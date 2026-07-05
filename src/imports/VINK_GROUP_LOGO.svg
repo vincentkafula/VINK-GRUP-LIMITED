@@ -1,0 +1,80 @@
+<svg width="800" height="500" viewBox="0 0 680 420" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>Vink Group Logo</title>
+<desc>An eagle with spread wings inside a gold ring, in dark crimson and gold, with VINK GROUP text below</desc>
+<defs>
+  <style>
+    .eagle-body { fill: #8B0000; }
+    .shield { fill: #C9A84C; }
+    .ring { fill: none; stroke: #C9A84C; stroke-width: 14; }
+    .feather { fill: #8B0000; }
+    .word-vink {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-size: 52px;
+      font-weight: 700;
+      fill: #1a1a1a;
+      letter-spacing: 14px;
+    }
+    .word-group {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-size: 20px;
+      font-weight: 400;
+      fill: #C9A84C;
+      letter-spacing: 10px;
+    }
+    .divider { stroke: #C9A84C; stroke-width: 1.2; }
+  </style>
+</defs>
+
+<!-- White background -->
+
+<!-- Gold ring -->
+<circle cx="340" cy="185" r="130" class="ring"/>
+
+<!-- LEFT WING -->
+<path d="M210 168 Q160 155 90 148 Q70 155 60 165 Q80 165 100 168 Q160 172 210 180 Z" class="feather"/>
+<path d="M210 180 Q155 175 85 175 Q68 184 65 193 Q85 190 108 190 Q162 190 210 192 Z" class="feather"/>
+<path d="M212 192 Q162 194 100 198 Q82 206 82 214 Q100 212 120 212 Q168 210 213 206 Z" class="feather"/>
+<path d="M80 160 Q55 162 38 178 Q48 176 68 178 Z" class="feather"/>
+<path d="M68 176 Q42 182 28 198 Q40 195 62 194 Z" class="feather"/>
+<path d="M64 194 Q42 202 32 216 Q46 212 64 210 Z" class="feather"/>
+
+<!-- RIGHT WING -->
+<path d="M470 168 Q520 155 590 148 Q610 155 620 165 Q600 165 580 168 Q520 172 470 180 Z" class="feather"/>
+<path d="M470 180 Q525 175 595 175 Q612 184 615 193 Q595 190 572 190 Q518 190 470 192 Z" class="feather"/>
+<path d="M468 192 Q518 194 580 198 Q598 206 598 214 Q580 212 560 212 Q512 210 467 206 Z" class="feather"/>
+<path d="M600 160 Q625 162 642 178 Q632 176 612 178 Z" class="feather"/>
+<path d="M612 176 Q638 182 652 198 Q640 195 618 194 Z" class="feather"/>
+<path d="M616 194 Q638 202 648 216 Q634 212 616 210 Z" class="feather"/>
+
+<!-- SHIELD BODY (gold) -->
+<path d="M318 152 Q318 148 340 148 Q362 148 362 152 L362 248 Q362 268 340 278 Q318 268 318 248 Z" class="shield"/>
+
+<!-- EAGLE BODY -->
+<ellipse cx="340" cy="200" rx="30" ry="38" class="eagle-body"/>
+<ellipse cx="340" cy="168" rx="16" ry="18" class="eagle-body"/>
+<ellipse cx="340" cy="148" rx="18" ry="16" class="eagle-body"/>
+
+<!-- BEAK -->
+<path d="M352 144 Q364 148 360 156 Q354 152 350 150 Z" style="fill:#6B0000;"/>
+
+<!-- EYE -->
+<circle cx="350" cy="143" r="3" style="fill:#fff;"/>
+<circle cx="351" cy="143" r="1.5" style="fill:#2a0000;"/>
+
+<!-- TAIL FEATHERS -->
+<ellipse cx="319" cy="258" rx="7" ry="16" transform="rotate(-25 319 258)" class="eagle-body"/>
+<ellipse cx="330" cy="264" rx="7" ry="16" transform="rotate(-10 330 264)" class="eagle-body"/>
+<ellipse cx="340" cy="266" rx="7" ry="16" class="eagle-body"/>
+<ellipse cx="350" cy="264" rx="7" ry="16" transform="rotate(10 350 264)" class="eagle-body"/>
+<ellipse cx="361" cy="258" rx="7" ry="16" transform="rotate(25 361 258)" class="eagle-body"/>
+
+<!-- Divider -->
+<line x1="180" y1="340" x2="500" y2="340" class="divider"/>
+
+<!-- VINK -->
+<text x="340" y="388" text-anchor="middle" class="word-vink">VINK</text>
+
+<!-- GROUP -->
+<text x="340" y="413" text-anchor="middle" class="word-group">GROUP</text>
+
+</svg>

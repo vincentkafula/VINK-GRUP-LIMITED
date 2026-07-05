@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VMS Bank – Business Credit Cards</title>
+<style>
+  :root {
+    --purple: #4B2D9E;
+    --purple-dark: #3a2180;
+    --purple-light: #6B4FBE;
+    --purple-bg: #f3f0fb;
+    --white: #ffffff;
+    --gray-100: #f7f7f9;
+    --gray-200: #e8e8f0;
+    --gray-600: #5a5a72;
+    --gray-800: #1e1e2e;
+    --font: 'Segoe UI', Arial, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); background: var(--white); color: var(--gray-800); font-size: 15px; }
+
+  /* TOP NAV */
+  .top-bar { background: var(--white); border-bottom: 1px solid var(--gray-200); display: flex; align-items: center; justify-content: space-between; padding: 0 32px; height: 56px; }
+  .top-bar-left { display: flex; align-items: center; gap: 28px; }
+  .logo { display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--purple); font-size: 18px; }
+  .logo-icon { width: 36px; height: 36px; background: var(--purple); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+  .logo-icon svg { width: 22px; height: 22px; fill: white; }
+  .top-nav { display: flex; gap: 4px; list-style: none; }
+  .top-nav a { text-decoration: none; color: var(--gray-600); font-size: 14px; padding: 8px 12px; border-radius: 4px; transition: color .2s; }
+  .top-nav a:hover { color: var(--purple); }
+  .top-nav a.active { color: var(--purple); font-weight: 600; }
+  .login-btn { background: var(--purple); color: white; border: none; border-radius: 20px; padding: 8px 20px; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+
+  /* SUB NAV */
+  .sub-nav { background: var(--purple); display: flex; padding: 0 32px; overflow-x: auto; }
+  .sub-nav a { text-decoration: none; color: rgba(255,255,255,0.75); font-size: 13px; padding: 13px 16px; white-space: nowrap; border-bottom: 3px solid transparent; transition: all .2s; }
+  .sub-nav a:hover { color: white; }
+  .sub-nav a.active { color: white; font-weight: 600; border-bottom-color: white; }
+
+  /* HERO */
+  .hero { text-align: center; padding: 52px 24px 36px; background: var(--gray-100); }
+  .hero h1 { font-size: 30px; font-weight: 700; color: var(--gray-800); margin-bottom: 6px; }
+  .hero p { color: var(--gray-600); font-size: 15px; margin-bottom: 22px; }
+  .decide-btn { background: var(--purple); color: white; border: none; border-radius: 24px; padding: 12px 32px; font-size: 15px; font-weight: 600; cursor: pointer; transition: background .2s; }
+  .decide-btn:hover { background: var(--purple-dark); }
+
+  /* CARD GRID */
+  .plans-section { padding: 40px 32px 24px; max-width: 1200px; margin: 0 auto; }
+  .plans-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px; }
+
+  .plan-card { background: var(--white); border: 1.5px solid var(--gray-200); border-radius: 12px; padding: 28px 24px; display: flex; flex-direction: column; transition: box-shadow .2s; }
+  .plan-card:hover { box-shadow: 0 6px 24px rgba(75,45,158,.12); }
+  .plan-card.featured { background: var(--purple); border-color: var(--purple); color: white; }
+
+  .plan-name { font-size: 16px; font-weight: 700; color: var(--purple); margin-bottom: 10px; }
+  .plan-card.featured .plan-name { color: white; }
+
+  .plan-price { font-size: 36px; font-weight: 800; color: var(--gray-800); line-height: 1; }
+  .plan-card.featured .plan-price { color: white; }
+  .plan-price span { font-size: 15px; font-weight: 400; color: var(--gray-600); }
+  .plan-card.featured .plan-price span { color: rgba(255,255,255,0.75); }
+
+  .what-you-get { font-size: 13px; font-weight: 700; color: var(--purple); margin: 18px 0 10px; text-transform: uppercase; letter-spacing: .5px; }
+  .plan-card.featured .what-you-get { color: rgba(255,255,255,0.85); }
+
+  .features { list-style: none; flex: 1; }
+  .features li { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: var(--gray-600); margin-bottom: 8px; line-height: 1.4; }
+  .plan-card.featured .features li { color: rgba(255,255,255,0.88); }
+  .features li::before { content: "✓"; color: var(--purple); font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+  .plan-card.featured .features li::before { color: rgba(255,255,255,0.9); }
+
+  .card-actions { display: flex; gap: 10px; margin-top: 22px; }
+  .btn-apply { flex: 1; background: var(--purple); color: white; border: none; border-radius: 20px; padding: 10px 0; font-size: 13px; font-weight: 600; cursor: pointer; transition: background .2s; }
+  .btn-apply:hover { background: var(--purple-dark); }
+  .plan-card.featured .btn-apply { background: white; color: var(--purple); }
+  .plan-card.featured .btn-apply:hover { background: var(--purple-bg); }
+  .btn-more { flex: 1; background: transparent; color: var(--purple); border: 1.5px solid var(--purple); border-radius: 20px; padding: 10px 0; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .2s; }
+  .btn-more:hover { background: var(--purple-bg); }
+  .plan-card.featured .btn-more { color: white; border-color: white; }
+  .plan-card.featured .btn-more:hover { background: rgba(255,255,255,0.1); }
+
+  /* T&C BANNER */
+  .tc-banner { text-align: center; background: var(--gray-100); padding: 28px 24px; margin: 16px 0 0; }
+  .tc-banner h3 { font-size: 17px; font-weight: 700; color: var(--purple); margin-bottom: 6px; }
+  .tc-banner p { font-size: 13px; color: var(--gray-600); margin-bottom: 4px; }
+  .continue-btn { margin-top: 14px; background: var(--purple); color: white; border: none; border-radius: 20px; padding: 11px 28px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .continue-btn:hover { background: var(--purple-dark); }
+
+  /* FOOTER */
+  footer { background: #1a1030; color: rgba(255,255,255,0.7); padding: 40px 32px 20px; }
+  .footer-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 28px; margin-bottom: 32px; }
+  .footer-col h4 { color: white; font-size: 13px; font-weight: 700; margin-bottom: 12px; text-transform: uppercase; letter-spacing: .5px; }
+  .footer-col a { display: block; color: rgba(255,255,255,0.65); font-size: 13px; text-decoration: none; margin-bottom: 6px; }
+  .footer-col a:hover { color: white; }
+  .footer-bottom { border-top: 1px solid rgba(255,255,255,0.12); padding-top: 16px; font-size: 12px; color: rgba(255,255,255,0.5); text-align: center; }
+
+  @media (max-width: 900px) { .plans-row { grid-template-columns: 1fr 1fr; } .footer-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 600px) { .plans-row { grid-template-columns: 1fr; } .top-nav { display: none; } .footer-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav class="top-bar">
+  <div class="top-bar-left">
+    <div class="logo">
+      <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2L4 7v10l8 5 8-5V7z"/></svg></div>
+      VMS
+    </div>
+    <ul class="top-nav">
+      <li><a href="#">Personal</a></li>
+      <li><a href="#" class="active">Business</a></li>
+      <li><a href="#">Corporate</a></li>
+      <li><a href="#">Marketplace</a></li>
+    </ul>
+  </div>
+  <button class="login-btn">&#128274; Login</button>
+</nav>
+
+<!-- SUB NAV -->
+<nav class="sub-nav">
+  <a href="#">Start my business</a>
+  <a href="#">Accounts</a>
+  <a href="#" class="active">Credit cards</a>
+  <a href="#">Loans</a>
+  <a href="#">Invest</a>
+  <a href="#">Insure</a>
+  <a href="#">Manage my Business</a>
+  <a href="#">International</a>
+  <a href="#">Studio</a>
+  <a href="#">news</a>
+  <a href="#">Get Help</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <h1>Plans that help you grow</h1>
+  <p>Transparent Pricing for You</p>
+  <button class="decide-btn">Help me Decide</button>
+</section>
+
+<!-- PLANS ROW 1 -->
+<div class="plans-section">
+  <div class="plans-row">
+
+    <div class="plan-card">
+      <div class="plan-name">Advice</div>
+      <div class="plan-price">R0 <span>/ Month</span></div>
+      <div class="what-you-get">What you Get</div>
+      <ul class="features">
+        <li>Annual turnover: R0 to R1,5 million</li>
+      </ul>
+      <div class="card-actions">
+        <button class="btn-apply">Apply Now</button>
+        <button class="btn-more">Tell me more</button>
+      </div>
+    </div>
+
+    <div class="plan-card">
+      <div class="plan-name">Platinum</div>
+      <div class="plan-price">R0 <span>/ Month</span></div>
+      <div class="what-you-get">What you Get</div>
+      <ul class="features">
+        <li>Annual turnover: R0 to 5 million</li>
+      </ul>
+      <div class="card-actions">
+        <button class="btn-apply">Apply Now</button>
+        <button class="btn-more">Tell me more</button>
+      </div>
+    </div>
+
+    <div class="plan-card">
+      <div class="plan-name">Black</div>
+      <div class="plan-price">R85 <span>/ Month</span></div>
+      <div class="what-you-get">What you Get</div>
+      <ul class="features">
+        <li>Annual turnover: R0 to 500 million</li>
+      </ul>
+      <div class="card-actions">
+        <button class="btn-apply">Apply Now</button>
+        <button class="btn-more">Tell me more</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- PLANS ROW 2 -->
+  <div class="plans-row">
+
+    <div class="plan-card">
+      <div class="plan-name">Petrol</div>
+      <div class="plan-price">R170 <span>/ Month</span></div>
+      <div class="what-you-get">What you Get</div>
+      <ul class="features">
+        <li>Annual turnover: R0 to R500 million</li>
+        <li>Free VMS Online Banking and NotifyMes</li>
+        <li>Suitable for all business segments and sectors</li>
+        <li>Shari'ah-compliant option available</li>
+        <li>Free Online Banking and NotifyMes</li>
+        <li>Suitable for all business segments and sectors</li>
+        <li>Shari'ah-compliant option available</li>
+      </ul>
+      <div class="card-actions">
+        <button class="btn-apply">Apply Now</button>
+        <button class="btn-more">Tell me more</button>
+      </div>
+    </div>
+
+    <!-- Finance — FEATURED -->
+    <div class="plan-card featured">
+      <div class="plan-name">Finance</div>
+      <div class="plan-price">R265 <span>/ Month</span></div>
+      <div class="what-you-get">What you Get</div>
+      <ul class="features">
+        <li>Annual turnover: R0 to R500 million</li>
+        <li>35 electronic transactions</li>
+        <li>10 cash deposits/withdrawals at any VMS ATM (capped at R50 000 per month)</li>
+        <li>Suitable for all business segments and sectors</li>
+        <li>Free Online Banking and NotifyMes</li>
+        <li>Limited to Sole Proprietors</li>
+        <li>Shari'ah-compliant option available</li>
+      </ul>
+      <div class="card-actions">
+        <button class="btn-apply">Apply Now</button>
+        <button class="btn-more">Tell me more</button>
+      </div>
+    </div>
+
+    <div class="plan-card">
+      <div class="plan-name">Manage Cash</div>
+      <div class="plan-price">R415 <span>/ Month</span></div>
+      <div class="what-you-get">What you Get</div>
+      <ul class="features">
+        <li>Annual turnover: R0 to R500 million</li>
+        <li>60 electronic transactions</li>
+        <li>15 cash deposit/withdrawal transactions at any VMS ATM (capped at R100 000 per month)</li>
+        <li>Suitable for all business segments and sectors</li>
+        <li>Free Online Banking and NotifyMes</li>
+        <li>Suitable for all business segments and sectors</li>
+        <li>Shari'ah-compliant option available</li>
+      </ul>
+      <div class="card-actions">
+        <button class="btn-apply">Apply Now</button>
+        <button class="btn-more">Tell me more</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- T&C BANNER -->
+<div class="tc-banner">
+  <h3>Terms and Conditions Apply</h3>
+  <p>*These four Business Platinum Checkings meet different needs — choose what's right for you.</p>
+  <p>Note: Shari'ah-compliant investment options are available on request.</p>
+  <button class="continue-btn">Continue an Application</button>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-col">
+      <h4>Social</h4>
+      <a href="#">Facebook</a><a href="#">Twitter</a><a href="#">LinkedIn</a><a href="#">Instagram</a>
+      <h4 style="margin-top:16px;">Useful Tools</h4>
+      <a href="#">Latest Offers</a><a href="#">Find the Branch</a><a href="#">Safety and Security</a>
+      <a href="#">Market Indices</a><a href="#">Guide to help you bank</a>
+      <a href="#">App, Online and other banking</a><a href="#">Exchange rates</a><a href="#">Banking rates and fees</a>
+    </div>
+    <div class="footer-col">
+      <h4>Who We Are</h4>
+      <a href="#">About VMS</a><a href="#">Investor Relations</a><a href="#">Social Responsibility</a>
+      <a href="#">News</a><a href="#">Sponsorship</a><a href="#">Careers</a>
+      <a href="#">VMS at the World Economic Forum</a>
+    </div>
+    <div class="footer-col">
+      <h4>Our Sites</h4>
+      <a href="#">Personal Banking</a><a href="#">Business Banking</a>
+      <a href="#">Wealth and Investment Management</a>
+      <a href="#">Corporate and Investment Banking</a><a href="#">VMS blog</a>
+    </div>
+    <div class="footer-col">
+      <h4>Support</h4>
+      <a href="#">Contact Us</a><a href="#">Switch to VMS</a>
+      <a href="#">Business debit order switching</a><a href="#">Send your feedback</a>
+      <h4 style="margin-top:16px;">Legal</h4>
+      <a href="#">Legal and Compliance</a><a href="#">Terms of use</a>
+      <a href="#">Banking regulations</a><a href="#">Privacy Statement</a>
+    </div>
+    <div class="footer-col">
+      <h4>Lost or stolen cards</h4>
+      <a href="tel:+27210070772">+27(0) 21 007 0772</a>
+      <a href="tel:+27614615035">+27(0) 61 461 5035</a>
+      <p style="font-size:13px;color:rgba(255,255,255,0.7);margin-top:12px;line-height:1.5;">Download the App Now!<br>Your credit score is a tool to help you meet your goals.</p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>VMS Head Office: State house Building, 8 Rose Street, Cape Town, South Africa</p>
+    <p style="margin-top:8px;">Terms Of Use | Banking Regulations | Privacy Statement | Security Centre | Authorised Financial Services Provider and a registered credit provider (NCRCP)</p>
+    <p style="margin-top:6px;">© Copyright. VMS Bank Limited. All Rights reserved | Registration number 2018/079316/07</p>
+  </div>
+</footer>
+
+</body>
+</html>

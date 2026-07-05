@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VMS Bank – News</title>
+<style>
+  :root {
+    --purple: #4B2D9E;
+    --purple-dark: #3a2180;
+    --purple-bg: #f3f0fb;
+    --white: #ffffff;
+    --gray-100: #f7f7f9;
+    --gray-200: #e8e8f0;
+    --gray-600: #5a5a72;
+    --gray-800: #1e1e2e;
+    --red: #d32f2f;
+    --font: 'Segoe UI', Arial, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); background: var(--white); color: var(--gray-800); font-size: 15px; }
+
+  /* TOP NAV */
+  .top-bar { background: var(--white); border-bottom: 1px solid var(--gray-200); display: flex; align-items: center; justify-content: space-between; padding: 0 32px; height: 56px; }
+  .top-bar-left { display: flex; align-items: center; gap: 28px; }
+  .logo { display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--purple); font-size: 18px; }
+  .logo-icon { width: 36px; height: 36px; background: var(--purple); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+  .logo-icon svg { width: 22px; height: 22px; fill: white; }
+  .top-nav { display: flex; gap: 4px; list-style: none; }
+  .top-nav a { text-decoration: none; color: var(--gray-600); font-size: 14px; padding: 8px 12px; border-radius: 4px; }
+  .top-nav a.active { color: var(--purple); font-weight: 600; }
+  .login-btn { background: var(--purple); color: white; border: none; border-radius: 20px; padding: 8px 20px; font-size: 14px; cursor: pointer; }
+
+  /* SUB NAV */
+  .sub-nav { background: var(--purple); display: flex; padding: 0 32px; overflow-x: auto; }
+  .sub-nav a { text-decoration: none; color: rgba(255,255,255,0.75); font-size: 13px; padding: 13px 16px; white-space: nowrap; border-bottom: 3px solid transparent; transition: all .2s; }
+  .sub-nav a.active { color: white; font-weight: 600; border-bottom-color: white; }
+
+  /* NEWS SUB-NAV */
+  .news-subnav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 32px; border-bottom: 1px solid var(--gray-200);
+    background: var(--white);
+  }
+  .news-subnav-links { display: flex; gap: 4px; }
+  .news-subnav-links a { text-decoration: none; color: var(--gray-600); font-size: 14px; padding: 12px 14px; border-bottom: 2px solid transparent; }
+  .news-subnav-links a.active { color: var(--purple); font-weight: 600; border-bottom-color: var(--purple); }
+  .news-subnav-actions { display: flex; gap: 10px; padding: 10px 0; }
+  .btn-subscribe { background: var(--purple); color: white; border: none; border-radius: 20px; padding: 8px 18px; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .btn-signin { background: transparent; color: var(--purple); border: 1.5px solid var(--purple); border-radius: 20px; padding: 8px 18px; font-size: 13px; font-weight: 600; cursor: pointer; }
+
+  /* MAIN LAYOUT */
+  .news-layout { display: grid; grid-template-columns: 1fr 300px; gap: 28px; max-width: 1200px; margin: 0 auto; padding: 28px 32px; }
+
+  /* LEFT COLUMN */
+  .news-main {}
+
+  /* Hero article */
+  .hero-article { border: 1.5px solid var(--gray-200); border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
+  .hero-img { width: 100%; height: 220px; background: linear-gradient(135deg, #2a2a2a 0%, #4a4a4a 100%); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+  .hero-img-placeholder { width: 100%; height: 100%; background: linear-gradient(135deg, #3d3d3d, #666); display: flex; align-items: flex-end; }
+  .hero-img-placeholder::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.5)); }
+
+  /* Article grid */
+  .articles-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .article-card { display: flex; gap: 12px; padding: 14px; border: 1.5px solid var(--gray-200); border-radius: 8px; cursor: pointer; transition: box-shadow .2s; }
+  .article-card:hover { box-shadow: 0 3px 12px rgba(0,0,0,0.08); }
+  .article-thumb { width: 80px; height: 64px; border-radius: 6px; flex-shrink: 0; overflow: hidden; }
+  .thumb-tv { background: linear-gradient(135deg, #8B6914, #c49a1a); }
+  .thumb-murder { background: linear-gradient(135deg, #2c3e50, #4a6a8a); }
+  .thumb-live { background: linear-gradient(135deg, #c0392b, #922b21); }
+  .thumb-opinion { background: linear-gradient(135deg, #1a5276, #2980b9); }
+  .thumb-court { background: linear-gradient(135deg, #1e8449, #27ae60); }
+  .thumb-promo { background: linear-gradient(135deg, #6c3483, #8e44ad); }
+  .article-thumb { width: 80px; height: 64px; border-radius: 6px; flex-shrink: 0; }
+  .article-info { flex: 1; }
+  .article-tag { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--red); margin-bottom: 4px; }
+  .article-tag.live { background: var(--red); color: white; padding: 1px 6px; border-radius: 3px; display: inline-block; }
+  .article-tag.subscriber { background: var(--purple); color: white; padding: 1px 6px; border-radius: 3px; display: inline-block; }
+  .article-tag.sponsored { color: var(--gray-600); }
+  .article-title { font-size: 13px; font-weight: 600; color: var(--gray-800); line-height: 1.4; margin-bottom: 6px; }
+  .article-time { font-size: 11px; color: var(--gray-600); }
+
+  /* More News */
+  .more-news-title { font-size: 17px; font-weight: 700; color: var(--gray-800); margin-bottom: 16px; }
+  .more-news-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .more-card { cursor: pointer; }
+  .more-card-img { width: 100%; height: 120px; border-radius: 8px; margin-bottom: 10px; }
+  .more-img-1 { background: linear-gradient(135deg, #1a7a2e, #27ae60); }
+  .more-img-2 { background: linear-gradient(135deg, #1a3a5c, #2980b9); }
+  .more-img-3 { background: linear-gradient(135deg, #5c1a1a, #c0392b); }
+  .more-card-title { font-size: 13px; font-weight: 600; color: var(--gray-800); line-height: 1.4; }
+
+  /* RIGHT SIDEBAR */
+  .news-sidebar {}
+
+  /* Trending */
+  .trending-box { border: 1.5px solid var(--gray-200); border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+  .trending-title { font-size: 15px; font-weight: 700; color: var(--purple); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid var(--purple); }
+  .trending-item { display: flex; gap: 12px; margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid var(--gray-200); }
+  .trending-item:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+  .trending-num { font-size: 18px; font-weight: 800; color: var(--purple); flex-shrink: 0; width: 24px; }
+  .trending-text { font-size: 12px; font-weight: 600; color: var(--gray-800); line-height: 1.4; }
+
+  /* Insurance widget */
+  .insurance-box { border: 1.5px solid var(--gray-200); border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
+  .insurance-img { width: 100%; height: 120px; background: linear-gradient(135deg, #b8860b, #daa520); }
+  .insurance-form { padding: 16px; }
+  .insurance-form h4 { font-size: 14px; font-weight: 700; color: var(--purple); margin-bottom: 14px; }
+  .form-field { margin-bottom: 10px; }
+  .form-field label { display: block; font-size: 11px; color: var(--gray-600); margin-bottom: 3px; }
+  .form-field input { width: 100%; border: 1px solid var(--gray-200); border-radius: 4px; padding: 7px 10px; font-size: 13px; color: var(--gray-800); outline: none; }
+  .form-field input:focus { border-color: var(--purple); }
+  .submit-btn { width: 100%; background: var(--purple); color: white; border: none; border-radius: 20px; padding: 10px; font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 4px; }
+  .form-note { font-size: 10px; color: var(--gray-600); margin-top: 8px; line-height: 1.4; text-align: center; }
+
+  /* Newsletter */
+  .newsletter-box { border: 1.5px solid var(--gray-200); border-radius: 10px; padding: 20px; }
+  .newsletter-box h4 { font-size: 15px; font-weight: 700; color: var(--purple); margin-bottom: 6px; padding-bottom: 10px; border-bottom: 2px solid var(--purple); }
+  .newsletter-label { font-size: 13px; color: var(--gray-800); margin: 12px 0 10px; }
+  .newsletter-box .form-field input { border: 1px solid var(--gray-200); }
+  .newsletter-btn { width: 100%; background: var(--purple); color: white; border: none; border-radius: 20px; padding: 10px; font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+
+  /* T&C */
+  .tc-banner { text-align: center; background: var(--gray-100); padding: 28px 24px; }
+  .tc-banner h3 { font-size: 17px; font-weight: 700; color: var(--purple); margin-bottom: 6px; }
+  .tc-banner p { font-size: 13px; color: var(--gray-600); margin-bottom: 4px; }
+  .continue-btn { margin-top: 14px; background: var(--purple); color: white; border: none; border-radius: 20px; padding: 11px 28px; font-size: 14px; font-weight: 600; cursor: pointer; }
+
+  /* FOOTER */
+  footer { background: #1a1030; color: rgba(255,255,255,0.7); padding: 40px 32px 20px; }
+  .footer-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 28px; margin-bottom: 32px; }
+  .footer-col h4 { color: white; font-size: 13px; font-weight: 700; margin-bottom: 12px; text-transform: uppercase; letter-spacing: .5px; }
+  .footer-col a { display: block; color: rgba(255,255,255,0.65); font-size: 13px; text-decoration: none; margin-bottom: 6px; }
+  .footer-col a:hover { color: white; }
+  .footer-bottom { border-top: 1px solid rgba(255,255,255,0.12); padding-top: 16px; font-size: 12px; color: rgba(255,255,255,0.5); text-align: center; }
+
+  @media (max-width: 960px) { .news-layout { grid-template-columns: 1fr; } .articles-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 600px) { .more-news-grid { grid-template-columns: 1fr; } .top-nav { display: none; } .footer-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav class="top-bar">
+  <div class="top-bar-left">
+    <div class="logo">
+      <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2L4 7v10l8 5 8-5V7z"/></svg></div>
+      VMS
+    </div>
+    <ul class="top-nav">
+      <li><a href="#">Personal</a></li>
+      <li><a href="#" class="active">Business</a></li>
+      <li><a href="#">Corporate</a></li>
+      <li><a href="#">Marketplace</a></li>
+    </ul>
+  </div>
+  <button class="login-btn">&#128274; Login</button>
+</nav>
+
+<!-- SUB NAV -->
+<nav class="sub-nav">
+  <a href="#">Start my business</a>
+  <a href="#">Accounts</a>
+  <a href="#">Credit cards</a>
+  <a href="#">Loans</a>
+  <a href="#">Invest</a>
+  <a href="#">Insure</a>
+  <a href="#">Manage my Business</a>
+  <a href="#">International</a>
+  <a href="#">Studio</a>
+  <a href="#" class="active">news</a>
+  <a href="#">Get Help</a>
+</nav>
+
+<!-- NEWS SUB-NAV -->
+<div class="news-subnav">
+  <div class="news-subnav-links">
+    <a href="#" class="active">News</a>
+    <a href="#">Careers</a>
+    <a href="#">Property</a>
+    <a href="#">Autotrader</a>
+    <a href="#">Marketplaces</a>
+  </div>
+  <div class="news-subnav-actions">
+    <button class="btn-subscribe">Subscribe</button>
+    <button class="btn-signin">Sign in</button>
+  </div>
+</div>
+
+<!-- NEWS LAYOUT -->
+<div class="news-layout">
+
+  <!-- LEFT: MAIN CONTENT -->
+  <div class="news-main">
+
+    <!-- Hero article placeholder -->
+    <div class="hero-article">
+      <div class="hero-img">
+        <div class="hero-img-placeholder"></div>
+      </div>
+    </div>
+
+    <!-- Articles grid 2-col -->
+    <div class="articles-grid">
+
+      <div class="article-card">
+        <div class="article-thumb thumb-tv"></div>
+        <div class="article-info">
+          <div class="article-title">Splurge exposed: Leather loungers, skinny jeans and R10 000 for a bucket</div>
+          <div class="article-time">12h ago</div>
+        </div>
+      </div>
+
+      <div class="article-card">
+        <div class="article-thumb thumb-murder"></div>
+        <div class="article-info">
+          <div class="article-title">Top job after murder charges provisionally withdrawn</div>
+          <div class="article-time">12h ago</div>
+        </div>
+      </div>
+
+      <div class="article-card">
+        <div class="article-thumb thumb-live"></div>
+        <div class="article-info">
+          <div class="article-tag live">LIVE</div>
+          <div class="article-title">BREAKING NEWS LIVE | Veld fire leads to OR Tambo International Airport closing one of its two runways...</div>
+          <div class="article-time">12h ago</div>
+        </div>
+      </div>
+
+      <div class="article-card">
+        <div class="article-thumb thumb-opinion"></div>
+        <div class="article-info">
+          <div class="article-tag subscriber">FOR SUBSCRIBERS</div>
+          <div class="article-title">Adriaan Basson | We have the people to fix SA. So let's do it</div>
+          <div class="article-time">12h ago</div>
+        </div>
+      </div>
+
+      <div class="article-card">
+        <div class="article-thumb thumb-court"></div>
+        <div class="article-info">
+          <div class="article-title">Senzo Meyiwa: One of the accused claims existence of second docket has prejudiced him</div>
+          <div class="article-time">12h ago</div>
+        </div>
+      </div>
+
+      <div class="article-card">
+        <div class="article-thumb thumb-promo"></div>
+        <div class="article-info">
+          <div class="article-tag sponsored">Sponsored Content</div>
+          <div class="article-title">Stand a chance to win a Nokia X10 smartphone Valued at R6,999 this Women's Month</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- More News -->
+    <div class="more-news-title">More News</div>
+    <div class="more-news-grid">
+      <div class="more-card">
+        <div class="more-card-img more-img-1"></div>
+        <div class="more-card-title">Senzo Meyiwa: One of the accused claims existence of second docket has prejudiced him</div>
+      </div>
+      <div class="more-card">
+        <div class="more-card-img more-img-2"></div>
+        <div class="more-card-title">Senzo Meyiwa: One of the accused claims existence of second docket has prejudiced him</div>
+      </div>
+      <div class="more-card">
+        <div class="more-card-img more-img-3"></div>
+        <div class="more-card-title">Senzo Meyiwa: One of the accused claims existence of second docket has prejudiced him</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT: SIDEBAR -->
+  <div class="news-sidebar">
+
+    <!-- Trending -->
+    <div class="trending-box">
+      <div class="trending-title">Title Comes Here</div>
+      <div class="trending-item">
+        <div class="trending-num">1</div>
+        <div class="trending-text">BREAKING NEWS LIVE | Veld fire leads to OR Tambo International Airport closing one of its two runways</div>
+      </div>
+      <div class="trending-item">
+        <div class="trending-num">2</div>
+        <div class="trending-text">Malema says EFF will kiss frogs to reach its destination</div>
+      </div>
+      <div class="trending-item">
+        <div class="trending-num">3</div>
+        <div class="trending-text">Richards Bay surgeon faces shock murder charge after death of patient</div>
+      </div>
+      <div class="trending-item">
+        <div class="trending-num">4</div>
+        <div class="trending-text">SILENCED | Tembisa Hospital splurge exposed: Leather loungers, skinny jeans and R10 000 for a bucket</div>
+      </div>
+      <div class="trending-item">
+        <div class="trending-num">5</div>
+        <div class="trending-text">'They'll soon take over our homes': Sabie residents gripped by fear as zama zamas divert services</div>
+      </div>
+    </div>
+
+    <!-- Car Insurance Widget -->
+    <div class="insurance-box">
+      <div class="insurance-img"></div>
+      <div class="insurance-form">
+        <h4>Start a Car Insurance Quote</h4>
+        <div class="form-field">
+          <label>First Name</label>
+          <input type="text" placeholder="">
+        </div>
+        <div class="form-field">
+          <label>Last Name</label>
+          <input type="text" placeholder="">
+        </div>
+        <div class="form-field">
+          <label>Contact Number</label>
+          <input type="tel" placeholder="">
+        </div>
+        <button class="submit-btn">Submit</button>
+        <div class="form-note">A Friendly advisor will call you back<br>Licensed insurer and FSP. Premiums are risk profile dependent and reviewed annually based on risk profile and economic factors. Ts and Cs apply</div>
+      </div>
+    </div>
+
+    <!-- Newsletter -->
+    <div class="newsletter-box">
+      <h4>Newsletters</h4>
+      <div class="newsletter-label">State of the Nation · Weekly</div>
+      <div class="form-field">
+        <label>First Name</label>
+        <input type="text" placeholder="">
+      </div>
+      <div class="form-field">
+        <label>Email Address</label>
+        <input type="email" placeholder="">
+      </div>
+      <button class="newsletter-btn">Subscribe</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- T&C BANNER -->
+<div class="tc-banner">
+  <h3>Terms and Conditions Apply</h3>
+  <p>*These four Business Platinum Checkings meet different needs — choose what's right for you.</p>
+  <p>Note: Shari'ah-compliant investment options are available on request.</p>
+  <button class="continue-btn">Continue an Application</button>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-col">
+      <h4>Social</h4>
+      <a href="#">Facebook</a><a href="#">Twitter</a><a href="#">LinkedIn</a><a href="#">Instagram</a>
+      <h4 style="margin-top:16px;">Useful Tools</h4>
+      <a href="#">Latest Offers</a><a href="#">Find the Branch</a><a href="#">Safety and Security</a>
+      <a href="#">Market Indices</a><a href="#">Guide to help you bank</a>
+      <a href="#">App, Online and other banking</a><a href="#">Exchange rates</a><a href="#">Banking rates and fees</a>
+    </div>
+    <div class="footer-col">
+      <h4>Who We Are</h4>
+      <a href="#">About VMS</a><a href="#">Investor Relations</a><a href="#">Social Responsibility</a>
+      <a href="#">News</a><a href="#">Sponsorship</a><a href="#">Careers</a>
+      <a href="#">VMS at the World Economic Forum</a>
+    </div>
+    <div class="footer-col">
+      <h4>Our Sites</h4>
+      <a href="#">Personal Banking</a><a href="#">Business Banking</a>
+      <a href="#">Wealth and Investment Management</a>
+      <a href="#">Corporate and Investment Banking</a><a href="#">VMS blog</a>
+    </div>
+    <div class="footer-col">
+      <h4>Support</h4>
+      <a href="#">Contact Us</a><a href="#">Switch to VMS</a>
+      <a href="#">Business debit order switching</a><a href="#">Send your feedback</a>
+      <h4 style="margin-top:16px;">Legal</h4>
+      <a href="#">Legal and Compliance</a><a href="#">Terms of use</a>
+      <a href="#">Banking regulations</a><a href="#">Privacy Statement</a>
+    </div>
+    <div class="footer-col">
+      <h4>Lost or stolen cards</h4>
+      <a href="tel:+27210070772">+27(0) 21 007 0772</a>
+      <a href="tel:+27614615035">+27(0) 61 461 5035</a>
+      <p style="font-size:13px;color:rgba(255,255,255,0.7);margin-top:12px;line-height:1.5;">Download the App Now!<br>Your credit score is a tool to help you meet your goals.</p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>VMS Head Office: State house Building, 8 Rose Street, Cape Town, South Africa</p>
+    <p style="margin-top:8px;">Terms Of Use | Banking Regulations | Privacy Statement | Security Centre | Authorised Financial Services Provider and a registered credit provider (NCRCP)</p>
+    <p style="margin-top:6px;">© Copyright. VMS Bank Limited. All Rights reserved | Registration number 2018/079316/07</p>
+  </div>
+</footer>
+
+</body>
+</html>

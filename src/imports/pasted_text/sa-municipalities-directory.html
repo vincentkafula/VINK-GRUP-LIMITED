@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SA Municipalities Directory</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #0D1117;
+    --surface:   #161B22;
+    --border:    #21262D;
+    --text:      #E6EDF3;
+    --muted:     #7D8590;
+    --accent:    #F78166;
+    --metro:     #F0883E;
+    --district:  #58A6FF;
+    --local:     #3FB950;
+    --tag-metro-bg: rgba(240,136,62,0.12);
+    --tag-dist-bg:  rgba(88,166,255,0.12);
+    --tag-local-bg: rgba(63,185,80,0.12);
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* ── Top bar ── */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(13,17,23,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 24px;
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  }
+  .topbar-title {
+    font-size: 13px; font-weight: 600;
+    color: var(--text); letter-spacing: .03em;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .topbar-title span { color: var(--accent); }
+  .badge-total {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; font-weight: 500;
+    background: rgba(247,129,102,0.12);
+    color: var(--accent);
+    border: 1px solid rgba(247,129,102,0.25);
+    border-radius: 20px; padding: 2px 10px;
+  }
+  .spacer { flex: 1; }
+
+  /* search */
+  .search-wrap { position: relative; }
+  .search-wrap input {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    padding: 6px 10px 6px 32px;
+    width: 220px; outline: none;
+    transition: border-color .15s;
+  }
+  .search-wrap input:focus { border-color: var(--accent); }
+  .search-wrap input::placeholder { color: var(--muted); }
+  .search-icon {
+    position: absolute; left: 9px; top: 50%; transform: translateY(-50%);
+    color: var(--muted); pointer-events: none;
+  }
+
+  /* filter pills */
+  .filters { display: flex; gap: 6px; }
+  .pill {
+    font-size: 11px; font-weight: 500;
+    padding: 4px 12px; border-radius: 20px; cursor: pointer;
+    border: 1px solid var(--border);
+    background: transparent; color: var(--muted);
+    transition: all .15s;
+    font-family: 'Inter', sans-serif;
+  }
+  .pill:hover { border-color: var(--muted); color: var(--text); }
+  .pill.active-all    { background: rgba(247,129,102,.15); border-color: var(--accent); color: var(--accent); }
+  .pill.active-metro  { background: var(--tag-metro-bg); border-color: var(--metro); color: var(--metro); }
+  .pill.active-dist   { background: var(--tag-dist-bg);  border-color: var(--district); color: var(--district); }
+  .pill.active-local  { background: var(--tag-local-bg); border-color: var(--local); color: var(--local); }
+
+  /* copy button */
+  .copy-btn {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 600; letter-spacing: .04em;
+    padding: 6px 14px; border-radius: 6px; cursor: pointer;
+    background: var(--accent); color: #0D1117;
+    border: none; font-family: 'Inter', sans-serif;
+    transition: opacity .15s, transform .1s;
+  }
+  .copy-btn:hover { opacity: .88; }
+  .copy-btn:active { transform: scale(.97); }
+  .copy-btn.copied { background: var(--local); }
+
+  /* ── Layout ── */
+  .layout {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    min-height: calc(100vh - 57px);
+  }
+
+  /* sidebar */
+  .sidebar {
+    border-right: 1px solid var(--border);
+    padding: 16px 0;
+    position: sticky; top: 57px;
+    height: calc(100vh - 57px);
+    overflow-y: auto;
+  }
+  .sidebar-label {
+    font-size: 10px; font-weight: 600; letter-spacing: .08em;
+    color: var(--muted); text-transform: uppercase;
+    padding: 0 16px 8px;
+  }
+  .prov-btn {
+    display: flex; align-items: center; justify-content: space-between;
+    width: 100%; padding: 7px 16px;
+    font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500;
+    color: var(--muted); background: transparent; border: none;
+    cursor: pointer; text-align: left;
+    border-left: 2px solid transparent;
+    transition: all .12s;
+  }
+  .prov-btn:hover { color: var(--text); background: rgba(255,255,255,.03); }
+  .prov-btn.active { color: var(--text); border-left-color: var(--accent); background: rgba(247,129,102,.06); }
+  .prov-count {
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    color: var(--muted); background: var(--surface);
+    border-radius: 10px; padding: 1px 6px; min-width: 22px; text-align: center;
+  }
+
+  /* main content */
+  .main { padding: 0; overflow-y: auto; }
+
+  /* province section */
+  .prov-section { border-bottom: 1px solid var(--border); }
+  .prov-header {
+    position: sticky; top: 0; z-index: 10;
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 28px;
+    background: rgba(13,17,23,0.95);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .prov-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .prov-name { font-size: 14px; font-weight: 700; }
+  .prov-stats { display: flex; gap: 8px; margin-left: auto; }
+  .stat-tag {
+    font-size: 10px; font-weight: 600; letter-spacing: .04em;
+    padding: 2px 8px; border-radius: 4px;
+  }
+  .stat-metro { background: var(--tag-metro-bg); color: var(--metro); }
+  .stat-dist  { background: var(--tag-dist-bg);  color: var(--district); }
+  .stat-local { background: var(--tag-local-bg); color: var(--local); }
+
+  /* table */
+  .muni-table { width: 100%; border-collapse: collapse; }
+  .muni-table thead tr {
+    background: rgba(22,27,34,0.6);
+  }
+  .muni-table th {
+    font-size: 10px; font-weight: 600; letter-spacing: .07em;
+    text-transform: uppercase; color: var(--muted);
+    padding: 8px 28px; text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .muni-table th:last-child { text-align: center; width: 130px; }
+
+  .muni-row { transition: background .1s; }
+  .muni-row:hover { background: rgba(255,255,255,.025); }
+  .muni-row td { padding: 10px 28px; border-bottom: 1px solid rgba(33,38,45,0.6); vertical-align: middle; }
+  .muni-row td:first-child {
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    color: var(--muted); width: 44px;
+  }
+  .muni-name { font-size: 13px; font-weight: 500; color: var(--text); }
+  .muni-type-cell { text-align: center; }
+  .type-badge {
+    display: inline-block;
+    font-size: 10px; font-weight: 600; letter-spacing: .05em;
+    padding: 3px 10px; border-radius: 4px; text-transform: uppercase;
+  }
+  .type-Metropolitan { background: var(--tag-metro-bg); color: var(--metro); border: 1px solid rgba(240,136,62,.2); }
+  .type-District     { background: var(--tag-dist-bg);  color: var(--district); border: 1px solid rgba(88,166,255,.2); }
+  .type-Local        { background: var(--tag-local-bg); color: var(--local); border: 1px solid rgba(63,185,80,.2); }
+
+  .no-results {
+    text-align: center; padding: 64px 24px;
+    color: var(--muted); font-size: 13px;
+  }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* copy toast */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(10px);
+    background: var(--local); color: #0D1117;
+    font-size: 12px; font-weight: 700; letter-spacing: .04em;
+    padding: 10px 20px; border-radius: 8px;
+    opacity: 0; pointer-events: none;
+    transition: all .25s;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-title">
+    🇿🇦 SA Municipal Directory
+    <span class="badge-total" id="countBadge">255 municipalities</span>
+  </div>
+  <div class="filters">
+    <button class="pill active-all" data-filter="All" onclick="setFilter('All',this)">All</button>
+    <button class="pill" data-filter="Metropolitan" onclick="setFilter('Metropolitan',this)">Metro</button>
+    <button class="pill" data-filter="District" onclick="setFilter('District',this)">District</button>
+    <button class="pill" data-filter="Local" onclick="setFilter('Local',this)">Local</button>
+  </div>
+  <div class="search-wrap">
+    <svg class="search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+    </svg>
+    <input type="text" id="searchInput" placeholder="Search municipalities…" oninput="applyFilters()">
+  </div>
+  <div class="spacer"></div>
+  <button class="copy-btn" id="copyBtn" onclick="copyTSV()">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+    </svg>
+    Copy for Figma
+  </button>
+</div>
+
+<div class="layout">
+  <nav class="sidebar">
+    <div class="sidebar-label">Provinces</div>
+    <div id="sidebarNav"></div>
+  </nav>
+  <main class="main" id="mainContent"></main>
+</div>
+
+<div class="toast" id="toast">✓ Copied to clipboard</div>
+
+<script>
+const DATA = {"Eastern Cape":[{"name":"Buffalo City Metropolitan Municipality","type":"Metropolitan"},{"name":"Nelson Mandela Bay Metropolitan Municipality","type":"Metropolitan"},{"name":"Alfred Nzo District Municipality","type":"District"},{"name":"Amathole District Municipality","type":"District"},{"name":"Chris Hani District Municipality","type":"District"},{"name":"Joe Gqabi District Municipality","type":"District"},{"name":"OR Tambo District Municipality","type":"District"},{"name":"Sarah Baartman District Municipality","type":"District"},{"name":"Amahlathi Local Municipality","type":"Local"},{"name":"Blue Crane Route Local Municipality","type":"Local"},{"name":"Dr AB Xuma Local Municipality","type":"Local"},{"name":"Dr Beyers Naudé Local Municipality","type":"Local"},{"name":"Elundini Local Municipality","type":"Local"},{"name":"Emalahleni Local Municipality","type":"Local"},{"name":"Enoch Mgijima Local Municipality","type":"Local"},{"name":"Great Kei Local Municipality","type":"Local"},{"name":"Ingquza Hill Local Municipality","type":"Local"},{"name":"Intsika Yethu Local Municipality","type":"Local"},{"name":"Inxuba Yethemba Local Municipality","type":"Local"},{"name":"King Sabata Dalindyebo Local Municipality","type":"Local"},{"name":"KouKamma Local Municipality","type":"Local"},{"name":"Kouga Local Municipality","type":"Local"},{"name":"Makana Local Municipality","type":"Local"},{"name":"Matatiele Local Municipality","type":"Local"},{"name":"Mbhashe Local Municipality","type":"Local"},{"name":"Mhlontlo Local Municipality","type":"Local"},{"name":"Mnquma Local Municipality","type":"Local"},{"name":"Ndlambe Local Municipality","type":"Local"},{"name":"Ngqushwa Local Municipality","type":"Local"},{"name":"Ntabankulu Local Municipality","type":"Local"},{"name":"Nyandeni Local Municipality","type":"Local"},{"name":"Port St Johns Local Municipality","type":"Local"},{"name":"Raymond Mhlaba Local Municipality","type":"Local"},{"name":"Sakhisizwe Local Municipality","type":"Local"},{"name":"Senqu Local Municipality","type":"Local"},{"name":"Sunday's River Valley Local Municipality","type":"Local"},{"name":"Umzimvubu Local Municipality","type":"Local"},{"name":"Walter Sisulu Local Municipality","type":"Local"},{"name":"Winnie Madikizela-Mandela Local Municipality","type":"Local"}],"Free State":[{"name":"Mangaung Metropolitan Municipality","type":"Metropolitan"},{"name":"Fezile Dabi District Municipality","type":"District"},{"name":"Lejweleputswa District Municipality","type":"District"},{"name":"Thabo Mofutsanyana District Municipality","type":"District"},{"name":"Xhariep District Municipality","type":"District"},{"name":"Dihlabeng Local Municipality","type":"Local"},{"name":"Kopanong Local Municipality","type":"Local"},{"name":"Letsemeng Local Municipality","type":"Local"},{"name":"Mafube Local Municipality","type":"Local"},{"name":"Maluti-a-Phofung Local Municipality","type":"Local"},{"name":"Mantsopa Local Municipality","type":"Local"},{"name":"Masilonyana Local Municipality","type":"Local"},{"name":"Matjhabeng Local Municipality","type":"Local"},{"name":"Metsimaholo Local Municipality","type":"Local"},{"name":"Mohokare Local Municipality","type":"Local"},{"name":"Moqhaka Local Municipality","type":"Local"},{"name":"Nala Local Municipality","type":"Local"},{"name":"Ngwathe Local Municipality","type":"Local"},{"name":"Nketoana Local Municipality","type":"Local"},{"name":"Phumelela Local Municipality","type":"Local"},{"name":"Setsoto Local Municipality","type":"Local"},{"name":"Tokologo Local Municipality","type":"Local"},{"name":"Tswelopele Local Municipality","type":"Local"}],"Gauteng":[{"name":"City of Johannesburg Metropolitan Municipality","type":"Metropolitan"},{"name":"City of Tshwane Metropolitan Municipality","type":"Metropolitan"},{"name":"Sedibeng District Municipality","type":"District"},{"name":"West Rand District Municipality","type":"District"},{"name":"City of Ekurhuleni","type":"Local"},{"name":"Emfuleni Local Municipality","type":"Local"},{"name":"Lesedi Local Municipality","type":"Local"},{"name":"Merafong Local Municipality","type":"Local"},{"name":"Midvaal Local Municipality","type":"Local"},{"name":"Mogale City Local Municipality","type":"Local"},{"name":"Rand West City Local Municipality","type":"Local"}],"KwaZulu-Natal":[{"name":"eThekwini Metropolitan Municipality","type":"Metropolitan"},{"name":"Amajuba District Municipality","type":"District"},{"name":"Harry Gwala District Municipality","type":"District"},{"name":"King Cetshwayo District Municipality","type":"District"},{"name":"Ugu District Municipality","type":"District"},{"name":"Zululand District Municipality","type":"District"},{"name":"iLembe District Municipality","type":"District"},{"name":"uMgungundlovu District Municipality","type":"District"},{"name":"uMkhanyakude District Municipality","type":"District"},{"name":"uMzinyathi District Municipality","type":"District"},{"name":"uThukela District Municipality","type":"District"},{"name":"AbaQulusi Local Municipality","type":"Local"},{"name":"Alfred Duma Local Municipality","type":"Local"},{"name":"Big 5 Hlabisa Local Municipality","type":"Local"},{"name":"City of uMhlathuze Local Municipality","type":"Local"},{"name":"Dannhauser Local Municipality","type":"Local"},{"name":"Dr Nkosazana Dlamini Zuma Local Municipality","type":"Local"},{"name":"Emadlangeni Local Municipality","type":"Local"},{"name":"Endumeni Local Municipality","type":"Local"},{"name":"Greater Kokstad Local Municipality","type":"Local"},{"name":"Impendle Local Municipality","type":"Local"},{"name":"Inkosi Langalibalele Local Municipality","type":"Local"},{"name":"Inkosi Mtubatuba Local Municipality","type":"Local"},{"name":"Johannes Phumani Phungula Local Municipality","type":"Local"},{"name":"Jozini Local Municipality","type":"Local"},{"name":"KwaDukuza Local Municipality","type":"Local"},{"name":"Mandeni Local Municipality","type":"Local"},{"name":"Maphumulo Local Municipality","type":"Local"},{"name":"Mkhambathini Local Municipality","type":"Local"},{"name":"Mpofana Local Municipality","type":"Local"},{"name":"Msunduzi Local Municipality","type":"Local"},{"name":"Mthonjaneni Local Municipality","type":"Local"},{"name":"Ndwedwe Local Municipality","type":"Local"},{"name":"Newcastle Local Municipality","type":"Local"},{"name":"Nkandla Local Municipality","type":"Local"},{"name":"Nongoma Local Municipality","type":"Local"},{"name":"Nquthu Local Municipality","type":"Local"},{"name":"Okhahlamba Local Municipality","type":"Local"},{"name":"Ray Nkonyeni Local Municipality","type":"Local"},{"name":"Richmond Local Municipality","type":"Local"},{"name":"Ulundi Local Municipality","type":"Local"},{"name":"Umdoni Local Municipality","type":"Local"},{"name":"Umhlabuyalingana Local Municipality","type":"Local"},{"name":"Umuziwabantu Local Municipality","type":"Local"},{"name":"Umvoti Local Municipality","type":"Local"},{"name":"Umzimkhulu Local Municipality","type":"Local"},{"name":"Umzumbe Local Municipality","type":"Local"},{"name":"eDumbe Local Municipality","type":"Local"},{"name":"uMfolozi Local Municipality","type":"Local"},{"name":"uMlalazi Local Municipality","type":"Local"},{"name":"uMngeni Local Municipality","type":"Local"},{"name":"uMshwathi Local Municipality","type":"Local"},{"name":"uMsinga Local Municipality","type":"Local"},{"name":"uPhongolo Local Municipality","type":"Local"}],"Limpopo":[{"name":"Capricorn District Municipality","type":"District"},{"name":"Mopani District Municipality","type":"District"},{"name":"Sekhukhune District Municipality","type":"District"},{"name":"Vhembe District Municipality","type":"District"},{"name":"Waterberg District Municipality","type":"District"},{"name":"Ba-Phalaborwa Local Municipality","type":"Local"},{"name":"Bela-Bela Local Municipality","type":"Local"},{"name":"Blouberg Local Municipality","type":"Local"},{"name":"Elias Motswaledi Local Municipality","type":"Local"},{"name":"Ephraim Mogale Local Municipality","type":"Local"},{"name":"Fetakgomo Tubatse Local Municipality","type":"Local"},{"name":"Greater Giyani Local Municipality","type":"Local"},{"name":"Greater Letaba Local Municipality","type":"Local"},{"name":"Greater Tzaneen Local Municipality","type":"Local"},{"name":"Lepelle-Nkumpi Local Municipality","type":"Local"},{"name":"Lephalale Local Municipality","type":"Local"},{"name":"Makhado Local Municipality","type":"Local"},{"name":"Makhudutamaga Local Municipality","type":"Local"},{"name":"Maruleng Local Municipality","type":"Local"},{"name":"Modimolle-Mookgophong Local Municipality","type":"Local"},{"name":"Mogalakwena Local Municipality","type":"Local"},{"name":"Molemole Local Municipality","type":"Local"},{"name":"Musina Local Municipality","type":"Local"},{"name":"Polokwane Local Municipality","type":"Local"},{"name":"Thabazimbi Local Municipality","type":"Local"},{"name":"Thulamela Local Municipality","type":"Local"}],"Mpumalanga":[{"name":"Ehlanzeni District Municipality","type":"District"},{"name":"Gert Sibande District Municipality","type":"District"},{"name":"Nkangala District Municipality","type":"District"},{"name":"Bushbuckridge Local Municipality","type":"Local"},{"name":"Chief Albert Luthuli Local Municipality","type":"Local"},{"name":"City of Mbombela Local Municipality","type":"Local"},{"name":"Dipaleseng Local Municipality","type":"Local"},{"name":"Dr JS Moroka Local Municipality","type":"Local"},{"name":"Emakhazeni Local Municipality","type":"Local"},{"name":"Emalahleni Local Municipality","type":"Local"},{"name":"Govan Mbeki Local Municipality","type":"Local"},{"name":"Lekwa Local Municipality","type":"Local"},{"name":"Mkhondo Local Municipality","type":"Local"},{"name":"Msukaligwa Local Municipality","type":"Local"},{"name":"Nkomazi Local Municipality","type":"Local"},{"name":"Pixley Ka Seme Local Municipality","type":"Local"},{"name":"Steve Tshwete Local Municipality","type":"Local"},{"name":"Thaba Chweu Local Municipality","type":"Local"},{"name":"Thembisile Hani Local Municipality","type":"Local"},{"name":"Victor Khanye Local Municipality","type":"Local"}],"North West":[{"name":"Bojanala Platinum District Municipality","type":"District"},{"name":"Dr Kenneth Kaunda District Municipality","type":"District"},{"name":"Dr Ruth Segomotsi Mompati District Municipality","type":"District"},{"name":"Ngaka Modiri Molema District Municipality","type":"District"},{"name":"City of Matlosana Local Municipality","type":"Local"},{"name":"Ditsobotla Local Municipality","type":"Local"},{"name":"Greater Taung Local Municipality","type":"Local"},{"name":"Kagisano-Molopo Local Municipality","type":"Local"},{"name":"Kgetlengrivier Local Municipality","type":"Local"},{"name":"Lekwa-Teemane Local Municipality","type":"Local"},{"name":"Madibeng Local Municipality","type":"Local"},{"name":"Mahikeng Local Municipality","type":"Local"},{"name":"Mamusa Local Municipality","type":"Local"},{"name":"Maquassi Hills Local Municipality","type":"Local"},{"name":"Moretele Local Municipality","type":"Local"},{"name":"Moses Kotane Local Municipality","type":"Local"},{"name":"Naledi Local Municipality","type":"Local"},{"name":"Ramotshere Moiloa Local Municipality","type":"Local"},{"name":"Ratlou Local Municipality","type":"Local"},{"name":"Rustenburg Local Municipality","type":"Local"},{"name":"Tswaing Local Municipality","type":"Local"}],"Northern Cape":[{"name":"Frances Baard District Municipality","type":"District"},{"name":"John Taolo Gaetsewe District Municipality","type":"District"},{"name":"Namakwa District Municipality","type":"District"},{"name":"Pixley Ka Seme District Municipality","type":"District"},{"name":"ZF Mgcawu District Municipality","type":"District"},{"name":"!Kheis Local Municipality","type":"Local"},{"name":"Dawid Kruiper Local Municipality","type":"Local"},{"name":"Dikgatlong Local Municipality","type":"Local"},{"name":"Emthanjeni Local Municipality","type":"Local"},{"name":"Ga-segonyana Local Municipality","type":"Local"},{"name":"Gamagara Local Municipality","type":"Local"},{"name":"Hantam Local Municipality","type":"Local"},{"name":"Joe Morolong Local Municipality","type":"Local"},{"name":"Kai !Garib Local Municipality","type":"Local"},{"name":"Kamiesberg Local Municipality","type":"Local"},{"name":"Kareeberg Local Municipality","type":"Local"},{"name":"Karoo Hoogland Local Municipality","type":"Local"},{"name":"Kgatelopele Local Municipality","type":"Local"},{"name":"Khâi-ma Local Municipality","type":"Local"},{"name":"Magareng Local Municipality","type":"Local"},{"name":"Nama Khoi Local Municipality","type":"Local"},{"name":"Phokwane Local Municipality","type":"Local"},{"name":"Renosterberg Local Municipality","type":"Local"},{"name":"Richtersveld Local Municipality","type":"Local"},{"name":"Siyancuma Local Municipality","type":"Local"},{"name":"Siyathemba Local Municipality","type":"Local"},{"name":"Sol Plaatje Local Municipality","type":"Local"},{"name":"Thembelihle Local Municipality","type":"Local"},{"name":"Tsantsabane Local Municipality","type":"Local"},{"name":"Ubuntu Local Municipality","type":"Local"},{"name":"Umsobomvu Local Municipality","type":"Local"}],"Western Cape":[{"name":"City of Cape Town Metropolitan Municipality","type":"Metropolitan"},{"name":"Cape Winelands District Municipality","type":"District"},{"name":"Central Karoo District Municipality","type":"District"},{"name":"Garden Route District Municipality","type":"District"},{"name":"Overberg District Municipality","type":"District"},{"name":"West Coast District Municipality","type":"District"},{"name":"Beaufort West Local Municipality","type":"Local"},{"name":"Bergrivier Local Municipality","type":"Local"},{"name":"Bitou Local Municipality","type":"Local"},{"name":"Breede Valley Local Municipality","type":"Local"},{"name":"Cape Agulhas Local Municipality","type":"Local"},{"name":"Cederberg Local Municipality","type":"Local"},{"name":"Drakenstein Local Municipality","type":"Local"},{"name":"George Local Municipality","type":"Local"},{"name":"Hessequa Local Municipality","type":"Local"},{"name":"Kannaland Local Municipality","type":"Local"},{"name":"Knysna Local Municipality","type":"Local"},{"name":"Laingsburg Local Municipality","type":"Local"},{"name":"Langeberg Local Municipality","type":"Local"},{"name":"Matzikama Local Municipality","type":"Local"},{"name":"Mossel Bay Local Municipality","type":"Local"},{"name":"Oudtshoorn Local Municipality","type":"Local"},{"name":"Overstrand Local Municipality","type":"Local"},{"name":"Prince Albert Local Municipality","type":"Local"},{"name":"Saldanha Bay Local Municipality","type":"Local"},{"name":"Stellenbosch Local Municipality","type":"Local"},{"name":"Swartland Local Municipality","type":"Local"},{"name":"Swellendam Local Municipality","type":"Local"},{"name":"Theewaterskloof Local Municipality","type":"Local"},{"name":"Witzenberg Local Municipality","type":"Local"}]};
+
+const PROV_COLORS = {
+  "Eastern Cape":"#58A6FF","Free State":"#3FB950","Gauteng":"#BC8CFF",
+  "KwaZulu-Natal":"#F0883E","Limpopo":"#F78166","Mpumalanga":"#79C0FF",
+  "North West":"#FF7B72","Northern Cape":"#56D364","Western Cape":"#D2A8FF"
+};
+
+let activeFilter = 'All';
+let activeProvince = null;
+
+function buildSidebar() {
+  const nav = document.getElementById('sidebarNav');
+  Object.keys(DATA).forEach(prov => {
+    const count = DATA[prov].length;
+    const btn = document.createElement('button');
+    btn.className = 'prov-btn';
+    btn.id = 'nav-' + prov;
+    btn.innerHTML = `${prov}<span class="prov-count">${count}</span>`;
+    btn.onclick = () => scrollToProvince(prov);
+    nav.appendChild(btn);
+  });
+}
+
+function getVisible() {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  const result = {};
+  Object.entries(DATA).forEach(([prov, munis]) => {
+    const filtered = munis.filter(m => {
+      const typeMatch = activeFilter === 'All' || m.type === activeFilter;
+      const searchMatch = !q || m.name.toLowerCase().includes(q) || prov.toLowerCase().includes(q);
+      return typeMatch && searchMatch;
+    });
+    if (filtered.length) result[prov] = filtered;
+  });
+  return result;
+}
+
+function buildMain() {
+  const main = document.getElementById('mainContent');
+  const visible = getVisible();
+  main.innerHTML = '';
+
+  if (!Object.keys(visible).length) {
+    main.innerHTML = '<div class="no-results">No municipalities match your search.</div>';
+    document.getElementById('countBadge').textContent = '0 municipalities';
+    return;
+  }
+
+  let total = 0;
+  Object.entries(visible).forEach(([prov, munis]) => {
+    total += munis.length;
+    const metro = munis.filter(m=>m.type==='Metropolitan').length;
+    const dist  = munis.filter(m=>m.type==='District').length;
+    const local = munis.filter(m=>m.type==='Local').length;
+    const color = PROV_COLORS[prov] || '#888';
+
+    const section = document.createElement('div');
+    section.className = 'prov-section';
+    section.id = 'prov-' + prov;
+
+    let statsHtml = '';
+    if (metro) statsHtml += `<span class="stat-tag stat-metro">${metro} Metro</span>`;
+    if (dist)  statsHtml += `<span class="stat-tag stat-dist">${dist} District</span>`;
+    if (local) statsHtml += `<span class="stat-tag stat-local">${local} Local</span>`;
+
+    let rows = munis.map((m, i) => `
+      <tr class="muni-row">
+        <td>${String(i+1).padStart(2,'0')}</td>
+        <td><span class="muni-name">${m.name}</span></td>
+        <td class="muni-type-cell"><span class="type-badge type-${m.type}">${m.type}</span></td>
+      </tr>`).join('');
+
+    section.innerHTML = `
+      <div class="prov-header">
+        <div class="prov-dot" style="background:${color}"></div>
+        <span class="prov-name">${prov}</span>
+        <div class="prov-stats">${statsHtml}</div>
+      </div>
+      <table class="muni-table">
+        <thead><tr><th>#</th><th>Municipality</th><th>Type</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+    main.appendChild(section);
+  });
+
+  document.getElementById('countBadge').textContent = `${total} municipalities`;
+}
+
+function scrollToProvince(prov) {
+  const el = document.getElementById('prov-' + prov);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.querySelectorAll('.prov-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('nav-' + prov);
+  if (btn) btn.classList.add('active');
+}
+
+function setFilter(type, btn) {
+  activeFilter = type;
+  document.querySelectorAll('.pill').forEach(p => p.className = 'pill');
+  const map = { All: 'active-all', Metropolitan: 'active-metro', District: 'active-dist', Local: 'active-local' };
+  btn.className = `pill ${map[type]}`;
+  buildMain();
+}
+
+function applyFilters() { buildMain(); }
+
+function copyTSV() {
+  const visible = getVisible();
+  const lines = ['Province\tMunicipality\tType'];
+  Object.entries(visible).forEach(([prov, munis]) => {
+    munis.forEach(m => lines.push(`${prov}\t${m.name}\t${m.type}`));
+  });
+  const tsv = lines.join('\n');
+  navigator.clipboard.writeText(tsv).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = '✓ Copied!';
+    btn.classList.add('copied');
+    const toast = document.getElementById('toast');
+    toast.classList.add('show');
+    setTimeout(() => {
+      btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy for Figma`;
+      btn.classList.remove('copied');
+      toast.classList.remove('show');
+    }, 2500);
+  });
+}
+
+// Highlight active province on scroll
+const mainEl = document.querySelector('.main') || document.getElementById('mainContent');
+function onScroll() {
+  const sections = document.querySelectorAll('.prov-section');
+  let current = null;
+  sections.forEach(s => {
+    const rect = s.getBoundingClientRect();
+    if (rect.top <= 120) current = s.id.replace('prov-', '');
+  });
+  if (current) {
+    document.querySelectorAll('.prov-btn').forEach(b => b.classList.remove('active'));
+    const btn = document.getElementById('nav-' + current);
+    if (btn) btn.classList.add('active');
+  }
+}
+document.getElementById('mainContent').addEventListener('scroll', onScroll);
+window.addEventListener('scroll', onScroll);
+
+buildSidebar();
+buildMain();
+</script>
+</body>
+</html>

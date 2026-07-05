@@ -1,0 +1,88 @@
+<svg viewBox="0 0 720 760" xmlns="http://www.w3.org/2000/svg" width="720" height="760" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+  <title>Vehicle Tracking System — Four Layer Architecture</title>
+
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="#73726C" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <!-- ─── LAYER 1 — Vehicle / Data Acquisition (orange) ─── -->
+  <rect x="40" y="40" width="640" height="148" rx="16" fill="#FAECE7" stroke="#993C1D" stroke-width="0.75"/>
+  <text x="64" y="70" font-size="13" font-weight="600" fill="#712B13">Vehicle / data acquisition layer</text>
+  <text x="64" y="88" font-size="11" fill="#993C1D">Captures and packages vehicle data</text>
+
+  <!-- GPS card -->
+  <rect x="60" y="104" width="178" height="60" rx="8" fill="#FAECE7" stroke="#993C1D" stroke-width="0.75"/>
+  <text x="149" y="126" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="600" fill="#712B13">GPS / GNSS module</text>
+  <text x="149" y="148" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#993C1D">Captures location</text>
+
+  <!-- Sensors card -->
+  <rect x="261" y="104" width="178" height="60" rx="8" fill="#FAECE7" stroke="#993C1D" stroke-width="0.75"/>
+  <text x="350" y="126" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="600" fill="#712B13">Sensors</text>
+  <text x="350" y="148" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#993C1D">Speed, fuel, temp</text>
+
+  <!-- GSM card -->
+  <rect x="462" y="104" width="178" height="60" rx="8" fill="#FAECE7" stroke="#993C1D" stroke-width="0.75"/>
+  <text x="551" y="126" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="600" fill="#712B13">GSM modem + SIM</text>
+  <text x="551" y="148" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#993C1D">Transmits data</text>
+
+  <!-- Arrow 1→2 -->
+  <line x1="360" y1="188" x2="360" y2="216" stroke="#73726C" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ─── LAYER 2 — Communication (blue) ─── -->
+  <rect x="40" y="220" width="640" height="148" rx="16" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.75"/>
+  <text x="64" y="250" font-size="13" font-weight="600" fill="#0C447C">Communication layer</text>
+  <text x="64" y="268" font-size="11" fill="#185FA5">Sends data to server</text>
+
+  <!-- Cellular card -->
+  <rect x="60" y="282" width="288" height="60" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.75"/>
+  <text x="204" y="304" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="600" fill="#0C447C">Cellular network</text>
+  <text x="204" y="326" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#185FA5">3G / 4G / 5G / LTE link</text>
+
+  <!-- Satellite card -->
+  <rect x="372" y="282" width="268" height="60" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.75"/>
+  <text x="506" y="304" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="600" fill="#0C447C">Satellite link</text>
+  <text x="506" y="326" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#185FA5">Backup in remote areas</text>
+
+  <!-- Arrow 2→3 -->
+  <line x1="360" y1="368" x2="360" y2="396" stroke="#73726C" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ─── LAYER 3 — Server / Backend (purple) ─── -->
+  <rect x="40" y="400" width="640" height="148" rx="16" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.75"/>
+  <text x="64" y="430" font-size="13" font-weight="600" fill="#3C3489">Server / backend layer</text>
+  <text x="64" y="448" font-size="11" fill="#534AB7">Processes and stores vehicle data</text>
+
+  <!-- App server card -->
+  <rect x="60" y="462" width="178" height="60" rx="8" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.75"/>
+  <text x="149" y="484" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="600" fill="#3C3489">App server</text>
+  <text x="149" y="506" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#534AB7">Business logic</text>
+
+  <!-- Database card -->
+  <rect x="261" y="462" width="178" height="60" rx="8" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.75"/>
+  <text x="350" y="484" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="600" fill="#3C3489">Database</text>
+  <text x="350" y="506" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#534AB7">Stores location data</text>
+
+  <!-- Alerts engine card -->
+  <rect x="462" y="462" width="178" height="60" rx="8" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.75"/>
+  <text x="551" y="484" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="600" fill="#3C3489">Alerts engine</text>
+  <text x="551" y="506" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#534AB7">Triggers alerts</text>
+
+  <!-- Arrow 3→4 -->
+  <line x1="360" y1="548" x2="360" y2="576" stroke="#73726C" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ─── LAYER 4 — Client / Presentation (green) ─── -->
+  <rect x="40" y="580" width="640" height="148" rx="16" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.75"/>
+  <text x="64" y="610" font-size="13" font-weight="600" fill="#085041">Client / presentation layer</text>
+  <text x="64" y="628" font-size="11" fill="#0F6E56">Displays live vehicle data</text>
+
+  <!-- Web dashboard card -->
+  <rect x="60" y="642" width="288" height="60" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.75"/>
+  <text x="204" y="664" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="600" fill="#085041">Web dashboard</text>
+  <text x="204" y="686" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#0F6E56">Fleet manager view</text>
+
+  <!-- Mobile app card -->
+  <rect x="372" y="642" width="268" height="60" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.75"/>
+  <text x="506" y="664" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="600" fill="#085041">Mobile app</text>
+  <text x="506" y="686" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#0F6E56">Driver &amp; owner view</text>
+</svg>

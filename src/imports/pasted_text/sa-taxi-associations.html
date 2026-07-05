@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SA Taxi Associations — Figma Reference</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: #F7F8FA; padding: 32px; color: #1A1A2E; }
+  h1 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: #6B7280; margin-bottom: 24px; }
+  .controls { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  input, select {
+    padding: 8px 12px; border: 1px solid #E5E7EB; border-radius: 8px;
+    font-size: 13px; outline: none; background: white;
+  }
+  input { width: 240px; }
+  input:focus, select:focus { border-color: #6366F1; }
+  .copy-btn {
+    margin-left: auto; padding: 8px 18px; background: #6366F1; color: white;
+    border: none; border-radius: 8px; font-size: 13px; cursor: pointer; font-weight: 600;
+  }
+  .copy-btn:hover { background: #4F46E5; }
+  table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+  thead th { background: #6366F1; color: white; padding: 12px 16px; text-align: left; font-size: 12px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
+  tbody tr { border-bottom: 1px solid #F3F4F6; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #F5F3FF; }
+  td { padding: 10px 16px; font-size: 13px; vertical-align: top; }
+  .badge {
+    display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 600;
+  }
+  .badge-national { background: #FEF3C7; color: #92400E; }
+  .badge-provincial { background: #DBEAFE; color: #1E40AF; }
+  .badge-regional { background: #D1FAE5; color: #065F46; }
+  .badge-local { background: #F3F4F6; color: #374151; }
+  .count { font-size: 12px; color: #6B7280; margin-bottom: 16px; }
+  .toast { display: none; position: fixed; bottom: 24px; right: 24px; background: #1A1A2E; color: white; padding: 10px 18px; border-radius: 8px; font-size: 13px; }
+</style>
+</head>
+<body>
+<h1>South Africa Taxi Associations</h1>
+<p class="subtitle">Payment system outreach reference · All 9 provinces</p>
+
+<div class="controls">
+  <input type="text" id="search" placeholder="🔍  Search association…" oninput="filterTable()">
+  <select id="province" onchange="filterTable()">
+    <option value="">All provinces</option>
+    <option>National</option>
+    <option>Gauteng</option>
+    <option>KwaZulu-Natal</option>
+    <option>Western Cape</option>
+    <option>Eastern Cape</option>
+    <option>Limpopo</option>
+    <option>Mpumalanga</option>
+    <option>North West</option>
+    <option>Free State</option>
+    <option>Northern Cape</option>
+  </select>
+  <select id="level" onchange="filterTable()">
+    <option value="">All levels</option>
+    <option>National</option>
+    <option>Provincial</option>
+    <option>Regional</option>
+    <option>Local</option>
+  </select>
+  <button class="copy-btn" onclick="copyTable()">Copy for Figma</button>
+</div>
+
+<p class="count" id="count"></p>
+
+<table id="mainTable">
+  <thead>
+    <tr>
+      <th>Province</th>
+      <th>Association</th>
+      <th>Level</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody id="tableBody"></tbody>
+</table>
+
+<div class="toast" id="toast">✅ Copied to clipboard!</div>
+
+<script>
+const data = [
+  ["National","SANTACO (South African National Taxi Council)","National","Unified voice; +27 12 321 1043; 937 Francis Baard St, Arcadia, Pretoria"],
+  ["National","National Taxi Alliance (NTA)","National","~200 000 taxis; 600 000+ members; 7 regions"],
+  ["Gauteng","Gauteng Johannesburg Region (GJR)","Provincial","40+ local associations; serves ~70% of Gauteng population"],
+  ["Gauteng","Central Johannesburg Taxi Association","Local","Johannesburg CBD routes"],
+  ["Gauteng","East Rand Taxi Association","Local","East Rand / Ekurhuleni area"],
+  ["Gauteng","Soweto Taxi Association","Local","Soweto routes"],
+  ["Gauteng","Tshwane Taxi Association","Local","Pretoria / Tshwane area"],
+  ["Gauteng","Midvaal Taxi Association","Local","Midvaal area"],
+  ["Gauteng","Vaal Taxi Association","Local","Vaal Triangle area"],
+  ["KwaZulu-Natal","KwaZulu-Natal Provincial Taxi Council (KZNTPC)","Provincial","252 associations; 16 regional councils"],
+  ["KwaZulu-Natal","Durban Metro Taxi Association","Regional","Durban metro area"],
+  ["KwaZulu-Natal","Ethekwini Taxi Association","Regional","eThekwini municipality"],
+  ["KwaZulu-Natal","Pietermaritzburg Taxi Association","Local","Msunduzi / PMB area"],
+  ["KwaZulu-Natal","North Coast Taxi Association","Regional","North Coast routes"],
+  ["KwaZulu-Natal","South Coast Taxi Association","Regional","South Coast routes"],
+  ["KwaZulu-Natal","Zululand Taxi Association","Regional","Northern KZN"],
+  ["Western Cape","Western Cape Taxi Association (WCTA)","Provincial","Cape Town and surrounds"],
+  ["Western Cape","Cape Amalgamated Taxi Association (CATA)","Regional","Largest in Cape Town metro"],
+  ["Western Cape","Congress of Democratic Taxi Associations (CODETA)","Regional","Cape Town metro"],
+  ["Western Cape","Bellville Taxi Association","Local","Northern Suburbs"],
+  ["Western Cape","Mitchell's Plain Taxi Association","Local","Cape Flats routes"],
+  ["Western Cape","Khayelitsha Taxi Association","Local","Khayelitsha routes"],
+  ["Western Cape","Garden Route Taxi Association","Regional","George / Mossel Bay area"],
+  ["Eastern Cape","Eastern Cape Taxi Council","Provincial","Provincial body"],
+  ["Eastern Cape","Port Elizabeth / Gqeberha Taxi Association","Regional","Nelson Mandela Bay"],
+  ["Eastern Cape","East London Taxi Association","Regional","Buffalo City metro"],
+  ["Eastern Cape","King William's Town Taxi Association","Local","KWT area"],
+  ["Eastern Cape","Mthatha Taxi Association","Local","OR Tambo district"],
+  ["Limpopo","Limpopo Taxi Council","Provincial","Provincial body"],
+  ["Limpopo","Polokwane Taxi Association","Regional","Polokwane city routes"],
+  ["Limpopo","Tzaneen Taxi Association","Local","Tzaneen area"],
+  ["Limpopo","Thohoyandou Taxi Association","Local","Vhembe district"],
+  ["Limpopo","Phalaborwa Taxi Association","Local","Phalaborwa area"],
+  ["Mpumalanga","Mpumalanga Taxi Council","Provincial","Provincial body"],
+  ["Mpumalanga","Nelspruit / Mbombela Taxi Association","Regional","Mbombela city area"],
+  ["Mpumalanga","Witbank / Emalahleni Taxi Association","Regional","Emalahleni area"],
+  ["Mpumalanga","Secunda Taxi Association","Local","Govan Mbeki area"],
+  ["North West","North West Taxi Council","Provincial","Provincial body"],
+  ["North West","Rustenburg Taxi Association","Regional","Rustenburg city area"],
+  ["North West","Mafikeng Taxi Association","Regional","Mahikeng / capital area"],
+  ["North West","Potchefstroom Taxi Association","Local","JB Marks municipality"],
+  ["Free State","Free State Taxi Council","Provincial","Provincial body"],
+  ["Free State","Bloemfontein Taxi Association","Regional","Mangaung metro"],
+  ["Free State","Welkom Taxi Association","Regional","Matjhabeng area"],
+  ["Free State","Sasolburg Taxi Association","Local","Metsimaholo area"],
+  ["Northern Cape","Northern Cape Taxi Council","Provincial","Provincial body"],
+  ["Northern Cape","Kimberley Taxi Association","Regional","Sol Plaatje municipality"],
+  ["Northern Cape","Upington Taxi Association","Local","!Kheis / Upington area"],
+];
+
+const badgeClass = { National:"badge-national", Provincial:"badge-provincial", Regional:"badge-regional", Local:"badge-local" };
+
+function render(rows) {
+  const tbody = document.getElementById("tableBody");
+  tbody.innerHTML = rows.map(r => `
+    <tr>
+      <td>${r[0]}</td>
+      <td><strong>${r[1]}</strong></td>
+      <td><span class="badge ${badgeClass[r[2]]||'badge-local'}">${r[2]}</span></td>
+      <td style="color:#6B7280">${r[3]}</td>
+    </tr>`).join("");
+  document.getElementById("count").textContent = `Showing ${rows.length} of ${data.length} associations`;
+}
+
+function filterTable() {
+  const q = document.getElementById("search").value.toLowerCase();
+  const prov = document.getElementById("province").value;
+  const lvl = document.getElementById("level").value;
+  const filtered = data.filter(r =>
+    (!q || r[0].toLowerCase().includes(q) || r[1].toLowerCase().includes(q) || r[3].toLowerCase().includes(q)) &&
+    (!prov || r[0] === prov) &&
+    (!lvl || r[2] === lvl)
+  );
+  render(filtered);
+}
+
+function copyTable() {
+  const rows = ["Province\tAssociation\tLevel\tNotes", ...data.map(r => r.join("\t"))];
+  navigator.clipboard.writeText(rows.join("\n")).then(() => {
+    const t = document.getElementById("toast");
+    t.style.display = "block";
+    setTimeout(() => t.style.display = "none", 2500);
+  });
+}
+
+render(data);
+</script>
+</body>
+</html>
