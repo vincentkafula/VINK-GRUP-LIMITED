@@ -26,10 +26,16 @@ FROM nginx:alpine AS runner
 # Copy built assets
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# SPA routing — all unknown routes fall back to index.html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# SPA routing — all unknown routes fall back to index.html.
+# Use nginx's built-in template mechanism (/etc/nginx/templates/*.template)
+# so the listen port is filled in from Railway's dynamic $PORT at container
+# start, instead of being hardcoded to 80. The base nginx image auto-runs
+# envsubst on this file into /etc/nginx/conf.d/default.conf before nginx starts.
+COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 
-EXPOSE 80
+# Fallback default; Railway overrides this with its own injected PORT value.
+ENV PORT=8080
+EXPOSE 8080
 
 CMD ["nginx", "-g", "daemon off;"]
 
