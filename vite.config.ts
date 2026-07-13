@@ -46,9 +46,15 @@ export default defineConfig(({ mode }) => {
           if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
             return 'react-vendor';
           }
-          if (id.includes('node_modules/recharts') || id.includes('node_modules/d3')) {
-            return 'charts-vendor';
-          }
+          // NOTE: recharts/d3 are intentionally NOT split into their own chunk.
+          // d3 and recharts have circular internal imports; isolating them into a
+          // separate "charts-vendor" chunk causes Rollup to evaluate their
+          // minified `let`/`const` bindings out of order, which throws
+          // "Uncaught ReferenceError: can't access lexical declaration '<x>'
+          // before initialization" at runtime — crashing the whole app before
+          // React ever mounts (blank page in production). Leaving them
+          // unchunked lets Rollup bundle them with their actual consumers in
+          // the correct dependency order.
           if (id.includes('node_modules/@radix-ui')) {
             return 'radix-vendor';
           }
