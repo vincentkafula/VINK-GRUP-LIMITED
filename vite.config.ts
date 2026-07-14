@@ -40,38 +40,27 @@ export default defineConfig(({ mode }) => {
     // Raise warning threshold — we know the app is large
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
-      output: {
-        // Split vendor libraries into separate cacheable chunks
-        manualChunks(id) {
-          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
-            return 'react-vendor';
-          }
-          // NOTE: recharts/d3 are intentionally NOT split into their own chunk.
-          // d3 and recharts have circular internal imports; isolating them into a
-          // separate "charts-vendor" chunk causes Rollup to evaluate their
-          // minified `let`/`const` bindings out of order, which throws
-          // "Uncaught ReferenceError: can't access lexical declaration '<x>'
-          // before initialization" at runtime — crashing the whole app before
-          // React ever mounts (blank page in production). Leaving them
-          // unchunked lets Rollup bundle them with their actual consumers in
-          // the correct dependency order.
-          if (id.includes('node_modules/@radix-ui')) {
-            return 'radix-vendor';
-          }
-          if (id.includes('node_modules/lucide-react')) {
-            return 'icons-vendor';
-          }
-          if (id.includes('node_modules/motion') || id.includes('node_modules/framer-motion')) {
-            return 'motion-vendor';
-          }
-          if (id.includes('node_modules/date-fns')) {
-            return 'dates-vendor';
-          }
-          if (id.includes('node_modules/')) {
-            return 'vendor';
-          }
-        },
-      },
+      // NOTE: We intentionally do NOT use a hand-rolled `manualChunks`
+      // function here. Grouping unrelated node_modules packages into
+      // arbitrary buckets by name (react-vendor, charts-vendor, vendor, etc.)
+      // repeatedly caused production-only crashes of the form:
+      //
+      //   Uncaught ReferenceError: can't access lexical declaration '<x>'
+      //   before initialization
+      //
+      // This happens because several of our dependencies (d3/recharts, and
+      // others pulled into the generic "vendor" bucket) have circular
+      // internal imports. When modules with circular references are split
+      // across chunk boundaries by name-matching instead of by their actual
+      // dependency graph, Rollup can emit minified `let`/`const` bindings in
+      // an order that violates the temporal dead zone — the app then throws
+      // before React ever mounts, resulting in a blank page in production
+      // (this does not reproduce with `vite dev` or `vite preview` locally
+      // in the same way, which is why it slipped through).
+      //
+      // Rollup's default automatic chunking is dependency-graph-aware and
+      // keeps circularly-dependent modules together, so we let it handle
+      // splitting on its own instead of overriding it.
     },
     // Inline only tiny assets (<4KB) as base64; larger ones stay as separate files
     assetsInlineLimit: 4096,
