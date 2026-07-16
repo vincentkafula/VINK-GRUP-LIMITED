@@ -49,6 +49,7 @@ const ClubBookingViewer           = lazy(() => import("./components/ClubBookingV
 const StartMyBusinessViewer       = lazy(() => import("./components/StartMyBusinessViewer").then(m => ({ default: m.StartMyBusinessViewer })));
 const BusinessCreditCardViewer    = lazy(() => import("./components/BusinessCreditCardViewer").then(m => ({ default: m.BusinessCreditCardViewer })));
 const BusinessLoansViewer         = lazy(() => import("./components/BusinessLoansViewer").then(m => ({ default: m.BusinessLoansViewer })));
+const BusinessAccountApplicationViewer = lazy(() => import("./components/BusinessAccountApplicationViewer").then(m => ({ default: m.BusinessAccountApplicationViewer })));
 const BusinessLoanApplicationViewer = lazy(() => import("./components/BusinessLoanApplicationViewer").then(m => ({ default: m.BusinessLoanApplicationViewer })));
 const ManageMyBusinessViewer      = lazy(() => import("./components/ManageMyBusinessViewer").then(m => ({ default: m.ManageMyBusinessViewer })));
 const BusinessInternationalViewer = lazy(() => import("./components/BusinessInternationalViewer").then(m => ({ default: m.BusinessInternationalViewer })));
@@ -143,6 +144,7 @@ export default function App() {
 
   // ── Business ──────────────────────────────────────────────────────────────
   const [showStartBusiness, setShowStartBusiness]           = useState(false);
+  const [showBusinessAccounts, setShowBusinessAccounts]     = useState(false);
   const [showBusinessCreditCard, setShowBusinessCreditCard] = useState(false);
   const [showBusinessLoans, setShowBusinessLoans]           = useState(false);
   const [showBusinessLoanApp, setShowBusinessLoanApp]       = useState(false);
@@ -300,21 +302,24 @@ export default function App() {
       if (item === "Insure")            return openSelector("insure");
       if (item === "Rewards")           return openSelector("rewards");
       if (item === "SIM")               return openSelector("sim");
-      // Business
+      // Business — Header.tsx's BUSINESS_SUB_NAV sends these exact bare labels
       if (item === "Start My Business") { mount("startBusiness");      setShowStartBusiness(true); return; }
-      if (item === "Business Credit Card") { mount("bizCreditCard");   setShowBusinessCreditCard(true); return; }
-      if (item === "Business Loans")    { mount("bizLoans");           setShowBusinessLoans(true); return; }
+      if (item === "Accounts")          { mount("bizAccounts");        setShowBusinessAccounts(true); return; }
+      if (item === "Credit Cards")      { mount("bizCreditCard");      setShowBusinessCreditCard(true); return; }
+      if (item === "Loans")             { mount("bizLoans");           setShowBusinessLoans(true); return; }
       if (item === "Manage My Business"){ mount("manageBusiness");     setShowManageBusiness(true); return; }
       if (item === "International")     { mount("bizInternational");   setShowBusinessInternational(true); return; }
       if (item === "Studio")            { mount("bizStudio");          setShowBusinessStudio(true); return; }
-      if (item === "Business News")     { mount("bizNews");            setShowBusinessNews(true); return; }
-      // Corporate
-      if (item === "Corporate Account") { mount("corpAccount");        setShowCorporateAccount(true); return; }
-      if (item === "Solutions")         { mount("corpSolutions");      setShowCorporateSolutions(true); return; }
-      if (item === "Corporate Loan")    { mount("corpLoan");           setShowCorporateLoan(true); return; }
-      if (item === "API & Integration") { mount("corpApi");            setShowCorporateApi(true); return; }
-      if (item === "Corporate Events")  { mount("corpEvents");         setShowCorporateEvents(true); return; }
-      if (item === "CSR")               { mount("corpCSR");            setShowCorporateCSR(true); return; }
+      if (item === "News")              { mount("bizNews");            setShowBusinessNews(true); return; }
+      // Corporate — Header.tsx's CORPORATE_SUB_NAV items are dispatched with a
+      // "Corporate:" prefix (see handleNavClick's onClick for CORPORATE_SUB_NAV),
+      // so matches must include that prefix and the exact sub-nav label.
+      if (item === "Corporate:Account")                  { mount("corpAccount");   setShowCorporateAccount(true); return; }
+      if (item === "Corporate:Solutions & Credit Cards")  { mount("corpSolutions"); setShowCorporateSolutions(true); return; }
+      if (item === "Corporate:Loan")                      { mount("corpLoan");      setShowCorporateLoan(true); return; }
+      if (item === "Corporate:API")                       { mount("corpApi");       setShowCorporateApi(true); return; }
+      if (item === "Corporate:Events")                    { mount("corpEvents");    setShowCorporateEvents(true); return; }
+      if (item === "Corporate:Social Responsibility")     { mount("corpCSR");       setShowCorporateCSR(true); return; }
       // Marketplace
       if (item === "Marketplace")       { mount("marketplace");        setShowMarketplace(true); return; }
     });
@@ -441,6 +446,7 @@ export default function App() {
 
       {/* Business */}
       {has("startBusiness")      && <Suspense fallback={null}><StartMyBusinessViewer       isOpen={showStartBusiness}       onClose={() => setShowStartBusiness(false)} /></Suspense>}
+      {has("bizAccounts")        && <Suspense fallback={null}><BusinessAccountApplicationViewer isOpen={showBusinessAccounts} onClose={() => setShowBusinessAccounts(false)} /></Suspense>}
       {has("bizCreditCard")      && <Suspense fallback={null}><BusinessCreditCardViewer    isOpen={showBusinessCreditCard}  onClose={() => setShowBusinessCreditCard(false)} /></Suspense>}
       {has("bizLoans")           && <Suspense fallback={null}><BusinessLoansViewer         isOpen={showBusinessLoans}       onClose={() => setShowBusinessLoans(false)} /></Suspense>}
       {has("bizLoanApp")         && <Suspense fallback={null}><BusinessLoanApplicationViewer isOpen={showBusinessLoanApp}   onClose={() => setShowBusinessLoanApp(false)} /></Suspense>}
