@@ -123,6 +123,7 @@ function Globe() {
     function drawPoly(latLngs:[number,number][], rotY:number, fill:string, stroke:string, lw=0.6) {
       const pts3 = latLngs.map(([la,ln]) => to3D(la, ln, rotY));
       const vis: [number,number][] = [];
+      let lastExitAngle: number | null = null;
       for (let i = 0; i < pts3.length; i++) {
         const c = pts3[i];
         const n = pts3[(i+1) % pts3.length];
@@ -132,7 +133,34 @@ function Globe() {
           let hx = c[0]+t*(n[0]-c[0]);
           let hy = c[1]+t*(n[1]-c[1]);
           const l = Math.sqrt(hx*hx+hy*hy)||1;
-          vis.push([cx+(hx/l)*R, cy-(hy/l)*R]);
+          const bx = hx/l, by = hy/l;
+          const exiting = c[2] >= 0; // true = going from visible to hidden
+          vis.push([cx+bx*R, cy-by*R]);
+          if (!exiting) {
+            // Re-entering visibility: the previous boundary point pushed onto
+            // `vis` (from the matching exit earlier in this ring) and this
+            // entry point are NOT adjacent on the sphere — the hidden arc
+            // between them can span a large chunk of the globe (e.g. Asia,
+            // Antarctica). Connecting them with a straight line cuts a flat
+            // chord across the sphere instead of following its curved edge,
+            // which is what made the globe look flat/fake. Trace along the
+            // actual horizon circle (radius R) instead.
+            const prevExit = lastExitAngle;
+            if (prevExit !== null) {
+              const entryAngle = Math.atan2(by, bx);
+              let delta = entryAngle - prevExit;
+              // shortest angular path around the circle
+              while (delta > Math.PI) delta -= Math.PI * 2;
+              while (delta < -Math.PI) delta += Math.PI * 2;
+              const steps = Math.max(2, Math.ceil(Math.abs(delta) / (Math.PI / 24)));
+              for (let s = 1; s < steps; s++) {
+                const a = prevExit + (delta * s) / steps;
+                vis.push([cx + Math.cos(a) * R, cy - Math.sin(a) * R]);
+              }
+            }
+          } else {
+            lastExitAngle = Math.atan2(by, bx);
+          }
         }
       }
       if (vis.length < 3) return;
