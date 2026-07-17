@@ -65,25 +65,28 @@ const CLOUDS: [number,number,number,number,number][] = [
   [-15, -50,  6, 12, 0.36],
 ];
 
-// ─── Biome fill colours ───────────────────────────────────────────────────────
-const BIOME_FILL: Record<string, string> = {
-  forest:  "#2E7D4A",
-  tropical:"#27753E",
-  savanna: "#7A9E50",
-  desert:  "#C4A064",
-  tundra:  "#8BA68B",
-  ice:     "#E8F4FC",
-  sa:      "#FF7043",   // South Africa — highlight colour
-};
-const BIOME_STROKE: Record<string, string> = {
-  forest:  "#1D5C33",
-  tropical:"#1C5C2E",
-  savanna: "#5A7A3A",
-  desert:  "#A0803C",
-  tundra:  "#6A8870",
-  ice:     "#B0D8F0",
-  sa:      "#E64A19",
-};
+// ─── Climate-band colours, ordered north pole → south pole ─────────────────
+// Used to build a screen-space vertical gradient (see buildLandGradient
+// below) so land is shaded by each point's REAL latitude rather than one
+// flat color per landmass. This matters because e.g. Africa+Europe+Asia are
+// one single connected landmass in real geography (joined at Suez) — a
+// single fill color per landmass would paint Siberia and the Sahara
+// identically.
+const CLIMATE_STOPS: { lat: number; fill: string; stroke: string }[] = [
+  { lat:  90, fill: "#E8F4FC", stroke: "#B0D8F0" }, // north polar ice
+  { lat:  70, fill: "#E8F4FC", stroke: "#B0D8F0" },
+  { lat:  60, fill: "#8BA68B", stroke: "#6A8870" }, // tundra
+  { lat:  35, fill: "#2E7D4A", stroke: "#1D5C33" }, // temperate forest
+  { lat:  15, fill: "#7A9E50", stroke: "#5A7A3A" }, // subtropical/savanna
+  { lat:   0, fill: "#27753E", stroke: "#1C5C2E" }, // tropical
+  { lat: -15, fill: "#7A9E50", stroke: "#5A7A3A" },
+  { lat: -35, fill: "#2E7D4A", stroke: "#1D5C33" },
+  { lat: -60, fill: "#8BA68B", stroke: "#6A8870" },
+  { lat: -70, fill: "#E8F4FC", stroke: "#B0D8F0" },
+  { lat: -90, fill: "#E8F4FC", stroke: "#B0D8F0" }, // south polar ice
+];
+const SA_FILL = "#FF7043";
+const SA_STROKE = "#E64A19";
 
 // ─── Globe canvas ─────────────────────────────────────────────────────────────
 function Globe() {
@@ -106,6 +109,21 @@ function Globe() {
     const cx = SIZE / 2, cy = SIZE / 2;
     const R  = SIZE * 0.43;
 
+    // Build the land gradient once — screen Y maps exactly to latitude here
+    // because this globe only rotates in longitude (rotY), never tilts in
+    // latitude, so the north pole is always at the top of the circle and the
+    // south pole always at the bottom, for any rotation.
+    const landGradient = ctx.createLinearGradient(cx, cy - R, cx, cy + R);
+    CLIMATE_STOPS.forEach(({ lat, fill }) => {
+      landGradient.addColorStop((90 - lat) / 180, fill);
+    });
+    // Stroke uses the same latitude mapping so outlines blend with their
+    // local fill color rather than a single flat tone everywhere.
+    const strokeGradient = ctx.createLinearGradient(cx, cy - R, cx, cy + R);
+    CLIMATE_STOPS.forEach(({ lat, stroke }) => {
+      strokeGradient.addColorStop((90 - lat) / 180, stroke);
+    });
+
     // ── Stars ─────────────────────────────────────────────────────────────────
     const stars: { x:number; y:number; r:number; a:number; tw:number }[] = [];
     while (stars.length < 220) {
@@ -120,7 +138,7 @@ function Globe() {
       return [cx + p[0]*R, cy - p[1]*R];
     }
 
-    function drawPoly(latLngs:[number,number][], rotY:number, fill:string, stroke:string, lw=0.6) {
+    function drawPoly(latLngs:[number,number][], rotY:number, fill:string|CanvasGradient, stroke:string|CanvasGradient, lw=0.6) {
       const pts3 = latLngs.map(([la,ln]) => to3D(la, ln, rotY));
       const vis: [number,number][] = [];
       let lastExitAngle: number | null = null;
@@ -255,8 +273,12 @@ function Globe() {
 
       // Land — sorted so SA renders last (on top) for visibility
       const sorted = [...LAND].sort((a,b) => (a.biome==="sa"?1:-1) - (b.biome==="sa"?1:-1));
-      sorted.forEach(({pts, biome="forest"}) => {
-        drawPoly(pts, rotY, BIOME_FILL[biome], BIOME_STROKE[biome], biome==="sa"?1.0:0.5);
+      sorted.forEach(({pts, biome="land"}) => {
+        if (biome === "sa") {
+          drawPoly(pts, rotY, SA_FILL, SA_STROKE, 1.0);
+        } else {
+          drawPoly(pts, rotY, landGradient, strokeGradient, 0.5);
+        }
       });
 
       // ── Clouds ──────────────────────────────────────────────────────────────
