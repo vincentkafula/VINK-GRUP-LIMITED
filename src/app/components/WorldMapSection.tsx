@@ -21,27 +21,30 @@ function to3D(lat: number, lng: number, rotY: number): [number, number, number] 
 
 // ─── City dots [lat, lng, name] ───────────────────────────────────────────────
 const CITIES: [number, number, string, boolean][] = [
-  // South Africa
+  // South Africa — office
   [-33.92,  18.42, "Cape Town",   true ],
   [-26.20,  28.05, "Johannesburg",true ],
   [-29.85,  31.00, "Durban",      true ],
   [-25.75,  28.20, "Pretoria",    true ],
+  // Zambia — office
+  [-15.39,  28.32, "Lusaka",      true ],
   // Africa
   [-1.28,   36.82, "Nairobi",     false],
   [ 6.36,    3.40, "Lagos",       false],
   [30.06,   31.25, "Cairo",       false],
   [-8.84,   13.23, "Luanda",      false],
   [15.55,   32.53, "Khartoum",    false],
-  // Europe
-  [51.51,   -0.13, "London",      false],
+  // Europe — UK office
+  [51.51,   -0.13, "London",      true ],
   [48.85,    2.35, "Paris",       false],
   [52.52,   13.40, "Berlin",      false],
   [41.90,   12.48, "Rome",        false],
-  // Americas
-  [40.71,  -74.01, "New York",    false],
+  // Americas — USA office
+  [40.71,  -74.01, "New York",    true ],
   [34.05, -118.24, "Los Angeles", false],
   [-23.55, -46.63, "São Paulo",   false],
-  // Asia
+  // Asia — China office
+  [31.23,  121.47, "Shanghai",    true ],
   [55.75,   37.62, "Moscow",      false],
   [35.69,  139.69, "Tokyo",       false],
   [22.53,  114.06, "Hong Kong",   false],
@@ -293,7 +296,7 @@ function Globe() {
       });
 
       // ── City dots ────────────────────────────────────────────────────────────
-      CITIES.forEach(([lat,lng,_name,isSA]) => {
+      CITIES.forEach(([lat,lng,_name,isOffice]) => {
         const p3 = to3D(lat, lng, rotY);
         if (p3[2] < 0) return; // behind globe
 
@@ -303,8 +306,8 @@ function Globe() {
 
         const [sx,sy] = scr(p3);
 
-        if (isSA) {
-          // SA cities — bright orange glow
+        if (isOffice) {
+          // Office cities (South Africa, Zambia, USA, UK, China) — bright orange glow
           const g = ctx.createRadialGradient(sx,sy,0, sx,sy,7);
           g.addColorStop(0, "rgba(255,120,60,0.95)");
           g.addColorStop(0.5,"rgba(255,80,20,0.60)");
