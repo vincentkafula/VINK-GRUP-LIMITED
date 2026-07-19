@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import {
   X, Phone, Mail, MapPin, Clock, MessageCircle, Loader2, CheckCircle,
-  ChevronDown, Shield, Search, Building2, Smartphone, Upload, AlertTriangle,
+  ChevronDown, Shield, Search, Building2, Smartphone, Upload, AlertTriangle, Plus,
 } from "lucide-react";
 import { toast } from "sonner";
 import vinkLogo from "../../../imports/LOGO_FINAL.png";
@@ -9,12 +9,22 @@ import { publicApi } from "../../services/apiClient";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 const P = "#5B2D8E";
+const P_DARK = "#3E1E63";
+const GOLD = "#F5A623";
 
 type TabId = "connect" | "locate" | "feedback";
-const TABS: { id: TabId; label: string }[] = [
-  { id: "connect",  label: "Connect With Us" },
-  { id: "locate",   label: "Locate Us" },
-  { id: "feedback", label: "Send Us Your Feedback" },
+const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
+  { id: "connect",  label: "Connect With Us", icon: <MessageCircle className="w-4 h-4" /> },
+  { id: "locate",   label: "Locate Us",       icon: <MapPin className="w-4 h-4" /> },
+  { id: "feedback", label: "Send Feedback",   icon: <Mail className="w-4 h-4" /> },
+];
+
+const OFFICES = [
+  { flag: "🇿🇦", country: "South Africa", city: "Cape Town — HQ" },
+  { flag: "🇿🇲", country: "Zambia",        city: "Lusaka" },
+  { flag: "🇺🇸", country: "USA",           city: "New York" },
+  { flag: "🇬🇧", country: "UK",            city: "London" },
+  { flag: "🇨🇳", country: "China",         city: "Shanghai" },
 ];
 
 // ── Shared data ──────────────────────────────────────────────────────────
@@ -26,15 +36,15 @@ const EMERGENCY_CONTACTS = [
 ];
 
 const DIRECTORY = [
-  { title: "Report Fraud", icon: <AlertTriangle className="w-5 h-5" />, urgent: true, items: ["Fraud Hotline — +27 (0)61 461 5035", "Card Blocking — via VMS App or Fraud Hotline", "Suspicious Transactions — report immediately", "Available 24/7"] },
-  { title: "Lost or Stolen Cards", icon: <Shield className="w-5 h-5" />, urgent: true, items: ["Emergency Card Services", "+27 (0)21 007 0772", "Available 24 hours"] },
-  { title: "Personal Banking", icon: <Building2 className="w-5 h-5" />, items: ["Savings & Current Accounts", "Debit & Credit Cards", "Internet & Mobile Banking"] },
-  { title: "Business Banking", icon: <Building2 className="w-5 h-5" />, items: ["SME Banking", "Corporate Banking", "Merchant Services", "Business Loans"] },
-  { title: "Loans & Credit", icon: <Building2 className="w-5 h-5" />, items: ["Home Loans", "Vehicle Finance", "Personal Loans"] },
-  { title: "Savings & Investments", icon: <Building2 className="w-5 h-5" />, items: ["Fixed Deposits", "Investment Accounts", "Wealth Management"] },
-  { title: "Insurance", icon: <Building2 className="w-5 h-5" />, items: ["Claims", "New Policies", "Financial Advice"] },
-  { title: "International Banking", icon: <Building2 className="w-5 h-5" />, items: ["Forex", "International Payments", "Travel Cards"] },
-  { title: "Media & General Enquiries", icon: <Mail className="w-5 h-5" />, items: ["Media Relations — media@vink.com", "General Enquiries — info@vink.com"] },
+  { title: "Report Fraud", icon: <AlertTriangle className="w-4 h-4" />, urgent: true, items: ["Fraud Hotline — +27 (0)61 461 5035", "Card blocking via VMS App", "Suspicious transactions"] },
+  { title: "Lost or Stolen Cards", icon: <Shield className="w-4 h-4" />, urgent: true, items: ["Emergency card services", "+27 (0)21 007 0772", "Available 24 hours"] },
+  { title: "Personal Banking", icon: <Building2 className="w-4 h-4" />, items: ["Savings & current accounts", "Debit & credit cards", "Internet & mobile banking"] },
+  { title: "Business Banking", icon: <Building2 className="w-4 h-4" />, items: ["SME banking", "Corporate banking", "Merchant services", "Business loans"] },
+  { title: "Loans & Credit", icon: <Building2 className="w-4 h-4" />, items: ["Home loans", "Vehicle finance", "Personal loans"] },
+  { title: "Savings & Investments", icon: <Building2 className="w-4 h-4" />, items: ["Fixed deposits", "Investment accounts", "Wealth management"] },
+  { title: "Insurance", icon: <Building2 className="w-4 h-4" />, items: ["Claims", "New policies", "Financial advice"] },
+  { title: "International Banking", icon: <Building2 className="w-4 h-4" />, items: ["Forex", "International payments", "Travel cards"] },
+  { title: "Media & General", icon: <Mail className="w-4 h-4" />, items: ["Media relations — media@vink.com", "General enquiries — info@vink.com"] },
 ];
 
 const AGENT_NETWORKS = [
@@ -50,7 +60,7 @@ const BEFORE_YOU_VISIT = [
   { title: "Opening an Account", items: ["South African ID or Passport", "Proof of Address", "Proof of Income"] },
   { title: "Collecting Your Card", items: ["South African ID", "Collection Reference"] },
   { title: "Receiving Forex", items: ["South African ID", "Reference Number"] },
-  { title: "Sending Forex", items: ["South African ID", "Recipient Contact Details", "Recipient Address", "Supporting Documentation"] },
+  { title: "Sending Forex", items: ["South African ID", "Recipient Details", "Supporting Documentation"] },
 ];
 
 const TOPICS = ["Complaint", "Compliment", "Suggestion", "Online Banking", "Mobile Banking", "Cards", "Loans", "Insurance", "Investments"];
@@ -58,55 +68,65 @@ const TOPICS = ["Complaint", "Compliment", "Suggestion", "Online Banking", "Mobi
 const FAQS = [
   { q: "How do I block my card?", a: "Call the Fraud Hotline immediately, or block your card instantly from the VMS App under Card Settings." },
   { q: "How do I reset my Online or Mobile Banking password?", a: "Select \"Forgot Password\" on the login screen of the VMS App or web portal, and follow the verification steps." },
-  { q: "Can I track my complaint?", a: "Yes — you'll receive a reference number by email as soon as you submit the form below, which you can quote in any follow-up." },
+  { q: "Can I track my complaint?", a: "Yes — you'll get a reference number as soon as you submit the form, which you can quote in any follow-up." },
   { q: "How do I report fraud?", a: "Call the Fraud Hotline on +27 (0)61 461 5035 immediately — it's available 24/7." },
-  { q: "How long will it take to receive a response?", a: "General enquiries are answered within 1 business day. Feedback submitted via this page receives a full response within 1–2 business days." },
+  { q: "How long until I get a response?", a: "General enquiries: within 1 business day. Feedback submitted here: within 1–2 business days." },
+  { q: "Is my feedback confidential?", a: "Yes — feedback is only visible to the relevant VMS support team handling your enquiry." },
 ];
 
 // ── Small building blocks ───────────────────────────────────────────────
-function Accordion({ items }: { items: { title: string; icon: React.ReactNode; items: string[]; urgent?: boolean }[] }) {
+function Eyebrow({ children }: { children: React.ReactNode }) {
+  return <p className="text-[11px] font-bold uppercase tracking-[0.14em] mb-2" style={{ color: GOLD }}>{children}</p>;
+}
+
+function DirectoryGrid() {
   const [open, setOpen] = useState<number | null>(null);
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden divide-y divide-gray-100">
-      {items.map((it, i) => (
-        <div key={i}>
-          <button onClick={() => setOpen(open === i ? null : i)}
-            className="w-full flex items-center justify-between gap-3 px-5 py-4 text-left hover:bg-gray-50 transition-colors">
-            <span className="flex items-center gap-3">
-              <span className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      {DIRECTORY.map((it, i) => {
+        const isOpen = open === i;
+        return (
+          <button key={i} onClick={() => setOpen(isOpen ? null : i)}
+            className={`text-left rounded-2xl bg-white border transition-all overflow-hidden ${isOpen ? "shadow-md" : "hover:shadow-sm"}`}
+            style={{ borderColor: isOpen ? (it.urgent ? "#FCA5A5" : "#C4B0E0") : "#E5E7EB", borderLeftWidth: 3, borderLeftColor: it.urgent ? "#EF4444" : P }}>
+            <div className="flex items-center gap-3 px-4 py-3.5">
+              <span className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
                 style={{ background: it.urgent ? "#FEE2E2" : "#EDE9FE", color: it.urgent ? "#DC2626" : P }}>{it.icon}</span>
-              <span className="font-bold text-gray-900 text-sm">{it.title}</span>
-              {it.urgent && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-600">24/7</span>}
-            </span>
-            <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform flex-shrink-0 ${open === i ? "rotate-180" : ""}`} />
-          </button>
-          {open === i && (
-            <div className="px-5 pb-4 pl-[4.25rem]">
-              <ul className="space-y-1.5">
-                {it.items.map((line, j) => <li key={j} className="text-sm text-gray-600">{line}</li>)}
-              </ul>
+              <span className="font-bold text-gray-900 text-sm flex-1">{it.title}</span>
+              {it.urgent && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-red-100 text-red-600 flex-shrink-0">24/7</span>}
+              <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform flex-shrink-0 ${isOpen ? "rotate-180" : ""}`} />
             </div>
-          )}
-        </div>
-      ))}
+            {isOpen && (
+              <div className="px-4 pb-3.5 pl-[3.75rem] -mt-1">
+                <ul className="space-y-1">
+                  {it.items.map((line, j) => <li key={j} className="text-xs text-gray-600">{line}</li>)}
+                </ul>
+              </div>
+            )}
+          </button>
+        );
+      })}
     </div>
   );
 }
 
-function FaqAccordion() {
+function FaqGrid() {
   const [open, setOpen] = useState<number | null>(null);
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden divide-y divide-gray-100">
-      {FAQS.map((f, i) => (
-        <div key={i}>
-          <button onClick={() => setOpen(open === i ? null : i)}
-            className="w-full flex items-center justify-between gap-3 px-5 py-4 text-left hover:bg-gray-50 transition-colors">
-            <span className="font-semibold text-gray-900 text-sm">{f.q}</span>
-            <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform flex-shrink-0 ${open === i ? "rotate-180" : ""}`} />
+    <div className="grid sm:grid-cols-2 gap-3">
+      {FAQS.map((f, i) => {
+        const isOpen = open === i;
+        return (
+          <button key={i} onClick={() => setOpen(isOpen ? null : i)}
+            className={`text-left rounded-2xl bg-white border px-4 py-3.5 transition-all ${isOpen ? "shadow-md border-purple-200" : "border-gray-200 hover:shadow-sm"}`}>
+            <span className="flex items-center justify-between gap-3">
+              <span className="font-semibold text-gray-900 text-sm">{f.q}</span>
+              <Plus className={`w-3.5 h-3.5 flex-shrink-0 transition-transform ${isOpen ? "rotate-45" : ""}`} style={{ color: P }} />
+            </span>
+            {isOpen && <p className="text-xs text-gray-600 mt-2 leading-relaxed">{f.a}</p>}
           </button>
-          {open === i && <div className="px-5 pb-4"><p className="text-sm text-gray-600">{f.a}</p></div>}
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -114,56 +134,67 @@ function FaqAccordion() {
 function QuickAction({ icon, label, onClick }: { icon: React.ReactNode; label: string; onClick: () => void }) {
   return (
     <button onClick={onClick}
-      className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-gray-200 hover:border-purple-300 hover:shadow-sm transition-all text-sm font-semibold text-gray-800">
+      className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/95 hover:bg-white transition-all text-sm font-bold shadow-lg shadow-black/10 hover:-translate-y-0.5"
+      style={{ color: P_DARK }}>
       {icon}{label}
     </button>
   );
 }
 
+function Field({ label, required, className = "", children }: { label: string; required?: boolean; className?: string; children: React.ReactNode }) {
+  return (
+    <div className={className}>
+      <label className="text-[11px] font-bold uppercase tracking-wide text-gray-500 block mb-1.5">{label}{required && <span style={{ color: P }}> *</span>}</label>
+      {children}
+    </div>
+  );
+}
+const inputCls = "w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-100 transition-all bg-white";
+
 // ── Tab: Connect With Us ────────────────────────────────────────────────
 function ConnectTab({ goTo }: { goTo: (t: TabId) => void }) {
   return (
-    <div className="space-y-10">
+    <div className="space-y-9">
       <section>
-        <h2 className="text-xl font-black mb-5" style={{ color: P }}>How Can We Help You Today?</h2>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {[
-            { icon: <Phone className="w-5 h-5" />, title: "Contact Customer Care", sub: "Speak to one of our consultants.", cta: "Call Now", href: "tel:+27210000000" },
-            { icon: <MapPin className="w-5 h-5" />, title: "Locate a Branch or Agent", sub: "Find our Head Office or nearest agent point.", cta: "Search Locations", onClick: () => goTo("locate") },
-            { icon: <MessageCircle className="w-5 h-5" />, title: "Send Feedback", sub: "Compliments, complaints and suggestions.", cta: "Send Feedback", onClick: () => goTo("feedback") },
-            { icon: <AlertTriangle className="w-5 h-5" />, title: "Report Fraud", sub: "Lost cards or suspicious activity.", cta: "Report Now", href: "tel:+27614615035" },
+            { icon: <Phone className="w-5 h-5" />, title: "Customer Care", sub: "Speak to a consultant", cta: "Call now", href: "tel:+27210000000" },
+            { icon: <MapPin className="w-5 h-5" />, title: "Branches & Agents", sub: "Head Office & national network", cta: "Search", onClick: () => goTo("locate") },
+            { icon: <MessageCircle className="w-5 h-5" />, title: "Feedback", sub: "Compliments & complaints", cta: "Get started", onClick: () => goTo("feedback") },
+            { icon: <AlertTriangle className="w-5 h-5" />, title: "Report Fraud", sub: "Lost cards, suspicious activity", cta: "Call hotline", href: "tel:+27614615035", urgent: true },
           ].map((c, i) => (
-            <div key={i} className="p-5 bg-white rounded-2xl border border-gray-200 flex flex-col">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style={{ background: "#EDE9FE", color: P }}>{c.icon}</div>
+            <div key={i} className="group p-5 bg-white rounded-2xl border border-gray-200 hover:border-purple-200 hover:shadow-md transition-all flex flex-col">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style={{ background: c.urgent ? "#FEE2E2" : "#EDE9FE", color: c.urgent ? "#DC2626" : P }}>{c.icon}</div>
               <p className="font-bold text-gray-900 text-sm">{c.title}</p>
-              <p className="text-xs text-gray-500 mt-1 flex-1">{c.sub}</p>
+              <p className="text-xs text-gray-500 mt-0.5 flex-1">{c.sub}</p>
               {c.href
-                ? <a href={c.href} className="mt-3 text-xs font-bold no-underline" style={{ color: P }}>{c.cta} →</a>
-                : <button onClick={c.onClick} className="mt-3 text-xs font-bold text-left" style={{ color: P }}>{c.cta} →</button>}
+                ? <a href={c.href} className="mt-3 text-xs font-bold no-underline group-hover:underline" style={{ color: c.urgent ? "#DC2626" : P }}>{c.cta} →</a>
+                : <button onClick={c.onClick} className="mt-3 text-xs font-bold text-left group-hover:underline" style={{ color: P }}>{c.cta} →</button>}
             </div>
           ))}
         </div>
       </section>
 
       <section>
-        <h2 className="text-xl font-black mb-5" style={{ color: P }}>Contact Directory</h2>
-        <Accordion items={DIRECTORY} />
+        <div className="flex items-baseline justify-between mb-4">
+          <div><Eyebrow>Directory</Eyebrow><h2 className="text-lg font-black text-gray-900">Who do you need?</h2></div>
+        </div>
+        <DirectoryGrid />
       </section>
 
-      <section>
-        <div className="rounded-2xl p-6 text-white" style={{ background: `linear-gradient(135deg,${P},#7B4DB5)` }}>
-          <h3 className="text-lg font-black mb-4">Need Immediate Assistance?</h3>
-          <div className="space-y-2">
-            {EMERGENCY_CONTACTS.map((e, i) => (
-              <a key={i} href={e.href} className="flex items-center justify-between gap-3 bg-white/10 hover:bg-white/15 transition-colors rounded-xl px-4 py-3 no-underline">
-                <span className="text-sm font-semibold text-white">{e.service}</span>
-                <span className="flex items-center gap-3">
-                  <span className="text-sm text-white/90">{e.contact}</span>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/20 text-white">{e.hours}</span>
-                </span>
-              </a>
-            ))}
-          </div>
+      <section className="rounded-2xl p-5 sm:p-6 text-white relative overflow-hidden" style={{ background: `linear-gradient(135deg,${P_DARK},${P})` }}>
+        <div className="absolute -right-8 -top-8 w-40 h-40 rounded-full bg-white/5" />
+        <h3 className="text-base font-black mb-4 flex items-center gap-2 relative"><Shield className="w-4 h-4" style={{ color: GOLD }} />Need Immediate Assistance?</h3>
+        <div className="grid sm:grid-cols-2 gap-2 relative">
+          {EMERGENCY_CONTACTS.map((e, i) => (
+            <a key={i} href={e.href} className="flex items-center justify-between gap-3 bg-white/10 hover:bg-white/15 transition-colors rounded-xl px-4 py-3 no-underline">
+              <span>
+                <span className="text-sm font-semibold text-white block">{e.service}</span>
+                <span className="text-xs text-white/70">{e.hours}</span>
+              </span>
+              <span className="text-xs font-bold whitespace-nowrap" style={{ color: GOLD }}>{e.contact}</span>
+            </a>
+          ))}
         </div>
       </section>
     </div>
@@ -180,36 +211,33 @@ function LocateTab() {
   ), [query, filter]);
 
   return (
-    <div className="space-y-10">
-      <div className="bg-white rounded-2xl border border-gray-200 p-5">
-        <label className="text-xs font-bold uppercase tracking-wider text-gray-500 block mb-2">Search by area, suburb or store name</label>
-        <div className="flex gap-3">
-          <div className="flex-1 flex items-center gap-2 border border-gray-200 rounded-xl px-4 py-2.5">
-            <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
-            <input value={query} onChange={e => setQuery(e.target.value)} className="flex-1 text-sm outline-none text-gray-700" placeholder="e.g. Cape Town, Sandton..." />
-          </div>
+    <div className="space-y-9">
+      <div className="bg-white rounded-2xl border border-gray-200 p-4 flex flex-col sm:flex-row gap-3">
+        <div className="flex-1 flex items-center gap-2 border border-gray-200 rounded-xl px-4 py-2.5">
+          <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
+          <input value={query} onChange={e => setQuery(e.target.value)} className="flex-1 text-sm outline-none text-gray-700" placeholder="Search by area, suburb or store..." />
         </div>
-        <div className="flex flex-wrap gap-2 mt-4">
-          {[["all", "All"], ["office", "Head Office"], ["agent", "Agent Points"]].map(([id, label]) => (
+        <div className="flex gap-2">
+          {[["all", "All"], ["office", "Head Office"], ["agent", "Agents"]].map(([id, label]) => (
             <button key={id} onClick={() => setFilter(id as typeof filter)}
-              className="px-4 py-1.5 rounded-full text-xs font-semibold transition-all"
+              className="px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex-1 sm:flex-none"
               style={{ background: filter === id ? P : "#F3F4F6", color: filter === id ? "#fff" : "#6B7280" }}>{label}</button>
           ))}
         </div>
       </div>
 
       <section>
-        <p className="text-gray-500 text-sm -mt-6 mb-5">VMS is a digital-first bank — full banking services are available at our Head Office, with everyday card services available nationwide through our agent network.</p>
-        <div className="grid sm:grid-cols-2 gap-4">
+        <p className="text-gray-400 text-xs mb-4">VMS is a digital-first bank — full services at our Head Office, everyday card services nationwide via our agent network.</p>
+        <div className="grid sm:grid-cols-2 gap-3">
           {results.map((a, i) => (
-            <div key={i} className={`flex items-start gap-4 p-5 bg-white rounded-xl border hover:shadow-md transition-shadow ${a.type === "office" ? "border-2" : "border-gray-200"}`}
+            <div key={i} className={`flex items-start gap-3 p-4 bg-white rounded-xl border hover:shadow-sm transition-shadow ${a.type === "office" ? "border-2" : "border-gray-200"}`}
               style={a.type === "office" ? { borderColor: P } : undefined}>
-              <span className="text-3xl">{a.icon}</span>
+              <span className="text-2xl">{a.icon}</span>
               <div>
-                <p className="font-bold text-gray-900">{a.name}</p>
+                <p className="font-bold text-gray-900 text-sm">{a.name}</p>
                 <p className="text-xs text-gray-500 mt-0.5">{a.cover}</p>
-                <p className="text-xs text-gray-600 mt-1 font-medium">{a.services}</p>
-                <p className="text-xs text-gray-400 mt-1 flex items-center gap-1"><Clock className="w-3 h-3" />{a.hours}</p>
+                <p className="text-xs text-gray-600 mt-1">{a.services}</p>
+                <p className="text-[11px] text-gray-400 mt-1 flex items-center gap-1"><Clock className="w-3 h-3" />{a.hours}</p>
               </div>
             </div>
           ))}
@@ -218,14 +246,15 @@ function LocateTab() {
       </section>
 
       <section>
-        <h2 className="text-xl font-black mb-5" style={{ color: P }}>Before You Visit</h2>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Eyebrow>Checklist</Eyebrow>
+        <h2 className="text-lg font-black text-gray-900 mb-4">Before You Visit</h2>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {BEFORE_YOU_VISIT.map((c, i) => (
-            <div key={i} className="p-5 bg-white rounded-xl border border-gray-200">
-              <p className="font-bold text-gray-900 text-sm mb-2">{c.title}</p>
+            <div key={i} className="p-4 bg-white rounded-xl border border-gray-200">
+              <p className="font-bold text-gray-900 text-xs mb-2">{c.title}</p>
               <ul className="space-y-1">
                 {c.items.map((it, j) => (
-                  <li key={j} className="text-xs text-gray-600 flex items-start gap-1.5">
+                  <li key={j} className="text-[11px] text-gray-600 flex items-start gap-1.5">
                     <CheckCircle className="w-3 h-3 mt-0.5 flex-shrink-0" style={{ color: P }} />{it}
                   </li>
                 ))}
@@ -286,148 +315,117 @@ function FeedbackTab() {
 
   if (submitted) {
     return (
-      <div className="bg-green-50 border border-green-200 rounded-2xl p-8 text-center max-w-xl mx-auto">
-        <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
-        <h3 className="text-lg font-black text-green-800 mb-1">Feedback Sent!</h3>
-        <p className="text-green-700 text-sm">Thank you — your reference number is <strong>{submitted}</strong>. You'll receive a response at <strong>{form.email}</strong> within 1–2 business days.</p>
+      <div className="bg-white border border-green-200 rounded-2xl p-10 text-center max-w-lg mx-auto shadow-sm">
+        <div className="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-4">
+          <CheckCircle className="w-7 h-7 text-green-500" />
+        </div>
+        <h3 className="text-lg font-black text-gray-900 mb-1">Feedback sent</h3>
+        <p className="text-gray-500 text-sm">Your reference number is</p>
+        <p className="text-xl font-black tracking-wide my-2" style={{ color: P }}>{submitted}</p>
+        <p className="text-gray-500 text-sm">We'll respond to <strong className="text-gray-700">{form.email}</strong> within 1–2 business days.</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-9">
       <section>
-        <h2 className="text-2xl font-black mb-1" style={{ color: P }}>We'd Love to Hear From You</h2>
-        <p className="text-gray-500 text-sm mb-6">Tell us how we're doing or let us know how we can improve.</p>
+        <Eyebrow>Feedback</Eyebrow>
+        <h2 className="text-lg font-black text-gray-900 mb-5">We'd love to hear from you</h2>
 
-        <div className="bg-white rounded-2xl border border-gray-200 p-6 space-y-5">
-          <div>
-            <label className="text-xs font-semibold text-gray-700 block mb-2">You are giving feedback for</label>
-            <div className="flex gap-4">
-              {["Personal Banking", "Business Banking"].map(t => (
-                <label key={t} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                  <input type="radio" name="bankingType" checked={form.bankingType === t}
-                    onChange={() => setForm(f => ({ ...f, bankingType: t }))} style={{ accentColor: P }} />
-                  {t}
-                </label>
-              ))}
-            </div>
+        <div className="bg-white rounded-2xl border border-gray-200 p-5 sm:p-6 space-y-4">
+          <div className="grid sm:grid-cols-2 gap-4">
+            <Field label="You're giving feedback for">
+              <div className="flex gap-1 p-1 bg-gray-100 rounded-xl">
+                {["Personal Banking", "Business Banking"].map(t => (
+                  <button key={t} onClick={() => setForm(f => ({ ...f, bankingType: t }))}
+                    className="flex-1 text-xs font-bold py-2 rounded-lg transition-all"
+                    style={{ background: form.bankingType === t ? "white" : "transparent", color: form.bankingType === t ? P : "#9CA3AF", boxShadow: form.bankingType === t ? "0 1px 2px rgba(0,0,0,0.08)" : "none" }}>
+                    {t.replace(" Banking", "")}
+                  </button>
+                ))}
+              </div>
+            </Field>
+            <Field label="Topic">
+              <select value={form.topic} onChange={e => setForm(f => ({ ...f, topic: e.target.value }))} className={inputCls}>
+                {TOPICS.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </Field>
           </div>
 
-          <div>
-            <label className="text-xs font-semibold text-gray-700 block mb-1">Topic</label>
-            <select value={form.topic} onChange={e => setForm(f => ({ ...f, topic: e.target.value }))}
-              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-purple-400 bg-white">
-              {TOPICS.map(t => <option key={t} value={t}>{t}</option>)}
-            </select>
+          <Field label="Message" required>
+            <textarea value={form.message} onChange={e => setForm(f => ({ ...f, message: e.target.value }))} rows={4}
+              className={`${inputCls} resize-none`} placeholder="Tell us what you need help with..." />
+          </Field>
+
+          <div className="grid sm:grid-cols-2 gap-4 pt-3 border-t border-gray-100">
+            <Field label="First Name" required><input value={form.firstName} onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))} className={inputCls} /></Field>
+            <Field label="Last Name" required><input value={form.lastName} onChange={e => setForm(f => ({ ...f, lastName: e.target.value }))} className={inputCls} /></Field>
+            <Field label="Email Address" required><input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} className={inputCls} /></Field>
+            <Field label="Phone Number"><input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} className={inputCls} placeholder="+27 000 000 0000" /></Field>
+            <Field label="Customer Number (optional)"><input value={form.customerNumber} onChange={e => setForm(f => ({ ...f, customerNumber: e.target.value }))} className={inputCls} /></Field>
+            <Field label="Attachment (optional)">
+              <label className="flex items-center gap-2 border border-dashed border-gray-300 rounded-xl px-3.5 py-2.5 text-xs text-gray-500 cursor-pointer hover:border-purple-300 transition-colors truncate">
+                <Upload className="w-3.5 h-3.5 flex-shrink-0" />
+                <span className="truncate">{attachment ? attachment.name : "PDF, PNG or JPEG, max 10MB"}</span>
+                <input type="file" accept=".pdf,.png,.jpg,.jpeg" className="hidden" onChange={e => setAttachment(e.target.files?.[0] ?? null)} />
+              </label>
+            </Field>
           </div>
 
-          <div>
-            <label className="text-xs font-semibold text-gray-700 block mb-1">Message *</label>
-            <textarea value={form.message} onChange={e => setForm(f => ({ ...f, message: e.target.value }))} rows={5}
-              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-purple-400 resize-none" placeholder="Tell us what you need help with..." />
-          </div>
-
-          <div className="pt-2 border-t border-gray-100">
-            <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-3">Your Details</p>
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <label className="text-xs font-semibold text-gray-700 block mb-1">First Name *</label>
-                <input value={form.firstName} onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-purple-400" />
-              </div>
-              <div>
-                <label className="text-xs font-semibold text-gray-700 block mb-1">Last Name *</label>
-                <input value={form.lastName} onChange={e => setForm(f => ({ ...f, lastName: e.target.value }))}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-purple-400" />
-              </div>
-              <div>
-                <label className="text-xs font-semibold text-gray-700 block mb-1">Email Address *</label>
-                <input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-purple-400" />
-              </div>
-              <div>
-                <label className="text-xs font-semibold text-gray-700 block mb-1">Phone Number</label>
-                <input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-purple-400" placeholder="+27 000 000 0000" />
-              </div>
-              <div className="sm:col-span-2">
-                <label className="text-xs font-semibold text-gray-700 block mb-1">Customer Number (optional)</label>
-                <input value={form.customerNumber} onChange={e => setForm(f => ({ ...f, customerNumber: e.target.value }))}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-purple-400" />
-              </div>
-            </div>
-          </div>
-
-          <div className="grid sm:grid-cols-2 gap-4 pt-2 border-t border-gray-100">
-            <div>
-              <label className="text-xs font-semibold text-gray-700 block mb-2">Preferred Contact Method</label>
-              <div className="flex gap-4">
+          <div className="grid sm:grid-cols-2 gap-4 pt-3 border-t border-gray-100">
+            <Field label="Preferred Contact Method">
+              <div className="flex gap-1 p-1 bg-gray-100 rounded-xl">
                 {["Phone", "Email"].map(m => (
-                  <label key={m} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                    <input type="radio" name="contactMethod" checked={form.contactMethod === m}
-                      onChange={() => setForm(f => ({ ...f, contactMethod: m }))} style={{ accentColor: P }} />{m}
-                  </label>
+                  <button key={m} onClick={() => setForm(f => ({ ...f, contactMethod: m }))} className="flex-1 text-xs font-bold py-2 rounded-lg transition-all"
+                    style={{ background: form.contactMethod === m ? "white" : "transparent", color: form.contactMethod === m ? P : "#9CA3AF", boxShadow: form.contactMethod === m ? "0 1px 2px rgba(0,0,0,0.08)" : "none" }}>{m}</button>
                 ))}
               </div>
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-gray-700 block mb-2">Preferred Contact Time</label>
-              <div className="flex gap-4">
+            </Field>
+            <Field label="Preferred Contact Time">
+              <div className="flex gap-1 p-1 bg-gray-100 rounded-xl">
                 {["Morning", "Afternoon", "Evening"].map(t => (
-                  <label key={t} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                    <input type="radio" name="contactTime" checked={form.contactTime === t}
-                      onChange={() => setForm(f => ({ ...f, contactTime: t }))} style={{ accentColor: P }} />{t}
-                  </label>
+                  <button key={t} onClick={() => setForm(f => ({ ...f, contactTime: t }))} className="flex-1 text-xs font-bold py-2 rounded-lg transition-all"
+                    style={{ background: form.contactTime === t ? "white" : "transparent", color: form.contactTime === t ? P : "#9CA3AF", boxShadow: form.contactTime === t ? "0 1px 2px rgba(0,0,0,0.08)" : "none" }}>{t}</button>
                 ))}
               </div>
-            </div>
+            </Field>
           </div>
 
-          <div className="pt-2 border-t border-gray-100">
-            <label className="text-xs font-semibold text-gray-700 block mb-1">Attachment (optional)</label>
-            <label className="flex items-center gap-2 border border-dashed border-gray-300 rounded-xl px-4 py-3 text-sm text-gray-500 cursor-pointer hover:border-purple-300 transition-colors">
-              <Upload className="w-4 h-4 flex-shrink-0" />
-              {attachment ? attachment.name : "Upload supporting documents — PDF, PNG or JPEG, max 10MB"}
-              <input type="file" accept=".pdf,.png,.jpg,.jpeg" className="hidden"
-                onChange={e => setAttachment(e.target.files?.[0] ?? null)} />
-            </label>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3 pt-3 border-t border-gray-100">
+            <Field label={`Quick check: ${captcha.a} + ${captcha.b} =`} className="w-full sm:w-40">
+              <input value={captchaInput} onChange={e => setCaptchaInput(e.target.value)} inputMode="numeric" className={inputCls} placeholder="Answer" />
+            </Field>
+            <button onClick={handleSubmit} disabled={submitting}
+              className="flex-1 py-3 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-2"
+              style={{ background: `linear-gradient(135deg,${P},#9585EA)` }}>
+              {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Sending...</> : "Send Message"}
+            </button>
           </div>
-
-          <div className="pt-2 border-t border-gray-100">
-            <label className="text-xs font-semibold text-gray-700 block mb-1">Quick check — what is {captcha.a} + {captcha.b}?</label>
-            <input value={captchaInput} onChange={e => setCaptchaInput(e.target.value)} inputMode="numeric"
-              className="w-32 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-purple-400" placeholder="Answer" />
-          </div>
-
-          <button onClick={handleSubmit} disabled={submitting}
-            className="w-full py-3 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-2"
-            style={{ background: `linear-gradient(135deg,${P},#9585EA)` }}>
-            {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Sending...</> : "Send Message"}
-          </button>
         </div>
       </section>
 
       <section>
-        <h2 className="text-xl font-black mb-6" style={{ color: P }}>What Happens Next?</h2>
-        <div className="grid sm:grid-cols-3 gap-4">
+        <Eyebrow>Process</Eyebrow>
+        <h2 className="text-lg font-black text-gray-900 mb-4">What happens next</h2>
+        <div className="grid sm:grid-cols-3 gap-3">
           {[
             { n: 1, t: "Your enquiry is received immediately." },
             { n: 2, t: "A support consultant reviews your request." },
             { n: 3, t: "You'll receive a response within 1–2 business days." },
           ].map((s, i) => (
-            <div key={i} className="bg-white rounded-xl border border-gray-200 p-5 text-center">
-              <div className="w-9 h-9 rounded-full flex items-center justify-center font-black text-white mx-auto mb-3" style={{ background: P }}>{s.n}</div>
-              <p className="text-sm text-gray-700">{s.t}</p>
+            <div key={i} className="bg-white rounded-xl border border-gray-200 p-4 flex items-start gap-3">
+              <div className="w-7 h-7 rounded-full flex items-center justify-center font-black text-white flex-shrink-0 text-xs" style={{ background: P }}>{s.n}</div>
+              <p className="text-xs text-gray-600 pt-1">{s.t}</p>
             </div>
           ))}
         </div>
-        <p className="text-xs text-gray-400 text-center mt-4">Complaint reference numbers are automatically generated on submission.</p>
       </section>
 
       <section>
-        <h2 className="text-xl font-black mb-5" style={{ color: P }}>Frequently Asked Questions</h2>
-        <FaqAccordion />
+        <Eyebrow>FAQ</Eyebrow>
+        <h2 className="text-lg font-black text-gray-900 mb-4">Frequently asked questions</h2>
+        <FaqGrid />
       </section>
     </div>
   );
@@ -440,65 +438,83 @@ export function ContactUsViewer({ isOpen, onClose }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-gray-50">
-      <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm">
+      <div className="sticky top-0 z-30 flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm">
         <img src={vinkLogo} alt="Vink" className="h-9 w-auto object-contain" />
         <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500"><X className="w-5 h-5" /></button>
       </div>
 
       {/* Hero */}
-      <div className="py-14 px-6 text-white" style={{ background: `linear-gradient(135deg,${P},#7B4DB5)` }}>
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-black mb-2">We're Here to Help</h1>
-          <p className="text-white/75 text-base max-w-xl mb-6">
-            Whether you need banking assistance, want to visit our Head Office, report fraud, or send us feedback — our dedicated teams are here to support you.
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <QuickAction icon={<Phone className="w-4 h-4" style={{ color: P }} />} label="Call Us" onClick={() => { setTab("connect"); }} />
-            <QuickAction icon={<MapPin className="w-4 h-4" style={{ color: P }} />} label="Find a Branch" onClick={() => setTab("locate")} />
-            <QuickAction icon={<MessageCircle className="w-4 h-4" style={{ color: P }} />} label="Live Chat" onClick={() => { setTab("connect"); }} />
-            <QuickAction icon={<Mail className="w-4 h-4" style={{ color: P }} />} label="Send Feedback" onClick={() => setTab("feedback")} />
+      <div className="relative overflow-hidden text-white" style={{ background: `linear-gradient(135deg,${P_DARK},${P} 55%,#7B4DB5)` }}>
+        <div className="absolute inset-0 opacity-[0.07]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)", backgroundSize: "22px 22px" }} />
+        <div className="absolute -right-16 -top-24 w-80 h-80 rounded-full" style={{ background: "radial-gradient(circle, rgba(245,166,35,0.18), transparent 70%)" }} />
+        <div className="max-w-5xl mx-auto px-5 pt-14 pb-20 relative grid lg:grid-cols-[1.3fr_1fr] gap-10 items-center">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.16em] mb-3" style={{ color: GOLD }}>Contact Centre</p>
+            <h1 className="text-3xl sm:text-4xl font-black mb-3 leading-tight">We're here to help</h1>
+            <p className="text-white/70 text-sm max-w-md mb-6">
+              Banking assistance, branches, fraud reporting or feedback — one place for everything.
+            </p>
+            <div className="flex flex-wrap gap-2.5">
+              <QuickAction icon={<Phone className="w-4 h-4" />} label="Call Us" onClick={() => setTab("connect")} />
+              <QuickAction icon={<MapPin className="w-4 h-4" />} label="Find a Branch" onClick={() => setTab("locate")} />
+              <QuickAction icon={<Mail className="w-4 h-4" />} label="Send Feedback" onClick={() => setTab("feedback")} />
+            </div>
+          </div>
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/10 p-5">
+            <p className="text-[11px] font-bold uppercase tracking-wide text-white/60 mb-3">Our global offices</p>
+            <div className="space-y-2">
+              {OFFICES.map((o, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <span className="text-lg">{o.flag}</span>
+                  <span className="text-sm font-semibold flex-1">{o.country}</span>
+                  <span className="text-xs text-white/60">{o.city}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Tab strip */}
-      <div className="sticky top-[57px] z-10 bg-white border-b border-gray-200">
-        <div className="max-w-4xl mx-auto flex gap-8 px-5">
+      {/* Floating tab switcher */}
+      <div className="max-w-5xl mx-auto w-full px-5 -mt-8 relative z-10">
+        <div className="bg-white rounded-2xl shadow-lg shadow-black/10 border border-gray-100 p-1.5 flex gap-1">
           {TABS.map(t => (
             <button key={t.id} onClick={() => setTab(t.id)}
-              className={`py-4 text-sm font-bold border-b-2 transition-colors ${tab === t.id ? "" : "border-transparent text-gray-400 hover:text-gray-600"}`}
-              style={tab === t.id ? { color: P, borderColor: P } : undefined}>
-              {t.label}
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all"
+              style={{ background: tab === t.id ? P : "transparent", color: tab === t.id ? "#fff" : "#6B7280" }}>
+              {t.icon}<span className="hidden sm:inline">{t.label}</span>
             </button>
           ))}
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto w-full px-5 py-10">
+      <div className="max-w-5xl mx-auto w-full px-5 py-9">
         {tab === "connect"  && <ConnectTab goTo={setTab} />}
         {tab === "locate"   && <LocateTab />}
         {tab === "feedback" && <FeedbackTab />}
 
-        {/* Persistent footer blocks — shown regardless of active tab */}
-        <div className="mt-14 grid sm:grid-cols-2 gap-4">
-          <div className="bg-white rounded-2xl border border-gray-200 p-6">
-            <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-3">Head Office</p>
-            <p className="font-black text-gray-900">VMS Bank Limited</p>
-            <p className="text-sm text-gray-600 mt-1">State House Building<br />8 Rose Street, Cape Town<br />South Africa</p>
-            <p className="text-sm text-gray-600 mt-3">
-              <Mail className="w-3.5 h-3.5 inline mr-1.5" style={{ color: P }} />
-              <a href="mailto:info@vink.com" className="no-underline" style={{ color: P }}>info@vink.com</a>
-            </p>
-            <p className="text-sm text-gray-600 mt-1"><Clock className="w-3.5 h-3.5 inline mr-1.5" style={{ color: P }} />Mon–Fri 08:00–17:00</p>
-          </div>
-          <div className="rounded-2xl p-6 text-white flex flex-col justify-between" style={{ background: `linear-gradient(135deg,${P},#7B4DB5)` }}>
+        {/* Persistent footer blocks */}
+        <div className="mt-9 grid sm:grid-cols-2 gap-3">
+          <div className="bg-white rounded-2xl border border-gray-200 p-5 flex items-start gap-4">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#EDE9FE", color: P }}><Building2 className="w-5 h-5" /></div>
             <div>
-              <p className="font-black flex items-center gap-2 mb-1"><Smartphone className="w-4 h-4" /> Download the Mobile App</p>
-              <p className="text-sm text-white/80">Mobile banking, instant payments, card management, balance enquiries and secure login — all in one app.</p>
+              <p className="text-[11px] font-bold uppercase tracking-wide text-gray-400 mb-1">Head Office</p>
+              <p className="font-black text-gray-900 text-sm">VMS Bank Limited</p>
+              <p className="text-xs text-gray-500 mt-0.5">State House Building, 8 Rose Street, Cape Town, South Africa</p>
+              <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2">
+                <a href="mailto:info@vink.com" className="text-xs font-semibold no-underline" style={{ color: P }}>info@vink.com</a>
+                <span className="text-xs text-gray-400">Mon–Fri 08:00–17:00</span>
+              </div>
             </div>
-            <div className="flex gap-2 mt-4">
-              <span className="text-xs font-semibold bg-white/15 px-3 py-1.5 rounded-lg">App Store</span>
-              <span className="text-xs font-semibold bg-white/15 px-3 py-1.5 rounded-lg">Google Play</span>
+          </div>
+          <div className="rounded-2xl p-5 text-white flex items-center justify-between gap-4" style={{ background: `linear-gradient(135deg,${P_DARK},${P})` }}>
+            <div>
+              <p className="font-black text-sm flex items-center gap-2 mb-1"><Smartphone className="w-4 h-4" style={{ color: GOLD }} /> Get the VMS App</p>
+              <p className="text-xs text-white/70">Banking, payments & cards — all in one app.</p>
+            </div>
+            <div className="flex flex-col gap-1.5 flex-shrink-0">
+              <span className="text-[10px] font-bold bg-white/15 px-2.5 py-1 rounded-lg text-center">App Store</span>
+              <span className="text-[10px] font-bold bg-white/15 px-2.5 py-1 rounded-lg text-center">Google Play</span>
             </div>
           </div>
         </div>
