@@ -295,7 +295,7 @@ export default function App() {
   const handleSubNavClick = (item: string) => {
     startTransition(() => {
       // Personal — through product selector
-      if (item === "Account")           return openSelector("account");
+     if (item === "Account")           { mount("personalAccount"); setShowPersonalAccount(true); return; }
       if (item === "Credit Card")       return openSelector("creditCard");
       if (item === "Loan")              return openSelector("loan");
       if (item === "Invest")            return openSelector("invest");
