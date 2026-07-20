@@ -22,12 +22,12 @@ const TABS: { id: TabId; label: string }[] = [
 const EMERGENCY_CONTACTS = [
   { service: "Lost or Stolen Cards",     contact: "+27 (0)21 007 0772", href: "tel:+27210070772",  hours: "24/7" },
   { service: "Fraud Hotline",            contact: "+27 (0)61 461 5035", href: "tel:+27614615035",  hours: "24/7" },
-  { service: "Digital Banking Support",  contact: "support@vink.com",   href: "mailto:support@vink.com", hours: "Business hours" },
-  { service: "General Customer Care",    contact: "info@vink.com",      href: "mailto:info@vink.com",    hours: "Mon–Fri 08:00–17:00" },
+  { service: "Digital Banking Support",  contact: "support@vink.co.za",   href: "mailto:support@vink.co.za", hours: "Business hours" },
+  { service: "General Customer Care",    contact: "info@vink.co.za",      href: "mailto:info@vink.co.za",    hours: "Mon–Fri 08:00–17:00" },
 ];
 
 const DIRECTORY = [
-  { title: "Report Fraud", icon: <AlertTriangle className="w-4 h-4" />, urgent: true, items: ["Fraud Hotline — +27 (0)61 461 5035", "Card blocking via VMS App", "Suspicious transactions"] },
+  { title: "Report Fraud", icon: <AlertTriangle className="w-4 h-4" />, urgent: true, items: ["Fraud Hotline — +27 (0)61 461 5035", "Card blocking via VINK App", "Suspicious transactions"] },
   { title: "Lost or Stolen Cards", icon: <Shield className="w-4 h-4" />, urgent: true, items: ["Emergency card services", "+27 (0)21 007 0772", "Available 24 hours"] },
   { title: "Personal Banking", icon: <Building2 className="w-4 h-4" />, items: ["Savings & current accounts", "Debit & credit cards", "Internet & mobile banking"] },
   { title: "Business Banking", icon: <Building2 className="w-4 h-4" />, items: ["SME banking", "Corporate banking", "Merchant services", "Business loans"] },
@@ -35,11 +35,11 @@ const DIRECTORY = [
   { title: "Savings & Investments", icon: <Building2 className="w-4 h-4" />, items: ["Fixed deposits", "Investment accounts", "Wealth management"] },
   { title: "Insurance", icon: <Building2 className="w-4 h-4" />, items: ["Claims", "New policies", "Financial advice"] },
   { title: "International Banking", icon: <Building2 className="w-4 h-4" />, items: ["Forex", "International payments", "Travel cards"] },
-  { title: "Media & General", icon: <Mail className="w-4 h-4" />, items: ["Media relations — media@vink.com", "General enquiries — info@vink.com"] },
+  { title: "Media & General", icon: <Mail className="w-4 h-4" />, items: ["Media relations — media@vink.co.za", "General enquiries — info@vink.co.za"] },
 ];
 
 const AGENT_NETWORKS = [
-  { name: "VMS Head Office", type: "office" as const, icon: "🏢", cover: "8 Rose Street, Cape Town CBD", services: "Account opening, FICA verification, card collection, business banking consultations", hours: "Mon–Fri 08:00–17:00" },
+  { name: "VINK Head Office", type: "office" as const, icon: "🏢", cover: "8 Rose Street, Cape Town CBD", services: "Account opening, FICA verification, card collection, business banking consultations", hours: "Mon–Fri 08:00–17:00" },
   { name: "Pick n Pay",  type: "agent" as const, icon: "🛒", cover: "Nationwide — all stores", services: "Card recharge, replacement, cash withdrawals", hours: "Store trading hours" },
   { name: "Shoprite",   type: "agent" as const, icon: "🛒", cover: "Nationwide — all stores", services: "Card recharge, cash withdrawals", hours: "Store trading hours" },
   { name: "Checkers",   type: "agent" as const, icon: "🛒", cover: "Nationwide — all stores", services: "Card recharge, cash withdrawals", hours: "Store trading hours" },
@@ -67,12 +67,12 @@ const TOPICS = [
 ];
 
 const FAQS = [
-  { q: "How do I block my card?", a: "Call the Fraud Hotline immediately, or block your card instantly from the VMS App under Card Settings." },
-  { q: "How do I reset my Online or Mobile Banking password?", a: "Select \"Forgot Password\" on the login screen of the VMS App or web portal, and follow the verification steps." },
+  { q: "How do I block my card?", a: "Call the Fraud Hotline immediately, or block your card instantly from the VINK App under Card Settings." },
+  { q: "How do I reset my Online or Mobile Banking password?", a: "Select \"Forgot Password\" on the login screen of the VINK App or web portal, and follow the verification steps." },
   { q: "Can I track my complaint?", a: "Yes — you'll get a reference number as soon as you submit the form, which you can quote in any follow-up." },
   { q: "How do I report fraud?", a: "Call the Fraud Hotline on +27 (0)61 461 5035 immediately — it's available 24/7." },
   { q: "How long until I get a response?", a: "General enquiries: within 1 business day. Feedback submitted here: within 1–2 business days." },
-  { q: "Is my feedback confidential?", a: "Yes — feedback is only visible to the relevant VMS support team handling your enquiry." },
+  { q: "Is my feedback confidential?", a: "Yes — feedback is only visible to the relevant VINK support team handling your enquiry." },
 ];
 
 // ── Canvas captcha — real, generated client-side, not decorative ────────
@@ -257,7 +257,7 @@ function LocateTab() {
       </div>
 
       <section>
-        <p className="text-gray-400 text-xs mb-4">VMS is a digital-first bank — full services at our Head Office, everyday card services nationwide via our agent network.</p>
+        <p className="text-gray-400 text-xs mb-4">VINK is a digital-first bank — full services at our Head Office, everyday card services nationwide via our agent network.</p>
         <div className="grid sm:grid-cols-2 gap-3">
           {results.map((a, i) => (
             <div key={i} className={`flex items-start gap-3 p-4 bg-white rounded-lg border hover:shadow-sm transition-shadow ${a.type === "office" ? "border-2" : "border-gray-200"}`}
@@ -325,7 +325,7 @@ function FeedbackTab() {
     });
     setSubmitting(false);
     if (r.success) {
-      setSubmitted("VMS-" + Math.random().toString(36).slice(2, 8).toUpperCase());
+      setSubmitted("VINK-" + Math.random().toString(36).slice(2, 8).toUpperCase());
       toast.success("Message sent — thank you!");
     } else {
       toast.error(r.error ?? "Failed to send message. Please try email directly.");
@@ -480,17 +480,17 @@ export function ContactUsViewer({ isOpen, onClose }: Props) {
             <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#EDE9FE", color: P }}><Building2 className="w-5 h-5" /></div>
             <div>
               <p className="text-[11px] font-bold uppercase tracking-wide text-gray-400 mb-1">Head Office</p>
-              <p className="font-black text-gray-900 text-sm">VMS Bank Limited</p>
+              <p className="font-black text-gray-900 text-sm">VINK Bank Limited</p>
               <p className="text-xs text-gray-500 mt-0.5">State House Building, 8 Rose Street, Cape Town, South Africa</p>
               <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2">
-                <a href="mailto:info@vink.com" className="text-xs font-semibold no-underline" style={{ color: P }}>info@vink.com</a>
+                <a href="mailto:info@vink.co.za" className="text-xs font-semibold no-underline" style={{ color: P }}>info@vink.co.za</a>
                 <span className="text-xs text-gray-400">Mon–Fri 08:00–17:00</span>
               </div>
             </div>
           </div>
           <div className="rounded-xl p-5 text-white flex items-center justify-between gap-4" style={{ background: P }}>
             <div>
-              <p className="font-black text-sm flex items-center gap-2 mb-1"><Smartphone className="w-4 h-4" style={{ color: GOLD }} /> Get the VMS App</p>
+              <p className="font-black text-sm flex items-center gap-2 mb-1"><Smartphone className="w-4 h-4" style={{ color: GOLD }} /> Get the VINK App</p>
               <p className="text-xs text-white/70">Banking, payments & cards — all in one app.</p>
             </div>
             <div className="flex flex-col gap-1.5 flex-shrink-0">

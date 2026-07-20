@@ -1,10 +1,10 @@
 /**
- * VMS AFC Revenue Distribution Dashboard
+ * VINK AFC Revenue Distribution Dashboard
  *
  * Shows the complete revenue flow:
  *   Passenger → Fare + R0.50 fee
  *   Driver    → Fare - R0.50 fee - R20/trip levy
- *   VMS       → R1.00/tap → keeps R0.90, sends R0.10 to device investor
+ *   VINK       → R1.00/tap → keeps R0.90, sends R0.10 to device investor
  *   Association → R20/trip levy → splits with marshall per agreed %
  *   Investor  → R0.10/tap + R250/month device rental
  *   Marshall  → % of R20 levy per trip
@@ -26,12 +26,12 @@ const fmtM = (n: number) => n >= 1_000_000 ? `R${(n/1_000_000).toFixed(1)}M` : n
 type Screen = "overview" | "tap_simulator" | "accounts" | "devices" | "agreements" | "transactions" | "investor";
 
 const ACCOUNT_COLORS: Record<string, string> = {
-  vms_platform: "#5B2D8E", investor: "#F59E0B", association: "#3B82F6",
+  vink_platform: "#5B2D8E", investor: "#F59E0B", association: "#3B82F6",
   marshall: "#10B981", driver: "#14B8A6", passenger: "#EC4899", taxi_owner: "#6B7280",
 };
 
 const ACCOUNT_ICONS: Record<string, string> = {
-  vms_platform: "🏦", investor: "💰", association: "🏛️",
+  vink_platform: "🏦", investor: "💰", association: "🏛️",
   marshall: "👮", driver: "🚌", passenger: "👤", taxi_owner: "🏢",
 };
 
@@ -39,7 +39,7 @@ const ACCOUNT_ICONS: Record<string, string> = {
 const FEES = {
   PASSENGER_TAP_FEE: 0.50,
   DRIVER_TAP_FEE:    0.50,
-  VMS_FEE_TOTAL:     1.00,
+  VINK_FEE_TOTAL:     1.00,
   INVESTOR_SHARE_PCT: 10,
   TRIP_LEVY:         20.00,
   DEVICE_MONTHLY_RENTAL: 250.00,
@@ -49,16 +49,16 @@ const FEES = {
 function simulateTapResult(fareAmount: number, marshallPct = 15) {
   const passengerFee  = FEES.PASSENGER_TAP_FEE;
   const driverFee     = FEES.DRIVER_TAP_FEE;
-  const vmsFee        = FEES.VMS_FEE_TOTAL;
-  const investorShare = +(vmsFee * FEES.INVESTOR_SHARE_PCT / 100).toFixed(2);
-  const vmsKeeps      = +(vmsFee - investorShare).toFixed(2);
+  const vinkFee        = FEES.VINK_FEE_TOTAL;
+  const investorShare = +(vinkFee * FEES.INVESTOR_SHARE_PCT / 100).toFixed(2);
+  const vinkKeeps      = +(vinkFee - investorShare).toFixed(2);
   const levy          = FEES.TRIP_LEVY;
   const marshallLevy  = +(levy * marshallPct / 100).toFixed(2);
   const assocLevy     = +(levy - marshallLevy).toFixed(2);
   return {
     passenger: { pays: fareAmount + passengerFee, fee: passengerFee },
     driver: { receives: fareAmount - driverFee, fee: driverFee, tripLevyPerTrip: levy },
-    vms: { earns: vmsFee, keeps: vmsKeeps },
+    vink: { earns: vinkFee, keeps: vinkKeeps },
     investor: { tapShare: investorShare, monthly: FEES.DEVICE_MONTHLY_RENTAL },
     association: { receives: assocLevy, perTrip: levy },
     marshall: { receives: marshallLevy, percentage: marshallPct },
@@ -190,7 +190,7 @@ export function RevenueDashboard({ isOpen, onClose }: Props) {
             {[
               { label: "Passenger tap fee", value: "R0.50" },
               { label: "Driver tap fee",    value: "R0.50" },
-              { label: "VMS total/tap",     value: "R1.00" },
+              { label: "VINK total/tap",     value: "R1.00" },
               { label: "Investor share",    value: "10%" },
               { label: "Trip levy",         value: "R20.00" },
               { label: "Device rental",     value: "R250/mo" },
@@ -219,7 +219,7 @@ export function RevenueDashboard({ isOpen, onClose }: Props) {
                     {[
                       { label: "Passenger", pays: "R14.50", note: "R14 fare\n+ R0.50 fee", color: "#EC4899", arrow: true },
                       { label: "Driver",    pays: "R13.50", note: "Receives R14\n- R0.50 fee\n- R20/trip levy", color: "#14B8A6", arrow: true },
-                      { label: "VMS Platform", pays: "R0.90/tap", note: "Keeps 90%\nof R1.00 fee", color: P, arrow: true },
+                      { label: "VINK Platform", pays: "R0.90/tap", note: "Keeps 90%\nof R1.00 fee", color: P, arrow: true },
                       { label: "Investor",  pays: "R0.10/tap\n+R250/mo", note: "10% of R1.00\n+ monthly rental", color: "#F59E0B", arrow: false },
                     ].map((n, i) => (
                       <div key={i} className="flex items-center gap-2 flex-1">
@@ -263,7 +263,7 @@ export function RevenueDashboard({ isOpen, onClose }: Props) {
                   {[
                     { label: "Total Taps Today",         value: String((snapshot.totalTapsToday as number) ?? 0),               color: P },
                     { label: "Total Fare Today",         value: fmtM((snapshot.totalFareToday as number) ?? 0),                  color: "#14B8A6" },
-                    { label: "VMS Earnings Today",       value: fmtM((snapshot.totalVmsEarningsToday as number) ?? 0),           color: "#F59E0B" },
+                    { label: "VINK Earnings Today",       value: fmtM((snapshot.totalVinkEarningsToday as number) ?? 0),           color: "#F59E0B" },
                     { label: "Investor Earnings Today",  value: fmtM((snapshot.totalInvestorEarningsToday as number) ?? 0),      color: "#EC4899" },
                     { label: "Levies Collected",         value: fmtM((snapshot.totalLeviesCollectedToday as number) ?? 0),       color: "#3B82F6" },
                     { label: "Marshall Payments",        value: fmtM((snapshot.totalMarshallPaymentsToday as number) ?? 0),      color: "#10B981" },
@@ -347,8 +347,8 @@ export function RevenueDashboard({ isOpen, onClose }: Props) {
                     {[
                       { party: "Passenger pays",  amount: simResult.passenger.pays,                      note: `R${simFare} fare + R${simResult.passenger.fee} tap fee`,          color: "#EC4899", arrow: "←" },
                       { party: "Driver receives",  amount: simResult.driver.receives,                     note: `R${simFare} fare − R${simResult.driver.fee} tap fee`,             color: "#14B8A6", arrow: "→" },
-                      { party: "VMS earns (keeps)", amount: simResult.vms.keeps,                          note: `R${simResult.vms.earns} total fee − R${simResult.investor.tapShare} investor`, color: P, arrow: "→" },
-                      { party: "Investor earns/tap", amount: simResult.investor.tapShare,                 note: `${FEES.INVESTOR_SHARE_PCT}% of R${FEES.VMS_FEE_TOTAL} VMS fee`,  color: "#F59E0B", arrow: "→" },
+                      { party: "VINK earns (keeps)", amount: simResult.vink.keeps,                          note: `R${simResult.vink.earns} total fee − R${simResult.investor.tapShare} investor`, color: P, arrow: "→" },
+                      { party: "Investor earns/tap", amount: simResult.investor.tapShare,                 note: `${FEES.INVESTOR_SHARE_PCT}% of R${FEES.VINK_FEE_TOTAL} VINK fee`,  color: "#F59E0B", arrow: "→" },
                       { party: "Association (levy)", amount: simResult.association.receives,              note: `R${FEES.TRIP_LEVY} levy − ${simResult.marshall.percentage}% marshall = R${simResult.marshall.receives}`, color: "#3B82F6", arrow: "→" },
                       { party: "Marshall (levy %)", amount: simResult.marshall.receives,                  note: `${simResult.marshall.percentage}% of R${FEES.TRIP_LEVY} trip levy`, color: "#10B981", arrow: "→" },
                     ].map((row, i) => (
@@ -380,7 +380,7 @@ export function RevenueDashboard({ isOpen, onClose }: Props) {
                     {simHistory.map((h, i) => (
                       <div key={i} className="flex justify-between py-1.5 border-b border-gray-50 last:border-0 text-sm">
                         <span className="text-gray-500">{h.ts}</span>
-                        <span className="font-semibold text-gray-800">R{h.fare} fare → {fmt(h.fare * 0.5 / 0.5 * FEES.VMS_FEE_TOTAL)} VMS earning</span>
+                        <span className="font-semibold text-gray-800">R{h.fare} fare → {fmt(h.fare * 0.5 / 0.5 * FEES.VINK_FEE_TOTAL)} VINK earning</span>
                       </div>
                     ))}
                   </div>
@@ -430,7 +430,7 @@ export function RevenueDashboard({ isOpen, onClose }: Props) {
             <div className="space-y-4 max-w-4xl">
               <h1 className="text-xl font-black text-gray-900">AFC Devices & Investor Ownership</h1>
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800">
-                <strong>Investor model:</strong> Investors purchase AFC devices and rent them to taxi owners at <strong>R250/month</strong>. Each tap on their device earns them <strong>R0.10</strong> (10% of the R1.00 VMS fee). A device doing 200 taps/day earns the investor R20/day in tap revenue + R250/month rental = ~R850/month per device.
+                <strong>Investor model:</strong> Investors purchase AFC devices and rent them to taxi owners at <strong>R250/month</strong>. Each tap on their device earns them <strong>R0.10</strong> (10% of the R1.00 VINK fee). A device doing 200 taps/day earns the investor R20/day in tap revenue + R250/month rental = ~R850/month per device.
               </div>
               <div className="space-y-4">
                 {devices.map((dev, i) => (
@@ -451,10 +451,10 @@ export function RevenueDashboard({ isOpen, onClose }: Props) {
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                       {[
-                        { label: "Investor earns (taps)", value: fmt(Number(dev.tapCount) * FEES.VMS_FEE_TOTAL * FEES.INVESTOR_SHARE_PCT / 100), color: "#F59E0B" },
+                        { label: "Investor earns (taps)", value: fmt(Number(dev.tapCount) * FEES.VINK_FEE_TOTAL * FEES.INVESTOR_SHARE_PCT / 100), color: "#F59E0B" },
                         { label: "Monthly rental",        value: fmt(Number(dev.monthlyRental)),                    color: "#8B5CF6" },
-                        { label: "Est. monthly tap revenue", value: fmt(200 * 30 * FEES.VMS_FEE_TOTAL * FEES.INVESTOR_SHARE_PCT / 100), color: "#10B981" },
-                        { label: "Total monthly return",  value: fmt(Number(dev.monthlyRental) + 200 * 30 * FEES.VMS_FEE_TOTAL * FEES.INVESTOR_SHARE_PCT / 100), color: P },
+                        { label: "Est. monthly tap revenue", value: fmt(200 * 30 * FEES.VINK_FEE_TOTAL * FEES.INVESTOR_SHARE_PCT / 100), color: "#10B981" },
+                        { label: "Total monthly return",  value: fmt(Number(dev.monthlyRental) + 200 * 30 * FEES.VINK_FEE_TOTAL * FEES.INVESTOR_SHARE_PCT / 100), color: P },
                       ].map((s, j) => (
                         <div key={j} className="rounded-xl p-3 text-center" style={{ background: s.color + "10", border: `1px solid ${s.color}25` }}>
                           <p className="text-[9px] text-gray-500 uppercase tracking-wide">{s.label}</p>
@@ -555,7 +555,7 @@ export function RevenueDashboard({ isOpen, onClose }: Props) {
                       const typeColors: Record<string, string> = {
                         tap_fare: "#14B8A6", tap_fee_passenger: "#EC4899",
                         tap_fee_driver: "#F59E0B", investor_tap: "#8B5CF6",
-                        vms_platform_tap: P, trip_levy: "#3B82F6",
+                        vink_platform_tap: P, trip_levy: "#3B82F6",
                         marshall_share: "#10B981", device_rental: "#F59E0B",
                       };
                       const color = typeColors[String(txn.type)] ?? "#9CA3AF";
@@ -608,9 +608,9 @@ export function RevenueDashboard({ isOpen, onClose }: Props) {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                       {[
                         { label: "Total taps earned from",    value: totalTaps.toLocaleString(),               color: P },
-                        { label: "Tap revenue (lifetime)",    value: fmt(totalTaps * FEES.VMS_FEE_TOTAL * FEES.INVESTOR_SHARE_PCT / 100), color: "#F59E0B" },
+                        { label: "Tap revenue (lifetime)",    value: fmt(totalTaps * FEES.VINK_FEE_TOTAL * FEES.INVESTOR_SHARE_PCT / 100), color: "#F59E0B" },
                         { label: "Monthly rental income",     value: fmt(invDevices.length * FEES.DEVICE_MONTHLY_RENTAL),               color: "#10B981" },
-                        { label: "Est. monthly total return", value: fmt(invDevices.length * FEES.DEVICE_MONTHLY_RENTAL + 200 * 30 * invDevices.length * FEES.VMS_FEE_TOTAL * FEES.INVESTOR_SHARE_PCT / 100), color: "#8B5CF6" },
+                        { label: "Est. monthly total return", value: fmt(invDevices.length * FEES.DEVICE_MONTHLY_RENTAL + 200 * 30 * invDevices.length * FEES.VINK_FEE_TOTAL * FEES.INVESTOR_SHARE_PCT / 100), color: "#8B5CF6" },
                       ].map((s, j) => (
                         <div key={j} className="rounded-xl p-3 text-center" style={{ background: s.color + "10", border: `1px solid ${s.color}25` }}>
                           <p className="text-[9px] text-gray-500 uppercase tracking-wide leading-tight">{s.label}</p>
@@ -628,7 +628,7 @@ export function RevenueDashboard({ isOpen, onClose }: Props) {
                           </div>
                           <div className="text-right">
                             <p className="text-sm font-black" style={{ color: GOLD }}>
-                              {fmt(Number(dev.tapCount) * FEES.VMS_FEE_TOTAL * FEES.INVESTOR_SHARE_PCT / 100)}
+                              {fmt(Number(dev.tapCount) * FEES.VINK_FEE_TOTAL * FEES.INVESTOR_SHARE_PCT / 100)}
                             </p>
                             <p className="text-[9px] text-gray-400">lifetime tap earnings</p>
                           </div>

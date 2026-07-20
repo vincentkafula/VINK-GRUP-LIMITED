@@ -54,7 +54,7 @@ export function CareersViewer({ isOpen, onClose }: Props) {
             Build the Future of<br />African Payments.
           </h1>
           <p className="text-white/80 text-lg max-w-2xl leading-relaxed">
-            At VMS, you&apos;re not just building software — you&apos;re building the financial infrastructure for 15 million South Africans who take a taxi every day.
+            At VINK, you&apos;re not just building software — you&apos;re building the financial infrastructure for 15 million South Africans who take a taxi every day.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <span className="px-4 py-2 rounded-full text-sm font-semibold" style={{ background: "rgba(255,255,255,.15)" }}>
@@ -74,7 +74,7 @@ export function CareersViewer({ isOpen, onClose }: Props) {
 
         {/* Benefits */}
         <section>
-          <h2 className="text-2xl font-black mb-6" style={{ color: P }}>Why Work at VMS?</h2>
+          <h2 className="text-2xl font-black mb-6" style={{ color: P }}>Why Work at VINK?</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {BENEFITS.map((b, i) => (
               <div key={i} className="flex items-start gap-3 p-4 rounded-xl border border-gray-200 hover:border-purple-200 hover:bg-purple-50 transition-all">
@@ -123,7 +123,7 @@ export function CareersViewer({ isOpen, onClose }: Props) {
           </div>
           <div className="mt-6 p-5 rounded-2xl border-2" style={{ borderColor: P }}>
             <p className="text-sm font-semibold text-gray-800 mb-1">Application Email</p>
-            <a href="mailto:careers@vink.com" className="font-bold text-lg" style={{ color: P }}>careers@vink.com</a>
+            <a href="mailto:careers@vink.co.za" className="font-bold text-lg" style={{ color: P }}>careers@vink.co.za</a>
           </div>
         </section>
 
@@ -131,11 +131,11 @@ export function CareersViewer({ isOpen, onClose }: Props) {
         <section className="rounded-2xl p-6 text-white" style={{ background: `linear-gradient(135deg,#1B1837,${P})` }}>
           <h2 className="text-xl font-black mb-2">Graduate &amp; Internship Programme</h2>
           <p className="text-white/80 text-sm leading-relaxed mb-4">
-            VMS offers a 12-month paid internship programme for recent graduates in Computer Science, Finance, Marketing, and Business Management. Applications open annually in January.
+            VINK offers a 12-month paid internship programme for recent graduates in Computer Science, Finance, Marketing, and Business Management. Applications open annually in January.
           </p>
-          <a href="mailto:intern@vink.com" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-white transition-all hover:opacity-90"
+          <a href="mailto:intern@vink.co.za" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-white transition-all hover:opacity-90"
             style={{ color: P }}>
-            Email intern@vink.com
+            Email intern@vink.co.za
           </a>
         </section>
       </div>

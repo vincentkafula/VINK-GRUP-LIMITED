@@ -1,10 +1,10 @@
-# VMS — Railway Deployment Guide
+# VINK — Railway Deployment Guide
 
 ## Architecture
 
 ```
-Railway Service 1: vms-frontend   (React/Vite → nginx)
-Railway Service 2: vms-backend    (Express + WebSocket)
+Railway Service 1: vink-frontend   (React/Vite → nginx)
+Railway Service 2: vink-backend    (Express + WebSocket)
 Supabase:          Edge Function  (Hono — applications, banking, ride-hailing, municipalities)
 ```
 
@@ -41,7 +41,7 @@ SUPABASE_SERVICE_KEY=<your service role key>
 ```
 
 5. Railway auto-detects Node.js. Build: `npm install && npm run build`. Start: `npm start`.
-6. Note the backend URL: `https://vms-backend-XXXX.up.railway.app`
+6. Note the backend URL: `https://vink-backend-XXXX.up.railway.app`
 
 ---
 
@@ -52,7 +52,7 @@ SUPABASE_SERVICE_KEY=<your service role key>
 3. Set environment variables:
 
 ```env
-VITE_API_URL=https://vms-backend-XXXX.up.railway.app
+VITE_API_URL=https://vink-backend-XXXX.up.railway.app
 VITE_SUPABASE_PROJECT_ID=rkuamkxvdnwsefbhampg
 VITE_SUPABASE_URL=https://rkuamkxvdnwsefbhampg.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
@@ -67,7 +67,7 @@ VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 Once both services are live, update the backend `ALLOWED_ORIGINS`:
 ```
-ALLOWED_ORIGINS=https://vms-frontend-XXXX.up.railway.app,http://localhost:5173
+ALLOWED_ORIGINS=https://vink-frontend-XXXX.up.railway.app,http://localhost:5173
 ```
 
 ---
@@ -76,8 +76,8 @@ ALLOWED_ORIGINS=https://vms-frontend-XXXX.up.railway.app,http://localhost:5173
 
 | Service | URL |
 |---|---|
-| Frontend | `https://vms-frontend.up.railway.app/health` |
-| Backend  | `https://vms-backend.up.railway.app/health` |
+| Frontend | `https://vink-frontend.up.railway.app/health` |
+| Backend  | `https://vink-backend.up.railway.app/health` |
 | Supabase | `https://rkuamkxvdnwsefbhampg.supabase.co/functions/v1/make-server-3f39932e/health` |
 
 ---

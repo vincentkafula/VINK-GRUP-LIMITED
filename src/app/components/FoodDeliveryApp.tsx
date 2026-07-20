@@ -1,6 +1,6 @@
 /**
- * VMS Food Delivery System
- * Full-stack food ordering platform integrated with VMS Banking.
+ * VINK Food Delivery System
+ * Full-stack food ordering platform integrated with VINK Banking.
  * Roles: Customer | Restaurant | Driver | Admin
  * Order lifecycle: Pending → Accepted → Preparing → Ready → Picked Up → Delivered
  */
@@ -723,7 +723,7 @@ function AdminApp({ onClose }: { onClose: () => void }) {
   return (
     <div className="flex flex-col h-full bg-gray-50">
       <div className="px-4 py-3 flex items-center justify-between bg-white border-b border-gray-100 flex-shrink-0">
-        <div><p className="text-[10px] text-gray-500 font-semibold uppercase">Admin Dashboard</p><p className="text-base font-black text-gray-900">VMS Food Operations</p></div>
+        <div><p className="text-[10px] text-gray-500 font-semibold uppercase">Admin Dashboard</p><p className="text-base font-black text-gray-900">VINK Food Operations</p></div>
         <button onClick={onClose} className="p-1.5 rounded-full bg-gray-100 text-gray-500"><X className="w-4 h-4" /></button>
       </div>
 
@@ -839,7 +839,7 @@ export function FoodDeliveryApp({ isOpen, onClose }: Props) {
       <div className="fixed inset-0 z-50 flex flex-col bg-gray-900">
         <div className="flex items-center justify-between px-5 py-4">
           <div>
-            <p className="text-xs text-white/50 uppercase tracking-widest font-bold">VMS Food Delivery</p>
+            <p className="text-xs text-white/50 uppercase tracking-widest font-bold">VINK Food Delivery</p>
             <p className="text-xl font-black text-white mt-0.5">🍽️ Select your role</p>
           </div>
           <button onClick={onClose} className="p-2 rounded-full bg-white/10 text-white/50"><X className="w-5 h-5" /></button>

@@ -73,7 +73,7 @@ export function TaxiAssociationsViewer({ isOpen, onClose }: Props) {
     const blob = new Blob([rows], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url; a.download = "vms-taxi-associations.csv"; a.click();
+    a.href = url; a.download = "vink-taxi-associations.csv"; a.click();
     URL.revokeObjectURL(url);
   };
 
@@ -90,7 +90,7 @@ export function TaxiAssociationsViewer({ isOpen, onClose }: Props) {
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-black text-sm" style={{ color: NAVY }}>SA Taxi Associations</p>
-          <p className="text-xs text-gray-500">VMS outreach reference · All 9 provinces + national</p>
+          <p className="text-xs text-gray-500">VINK outreach reference · All 9 provinces + national</p>
         </div>
         {/* Stats */}
         <div className="hidden sm:flex items-center gap-4 text-center mr-2">
@@ -364,7 +364,7 @@ export function TaxiAssociationsViewer({ isOpen, onClose }: Props) {
       <div className="flex-shrink-0 border-t bg-white px-5 py-2.5 flex items-center gap-4 flex-wrap" style={{ borderColor: "#E5E7EB" }}>
         <div className="flex items-center gap-2">
           <MapPin className="w-3.5 h-3.5 text-gray-400" />
-          <p className="text-xs text-gray-500 font-medium">VMS AFC Outreach Database · {TAXI_ASSOCIATIONS.length} associations across 9 provinces</p>
+          <p className="text-xs text-gray-500 font-medium">VINK AFC Outreach Database · {TAXI_ASSOCIATIONS.length} associations across 9 provinces</p>
         </div>
         <div className="ml-auto flex gap-3">
           {LEVELS.map(l => {

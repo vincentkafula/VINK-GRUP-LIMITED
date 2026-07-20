@@ -428,7 +428,7 @@ function Step7({ onBack, onClose }: { onBack: () => void; onClose: () => void })
         <p className="text-gray-500 text-sm max-w-md">
           Your business account application has been received. Our team will review it within 2–5 business days and contact you at the email address provided.
         </p>
-        <p className="text-xs text-gray-400">Reference: VMS-{Date.now().toString(36).toUpperCase()}</p>
+        <p className="text-xs text-gray-400">Reference: VINK-{Date.now().toString(36).toUpperCase()}</p>
         <button onClick={onClose}
           className="mt-4 px-8 py-3 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90"
           style={{ background: PURPLE }}>
@@ -484,7 +484,7 @@ function Step7({ onBack, onClose }: { onBack: () => void; onClose: () => void })
         <input type="checkbox" checked={agreeTerms} onChange={e => setAgreeTerms(e.target.checked)}
           className="mt-0.5 w-4 h-4 accent-purple-600 flex-shrink-0" />
         <p className="text-xs text-gray-600 leading-relaxed">
-          I confirm that all information provided is accurate and complete. I authorise VMS to perform FICA verification, credit checks, and to open the selected business account on behalf of the registered entity. I have read and agree to the <span className="font-semibold" style={{ color: PURPLE }}>Terms and Conditions</span> and <span className="font-semibold" style={{ color: PURPLE }}>Privacy Policy</span>.
+          I confirm that all information provided is accurate and complete. I authorise VINK to perform FICA verification, credit checks, and to open the selected business account on behalf of the registered entity. I have read and agree to the <span className="font-semibold" style={{ color: PURPLE }}>Terms and Conditions</span> and <span className="font-semibold" style={{ color: PURPLE }}>Privacy Policy</span>.
         </p>
       </label>
 

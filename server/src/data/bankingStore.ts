@@ -22,9 +22,9 @@ const USERS_SEED: Partial<BankUser>[] = [
   { role: "investor",  firstName: "Patricia",  lastName: "Osei",      email: "patricia@example.com",  phone: "+27831000001", nationalId: "7209145009084", kycStatus: "approved", amlStatus: "clear" },
   { role: "investor",  firstName: "David",     lastName: "Nkosi",     email: "david@example.com",     phone: "+27831000002", nationalId: "6805045009085", kycStatus: "in_review", amlStatus: "under_review" },
   { role: "owner",     firstName: "Vincent",   lastName: "Karimi",    email: "vincent@example.com",   phone: "+27841000001", nationalId: "7712035009086", kycStatus: "approved", amlStatus: "clear" },
-  { role: "admin",     firstName: "Sarah",     lastName: "Williams",  email: "admin@vink.com",        phone: "+27851000001", nationalId: "8204125009087", kycStatus: "approved", amlStatus: "clear" },
-  { role: "compliance",firstName: "Nadia",     lastName: "Petersen",  email: "compliance@vink.com",   phone: "+27851000002", nationalId: "8506035009088", kycStatus: "approved", amlStatus: "clear" },
-  { role: "treasury",  firstName: "James",     lastName: "Molefe",    email: "treasury@vink.com",     phone: "+27851000003", nationalId: "7901155009089", kycStatus: "approved", amlStatus: "clear" },
+  { role: "admin",     firstName: "Sarah",     lastName: "Williams",  email: "admin@vink.co.za",        phone: "+27851000001", nationalId: "8204125009087", kycStatus: "approved", amlStatus: "clear" },
+  { role: "compliance",firstName: "Nadia",     lastName: "Petersen",  email: "compliance@vink.co.za",   phone: "+27851000002", nationalId: "8506035009088", kycStatus: "approved", amlStatus: "clear" },
+  { role: "treasury",  firstName: "James",     lastName: "Molefe",    email: "treasury@vink.co.za",     phone: "+27851000003", nationalId: "7901155009089", kycStatus: "approved", amlStatus: "clear" },
   { role: "passenger", firstName: "Amahle",    lastName: "Ngcobo",    email: "amahle@example.com",    phone: "+27821000003", nationalId: "9203015009090", kycStatus: "pending",   amlStatus: "clear" },
   { role: "driver",    firstName: "Farai",     lastName: "Moyo",      email: "farai@example.com",     phone: "+27811000003", nationalId: "8811055009091", kycStatus: "approved", amlStatus: "clear" },
 ];
@@ -200,7 +200,7 @@ function seedKyc() {
       addressVerified: u.kycStatus === "approved",
       submittedAt: ago(rand(720, 4320)),
       reviewedAt: u.kycStatus === "approved" ? ago(rand(60, 720)) : null,
-      reviewedBy: u.kycStatus === "approved" ? "compliance@vink.com" : null,
+      reviewedBy: u.kycStatus === "approved" ? "compliance@vink.co.za" : null,
       rejectionReason: null,
     });
   });

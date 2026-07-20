@@ -38,8 +38,8 @@ const LEGAL_LINKS = ["Privacy Policy", "Terms of Use", "Advertiser Disclosure", 
 
 const CONTACT_CHANNELS = [
   { icon: <Phone className="w-5 h-5" />, label: "Call Us", value: "0800 VINK (8465)", sub: "Mon–Fri 08:00–20:00 | Sat 09:00–14:00", color: "#6B5ED7" },
-  { icon: <MessageCircle className="w-5 h-5" />, label: "Live Chat", value: "Chat on VMS App", sub: "Available 24/7", color: "#10B981" },
-  { icon: <Mail className="w-5 h-5" />, label: "Email Support", value: "support@vink.com", sub: "Reply within 2 business hours", color: "#3B82F6" },
+  { icon: <MessageCircle className="w-5 h-5" />, label: "Live Chat", value: "Chat on VINK App", sub: "Available 24/7", color: "#10B981" },
+  { icon: <Mail className="w-5 h-5" />, label: "Email Support", value: "support@vink.co.za", sub: "Reply within 2 business hours", color: "#3B82F6" },
   { icon: <MapPin className="w-5 h-5" />, label: "Visit Us", value: "8 Rose Street, Cape Town CBD", sub: "By appointment", color: "#F59E0B" },
 ];
 
@@ -134,7 +134,7 @@ export function GetHelpModal({ isOpen, onClose }: GetHelpModalProps) {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             {/* App badges */}
             <div>
-              <p className="text-white/45 text-[10px] uppercase tracking-wider mb-1">Take VMS Everywhere</p>
+              <p className="text-white/45 text-[10px] uppercase tracking-wider mb-1">Take VINK Everywhere</p>
               <p className="text-white/60 text-xs mb-3">Download the Vink app for instant payments, card management, rewards, and more.</p>
               <div className="flex gap-3">
                 {/* Apple */}

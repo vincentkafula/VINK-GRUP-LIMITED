@@ -1,5 +1,5 @@
 /**
- * VMS Ride-Hailing System — Complete Uber-like Platform
+ * VINK Ride-Hailing System — Complete Uber-like Platform
  * Passenger · Driver · Admin · Messaging · Calling · Payments · Ratings
  */
 import { useState, useEffect, useRef } from "react";
@@ -218,7 +218,7 @@ function CallView({ tripId, callerName, receiverName, myId, myRole, onEnd }: { t
             {String(mins).padStart(2,"0")}:{String(ss).padStart(2,"0")}
           </p>
         </div>
-        <p className="text-[10px] text-white/30 text-center">🔒 Call masked via VMS secure relay · Number not shared</p>
+        <p className="text-[10px] text-white/30 text-center">🔒 Call masked via VINK secure relay · Number not shared</p>
         <div className="flex items-center gap-6 mt-4">
           <button onClick={() => setMuted(m => !m)} className="flex flex-col items-center gap-1.5">
             <div className={`w-14 h-14 rounded-full flex items-center justify-center ${muted ? "bg-red-500" : "bg-white/15"}`}>

@@ -18,7 +18,7 @@ const ROW1 = [
 ];
 
 const ROW2 = [
-  { name: "Home Contents Insurance", price: "R170", featured: false, features: ["Covers theft, fire, flood, and accidental damage", "Replacement value (not book value) basis", "Fast online claims via VMS app"] },
+  { name: "Home Contents Insurance", price: "R170", featured: false, features: ["Covers theft, fire, flood, and accidental damage", "Replacement value (not book value) basis", "Fast online claims via VINK app"] },
   { name: "Motor Insurance",         price: "R265", featured: true,  features: ["Comprehensive cover for personal and commercial vehicles", "Roadside assist included", "No-claims bonus after 12 months", "Linked to Vink Driver Card for taxi operators"] },
   { name: "Hospital Cash Plan",      price: "R415", featured: false, features: ["R500–R2,000 per day while hospitalised", "No network restrictions", "Covers maternity and planned procedures", "Payout direct to your Vink account"] },
 ];
@@ -61,7 +61,7 @@ export function InsureViewer({ isOpen, onClose }: Props) {
       {/* Top nav */}
       <nav style={{ background: "#fff", borderBottom: "1px solid #e8e8f0", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 32px", height: 56, position: "sticky", top: 0, zIndex: 100 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
-          <img src={vinkLogo} alt="VMS" style={{ height: 38, width: "auto", objectFit: "contain" }} />
+          <img src={vinkLogo} alt="VINK" style={{ height: 38, width: "auto", objectFit: "contain" }} />
           <ul style={{ display: "flex", gap: 4, listStyle: "none", margin: 0, padding: 0 }} className="hidden md:flex">
             {TOP_NAV.map((item, i) => (
               <li key={item}><a href="#" style={{ textDecoration: "none", color: i === 1 ? BRAND : "#5a5a72", fontSize: 14, fontWeight: i === 1 ? 600 : 400, padding: "8px 12px", borderRadius: 4, display: "block" }}>{item}</a></li>

@@ -1,10 +1,10 @@
-// ─── VMS Central API Client ───────────────────────────────────────────────────
+// ─── VINK Central API Client ───────────────────────────────────────────────────
 // Single source of truth for all backend calls. Falls back to demo mode when
 // the server is unreachable.
 
 const BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
-const TOKEN_KEY = "vms_jwt";
-const DEMO_KEY  = "vms_demo";
+const TOKEN_KEY = "vink_jwt";
+const DEMO_KEY  = "vink_demo";
 
 // ─── Auth token management ────────────────────────────────────────────────────
 export function getToken(): string | null  { return localStorage.getItem(TOKEN_KEY); }
@@ -14,7 +14,7 @@ export function isDemoMode(): boolean      { return localStorage.getItem(DEMO_KE
 export function setDemoMode(on: boolean)   { on ? localStorage.setItem(DEMO_KEY, "1") : localStorage.removeItem(DEMO_KEY); }
 
 // ─── Logged-in user (stored after login) ─────────────────────────────────────
-const SESSION_KEY = "vms_session";
+const SESSION_KEY = "vink_session";
 export function getSession(): { id: string; username: string; name: string; email: string; role: string } | null {
   try { return JSON.parse(localStorage.getItem(SESSION_KEY) ?? "null"); } catch { return null; }
 }
@@ -162,7 +162,7 @@ export const publicApi = {
 // ─── Demo mode fallbacks (used when server is down) ──────────────────────────
 export const demoLogin = (dashboardId: string) => {
   setDemoMode(true);
-  setSession({ id: "demo-001", username: "demo", name: "Demo User", email: "demo@vink.com", role: "customer", dashboard: dashboardId });
+  setSession({ id: "demo-001", username: "demo", name: "Demo User", email: "demo@vink.co.za", role: "customer", dashboard: dashboardId });
 };
 
 // ─── Notify helpers (used with Sonner toast) ──────────────────────────────────

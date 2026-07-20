@@ -137,7 +137,7 @@ function SelfieCapture({ onDone }: { onDone: () => void }) {
 }
 
 // ── Main component ─────────────────────────────────────────────────────────────
-export function VMSSIMApplicationViewer({ isOpen, onClose }: Props) {
+export function VINKSIMApplicationViewer({ isOpen, onClose }: Props) {
   const [step, setStep] = useState(1);
   const [fingerprintDone, setFingerprintDone] = useState(false);
   const [selfieDone, setSelfieDone] = useState(false);
@@ -189,7 +189,7 @@ export function VMSSIMApplicationViewer({ isOpen, onClose }: Props) {
       </div>
 
       <AppHero
-        tag="VMS MVNO · Cell C Network · ICASA Licensed"
+        tag="VINK MVNO · Cell C Network · ICASA Licensed"
         title="Get Your Vink SIM Card"
         subtitle="Stay connected on South Africa's fastest network. Choose your plan, verify your identity, and get your SIM activated in minutes."
         gradient="linear-gradient(135deg,#1a0533 0%,#3B2D9E 45%,#6B5ED7 100%)"
@@ -396,7 +396,7 @@ export function VMSSIMApplicationViewer({ isOpen, onClose }: Props) {
               ))}
             </div>
             <p className="text-xs text-gray-500 leading-relaxed mt-2">
-              By activating your Vink SIM you confirm that all information provided is accurate and that you consent to RICA registration, VMS&apos;s Privacy Policy, and the Cell C network Terms of Service.
+              By activating your Vink SIM you confirm that all information provided is accurate and that you consent to RICA registration, VINK&apos;s Privacy Policy, and the Cell C network Terms of Service.
             </p>
             <button
               onClick={async () => {
@@ -437,7 +437,7 @@ export function VMSSIMApplicationViewer({ isOpen, onClose }: Props) {
               </div>
             </div>
             <button onClick={onClose} className="w-full py-3.5 rounded-xl text-sm font-bold text-white shadow-lg" style={{ background: `linear-gradient(135deg,${CP},#9585EA)` }}>
-              Back to VMS
+              Back to VINK
             </button>
           </div>
         )}

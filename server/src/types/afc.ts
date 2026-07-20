@@ -65,7 +65,7 @@ export interface FareTap {
   routeId: string;
   routeName: string;
   fareAmount: number;
-  processingFee: number;       // R0.50 — VMS fee
+  processingFee: number;       // R0.50 — VINK fee
   driverCredit: number;        // 85% of fare
   associationCredit: number;   // 5% of fare
   communityCredit: number;     // 5% → neighbourhood watch
@@ -116,7 +116,7 @@ export interface AFCKpi {
   avgProcessingMs: number;
   wifiSessionsToday: number;
   approvalRate: number;       // percentage
-  vmsInterchangeToday: number; // R0.50 × total taps
+  vinkInterchangeToday: number; // R0.50 × total taps
   driverPayoutsToday: number;
   communityFundToday: number;
 }

@@ -125,8 +125,8 @@ export function VehicleTrackingApplicationViewer({ isOpen, onClose }: Props) {
   const [installDate, setInstallDate] = useState("");
   const [fleetSize, setFleetSize] = useState("1");
 
-  const [deviceId] = useState(`VMS-TRK-${new Date().getFullYear()}-${Math.floor(Math.random() * 900000 + 100000)}`);
-  const [refNo] = useState(`VMS-VT-${new Date().getFullYear()}-${Math.floor(Math.random() * 90000 + 10000)}`);
+  const [deviceId] = useState(`VINK-TRK-${new Date().getFullYear()}-${Math.floor(Math.random() * 900000 + 100000)}`);
+  const [refNo] = useState(`VINK-VT-${new Date().getFullYear()}-${Math.floor(Math.random() * 90000 + 10000)}`);
 
   if (!isOpen) return null;
 
@@ -155,7 +155,7 @@ export function VehicleTrackingApplicationViewer({ isOpen, onClose }: Props) {
       </div>
 
       <AppHero
-        tag="VMS Vehicle Tracking · SADC Coverage · POPIA Compliant"
+        tag="VINK Vehicle Tracking · SADC Coverage · POPIA Compliant"
         title="Vehicle Tracking Application"
         subtitle="Real-time GPS tracking, geofencing, and theft recovery across Southern Africa. Protect your vehicle or fleet today."
         gradient="linear-gradient(135deg,#0F172A 0%,#1E3A5F 40%,#2563EB 100%)"
@@ -170,7 +170,7 @@ export function VehicleTrackingApplicationViewer({ isOpen, onClose }: Props) {
               <Field label="First name(s)" required><input className={inputCls} placeholder="e.g. Vincent" value={form.firstName} onChange={setF("firstName")} /></Field>
               <Field label="Surname" required><input className={inputCls} placeholder="e.g. Kafula" value={form.lastName} onChange={setF("lastName")} /></Field>
               <Field label="SA ID or passport number" required><input className={inputCls} placeholder="13-digit ID" value={form.idNumber} onChange={setF("idNumber")} /></Field>
-              <Field label="Company name (if applicable)"><input className={inputCls} placeholder="VMS Transport (Pty) Ltd" value={form.company} onChange={setF("company")} /></Field>
+              <Field label="Company name (if applicable)"><input className={inputCls} placeholder="VINK Transport (Pty) Ltd" value={form.company} onChange={setF("company")} /></Field>
               <Field label="Mobile number" required><input className={inputCls} placeholder="+27 ..." value={form.phone} onChange={setF("phone")} /></Field>
               <Field label="Email address" required><input type="email" className={inputCls} placeholder="email@domain.com" value={form.email} onChange={setF("email")} /></Field>
               <Field label="Residential / business address" required full><input className={inputCls} placeholder="Street, suburb, city, province" value={form.address} onChange={setF("address")} /></Field>
@@ -329,7 +329,7 @@ export function VehicleTrackingApplicationViewer({ isOpen, onClose }: Props) {
               ))}
             </div>
             <p className="text-xs text-gray-500 leading-relaxed mt-2">
-              By submitting you consent to VMS installing a GPS tracking device in your vehicle and processing your location data in accordance with POPIA and VMS&apos;s Privacy Policy.
+              By submitting you consent to VINK installing a GPS tracking device in your vehicle and processing your location data in accordance with POPIA and VINK&apos;s Privacy Policy.
             </p>
             <button
               onClick={async () => {
@@ -365,13 +365,13 @@ export function VehicleTrackingApplicationViewer({ isOpen, onClose }: Props) {
                 </div>
               </div>
               <div className="rounded-xl p-4 bg-gray-50 space-y-2 text-sm text-gray-600 text-left">
-                <p>📞 A VMS technician will call <strong>{form.phone}</strong> within 24 hours to book your installation.</p>
+                <p>📞 A VINK technician will call <strong>{form.phone}</strong> within 24 hours to book your installation.</p>
                 <p>⏱️ Installation takes approximately 2 hours at your location or our Cape Town service centre.</p>
-                <p>📱 Once installed, track your vehicle live on the <strong>VMS app</strong> or VMS dashboard.</p>
+                <p>📱 Once installed, track your vehicle live on the <strong>VINK app</strong> or VINK dashboard.</p>
               </div>
             </div>
             <button onClick={onClose} className="w-full py-3.5 rounded-xl text-sm font-bold text-white shadow-lg" style={{ background: "linear-gradient(135deg,#1E3A5F,#2563EB)" }}>
-              Back to VMS
+              Back to VINK
             </button>
           </div>
         )}

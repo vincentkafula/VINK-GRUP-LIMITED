@@ -51,7 +51,7 @@ const fmtM = (n: number) => n >= 1_000_000 ? `${(n/1_000_000).toFixed(1)}M` : n 
 
 // ─── Demo data ────────────────────────────────────────────────────────────────
 const ACCOUNT = {
-  referenceNumber: "VMS-GBL-2024-00001", customerName: "Vincent Kafula",
+  referenceNumber: "VINK-GBL-2024-00001", customerName: "Vincent Kafula",
   baseCurrency: "ZAR", tier: "corporate", kycStatus: "approved", amlFlag: "clear",
   balances: { ZAR: 847_250.00, USD: 45_820.00, EUR: 38_450.00, ZMW: 124_800.00, CNY: 298_450.00 },
 };
@@ -87,10 +87,10 @@ const TRANSACTIONS = [
   { id: "t2",  dir: "debit",  desc: "Amazon DE Order",        merchant: "Amazon DE",    cat: "E-commerce",  country: "EU", local: "€ 89.99",     billed: "R 1,794.22",  channel: "card_online", domestic: true,  time: "12:18" },
   { id: "t3",  dir: "debit",  desc: "AWS Cloud Services",     merchant: "Amazon Web Services", cat: "Tech", country: "US", local: "$ 842.00",   billed: "$ 842.00",    channel: "card_pos",    domestic: true,  time: "09:44" },
   { id: "t4",  dir: "credit", desc: "P2P from Nomsa Zulu",    merchant: "Nomsa Zulu",   cat: "P2P",         country: "ZA", local: "R 5,000.00",  billed: "R 5,000.00",  channel: "p2p",         domestic: true,  time: "08:30" },
-  { id: "t5",  dir: "credit", desc: "EFT Deposit — Salary",   merchant: "VMS Payroll",  cat: "Deposit",     country: "ZA", local: "R 85,000.00", billed: "R 85,000.00", channel: "deposit",     domestic: true,  time: "Yesterday" },
+  { id: "t5",  dir: "credit", desc: "EFT Deposit — Salary",   merchant: "VINK Payroll",  cat: "Deposit",     country: "ZA", local: "R 85,000.00", billed: "R 85,000.00", channel: "deposit",     domestic: true,  time: "Yesterday" },
   { id: "t6",  dir: "debit",  desc: "ATM Standard Bank CPT",  merchant: "Standard Bank", cat: "ATM",        country: "ZA", local: "R 2,000.00",  billed: "R 2,000.00",  channel: "atm",         domestic: true,  time: "Yesterday" },
   { id: "t7",  dir: "debit",  desc: "Netflix Subscription",   merchant: "Netflix",      cat: "Entertainment",country: "US",local: "$ 15.49",     billed: "R 284.24",    channel: "card_online", domestic: false, time: "2 days ago" },
-  { id: "t8",  dir: "credit", desc: "FX Conversion ZAR→USD",  merchant: "VMS FX Engine",cat: "FX",          country: "US", local: "R 50,000",    billed: "$ 2,724.25",  channel: "fx",          domestic: true,  time: "2 days ago" },
+  { id: "t8",  dir: "credit", desc: "FX Conversion ZAR→USD",  merchant: "VINK FX Engine",cat: "FX",          country: "US", local: "R 50,000",    billed: "$ 2,724.25",  channel: "fx",          domestic: true,  time: "2 days ago" },
 ];
 
 const KPI = {
@@ -459,7 +459,7 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
             <div className="space-y-5 max-w-5xl">
               <SectionTitle><Globe className="w-4 h-4" style={{ color: P }} />Nostro (Mirror) Accounts — 5 Countries</SectionTitle>
               <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 text-sm text-purple-800 leading-relaxed">
-                <strong>How it works:</strong> VMS holds a registered bank account in each country. When a customer's card is used at a merchant, the transaction is routed domestically against the local nostro account — eliminating international cross-border fees entirely. The customer's master balance is debited simultaneously via the internal FX engine.
+                <strong>How it works:</strong> VINK holds a registered bank account in each country. When a customer's card is used at a merchant, the transaction is routed domestically against the local nostro account — eliminating international cross-border fees entirely. The customer's master balance is debited simultaneously via the internal FX engine.
               </div>
               <div className="space-y-4">
                 {NOSTRO.map(n => {
@@ -691,7 +691,7 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
                 })}
               </div>
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800">
-                <strong>Local-fee innovation:</strong> Each card's BIN is registered in its assigned country (ZA, EU, US, etc.). POS terminals recognise it as domestic, eliminating international cross-border surcharges. VMS's internal FX engine handles multi-currency conversion before it ever touches the card network.
+                <strong>Local-fee innovation:</strong> Each card's BIN is registered in its assigned country (ZA, EU, US, etc.). POS terminals recognise it as domestic, eliminating international cross-border surcharges. VINK's internal FX engine handles multi-currency conversion before it ever touches the card network.
               </div>
             </div>
           )}
@@ -756,7 +756,7 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
                     <div className="grid sm:grid-cols-3 gap-3">
                       <div className="sm:col-span-2">
                         <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wide block mb-1">Recipient reference number</label>
-                        <input className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-purple-400" placeholder="VMS-GBL-2024-XXXXX" value={p2pRef} onChange={e => setP2pRef(e.target.value)} />
+                        <input className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-purple-400" placeholder="VINK-GBL-2024-XXXXX" value={p2pRef} onChange={e => setP2pRef(e.target.value)} />
                       </div>
                       <div>
                         <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wide block mb-1">Currency</label>
@@ -962,7 +962,7 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs">
                     <thead><tr className="border-b border-gray-100">
-                      {["Feature", "VMS Global", "Revolut", "Wise", "Traditional Bank"].map(h => (
+                      {["Feature", "VINK Global", "Revolut", "Wise", "Traditional Bank"].map(h => (
                         <th key={h} className="text-left py-2 px-3 font-bold text-gray-500 uppercase tracking-wide">{h}</th>
                       ))}
                     </tr></thead>

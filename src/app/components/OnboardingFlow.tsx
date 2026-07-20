@@ -26,7 +26,7 @@ const PRODUCTS = [
   { id: "everyday", label: "Everyday Account", desc: "Zero-fee transactional account with free debit card", icon: "💳", popular: true },
   { id: "savings", label: "Savings Account", desc: "Earn 6.5% p.a. interest on your savings", icon: "🏦", popular: false },
   { id: "invest", label: "Investment Account", desc: "Unit trusts, fixed deposits, and tax-free savings", icon: "📈", popular: false },
-  { id: "sim", label: "VMS SIM Card", desc: "One SIM for South Africa and 80+ countries", icon: "📱", popular: false },
+  { id: "sim", label: "VINK SIM Card", desc: "One SIM for South Africa and 80+ countries", icon: "📱", popular: false },
 ];
 
 export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
@@ -109,7 +109,7 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
             <div className="text-center space-y-5">
               <div className="text-6xl">👋</div>
               <div>
-                <h1 className="text-2xl font-black text-white">Welcome to VMS Banking</h1>
+                <h1 className="text-2xl font-black text-white">Welcome to VINK Banking</h1>
                 <p className="text-white/70 mt-2 text-sm leading-relaxed">
                   South Africa's most complete financial super-app. Let's set up your account in under 3 minutes.
                 </p>
@@ -179,7 +179,7 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
               </div>
               <div className="space-y-3">
                 {[
-                  { key: "terms", label: "I agree to the VMS Terms & Conditions and Privacy Policy", state: acceptedTerms, set: setAcceptedTerms },
+                  { key: "terms", label: "I agree to the VINK Terms & Conditions and Privacy Policy", state: acceptedTerms, set: setAcceptedTerms },
                   { key: "popia", label: "I consent to my personal information being processed in accordance with POPIA", state: acceptedPopia, set: setAcceptedPopia },
                 ].map(item => (
                   <label key={item.key} className="flex items-start gap-3 cursor-pointer">
@@ -272,7 +272,7 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
               <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mx-auto" style={{ background: `linear-gradient(135deg,${P},#9585EA)` }}>🎉</div>
               <div>
                 <h2 className="text-xl font-black text-gray-900">You're all set, {firstName || "welcome"}!</h2>
-                <p className="text-sm text-gray-500 mt-2">Your VMS account is being set up. You'll receive an email with your account details shortly.</p>
+                <p className="text-sm text-gray-500 mt-2">Your VINK account is being set up. You'll receive an email with your account details shortly.</p>
               </div>
               <div className="grid grid-cols-2 gap-3 text-left">
                 {[

@@ -23,8 +23,8 @@ export function BranchLocatorViewer({ isOpen, onClose }: Props) {
 
       <div className="py-12 px-6 text-white" style={{ background: `linear-gradient(135deg,${P},#7B4DB5)` }}>
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-black mb-2">Find a VMS Service Point</h1>
-          <p className="text-white/70 text-sm">VMS is a digital-first bank. Full banking services are available at our Head Office and through our national agent network.</p>
+          <h1 className="text-3xl font-black mb-2">Find a VINK Service Point</h1>
+          <p className="text-white/70 text-sm">VINK is a digital-first bank. Full banking services are available at our Head Office and through our national agent network.</p>
         </div>
       </div>
 
@@ -51,7 +51,7 @@ export function BranchLocatorViewer({ isOpen, onClose }: Props) {
               <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white flex-shrink-0"
                 style={{ background: P }}><MapPin className="w-6 h-6" /></div>
               <div className="flex-1">
-                <p className="font-black text-gray-900 text-lg">VMS Head Office</p>
+                <p className="font-black text-gray-900 text-lg">VINK Head Office</p>
                 <p className="text-gray-600 text-sm mt-1">8 Rose Street, Cape Town CBD<br />State House Building, Cape Town, 8001</p>
                 <div className="flex flex-wrap gap-4 mt-4">
                   <div className="flex items-center gap-2">

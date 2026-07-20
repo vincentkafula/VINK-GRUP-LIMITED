@@ -13,10 +13,10 @@ const VALUES = [
 ];
 
 const MILESTONES = [
-  { year: "2018", text: "VMS incorporated (Reg: 2018/079316/07); AFC payment system developed." },
+  { year: "2018", text: "VINK incorporated (Reg: 2018/079316/07); AFC payment system developed." },
   { year: "2019", text: "Website launched; first taxi association partnerships established." },
   { year: "2020", text: "Driver Wallet, Smart Pay Card, and Marshall Wallet products launched." },
-  { year: "2021", text: "VMS MVNO agreement with Cell C; Nedbank API integration completed." },
+  { year: "2021", text: "VINK MVNO agreement with Cell C; Nedbank API integration completed." },
   { year: "2022", text: "Business plan submitted for R4.5 billion funding round." },
   { year: "Now",  text: "Expansion to gyms, fuel stations, and Vink Online Store underway." },
 ];
@@ -24,7 +24,7 @@ const MILESTONES = [
 const P = "#5B2D8E";
 const GOLD = "#F5A623";
 
-export function AboutVMSViewer({ isOpen, onClose }: Props) {
+export function AboutVINKViewer({ isOpen, onClose }: Props) {
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-white">
@@ -71,10 +71,10 @@ export function AboutVMSViewer({ isOpen, onClose }: Props) {
               Vink Group (Pty) Ltd. was founded in 2018 in Cape Town by <strong>Vincent Kafula</strong> — a Cape Town native with deep roots in the public transport industry. Vincent saw a gap that no bank or fintech had filled: a payment system fast enough for the taxi industry, where 15 million South Africans board a minibus every single morning. He built one.
             </p>
             <p className="text-gray-700 leading-relaxed mb-4">
-              From a single idea in the Cape Town CBD to a fully developed AFC payment platform, VMS was born from the belief that financial tools should serve everyone — not just those with traditional banking histories.
+              From a single idea in the Cape Town CBD to a fully developed AFC payment platform, VINK was born from the belief that financial tools should serve everyone — not just those with traditional banking histories.
             </p>
             <p className="text-gray-600 leading-relaxed">
-              VMS charges just R0.50 per taxi transaction — the lowest processing fee in the industry. Of that: 10% goes to the financing bank, 5% to the driver&apos;s taxi association, 5% to neighbourhood watch in the area served, and 10% is retained to seed a future VMS community bank specifically designed for taxi drivers.
+              VINK charges just R0.50 per taxi transaction — the lowest processing fee in the industry. Of that: 10% goes to the financing bank, 5% to the driver&apos;s taxi association, 5% to neighbourhood watch in the area served, and 10% is retained to seed a future VINK community bank specifically designed for taxi drivers.
             </p>
           </div>
         </section>
@@ -117,7 +117,7 @@ export function AboutVMSViewer({ isOpen, onClose }: Props) {
         <section className="rounded-2xl p-6" style={{ background: "#F3F0FB" }}>
           <h2 className="text-lg font-black mb-3" style={{ color: P }}>BBBEE &amp; Ownership</h2>
           <p className="text-gray-700 text-sm leading-relaxed">
-            VMS is a <strong>100% black-owned business</strong>. The founder, Vincent Kafula, holds 80% of the shares. The remaining shares are held by South African co-shareholders and beneficiaries — including a 10% stake held in trust for a minor beneficiary, reflecting the founder&apos;s commitment to generational wealth building.
+            VINK is a <strong>100% black-owned business</strong>. The founder, Vincent Kafula, holds 80% of the shares. The remaining shares are held by South African co-shareholders and beneficiaries — including a 10% stake held in trust for a minor beneficiary, reflecting the founder&apos;s commitment to generational wealth building.
           </p>
         </section>
 

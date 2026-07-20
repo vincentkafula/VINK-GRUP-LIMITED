@@ -79,11 +79,11 @@ const VinkDriverApp               = lazy(() => import("./components/apps/VinkDri
 const VinkPassengerApp            = lazy(() => import("./components/apps/VinkPassengerApp").then(m => ({ default: m.VinkPassengerApp })));
 const VinkMobileApp               = lazy(() => import("./components/apps/VinkMobileApp").then(m => ({ default: m.VinkMobileApp })));
 const AppLauncher                 = lazy(() => import("./components/apps/AppLauncher").then(m => ({ default: m.AppLauncher })));
-const AboutVMSViewer              = lazy(() => import("./components/footerPages/AboutVMSViewer").then(m => ({ default: m.AboutVMSViewer })));
+const AboutVINKViewer              = lazy(() => import("./components/footerPages/AboutVINKViewer").then(m => ({ default: m.AboutVINKViewer })));
 const CareersViewer               = lazy(() => import("./components/footerPages/CareersViewer").then(m => ({ default: m.CareersViewer })));
 const NewsViewer                  = lazy(() => import("./components/footerPages/NewsViewer").then(m => ({ default: m.NewsViewer })));
 const ContactUsViewer             = lazy(() => import("./components/footerPages/ContactUsViewer").then(m => ({ default: m.ContactUsViewer })));
-const SwitchToVMSViewer           = lazy(() => import("./components/footerPages/SwitchToVMSViewer").then(m => ({ default: m.SwitchToVMSViewer })));
+const SwitchToVINKViewer           = lazy(() => import("./components/footerPages/SwitchToVINKViewer").then(m => ({ default: m.SwitchToVINKViewer })));
 const FiveHundredGlobalApplication = lazy(() => import("./components/FiveHundredGlobalApplication").then(m => ({ default: m.FiveHundredGlobalApplication })));
 const TaxiAssociationsViewer       = lazy(() => import("./components/TaxiAssociationsViewer").then(m => ({ default: m.TaxiAssociationsViewer })));
 const ManagementHub                = lazy(() => import("./components/ManagementHub").then(m => ({ default: m.ManagementHub })));
@@ -174,11 +174,11 @@ export default function App() {
   const [showInvestorRelations, setShowInvestorRelations]   = useState(false);
 
   // ── Footer pages ──────────────────────────────────────────────────────────
-  const [showAboutVMS, setShowAboutVMS]                     = useState(false);
+  const [showAboutVINK, setShowAboutVINK]                     = useState(false);
   const [showCareers, setShowCareers]                       = useState(false);
   const [showNews, setShowNews]                             = useState(false);
   const [showContactUs, setShowContactUs]                   = useState(false);
-  const [showSwitchToVMS, setShowSwitchToVMS]               = useState(false);
+  const [showSwitchToVINK, setShowSwitchToVINK]               = useState(false);
   const [show500App, setShow500App]                         = useState(false);
 
   // ── Login state ───────────────────────────────────────────────────────────
@@ -269,7 +269,7 @@ export default function App() {
         // Connectivity
         case "connect":
         case "mobile":
-        case "vmstv":        mount("mobileNetwork");    setShowMobileNetwork(true);    break;
+        case "vinktv":        mount("mobileNetwork");    setShowMobileNetwork(true);    break;
         // Commerce
         case "marketplace":  mount("marketplace");      setShowMarketplace(true);      break;
         case "buy":
@@ -340,12 +340,12 @@ export default function App() {
 
   const handleFooterLink = (label: string) => {
     startTransition(() => {
-      if (label === "About VMS")                                 open("aboutVMS",          () => setShowAboutVMS(true));
+      if (label === "About VINK")                                 open("aboutVINK",          () => setShowAboutVINK(true));
       if (label === "Investor Relations")                        open("investorRelations",  () => setShowInvestorRelations(true));
       if (label === "Careers")                                   open("careers",            () => setShowCareers(true));
       if (label === "News")                                      open("news",               () => setShowNews(true));
       if (label === "Contact Us")                                open("contactUs",          () => setShowContactUs(true));
-      if (label === "Switch to VMS")                             open("switchToVMS",        () => setShowSwitchToVMS(true));
+      if (label === "Switch to VINK")                             open("switchToVINK",        () => setShowSwitchToVINK(true));
       if (label === "500 Global Application")                    open("500app",             () => setShow500App(true));
       if (label === "Browse Apps")                               startTransition(() => { mount("appLauncher"); setShowAppLauncher(true); });
       if (label === "Investor Relations")                        open("investorRelations",  () => setShowInvestorRelations(true));
@@ -498,11 +498,11 @@ export default function App() {
       }} /></Suspense>}
 
       {/* Footer pages */}
-      {has("aboutVMS")           && <Suspense fallback={null}><AboutVMSViewer       isOpen={showAboutVMS}           onClose={() => setShowAboutVMS(false)} /></Suspense>}
+      {has("aboutVINK")           && <Suspense fallback={null}><AboutVINKViewer       isOpen={showAboutVINK}           onClose={() => setShowAboutVINK(false)} /></Suspense>}
       {has("careers")            && <Suspense fallback={null}><CareersViewer        isOpen={showCareers}            onClose={() => setShowCareers(false)} /></Suspense>}
       {has("news")               && <Suspense fallback={null}><NewsViewer           isOpen={showNews}               onClose={() => setShowNews(false)} /></Suspense>}
       {has("contactUs")          && <Suspense fallback={null}><ContactUsViewer            isOpen={showContactUs}  onClose={() => setShowContactUs(false)} /></Suspense>}
-      {has("switchToVMS")        && <Suspense fallback={null}><SwitchToVMSViewer          isOpen={showSwitchToVMS} onClose={() => setShowSwitchToVMS(false)} /></Suspense>}
+      {has("switchToVINK")        && <Suspense fallback={null}><SwitchToVINKViewer          isOpen={showSwitchToVINK} onClose={() => setShowSwitchToVINK(false)} /></Suspense>}
       {has("managementHub")      && <Suspense fallback={null}><ManagementHub              isOpen={showManagementHub}       onClose={() => setShowManagementHub(false)} /></Suspense>}
       {has("taxiAssociations")   && <Suspense fallback={null}><TaxiAssociationsViewer       isOpen={showTaxiAssociations} onClose={() => setShowTaxiAssociations(false)} /></Suspense>}
       {has("500app")             && <Suspense fallback={null}><FiveHundredGlobalApplication isOpen={show500App}          onClose={() => setShow500App(false)} /></Suspense>}

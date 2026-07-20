@@ -63,9 +63,9 @@ export function UserProfileViewer({ isOpen, onClose, onSignOut }: Props) {
     tier: "Premium",
     kycStatus: "partial",
     memberSince: "March 2024",
-    referralCode: "VMS-VKAFULA8",
+    referralCode: "VINK-VKAFULA8",
     vinkPoints: 14820,
-    accountNo: "VMS012847291",
+    accountNo: "VINK012847291",
   });
 
   if (!isOpen) return null;
@@ -240,7 +240,7 @@ export function UserProfileViewer({ isOpen, onClose, onSignOut }: Props) {
                   <label className="text-xs font-semibold text-gray-500 block mb-1">Primary Account Number</label>
                   <div className="flex items-center gap-2">
                     <span className="font-mono text-sm text-gray-800">
-                      {showAccountNo ? profile.accountNo : "VMS••••••••••"}
+                      {showAccountNo ? profile.accountNo : "VINK••••••••••"}
                     </span>
                     <button onClick={() => setShowAccountNo(v => !v)} className="text-gray-400 hover:text-gray-600 ml-auto">
                       {showAccountNo ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}

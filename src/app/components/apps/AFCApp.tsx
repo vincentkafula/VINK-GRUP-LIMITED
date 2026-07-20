@@ -11,7 +11,7 @@
  *
  * Speed guarantee:
  * • OFFLINE path (fares < R500): 280–520ms — no network needed
- * • ONLINE fast path (VMS internal): 600–900ms
+ * • ONLINE fast path (VINK internal): 600–900ms
  * • ONLINE Visa/MC path: 1.2–2.8s (fallback only)
  *
  * Connectivity: LTE / WCDMA / GPRS · WiFi · Bluetooth · GPS built-in
@@ -93,8 +93,8 @@ const OFFLINE_STAGES = [
 const ONLINE_STAGES = [
   { label: "ISO 14443 A/B read",    ms: 55,  desc: "T-T20 NFC field reads card chip data" },
   { label: "SAM ARQC generate",     ms: 80,  desc: "SAM slot 1: online cryptogram generated" },
-  { label: "LTE auth request",      ms: 45,  desc: "ISO 8583 → VMS via LTE (persistent WS)" },
-  { label: "Balance check",         ms: 120, desc: "Real-time balance verified at VMS server" },
+  { label: "LTE auth request",      ms: 45,  desc: "ISO 8583 → VINK via LTE (persistent WS)" },
+  { label: "Balance check",         ms: 120, desc: "Real-time balance verified at VINK server" },
   { label: "ARPC response",         ms: 30,  desc: "Auth code extracted, ARPC verified" },
   { label: "APPROVED",              ms: 15,  desc: "Fare deducted · LED green · SMS receipt" },
 ];
@@ -195,7 +195,7 @@ function RouteSelector({ selectedRoute, routeSearch, setRouteSearch, routeZoneFi
 }
 
 // Load/save vehicle profile from device localStorage
-const PROFILE_KEY = "vms_afc_vehicle_profile";
+const PROFILE_KEY = "vink_afc_vehicle_profile";
 function loadProfile(): VehicleProfile | null {
   try { const s = localStorage.getItem(PROFILE_KEY); return s ? JSON.parse(s) : null; } catch { return null; }
 }
@@ -565,7 +565,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
 
                 {!processing && !result && (
                   <p className="text-white/30 text-[10px] text-center">
-                    {isOfflinePath ? "Offline auth — no network needed · Auto-syncs every 30 min" : "Online fast path · Direct VMS connection"}
+                    {isOfflinePath ? "Offline auth — no network needed · Auto-syncs every 30 min" : "Online fast path · Direct VINK connection"}
                   </p>
                 )}
               </div>
@@ -594,7 +594,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
                   <p className="text-white/60 text-[10px] font-bold uppercase tracking-wide mb-3">Authorization paths today</p>
                   {[
                     { path: "OFFLINE",       pct: 82, ms: "280–520ms", desc: "EMV offline crypto · No network · Batch sync", color: "#10B981" },
-                    { path: "ONLINE FAST",   pct: 15, ms: "600–900ms", desc: "VMS WebSocket · Internal auth", color: "#3B82F6" },
+                    { path: "ONLINE FAST",   pct: 15, ms: "600–900ms", desc: "VINK WebSocket · Internal auth", color: "#3B82F6" },
                     { path: "VISA/MC NET",   pct: 3,  ms: "1.2–2.8s",  desc: "Full network auth · Fallback path", color: "#F59E0B" },
                   ].map((p, i) => (
                     <div key={i} className="mb-3">
@@ -658,7 +658,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
                   <p className="text-white/50 text-[10px] mb-2">Pending batch sync ({pendingBatch} txns)</p>
                   <button onClick={() => { setPendingBatch(0); }}
                     className="w-full py-2 rounded-lg text-xs font-bold text-white transition-all" style={{ background: P }}>
-                    Sync now to VMS servers
+                    Sync now to VINK servers
                   </button>
                 </div>
               </div>
@@ -1254,7 +1254,7 @@ function SetupScreen({ initial, onSave, onCancel, P, GOLD }: {
             <p className="text-white font-black text-sm">Vehicle Documents</p>
             <div className="rounded-xl p-3 flex items-start gap-2 mb-1" style={{ background: "#1E3A5F" }}>
               <Shield className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-              <p className="text-blue-300 text-[10px] leading-relaxed">Upload photos of each document using the T-T20's dual-lens camera. Numbers are recorded for VMS compliance.</p>
+              <p className="text-blue-300 text-[10px] leading-relaxed">Upload photos of each document using the T-T20's dual-lens camera. Numbers are recorded for VINK compliance.</p>
             </div>
             <F label="Registration Certificate Number" k="registrationCertNumber" placeholder="e.g. ZA/REG/2022/001234" />
             <F label="Reg. Cert. Expiry Date" k="registrationCertExpiry" type="date" placeholder="" />
@@ -1275,7 +1275,7 @@ function SetupScreen({ initial, onSave, onCancel, P, GOLD }: {
             <F label="Last Inspection Date" k="lastInspectionDate" type="date" placeholder="" />
             <div className="rounded-xl p-3" style={{ background: "#F59E0B15", border: "1px solid #F59E0B30" }}>
               <p className="text-yellow-400 font-bold text-[11px]">⚠ Roadworthy Reminder</p>
-              <p className="text-yellow-400/60 text-[10px] mt-0.5 leading-relaxed">VMS will alert this device 30 days before roadworthy expiry. Operating with an expired certificate will lock fare collection.</p>
+              <p className="text-yellow-400/60 text-[10px] mt-0.5 leading-relaxed">VINK will alert this device 30 days before roadworthy expiry. Operating with an expired certificate will lock fare collection.</p>
             </div>
           </>
         )}

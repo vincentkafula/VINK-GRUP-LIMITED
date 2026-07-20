@@ -128,9 +128,9 @@ const BANK_USERS = [
   { id: "bu-005", role: "investor",  firstName: "Patricia",  lastName: "Osei",     email: "patricia@example.com",  phone: "+27831000001", kycStatus: "approved",  amlStatus: "clear",        accountCount: 2, cardCount: 2, totalBalance: 480_000.00,createdAt: ago(50000) },
   { id: "bu-006", role: "investor",  firstName: "David",     lastName: "Nkosi",    email: "david@example.com",     phone: "+27831000002", kycStatus: "in_review", amlStatus: "under_review", accountCount: 2, cardCount: 1, totalBalance: 220_000.00,createdAt: ago(40000) },
   { id: "bu-007", role: "owner",     firstName: "Vincent",   lastName: "Karimi",   email: "vincent@example.com",   phone: "+27841000001", kycStatus: "approved",  amlStatus: "clear",        accountCount: 3, cardCount: 3, totalBalance: 1_240_000, createdAt: ago(60000) },
-  { id: "bu-008", role: "admin",     firstName: "Sarah",     lastName: "Williams", email: "admin@vink.com",         phone: "+27851000001", kycStatus: "approved",  amlStatus: "clear",        accountCount: 1, cardCount: 0, totalBalance: 0,          createdAt: ago(43800) },
-  { id: "bu-009", role: "compliance",firstName: "Nadia",     lastName: "Petersen", email: "compliance@vink.com",   phone: "+27851000002", kycStatus: "approved",  amlStatus: "clear",        accountCount: 1, cardCount: 0, totalBalance: 0,          createdAt: ago(43800) },
-  { id: "bu-010", role: "treasury",  firstName: "James",     lastName: "Molefe",   email: "treasury@vink.com",     phone: "+27851000003", kycStatus: "approved",  amlStatus: "clear",        accountCount: 1, cardCount: 0, totalBalance: 0,          createdAt: ago(43800) },
+  { id: "bu-008", role: "admin",     firstName: "Sarah",     lastName: "Williams", email: "admin@vink.co.za",         phone: "+27851000001", kycStatus: "approved",  amlStatus: "clear",        accountCount: 1, cardCount: 0, totalBalance: 0,          createdAt: ago(43800) },
+  { id: "bu-009", role: "compliance",firstName: "Nadia",     lastName: "Petersen", email: "compliance@vink.co.za",   phone: "+27851000002", kycStatus: "approved",  amlStatus: "clear",        accountCount: 1, cardCount: 0, totalBalance: 0,          createdAt: ago(43800) },
+  { id: "bu-010", role: "treasury",  firstName: "James",     lastName: "Molefe",   email: "treasury@vink.co.za",     phone: "+27851000003", kycStatus: "approved",  amlStatus: "clear",        accountCount: 1, cardCount: 0, totalBalance: 0,          createdAt: ago(43800) },
   { id: "bu-011", role: "passenger", firstName: "Amahle",    lastName: "Ngcobo",   email: "amahle@example.com",    phone: "+27821000003", kycStatus: "pending",   amlStatus: "clear",        accountCount: 1, cardCount: 0, totalBalance: 3_100.00,  createdAt: ago(5000) },
   { id: "bu-012", role: "driver",    firstName: "Farai",     lastName: "Moyo",     email: "farai@example.com",     phone: "+27811000003", kycStatus: "approved",  amlStatus: "clear",        accountCount: 1, cardCount: 1, totalBalance: 7_600.00,  createdAt: ago(15000) },
 ];
@@ -276,7 +276,7 @@ export const bankMock = {
       faceMatchScore: u.kycStatus === "approved" ? rand(88,99) : null,
       addressVerified: u.kycStatus === "approved",
       submittedAt: ago(rand(720,4320)), reviewedAt: u.kycStatus === "approved" ? ago(rand(60,720)) : null,
-      reviewedBy: u.kycStatus === "approved" ? "compliance@vink.com" : null,
+      reviewedBy: u.kycStatus === "approved" ? "compliance@vink.co.za" : null,
       rejectionReason: null, user: u,
     }));
     const filtered = params?.status ? recs.filter(r => r.status === params.status) : recs;

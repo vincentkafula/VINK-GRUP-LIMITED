@@ -1,4 +1,4 @@
-// ─── VMS Production Supabase Client ──────────────────────────────────────────
+// ─── VINK Production Supabase Client ──────────────────────────────────────────
 // Centralised Supabase access. Import from here — never instantiate elsewhere.
 
 import { createClient, SupabaseClient, Session, User } from "@supabase/supabase-js";
@@ -11,7 +11,7 @@ export const supabase: SupabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON
     autoRefreshToken:  true,
     persistSession:    true,
     detectSessionInUrl: true,
-    storageKey: "vms-auth-session",
+    storageKey: "vink-auth-session",
   },
   realtime: {
     params: { eventsPerSecond: 10 },

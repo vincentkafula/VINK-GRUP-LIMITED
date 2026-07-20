@@ -1,4 +1,4 @@
-# VMS Group — Production Deployment Handoff
+# VINK Group — Production Deployment Handoff
 ## Developer Reference — June 2026
 
 ---
@@ -19,7 +19,7 @@
 | `src/app/components/BankingDashboard.tsx` | Full personal banking dashboard | ✅ Complete |
 | `src/app/components/GlobalBankingDashboard.tsx` | Multi-currency, FX, nostro accounts, card issuance | ✅ Complete |
 | `src/app/components/FinancialReportsViewer.tsx` | Payslips, bank statements, income statement, balance sheet, cash flow | ✅ Complete |
-| `src/app/components/RevenueDashboard.tsx` | AFC revenue split per tap (investors, drivers, VMS, association) | ✅ Complete |
+| `src/app/components/RevenueDashboard.tsx` | AFC revenue split per tap (investors, drivers, VINK, association) | ✅ Complete |
 | `src/app/components/AFCManagementDashboard.tsx` | Fleet-wide tap management, batch reconciliation | ✅ Complete |
 | `src/app/components/AdminDashboard.tsx` | System authority monitoring dashboard | ✅ Complete |
 | `src/app/components/AdminApplicationsViewer.tsx` | Application review workflow | ✅ Complete |
@@ -48,14 +48,14 @@
 | `BusinessAccountApplicationViewer.tsx` | Business Account |
 | `CorporateLoanApplicationViewer.tsx` | Corporate Loan |
 | `ServiceApplicationViewer.tsx` | Investment / Insurance / Rewards / SIM |
-| `VMSSIMApplicationViewer.tsx` | VMS SIM Card |
+| `VINKSIMApplicationViewer.tsx` | VINK SIM Card |
 | `VehicleTrackingApplicationViewer.tsx` | Fleet Tracking |
 
 #### Banking Product Pages
 `PersonalAccountViewer`, `CreditCardViewer`, `LoanViewer`, `InvestViewer`, `InsureViewer`, `RewardsViewer`, `BusinessCreditCardViewer`, `BusinessLoansViewer`, `CorporateLoanViewer`, `CorporateSolutionsViewer`, `CorporateAccountViewer`, `CorporateApiViewer`, `CorporateEventsViewer`, `CorporateSocialResponsibilityViewer`
 
 #### Footer Pages
-`AboutVMSViewer`, `CareersViewer`, `NewsViewer`, `ContactUsViewer`, `SwitchToVMSViewer`, `SafetySecurityViewer`, `LegalComplianceViewer`, `SponsorshipViewer`, `WEFViewer`, `BranchLocatorViewer`
+`AboutVINKViewer`, `CareersViewer`, `NewsViewer`, `ContactUsViewer`, `SwitchToVINKViewer`, `SafetySecurityViewer`, `LegalComplianceViewer`, `SponsorshipViewer`, `WEFViewer`, `BranchLocatorViewer`
 
 ---
 
@@ -314,4 +314,4 @@ VITE_SENTRY_DSN=your-sentry-dsn
 
 ---
 
-*Built by Claude (Anthropic) for VMS Group — June 2026*
+*Built by Claude (Anthropic) for VINK Group — June 2026*

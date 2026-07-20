@@ -35,9 +35,9 @@ const TOOLS = [
 const SOCIAL = ["f", "𝕏", "in", "▶"];
 const SUB_NAV_ITEMS = ["Account", "Credit Card", "Loan", "Invest", "Insure", "Rewards"];
 const FOOTER_COLS = [
-  { title: "Who We Are",  links: ["About VMS", "Investor Relations", "Social Responsibility", "News", "Sponsorship", "Careers", "VMS at the World Economic Forum"] },
-  { title: "Our Sites",   links: ["Personal Banking", "Business Banking", "Wealth and Investment Management", "Corporate and Investment Banking", "VMS blog"] },
-  { title: "Support",     links: ["Contact Us", "Switch to VMS", "Business debit order switching", "Send your feedback"] },
+  { title: "Who We Are",  links: ["About VINK", "Investor Relations", "Social Responsibility", "News", "Sponsorship", "Careers", "VINK at the World Economic Forum"] },
+  { title: "Our Sites",   links: ["Personal Banking", "Business Banking", "Wealth and Investment Management", "Corporate and Investment Banking", "VINK blog"] },
+  { title: "Support",     links: ["Contact Us", "Switch to VINK", "Business debit order switching", "Send your feedback"] },
   { title: "Legal",       links: ["Legal and Compliance", "Terms of use", "Banking regulations", "Privacy Statement"] },
 ];
 
@@ -154,7 +154,7 @@ export function PricingViewer({ isOpen, onClose, activeSubNav, heroTitle, heroSu
       <nav style={{ background: "#fff", borderBottom: "1px solid #E4DFFE", position: "sticky", top: 0, zIndex: 100 }}>
         {/* Top row */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 48px", height: 64, maxWidth: 1280, margin: "0 auto" }}>
-          <img src={vinkLogo} alt="VMS" style={{ height: 44, width: "auto", objectFit: "contain" }} />
+          <img src={vinkLogo} alt="VINK" style={{ height: 44, width: "auto", objectFit: "contain" }} />
 
           <ul style={{ display: "flex", gap: 28, listStyle: "none", margin: 0, padding: 0 }} className="hidden md:flex">
             {["Personal", "Business", "Corporate", "Marketplace"].map((item, i) => (
@@ -262,13 +262,13 @@ export function PricingViewer({ isOpen, onClose, activeSubNav, heroTitle, heroSu
 
         {/* Bottom bar */}
         <div style={{ maxWidth: 1200, margin: "24px auto 0", display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center", justifyContent: "space-between", fontSize: 11.5, color: "rgba(255,255,255,.4)" }}>
-          <div>VMS Head Office: State House Building, 8 Rose Street, Cape Town, South Africa</div>
+          <div>VINK Head Office: State House Building, 8 Rose Street, Cape Town, South Africa</div>
           <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
             {["Terms Of Use", "Banking Regulations", "Privacy Statement", "Security Centre"].map((l, i) => (
               <a key={i} href="#" style={{ color: "rgba(255,255,255,.5)", textDecoration: "none", fontSize: 11.5 }}>{l}</a>
             ))}
           </div>
-          <div>© Copyright VMS Bank Limited. All Rights Reserved | Registration number 2018/079316/07</div>
+          <div>© Copyright VINK Bank Limited. All Rights Reserved | Registration number 2018/079316/07</div>
         </div>
       </footer>
 

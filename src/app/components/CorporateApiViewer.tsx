@@ -20,18 +20,18 @@ interface ApiPlan {
 
 const CORE_PLANS: ApiPlan[] = [
   {
-    name: "VMS VMVO API",
+    name: "VINK VMVO API",
     price: "R0",
     features: [
       "RESTful JSON architecture; OAuth 2.0 authentication",
       "Up to 10,000 API calls per day on standard tier",
-      "Initiate, verify, and settle payments through the VMS AFC network",
+      "Initiate, verify, and settle payments through the VINK AFC network",
       "Full sandbox environment and Swagger documentation provided",
       "Ideal for taxi associations, municipality portals, and transport developers",
     ],
   },
   {
-    name: "VMS Wallet API",
+    name: "VINK Wallet API",
     price: "R0",
     features: [
       "Create, fund, and manage Vink wallets programmatically",

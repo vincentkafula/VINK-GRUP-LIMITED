@@ -103,10 +103,10 @@ export function CorporateSocialResponsibilityViewer({ isOpen, onClose }: Props) 
       {/* ── Article content ── */}
       <div className="max-w-3xl mx-auto px-6 pb-14 space-y-5" style={{ color: "#1e1e2e" }}>
         <p className="leading-relaxed text-[15px]" style={{ color: "#1e1e2e" }}>
-          The office of the chief executive officer drives the strategy behind the work of the VMS SOCIAL DEVELOPMENT, and also oversees the day-to-day operations of the four VMS SOCIAL RESPONSIBILITY departments. This office also drives the VMS SOCIAL DEVELOPMENT's special projects and programmes, as well as research, and constantly seeks to develop and deliver new products and services to all stakeholders.
+          The office of the chief executive officer drives the strategy behind the work of the VINK SOCIAL DEVELOPMENT, and also oversees the day-to-day operations of the four VINK SOCIAL RESPONSIBILITY departments. This office also drives the VINK SOCIAL DEVELOPMENT's special projects and programmes, as well as research, and constantly seeks to develop and deliver new products and services to all stakeholders.
         </p>
         <p className="leading-relaxed text-[15px]" style={{ color: "#1e1e2e" }}>
-          The current occupant of the CEO post, Siyasanga Mahlulo, has been with the VMS SOCIAL RESPONSIBILITY since its inception in 2018 and has led the organisation since 2021. She is aided in her daily duties by a personal assistant.
+          The current occupant of the CEO post, Siyasanga Mahlulo, has been with the VINK SOCIAL RESPONSIBILITY since its inception in 2018 and has led the organisation since 2021. She is aided in her daily duties by a personal assistant.
         </p>
         <p className="leading-relaxed text-[15px]" style={{ color: "#1e1e2e" }}>
           Financial administration and human resources (HR) also fall under the CEO's office and are driven by a finance &amp; HR manager and a finance &amp; HR assistant.

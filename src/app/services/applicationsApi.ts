@@ -1,5 +1,5 @@
 /**
- * VMS Bank — Applications API client
+ * VINK Bank — Applications API client
  * Connects to the Supabase Edge Function backend.
  */
 import { projectId } from "../../../utils/supabase/info";

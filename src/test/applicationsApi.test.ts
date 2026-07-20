@@ -14,18 +14,18 @@ describe("applicationsApi.submit", () => {
     mockFetch.mockResolvedValue({
       json: async () => ({
         success: true,
-        data: { referenceNumber: "VMS-CC-2024-123456", id: "abc", status: "pending" },
+        data: { referenceNumber: "VINK-CC-2024-123456", id: "abc", status: "pending" },
       }),
     });
 
     const result = await applicationsApi.submit({
       type: "creditCard",
       applicantName: "Test User",
-      applicantEmail: "test@vink.com",
+      applicantEmail: "test@vink.co.za",
     });
 
     expect(result.success).toBe(true);
-    expect((result.data as { referenceNumber: string }).referenceNumber).toBe("VMS-CC-2024-123456");
+    expect((result.data as { referenceNumber: string }).referenceNumber).toBe("VINK-CC-2024-123456");
   });
 
   it("returns network error gracefully", async () => {

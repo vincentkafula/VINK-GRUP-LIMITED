@@ -1,7 +1,7 @@
 {
-  "name": "VMS Banking & Transport",
-  "short_name": "VMS Bank",
-  "description": "South Africa's integrated banking, transport, and travel super-application by VMS Group",
+  "name": "VINK Banking & Transport",
+  "short_name": "VINK Bank",
+  "description": "South Africa's integrated banking, transport, and travel super-application by VINK Group",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0A0A14",
@@ -89,7 +89,7 @@
       "sizes": "1280x800",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "VMS Banking Homepage"
+      "label": "VINK Banking Homepage"
     },
     {
       "src": "/screenshots/mobile-banking.png",
@@ -102,8 +102,8 @@
   "related_applications": [
     {
       "platform": "play",
-      "url": "https://play.google.com/store/apps/details?id=co.za.vms.banking",
-      "id": "co.za.vms.banking"
+      "url": "https://play.google.com/store/apps/details?id=co.za.vink.banking",
+      "id": "co.za.vink.banking"
     },
     {
       "platform": "itunes",

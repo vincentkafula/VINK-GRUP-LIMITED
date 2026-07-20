@@ -1,5 +1,5 @@
 /**
- * VMS Admin Dashboard
+ * VINK Admin Dashboard
  * Full application review centre — approve, decline, request info, assign reviewers.
  * Powered by Supabase Edge Function.
  */
@@ -641,7 +641,7 @@ export function AdminDashboard({ isOpen, onClose }: Props) {
                   const csv = "Email\n" + newsletters.join("\n");
                   const blob = new Blob([csv], { type: "text/csv" });
                   const url = URL.createObjectURL(blob);
-                  const a = document.createElement("a"); a.href = url; a.download = "vms-newsletter.csv"; a.click();
+                  const a = document.createElement("a"); a.href = url; a.download = "vink-newsletter.csv"; a.click();
                 }}
                   className="flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-xl text-white transition-all hover:opacity-90"
                   style={{ background: P }}>

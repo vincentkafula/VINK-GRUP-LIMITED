@@ -120,7 +120,7 @@ function HomeScreen({ setScreen }: { setScreen: (s: Screen) => void }) {
         >
           <span className="text-2xl">📶</span>
           <div>
-            <p className="text-xs font-bold" style={{ color: PURPLE }}>Free Wi-Fi on all VMS taxis!</p>
+            <p className="text-xs font-bold" style={{ color: PURPLE }}>Free Wi-Fi on all VINK taxis!</p>
             <p className="text-gray-500 text-[10px]">Connect automatically when you board</p>
           </div>
         </div>
@@ -567,7 +567,7 @@ export function VinkPassengerApp({ isOpen, onClose, onOpenClubBooking, onBookRid
               <div>
                 <p className="text-lg font-black text-gray-900">Club Travel</p>
                 <p className="text-sm text-gray-500 mt-1 leading-relaxed">
-                  Join group bookings on flights and buses — get bulk prices and travel together. VMS pays the operator when the group is full.
+                  Join group bookings on flights and buses — get bulk prices and travel together. VINK pays the operator when the group is full.
                 </p>
               </div>
               <div className="space-y-3 w-full max-w-xs">

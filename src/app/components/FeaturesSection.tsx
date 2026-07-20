@@ -24,7 +24,7 @@ export const FeaturesSection = memo(function FeaturesSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-3"
-            style={{ background: "#EDE9FE", color: "#6B5ED7" }}>Why Choose VMS</span>
+            style={{ background: "#EDE9FE", color: "#6B5ED7" }}>Why Choose VINK</span>
           <h2 className="text-2xl sm:text-3xl font-black text-gray-900 mb-2">Smarter Benefits, Every Day</h2>
           <p className="text-gray-500 text-sm max-w-lg mx-auto">
             One card that pays your taxi fare, fills your fuel tank, and earns rewards at the gym — built for real South African life.

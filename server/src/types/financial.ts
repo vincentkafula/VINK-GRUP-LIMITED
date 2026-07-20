@@ -1,4 +1,4 @@
-// ─── VMS Financial Reporting System ──────────────────────────────────────────
+// ─── VINK Financial Reporting System ──────────────────────────────────────────
 
 export type PaymentMethod = "card" | "cash" | "wallet";
 export type PaymentModel  = "salary" | "target";

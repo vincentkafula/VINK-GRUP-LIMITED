@@ -83,7 +83,7 @@ export function CorporateAccountViewer({ isOpen, onClose }: Props) {
         <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
           {/* Logo with gold+purple brand mark */}
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <img src={vinkLogo} alt="VMS" style={{ height: 36, width: "auto", objectFit: "contain" }} />
+            <img src={vinkLogo} alt="VINK" style={{ height: 36, width: "auto", objectFit: "contain" }} />
           </div>
           <nav className="hidden md:flex" style={{ display: "flex", gap: 4 }}>
             {TOP_NAV.map((item, i) => (

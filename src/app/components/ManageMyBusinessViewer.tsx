@@ -12,15 +12,15 @@ const BIZ_SUBNAV = ["Start my business", "Accounts", "Credit cards", "Loans", "I
 const ACTIVE_IDX = 6; // "Manage my Business"
 
 const ROW1 = [
-  { name: "Quick Market Entry",      price: "R0",  features: ["VMS scopes your target market and handles regulatory registration", "Connect to banking infrastructure in a new city or country within 30 days", "CIPC registration support included"] },
+  { name: "Quick Market Entry",      price: "R0",  features: ["VINK scopes your target market and handles regulatory registration", "Connect to banking infrastructure in a new city or country within 30 days", "CIPC registration support included"] },
   { name: "A People-First Approach", price: "R0",  features: ["HR setup, payroll processing, and employment contract templates", "SARS-registered payroll partner connections", "Compliant, timely salary runs"] },
   { name: "Reduce Costs",            price: "R85", features: ["Cost-optimisation audit for your business account and card spend", "Identify duplicated subscriptions and high-fee banking habits", "Recommended lower-cost alternatives provided"] },
 ];
 
 const ROW2 = [
-  { name: "Services in 185+ Countries",  price: "R170", featured: false, features: ["International expansion support from company registration to forex accounts", "Cross-border tax obligation navigation", "VMS network reaches 185+ countries"] },
-  { name: "Unmatched Expertise",         price: "R265", featured: true,  features: ["Dedicated business advisor reviews your financials quarterly", "Identifies growth opportunities across all VMS products", "Connects you to bridge loans, fleet insurance, and more", "Rolling monthly agreement — no lock-in"] },
-  { name: "No Long-Term Commitments",    price: "R415", featured: false, features: ["All VMS business management services on rolling monthly agreements", "No 12-month lock-ins", "Cancel, upgrade, or downgrade any time with 30 days' notice"] },
+  { name: "Services in 185+ Countries",  price: "R170", featured: false, features: ["International expansion support from company registration to forex accounts", "Cross-border tax obligation navigation", "VINK network reaches 185+ countries"] },
+  { name: "Unmatched Expertise",         price: "R265", featured: true,  features: ["Dedicated business advisor reviews your financials quarterly", "Identifies growth opportunities across all VINK products", "Connects you to bridge loans, fleet insurance, and more", "Rolling monthly agreement — no lock-in"] },
+  { name: "No Long-Term Commitments",    price: "R415", featured: false, features: ["All VINK business management services on rolling monthly agreements", "No 12-month lock-ins", "Cancel, upgrade, or downgrade any time with 30 days' notice"] },
 ];
 
 function Card({ card }: { card: { name: string; price: string; featured?: boolean; features: string[] } }) {
@@ -61,7 +61,7 @@ export function ManageMyBusinessViewer({ isOpen, onClose }: Props) {
       {/* Top nav */}
       <nav style={{ background: "#fff", borderBottom: "1px solid #e8e8f0", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 32px", height: 56, position: "sticky", top: 0, zIndex: 100 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
-          <img src={vinkLogo} alt="VMS" style={{ height: 38, width: "auto", objectFit: "contain" }} />
+          <img src={vinkLogo} alt="VINK" style={{ height: 38, width: "auto", objectFit: "contain" }} />
           <ul style={{ display: "flex", gap: 4, listStyle: "none", margin: 0, padding: 0 }} className="hidden md:flex">
             {TOP_NAV.map((item, i) => (
               <li key={item}><a href="#" style={{ textDecoration: "none", color: i === 1 ? BRAND : "#5a5a72", fontSize: 14, fontWeight: i === 1 ? 600 : 400, padding: "8px 12px", borderRadius: 4, display: "block" }}>{item}</a></li>

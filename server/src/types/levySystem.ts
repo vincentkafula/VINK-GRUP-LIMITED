@@ -1,11 +1,11 @@
-// ─── VMS AFC Revenue Distribution System ─────────────────────────────────────
+// ─── VINK AFC Revenue Distribution System ─────────────────────────────────────
 //
 // Revenue flow per tap:
-// 1. Passenger pays fare + R0.50 (VMS tap fee)
-// 2. Driver earns fare - R0.50 (VMS tap fee)
-// 3. VMS earns R1.00 total (R0.50 from each side)
+// 1. Passenger pays fare + R0.50 (VINK tap fee)
+// 2. Driver earns fare - R0.50 (VINK tap fee)
+// 3. VINK earns R1.00 total (R0.50 from each side)
 //    └─ R0.10 → device Investor (10% of R1.00)
-//    └─ R0.90 → VMS Platform
+//    └─ R0.90 → VINK Platform
 // 4. At trip end: R20 trip levy deducted from driver
 //    └─ Association receives R20
 //    └─ Marshall receives (agreed %) of R20
@@ -18,7 +18,7 @@ export type LevyAccountType =
   | "investor"
   | "association"
   | "marshall"
-  | "vms_platform"
+  | "vink_platform"
   | "taxi_owner";
 
 export type LevyTxnType =
@@ -26,7 +26,7 @@ export type LevyTxnType =
   | "tap_fee_passenger"  // R0.50 from passenger
   | "tap_fee_driver"     // R0.50 from driver
   | "investor_tap"       // R0.10 to investor per tap
-  | "vms_platform_tap"   // R0.90 to VMS
+  | "vink_platform_tap"   // R0.90 to VINK
   | "trip_levy"          // R20 from driver → association
   | "marshall_share"     // % of levy → marshall
   | "device_rental"      // R250/month → investor
@@ -85,10 +85,10 @@ export interface AFCTap {
   // Deductions from driver
   driverTapFee: number;        // 0.50
   driverNet: number;           // fare - 0.50
-  // VMS earnings
-  vmsFee: number;              // 1.00 (sum of both fees)
-  investorShare: number;       // 0.10 (10% of vmsFee)
-  vmsPlatformShare: number;    // 0.90
+  // VINK earnings
+  vinkFee: number;              // 1.00 (sum of both fees)
+  investorShare: number;       // 0.10 (10% of vinkFee)
+  vinkPlatformShare: number;    // 0.90
   paymentPath: "offline" | "online_fast" | "online_network";
   authCode: string;
   processingMs: number;
@@ -160,7 +160,7 @@ export interface RevenueSnapshot {
   timestamp: string;
   totalTapsToday: number;
   totalFareToday: number;
-  totalVmsEarningsToday: number;
+  totalVinkEarningsToday: number;
   totalInvestorEarningsToday: number;
   totalLeviesCollectedToday: number;
   totalMarshallPaymentsToday: number;

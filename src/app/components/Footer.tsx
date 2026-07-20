@@ -23,13 +23,13 @@ const COLS = [
   {
     title: "Who We Are",
     links: [
-      "About VMS",
+      "About VINK",
       "Investor Relations",
       "Social Responsibility",
       "News",
       "Sponsorship",
       "Careers",
-      "VMS at the World Economic Forum",
+      "VINK at the World Economic Forum",
       "500 Global Application",
     ],
   },
@@ -40,7 +40,7 @@ const COLS = [
       "Business Banking",
       "Wealth and Investment Management",
       "Corporate and Investment Banking",
-      "VMS blog",
+      "VINK blog",
     ],
   },
   {
@@ -56,7 +56,7 @@ const COLS = [
     title: "Support",
     links: [
       "Contact Us",
-      "Switch to VMS",
+      "Switch to VINK",
       "Business debit order switching",
       "Send your feedback",
       "Applications Dashboard",
@@ -359,7 +359,7 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
           {/* Copyright */}
           <div style={{ paddingBottom: 16, textAlign: "center" }}>
             <p style={{ color: "rgba(255,255,255,0.28)", fontSize: 12, margin: 0 }}>
-              © Copyright. VMS Bank Limited. All Rights Reserved | Registration number 2018/079316/07
+              © Copyright. VINK Bank Limited. All Rights Reserved | Registration number 2018/079316/07
             </p>
           </div>
         </div>

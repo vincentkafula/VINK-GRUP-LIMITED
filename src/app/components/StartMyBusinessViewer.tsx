@@ -103,7 +103,7 @@ export function StartMyBusinessViewer({ isOpen, onClose }: Props) {
       <nav style={{ background: "#fff", borderBottom: "1px solid #E4DFFE", position: "sticky", top: 0, zIndex: 100 }}>
         {/* Top row */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 48px", height: 64, maxWidth: 1280, margin: "0 auto" }}>
-          <img src={vinkLogo} alt="VMS" style={{ height: 44, width: "auto", objectFit: "contain" }} />
+          <img src={vinkLogo} alt="VINK" style={{ height: 44, width: "auto", objectFit: "contain" }} />
           <ul style={{ display: "flex", gap: 28, listStyle: "none", margin: 0, padding: 0 }} className="hidden md:flex">
             {TOP_NAV.map((item, i) => (
               <li key={item}>
@@ -137,7 +137,7 @@ export function StartMyBusinessViewer({ isOpen, onClose }: Props) {
         <h1 style={{ fontSize: "clamp(28px, 4.5vw, 48px)", fontWeight: 800, color: BRAND, letterSpacing: -1.5, lineHeight: 1.1, margin: 0 }}>
           Your Business Journey Starts Here
         </h1>
-        <p style={{ marginTop: 8, fontSize: 16, color: "#8A82A6", fontWeight: 500 }}>VMS helps South African entrepreneurs register, fund, and operate businesses — locally and across six key global markets.</p>
+        <p style={{ marginTop: 8, fontSize: 16, color: "#8A82A6", fontWeight: 500 }}>VINK helps South African entrepreneurs register, fund, and operate businesses — locally and across six key global markets.</p>
         <div style={{ marginTop: 24 }}>
           <button style={{ background: BRAND, color: "#fff", border: "none", padding: "12px 32px", borderRadius: 50, fontSize: 15, fontWeight: 700, cursor: "pointer" }}
             onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = BRAND_DARK; }}

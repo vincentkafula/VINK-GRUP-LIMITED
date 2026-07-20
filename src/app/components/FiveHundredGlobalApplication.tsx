@@ -1,6 +1,6 @@
 /**
  * 500 Global Flagship Accelerator — Application Form
- * Pre-filled with VMS / Vink Multi Services details.
+ * Pre-filled with VINK details.
  * User can edit any field before copying / submitting.
  */
 import { useState, useRef } from "react";
@@ -135,9 +135,9 @@ function Tip({ children }: { children: React.ReactNode }) {
 /* ─── Main component ──────────────────────────────────────── */
 export function FiveHundredGlobalApplication({ isOpen, onClose }: Props) {
   /* ── Company basics ── */
-  const [companyName,    setCompanyName]    = useState("Vink Multi Services (Pty) Ltd");
-  const [tradingName,    setTradingName]    = useState("VMS / Vink");
-  const [website,        setWebsite]        = useState("https://vink.com");
+  const [companyName,    setCompanyName]    = useState("VINK (Pty) Ltd");
+  const [tradingName,    setTradingName]    = useState("VINK / Vink");
+  const [website,        setWebsite]        = useState("https://vink.co.za");
   const [founded,        setFounded]        = useState("2020");
   const [hq,             setHq]             = useState("Cape Town, Western Cape, South Africa");
   const [stage,          setStage]          = useState("Pre-Seed / Early Revenue");
@@ -146,13 +146,13 @@ export function FiveHundredGlobalApplication({ isOpen, onClose }: Props) {
   /* ── Founder ── */
   const [founderName,    setFounderName]    = useState("Vincent Kafula");
   const [founderTitle,   setFounderTitle]   = useState("Founder & CEO");
-  const [founderEmail,   setFounderEmail]   = useState("vk@vink.com");
+  const [founderEmail,   setFounderEmail]   = useState("vk@vink.co.za");
   const [founderLinkedin,setFounderLinkedin]= useState("linkedin.com/in/vincentkafula");
   const [teamSize,       setTeamSize]       = useState("2 (Founder + 1 engineer). Hiring CTO and Growth Lead with programme funding.");
 
   /* ── One-liner / pitch ── */
   const [oneLiner, setOneLiner] = useState(
-    "VMS is South Africa's first transport-native digital bank — embedding automatic fare collection, banking, MVNO, and ride-hailing into the minibus taxi network that moves 15 million South Africans every day."
+    "VINK is South Africa's first transport-native digital bank — embedding automatic fare collection, banking, MVNO, and ride-hailing into the minibus taxi network that moves 15 million South Africans every day."
   );
 
   /* ── Problem ── */
@@ -174,9 +174,9 @@ The South African government has been calling for cashless transit since 2009. S
 
   /* ── Solution ── */
   const [solution, setSolution] = useState(
-    `VMS installs an Android-based AFC (Automatic Fare Collection) terminal in any minibus taxi in under 2 hours. Passengers tap a Vink Smart Pay Card. Fare deducted, driver credited, association levy distributed, and device investor dividend allocated — all in one transaction in under 3 seconds, offline-capable.
+    `VINK installs an Android-based AFC (Automatic Fare Collection) terminal in any minibus taxi in under 2 hours. Passengers tap a Vink Smart Pay Card. Fare deducted, driver credited, association levy distributed, and device investor dividend allocated — all in one transaction in under 3 seconds, offline-capable.
 
-This is the wedge. From there, VMS radiates outward:
+This is the wedge. From there, VINK radiates outward:
 
 • Vink Banking App — personal and business accounts, multi-currency cards (Visa/Mastercard), FX across ZAR, ZMW, EUR, USD, CNY.
 • Vink Driver App — earnings dashboard, ride-hailing, cash-fare entry, payslips, bank statements.
@@ -209,9 +209,9 @@ Market validation:
 
   /* ── Business model ── */
   const [bizModel, setBizModel] = useState(
-    `VMS generates revenue across 6 streams, all compounding from the same base of daily transactions:
+    `VINK generates revenue across 6 streams, all compounding from the same base of daily transactions:
 
-1. AFC Transaction Fee — R2.00 per tap (R0.50 passenger + R0.50 driver + R1.00 VMS). At 5.5 billion annual taps nationally, TAM = R11 billion/year. Zero marginal cost per transaction.
+1. AFC Transaction Fee — R2.00 per tap (R0.50 passenger + R0.50 driver + R1.00 VINK). At 5.5 billion annual taps nationally, TAM = R11 billion/year. Zero marginal cost per transaction.
 
 2. Banking & Cards — interchange (1.5–2%), monthly account fees (R59–R199/month by tier), and FX spreads (0.5–1% on cross-border). 500,000 driver accounts = R354M/year at R59 base tier.
 
@@ -219,9 +219,9 @@ Market validation:
 
 4. Ride-Hailing Commission — 15–20% on all Vink Ride trips. Driver-side acquisition already built into the Driver App ecosystem.
 
-5. AFC Device Rental — R250/month per device paid to device investors. VMS earns 10% of its own per-tap fee via the investor dividend model — creating a self-funding hardware deployment mechanism.
+5. AFC Device Rental — R250/month per device paid to device investors. VINK earns 10% of its own per-tap fee via the investor dividend model — creating a self-funding hardware deployment mechanism.
 
-6. Trip Levy Distribution — R20 per trip distributed between taxi associations and marshalls. VMS charges a 2% processing fee on all levy flows.
+6. Trip Levy Distribution — R20 per trip distributed between taxi associations and marshalls. VINK charges a 2% processing fee on all levy flows.
 
 Unit economics: R2.00 revenue per tap, R0.02 infrastructure cost per tap, 99% gross margin. The SaaS layer (banking, MVNO, ride-hailing) compounds on top.`
   );
@@ -229,7 +229,7 @@ Unit economics: R2.00 revenue per tap, R0.02 infrastructure cost per tap, 99% gr
   /* ── Market size ── */
   const [marketSize, setMarketSize] = useState(
     `Total Addressable Market (TAM):
-R11 billion/year in AFC fees from the South African minibus taxi network alone (5.5 billion annual trips × R2.00 VMS fee at 100% penetration). This excludes banking, MVNO, ride-hailing, and insurance revenue streams, which add a further R8–12 billion to the TAM.
+R11 billion/year in AFC fees from the South African minibus taxi network alone (5.5 billion annual trips × R2.00 VINK fee at 100% penetration). This excludes banking, MVNO, ride-hailing, and insurance revenue streams, which add a further R8–12 billion to the TAM.
 
 Serviceable Addressable Market (SAM):
 Cape Town + Johannesburg + Durban metro areas combined. Approximately 2.8 million daily commuters, 80,000 active drivers, 12,000 registered taxis. SAM = R2.2 billion/year.
@@ -238,14 +238,14 @@ Serviceable Obtainable Market (SOM — Year 1):
 1,000 AFC devices across Cape Town and Johannesburg, targeting 10,000 daily transactions per device × R2.00 = R20M/month AFC revenue, plus R48M/month banking and MVNO contribution = R97M ARR.
 
 Geographic expansion:
-The same model applies identically in Zambia (minibus taxis, confirmed nostro account), Zimbabwe (kombis), Nigeria (danfos, 220M population), Kenya (matatus), and Ghana (trotros). VMS estimates a 5-country SADC rollout within 36 months of Series A.`
+The same model applies identically in Zambia (minibus taxis, confirmed nostro account), Zimbabwe (kombis), Nigeria (danfos, 220M population), Kenya (matatus), and Ghana (trotros). VINK estimates a 5-country SADC rollout within 36 months of Series A.`
   );
 
   /* ── Competition ── */
   const [competition, setCompetition] = useState(
     `There is no direct competitor at the intersection of AFC, transport-native banking, MVNO, ride-hailing, and fleet management for the African minibus taxi market.
 
-Indirect competitors and why VMS wins against each:
+Indirect competitors and why VINK wins against each:
 
 • Uber / Bolt: Serve private-hire only. Cannot serve minibus taxis (fixed-route, shared, multi-passenger). No banking layer. No AFC. No driver financial identity.
 
@@ -257,12 +257,12 @@ Indirect competitors and why VMS wins against each:
 
 • Ukheshe / Kazang: Payment aggregators serving FMCG retail. No AFC product, no driver app, no ride-hailing.
 
-VMS's moat: (1) Network effects — each AFC device makes every other device more valuable as route coverage grows. (2) Switching cost — once a taxi association adopts VMS, levy distribution, driver payroll, and compliance reporting all run through us. (3) Data advantage — we are the only platform with structured, verified driver income data, which unlocks credit and insurance products no competitor can offer.`
+VINK's moat: (1) Network effects — each AFC device makes every other device more valuable as route coverage grows. (2) Switching cost — once a taxi association adopts VINK, levy distribution, driver payroll, and compliance reporting all run through us. (3) Data advantage — we are the only platform with structured, verified driver income data, which unlocks credit and insurance products no competitor can offer.`
   );
 
   /* ── Why 500 ── */
   const [why500, setWhy500] = useState(
-    `Five specific reasons VMS applied to 500 Global over other accelerators:
+    `Five specific reasons VINK applied to 500 Global over other accelerators:
 
 1. Emerging markets portfolio precedent. 500 has invested in Careem (MENA), Grab (SEA), and multiple African fintech plays. The partners understand transport-adjacent fintech in frontier markets at a depth that US-centric accelerators cannot match. We are not explaining the problem from scratch.
 
@@ -272,7 +272,7 @@ VMS's moat: (1) Network effects — each AFC device makes every other device mor
 
 4. Operator network for hardware scale. We need introductions to: (a) Shenzhen OEM manufacturers for AFC device supply chain, (b) cloud infrastructure partners for real-time transaction processing at national scale, (c) payments compliance advisors for SARB regulatory sandbox navigation. The 500 mentor network has all three.
 
-5. African fintech representation. VMS intends to be the breakout African fintech at Demo Day — the story Silicon Valley has been waiting for: transport-native banking, built from the ground up for 15 million daily users, with 99% gross margins and a self-funding hardware deployment model. We want to tell that story from the 500 stage.`
+5. African fintech representation. VINK intends to be the breakout African fintech at Demo Day — the story Silicon Valley has been waiting for: transport-native banking, built from the ground up for 15 million daily users, with 99% gross margins and a self-funding hardware deployment model. We want to tell that story from the 500 stage.`
   );
 
   /* ── Funding ask ── */
@@ -296,13 +296,13 @@ We have identified 4 Development Finance Institutions (DFIs) and 2 African-focus
   );
 
   /* ── Additional ── */
-  const [videoUrl,     setVideoUrl]     = useState("https://vink.com/demo");
-  const [pitchDeck,    setPitchDeck]    = useState("https://vink.com/deck-2025.pdf");
+  const [videoUrl,     setVideoUrl]     = useState("https://vink.co.za/demo");
+  const [pitchDeck,    setPitchDeck]    = useState("https://vink.co.za/deck-2025.pdf");
   const [referral,     setReferral]     = useState("Applied via 500 Global website (500.co) after researching emerging markets portfolio.");
   const [anythingElse, setAnythingElse] = useState(
-    `VMS is 100% Black-owned and founded — a deliberate reflection of the community it serves. Every component of the system has been designed with the specific constraints of the South African township economy in mind: offline-first devices, ZAR-denominated products, USSD fallback for feature phones, and community-based distribution through taxi association networks.
+    `VINK is 100% Black-owned and founded — a deliberate reflection of the community it serves. Every component of the system has been designed with the specific constraints of the South African township economy in mind: offline-first devices, ZAR-denominated products, USSD fallback for feature phones, and community-based distribution through taxi association networks.
 
-The founding vision is simple: if you move 15 million people every day, you already have the most powerful financial distribution network in the country. You just need to digitise it. That is what VMS does.
+The founding vision is simple: if you move 15 million people every day, you already have the most powerful financial distribution network in the country. You just need to digitise it. That is what VINK does.
 
 We are ready for 500 Global. The product is built. The partnership is signed. The pilot is scheduled. We need the network, the curriculum, and the Demo Day platform to scale.`
   );
@@ -361,7 +361,7 @@ We are ready for 500 Global. The product is built. The partnership is signed. Th
             style={{ background: P }}>500</div>
           <div>
             <p className="text-white font-bold text-sm">500 Global Flagship Accelerator</p>
-            <p className="text-white/40 text-xs">Application — pre-filled with your VMS system details. Edit any field, then copy.</p>
+            <p className="text-white/40 text-xs">Application — pre-filled with your VINK system details. Edit any field, then copy.</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -380,7 +380,7 @@ We are ready for 500 Global. The product is built. The partnership is signed. Th
         <div className="mb-6 p-4 rounded-xl border" style={{ background: "#EFF6FF", borderColor: "#BFDBFE" }}>
           <p className="text-sm font-bold text-blue-800 mb-1">How to use this form</p>
           <p className="text-xs text-blue-700 leading-relaxed">
-            Every field below is pre-filled with your VMS system details. Read each answer, edit if you want to personalise the language, then click the copy icon on any field to paste it directly into the 500 Global application at <strong>500.co/flagship</strong>. Use <strong>"Copy All Fields"</strong> above to copy the full document at once.
+            Every field below is pre-filled with your VINK system details. Read each answer, edit if you want to personalise the language, then click the copy icon on any field to paste it directly into the 500 Global application at <strong>500.co/flagship</strong>. Use <strong>"Copy All Fields"</strong> above to copy the full document at once.
           </p>
         </div>
 
@@ -477,9 +477,9 @@ We are ready for 500 Global. The product is built. The partnership is signed. Th
 
         {/* ── SECTION 9: Competition ── */}
         <AppSection num="09" title="Competition" subtitle="Who else is solving this problem, and what is your edge?">
-          <Tip>Don't say "there are no competitors." Show you understand the landscape deeply and explain specifically why VMS wins in each comparison. The no-competitor claim is a red flag to investors.</Tip>
+          <Tip>Don't say "there are no competitors." Show you understand the landscape deeply and explain specifically why VINK wins in each comparison. The no-competitor claim is a red flag to investors.</Tip>
           <Field
-            label="Who are your competitors and what differentiates VMS?"
+            label="Who are your competitors and what differentiates VINK?"
             hint="Be honest and specific"
             value={competition} onChange={setCompetition}
             rows={16} maxLen={2000}

@@ -52,7 +52,7 @@ export function PersonalAccountViewer({ isOpen, onClose }: Props) {
       onClose={onClose}
       activeSubNav="Account"
       heroTitle="The Right Account for Your Life"
-      heroSub="From your first account to a full financial toolkit — VMS has the right fit at every stage."
+      heroSub="From your first account to a full financial toolkit — VINK has the right fit at every stage."
       row1={ROW1}
       row2={ROW2}
     />

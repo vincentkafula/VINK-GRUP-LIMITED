@@ -33,58 +33,58 @@ const SERVICE_CONFIG: Record<ServiceType, {
   accountPrefix: string; accentColor: string;
 }> = {
   invest: {
-    tag:           "VMS Personal Banking · Investments",
+    tag:           "VINK Personal Banking · Investments",
     title:         "Investment Account Application",
     subtitle:      "Open a Tax-Free Savings Account, Fixed Deposit, Unit Trust, Retirement Annuity or Money Market — verified in minutes.",
     gradient:      "linear-gradient(135deg,#0F4C81 0%,#1565C0 50%,#42A5F5 100%)",
     successTitle:  "Investment Account Opened!",
-    successBody:   "Your investment account is active. Access it via the VMS app or web portal.",
+    successBody:   "Your investment account is active. Access it via the VINK app or web portal.",
     accountLabel:  "Investment account number",
-    accountPrefix: "VMS-INV",
+    accountPrefix: "VINK-INV",
     accentColor:   "#1565C0",
   },
   insure: {
-    tag:           "VMS Personal Banking · Insurance",
+    tag:           "VINK Personal Banking · Insurance",
     title:         "Insurance Policy Application",
     subtitle:      "Apply for Life Cover, Disability, Funeral Plan, Home Contents, Motor Insurance or Hospital Cash Plan.",
     gradient:      "linear-gradient(135deg,#1B5E20 0%,#2E7D32 50%,#66BB6A 100%)",
     successTitle:  "Policy Activated!",
     successBody:   "Your insurance policy is active. Your policy schedule will be emailed to you within 2 business hours.",
     accountLabel:  "Policy number",
-    accountPrefix: "VMS-INS",
+    accountPrefix: "VINK-INS",
     accentColor:   "#2E7D32",
   },
   rewards: {
-    tag:           "VMS Personal Banking · VinkPoints",
+    tag:           "VINK Personal Banking · VinkPoints",
     title:         "VinkPoints Rewards Enrolment",
     subtitle:      "Enrol in VinkPoints to earn on every taxi ride, fuel purchase, grocery trip, and online spend.",
     gradient:      "linear-gradient(135deg,#7B1FA2 0%,#AB47BC 50%,#CE93D8 100%)",
     successTitle:  "VinkPoints Account Created!",
     successBody:   "You have been enrolled in VinkPoints. Your welcome bonus of 5,000 points (worth R50) has been credited.",
     accountLabel:  "VinkPoints member number",
-    accountPrefix: "VMS-RWD",
+    accountPrefix: "VINK-RWD",
     accentColor:   "#AB47BC",
   },
   sim: {
-    tag:           "VMS MVNO · Cell C Network",
+    tag:           "VINK MVNO · Cell C Network",
     title:         "Vink SIM Card Application",
     subtitle:      "Get your Vink SIM on the Cell C network — affordable data, calls, and SMS bundled with your Vink wallet.",
     gradient:      "linear-gradient(135deg,#E65100 0%,#F57C00 50%,#FFB74D 100%)",
     successTitle:  "SIM Card Issued!",
     successBody:   "Your Vink SIM card will be delivered to your address within 3–5 business days. Your number is active immediately.",
     accountLabel:  "MSISDN / mobile number",
-    accountPrefix: "VMS-SIM",
+    accountPrefix: "VINK-SIM",
     accentColor:   "#F57C00",
   },
   account: {
-    tag:           "VMS Personal Banking · Accounts",
+    tag:           "VINK Personal Banking · Accounts",
     title:         "Bank Account Application",
     subtitle:      "Open your selected Vink account in minutes — FICA-verified and ready to use.",
     gradient:      "linear-gradient(135deg,#1A237E 0%,#3949AB 55%,#5C6BC0 100%)",
     successTitle:  "Account Opened!",
     successBody:   "Your Vink bank account is active. Your Vink card will be delivered to your registered address within 5–7 business days.",
     accountLabel:  "Account number",
-    accountPrefix: "VMS-ACC",
+    accountPrefix: "VINK-ACC",
     accentColor:   "#3949AB",
   },
 };
@@ -635,7 +635,7 @@ export function ServiceApplicationViewer({ isOpen, onClose, serviceType }: Props
               ))}
             </div>
             <div className="rounded-xl p-4 text-xs text-gray-600 leading-relaxed" style={{ background: cfg.accentColor + "08", border: `1px solid ${cfg.accentColor}20` }}>
-              By submitting I confirm all information is true and accurate. I authorise VMS to conduct credit bureau inquiries and verify my identity with SARS, CIPC, and Home Affairs.
+              By submitting I confirm all information is true and accurate. I authorise VINK to conduct credit bureau inquiries and verify my identity with SARS, CIPC, and Home Affairs.
             </div>
             <label className="flex items-start gap-3 cursor-pointer">
               <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)} className="mt-0.5 w-4 h-4 rounded flex-shrink-0" />
@@ -691,7 +691,7 @@ export function ServiceApplicationViewer({ isOpen, onClose, serviceType }: Props
             <button onClick={onClose}
               className="w-full py-3.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 shadow-lg"
               style={{ background: `linear-gradient(135deg,${CP},#9585EA)` }}>
-              Back to VMS
+              Back to VINK
             </button>
           </div>
         )}

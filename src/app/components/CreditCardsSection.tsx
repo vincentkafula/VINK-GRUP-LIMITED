@@ -9,7 +9,7 @@ const CARDS = [
       "R0 annual fee — always",
       "3-second tap-and-go fare payment on all taxi routes",
       "R0.50 cashback per taxi ride, redeemable after 30 days",
-      "Free Wi-Fi access on VMS-enabled taxis",
+      "Free Wi-Fi access on VINK-enabled taxis",
       "Access to 2,100+ gym sessions at R20 per visit",
     ],
   },

@@ -4,31 +4,31 @@ import vinkLogo from "../../../imports/LOGO_FINAL.png";
 interface Props { isOpen: boolean; onClose: () => void; }
 const P = "#5B2D8E";
 
-const HOW_VMS_PROTECTS = [
+const HOW_VINK_PROTECTS = [
   { icon: "🔍", title: "Real-time fraud monitoring", desc: "Every transaction is monitored 24/7 by our fraud detection engine. Unusual activity is flagged within milliseconds." },
   { icon: "📱", title: "Instant notifications",       desc: "Receive an SMS and app notification for every purchase — before, during, and after the transaction." },
-  { icon: "✅", title: "Zero-liability guarantee",    desc: "You will never be held responsible for unauthorised transactions. If something goes wrong, VMS makes it right." },
-  { icon: "🔐", title: "Two-factor authentication",   desc: "All VMS app logins require 2FA — protecting your account even if your password is compromised." },
+  { icon: "✅", title: "Zero-liability guarantee",    desc: "You will never be held responsible for unauthorised transactions. If something goes wrong, VINK makes it right." },
+  { icon: "🔐", title: "Two-factor authentication",   desc: "All VINK app logins require 2FA — protecting your account even if your password is compromised." },
   { icon: "🔒", title: "256-bit AES encryption",      desc: "All data in transit and at rest is protected with bank-grade 256-bit AES encryption." },
-  { icon: "🏦", title: "Nedbank backbone security",   desc: "VMS's Nedbank API integration provides an additional layer of bank-grade security infrastructure." },
+  { icon: "🏦", title: "Nedbank backbone security",   desc: "VINK's Nedbank API integration provides an additional layer of bank-grade security infrastructure." },
 ];
 
 const TIPS = [
-  "Never share your PIN, OTP, or card number with anyone — including people claiming to be VMS staff.",
+  "Never share your PIN, OTP, or card number with anyone — including people claiming to be VINK staff.",
   "Protect against SIM swap fraud: register your number on your bank's SIM swap notification service.",
   "Shield your card when tapping at any terminal — check for unusual devices attached to AFC machines.",
   "Only shop on websites beginning with \"https://\" and look for the padlock in your browser address bar.",
-  "If you receive a suspicious call, SMS, or email claiming to be VMS, do not respond — call our fraud line immediately.",
-  "Set up transaction limits in the VMS app to cap spending if your card is compromised.",
-  "Report a lost or stolen card immediately via the VMS app or call +27 (0)21 007 0772.",
-  "Never click links in unsolicited emails or SMS messages claiming to be from VMS.",
+  "If you receive a suspicious call, SMS, or email claiming to be VINK, do not respond — call our fraud line immediately.",
+  "Set up transaction limits in the VINK app to cap spending if your card is compromised.",
+  "Report a lost or stolen card immediately via the VINK app or call +27 (0)21 007 0772.",
+  "Never click links in unsolicited emails or SMS messages claiming to be from VINK.",
 ];
 
 const STEPS = [
-  "Freeze your card immediately via the VMS app (Settings → Card → Freeze Card).",
+  "Freeze your card immediately via the VINK app (Settings → Card → Freeze Card).",
   "Call our 24-hour fraud line: +27 (0)21 007 0772.",
-  "Dispute the unauthorised transaction via the app or email support@vink.com.",
-  "VMS will investigate and resolve confirmed fraud claims within 5 business days.",
+  "Dispute the unauthorised transaction via the app or email support@vink.co.za.",
+  "VINK will investigate and resolve confirmed fraud claims within 5 business days.",
   "A replacement card will be issued at no cost if fraud is confirmed.",
 ];
 
@@ -47,18 +47,18 @@ export function SafetySecurityViewer({ isOpen, onClose }: Props) {
           <Shield className="w-16 h-16 text-green-400 flex-shrink-0" />
           <div>
             <h1 className="text-4xl font-black mb-2">Safety &amp; Security</h1>
-            <p className="text-white/70 text-base max-w-xl">How VMS protects your money, your data, and your identity — and what to do if something goes wrong.</p>
+            <p className="text-white/70 text-base max-w-xl">How VINK protects your money, your data, and your identity — and what to do if something goes wrong.</p>
           </div>
         </div>
       </div>
 
       <div className="max-w-4xl mx-auto w-full px-5 py-10 space-y-12">
 
-        {/* How VMS protects you */}
+        {/* How VINK protects you */}
         <section>
-          <h2 className="text-2xl font-black mb-6" style={{ color: P }}>How VMS Protects You</h2>
+          <h2 className="text-2xl font-black mb-6" style={{ color: P }}>How VINK Protects You</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {HOW_VMS_PROTECTS.map((item, i) => (
+            {HOW_VINK_PROTECTS.map((item, i) => (
               <div key={i} className="p-5 bg-white rounded-xl border border-gray-200 hover:shadow-md transition-shadow">
                 <span className="text-3xl block mb-3">{item.icon}</span>
                 <p className="font-bold text-gray-900 text-sm mb-1">{item.title}</p>

@@ -22,9 +22,9 @@ const SECTIONS = [
   {
     label: "Premium Credit Card Plans",
     cards: [
-      { name: "Petrol",      price: "R170", featured: false, features: ["Annual turnover: R0 to R500 million","Free Vms Online Banking and NotifyMes","Suitable for all business segments and sectors","Shariah-compliant option available","Free Online Banking and NotifyMes","Suitable for all business segments and sectors","Shariah-compliant option available"] },
-      { name: "Finance",     price: "R265", featured: true,  features: ["Annual turnover: R0 to R500 million","35 electronic transactions","10 cash deposits/withdrawals at any Vms ATM (capped at R50,000 per month)","Suitable for all business segments and sectors","Free Online Banking and NotifyMes","Limited to Sole Proprietors","Shariah-compliant option available"] },
-      { name: "Manage Cash", price: "R415", featured: false, features: ["Annual turnover: R0 to R500 million","60 electronic transactions","15 cash deposits/withdrawals at any Vms ATM (capped at R100,000 per month)","Suitable for all business segments and sectors","Free Online Banking and NotifyMes","Suitable for all business segments and sectors","Shariah-compliant option available"] },
+      { name: "Petrol",      price: "R170", featured: false, features: ["Annual turnover: R0 to R500 million","Free Vink Online Banking and NotifyMes","Suitable for all business segments and sectors","Shariah-compliant option available","Free Online Banking and NotifyMes","Suitable for all business segments and sectors","Shariah-compliant option available"] },
+      { name: "Finance",     price: "R265", featured: true,  features: ["Annual turnover: R0 to R500 million","35 electronic transactions","10 cash deposits/withdrawals at any Vink ATM (capped at R50,000 per month)","Suitable for all business segments and sectors","Free Online Banking and NotifyMes","Limited to Sole Proprietors","Shariah-compliant option available"] },
+      { name: "Manage Cash", price: "R415", featured: false, features: ["Annual turnover: R0 to R500 million","60 electronic transactions","15 cash deposits/withdrawals at any Vink ATM (capped at R100,000 per month)","Suitable for all business segments and sectors","Free Online Banking and NotifyMes","Suitable for all business segments and sectors","Shariah-compliant option available"] },
     ],
   },
 ];
@@ -68,7 +68,7 @@ export function CorporateSolutionsViewer({ isOpen, onClose }: Props) {
 
       {/* Top nav */}
       <header style={{ background: "#fff", borderBottom: "1px solid #ddd", display: "flex", alignItems: "center", padding: "0 24px", height: 52, gap: 32, position: "sticky", top: 0, zIndex: 100 }}>
-        <img src={vinkLogo} alt="VMS" style={{ height: 34, width: "auto", objectFit: "contain" }} />
+        <img src={vinkLogo} alt="VINK" style={{ height: 34, width: "auto", objectFit: "contain" }} />
         <nav className="hidden md:flex" style={{ display: "flex", gap: 0, flex: 1 }}>
           {TOP_NAV.map((item, i) => (
             <a key={item} href="#" style={{ padding: "0 18px", height: 52, display: "flex", alignItems: "center", textDecoration: "none", fontSize: ".92rem", color: i === 3 ? PURPLE : "#222", borderBottom: `3px solid ${i === 3 ? PURPLE : "transparent"}`, fontWeight: i === 3 ? 600 : 400 }}>{item}</a>

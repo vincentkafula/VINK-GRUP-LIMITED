@@ -15,7 +15,7 @@ app.use("/*", cors({
 }));
 
 // ─── Health ───────────────────────────────────────────────────────────────────
-app.get("/make-server-3f39932e/health", (c) => c.json({ status: "ok", service: "VMS Bank API v2.0" }));
+app.get("/make-server-3f39932e/health", (c) => c.json({ status: "ok", service: "VINK Bank API v2.0" }));
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const refNo = (prefix: string) =>
@@ -74,8 +74,8 @@ async function seedGlobalBankingData() {
 
   // Unified accounts
   const acct1: Record<string, unknown> = {
-    id: "acct-001", referenceNumber: "VMS-GBL-2024-00001",
-    customerName: "Vincent Kafula", email: "vincent@vink.com", phone: "+27 21 007 0772",
+    id: "acct-001", referenceNumber: "VINK-GBL-2024-00001",
+    customerName: "Vincent Kafula", email: "vincent@vink.co.za", phone: "+27 21 007 0772",
     baseCurrency: "ZAR", kycStatus: "approved", amlFlag: "clear", tier: "corporate",
     balances: { ZAR: 847250, USD: 45820, EUR: 38450, ZMW: 124800, CNY: 298450 },
     cardIds: ["card-001","card-002","card-003","card-004"],
@@ -83,8 +83,8 @@ async function seedGlobalBankingData() {
     popiaConcent: true, gdprConsent: true, fatfChecked: true,
   };
   const acct2: Record<string, unknown> = {
-    id: "acct-002", referenceNumber: "VMS-GBL-2024-00247",
-    customerName: "Nomsa Zulu", email: "nomsa@vink.com", phone: "+27 82 334 7821",
+    id: "acct-002", referenceNumber: "VINK-GBL-2024-00247",
+    customerName: "Nomsa Zulu", email: "nomsa@vink.co.za", phone: "+27 82 334 7821",
     baseCurrency: "ZAR", kycStatus: "approved", amlFlag: "clear", tier: "premium",
     balances: { ZAR: 124890, USD: 8240, EUR: 0, ZMW: 0, CNY: 45200 },
     cardIds: ["card-005","card-006"],
@@ -92,9 +92,9 @@ async function seedGlobalBankingData() {
     popiaConcent: true, gdprConsent: false, fatfChecked: true,
   };
   await kv.set("gb:acct:acct-001", acct1);
-  await kv.set("gb:acct:VMS-GBL-2024-00001", acct1); // by ref
+  await kv.set("gb:acct:VINK-GBL-2024-00001", acct1); // by ref
   await kv.set("gb:acct:acct-002", acct2);
-  await kv.set("gb:acct:VMS-GBL-2024-00247", acct2);
+  await kv.set("gb:acct:VINK-GBL-2024-00247", acct2);
   await kv.set("gb:accounts:index", ["acct-001","acct-002"]);
 
   // Cards
@@ -113,13 +113,13 @@ async function seedGlobalBankingData() {
     { id: "t2", accountId: "acct-001", direction: "debit", channel: "card_online", localAmount: 89.99, localCurrency: "EUR", billedAmount: 1794.22, billedCurrency: "ZAR", description: "Amazon DE Order", merchantName: "Amazon DE", merchantCategory: "E-commerce", merchantCountry: "EU", fxRate: 19.93, fxFee: 44.86, status: "completed", domesticRouting: true, interchangeEarned: 9.90, createdAt: new Date(Date.now()-7200000).toISOString() },
     { id: "t3", accountId: "acct-001", direction: "debit", channel: "card_pos", localAmount: 842, localCurrency: "USD", billedAmount: 842, billedCurrency: "USD", description: "AWS Cloud Services", merchantName: "AWS", merchantCategory: "Technology", merchantCountry: "US", status: "completed", domesticRouting: true, interchangeEarned: 15.16, fxFee: 0, createdAt: new Date(Date.now()-14400000).toISOString() },
     { id: "t4", accountId: "acct-001", direction: "credit", channel: "p2p", localAmount: 5000, localCurrency: "ZAR", billedAmount: 5000, billedCurrency: "ZAR", description: "P2P from Nomsa Zulu", merchantName: "Nomsa Zulu", status: "completed", domesticRouting: true, interchangeEarned: 0, fxFee: 0, createdAt: new Date(Date.now()-28800000).toISOString() },
-    { id: "t5", accountId: "acct-001", direction: "credit", channel: "deposit", localAmount: 85000, localCurrency: "ZAR", billedAmount: 85000, billedCurrency: "ZAR", description: "EFT Deposit — Salary", merchantName: "VMS Payroll", status: "completed", domesticRouting: true, interchangeEarned: 0, fxFee: 0, createdAt: new Date(Date.now()-86400000).toISOString() },
+    { id: "t5", accountId: "acct-001", direction: "credit", channel: "deposit", localAmount: 85000, localCurrency: "ZAR", billedAmount: 85000, billedCurrency: "ZAR", description: "EFT Deposit — Salary", merchantName: "VINK Payroll", status: "completed", domesticRouting: true, interchangeEarned: 0, fxFee: 0, createdAt: new Date(Date.now()-86400000).toISOString() },
     { id: "t6", accountId: "acct-001", direction: "debit", channel: "atm", localAmount: 2000, localCurrency: "ZAR", billedAmount: 2000, billedCurrency: "ZAR", description: "ATM Standard Bank CPT", merchantName: "Standard Bank ATM", merchantCountry: "ZA", status: "completed", domesticRouting: true, interchangeEarned: 2, fxFee: 0, createdAt: new Date(Date.now()-172800000).toISOString() },
   ]);
 
   // P2P transfers
   await kv.set("gb:p2p", [
-    { id: "p2p-001", senderAccountId: "acct-002", recipientReferenceNumber: "VMS-GBL-2024-00001", recipientName: "Vincent Kafula", amount: 5000, currency: "ZAR", note: "Reimbursement", status: "completed", createdAt: new Date(Date.now()-86400000).toISOString(), completedAt: new Date(Date.now()-86390000).toISOString() },
+    { id: "p2p-001", senderAccountId: "acct-002", recipientReferenceNumber: "VINK-GBL-2024-00001", recipientName: "Vincent Kafula", amount: 5000, currency: "ZAR", note: "Reimbursement", status: "completed", createdAt: new Date(Date.now()-86400000).toISOString(), completedAt: new Date(Date.now()-86390000).toISOString() },
   ]);
 
   // FX conversions history
@@ -144,11 +144,11 @@ app.post("/make-server-3f39932e/applications", async (c) => {
       return c.json({ success: false, error: "type and applicantName are required" }, 400);
     }
     const prefixMap: Record<string, string> = {
-      account: "VMS-ACC", creditCard: "VMS-CC", loan: "VMS-LN",
-      invest: "VMS-INV", insure: "VMS-INS", rewards: "VMS-RWD",
-      sim: "VMS-SIM", businessLoan: "VMS-BL", corporateLoan: "VMS-CL",
+      account: "VINK-ACC", creditCard: "VINK-CC", loan: "VINK-LN",
+      invest: "VINK-INV", insure: "VINK-INS", rewards: "VINK-RWD",
+      sim: "VINK-SIM", businessLoan: "VINK-BL", corporateLoan: "VINK-CL",
     };
-    const ref = refNo(prefixMap[type] ?? "VMS-APP");
+    const ref = refNo(prefixMap[type] ?? "VINK-APP");
     const application: Application = {
       id: crypto.randomUUID(), referenceNumber: ref, type, subType: subType ?? "",
       status: "pending", applicantName, applicantEmail: applicantEmail ?? "",
@@ -278,7 +278,7 @@ app.post("/make-server-3f39932e/newsletter", async (c) => {
     await kv.set(`newsletter:${email}`, { email, subscribedAt: now() });
     const idx: string[] = (await kv.get("newsletter:index")) ?? [];
     if (!idx.includes(email)) await kv.set("newsletter:index", [email, ...idx].slice(0, 5000));
-    return c.json({ success: true, message: "Subscribed successfully! Welcome to VMS updates." }, 201);
+    return c.json({ success: true, message: "Subscribed successfully! Welcome to VINK updates." }, 201);
   } catch {
     return c.json({ success: false, error: "Subscription failed" }, 500);
   }
@@ -796,7 +796,7 @@ app.get("/make-server-3f39932e/admin/newsletter", async (c) => {
 const AFC_FEES = {
   PASSENGER_TAP_FEE: 0.50,
   DRIVER_TAP_FEE:    0.50,
-  VMS_FEE_TOTAL:     1.00,
+  VINK_FEE_TOTAL:     1.00,
   INVESTOR_SHARE_PCT: 10,
   TRIP_LEVY:         20.00,
   DEVICE_MONTHLY_RENTAL: 250.00,
@@ -806,7 +806,7 @@ async function seedLevyData() {
   const seeded = await kv.get("levy:seeded");
   if (seeded) return;
   await kv.set("levy:accounts", [
-    { id: "la-vms",     type: "vms_platform",  ownerId: "vms",       ownerName: "VMS Platform Account",             balance: 284750,  totalIn: 284750,  totalOut: 0,     status: "active" },
+    { id: "la-vink",     type: "vink_platform",  ownerId: "vink",       ownerName: "VINK Platform Account",             balance: 284750,  totalIn: 284750,  totalOut: 0,     status: "active" },
     { id: "la-inv001",  type: "investor",       ownerId: "inv-001",   ownerName: "Themba Nkosi (Investor)",          balance: 42850,   totalIn: 42850,   totalOut: 0,     status: "active" },
     { id: "la-inv002",  type: "investor",       ownerId: "inv-002",   ownerName: "Priya Investments CC",             balance: 28400,   totalIn: 28400,   totalOut: 0,     status: "active" },
     { id: "la-assoc001",type: "association",    ownerId: "assoc-001", ownerName: "Cape Flats Taxi Association",      balance: 187240,  totalIn: 187240,  totalOut: 0,     status: "active" },
@@ -849,7 +849,7 @@ app.get("/make-server-3f39932e/levy/snapshot", async (c) => {
     timestamp: new Date().toISOString(),
     totalTapsToday: todayTaps.length,
     totalFareToday: +todayTaps.reduce((s, t: Record<string,unknown>) => s + Number(t.fareAmount ?? 0), 0).toFixed(2),
-    totalVmsEarningsToday: +todayTaps.reduce((s, t: Record<string,unknown>) => s + Number(t.vmsPlatformShare ?? 0), 0).toFixed(2),
+    totalVinkEarningsToday: +todayTaps.reduce((s, t: Record<string,unknown>) => s + Number(t.vinkPlatformShare ?? 0), 0).toFixed(2),
     totalInvestorEarningsToday: +todayTaps.reduce((s, t: Record<string,unknown>) => s + Number(t.investorShare ?? 0), 0).toFixed(2),
     totalLeviesCollectedToday: 0,
     totalMarshallPaymentsToday: 0,
@@ -858,7 +858,7 @@ app.get("/make-server-3f39932e/levy/snapshot", async (c) => {
     activeDrivers: accounts.filter((a: Record<string,unknown>) => a.type === "driver").length,
     activePassengers: accounts.filter((a: Record<string,unknown>) => a.type === "passenger").length,
     totalLifetimeTaps: devices.reduce((s, d: Record<string,unknown>) => s + Number(d.tapCount ?? 0), 0),
-    vmsTotalBalance: (accounts.find((a: Record<string,unknown>) => a.type === "vms_platform") as Record<string,unknown> | undefined)?.balance ?? 0,
+    vinkTotalBalance: (accounts.find((a: Record<string,unknown>) => a.type === "vink_platform") as Record<string,unknown> | undefined)?.balance ?? 0,
   }});
 });
 
@@ -918,8 +918,8 @@ app.post("/make-server-3f39932e/levy/tap", async (c) => {
 
     const passFee = AFC_FEES.PASSENGER_TAP_FEE;
     const drvFee  = AFC_FEES.DRIVER_TAP_FEE;
-    const invShare = +(AFC_FEES.VMS_FEE_TOTAL * AFC_FEES.INVESTOR_SHARE_PCT / 100).toFixed(2);
-    const vmsKeeps = +(AFC_FEES.VMS_FEE_TOTAL - invShare).toFixed(2);
+    const invShare = +(AFC_FEES.VINK_FEE_TOTAL * AFC_FEES.INVESTOR_SHARE_PCT / 100).toFixed(2);
+    const vinkKeeps = +(AFC_FEES.VINK_FEE_TOTAL - invShare).toFixed(2);
 
     const updateBal = (ownerId: string, delta: number) => {
       const acct = accounts.find((a: Record<string,unknown>) => a.ownerId === ownerId) as Record<string,unknown> | undefined;
@@ -936,14 +936,14 @@ app.post("/make-server-3f39932e/levy/tap", async (c) => {
     updateBal(passengerId, -(fareAmount + passFee));
     updateBal(String(dev.driverId), fareAmount - drvFee);
     updateBal(String(dev.investorId), invShare);
-    updateBal("vms", vmsKeeps);
+    updateBal("vink", vinkKeeps);
     (dev as Record<string,number>).tapCount = (Number(dev.tapCount) || 0) + 1;
 
-    const tap = { id: tapId, deviceId, passengerId, driverId: dev.driverId, investorId: dev.investorId, fareAmount, passengerTapFee: passFee, driverTapFee: drvFee, vmsFee: AFC_FEES.VMS_FEE_TOTAL, investorShare: invShare, vmsPlatformShare: vmsKeeps, routeName: routeName ?? "", paymentPath: paymentPath ?? "online_fast", processingMs: processingMs ?? 500, timestamp: ts, settled: true };
+    const tap = { id: tapId, deviceId, passengerId, driverId: dev.driverId, investorId: dev.investorId, fareAmount, passengerTapFee: passFee, driverTapFee: drvFee, vinkFee: AFC_FEES.VINK_FEE_TOTAL, investorShare: invShare, vinkPlatformShare: vinkKeeps, routeName: routeName ?? "", paymentPath: paymentPath ?? "online_fast", processingMs: processingMs ?? 500, timestamp: ts, settled: true };
     const newTxns = [
       { id: crypto.randomUUID(), type: "tap_fare",          amount: fareAmount, description: `Fare — ${routeName ?? "route"}`, timestamp: ts },
-      { id: crypto.randomUUID(), type: "tap_fee_passenger", amount: passFee,   description: "VMS tap fee (passenger)", timestamp: ts },
-      { id: crypto.randomUUID(), type: "investor_tap",      amount: invShare,   description: `Investor share (${AFC_FEES.INVESTOR_SHARE_PCT}% of R${AFC_FEES.VMS_FEE_TOTAL})`, timestamp: ts },
+      { id: crypto.randomUUID(), type: "tap_fee_passenger", amount: passFee,   description: "VINK tap fee (passenger)", timestamp: ts },
+      { id: crypto.randomUUID(), type: "investor_tap",      amount: invShare,   description: `Investor share (${AFC_FEES.INVESTOR_SHARE_PCT}% of R${AFC_FEES.VINK_FEE_TOTAL})`, timestamp: ts },
     ];
 
     taps.push(tap);
@@ -1343,7 +1343,7 @@ app.get("/make-server-3f39932e/financial/statements/cash-flow", async (c) => {
 
 // ══════════════════════════════════════════════════════════════════════════════
 // ─── CLUB BOOKING SYSTEM ──────────────────────────────────────────────────────
-// Group travel — passengers join club routes, VMS pays provider when full
+// Group travel — passengers join club routes, VINK pays provider when full
 // ══════════════════════════════════════════════════════════════════════════════
 
 async function seedClubBookingData() {
@@ -1361,7 +1361,7 @@ async function seedClubBookingData() {
       pricePerSeat: 18500, originalPrice: 27000,
       totalSeats: 40, seatsBooked: 28,
       status: "open",
-      description: "VMS Club Flight: Cape Town to New York. Join 40 travellers on this club-priced route. Seats are released to Comair/SAA once the group is full.",
+      description: "VINK Club Flight: Cape Town to New York. Join 40 travellers on this club-priced route. Seats are released to Comair/SAA once the group is full.",
       includes: ["Return economy class", "1 × 23kg checked bag", "In-flight meals", "Airport transfers CPT & JFK"],
       route: "CPT → JNB → ATL → JFK",
       duration: "22h 40min",
@@ -1379,7 +1379,7 @@ async function seedClubBookingData() {
       pricePerSeat: 14800, originalPrice: 22500,
       totalSeats: 35, seatsBooked: 19,
       status: "open",
-      description: "VMS Club Flight: Cape Town to London Heathrow. Business and leisure combined — cheapest group rate to the UK.",
+      description: "VINK Club Flight: Cape Town to London Heathrow. Business and leisure combined — cheapest group rate to the UK.",
       includes: ["Return economy class", "1 × 23kg checked bag", "In-flight meals"],
       route: "CPT → JNB → LHR",
       duration: "14h 20min",
@@ -1397,7 +1397,7 @@ async function seedClubBookingData() {
       pricePerSeat: 9200, originalPrice: 15400,
       totalSeats: 50, seatsBooked: 41,
       status: "open",
-      description: "VMS Club Flight: Cape Town to Dubai. 20-day package with bulk group pricing via Emirates.",
+      description: "VINK Club Flight: Cape Town to Dubai. 20-day package with bulk group pricing via Emirates.",
       includes: ["Return economy class", "2 × 23kg checked bags", "In-flight meals", "Layover lounge access"],
       route: "CPT → DXB",
       duration: "9h 55min",
@@ -1416,7 +1416,7 @@ async function seedClubBookingData() {
       pricePerSeat: 890, originalPrice: 1350,
       totalSeats: 55, seatsBooked: 32,
       status: "open",
-      description: "VMS Club Bus: Cape Town to Pretoria. Luxury coach with club-negotiated rates. Departs Cape Town Terminus at 06:00.",
+      description: "VINK Club Bus: Cape Town to Pretoria. Luxury coach with club-negotiated rates. Departs Cape Town Terminus at 06:00.",
       includes: ["Luxury recliner seat", "Onboard Wi-Fi", "USB charging", "Light refreshments", "Air conditioning"],
       route: "Cape Town → Beaufort West → Three Sisters → Johannesburg → Pretoria",
       duration: "18h 30min",
@@ -1434,7 +1434,7 @@ async function seedClubBookingData() {
       pricePerSeat: 750, originalPrice: 1100,
       totalSeats: 60, seatsBooked: 45,
       status: "open",
-      description: "VMS Club Bus: Cape Town to Johannesburg. Non-stop luxury coach service at group rates.",
+      description: "VINK Club Bus: Cape Town to Johannesburg. Non-stop luxury coach service at group rates.",
       includes: ["Luxury recliner seat", "Onboard entertainment", "USB charging", "Air conditioning"],
       route: "Cape Town → Hex River → Matjiesfontein → Three Sisters → Johannesburg Park Station",
       duration: "17h 00min",
@@ -1452,7 +1452,7 @@ async function seedClubBookingData() {
       pricePerSeat: 1050, originalPrice: 1600,
       totalSeats: 50, seatsBooked: 22,
       status: "open",
-      description: "VMS Club Bus: Cape Town to Durban. Long-distance luxury service along the Garden Route.",
+      description: "VINK Club Bus: Cape Town to Durban. Long-distance luxury service along the Garden Route.",
       includes: ["Luxury recliner seat", "Onboard Wi-Fi", "USB charging", "Air conditioning", "Blanket & pillow"],
       route: "Cape Town → George → Port Elizabeth → East London → Durban",
       duration: "24h 00min",
@@ -1512,12 +1512,12 @@ app.post("/make-server-3f39932e/club/bookings", async (c) => {
     const totalAmount = Number(route.pricePerSeat) * seatCount;
     const booking = {
       id: crypto.randomUUID(),
-      referenceNumber: `VMS-CB-${new Date().getFullYear()}-${Math.floor(Math.random() * 900000 + 100000)}`,
+      referenceNumber: `VINK-CB-${new Date().getFullYear()}-${Math.floor(Math.random() * 900000 + 100000)}`,
       routeId, passengerName, phone, email, idNumber: idNumber ?? null,
       seatCount, totalAmount, paymentMethod: paymentMethod ?? "vink_wallet",
       status: "confirmed", specialRequests: specialRequests ?? "",
       bookedAt: now(),
-      // When full, VMS will pay provider — track this
+      // When full, VINK will pay provider — track this
       providerPaid: false, providerPaymentDate: null,
       route: { origin: route.origin, destination: route.destination, departureDate: route.departureDate, returnDate: route.returnDate, type: route.type, operator: route.operator },
     };
@@ -1560,7 +1560,7 @@ app.post("/make-server-3f39932e/club/visa", async (c) => {
     if (!applicantName || !email || !passportNumber || !destinationCountry) return c.json({ success: false, error: "applicantName, email, passportNumber, destinationCountry required" }, 400);
     const visa = {
       id: crypto.randomUUID(),
-      referenceNumber: `VMS-VISA-${new Date().getFullYear()}-${Math.floor(Math.random() * 900000 + 100000)}`,
+      referenceNumber: `VINK-VISA-${new Date().getFullYear()}-${Math.floor(Math.random() * 900000 + 100000)}`,
       applicantName, email, phone, passportNumber, passportExpiry, destinationCountry,
       travelDate, returnDate, purposeOfVisit, accommodation, sponsorDetails, employmentStatus,
       status: "pending_documents",
@@ -1609,10 +1609,10 @@ async function seedNotifications() {
   const demos = [
     { id: "n1", type: "transaction", title: "Money Received", body: "R12,500.00 credited from Employer Payroll", icon: "💸", is_read: false, created_at: new Date(Date.now() - 5 * 60000).toISOString() },
     { id: "n2", type: "security", title: "New Device Login", body: "Sign-in from Chrome on MacBook Pro detected", icon: "🔒", is_read: false, created_at: new Date(Date.now() - 32 * 60000).toISOString() },
-    { id: "n3", type: "travel", title: "Club Booking Confirmed", body: "Cape Town → New York (15 Jul 2026) — Ref: VMS-CB-2026-48291", icon: "✈️", is_read: false, created_at: new Date(Date.now() - 2 * 3600000).toISOString() },
+    { id: "n3", type: "travel", title: "Club Booking Confirmed", body: "Cape Town → New York (15 Jul 2026) — Ref: VINK-CB-2026-48291", icon: "✈️", is_read: false, created_at: new Date(Date.now() - 2 * 3600000).toISOString() },
     { id: "n4", type: "kyc", title: "KYC Verification Approved", body: "Your identity has been verified. Full access unlocked.", icon: "✅", is_read: true, created_at: new Date(Date.now() - 6 * 3600000).toISOString() },
     { id: "n5", type: "promotion", title: "Double VinkPoints This Weekend", body: "Earn 2x VinkPoints on all card purchases Fri–Sun", icon: "⭐", is_read: true, created_at: new Date(Date.now() - 24 * 3600000).toISOString() },
-    { id: "n6", type: "loan", title: "Loan Application Update", body: "Personal Loan VMS-PL-2026-33847 is under review. Decision within 24h.", icon: "📋", is_read: true, created_at: new Date(Date.now() - 48 * 3600000).toISOString() },
+    { id: "n6", type: "loan", title: "Loan Application Update", body: "Personal Loan VINK-PL-2026-33847 is under review. Decision within 24h.", icon: "📋", is_read: true, created_at: new Date(Date.now() - 48 * 3600000).toISOString() },
   ];
   await kv.set("notif:demo", demos);
   await kv.set("notif:seeded", true);
@@ -1795,7 +1795,7 @@ app.post("/make-server-3f39932e/kyc/:profileId/submit", async (c) => {
     const existing: Record<string,unknown> = (await kv.get(`kyc:${c.req.param("profileId")}`)) ?? {};
     const updated = { ...existing, ...body, submittedAt: now(), status: "pending" };
     await kv.set(`kyc:${c.req.param("profileId")}`, updated);
-    return c.json({ success: true, data: updated, referenceNumber: `VMS-KYC-${Math.floor(100000 + Math.random() * 900000)}` });
+    return c.json({ success: true, data: updated, referenceNumber: `VINK-KYC-${Math.floor(100000 + Math.random() * 900000)}` });
   } catch (err) { return c.json({ success: false, error: String(err) }, 500); }
 });
 
@@ -1818,7 +1818,7 @@ app.get("/make-server-3f39932e/fx/rates", async (c) => {
       { from: "GBP", to: "ZAR", interbank: 23.20, customer: 22.97, spread: 1.00, flag: "🇿🇦" },
     ],
     updatedAt: now(),
-    source: "VMS Treasury · Interbank mid-rate",
+    source: "VINK Treasury · Interbank mid-rate",
   });
 });
 
@@ -1840,7 +1840,7 @@ app.post("/make-server-3f39932e/fx/convert", async (c) => {
       rate, converted: parseFloat(converted.toFixed(4)),
       fee: parseFloat(fee.toFixed(4)),
       netConverted: parseFloat((converted - fee).toFixed(4)),
-      reference: refNo("VMS-FX"),
+      reference: refNo("VINK-FX"),
       timestamp: now(),
     });
   } catch (err) { return c.json({ success: false, error: String(err) }, 500); }
@@ -1854,12 +1854,12 @@ app.get("/make-server-3f39932e/branches", (c) => {
   return c.json({
     success: true,
     data: [
-      { id: "b1", name: "VMS Cape Town CBD",       address: "24 Buitenkant Street, Cape Town CBD, 8001",   lat: -33.9249, lng: 18.4241, phone: "+27 21 007 0001", hours: "Mon–Fri 08:00–17:00, Sat 09:00–13:00", services: ["Full Banking","KYC","Loans","Cards","ATM"], atm: true, status: "open" },
-      { id: "b2", name: "VMS Johannesburg Sandton", address: "Sandton City, 83 Rivonia Rd, Sandton, 2196",  lat: -26.1076, lng: 28.0567, phone: "+27 11 007 0001", hours: "Mon–Fri 08:00–17:00, Sat 09:00–13:00", services: ["Full Banking","KYC","Loans","Corporate","ATM"], atm: true, status: "open" },
-      { id: "b3", name: "VMS Durban Umhlanga",      address: "La Lucia Mall, La Lucia Ridge, Durban, 4051", lat: -29.7374, lng: 31.0783, phone: "+27 31 007 0001", hours: "Mon–Fri 08:00–17:00, Sat 09:00–13:00", services: ["Full Banking","KYC","Loans","Cards","ATM"], atm: true, status: "open" },
-      { id: "b4", name: "VMS Pretoria Hatfield",    address: "Hatfield Plaza, Burnett Street, Pretoria, 0083", lat: -25.7461, lng: 28.2393, phone: "+27 12 007 0001", hours: "Mon–Fri 08:00–17:00, Sat 09:00–13:00", services: ["Full Banking","KYC","Loans","ATM"], atm: true, status: "open" },
-      { id: "b5", name: "VMS Cape Town Bellville",  address: "Voortrekker Road, Bellville, 7530",          lat: -33.9290, lng: 18.6324, phone: "+27 21 007 0002", hours: "Mon–Fri 08:00–17:00, Sat 09:00–13:00", services: ["Full Banking","AFC Support","ATM"], atm: true, status: "open" },
-      { id: "b6", name: "VMS Lusaka Zambia",        address: "Cairo Road, Lusaka, Zambia",                  lat: -15.4167, lng: 28.2833, phone: "+260 211 007 001", hours: "Mon–Fri 08:00–16:30", services: ["Full Banking","KYC","ATM","Mobile Money"], atm: true, status: "open" },
+      { id: "b1", name: "VINK Cape Town CBD",       address: "24 Buitenkant Street, Cape Town CBD, 8001",   lat: -33.9249, lng: 18.4241, phone: "+27 21 007 0001", hours: "Mon–Fri 08:00–17:00, Sat 09:00–13:00", services: ["Full Banking","KYC","Loans","Cards","ATM"], atm: true, status: "open" },
+      { id: "b2", name: "VINK Johannesburg Sandton", address: "Sandton City, 83 Rivonia Rd, Sandton, 2196",  lat: -26.1076, lng: 28.0567, phone: "+27 11 007 0001", hours: "Mon–Fri 08:00–17:00, Sat 09:00–13:00", services: ["Full Banking","KYC","Loans","Corporate","ATM"], atm: true, status: "open" },
+      { id: "b3", name: "VINK Durban Umhlanga",      address: "La Lucia Mall, La Lucia Ridge, Durban, 4051", lat: -29.7374, lng: 31.0783, phone: "+27 31 007 0001", hours: "Mon–Fri 08:00–17:00, Sat 09:00–13:00", services: ["Full Banking","KYC","Loans","Cards","ATM"], atm: true, status: "open" },
+      { id: "b4", name: "VINK Pretoria Hatfield",    address: "Hatfield Plaza, Burnett Street, Pretoria, 0083", lat: -25.7461, lng: 28.2393, phone: "+27 12 007 0001", hours: "Mon–Fri 08:00–17:00, Sat 09:00–13:00", services: ["Full Banking","KYC","Loans","ATM"], atm: true, status: "open" },
+      { id: "b5", name: "VINK Cape Town Bellville",  address: "Voortrekker Road, Bellville, 7530",          lat: -33.9290, lng: 18.6324, phone: "+27 21 007 0002", hours: "Mon–Fri 08:00–17:00, Sat 09:00–13:00", services: ["Full Banking","AFC Support","ATM"], atm: true, status: "open" },
+      { id: "b6", name: "VINK Lusaka Zambia",        address: "Cairo Road, Lusaka, Zambia",                  lat: -15.4167, lng: 28.2833, phone: "+260 211 007 001", hours: "Mon–Fri 08:00–16:30", services: ["Full Banking","KYC","ATM","Mobile Money"], atm: true, status: "open" },
     ],
   });
 });
@@ -1912,7 +1912,7 @@ app.post("/make-server-3f39932e/afc/tap", async (c) => {
       splits: {
         passenger: 0.50,
         driver: 0.50,
-        vms: 1.00,
+        vink: 1.00,
         investor: 0.10,
       },
       timestamp: now(),

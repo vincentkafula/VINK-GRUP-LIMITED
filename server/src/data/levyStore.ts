@@ -10,8 +10,8 @@ const now = () => new Date().toISOString();
 export const FEES = {
   PASSENGER_TAP_FEE: 0.50,    // R0.50 charged to passenger per tap
   DRIVER_TAP_FEE:    0.50,    // R0.50 charged to driver per tap
-  VMS_FEE_TOTAL:     1.00,    // R1.00 total VMS earnings per tap
-  INVESTOR_SHARE_PCT: 10,     // 10% of VMS fee → device investor = R0.10
+  VINK_FEE_TOTAL:     1.00,    // R1.00 total VINK earnings per tap
+  INVESTOR_SHARE_PCT: 10,     // 10% of VINK fee → device investor = R0.10
   TRIP_LEVY:         20.00,   // R20 per trip deducted from driver → association
   DEVICE_MONTHLY_RENTAL: 250.00, // R250/month rental device owner → investor
 };
@@ -27,8 +27,8 @@ const mkAccount = (
 });
 
 export const levyAccounts: LevyAccount[] = [
-  // VMS Platform
-  { ...mkAccount("vms_platform", "vms", "VMS Platform Account", 284_750), id: "la-vms" },
+  // VINK Platform
+  { ...mkAccount("vink_platform", "vink", "VINK Platform Account", 284_750), id: "la-vink" },
   // Investors
   { ...mkAccount("investor", "inv-001", "Themba Nkosi (Investor)", 42_850), id: "la-inv001" },
   { ...mkAccount("investor", "inv-002", "Priya Investments CC", 28_400), id: "la-inv002" },
@@ -97,18 +97,18 @@ export function processAFCTap(params: {
   const driverAccount      = levyAccounts.find(a => a.ownerId === device.driverId);
   const investorAccount    = levyAccounts.find(a => a.ownerId === device.investorId);
   const associationAccount = levyAccounts.find(a => a.ownerId === device.associationId);
-  const vmsAccount         = levyAccounts.find(a => a.type === "vms_platform");
+  const vinkAccount         = levyAccounts.find(a => a.type === "vink_platform");
 
-  if (!passengerAccount || !driverAccount || !investorAccount || !associationAccount || !vmsAccount) {
+  if (!passengerAccount || !driverAccount || !investorAccount || !associationAccount || !vinkAccount) {
     throw new Error("One or more accounts not found");
   }
 
   // Calculate all splits
   const passengerFee   = FEES.PASSENGER_TAP_FEE;           // R0.50
   const driverFee      = FEES.DRIVER_TAP_FEE;              // R0.50
-  const vmsFee         = FEES.VMS_FEE_TOTAL;               // R1.00
-  const investorShare  = +(vmsFee * FEES.INVESTOR_SHARE_PCT / 100).toFixed(2); // R0.10
-  const vmsKeeps       = +(vmsFee - investorShare).toFixed(2);                 // R0.90
+  const vinkFee         = FEES.VINK_FEE_TOTAL;               // R1.00
+  const investorShare  = +(vinkFee * FEES.INVESTOR_SHARE_PCT / 100).toFixed(2); // R0.10
+  const vinkKeeps       = +(vinkFee - investorShare).toFixed(2);                 // R0.90
   const passengerTotal = +(params.fareAmount + passengerFee).toFixed(2);
   const driverNet      = +(params.fareAmount - driverFee).toFixed(2);
 
@@ -125,7 +125,7 @@ export function processAFCTap(params: {
     fareAmount: params.fareAmount,
     passengerTapFee: passengerFee, passengerTotal,
     driverTapFee: driverFee, driverNet,
-    vmsFee, investorShare, vmsPlatformShare: vmsKeeps,
+    vinkFee, investorShare, vinkPlatformShare: vinkKeeps,
     paymentPath: params.paymentPath, authCode: `AUTH${Math.floor(100000 + Math.random() * 900000)}`,
     processingMs: params.processingMs, timestamp: ts, settled: true,
   };
@@ -137,18 +137,18 @@ export function processAFCTap(params: {
   driverAccount.totalIn      += driverNet;
   investorAccount.balance    = +(investorAccount.balance + investorShare).toFixed(2);
   investorAccount.totalIn    += investorShare;
-  vmsAccount.balance         = +(vmsAccount.balance + vmsKeeps).toFixed(2);
-  vmsAccount.totalIn         += vmsKeeps;
+  vinkAccount.balance         = +(vinkAccount.balance + vinkKeeps).toFixed(2);
+  vinkAccount.totalIn         += vinkKeeps;
   device.tapCount++;
   device.lastActiveAt = ts;
-  [passengerAccount, driverAccount, investorAccount, vmsAccount].forEach(a => { a.lastTransactionAt = ts; });
+  [passengerAccount, driverAccount, investorAccount, vinkAccount].forEach(a => { a.lastTransactionAt = ts; });
 
   // Create transaction audit trail
   const txns: LevyTransaction[] = [
     { id: uuid(), fromAccountId: passengerAccount.id, toAccountId: driverAccount.id, amount: params.fareAmount, type: "tap_fare", referenceId: tapId, description: `Fare payment — ${params.routeName}`, timestamp: ts, balanceAfter: driverAccount.balance },
-    { id: uuid(), fromAccountId: passengerAccount.id, toAccountId: vmsAccount.id, amount: passengerFee, type: "tap_fee_passenger", referenceId: tapId, description: `VMS tap fee (passenger side)`, timestamp: ts, balanceAfter: vmsAccount.balance },
-    { id: uuid(), fromAccountId: driverAccount.id, toAccountId: vmsAccount.id, amount: driverFee, type: "tap_fee_driver", referenceId: tapId, description: `VMS tap fee (driver side)`, timestamp: ts, balanceAfter: vmsAccount.balance },
-    { id: uuid(), fromAccountId: vmsAccount.id, toAccountId: investorAccount.id, amount: investorShare, type: "investor_tap", referenceId: tapId, description: `Investor share (10% of VMS fee) — device ${device.serialNumber}`, timestamp: ts, balanceAfter: investorAccount.balance },
+    { id: uuid(), fromAccountId: passengerAccount.id, toAccountId: vinkAccount.id, amount: passengerFee, type: "tap_fee_passenger", referenceId: tapId, description: `VINK tap fee (passenger side)`, timestamp: ts, balanceAfter: vinkAccount.balance },
+    { id: uuid(), fromAccountId: driverAccount.id, toAccountId: vinkAccount.id, amount: driverFee, type: "tap_fee_driver", referenceId: tapId, description: `VINK tap fee (driver side)`, timestamp: ts, balanceAfter: vinkAccount.balance },
+    { id: uuid(), fromAccountId: vinkAccount.id, toAccountId: investorAccount.id, amount: investorShare, type: "investor_tap", referenceId: tapId, description: `Investor share (10% of VINK fee) — device ${device.serialNumber}`, timestamp: ts, balanceAfter: investorAccount.balance },
   ];
 
   afcTaps.push(tap);
@@ -258,7 +258,7 @@ export function getRevenueSnapshot() {
     timestamp: now(),
     totalTapsToday: todayTaps.length,
     totalFareToday: +todayTaps.reduce((s, t) => s + t.fareAmount, 0).toFixed(2),
-    totalVmsEarningsToday: +todayTaps.reduce((s, t) => s + t.vmsPlatformShare, 0).toFixed(2),
+    totalVinkEarningsToday: +todayTaps.reduce((s, t) => s + t.vinkPlatformShare, 0).toFixed(2),
     totalInvestorEarningsToday: +todayTaps.reduce((s, t) => s + t.investorShare, 0).toFixed(2),
     totalLeviesCollectedToday: +todayTrips.reduce((s, t) => s + t.tripLevy, 0).toFixed(2),
     totalMarshallPaymentsToday: +todayTrips.reduce((s, t) => s + t.marshallShare, 0).toFixed(2),
@@ -267,6 +267,6 @@ export function getRevenueSnapshot() {
     activeDrivers: levyAccounts.filter(a => a.type === "driver" && a.status === "active").length,
     activePassengers: levyAccounts.filter(a => a.type === "passenger" && a.status === "active").length,
     totalLifetimeTaps: afcDevices.reduce((s, d) => s + d.tapCount, 0),
-    vmsTotalBalance: levyAccounts.find(a => a.type === "vms_platform")?.balance ?? 0,
+    vinkTotalBalance: levyAccounts.find(a => a.type === "vink_platform")?.balance ?? 0,
   };
 }

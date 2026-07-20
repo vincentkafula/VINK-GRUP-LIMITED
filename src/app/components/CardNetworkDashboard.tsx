@@ -79,12 +79,12 @@ const EMV_PATHS: Record<EMVPath, { label: string; color: string; totalMs: string
     ],
   },
   online_fast: {
-    label: "ONLINE FAST (VMS Internal)", color: "#3B82F6", totalMs: "600–900ms",
+    label: "ONLINE FAST (VINK Internal)", color: "#3B82F6", totalMs: "600–900ms",
     steps: [
       { id: 1, name: "NFC/Chip read",         desc: "ISO 14443 contactless read", icon: "📱", duration: 55 },
       { id: 2, name: "Online ARQC generate",  desc: "Card demands online authorization", icon: "🔐", duration: 80 },
-      { id: 3, name: "VMS auth request",      desc: "ISO 8583 → VMS via persistent WebSocket (no DNS, no TLS handshake)", icon: "⚡", duration: 45 },
-      { id: 4, name: "Real-time balance",     desc: "VMS ledger balance check — sub-millisecond in-memory lookup", icon: "🏦", duration: 120 },
+      { id: 3, name: "VINK auth request",      desc: "ISO 8583 → VINK via persistent WebSocket (no DNS, no TLS handshake)", icon: "⚡", duration: 45 },
+      { id: 4, name: "Real-time balance",     desc: "VINK ledger balance check — sub-millisecond in-memory lookup", icon: "🏦", duration: 120 },
       { id: 5, name: "Auth response",         desc: "00 Approved + ARPC returned to terminal", icon: "📡", duration: 30 },
       { id: 6, name: "APPROVED",              desc: "R14.00 deducted · Real-time settlement · SMS queued", icon: "✅", duration: 15 },
     ],
@@ -94,7 +94,7 @@ const EMV_PATHS: Record<EMVPath, { label: string; color: string; totalMs: string
     steps: [
       { id: 1, name: "NFC/Chip read",         desc: "ISO 14443 contactless read", icon: "📱", duration: 55 },
       { id: 2, name: "Online ARQC generate",  desc: "Card demands full network authorization", icon: "🔐", duration: 80 },
-      { id: 3, name: "VMS → VisaNet/Banknet", desc: "ISO 8583 auth request to Visa/MC network via leased line", icon: "📡", duration: 200 },
+      { id: 3, name: "VINK → VisaNet/Banknet", desc: "ISO 8583 auth request to Visa/MC network via leased line", icon: "📡", duration: 200 },
       { id: 4, name: "Network routing",       desc: "BIN lookup → issuer routing → host connection", icon: "🌐", duration: 350 },
       { id: 5, name: "Issuer decision",       desc: "Balance, fraud score, velocity checks at issuer host", icon: "🏦", duration: 400 },
       { id: 6, name: "Response → terminal",   desc: "Auth response decoded, ARPC verified, transaction complete", icon: "📡", duration: 180 },
@@ -538,7 +538,7 @@ export function CardNetworkDashboard({ isOpen, onClose }: Props) {
             <div className="space-y-4 max-w-5xl">
               <h1 className="text-xl font-black text-gray-900">BIN (Bank Identification Number) Management</h1>
               <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 text-sm text-purple-800 leading-relaxed">
-                <strong>How BINs work:</strong> Each Vink card type is assigned a BIN registered in its target country. When a payment is processed, the card network identifies the BIN and routes the transaction domestically — the acquiring bank sees it as a local card, eliminating cross-border fees. VMS holds Visa and Mastercard principal membership, allowing direct BIN assignment without a third-party BIN sponsor.
+                <strong>How BINs work:</strong> Each Vink card type is assigned a BIN registered in its target country. When a payment is processed, the card network identifies the BIN and routes the transaction domestically — the acquiring bank sees it as a local card, eliminating cross-border fees. VINK holds Visa and Mastercard principal membership, allowing direct BIN assignment without a third-party BIN sponsor.
               </div>
               <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
                 <div className="overflow-x-auto">
@@ -597,8 +597,8 @@ export function CardNetworkDashboard({ isOpen, onClose }: Props) {
                     ["F025", "POS Condition", "00 — Normal"],
                     ["F037", "Retrieval Ref", "622114321500"],
                     ["F041", "Terminal ID",   "AFC00847"],
-                    ["F042", "Merchant ID",   "VMSAFC0012347"],
-                    ["F043", "Merchant Name", "VMS AFC ROUTE ZA"],
+                    ["F042", "Merchant ID",   "VINKAFC0012347"],
+                    ["F043", "Merchant Name", "VINK AFC ROUTE ZA"],
                     ["F049", "Currency Code", "710 — ZAR"],
                     ["F055", "EMV Data",      "5F2A... (ARQC cryptogram)"],
                   ].map(([field, label, val]) => (
@@ -682,7 +682,7 @@ export function CardNetworkDashboard({ isOpen, onClose }: Props) {
                     { time: "01:00", label: "Net position", desc: "Interchange calculated", color: "#3B82F6" },
                     { time: "04:00", label: "VisaNet/Banknet", desc: "Clearing files exchanged", color: VISA_BLUE },
                     { time: "08:00", label: "RTGS payment", desc: "Funds transferred SA Reserve Bank", color: "#10B981" },
-                    { time: "T+1",   label: "Funds available", desc: "Credited to VMS nostro account", color: "#10B981" },
+                    { time: "T+1",   label: "Funds available", desc: "Credited to VINK nostro account", color: "#10B981" },
                   ].map((step, i) => (
                     <div key={i} className="flex items-center">
                       <div className="flex flex-col items-center min-w-[100px]">
@@ -707,7 +707,7 @@ export function CardNetworkDashboard({ isOpen, onClose }: Props) {
 
               <div className="bg-white rounded-2xl border border-gray-100 p-6 space-y-5">
                 <p className="text-sm text-gray-600 leading-relaxed">
-                  <strong>Interchange</strong> is the fee paid by the merchant's bank (acquirer) to the card issuer (VMS) on every transaction. As a Visa/MC principal member, VMS earns interchange directly on every card transaction processed globally.
+                  <strong>Interchange</strong> is the fee paid by the merchant's bank (acquirer) to the card issuer (VINK) on every transaction. As a Visa/MC principal member, VINK earns interchange directly on every card transaction processed globally.
                 </p>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>

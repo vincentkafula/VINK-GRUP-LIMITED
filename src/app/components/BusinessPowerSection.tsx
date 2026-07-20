@@ -37,7 +37,7 @@ export const BusinessPowerSection = memo(function BusinessPowerSection() {
               when you open a Vink Business Account this month.
             </h2>
             <p className="text-white/60 text-sm leading-relaxed mb-7 max-w-md mx-auto lg:mx-0">
-              VMS Business Banking is designed for the operators who keep South Africa moving — taxi associations, fleet owners, fuel stations, gym franchises, and independent retailers. Get instant settlements, no hidden fees, and a payment infrastructure that scales with you.
+              VINK Business Banking is designed for the operators who keep South Africa moving — taxi associations, fleet owners, fuel stations, gym franchises, and independent retailers. Get instant settlements, no hidden fees, and a payment infrastructure that scales with you.
             </p>
             <ul className="space-y-2.5 mb-8 text-left max-w-md mx-auto lg:mx-0">
               {PERKS.map((perk, i) => (

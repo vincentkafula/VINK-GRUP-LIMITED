@@ -1,5 +1,5 @@
 /**
- * VMS Bank — Admin Applications Dashboard
+ * VINK Bank — Admin Applications Dashboard
  * Connected to Supabase via applicationsApi
  */
 import { useState, useEffect, useCallback } from "react";
@@ -236,7 +236,7 @@ export function AdminApplicationsViewer({ isOpen, onClose }: Props) {
             <img src={vinkLogo} alt="Vink" className="h-9 w-auto object-contain" />
             <div className="border-l border-gray-200 pl-3 hidden sm:block">
               <p className="text-sm font-black text-gray-800">Applications Dashboard</p>
-              <p className="text-[11px] text-gray-400">VMS Bank · Admin · Supabase Connected</p>
+              <p className="text-[11px] text-gray-400">VINK Bank · Admin · Supabase Connected</p>
             </div>
           </div>
           <div className="flex items-center gap-2">

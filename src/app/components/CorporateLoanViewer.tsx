@@ -47,7 +47,7 @@ const SECTIONS: Section[] = [
         price: "R170",
         features: [
           "Annual turnover: R0 to R500 million",
-          "Free Vms Online Banking and NotifyMes",
+          "Free Vink Online Banking and NotifyMes",
           "Suitable for all business segments and sectors",
           "Shariah-compliant option available",
           "Free Online Banking and NotifyMes",
@@ -62,7 +62,7 @@ const SECTIONS: Section[] = [
         features: [
           "Annual turnover: R0 to R500 million",
           "35 electronic transactions",
-          "10 cash deposits/withdrawals at any Vms ATM (capped at R50,000 per month)",
+          "10 cash deposits/withdrawals at any Vink ATM (capped at R50,000 per month)",
           "Suitable for all business segments and sectors",
           "Free Online Banking and NotifyMes",
           "Limited to Sole Proprietors",
@@ -75,7 +75,7 @@ const SECTIONS: Section[] = [
         features: [
           "Annual turnover: R0 to R500 million",
           "60 electronic transactions",
-          "15 cash deposits/withdrawals at any Vms ATM (capped at R100,000 per month)",
+          "15 cash deposits/withdrawals at any Vink ATM (capped at R100,000 per month)",
           "Suitable for all business segments and sectors",
           "Free Online Banking and NotifyMes",
           "Suitable for all business segments and sectors",
@@ -92,7 +92,7 @@ const SECTIONS: Section[] = [
         price: "R170",
         features: [
           "Annual turnover: R0 to R500 million",
-          "Free Vms Online Banking and NotifyMes",
+          "Free Vink Online Banking and NotifyMes",
           "Suitable for all business segments and sectors",
           "Shariah-compliant option available",
         ],
@@ -103,7 +103,7 @@ const SECTIONS: Section[] = [
         features: [
           "Annual turnover: R0 to R500 million",
           "35 electronic transactions",
-          "10 cash deposits/withdrawals at any Vms ATM (capped at R50,000 per month)",
+          "10 cash deposits/withdrawals at any Vink ATM (capped at R50,000 per month)",
           "Suitable for all business segments and sectors",
         ],
       },
@@ -113,7 +113,7 @@ const SECTIONS: Section[] = [
         features: [
           "Annual turnover: R0 to R500 million",
           "60 electronic transactions",
-          "15 cash deposits/withdrawals at any Vms ATM (capped at R100,000 per month)",
+          "15 cash deposits/withdrawals at any Vink ATM (capped at R100,000 per month)",
           "Suitable for all business segments and sectors",
         ],
       },
@@ -129,7 +129,7 @@ export function CorporateLoanViewer({ isOpen, onClose }: Props) {
 
       {/* Top Nav */}
       <header className="bg-white border-b flex items-center px-6 h-[52px] gap-8" style={{ borderColor: "#ddd" }}>
-        <img src={vinkLogo} alt="VMS" className="h-8 w-auto object-contain" />
+        <img src={vinkLogo} alt="VINK" className="h-8 w-auto object-contain" />
         <nav className="flex flex-1 h-full">
           {["Personal", "Business", "Corporate", "Marketplace"].map((item) => (
             <span

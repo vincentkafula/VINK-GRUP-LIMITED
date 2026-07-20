@@ -11,7 +11,7 @@ const ROW2 = [
     name: "Retail Rewards", price: "R170",
     features: [
       "Earn double VinkPoints at Pick n Pay, Shoprite, Checkers, and Spar",
-      "Redeem in-store or on the VMS app",
+      "Redeem in-store or on the VINK app",
       "Selected independent retailers included",
     ],
   },

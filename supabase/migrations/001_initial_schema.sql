@@ -1,7 +1,7 @@
 -- ═══════════════════════════════════════════════════════════════════════════════
--- VMS GROUP — PRODUCTION DATABASE SCHEMA
+-- VINK GROUP — PRODUCTION DATABASE SCHEMA
 -- Migration: 001_initial_schema.sql
--- Description: Complete production schema for VMS banking, transport, and travel platform
+-- Description: Complete production schema for VINK banking, transport, and travel platform
 -- ═══════════════════════════════════════════════════════════════════════════════
 
 -- Enable required extensions
@@ -61,7 +61,7 @@ CREATE TABLE profiles (
   theme_pref          TEXT DEFAULT 'light',
   onboarding_complete BOOLEAN DEFAULT false,
   onboarding_step     INTEGER DEFAULT 0,
-  referral_code       TEXT UNIQUE DEFAULT 'VMS-' || UPPER(SUBSTRING(gen_random_uuid()::TEXT, 1, 8)),
+  referral_code       TEXT UNIQUE DEFAULT 'VINK-' || UPPER(SUBSTRING(gen_random_uuid()::TEXT, 1, 8)),
   referred_by         TEXT,
   last_login_at       TIMESTAMPTZ,
   created_at          TIMESTAMPTZ DEFAULT NOW(),
@@ -73,7 +73,7 @@ CREATE TABLE profiles (
 CREATE TABLE bank_accounts (
   id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   profile_id          UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  account_number      TEXT UNIQUE NOT NULL DEFAULT 'VMS' || LPAD(FLOOR(RANDOM() * 1000000000)::TEXT, 9, '0'),
+  account_number      TEXT UNIQUE NOT NULL DEFAULT 'VINK' || LPAD(FLOOR(RANDOM() * 1000000000)::TEXT, 9, '0'),
   account_type        TEXT NOT NULL,            -- 'everyday','student','premium','savings','business','corporate'
   account_name        TEXT NOT NULL,
   currency            currency_code DEFAULT 'ZAR',
@@ -82,8 +82,8 @@ CREATE TABLE bank_accounts (
   reserved_balance    DECIMAL(18,2) DEFAULT 0.00,
   overdraft_limit     DECIMAL(18,2) DEFAULT 0.00,
   status              TEXT DEFAULT 'active',    -- active, dormant, closed, frozen
-  branch_code         TEXT DEFAULT '632005',    -- VMS default branch
-  swift_code          TEXT DEFAULT 'VMSBZAJJ',
+  branch_code         TEXT DEFAULT '632005',    -- VINK default branch
+  swift_code          TEXT DEFAULT 'VINKZAJJ',
   interest_rate       DECIMAL(5,4) DEFAULT 0.0000,
   monthly_fee         DECIMAL(8,2) DEFAULT 0.00,
   is_primary          BOOLEAN DEFAULT false,
@@ -392,7 +392,7 @@ CREATE TABLE afc_taps (
   -- Revenue split (auto-calculated)
   split_passenger     DECIMAL(8,2) DEFAULT 0.50,
   split_driver        DECIMAL(8,2) DEFAULT 0.50,
-  split_vms           DECIMAL(8,2) DEFAULT 1.00,
+  split_vink           DECIMAL(8,2) DEFAULT 1.00,
   split_investor      DECIMAL(8,2) DEFAULT 0.10,
   split_association   DECIMAL(8,2) DEFAULT 0.00,
   split_marshall      DECIMAL(8,2) DEFAULT 0.00,
@@ -836,10 +836,10 @@ ON CONFLICT (from_currency, to_currency) DO NOTHING;
 -- ─── SEED: CLUB ROUTES ────────────────────────────────────────────────────────
 
 INSERT INTO club_routes (type, origin, destination, origin_code, destination_code, operator_name, departure_date, return_date, departure_time, total_seats, seats_booked, member_price, retail_price, status, visa_required, includes, description) VALUES
-  ('flight','Cape Town','New York','CPT','JFK','Emirates / codeshare','2026-07-15','2026-09-15','10:30',40,14,18500.00,27000.00,'filling_fast',true,'{"Return flight","23kg checked baggage","Meals included","Airport transfers"}','VMS Club deal — Cape Town to New York return. Pre-negotiated group rate with Emirates. Book your seat now and pay only R3,000 deposit.'),
+  ('flight','Cape Town','New York','CPT','JFK','Emirates / codeshare','2026-07-15','2026-09-15','10:30',40,14,18500.00,27000.00,'filling_fast',true,'{"Return flight","23kg checked baggage","Meals included","Airport transfers"}','VINK Club deal — Cape Town to New York return. Pre-negotiated group rate with Emirates. Book your seat now and pay only R3,000 deposit.'),
   ('flight','Cape Town','London','CPT','LHR','British Airways','2026-07-20','2026-08-30','08:15',35,8,14800.00,22000.00,'open',true,'{"Return flight","23kg baggage","Meals","City transfer"}','Direct group booking on British Airways. Secure your seat with just R2,500 deposit.'),
   ('flight','Cape Town','Dubai','CPT','DXB','Emirates','2026-08-01','2026-08-21','22:45',50,22,9200.00,14500.00,'filling_fast',false,'{"Return flight","30kg baggage","Meals","Hotel transfers"}','Emirates group deal — Cape Town to Dubai return. No visa required for SA passport holders.'),
-  ('bus','Cape Town','Pretoria','CPT','PRY','Intercape / VMS Charter','2026-07-15','2026-09-15','07:00',55,31,890.00,1400.00,'filling_fast',false,'{"Luxury coach","Onboard refreshments","WiFi","USB charging","1 luggage"}','VMS charter luxury coach. Departs Cape Town (Bellville terminal) 07:00, arrives Pretoria 22:00.'),
-  ('bus','Cape Town','Johannesburg','CPT','JHB','Greyhound / VMS','2026-07-15','2026-09-15','06:30',60,19,750.00,1200.00,'open',false,'{"Luxury coach","Refreshments","WiFi","USB charging"}','Cape Town to Johannesburg (Park Station). Departs 06:30, arrives 20:30.'),
-  ('bus','Cape Town','Durban','CPT','DUR','VMS Luxury Coach','2026-07-20','2026-09-01','05:00',50,12,1050.00,1600.00,'open',false,'{"Luxury coach","Meals","WiFi","USB charging","Blanket pillow"}','Cape Town to Durban along the Garden Route. Scenic 18-hour journey with meal stops.')
+  ('bus','Cape Town','Pretoria','CPT','PRY','Intercape / VINK Charter','2026-07-15','2026-09-15','07:00',55,31,890.00,1400.00,'filling_fast',false,'{"Luxury coach","Onboard refreshments","WiFi","USB charging","1 luggage"}','VINK charter luxury coach. Departs Cape Town (Bellville terminal) 07:00, arrives Pretoria 22:00.'),
+  ('bus','Cape Town','Johannesburg','CPT','JHB','Greyhound / VINK','2026-07-15','2026-09-15','06:30',60,19,750.00,1200.00,'open',false,'{"Luxury coach","Refreshments","WiFi","USB charging"}','Cape Town to Johannesburg (Park Station). Departs 06:30, arrives 20:30.'),
+  ('bus','Cape Town','Durban','CPT','DUR','VINK Luxury Coach','2026-07-20','2026-09-01','05:00',50,12,1050.00,1600.00,'open',false,'{"Luxury coach","Meals","WiFi","USB charging","Blanket pillow"}','Cape Town to Durban along the Garden Route. Scenic 18-hour journey with meal stops.')
 ON CONFLICT DO NOTHING;

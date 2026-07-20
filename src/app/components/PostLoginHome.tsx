@@ -38,7 +38,7 @@ const MENU_ROWS = [
     { id: "insurance",label: "Insurance",   icon: <ShieldCheck className="w-6 h-6" />,     gradient: "from-[#10B981] to-[#047857]", glow: "#10B981" },
   ],
   [
-    { id: "vmstv",    label: "VMS TV",      icon: <Tv className="w-6 h-6" />,              gradient: "from-[#7C3AED] to-[#5B21B6]", glow: "#7C3AED" },
+    { id: "vinktv",    label: "VINK TV",      icon: <Tv className="w-6 h-6" />,              gradient: "from-[#7C3AED] to-[#5B21B6]", glow: "#7C3AED" },
     { id: "cardless", label: "Cardless Cash",icon: <Banknote className="w-6 h-6" />,       gradient: "from-[#D97706] to-[#92400E]", glow: "#D97706" },
     { id: "elections",label: "Elections",   icon: <Vote className="w-6 h-6" />,            gradient: "from-[#0891B2] to-[#164E63]", glow: "#0891B2" },
   ],

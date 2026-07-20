@@ -33,8 +33,8 @@ export const nostroAccounts: NostroAccount[] = [
 // ─── Demo Unified Accounts ────────────────────────────────────────────────────
 export const unifiedAccounts: UnifiedAccount[] = [
   {
-    id: "acct-001", referenceNumber: "VMS-GBL-2024-00001",
-    customerId: "cust-001", customerName: "Vincent Kafula", email: "vincent@vink.com", phone: "+27 21 007 0772",
+    id: "acct-001", referenceNumber: "VINK-GBL-2024-00001",
+    customerId: "cust-001", customerName: "Vincent Kafula", email: "vincent@vink.co.za", phone: "+27 21 007 0772",
     baseCurrency: "ZAR", kycStatus: "approved", amlFlag: "clear", tier: "corporate",
     createdAt: "2024-01-15T08:00:00Z", lastActivityAt: new Date().toISOString(),
     balances: { ZAR: 847_250.00, USD: 45_820.00, EUR: 38_450.00, ZMW: 124_800.00, CNY: 298_450.00 },
@@ -42,8 +42,8 @@ export const unifiedAccounts: UnifiedAccount[] = [
     subAccountIds: [], popiaConcent: true, gdprConsent: true, fatfChecked: true,
   },
   {
-    id: "acct-002", referenceNumber: "VMS-GBL-2024-00247",
-    customerId: "cust-002", customerName: "Nomsa Zulu", email: "nomsa@vink.com", phone: "+27 82 334 7821",
+    id: "acct-002", referenceNumber: "VINK-GBL-2024-00247",
+    customerId: "cust-002", customerName: "Nomsa Zulu", email: "nomsa@vink.co.za", phone: "+27 82 334 7821",
     baseCurrency: "ZAR", kycStatus: "approved", amlFlag: "clear", tier: "premium",
     createdAt: "2024-03-22T10:30:00Z", lastActivityAt: new Date().toISOString(),
     balances: { ZAR: 124_890.00, USD: 8_240.00, EUR: 0, ZMW: 0, CNY: 45_200.00 },
@@ -51,8 +51,8 @@ export const unifiedAccounts: UnifiedAccount[] = [
     subAccountIds: [], popiaConcent: true, gdprConsent: false, fatfChecked: true,
   },
   {
-    id: "acct-003", referenceNumber: "VMS-GBL-2024-00891",
-    customerId: "cust-003", customerName: "Thabo Dlamini", email: "thabo@vink.com", phone: "+260 977 881 234",
+    id: "acct-003", referenceNumber: "VINK-GBL-2024-00891",
+    customerId: "cust-003", customerName: "Thabo Dlamini", email: "thabo@vink.co.za", phone: "+260 977 881 234",
     baseCurrency: "ZMW", kycStatus: "pending", amlFlag: "clear", tier: "standard",
     createdAt: "2024-05-10T14:00:00Z", lastActivityAt: new Date().toISOString(),
     balances: { ZAR: 0, USD: 2_150.00, EUR: 0, ZMW: 48_920.00, CNY: 0 },
@@ -91,7 +91,7 @@ export const globalTransactions: GlobalTransaction[] = [
   mkTxn({ description: "Shell Garage N2", merchantName: "Shell", merchantCategory: "Fuel", merchantCountry: "ZA", localAmount: 1245.00, billedAmount: 1245.00, interchangeEarned: 12.45 }),
   mkTxn({ cardId: "card-002", description: "Amazon DE Order", merchantName: "Amazon", merchantCategory: "E-commerce", merchantCountry: "EU", localAmount: 89.99, localCurrency: "EUR", billedAmount: 1794.22, billedCurrency: "ZAR", fxRate: 19.93, fxFee: 44.86, interchangeEarned: 9.90, domesticRouting: true }),
   mkTxn({ cardId: "card-003", description: "AWS Cloud Services", merchantName: "Amazon Web Services", merchantCategory: "Technology", merchantCountry: "US", localAmount: 842.00, localCurrency: "USD", billedAmount: 842.00, billedCurrency: "USD", interchangeEarned: 15.16, domesticRouting: true }),
-  mkTxn({ channel: "p2p", direction: "credit", description: "P2P from VMS-GBL-2024-00247", localAmount: 5000, billedAmount: 5000, merchantName: "Nomsa Zulu", interchangeEarned: 0 }),
+  mkTxn({ channel: "p2p", direction: "credit", description: "P2P from VINK-GBL-2024-00247", localAmount: 5000, billedAmount: 5000, merchantName: "Nomsa Zulu", interchangeEarned: 0 }),
   mkTxn({ channel: "deposit", direction: "credit", description: "EFT Deposit - Salary", localAmount: 85000, billedAmount: 85000, merchantName: "Vink Group (Pty) Ltd", interchangeEarned: 0 }),
   mkTxn({ channel: "atm", description: "ATM Withdrawal Standard Bank CPT", merchantName: "Standard Bank ATM", merchantCountry: "ZA", localAmount: 2000, billedAmount: 2000, interchangeEarned: 2.00 }),
   mkTxn({ cardId: "card-002", description: "Revolut Top-up EUR", merchantName: "Revolut", merchantCategory: "Finance", merchantCountry: "EU", localAmount: 500, localCurrency: "EUR", billedAmount: 9965, billedCurrency: "ZAR", fxRate: 19.93, fxFee: 249.13, interchangeEarned: 7.00, domesticRouting: true }),
@@ -110,15 +110,15 @@ export const fxConversions: FxConversion[] = [
 
 // ─── Deposits ────────────────────────────────────────────────────────────────
 export const depositRecords: DepositRecord[] = [
-  { id: uuid(), accountId: "acct-001", channel: "eft", amount: 85000, currency: "ZAR", reference: "VMS-GBL-2024-00001", senderName: "Vink Group", senderAccount: "000987654321", nostroAccountId: "na-za", status: "credited", creditedAmount: 85000, creditedCurrency: "ZAR", fxRate: null, createdAt: new Date(Date.now() - 7200000).toISOString(), creditedAt: new Date(Date.now() - 7180000).toISOString() },
-  { id: uuid(), accountId: "acct-001", channel: "sepa", amount: 2500, currency: "EUR", reference: "VMS-GBL-2024-00001", senderName: "EU Partner GmbH", senderAccount: "DE89370400440532013000", nostroAccountId: "na-eu", status: "credited", creditedAmount: 2500, creditedCurrency: "EUR", fxRate: null, createdAt: new Date(Date.now() - 86400000).toISOString(), creditedAt: new Date(Date.now() - 86300000).toISOString() },
-  { id: uuid(), accountId: "acct-003", channel: "mobile_money", amount: 5000, currency: "ZMW", reference: "VMS-GBL-2024-00891", senderName: "MTN Mobile Money", senderAccount: "+260977881234", nostroAccountId: "na-zm", status: "credited", creditedAmount: 5000, creditedCurrency: "ZMW", fxRate: null, createdAt: new Date(Date.now() - 3600000).toISOString(), creditedAt: new Date(Date.now() - 3590000).toISOString() },
+  { id: uuid(), accountId: "acct-001", channel: "eft", amount: 85000, currency: "ZAR", reference: "VINK-GBL-2024-00001", senderName: "Vink Group", senderAccount: "000987654321", nostroAccountId: "na-za", status: "credited", creditedAmount: 85000, creditedCurrency: "ZAR", fxRate: null, createdAt: new Date(Date.now() - 7200000).toISOString(), creditedAt: new Date(Date.now() - 7180000).toISOString() },
+  { id: uuid(), accountId: "acct-001", channel: "sepa", amount: 2500, currency: "EUR", reference: "VINK-GBL-2024-00001", senderName: "EU Partner GmbH", senderAccount: "DE89370400440532013000", nostroAccountId: "na-eu", status: "credited", creditedAmount: 2500, creditedCurrency: "EUR", fxRate: null, createdAt: new Date(Date.now() - 86400000).toISOString(), creditedAt: new Date(Date.now() - 86300000).toISOString() },
+  { id: uuid(), accountId: "acct-003", channel: "mobile_money", amount: 5000, currency: "ZMW", reference: "VINK-GBL-2024-00891", senderName: "MTN Mobile Money", senderAccount: "+260977881234", nostroAccountId: "na-zm", status: "credited", creditedAmount: 5000, creditedCurrency: "ZMW", fxRate: null, createdAt: new Date(Date.now() - 3600000).toISOString(), creditedAt: new Date(Date.now() - 3590000).toISOString() },
 ];
 
 // ─── KYC Records ─────────────────────────────────────────────────────────────
 export const kycRecords: KycRecord[] = [
-  { id: uuid(), accountId: "acct-001", status: "approved", tier: "full", documentType: "passport", documentNumber: "A12345678", documentCountry: "ZA", documentExpiry: "2029-04-15", selfieVerified: true, addressVerified: true, pepScreened: true, sanctionsScreened: true, faceMatchScore: 97.4, submittedAt: "2024-01-15T08:00:00Z", reviewedAt: "2024-01-16T10:30:00Z", reviewedBy: "compliance@vink.com", expiresAt: "2027-01-15T08:00:00Z", rejectionReason: null },
-  { id: uuid(), accountId: "acct-002", status: "approved", tier: "enhanced", documentType: "national_id", documentNumber: "8912245082082", documentCountry: "ZA", documentExpiry: "2031-01-01", selfieVerified: true, addressVerified: true, pepScreened: true, sanctionsScreened: true, faceMatchScore: 94.2, submittedAt: "2024-03-22T10:30:00Z", reviewedAt: "2024-03-23T09:00:00Z", reviewedBy: "compliance@vink.com", expiresAt: "2027-03-22T10:30:00Z", rejectionReason: null },
+  { id: uuid(), accountId: "acct-001", status: "approved", tier: "full", documentType: "passport", documentNumber: "A12345678", documentCountry: "ZA", documentExpiry: "2029-04-15", selfieVerified: true, addressVerified: true, pepScreened: true, sanctionsScreened: true, faceMatchScore: 97.4, submittedAt: "2024-01-15T08:00:00Z", reviewedAt: "2024-01-16T10:30:00Z", reviewedBy: "compliance@vink.co.za", expiresAt: "2027-01-15T08:00:00Z", rejectionReason: null },
+  { id: uuid(), accountId: "acct-002", status: "approved", tier: "enhanced", documentType: "national_id", documentNumber: "8912245082082", documentCountry: "ZA", documentExpiry: "2031-01-01", selfieVerified: true, addressVerified: true, pepScreened: true, sanctionsScreened: true, faceMatchScore: 94.2, submittedAt: "2024-03-22T10:30:00Z", reviewedAt: "2024-03-23T09:00:00Z", reviewedBy: "compliance@vink.co.za", expiresAt: "2027-03-22T10:30:00Z", rejectionReason: null },
   { id: uuid(), accountId: "acct-003", status: "pending", tier: "basic", documentType: "national_id", documentNumber: "NRC/234567/89/1", documentCountry: "ZM", documentExpiry: "2028-06-30", selfieVerified: true, addressVerified: false, pepScreened: false, sanctionsScreened: false, faceMatchScore: 88.1, submittedAt: "2024-05-10T14:00:00Z", reviewedAt: null, reviewedBy: null, expiresAt: null, rejectionReason: null },
 ];
 
@@ -131,7 +131,7 @@ export const amlChecks: AmlCheck[] = [
 
 // ─── P2P Transfers ────────────────────────────────────────────────────────────
 export const p2pTransfers: P2PTransfer[] = [
-  { id: uuid(), senderAccountId: "acct-002", recipientReferenceNumber: "VMS-GBL-2024-00001", recipientName: "Vincent Kafula", amount: 5000, currency: "ZAR", note: "Reimbursement", status: "completed", createdAt: new Date(Date.now() - 86400000).toISOString(), completedAt: new Date(Date.now() - 86390000).toISOString() },
+  { id: uuid(), senderAccountId: "acct-002", recipientReferenceNumber: "VINK-GBL-2024-00001", recipientName: "Vincent Kafula", amount: 5000, currency: "ZAR", note: "Reimbursement", status: "completed", createdAt: new Date(Date.now() - 86400000).toISOString(), completedAt: new Date(Date.now() - 86390000).toISOString() },
 ];
 
 // ─── KPI snapshot ─────────────────────────────────────────────────────────────

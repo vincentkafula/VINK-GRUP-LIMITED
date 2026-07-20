@@ -10,7 +10,7 @@ const GOLD = "#F5A623";
 
 const TRANSACTIONS = [
   { emoji: "🛒", name: "Shoprite Claremont",       amount: -284.50,  date: "Today",    cat: "Grocery" },
-  { emoji: "💰", name: "Salary — VMS Corp",         amount: 18500.00, date: "Today",    cat: "Income" },
+  { emoji: "💰", name: "Salary — VINK Corp",         amount: 18500.00, date: "Today",    cat: "Income" },
   { emoji: "⛽", name: "Shell Garage Observatory",  amount: -650.00,  date: "Yesterday",cat: "Fuel" },
   { emoji: "🏋️", name: "Planet Fitness",            amount: -299.00,  date: "18 Jun",   cat: "Health" },
   { emoji: "📺", name: "Netflix",                   amount: -199.00,  date: "17 Jun",   cat: "Entertainment" },
@@ -116,7 +116,7 @@ function HomeScreen() {
       <div className="mx-3 mt-3 mb-4 rounded-2xl p-3 flex items-center gap-3" style={{ background: `${GOLD}22`, border: `1px solid ${GOLD}55` }}>
         <span className="text-2xl">🎁</span>
         <div>
-          <p className="text-xs font-bold" style={{ color: PURPLE }}>Free Wi-Fi on VMS taxis!</p>
+          <p className="text-xs font-bold" style={{ color: PURPLE }}>Free Wi-Fi on VINK taxis!</p>
           <p className="text-gray-500 text-[10px]">Earn 2× VinkPoints on taxi rides this week</p>
         </div>
       </div>
@@ -125,9 +125,9 @@ function HomeScreen() {
 }
 
 const RECENT_RECIPIENTS = [
-  { initials: "SD", name: "Sipho D.",    ref: "VMS-GBL-2024-00002" },
-  { initials: "LM", name: "Lindiwe M.", ref: "VMS-GBL-2024-00003" },
-  { initials: "BZ", name: "Busisiwe Z.", ref: "VMS-GBL-2024-00004" },
+  { initials: "SD", name: "Sipho D.",    ref: "VINK-GBL-2024-00002" },
+  { initials: "LM", name: "Lindiwe M.", ref: "VINK-GBL-2024-00003" },
+  { initials: "BZ", name: "Busisiwe Z.", ref: "VINK-GBL-2024-00004" },
 ];
 
 function SendScreen() {
@@ -187,7 +187,7 @@ function SendScreen() {
         <div>
           <label className="text-gray-500 text-xs font-semibold">To (Vink Reference or Phone)</label>
           <input type="text" value={recipient} onChange={e => setRecipient(e.target.value)}
-            placeholder="VMS-GBL-2024-XXXXX or 082 555 1234"
+            placeholder="VINK-GBL-2024-XXXXX or 082 555 1234"
             className="w-full mt-1.5 px-3 py-2.5 rounded-xl text-sm bg-white border text-gray-800 outline-none"
             style={{ borderColor: `${PURPLE}33` }} />
         </div>

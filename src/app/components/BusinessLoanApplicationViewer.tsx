@@ -92,7 +92,7 @@ export function BusinessLoanApplicationViewer({ isOpen, onClose }: Props) {
 
       {/* ── Hero ── */}
       <AppHero
-        tag="VMS Business Banking · NCRCP Licensed"
+        tag="VINK Business Banking · NCRCP Licensed"
         title="Small Business Loan Application"
         subtitle="Fast, transparent funding for South African businesses. Complete all 7 steps to receive your decision."
         gradient={`linear-gradient(135deg,${CP} 0%,#3d1d63 50%,#7B4DB5 100%)`}
@@ -356,7 +356,7 @@ export function BusinessLoanApplicationViewer({ isOpen, onClose }: Props) {
               </Field>
             </div>
 
-            <p className="text-xs text-gray-400">Add more directors by contacting your VMS relationship manager after submission.</p>
+            <p className="text-xs text-gray-400">Add more directors by contacting your VINK relationship manager after submission.</p>
           </FormCard>
         )}
 
@@ -432,12 +432,12 @@ export function BusinessLoanApplicationViewer({ isOpen, onClose }: Props) {
                 </div>
                 <h2 className="text-2xl font-black text-gray-900">Application Submitted!</h2>
                 <p className="text-gray-600 text-sm leading-relaxed max-w-md mx-auto">
-                  Your business loan application has been received. A VMS credit officer will review your application and contact you at <strong>{form.contactNumber}</strong> within <strong>2 business days</strong>.
+                  Your business loan application has been received. A VINK credit officer will review your application and contact you at <strong>{form.contactNumber}</strong> within <strong>2 business days</strong>.
                 </p>
                 <div className="rounded-xl p-4 mt-2" style={{ background: "#F3F0FB" }}>
                   <p className="text-xs text-gray-500 mb-1">Application reference number</p>
                   <p className="font-black text-lg" style={{ color: CP }}>
-                    VMS-BL-{new Date().getFullYear()}-{Math.floor(Math.random() * 90000 + 10000)}
+                    VINK-BL-{new Date().getFullYear()}-{Math.floor(Math.random() * 90000 + 10000)}
                   </p>
                 </div>
                 <p className="text-xs text-gray-400">
@@ -446,7 +446,7 @@ export function BusinessLoanApplicationViewer({ isOpen, onClose }: Props) {
                 <button onClick={onClose}
                   className="mt-4 px-8 py-3 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90"
                   style={{ background: CP }}>
-                  Back to VMS
+                  Back to VINK
                 </button>
               </div>
             )}

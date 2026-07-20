@@ -386,7 +386,7 @@ function SettingsScreen() {
         {/* Device info */}
         <div className="rounded-2xl p-4 space-y-2" style={{ background: "#0F1E3A" }}>
           <p className="text-gray-400 text-[10px] font-semibold uppercase tracking-wider mb-2">Device Info</p>
-          {[["Fleet Unit ID","VMS-FCT-0047"],["Firmware","v3.2.1"],["Last Sync","2 min ago"],["SIM","MTN Fleet 087-234-5678"]].map(([k,v]) => (
+          {[["Fleet Unit ID","VINK-FCT-0047"],["Firmware","v3.2.1"],["Last Sync","2 min ago"],["SIM","MTN Fleet 087-234-5678"]].map(([k,v]) => (
             <div key={k} className="flex justify-between">
               <span className="text-gray-400 text-xs">{k}</span>
               <span className="text-gray-200 text-xs font-medium">{v}</span>

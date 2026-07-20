@@ -66,7 +66,7 @@ export function ApplyModal({ isOpen, onClose, product, tier, price }: Props) {
             <CheckCircle className="w-14 h-14 text-green-500 mx-auto mb-4" />
             <h3 className="text-xl font-black text-gray-900 mb-2">You&apos;re all set!</h3>
             <p className="text-gray-600 text-sm mb-4 leading-relaxed">
-              Your application for <strong>{product}</strong> has been received. A VMS advisor will contact you at <strong>{form.email}</strong> within 1 business day.
+              Your application for <strong>{product}</strong> has been received. A VINK advisor will contact you at <strong>{form.email}</strong> within 1 business day.
             </p>
             <div className="bg-gray-50 rounded-xl p-4 mb-5">
               <p className="text-xs text-gray-500 mb-1">Reference Number</p>
@@ -130,7 +130,7 @@ export function ApplyModal({ isOpen, onClose, product, tier, price }: Props) {
             </div>
 
             <p className="text-[10px] text-gray-400 leading-relaxed">
-              By submitting this application you consent to VMS processing your personal information in accordance with POPIA. A soft credit inquiry may be performed.
+              By submitting this application you consent to VINK processing your personal information in accordance with POPIA. A soft credit inquiry may be performed.
             </p>
 
             <button onClick={handleSubmit} disabled={submitting}

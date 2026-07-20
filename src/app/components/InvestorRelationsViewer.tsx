@@ -33,13 +33,13 @@ const REASONS = [
   {
     title: "Exceeding expectations",
     icon: "🚀",
-    text: "VMS has surpassed consensus earnings forecasts in each of the last eight quarters, driven by accelerated digital adoption, cost efficiency programmes and strategic corporate acquisitions.",
+    text: "VINK has surpassed consensus earnings forecasts in each of the last eight quarters, driven by accelerated digital adoption, cost efficiency programmes and strategic corporate acquisitions.",
   },
 ];
 
 const SHARE_ROWS = [
   { label: "LAST PRICE",         value: "2.60 ZAR" },
-  { label: "PROPOSED TICKER",    value: "R.SX: VMS" },
+  { label: "PROPOSED TICKER",    value: "R.SX: VINK" },
   { label: "REGISTRATION",       value: "2018/079316/07" },
   { label: "ANNUAL GROWTH",      value: "7.5% p.a." },
   { label: "FUNDING RAISED",     value: "R4.5 Billion" },
@@ -49,10 +49,10 @@ const SHARE_ROWS = [
 ];
 
 const INVESTOR_NEWS = [
-  { date: "15 Jun 2022", title: "VMS Quarterly Financial Statements for the quarter ended 15 June 2022", type: "PDF", color: "#EF4444" },
-  { date: "17 Mar 2022", title: "VMS Quarterly Financial Statements for the quarter ended 17 March 2022", type: "PDF", color: "#EF4444" },
-  { date: "02 Feb 2022", title: "VMS: Release of 2021–2022 Annual Report", type: "PDF", color: "#EF4444" },
-  { date: "14 Nov 2021", title: "VMS Notice of Annual General Meeting — November 2021", type: "PDF", color: "#EF4444" },
+  { date: "15 Jun 2022", title: "VINK Quarterly Financial Statements for the quarter ended 15 June 2022", type: "PDF", color: "#EF4444" },
+  { date: "17 Mar 2022", title: "VINK Quarterly Financial Statements for the quarter ended 17 March 2022", type: "PDF", color: "#EF4444" },
+  { date: "02 Feb 2022", title: "VINK: Release of 2021–2022 Annual Report", type: "PDF", color: "#EF4444" },
+  { date: "14 Nov 2021", title: "VINK Notice of Annual General Meeting — November 2021", type: "PDF", color: "#EF4444" },
 ];
 
 const DOCS = [
@@ -137,7 +137,7 @@ const RESPONSIBILITIES = [
   {
     title: "Strategic Direction",
     icon: "🎯",
-    text: "The Board is responsible for setting the strategic direction of VMS, approving major decisions and ensuring these are aligned with the long-term interests of shareholders and all stakeholders.",
+    text: "The Board is responsible for setting the strategic direction of VINK, approving major decisions and ensuring these are aligned with the long-term interests of shareholders and all stakeholders.",
   },
   {
     title: "Financial Oversight",
@@ -157,7 +157,7 @@ const RESPONSIBILITIES = [
   {
     title: "Stakeholder Engagement",
     icon: "🤝",
-    text: "The Board promotes open and transparent communication with shareholders, regulators, employees, customers and communities in which VMS operates.",
+    text: "The Board promotes open and transparent communication with shareholders, regulators, employees, customers and communities in which VINK operates.",
   },
   {
     title: "Risk Management",
@@ -220,11 +220,11 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
       {/* ── Hero banner ── */}
       <div className="px-6 py-8" style={{ background: `linear-gradient(135deg,${PD} 0%,${P} 60%,#7B4DB5 100%)` }}>
         <div className="max-w-5xl mx-auto">
-          <p className="text-white/60 text-xs uppercase tracking-widest mb-1">VMS Bank · Corporate</p>
+          <p className="text-white/60 text-xs uppercase tracking-widest mb-1">VINK Bank · Corporate</p>
           <h1 className="text-3xl md:text-4xl font-black text-white mb-1">Investor Relations</h1>
           <p className="text-white/70 text-sm mb-6">FY – 2022</p>
           <p className="text-white/80 text-sm max-w-2xl leading-relaxed mb-6">
-            In 2022, Vink Group achieved a historic milestone: South Africa's first transport-native digital bank, processing over 250,000 AFC device transactions with a projected Year 1 revenue of R74.2 billion. Registered under CIPC number 2018/079316/07, VMS is building the financial infrastructure that 15 million daily commuters deserve.
+            In 2022, Vink Group achieved a historic milestone: South Africa's first transport-native digital bank, processing over 250,000 AFC device transactions with a projected Year 1 revenue of R74.2 billion. Registered under CIPC number 2018/079316/07, VINK is building the financial infrastructure that 15 million daily commuters deserve.
           </p>
 
           {/* KPI cards */}
@@ -258,7 +258,7 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
         {/* ── Company info ── */}
         <div className="grid md:grid-cols-2 gap-6">
           <div>
-            <SectionHeading>VMS MULTI SERVICES PTY LTD</SectionHeading>
+            <SectionHeading>VINK MULTI SERVICES PTY LTD</SectionHeading>
             <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-3">
               <p className="text-sm text-gray-700 leading-relaxed">
                 Vink Group PTY LTD is a professional diversified financial services company. Our commitment to financial excellence drives innovative solutions for banking, insurance, telecommunications and e-mobility services across Southern Africa.
@@ -266,7 +266,7 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
               <div className="border-t pt-3 space-y-2 text-sm">
                 <div className="flex justify-between"><span className="text-gray-500">Sovereign Meeting</span><span className="font-semibold text-gray-800">31 January 2022</span></div>
                 <div className="flex justify-between"><span className="text-gray-500">Meeting Hours</span><span className="font-semibold text-gray-800">3 PM – 5 PM</span></div>
-                <div className="flex justify-between"><span className="text-gray-500">JSE Ticker</span><span className="font-semibold" style={{ color: P }}>R.SX: VMS</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">JSE Ticker</span><span className="font-semibold" style={{ color: P }}>R.SX: VINK</span></div>
                 <div className="flex justify-between"><span className="text-gray-500">Registration</span><span className="font-semibold text-gray-800">2018/079316/07</span></div>
               </div>
             </div>
@@ -293,9 +293,9 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
         {/* ── 3 Reasons ── */}
         <div>
           <h2 className="text-xl font-black text-center mb-2" style={{ color: PD }}>
-            3 Reasons to Consider Investing in VMS MULTI SERVICES PTY LTD
+            3 Reasons to Consider Investing in VINK MULTI SERVICES PTY LTD
           </h2>
-          <p className="text-center text-sm text-gray-500 mb-6">Why sophisticated investors choose VMS</p>
+          <p className="text-center text-sm text-gray-500 mb-6">Why sophisticated investors choose VINK</p>
           <div className="grid sm:grid-cols-3 gap-5">
             {REASONS.map((r) => (
               <div key={r.title} className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow">
@@ -396,7 +396,7 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
           <div className="bg-white rounded-xl border border-gray-200 p-5 mb-5 text-sm text-gray-700 leading-relaxed">
             <div className="flex items-center gap-2 mb-2">
               <BarChart3 className="w-4 h-4 flex-shrink-0" style={{ color: P }} />
-              <span className="font-bold text-gray-900">VMS is committed to the highest standards of corporate governance.</span>
+              <span className="font-bold text-gray-900">VINK is committed to the highest standards of corporate governance.</span>
             </div>
             The Board of Directors is responsible for the overall governance of the company, including setting strategic direction, overseeing management, and ensuring accountability to stakeholders.
           </div>

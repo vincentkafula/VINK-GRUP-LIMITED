@@ -16,7 +16,7 @@ export type NostroCountry = "ZA" | "ZM" | "EU" | "US" | "CN";
 
 export interface UnifiedAccount {
   id: string;
-  referenceNumber: string;   // e.g. VMS-GBL-2024-00001
+  referenceNumber: string;   // e.g. VINK-GBL-2024-00001
   customerId: string;
   customerName: string;
   email: string;
@@ -48,7 +48,7 @@ export interface NostroAccount {
   bankName: string;           // e.g. "Standard Bank ZA", "Zanaco Zambia"
   accountNumber: string;
   swiftBic: string;
-  balance: number;            // VMS's own funds in that country
+  balance: number;            // VINK's own funds in that country
   minReserveRequired: number;
   lastReconciledAt: string;
   status: "active" | "inactive" | "reconciling";
@@ -135,7 +135,7 @@ export interface GlobalTransaction {
   authCode: string | null;
   createdAt: string;
   settledAt: string | null;
-  interchangeEarned: number;   // VMS income on this txn
+  interchangeEarned: number;   // VINK income on this txn
   domesticRouting: boolean;    // true = no international fee
 }
 

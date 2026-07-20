@@ -1,6 +1,6 @@
 const OFFERS = [
   {
-    name: "Vink Everyday Cashback", issuer: "VMS Standard",
+    name: "Vink Everyday Cashback", issuer: "VINK Standard",
     grad: "linear-gradient(135deg,#1A3A6E 0%,#2952B8 60%,#4F79E0 100%)",
     badge: "Best Value", badgeColor: "#10B981",
     highlight: "3% cashback at supermarkets and spaza shops",
@@ -8,7 +8,7 @@ const OFFERS = [
     net: "visa",
   },
   {
-    name: "Vink Rewards Gold", issuer: "VMS Premier",
+    name: "Vink Rewards Gold", issuer: "VINK Premier",
     grad: "linear-gradient(135deg,#7A5C2A 0%,#C4922A 60%,#E6B85A 100%)",
     badge: "Top Pick", badgeColor: "#F59E0B",
     highlight: "Earn 2 VinkPoints per R10 on all spend",
@@ -16,10 +16,10 @@ const OFFERS = [
     net: "amex",
   },
   {
-    name: "Vink Commuter Unlimited", issuer: "VMS Commuter",
+    name: "Vink Commuter Unlimited", issuer: "VINK Commuter",
     grad: "linear-gradient(135deg,#1B4D1B 0%,#2E7D32 60%,#4CAF50 100%)",
     badge: "No Limits", badgeColor: "#3B82F6",
-    highlight: "Unlimited tap-and-go rides on any VMS-enabled taxi",
+    highlight: "Unlimited tap-and-go rides on any VINK-enabled taxi",
     detail: "Free card replacement · No minimum balance required",
     net: "mc",
   },
@@ -80,7 +80,7 @@ export const FeaturedOffersSection = memo(function FeaturedOffersSection() {
           ))}
         </div>
         <p className="text-center text-[11px] text-gray-400 mt-6">
-          Subject to credit approval and FICA verification. Terms and conditions apply. VMS is an authorised Financial Services Provider.
+          Subject to credit approval and FICA verification. Terms and conditions apply. VINK is an authorised Financial Services Provider.
         </p>
       </div>
     </section>

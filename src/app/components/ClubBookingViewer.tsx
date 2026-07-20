@@ -1,7 +1,7 @@
 /**
- * VMS Club Booking System
+ * VINK Club Booking System
  * Group travel — passengers join club routes at bulk prices.
- * VMS pays airline/bus operator when route is full.
+ * VINK pays airline/bus operator when route is full.
  * Also includes Visa Application assistance.
  */
 import { useState, useEffect } from "react";
@@ -225,7 +225,7 @@ export function ClubBookingViewer({ isOpen, onClose }: Props) {
                   Travel More.<br />Pay Less. Together.
                 </h1>
                 <p className="text-white/70 text-sm leading-relaxed mb-6 max-w-lg">
-                  Join VMS Club Travel routes — we pre-negotiate bulk seats on flights and buses. When the group is full, we pay the airline or bus company and everyone gets their seat at a fraction of the retail price.
+                  Join VINK Club Travel routes — we pre-negotiate bulk seats on flights and buses. When the group is full, we pay the airline or bus company and everyone gets their seat at a fraction of the retail price.
                 </p>
                 <div className="grid grid-cols-3 gap-4 mb-6">
                   {[
@@ -261,7 +261,7 @@ export function ClubBookingViewer({ isOpen, onClose }: Props) {
                 {[
                   { n: "1", icon: "🎯", title: "Choose your route", desc: "Pick from available club flights or buses with fixed departure dates." },
                   { n: "2", icon: "🪑", title: "Reserve your seat", desc: "Pay the club price via your Vink wallet. Your seat is secured." },
-                  { n: "3", icon: "👥", title: "Group fills up", desc: "Once all seats are booked, VMS pays the airline or bus company." },
+                  { n: "3", icon: "👥", title: "Group fills up", desc: "Once all seats are booked, VINK pays the airline or bus company." },
                   { n: "4", icon: "✅", title: "Travel confirmed", desc: "You receive your ticket/boarding pass from the operator directly." },
                 ].map((s, i) => (
                   <div key={i} className="text-center p-3">
@@ -367,7 +367,7 @@ export function ClubBookingViewer({ isOpen, onClose }: Props) {
                     <span className="font-black" style={{ color: selectedRoute.fillPct >= 90 ? "#FCA5A5" : GOLD }}>{selectedRoute.seatsRemaining} seats left</span>
                   </div>
                   <ProgressBar pct={selectedRoute.fillPct} color={selectedRoute.fillPct >= 90 ? "#EF4444" : GOLD} />
-                  <p className="text-white/40 text-[10px]">When all seats are filled, VMS pays {selectedRoute.operator} and tickets are issued to all passengers.</p>
+                  <p className="text-white/40 text-[10px]">When all seats are filled, VINK pays {selectedRoute.operator} and tickets are issued to all passengers.</p>
                 </div>
               </div>
             </div>
@@ -388,7 +388,7 @@ export function ClubBookingViewer({ isOpen, onClose }: Props) {
               {selectedRoute.visaRequired && (
                 <div className="rounded-xl p-4" style={{ background: "#F3E8FF", border: "1px solid #DDD6FE" }}>
                   <p className="text-sm font-bold text-purple-800 flex items-center gap-2"><Globe className="w-4 h-4" />Visa required for {selectedRoute.visaCountry}</p>
-                  <p className="text-xs text-purple-700 mt-1">VMS can assist with your visa application. We handle document preparation and submission guidance.</p>
+                  <p className="text-xs text-purple-700 mt-1">VINK can assist with your visa application. We handle document preparation and submission guidance.</p>
                   <button onClick={() => { setVisaForm(f => ({ ...f, country: selectedRoute.visaCountry ?? "", travelDate: selectedRoute.departureDate, returnDate: selectedRoute.returnDate })); setScreen("visa"); }}
                     className="mt-2 text-xs font-bold px-3 py-1.5 rounded-lg text-white" style={{ background: P }}>
                     Start Visa Application →
@@ -453,7 +453,7 @@ export function ClubBookingViewer({ isOpen, onClose }: Props) {
                 <span className="font-black text-gray-900">Total to pay now</span>
                 <span className="font-black text-xl" style={{ color: P }}>{fmt(selectedRoute.pricePerSeat * +bkForm.seats)}</span>
               </div>
-              <p className="text-[10px] text-gray-500 mt-2">Payment is held by VMS until the route group is full. If the route is cancelled, you receive a full refund to your Vink wallet.</p>
+              <p className="text-[10px] text-gray-500 mt-2">Payment is held by VINK until the route group is full. If the route is cancelled, you receive a full refund to your Vink wallet.</p>
             </div>
 
             {bkError && <div className="flex items-center gap-2 p-3 rounded-xl text-sm font-semibold text-red-700 bg-red-50 border border-red-200"><AlertTriangle className="w-4 h-4" />{bkError}</div>}
@@ -519,7 +519,7 @@ export function ClubBookingViewer({ isOpen, onClose }: Props) {
           <div className="space-y-5">
             <div>
               <h1 className="text-xl font-black text-gray-900">Visa Application Assistance</h1>
-              <p className="text-sm text-gray-500">VMS helps you prepare and submit your visa application. We handle document guidance and follow-up.</p>
+              <p className="text-sm text-gray-500">VINK helps you prepare and submit your visa application. We handle document guidance and follow-up.</p>
             </div>
 
             {/* Visa types */}
@@ -624,7 +624,7 @@ export function ClubBookingViewer({ isOpen, onClose }: Props) {
             <div className="text-left rounded-xl p-4 bg-orange-50 border border-orange-200">
               <p className="text-sm font-bold text-orange-800 mb-2">Next steps</p>
               <ol className="space-y-1">
-                {["VMS will email you a document checklist within 24 hours", "Upload or drop off all required documents", "VMS prepares and submits your application", "Track status via your VMS app", "Receive your visa directly from the consulate"].map((s, i) => (
+                {["VINK will email you a document checklist within 24 hours", "Upload or drop off all required documents", "VINK prepares and submits your application", "Track status via your VINK app", "Receive your visa directly from the consulate"].map((s, i) => (
                   <li key={i} className="text-xs text-orange-700 flex items-start gap-2">
                     <span className="font-black text-orange-400 flex-shrink-0">{i + 1}.</span>{s}
                   </li>

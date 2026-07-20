@@ -8,14 +8,14 @@ const GOLD = "#F5A623";
 const FOCUS_AREAS = [
   { icon: "🚌", title: "Transport Safety",          desc: "Taxi industry road safety campaigns, CCTV deployment, and community crime prevention initiatives." },
   { icon: "🎓", title: "Youth Entrepreneurship",    desc: "Business skills workshops for young people in Western Cape townships — equipping the next generation of South African entrepreneurs." },
-  { icon: "🏘️", title: "Community Safety",          desc: "Neighbourhood watch and CCID community safety initiatives. 5% of every VMS taxi transaction goes directly to neighbourhood watch in the area served." },
+  { icon: "🏘️", title: "Community Safety",          desc: "Neighbourhood watch and CCID community safety initiatives. 5% of every VINK taxi transaction goes directly to neighbourhood watch in the area served." },
   { icon: "⚽", title: "Grassroots Sport",           desc: "Football leagues, athletics, and martial arts at community level — supporting healthy, active communities." },
 ];
 
 const ELIGIBILITY = [
   "Non-profit organisations, community sport teams, school programmes, or community events",
   "Priority given to Western Cape applicants; national applications considered",
-  "Clear community benefit aligned with VMS values required",
+  "Clear community benefit aligned with VINK values required",
   "Minimum request: R5,000 · Maximum: R500,000 per application",
 ];
 
@@ -34,7 +34,7 @@ export function SponsorshipViewer({ isOpen, onClose }: Props) {
             style={{ background: "rgba(245,166,35,.2)", color: GOLD }}>Community Investment</span>
           <h1 className="text-4xl font-black mb-3">Sponsorship &amp; Community Investment</h1>
           <p className="text-white/80 text-lg max-w-2xl leading-relaxed">
-            VMS sponsors programmes that uplift the communities our customers live and work in — with a focus on transport safety, youth education, township economic development, and sport.
+            VINK sponsors programmes that uplift the communities our customers live and work in — with a focus on transport safety, youth education, township economic development, and sport.
           </p>
         </div>
       </div>
@@ -71,7 +71,7 @@ export function SponsorshipViewer({ isOpen, onClose }: Props) {
         <section>
           <h2 className="text-2xl font-black mb-4" style={{ color: P }}>How to Apply</h2>
           <div className="bg-white rounded-2xl border border-gray-200 p-6 space-y-3 text-sm text-gray-700">
-            <p>Submit a sponsorship proposal to <a href="mailto:sponsorships@vink.com" className="font-bold" style={{ color: P }}>sponsorships@vink.com</a>.</p>
+            <p>Submit a sponsorship proposal to <a href="mailto:sponsorships@vink.co.za" className="font-bold" style={{ color: P }}>sponsorships@vink.co.za</a>.</p>
             <p><strong>Include in your proposal:</strong></p>
             <ul className="list-disc pl-5 space-y-1 text-gray-600">
               <li>Organisation background and mission</li>
@@ -80,17 +80,17 @@ export function SponsorshipViewer({ isOpen, onClose }: Props) {
               <li>Expected community reach and impact</li>
               <li>Proof of NPO or community organisation registration</li>
             </ul>
-            <p>VMS reviews applications on a <strong>quarterly basis</strong>. Successful applicants will be contacted within 6 weeks of the review date.</p>
+            <p>VINK reviews applications on a <strong>quarterly basis</strong>. Successful applicants will be contacted within 6 weeks of the review date.</p>
           </div>
         </section>
 
         <section className="rounded-2xl p-8 text-center text-white" style={{ background: `linear-gradient(135deg,${P},#7B4DB5)` }}>
           <h3 className="text-xl font-black mb-2">Ready to Apply?</h3>
           <p className="text-white/75 text-sm mb-4">Send your proposal to our sponsorship team.</p>
-          <a href="mailto:sponsorships@vink.com"
+          <a href="mailto:sponsorships@vink.co.za"
             className="inline-block px-7 py-3 rounded-xl text-sm font-bold transition-all hover:opacity-90"
             style={{ background: GOLD, color: "#222" }}>
-            sponsorships@vink.com
+            sponsorships@vink.co.za
           </a>
         </section>
       </div>

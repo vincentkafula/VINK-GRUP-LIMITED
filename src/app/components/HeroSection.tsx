@@ -25,7 +25,7 @@ const SLIDES = [
   },
   {
     image:   heroImage2,
-    eyebrow: "VMS Personal Banking",
+    eyebrow: "VINK Personal Banking",
     eyebrowDot: "bg-blue-400",
     headline: <>Shop. Pay. Save.<br /><span className="relative inline-block"><span className="relative z-10">All on One Card.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#F5A623" }} /></span></>,
     body: "Tap to buy groceries, pay your taxi fare, earn VinkPoints on every rand spent — and manage it all from the Vink app.",
@@ -41,7 +41,7 @@ const SLIDES = [
   },
   {
     image:   heroImage3,
-    eyebrow: "VMS MVNO — Global Connectivity",
+    eyebrow: "VINK MVNO — Global Connectivity",
     eyebrowDot: "bg-orange-400",
     headline: <>🌍 One SIM.<br /><span className="relative inline-block"><span className="relative z-10">Every Country.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#F5A623" }} /></span></>,
     body: "Stop paying a fortune every time you cross a border. With the Vink Global SIM, international calls sound — and cost — just like a local call, no matter where in the world you are.",
@@ -63,7 +63,7 @@ const SLIDES = [
   },
   {
     image:   heroImage4,
-    eyebrow: "VMS Corporate & Transport Banking",
+    eyebrow: "VINK Corporate & Transport Banking",
     eyebrowDot: "bg-teal-400",
     headline: <>The Bank Built<br /><span className="relative inline-block"><span className="relative z-10">for Fleet Operators.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#F5A623" }} /></span></>,
     body: "Taxi associations, bus operators, and logistics companies — manage every driver wallet, fuel spend, and route payment from one business account with R0.50 per transaction.",

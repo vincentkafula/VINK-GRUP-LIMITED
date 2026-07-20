@@ -266,7 +266,7 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
 
       {/* ── Hero ── */}
       <AppHero
-        tag="VMS Personal Banking · FICA · POCA Compliant"
+        tag="VINK Personal Banking · FICA · POCA Compliant"
         title="New Credit Card Application"
         subtitle="Choose your card, verify your identity, and get approved in minutes."
         gradient="linear-gradient(135deg,#1a0533 0%,#5B2D8E 50%,#9585EA 100%)"
@@ -552,7 +552,7 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
               )}
             </div>
             <p className="text-xs text-gray-400">
-              Additional directors can be verified by contacting your VMS relationship manager after card activation.
+              Additional directors can be verified by contacting your VINK relationship manager after card activation.
             </p>
           </FormCard>
         )}
@@ -562,7 +562,7 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
           <div className="space-y-5">
             <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm space-y-3">
               <p className="text-xs text-gray-500 leading-relaxed">
-                By submitting I confirm all information is true and accurate. I authorise VMS to conduct credit bureau inquiries and verify my identity with SARS, CIPC, and Home Affairs.
+                By submitting I confirm all information is true and accurate. I authorise VINK to conduct credit bureau inquiries and verify my identity with SARS, CIPC, and Home Affairs.
               </p>
               <button
                 disabled={submitting}
@@ -640,7 +640,7 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
                 { label: "Credit limit",      value: CARD_TYPES.find(c => c.id === selectedCard)?.limit ?? "" },
                 { label: "Card expiry",       value: `${new Date().getMonth() + 1 < 10 ? "0" : ""}${new Date().getMonth() + 1}/${new Date().getFullYear() + 3 - 2000}` },
                 { label: "Account status",    value: "Active — card being printed" },
-                { label: "Reference number",  value: `VMS-CC-${new Date().getFullYear()}-${Math.floor(Math.random() * 90000 + 10000)}` },
+                { label: "Reference number",  value: `VINK-CC-${new Date().getFullYear()}-${Math.floor(Math.random() * 90000 + 10000)}` },
               ].map((item, i) => (
                 <div key={i} className="flex justify-between py-2 border-b border-gray-100 last:border-0">
                   <span className="text-xs text-gray-500 font-medium">{item.label}</span>
@@ -651,14 +651,14 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
 
             <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm text-sm text-gray-600 leading-relaxed">
               <p>📦 Your physical card will be delivered to <strong>{form.address || "your registered address"}</strong> within <strong>5–7 business days</strong>.</p>
-              <p className="mt-2">📱 Your virtual card is available immediately in the <strong>VMS app</strong> for online and tap-to-pay transactions.</p>
+              <p className="mt-2">📱 Your virtual card is available immediately in the <strong>VINK app</strong> for online and tap-to-pay transactions.</p>
               <p className="mt-2 text-xs text-gray-400">A welcome email has been sent to {form.email || "your registered email"}.</p>
             </div>
 
             <button onClick={onClose}
               className="w-full py-3.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 shadow-lg"
               style={{ background: `linear-gradient(135deg,${CP},#9585EA)` }}>
-              Back to VMS Banking
+              Back to VINK Banking
             </button>
           </div>
         )}

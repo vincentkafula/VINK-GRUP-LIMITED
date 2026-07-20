@@ -19,8 +19,8 @@ describe("validators.saPhone", () => {
 
 describe("validators.email", () => {
   const rule = validators.email();
-  it("accepts valid email",     () => expect(rule("test@vink.com")).toBeNull());
-  it("rejects missing @",       () => expect(rule("testATvink.com")).toBeTruthy());
+  it("accepts valid email",     () => expect(rule("test@vink.co.za")).toBeNull());
+  it("rejects missing @",       () => expect(rule("testATvink.co.za")).toBeTruthy());
   it("rejects missing domain",  () => expect(rule("test@")).toBeTruthy());
   it("rejects empty",           () => expect(rule("")).toBeTruthy());
 });

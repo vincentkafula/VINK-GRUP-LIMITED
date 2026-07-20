@@ -195,7 +195,7 @@ function Step2({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
         <SelectField label="Politically Exposed Person (PEP)?" value={pep} onChange={setPep} options={["No","Yes"]} />
       </div>
       <div className="rounded-xl p-4 text-xs leading-relaxed" style={{ background: "#EFF6FF", color: "#1D4ED8" }}>
-        <strong>Why do we ask this?</strong> VMS is required by the Financial Intelligence Centre Act (FICA) to verify your source of funds and confirm your PEP status. All information is kept strictly confidential.
+        <strong>Why do we ask this?</strong> VINK is required by the Financial Intelligence Centre Act (FICA) to verify your source of funds and confirm your PEP status. All information is kept strictly confidential.
       </div>
       <NavButtons onBack={onBack} onNext={onNext} nextLabel="Next: Verify" />
     </div>
@@ -393,7 +393,7 @@ function Step6({ onNext, onBack, submitting }: { onNext: () => void; onBack: () 
 
   const SERVICE_LIST = [
     { key: "internetBanking", label: "Internet Banking",        sub: "Manage your account online" },
-    { key: "mobileApp",       label: "VMS Mobile App",          sub: "Transact via smartphone" },
+    { key: "mobileApp",       label: "VINK Mobile App",          sub: "Transact via smartphone" },
     { key: "smsAlerts",       label: "SMS Transaction Alerts",   sub: "Instant notifications for each transaction" },
     { key: "debitCard",       label: "Vink Debit Card",          sub: "Tap-and-go payments everywhere" },
     { key: "overdraft",       label: "Overdraft Facility",       sub: "Subject to credit assessment" },
@@ -435,7 +435,7 @@ function Step6({ onNext, onBack, submitting }: { onNext: () => void; onBack: () 
         <input type="checkbox" checked={consent} onChange={e => setConsent(e.target.checked)}
           className="mt-0.5 w-4 h-4 flex-shrink-0" style={{ accentColor: BLUE }} />
         <p className="text-xs text-gray-600 leading-relaxed">
-          I consent to VMS processing my personal information in accordance with the POPIA Privacy Policy and acknowledge the VMS Terms &amp; Conditions for the selected account and services.
+          I consent to VINK processing my personal information in accordance with the POPIA Privacy Policy and acknowledge the VINK Terms &amp; Conditions for the selected account and services.
         </p>
       </label>
 
@@ -509,19 +509,19 @@ function Step7({ onClose }: { onClose: () => void }) {
 
       {/* Contact */}
       <div className="border border-gray-200 rounded-xl p-5 bg-white">
-        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-4">VMS BANK CONTACT</p>
+        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-4">VINK BANK CONTACT</p>
         <div className="grid sm:grid-cols-2 gap-3 text-xs text-gray-700">
           <div>
             <p className="text-gray-400 mb-0.5">Website</p>
-            <a href="#" className="font-semibold" style={{ color: BLUE }}>www.vmsbank.co.za</a>
+            <a href="#" className="font-semibold" style={{ color: BLUE }}>www.vinkbank.co.za</a>
           </div>
           <div>
-            <p className="text-gray-400 mb-0.5">VMS Call Centre</p>
+            <p className="text-gray-400 mb-0.5">VINK Call Centre</p>
             <a href="tel:+27210070772" className="font-semibold text-gray-800">+27 (0)21 007 0772</a>
           </div>
           <div>
             <p className="text-gray-400 mb-0.5">Support Email</p>
-            <a href="mailto:support@vink.com" className="font-semibold" style={{ color: BLUE }}>support@vink.com</a>
+            <a href="mailto:support@vink.co.za" className="font-semibold" style={{ color: BLUE }}>support@vink.co.za</a>
           </div>
           <div>
             <p className="text-gray-400 mb-0.5">Head Office</p>

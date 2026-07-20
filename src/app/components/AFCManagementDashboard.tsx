@@ -10,7 +10,7 @@
  *   Association    5%
  *   Neighbourhood Watch  5%
  *   Community Bank Fund  5%
- *   VMS fee        R0.50 (lowest in industry)
+ *   VINK fee        R0.50 (lowest in industry)
  */
 import { useState, useEffect, useCallback } from "react";
 import {
@@ -30,20 +30,20 @@ const fmtM = (n: number) => n >= 1000 ? `R${(n/1000).toFixed(1)}K` : `R${n}`;
 
 // ─── Static demo data ─────────────────────────────────────────────────────────
 const DEVICES = [
-  { id: "dev-001", ref: "AFC-CPT-00847", driver: "Sipho Dlamini",   driverRef: "VMS-DRV-2024-00001", plate: "CA 847-891", route: "Khayelitsha → Cape Town CBD",  fare: 14.00, status: "online",  battery: 92, signal: 4, wifi: true,  todayTaps: 28, todayRevenue: 392.00, passengers: 11, assoc: "CATA", lat: -33.9249, lng: 18.4241, make: "Toyota HiAce" },
-  { id: "dev-002", ref: "AFC-CPT-00312", driver: "Thabo Nkosi",     driverRef: "VMS-DRV-2024-00002", plate: "CA 312-554", route: "Mitchell's Plain → Bellville", fare: 11.50, status: "online",  battery: 78, signal: 3, wifi: true,  todayTaps: 18, todayRevenue: 207.00, passengers: 8,  assoc: "CATA", lat: -33.9898, lng: 18.5672, make: "Toyota HiAce" },
-  { id: "dev-003", ref: "AFC-CPT-00991", driver: "Priya Naidoo",    driverRef: "VMS-DRV-2024-00003", plate: "CA 991-223", route: "Gugulethu → Claremont",       fare: 13.00, status: "online",  battery: 65, signal: 4, wifi: true,  todayTaps: 22, todayRevenue: 286.00, passengers: 13, assoc: "CATA", lat: -33.9748, lng: 18.5234, make: "Quantum 15-seater" },
-  { id: "dev-004", ref: "AFC-CPT-00445", driver: "James van Berg",  driverRef: "VMS-DRV-2024-00004", plate: "CA 445-881", route: "Langa → Observatory",         fare: 10.00, status: "offline", battery: 23, signal: 0, wifi: false, todayTaps: 0,  todayRevenue: 0,      passengers: 0,  assoc: "CATA", lat: -33.9283, lng: 18.4742, make: "Toyota HiAce" },
-  { id: "dev-005", ref: "AFC-CPT-00772", driver: "Lindiwe Mokoena", driverRef: "VMS-DRV-2024-00005", plate: "CA 772-339", route: "Nyanga → Wynberg",            fare: 12.50, status: "online",  battery: 88, signal: 4, wifi: true,  todayTaps: 35, todayRevenue: 437.50, passengers: 14, assoc: "CATA", lat: -34.0123, lng: 18.4932, make: "Quantum 15-seater" },
-  { id: "dev-006", ref: "AFC-JHB-01284", driver: "Bongani Zulu",    driverRef: "VMS-DRV-2024-00006", plate: "GP 284-11",  route: "Soweto → Johannesburg CBD",   fare: 16.00, status: "online",  battery: 95, signal: 3, wifi: true,  todayTaps: 31, todayRevenue: 496.00, passengers: 12, assoc: "JMTC", lat: -26.2041, lng: 28.0473, make: "Toyota HiAce" },
+  { id: "dev-001", ref: "AFC-CPT-00847", driver: "Sipho Dlamini",   driverRef: "VINK-DRV-2024-00001", plate: "CA 847-891", route: "Khayelitsha → Cape Town CBD",  fare: 14.00, status: "online",  battery: 92, signal: 4, wifi: true,  todayTaps: 28, todayRevenue: 392.00, passengers: 11, assoc: "CATA", lat: -33.9249, lng: 18.4241, make: "Toyota HiAce" },
+  { id: "dev-002", ref: "AFC-CPT-00312", driver: "Thabo Nkosi",     driverRef: "VINK-DRV-2024-00002", plate: "CA 312-554", route: "Mitchell's Plain → Bellville", fare: 11.50, status: "online",  battery: 78, signal: 3, wifi: true,  todayTaps: 18, todayRevenue: 207.00, passengers: 8,  assoc: "CATA", lat: -33.9898, lng: 18.5672, make: "Toyota HiAce" },
+  { id: "dev-003", ref: "AFC-CPT-00991", driver: "Priya Naidoo",    driverRef: "VINK-DRV-2024-00003", plate: "CA 991-223", route: "Gugulethu → Claremont",       fare: 13.00, status: "online",  battery: 65, signal: 4, wifi: true,  todayTaps: 22, todayRevenue: 286.00, passengers: 13, assoc: "CATA", lat: -33.9748, lng: 18.5234, make: "Quantum 15-seater" },
+  { id: "dev-004", ref: "AFC-CPT-00445", driver: "James van Berg",  driverRef: "VINK-DRV-2024-00004", plate: "CA 445-881", route: "Langa → Observatory",         fare: 10.00, status: "offline", battery: 23, signal: 0, wifi: false, todayTaps: 0,  todayRevenue: 0,      passengers: 0,  assoc: "CATA", lat: -33.9283, lng: 18.4742, make: "Toyota HiAce" },
+  { id: "dev-005", ref: "AFC-CPT-00772", driver: "Lindiwe Mokoena", driverRef: "VINK-DRV-2024-00005", plate: "CA 772-339", route: "Nyanga → Wynberg",            fare: 12.50, status: "online",  battery: 88, signal: 4, wifi: true,  todayTaps: 35, todayRevenue: 437.50, passengers: 14, assoc: "CATA", lat: -34.0123, lng: 18.4932, make: "Quantum 15-seater" },
+  { id: "dev-006", ref: "AFC-JHB-01284", driver: "Bongani Zulu",    driverRef: "VINK-DRV-2024-00006", plate: "GP 284-11",  route: "Soweto → Johannesburg CBD",   fare: 16.00, status: "online",  battery: 95, signal: 3, wifi: true,  todayTaps: 31, todayRevenue: 496.00, passengers: 12, assoc: "JMTC", lat: -26.2041, lng: 28.0473, make: "Toyota HiAce" },
 ];
 
 const WALLETS = [
-  { driver: "Sipho Dlamini",   ref: "VMS-DRV-2024-00001", balance: 4284.50, today: 847.50,  week: 4284.50,  taps: 2847, bank: "Standard Bank ****4291", payout: true },
-  { driver: "Thabo Nkosi",     ref: "VMS-DRV-2024-00002", balance: 2142.00, today: 482.00,  week: 2142.00,  taps: 1423, bank: "Nedbank ****8834",        payout: false },
-  { driver: "Priya Naidoo",    ref: "VMS-DRV-2024-00003", balance: 3890.00, today: 624.00,  week: 3890.00,  taps: 2241, bank: "FNB ****3317",            payout: true },
-  { driver: "James van Berg",  ref: "VMS-DRV-2024-00004", balance: 1247.50, today: 0,        week: 1247.50,  taps: 892,  bank: "Not linked",             payout: false },
-  { driver: "Lindiwe Mokoena", ref: "VMS-DRV-2024-00005", balance: 5124.00, today: 988.00,  week: 5124.00,  taps: 3421, bank: "Absa ****7751",           payout: true },
+  { driver: "Sipho Dlamini",   ref: "VINK-DRV-2024-00001", balance: 4284.50, today: 847.50,  week: 4284.50,  taps: 2847, bank: "Standard Bank ****4291", payout: true },
+  { driver: "Thabo Nkosi",     ref: "VINK-DRV-2024-00002", balance: 2142.00, today: 482.00,  week: 2142.00,  taps: 1423, bank: "Nedbank ****8834",        payout: false },
+  { driver: "Priya Naidoo",    ref: "VINK-DRV-2024-00003", balance: 3890.00, today: 624.00,  week: 3890.00,  taps: 2241, bank: "FNB ****3317",            payout: true },
+  { driver: "James van Berg",  ref: "VINK-DRV-2024-00004", balance: 1247.50, today: 0,        week: 1247.50,  taps: 892,  bank: "Not linked",             payout: false },
+  { driver: "Lindiwe Mokoena", ref: "VINK-DRV-2024-00005", balance: 5124.00, today: 988.00,  week: 5124.00,  taps: 3421, bank: "Absa ****7751",           payout: true },
 ];
 
 type Screen = "overview" | "devices" | "terminal" | "wallets" | "routes" | "analytics";
@@ -200,7 +200,7 @@ function AFCTerminal({ device, onTap }: { device: typeof DEVICES[0]; onTap: (tap
             </div>
           ))}
           <div className="border-t border-white/10 pt-1.5 flex justify-between">
-            <span className="text-white/40 text-[9px]">VMS fee</span>
+            <span className="text-white/40 text-[9px]">VINK fee</span>
             <span className="text-white/40 text-[9px]">R0.50</span>
           </div>
         </div>
@@ -262,7 +262,7 @@ export function AFCManagementDashboard({ isOpen, onClose }: Props) {
           </div>
           <div>
             <p className="text-sm font-black text-white leading-none">AFC Device Management</p>
-            <p className="text-[10px] text-white/40 mt-0.5">Automated Fare Collection · {totalOnline}/{DEVICES.length} devices online · VMS fee R0.50/tap</p>
+            <p className="text-[10px] text-white/40 mt-0.5">Automated Fare Collection · {totalOnline}/{DEVICES.length} devices online · VINK fee R0.50/tap</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -610,7 +610,7 @@ export function AFCManagementDashboard({ isOpen, onClose }: Props) {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
                   { label: "Total Devices", value: DEVICES.length.toString(), color: P },
-                  { label: "VMS Fee Today", value: `R${(totalTodayTaps * 0.50).toFixed(2)}`, color: GOLD, note: "R0.50 × taps" },
+                  { label: "VINK Fee Today", value: `R${(totalTodayTaps * 0.50).toFixed(2)}`, color: GOLD, note: "R0.50 × taps" },
                   { label: "Driver Payouts", value: fmtM(totalTodayRev * 0.85), color: GREEN },
                   { label: "Community Fund", value: fmtM(totalTodayRev * 0.10), color: "#8B5CF6" },
                 ].map(k => (
@@ -624,7 +624,7 @@ export function AFCManagementDashboard({ isOpen, onClose }: Props) {
 
               {/* Revenue model */}
               <div className="rounded-2xl p-5" style={{ background: "#1A1A2E" }}>
-                <p className="text-white font-black mb-4">VMS Revenue Model — AFC</p>
+                <p className="text-white font-black mb-4">VINK Revenue Model — AFC</p>
                 <div className="space-y-3">
                   {[
                     { stream: "Transaction fee (R0.50/tap)",     daily: totalTodayTaps * 0.50,           note: "Lowest in industry — charged per tap" },
@@ -651,7 +651,7 @@ export function AFCManagementDashboard({ isOpen, onClose }: Props) {
                     { label: "Taxi Association",         amount: 0.70,  pct: 5,  color: "#3B82F6" },
                     { label: "Neighbourhood Watch",      amount: 0.70,  pct: 5,  color: GOLD },
                     { label: "Community Bank Fund",      amount: 0.70,  pct: 5,  color: "#8B5CF6" },
-                    { label: "VMS transaction fee",      amount: 0.50,  pct: 3.5, color: P, note: "Fixed R0.50 — not from fare" },
+                    { label: "VINK transaction fee",      amount: 0.50,  pct: 3.5, color: P, note: "Fixed R0.50 — not from fare" },
                   ].map(r => (
                     <div key={r.label}>
                       <div className="flex justify-between mb-1">

@@ -1,5 +1,5 @@
 /**
- * VMS Banking Management Hub
+ * VINK Banking Management Hub
  * Role-Based Access Control — 7 management levels
  * Global Director → Continental → Regional → Country → State → Branch Manager → Branch Representative
  */
@@ -25,13 +25,13 @@ interface MgmtUser {
 }
 
 const DEMO_USERS: MgmtUser[] = [
-  { id: "u1",  name: "Vincent Kafula",      role: "global_director",       roleLabel: "Global Director",         scope: "Worldwide",       email: "vk@vink.com",         password: "VMS@2025",   avatar: "VK", level: 1 },
-  { id: "u2",  name: "Adaeze Okonkwo",      role: "continental_director",  roleLabel: "Continental Director",    scope: "Africa",          email: "adaeze@vink.com",      password: "Africa@123", avatar: "AO", level: 2 },
-  { id: "u3",  name: "Sipho Ndlovu",        role: "regional_director",     roleLabel: "Regional Director",       scope: "Southern Africa", email: "sipho@vink.com",       password: "Region@123", avatar: "SN", level: 3 },
-  { id: "u4",  name: "Thabo Dlamini",       role: "country_director",      roleLabel: "Country Director",        scope: "South Africa",    email: "thabo@vink.com",       password: "Country@1",  avatar: "TD", level: 4 },
-  { id: "u5",  name: "Priya Naidoo",        role: "state_director",        roleLabel: "State / Provincial Dir.", scope: "Western Cape",    email: "priya@vink.com",       password: "State@123",  avatar: "PN", level: 5 },
-  { id: "u6",  name: "James van Berg",      role: "branch_manager",        roleLabel: "Branch Manager",          scope: "Cape Town CBD",   email: "james@vink.com",       password: "Branch@1",   avatar: "JV", level: 6 },
-  { id: "u7",  name: "Nomsa Zulu",          role: "branch_rep",            roleLabel: "Branch Representative",   scope: "Cape Town CBD",   email: "nomsa@vink.com",       password: "Rep@2025",   avatar: "NZ", level: 7 },
+  { id: "u1",  name: "Vincent Kafula",      role: "global_director",       roleLabel: "Global Director",         scope: "Worldwide",       email: "vk@vink.co.za",         password: "VINK@2025",   avatar: "VK", level: 1 },
+  { id: "u2",  name: "Adaeze Okonkwo",      role: "continental_director",  roleLabel: "Continental Director",    scope: "Africa",          email: "adaeze@vink.co.za",      password: "Africa@123", avatar: "AO", level: 2 },
+  { id: "u3",  name: "Sipho Ndlovu",        role: "regional_director",     roleLabel: "Regional Director",       scope: "Southern Africa", email: "sipho@vink.co.za",       password: "Region@123", avatar: "SN", level: 3 },
+  { id: "u4",  name: "Thabo Dlamini",       role: "country_director",      roleLabel: "Country Director",        scope: "South Africa",    email: "thabo@vink.co.za",       password: "Country@1",  avatar: "TD", level: 4 },
+  { id: "u5",  name: "Priya Naidoo",        role: "state_director",        roleLabel: "State / Provincial Dir.", scope: "Western Cape",    email: "priya@vink.co.za",       password: "State@123",  avatar: "PN", level: 5 },
+  { id: "u6",  name: "James van Berg",      role: "branch_manager",        roleLabel: "Branch Manager",          scope: "Cape Town CBD",   email: "james@vink.co.za",       password: "Branch@1",   avatar: "JV", level: 6 },
+  { id: "u7",  name: "Nomsa Zulu",          role: "branch_rep",            roleLabel: "Branch Representative",   scope: "Cape Town CBD",   email: "nomsa@vink.co.za",       password: "Rep@2025",   avatar: "NZ", level: 7 },
 ];
 
 // ─── Role permissions ─────────────────────────────────────────────────────────
@@ -163,7 +163,7 @@ function LoginScreen({ onLogin }: { onLogin: (user: MgmtUser) => void }) {
             <Shield className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-2xl font-black text-white">Management Hub</h1>
-          <p className="text-white/50 text-sm mt-1">VMS Banking · Authorised Access Only</p>
+          <p className="text-white/50 text-sm mt-1">VINK Banking · Authorised Access Only</p>
         </div>
 
         {/* Form */}
@@ -347,15 +347,15 @@ function OverviewScreen({ user }: { user: MgmtUser }) {
 function UsersScreen() {
   const [search, setSearch] = useState("");
   const users = [
-    { name: "Vincent Kafula",   email: "vk@vink.com",      role: "Global Director",       status: "active",    last: "Just now" },
-    { name: "Adaeze Okonkwo",   email: "adaeze@vink.com",  role: "Continental Director",  status: "active",    last: "5m ago" },
-    { name: "Sipho Ndlovu",     email: "sipho@vink.com",   role: "Regional Director",     status: "active",    last: "12m ago" },
-    { name: "Thabo Dlamini",    email: "thabo@vink.com",   role: "Country Director",      status: "active",    last: "1h ago" },
-    { name: "Priya Naidoo",     email: "priya@vink.com",   role: "State Director",        status: "active",    last: "2h ago" },
-    { name: "James van Berg",   email: "james@vink.com",   role: "Branch Manager",        status: "active",    last: "3h ago" },
-    { name: "Nomsa Zulu",       email: "nomsa@vink.com",   role: "Branch Representative", status: "suspended", last: "1d ago" },
-    { name: "Kwame Mensah",     email: "kwame@vink.com",   role: "Branch Representative", status: "active",    last: "30m ago" },
-    { name: "Grace Mwangi",     email: "grace@vink.com",   role: "Branch Manager",        status: "disabled",  last: "7d ago" },
+    { name: "Vincent Kafula",   email: "vk@vink.co.za",      role: "Global Director",       status: "active",    last: "Just now" },
+    { name: "Adaeze Okonkwo",   email: "adaeze@vink.co.za",  role: "Continental Director",  status: "active",    last: "5m ago" },
+    { name: "Sipho Ndlovu",     email: "sipho@vink.co.za",   role: "Regional Director",     status: "active",    last: "12m ago" },
+    { name: "Thabo Dlamini",    email: "thabo@vink.co.za",   role: "Country Director",      status: "active",    last: "1h ago" },
+    { name: "Priya Naidoo",     email: "priya@vink.co.za",   role: "State Director",        status: "active",    last: "2h ago" },
+    { name: "James van Berg",   email: "james@vink.co.za",   role: "Branch Manager",        status: "active",    last: "3h ago" },
+    { name: "Nomsa Zulu",       email: "nomsa@vink.co.za",   role: "Branch Representative", status: "suspended", last: "1d ago" },
+    { name: "Kwame Mensah",     email: "kwame@vink.co.za",   role: "Branch Representative", status: "active",    last: "30m ago" },
+    { name: "Grace Mwangi",     email: "grace@vink.co.za",   role: "Branch Manager",        status: "disabled",  last: "7d ago" },
   ];
   const filtered = users.filter(u => !search || u.name.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase()));
   const statusColor = (s: string) => s === "active" ? GREEN : s === "suspended" ? GOLD : RED;
@@ -704,7 +704,7 @@ function DashboardShell({ user, onLogout }: { user: MgmtUser; onLogout: () => vo
         <div className="flex items-center gap-3 px-4 py-4 border-b" style={{ borderColor: "#1E2A45" }}>
           <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-white font-black text-xs"
             style={{ background: `linear-gradient(135deg,${P},#9585EA)` }}>V</div>
-          {sidebarOpen && <p className="text-white font-black text-sm leading-tight">VMS<br /><span className="font-normal text-[10px] text-gray-400">Management Hub</span></p>}
+          {sidebarOpen && <p className="text-white font-black text-sm leading-tight">VINK<br /><span className="font-normal text-[10px] text-gray-400">Management Hub</span></p>}
         </div>
 
         {/* Nav */}
@@ -790,7 +790,7 @@ export function ManagementHub({ isOpen, onClose }: Props) {
         style={{ background: DEEP, borderColor: "#1E2A45" }}>
         <div className="flex items-center gap-2">
           <Shield className="w-5 h-5" style={{ color: P }} />
-          <p className="text-white font-black text-sm">VMS Management Hub</p>
+          <p className="text-white font-black text-sm">VINK Management Hub</p>
           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full ml-1" style={{ background: RED + "25", color: RED }}>
             🔒 SECURE
           </span>

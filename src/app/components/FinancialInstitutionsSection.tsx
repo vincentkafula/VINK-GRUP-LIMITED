@@ -27,7 +27,7 @@ export const FinancialInstitutionsSection = memo(function FinancialInstitutionsS
           ))}
         </div>
         <p className="text-center text-xs text-gray-400 mt-8">
-          VMS partners with leading banks, telcos, and financial institutions across Southern Africa to deliver seamless payment experiences for commuters, drivers, and businesses.
+          VINK partners with leading banks, telcos, and financial institutions across Southern Africa to deliver seamless payment experiences for commuters, drivers, and businesses.
         </p>
       </div>
     </section>

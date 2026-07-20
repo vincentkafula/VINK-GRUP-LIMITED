@@ -8,15 +8,15 @@ const GOLD = "#F5A623";
 const REASONS = [
   { icon: "💳", title: "Lowest taxi fare fee in SA", desc: "Just R0.50 per transaction — no bank charges more in the taxi industry" },
   { icon: "⭐", title: "Earn VinkPoints on everything", desc: "Rides, fuel, groceries, gym, and online shopping — every rand earns" },
-  { icon: "📶", title: "Free Wi-Fi on VMS taxis",     desc: "Stay connected on your commute — no data needed" },
+  { icon: "📶", title: "Free Wi-Fi on VINK taxis",     desc: "Stay connected on your commute — no data needed" },
   { icon: "🚫", title: "No hidden fees. Ever.",       desc: "What you see is what you pay — always transparent" },
   { icon: "🏘️", title: "5% back to your community",   desc: "Every taxi transaction funds neighbourhood watch in your area" },
 ];
 
 const STEPS = [
-  { n: "1", title: "Open your VMS account", desc: "Online or at our Head Office in Cape Town — takes under 10 minutes." },
-  { n: "2", title: "VMS handles your debit orders", desc: "We contact your listed providers on your behalf to redirect all debit orders." },
-  { n: "3", title: "Redirect your salary", desc: "One letter to your employer's payroll department — VMS generates the template for you." },
+  { n: "1", title: "Open your VINK account", desc: "Online or at our Head Office in Cape Town — takes under 10 minutes." },
+  { n: "2", title: "VINK handles your debit orders", desc: "We contact your listed providers on your behalf to redirect all debit orders." },
+  { n: "3", title: "Redirect your salary", desc: "One letter to your employer's payroll department — VINK generates the template for you." },
   { n: "4", title: "Old account closes automatically", desc: "Once all debit orders are transferred, your old account closes with no effort from you." },
 ];
 
@@ -27,7 +27,7 @@ const FICA = [
   "For business accounts: company registration documents and FICA documents for all directors",
 ];
 
-export function SwitchToVMSViewer({ isOpen, onClose }: Props) {
+export function SwitchToVINKViewer({ isOpen, onClose }: Props) {
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-white">
@@ -41,7 +41,7 @@ export function SwitchToVMSViewer({ isOpen, onClose }: Props) {
         <div className="max-w-4xl mx-auto">
           <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4"
             style={{ background: "rgba(245,166,35,.2)", color: GOLD }}>Switch in 7–10 days</span>
-          <h1 className="text-4xl md:text-5xl font-black leading-tight mb-4">Make the Switch to VMS.</h1>
+          <h1 className="text-4xl md:text-5xl font-black leading-tight mb-4">Make the Switch to VINK.</h1>
           <p className="text-white/80 text-lg max-w-xl leading-relaxed">
             It&apos;s easier than you think — and we do the heavy lifting. Most customers are fully switched within 7–10 business days.
           </p>
@@ -52,7 +52,7 @@ export function SwitchToVMSViewer({ isOpen, onClose }: Props) {
 
         {/* 5 reasons */}
         <section>
-          <h2 className="text-2xl font-black mb-6" style={{ color: P }}>Why Switch to VMS?</h2>
+          <h2 className="text-2xl font-black mb-6" style={{ color: P }}>Why Switch to VINK?</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {REASONS.map((r, i) => (
               <div key={i} className="p-5 rounded-xl border border-gray-200 bg-white hover:shadow-md transition-shadow">
@@ -64,14 +64,14 @@ export function SwitchToVMSViewer({ isOpen, onClose }: Props) {
           </div>
         </section>
 
-        {/* What VMS makes easy */}
+        {/* What VINK makes easy */}
         <section className="rounded-2xl p-6" style={{ background: "#F3F0FB" }}>
-          <h2 className="text-xl font-black mb-4" style={{ color: P }}>What VMS Makes Easy</h2>
+          <h2 className="text-xl font-black mb-4" style={{ color: P }}>What VINK Makes Easy</h2>
           <div className="space-y-3">
             {[
               { t: "Account number portability",  d: "Keep your FICA details — just switch your account." },
-              { t: "Debit order switching",        d: "VMS contacts your existing providers on your behalf." },
-              { t: "Salary redirect",              d: "One letter to your employer's payroll — VMS provides the template." },
+              { t: "Debit order switching",        d: "VINK contacts your existing providers on your behalf." },
+              { t: "Salary redirect",              d: "One letter to your employer's payroll — VINK provides the template." },
             ].map((item, i) => (
               <div key={i} className="flex items-start gap-3 bg-white rounded-xl p-4 border border-white/50">
                 <CheckCircle className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: "#10B981" }} />

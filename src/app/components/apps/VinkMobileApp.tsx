@@ -27,7 +27,7 @@ const TILES = [
   { id: "device",       label: "Device",        bg: "#D1FAE5", fg: "#059669", icon: DeviceIcon },
   { id: "guardme",      label: "Guard Me",      bg: "#FEE2E2", fg: "#DC2626", icon: ShieldIcon },
   { id: "insurance",    label: "Insurance",     bg: "#DBEAFE", fg: "#2563EB", icon: InsureIcon },
-  { id: "vmstv",        label: "VMS TV",        bg: "#D1FAE5", fg: "#059669", icon: TVIcon },
+  { id: "vinktv",        label: "VINK TV",        bg: "#D1FAE5", fg: "#059669", icon: TVIcon },
   { id: "cardlesscash", label: "Cardless Cash", bg: "#EDE9FE", fg: "#7C3AED", icon: CashIcon },
   { id: "elections",    label: "Elections",     bg: "#FEF3C7", fg: "#D97706", icon: ElectionIcon },
   { id: "scantopay",    label: "Scan to Pay",   bg: "#FEE2E2", fg: "#DC2626", icon: ScanIcon },
