@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { X, CheckCircle, Upload, ChevronLeft, ChevronRight, Clock, Loader2 } from "lucide-react";
+import { X, CheckCircle, Upload, ChevronLeft, ChevronRight, Clock, Loader2, AlertTriangle } from "lucide-react";
+import { toast } from "sonner";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { applicationsApi, otpApi } from "../services/applicationsApi";
 
@@ -109,7 +110,7 @@ function SectionHead({ title, sub }: { title: string; sub: string }) {
 }
 
 // ─── Step 1 — Personal Info ───────────────────────────────────────────────────
-function Step1({ onNext }: { onNext: () => void }) {
+function Step1({ onNext, updateForm }: { onNext: () => void; updateForm: (d: Record<string, string>) => void }) {
   const [title, setTitle] = useState("Mr");
   const [firstName, setFirstName] = useState("");
   const [middleName, setMiddleName] = useState("");
@@ -129,6 +130,14 @@ function Step1({ onNext }: { onNext: () => void }) {
   const [postal, setPostal] = useState("");
 
   const isValid = firstName.trim() && lastName.trim() && dob && idNumber.trim() && phone.length > 5 && email.includes("@") && addr1.trim() && city.trim() && postal.trim();
+
+  const handleNext = () => {
+    updateForm({
+      title, firstName, middleName, lastName, dob, gender, nationality, idType, idNumber,
+      marital, phone, email, addr1, addr2, city, province, postal,
+    });
+    onNext();
+  };
 
   return (
     <div className="space-y-5">
@@ -162,13 +171,13 @@ function Step1({ onNext }: { onNext: () => void }) {
         </div>
       </div>
       {!isValid && <p className="text-xs text-red-500">Please fill in all required fields before continuing.</p>}
-      <NavButtons onNext={onNext} nextLabel="Next: KYC" nextDisabled={!isValid} />
+      <NavButtons onNext={handleNext} nextLabel="Next: KYC" nextDisabled={!isValid} />
     </div>
   );
 }
 
 // ─── Step 2 — KYC ────────────────────────────────────────────────────────────
-function Step2({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
+function Step2({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () => void; updateForm: (d: Record<string, string>) => void }) {
   const [status, setStatus] = useState("Employed");
   const [employer, setEmployer] = useState("");
   const [jobTitle, setJobTitle] = useState("");
@@ -177,6 +186,11 @@ function Step2({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
   const [sourceOfFunds, setSourceOfFunds] = useState("Salary");
   const [taxNo, setTaxNo] = useState("");
   const [pep, setPep] = useState("No");
+
+  const handleNext = () => {
+    updateForm({ employmentStatus: status, employer, jobTitle, industry, income, sourceOfFunds, taxNo, pep });
+    onNext();
+  };
 
   return (
     <div className="space-y-5">
@@ -197,13 +211,13 @@ function Step2({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
       <div className="rounded-xl p-4 text-xs leading-relaxed" style={{ background: "#EFF6FF", color: "#1D4ED8" }}>
         <strong>Why do we ask this?</strong> VINK is required by the Financial Intelligence Centre Act (FICA) to verify your source of funds and confirm your PEP status. All information is kept strictly confidential.
       </div>
-      <NavButtons onBack={onBack} onNext={onNext} nextLabel="Next: Verify" />
+      <NavButtons onBack={onBack} onNext={handleNext} nextLabel="Next: Verify" />
     </div>
   );
 }
 
 // ─── Step 3 — OTP Verify ─────────────────────────────────────────────────────
-function Step3({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
+function Step3({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () => void; updateForm: (d: Record<string, string>) => void }) {
   const [phone, setPhone] = useState("+27 ");
   const [email, setEmail] = useState("");
   const [otpPhone, setOtpPhone] = useState("");
@@ -212,10 +226,63 @@ function Step3({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
   const [sentEmail, setSentEmail] = useState(false);
   const [phoneOk, setPhoneOk] = useState(false);
   const [emailOk, setEmailOk] = useState(false);
+  const [sendingPhone, setSendingPhone] = useState(false);
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [verifyingPhone, setVerifyingPhone] = useState(false);
+  const [verifyingEmail, setVerifyingEmail] = useState(false);
+  const [phoneErr, setPhoneErr] = useState("");
+  const [emailErr, setEmailErr] = useState("");
+  const [demoCodes, setDemoCodes] = useState<string[]>([]);
+
+  const sendPhoneOtp = async () => {
+    setSendingPhone(true); setPhoneErr("");
+    const r = await otpApi.send(phone, "sms");
+    setSendingPhone(false);
+    if (r.success) {
+      setSentPhone(true);
+      if (r.demoCode) setDemoCodes(c => [...c, `SMS to ${phone}: ${r.demoCode}`]);
+    } else {
+      setPhoneErr(r.error ?? "Failed to send OTP — please try again.");
+    }
+  };
+  const verifyPhoneOtp = async () => {
+    setVerifyingPhone(true); setPhoneErr("");
+    const r = await otpApi.verify(phone, otpPhone);
+    setVerifyingPhone(false);
+    if (r.success) setPhoneOk(true); else setPhoneErr(r.error ?? "Invalid code");
+  };
+  const sendEmailOtp = async () => {
+    setSendingEmail(true); setEmailErr("");
+    const r = await otpApi.send(email, "email");
+    setSendingEmail(false);
+    if (r.success) {
+      setSentEmail(true);
+      if (r.demoCode) setDemoCodes(c => [...c, `Email to ${email}: ${r.demoCode}`]);
+    } else {
+      setEmailErr(r.error ?? "Failed to send OTP — please try again.");
+    }
+  };
+  const verifyEmailOtp = async () => {
+    setVerifyingEmail(true); setEmailErr("");
+    const r = await otpApi.verify(email, otpEmail);
+    setVerifyingEmail(false);
+    if (r.success) setEmailOk(true); else setEmailErr(r.error ?? "Invalid code");
+  };
+
+  const handleNext = () => {
+    updateForm({ verifiedPhone: phone, verifiedEmail: email });
+    onNext();
+  };
 
   return (
     <div className="space-y-5">
       <SectionHead title="Verify Your Identity" sub="Section 3 — Confirm your phone number and email address via OTP" />
+
+      {demoCodes.length > 0 && (
+        <div className="rounded-xl p-3 text-[11px] leading-relaxed bg-amber-50 text-amber-800 border border-amber-200">
+          <strong>Sandbox mode:</strong> no SMS/email gateway is connected yet, so codes are shown here instead of being delivered. {demoCodes.join(" · ")}
+        </div>
+      )}
 
       {/* Phone OTP */}
       <div className="border border-gray-200 rounded-xl p-5 space-y-3">
@@ -227,20 +294,21 @@ function Step3({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
           {phoneOk && <span className="ml-auto text-xs font-bold text-green-600">Verified</span>}
         </div>
         <InputField label="Cell number" value={phone} onChange={setPhone} placeholder="+27 82 000 0000" />
+        {phoneErr && <p className="text-xs text-red-500 flex items-center gap-1"><AlertTriangle className="w-3 h-3" />{phoneErr}</p>}
         {!sentPhone ? (
-          <button onClick={() => setSentPhone(true)}
-            className="px-4 py-2 rounded-lg text-xs font-bold text-white border-0"
+          <button onClick={sendPhoneOtp} disabled={sendingPhone || phone.replace(/\D/g, "").length < 9}
+            className="px-4 py-2 rounded-lg text-xs font-bold text-white border-0 disabled:opacity-50 flex items-center gap-1.5"
             style={{ background: BLUE }}>
-            Send SMS OTP
+            {sendingPhone && <Loader2 className="w-3 h-3 animate-spin" />} Send SMS OTP
           </button>
         ) : !phoneOk ? (
           <div className="flex gap-2 items-center">
             <input value={otpPhone} onChange={e => setOtpPhone(e.target.value)} placeholder="Enter 6-digit OTP"
               maxLength={6} className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 w-40" />
-            <button onClick={() => { if (otpPhone.length >= 4) setPhoneOk(true); }}
-              className="px-4 py-2 rounded-lg text-xs font-bold text-white border-0"
+            <button onClick={verifyPhoneOtp} disabled={verifyingPhone || otpPhone.length < 4}
+              className="px-4 py-2 rounded-lg text-xs font-bold text-white border-0 disabled:opacity-50 flex items-center gap-1.5"
               style={{ background: BLUE }}>
-              Verify
+              {verifyingPhone && <Loader2 className="w-3 h-3 animate-spin" />} Verify
             </button>
           </div>
         ) : null}
@@ -256,35 +324,42 @@ function Step3({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
           {emailOk && <span className="ml-auto text-xs font-bold text-green-600">Verified</span>}
         </div>
         <InputField label="Email address" value={email} onChange={setEmail} type="email" placeholder="you@example.co.za" />
+        {emailErr && <p className="text-xs text-red-500 flex items-center gap-1"><AlertTriangle className="w-3 h-3" />{emailErr}</p>}
         {!sentEmail ? (
-          <button onClick={() => setSentEmail(true)}
-            className="px-4 py-2 rounded-lg text-xs font-bold text-white border-0"
+          <button onClick={sendEmailOtp} disabled={sendingEmail || !email.includes("@")}
+            className="px-4 py-2 rounded-lg text-xs font-bold text-white border-0 disabled:opacity-50 flex items-center gap-1.5"
             style={{ background: BLUE }}>
-            Send Email OTP
+            {sendingEmail && <Loader2 className="w-3 h-3 animate-spin" />} Send Email OTP
           </button>
         ) : !emailOk ? (
           <div className="flex gap-2 items-center">
             <input value={otpEmail} onChange={e => setOtpEmail(e.target.value)} placeholder="Enter 6-digit OTP"
               maxLength={6} className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 w-40" />
-            <button onClick={() => { if (otpEmail.length >= 4) setEmailOk(true); }}
-              className="px-4 py-2 rounded-lg text-xs font-bold text-white border-0"
+            <button onClick={verifyEmailOtp} disabled={verifyingEmail || otpEmail.length < 4}
+              className="px-4 py-2 rounded-lg text-xs font-bold text-white border-0 disabled:opacity-50 flex items-center gap-1.5"
               style={{ background: BLUE }}>
-              Verify
+              {verifyingEmail && <Loader2 className="w-3 h-3 animate-spin" />} Verify
             </button>
           </div>
         ) : null}
       </div>
 
-      <NavButtons onBack={onBack} onNext={onNext} nextLabel="Next: Biometrics" nextDisabled={!phoneOk || !emailOk} />
+      <NavButtons onBack={onBack} onNext={handleNext} nextLabel="Next: Biometrics" nextDisabled={!phoneOk || !emailOk} />
     </div>
   );
 }
 
 // ─── Step 4 — Biometrics ─────────────────────────────────────────────────────
-function Step4({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
+function Step4({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () => void; updateForm: (d: Record<string, string>) => void }) {
   const [fp, setFp] = useState(false);
   const [selfie, setSelfie] = useState(false);
+  const [selfieFile, setSelfieFile] = useState<File | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const handleNext = () => {
+    updateForm({ fingerprintCaptured: String(fp), selfieFileName: selfieFile?.name ?? "" });
+    onNext();
+  };
 
   return (
     <div className="space-y-5">
@@ -302,6 +377,7 @@ function Step4({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
               style={{ background: BLUE }}>
               Capture Fingerprint
             </button>
+            <p className="text-[10px] text-gray-300 mt-3">Simulated for this demo environment — no biometric scanner hardware is connected.</p>
           </>
         ) : (
           <div className="flex flex-col items-center gap-2">
@@ -329,17 +405,18 @@ function Step4({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
             <p className="text-sm font-bold text-green-700">Selfie confirmed</p>
           </div>
         )}
-        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={() => setSelfie(true)} />
+        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) { setSelfie(true); setSelfieFile(f); } }} />
       </div>
 
-      <NavButtons onBack={onBack} onNext={onNext} nextLabel="Next: Documents" nextDisabled={!fp || !selfie} />
+      <NavButtons onBack={onBack} onNext={handleNext} nextLabel="Next: Documents" nextDisabled={!fp || !selfie} />
     </div>
   );
 }
 
 // ─── Step 5 — Documents ──────────────────────────────────────────────────────
-function Step5({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
+function Step5({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () => void; updateForm: (d: Record<string, string>) => void }) {
   const [uploaded, setUploaded] = useState<Record<string, boolean>>({});
+  const [fileNames, setFileNames] = useState<Record<string, string>>({});
 
   const DOCS = [
     { key: "id",       label: "Certified copy of ID / Passport" },
@@ -349,6 +426,13 @@ function Step5({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
     { key: "taxDoc",   label: "SARS tax certificate (if applicable)" },
   ];
   const allDone = DOCS.every(d => uploaded[d.key]);
+
+  const handleNext = () => {
+    const data: Record<string, string> = {};
+    DOCS.forEach(d => { data[`doc_${d.key}`] = fileNames[d.key] ?? ""; });
+    updateForm(data);
+    onNext();
+  };
 
   return (
     <div className="space-y-5">
@@ -369,18 +453,19 @@ function Step5({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
               {uploaded[d.key] ? "Uploaded" : "Upload"}
             </span>
             <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png"
-              onChange={() => setUploaded(p => ({ ...p, [d.key]: true }))} />
+              onChange={e => { const f = e.target.files?.[0]; if (f) { setUploaded(p => ({ ...p, [d.key]: true })); setFileNames(p => ({ ...p, [d.key]: f.name })); } }} />
           </label>
         ))}
       </div>
+      <p className="text-[10px] text-gray-400">Document names are attached to your application for our team's records. Secure document upload isn't wired up in this environment yet, so please also bring or email certified copies as a backup.</p>
       {!allDone && <p className="text-xs text-red-500">Please upload all required documents before continuing.</p>}
-      <NavButtons onBack={onBack} onNext={onNext} nextLabel="Next: Services" nextDisabled={!allDone} />
+      <NavButtons onBack={onBack} onNext={handleNext} nextLabel="Next: Services" nextDisabled={!allDone} />
     </div>
   );
 }
 
 // ─── Step 6 — Services ───────────────────────────────────────────────────────
-function Step6({ onNext, onBack, submitting }: { onNext: () => void; onBack: () => void; submitting?: boolean }) {
+function Step6({ onNext, onBack, submitting }: { onNext: (data: Record<string, string>) => void; onBack: () => void; submitting?: boolean }) {
   const [accountType, setAccountType] = useState("Clear Access Account");
   const [cardType, setCardType] = useState("Debit Card (free)");
   const [services, setServices] = useState<Record<string, boolean>>({
@@ -390,6 +475,13 @@ function Step6({ onNext, onBack, submitting }: { onNext: () => void; onBack: () 
   const [consent, setConsent] = useState(false);
 
   const toggle = (k: string) => setServices(p => ({ ...p, [k]: !p[k] }));
+
+  const handleNext = () => {
+    onNext({
+      accountType, cardType, consent: String(consent),
+      selectedServices: Object.entries(services).filter(([, v]) => v).map(([k]) => k).join(", "),
+    });
+  };
 
   const SERVICE_LIST = [
     { key: "internetBanking", label: "Internet Banking",        sub: "Manage your account online" },
@@ -439,24 +531,13 @@ function Step6({ onNext, onBack, submitting }: { onNext: () => void; onBack: () 
         </p>
       </label>
 
-      <NavButtons onBack={onBack} onNext={onNext} nextLabel={submitting ? "Submitting…" : "Open My Account"} nextDisabled={!consent || submitting} />
+      <NavButtons onBack={onBack} onNext={handleNext} nextLabel={submitting ? "Submitting…" : "Open My Account"} nextDisabled={!consent || submitting} />
     </div>
   );
 }
 
 // ─── Step 7 — Account Opened (matches image) ─────────────────────────────────
-function Step7({ onClose }: { onClose: () => void }) {
-  const [accountNum, setAccountNum] = useState("");
-
-  useEffect(() => {
-    const t = setTimeout(() => {
-      const n1 = Math.floor(1000 + Math.random() * 9000);
-      const n2 = Math.floor(1000 + Math.random() * 9000);
-      setAccountNum(`6200 ${n1} ${n2}`);
-    }, 2000);
-    return () => clearTimeout(t);
-  }, []);
-
+function Step7({ onClose, referenceNumber }: { onClose: () => void; referenceNumber: string }) {
   const SUMMARY_ITEMS = [
     "Identity verified via OTP, fingerprint and selfie",
     "KYC documents received and processed",
@@ -468,21 +549,18 @@ function Step7({ onClose }: { onClose: () => void }) {
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-lg font-black text-gray-900">Account opened successfully</h2>
-        <p className="text-xs text-gray-500 mt-0.5">Section 7 — Your personal account details</p>
+        <h2 className="text-lg font-black text-gray-900">Application submitted successfully</h2>
+        <p className="text-xs text-gray-500 mt-0.5">Section 7 — Your application reference</p>
       </div>
 
-      {/* Account number box */}
+      {/* Reference number box */}
       <div className="border border-gray-200 rounded-xl p-6 text-center bg-white">
         <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3">
-          YOUR NEW ACCOUNT NUMBER
+          YOUR APPLICATION REFERENCE NUMBER
         </p>
         <div className="w-12 h-px bg-gray-300 mx-auto mb-4" />
-        {accountNum ? (
-          <p className="text-2xl font-black tracking-widest" style={{ color: BLUE }}>{accountNum}</p>
-        ) : (
-          <p className="text-sm text-gray-400 animate-pulse">Generating your account...</p>
-        )}
+        <p className="text-2xl font-black tracking-widest" style={{ color: BLUE }}>{referenceNumber}</p>
+        <p className="text-[11px] text-gray-400 mt-3">Quote this reference if you contact us about your application. Your account number will be issued once KYC review is complete.</p>
       </div>
 
       {/* Account summary */}
@@ -491,7 +569,7 @@ function Step7({ onClose }: { onClose: () => void }) {
         <div className="space-y-2.5">
           {SUMMARY_ITEMS.map((item, i) => (
             <div key={i} className="flex items-start gap-2.5">
-              <input type="checkbox" checked={!!accountNum} readOnly
+              <input type="checkbox" checked readOnly
                 className="mt-0.5 w-3.5 h-3.5 flex-shrink-0" style={{ accentColor: BLUE }} />
               <p className="text-xs text-gray-600 leading-snug">{item}</p>
             </div>
@@ -544,6 +622,7 @@ export function PersonalAccountApplicationViewer({ isOpen, onClose }: Props) {
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState<Record<string, string>>({});
+  const [referenceNumber, setReferenceNumber] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const updateForm = (data: Record<string, string>) =>
@@ -554,20 +633,30 @@ export function PersonalAccountApplicationViewer({ isOpen, onClose }: Props) {
     scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const submitApplication = async () => {
+  const submitApplication = async (step6Data: Record<string, string>) => {
+    // Merge synchronously rather than calling updateForm() and reading
+    // formData in the same tick — setFormData doesn't flush before this
+    // function runs, so formData here would otherwise still be missing
+    // everything captured on this final step.
+    const merged = { ...formData, ...step6Data };
+    updateForm(step6Data);
     setSubmitting(true);
-    try {
-      await applicationsApi.submit({
-        type: "personal-account",
-        applicantName: `${formData.firstName ?? ""} ${formData.lastName ?? ""}`.trim() || "Applicant",
-        applicantEmail: formData.email,
-        applicantPhone: formData.phone,
-        formData: { ...formData, accountType: formData.accountType ?? "Vink Personal Account" },
-      });
-    } catch { /* non-blocking — still advance */ }
+    const r = await applicationsApi.submit({
+      type: "account",
+      subType: "Personal Account",
+      applicantName: `${merged.firstName ?? ""} ${merged.lastName ?? ""}`.trim() || "Applicant",
+      applicantEmail: merged.email,
+      applicantPhone: merged.phone,
+      formData: merged,
+    });
     setSubmitting(false);
-    setStep(7);
-    scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+    if (r.success && r.data?.referenceNumber) {
+      setReferenceNumber(r.data.referenceNumber);
+      setStep(7);
+      scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      toast.error(r.error ?? "Couldn't submit your application — please check your connection and try again.");
+    }
   };
 
   const back = () => {
@@ -577,7 +666,7 @@ export function PersonalAccountApplicationViewer({ isOpen, onClose }: Props) {
 
   // Reset to step 1 when reopened
   useEffect(() => {
-    if (isOpen) { setStep(1); setFormData({}); }
+    if (isOpen) { setStep(1); setFormData({}); setReferenceNumber(""); }
   }, [isOpen]);
 
   if (!isOpen) return null;
@@ -600,11 +689,11 @@ export function PersonalAccountApplicationViewer({ isOpen, onClose }: Props) {
       {/* Scrollable content */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto">
         <div className="max-w-2xl mx-auto px-4 py-8">
-          {step === 1 && <Step1 onNext={next} />}
-          {step === 2 && <Step2 onNext={next} onBack={back} />}
-          {step === 3 && <Step3 onNext={next} onBack={back} />}
-          {step === 4 && <Step4 onNext={next} onBack={back} />}
-          {step === 5 && <Step5 onNext={next} onBack={back} />}
+          {step === 1 && <Step1 onNext={next} updateForm={updateForm} />}
+          {step === 2 && <Step2 onNext={next} onBack={back} updateForm={updateForm} />}
+          {step === 3 && <Step3 onNext={next} onBack={back} updateForm={updateForm} />}
+          {step === 4 && <Step4 onNext={next} onBack={back} updateForm={updateForm} />}
+          {step === 5 && <Step5 onNext={next} onBack={back} updateForm={updateForm} />}
           {step === 6 && (
             <Step6
               onNext={submitApplication}
@@ -612,7 +701,7 @@ export function PersonalAccountApplicationViewer({ isOpen, onClose }: Props) {
               submitting={submitting}
             />
           )}
-          {step === 7 && <Step7 onClose={onClose} />}
+          {step === 7 && <Step7 onClose={onClose} referenceNumber={referenceNumber} />}
         </div>
       </div>
     </div>
