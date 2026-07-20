@@ -123,7 +123,7 @@ function AccountCard({ acct, onApply }: { acct: Account; onApply: (name: string,
         <button className="pav-btn pav-btn-primary" onClick={() => onApply(acct.name, acct.price)}>
           Apply now
         </button>
-        <button className="pav-btn pav-btn-ghost" onClick={() => onApply(acct.name, acct.price)}>
+        <button className="pav-btn pav-btn-primary" onClick={() => onApply(acct.name, acct.price)}>
           See account details
         </button>
       </div>
@@ -188,27 +188,9 @@ export function PersonalAccountViewer({ isOpen, onClose }: Props) {
         .pav-subnav-item:hover{ color:var(--pav-text-on-ink); }
         .pav-subnav-item.active{ color:var(--pav-gold); background:rgba(198,161,91,0.12); font-weight:600; }
 
-        .pav-hero{
-          background:var(--pav-ink); color:var(--pav-text-on-ink);
-          padding:64px 0 88px; position:relative; overflow:hidden;
-        }
-        .pav-hero::before{
-          content:""; position:absolute; inset:0;
-          background-image: repeating-linear-gradient(180deg, transparent, transparent 43px, var(--pav-rule-on-ink) 43px, var(--pav-rule-on-ink) 44px);
-          opacity:0.5; pointer-events:none;
-        }
-        .pav-hero-inner{ position:relative; }
-        .pav-h1{
-          font-family:'Fraunces', serif; font-weight:500;
-          font-size:clamp(32px, 5vw, 54px); line-height:1.08; letter-spacing:-0.01em;
-          margin:0 0 26px; max-width:17ch;
-        }
-        .pav-h1 em{ font-style:italic; font-weight:500; color:var(--pav-gold); }
-        .pav-lede{ font-size:17px; line-height:1.65; color:var(--pav-text-muted-on-ink); max-width:48ch; margin:0; }
-
         .pav-ledger-head{
           display:flex; justify-content:space-between; align-items:flex-end;
-          padding:56px 0 22px;
+          padding:32px 0 22px;
         }
         .pav-ledger-head h2{ font-family:'Fraunces', serif; font-weight:500; font-size:22px; margin:0; }
         .pav-scale-note{ font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--pav-text-muted); text-align:right; line-height:1.5; }
@@ -242,7 +224,7 @@ export function PersonalAccountViewer({ isOpen, onClose }: Props) {
         .pav-price{ font-family:'IBM Plex Mono', monospace; font-weight:600; font-size:28px; color:var(--pav-ink); line-height:1; }
         .pav-price .pav-cur{ font-size:16px; vertical-align:top; margin-right:1px; }
         .pav-price-sub{ font-size:11px; color:var(--pav-text-muted); margin:6px 0 0; font-family:'IBM Plex Mono', monospace; letter-spacing:0.02em; }
-        .pav-cta-group{ display:flex; flex-direction:column; gap:9px; }
+        .pav-cta-group{ display:flex; flex-direction:row; gap:9px; }
         .pav-btn{
           display:inline-block; font-family:'IBM Plex Sans', sans-serif; font-size:13.5px; font-weight:600;
           text-decoration:none; padding:10px 20px; border-radius:2px; cursor:pointer;
@@ -250,8 +232,6 @@ export function PersonalAccountViewer({ isOpen, onClose }: Props) {
         }
         .pav-btn-primary{ background:var(--pav-ink); color:var(--pav-text-on-ink); }
         .pav-btn-primary:hover{ background:var(--pav-plum); }
-        .pav-btn-ghost{ background:transparent; border-color:var(--pav-rule); color:var(--pav-ink); }
-        .pav-btn-ghost:hover{ border-color:var(--pav-ink); }
 
         .pav-foot{ background:var(--pav-ink); color:var(--pav-text-muted-on-ink); padding:34px 0; font-size:12px; line-height:1.7; font-family:'IBM Plex Mono', monospace; }
         .pav-foot .pav-wrap{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
@@ -280,13 +260,6 @@ export function PersonalAccountViewer({ isOpen, onClose }: Props) {
           ))}
         </div>
       </nav>
-
-      <section className="pav-hero">
-        <div className="pav-wrap pav-hero-inner">
-          <h1 className="pav-h1">Six accounts, one ledger.<br />Find the <em>ceiling</em> that fits how money moves through your life.</h1>
-          <p className="pav-lede">Every account below is measured the same way: what it costs you each month, and how much can move through it. Compare the two, and the right one is usually obvious.</p>
-        </div>
-      </section>
 
       <section className="pav-ledger-section">
         <div className="pav-wrap">
