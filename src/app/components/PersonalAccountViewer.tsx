@@ -15,7 +15,9 @@ interface Account {
   priceSub: string;
 }
 
-const ACCOUNTS: Account[] = [
+const SUB_NAV = ["Account", "Credit Card", "Loan", "Invest", "Insure", "Rewards"];
+
+const ROW1: Account[] = [
   {
     folio: "01",
     name: "Clear Access Account",
@@ -43,6 +45,9 @@ const ACCOUNTS: Account[] = [
     price: "R85",
     priceSub: "/ month · turnover to R500m",
   },
+];
+
+const ROW2: Account[] = [
   {
     folio: "04",
     name: "Premier Checking Account",
@@ -91,9 +96,45 @@ const ACCOUNTS: Account[] = [
   },
 ];
 
+function AccountCard({ acct, onApply }: { acct: Account; onApply: (name: string, price: string) => void }) {
+  return (
+    <div className="pav-card">
+      <div className="pav-folio">Folio No.&nbsp;{acct.folio}</div>
+      <h3 className="pav-acct-name">{acct.name}</h3>
+      <p className="pav-acct-desc">{acct.desc}</p>
+      {acct.features && (
+        <ul className="pav-features">
+          {acct.features.map((f) => <li key={f}>{f}</li>)}
+        </ul>
+      )}
+      <div className="pav-gauge-block">
+        <div className="pav-gauge-label"><span>R5k</span><span className="pav-ceiling-val">{acct.ceilingLabel}</span></div>
+        <div className="pav-gauge" aria-label={`Monthly turnover ceiling: ${acct.ceilingLabel}`}>
+          <div className="pav-gauge-fill" style={{ width: `${acct.ceilingPct}%` }} />
+          <div className="pav-gauge-marker" style={{ left: `${acct.ceilingPct}%` }} />
+        </div>
+        <div className="pav-gauge-ticks"><span>R5k</span><span>R500m</span></div>
+      </div>
+      <div className="pav-price-block">
+        <div className="pav-price"><span className="pav-cur">R</span>{acct.price.replace("R", "")}</div>
+        <div className="pav-price-sub">{acct.priceSub}</div>
+      </div>
+      <div className="pav-cta-group">
+        <button className="pav-btn pav-btn-primary" onClick={() => onApply(acct.name, acct.price)}>
+          Apply now
+        </button>
+        <button className="pav-btn pav-btn-ghost" onClick={() => onApply(acct.name, acct.price)}>
+          See account details
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function PersonalAccountViewer({ isOpen, onClose }: Props) {
   const [applyProduct, setApplyProduct] = useState<{ name: string; price: string } | null>(null);
   if (!isOpen) return null;
+  const openApply = (name: string, price: string) => setApplyProduct({ name, price });
 
   return (
     <div className="pav-root fixed inset-0 z-50 overflow-y-auto">
@@ -132,9 +173,24 @@ export function PersonalAccountViewer({ isOpen, onClose }: Props) {
         }
         .pav-close:hover{ background:rgba(29,23,64,0.85); }
 
+        /* ── Sub-nav bar ── */
+        .pav-subnav{ background:var(--pav-ink); border-bottom:1px solid var(--pav-rule-on-ink); }
+        .pav-subnav-inner{
+          display:flex; align-items:center; gap:4px; overflow-x:auto;
+          padding:0 32px; max-width:1160px; margin:0 auto; height:46px;
+        }
+        .pav-subnav-item{
+          font-family:'IBM Plex Mono', monospace; font-size:12.5px; white-space:nowrap;
+          padding:8px 16px; border-radius:2px; text-decoration:none; cursor:pointer;
+          color:var(--pav-text-muted-on-ink); background:transparent; border:none;
+          transition:color 0.15s ease, background 0.15s ease;
+        }
+        .pav-subnav-item:hover{ color:var(--pav-text-on-ink); }
+        .pav-subnav-item.active{ color:var(--pav-gold); background:rgba(198,161,91,0.12); font-weight:600; }
+
         .pav-hero{
           background:var(--pav-ink); color:var(--pav-text-on-ink);
-          padding:88px 0 96px; position:relative; overflow:hidden;
+          padding:64px 0 88px; position:relative; overflow:hidden;
         }
         .pav-hero::before{
           content:""; position:absolute; inset:0;
@@ -142,12 +198,6 @@ export function PersonalAccountViewer({ isOpen, onClose }: Props) {
           opacity:0.5; pointer-events:none;
         }
         .pav-hero-inner{ position:relative; }
-        .pav-eyebrow{
-          font-family:'IBM Plex Mono', monospace; font-size:12.5px; letter-spacing:0.14em;
-          text-transform:uppercase; color:var(--pav-gold);
-          display:flex; align-items:center; gap:12px; margin-bottom:28px;
-        }
-        .pav-eyebrow::before{ content:""; width:26px; height:1px; background:var(--pav-gold-dim); display:inline-block; }
         .pav-h1{
           font-family:'Fraunces', serif; font-weight:500;
           font-size:clamp(32px, 5vw, 54px); line-height:1.08; letter-spacing:-0.01em;
@@ -158,24 +208,29 @@ export function PersonalAccountViewer({ isOpen, onClose }: Props) {
 
         .pav-ledger-head{
           display:flex; justify-content:space-between; align-items:flex-end;
-          padding:56px 0 22px; border-bottom:1px solid var(--pav-rule);
+          padding:56px 0 22px;
         }
         .pav-ledger-head h2{ font-family:'Fraunces', serif; font-weight:500; font-size:22px; margin:0; }
         .pav-scale-note{ font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--pav-text-muted); text-align:right; line-height:1.5; }
 
-        .pav-row{
-          display:grid; grid-template-columns: 64px 1.25fr 1.3fr 0.95fr; gap:32px;
-          align-items:start; padding:38px 0; border-bottom:1px solid var(--pav-rule);
-          transition:background-color 0.2s ease;
+        /* ── Two rows of three cards ── */
+        .pav-grid{
+          display:grid; grid-template-columns:repeat(3, 1fr); gap:24px; margin-bottom:24px;
         }
-        .pav-row:hover{ background:var(--pav-paper-dim); }
-        .pav-folio{ font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--pav-gold-dim); letter-spacing:0.04em; padding-top:6px; }
-        .pav-acct-name{ font-family:'Fraunces', serif; font-weight:500; font-size:23px; margin:0 0 8px; letter-spacing:-0.01em; }
-        .pav-acct-desc{ font-size:14.5px; color:var(--pav-text-muted); line-height:1.55; margin:0 0 14px; max-width:32ch; }
-        .pav-features{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px; }
-        .pav-features li{ font-size:12.8px; color:var(--pav-ink-soft); line-height:1.5; padding-left:15px; position:relative; max-width:34ch; }
+        .pav-card{
+          background:#fff; border:1px solid var(--pav-rule); border-radius:2px;
+          padding:28px 26px; display:flex; flex-direction:column;
+          transition:box-shadow 0.2s ease, transform 0.2s ease;
+        }
+        .pav-card:hover{ box-shadow:0 12px 32px rgba(29,23,64,0.1); transform:translateY(-2px); }
+        .pav-folio{ font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--pav-gold-dim); letter-spacing:0.04em; margin-bottom:14px; }
+        .pav-acct-name{ font-family:'Fraunces', serif; font-weight:500; font-size:21px; margin:0 0 8px; letter-spacing:-0.01em; }
+        .pav-acct-desc{ font-size:13.5px; color:var(--pav-text-muted); line-height:1.55; margin:0 0 14px; }
+        .pav-features{ list-style:none; margin:0 0 16px; padding:0; display:flex; flex-direction:column; gap:6px; }
+        .pav-features li{ font-size:12.3px; color:var(--pav-ink-soft); line-height:1.5; padding-left:15px; position:relative; }
         .pav-features li::before{ content:"—"; position:absolute; left:0; color:var(--pav-gold-dim); }
 
+        .pav-gauge-block{ margin-bottom:18px; }
         .pav-gauge-label{ font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--pav-text-muted); display:flex; justify-content:space-between; margin-bottom:8px; }
         .pav-gauge-label .pav-ceiling-val{ color:var(--pav-ink); font-weight:600; }
         .pav-gauge{ position:relative; height:6px; background:var(--pav-paper-dim); border-radius:3px; overflow:visible; }
@@ -183,11 +238,11 @@ export function PersonalAccountViewer({ isOpen, onClose }: Props) {
         .pav-gauge-marker{ position:absolute; top:50%; width:11px; height:11px; border-radius:50%; background:var(--pav-ink); border:2px solid var(--pav-gold); transform:translate(-50%,-50%); }
         .pav-gauge-ticks{ display:flex; justify-content:space-between; margin-top:7px; font-family:'IBM Plex Mono', monospace; font-size:10px; color:var(--pav-text-muted); }
 
-        .pav-price-block{ text-align:right; }
-        .pav-price{ font-family:'IBM Plex Mono', monospace; font-weight:600; font-size:30px; color:var(--pav-ink); line-height:1; }
-        .pav-price .pav-cur{ font-size:17px; vertical-align:top; margin-right:1px; }
-        .pav-price-sub{ font-size:11.5px; color:var(--pav-text-muted); margin:6px 0 20px; font-family:'IBM Plex Mono', monospace; letter-spacing:0.02em; }
-        .pav-cta-group{ display:flex; flex-direction:column; gap:9px; align-items:flex-end; }
+        .pav-price-block{ margin-top:auto; margin-bottom:16px; }
+        .pav-price{ font-family:'IBM Plex Mono', monospace; font-weight:600; font-size:28px; color:var(--pav-ink); line-height:1; }
+        .pav-price .pav-cur{ font-size:16px; vertical-align:top; margin-right:1px; }
+        .pav-price-sub{ font-size:11px; color:var(--pav-text-muted); margin:6px 0 0; font-family:'IBM Plex Mono', monospace; letter-spacing:0.02em; }
+        .pav-cta-group{ display:flex; flex-direction:column; gap:9px; }
         .pav-btn{
           display:inline-block; font-family:'IBM Plex Sans', sans-serif; font-size:13.5px; font-weight:600;
           text-decoration:none; padding:10px 20px; border-radius:2px; cursor:pointer;
@@ -203,10 +258,7 @@ export function PersonalAccountViewer({ isOpen, onClose }: Props) {
         .pav-foot strong{ color:var(--pav-gold); font-weight:600; }
 
         @media (max-width:900px){
-          .pav-row{ grid-template-columns:1fr; gap:16px; padding:30px 0; }
-          .pav-folio{ padding-top:0; }
-          .pav-price-block{ text-align:left; }
-          .pav-cta-group{ align-items:stretch; flex-direction:row; max-width:340px; }
+          .pav-grid{ grid-template-columns:1fr; }
           .pav-ledger-head{ flex-direction:column; align-items:flex-start; gap:10px; }
           .pav-scale-note{ text-align:left; }
         }
@@ -219,9 +271,18 @@ export function PersonalAccountViewer({ isOpen, onClose }: Props) {
         <X className="w-4 h-4" />
       </button>
 
+      <nav className="pav-subnav">
+        <div className="pav-subnav-inner">
+          {SUB_NAV.map((item) => (
+            <button key={item} className={`pav-subnav-item${item === "Account" ? " active" : ""}`}>
+              {item}
+            </button>
+          ))}
+        </div>
+      </nav>
+
       <section className="pav-hero">
         <div className="pav-wrap pav-hero-inner">
-          <div className="pav-eyebrow">VINK Bank &nbsp;·&nbsp; Personal Banking</div>
           <h1 className="pav-h1">Six accounts, one ledger.<br />Find the <em>ceiling</em> that fits how money moves through your life.</h1>
           <p className="pav-lede">Every account below is measured the same way: what it costs you each month, and how much can move through it. Compare the two, and the right one is usually obvious.</p>
         </div>
@@ -234,40 +295,12 @@ export function PersonalAccountViewer({ isOpen, onClose }: Props) {
             <div className="pav-scale-note">Monthly turnover ceiling<br />shown on a shared scale, R5k → R500m</div>
           </div>
 
-          {ACCOUNTS.map((acct) => (
-            <div className="pav-row" key={acct.folio}>
-              <div className="pav-folio">Folio<br />No.&nbsp;{acct.folio}</div>
-              <div>
-                <h3 className="pav-acct-name">{acct.name}</h3>
-                <p className="pav-acct-desc">{acct.desc}</p>
-                {acct.features && (
-                  <ul className="pav-features">
-                    {acct.features.map((f) => <li key={f}>{f}</li>)}
-                  </ul>
-                )}
-              </div>
-              <div className="pav-gauge-block">
-                <div className="pav-gauge-label"><span>R5k</span><span className="pav-ceiling-val">{acct.ceilingLabel}</span></div>
-                <div className="pav-gauge" aria-label={`Monthly turnover ceiling: ${acct.ceilingLabel}`}>
-                  <div className="pav-gauge-fill" style={{ width: `${acct.ceilingPct}%` }} />
-                  <div className="pav-gauge-marker" style={{ left: `${acct.ceilingPct}%` }} />
-                </div>
-                <div className="pav-gauge-ticks"><span>R5k</span><span>R500m</span></div>
-              </div>
-              <div className="pav-price-block">
-                <div className="pav-price"><span className="pav-cur">R</span>{acct.price.replace("R", "")}</div>
-                <div className="pav-price-sub">{acct.priceSub}</div>
-                <div className="pav-cta-group">
-                  <button className="pav-btn pav-btn-primary" onClick={() => setApplyProduct({ name: acct.name, price: acct.price })}>
-                    Apply now
-                  </button>
-                  <button className="pav-btn pav-btn-ghost" onClick={() => setApplyProduct({ name: acct.name, price: acct.price })}>
-                    See account details
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
+          <div className="pav-grid">
+            {ROW1.map((acct) => <AccountCard key={acct.folio} acct={acct} onApply={openApply} />)}
+          </div>
+          <div className="pav-grid">
+            {ROW2.map((acct) => <AccountCard key={acct.folio} acct={acct} onApply={openApply} />)}
+          </div>
         </div>
       </section>
 
