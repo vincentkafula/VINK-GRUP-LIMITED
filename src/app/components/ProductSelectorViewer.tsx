@@ -11,7 +11,7 @@ import vinkLogo from "../../imports/LOGO_FINAL.png";
 export type ProductCategory =
   | "invest" | "insure" | "rewards" | "loan" | "creditCard" | "sim" | "account";
 
-interface Product {
+export interface Product {
   id: string;
   name: string;
   tagline: string;
@@ -34,7 +34,7 @@ interface Props {
 
 // ─── Per-category config ──────────────────────────────────────────────────────
 
-const CATEGORY_CONFIG: Record<ProductCategory, {
+export const CATEGORY_CONFIG: Record<ProductCategory, {
   title: string; subtitle: string; tag: string;
   gradient: string; accentColor: string;
 }> = {
@@ -91,7 +91,7 @@ const CATEGORY_CONFIG: Record<ProductCategory, {
 
 // ─── Product catalogues ───────────────────────────────────────────────────────
 
-const PRODUCTS: Record<ProductCategory, Product[]> = {
+export const PRODUCTS: Record<ProductCategory, Product[]> = {
   account: [
     { id: "clear-access", name: "Clear Access Account", tagline: "For anyone starting their banking journey", price: "R0", priceLabel: "/month — always free", emoji: "🌱", gradient: "linear-gradient(135deg,#E3F2FD,#BBDEFB)", features: ["No minimum balance", "Free Vink card included", "Instant transaction notifications", "Online and app banking"], badge: "Free Forever", badgeColor: "#10B981" },
     { id: "everyday", name: "Everyday Checking Account", tagline: "Designed for daily commuters and casual spenders", price: "R0", priceLabel: "/month", emoji: "🚌", gradient: "linear-gradient(135deg,#E8F5E9,#C8E6C9)", features: ["Free taxi fare payments via tap-and-go", "2 free ATM withdrawals/month", "Free airtime and electricity in-app", "Debit order support"] },

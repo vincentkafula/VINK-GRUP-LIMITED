@@ -1,139 +1,115 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { ApplyModal } from "./ApplyModal";
+import { CATEGORY_CONFIG, PRODUCTS, type Product, type ProductCategory } from "./ProductSelectorViewer";
 
-interface Props { isOpen: boolean; onClose: () => void; onNavigate: (category: "creditCard" | "loan" | "invest" | "insure" | "rewards") => void }
-
-interface Account {
-  folio: string;
-  name: string;
-  desc: string;
-  features?: string[];
-  ceilingLabel: string;
-  ceilingPct: number;
-  price: string;
-  priceSub: string;
+interface Props {
+  isOpen: boolean;
+  onClose: () => void;
+  initialCategory: Exclude<ProductCategory, "account" | "sim">;
+  onNavigateToAccount: () => void;
 }
 
-const SUB_NAV = ["Account", "Credit Card", "Loan", "Invest", "Insure", "Rewards"];
-
-const ROW1: Account[] = [
-  {
-    folio: "01",
-    name: "Clear Access Account",
-    desc: "Straightforward day-to-day banking, no monthly fee attached.",
-    ceilingLabel: "R1.5m ceiling",
-    ceilingPct: 49.6,
-    price: "R0",
-    priceSub: "/ month · turnover to R1.5m",
-  },
-  {
-    folio: "02",
-    name: "Everyday Checking Account",
-    desc: "More room to move each month, still free to hold.",
-    ceilingLabel: "R5m ceiling",
-    ceilingPct: 59.2,
-    price: "R0",
-    priceSub: "/ month · turnover to R5m",
-  },
-  {
-    folio: "03",
-    name: "Prime Checking Account",
-    desc: "Built for accounts that carry serious monthly volume.",
-    ceilingLabel: "R500m ceiling",
-    ceilingPct: 96.3,
-    price: "R85",
-    priceSub: "/ month · turnover to R500m",
-  },
+// "Account" is handled by its own dedicated page (PersonalAccountViewer) with
+// its own product data — this component covers the other five and hands off
+// to that page via onNavigateToAccount so the subnav feels like one
+// continuous experience rather than two disconnected data sources.
+const SUB_NAV: { label: string; category: ProductCategory }[] = [
+  { label: "Account",     category: "account" },
+  { label: "Credit Card", category: "creditCard" },
+  { label: "Loan",        category: "loan" },
+  { label: "Invest",      category: "invest" },
+  { label: "Insure",      category: "insure" },
+  { label: "Rewards",     category: "rewards" },
 ];
 
-const ROW2: Account[] = [
-  {
-    folio: "04",
-    name: "Premier Checking Account",
-    desc: "A tighter turnover band, geared to lower-volume activity.",
-    features: [
-      "Free online banking and NotifyMe alerts",
-      "Suitable for all business segments and sectors",
-      "Shariah-compliant option available",
-    ],
-    ceilingLabel: "R5,000 ceiling",
-    ceilingPct: 3.7,
-    price: "R170",
-    priceSub: "/ month · turnover to R5,000",
-  },
-  {
-    folio: "05",
-    name: "Grain Account",
-    desc: "Built for sole proprietors who need room to grow.",
-    features: [
-      "35 electronic transactions included",
-      "10 cash deposits/withdrawals at any VINK ATM, capped at R50,000/month",
-      "Limited to sole proprietors",
-      "Free online banking and NotifyMe alerts",
-      "Shariah-compliant option available",
-    ],
-    ceilingLabel: "R500m ceiling",
-    ceilingPct: 96.3,
-    price: "R265",
-    priceSub: "/ month · turnover to R500m",
-  },
-  {
-    folio: "06",
-    name: "Animal Account",
-    desc: "The highest-capacity personal account, for all business segments and sectors.",
-    features: [
-      "60 electronic transactions included",
-      "15 cash deposits/withdrawals at any VINK ATM, capped at R100,000/month",
-      "Suitable for all business segments and sectors",
-      "Free online banking and NotifyMe alerts",
-      "Shariah-compliant option available",
-    ],
-    ceilingLabel: "R500m ceiling",
-    ceilingPct: 96.3,
-    price: "R415",
-    priceSub: "/ month · turnover to R500m",
-  },
-];
+const PAGE_COPY: Record<ProductCategory, { heading: string; scaleNote: string; detailsCta: string }> = {
+  account:    { heading: "All personal accounts",   scaleNote: "Monthly turnover ceiling shown on a shared scale, R5k → R500m", detailsCta: "See account details" },
+  creditCard: { heading: "All personal credit cards", scaleNote: "Monthly card fee shown on a shared scale, R0 → R415",          detailsCta: "See card details" },
+  loan:       { heading: "All personal loans",       scaleNote: "Application / admin fee shown on a shared scale, R0 → R415",   detailsCta: "See loan details" },
+  invest:     { heading: "All investment products",  scaleNote: "Entry cost or rate varies by product type",                    detailsCta: "See investment details" },
+  insure:     { heading: "All insurance cover",      scaleNote: "Monthly premium or admin fee shown on a shared scale, R0 → R415", detailsCta: "See cover details" },
+  rewards:    { heading: "All rewards cards",        scaleNote: "Monthly card fee shown on a shared scale, R0 → R415",          detailsCta: "See card details" },
+  sim: { heading: "", scaleNote: "", detailsCta: "" },
+};
 
-function AccountCard({ acct, onApply }: { acct: Account; onApply: (name: string, price: string) => void }) {
+function parsePrice(price: string): number | null {
+  const m = price.trim().match(/^R([\d,]+)$/i);
+  if (!m) return null;
+  return parseInt(m[1].replace(/,/g, ""), 10);
+}
+
+function ProductCard({
+  product, folio, maxPrice, detailsCta, onApply,
+}: {
+  product: Product; folio: string; maxPrice: number | null; detailsCta: string;
+  onApply: (name: string, price: string) => void;
+}) {
+  const numericPrice = parsePrice(product.price);
+  const showGauge = numericPrice !== null && maxPrice !== null && maxPrice > 0;
+  const pct = showGauge ? Math.max(4, (numericPrice! / maxPrice!) * 100) : 0;
+  const isRand = product.price.trim().startsWith("R");
+
   return (
     <div className="pav-card">
-      <div className="pav-folio">Folio No.&nbsp;{acct.folio}</div>
-      <h3 className="pav-acct-name">{acct.name}</h3>
-      <p className="pav-acct-desc">{acct.desc}</p>
-      {acct.features && (
+      <div className="pav-folio">Folio No.&nbsp;{folio}</div>
+      {product.badge && <div className="pav-badge">{product.badge}</div>}
+      <h3 className="pav-acct-name">{product.name}</h3>
+      <p className="pav-acct-desc">{product.tagline}</p>
+      {product.features.length > 0 && (
         <ul className="pav-features">
-          {acct.features.map((f) => <li key={f}>{f}</li>)}
+          {product.features.map((f) => <li key={f}>{f}</li>)}
         </ul>
       )}
-      <div className="pav-gauge-block">
-        <div className="pav-gauge-label"><span>R5k</span><span className="pav-ceiling-val">{acct.ceilingLabel}</span></div>
-        <div className="pav-gauge" aria-label={`Monthly turnover ceiling: ${acct.ceilingLabel}`}>
-          <div className="pav-gauge-fill" style={{ width: `${acct.ceilingPct}%` }} />
-          <div className="pav-gauge-marker" style={{ left: `${acct.ceilingPct}%` }} />
+
+      {showGauge && (
+        <div className="pav-gauge-block">
+          <div className="pav-gauge-label"><span>Fee</span><span className="pav-ceiling-val">{product.price} {product.priceLabel}</span></div>
+          <div className="pav-gauge" aria-label={`${product.price} ${product.priceLabel}`}>
+            <div className="pav-gauge-fill" style={{ width: `${pct}%` }} />
+            <div className="pav-gauge-marker" style={{ left: `${pct}%` }} />
+          </div>
+          <div className="pav-gauge-ticks"><span>R0</span><span>R{maxPrice}</span></div>
         </div>
-        <div className="pav-gauge-ticks"><span>R5k</span><span>R500m</span></div>
-      </div>
+      )}
+
       <div className="pav-price-block">
-        <div className="pav-price"><span className="pav-cur">R</span>{acct.price.replace("R", "")}</div>
-        <div className="pav-price-sub">{acct.priceSub}</div>
+        <div className="pav-price">
+          {isRand && <span className="pav-cur">R</span>}
+          {isRand ? product.price.replace("R", "") : product.price}
+        </div>
+        <div className="pav-price-sub">{product.priceLabel}</div>
       </div>
       <div className="pav-cta-group">
-        <button className="pav-btn pav-btn-primary" onClick={() => onApply(acct.name, acct.price)}>
+        <button className="pav-btn pav-btn-primary" onClick={() => onApply(product.name, product.price)}>
           Apply now
         </button>
-        <button className="pav-btn pav-btn-primary" onClick={() => onApply(acct.name, acct.price)}>
-          See account details
+        <button className="pav-btn pav-btn-primary" onClick={() => onApply(product.name, product.price)}>
+          {detailsCta}
         </button>
       </div>
     </div>
   );
 }
 
-export function PersonalAccountViewer({ isOpen, onClose, onNavigate }: Props) {
+export function PersonalProductLedgerViewer({ isOpen, onClose, initialCategory, onNavigateToAccount }: Props) {
+  const [category, setCategory] = useState<ProductCategory>(initialCategory);
   const [applyProduct, setApplyProduct] = useState<{ name: string; price: string } | null>(null);
+
+  // Jump straight to whichever category was clicked, each time the viewer opens.
+  useEffect(() => { if (isOpen) setCategory(initialCategory); }, [isOpen, initialCategory]);
+
   if (!isOpen) return null;
+
+  const products = PRODUCTS[category] ?? [];
+  const copy = PAGE_COPY[category];
+  const cfg = CATEGORY_CONFIG[category];
+  const maxPrice = products.length
+    ? (() => {
+        const parsed = products.map(p => parsePrice(p.price)).filter((n): n is number => n !== null);
+        return parsed.length ? Math.max(...parsed) : null;
+      })()
+    : null;
   const openApply = (name: string, price: string) => setApplyProduct({ name, price });
 
   return (
@@ -193,28 +169,34 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate }: Props) {
           padding:32px 0 22px;
         }
         .pav-ledger-head h2{ font-family:'Fraunces', serif; font-weight:500; font-size:22px; margin:0; }
-        .pav-scale-note{ font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--pav-text-muted); text-align:right; line-height:1.5; }
+        .pav-scale-note{ font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--pav-text-muted); text-align:right; line-height:1.5; max-width:280px; }
 
         /* ── Two rows of three cards ── */
         .pav-grid{
           display:grid; grid-template-columns:repeat(3, 1fr); gap:24px; margin-bottom:24px;
         }
         .pav-card{
+          position:relative;
           background:#fff; border:1px solid var(--pav-rule); border-radius:2px;
           padding:28px 26px; display:flex; flex-direction:column;
           transition:box-shadow 0.2s ease, transform 0.2s ease;
         }
         .pav-card:hover{ box-shadow:0 12px 32px rgba(29,23,64,0.1); transform:translateY(-2px); }
         .pav-folio{ font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--pav-gold-dim); letter-spacing:0.04em; margin-bottom:14px; }
-        .pav-acct-name{ font-family:'Fraunces', serif; font-weight:500; font-size:21px; margin:0 0 8px; letter-spacing:-0.01em; }
+        .pav-badge{
+          position:absolute; top:24px; right:26px;
+          font-family:'IBM Plex Mono', monospace; font-size:10px; font-weight:600;
+          color:var(--pav-ink); background:var(--pav-gold); padding:3px 9px; border-radius:2px;
+        }
+        .pav-acct-name{ font-family:'Fraunces', serif; font-weight:500; font-size:21px; margin:0 0 8px; letter-spacing:-0.01em; padding-right:70px; }
         .pav-acct-desc{ font-size:13.5px; color:var(--pav-text-muted); line-height:1.55; margin:0 0 14px; }
         .pav-features{ list-style:none; margin:0 0 16px; padding:0; display:flex; flex-direction:column; gap:6px; }
         .pav-features li{ font-size:12.3px; color:var(--pav-ink-soft); line-height:1.5; padding-left:15px; position:relative; }
         .pav-features li::before{ content:"—"; position:absolute; left:0; color:var(--pav-gold-dim); }
 
         .pav-gauge-block{ margin-bottom:18px; }
-        .pav-gauge-label{ font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--pav-text-muted); display:flex; justify-content:space-between; margin-bottom:8px; }
-        .pav-gauge-label .pav-ceiling-val{ color:var(--pav-ink); font-weight:600; }
+        .pav-gauge-label{ font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--pav-text-muted); display:flex; justify-content:space-between; margin-bottom:8px; gap:8px; }
+        .pav-gauge-label .pav-ceiling-val{ color:var(--pav-ink); font-weight:600; text-align:right; }
         .pav-gauge{ position:relative; height:6px; background:var(--pav-paper-dim); border-radius:3px; overflow:visible; }
         .pav-gauge-fill{ position:absolute; top:0; left:0; height:100%; background:linear-gradient(90deg, var(--pav-plum), var(--pav-gold)); border-radius:3px; }
         .pav-gauge-marker{ position:absolute; top:50%; width:11px; height:11px; border-radius:50%; background:var(--pav-ink); border:2px solid var(--pav-gold); transform:translate(-50%,-50%); }
@@ -240,7 +222,7 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate }: Props) {
         @media (max-width:900px){
           .pav-grid{ grid-template-columns:1fr; }
           .pav-ledger-head{ flex-direction:column; align-items:flex-start; gap:10px; }
-          .pav-scale-note{ text-align:left; }
+          .pav-scale-note{ text-align:left; max-width:none; }
         }
         @media (prefers-reduced-motion:reduce){
           .pav-root *{ transition:none !important; }
@@ -255,17 +237,11 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate }: Props) {
         <div className="pav-subnav-inner">
           {SUB_NAV.map((item) => (
             <button
-              key={item}
-              className={`pav-subnav-item${item === "Account" ? " active" : ""}`}
-              onClick={() => {
-                if (item === "Account") return;
-                const map: Record<string, "creditCard" | "loan" | "invest" | "insure" | "rewards"> = {
-                  "Credit Card": "creditCard", "Loan": "loan", "Invest": "invest", "Insure": "insure", "Rewards": "rewards",
-                };
-                onNavigate(map[item]);
-              }}
+              key={item.category}
+              className={`pav-subnav-item${item.category === category ? " active" : ""}`}
+              onClick={() => item.category === "account" ? onNavigateToAccount() : setCategory(item.category)}
             >
-              {item}
+              {item.label}
             </button>
           ))}
         </div>
@@ -274,15 +250,22 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate }: Props) {
       <section className="pav-ledger-section">
         <div className="pav-wrap">
           <div className="pav-ledger-head">
-            <h2>All personal accounts</h2>
-            <div className="pav-scale-note">Monthly turnover ceiling<br />shown on a shared scale, R5k → R500m</div>
+            <div>
+              <h2>{copy.heading}</h2>
+              <p style={{ font: "12px 'IBM Plex Mono',monospace", color: "var(--pav-text-muted)", margin: "6px 0 0" }}>{cfg.tag}</p>
+            </div>
+            <div className="pav-scale-note">{copy.scaleNote}</div>
           </div>
 
           <div className="pav-grid">
-            {ROW1.map((acct) => <AccountCard key={acct.folio} acct={acct} onApply={openApply} />)}
+            {products.slice(0, 3).map((p, i) => (
+              <ProductCard key={p.id} product={p} folio={String(i + 1).padStart(2, "0")} maxPrice={maxPrice} detailsCta={copy.detailsCta} onApply={openApply} />
+            ))}
           </div>
           <div className="pav-grid">
-            {ROW2.map((acct) => <AccountCard key={acct.folio} acct={acct} onApply={openApply} />)}
+            {products.slice(3, 6).map((p, i) => (
+              <ProductCard key={p.id} product={p} folio={String(i + 4).padStart(2, "0")} maxPrice={maxPrice} detailsCta={copy.detailsCta} onApply={openApply} />
+            ))}
           </div>
         </div>
       </section>

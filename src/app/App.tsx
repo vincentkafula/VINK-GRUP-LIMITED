@@ -37,6 +37,7 @@ const BankingDashboard            = lazy(() => import("./components/BankingDashb
 const VehicleTrackingDashboard    = lazy(() => import("./components/VehicleTrackingDashboard").then(m => ({ default: m.VehicleTrackingDashboard })));
 const VinkMarketplace             = lazy(() => import("./components/VinkMarketplace").then(m => ({ default: m.VinkMarketplace })));
 const PersonalAccountViewer       = lazy(() => import("./components/PersonalAccountViewer").then(m => ({ default: m.PersonalAccountViewer })));
+const PersonalProductLedgerViewer = lazy(() => import("./components/PersonalProductLedgerViewer").then(m => ({ default: m.PersonalProductLedgerViewer })));
 const CreditCardViewer            = lazy(() => import("./components/CreditCardViewer").then(m => ({ default: m.CreditCardViewer })));
 const CreditCardApplicationViewer = lazy(() => import("./components/CreditCardApplicationViewer").then(m => ({ default: m.CreditCardApplicationViewer })));
 const LoanViewer                  = lazy(() => import("./components/LoanViewer").then(m => ({ default: m.LoanViewer })));
@@ -125,6 +126,8 @@ export default function App() {
 
   // ── Personal products ──────────────────────────────────────────────────────
   const [showPersonalAccount, setShowPersonalAccount]       = useState(false);
+  const [showPersonalLedger, setShowPersonalLedger]          = useState(false);
+  const [ledgerCategory, setLedgerCategory]                  = useState<"creditCard" | "loan" | "invest" | "insure" | "rewards">("creditCard");
   const [showCreditCard, setShowCreditCard]                 = useState(false);
   const [showCreditCardApp, setShowCreditCardApp]           = useState(false);
   const [showLoan, setShowLoan]                             = useState(false);
@@ -296,11 +299,11 @@ export default function App() {
     startTransition(() => {
       // Personal — through product selector
      if (item === "Account")           { mount("personalAccount"); setShowPersonalAccount(true); return; }
-      if (item === "Credit Card")       return openSelector("creditCard");
-      if (item === "Loan")              return openSelector("loan");
-      if (item === "Invest")            return openSelector("invest");
-      if (item === "Insure")            return openSelector("insure");
-      if (item === "Rewards")           return openSelector("rewards");
+      if (item === "Credit Card")       { mount("personalAccount"); mount("personalLedger"); setLedgerCategory("creditCard"); setShowPersonalLedger(true); return; }
+      if (item === "Loan")              { mount("personalAccount"); mount("personalLedger"); setLedgerCategory("loan"); setShowPersonalLedger(true); return; }
+      if (item === "Invest")            { mount("personalAccount"); mount("personalLedger"); setLedgerCategory("invest"); setShowPersonalLedger(true); return; }
+      if (item === "Insure")            { mount("personalAccount"); mount("personalLedger"); setLedgerCategory("insure"); setShowPersonalLedger(true); return; }
+      if (item === "Rewards")           { mount("personalAccount"); mount("personalLedger"); setLedgerCategory("rewards"); setShowPersonalLedger(true); return; }
       if (item === "SIM")               return openSelector("sim");
       // Business — Header.tsx's BUSINESS_SUB_NAV sends these exact bare labels
       if (item === "Start My Business") { mount("startBusiness");      setShowStartBusiness(true); return; }
@@ -427,7 +430,8 @@ export default function App() {
       {has("marketplace")     && <Suspense fallback={null}><VinkMarketplace        isOpen={showMarketplace}     onClose={() => setShowMarketplace(false)} /></Suspense>}
 
       {/* Personal products */}
-      {has("personalAccount") && <Suspense fallback={null}><PersonalAccountViewer  isOpen={showPersonalAccount} onClose={() => setShowPersonalAccount(false)} /></Suspense>}
+      {has("personalAccount") && <Suspense fallback={null}><PersonalAccountViewer  isOpen={showPersonalAccount} onClose={() => setShowPersonalAccount(false)} onNavigate={(cat) => { setShowPersonalAccount(false); setLedgerCategory(cat); setShowPersonalLedger(true); }} /></Suspense>}
+      {has("personalLedger")  && <Suspense fallback={null}><PersonalProductLedgerViewer isOpen={showPersonalLedger} onClose={() => setShowPersonalLedger(false)} initialCategory={ledgerCategory} onNavigateToAccount={() => { setShowPersonalLedger(false); setShowPersonalAccount(true); }} /></Suspense>}
       {has("creditCard")      && <Suspense fallback={null}><CreditCardViewer       isOpen={showCreditCard}      onClose={() => setShowCreditCard(false)} /></Suspense>}
       {has("creditCardApp")   && <Suspense fallback={null}><CreditCardApplicationViewer isOpen={showCreditCardApp} onClose={() => setShowCreditCardApp(false)} /></Suspense>}
       {has("loan")            && <Suspense fallback={null}><LoanViewer             isOpen={showLoan}            onClose={() => setShowLoan(false)} /></Suspense>}
