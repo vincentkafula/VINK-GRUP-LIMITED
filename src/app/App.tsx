@@ -48,8 +48,7 @@ const ServiceApplicationViewer    = lazy(() => import("./components/ServiceAppli
 const ProductSelectorViewer       = lazy(() => import("./components/ProductSelectorViewer").then(m => ({ default: m.ProductSelectorViewer })));
 const ClubBookingViewer           = lazy(() => import("./components/ClubBookingViewer").then(m => ({ default: m.ClubBookingViewer })));
 const StartMyBusinessViewer       = lazy(() => import("./components/StartMyBusinessViewer").then(m => ({ default: m.StartMyBusinessViewer })));
-const BusinessCreditCardViewer    = lazy(() => import("./components/BusinessCreditCardViewer").then(m => ({ default: m.BusinessCreditCardViewer })));
-const BusinessLoansViewer         = lazy(() => import("./components/BusinessLoansViewer").then(m => ({ default: m.BusinessLoansViewer })));
+const BusinessProductLedgerViewer = lazy(() => import("./components/BusinessProductLedgerViewer").then(m => ({ default: m.BusinessProductLedgerViewer })));
 const BusinessAccountApplicationViewer = lazy(() => import("./components/BusinessAccountApplicationViewer").then(m => ({ default: m.BusinessAccountApplicationViewer })));
 const BusinessLoanApplicationViewer = lazy(() => import("./components/BusinessLoanApplicationViewer").then(m => ({ default: m.BusinessLoanApplicationViewer })));
 const ManageMyBusinessViewer      = lazy(() => import("./components/ManageMyBusinessViewer").then(m => ({ default: m.ManageMyBusinessViewer })));
@@ -148,8 +147,8 @@ export default function App() {
   // ── Business ──────────────────────────────────────────────────────────────
   const [showStartBusiness, setShowStartBusiness]           = useState(false);
   const [showBusinessAccounts, setShowBusinessAccounts]     = useState(false);
-  const [showBusinessCreditCard, setShowBusinessCreditCard] = useState(false);
-  const [showBusinessLoans, setShowBusinessLoans]           = useState(false);
+  const [showBusinessLedger, setShowBusinessLedger]         = useState(false);
+  const [businessLedgerCategory, setBusinessLedgerCategory] = useState<"creditCard" | "loan">("creditCard");
   const [showBusinessLoanApp, setShowBusinessLoanApp]       = useState(false);
   const [showManageBusiness, setShowManageBusiness]         = useState(false);
   const [showBusinessInternational, setShowBusinessInternational] = useState(false);
@@ -295,6 +294,18 @@ export default function App() {
     });
   }, [mount]);
 
+  const navigateBusinessItem = (item: string) => {
+    setShowBusinessLedger(false);
+    if (item === "Start My Business") { mount("startBusiness");    setShowStartBusiness(true); return; }
+    if (item === "Accounts")          { mount("bizAccounts");      setShowBusinessAccounts(true); return; }
+    if (item === "Invest")            return openSelector("invest");
+    if (item === "Insure")            return openSelector("insure");
+    if (item === "Manage My Business"){ mount("manageBusiness");   setShowManageBusiness(true); return; }
+    if (item === "International")     { mount("bizInternational"); setShowBusinessInternational(true); return; }
+    if (item === "Studio")            { mount("bizStudio");        setShowBusinessStudio(true); return; }
+    if (item === "News")              { mount("bizNews");          setShowBusinessNews(true); return; }
+  };
+
   const handleSubNavClick = (item: string) => {
     startTransition(() => {
       // Personal — through product selector
@@ -308,8 +319,8 @@ export default function App() {
       // Business — Header.tsx's BUSINESS_SUB_NAV sends these exact bare labels
       if (item === "Start My Business") { mount("startBusiness");      setShowStartBusiness(true); return; }
       if (item === "Accounts")          { mount("bizAccounts");        setShowBusinessAccounts(true); return; }
-      if (item === "Credit Cards")      { mount("bizCreditCard");      setShowBusinessCreditCard(true); return; }
-      if (item === "Loans")             { mount("bizLoans");           setShowBusinessLoans(true); return; }
+      if (item === "Credit Cards")      { mount("bizLedger");          setBusinessLedgerCategory("creditCard"); setShowBusinessLedger(true); return; }
+      if (item === "Loans")             { mount("bizLedger");          setBusinessLedgerCategory("loan"); setShowBusinessLedger(true); return; }
       if (item === "Manage My Business"){ mount("manageBusiness");     setShowManageBusiness(true); return; }
       if (item === "International")     { mount("bizInternational");   setShowBusinessInternational(true); return; }
       if (item === "Studio")            { mount("bizStudio");          setShowBusinessStudio(true); return; }
@@ -451,8 +462,7 @@ export default function App() {
       {/* Business */}
       {has("startBusiness")      && <Suspense fallback={null}><StartMyBusinessViewer       isOpen={showStartBusiness}       onClose={() => setShowStartBusiness(false)} /></Suspense>}
       {has("bizAccounts")        && <Suspense fallback={null}><BusinessAccountApplicationViewer isOpen={showBusinessAccounts} onClose={() => setShowBusinessAccounts(false)} /></Suspense>}
-      {has("bizCreditCard")      && <Suspense fallback={null}><BusinessCreditCardViewer    isOpen={showBusinessCreditCard}  onClose={() => setShowBusinessCreditCard(false)} /></Suspense>}
-      {has("bizLoans")           && <Suspense fallback={null}><BusinessLoansViewer         isOpen={showBusinessLoans}       onClose={() => setShowBusinessLoans(false)} /></Suspense>}
+      {has("bizLedger") && <Suspense fallback={null}><BusinessProductLedgerViewer isOpen={showBusinessLedger} onClose={() => setShowBusinessLedger(false)} initialCategory={businessLedgerCategory} onNavigate={(item) => navigateBusinessItem(item)} /></Suspense>}
       {has("bizLoanApp")         && <Suspense fallback={null}><BusinessLoanApplicationViewer isOpen={showBusinessLoanApp}   onClose={() => setShowBusinessLoanApp(false)} /></Suspense>}
       {has("manageBusiness")     && <Suspense fallback={null}><ManageMyBusinessViewer      isOpen={showManageBusiness}      onClose={() => setShowManageBusiness(false)} /></Suspense>}
       {has("bizInternational")   && <Suspense fallback={null}><BusinessInternationalViewer isOpen={showBusinessInternational} onClose={() => setShowBusinessInternational(false)} /></Suspense>}
