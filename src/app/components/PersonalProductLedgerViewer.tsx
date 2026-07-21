@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
-import { ApplyModal } from "./ApplyModal";
 import { CATEGORY_CONFIG, PRODUCTS, type Product, type ProductCategory } from "./ProductSelectorViewer";
 
 interface Props {
@@ -8,6 +7,7 @@ interface Props {
   onClose: () => void;
   initialCategory: Exclude<ProductCategory, "account" | "sim">;
   onNavigateToAccount: () => void;
+  onApply: (category: Exclude<ProductCategory, "account" | "sim">) => void;
 }
 
 // "Account" is handled by its own dedicated page (PersonalAccountViewer) with
@@ -43,7 +43,7 @@ function ProductCard({
   product, folio, maxPrice, detailsCta, onApply,
 }: {
   product: Product; folio: string; maxPrice: number | null; detailsCta: string;
-  onApply: (name: string, price: string) => void;
+  onApply: () => void;
 }) {
   const numericPrice = parsePrice(product.price);
   const showGauge = numericPrice !== null && maxPrice !== null && maxPrice > 0;
@@ -81,10 +81,10 @@ function ProductCard({
         <div className="pav-price-sub">{product.priceLabel}</div>
       </div>
       <div className="pav-cta-group">
-        <button className="pav-btn pav-btn-primary" onClick={() => onApply(product.name, product.price)}>
+        <button className="pav-btn pav-btn-primary" onClick={onApply}>
           Apply now
         </button>
-        <button className="pav-btn pav-btn-primary" onClick={() => onApply(product.name, product.price)}>
+        <button className="pav-btn pav-btn-primary" onClick={onApply}>
           {detailsCta}
         </button>
       </div>
@@ -92,9 +92,8 @@ function ProductCard({
   );
 }
 
-export function PersonalProductLedgerViewer({ isOpen, onClose, initialCategory, onNavigateToAccount }: Props) {
+export function PersonalProductLedgerViewer({ isOpen, onClose, initialCategory, onNavigateToAccount, onApply }: Props) {
   const [category, setCategory] = useState<ProductCategory>(initialCategory);
-  const [applyProduct, setApplyProduct] = useState<{ name: string; price: string } | null>(null);
 
   // Jump straight to whichever category was clicked, each time the viewer opens.
   useEffect(() => { if (isOpen) setCategory(initialCategory); }, [isOpen, initialCategory]);
@@ -110,7 +109,7 @@ export function PersonalProductLedgerViewer({ isOpen, onClose, initialCategory, 
         return parsed.length ? Math.max(...parsed) : null;
       })()
     : null;
-  const openApply = (name: string, price: string) => setApplyProduct({ name, price });
+  const handleApply = () => { onClose(); onApply(category as Exclude<ProductCategory, "account" | "sim">); };
 
   return (
     <div className="pav-root fixed inset-0 z-50 overflow-y-auto">
@@ -259,12 +258,12 @@ export function PersonalProductLedgerViewer({ isOpen, onClose, initialCategory, 
 
           <div className="pav-grid">
             {products.slice(0, 3).map((p, i) => (
-              <ProductCard key={p.id} product={p} folio={String(i + 1).padStart(2, "0")} maxPrice={maxPrice} detailsCta={copy.detailsCta} onApply={openApply} />
+              <ProductCard key={p.id} product={p} folio={String(i + 1).padStart(2, "0")} maxPrice={maxPrice} detailsCta={copy.detailsCta} onApply={handleApply} />
             ))}
           </div>
           <div className="pav-grid">
             {products.slice(3, 6).map((p, i) => (
-              <ProductCard key={p.id} product={p} folio={String(i + 4).padStart(2, "0")} maxPrice={maxPrice} detailsCta={copy.detailsCta} onApply={openApply} />
+              <ProductCard key={p.id} product={p} folio={String(i + 4).padStart(2, "0")} maxPrice={maxPrice} detailsCta={copy.detailsCta} onApply={handleApply} />
             ))}
           </div>
         </div>
@@ -276,15 +275,6 @@ export function PersonalProductLedgerViewer({ isOpen, onClose, initialCategory, 
           <div>State House Building, 8 Rose Street, Cape Town</div>
         </div>
       </footer>
-
-      {applyProduct && (
-        <ApplyModal
-          isOpen={!!applyProduct}
-          onClose={() => setApplyProduct(null)}
-          product={applyProduct.name}
-          price={applyProduct.price}
-        />
-      )}
     </div>
   );
 }

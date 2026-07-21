@@ -294,6 +294,16 @@ export default function App() {
     });
   }, [mount]);
 
+  const applyForProductCategory = (category: "creditCard" | "loan" | "invest" | "insure" | "rewards") => {
+    startTransition(() => {
+      if (category === "invest")      { mount("investApp");     setShowInvestApp(true); }
+      else if (category === "insure") { mount("insureApp");     setShowInsureApp(true); }
+      else if (category === "rewards"){ mount("rewardsApp");    setShowRewardsApp(true); }
+      else if (category === "creditCard") { mount("creditCardApp"); setShowCreditCardApp(true); }
+      else if (category === "loan")   { mount("bizLoanApp");    setShowBusinessLoanApp(true); }
+    });
+  };
+
   const navigateBusinessItem = (item: string) => {
     setShowBusinessLedger(false);
     if (item === "Start My Business") { mount("startBusiness");    setShowStartBusiness(true); return; }
@@ -442,7 +452,7 @@ export default function App() {
 
       {/* Personal products */}
       {has("personalAccount") && <Suspense fallback={null}><PersonalAccountViewer  isOpen={showPersonalAccount} onClose={() => setShowPersonalAccount(false)} onNavigate={(cat) => { setShowPersonalAccount(false); setLedgerCategory(cat); setShowPersonalLedger(true); }} /></Suspense>}
-      {has("personalLedger")  && <Suspense fallback={null}><PersonalProductLedgerViewer isOpen={showPersonalLedger} onClose={() => setShowPersonalLedger(false)} initialCategory={ledgerCategory} onNavigateToAccount={() => { setShowPersonalLedger(false); setShowPersonalAccount(true); }} /></Suspense>}
+      {has("personalLedger")  && <Suspense fallback={null}><PersonalProductLedgerViewer isOpen={showPersonalLedger} onClose={() => setShowPersonalLedger(false)} initialCategory={ledgerCategory} onNavigateToAccount={() => { setShowPersonalLedger(false); setShowPersonalAccount(true); }} onApply={applyForProductCategory} /></Suspense>}
       {has("creditCard")      && <Suspense fallback={null}><CreditCardViewer       isOpen={showCreditCard}      onClose={() => setShowCreditCard(false)} /></Suspense>}
       {has("creditCardApp")   && <Suspense fallback={null}><CreditCardApplicationViewer isOpen={showCreditCardApp} onClose={() => setShowCreditCardApp(false)} /></Suspense>}
       {has("loan")            && <Suspense fallback={null}><LoanViewer             isOpen={showLoan}            onClose={() => setShowLoan(false)} /></Suspense>}
@@ -462,7 +472,7 @@ export default function App() {
       {/* Business */}
       {has("startBusiness")      && <Suspense fallback={null}><StartMyBusinessViewer       isOpen={showStartBusiness}       onClose={() => setShowStartBusiness(false)} /></Suspense>}
       {has("bizAccounts")        && <Suspense fallback={null}><BusinessAccountApplicationViewer isOpen={showBusinessAccounts} onClose={() => setShowBusinessAccounts(false)} /></Suspense>}
-      {has("bizLedger") && <Suspense fallback={null}><BusinessProductLedgerViewer isOpen={showBusinessLedger} onClose={() => setShowBusinessLedger(false)} initialCategory={businessLedgerCategory} onNavigate={(item) => navigateBusinessItem(item)} /></Suspense>}
+      {has("bizLedger") && <Suspense fallback={null}><BusinessProductLedgerViewer isOpen={showBusinessLedger} onClose={() => setShowBusinessLedger(false)} initialCategory={businessLedgerCategory} onNavigate={(item) => navigateBusinessItem(item)} onApply={applyForProductCategory} /></Suspense>}
       {has("bizLoanApp")         && <Suspense fallback={null}><BusinessLoanApplicationViewer isOpen={showBusinessLoanApp}   onClose={() => setShowBusinessLoanApp(false)} /></Suspense>}
       {has("manageBusiness")     && <Suspense fallback={null}><ManageMyBusinessViewer      isOpen={showManageBusiness}      onClose={() => setShowManageBusiness(false)} /></Suspense>}
       {has("bizInternational")   && <Suspense fallback={null}><BusinessInternationalViewer isOpen={showBusinessInternational} onClose={() => setShowBusinessInternational(false)} /></Suspense>}

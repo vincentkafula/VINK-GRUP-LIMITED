@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
-import { ApplyModal } from "./ApplyModal";
 
 type BizCategory = "creditCard" | "loan";
 type NavItem = "Start My Business" | "Accounts" | "Credit Cards" | "Loans" | "Invest" | "Insure" | "Manage My Business" | "International" | "Studio" | "News";
@@ -10,6 +9,7 @@ interface Props {
   onClose: () => void;
   initialCategory: BizCategory;
   onNavigate: (item: NavItem) => void;
+  onApply: (category: BizCategory) => void;
 }
 
 const SUB_NAV: NavItem[] = ["Start My Business", "Accounts", "Credit Cards", "Loans", "Invest", "Insure", "Manage My Business", "International", "Studio", "News"];
@@ -54,7 +54,7 @@ function ProductCard({
   product, folio, maxPrice, detailsCta, onApply,
 }: {
   product: BizProduct; folio: string; maxPrice: number | null; detailsCta: string;
-  onApply: (name: string, price: string) => void;
+  onApply: () => void;
 }) {
   const numericPrice = parsePrice(product.price);
   const showGauge = numericPrice !== null && maxPrice !== null && maxPrice > 0;
@@ -85,16 +85,15 @@ function ProductCard({
         <div className="pav-price-sub">/ month</div>
       </div>
       <div className="pav-cta-group">
-        <button className="pav-btn pav-btn-primary" onClick={() => onApply(product.name, product.price)}>Apply now</button>
-        <button className="pav-btn pav-btn-primary" onClick={() => onApply(product.name, product.price)}>{detailsCta}</button>
+        <button className="pav-btn pav-btn-primary" onClick={onApply}>Apply now</button>
+        <button className="pav-btn pav-btn-primary" onClick={onApply}>{detailsCta}</button>
       </div>
     </div>
   );
 }
 
-export function BusinessProductLedgerViewer({ isOpen, onClose, initialCategory, onNavigate }: Props) {
+export function BusinessProductLedgerViewer({ isOpen, onClose, initialCategory, onNavigate, onApply }: Props) {
   const [category, setCategory] = useState<BizCategory>(initialCategory);
-  const [applyProduct, setApplyProduct] = useState<{ name: string; price: string } | null>(null);
 
   useEffect(() => { if (isOpen) setCategory(initialCategory); }, [isOpen, initialCategory]);
 
@@ -104,7 +103,7 @@ export function BusinessProductLedgerViewer({ isOpen, onClose, initialCategory, 
   const copy = PAGE_COPY[category];
   const parsed = products.map(p => parsePrice(p.price)).filter((n): n is number => n !== null);
   const maxPrice = parsed.length ? Math.max(...parsed) : null;
-  const openApply = (name: string, price: string) => setApplyProduct({ name, price });
+  const handleApply = () => { onClose(); onApply(category); };
   const activeLabel: NavItem = category === "creditCard" ? "Credit Cards" : "Loans";
 
   return (
@@ -254,12 +253,12 @@ export function BusinessProductLedgerViewer({ isOpen, onClose, initialCategory, 
 
           <div className="pav-grid">
             {products.slice(0, 3).map((p, i) => (
-              <ProductCard key={p.name} product={p} folio={String(i + 1).padStart(2, "0")} maxPrice={maxPrice} detailsCta={copy.detailsCta} onApply={openApply} />
+              <ProductCard key={p.name} product={p} folio={String(i + 1).padStart(2, "0")} maxPrice={maxPrice} detailsCta={copy.detailsCta} onApply={handleApply} />
             ))}
           </div>
           <div className="pav-grid">
             {products.slice(3, 6).map((p, i) => (
-              <ProductCard key={p.name} product={p} folio={String(i + 4).padStart(2, "0")} maxPrice={maxPrice} detailsCta={copy.detailsCta} onApply={openApply} />
+              <ProductCard key={p.name} product={p} folio={String(i + 4).padStart(2, "0")} maxPrice={maxPrice} detailsCta={copy.detailsCta} onApply={handleApply} />
             ))}
           </div>
         </div>
@@ -271,15 +270,6 @@ export function BusinessProductLedgerViewer({ isOpen, onClose, initialCategory, 
           <div>State House Building, 8 Rose Street, Cape Town</div>
         </div>
       </footer>
-
-      {applyProduct && (
-        <ApplyModal
-          isOpen={!!applyProduct}
-          onClose={() => setApplyProduct(null)}
-          product={applyProduct.name}
-          price={applyProduct.price}
-        />
-      )}
     </div>
   );
 }
