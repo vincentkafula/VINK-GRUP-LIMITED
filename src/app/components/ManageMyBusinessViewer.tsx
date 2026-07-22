@@ -1,14 +1,16 @@
+import { useState } from "react";
 import { X } from "lucide-react";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { Footer } from "./Footer";
+import { ApplyModal } from "./ApplyModal";
 
-interface Props { isOpen: boolean; onClose: () => void }
+interface Props { isOpen: boolean; onClose: () => void; onNavigate: (item: string) => void }
 
 const BRAND      = "#4B2D9E";
 const BRAND_DARK = "#3a2180";
 const FEAT_BG    = "#4B2D9E";
 const TOP_NAV    = ["Personal", "Business", "Corporate", "Marketplace"];
-const BIZ_SUBNAV = ["Start my business", "Accounts", "Credit cards", "Loans", "Invest", "Insure", "Manage my Business", "International", "Studio", "news", "Get Help"];
+const BIZ_SUBNAV = ["Start My Business", "Accounts", "Credit Cards", "Loans", "Invest", "Insure", "Manage My Business", "International", "Studio", "News", "Get Help"];
 const ACTIVE_IDX = 6; // "Manage my Business"
 
 const ROW1 = [
@@ -23,7 +25,7 @@ const ROW2 = [
   { name: "No Long-Term Commitments",    price: "R415", featured: false, features: ["All VINK business management services on rolling monthly agreements", "No 12-month lock-ins", "Cancel, upgrade, or downgrade any time with 30 days' notice"] },
 ];
 
-function Card({ card }: { card: { name: string; price: string; featured?: boolean; features: string[] } }) {
+function Card({ card, onApply }: { card: { name: string; price: string; featured?: boolean; features: string[] }; onApply: (service: string) => void }) {
   return (
     <div style={{ background: card.featured ? FEAT_BG : "#fff", border: `1.5px solid ${card.featured ? FEAT_BG : "#e8e8f0"}`, borderRadius: 12, padding: "28px 24px", display: "flex", flexDirection: "column", transition: "box-shadow .2s" }}
       onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.boxShadow = "0 6px 24px rgba(75,45,158,.12)"; }}
@@ -43,9 +45,11 @@ function Card({ card }: { card: { name: string; price: string; featured?: boolea
       </ul>
       <div style={{ display: "flex", gap: 10, marginTop: "auto" }}>
         <button style={{ flex: 1, background: card.featured ? "#fff" : BRAND, color: card.featured ? BRAND : "#fff", border: "none", borderRadius: 20, padding: "10px 0", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
+          onClick={() => onApply(card.name)}
           onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.opacity = "0.88"; }}
           onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.opacity = "1"; }}>Apply Now</button>
         <button style={{ flex: 1, background: "transparent", color: card.featured ? "#fff" : BRAND, border: `1.5px solid ${card.featured ? "#fff" : BRAND}`, borderRadius: 20, padding: "10px 0", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
+          onClick={() => onApply(card.name)}
           onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = card.featured ? "rgba(255,255,255,.1)" : "#f3f0fb"; }}
           onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}>Tell me more</button>
       </div>
@@ -53,7 +57,8 @@ function Card({ card }: { card: { name: string; price: string; featured?: boolea
   );
 }
 
-export function ManageMyBusinessViewer({ isOpen, onClose }: Props) {
+export function ManageMyBusinessViewer({ isOpen, onClose, onNavigate }: Props) {
+  const [applyService, setApplyService] = useState<string | null>(null);
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto" style={{ background: "#fff", fontFamily: "'Segoe UI', Arial, sans-serif", fontSize: 15 }}>
@@ -79,7 +84,7 @@ export function ManageMyBusinessViewer({ isOpen, onClose }: Props) {
       {/* Business sub-nav */}
       <nav style={{ background: BRAND, display: "flex", padding: "0 32px", overflowX: "auto" }}>
         {BIZ_SUBNAV.map((item, i) => (
-          <a key={item} href="#" style={{ textDecoration: "none", color: i === ACTIVE_IDX ? "#fff" : "rgba(255,255,255,0.75)", fontSize: 13, padding: "13px 16px", whiteSpace: "nowrap", borderBottom: `3px solid ${i === ACTIVE_IDX ? "#fff" : "transparent"}`, fontWeight: i === ACTIVE_IDX ? 600 : 400 }}>{item}</a>
+          <button key={item} onClick={() => onNavigate(item)} style={{ textDecoration: "none", color: i === ACTIVE_IDX ? "#fff" : "rgba(255,255,255,0.75)", fontSize: 13, padding: "13px 16px", whiteSpace: "nowrap", borderBottom: `3px solid ${i === ACTIVE_IDX ? "#fff" : "transparent"}`, fontWeight: i === ACTIVE_IDX ? 600 : 400, background: "transparent", border: "none", borderBottomWidth: 3, borderBottomStyle: "solid", borderBottomColor: i === ACTIVE_IDX ? "#fff" : "transparent", cursor: "pointer", fontFamily: "inherit" }}>{item}</button>
         ))}
       </nav>
 
@@ -88,6 +93,7 @@ export function ManageMyBusinessViewer({ isOpen, onClose }: Props) {
         <h1 style={{ fontSize: 30, fontWeight: 700, color: "#1e1e2e", marginBottom: 6 }}>Plans that help you grow</h1>
         <p style={{ color: "#5a5a72", fontSize: 15, marginBottom: 22 }}>Transparent Pricing for You</p>
         <button style={{ background: BRAND, color: "#fff", border: "none", borderRadius: 24, padding: "12px 32px", fontSize: 15, fontWeight: 600, cursor: "pointer" }}
+          onClick={() => setApplyService("Business Management Consultation")}
           onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = BRAND_DARK; }}
           onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = BRAND; }}>Help me Decide</button>
       </section>
@@ -95,10 +101,10 @@ export function ManageMyBusinessViewer({ isOpen, onClose }: Props) {
       {/* Pricing */}
       <div style={{ padding: "40px 32px 24px", maxWidth: 1200, margin: "0 auto" }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 20, marginBottom: 20 }}>
-          {ROW1.map((card, i) => <Card key={i} card={card} />)}
+          {ROW1.map((card, i) => <Card key={i} card={card} onApply={setApplyService} />)}
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20 }} className="biz-mgmt-row2">
-          {ROW2.map((card, i) => <Card key={i} card={card} />)}
+          {ROW2.map((card, i) => <Card key={i} card={card} onApply={setApplyService} />)}
         </div>
         <style>{`@media(max-width:900px){.biz-mgmt-row2{grid-template-columns:1fr 1fr!important}}@media(max-width:600px){.biz-mgmt-row2{grid-template-columns:1fr!important}}`}</style>
       </div>
@@ -109,11 +115,16 @@ export function ManageMyBusinessViewer({ isOpen, onClose }: Props) {
         <p style={{ fontSize: 13, color: "#5a5a72", marginBottom: 4 }}>*These four Business Platinum Checkings meet different needs — choose what&apos;s right for you.</p>
         <p style={{ fontSize: 13, color: "#5a5a72", marginBottom: 4 }}>Note: Shari&apos;ah-compliant investment options are available on request.</p>
         <button style={{ marginTop: 14, background: BRAND, color: "#fff", border: "none", borderRadius: 20, padding: "11px 28px", fontSize: 14, fontWeight: 600, cursor: "pointer" }}
+          onClick={() => setApplyService("Business Management Consultation")}
           onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = BRAND_DARK; }}
           onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = BRAND; }}>Continue an Application</button>
       </div>
 
       <Footer />
+
+      {applyService && (
+        <ApplyModal isOpen={!!applyService} onClose={() => setApplyService(null)} product={applyService} />
+      )}
     </div>
   );
 }

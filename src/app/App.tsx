@@ -306,8 +306,15 @@ export default function App() {
 
   const navigateBusinessItem = (item: string) => {
     setShowBusinessLedger(false);
+    setShowStartBusiness(false);
+    setShowManageBusiness(false);
+    setShowBusinessInternational(false);
+    setShowBusinessStudio(false);
+    setShowBusinessNews(false);
     if (item === "Start My Business") { mount("startBusiness");    setShowStartBusiness(true); return; }
     if (item === "Accounts")          { mount("bizAccounts");      setShowBusinessAccounts(true); return; }
+    if (item === "Credit Cards")      { mount("bizLedger"); setBusinessLedgerCategory("creditCard"); setShowBusinessLedger(true); return; }
+    if (item === "Loans")             { mount("bizLedger"); setBusinessLedgerCategory("loan"); setShowBusinessLedger(true); return; }
     if (item === "Invest")            return openSelector("invest");
     if (item === "Insure")            return openSelector("insure");
     if (item === "Manage My Business"){ mount("manageBusiness");   setShowManageBusiness(true); return; }
@@ -470,14 +477,14 @@ export default function App() {
       {has("productSelector") && <Suspense fallback={null}><ProductSelectorViewer  isOpen={selectorOpen} category={selectorCategory} onClose={() => setSelectorOpen(false)} onSelect={handleSelectorSelect} /></Suspense>}
 
       {/* Business */}
-      {has("startBusiness")      && <Suspense fallback={null}><StartMyBusinessViewer       isOpen={showStartBusiness}       onClose={() => setShowStartBusiness(false)} /></Suspense>}
+      {has("startBusiness")      && <Suspense fallback={null}><StartMyBusinessViewer       isOpen={showStartBusiness}       onClose={() => setShowStartBusiness(false)} onNavigate={navigateBusinessItem} /></Suspense>}
       {has("bizAccounts")        && <Suspense fallback={null}><BusinessAccountApplicationViewer isOpen={showBusinessAccounts} onClose={() => setShowBusinessAccounts(false)} /></Suspense>}
       {has("bizLedger") && <Suspense fallback={null}><BusinessProductLedgerViewer isOpen={showBusinessLedger} onClose={() => setShowBusinessLedger(false)} initialCategory={businessLedgerCategory} onNavigate={(item) => navigateBusinessItem(item)} onApply={applyForProductCategory} /></Suspense>}
       {has("bizLoanApp")         && <Suspense fallback={null}><BusinessLoanApplicationViewer isOpen={showBusinessLoanApp}   onClose={() => setShowBusinessLoanApp(false)} /></Suspense>}
-      {has("manageBusiness")     && <Suspense fallback={null}><ManageMyBusinessViewer      isOpen={showManageBusiness}      onClose={() => setShowManageBusiness(false)} /></Suspense>}
-      {has("bizInternational")   && <Suspense fallback={null}><BusinessInternationalViewer isOpen={showBusinessInternational} onClose={() => setShowBusinessInternational(false)} /></Suspense>}
-      {has("bizStudio")          && <Suspense fallback={null}><BusinessStudioViewer        isOpen={showBusinessStudio}      onClose={() => setShowBusinessStudio(false)} /></Suspense>}
-      {has("bizNews")            && <Suspense fallback={null}><BusinessNewsViewer          isOpen={showBusinessNews}        onClose={() => setShowBusinessNews(false)} /></Suspense>}
+      {has("manageBusiness")     && <Suspense fallback={null}><ManageMyBusinessViewer      isOpen={showManageBusiness}      onClose={() => setShowManageBusiness(false)} onNavigate={navigateBusinessItem} /></Suspense>}
+      {has("bizInternational")   && <Suspense fallback={null}><BusinessInternationalViewer isOpen={showBusinessInternational} onClose={() => setShowBusinessInternational(false)} onNavigate={navigateBusinessItem} /></Suspense>}
+      {has("bizStudio")          && <Suspense fallback={null}><BusinessStudioViewer        isOpen={showBusinessStudio}      onClose={() => setShowBusinessStudio(false)} onNavigate={navigateBusinessItem} /></Suspense>}
+      {has("bizNews")            && <Suspense fallback={null}><BusinessNewsViewer          isOpen={showBusinessNews}        onClose={() => setShowBusinessNews(false)} onNavigate={navigateBusinessItem} /></Suspense>}
 
       {/* Corporate */}
       {has("corpAccount")        && <Suspense fallback={null}><CorporateAccountViewer      isOpen={showCorporateAccount}    onClose={() => setShowCorporateAccount(false)} /></Suspense>}

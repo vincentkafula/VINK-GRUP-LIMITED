@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { X } from "lucide-react";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { Footer } from "./Footer";
+import { ApplyModal } from "./ApplyModal";
 
-interface Props { isOpen: boolean; onClose: () => void }
+interface Props { isOpen: boolean; onClose: () => void; onNavigate: (item: string) => void }
 
 const BRAND      = "#5B3FC8";
 const BRAND_DARK = "#3B2490";
@@ -64,7 +66,7 @@ const ROW2 = [
   },
 ];
 
-function Card({ card }: { card: { name: string; price: string; featured?: boolean; features: string[] } }) {
+function Card({ card, onApply }: { card: { name: string; price: string; featured?: boolean; features: string[] }; onApply: (country: string) => void }) {
   return (
     <div
       style={{ background: card.featured ? FEAT_BG : "#fff", border: `1.5px solid ${card.featured ? FEAT_BG : "#E4DFFE"}`, borderRadius: 16, padding: "28px 26px", display: "flex", flexDirection: "column", transition: "box-shadow .25s, transform .25s" }}
@@ -86,14 +88,15 @@ function Card({ card }: { card: { name: string; price: string; featured?: boolea
         ))}
       </ul>
       <div style={{ display: "flex", gap: 10, marginTop: "auto" }}>
-        <button style={{ flex: 1, background: card.featured ? "#fff" : BRAND, color: card.featured ? BRAND : "#fff", border: "none", padding: "11px 0", borderRadius: 8, fontSize: 13.5, fontWeight: 700, cursor: "pointer" }} onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.opacity = "0.88"; }} onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.opacity = "1"; }}>Apply Now</button>
-        <button style={{ flex: 1, background: "transparent", color: card.featured ? "#fff" : BRAND, border: `1.5px solid ${card.featured ? "rgba(255,255,255,.5)" : "#E4DFFE"}`, padding: "11px 0", borderRadius: 8, fontSize: 13.5, fontWeight: 600, cursor: "pointer" }} onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = card.featured ? "rgba(255,255,255,.12)" : "#F5F3FF"; }} onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}>Tell me more</button>
+        <button style={{ flex: 1, background: card.featured ? "#fff" : BRAND, color: card.featured ? BRAND : "#fff", border: "none", padding: "11px 0", borderRadius: 8, fontSize: 13.5, fontWeight: 700, cursor: "pointer" }} onClick={() => onApply(card.name)} onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.opacity = "0.88"; }} onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.opacity = "1"; }}>Apply Now</button>
+        <button style={{ flex: 1, background: "transparent", color: card.featured ? "#fff" : BRAND, border: `1.5px solid ${card.featured ? "rgba(255,255,255,.5)" : "#E4DFFE"}`, padding: "11px 0", borderRadius: 8, fontSize: 13.5, fontWeight: 600, cursor: "pointer" }} onClick={() => onApply(card.name)} onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = card.featured ? "rgba(255,255,255,.12)" : "#F5F3FF"; }} onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}>Tell me more</button>
       </div>
     </div>
   );
 }
 
-export function StartMyBusinessViewer({ isOpen, onClose }: Props) {
+export function StartMyBusinessViewer({ isOpen, onClose, onNavigate }: Props) {
+  const [applyCountry, setApplyCountry] = useState<string | null>(null);
   if (!isOpen) return null;
 
   return (
@@ -123,9 +126,9 @@ export function StartMyBusinessViewer({ isOpen, onClose }: Props) {
         <div style={{ background: BRAND, borderTop: "1px solid rgba(255,255,255,.15)" }}>
           <div style={{ display: "flex", gap: 0, padding: "0 24px", maxWidth: 1280, margin: "0 auto", alignItems: "center", overflowX: "auto" }}>
             {BIZ_SUBNAV.map((item, i) => (
-              <a key={item} href="#" style={{ color: i === 0 ? "#fff" : "rgba(255,255,255,.75)", fontSize: 12.5, fontWeight: i === 0 ? 700 : 500, padding: "10px 13px", textDecoration: "none", background: i === 0 ? "rgba(255,255,255,.18)" : "transparent", borderRadius: 4, whiteSpace: "nowrap" }}>
+              <button key={item} onClick={() => onNavigate(item)} style={{ color: i === 0 ? "#fff" : "rgba(255,255,255,.75)", fontSize: 12.5, fontWeight: i === 0 ? 700 : 500, fontFamily: "inherit", padding: "10px 13px", textDecoration: "none", background: i === 0 ? "rgba(255,255,255,.18)" : "transparent", borderRadius: 4, whiteSpace: "nowrap", border: "none", cursor: "pointer" }}>
                 {item}
-              </a>
+              </button>
             ))}
             <a href="#" style={{ marginLeft: "auto", color: "rgba(255,255,255,.9)", fontSize: 12.5, fontWeight: 500, padding: "10px 13px", textDecoration: "none", whiteSpace: "nowrap" }}>Get Help</a>
           </div>
@@ -140,6 +143,7 @@ export function StartMyBusinessViewer({ isOpen, onClose }: Props) {
         <p style={{ marginTop: 8, fontSize: 16, color: "#8A82A6", fontWeight: 500 }}>VINK helps South African entrepreneurs register, fund, and operate businesses — locally and across six key global markets.</p>
         <div style={{ marginTop: 24 }}>
           <button style={{ background: BRAND, color: "#fff", border: "none", padding: "12px 32px", borderRadius: 50, fontSize: 15, fontWeight: 700, cursor: "pointer" }}
+            onClick={() => setApplyCountry("South Africa")}
             onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = BRAND_DARK; }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = BRAND; }}>
             Help me Decide
@@ -151,11 +155,11 @@ export function StartMyBusinessViewer({ isOpen, onClose }: Props) {
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "40px 24px 40px" }}>
         {/* Row 1 */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20, marginBottom: 20 }}>
-          {ROW1.map((card, i) => <Card key={i} card={card} />)}
+          {ROW1.map((card, i) => <Card key={i} card={card} onApply={setApplyCountry} />)}
         </div>
         {/* Row 2 */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1.15fr 1fr", gap: 20 }} className="biz-row-2">
-          {ROW2.map((card, i) => <Card key={i} card={card} />)}
+          {ROW2.map((card, i) => <Card key={i} card={card} onApply={setApplyCountry} />)}
         </div>
         <style>{`@media(max-width:1024px){.biz-row-2{grid-template-columns:1fr!important}}`}</style>
       </div>
@@ -169,6 +173,7 @@ export function StartMyBusinessViewer({ isOpen, onClose }: Props) {
             Note: Shari&apos;ah-compliant investment options are available on request.
           </p>
           <button style={{ background: BRAND, color: "#fff", border: "none", padding: "12px 36px", borderRadius: 50, fontSize: 14, fontWeight: 700, cursor: "pointer" }}
+            onClick={() => setApplyCountry("South Africa")}
             onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = BRAND_DARK; }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = BRAND; }}>
             Continue an Application
@@ -177,6 +182,14 @@ export function StartMyBusinessViewer({ isOpen, onClose }: Props) {
       </div>
 
       <Footer />
+
+      {applyCountry && (
+        <ApplyModal
+          isOpen={!!applyCountry}
+          onClose={() => setApplyCountry(null)}
+          product={`Start My Business — ${applyCountry}`}
+        />
+      )}
     </div>
   );
 }

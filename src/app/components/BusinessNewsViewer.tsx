@@ -1,14 +1,17 @@
 import { useState } from "react";
 import { X } from "lucide-react";
+import { toast } from "sonner";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { Footer } from "./Footer";
+import { ApplyModal } from "./ApplyModal";
+import { publicApi } from "../services/apiClient";
 
-interface Props { isOpen: boolean; onClose: () => void }
+interface Props { isOpen: boolean; onClose: () => void; onNavigate: (item: string) => void }
 
 const BRAND      = "#4B2D9E";
 const BRAND_DARK = "#3a2180";
 const TOP_NAV    = ["Personal", "Business", "Corporate", "Marketplace"];
-const BIZ_SUBNAV = ["Start my business", "Accounts", "Credit cards", "Loans", "Invest", "Insure", "Manage my Business", "International", "Studio", "news", "Get Help"];
+const BIZ_SUBNAV = ["Start My Business", "Accounts", "Credit Cards", "Loans", "Invest", "Insure", "Manage My Business", "International", "Studio", "News", "Get Help"];
 const ACTIVE_IDX = 9;
 
 const NEWS_TABS = ["News", "Careers", "Property", "Autotrader", "Marketplaces"];
@@ -36,12 +39,28 @@ const TRENDING = [
   "'They'll soon take over our homes': Sabie residents gripped by fear as zama zamas divert services",
 ];
 
-export function BusinessNewsViewer({ isOpen, onClose }: Props) {
+export function BusinessNewsViewer({ isOpen, onClose, onNavigate }: Props) {
   const [activeNewsTab, setActiveNewsTab] = useState("News");
   const [insureForm, setInsureForm] = useState({ first: "", last: "", contact: "" });
   const [newsletter, setNewsletter] = useState({ name: "", email: "" });
+  const [subscribing, setSubscribing] = useState(false);
+  const [applyOpen, setApplyOpen] = useState(false);
 
   if (!isOpen) return null;
+
+  const handleNewsletterSubscribe = async () => {
+    if (!newsletter.email.includes("@")) { toast.error("Please enter a valid email address."); return; }
+    setSubscribing(true);
+    const r = await publicApi.newsletter(newsletter.email);
+    setSubscribing(false);
+    if (r.success) { toast.success("Subscribed! Check your inbox for confirmation."); setNewsletter({ name: "", email: "" }); }
+    else toast.error(r.error ?? "Couldn't subscribe right now — please try again.");
+  };
+
+  const handleInsuranceQuote = () => {
+    if (!insureForm.first || !insureForm.last || !insureForm.contact) { toast.error("Please fill in your name and contact number."); return; }
+    onNavigate("Insure");
+  };
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto" style={{ background: "#fff", fontFamily: "'Segoe UI', Arial, sans-serif", fontSize: 15 }}>
@@ -67,7 +86,7 @@ export function BusinessNewsViewer({ isOpen, onClose }: Props) {
       {/* Business sub-nav */}
       <nav style={{ background: BRAND, display: "flex", padding: "0 32px", overflowX: "auto" }}>
         {BIZ_SUBNAV.map((item, i) => (
-          <a key={item} href="#" style={{ textDecoration: "none", color: i === ACTIVE_IDX ? "#fff" : "rgba(255,255,255,0.75)", fontSize: 13, padding: "13px 16px", whiteSpace: "nowrap", borderBottom: `3px solid ${i === ACTIVE_IDX ? "#fff" : "transparent"}`, fontWeight: i === ACTIVE_IDX ? 600 : 400 }}>{item}</a>
+          <button key={item} onClick={() => onNavigate(item)} style={{ textDecoration: "none", color: i === ACTIVE_IDX ? "#fff" : "rgba(255,255,255,0.75)", fontSize: 13, padding: "13px 16px", whiteSpace: "nowrap", borderBottom: `3px solid ${i === ACTIVE_IDX ? "#fff" : "transparent"}`, fontWeight: i === ACTIVE_IDX ? 600 : 400, background: "transparent", border: "none", borderBottomWidth: 3, borderBottomStyle: "solid", borderBottomColor: i === ACTIVE_IDX ? "#fff" : "transparent", cursor: "pointer", fontFamily: "inherit" }}>{item}</button>
         ))}
       </nav>
 
@@ -166,6 +185,7 @@ export function BusinessNewsViewer({ isOpen, onClose }: Props) {
                 </div>
               ))}
               <button style={{ width: "100%", background: BRAND, color: "#fff", border: "none", borderRadius: 20, padding: 10, fontSize: 13, fontWeight: 600, cursor: "pointer", marginTop: 4 }}
+                onClick={handleInsuranceQuote}
                 onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = BRAND_DARK; }}
                 onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = BRAND; }}>Submit</button>
               <p style={{ fontSize: 10, color: "#5a5a72", marginTop: 8, lineHeight: 1.4, textAlign: "center" }}>
@@ -189,9 +209,10 @@ export function BusinessNewsViewer({ isOpen, onClose }: Props) {
                   style={{ width: "100%", border: "1px solid #e8e8f0", borderRadius: 4, padding: "7px 10px", fontSize: 13, color: "#1e1e2e", outline: "none" }} />
               </div>
             ))}
-            <button style={{ width: "100%", background: BRAND, color: "#fff", border: "none", borderRadius: 20, padding: 10, fontSize: 13, fontWeight: 600, cursor: "pointer", marginTop: 10 }}
+            <button style={{ width: "100%", background: BRAND, color: "#fff", border: "none", borderRadius: 20, padding: 10, fontSize: 13, fontWeight: 600, cursor: subscribing ? "default" : "pointer", opacity: subscribing ? 0.7 : 1, marginTop: 10 }}
+              disabled={subscribing} onClick={handleNewsletterSubscribe}
               onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = BRAND_DARK; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = BRAND; }}>Subscribe</button>
+              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = BRAND; }}>{subscribing ? "Subscribing..." : "Subscribe"}</button>
           </div>
 
         </div>
@@ -203,11 +224,14 @@ export function BusinessNewsViewer({ isOpen, onClose }: Props) {
         <p style={{ fontSize: 13, color: "#5a5a72", marginBottom: 4 }}>*These four Business Platinum Checkings meet different needs — choose what&apos;s right for you.</p>
         <p style={{ fontSize: 13, color: "#5a5a72", marginBottom: 4 }}>Note: Shari&apos;ah-compliant investment options are available on request.</p>
         <button style={{ marginTop: 14, background: BRAND, color: "#fff", border: "none", borderRadius: 20, padding: "11px 28px", fontSize: 14, fontWeight: 600, cursor: "pointer" }}
+          onClick={() => setApplyOpen(true)}
           onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = BRAND_DARK; }}
           onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = BRAND; }}>Continue an Application</button>
       </div>
 
       <Footer />
+
+      <ApplyModal isOpen={applyOpen} onClose={() => setApplyOpen(false)} product="Business Services Enquiry" />
     </div>
   );
 }

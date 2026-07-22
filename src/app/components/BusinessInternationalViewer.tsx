@@ -1,13 +1,15 @@
+import { useState } from "react";
 import { X } from "lucide-react";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { Footer } from "./Footer";
+import { ApplyModal } from "./ApplyModal";
 
-interface Props { isOpen: boolean; onClose: () => void }
+interface Props { isOpen: boolean; onClose: () => void; onNavigate: (item: string) => void }
 
 const BRAND      = "#4B2D9E";
 const BRAND_DARK = "#3a2180";
 const TOP_NAV    = ["Personal", "Business", "Corporate", "Marketplace"];
-const BIZ_SUBNAV = ["Start my business", "Accounts", "Credit cards", "Loans", "Invest", "Insure", "Manage my Business", "International", "Studio", "news", "Get Help"];
+const BIZ_SUBNAV = ["Start My Business", "Accounts", "Credit Cards", "Loans", "Invest", "Insure", "Manage My Business", "International", "Studio", "News", "Get Help"];
 const ACTIVE_IDX = 7;
 
 const FEATURES = [
@@ -94,7 +96,8 @@ function FeatureCard({ feature }: { feature: typeof FEATURES[0] }) {
   );
 }
 
-export function BusinessInternationalViewer({ isOpen, onClose }: Props) {
+export function BusinessInternationalViewer({ isOpen, onClose, onNavigate }: Props) {
+  const [applyOpen, setApplyOpen] = useState(false);
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto" style={{ background: "#fff", fontFamily: "'Segoe UI', Arial, sans-serif", fontSize: 15 }}>
@@ -120,7 +123,7 @@ export function BusinessInternationalViewer({ isOpen, onClose }: Props) {
       {/* Business sub-nav */}
       <nav style={{ background: BRAND, display: "flex", padding: "0 32px", overflowX: "auto" }}>
         {BIZ_SUBNAV.map((item, i) => (
-          <a key={item} href="#" style={{ textDecoration: "none", color: i === ACTIVE_IDX ? "#fff" : "rgba(255,255,255,0.75)", fontSize: 13, padding: "13px 16px", whiteSpace: "nowrap", borderBottom: `3px solid ${i === ACTIVE_IDX ? "#fff" : "transparent"}`, fontWeight: i === ACTIVE_IDX ? 600 : 400 }}>{item}</a>
+          <button key={item} onClick={() => onNavigate(item)} style={{ textDecoration: "none", color: i === ACTIVE_IDX ? "#fff" : "rgba(255,255,255,0.75)", fontSize: 13, padding: "13px 16px", whiteSpace: "nowrap", borderBottom: `3px solid ${i === ACTIVE_IDX ? "#fff" : "transparent"}`, fontWeight: i === ACTIVE_IDX ? 600 : 400, background: "transparent", border: "none", borderBottomWidth: 3, borderBottomStyle: "solid", borderBottomColor: i === ACTIVE_IDX ? "#fff" : "transparent", cursor: "pointer", fontFamily: "inherit" }}>{item}</button>
         ))}
       </nav>
 
@@ -142,11 +145,14 @@ export function BusinessInternationalViewer({ isOpen, onClose }: Props) {
         <p style={{ fontSize: 13, color: "#5a5a72", marginBottom: 4 }}>*These four Business Platinum Checkings meet different needs — choose what&apos;s right for you.</p>
         <p style={{ fontSize: 13, color: "#5a5a72", marginBottom: 4 }}>Note: Shari&apos;ah-compliant investment options are available on request.</p>
         <button style={{ marginTop: 16, background: BRAND, color: "#fff", border: "none", borderRadius: 20, padding: "11px 28px", fontSize: 14, fontWeight: 600, cursor: "pointer" }}
+          onClick={() => setApplyOpen(true)}
           onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = BRAND_DARK; }}
           onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = BRAND; }}>Continue an Application</button>
       </div>
 
       <Footer />
+
+      <ApplyModal isOpen={applyOpen} onClose={() => setApplyOpen(false)} product="Business Services Enquiry" />
     </div>
   );
 }
