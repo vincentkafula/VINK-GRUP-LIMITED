@@ -1,8 +1,8 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { X, CheckCircle, Clock, Upload, Plus, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 
-interface Props { isOpen: boolean; onClose: () => void; }
+interface Props { isOpen: boolean; onClose: () => void; initialAccountType?: string; }
 
 const PURPLE = "#5B2D8E";
 const GREEN  = "#10B981";
@@ -414,8 +414,8 @@ function Step6({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
 }
 
 // ─── Step 7 — Account ─────────────────────────────────────────────────────────
-function Step7({ onBack, onClose }: { onBack: () => void; onClose: () => void }) {
-  const [accountType, setAccountType] = useState("Business Current Account");
+function Step7({ onBack, onClose, initialAccountType }: { onBack: () => void; onClose: () => void; initialAccountType?: string }) {
+  const [accountType, setAccountType] = useState(initialAccountType ?? "Business Current Account");
   const [currency, setCurrency] = useState("ZAR");
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -543,10 +543,12 @@ function NavButtons({ onBack, onNext, nextLabel = "Next", nextDisabled = false }
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
-export function BusinessAccountApplicationViewer({ isOpen, onClose }: Props) {
+export function BusinessAccountApplicationViewer({ isOpen, onClose, initialAccountType }: Props) {
   const [step, setStep] = useState(1);
   const next = () => setStep(s => Math.min(s + 1, 7));
   const back = () => setStep(s => Math.max(s - 1, 1));
+
+  useEffect(() => { if (isOpen) setStep(1); }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -585,7 +587,7 @@ export function BusinessAccountApplicationViewer({ isOpen, onClose }: Props) {
             {step === 4 && <Step4 onNext={next} onBack={back} />}
             {step === 5 && <Step5 onNext={next} onBack={back} />}
             {step === 6 && <Step6 onNext={next} onBack={back} />}
-            {step === 7 && <Step7 onBack={back} onClose={onClose} />}
+            {step === 7 && <Step7 onBack={back} onClose={onClose} initialAccountType={initialAccountType} />}
           </div>
         </div>
       </div>

@@ -50,6 +50,7 @@ const ClubBookingViewer           = lazy(() => import("./components/ClubBookingV
 const StartMyBusinessViewer       = lazy(() => import("./components/StartMyBusinessViewer").then(m => ({ default: m.StartMyBusinessViewer })));
 const BusinessProductLedgerViewer = lazy(() => import("./components/BusinessProductLedgerViewer").then(m => ({ default: m.BusinessProductLedgerViewer })));
 const BusinessAccountApplicationViewer = lazy(() => import("./components/BusinessAccountApplicationViewer").then(m => ({ default: m.BusinessAccountApplicationViewer })));
+const BusinessAccountSelectorViewer = lazy(() => import("./components/BusinessAccountSelectorViewer").then(m => ({ default: m.BusinessAccountSelectorViewer })));
 const BusinessLoanApplicationViewer = lazy(() => import("./components/BusinessLoanApplicationViewer").then(m => ({ default: m.BusinessLoanApplicationViewer })));
 const ManageMyBusinessViewer      = lazy(() => import("./components/ManageMyBusinessViewer").then(m => ({ default: m.ManageMyBusinessViewer })));
 const BusinessInternationalViewer = lazy(() => import("./components/BusinessInternationalViewer").then(m => ({ default: m.BusinessInternationalViewer })));
@@ -147,6 +148,8 @@ export default function App() {
   // ── Business ──────────────────────────────────────────────────────────────
   const [showStartBusiness, setShowStartBusiness]           = useState(false);
   const [showBusinessAccounts, setShowBusinessAccounts]     = useState(false);
+  const [showBusinessAccountSelector, setShowBusinessAccountSelector] = useState(false);
+  const [chosenBusinessAccountType, setChosenBusinessAccountType] = useState<string | undefined>(undefined);
   const [showBusinessLedger, setShowBusinessLedger]         = useState(false);
   const [businessLedgerCategory, setBusinessLedgerCategory] = useState<"creditCard" | "loan">("creditCard");
   const [showBusinessLoanApp, setShowBusinessLoanApp]       = useState(false);
@@ -306,13 +309,14 @@ export default function App() {
 
   const navigateBusinessItem = (item: string) => {
     setShowBusinessLedger(false);
+    setShowBusinessAccountSelector(false);
     setShowStartBusiness(false);
     setShowManageBusiness(false);
     setShowBusinessInternational(false);
     setShowBusinessStudio(false);
     setShowBusinessNews(false);
     if (item === "Start My Business") { mount("startBusiness");    setShowStartBusiness(true); return; }
-    if (item === "Accounts")          { mount("bizAccounts");      setShowBusinessAccounts(true); return; }
+    if (item === "Accounts")          { mount("bizAccountSelector"); setShowBusinessAccountSelector(true); return; }
     if (item === "Credit Cards")      { mount("bizLedger"); setBusinessLedgerCategory("creditCard"); setShowBusinessLedger(true); return; }
     if (item === "Loans")             { mount("bizLedger"); setBusinessLedgerCategory("loan"); setShowBusinessLedger(true); return; }
     if (item === "Invest")            return openSelector("invest");
@@ -335,7 +339,7 @@ export default function App() {
       if (item === "SIM")               return openSelector("sim");
       // Business — Header.tsx's BUSINESS_SUB_NAV sends these exact bare labels
       if (item === "Start My Business") { mount("startBusiness");      setShowStartBusiness(true); return; }
-      if (item === "Accounts")          { mount("bizAccounts");        setShowBusinessAccounts(true); return; }
+      if (item === "Accounts")          { mount("bizAccountSelector"); setShowBusinessAccountSelector(true); return; }
       if (item === "Credit Cards")      { mount("bizLedger");          setBusinessLedgerCategory("creditCard"); setShowBusinessLedger(true); return; }
       if (item === "Loans")             { mount("bizLedger");          setBusinessLedgerCategory("loan"); setShowBusinessLedger(true); return; }
       if (item === "Manage My Business"){ mount("manageBusiness");     setShowManageBusiness(true); return; }
@@ -478,7 +482,8 @@ export default function App() {
 
       {/* Business */}
       {has("startBusiness")      && <Suspense fallback={null}><StartMyBusinessViewer       isOpen={showStartBusiness}       onClose={() => setShowStartBusiness(false)} onNavigate={navigateBusinessItem} /></Suspense>}
-      {has("bizAccounts")        && <Suspense fallback={null}><BusinessAccountApplicationViewer isOpen={showBusinessAccounts} onClose={() => setShowBusinessAccounts(false)} /></Suspense>}
+      {has("bizAccountSelector") && <Suspense fallback={null}><BusinessAccountSelectorViewer isOpen={showBusinessAccountSelector} onClose={() => setShowBusinessAccountSelector(false)} onNavigate={(item) => navigateBusinessItem(item)} onApply={(type) => { setShowBusinessAccountSelector(false); mount("bizAccounts"); setChosenBusinessAccountType(type); setShowBusinessAccounts(true); }} /></Suspense>}
+      {has("bizAccounts")        && <Suspense fallback={null}><BusinessAccountApplicationViewer isOpen={showBusinessAccounts} onClose={() => setShowBusinessAccounts(false)} initialAccountType={chosenBusinessAccountType} /></Suspense>}
       {has("bizLedger") && <Suspense fallback={null}><BusinessProductLedgerViewer isOpen={showBusinessLedger} onClose={() => setShowBusinessLedger(false)} initialCategory={businessLedgerCategory} onNavigate={(item) => navigateBusinessItem(item)} onApply={applyForProductCategory} /></Suspense>}
       {has("bizLoanApp")         && <Suspense fallback={null}><BusinessLoanApplicationViewer isOpen={showBusinessLoanApp}   onClose={() => setShowBusinessLoanApp(false)} /></Suspense>}
       {has("manageBusiness")     && <Suspense fallback={null}><ManageMyBusinessViewer      isOpen={showManageBusiness}      onClose={() => setShowManageBusiness(false)} onNavigate={navigateBusinessItem} /></Suspense>}
