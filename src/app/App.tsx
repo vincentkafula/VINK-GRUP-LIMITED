@@ -56,9 +56,7 @@ const ManageMyBusinessViewer      = lazy(() => import("./components/ManageMyBusi
 const BusinessInternationalViewer = lazy(() => import("./components/BusinessInternationalViewer").then(m => ({ default: m.BusinessInternationalViewer })));
 const BusinessStudioViewer        = lazy(() => import("./components/BusinessStudioViewer").then(m => ({ default: m.BusinessStudioViewer })));
 const BusinessNewsViewer          = lazy(() => import("./components/BusinessNewsViewer").then(m => ({ default: m.BusinessNewsViewer })));
-const CorporateAccountViewer      = lazy(() => import("./components/CorporateAccountViewer").then(m => ({ default: m.CorporateAccountViewer })));
-const CorporateSolutionsViewer    = lazy(() => import("./components/CorporateSolutionsViewer").then(m => ({ default: m.CorporateSolutionsViewer })));
-const CorporateLoanViewer         = lazy(() => import("./components/CorporateLoanViewer").then(m => ({ default: m.CorporateLoanViewer })));
+const CorporateProductLedgerViewer = lazy(() => import("./components/CorporateProductLedgerViewer").then(m => ({ default: m.CorporateProductLedgerViewer })));
 const CorporateLoanApplicationViewer = lazy(() => import("./components/CorporateLoanApplicationViewer").then(m => ({ default: m.CorporateLoanApplicationViewer })));
 const CorporateApiViewer          = lazy(() => import("./components/CorporateApiViewer").then(m => ({ default: m.CorporateApiViewer })));
 const CorporateEventsViewer       = lazy(() => import("./components/CorporateEventsViewer").then(m => ({ default: m.CorporateEventsViewer })));
@@ -159,9 +157,8 @@ export default function App() {
   const [showBusinessNews, setShowBusinessNews]             = useState(false);
 
   // ── Corporate ─────────────────────────────────────────────────────────────
-  const [showCorporateAccount, setShowCorporateAccount]     = useState(false);
-  const [showCorporateSolutions, setShowCorporateSolutions] = useState(false);
-  const [showCorporateLoan, setShowCorporateLoan]           = useState(false);
+  const [showCorporateLedger, setShowCorporateLedger]       = useState(false);
+  const [corporateLedgerCategory, setCorporateLedgerCategory] = useState<"account" | "solutions" | "loan">("account");
   const [showCorporateLoanApp, setShowCorporateLoanApp]     = useState(false);
   const [showCorporateApi, setShowCorporateApi]             = useState(false);
   const [showCorporateEvents, setShowCorporateEvents]       = useState(false);
@@ -307,6 +304,19 @@ export default function App() {
     });
   };
 
+  const navigateCorporateItem = (item: string) => {
+    setShowCorporateLedger(false);
+    setShowCorporateApi(false);
+    setShowCorporateEvents(false);
+    setShowCorporateCSR(false);
+    if (item === "Account")                  { mount("corpLedger"); setCorporateLedgerCategory("account");   setShowCorporateLedger(true); return; }
+    if (item === "Solutions & Credit Cards")  { mount("corpLedger"); setCorporateLedgerCategory("solutions"); setShowCorporateLedger(true); return; }
+    if (item === "Loan")                      { mount("corpLedger"); setCorporateLedgerCategory("loan");      setShowCorporateLedger(true); return; }
+    if (item === "API")                       { mount("corpApi");       setShowCorporateApi(true); return; }
+    if (item === "Events")                    { mount("corpEvents");    setShowCorporateEvents(true); return; }
+    if (item === "Social Responsibility")     { mount("corpCSR");       setShowCorporateCSR(true); return; }
+  };
+
   const navigateBusinessItem = (item: string) => {
     setShowBusinessLedger(false);
     setShowBusinessAccountSelector(false);
@@ -351,9 +361,9 @@ export default function App() {
       // Corporate — Header.tsx's CORPORATE_SUB_NAV items are dispatched with a
       // "Corporate:" prefix (see handleNavClick's onClick for CORPORATE_SUB_NAV),
       // so matches must include that prefix and the exact sub-nav label.
-      if (item === "Corporate:Account")                  { mount("corpAccount");   setShowCorporateAccount(true); return; }
-      if (item === "Corporate:Solutions & Credit Cards")  { mount("corpSolutions"); setShowCorporateSolutions(true); return; }
-      if (item === "Corporate:Loan")                      { mount("corpLoan");      setShowCorporateLoan(true); return; }
+      if (item === "Corporate:Account")                  { mount("corpLedger"); setCorporateLedgerCategory("account");   setShowCorporateLedger(true); return; }
+      if (item === "Corporate:Solutions & Credit Cards")  { mount("corpLedger"); setCorporateLedgerCategory("solutions"); setShowCorporateLedger(true); return; }
+      if (item === "Corporate:Loan")                      { mount("corpLedger"); setCorporateLedgerCategory("loan");      setShowCorporateLedger(true); return; }
       if (item === "Corporate:API")                       { mount("corpApi");       setShowCorporateApi(true); return; }
       if (item === "Corporate:Events")                    { mount("corpEvents");    setShowCorporateEvents(true); return; }
       if (item === "Corporate:Social Responsibility")     { mount("corpCSR");       setShowCorporateCSR(true); return; }
@@ -494,13 +504,11 @@ export default function App() {
       {has("bizNews")            && <Suspense fallback={null}><BusinessNewsViewer          isOpen={showBusinessNews}        onClose={() => setShowBusinessNews(false)} onNavigate={navigateBusinessItem} /></Suspense>}
 
       {/* Corporate */}
-      {has("corpAccount")        && <Suspense fallback={null}><CorporateAccountViewer      isOpen={showCorporateAccount}    onClose={() => setShowCorporateAccount(false)} /></Suspense>}
-      {has("corpSolutions")      && <Suspense fallback={null}><CorporateSolutionsViewer    isOpen={showCorporateSolutions}  onClose={() => setShowCorporateSolutions(false)} /></Suspense>}
-      {has("corpLoan")           && <Suspense fallback={null}><CorporateLoanViewer         isOpen={showCorporateLoan}       onClose={() => setShowCorporateLoan(false)} /></Suspense>}
+      {has("corpLedger")         && <Suspense fallback={null}><CorporateProductLedgerViewer isOpen={showCorporateLedger} onClose={() => setShowCorporateLedger(false)} initialCategory={corporateLedgerCategory} onNavigate={(item) => navigateCorporateItem(item)} /></Suspense>}
       {has("corpLoanApp")        && <Suspense fallback={null}><CorporateLoanApplicationViewer isOpen={showCorporateLoanApp} onClose={() => setShowCorporateLoanApp(false)} /></Suspense>}
-      {has("corpApi")            && <Suspense fallback={null}><CorporateApiViewer          isOpen={showCorporateApi}        onClose={() => setShowCorporateApi(false)} /></Suspense>}
-      {has("corpEvents")         && <Suspense fallback={null}><CorporateEventsViewer       isOpen={showCorporateEvents}     onClose={() => setShowCorporateEvents(false)} /></Suspense>}
-      {has("corpCSR")            && <Suspense fallback={null}><CorporateSocialResponsibilityViewer isOpen={showCorporateCSR} onClose={() => setShowCorporateCSR(false)} /></Suspense>}
+      {has("corpApi")            && <Suspense fallback={null}><CorporateApiViewer          isOpen={showCorporateApi}        onClose={() => setShowCorporateApi(false)} onNavigate={(item) => navigateCorporateItem(item)} /></Suspense>}
+      {has("corpEvents")         && <Suspense fallback={null}><CorporateEventsViewer       isOpen={showCorporateEvents}     onClose={() => setShowCorporateEvents(false)} onNavigate={(item) => navigateCorporateItem(item)} /></Suspense>}
+      {has("corpCSR")            && <Suspense fallback={null}><CorporateSocialResponsibilityViewer isOpen={showCorporateCSR} onClose={() => setShowCorporateCSR(false)} onNavigate={(item) => navigateCorporateItem(item)} /></Suspense>}
 
       {/* Operations */}
       {has("globalBanking")      && <Suspense fallback={null}><GlobalBankingDashboard      isOpen={showGlobalBanking}       onClose={() => setShowGlobalBanking(false)} /></Suspense>}

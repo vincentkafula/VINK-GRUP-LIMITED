@@ -3,7 +3,7 @@ import { X } from "lucide-react";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { Footer } from "./Footer";
 
-interface Props { isOpen: boolean; onClose: () => void; }
+interface Props { isOpen: boolean; onClose: () => void; onNavigate: (item: string) => void; }
 
 const P = "#4B2D9E";
 const PD = "#3a2180";
@@ -12,7 +12,7 @@ const CORPORATE_SUB_NAV = ["Account", "Solutions & Credit Cards", "Loan", "API",
 
 const PILLS = ["Urban Management", "Urban Management", "Social Development", "Communications"];
 
-export function CorporateSocialResponsibilityViewer({ isOpen, onClose }: Props) {
+export function CorporateSocialResponsibilityViewer({ isOpen, onClose, onNavigate }: Props) {
   const [activePill, setActivePill] = useState(0);
   if (!isOpen) return null;
 
@@ -41,14 +41,14 @@ export function CorporateSocialResponsibilityViewer({ isOpen, onClose }: Props) 
       <div className="flex items-center overflow-x-auto px-6" style={{ background: P }}>
         <div className="flex flex-1">
           {CORPORATE_SUB_NAV.map((item) => (
-            <span key={item} className="text-xs py-3 px-3 flex-shrink-0 cursor-pointer transition-colors"
+            <button key={item} onClick={() => onNavigate(item)} className="text-xs py-3 px-3 flex-shrink-0 cursor-pointer transition-colors bg-transparent border-none"
               style={{
                 color: item === "Social Responsibility" ? "#fff" : "rgba(255,255,255,.75)",
                 borderBottom: item === "Social Responsibility" ? "3px solid #fff" : "3px solid transparent",
                 fontWeight: item === "Social Responsibility" ? 600 : 400,
               }}>
               {item}
-            </span>
+            </button>
           ))}
         </div>
         <span className="text-xs px-3 py-1.5 rounded cursor-pointer flex-shrink-0 font-medium" style={{ color: "rgba(255,255,255,.85)" }}>

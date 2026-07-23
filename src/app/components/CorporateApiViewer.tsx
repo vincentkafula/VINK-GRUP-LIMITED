@@ -2,7 +2,7 @@ import { X } from "lucide-react";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { Footer } from "./Footer";
 
-interface Props { isOpen: boolean; onClose: () => void; }
+interface Props { isOpen: boolean; onClose: () => void; onNavigate: (item: string) => void; }
 
 const CORPORATE_PURPLE = "#5B2D8E";
 const GOLD = "#F5A623";
@@ -153,7 +153,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 
 // ─── Main viewer ──────────────────────────────────────────────────────────────
 
-export function CorporateApiViewer({ isOpen, onClose }: Props) {
+export function CorporateApiViewer({ isOpen, onClose, onNavigate }: Props) {
   if (!isOpen) return null;
 
   return (
@@ -185,9 +185,10 @@ export function CorporateApiViewer({ isOpen, onClose }: Props) {
       {/* ── Sub nav ── */}
       <div className="flex overflow-x-auto px-4" style={{ background: CORPORATE_PURPLE }}>
         {CORPORATE_SUB_NAV.map((item) => (
-          <span
+          <button
             key={item}
-            className="text-xs py-2.5 px-3 flex-shrink-0 cursor-pointer transition-colors"
+            onClick={() => onNavigate(item)}
+            className="text-xs py-2.5 px-3 flex-shrink-0 cursor-pointer transition-colors bg-transparent border-none"
             style={{
               color: item === "API" ? "#fff" : "rgba(255,255,255,.75)",
               borderBottom: item === "API" ? "3px solid #fff" : "3px solid transparent",
@@ -195,7 +196,7 @@ export function CorporateApiViewer({ isOpen, onClose }: Props) {
             }}
           >
             {item}
-          </span>
+          </button>
         ))}
         <span
           className="ml-auto my-1.5 px-3 flex items-center text-xs font-bold rounded cursor-pointer flex-shrink-0"

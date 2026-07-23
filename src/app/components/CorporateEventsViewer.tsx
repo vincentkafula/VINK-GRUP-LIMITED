@@ -3,7 +3,7 @@ import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { Footer } from "./Footer";
 
-interface Props { isOpen: boolean; onClose: () => void; }
+interface Props { isOpen: boolean; onClose: () => void; onNavigate: (item: string) => void; }
 
 const P = "#5B2D8E";
 const PD = "#3d1d63";
@@ -139,7 +139,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 
 // ─── Main viewer ──────────────────────────────────────────────────────────────
 
-export function CorporateEventsViewer({ isOpen, onClose }: Props) {
+export function CorporateEventsViewer({ isOpen, onClose, onNavigate }: Props) {
   if (!isOpen) return null;
 
   return (
@@ -166,10 +166,10 @@ export function CorporateEventsViewer({ isOpen, onClose }: Props) {
       {/* ── Sub nav ── */}
       <div className="flex overflow-x-auto px-4" style={{ background: P }}>
         {CORPORATE_SUB_NAV.map((item) => (
-          <span key={item} className="text-xs py-2.5 px-3 flex-shrink-0 cursor-pointer transition-colors"
+          <button key={item} onClick={() => onNavigate(item)} className="text-xs py-2.5 px-3 flex-shrink-0 cursor-pointer transition-colors bg-transparent border-none"
             style={{ color: item === "Events" ? "#fff" : "rgba(255,255,255,.75)", borderBottom: item === "Events" ? "3px solid #fff" : "3px solid transparent", fontWeight: item === "Events" ? 600 : 400 }}>
             {item}
-          </span>
+          </button>
         ))}
         <span className="ml-auto my-1.5 px-3 flex items-center text-xs font-bold rounded cursor-pointer flex-shrink-0" style={{ background: GOLD, color: "#222" }}>
           Get Help
