@@ -188,7 +188,7 @@ export function Header({ onDashboardSelect, onSubNavClick, onOpenProfile, isLogg
               <div className="flex items-center h-10 overflow-x-auto scrollbar-none">
                 <nav className="flex items-center gap-0.5">
                   {BUSINESS_SUB_NAV.map(item => (
-                    <button key={item} onClick={() => { onSubNavClick?.(item); setActiveNav(null); }}
+                    <button key={item} onClick={() => { onSubNavClick?.(item === "Insure" ? "Business:Insure" : item); setActiveNav(null); }}
                       className="whitespace-nowrap text-white/90 hover:text-white transition-colors hover:underline underline-offset-4 px-3"
                       style={{ fontSize: 12 }}>
                       {item}

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 
-type BizCategory = "creditCard" | "loan";
+type BizCategory = "creditCard" | "loan" | "insure";
 type NavItem = "Start My Business" | "Accounts" | "Credit Cards" | "Loans" | "Invest" | "Insure" | "Manage My Business" | "International" | "Studio" | "News";
 
 interface Props {
@@ -13,7 +13,7 @@ interface Props {
 }
 
 const SUB_NAV: NavItem[] = ["Start My Business", "Accounts", "Credit Cards", "Loans", "Invest", "Insure", "Manage My Business", "International", "Studio", "News"];
-const CATEGORY_FOR_NAV: Partial<Record<NavItem, BizCategory>> = { "Credit Cards": "creditCard", "Loans": "loan" };
+const CATEGORY_FOR_NAV: Partial<Record<NavItem, BizCategory>> = { "Credit Cards": "creditCard", "Loans": "loan", "Insure": "insure" };
 
 interface BizProduct { name: string; price: string; features: string[]; featured?: boolean }
 
@@ -37,11 +37,20 @@ const PRODUCTS: Record<BizCategory, BizProduct[]> = {
     { name: "Business Vehicle Leasing", price: "R265", featured: true, features: ["Full operating lease with maintenance, tyres, and licensing included", "Fixed monthly cost for easy budgeting", "Fuel management optional add-on", "Residual value guaranteed", "Cancel at end of term with no penalty"] },
     { name: "Business Bridge Loan", price: "R415", features: ["Short-term capital for urgent cash flow needs", "R100,000–R5,000,000", "1–12 month terms", "Draw down as needed", "Interest only on amount drawn"] },
   ],
+  insure: [
+    { name: "Surety Bonds", price: "R0", features: ["Annual turnover: R0 to R1.5 million", "Free VINK Online Banking and NotifyMes", "Suitable for all business segments and sectors", "Shari'ah-compliant option available"] },
+    { name: "Business Owners Policy", price: "R0", features: ["Annual turnover: R0 to R5 million", "Free VINK Online Banking and NotifyMes", "Limited to sole proprietors", "Shari'ah-compliant option available"] },
+    { name: "Commercial Property Insurance", price: "R85", features: ["Annual turnover: R0 to R500 million", "Free VINK Online Banking and NotifyMes", "Suitable for all business segments and sectors", "Shari'ah-compliant option available"] },
+    { name: "General Liability Insurance", price: "R170", features: ["Annual turnover: R0 to R500 million", "Free VINK Online Banking and NotifyMes", "Suitable for all business segments and sectors", "Shari'ah-compliant option available"] },
+    { name: "Commercial Auto Insurance", price: "R265", featured: true, features: ["Annual turnover: R0 to R500 million", "35 electronic transactions", "10 cash deposits/withdrawals at any VINK ATM, capped at R50,000/month", "Suitable for all business segments and sectors"] },
+    { name: "Worker's Compensation", price: "R415", features: ["Annual turnover: R0 to R500 million", "60 electronic transactions", "15 cash deposits/withdrawals at any VINK ATM, capped at R100,000/month", "Suitable for all business segments and sectors"] },
+  ],
 };
 
 const PAGE_COPY: Record<BizCategory, { heading: string; tag: string; scaleNote: string; detailsCta: string }> = {
   creditCard: { heading: "All business credit cards", tag: "Business Banking · Credit Cards", scaleNote: "Monthly card fee shown on a shared scale, R0 → R415", detailsCta: "See card details" },
   loan:       { heading: "All business loans",         tag: "Business Banking · Loans",        scaleNote: "Admin / monthly fee shown on a shared scale, R0 → R415", detailsCta: "See loan details" },
+  insure:     { heading: "All business insurance",     tag: "Business Banking · Insure",       scaleNote: "Monthly premium / admin fee shown on a shared scale, R0 → R415", detailsCta: "See cover details" },
 };
 
 function parsePrice(price: string): number | null {
@@ -104,7 +113,7 @@ export function BusinessProductLedgerViewer({ isOpen, onClose, initialCategory, 
   const parsed = products.map(p => parsePrice(p.price)).filter((n): n is number => n !== null);
   const maxPrice = parsed.length ? Math.max(...parsed) : null;
   const handleApply = () => { onClose(); onApply(category); };
-  const activeLabel: NavItem = category === "creditCard" ? "Credit Cards" : "Loans";
+  const activeLabel: NavItem = category === "creditCard" ? "Credit Cards" : category === "loan" ? "Loans" : "Insure";
 
   return (
     <div className="pav-root fixed inset-0 z-50 overflow-y-auto">
