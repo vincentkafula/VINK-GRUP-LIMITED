@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 
-type BizCategory = "creditCard" | "loan" | "insure";
+type BizCategory = "creditCard" | "loan" | "insure" | "invest";
 type NavItem = "Start My Business" | "Accounts" | "Credit Cards" | "Loans" | "Invest" | "Insure" | "Manage My Business" | "International" | "Studio" | "News";
 
 interface Props {
@@ -13,7 +13,7 @@ interface Props {
 }
 
 const SUB_NAV: NavItem[] = ["Start My Business", "Accounts", "Credit Cards", "Loans", "Invest", "Insure", "Manage My Business", "International", "Studio", "News"];
-const CATEGORY_FOR_NAV: Partial<Record<NavItem, BizCategory>> = { "Credit Cards": "creditCard", "Loans": "loan", "Insure": "insure" };
+const CATEGORY_FOR_NAV: Partial<Record<NavItem, BizCategory>> = { "Credit Cards": "creditCard", "Loans": "loan", "Insure": "insure", "Invest": "invest" };
 
 interface BizProduct { name: string; price: string; features: string[]; featured?: boolean }
 
@@ -45,12 +45,29 @@ const PRODUCTS: Record<BizCategory, BizProduct[]> = {
     { name: "Commercial Auto Insurance", price: "R265", featured: true, features: ["Annual turnover: R0 to R500 million", "35 electronic transactions", "10 cash deposits/withdrawals at any VINK ATM, capped at R50,000/month", "Suitable for all business segments and sectors"] },
     { name: "Worker's Compensation", price: "R415", features: ["Annual turnover: R0 to R500 million", "60 electronic transactions", "15 cash deposits/withdrawals at any VINK ATM, capped at R100,000/month", "Suitable for all business segments and sectors"] },
   ],
+  // NOTE: unlike creditCard/loan/insure above, no genuine business
+  // investment product data exists anywhere in this codebase (the one
+  // reference file found — vms-bank-business-invest.html — is a
+  // mislabeled copy of unrelated account-tier content, not real
+  // investment products, so it wasn't used). These are standard,
+  // generic business treasury account types rather than fabricated
+  // rates or specific investment terms, to avoid presenting invented
+  // numbers as real financial product details.
+  invest: [
+    { name: "Business Call Account",          price: "R0",   features: ["Same-day access to funds", "No minimum balance", "Tiered interest on the full balance", "No fixed term"] },
+    { name: "Business 32-Day Notice Account",  price: "R0",   features: ["32 days' notice required for withdrawal", "Higher tiered interest than a call account", "No minimum balance"] },
+    { name: "Business Fixed Deposit — Short",  price: "R85",  features: ["3–6 month fixed terms", "Interest rate locked for the term", "Early withdrawal penalty applies"] },
+    { name: "Business Fixed Deposit — Long",   price: "R170", features: ["12–24 month fixed terms", "Interest rate locked for the term", "Early withdrawal penalty applies"] },
+    { name: "Corporate Money Market Account",  price: "R265", featured: true, features: ["Same-day liquidity for larger balances", "Tiered interest scaling with balance size", "Ideal for surplus operating cash"] },
+    { name: "Structured Treasury Deposit",     price: "R415", features: ["For larger corporate balances", "Terms structured with a relationship manager", "Custom notice/fixed-term blend available"] },
+  ],
 };
 
 const PAGE_COPY: Record<BizCategory, { heading: string; tag: string; scaleNote: string; detailsCta: string }> = {
   creditCard: { heading: "All business credit cards", tag: "Business Banking · Credit Cards", scaleNote: "Monthly card fee shown on a shared scale, R0 → R415", detailsCta: "See card details" },
   loan:       { heading: "All business loans",         tag: "Business Banking · Loans",        scaleNote: "Admin / monthly fee shown on a shared scale, R0 → R415", detailsCta: "See loan details" },
   insure:     { heading: "All business insurance",     tag: "Business Banking · Insure",       scaleNote: "Monthly premium / admin fee shown on a shared scale, R0 → R415", detailsCta: "See cover details" },
+  invest:     { heading: "All business investment accounts", tag: "Business Banking · Invest", scaleNote: "Admin fee shown on a shared scale, R0 → R415", detailsCta: "See account details" },
 };
 
 function parsePrice(price: string): number | null {
@@ -113,7 +130,7 @@ export function BusinessProductLedgerViewer({ isOpen, onClose, initialCategory, 
   const parsed = products.map(p => parsePrice(p.price)).filter((n): n is number => n !== null);
   const maxPrice = parsed.length ? Math.max(...parsed) : null;
   const handleApply = () => { onClose(); onApply(category); };
-  const activeLabel: NavItem = category === "creditCard" ? "Credit Cards" : category === "loan" ? "Loans" : "Insure";
+  const activeLabel: NavItem = category === "creditCard" ? "Credit Cards" : category === "loan" ? "Loans" : category === "insure" ? "Insure" : "Invest";
 
   return (
     <div className="pav-root fixed inset-0 z-50 overflow-y-auto">

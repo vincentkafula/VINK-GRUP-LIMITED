@@ -151,7 +151,7 @@ export default function App() {
   const [showBusinessAccountSelector, setShowBusinessAccountSelector] = useState(false);
   const [chosenBusinessAccountType, setChosenBusinessAccountType] = useState<string | undefined>(undefined);
   const [showBusinessLedger, setShowBusinessLedger]         = useState(false);
-  const [businessLedgerCategory, setBusinessLedgerCategory] = useState<"creditCard" | "loan" | "insure">("creditCard");
+  const [businessLedgerCategory, setBusinessLedgerCategory] = useState<"creditCard" | "loan" | "insure" | "invest">("creditCard");
   const [showBusinessLoanApp, setShowBusinessLoanApp]       = useState(false);
   const [showManageBusiness, setShowManageBusiness]         = useState(false);
   const [showBusinessInternational, setShowBusinessInternational] = useState(false);
@@ -319,7 +319,7 @@ export default function App() {
     if (item === "Accounts")          { mount("bizAccountSelector"); setShowBusinessAccountSelector(true); return; }
     if (item === "Credit Cards")      { mount("bizLedger"); setBusinessLedgerCategory("creditCard"); setShowBusinessLedger(true); return; }
     if (item === "Loans")             { mount("bizLedger"); setBusinessLedgerCategory("loan"); setShowBusinessLedger(true); return; }
-    if (item === "Invest")            return openSelector("invest");
+    if (item === "Invest")            { mount("bizLedger"); setBusinessLedgerCategory("invest"); setShowBusinessLedger(true); return; }
     if (item === "Insure")            { mount("bizLedger"); setBusinessLedgerCategory("insure"); setShowBusinessLedger(true); return; }
     if (item === "Manage My Business"){ mount("manageBusiness");   setShowManageBusiness(true); return; }
     if (item === "International")     { mount("bizInternational"); setShowBusinessInternational(true); return; }
@@ -330,6 +330,7 @@ export default function App() {
   const handleSubNavClick = (item: string) => {
     startTransition(() => {
       if (item === "Business:Insure")   { mount("bizLedger");          setBusinessLedgerCategory("insure"); setShowBusinessLedger(true); return; }
+      if (item === "Business:Invest")   { mount("bizLedger");          setBusinessLedgerCategory("invest"); setShowBusinessLedger(true); return; }
       // Personal — through product selector
      if (item === "Account")           { mount("personalAccount"); setShowPersonalAccount(true); return; }
       if (item === "Credit Card")       { mount("personalAccount"); mount("personalLedger"); setLedgerCategory("creditCard"); setShowPersonalLedger(true); return; }
