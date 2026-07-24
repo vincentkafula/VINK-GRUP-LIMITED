@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import vinkLogo from "../../../imports/LOGO_FINAL.png";
 
-interface Props { isOpen: boolean; onClose: () => void; }
+interface Props { isOpen: boolean; onClose: () => void; initialTab?: string; }
 const P = "#5B2D8E";
 
 const TABS = [
@@ -12,8 +12,9 @@ const TABS = [
   { key: "compliance", label: "Legal & Compliance" },
 ];
 
-export function LegalComplianceViewer({ isOpen, onClose }: Props) {
-  const [activeTab, setActiveTab] = useState("privacy");
+export function LegalComplianceViewer({ isOpen, onClose, initialTab }: Props) {
+  const [activeTab, setActiveTab] = useState(initialTab ?? "privacy");
+  useEffect(() => { if (isOpen && initialTab) setActiveTab(initialTab); }, [isOpen, initialTab]);
   if (!isOpen) return null;
 
   return (

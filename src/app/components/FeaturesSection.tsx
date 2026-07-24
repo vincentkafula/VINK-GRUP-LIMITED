@@ -18,7 +18,7 @@ const ICONS = [
 
 import { memo } from "react";
 
-export const FeaturesSection = memo(function FeaturesSection() {
+export const FeaturesSection = memo(function FeaturesSection({ onExploreAll }: { onExploreAll?: () => void }) {
   return (
     <section className="bg-white py-16 sm:py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -46,9 +46,9 @@ export const FeaturesSection = memo(function FeaturesSection() {
           ))}
         </div>
         <div className="text-center mt-8">
-          <a href="#" className="text-sm font-semibold hover:underline" style={{ color: "#6B5ED7" }}>
+          <button onClick={onExploreAll} className="text-sm font-semibold hover:underline bg-transparent border-none cursor-pointer" style={{ color: "#6B5ED7" }}>
             Explore All Features →
-          </a>
+          </button>
         </div>
       </div>
     </section>

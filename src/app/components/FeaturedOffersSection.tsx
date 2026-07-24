@@ -27,7 +27,7 @@ const OFFERS = [
 
 import { memo } from "react";
 
-export const FeaturedOffersSection = memo(function FeaturedOffersSection() {
+export const FeaturedOffersSection = memo(function FeaturedOffersSection({ onCompareCards }: { onCompareCards?: () => void }) {
   return (
     <section className="py-14 sm:py-20" style={{ background: "#F8F7FF" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -37,9 +37,9 @@ export const FeaturedOffersSection = memo(function FeaturedOffersSection() {
               style={{ background: "#EDE9FE", color: "#6B5ED7" }}>Partner Offers</span>
             <h2 className="text-2xl sm:text-3xl font-black text-gray-900">Featured Card Offers</h2>
           </div>
-          <a href="#" className="text-sm font-semibold hover:underline flex-shrink-0" style={{ color: "#6B5ED7" }}>
+          <button onClick={onCompareCards} className="text-sm font-semibold hover:underline flex-shrink-0 bg-transparent border-none cursor-pointer" style={{ color: "#6B5ED7" }}>
             Compare all cards →
-          </a>
+          </button>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           {OFFERS.map((o, i) => (

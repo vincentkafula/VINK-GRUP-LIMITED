@@ -340,7 +340,7 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
           <div style={{ height: 56, display: "flex", alignItems: "center", justifyContent: "center", flexWrap: "wrap", gap: "6px 0" }}>
             {["Terms Of Use", "Banking Regulations", "Privacy Statement", "Security Centre"].map((item, i, arr) => (
               <span key={item} style={{ display: "flex", alignItems: "center" }}>
-                <a href="#" style={{ color: "rgba(255,255,255,0.55)", fontSize: 12, fontWeight: 700, textDecoration: "none", padding: "0 12px", whiteSpace: "nowrap" }}
+                <a href="#" onClick={(e) => { e.preventDefault(); onLinkClick?.(item); }} style={{ color: "rgba(255,255,255,0.55)", fontSize: 12, fontWeight: 700, textDecoration: "none", padding: "0 12px", whiteSpace: "nowrap" }}
                   onMouseEnter={(e) => { (e.target as HTMLAnchorElement).style.color = "#fff"; }}
                   onMouseLeave={(e) => { (e.target as HTMLAnchorElement).style.color = "rgba(255,255,255,0.55)"; }}
                 >

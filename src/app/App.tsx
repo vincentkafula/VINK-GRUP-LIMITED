@@ -79,6 +79,7 @@ const VinkPassengerApp            = lazy(() => import("./components/apps/VinkPas
 const VinkMobileApp               = lazy(() => import("./components/apps/VinkMobileApp").then(m => ({ default: m.VinkMobileApp })));
 const AppLauncher                 = lazy(() => import("./components/apps/AppLauncher").then(m => ({ default: m.AppLauncher })));
 const AboutVINKViewer              = lazy(() => import("./components/footerPages/AboutVINKViewer").then(m => ({ default: m.AboutVINKViewer })));
+const LegalComplianceViewer         = lazy(() => import("./components/footerPages/LegalComplianceViewer").then(m => ({ default: m.LegalComplianceViewer })));
 const CareersViewer               = lazy(() => import("./components/footerPages/CareersViewer").then(m => ({ default: m.CareersViewer })));
 const NewsViewer                  = lazy(() => import("./components/footerPages/NewsViewer").then(m => ({ default: m.NewsViewer })));
 const ContactUsViewer             = lazy(() => import("./components/footerPages/ContactUsViewer").then(m => ({ default: m.ContactUsViewer })));
@@ -180,6 +181,8 @@ export default function App() {
   const [showCareers, setShowCareers]                       = useState(false);
   const [showNews, setShowNews]                             = useState(false);
   const [showContactUs, setShowContactUs]                   = useState(false);
+  const [showLegal, setShowLegal]                           = useState(false);
+  const [legalTab, setLegalTab]                             = useState<string | undefined>(undefined);
   const [showSwitchToVINK, setShowSwitchToVINK]               = useState(false);
   const [show500App, setShow500App]                         = useState(false);
 
@@ -497,6 +500,11 @@ export default function App() {
       if (label === "Investor Relations")                        open("investorRelations",  () => setShowInvestorRelations(true));
       if (label === "Get Help & Information")                    open("contactUs",          () => setShowContactUs(true));
       if (label === "Message Us")                                open("contactUs",          () => setShowContactUs(true));
+      if (label === "Legal and Compliance")                      { setLegalTab("compliance"); open("legal", () => setShowLegal(true)); }
+      if (label === "Terms of use" || label === "Terms Of Use")  { setLegalTab("terms");      open("legal", () => setShowLegal(true)); }
+      if (label === "Banking regulations" || label === "Banking Regulations") { setLegalTab("regulatory"); open("legal", () => setShowLegal(true)); }
+      if (label === "Privacy Statement")                         { setLegalTab("privacy");    open("legal", () => setShowLegal(true)); }
+      if (label === "Security Centre")                           { setLegalTab("privacy");    open("legal", () => setShowLegal(true)); }
     });
   };
 
@@ -538,13 +546,13 @@ export default function App() {
 
       <SearchSection />
 
-      <LazySection><Suspense fallback={null}><FeaturesSection /></Suspense></LazySection>
+      <LazySection><Suspense fallback={null}><FeaturesSection onExploreAll={() => { mount("appLauncher"); setShowAppLauncher(true); }} /></Suspense></LazySection>
       <LazySection><Suspense fallback={null}><ProtectionSection /></Suspense></LazySection>
       <LazySection><Suspense fallback={null}><WorldMapSection /></Suspense></LazySection>
       <LazySection><Suspense fallback={null}><CreditCardsSection onApply={() => openSelector("creditCard")} /></Suspense></LazySection>
       <LazySection><Suspense fallback={null}><BusinessPowerSection onSubNavClick={handleSubNavClick} /></Suspense></LazySection>
       <LazySection><Suspense fallback={null}><PreApprovalSection onApply={() => openSelector("loan")} /></Suspense></LazySection>
-      <LazySection><Suspense fallback={null}><FeaturedOffersSection /></Suspense></LazySection>
+      <LazySection><Suspense fallback={null}><FeaturedOffersSection onCompareCards={() => openSelector("creditCard")} /></Suspense></LazySection>
       <LazySection><Suspense fallback={null}><SpecialNeedSection /></Suspense></LazySection>
       <LazySection><Suspense fallback={null}><FinancialInstitutionsSection /></Suspense></LazySection>
       {/* AppShowcaseSection removed from homepage — accessible via footer "Download the App Now!" only */}
@@ -647,6 +655,7 @@ export default function App() {
       {has("careers")            && <Suspense fallback={null}><CareersViewer        isOpen={showCareers}            onClose={() => setShowCareers(false)} /></Suspense>}
       {has("news")               && <Suspense fallback={null}><NewsViewer           isOpen={showNews}               onClose={() => setShowNews(false)} /></Suspense>}
       {has("contactUs")          && <Suspense fallback={null}><ContactUsViewer            isOpen={showContactUs}  onClose={() => { setShowContactUs(false); pushRoute("/"); }} /></Suspense>}
+      {has("legal")              && <Suspense fallback={null}><LegalComplianceViewer      isOpen={showLegal}      onClose={() => setShowLegal(false)} initialTab={legalTab} /></Suspense>}
       {has("switchToVINK")        && <Suspense fallback={null}><SwitchToVINKViewer          isOpen={showSwitchToVINK} onClose={() => setShowSwitchToVINK(false)} /></Suspense>}
       {has("managementHub")      && <Suspense fallback={null}><ManagementHub              isOpen={showManagementHub}       onClose={() => setShowManagementHub(false)} /></Suspense>}
       {has("taxiAssociations")   && <Suspense fallback={null}><TaxiAssociationsViewer       isOpen={showTaxiAssociations} onClose={() => setShowTaxiAssociations(false)} /></Suspense>}
