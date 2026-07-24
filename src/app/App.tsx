@@ -304,7 +304,13 @@ export default function App() {
     });
   };
 
+  const CORP_PATH: Record<string, string> = {
+    "Account": "/corporate/account", "Solutions & Credit Cards": "/corporate/solutions-credit-cards",
+    "Loan": "/corporate/loan", "API": "/corporate/api", "Events": "/corporate/events",
+    "Social Responsibility": "/corporate/social-responsibility",
+  };
   const navigateCorporateItem = (item: string) => {
+    if (CORP_PATH[item]) pushRoute(CORP_PATH[item]);
     setShowCorporateLedger(false);
     setShowCorporateApi(false);
     setShowCorporateEvents(false);
@@ -317,7 +323,15 @@ export default function App() {
     if (item === "Social Responsibility")     { mount("corpCSR");       setShowCorporateCSR(true); return; }
   };
 
+  const BIZ_PATH: Record<string, string> = {
+    "Start My Business": "/business/start-my-business", "Accounts": "/business/accounts",
+    "Credit Cards": "/business/credit-cards", "Loans": "/business/loans",
+    "Invest": "/business/invest", "Insure": "/business/insure",
+    "Manage My Business": "/business/manage-my-business", "International": "/business/international",
+    "Studio": "/business/studio", "News": "/business/news",
+  };
   const navigateBusinessItem = (item: string) => {
+    if (BIZ_PATH[item]) pushRoute(BIZ_PATH[item]);
     setShowBusinessLedger(false);
     setShowBusinessAccountSelector(false);
     setShowStartBusiness(false);
@@ -337,7 +351,26 @@ export default function App() {
     if (item === "News")              { mount("bizNews");          setShowBusinessNews(true); return; }
   };
 
+  const pushRoute = (path: string) => {
+    if (window.location.pathname !== path) window.history.pushState({}, "", path);
+  };
+
+  const NAV_PATH: Record<string, string> = {
+    "Account": "/personal/account", "Credit Card": "/personal/credit-card", "Loan": "/personal/loan",
+    "Invest": "/personal/invest", "Insure": "/personal/insure", "Rewards": "/personal/rewards",
+    "Start My Business": "/business/start-my-business", "Accounts": "/business/accounts",
+    "Credit Cards": "/business/credit-cards", "Loans": "/business/loans",
+    "Business:Invest": "/business/invest", "Business:Insure": "/business/insure",
+    "Manage My Business": "/business/manage-my-business", "International": "/business/international",
+    "Studio": "/business/studio", "News": "/business/news",
+    "Corporate:Account": "/corporate/account", "Corporate:Solutions & Credit Cards": "/corporate/solutions-credit-cards",
+    "Corporate:Loan": "/corporate/loan", "Corporate:API": "/corporate/api", "Corporate:Events": "/corporate/events",
+    "Corporate:Social Responsibility": "/corporate/social-responsibility",
+    "Contact Us": "/contact-us",
+  };
+
   const handleSubNavClick = (item: string) => {
+    if (NAV_PATH[item]) pushRoute(NAV_PATH[item]);
     startTransition(() => {
       if (item === "Business:Insure")   { mount("bizLedger");          setBusinessLedgerCategory("insure"); setShowBusinessLedger(true); return; }
       if (item === "Business:Invest")   { mount("bizLedger");          setBusinessLedgerCategory("invest"); setShowBusinessLedger(true); return; }
@@ -371,6 +404,72 @@ export default function App() {
       if (item === "Marketplace")       { mount("marketplace");        setShowMarketplace(true); return; }
     });
   };
+
+  const closeAllRoutedViewers = () => {
+    setShowPersonalAccount(false); setShowPersonalLedger(false);
+    setShowStartBusiness(false); setShowBusinessAccountSelector(false); setShowBusinessAccounts(false);
+    setShowBusinessLedger(false); setShowManageBusiness(false); setShowBusinessInternational(false);
+    setShowBusinessStudio(false); setShowBusinessNews(false);
+    setShowCorporateLedger(false); setShowCorporateApi(false); setShowCorporateEvents(false); setShowCorporateCSR(false);
+    setShowContactUs(false);
+  };
+
+  const openRoute = (path: string): boolean => {
+    const seg = path.replace(/^\/|\/$/g, "").split("/");
+    if (seg[0] === "personal" && seg[1]) {
+      const map: Record<string, string> = { account: "account", "credit-card": "creditCard", loan: "loan", invest: "invest", insure: "insure", rewards: "rewards" };
+      const cat = map[seg[1]];
+      if (!cat) return false;
+      mount("personalAccount");
+      if (cat === "account") { setShowPersonalAccount(true); } else { mount("personalLedger"); setLedgerCategory(cat as any); setShowPersonalLedger(true); }
+      return true;
+    }
+    if (seg[0] === "business" && seg[1]) {
+      const map: Record<string, string> = {
+        "start-my-business": "startBusiness", "accounts": "bizAccountSelector", "credit-cards": "bizLedger:creditCard",
+        "loans": "bizLedger:loan", "invest": "bizLedger:invest", "insure": "bizLedger:insure",
+        "manage-my-business": "manageBusiness", "international": "bizInternational", "studio": "bizStudio", "news": "bizNews",
+      };
+      const key = map[seg[1]];
+      if (!key) return false;
+      if (key.startsWith("bizLedger:")) { mount("bizLedger"); setBusinessLedgerCategory(key.split(":")[1] as any); setShowBusinessLedger(true); }
+      else if (key === "startBusiness")      { mount("startBusiness"); setShowStartBusiness(true); }
+      else if (key === "bizAccountSelector") { mount("bizAccountSelector"); setShowBusinessAccountSelector(true); }
+      else if (key === "manageBusiness")     { mount("manageBusiness"); setShowManageBusiness(true); }
+      else if (key === "bizInternational")   { mount("bizInternational"); setShowBusinessInternational(true); }
+      else if (key === "bizStudio")          { mount("bizStudio"); setShowBusinessStudio(true); }
+      else if (key === "bizNews")            { mount("bizNews"); setShowBusinessNews(true); }
+      return true;
+    }
+    if (seg[0] === "corporate" && seg[1]) {
+      const map: Record<string, string> = {
+        "account": "corpLedger:account", "solutions-credit-cards": "corpLedger:solutions", "loan": "corpLedger:loan",
+        "api": "corpApi", "events": "corpEvents", "social-responsibility": "corpCSR",
+      };
+      const key = map[seg[1]];
+      if (!key) return false;
+      if (key.startsWith("corpLedger:")) { mount("corpLedger"); setCorporateLedgerCategory(key.split(":")[1] as any); setShowCorporateLedger(true); }
+      else if (key === "corpApi")    { mount("corpApi"); setShowCorporateApi(true); }
+      else if (key === "corpEvents") { mount("corpEvents"); setShowCorporateEvents(true); }
+      else if (key === "corpCSR")    { mount("corpCSR"); setShowCorporateCSR(true); }
+      return true;
+    }
+    if (path === "/contact-us") { mount("contactUs"); setShowContactUs(true); return true; }
+    return false;
+  };
+
+  // Deep-link support: open the right view if the page loads on a route
+  // like /personal/account, and support the browser back/forward buttons.
+  useEffect(() => {
+    openRoute(window.location.pathname);
+    const onPopState = () => {
+      closeAllRoutedViewers();
+      openRoute(window.location.pathname);
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleMobileNavigate = (id: string) => {
     startTransition(() => {
@@ -474,8 +573,8 @@ export default function App() {
       {has("marketplace")     && <Suspense fallback={null}><VinkMarketplace        isOpen={showMarketplace}     onClose={() => setShowMarketplace(false)} /></Suspense>}
 
       {/* Personal products */}
-      {has("personalAccount") && <Suspense fallback={null}><PersonalAccountViewer  isOpen={showPersonalAccount} onClose={() => setShowPersonalAccount(false)} onNavigate={(cat) => { setShowPersonalAccount(false); setLedgerCategory(cat); setShowPersonalLedger(true); }} /></Suspense>}
-      {has("personalLedger")  && <Suspense fallback={null}><PersonalProductLedgerViewer isOpen={showPersonalLedger} onClose={() => setShowPersonalLedger(false)} initialCategory={ledgerCategory} onNavigateToAccount={() => { setShowPersonalLedger(false); setShowPersonalAccount(true); }} onApply={applyForProductCategory} /></Suspense>}
+      {has("personalAccount") && <Suspense fallback={null}><PersonalAccountViewer  isOpen={showPersonalAccount} onClose={() => { setShowPersonalAccount(false); pushRoute("/"); }} onNavigate={(cat) => { setShowPersonalAccount(false); setLedgerCategory(cat); setShowPersonalLedger(true); pushRoute(`/personal/${cat === "creditCard" ? "credit-card" : cat}`); }} /></Suspense>}
+      {has("personalLedger")  && <Suspense fallback={null}><PersonalProductLedgerViewer isOpen={showPersonalLedger} onClose={() => { setShowPersonalLedger(false); pushRoute("/"); }} initialCategory={ledgerCategory} onNavigateToAccount={() => { setShowPersonalLedger(false); setShowPersonalAccount(true); pushRoute("/personal/account"); }} onApply={applyForProductCategory} /></Suspense>}
       {has("creditCard")      && <Suspense fallback={null}><CreditCardViewer       isOpen={showCreditCard}      onClose={() => setShowCreditCard(false)} /></Suspense>}
       {has("creditCardApp")   && <Suspense fallback={null}><CreditCardApplicationViewer isOpen={showCreditCardApp} onClose={() => setShowCreditCardApp(false)} /></Suspense>}
       {has("loan")            && <Suspense fallback={null}><LoanViewer             isOpen={showLoan}            onClose={() => setShowLoan(false)} /></Suspense>}
@@ -493,22 +592,22 @@ export default function App() {
       {has("productSelector") && <Suspense fallback={null}><ProductSelectorViewer  isOpen={selectorOpen} category={selectorCategory} onClose={() => setSelectorOpen(false)} onSelect={handleSelectorSelect} /></Suspense>}
 
       {/* Business */}
-      {has("startBusiness")      && <Suspense fallback={null}><StartMyBusinessViewer       isOpen={showStartBusiness}       onClose={() => setShowStartBusiness(false)} onNavigate={navigateBusinessItem} /></Suspense>}
-      {has("bizAccountSelector") && <Suspense fallback={null}><BusinessAccountSelectorViewer isOpen={showBusinessAccountSelector} onClose={() => setShowBusinessAccountSelector(false)} onNavigate={(item) => navigateBusinessItem(item)} onApply={(type) => { setShowBusinessAccountSelector(false); mount("bizAccounts"); setChosenBusinessAccountType(type); setShowBusinessAccounts(true); }} /></Suspense>}
-      {has("bizAccounts")        && <Suspense fallback={null}><BusinessAccountApplicationViewer isOpen={showBusinessAccounts} onClose={() => setShowBusinessAccounts(false)} initialAccountType={chosenBusinessAccountType} /></Suspense>}
-      {has("bizLedger") && <Suspense fallback={null}><BusinessProductLedgerViewer isOpen={showBusinessLedger} onClose={() => setShowBusinessLedger(false)} initialCategory={businessLedgerCategory} onNavigate={(item) => navigateBusinessItem(item)} onApply={applyForProductCategory} /></Suspense>}
+      {has("startBusiness")      && <Suspense fallback={null}><StartMyBusinessViewer       isOpen={showStartBusiness}       onClose={() => { setShowStartBusiness(false); pushRoute("/"); }} onNavigate={navigateBusinessItem} /></Suspense>}
+      {has("bizAccountSelector") && <Suspense fallback={null}><BusinessAccountSelectorViewer isOpen={showBusinessAccountSelector} onClose={() => { setShowBusinessAccountSelector(false); pushRoute("/"); }} onNavigate={(item) => navigateBusinessItem(item)} onApply={(type) => { setShowBusinessAccountSelector(false); mount("bizAccounts"); setChosenBusinessAccountType(type); setShowBusinessAccounts(true); }} /></Suspense>}
+      {has("bizAccounts")        && <Suspense fallback={null}><BusinessAccountApplicationViewer isOpen={showBusinessAccounts} onClose={() => { setShowBusinessAccounts(false); pushRoute("/"); }} initialAccountType={chosenBusinessAccountType} /></Suspense>}
+      {has("bizLedger") && <Suspense fallback={null}><BusinessProductLedgerViewer isOpen={showBusinessLedger} onClose={() => { setShowBusinessLedger(false); pushRoute("/"); }} initialCategory={businessLedgerCategory} onNavigate={(item) => navigateBusinessItem(item)} onApply={applyForProductCategory} /></Suspense>}
       {has("bizLoanApp")         && <Suspense fallback={null}><BusinessLoanApplicationViewer isOpen={showBusinessLoanApp}   onClose={() => setShowBusinessLoanApp(false)} /></Suspense>}
-      {has("manageBusiness")     && <Suspense fallback={null}><ManageMyBusinessViewer      isOpen={showManageBusiness}      onClose={() => setShowManageBusiness(false)} onNavigate={navigateBusinessItem} /></Suspense>}
-      {has("bizInternational")   && <Suspense fallback={null}><BusinessInternationalViewer isOpen={showBusinessInternational} onClose={() => setShowBusinessInternational(false)} onNavigate={navigateBusinessItem} /></Suspense>}
-      {has("bizStudio")          && <Suspense fallback={null}><BusinessStudioViewer        isOpen={showBusinessStudio}      onClose={() => setShowBusinessStudio(false)} onNavigate={navigateBusinessItem} /></Suspense>}
-      {has("bizNews")            && <Suspense fallback={null}><BusinessNewsViewer          isOpen={showBusinessNews}        onClose={() => setShowBusinessNews(false)} onNavigate={navigateBusinessItem} /></Suspense>}
+      {has("manageBusiness")     && <Suspense fallback={null}><ManageMyBusinessViewer      isOpen={showManageBusiness}      onClose={() => { setShowManageBusiness(false); pushRoute("/"); }} onNavigate={navigateBusinessItem} /></Suspense>}
+      {has("bizInternational")   && <Suspense fallback={null}><BusinessInternationalViewer isOpen={showBusinessInternational} onClose={() => { setShowBusinessInternational(false); pushRoute("/"); }} onNavigate={navigateBusinessItem} /></Suspense>}
+      {has("bizStudio")          && <Suspense fallback={null}><BusinessStudioViewer        isOpen={showBusinessStudio}      onClose={() => { setShowBusinessStudio(false); pushRoute("/"); }} onNavigate={navigateBusinessItem} /></Suspense>}
+      {has("bizNews")            && <Suspense fallback={null}><BusinessNewsViewer          isOpen={showBusinessNews}        onClose={() => { setShowBusinessNews(false); pushRoute("/"); }} onNavigate={navigateBusinessItem} /></Suspense>}
 
       {/* Corporate */}
-      {has("corpLedger")         && <Suspense fallback={null}><CorporateProductLedgerViewer isOpen={showCorporateLedger} onClose={() => setShowCorporateLedger(false)} initialCategory={corporateLedgerCategory} onNavigate={(item) => navigateCorporateItem(item)} /></Suspense>}
+      {has("corpLedger")         && <Suspense fallback={null}><CorporateProductLedgerViewer isOpen={showCorporateLedger} onClose={() => { setShowCorporateLedger(false); pushRoute("/"); }} initialCategory={corporateLedgerCategory} onNavigate={(item) => navigateCorporateItem(item)} /></Suspense>}
       {has("corpLoanApp")        && <Suspense fallback={null}><CorporateLoanApplicationViewer isOpen={showCorporateLoanApp} onClose={() => setShowCorporateLoanApp(false)} /></Suspense>}
-      {has("corpApi")            && <Suspense fallback={null}><CorporateApiViewer          isOpen={showCorporateApi}        onClose={() => setShowCorporateApi(false)} onNavigate={(item) => navigateCorporateItem(item)} /></Suspense>}
-      {has("corpEvents")         && <Suspense fallback={null}><CorporateEventsViewer       isOpen={showCorporateEvents}     onClose={() => setShowCorporateEvents(false)} onNavigate={(item) => navigateCorporateItem(item)} /></Suspense>}
-      {has("corpCSR")            && <Suspense fallback={null}><CorporateSocialResponsibilityViewer isOpen={showCorporateCSR} onClose={() => setShowCorporateCSR(false)} onNavigate={(item) => navigateCorporateItem(item)} /></Suspense>}
+      {has("corpApi")            && <Suspense fallback={null}><CorporateApiViewer          isOpen={showCorporateApi}        onClose={() => { setShowCorporateApi(false); pushRoute("/"); }} onNavigate={(item) => navigateCorporateItem(item)} /></Suspense>}
+      {has("corpEvents")         && <Suspense fallback={null}><CorporateEventsViewer       isOpen={showCorporateEvents}     onClose={() => { setShowCorporateEvents(false); pushRoute("/"); }} onNavigate={(item) => navigateCorporateItem(item)} /></Suspense>}
+      {has("corpCSR")            && <Suspense fallback={null}><CorporateSocialResponsibilityViewer isOpen={showCorporateCSR} onClose={() => { setShowCorporateCSR(false); pushRoute("/"); }} onNavigate={(item) => navigateCorporateItem(item)} /></Suspense>}
 
       {/* Operations */}
       {has("globalBanking")      && <Suspense fallback={null}><GlobalBankingDashboard      isOpen={showGlobalBanking}       onClose={() => setShowGlobalBanking(false)} /></Suspense>}
@@ -547,7 +646,7 @@ export default function App() {
       {has("aboutVINK")           && <Suspense fallback={null}><AboutVINKViewer       isOpen={showAboutVINK}           onClose={() => setShowAboutVINK(false)} /></Suspense>}
       {has("careers")            && <Suspense fallback={null}><CareersViewer        isOpen={showCareers}            onClose={() => setShowCareers(false)} /></Suspense>}
       {has("news")               && <Suspense fallback={null}><NewsViewer           isOpen={showNews}               onClose={() => setShowNews(false)} /></Suspense>}
-      {has("contactUs")          && <Suspense fallback={null}><ContactUsViewer            isOpen={showContactUs}  onClose={() => setShowContactUs(false)} /></Suspense>}
+      {has("contactUs")          && <Suspense fallback={null}><ContactUsViewer            isOpen={showContactUs}  onClose={() => { setShowContactUs(false); pushRoute("/"); }} /></Suspense>}
       {has("switchToVINK")        && <Suspense fallback={null}><SwitchToVINKViewer          isOpen={showSwitchToVINK} onClose={() => setShowSwitchToVINK(false)} /></Suspense>}
       {has("managementHub")      && <Suspense fallback={null}><ManagementHub              isOpen={showManagementHub}       onClose={() => setShowManagementHub(false)} /></Suspense>}
       {has("taxiAssociations")   && <Suspense fallback={null}><TaxiAssociationsViewer       isOpen={showTaxiAssociations} onClose={() => setShowTaxiAssociations(false)} /></Suspense>}
