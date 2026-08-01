@@ -192,6 +192,91 @@ function ProductRow({ title, products, onProduct, onCart, slice = [0, 4] }: {
   );
 }
 
+function HeroProductSlider({ products, onView, onCart }: { products: R[]; onView: (p: R) => void; onCart: (p: R) => void }) {
+  const [index, setIndex] = useState(0);
+  const items = products.slice(0, 6);
+
+  useEffect(() => {
+    if (items.length < 2) return;
+    const id = setInterval(() => setIndex(i => (i + 1) % items.length), 4000);
+    return () => clearInterval(id);
+  }, [items.length]);
+
+  if (items.length === 0) return null;
+  const p = items[index];
+  const discount = p.compareAtPrice
+    ? Math.round((1 - Number(p.price) / Number(p.compareAtPrice)) * 100) : 0;
+  const imgs = p.images as string[];
+  const go = (i: number) => setIndex((i + items.length) % items.length);
+
+  return (
+    <div className="flex-1 relative overflow-hidden rounded-sm min-h-[140px]"
+      style={{ background: "linear-gradient(135deg,#e8f4fd 0%,#cce8f8 100%)", border: "1px solid #b3d9f0" }}>
+      <div className="absolute top-2 left-3 z-10 text-[10px] font-bold uppercase tracking-wider text-blue-700">Featured today</div>
+
+      {items.length > 1 && (
+        <>
+          <button
+            onClick={() => go(index - 1)}
+            className="absolute left-1.5 top-1/2 -translate-y-1/2 z-10 w-6 h-6 rounded-full bg-white/80 hover:bg-white flex items-center justify-center shadow-sm transition-colors"
+            aria-label="Previous product"
+          >
+            <ChevronRight className="w-3.5 h-3.5 rotate-180 text-blue-700" />
+          </button>
+          <button
+            onClick={() => go(index + 1)}
+            className="absolute right-1.5 top-1/2 -translate-y-1/2 z-10 w-6 h-6 rounded-full bg-white/80 hover:bg-white flex items-center justify-center shadow-sm transition-colors"
+            aria-label="Next product"
+          >
+            <ChevronRight className="w-3.5 h-3.5 text-blue-700" />
+          </button>
+        </>
+      )}
+
+      <div className="relative h-full flex items-center justify-between gap-3 px-8 py-4 min-h-[140px] cursor-pointer" onClick={() => onView(p)}>
+        <div className="min-w-0 flex-1">
+          {discount > 0 && (
+            <span className="inline-block bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-sm mb-1.5">-{discount}% OFF</span>
+          )}
+          <p className="text-sm font-bold text-gray-900 leading-snug line-clamp-2 mb-1.5">{p.name as string}</p>
+          <div className="flex items-baseline gap-1.5">
+            {p.compareAtPrice && (
+              <span className="text-[11px] text-gray-400 line-through">{fmtZAR(Number(p.compareAtPrice))}</span>
+            )}
+            <span className="text-lg font-black" style={{ color: "#0066CC" }}>{fmtZAR(Number(p.price))}</span>
+          </div>
+          <button
+            onClick={e => { e.stopPropagation(); onCart(p); }}
+            className="mt-2 bg-blue-600 text-white text-xs font-bold px-4 py-1.5 rounded hover:bg-blue-700 transition-colors"
+          >
+            Add to cart
+          </button>
+        </div>
+        <div
+          className="shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center text-4xl sm:text-5xl shadow-sm"
+          style={{ background: `linear-gradient(135deg,${imgs?.[0] ?? "#fff"},${imgs?.[1] ?? "#e8e8e8"})` }}
+        >
+          {p.emoji as string}
+        </div>
+      </div>
+
+      {items.length > 1 && (
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+          {items.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => go(i)}
+              className="h-1.5 rounded-full transition-all"
+              style={{ width: index === i ? 16 : 6, background: index === i ? "#0066CC" : "rgba(0,102,204,0.3)" }}
+              aria-label={`Product ${i + 1}`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function HomeView({ categories, products, onCategory, onProduct, onCart, wishlistIds, onWishlist }: {
   categories: R[]; products: R[];
   onCategory: () => void; onProduct: (p: R) => void;
@@ -243,22 +328,12 @@ function HomeView({ categories, products, onCategory, onProduct, onCart, wishlis
 
           {/* Hero banner */}
           <div className="flex gap-1 m-2">
-            {/* Left — MEGA BOOK SALE */}
-            <div className="flex-1 relative overflow-hidden rounded-sm flex flex-col justify-between p-4 min-h-[140px]"
-              style={{ background: "linear-gradient(135deg,#e8f4fd 0%,#cce8f8 100%)", border: "1px solid #b3d9f0" }}>
-              <div>
-                <div className="text-[10px] font-bold uppercase tracking-wider text-blue-700 mb-1">MEGA BOOK SALE</div>
-                <div className="flex items-end gap-1 mb-1">
-                  <span className="text-5xl font-black leading-none" style={{ color: "#0066CC" }}>35%</span>
-                  <span className="text-sm font-bold text-gray-600 mb-1">OFF</span>
-                </div>
-                <div className="text-[10px] text-gray-500 mb-3">17th – 11th September</div>
-              </div>
-              <button onClick={onCategory}
-                className="self-start bg-blue-600 text-white text-xs font-bold px-4 py-1.5 rounded hover:bg-blue-700 transition-colors">
-                Shop Now
-              </button>
-            </div>
+            {/* Left — sliding featured products */}
+            <HeroProductSlider
+              products={featured.length ? featured : products}
+              onView={onProduct}
+              onCart={onCart}
+            />
             {/* Right — 40% off + delivery check */}
             <div className="flex flex-col gap-1 w-48 flex-shrink-0">
               <div className="flex-1 rounded-sm p-3 flex flex-col justify-between"
