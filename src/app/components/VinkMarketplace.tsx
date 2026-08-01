@@ -33,6 +33,41 @@ const STATUS_COLOR: Record<string, string> = {
   confirmed: "#8B5CF6", pending: "#9CA3AF", cancelled: "#EF4444",
 };
 
+// ─── Auto-slide hook ────────────────────────────────────────────────────────
+// Continuously drifts a scroll container to the left (content flows right-to-
+// left) so product rows feel alive without requiring the user to drag/swipe.
+// Pauses on hover/touch and loops back to the start once it reaches the end.
+function useAutoSlide<T extends HTMLElement>(itemCount: number, speed = 0.5) {
+  const ref = useRef<T>(null);
+  const paused = useRef(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || itemCount < 2) return;
+    let raf: number;
+    const tick = () => {
+      if (!paused.current && el) {
+        const max = el.scrollWidth - el.clientWidth;
+        if (max > 0) {
+          el.scrollLeft = el.scrollLeft >= max - 1 ? 0 : el.scrollLeft + speed;
+        }
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [itemCount, speed]);
+
+  const handlers = {
+    onMouseEnter: () => { paused.current = true; },
+    onMouseLeave: () => { paused.current = false; },
+    onTouchStart: () => { paused.current = true; },
+    onTouchEnd:   () => { paused.current = false; },
+  };
+
+  return { ref, handlers };
+}
+
 // ─── Stars ────────────────────────────────────────────────────────────────────
 function Stars({ rating, size = 13 }: { rating: number; size?: number }) {
   return (
@@ -174,6 +209,7 @@ function ProductRow({ title, products, onProduct, onCart, slice = [0, 4] }: {
   onCart: (p: R) => void; slice?: [number, number];
 }) {
   const items = products.slice(...slice);
+  const { ref, handlers } = useAutoSlide<HTMLDivElement>(items.length);
   if (!items.length) return null;
   return (
     <div className="mb-4">
@@ -181,7 +217,7 @@ function ProductRow({ title, products, onProduct, onCart, slice = [0, 4] }: {
         <span className="text-sm font-bold text-gray-900">{title}</span>
         <button className="text-xs font-semibold" style={{ color: "#0066CC" }}>View more</button>
       </div>
-      <div className="flex gap-0 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+      <div ref={ref} {...handlers} className="flex gap-0 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
         {items.map((p, i) => (
           <HomeProductCard key={i} p={p}
             onView={() => onProduct(p)}
@@ -292,6 +328,8 @@ function HomeView({ categories, products, onCategory, onProduct, onCart, wishlis
   const row4 = products.slice(11, 15); // phones
   const rowHL = products.slice(1, 4);  // highlighted (red band)
   const row5 = products.slice(4, 7);   // branded microwaves
+  const dealsSlide = useAutoSlide<HTMLDivElement>(row1.length || 3);
+  const phonesSlide = useAutoSlide<HTMLDivElement>((row4.length ? row4 : products.slice(2, 6)).length);
 
   return (
     <div className="flex-1 flex flex-col min-h-0 overflow-hidden bg-gray-100">
@@ -360,7 +398,7 @@ function HomeView({ categories, products, onCategory, onProduct, onCart, wishlis
               <span className="text-sm font-bold text-gray-900">Deals of the day</span>
               <button onClick={onCategory} className="text-xs font-semibold" style={{ color: "#0066CC" }}>View more</button>
             </div>
-            <div className="flex gap-0 bg-white">
+            <div ref={dealsSlide.ref} {...dealsSlide.handlers} className="flex gap-0 bg-white overflow-x-auto" style={{ scrollbarWidth: "none" }}>
               {row1.map((p, i) => (
                 <HomeProductCard key={i} p={p} onView={() => onProduct(p)} onCart={() => onCart(p)} />
               ))}
@@ -414,7 +452,7 @@ function HomeView({ categories, products, onCategory, onProduct, onCart, wishlis
               <span className="text-sm font-bold text-gray-900">iPhone 13 Pro — now reduced</span>
               <button onClick={onCategory} className="text-xs font-semibold" style={{ color: "#0066CC" }}>View more</button>
             </div>
-            <div className="flex gap-0 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+            <div ref={phonesSlide.ref} {...phonesSlide.handlers} className="flex gap-0 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
               {(row4.length ? row4 : products.slice(2,6)).map((p, i) => (
                 <HomeProductCard key={i} p={p} onView={() => onProduct(p)} onCart={() => onCart(p)} />
               ))}
