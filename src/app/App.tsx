@@ -37,6 +37,8 @@ const BankingDashboard            = lazy(() => import("./components/BankingDashb
 const VehicleTrackingDashboard    = lazy(() => import("./components/VehicleTrackingDashboard").then(m => ({ default: m.VehicleTrackingDashboard })));
 const VinkMarketplace             = lazy(() => import("./components/VinkMarketplace").then(m => ({ default: m.VinkMarketplace })));
 const PersonalAccountViewer       = lazy(() => import("./components/PersonalAccountViewer").then(m => ({ default: m.PersonalAccountViewer })));
+const PersonalLandingViewer       = lazy(() => import("./components/PersonalLandingViewer").then(m => ({ default: m.PersonalLandingViewer })));
+const SafetySecurityViewer        = lazy(() => import("./components/footerPages/SafetySecurityViewer").then(m => ({ default: m.SafetySecurityViewer })));
 const PersonalProductLedgerViewer = lazy(() => import("./components/PersonalProductLedgerViewer").then(m => ({ default: m.PersonalProductLedgerViewer })));
 const CreditCardViewer            = lazy(() => import("./components/CreditCardViewer").then(m => ({ default: m.CreditCardViewer })));
 const CreditCardApplicationViewer = lazy(() => import("./components/CreditCardApplicationViewer").then(m => ({ default: m.CreditCardApplicationViewer })));
@@ -124,6 +126,8 @@ export default function App() {
   const [showRevenueDashboard, setShowRevenueDashboard]     = useState(false);
 
   // ── Personal products ──────────────────────────────────────────────────────
+  const [showPersonalLanding, setShowPersonalLanding]       = useState(false);
+  const [showSafetySecurity, setShowSafetySecurity]         = useState(false);
   const [showPersonalAccount, setShowPersonalAccount]       = useState(false);
   const [showPersonalLedger, setShowPersonalLedger]          = useState(false);
   const [ledgerCategory, setLedgerCategory]                  = useState<"creditCard" | "loan" | "invest" | "insure" | "rewards">("creditCard");
@@ -359,6 +363,7 @@ export default function App() {
   };
 
   const NAV_PATH: Record<string, string> = {
+    "PersonalHome": "/personal",
     "Account": "/personal/account", "Credit Card": "/personal/credit-card", "Loan": "/personal/loan",
     "Invest": "/personal/invest", "Insure": "/personal/insure", "Rewards": "/personal/rewards",
     "Start My Business": "/business/start-my-business", "Accounts": "/business/accounts",
@@ -377,7 +382,8 @@ export default function App() {
     startTransition(() => {
       if (item === "Business:Insure")   { mount("bizLedger");          setBusinessLedgerCategory("insure"); setShowBusinessLedger(true); return; }
       if (item === "Business:Invest")   { mount("bizLedger");          setBusinessLedgerCategory("invest"); setShowBusinessLedger(true); return; }
-      // Personal — through product selector
+      // Personal — top-level nav click opens the landing page; subnav items go through product selector
+      if (item === "PersonalHome")      { mount("personalLanding"); setShowPersonalLanding(true); return; }
      if (item === "Account")           { mount("personalAccount"); setShowPersonalAccount(true); return; }
       if (item === "Credit Card")       { mount("personalAccount"); mount("personalLedger"); setLedgerCategory("creditCard"); setShowPersonalLedger(true); return; }
       if (item === "Loan")              { mount("personalAccount"); mount("personalLedger"); setLedgerCategory("loan"); setShowPersonalLedger(true); return; }
@@ -409,6 +415,7 @@ export default function App() {
   };
 
   const closeAllRoutedViewers = () => {
+    setShowPersonalLanding(false);
     setShowPersonalAccount(false); setShowPersonalLedger(false);
     setShowStartBusiness(false); setShowBusinessAccountSelector(false); setShowBusinessAccounts(false);
     setShowBusinessLedger(false); setShowManageBusiness(false); setShowBusinessInternational(false);
@@ -419,6 +426,11 @@ export default function App() {
 
   const openRoute = (path: string): boolean => {
     const seg = path.replace(/^\/|\/$/g, "").split("/");
+    if (seg[0] === "personal" && !seg[1]) {
+      mount("personalLanding");
+      setShowPersonalLanding(true);
+      return true;
+    }
     if (seg[0] === "personal" && seg[1]) {
       const map: Record<string, string> = { account: "account", "credit-card": "creditCard", loan: "loan", invest: "invest", insure: "insure", rewards: "rewards" };
       const cat = map[seg[1]];
@@ -581,6 +593,8 @@ export default function App() {
       {has("marketplace")     && <Suspense fallback={null}><VinkMarketplace        isOpen={showMarketplace}     onClose={() => setShowMarketplace(false)} /></Suspense>}
 
       {/* Personal products */}
+      {has("personalLanding") && <Suspense fallback={null}><PersonalLandingViewer isOpen={showPersonalLanding} onClose={() => { setShowPersonalLanding(false); pushRoute("/"); }} onNavigate={(item) => { setShowPersonalLanding(false); handleSubNavClick(item); }} onApplyClick={() => openSelector("creditCard")} onSecurityClick={() => { mount("safetySecurity"); setShowSafetySecurity(true); }} /></Suspense>}
+      {has("safetySecurity")  && <Suspense fallback={null}><SafetySecurityViewer  isOpen={showSafetySecurity} onClose={() => setShowSafetySecurity(false)} /></Suspense>}
       {has("personalAccount") && <Suspense fallback={null}><PersonalAccountViewer  isOpen={showPersonalAccount} onClose={() => { setShowPersonalAccount(false); pushRoute("/"); }} onNavigate={(cat) => { setShowPersonalAccount(false); setLedgerCategory(cat); setShowPersonalLedger(true); pushRoute(`/personal/${cat === "creditCard" ? "credit-card" : cat}`); }} /></Suspense>}
       {has("personalLedger")  && <Suspense fallback={null}><PersonalProductLedgerViewer isOpen={showPersonalLedger} onClose={() => { setShowPersonalLedger(false); pushRoute("/"); }} initialCategory={ledgerCategory} onNavigateToAccount={() => { setShowPersonalLedger(false); setShowPersonalAccount(true); pushRoute("/personal/account"); }} onApply={applyForProductCategory} /></Suspense>}
       {has("creditCard")      && <Suspense fallback={null}><CreditCardViewer       isOpen={showCreditCard}      onClose={() => setShowCreditCard(false)} /></Suspense>}

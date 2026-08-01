@@ -35,6 +35,7 @@ export function Header({ onDashboardSelect, onSubNavClick, onOpenProfile, isLogg
     }
     if (item === "Personal") {
       setActiveNav(prev => (prev === "Personal" ? null : "Personal"));
+      onSubNavClick?.("PersonalHome");
     } else if (item === "Business") {
       setActiveNav(prev => (prev === "Business" ? null : "Business"));
     } else if (item === "Corporate") {
