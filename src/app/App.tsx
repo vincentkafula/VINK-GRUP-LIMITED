@@ -244,7 +244,7 @@ export default function App() {
       else if (id === "ridehailing")       { mount("rideHailing");      setShowRideHailing(true); }
       else if (id === "account")           { mount("banking");          setShowBanking(true); }
       else if (id === "vehicle")           { mount("vehicle");          setShowVehicle(true); }
-      else if (id === "marketplace")       { mount("marketplace");      setShowMarketplace(true); }
+      else if (id === "marketplace")       { mount("marketplace");      setShowMarketplace(true); pushRoute("/marketplace"); }
       else if (id === "appLauncher")       { mount("appLauncher");      setShowAppLauncher(true); }
       else if (id === "afcApp")            { mount("afcApp");           setShowAFCApp(true); }
       else                                 { mount("postLogin");        setShowPostLogin(true); }
@@ -281,7 +281,7 @@ export default function App() {
         case "mobile":
         case "vinktv":        mount("mobileNetwork");    setShowMobileNetwork(true);    break;
         // Commerce
-        case "marketplace":  mount("marketplace");      setShowMarketplace(true);      break;
+        case "marketplace":  mount("marketplace");      setShowMarketplace(true);      pushRoute("/marketplace"); break;
         case "buy":
         case "settings":     mount("vinkMobileApp");    setShowVinkMobileApp(true);    break;
         // Contact & Support
@@ -375,6 +375,7 @@ export default function App() {
     "Corporate:Account": "/corporate/account", "Corporate:Solutions & Credit Cards": "/corporate/solutions-credit-cards",
     "Corporate:Loan": "/corporate/loan", "Corporate:API": "/corporate/api", "Corporate:Events": "/corporate/events",
     "Corporate:Social Responsibility": "/corporate/social-responsibility",
+    "Marketplace": "/marketplace",
     "Contact Us": "/contact-us",
   };
 
@@ -457,7 +458,7 @@ export default function App() {
       if (section === "Personal")    { mount("personalLanding");     setShowPersonalLanding(true);     pushRoute("/personal"); }
       if (section === "Business")    { mount("bizAccountSelector");  setShowBusinessAccountSelector(true); pushRoute("/business/accounts"); }
       if (section === "Corporate")   { mount("corpLedger"); setCorporateLedgerCategory("account"); setShowCorporateLedger(true); pushRoute("/corporate/account"); }
-      if (section === "Marketplace") { mount("marketplace");         setShowMarketplace(true); }
+      if (section === "Marketplace") { mount("marketplace");         setShowMarketplace(true); pushRoute("/marketplace"); }
     });
   };
 
@@ -511,6 +512,7 @@ export default function App() {
       return true;
     }
     if (path === "/contact-us") { mount("contactUs"); setShowContactUs(true); return true; }
+    if (path === "/marketplace") { mount("marketplace"); setShowMarketplace(true); return true; }
     return false;
   };
 
@@ -635,7 +637,7 @@ export default function App() {
       {has("rideHailing")     && <Suspense fallback={null}><RideHailingSystem      isOpen={showRideHailing}     onClose={() => setShowRideHailing(false)} /></Suspense>}
       {has("banking")         && <Suspense fallback={null}><BankingDashboard       isOpen={showBanking}         onClose={() => setShowBanking(false)} /></Suspense>}
       {has("vehicle")         && <Suspense fallback={null}><VehicleTrackingDashboard isOpen={showVehicle}       onClose={() => setShowVehicle(false)} /></Suspense>}
-      {has("marketplace")     && <Suspense fallback={null}><VinkMarketplace        isOpen={showMarketplace}     onClose={() => setShowMarketplace(false)} /></Suspense>}
+      {has("marketplace")     && <Suspense fallback={null}><VinkMarketplace        isOpen={showMarketplace}     onClose={() => { setShowMarketplace(false); pushRoute("/"); }} /></Suspense>}
 
       {/* Personal products */}
       {has("personalLanding") && <Suspense fallback={null}><PersonalLandingViewer isOpen={showPersonalLanding} onClose={() => { setShowPersonalLanding(false); pushRoute("/"); }} onNavigate={(item) => { setShowPersonalLanding(false); handleSubNavClick(item); }} onApplyClick={() => openSelector("creditCard")} onSecurityClick={() => { mount("safetySecurity"); setShowSafetySecurity(true); }} /></Suspense>}
