@@ -36,6 +36,7 @@ const RideHailingSystem           = lazy(() => import("./components/RideHailingS
 const BankingDashboard            = lazy(() => import("./components/BankingDashboard").then(m => ({ default: m.BankingDashboard })));
 const VehicleTrackingDashboard    = lazy(() => import("./components/VehicleTrackingDashboard").then(m => ({ default: m.VehicleTrackingDashboard })));
 const VinkMarketplace             = lazy(() => import("./components/VinkMarketplace").then(m => ({ default: m.VinkMarketplace })));
+import { PersistentTopNav } from "./components/PersistentTopNav";
 const PersonalAccountViewer       = lazy(() => import("./components/PersonalAccountViewer").then(m => ({ default: m.PersonalAccountViewer })));
 const PersonalLandingViewer       = lazy(() => import("./components/PersonalLandingViewer").then(m => ({ default: m.PersonalLandingViewer })));
 const SafetySecurityViewer        = lazy(() => import("./components/footerPages/SafetySecurityViewer").then(m => ({ default: m.SafetySecurityViewer })));
@@ -417,11 +418,51 @@ export default function App() {
   const closeAllRoutedViewers = () => {
     setShowPersonalLanding(false);
     setShowPersonalAccount(false); setShowPersonalLedger(false);
+    setShowCreditCard(false); setShowCreditCardApp(false); setShowLoan(false); setShowInvest(false);
+    setShowInsure(false); setShowRewards(false); setShowInvestApp(false); setShowInsureApp(false);
+    setShowRewardsApp(false); setShowSIMServiceApp(false); setShowAccountApp(false); setShowClubBooking(false);
+    setSelectorOpen(false);
     setShowStartBusiness(false); setShowBusinessAccountSelector(false); setShowBusinessAccounts(false);
     setShowBusinessLedger(false); setShowManageBusiness(false); setShowBusinessInternational(false);
     setShowBusinessStudio(false); setShowBusinessNews(false);
     setShowCorporateLedger(false); setShowCorporateApi(false); setShowCorporateEvents(false); setShowCorporateCSR(false);
-    setShowContactUs(false);
+    setShowMarketplace(false);
+    setShowContactUs(false); setShowAboutVINK(false); setShowCareers(false); setShowNews(false);
+    setShowSwitchToVINK(false); setShowSafetySecurity(false); setShowInvestorRelations(false);
+    setShowTaxiAssociations(false); setShow500App(false);
+  };
+
+  // ── Persistent top nav (Personal/Business/Corporate/Marketplace) ─────────
+  // Shown above every full-screen site page so switching sections never
+  // requires backing out to the homepage first.
+  const activeSiteSection: "Personal" | "Business" | "Corporate" | "Marketplace" | null =
+    (showPersonalLanding || showPersonalAccount || showPersonalLedger || showCreditCard || showCreditCardApp ||
+     showLoan || showInvest || showInsure || showRewards || showInvestApp || showInsureApp || showRewardsApp ||
+     showSIMServiceApp || showAccountApp || showClubBooking) ? "Personal" :
+    (showStartBusiness || showBusinessAccountSelector || showBusinessAccounts || showBusinessLedger ||
+     showBusinessLoanApp || showManageBusiness || showBusinessInternational || showBusinessStudio || showBusinessNews)
+      ? "Business" :
+    (showCorporateLedger || showCorporateLoanApp || showCorporateApi || showCorporateEvents || showCorporateCSR ||
+     showInvestorRelations) ? "Corporate" :
+    showMarketplace ? "Marketplace" :
+    null;
+
+  const showPersistentNav =
+    activeSiteSection !== null || selectorOpen || showContactUs || showAboutVINK || showCareers || showNews ||
+    showSwitchToVINK || showSafetySecurity || showTaxiAssociations || show500App;
+
+  const goToSection = (section: "Personal" | "Business" | "Corporate" | "Marketplace") => {
+    startTransition(() => {
+      closeAllRoutedViewers();
+      if (section === "Personal")    { mount("personalLanding");     setShowPersonalLanding(true);     pushRoute("/personal"); }
+      if (section === "Business")    { mount("bizAccountSelector");  setShowBusinessAccountSelector(true); pushRoute("/business/accounts"); }
+      if (section === "Corporate")   { mount("corpLedger"); setCorporateLedgerCategory("account"); setShowCorporateLedger(true); pushRoute("/corporate/account"); }
+      if (section === "Marketplace") { mount("marketplace");         setShowMarketplace(true); }
+    });
+  };
+
+  const goHome = () => {
+    startTransition(() => { closeAllRoutedViewers(); pushRoute("/"); });
   };
 
   const openRoute = (path: string): boolean => {
@@ -534,8 +575,12 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className={`min-h-screen bg-white${showPersistentNav ? " has-persistent-nav" : ""}`}>
       <Toaster position="top-right" richColors closeButton duration={4000} />
+
+      {showPersistentNav && (
+        <PersistentTopNav active={activeSiteSection} onSelect={goToSection} onHome={goHome} />
+      )}
 
       {/* ── Homepage ────────────────────────────────────────────────────────── */}
       <ErrorBoundary>

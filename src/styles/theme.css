@@ -41,6 +41,16 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
+/* ── Persistent top nav (Personal/Business/Corporate/Marketplace) ──────────
+   When active, every full-screen "fixed inset-0" page (site pages, product
+   viewers, application forms, footer pages) is shifted down to clear the
+   52px strip instead of being hidden underneath it. Centred modals like the
+   login/help dialogs use the same fixed+inset-0 pattern but simply end up
+   52px shorter at the top, which is harmless. */
+.has-persistent-nav .fixed.inset-0 {
+  top: 52px !important;
+}
+
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);

@@ -3,7 +3,6 @@ import {
   X, ChevronRight, ChevronLeft, ArrowRight, Gift, Smartphone, Radio, Tag,
   Headphones, ShieldCheck, Wifi, Lock,
 } from "lucide-react";
-import vinkLogo from "../../imports/LOGO_FINAL.png";
 
 interface Props {
   isOpen: boolean;
@@ -127,19 +126,13 @@ export function PersonalLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
     <div className="fixed inset-0 z-50 overflow-y-auto bg-white" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
       {/* ── Top bar ── */}
       <div className="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-black/[0.06]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <img src={vinkLogo} alt="VINK" className="w-[110px] sm:w-[150px] h-auto object-contain" />
-            <nav className="hidden md:flex items-center gap-1">
-              <span className="px-3 py-1.5 rounded-lg text-sm font-semibold" style={{ color: VIOLET, background: "#F3F0FF" }}>Personal</span>
-            </nav>
-          </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-11 flex items-center justify-end">
           <button
             onClick={onClose}
-            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+            className="p-1.5 rounded-full hover:bg-gray-100 transition-colors"
             aria-label="Close"
           >
-            <X className="w-5 h-5 text-gray-500" />
+            <X className="w-4 h-4 text-gray-500" />
           </button>
         </div>
 
