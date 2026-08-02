@@ -1,10 +1,33 @@
-import { Router, Request, Response } from "express";
+import { Router, Request, Response, NextFunction } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { pool } from "../db/pool.js";
 import { requireAuth, requireRole, JWT_SECRET, JWT_EXPIRES } from "../middleware/auth.js";
 
 const MANAGER_ROLES = ["superadmin", "noc_engineer", "billing_admin", "marketplace_admin"] as const;
+
+// Only the account owner (or a marketplace manager) may read/write a
+// customer's own cart, wishlist, addresses, or stats — a valid login alone
+// isn't enough, the :userId in the URL must match the signed-in user.
+function requireSelf(req: Request, res: Response, next: NextFunction): void {
+  if (req.user!.userId !== req.params.userId && !MANAGER_ROLES.includes(req.user!.role as any)) {
+    res.status(403).json({ success: false, error: "You can only access your own account" });
+    return;
+  }
+  next();
+}
+
+// Only the seller who owns this store (or a marketplace manager) may manage
+// its products, orders, or profile.
+async function requireSellerOwner(req: Request, res: Response, next: NextFunction): Promise<void> {
+  if (MANAGER_ROLES.includes(req.user!.role as any)) { next(); return; }
+  const { rows } = await pool!.query(`SELECT user_id FROM mkt_sellers WHERE id = $1`, [req.params.id]);
+  if (!rows.length || rows[0].user_id !== req.user!.userId) {
+    res.status(403).json({ success: false, error: "You can only manage your own store" });
+    return;
+  }
+  next();
+}
 
 const router: ReturnType<typeof Router> = Router();
 
@@ -165,7 +188,7 @@ router.get("/products/:id", async (req: Request, res: Response): Promise<void> =
 });
 
 // ── CART ──────────────────────────────────────────────────────────────────────
-router.get("/cart/:userId", requireAuth, async (req: Request, res: Response): Promise<void> => {
+router.get("/cart/:userId", requireAuth, requireSelf, async (req: Request, res: Response): Promise<void> => {
   const { rows } = await pool!.query(`SELECT * FROM mkt_carts WHERE user_id = $1`, [req.params.userId]);
   res.json({ success: true, data: rows[0] ? cartRowToApi(rows[0]) : null });
 });
@@ -194,7 +217,7 @@ async function saveCart(cartId: string, items: any[], couponCode: string | null)
   return rows[0];
 }
 
-router.post("/cart/:userId/add", requireAuth, async (req: Request, res: Response): Promise<void> => {
+router.post("/cart/:userId/add", requireAuth, requireSelf, async (req: Request, res: Response): Promise<void> => {
   const { productId, variantId, quantity } = req.body;
   const { rows: productRows } = await pool!.query(
     `SELECT p.*, s.store_name AS seller_name FROM mkt_products p JOIN mkt_sellers s ON s.id = p.seller_id WHERE p.id::text = $1`, [productId]
@@ -206,13 +229,13 @@ router.post("/cart/:userId/add", requireAuth, async (req: Request, res: Response
   const items: any[] = cartRow.items;
   const existing = items.find(i => i.productId === productId && i.variantId === (variantId ?? null));
   if (existing) existing.quantity += (quantity ?? 1);
-  else items.push({ productId, variantId: variantId ?? null, quantity: quantity ?? 1, unitPrice: product.price, name: product.name, emoji: product.emoji, sellerName: product.sellerName, maxStock: product.stock });
+  else items.push({ productId, variantId: variantId ?? null, quantity: quantity ?? 1, unitPrice: product.price, name: product.name, emoji: product.emoji, sellerId: product.sellerId, sellerName: product.sellerName, maxStock: product.stock });
 
   const updated = await saveCart(cartRow.id, items, cartRow.coupon_code);
   res.json({ success: true, data: cartRowToApi(updated) });
 });
 
-router.patch("/cart/:userId/item/:productId", requireAuth, async (req: Request, res: Response): Promise<void> => {
+router.patch("/cart/:userId/item/:productId", requireAuth, requireSelf, async (req: Request, res: Response): Promise<void> => {
   const { rows } = await pool!.query(`SELECT * FROM mkt_carts WHERE user_id = $1`, [req.params.userId]);
   if (!rows.length) { res.status(404).json({ success: false, error: "Cart not found" }); return; }
   let items: any[] = rows[0].items;
@@ -223,7 +246,7 @@ router.patch("/cart/:userId/item/:productId", requireAuth, async (req: Request, 
   res.json({ success: true, data: cartRowToApi(updated) });
 });
 
-router.delete("/cart/:userId/item/:productId", requireAuth, async (req: Request, res: Response): Promise<void> => {
+router.delete("/cart/:userId/item/:productId", requireAuth, requireSelf, async (req: Request, res: Response): Promise<void> => {
   const { rows } = await pool!.query(`SELECT * FROM mkt_carts WHERE user_id = $1`, [req.params.userId]);
   if (!rows.length) { res.status(404).json({ success: false, error: "Cart not found" }); return; }
   const items = (rows[0].items as any[]).filter(i => i.productId !== req.params.productId);
@@ -231,7 +254,7 @@ router.delete("/cart/:userId/item/:productId", requireAuth, async (req: Request,
   res.json({ success: true, data: cartRowToApi(updated) });
 });
 
-router.post("/cart/:userId/coupon", requireAuth, async (req: Request, res: Response): Promise<void> => {
+router.post("/cart/:userId/coupon", requireAuth, requireSelf, async (req: Request, res: Response): Promise<void> => {
   const { rows } = await pool!.query(`SELECT * FROM mkt_carts WHERE user_id = $1`, [req.params.userId]);
   if (!rows.length) { res.status(404).json({ success: false, error: "Cart not found" }); return; }
   const { rows: couponRows } = await pool!.query(`SELECT * FROM mkt_coupons WHERE code = $1 AND active = true`, [String(req.body.code ?? "").toUpperCase()]);
@@ -245,7 +268,11 @@ router.post("/cart/:userId/coupon", requireAuth, async (req: Request, res: Respo
 
 // ── ORDERS ────────────────────────────────────────────────────────────────────
 router.get("/orders", requireAuth, async (req: Request, res: Response): Promise<void> => {
-  const { userId, status, page: pg, limit: lim } = req.query as Record<string, string>;
+  const { status, page: pg, limit: lim } = req.query as Record<string, string>;
+  const isManager = MANAGER_ROLES.includes(req.user!.role as any);
+  // Non-managers can only ever see their own orders — a userId query param
+  // from anyone else is ignored, not trusted.
+  const userId = isManager ? (req.query.userId as string | undefined) : req.user!.userId;
   const page = Math.max(1, Number(pg) || 1);
   const limit = Math.min(48, Number(lim) || 12);
   const where: string[] = []; const params: unknown[] = [];
@@ -263,18 +290,29 @@ router.get("/orders", requireAuth, async (req: Request, res: Response): Promise<
 router.get("/orders/:id", requireAuth, async (req: Request, res: Response): Promise<void> => {
   const { rows } = await pool!.query(`SELECT * FROM mkt_orders WHERE id::text = $1 OR order_number = $1`, [req.params.id]);
   if (!rows.length) { res.status(404).json({ success: false, error: "Order not found" }); return; }
-  res.json({ success: true, data: mapOrder(rows[0]) });
+  const order = rows[0];
+  const isManager = MANAGER_ROLES.includes(req.user!.role as any);
+  if (!isManager && order.user_id !== req.user!.userId) {
+    res.status(403).json({ success: false, error: "You can only view your own orders" });
+    return;
+  }
+  res.json({ success: true, data: mapOrder(order) });
 });
 
 router.post("/orders", requireAuth, async (req: Request, res: Response): Promise<void> => {
-  const { userId, addressId, paymentMethod } = req.body;
-  const { rows: cartRows } = await pool!.query(`SELECT * FROM mkt_carts WHERE user_id = $1`, [userId]);
+  const userId = req.user!.userId; // always the signed-in customer, never trusted from the body
+  const { addressId, paymentMethod } = req.body;
+  const [{ rows: cartRows }, { rows: userRows }] = await Promise.all([
+    pool!.query(`SELECT * FROM mkt_carts WHERE user_id = $1`, [userId]),
+    pool!.query(`SELECT email FROM users WHERE id = $1`, [userId]),
+  ]);
   const cart = cartRows[0];
   if (!cart || !cart.items.length) { res.status(400).json({ success: false, error: "Cart is empty" }); return; }
+  const customerEmail = userRows[0]?.email ?? "customer@example.com";
 
   const { rows: addrRows } = await pool!.query(
-    addressId ? `SELECT * FROM mkt_addresses WHERE id::text = $1` : `SELECT * FROM mkt_addresses LIMIT 1`,
-    addressId ? [addressId] : []
+    addressId ? `SELECT * FROM mkt_addresses WHERE id::text = $1 AND user_id = $2` : `SELECT * FROM mkt_addresses WHERE user_id = $1 LIMIT 1`,
+    addressId ? [addressId, userId] : [userId]
   );
   const addr = addrRows[0] ?? {};
 
@@ -282,7 +320,7 @@ router.post("/orders", requireAuth, async (req: Request, res: Response): Promise
   const orderNumber = `VNK-ORD-${String(100000 + countRows[0].n).padStart(6, "0")}`;
   const items = cart.items.map((i: any) => ({
     productId: i.productId, productName: i.name, emoji: i.emoji, variantId: i.variantId, variantLabel: null,
-    quantity: i.quantity, unitPrice: i.unitPrice, totalPrice: i.unitPrice * i.quantity, sellerId: "sel-01", sellerName: i.sellerName,
+    quantity: i.quantity, unitPrice: i.unitPrice, totalPrice: i.unitPrice * i.quantity, sellerId: i.sellerId ?? "sel-01", sellerName: i.sellerName,
   }));
   const shippingAddress = {
     label: "Home", firstName: addr.first_name ?? "Customer", lastName: addr.last_name ?? "", line1: addr.line1 ?? "",
@@ -295,7 +333,7 @@ router.post("/orders", requireAuth, async (req: Request, res: Response): Promise
        shipping_status, estimated_delivery, coupon_code, confirmed_at)
      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'ZAR','pending','paid',$11,$12,'not_shipped', now() + interval '5 days', $13, now())
      RETURNING *`,
-    [orderNumber, userId ?? "demo-customer-001", `${shippingAddress.firstName} ${shippingAddress.lastName}`, "customer@example.com",
+    [orderNumber, userId, `${shippingAddress.firstName} ${shippingAddress.lastName}`, customerEmail,
      JSON.stringify(items), cart.subtotal, cart.shipping, cart.tax, cart.coupon_discount, cart.total,
      paymentMethod ?? "card", JSON.stringify(shippingAddress), cart.coupon_code]
   );
@@ -324,7 +362,7 @@ router.post("/products/:id/reviews", requireAuth, async (req: Request, res: Resp
 });
 
 // ── WISHLIST ──────────────────────────────────────────────────────────────────
-router.get("/wishlist/:userId", requireAuth, async (req: Request, res: Response): Promise<void> => {
+router.get("/wishlist/:userId", requireAuth, requireSelf, async (req: Request, res: Response): Promise<void> => {
   const { rows } = await pool!.query(
     `SELECT p.*, s.store_name AS seller_name, c.name AS category_name FROM mkt_wishlist_items w
      JOIN mkt_products p ON p.id = w.product_id JOIN mkt_sellers s ON s.id = p.seller_id
@@ -333,14 +371,14 @@ router.get("/wishlist/:userId", requireAuth, async (req: Request, res: Response)
   res.json({ success: true, data: rows.map(r => mapProduct(r)), meta: { total: rows.length } });
 });
 
-router.post("/wishlist/:userId", requireAuth, async (req: Request, res: Response): Promise<void> => {
+router.post("/wishlist/:userId", requireAuth, requireSelf, async (req: Request, res: Response): Promise<void> => {
   const { rows } = await pool!.query(`SELECT 1 FROM mkt_wishlist_items WHERE user_id = $1 AND product_id = $2`, [req.params.userId, req.body.productId]);
   const exists = rows.length > 0;
   if (!exists) await pool!.query(`INSERT INTO mkt_wishlist_items (user_id, product_id) VALUES ($1,$2)`, [req.params.userId, req.body.productId]);
   res.json({ success: true, message: exists ? "Already in wishlist" : "Added to wishlist" });
 });
 
-router.delete("/wishlist/:userId/:productId", requireAuth, async (req: Request, res: Response): Promise<void> => {
+router.delete("/wishlist/:userId/:productId", requireAuth, requireSelf, async (req: Request, res: Response): Promise<void> => {
   await pool!.query(`DELETE FROM mkt_wishlist_items WHERE user_id = $1 AND product_id = $2`, [req.params.userId, req.params.productId]);
   res.json({ success: true });
 });
@@ -360,7 +398,7 @@ router.get("/sellers/:id", requireAuth, async (req: Request, res: Response): Pro
   res.json({ success: true, data: { seller: mapSeller(rows[0]), products: productRows.map(r => mapProduct(r)), orderCount: orderCountRows[0].n } });
 });
 
-router.get("/sellers/:id/analytics", requireAuth, async (req: Request, res: Response): Promise<void> => {
+router.get("/sellers/:id/analytics", requireAuth, requireSellerOwner, async (req: Request, res: Response): Promise<void> => {
   const { rows } = await pool!.query(`SELECT * FROM mkt_sellers WHERE id = $1`, [req.params.id]);
   if (!rows.length) { res.status(404).json({ success: false, error: "Seller not found" }); return; }
   const { rows: productRows } = await pool!.query(`SELECT p.*, s.store_name AS seller_name, c.name AS category_name FROM mkt_products p JOIN mkt_sellers s ON s.id=p.seller_id JOIN mkt_categories c ON c.id=p.category_id WHERE p.seller_id = $1`, [req.params.id]);
@@ -372,7 +410,7 @@ router.get("/sellers/:id/analytics", requireAuth, async (req: Request, res: Resp
   res.json({ success: true, data: { seller: mapSeller(rows[0]), products, revenue, topProducts: products.slice(0, 3).map(p => ({ id: p.id, name: p.name, emoji: p.emoji, sold: p.totalSold, revenue: p.totalSold * p.price })) } });
 });
 
-router.patch("/sellers/:id", requireAuth, async (req: Request, res: Response): Promise<void> => {
+router.patch("/sellers/:id", requireAuth, requireSellerOwner, async (req: Request, res: Response): Promise<void> => {
   const { storeName, description, logoUrl, bannerUrl, phone } = req.body;
   const sets: string[] = []; const vals: unknown[] = [];
   const push = (col: string, val: unknown) => { if (val !== undefined) { vals.push(val); sets.push(`${col} = $${vals.length}`); } };
@@ -408,6 +446,16 @@ router.get("/admin/orders", requireAuth, requireRole(...MANAGER_ROLES), async (r
 });
 
 router.patch("/admin/orders/:id/status", requireAuth, requireRole(...MANAGER_ROLES, "seller"), async (req: Request, res: Response): Promise<void> => {
+  const isManager = MANAGER_ROLES.includes(req.user!.role as any);
+  if (!isManager) {
+    // Sellers may only advance orders that actually contain one of their own products.
+    const { rows: sellerRows } = await pool!.query(`SELECT id FROM mkt_sellers WHERE user_id = $1`, [req.user!.userId]);
+    const sellerId = sellerRows[0]?.id;
+    const { rows: ownedOrder } = await pool!.query(
+      `SELECT 1 FROM mkt_orders WHERE id::text = $1 AND items::text LIKE $2`, [req.params.id, `%"sellerId":"${sellerId}"%`]
+    );
+    if (!sellerId || !ownedOrder.length) { res.status(403).json({ success: false, error: "You can only update orders containing your own products" }); return; }
+  }
   const { rows } = await pool!.query(
     `UPDATE mkt_orders SET status = $1, tracking_number = COALESCE($2, tracking_number) WHERE id::text = $3 RETURNING *`,
     [req.body.status, req.body.trackingNumber ?? null, req.params.id]
@@ -428,12 +476,12 @@ router.patch("/admin/products/:id/approve", requireAuth, requireRole(...MANAGER_
 });
 
 // ── ADDRESSES ─────────────────────────────────────────────────────────────────
-router.get("/addresses/:userId", requireAuth, async (req: Request, res: Response): Promise<void> => {
+router.get("/addresses/:userId", requireAuth, requireSelf, async (req: Request, res: Response): Promise<void> => {
   const { rows } = await pool!.query(`SELECT * FROM mkt_addresses WHERE user_id = $1`, [req.params.userId]);
   res.json({ success: true, data: rows.map(mapAddress) });
 });
 
-router.post("/addresses/:userId", requireAuth, async (req: Request, res: Response): Promise<void> => {
+router.post("/addresses/:userId", requireAuth, requireSelf, async (req: Request, res: Response): Promise<void> => {
   const { label, firstName, lastName, line1, line2, city, state, postalCode, country, phone, isDefault } = req.body;
   if (!firstName || !lastName || !line1 || !city || !postalCode || !phone) {
     res.status(400).json({ success: false, error: "firstName, lastName, line1, city, postalCode and phone are required" });
@@ -448,13 +496,13 @@ router.post("/addresses/:userId", requireAuth, async (req: Request, res: Respons
   res.status(201).json({ success: true, data: mapAddress(rows[0]) });
 });
 
-router.delete("/addresses/:userId/:addressId", requireAuth, async (req: Request, res: Response): Promise<void> => {
+router.delete("/addresses/:userId/:addressId", requireAuth, requireSelf, async (req: Request, res: Response): Promise<void> => {
   await pool!.query(`DELETE FROM mkt_addresses WHERE id::text = $1 AND user_id = $2`, [req.params.addressId, req.params.userId]);
   res.json({ success: true });
 });
 
 // ── CUSTOMER DASHBOARD ───────────────────────────────────────────────────────
-router.get("/customers/:userId/stats", requireAuth, async (req: Request, res: Response): Promise<void> => {
+router.get("/customers/:userId/stats", requireAuth, requireSelf, async (req: Request, res: Response): Promise<void> => {
   const userId = req.params.userId;
   const { rows: statusRows } = await pool!.query(
     `SELECT status, COUNT(*)::int AS n FROM mkt_orders WHERE user_id = $1 GROUP BY status`, [userId]
@@ -486,7 +534,7 @@ router.get("/customers/:userId/stats", requireAuth, async (req: Request, res: Re
   });
 });
 
-router.get("/customers/:userId/spending", requireAuth, async (req: Request, res: Response): Promise<void> => {
+router.get("/customers/:userId/spending", requireAuth, requireSelf, async (req: Request, res: Response): Promise<void> => {
   const userId = req.params.userId;
   const { rows: monthly } = await pool!.query(
     `SELECT to_char(placed_at, 'Mon') AS month, date_trunc('month', placed_at) AS m, SUM(total_amount)::float AS total
@@ -556,14 +604,14 @@ router.post("/sellers/register", async (req: Request, res: Response): Promise<vo
 });
 
 // ── SELLER: my orders / my products (CRUD) ──────────────────────────────────
-router.get("/sellers/:id/orders", requireAuth, async (req: Request, res: Response): Promise<void> => {
+router.get("/sellers/:id/orders", requireAuth, requireSellerOwner, async (req: Request, res: Response): Promise<void> => {
   const { rows } = await pool!.query(
     `SELECT * FROM mkt_orders WHERE items::text LIKE $1 ORDER BY placed_at DESC`, [`%"sellerId":"${req.params.id}"%`]
   );
   res.json({ success: true, data: rows.map(mapOrder), meta: { total: rows.length } });
 });
 
-router.post("/sellers/:id/products", requireAuth, async (req: Request, res: Response): Promise<void> => {
+router.post("/sellers/:id/products", requireAuth, requireSellerOwner, async (req: Request, res: Response): Promise<void> => {
   const { categoryId, name, shortDescription, description, price, compareAtPrice, stock, sku, brand, tags, attributes, emoji, images } = req.body;
   if (!categoryId || !name || !price) { res.status(400).json({ success: false, error: "categoryId, name and price are required" }); return; }
   const slug = `${String(name).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}-${Date.now().toString(36)}`;
@@ -577,7 +625,7 @@ router.post("/sellers/:id/products", requireAuth, async (req: Request, res: Resp
   res.status(201).json({ success: true, data: mapProduct(rows[0]), message: "Product submitted — it will appear once approved by the marketplace team." });
 });
 
-router.patch("/sellers/:id/products/:productId", requireAuth, async (req: Request, res: Response): Promise<void> => {
+router.patch("/sellers/:id/products/:productId", requireAuth, requireSellerOwner, async (req: Request, res: Response): Promise<void> => {
   const { rows: existing } = await pool!.query(`SELECT * FROM mkt_products WHERE id::text = $1 AND seller_id = $2`, [req.params.productId, req.params.id]);
   if (!existing.length) { res.status(404).json({ success: false, error: "Product not found" }); return; }
   const fields = ["name","shortDescription","description","price","compareAtPrice","stock","sku","brand","emoji"] as const;
@@ -592,7 +640,7 @@ router.patch("/sellers/:id/products/:productId", requireAuth, async (req: Reques
   res.json({ success: true, data: mapProduct(rows[0]) });
 });
 
-router.delete("/sellers/:id/products/:productId", requireAuth, async (req: Request, res: Response): Promise<void> => {
+router.delete("/sellers/:id/products/:productId", requireAuth, requireSellerOwner, async (req: Request, res: Response): Promise<void> => {
   await pool!.query(`UPDATE mkt_products SET status = 'inactive', updated_at = now() WHERE id::text = $1 AND seller_id = $2`, [req.params.productId, req.params.id]);
   res.json({ success: true });
 });

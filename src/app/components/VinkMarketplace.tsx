@@ -1057,7 +1057,7 @@ function CheckoutView({ cart, addresses, onBack, onComplete }: {
     setPlacing(true);
     try {
       const { mktOrders: api } = await import("../services/marketplaceApi");
-      const res = await api.place({ userId: "demo-customer-001", cartId: "cart-demo", addressId: (addresses[selAddr] as R)?.id, shippingMethod: shipping, paymentMethod: payment });
+      const res = await api.place({ addressId: (addresses[selAddr] as R)?.id, shippingMethod: shipping, paymentMethod: payment });
       setStep("confirmation");
       onComplete(res.data as R);
     } finally { setPlacing(false); }
