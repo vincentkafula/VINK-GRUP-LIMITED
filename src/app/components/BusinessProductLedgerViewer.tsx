@@ -63,11 +63,11 @@ const PRODUCTS: Record<BizCategory, BizProduct[]> = {
   ],
 };
 
-const PAGE_COPY: Record<BizCategory, { heading: string; tag: string; scaleNote: string; detailsCta: string }> = {
-  creditCard: { heading: "All business credit cards", tag: "Business Banking · Credit Cards", scaleNote: "Monthly card fee shown on a shared scale, R0 → R415", detailsCta: "See card details" },
-  loan:       { heading: "All business loans",         tag: "Business Banking · Loans",        scaleNote: "Admin / monthly fee shown on a shared scale, R0 → R415", detailsCta: "See loan details" },
-  insure:     { heading: "All business insurance",     tag: "Business Banking · Insure",       scaleNote: "Monthly premium / admin fee shown on a shared scale, R0 → R415", detailsCta: "See cover details" },
-  invest:     { heading: "All business investment accounts", tag: "Business Banking · Invest", scaleNote: "Admin fee shown on a shared scale, R0 → R415", detailsCta: "See account details" },
+const PAGE_COPY: Record<BizCategory, { heading: string; tag: string; scaleNote: string; detailsCta: string; heroEyebrow: string; heroTitle: string; heroSubtitle: string }> = {
+  creditCard: { heading: "All business credit cards", tag: "Business Banking · Credit Cards", scaleNote: "Monthly card fee shown on a shared scale, R0 → R415", detailsCta: "See card details", heroEyebrow: "Business Credit Cards", heroTitle: "Credit cards built for\nhow your business spends.", heroSubtitle: "From day-to-day expenses to team spending — find the card that fits your business." },
+  loan:       { heading: "All business loans",         tag: "Business Banking · Loans",        scaleNote: "Admin / monthly fee shown on a shared scale, R0 → R415", detailsCta: "See loan details", heroEyebrow: "Business Loans", heroTitle: "Funding that moves\nas fast as your business.", heroSubtitle: "Quick approvals and clear terms — access capital on your timeline." },
+  insure:     { heading: "All business insurance",     tag: "Business Banking · Insure",       scaleNote: "Monthly premium / admin fee shown on a shared scale, R0 → R415", detailsCta: "See cover details", heroEyebrow: "Business Insurance", heroTitle: "Protection built around\nyour operations.", heroSubtitle: "Cover that's easy to understand and even easier to claim on, when you need it." },
+  invest:     { heading: "All business investment accounts", tag: "Business Banking · Invest", scaleNote: "Admin fee shown on a shared scale, R0 → R415", detailsCta: "See account details", heroEyebrow: "Business Investment", heroTitle: "Put surplus cash\nto work.", heroSubtitle: "Investment and treasury accounts built for businesses of every size." },
 };
 
 function parsePrice(price: string): number | null {
@@ -266,6 +266,16 @@ export function BusinessProductLedgerViewer({ isOpen, onClose, initialCategory, 
           })}
         </div>
       </nav>
+
+      <div className="relative overflow-hidden" style={{ background: "linear-gradient(160deg,#FAFCFB 0%,#F3F9F5 100%)" }}>
+        <div className="absolute -left-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: "linear-gradient(180deg,#0F8A4B,#FF7A1A)", filter: "blur(60px)" }} />
+        <div className="absolute -right-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: "linear-gradient(180deg,#FF7A1A,#0F8A4B)", filter: "blur(60px)" }} />
+        <div className="relative max-w-6xl mx-auto px-8 py-14 sm:py-16">
+          <span className="inline-block text-[11px] font-bold tracking-[0.14em] uppercase mb-3" style={{ color: "#FF7A1A" }}>{copy.heroEyebrow}</span>
+          <h1 className="text-3xl sm:text-4xl font-black leading-[1.1] text-gray-900 whitespace-pre-line">{copy.heroTitle}</h1>
+          <p className="text-gray-500 text-sm sm:text-base mt-4 max-w-lg">{copy.heroSubtitle}</p>
+        </div>
+      </div>
 
       <section className="pav-ledger-section">
         <div className="pav-wrap">

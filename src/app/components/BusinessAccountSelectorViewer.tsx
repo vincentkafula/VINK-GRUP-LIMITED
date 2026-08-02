@@ -205,6 +205,16 @@ export function BusinessAccountSelectorViewer({ isOpen, onClose, onNavigate, onA
         </div>
       </nav>
 
+      <div className="relative overflow-hidden" style={{ background: "linear-gradient(160deg,#FAFCFB 0%,#F3F9F5 100%)" }}>
+        <div className="absolute -left-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: "linear-gradient(180deg,#0F8A4B,#FF7A1A)", filter: "blur(60px)" }} />
+        <div className="absolute -right-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: "linear-gradient(180deg,#FF7A1A,#0F8A4B)", filter: "blur(60px)" }} />
+        <div className="relative max-w-6xl mx-auto px-8 py-14 sm:py-16">
+          <span className="inline-block text-[11px] font-bold tracking-[0.14em] uppercase mb-3" style={{ color: "#FF7A1A" }}>Business Banking</span>
+          <h1 className="text-3xl sm:text-4xl font-black leading-[1.1] text-gray-900">Banking designed for<br />every South African business.</h1>
+          <p className="text-gray-500 text-sm sm:text-base mt-4 max-w-lg">Open a business account in minutes and manage your finances with the Vink app.</p>
+        </div>
+      </div>
+
       <section className="pav-ledger-section">
         <div className="pav-wrap">
           <div className="pav-ledger-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: "12px" }}>

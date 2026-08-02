@@ -23,14 +23,14 @@ const SUB_NAV: { label: string; category: ProductCategory }[] = [
   { label: "Rewards",     category: "rewards" },
 ];
 
-const PAGE_COPY: Record<ProductCategory, { heading: string; scaleNote: string; detailsCta: string }> = {
-  account:    { heading: "All personal accounts",   scaleNote: "Monthly turnover ceiling shown on a shared scale, R5k → R500m", detailsCta: "See account details" },
-  creditCard: { heading: "All personal credit cards", scaleNote: "Monthly card fee shown on a shared scale, R0 → R415",          detailsCta: "See card details" },
-  loan:       { heading: "All personal loans",       scaleNote: "Application / admin fee shown on a shared scale, R0 → R415",   detailsCta: "See loan details" },
-  invest:     { heading: "All investment products",  scaleNote: "Entry cost or rate varies by product type",                    detailsCta: "See investment details" },
-  insure:     { heading: "All insurance cover",      scaleNote: "Monthly premium or admin fee shown on a shared scale, R0 → R415", detailsCta: "See cover details" },
-  rewards:    { heading: "All rewards cards",        scaleNote: "Monthly card fee shown on a shared scale, R0 → R415",          detailsCta: "See card details" },
-  sim: { heading: "", scaleNote: "", detailsCta: "" },
+const PAGE_COPY: Record<ProductCategory, { heading: string; scaleNote: string; detailsCta: string; heroEyebrow: string; heroTitle: string; heroSubtitle: string }> = {
+  account:    { heading: "All personal accounts",   scaleNote: "Monthly turnover ceiling shown on a shared scale, R5k → R500m", detailsCta: "See account details", heroEyebrow: "Personal Banking", heroTitle: "Banking designed for\nevery South African.", heroSubtitle: "Open an account in minutes and manage your money with the Vink app." },
+  creditCard: { heading: "All personal credit cards", scaleNote: "Monthly card fee shown on a shared scale, R0 → R415",          detailsCta: "See card details", heroEyebrow: "Credit Cards", heroTitle: "Credit cards built for\nhow you spend.", heroSubtitle: "From everyday essentials to premium rewards — find the card that fits your life." },
+  loan:       { heading: "All personal loans",       scaleNote: "Application / admin fee shown on a shared scale, R0 → R415",   detailsCta: "See loan details", heroEyebrow: "Loans", heroTitle: "Loans that move\nas fast as you do.", heroSubtitle: "Quick approvals and clear terms — borrow with confidence, on your timeline." },
+  invest:     { heading: "All investment products",  scaleNote: "Entry cost or rate varies by product type",                    detailsCta: "See investment details", heroEyebrow: "Invest", heroTitle: "Grow your wealth\nwith confidence.", heroSubtitle: "Investment products for every goal, from your first fund to long-term wealth." },
+  insure:     { heading: "All insurance cover",      scaleNote: "Monthly premium or admin fee shown on a shared scale, R0 → R415", detailsCta: "See cover details", heroEyebrow: "Insure", heroTitle: "Protection for\nwhat matters most.", heroSubtitle: "Cover that's easy to understand and even easier to claim on, when you need it." },
+  rewards:    { heading: "All rewards cards",        scaleNote: "Monthly card fee shown on a shared scale, R0 → R415",          detailsCta: "See card details", heroEyebrow: "Rewards", heroTitle: "Get more out of\neveryday banking.", heroSubtitle: "Earn on every swipe and unlock offers built around how you already spend." },
+  sim: { heading: "", scaleNote: "", detailsCta: "", heroEyebrow: "", heroTitle: "", heroSubtitle: "" },
 };
 
 function parsePrice(price: string): number | null {
@@ -245,6 +245,16 @@ export function PersonalProductLedgerViewer({ isOpen, onClose, initialCategory, 
           ))}
         </div>
       </nav>
+
+      <div className="relative overflow-hidden" style={{ background: "linear-gradient(160deg,#FAFCFB 0%,#F3F9F5 100%)" }}>
+        <div className="absolute -left-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: "linear-gradient(180deg,#0F8A4B,#FF7A1A)", filter: "blur(60px)" }} />
+        <div className="absolute -right-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: "linear-gradient(180deg,#FF7A1A,#0F8A4B)", filter: "blur(60px)" }} />
+        <div className="relative max-w-6xl mx-auto px-8 py-14 sm:py-16">
+          <span className="inline-block text-[11px] font-bold tracking-[0.14em] uppercase mb-3" style={{ color: "#FF7A1A" }}>{copy.heroEyebrow}</span>
+          <h1 className="text-3xl sm:text-4xl font-black leading-[1.1] text-gray-900 whitespace-pre-line">{copy.heroTitle}</h1>
+          <p className="text-gray-500 text-sm sm:text-base mt-4 max-w-lg">{copy.heroSubtitle}</p>
+        </div>
+      </div>
 
       <section className="pav-ledger-section">
         <div className="pav-wrap">

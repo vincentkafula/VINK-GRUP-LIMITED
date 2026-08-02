@@ -202,10 +202,10 @@ const SECTIONS: Record<CorpCategory, Section[]> = {
 ],
 };
 
-const PAGE_COPY: Record<CorpCategory, { heading: string; tag: string; detailsCta: string }> = {
-  account:   { heading: "All corporate accounts",        tag: "Corporate Banking · Account",                 detailsCta: "See account details" },
-  solutions: { heading: "All corporate credit solutions", tag: "Corporate Banking · Solutions & Credit Cards", detailsCta: "See card details" },
-  loan:      { heading: "All corporate loans",            tag: "Corporate Banking · Loan",                    detailsCta: "See loan details" },
+const PAGE_COPY: Record<CorpCategory, { heading: string; tag: string; detailsCta: string; heroEyebrow: string; heroTitle: string; heroSubtitle: string }> = {
+  account:   { heading: "All corporate accounts",        tag: "Corporate Banking · Account",                 detailsCta: "See account details", heroEyebrow: "Corporate Banking", heroTitle: "Banking built for\norganizations that shape the future.", heroSubtitle: "From your first corporate account to institutional-grade treasury — one platform that grows with you." },
+  solutions: { heading: "All corporate credit solutions", tag: "Corporate Banking · Solutions & Credit Cards", detailsCta: "See card details", heroEyebrow: "Corporate Credit Solutions", heroTitle: "Credit built for\nenterprise-scale spending.", heroSubtitle: "Card programs and credit facilities designed around how your organization actually operates." },
+  loan:      { heading: "All corporate loans",            tag: "Corporate Banking · Loan",                    detailsCta: "See loan details", heroEyebrow: "Corporate Loans", heroTitle: "Capital that moves\nat enterprise speed.", heroSubtitle: "Structured financing and clear terms — access capital on the timeline your organization needs." },
 };
 
 function parsePrice(price: string): number | null {
@@ -451,6 +451,16 @@ export function CorporateProductLedgerViewer({ isOpen, onClose, initialCategory,
           })}
         </div>
       </nav>
+
+      <div className="relative overflow-hidden" style={{ background: "linear-gradient(160deg,#FAFCFB 0%,#F3F9F5 100%)" }}>
+        <div className="absolute -left-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: "linear-gradient(180deg,#0F8A4B,#FF7A1A)", filter: "blur(60px)" }} />
+        <div className="absolute -right-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: "linear-gradient(180deg,#FF7A1A,#0F8A4B)", filter: "blur(60px)" }} />
+        <div className="relative max-w-6xl mx-auto px-8 py-14 sm:py-16">
+          <span className="inline-block text-[11px] font-bold tracking-[0.14em] uppercase mb-3" style={{ color: "#FF7A1A" }}>{copy.heroEyebrow}</span>
+          <h1 className="text-3xl sm:text-4xl font-black leading-[1.1] text-gray-900 whitespace-pre-line">{copy.heroTitle}</h1>
+          <p className="text-gray-500 text-sm sm:text-base mt-4 max-w-lg">{copy.heroSubtitle}</p>
+        </div>
+      </div>
 
       <section className="pav-ledger-section">
         <div className="pav-wrap">
