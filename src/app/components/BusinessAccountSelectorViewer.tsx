@@ -95,18 +95,18 @@ export function BusinessAccountSelectorViewer({ isOpen, onClose, onNavigate, onA
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
         .pav-root{
-          --pav-ink:        #1D1740;
-          --pav-ink-soft:   #2A2358;
-          --pav-paper:      #F2EFF9;
-          --pav-paper-dim:  #E7E2F3;
-          --pav-gold:       #C6A15B;
-          --pav-gold-dim:   #9C7F49;
-          --pav-plum:       #6B4FA0;
+          --pav-ink:        #FF7A1A;
+          --pav-ink-soft:   #1F2937;
+          --pav-paper:      #FAFCFB;
+          --pav-paper-dim:  #F0F7F2;
+          --pav-gold:       #0F8A4B;
+          --pav-gold-dim:   #0B5C2E;
+          --pav-plum:       #0F8A4B;
           --pav-text-on-ink: #EDE9FA;
           --pav-text-muted-on-ink: #A79CD1;
-          --pav-text-body:  #2A2140;
-          --pav-text-muted: #6E6690;
-          --pav-rule:       rgba(29,23,64,0.14);
+          --pav-text-body:  #1F2937;
+          --pav-text-muted: #6B7280;
+          --pav-rule:       rgba(15,138,75,0.14);
           --pav-rule-on-ink: rgba(237,233,250,0.18);
           background: var(--pav-paper);
           color: var(--pav-text-body);
