@@ -93,9 +93,9 @@ const SERVICE_CONFIG: Record<ServiceType, {
 type FormState = Record<string, string>;
 
 const ACCOUNT_TYPES = [
-  "Clear Access Account (R0/month)", "Everyday Checking Account (R0/month)",
-  "Prime Checking Account (R85/month)", "Premier Checking Account (R170/month)",
-  "Grain Account (R265/month)", "Animal Account (R415/month)",
+  "Spark Account (R0/month)", "Anchor Account (R0/month)",
+  "Momentum Account (R85/month)", "Horizon Account (R170/month)",
+  "Summit Account (R265/month)", "Legacy Account (R415/month)",
 ];
 
 const INVEST_PRODUCTS = [

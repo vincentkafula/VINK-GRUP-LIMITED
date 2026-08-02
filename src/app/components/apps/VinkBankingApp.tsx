@@ -53,7 +53,7 @@ function HomeScreen() {
 
       {/* Balance card */}
       <div className="mx-3 -mt-1 rounded-2xl p-5 shadow-xl" style={{ background: `linear-gradient(135deg, ${PURPLE}, #3B1A6E)` }}>
-        <p className="text-white/60 text-xs">Vink Grain Account</p>
+        <p className="text-white/60 text-xs">Vink Summit Account</p>
         <p className="text-white text-[28px] font-bold tracking-tight mt-1">R 12,847.50</p>
         <p className="text-white/50 text-xs mt-0.5">****  ****  ****  3421</p>
         <div className="flex items-center justify-between mt-4">
@@ -269,7 +269,7 @@ function CardsScreen() {
           <div className="flex justify-between items-start">
             <div>
               <p className="text-[10px] font-bold tracking-widest" style={{ color: GOLD }}>VINK</p>
-              <p className="text-white/60 text-[9px] mt-0.5">Grain Account</p>
+              <p className="text-white/60 text-[9px] mt-0.5">Summit Account</p>
             </div>
             <div className="text-right">
               <p className="text-white/40 text-[9px]">VISA</p>

@@ -20,8 +20,8 @@ const SUB_NAV = ["Account", "Credit Card", "Loan", "Invest", "Insure", "Rewards"
 const ROW1: Account[] = [
   {
     folio: "01",
-    name: "Clear Access Account",
-    desc: "Straightforward day-to-day banking, no monthly fee attached.",
+    name: "Spark Account",
+    desc: "Entry-level account — straightforward day-to-day banking, no monthly fee attached.",
     ceilingLabel: "R1.5m ceiling",
     ceilingPct: 49.6,
     price: "R0",
@@ -29,8 +29,8 @@ const ROW1: Account[] = [
   },
   {
     folio: "02",
-    name: "Everyday Checking Account",
-    desc: "More room to move each month, still free to hold.",
+    name: "Anchor Account",
+    desc: "Standard everyday account — more room to move each month, still free to hold.",
     ceilingLabel: "R5m ceiling",
     ceilingPct: 59.2,
     price: "R0",
@@ -38,8 +38,8 @@ const ROW1: Account[] = [
   },
   {
     folio: "03",
-    name: "Prime Checking Account",
-    desc: "Built for accounts that carry serious monthly volume.",
+    name: "Momentum Account",
+    desc: "Rewards account — built for accounts that carry serious monthly volume.",
     ceilingLabel: "R500m ceiling",
     ceilingPct: 96.3,
     price: "R85",
@@ -50,8 +50,8 @@ const ROW1: Account[] = [
 const ROW2: Account[] = [
   {
     folio: "04",
-    name: "Premier Checking Account",
-    desc: "A tighter turnover band, geared to lower-volume activity.",
+    name: "Horizon Account",
+    desc: "Savings-focused account — a tighter turnover band, geared to lower-volume activity.",
     features: [
       "Free online banking and NotifyMe alerts",
       "Suitable for all business segments and sectors",
@@ -64,8 +64,8 @@ const ROW2: Account[] = [
   },
   {
     folio: "05",
-    name: "Grain Account",
-    desc: "Built for sole proprietors who need room to grow.",
+    name: "Summit Account",
+    desc: "Premium account — built for sole proprietors who need room to grow.",
     features: [
       "35 electronic transactions included",
       "10 cash deposits/withdrawals at any VINK ATM, capped at R50,000/month",
@@ -80,8 +80,8 @@ const ROW2: Account[] = [
   },
   {
     folio: "06",
-    name: "Animal Account",
-    desc: "The highest-capacity personal account, for all business segments and sectors.",
+    name: "Legacy Account",
+    desc: "Wealth management account — the highest-capacity personal account, for all business segments and sectors.",
     features: [
       "60 electronic transactions included",
       "15 cash deposits/withdrawals at any VINK ATM, capped at R100,000/month",

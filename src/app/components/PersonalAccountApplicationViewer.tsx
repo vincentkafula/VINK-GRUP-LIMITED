@@ -466,7 +466,7 @@ function Step5({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () 
 
 // ─── Step 6 — Services ───────────────────────────────────────────────────────
 function Step6({ onNext, onBack, submitting }: { onNext: (data: Record<string, string>) => void; onBack: () => void; submitting?: boolean }) {
-  const [accountType, setAccountType] = useState("Clear Access Account");
+  const [accountType, setAccountType] = useState("Spark Account");
   const [cardType, setCardType] = useState("Debit Card (free)");
   const [services, setServices] = useState<Record<string, boolean>>({
     internetBanking: true, mobileApp: true, smsAlerts: true, debitCard: true,
@@ -497,7 +497,7 @@ function Step6({ onNext, onBack, submitting }: { onNext: (data: Record<string, s
       <SectionHead title="Select Services" sub="Section 6 — Choose your account type and activate optional services" />
       <div className="grid sm:grid-cols-2 gap-4">
         <SelectField label="Account type" value={accountType} onChange={setAccountType}
-          options={["Clear Access Account","Everyday Checking Account","Prime Checking Account","Premier Checking Account","Grain Account","Animal Account"]}
+          options={["Spark Account","Anchor Account","Momentum Account","Horizon Account","Summit Account","Legacy Account"]}
           required />
         <SelectField label="Card preference" value={cardType} onChange={setCardType}
           options={["Debit Card (free)","Prepaid Card","Virtual Card only","No card"]}
