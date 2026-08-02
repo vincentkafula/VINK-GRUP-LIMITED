@@ -12,7 +12,10 @@ interface Props {
   onNavigate: (item: NavItem) => void;
 }
 
-interface CardData { name: string; price: string; featured?: boolean; features: string[] }
+interface CardData {
+  name: string; price: string; featured?: boolean; features: string[];
+  tagline?: string; overview?: string; idealFor?: string[]; inheritsFrom?: string;
+}
 interface Section { label: string; cards: CardData[] }
 
 const SUB_NAV: NavItem[] = ["Account", "Solutions & Credit Cards", "Loan", "API", "Events", "Social Responsibility"];
@@ -26,12 +29,53 @@ const SECTIONS: Record<CorpCategory, Section[]> = {
   {
     label: "Corporate Accounts",
     cards: [
-      { name: "Pillar Corporate",   price: "R0",   featured: false, features: ["RTGS same-day settlements across all business units", "Multi-site payment management", "Dedicated relationship manager", "Free online banking and NotifyMe alerts"] },
-      { name: "Keystone Corporate", price: "R0",   featured: false, features: ["Milestone-based payment releases", "Multi-project sub-account structure", "Bulk payment processing", "SAP and Oracle banking system integration"] },
-      { name: "Summit Corporate",   price: "R85",  featured: false, features: ["Supply chain financing and debtor management", "Purchase order finance", "EFT batch upload for 1,000+ supplier payments", "Retention account management"] },
-      { name: "Frontier Corporate", price: "R170", featured: false, features: ["FOREX and multi-currency settlement", "Cross-border trade finance", "Excon-compliant export payment processing", "Marine and aviation asset finance available"] },
-      { name: "Titan Corporate",    price: "R265", featured: true,  features: ["Multi-site payment management for large operations", "Royalty and dividend disbursement processing", "Compliance reporting for regulated sectors", "Dedicated sector desk", "FOREX for cross-border operations"] },
-      { name: "Sovereign Corporate",price: "R415", featured: false, features: ["Infrastructure and utility-scale project milestone payments", "Ring-fenced maintenance reserve accounts", "Bulk municipal and multi-entity payment processing", "Dedicated executive relationship team"] },
+      {
+        name: "Foundation Corporate", price: "R0", featured: false,
+        features: ["Corporate current account with multi-user access", "Secure domestic and international payments", "Bulk salary and supplier payments", "Cash flow dashboard"],
+        tagline: "Built on Strength.",
+        overview: "The Foundation Corporate Account is the ideal starting point for established organizations seeking secure, reliable, and efficient corporate banking. It provides the essential tools to manage day-to-day operations, streamline payments, and maintain complete visibility over corporate finances.",
+        idealFor: ["Established companies", "Non-profit organizations", "Educational institutions", "Government agencies", "Medium to large enterprises"],
+      },
+      {
+        name: "Apex Corporate", price: "R85", featured: false,
+        features: ["Higher transaction limits", "Advanced payroll processing", "Treasury management tools", "Multi-currency accounts", "Dedicated relationship manager"],
+        tagline: "Leading Business Forward.",
+        overview: "The Apex Corporate Account is designed for organizations experiencing growth and increasing financial complexity. With enhanced payment capabilities, treasury tools, and higher transaction limits, Apex helps businesses operate more efficiently while supporting strategic expansion.",
+        idealFor: ["National businesses", "Manufacturing companies", "Healthcare organizations", "Retail chains", "Regional corporations"],
+        inheritsFrom: "Foundation",
+      },
+      {
+        name: "Vertex Corporate", price: "R170", featured: false,
+        features: ["Multi-company account management", "Branch and subsidiary dashboards", "Multi-level payment approvals", "AI-powered financial insights", "ERP integration"],
+        tagline: "Where Strategy Meets Growth.",
+        overview: "The Vertex Corporate Account empowers organizations managing multiple business units, subsidiaries, or regional operations. It offers centralized financial control, intelligent reporting, and advanced approval workflows that simplify complex business structures.",
+        idealFor: ["Holding companies", "Franchise businesses", "Multi-branch organizations", "Logistics companies", "Corporate groups"],
+        inheritsFrom: "Apex",
+      },
+      {
+        name: "Nexus Corporate", price: "R265", featured: true,
+        features: ["Global multi-currency accounts", "Competitive foreign exchange rates", "Cross-border payments and international payroll", "SWIFT payment management", "Trade finance support"],
+        tagline: "Connecting Global Business.",
+        overview: "The Nexus Corporate Account is built for businesses operating across borders. With seamless international banking, foreign exchange services, and global treasury management, Nexus keeps your worldwide operations connected through a single banking platform.",
+        idealFor: ["Multinational corporations", "Exporters and importers", "International NGOs", "Global service providers", "International logistics companies"],
+        inheritsFrom: "Vertex",
+      },
+      {
+        name: "Dominion Corporate", price: "R415", featured: false,
+        features: ["Enterprise treasury management", "Automated liquidity optimization", "Unlimited corporate cards", "Executive financial dashboards", "Custom approval workflows"],
+        tagline: "Control Enterprise Finance.",
+        overview: "The Dominion Corporate Account delivers enterprise-grade banking for organizations managing significant financial operations. Designed for complex corporate structures, it combines advanced treasury services, governance controls, and powerful financial analytics into one secure platform.",
+        idealFor: ["Enterprise corporations", "Conglomerates", "Financial institutions", "National utility companies", "Large infrastructure organizations"],
+        inheritsFrom: "Nexus",
+      },
+      {
+        name: "Legacy Corporate", price: "R650", featured: false,
+        features: ["Executive relationship management", "Institutional investment services", "Private treasury solutions", "Global custody services", "Mergers and acquisitions support", "24/7 executive support"],
+        tagline: "Banking for Institutions That Shape the Future.",
+        overview: "The Legacy Corporate Account is our most prestigious banking solution, created for multinational corporations, institutional investors, sovereign entities, and family offices. Every client receives a fully customized banking experience supported by a dedicated team of specialists delivering strategic financial solutions on a global scale.",
+        idealFor: ["Multinational corporations", "Sovereign wealth entities", "Investment firms", "Private equity companies", "Family offices", "Global holding companies", "Institutional investors"],
+        inheritsFrom: "Dominion",
+      },
     ],
   },
 ],
@@ -170,10 +214,10 @@ function parsePrice(price: string): number | null {
 }
 
 function ProductCard({
-  card, folio, maxPrice, detailsCta, onApply,
+  card, folio, maxPrice, detailsCta, onApply, onDetails,
 }: {
   card: CardData; folio: string; maxPrice: number | null; detailsCta: string;
-  onApply: (name: string) => void;
+  onApply: (name: string) => void; onDetails: (card: CardData, folio: string) => void;
 }) {
   const numericPrice = parsePrice(card.price);
   const showGauge = numericPrice !== null && maxPrice !== null && maxPrice > 0;
@@ -205,7 +249,41 @@ function ProductCard({
       </div>
       <div className="pav-cta-group">
         <button className="pav-btn pav-btn-primary" onClick={() => onApply(card.name)}>Apply now</button>
-        <button className="pav-btn pav-btn-primary" onClick={() => onApply(card.name)}>{detailsCta}</button>
+        <button
+          className="pav-btn pav-btn-secondary"
+          onClick={() => card.tagline ? onDetails(card, folio) : onApply(card.name)}
+        >
+          {detailsCta}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function AccountDetailModal({ card, folio, onClose, onApply }: { card: CardData; folio: string; onClose: () => void; onApply: (name: string) => void }) {
+  return (
+    <div className="pav-detail-backdrop" onClick={onClose}>
+      <div className="pav-detail-card" onClick={(e) => e.stopPropagation()}>
+        <button className="pav-detail-close" onClick={onClose} aria-label="Close"><X className="w-4 h-4" /></button>
+        <div className="pav-detail-folio">Folio No.&nbsp;{folio}</div>
+        <h3 className="pav-detail-name">{card.name}</h3>
+        <p className="pav-detail-tagline">{card.tagline}</p>
+        <p className="pav-detail-desc">{card.overview}</p>
+        <div className="pav-detail-features-head">
+          {card.inheritsFrom ? <>Everything in <strong>{card.inheritsFrom}</strong>, plus:</> : "Key Benefits"}
+        </div>
+        <ul className="pav-detail-features">
+          {card.features.map((f) => <li key={f}>{f}</li>)}
+        </ul>
+        {card.idealFor && (
+          <>
+            <div className="pav-detail-features-head">Ideal For</div>
+            <ul className="pav-detail-features" style={{ marginBottom: 28 }}>
+              {card.idealFor.map((f) => <li key={f}>{f}</li>)}
+            </ul>
+          </>
+        )}
+        <button className="pav-btn pav-btn-primary" onClick={() => onApply(card.name)}>Apply now</button>
       </div>
     </div>
   );
@@ -214,6 +292,7 @@ function ProductCard({
 export function CorporateProductLedgerViewer({ isOpen, onClose, initialCategory, onNavigate }: Props) {
   const [category, setCategory] = useState<CorpCategory>(initialCategory);
   const [applyProduct, setApplyProduct] = useState<string | null>(null);
+  const [detailCard, setDetailCard] = useState<{ card: CardData; folio: string } | null>(null);
 
   useEffect(() => { if (isOpen) setCategory(initialCategory); }, [isOpen, initialCategory]);
 
@@ -323,6 +402,25 @@ export function CorporateProductLedgerViewer({ isOpen, onClose, initialCategory,
         }
         .pav-btn-primary{ background:var(--pav-ink); color:var(--pav-text-on-ink); }
         .pav-btn-primary:hover{ background:var(--pav-plum); }
+        .pav-cta-group{ display:flex; flex-direction:column; gap:9px; margin-top:auto; }
+        .pav-btn-secondary{ background:transparent; color:var(--pav-ink); border-color:var(--pav-rule); }
+        .pav-btn-secondary:hover{ background:var(--pav-paper-dim); border-color:var(--pav-gold-dim); }
+
+        /* ── Account detail modal ── */
+        .pav-detail-backdrop{ position:fixed; inset:0; z-index:70; background:rgba(29,23,64,0.55); display:flex; align-items:center; justify-content:center; padding:20px; }
+        .pav-detail-card{ position:relative; background:#fff; max-width:540px; width:100%; max-height:88vh; overflow-y:auto; border-radius:4px; padding:40px 36px 32px; box-shadow:0 30px 80px rgba(29,23,64,0.35); }
+        .pav-detail-close{ position:absolute; top:16px; right:16px; width:32px; height:32px; border-radius:50%; background:var(--pav-paper); color:var(--pav-ink); border:1px solid var(--pav-rule); display:flex; align-items:center; justify-content:center; cursor:pointer; }
+        .pav-detail-close:hover{ background:var(--pav-paper-dim); }
+        .pav-detail-folio{ font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--pav-gold-dim); letter-spacing:0.04em; margin-bottom:10px; }
+        .pav-detail-name{ font-family:'Fraunces', serif; font-weight:500; font-size:26px; margin:0 0 8px; letter-spacing:-0.01em; color:var(--pav-ink); }
+        .pav-detail-tagline{ font-family:'Fraunces', serif; font-style:italic; font-size:15px; color:var(--pav-plum); margin:0 0 20px; }
+        .pav-detail-desc{ font-size:13.5px; line-height:1.7; color:var(--pav-ink-soft); margin:0 0 26px; padding-bottom:26px; border-bottom:1px solid var(--pav-rule); }
+        .pav-detail-features-head{ font-size:13px; font-weight:600; color:var(--pav-ink); margin-bottom:12px; }
+        .pav-detail-features-head strong{ color:var(--pav-plum); }
+        .pav-detail-features{ list-style:none; margin:0 0 28px; padding:0; display:grid; grid-template-columns:1fr 1fr; gap:8px 16px; }
+        .pav-detail-features li{ font-size:12.8px; color:var(--pav-ink-soft); line-height:1.5; padding-left:16px; position:relative; }
+        .pav-detail-features li::before{ content:"✓"; position:absolute; left:0; color:var(--pav-gold-dim); font-weight:600; }
+        @media (max-width:480px){ .pav-detail-features{ grid-template-columns:1fr; } }
 
         .pav-foot{ background:var(--pav-ink); color:var(--pav-text-muted-on-ink); padding:34px 0; font-size:12px; line-height:1.7; font-family:'IBM Plex Mono', monospace; margin-top:24px; }
         .pav-foot .pav-wrap{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
@@ -366,7 +464,8 @@ export function CorporateProductLedgerViewer({ isOpen, onClose, initialCategory,
               <div className="pav-grid">
                 {sec.cards.map((c) => {
                   folioCounter++;
-                  return <ProductCard key={c.name} card={c} folio={String(folioCounter).padStart(2, "0")} maxPrice={maxPrice} detailsCta={copy.detailsCta} onApply={handleApply} />;
+                  const folio = String(folioCounter).padStart(2, "0");
+                  return <ProductCard key={c.name} card={c} folio={folio} maxPrice={maxPrice} detailsCta={copy.detailsCta} onApply={handleApply} onDetails={(card, f) => setDetailCard({ card, folio: f })} />;
                 })}
               </div>
             </div>
@@ -383,6 +482,15 @@ export function CorporateProductLedgerViewer({ isOpen, onClose, initialCategory,
 
       {applyProduct && (
         <ApplyModal isOpen={!!applyProduct} onClose={() => setApplyProduct(null)} product={applyProduct} />
+      )}
+
+      {detailCard && (
+        <AccountDetailModal
+          card={detailCard.card}
+          folio={detailCard.folio}
+          onClose={() => setDetailCard(null)}
+          onApply={(name) => { setDetailCard(null); handleApply(name); }}
+        />
       )}
     </div>
   );
