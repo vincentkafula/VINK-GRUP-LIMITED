@@ -1,7 +1,38 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ShoppingBag, Store, Tag, ArrowRight, X, Star, Loader2 } from "lucide-react";
 import heroBg from "../../imports/assets/marketplace-hero-wide-bg.png";
 import { mktProducts } from "../services/marketplaceApi";
+
+// Same continuous drift-left auto-slide used on the home marketplace's
+// product rows — pauses on hover/touch, loops back to the start at the end.
+function useAutoSlide<T extends HTMLElement>(itemCount: number, speed = 0.5) {
+  const ref = useRef<T>(null);
+  const paused = useRef(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || itemCount < 2) return;
+    let raf: number;
+    const tick = () => {
+      if (!paused.current && el) {
+        const max = el.scrollWidth - el.clientWidth;
+        if (max > 0) el.scrollLeft = el.scrollLeft >= max - 1 ? 0 : el.scrollLeft + speed;
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [itemCount, speed]);
+
+  const handlers = {
+    onMouseEnter: () => { paused.current = true; },
+    onMouseLeave: () => { paused.current = false; },
+    onTouchStart: () => { paused.current = true; },
+    onTouchEnd:   () => { paused.current = false; },
+  };
+
+  return { ref, handlers };
+}
 
 type R = Record<string, unknown>;
 
@@ -18,7 +49,7 @@ function ProductCard({ p, onClick }: { p: R; onClick: () => void }) {
   const imgs = p.images as string[];
   const discount = p.compareAtPrice ? Math.round((1 - Number(p.price) / Number(p.compareAtPrice)) * 100) : 0;
   return (
-    <button onClick={onClick} className="text-left bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition-all">
+    <button onClick={onClick} className="w-full text-left bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition-all">
       <div className="relative flex items-center justify-center h-32" style={{ background: `linear-gradient(135deg,${imgs?.[0] ?? "#eee"},${imgs?.[1] ?? "#ddd"})` }}>
         <span className="text-5xl">{p.emoji as string}</span>
         {discount > 0 && <span className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">-{discount}%</span>}
@@ -43,6 +74,7 @@ function ProductCard({ p, onClick }: { p: R; onClick: () => void }) {
 export function MarketplaceLandingViewer({ isOpen, onClose, onShop, onSell }: Props) {
   const [products, setProducts] = useState<R[]>([]);
   const [loading, setLoading] = useState(true);
+  const slide = useAutoSlide<HTMLDivElement>(products.length);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -116,9 +148,11 @@ export function MarketplaceLandingViewer({ isOpen, onClose, onShop, onSell }: Pr
         {loading ? (
           <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+          <div ref={slide.ref} {...slide.handlers} className="flex gap-3 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
             {products.map((p, i) => (
-              <ProductCard key={i} p={p} onClick={() => onShop(String(p.id))} />
+              <div key={i} className="w-40 sm:w-44 shrink-0">
+                <ProductCard p={p} onClick={() => onShop(String(p.id))} />
+              </div>
             ))}
           </div>
         )}
