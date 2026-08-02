@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ShoppingBag, Store, ShieldCheck, Truck, Tag, ArrowRight, X, Star, Loader2 } from "lucide-react";
+import { ShoppingBag, Store, Tag, ArrowRight, X, Star, Loader2 } from "lucide-react";
 import heroBg from "../../imports/assets/marketplace-hero-wide-bg.png";
 import { mktProducts } from "../services/marketplaceApi";
 
@@ -11,13 +11,6 @@ interface Props {
   onShop: (productId?: string) => void;
   onSell: () => void;
 }
-
-const FEATURES = [
-  { icon: <ShieldCheck className="w-5 h-5" />, title: "Buyer Protection", desc: "Every order is covered — get a refund if something isn't right." },
-  { icon: <Truck className="w-5 h-5" />, title: "Nationwide Delivery", desc: "Courier, pickup, and freight options from sellers across the country." },
-  { icon: <Tag className="w-5 h-5" />, title: "Real Daily Deals", desc: "Flash deals and featured products, refreshed across the catalogue." },
-  { icon: <Store className="w-5 h-5" />, title: "Built for Sellers", desc: "List products, manage orders, and track revenue from one dashboard." },
-];
 
 const fmtZAR = (n: number) => `R${Number(n ?? 0).toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
@@ -77,9 +70,6 @@ export function MarketplaceLandingViewer({ isOpen, onClose, onShop, onSell }: Pr
         </button>
 
         <div className="relative max-w-3xl mx-auto px-6 sm:px-10 py-24 sm:py-32 text-center">
-          <span className="inline-flex items-center gap-1.5 text-[11px] font-bold tracking-[0.14em] uppercase px-3 py-1.5 rounded-full mb-5" style={{ background: "rgba(21,163,80,0.12)", color: "#128A43" }}>
-            <ShoppingBag className="w-3.5 h-3.5" /> Vink Marketplace
-          </span>
           <h1 className="text-4xl sm:text-5xl font-black leading-[1.05] tracking-tight" style={{ color: "#0F3D24" }}>
             Everything you need,<br />from sellers you trust
           </h1>
@@ -106,26 +96,8 @@ export function MarketplaceLandingViewer({ isOpen, onClose, onShop, onSell }: Pr
         </div>
       </div>
 
-      {/* Feature strip */}
-      <div className="max-w-5xl mx-auto px-6 sm:px-10 py-14 sm:py-16">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {FEATURES.map(f => (
-            <div key={f.title} className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-shadow">
-              <span className="w-10 h-10 rounded-full flex items-center justify-center mb-3" style={{ background: "#FFF4E5", color: "#B75C00" }}>{f.icon}</span>
-              <p className="text-sm font-bold text-gray-900">{f.title}</p>
-              <p className="text-xs text-gray-500 mt-1.5 leading-relaxed">{f.desc}</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-10 flex items-center justify-center gap-2 text-sm text-gray-400">
-          <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-          <span>Rated by real customers across every category on the platform</span>
-        </div>
-      </div>
-
       {/* Full product catalogue */}
-      <div className="max-w-6xl mx-auto px-6 sm:px-10 pb-14">
+      <div className="max-w-6xl mx-auto px-6 sm:px-10 pt-10 pb-14">
         <div className="flex items-center justify-between mb-5">
           <div>
             <p className="text-xl sm:text-2xl font-black" style={{ color: "#0F3D24" }}>Shop the full catalogue</p>
