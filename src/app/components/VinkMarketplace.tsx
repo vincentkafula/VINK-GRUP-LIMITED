@@ -559,18 +559,20 @@ function HomeView({ categories, products, onCategory, onProduct, onCart, wishlis
 }
 
 // ─── CATALOG ──────────────────────────────────────────────────────────────────
-function CatalogView({ categories, onProduct, onCart, wishlistIds, onWishlist }: {
+function CatalogView({ categories, onProduct, onCart, wishlistIds, onWishlist, initialSearch }: {
   categories: R[]; onProduct: (p: R) => void; onCart: (p: R) => void;
-  wishlistIds: Set<string>; onWishlist: (id: string) => void;
+  wishlistIds: Set<string>; onWishlist: (id: string) => void; initialSearch?: string;
 }) {
   const [products, setProducts] = useState<R[]>([]);
   const [loading, setLoading]   = useState(true);
-  const [search, setSearch]     = useState("");
+  const [search, setSearch]     = useState(initialSearch ?? "");
   const [activeCat, setActiveCat] = useState("");
   const [sort, setSort]         = useState("popular");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [suggests, setSuggests] = useState<R[]>([]);
   const timer = useRef<ReturnType<typeof setTimeout>>();
+
+  useEffect(() => { if (initialSearch) setSearch(initialSearch); }, [initialSearch]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -702,16 +704,35 @@ function CatalogView({ categories, onProduct, onCart, wishlistIds, onWishlist }:
 }
 
 // ─── PRODUCT DETAIL ───────────────────────────────────────────────────────────
-function ProductDetailView({ productId, onBack, onCart, wishlistIds, onWishlist }: {
+function ProductDetailView({ productId, onBack, onCart, wishlistIds, onWishlist, authUser, onRequireAuth }: {
   productId: string; onBack: () => void;
   onCart: (p: R, variantId?: string) => void;
   wishlistIds: Set<string>; onWishlist: (id: string) => void;
+  authUser: { id: string; name: string } | null; onRequireAuth: () => void;
 }) {
   const [data, setData]   = useState<{ product: R; seller: R; reviews: R[]; related: R[] } | null>(null);
   const [loading, setLoading] = useState(true);
   const [qty, setQty]     = useState(1);
   const [selVariant, setSelVariant] = useState("");
   const [tab, setTab]     = useState<"desc" | "reviews" | "seller">("desc");
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewTitle, setReviewTitle] = useState("");
+  const [reviewBody, setReviewBody] = useState("");
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [reviewSubmitted, setReviewSubmitted] = useState(false);
+
+  const submitReview = async () => {
+    if (!authUser) { onRequireAuth(); return; }
+    if (!reviewRating) return;
+    setSubmittingReview(true);
+    const res = await mktProducts.addReview(productId, { userId: authUser.id, rating: reviewRating, title: reviewTitle, body: reviewBody });
+    setSubmittingReview(false);
+    if ((res as { success: boolean }).success) {
+      setReviewSubmitted(true);
+      setReviewRating(0); setReviewTitle(""); setReviewBody("");
+      mktProducts.get(productId).then(r => setData(r.data as typeof data));
+    }
+  };
 
   useEffect(() => {
     setLoading(true);
@@ -880,6 +901,30 @@ function ProductDetailView({ productId, onBack, onCart, wishlistIds, onWishlist 
           )}
           {tab === "reviews" && (
             <div className="space-y-4">
+              <div className="p-4 rounded-2xl border border-gray-100">
+                <p className="text-sm font-bold text-gray-900 mb-2">Write a review</p>
+                {reviewSubmitted ? (
+                  <p className="text-sm text-green-600 flex items-center gap-1.5"><CheckCircle className="w-4 h-4" /> Thanks — your review has been posted.</p>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-1 mb-2">
+                      {[1, 2, 3, 4, 5].map(n => (
+                        <button key={n} onClick={() => setReviewRating(n)} aria-label={`${n} star`}>
+                          <Star className={`w-5 h-5 ${n <= reviewRating ? "fill-amber-400 text-amber-400" : "text-gray-300"}`} />
+                        </button>
+                      ))}
+                    </div>
+                    <input value={reviewTitle} onChange={e => setReviewTitle(e.target.value)} placeholder="Review title (optional)"
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mb-2 outline-none focus:border-[#6B5ED7]" />
+                    <textarea value={reviewBody} onChange={e => setReviewBody(e.target.value)} rows={3} placeholder="Share what you liked or didn't..."
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mb-3 outline-none focus:border-[#6B5ED7]" />
+                    <button onClick={submitReview} disabled={!reviewRating || submittingReview}
+                      className="px-4 py-2 rounded-lg text-white text-sm font-semibold disabled:opacity-50" style={{ background: "#6B5ED7" }}>
+                      {submittingReview ? "Posting..." : authUser ? "Post review" : "Sign in to review"}
+                    </button>
+                  </>
+                )}
+              </div>
               {reviews.map((r, i) => (
                 <div key={i} className="p-4 rounded-2xl bg-gray-50">
                   <div className="flex items-start justify-between mb-2">
@@ -1430,6 +1475,29 @@ export function VinkMarketplace({ isOpen, onClose, initialAction, initialProduct
     setView(dest);
   };
 
+  const [navSearch, setNavSearch] = useState("");
+  const [submittedSearch, setSubmittedSearch] = useState("");
+  const [navSuggests, setNavSuggests] = useState<R[]>([]);
+  const [showSuggests, setShowSuggests] = useState(false);
+  const navSearchTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  const runSearch = (q: string) => {
+    setSubmittedSearch(q);
+    setShowSuggests(false);
+    setView("catalog");
+  };
+
+  const onNavSearchChange = (v: string) => {
+    setNavSearch(v);
+    clearTimeout(navSearchTimer.current);
+    if (v.trim().length < 2) { setNavSuggests([]); setShowSuggests(false); return; }
+    navSearchTimer.current = setTimeout(async () => {
+      const res = await mktProducts.suggest(v.trim());
+      setNavSuggests((res.data as R[]) ?? []);
+      setShowSuggests(true);
+    }, 250);
+  };
+
   const navItems = [
     { id:"seller" as View,   label:"Seller Central", icon:<TrendingUp className="w-4 h-4" />, roles:["seller"] },
     { id:"admin" as View,    label:"Manager Dashboard", icon:<Settings className="w-4 h-4" />, roles:["manager"] },
@@ -1457,18 +1525,44 @@ export function VinkMarketplace({ isOpen, onClose, initialAction, initialProduct
           <span className="text-xs font-bold leading-tight mt-0.5">South Africa</span>
         </button>
 
-        <div className="flex-1 flex items-stretch max-w-3xl rounded overflow-hidden h-9 min-w-0">
+        <div className="relative flex-1 flex items-stretch max-w-3xl rounded overflow-hidden h-9 min-w-0">
           <div className="hidden sm:flex items-center bg-[#E8E8E8] hover:bg-[#DDD] px-2 text-[11px] text-gray-700 border-r border-gray-300 shrink-0 cursor-pointer">
             All <ChevronDown className="w-3 h-3 ml-1" />
           </div>
           <input
+            value={navSearch}
+            onChange={e => onNavSearchChange(e.target.value)}
+            onKeyDown={e => { if (e.key === "Enter") runSearch(navSearch); if (e.key === "Escape") setShowSuggests(false); }}
+            onFocus={() => { if (navSuggests.length) setShowSuggests(true); }}
+            onBlur={() => setTimeout(() => setShowSuggests(false), 150)}
             placeholder="Search Vink Marketplace"
             className="flex-1 min-w-0 bg-white px-3 text-sm outline-none text-gray-800"
-            onFocus={() => setView("catalog")}
           />
-          <button onClick={() => setView("catalog")} className="w-11 flex items-center justify-center shrink-0" style={{ background: "#FF9900" }}>
+          <button onClick={() => runSearch(navSearch)} className="w-11 flex items-center justify-center shrink-0" style={{ background: "#FF9900" }}>
             <Search className="w-4 h-4 text-[#131921]" />
           </button>
+
+          {showSuggests && navSuggests.length > 0 && (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded shadow-2xl border border-gray-200 overflow-hidden z-30">
+              {navSuggests.map((s, i) => (
+                <button
+                  key={i}
+                  onMouseDown={() => { setSelProductId(String(s.id)); setView("product"); setShowSuggests(false); setNavSearch(""); }}
+                  className="w-full flex items-center justify-between px-3 py-2 text-sm hover:bg-gray-50 text-left"
+                >
+                  <span className="text-gray-700 truncate">{String(s.name)}</span>
+                  <span className="text-gray-400 text-xs shrink-0 ml-2">{String(s.category)}</span>
+                </button>
+              ))}
+              <button
+                onMouseDown={() => runSearch(navSearch)}
+                className="w-full flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-left border-t border-gray-100"
+                style={{ color: "#0066CC" }}
+              >
+                <Search className="w-3.5 h-3.5" /> See all results for "{navSearch}"
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-0.5 sm:gap-1 ml-auto shrink-0">
@@ -1576,6 +1670,7 @@ export function VinkMarketplace({ isOpen, onClose, initialAction, initialProduct
               onProduct={p => { setSelProductId(String(p.id)); setView("product"); }}
               onCart={handleAddToCart}
               wishlistIds={wishlistIds} onWishlist={handleWishlist}
+              initialSearch={submittedSearch}
             />
           )}
           {view === "product" && (
@@ -1584,6 +1679,7 @@ export function VinkMarketplace({ isOpen, onClose, initialAction, initialProduct
               onBack={() => setView("catalog")}
               onCart={(p, v) => { handleAddToCart(p, v); setView("cart"); }}
               wishlistIds={wishlistIds} onWishlist={handleWishlist}
+              authUser={authUser} onRequireAuth={() => setShowAuthModal(true)}
             />
           )}
           {view === "cart" && authUser && (

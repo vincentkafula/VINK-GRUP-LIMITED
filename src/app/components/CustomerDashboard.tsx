@@ -170,21 +170,11 @@ export function CustomerDashboard({ user, onProduct, onSignOut }: Props) {
                     <thead><tr className="text-left text-[11px] text-gray-400 border-b border-gray-100">
                       <th className="px-4 py-2 font-medium">Order</th><th className="px-4 py-2 font-medium">Date</th>
                       <th className="px-4 py-2 font-medium">Items</th><th className="px-4 py-2 font-medium">Amount</th>
-                      <th className="px-4 py-2 font-medium">Status</th>
+                      <th className="px-4 py-2 font-medium">Status</th><th className="px-4 py-2 font-medium">Actions</th>
                     </tr></thead>
                     <tbody>
                       {orders.map((o, i) => (
-                        <tr key={i} className="border-b border-gray-50 last:border-0">
-                          <td className="px-4 py-3 font-semibold text-gray-900">{String(o.orderNumber)}</td>
-                          <td className="px-4 py-3 text-gray-500">{new Date(String(o.placedAt)).toLocaleDateString()}</td>
-                          <td className="px-4 py-3 text-gray-500">{(o.items as R[]).length} item{(o.items as R[]).length !== 1 ? "s" : ""}</td>
-                          <td className="px-4 py-3 font-bold text-gray-700">{fmtZAR(Number(o.totalAmount))}</td>
-                          <td className="px-4 py-3">
-                            <span className="flex items-center gap-1 text-xs font-semibold w-fit px-2.5 py-1 rounded-full" style={{ color: STATUS_META[String(o.status)]?.color, background: `${STATUS_META[String(o.status)]?.color}15` }}>
-                              {STATUS_META[String(o.status)]?.icon} {STATUS_META[String(o.status)]?.label ?? String(o.status)}
-                            </span>
-                          </td>
-                        </tr>
+                        <OrderRow key={i} order={o} onChanged={load} />
                       ))}
                     </tbody>
                   </table>
@@ -240,6 +230,101 @@ export function CustomerDashboard({ user, onProduct, onSignOut }: Props) {
         )}
       </div>
     </div>
+  );
+}
+
+const CANCELLABLE = ["pending", "confirmed", "processing"];
+
+function downloadInvoice(o: R) {
+  const items = o.items as R[];
+  const addr = o.shippingAddress as R;
+  const lines = [
+    `VINK MARKETPLACE — INVOICE`,
+    `Order: ${o.orderNumber}`,
+    `Placed: ${new Date(String(o.placedAt)).toLocaleString()}`,
+    `Status: ${o.status}`,
+    ``,
+    `Ship to: ${addr?.firstName ?? ""} ${addr?.lastName ?? ""}`,
+    `${addr?.line1 ?? ""}, ${addr?.city ?? ""} ${addr?.postalCode ?? ""}`,
+    ``,
+    `Items:`,
+    ...items.map(i => `  ${i.quantity}x ${i.productName}  —  ${fmtZAR(Number(i.totalPrice))}`),
+    ``,
+    `Subtotal:   ${fmtZAR(Number(o.subtotal))}`,
+    `Shipping:   ${fmtZAR(Number(o.shippingCost))}`,
+    `Tax:        ${fmtZAR(Number(o.taxAmount))}`,
+    Number(o.discountAmount) > 0 ? `Discount:  -${fmtZAR(Number(o.discountAmount))}` : "",
+    `Total:      ${fmtZAR(Number(o.totalAmount))}`,
+  ].filter(Boolean).join("\n");
+  const blob = new Blob([lines], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = `${o.orderNumber}-invoice.txt`; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function OrderRow({ order, onChanged }: { order: R; onChanged: () => void }) {
+  const [busy, setBusy] = useState(false);
+  const [showReturnForm, setShowReturnForm] = useState(false);
+  const [reason, setReason] = useState("");
+  const status = String(order.status);
+
+  const cancel = async () => {
+    if (!confirm("Cancel this order? This can't be undone.")) return;
+    setBusy(true);
+    const r = await mktOrders.cancel(String(order.id));
+    setBusy(false);
+    if (!r.success) alert(r.error ?? "Could not cancel order.");
+    onChanged();
+  };
+
+  const submitReturn = async () => {
+    setBusy(true);
+    const r = await mktOrders.requestReturn(String(order.id), reason || "No reason given");
+    setBusy(false);
+    setShowReturnForm(false);
+    if (!r.success) alert(r.error ?? "Could not submit return request.");
+    onChanged();
+  };
+
+  return (
+    <>
+      <tr className="border-b border-gray-50 last:border-0">
+        <td className="px-4 py-3 font-semibold text-gray-900">{String(order.orderNumber)}</td>
+        <td className="px-4 py-3 text-gray-500">{new Date(String(order.placedAt)).toLocaleDateString()}</td>
+        <td className="px-4 py-3 text-gray-500">{(order.items as R[]).length} item{(order.items as R[]).length !== 1 ? "s" : ""}</td>
+        <td className="px-4 py-3 font-bold text-gray-700">{fmtZAR(Number(order.totalAmount))}</td>
+        <td className="px-4 py-3">
+          <span className="flex items-center gap-1 text-xs font-semibold w-fit px-2.5 py-1 rounded-full" style={{ color: STATUS_META[status]?.color, background: `${STATUS_META[status]?.color}15` }}>
+            {STATUS_META[status]?.icon} {STATUS_META[status]?.label ?? status}
+          </span>
+        </td>
+        <td className="px-4 py-3">
+          <div className="flex items-center gap-2 flex-wrap">
+            <button onClick={() => downloadInvoice(order)} className="text-[11px] font-semibold text-gray-500 hover:text-gray-800">Invoice</button>
+            {CANCELLABLE.includes(status) && (
+              <button onClick={cancel} disabled={busy} className="text-[11px] font-semibold text-red-500 hover:text-red-700 disabled:opacity-50">Cancel</button>
+            )}
+            {status === "delivered" && (
+              <button onClick={() => setShowReturnForm(s => !s)} className="text-[11px] font-semibold" style={{ color: "#8B5CF6" }}>Request return</button>
+            )}
+          </div>
+        </td>
+      </tr>
+      {showReturnForm && (
+        <tr className="border-b border-gray-50">
+          <td colSpan={6} className="px-4 py-3 bg-gray-50">
+            <div className="flex items-center gap-2">
+              <input value={reason} onChange={e => setReason(e.target.value)} placeholder="Reason for return"
+                className="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-[#6B5ED7]" />
+              <button onClick={submitReturn} disabled={busy} className="px-3 py-1.5 rounded-lg text-white text-xs font-semibold disabled:opacity-50" style={{ background: "#8B5CF6" }}>
+                {busy ? "Submitting..." : "Submit request"}
+              </button>
+            </div>
+          </td>
+        </tr>
+      )}
+    </>
   );
 }
 

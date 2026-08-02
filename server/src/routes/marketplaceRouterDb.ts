@@ -225,10 +225,16 @@ router.post("/cart/:userId/add", requireAuth, requireSelf, async (req: Request, 
   );
   if (!productRows.length) { res.status(404).json({ success: false, error: "Product not found" }); return; }
   const product = mapProduct(productRows[0]);
+  if (product.stock <= 0) { res.status(409).json({ success: false, error: "This product is out of stock." }); return; }
 
   const cartRow = await getOrCreateCart(req.params.userId);
   const items: any[] = cartRow.items;
   const existing = items.find(i => i.productId === productId && i.variantId === (variantId ?? null));
+  const requestedQty = (existing?.quantity ?? 0) + (quantity ?? 1);
+  if (requestedQty > product.stock) {
+    res.status(409).json({ success: false, error: `Only ${product.stock} left in stock.` });
+    return;
+  }
   if (existing) existing.quantity += (quantity ?? 1);
   else items.push({ productId, variantId: variantId ?? null, quantity: quantity ?? 1, unitPrice: product.price, name: product.name, emoji: product.emoji, sellerId: product.sellerId, sellerName: product.sellerName, maxStock: product.stock });
 
@@ -300,6 +306,51 @@ router.get("/orders/:id", requireAuth, async (req: Request, res: Response): Prom
   res.json({ success: true, data: mapOrder(order) });
 });
 
+const CANCELLABLE_STATUSES = ["pending", "confirmed", "processing"];
+
+router.post("/orders/:id/cancel", requireAuth, async (req: Request, res: Response): Promise<void> => {
+  const isManager = MANAGER_ROLES.includes(req.user!.role as any);
+  const client = await pool!.connect();
+  try {
+    await client.query("BEGIN");
+    const { rows } = await client.query(`SELECT * FROM mkt_orders WHERE id::text = $1 FOR UPDATE`, [req.params.id]);
+    if (!rows.length) { await client.query("ROLLBACK"); res.status(404).json({ success: false, error: "Order not found" }); return; }
+    const order = rows[0];
+    if (!isManager && order.user_id !== req.user!.userId) { await client.query("ROLLBACK"); res.status(403).json({ success: false, error: "You can only cancel your own orders" }); return; }
+    if (!CANCELLABLE_STATUSES.includes(order.status)) {
+      await client.query("ROLLBACK");
+      res.status(400).json({ success: false, error: `Orders that are already ${order.status} can't be cancelled.` });
+      return;
+    }
+    // Restock every item so cancelling doesn't leave inventory short.
+    for (const item of order.items as any[]) {
+      await client.query(`UPDATE mkt_products SET stock = stock + $1, total_sold = GREATEST(0, total_sold - $1) WHERE id::text = $2`, [item.quantity, item.productId]);
+    }
+    const { rows: updated } = await client.query(`UPDATE mkt_orders SET status = 'cancelled', cancelled_at = now() WHERE id = $1 RETURNING *`, [order.id]);
+    await client.query("COMMIT");
+    res.json({ success: true, data: mapOrder(updated[0]) });
+  } catch (err) {
+    await client.query("ROLLBACK");
+    console.error("[marketplace] Order cancel failed:", err);
+    res.status(500).json({ success: false, error: "Could not cancel order, please try again." });
+  } finally {
+    client.release();
+  }
+});
+
+router.post("/orders/:id/request-return", requireAuth, async (req: Request, res: Response): Promise<void> => {
+  const { rows } = await pool!.query(`SELECT * FROM mkt_orders WHERE id::text = $1`, [req.params.id]);
+  if (!rows.length) { res.status(404).json({ success: false, error: "Order not found" }); return; }
+  const order = rows[0];
+  if (order.user_id !== req.user!.userId) { res.status(403).json({ success: false, error: "You can only request returns on your own orders" }); return; }
+  if (order.status !== "delivered") { res.status(400).json({ success: false, error: "Only delivered orders are eligible for a return." }); return; }
+  const { rows: updated } = await pool!.query(
+    `UPDATE mkt_orders SET status = 'return_requested', notes = COALESCE(notes || E'\\n', '') || $1 WHERE id = $2 RETURNING *`,
+    [`Return requested: ${req.body.reason ?? "No reason given"}`, order.id]
+  );
+  res.json({ success: true, data: mapOrder(updated[0]) });
+});
+
 router.post("/orders", requireAuth, async (req: Request, res: Response): Promise<void> => {
   const userId = req.user!.userId; // always the signed-in customer, never trusted from the body
   const { addressId, paymentMethod } = req.body;
@@ -317,8 +368,6 @@ router.post("/orders", requireAuth, async (req: Request, res: Response): Promise
   );
   const addr = addrRows[0] ?? {};
 
-  const { rows: countRows } = await pool!.query(`SELECT COUNT(*)::int AS n FROM mkt_orders`);
-  const orderNumber = `VNK-ORD-${String(100000 + countRows[0].n).padStart(6, "0")}`;
   const items = cart.items.map((i: any) => ({
     productId: i.productId, productName: i.name, emoji: i.emoji, variantId: i.variantId, variantLabel: null,
     quantity: i.quantity, unitPrice: i.unitPrice, totalPrice: i.unitPrice * i.quantity, sellerId: i.sellerId ?? "sel-01", sellerName: i.sellerName,
@@ -328,19 +377,51 @@ router.post("/orders", requireAuth, async (req: Request, res: Response): Promise
     line2: null, city: addr.city ?? "", state: addr.state ?? "", postalCode: addr.postal_code ?? "", country: "ZA", phone: addr.phone ?? "",
   };
 
-  const { rows } = await pool!.query(
-    `INSERT INTO mkt_orders (order_number, user_id, customer_name, customer_email, items, subtotal, shipping_cost,
-       tax_amount, discount_amount, total_amount, currency, status, payment_status, payment_method, shipping_address,
-       shipping_status, estimated_delivery, coupon_code, confirmed_at)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'ZAR','pending','paid',$11,$12,'not_shipped', now() + interval '5 days', $13, now())
-     RETURNING *`,
-    [orderNumber, userId, `${shippingAddress.firstName} ${shippingAddress.lastName}`, customerEmail,
-     JSON.stringify(items), cart.subtotal, cart.shipping, cart.tax, cart.coupon_discount, cart.total,
-     paymentMethod ?? "card", JSON.stringify(shippingAddress), cart.coupon_code]
-  );
+  const client = await pool!.connect();
+  try {
+    await client.query("BEGIN");
 
-  await saveCart(cart.id, [], null);
-  res.status(201).json({ success: true, data: mapOrder(rows[0]) });
+    // Lock and validate stock for every item before committing to the order —
+    // FOR UPDATE prevents two simultaneous checkouts from both succeeding on
+    // the last unit of the same product.
+    for (const item of items) {
+      const { rows: stockRows } = await client.query(`SELECT stock, name FROM mkt_products WHERE id::text = $1 FOR UPDATE`, [item.productId]);
+      if (!stockRows.length) { throw { code: "OUT_OF_STOCK", message: `${item.productName} is no longer available.` }; }
+      if (stockRows[0].stock < item.quantity) {
+        throw { code: "OUT_OF_STOCK", message: `Only ${stockRows[0].stock} of "${stockRows[0].name}" left in stock — reduce the quantity in your cart.` };
+      }
+    }
+    for (const item of items) {
+      await client.query(`UPDATE mkt_products SET stock = stock - $1, total_sold = total_sold + $1 WHERE id::text = $2`, [item.quantity, item.productId]);
+    }
+
+    const { rows: countRows } = await client.query(`SELECT COUNT(*)::int AS n FROM mkt_orders`);
+    const orderNumber = `VNK-ORD-${String(100000 + countRows[0].n).padStart(6, "0")}`;
+
+    const { rows } = await client.query(
+      `INSERT INTO mkt_orders (order_number, user_id, customer_name, customer_email, items, subtotal, shipping_cost,
+         tax_amount, discount_amount, total_amount, currency, status, payment_status, payment_method, shipping_address,
+         shipping_status, estimated_delivery, coupon_code, confirmed_at)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'ZAR','pending','paid',$11,$12,'not_shipped', now() + interval '5 days', $13, now())
+       RETURNING *`,
+      [orderNumber, userId, `${shippingAddress.firstName} ${shippingAddress.lastName}`, customerEmail,
+       JSON.stringify(items), cart.subtotal, cart.shipping, cart.tax, cart.coupon_discount, cart.total,
+       paymentMethod ?? "card", JSON.stringify(shippingAddress), cart.coupon_code]
+    );
+
+    await client.query(`UPDATE mkt_carts SET items = '[]', coupon_code = NULL, coupon_discount = 0, subtotal = 0, shipping = 0, tax = 0, total = 0, updated_at = now() WHERE id = $1`, [cart.id]);
+    await client.query("COMMIT");
+    res.status(201).json({ success: true, data: mapOrder(rows[0]) });
+    return;
+  } catch (err: any) {
+    await client.query("ROLLBACK");
+    if (err?.code === "OUT_OF_STOCK") { res.status(409).json({ success: false, error: err.message }); return; }
+    console.error("[marketplace] Order placement failed:", err);
+    res.status(500).json({ success: false, error: "Could not place order, please try again." });
+    return;
+  } finally {
+    client.release();
+  }
 });
 
 // ── REVIEWS ───────────────────────────────────────────────────────────────────

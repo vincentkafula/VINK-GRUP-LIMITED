@@ -75,7 +75,9 @@ export const mktCart = {
 export const mktOrders = {
   list:   (p?: Record<string, string>) => api<{ success: boolean; data: unknown[] }>(`/api/marketplace/orders?${new URLSearchParams(p)}`),
   get:    (id: string) => api<{ success: boolean; data: unknown }>(`/api/marketplace/orders/${id}`),
-  place:  (body: unknown) => api<{ success: boolean; data: unknown }>("/api/marketplace/orders", { method: "POST", body: JSON.stringify(body) }),
+  place:  (body: unknown) => api<{ success: boolean; data: unknown; error?: string }>("/api/marketplace/orders", { method: "POST", body: JSON.stringify(body) }),
+  cancel: (id: string) => api<{ success: boolean; data: unknown; error?: string }>(`/api/marketplace/orders/${id}/cancel`, { method: "POST" }),
+  requestReturn: (id: string, reason: string) => api<{ success: boolean; data: unknown; error?: string }>(`/api/marketplace/orders/${id}/request-return`, { method: "POST", body: JSON.stringify({ reason }) }),
 };
 
 export const mktWishlist = {
