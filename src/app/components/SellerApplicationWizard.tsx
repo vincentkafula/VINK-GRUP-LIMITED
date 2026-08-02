@@ -32,26 +32,26 @@ type FormData = {
   firstName: string; middleName: string; lastName: string; dob: string; gender: string; nationality: string;
   altPhone: string; contactEmail: string;
   idType: string; idNumber: string; idCountry: string; idExpiry: string;
-  idFront: string; idBack: string; selfie: string;
-  street: string; city: string; province: string; postalCode: string; country: string; addressProof: string;
+  idFront: File | null; idBack: File | null; selfie: File | null;
+  street: string; city: string; province: string; postalCode: string; country: string; addressProof: File | null;
   businessName: string; tradingName: string; businessType: string; registrationNumber: string;
   taxNumber: string; vatNumber: string; dateRegistered: string; countryOfRegistration: string;
   website: string; yearsInBusiness: string; employees: string; annualRevenue: string; businessDescription: string;
-  certIncorporation: string; businessRegCert: string; businessLicense: string; companyStatus: string; companyAddress: string;
-  tin: string; vatRegNumber: string; taxCountry: string; taxCertificate: string;
+  certIncorporation: File | null; businessRegCert: File | null; businessLicense: File | null; companyStatus: string; companyAddress: string;
+  tin: string; vatRegNumber: string; taxCountry: string; taxCertificate: File | null;
 };
 
 const EMPTY: FormData = {
   email: "", mobile: "", password: "", confirmPassword: "", emailVerified: false, phoneVerified: false,
   sellerType: "", firstName: "", middleName: "", lastName: "", dob: "", gender: "", nationality: "",
   altPhone: "", contactEmail: "",
-  idType: "", idNumber: "", idCountry: "", idExpiry: "", idFront: "", idBack: "", selfie: "",
-  street: "", city: "", province: "", postalCode: "", country: "South Africa", addressProof: "",
+  idType: "", idNumber: "", idCountry: "", idExpiry: "", idFront: null, idBack: null, selfie: null,
+  street: "", city: "", province: "", postalCode: "", country: "South Africa", addressProof: null,
   businessName: "", tradingName: "", businessType: "", registrationNumber: "",
   taxNumber: "", vatNumber: "", dateRegistered: "", countryOfRegistration: "South Africa",
   website: "", yearsInBusiness: "", employees: "", annualRevenue: "", businessDescription: "",
-  certIncorporation: "", businessRegCert: "", businessLicense: "", companyStatus: "", companyAddress: "",
-  tin: "", vatRegNumber: "", taxCountry: "South Africa", taxCertificate: "",
+  certIncorporation: null, businessRegCert: null, businessLicense: null, companyStatus: "", companyAddress: "",
+  tin: "", vatRegNumber: "", taxCountry: "South Africa", taxCertificate: null,
 };
 
 interface Props {
@@ -115,15 +115,61 @@ function TextArea({ label, value, onChange, required }: { label: string; value: 
   );
 }
 
-function FileField({ label, value, onChange, required }: { label: string; value: string; onChange: (v: string) => void; required?: boolean }) {
+const MAX_FILE_MB = 10;
+const ACCEPTED = "image/png,image/jpeg,image/webp,application/pdf";
+
+function FileField({ label, file, onChange, required, hint }: {
+  label: string; file: File | null; onChange: (f: File | null) => void; required?: boolean; hint?: string;
+}) {
+  const [dragOver, setDragOver] = useState(false);
+  const [fileError, setFileError] = useState<string | null>(null);
+  const inputId = `file-${label.replace(/\W+/g, "-")}`;
+  const preview = file && file.type.startsWith("image/") ? URL.createObjectURL(file) : null;
+
+  const accept = (f: File | undefined) => {
+    if (!f) return;
+    if (f.size > MAX_FILE_MB * 1024 * 1024) { setFileError(`File is too large — max ${MAX_FILE_MB}MB.`); return; }
+    if (!ACCEPTED.split(",").includes(f.type)) { setFileError("Use a JPG, PNG, WEBP or PDF file."); return; }
+    setFileError(null);
+    onChange(f);
+  };
+
   return (
-    <label className="block">
+    <label className="block" htmlFor={inputId}>
       <Label required={required}>{label}</Label>
-      <span className="flex items-center gap-2 border border-dashed border-gray-300 rounded-lg px-3 py-2 text-sm cursor-pointer hover:border-[#0066CC] hover:bg-blue-50/30">
-        <Upload className="w-4 h-4 text-gray-400 shrink-0" />
-        <span className={`truncate ${value ? "text-gray-800" : "text-gray-400"}`}>{value || "Choose file..."}</span>
-        <input type="file" className="hidden" onChange={e => onChange(e.target.files?.[0]?.name ?? "")} />
-      </span>
+      <div
+        onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={e => { e.preventDefault(); setDragOver(false); accept(e.dataTransfer.files?.[0]); }}
+        className="relative flex items-center gap-3 border border-dashed rounded-lg px-3 py-2.5 text-sm cursor-pointer transition-colors"
+        style={{ borderColor: dragOver ? "#0066CC" : file ? "#10B981" : "#D1D5DB", background: dragOver ? "#EFF6FF" : file ? "#F0FDF4" : "#fff" }}
+      >
+        {preview ? (
+          <img src={preview} alt="" className="w-9 h-9 rounded object-cover shrink-0 border border-gray-200" />
+        ) : (
+          <span className="w-9 h-9 rounded flex items-center justify-center shrink-0" style={{ background: file ? "#DCFCE7" : "#F3F4F6", color: file ? "#059669" : "#9CA3AF" }}>
+            {file ? <CheckCircle2 className="w-4 h-4" /> : <Upload className="w-4 h-4" />}
+          </span>
+        )}
+        <span className="flex-1 min-w-0">
+          {file ? (
+            <>
+              <span className="block truncate text-gray-800 font-medium">{file.name}</span>
+              <span className="block text-[10px] text-gray-400">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
+            </>
+          ) : (
+            <span className="text-gray-400">Drag a file here, or click to browse</span>
+          )}
+        </span>
+        {file && (
+          <button type="button" onClick={e => { e.preventDefault(); e.stopPropagation(); onChange(null); }} className="text-gray-400 hover:text-red-500 shrink-0 text-xs font-semibold">
+            Remove
+          </button>
+        )}
+        <input id={inputId} type="file" accept={ACCEPTED} className="absolute inset-0 opacity-0 cursor-pointer" onChange={e => accept(e.target.files?.[0])} />
+      </div>
+      {fileError && <p className="text-[11px] text-red-500 mt-1">{fileError}</p>}
+      {hint && !fileError && <p className="text-[11px] text-gray-400 mt-1">{hint}</p>}
     </label>
   );
 }
@@ -225,8 +271,8 @@ export function SellerApplicationWizard({ onClose, onAuthenticated }: Props) {
   };
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-6" style={{ background: "rgba(0,0,0,0.55)" }}>
-      <div className="w-full max-w-3xl bg-white rounded-xl shadow-2xl overflow-hidden max-h-[94vh] flex flex-col">
+    <div className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-6" style={{ background: "rgba(0,0,0,0.55)" }} onClick={e => e.stopPropagation()}>
+      <div className="w-full max-w-3xl bg-white rounded-xl shadow-2xl overflow-hidden max-h-[94vh] flex flex-col" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between px-5 sm:px-6 py-4 shrink-0" style={{ background: INK }}>
           <div>
             <p className="text-white text-sm font-black">Seller Registration &amp; Verification</p>
@@ -334,9 +380,9 @@ export function SellerApplicationWizard({ onClose, onAuthenticated }: Props) {
                 <TextField label="Expiry date" value={form.idExpiry} onChange={v => set("idExpiry", v)} type="date" />
               </div>
               <div className="grid sm:grid-cols-3 gap-3">
-                <FileField label="Front of ID" value={form.idFront} onChange={v => set("idFront", v)} />
-                <FileField label="Back of ID (if applicable)" value={form.idBack} onChange={v => set("idBack", v)} />
-                <FileField label="Selfie holding the ID" value={form.selfie} onChange={v => set("selfie", v)} />
+                <FileField label="Front of ID" file={form.idFront} onChange={v => set("idFront", v)} />
+                <FileField label="Back of ID (if applicable)" file={form.idBack} onChange={v => set("idBack", v)} />
+                <FileField label="Selfie holding the ID" file={form.selfie} onChange={v => set("selfie", v)} />
               </div>
               <div className="mt-4 flex items-center gap-2">
                 <span className="text-xs text-gray-500">Verification status:</span>
@@ -346,7 +392,7 @@ export function SellerApplicationWizard({ onClose, onAuthenticated }: Props) {
               </div>
               <div className="mt-4 flex items-start gap-2 px-3 py-2.5 rounded-lg bg-amber-50 border border-amber-100">
                 <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                <p className="text-[11px] text-amber-800">Files chosen here are attached for this application only — they are <strong>not uploaded or stored</strong>. This demo doesn't have a secure, encrypted document store or a licensed identity-verification provider behind it, so real ID/selfie images should never be submitted through it.</p>
+                <p className="text-[11px] text-amber-800">You can select and preview real files here — they're read into your browser for this application. What doesn't happen: they are <strong>not sent to or stored on our servers</strong> in this demo. There's no secure, encrypted document store or licensed identity-verification provider behind it yet, so treat this as a working form preview rather than a channel for submitting real ID/selfie images.</p>
               </div>
             </div>
           )}
@@ -360,9 +406,9 @@ export function SellerApplicationWizard({ onClose, onAuthenticated }: Props) {
                 <TextField label="Province/State" value={form.province} onChange={v => set("province", v)} />
                 <TextField label="Postal code" value={form.postalCode} onChange={v => set("postalCode", v)} required />
                 <TextField label="Country" value={form.country} onChange={v => set("country", v)} required />
-                <FileField label="Proof of address (utility bill / bank statement / lease)" value={form.addressProof} onChange={v => set("addressProof", v)} />
+                <FileField label="Proof of address (utility bill / bank statement / lease)" file={form.addressProof} onChange={v => set("addressProof", v)} />
               </div>
-              <p className="text-[11px] text-gray-400 mt-3">Document should be less than 3 months old. As on the previous step, this file is not actually uploaded anywhere in this demo.</p>
+              <p className="text-[11px] text-gray-400 mt-3">Document should be less than 3 months old. As on the previous step, this stays in your browser and isn't sent to our servers in this demo.</p>
             </div>
           )}
 
@@ -391,13 +437,13 @@ export function SellerApplicationWizard({ onClose, onAuthenticated }: Props) {
             <div>
               <SectionIntro icon={<FileText className="w-5 h-5" />} title="Company Registration Documents" subtitle="Supporting documents that confirm your business is legally registered." />
               <div className="grid sm:grid-cols-2 gap-3 mb-4">
-                <FileField label="Certificate of Incorporation" value={form.certIncorporation} onChange={v => set("certIncorporation", v)} />
-                <FileField label="Business Registration Certificate" value={form.businessRegCert} onChange={v => set("businessRegCert", v)} />
-                <FileField label="Business License" value={form.businessLicense} onChange={v => set("businessLicense", v)} />
+                <FileField label="Certificate of Incorporation" file={form.certIncorporation} onChange={v => set("certIncorporation", v)} />
+                <FileField label="Business Registration Certificate" file={form.businessRegCert} onChange={v => set("businessRegCert", v)} />
+                <FileField label="Business License" file={form.businessLicense} onChange={v => set("businessLicense", v)} />
                 <SelectField label="Company status" value={form.companyStatus} onChange={v => set("companyStatus", v)} options={["Active", "In Business", "Dormant", "Deregistered"]} />
               </div>
               <TextField label="Registered company address" value={form.companyAddress} onChange={v => set("companyAddress", v)} icon={<Landmark className="w-4 h-4" />} />
-              <p className="text-[11px] text-gray-400 mt-3">As with the KYC step, these files are not uploaded or stored — attaching them here just keeps the application complete for review.</p>
+              <p className="text-[11px] text-gray-400 mt-3">As with the KYC step, these stay in your browser only — attaching them here keeps the application complete for review without sending real documents to a server.</p>
             </div>
           )}
 
@@ -408,7 +454,7 @@ export function SellerApplicationWizard({ onClose, onAuthenticated }: Props) {
                 <TextField label="Tax identification number" value={form.tin} onChange={v => set("tin", v)} required />
                 <TextField label="VAT registration number" value={form.vatRegNumber} onChange={v => set("vatRegNumber", v)} />
                 <TextField label="Tax country" value={form.taxCountry} onChange={v => set("taxCountry", v)} />
-                <FileField label="Tax certificate" value={form.taxCertificate} onChange={v => set("taxCertificate", v)} />
+                <FileField label="Tax certificate" file={form.taxCertificate} onChange={v => set("taxCertificate", v)} />
               </div>
               <div className="mt-5 p-4 rounded-lg bg-gray-50 border border-gray-100">
                 <p className="text-xs font-semibold text-gray-700 mb-1">Ready to submit</p>
