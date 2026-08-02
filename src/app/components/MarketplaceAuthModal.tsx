@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { X, User, Store, Loader2, Eye, EyeOff } from "lucide-react";
 import { mktAuth, type MktAuthUser } from "../services/marketplaceApi";
+import { SellerApplicationWizard } from "./SellerApplicationWizard";
 
 type Tab = "signin" | "customer" | "seller";
 
@@ -39,6 +40,7 @@ export function MarketplaceAuthModal({ onClose, onAuthenticated }: Props) {
   const [tab, setTab] = useState<Tab>("signin");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showWizard, setShowWizard] = useState(false);
 
   // Sign in
   const [siUsername, setSiUsername] = useState("");
@@ -49,15 +51,6 @@ export function MarketplaceAuthModal({ onClose, onAuthenticated }: Props) {
   const [cUsername, setCUsername] = useState("");
   const [cEmail, setCEmail] = useState("");
   const [cPassword, setCPassword] = useState("");
-
-  // Seller registration
-  const [sName, setSName] = useState("");
-  const [sUsername, setSUsername] = useState("");
-  const [sEmail, setSEmail] = useState("");
-  const [sPassword, setSPassword] = useState("");
-  const [sStoreName, setSStoreName] = useState("");
-  const [sDescription, setSDescription] = useState("");
-  const [sPhone, setSPhone] = useState("");
 
   const handleSignIn = async () => {
     setError(null);
@@ -77,17 +70,6 @@ export function MarketplaceAuthModal({ onClose, onAuthenticated }: Props) {
     const r = await mktAuth.registerCustomer({ username: cUsername, password: cPassword, name: cName, email: cEmail });
     setLoading(false);
     if (r.success && r.token) onAuthenticated(r.user, null);
-    else setError((r as { error?: string }).error ?? "Registration failed.");
-  };
-
-  const handleSellerRegister = async () => {
-    setError(null);
-    if (!sName || !sUsername || !sEmail || !sPassword || !sStoreName) { setError("Name, username, email, password and store name are required."); return; }
-    if (sPassword.length < 8) { setError("Password must be at least 8 characters."); return; }
-    setLoading(true);
-    const r = await mktAuth.registerSeller({ username: sUsername, password: sPassword, name: sName, email: sEmail, storeName: sStoreName, description: sDescription, phone: sPhone });
-    setLoading(false);
-    if (r.success && r.token) onAuthenticated(r.user, r.seller as { id: string; storeName: string; status: string });
     else setError((r as { error?: string }).error ?? "Registration failed.");
   };
 
@@ -144,24 +126,29 @@ export function MarketplaceAuthModal({ onClose, onAuthenticated }: Props) {
           )}
 
           {tab === "seller" && (
-            <div>
-              <Field label="Store name" value={sStoreName} onChange={setSStoreName} />
-              <Field label="Store description" value={sDescription} onChange={setSDescription} required={false} />
-              <Field label="Your full name" value={sName} onChange={setSName} />
-              <Field label="Username" value={sUsername} onChange={setSUsername} />
-              <Field label="Email" value={sEmail} onChange={setSEmail} type="email" />
-              <Field label="Phone" value={sPhone} onChange={setSPhone} required={false} />
-              <Field label="Password" value={sPassword} onChange={setSPassword} type="password" placeholder="At least 8 characters" />
-              <button onClick={handleSellerRegister} disabled={loading}
-                className="w-full mt-2 py-2.5 rounded-lg font-bold text-sm text-white flex items-center justify-center gap-2 disabled:opacity-60"
+            <div className="text-center py-4">
+              <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3" style={{ background: "#FFF4E5", color: "#B75C00" }}>
+                <Store className="w-6 h-6" />
+              </div>
+              <p className="text-sm font-bold text-gray-900 mb-1">Sell on Vink</p>
+              <p className="text-xs text-gray-500 mb-5 max-w-xs mx-auto">Our full seller application covers your account, business details, identity verification, and tax information — about 5 minutes.</p>
+              <button onClick={() => setShowWizard(true)}
+                className="w-full py-2.5 rounded-lg font-bold text-sm text-white flex items-center justify-center gap-2"
                 style={{ background: "#131921" }}>
-                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Store className="w-4 h-4" /> Create seller account</>}
+                <Store className="w-4 h-4" /> Start seller application
               </button>
-              <p className="text-[11px] text-gray-400 mt-3">Your store won't be visible to shoppers until the marketplace team approves it — usually within a business day.</p>
+              <p className="text-[11px] text-gray-400 mt-3">Your store won't be visible to shoppers until the marketplace team approves your application.</p>
             </div>
           )}
         </div>
       </div>
+
+      {showWizard && (
+        <SellerApplicationWizard
+          onClose={() => setShowWizard(false)}
+          onAuthenticated={(user, seller) => { setShowWizard(false); onAuthenticated(user, seller); }}
+        />
+      )}
     </div>
   );
 }

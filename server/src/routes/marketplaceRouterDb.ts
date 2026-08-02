@@ -43,6 +43,7 @@ const mapSeller = (r: any) => ({
   phone: r.phone, country: r.country, status: r.status, kycVerified: r.kyc_verified, taxId: r.tax_id,
   totalProducts: Number(r.total_products ?? 0), totalSales: r.total_sales, totalRevenue: Number(r.total_revenue),
   avgRating: Number(r.avg_rating), reviewCount: r.review_count, joinedAt: r.joined_at, commissionPct: Number(r.commission_pct),
+  applicationData: r.application_data ?? {},
 });
 
 const mapProduct = (r: any, sellerName?: string, categoryName?: string) => ({
@@ -557,7 +558,7 @@ router.get("/customers/:userId/spending", requireAuth, requireSelf, async (req: 
 
 // ── SELLER REGISTRATION ──────────────────────────────────────────────────────
 router.post("/sellers/register", async (req: Request, res: Response): Promise<void> => {
-  const { username, password, name, email, storeName, description, phone, taxId } = req.body;
+  const { username, password, name, email, storeName, description, phone, taxId, applicationData } = req.body;
   if (!username || !password || !name || !email || !storeName) {
     res.status(400).json({ success: false, error: "username, password, name, email and storeName are required" });
     return;
@@ -582,9 +583,9 @@ router.post("/sellers/register", async (req: Request, res: Response): Promise<vo
     const user = userRows[0];
     const sellerId = `sel-${user.id.slice(0, 8)}`;
     await client.query(
-      `INSERT INTO mkt_sellers (id, user_id, store_name, store_slug, description, email, phone, status, kyc_verified, tax_id)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,'pending_kyc',false,$8)`,
-      [sellerId, user.id, storeName, slug, description ?? "", email, phone ?? "", taxId ?? null]
+      `INSERT INTO mkt_sellers (id, user_id, store_name, store_slug, description, email, phone, status, kyc_verified, tax_id, application_data)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,'pending_kyc',false,$8,$9)`,
+      [sellerId, user.id, storeName, slug, description ?? "", email, phone ?? "", taxId ?? null, JSON.stringify(applicationData ?? {})]
     );
     await client.query("COMMIT");
     const token = jwt.sign({ userId: user.id, username: user.username, role: user.role }, JWT_SECRET, { expiresIn: JWT_EXPIRES });
@@ -592,7 +593,7 @@ router.post("/sellers/register", async (req: Request, res: Response): Promise<vo
       success: true, token,
       user: { id: user.id, username: user.username, name: user.name, email: user.email, role: user.role },
       seller: { id: sellerId, storeName, status: "pending_kyc" },
-      message: "Seller account created — your store is pending approval before it goes live.",
+      message: "Seller account created — your application is pending review before your store goes live.",
     });
   } catch (err) {
     await client.query("ROLLBACK");

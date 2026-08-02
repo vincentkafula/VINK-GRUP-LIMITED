@@ -54,8 +54,15 @@ CREATE TABLE IF NOT EXISTS mkt_sellers (
   avg_rating      NUMERIC(2,1) NOT NULL DEFAULT 0,
   review_count    INTEGER NOT NULL DEFAULT 0,
   commission_pct  NUMERIC(4,1) NOT NULL DEFAULT 8,
-  joined_at       TIMESTAMPTZ NOT NULL DEFAULT now()
+  joined_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+  -- Structured data from the seller application wizard (steps 1-8: seller
+  -- type, personal info, KYC identity fields, address, business info, tax
+  -- info). Document *uploads* referenced in the wizard are NOT stored here
+  -- or anywhere else — this demo doesn't have a secure document storage /
+  -- licensed KYC pipeline, so only the structured text fields persist.
+  application_data JSONB NOT NULL DEFAULT '{}'
 );
+ALTER TABLE mkt_sellers ADD COLUMN IF NOT EXISTS application_data JSONB NOT NULL DEFAULT '{}';
 
 CREATE TABLE IF NOT EXISTS mkt_products (
   id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
