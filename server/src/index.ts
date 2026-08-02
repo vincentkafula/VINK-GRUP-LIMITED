@@ -7,6 +7,7 @@ import rateLimit from "express-rate-limit";
 
 import { requestLogger } from "./middleware/logger.js";
 import authRouter from "./routes/auth.js";
+import authRouterDb from "./routes/authRouterDb.js";
 import kpisRouter from "./routes/kpis.js";
 import subscribersRouter from "./routes/subscribers.js";
 import networkRouter from "./routes/network.js";
@@ -28,6 +29,7 @@ import bankTreasuryRouter from "./routes/bankTreasury.js";
 import bankComplianceRouter from "./routes/bankCompliance.js";
 import bankUsersRouter from "./routes/bankUsers.js";
 import marketplaceRouter from "./routes/marketplaceRouter.js";
+import marketplaceRouterDb from "./routes/marketplaceRouterDb.js";
 import publicRouter from "./routes/public.js";
 import globalBankingRouter from "./routes/globalBanking.js";
 import financialReportsRouter from "./routes/financialReports.js";
@@ -35,6 +37,8 @@ import levySystemRouter from "./routes/levySystem.js";
 import afcRouter from "./routes/afc.js";
 import { startSimulator } from "./services/simulator.js";
 import { startVehicleSimulator } from "./services/vehicleSimulator.js";
+import { hasDb } from "./db/pool.js";
+import { migrateAndSeed } from "./db/migrate.js";
 import type { WsEvent } from "./types/mvno.js";
 import type { VehicleWsMessage } from "./types/vehicles.js";
 
@@ -62,7 +66,7 @@ app.use(requestLogger);
 app.use("/api", rateLimit({ windowMs: 60_000, max: 300, standardHeaders: true, legacyHeaders: false }));
 
 // ─── Routes ──────────────────────────────────────────────────────────────────
-app.use("/api/auth",          authRouter);
+app.use("/api/auth",          hasDb ? authRouterDb : authRouter);
 app.use("/api/kpis",          kpisRouter);
 app.use("/api/subscribers",   subscribersRouter);
 app.use("/api/network",       networkRouter);
@@ -80,7 +84,7 @@ app.use("/api/bank/payments",      bankPaymentsRouter);
 app.use("/api/bank/treasury",      bankTreasuryRouter);
 app.use("/api/bank/compliance",    bankComplianceRouter);
 app.use("/api/bank/users",         bankUsersRouter);
-app.use("/api/marketplace",        marketplaceRouter);
+app.use("/api/marketplace",        hasDb ? marketplaceRouterDb : marketplaceRouter);
 app.use("/api/public",             publicRouter);
 app.use("/api/global",             globalBankingRouter);
 app.use("/api/financial",          financialReportsRouter);
@@ -92,7 +96,7 @@ app.use("/api/ha/sos",        sosRouter);
 
 // Health check
 app.get("/health", (_req, res) => {
-  res.json({ status: "ok", uptime: process.uptime(), timestamp: new Date().toISOString() });
+  res.json({ status: "ok", uptime: process.uptime(), timestamp: new Date().toISOString(), database: hasDb ? "connected" : "in-memory" });
 });
 
 // API index
@@ -215,18 +219,33 @@ const stopSimulator        = startSimulator(broadcast);
 const stopVehicleSimulator = startVehicleSimulator(broadcast);
 
 // ─── Boot ────────────────────────────────────────────────────────────────────
-server.listen(PORT, () => {
-  console.log("");
-  console.log("  \x1b[35m▲ Vink Backend\x1b[0m  v1.1.0");
-  console.log(`  \x1b[2mHTTP\x1b[0m   → http://localhost:${PORT}`);
-  console.log(`  \x1b[2mAPI\x1b[0m    → http://localhost:${PORT}/api`);
-  console.log(`  \x1b[2mWS\x1b[0m     → ws://localhost:${PORT}/ws`);
-  console.log(`  \x1b[2mHealth\x1b[0m → http://localhost:${PORT}/health`);
-  console.log("");
-  console.log("  \x1b[32m●\x1b[0m MVNO simulator running");
-  console.log("  \x1b[32m●\x1b[0m Vehicle tracking simulator running (50 vehicles)");
-  console.log("");
-});
+async function boot() {
+  if (hasDb) {
+    try {
+      await migrateAndSeed();
+    } catch (err) {
+      console.error("[db] Migration failed — server will still start, but /api/auth and /api/marketplace will error until this is fixed:", err);
+    }
+  } else {
+    console.log("[db] DATABASE_URL not set — auth and marketplace are running on in-memory demo data.");
+  }
+
+  server.listen(PORT, () => {
+    console.log("");
+    console.log("  \x1b[35m▲ Vink Backend\x1b[0m  v1.1.0");
+    console.log(`  \x1b[2mHTTP\x1b[0m   → http://localhost:${PORT}`);
+    console.log(`  \x1b[2mAPI\x1b[0m    → http://localhost:${PORT}/api`);
+    console.log(`  \x1b[2mWS\x1b[0m     → ws://localhost:${PORT}/ws`);
+    console.log(`  \x1b[2mHealth\x1b[0m → http://localhost:${PORT}/health`);
+    console.log(`  \x1b[2mDB\x1b[0m     → ${hasDb ? "Postgres connected" : "in-memory (no DATABASE_URL)"}`);
+    console.log("");
+    console.log("  \x1b[32m●\x1b[0m MVNO simulator running");
+    console.log("  \x1b[32m●\x1b[0m Vehicle tracking simulator running (50 vehicles)");
+    console.log("");
+  });
+}
+
+boot();
 
 process.on("SIGTERM", () => { stopSimulator(); stopVehicleSimulator(); server.close(() => process.exit(0)); });
 process.on("SIGINT",  () => { stopSimulator(); stopVehicleSimulator(); server.close(() => process.exit(0)); });
