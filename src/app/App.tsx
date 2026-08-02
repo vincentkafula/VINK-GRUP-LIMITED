@@ -37,6 +37,7 @@ const BankingDashboard            = lazy(() => import("./components/BankingDashb
 const VehicleTrackingDashboard    = lazy(() => import("./components/VehicleTrackingDashboard").then(m => ({ default: m.VehicleTrackingDashboard })));
 const VinkMarketplace             = lazy(() => import("./components/VinkMarketplace").then(m => ({ default: m.VinkMarketplace })));
 import { PersistentTopNav } from "./components/PersistentTopNav";
+const MarketplaceLandingViewer    = lazy(() => import("./components/MarketplaceLandingViewer").then(m => ({ default: m.MarketplaceLandingViewer })));
 const PersonalAccountViewer       = lazy(() => import("./components/PersonalAccountViewer").then(m => ({ default: m.PersonalAccountViewer })));
 const PersonalLandingViewer       = lazy(() => import("./components/PersonalLandingViewer").then(m => ({ default: m.PersonalLandingViewer })));
 const SafetySecurityViewer        = lazy(() => import("./components/footerPages/SafetySecurityViewer").then(m => ({ default: m.SafetySecurityViewer })));
@@ -128,6 +129,8 @@ export default function App() {
 
   // ── Personal products ──────────────────────────────────────────────────────
   const [showPersonalLanding, setShowPersonalLanding]       = useState(false);
+  const [showMarketplaceLanding, setShowMarketplaceLanding] = useState(false);
+  const [marketplaceInitialAction, setMarketplaceInitialAction] = useState<"sell" | null>(null);
   const [showSafetySecurity, setShowSafetySecurity]         = useState(false);
   const [showPersonalAccount, setShowPersonalAccount]       = useState(false);
   const [showPersonalLedger, setShowPersonalLedger]          = useState(false);
@@ -244,7 +247,7 @@ export default function App() {
       else if (id === "ridehailing")       { mount("rideHailing");      setShowRideHailing(true); }
       else if (id === "account")           { mount("banking");          setShowBanking(true); }
       else if (id === "vehicle")           { mount("vehicle");          setShowVehicle(true); }
-      else if (id === "marketplace")       { mount("marketplace");      setShowMarketplace(true); pushRoute("/marketplace"); }
+      else if (id === "marketplace")       { mount("marketplaceLanding"); setShowMarketplaceLanding(true); pushRoute("/marketplace"); }
       else if (id === "appLauncher")       { mount("appLauncher");      setShowAppLauncher(true); }
       else if (id === "afcApp")            { mount("afcApp");           setShowAFCApp(true); }
       else                                 { mount("postLogin");        setShowPostLogin(true); }
@@ -281,7 +284,7 @@ export default function App() {
         case "mobile":
         case "vinktv":        mount("mobileNetwork");    setShowMobileNetwork(true);    break;
         // Commerce
-        case "marketplace":  mount("marketplace");      setShowMarketplace(true);      pushRoute("/marketplace"); break;
+        case "marketplace":  mount("marketplaceLanding"); setShowMarketplaceLanding(true); pushRoute("/marketplace"); break;
         case "buy":
         case "settings":     mount("vinkMobileApp");    setShowVinkMobileApp(true);    break;
         // Contact & Support
@@ -412,7 +415,7 @@ export default function App() {
       if (item === "Corporate:Events")                    { mount("corpEvents");    setShowCorporateEvents(true); return; }
       if (item === "Corporate:Social Responsibility")     { mount("corpCSR");       setShowCorporateCSR(true); return; }
       // Marketplace
-      if (item === "Marketplace")       { mount("marketplace");        setShowMarketplace(true); return; }
+      if (item === "Marketplace")       { mount("marketplaceLanding"); setShowMarketplaceLanding(true); return; }
     });
   };
 
@@ -427,7 +430,7 @@ export default function App() {
     setShowBusinessLedger(false); setShowManageBusiness(false); setShowBusinessInternational(false);
     setShowBusinessStudio(false); setShowBusinessNews(false);
     setShowCorporateLedger(false); setShowCorporateApi(false); setShowCorporateEvents(false); setShowCorporateCSR(false);
-    setShowMarketplace(false);
+    setShowMarketplace(false); setShowMarketplaceLanding(false);
     setShowContactUs(false); setShowAboutVINK(false); setShowCareers(false); setShowNews(false);
     setShowSwitchToVINK(false); setShowSafetySecurity(false); setShowInvestorRelations(false);
     setShowTaxiAssociations(false); setShow500App(false);
@@ -458,7 +461,7 @@ export default function App() {
       if (section === "Personal")    { mount("personalLanding");     setShowPersonalLanding(true);     pushRoute("/personal"); }
       if (section === "Business")    { mount("bizAccountSelector");  setShowBusinessAccountSelector(true); pushRoute("/business/accounts"); }
       if (section === "Corporate")   { mount("corpLedger"); setCorporateLedgerCategory("account"); setShowCorporateLedger(true); pushRoute("/corporate/account"); }
-      if (section === "Marketplace") { mount("marketplace");         setShowMarketplace(true); pushRoute("/marketplace"); }
+      if (section === "Marketplace") { mount("marketplaceLanding"); setShowMarketplaceLanding(true); pushRoute("/marketplace"); }
     });
   };
 
@@ -512,7 +515,7 @@ export default function App() {
       return true;
     }
     if (path === "/contact-us") { mount("contactUs"); setShowContactUs(true); return true; }
-    if (path === "/marketplace") { mount("marketplace"); setShowMarketplace(true); return true; }
+    if (path === "/marketplace") { mount("marketplaceLanding"); setShowMarketplaceLanding(true); return true; }
     return false;
   };
 
@@ -637,7 +640,8 @@ export default function App() {
       {has("rideHailing")     && <Suspense fallback={null}><RideHailingSystem      isOpen={showRideHailing}     onClose={() => setShowRideHailing(false)} /></Suspense>}
       {has("banking")         && <Suspense fallback={null}><BankingDashboard       isOpen={showBanking}         onClose={() => setShowBanking(false)} /></Suspense>}
       {has("vehicle")         && <Suspense fallback={null}><VehicleTrackingDashboard isOpen={showVehicle}       onClose={() => setShowVehicle(false)} /></Suspense>}
-      {has("marketplace")     && <Suspense fallback={null}><VinkMarketplace        isOpen={showMarketplace}     onClose={() => { setShowMarketplace(false); pushRoute("/"); }} /></Suspense>}
+      {has("marketplaceLanding") && <Suspense fallback={null}><MarketplaceLandingViewer isOpen={showMarketplaceLanding} onClose={() => { setShowMarketplaceLanding(false); pushRoute("/"); }} onShop={() => { setMarketplaceInitialAction(null); setShowMarketplaceLanding(false); mount("marketplace"); setShowMarketplace(true); }} onSell={() => { setMarketplaceInitialAction("sell"); setShowMarketplaceLanding(false); mount("marketplace"); setShowMarketplace(true); }} /></Suspense>}
+      {has("marketplace")     && <Suspense fallback={null}><VinkMarketplace        isOpen={showMarketplace}     onClose={() => { setShowMarketplace(false); pushRoute("/"); }} initialAction={marketplaceInitialAction} /></Suspense>}
 
       {/* Personal products */}
       {has("personalLanding") && <Suspense fallback={null}><PersonalLandingViewer isOpen={showPersonalLanding} onClose={() => { setShowPersonalLanding(false); pushRoute("/"); }} onNavigate={(item) => { setShowPersonalLanding(false); handleSubNavClick(item); }} onApplyClick={() => openSelector("creditCard")} onSecurityClick={() => { mount("safetySecurity"); setShowSafetySecurity(true); }} /></Suspense>}

@@ -1318,9 +1318,9 @@ function WishlistView({ wishlistIds, onProduct, onCart, onWishlist }: {
 
 
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
-interface VinkMarketplaceProps { isOpen: boolean; onClose: () => void }
+interface VinkMarketplaceProps { isOpen: boolean; onClose: () => void; initialAction?: "sell" | null }
 
-export function VinkMarketplace({ isOpen, onClose }: VinkMarketplaceProps) {
+export function VinkMarketplace({ isOpen, onClose, initialAction }: VinkMarketplaceProps) {
   const [view, setView]           = useState<View>("home");
   const [categories, setCategories] = useState<R[]>([]);
   const [products, setProducts]   = useState<R[]>([]);
@@ -1341,6 +1341,10 @@ export function VinkMarketplace({ isOpen, onClose }: VinkMarketplaceProps) {
     const restored = mktAuth.restoreSession();
     if (restored) { setAuthUser(restored.user); setAuthSeller(restored.seller); }
   }, []);
+
+  useEffect(() => {
+    if (isOpen && initialAction === "sell" && !mktAuth.restoreSession()) setShowAuthModal(true);
+  }, [isOpen, initialAction]);
 
   const loadInitial = useCallback(async () => {
     const promises: Promise<unknown>[] = [mktCategories(), mktProducts.list({ sort: "popular", limit: "48" })];
@@ -1612,7 +1616,7 @@ export function VinkMarketplace({ isOpen, onClose }: VinkMarketplaceProps) {
           )}
       </div>
 
-      {showAuthModal && <MarketplaceAuthModal onClose={() => setShowAuthModal(false)} onAuthenticated={handleAuthenticated} />}
+      {showAuthModal && <MarketplaceAuthModal onClose={() => setShowAuthModal(false)} onAuthenticated={handleAuthenticated} initialTab={initialAction === "sell" ? "seller" : "signin"} />}
     </div>
   );
 }

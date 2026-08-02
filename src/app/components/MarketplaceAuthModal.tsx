@@ -8,6 +8,7 @@ type Tab = "signin" | "customer" | "seller";
 interface Props {
   onClose: () => void;
   onAuthenticated: (user: MktAuthUser, seller: { id: string; storeName: string; status: string } | null) => void;
+  initialTab?: "signin" | "customer" | "seller";
 }
 
 function Field({ label, value, onChange, type = "text", required = true, placeholder }: {
@@ -36,8 +37,8 @@ function Field({ label, value, onChange, type = "text", required = true, placeho
   );
 }
 
-export function MarketplaceAuthModal({ onClose, onAuthenticated }: Props) {
-  const [tab, setTab] = useState<Tab>("signin");
+export function MarketplaceAuthModal({ onClose, onAuthenticated, initialTab = "signin" }: Props) {
+  const [tab, setTab] = useState<Tab>(initialTab);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showWizard, setShowWizard] = useState(false);
