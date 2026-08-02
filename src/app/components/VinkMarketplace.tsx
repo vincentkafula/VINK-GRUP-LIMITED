@@ -16,6 +16,7 @@ import { MarketplaceAuthModal } from "./MarketplaceAuthModal";
 import { CustomerDashboard } from "./CustomerDashboard";
 import { SellerDashboard } from "./SellerDashboard";
 import { ManagerDashboard } from "./ManagerDashboard";
+import { Product3DViewer } from "./Product3DViewer";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type View = "home" | "catalog" | "product" | "cart" | "checkout" | "orders" | "wishlist" | "seller" | "admin" | "account";
@@ -743,10 +744,14 @@ function ProductDetailView({ productId, onBack, onCart, wishlistIds, onWishlist 
       <div className="grid xl:grid-cols-2">
         {/* Image */}
         <div>
-          <div className="flex items-center justify-center p-16"
-            style={{ background: `linear-gradient(135deg,${imgs?.[0]},${imgs?.[1]})`, minHeight: 300 }}>
-            <span className="text-9xl select-none">{p.emoji as string}</span>
-          </div>
+          <Product3DViewer
+            emoji={p.emoji as string}
+            colorA={imgs?.[0] ?? "#6B5ED7"}
+            colorB={imgs?.[1] ?? "#4C1D95"}
+            brand={(p.brand as string) ?? ""}
+            name={p.name as string}
+            discount={discount}
+          />
           {p.isFlashDeal && (
             <div className="mx-4 my-3 flex items-center gap-2 p-3 rounded-xl bg-red-50 border border-red-100">
               <Zap className="w-4 h-4 text-red-500 flex-shrink-0" />
