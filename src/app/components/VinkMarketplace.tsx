@@ -4,7 +4,7 @@ import {
   SlidersHorizontal, Grid, List, Plus, Minus, Trash2,
   Package, Truck, CheckCircle, Tag, TrendingUp, BarChart3,
   Settings, Menu, Clock, Shield, Zap, RotateCcw, Loader2,
-  Home, Filter,
+  Home, Filter, MapPin, ChevronDown, User, LogOut,
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import {
@@ -1490,7 +1490,6 @@ export function VinkMarketplace({ isOpen, onClose }: VinkMarketplaceProps) {
   const [addresses, setAddresses] = useState<R[]>([]);
   const [selProductId, setSelProductId] = useState("");
   const [cartCount, setCartCount] = useState(0);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [role, setRole]           = useState<"customer" | "seller" | "admin">("customer");
 
   const loadInitial = useCallback(async () => {
@@ -1545,81 +1544,136 @@ export function VinkMarketplace({ isOpen, onClose }: VinkMarketplaceProps) {
   };
 
   const navItems = [
-    { id:"home" as View,     label:"Home",          icon:<Home className="w-4 h-4" />,          roles:["customer","seller","admin"] },
-    { id:"catalog" as View,  label:"Shop",          icon:<Grid className="w-4 h-4" />,           roles:["customer","seller","admin"] },
-    { id:"cart" as View,     label:"Cart",          icon:<ShoppingCart className="w-4 h-4" />,   roles:["customer"] },
-    { id:"wishlist" as View, label:"Wishlist",      icon:<Heart className="w-4 h-4" />,          roles:["customer"] },
-    { id:"orders" as View,   label:"My Orders",     icon:<Package className="w-4 h-4" />,        roles:["customer"] },
-    { id:"seller" as View,   label:"Seller Portal", icon:<TrendingUp className="w-4 h-4" />,    roles:["seller","admin"] },
-    { id:"admin" as View,    label:"Admin Panel",   icon:<Settings className="w-4 h-4" />,      roles:["admin"] },
+    { id:"seller" as View,   label:"Seller Central", icon:<TrendingUp className="w-4 h-4" />, roles:["seller","admin"] },
+    { id:"admin" as View,    label:"Manager Dashboard", icon:<Settings className="w-4 h-4" />, roles:["admin"] },
   ].filter(n => n.roles.includes(role));
 
+  const CATEGORY_QUICK_LINKS = (categories as R[]).slice(0, 8);
+
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-white">
-      {/* Top bar */}
-      <header className="flex items-center gap-3 px-4 py-3 bg-white border-b border-gray-100 flex-shrink-0 z-20">
-        <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
-          <Menu className="w-4 h-4 text-gray-600" />
+    <div className="fixed inset-0 z-50 flex flex-col bg-[#EAEDED]" style={{ fontFamily: "'Amazon Ember', Arial, sans-serif" }}>
+      {/* ── Tier 1: dark top strip ── */}
+      <header className="flex items-center gap-2 sm:gap-4 px-3 sm:px-4 py-2 flex-shrink-0 z-20" style={{ background: "#131921" }}>
+        <button
+          onClick={() => { setView("home"); }}
+          className="flex items-baseline gap-1 px-2 py-1.5 rounded border border-transparent hover:border-white/40 shrink-0"
+        >
+          <span className="text-white text-xl font-black tracking-tight">vink</span>
+          <span className="text-[#FF9900] text-lg font-black">.</span>
+          <span className="hidden sm:inline text-white/50 text-[10px] font-medium ml-1">marketplace</span>
         </button>
-        <div className="flex items-center gap-2">
-          <span className="text-xl">🛍️</span>
-          <div>
-            <p className="text-sm font-black text-gray-900 leading-none">Vink Marketplace</p>
-            <p className="text-[10px] text-gray-400 leading-none mt-0.5">Multi-vendor platform</p>
+
+        <button className="hidden lg:flex flex-col items-start px-2 py-1 rounded border border-transparent hover:border-white/40 text-white shrink-0">
+          <span className="flex items-center gap-1 text-[10px] text-white/60 leading-none">
+            <MapPin className="w-3 h-3" /> Deliver to
+          </span>
+          <span className="text-xs font-bold leading-tight mt-0.5">South Africa</span>
+        </button>
+
+        <div className="flex-1 flex items-stretch max-w-3xl rounded overflow-hidden h-9 min-w-0">
+          <div className="hidden sm:flex items-center bg-[#E8E8E8] hover:bg-[#DDD] px-2 text-[11px] text-gray-700 border-r border-gray-300 shrink-0 cursor-pointer">
+            All <ChevronDown className="w-3 h-3 ml-1" />
           </div>
-        </div>
-        <div className="hidden md:flex flex-1 max-w-lg items-center border border-gray-200 rounded-xl px-3 py-2 bg-gray-50 gap-2">
-          <Search className="w-4 h-4 text-gray-400" />
-          <input placeholder="Search products, brands, categories…"
-            className="flex-1 bg-transparent text-sm outline-none text-gray-700"
-            onFocus={() => setView("catalog")} />
-        </div>
-        <div className="flex items-center gap-2 ml-auto">
-          <select value={role} onChange={e => { setRole(e.target.value as typeof role); setView("home"); }}
-            className="text-xs border border-gray-200 rounded-xl px-2 py-1.5 outline-none bg-white text-gray-600 hidden md:block">
-            <option value="customer">Customer</option>
-            <option value="seller">Seller</option>
-            <option value="admin">Admin</option>
-          </select>
-          <button onClick={() => setView("wishlist")} className="relative p-2 rounded-xl hover:bg-gray-100 transition-colors">
-            <Heart className={`w-5 h-5 ${wishlistIds.size > 0 ? "text-red-500" : "text-gray-500"}`} />
-            {wishlistIds.size > 0 && <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">{wishlistIds.size}</span>}
+          <input
+            placeholder="Search Vink Marketplace"
+            className="flex-1 min-w-0 bg-white px-3 text-sm outline-none text-gray-800"
+            onFocus={() => setView("catalog")}
+          />
+          <button onClick={() => setView("catalog")} className="w-11 flex items-center justify-center shrink-0" style={{ background: "#FF9900" }}>
+            <Search className="w-4 h-4 text-[#131921]" />
           </button>
-          <button onClick={() => setView("cart")} className="relative p-2 rounded-xl hover:bg-gray-100 transition-colors">
-            <ShoppingCart className="w-5 h-5 text-gray-600" />
-            {cartCount > 0 && <span className="absolute -top-0.5 -right-0.5 w-4 h-4 text-white text-[9px] font-bold rounded-full flex items-center justify-center" style={{ background: "#6B5ED7" }}>{cartCount}</span>}
-          </button>
-          <button onClick={onClose} className="p-2 rounded-xl hover:bg-gray-100 transition-colors text-gray-500">
+        </div>
+
+        <div className="flex items-center gap-0.5 sm:gap-1 ml-auto shrink-0">
+          <div className="relative group hidden md:block">
+            <button className="flex flex-col items-start px-2 py-1 rounded border border-transparent hover:border-white/40 text-white">
+              <span className="text-[10px] text-white/60 leading-none flex items-center gap-1">
+                <User className="w-3 h-3" /> Hello, {role === "customer" ? "sign in" : role}
+              </span>
+              <span className="text-xs font-bold leading-tight mt-0.5 flex items-center gap-0.5">
+                Account &amp; Lists <ChevronDown className="w-3 h-3" />
+              </span>
+            </button>
+            <div className="absolute right-0 top-full mt-0 w-56 bg-white rounded-b shadow-2xl border border-gray-200 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-30">
+              <p className="px-3 pb-2 mb-1 border-b border-gray-100 text-[11px] text-gray-400">Demo role switcher</p>
+              {(["customer","seller","admin"] as const).map(r => (
+                <button key={r} onClick={() => { setRole(r); setView("home"); }}
+                  className="w-full text-left px-3 py-1.5 text-sm hover:bg-gray-50 flex items-center justify-between"
+                  style={{ color: role === r ? "#FF9900" : "#111827", fontWeight: role === r ? 700 : 400 }}>
+                  {r === "customer" ? "Customer" : r === "seller" ? "Seller" : "Marketplace Manager"}
+                  {role === r && <CheckCircle className="w-3.5 h-3.5" />}
+                </button>
+              ))}
+              {navItems.length > 0 && <div className="border-t border-gray-100 mt-1 pt-1">
+                {navItems.map(item => (
+                  <button key={item.id} onClick={() => setView(item.id)} className="w-full text-left px-3 py-1.5 text-sm hover:bg-gray-50 flex items-center gap-2 text-gray-700">
+                    {item.icon} {item.label}
+                  </button>
+                ))}
+              </div>}
+            </div>
+          </div>
+
+          {role === "customer" && (
+            <button onClick={() => setView("orders")} className="hidden sm:flex flex-col items-start px-2 py-1 rounded border border-transparent hover:border-white/40 text-white">
+              <span className="text-[10px] text-white/60 leading-none">Returns</span>
+              <span className="text-xs font-bold leading-tight mt-0.5">&amp; Orders</span>
+            </button>
+          )}
+
+          {role === "customer" && (
+            <button onClick={() => setView("wishlist")} className="relative p-2 rounded border border-transparent hover:border-white/40 text-white">
+              <Heart className={`w-5 h-5 ${wishlistIds.size > 0 ? "fill-[#FF9900] text-[#FF9900]" : ""}`} />
+              {wishlistIds.size > 0 && <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-[#FF9900] text-[#131921] text-[9px] font-bold rounded-full flex items-center justify-center">{wishlistIds.size}</span>}
+            </button>
+          )}
+
+          {role === "customer" && (
+            <button onClick={() => setView("cart")} className="relative flex items-end gap-1 px-2 py-1 rounded border border-transparent hover:border-white/40 text-white">
+              <span className="relative">
+                <ShoppingCart className="w-7 h-7" />
+                <span className="absolute -top-1 left-3.5 text-[13px] font-black" style={{ color: "#FF9900" }}>{cartCount}</span>
+              </span>
+              <span className="hidden lg:inline text-xs font-bold pb-1">Cart</span>
+            </button>
+          )}
+
+          <button onClick={onClose} className="p-2 rounded border border-transparent hover:border-white/40 text-white/70 ml-1">
             <X className="w-4 h-4" />
           </button>
         </div>
       </header>
 
-      <div className="flex flex-1 min-h-0 overflow-hidden">
-        {/* Sidebar */}
-        {sidebarOpen && (
-          <aside className="w-52 flex-shrink-0 bg-white border-r border-gray-100 flex flex-col py-3 px-2 overflow-y-auto">
-            {navItems.map(item => (
-              <button key={item.id} onClick={() => setView(item.id)}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left text-sm font-medium mb-0.5"
-                style={{ background: view === item.id ? "#F3F0FF" : "transparent", color: view === item.id ? "#6B5ED7" : "#6B7280" }}>
-                {item.icon}
-                <span>{item.label}</span>
-                {item.id === "cart" && cartCount > 0 && (
-                  <span className="ml-auto text-[10px] font-bold text-white rounded-full w-4 h-4 flex items-center justify-center" style={{ background: "#6B5ED7" }}>{cartCount}</span>
-                )}
-              </button>
-            ))}
-            {isDemoMode() && (
-              <div className="mt-auto mx-1 mb-1 p-2.5 rounded-xl text-[10px] text-amber-700 bg-amber-50 border border-amber-100">
-                ⚡ Demo Mode — data is simulated
-              </div>
-            )}
-          </aside>
+      {/* ── Tier 2: category strip ── */}
+      <div className="flex items-center gap-4 px-3 sm:px-4 py-1.5 flex-shrink-0 z-10 overflow-x-auto scrollbar-none" style={{ background: "#232F3E" }}>
+        <button onClick={() => setView("catalog")} className="flex items-center gap-1.5 text-white text-xs font-bold whitespace-nowrap hover:text-[#FF9900] transition-colors">
+          <Menu className="w-4 h-4" /> All
+        </button>
+        <button onClick={() => setView("home")} className="text-white/85 text-xs font-medium whitespace-nowrap hover:text-white transition-colors">Home</button>
+        {CATEGORY_QUICK_LINKS.map((c, i) => (
+          <button key={i} onClick={() => setView("catalog")} className="text-white/85 text-xs font-medium whitespace-nowrap hover:text-white transition-colors">
+            {String(c.name)}
+          </button>
+        ))}
+        {role === "customer" && (
+          <button onClick={() => setView("wishlist")} className="text-white/85 text-xs font-medium whitespace-nowrap hover:text-white transition-colors ml-auto">
+            Today's Deals
+          </button>
         )}
+        {navItems.map(item => (
+          <button key={item.id} onClick={() => setView(item.id)}
+            className="hidden md:flex items-center gap-1 text-xs font-medium whitespace-nowrap transition-colors"
+            style={{ color: view === item.id ? "#FF9900" : "rgba(255,255,255,0.85)" }}>
+            {item.icon} {item.label}
+          </button>
+        ))}
+        {isDemoMode() && (
+          <span className="hidden xl:inline text-[10px] text-amber-300 whitespace-nowrap ml-auto md:ml-4">⚡ Demo Mode</span>
+        )}
+      </div>
 
-        {/* Content */}
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      {/* Content */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
           {view === "home" && (
             <HomeView
               categories={categories} products={products}
@@ -1671,7 +1725,6 @@ export function VinkMarketplace({ isOpen, onClose }: VinkMarketplaceProps) {
           )}
           {view === "seller" && <SellerPortal />}
           {view === "admin"   && <AdminView />}
-        </div>
       </div>
     </div>
   );
