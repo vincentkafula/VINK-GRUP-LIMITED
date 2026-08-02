@@ -18,12 +18,12 @@ const SUB_NAV: NavItem[] = ["Start My Business", "Accounts", "Credit Cards", "Lo
 // descriptions are kept to honest, generic summaries rather than inventing
 // numbers.
 const ACCOUNTS: { name: string; desc: string }[] = [
-  { name: "Business Current Account",  desc: "Everyday transactional banking for day-to-day business expenses, payments and payroll." },
-  { name: "Business Savings Account",  desc: "Grow your business reserves in an interest-bearing account while keeping funds accessible." },
-  { name: "Business Premium Account",  desc: "Enhanced day-to-day banking with additional features built for growing businesses." },
-  { name: "Business Platinum Account", desc: "VINK's top-tier business account, for businesses that need the fullest feature set." },
-  { name: "Foreign Currency Account",  desc: "Hold and transact in USD, EUR, GBP or ZMW alongside your primary ZAR account." },
-  { name: "Corporate Treasury Account",desc: "A structured account built for corporate cash management and treasury operations." },
+  { name: "Launch Business Account",   desc: "For starting a new business — built for startups, freelancers and sole traders." },
+  { name: "Forge Business Account",    desc: "For building and growing operations — designed for small businesses." },
+  { name: "Catalyst Business Account", desc: "For accelerating growth — designed for growing SMEs." },
+  { name: "Pinnacle Business Account", desc: "For established businesses — designed for medium-sized companies." },
+  { name: "Empire Business Account",   desc: "For large enterprises — designed for corporates and multi-location businesses." },
+  { name: "Sovereign Business Account",desc: "Elite corporate and private business banking — for large corporations, family offices and multinational businesses." },
 ];
 
 export function BusinessAccountSelectorViewer({ isOpen, onClose, onNavigate, onApply }: Props) {

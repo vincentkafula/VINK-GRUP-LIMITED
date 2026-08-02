@@ -415,7 +415,7 @@ function Step6({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
 
 // ─── Step 7 — Account ─────────────────────────────────────────────────────────
 function Step7({ onBack, onClose, initialAccountType }: { onBack: () => void; onClose: () => void; initialAccountType?: string }) {
-  const [accountType, setAccountType] = useState(initialAccountType ?? "Business Current Account");
+  const [accountType, setAccountType] = useState(initialAccountType ?? "Launch Business Account");
   const [currency, setCurrency] = useState("ZAR");
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -449,7 +449,7 @@ function Step7({ onBack, onClose, initialAccountType }: { onBack: () => void; on
         <div>
           <label className="field-label">Account type *</label>
           <select value={accountType} onChange={e => setAccountType(e.target.value)} className="field-input">
-            {["Business Current Account","Business Savings Account","Business Premium Account","Business Platinum Account","Foreign Currency Account","Corporate Treasury Account"].map(t => <option key={t}>{t}</option>)}
+            {["Launch Business Account","Forge Business Account","Catalyst Business Account","Pinnacle Business Account","Empire Business Account","Sovereign Business Account"].map(t => <option key={t}>{t}</option>)}
           </select>
         </div>
         <div>
