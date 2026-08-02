@@ -123,7 +123,7 @@ function AFCTerminal({ device, onTap }: { device: typeof DEVICES[0]; onTap: (tap
           <span className="text-white text-xs font-bold">{device.ref}</span>
         </div>
         <div className="flex items-center gap-3">
-          {device.wifi && <Wifi className="w-3.5 h-3.5 text-blue-400" />}
+          {device.wifi && <Wifi className="w-3.5 h-3.5 text-emerald-400" />}
           <SignalBars bars={device.signal} />
           <BatteryIcon pct={device.battery} />
         </div>
@@ -170,7 +170,7 @@ function AFCTerminal({ device, onTap }: { device: typeof DEVICES[0]; onTap: (tap
             <p className="text-green-400 font-black">✓ FARE PAID</p>
             <p className="text-white font-bold text-lg">{fmt(lastTap.fare)}</p>
             <p className="text-white/50 text-[10px]">Processed in {lastTap.ms}ms</p>
-            {lastTap.wifi && <p className="text-blue-400 text-[10px]">📶 WiFi session granted</p>}
+            {lastTap.wifi && <p className="text-emerald-400 text-[10px]">📶 WiFi session granted</p>}
           </div>
         )}
         {tapState === "declined" && (
@@ -384,7 +384,7 @@ export function AFCManagementDashboard({ isOpen, onClose }: Props) {
                     <p className="text-white/40 text-[10px] truncate mb-3">{d.route}</p>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        {d.wifi && <Wifi className="w-3.5 h-3.5 text-blue-400" />}
+                        {d.wifi && <Wifi className="w-3.5 h-3.5 text-emerald-400" />}
                         <SignalBars bars={d.signal} />
                         <BatteryIcon pct={d.battery} />
                       </div>
@@ -493,7 +493,7 @@ export function AFCManagementDashboard({ isOpen, onClose }: Props) {
                             <span className="text-white/40 text-[9px]">{tap.device}</span>
                             <span className="text-white/20 text-[9px]">·</span>
                             <span className="text-white/40 text-[9px]">{tap.ms}ms</span>
-                            {tap.wifi && <span className="text-blue-400 text-[9px]">📶 WiFi</span>}
+                            {tap.wifi && <span className="text-emerald-400 text-[9px]">📶 WiFi</span>}
                           </div>
                         </div>
                         <div className="text-right flex-shrink-0">

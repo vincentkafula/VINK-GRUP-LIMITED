@@ -482,8 +482,8 @@ function MedicalNoteScreen({ vehicleType, fare, onConfirm, onBack }: {
       <div className="flex-1 overflow-y-auto px-4 pt-4 space-y-4">
         {/* Info box */}
         <div className="flex items-start gap-3 p-3.5 rounded-2xl" style={{ background: "#EFF6FF", border: "1px solid #BFDBFE" }}>
-          <Heart className="w-4 h-4 mt-0.5 flex-shrink-0 text-blue-500" />
-          <p className="text-xs text-blue-700">This note helps your driver prepare — e.g. bringing a wheelchair ramp, allowing extra boarding time, or adjusting driving style.</p>
+          <Heart className="w-4 h-4 mt-0.5 flex-shrink-0 text-emerald-500" />
+          <p className="text-xs text-emerald-700">This note helps your driver prepare — e.g. bringing a wheelchair ramp, allowing extra boarding time, or adjusting driving style.</p>
         </div>
 
         <p className="text-xs font-semibold text-gray-700">Quick add</p>

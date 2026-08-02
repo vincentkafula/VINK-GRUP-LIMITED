@@ -199,8 +199,8 @@ function HomeProductCard({ p, onView, onCart }: { p: R; onView: () => void; onCa
           )}
           <p className="text-sm font-bold text-gray-900 mb-2">{fmtZAR(Number(p.price))}</p>
           <button onClick={e => { e.stopPropagation(); onCart(); }}
-            className="w-full text-xs font-semibold py-1.5 border-2 transition-colors hover:bg-blue-600 hover:text-white hover:border-blue-600"
-            style={{ borderColor: "#0066CC", color: "#0066CC" }}>
+            className="w-full text-xs font-semibold py-1.5 border-2 transition-colors hover:bg-emerald-600 hover:text-white hover:border-emerald-600"
+            style={{ borderColor: "#128A43", color: "#128A43" }}>
             Add to cart
           </button>
         </div>
@@ -220,7 +220,7 @@ function ProductRow({ title, products, onProduct, onCart, slice = [0, 4] }: {
     <div className="mb-4">
       <div className="flex items-center justify-between px-3 py-2 bg-white border-b border-gray-200">
         <span className="text-sm font-bold text-gray-900">{title}</span>
-        <button className="text-xs font-semibold" style={{ color: "#0066CC" }}>View more</button>
+        <button className="text-xs font-semibold" style={{ color: "#128A43" }}>View more</button>
       </div>
       <div ref={ref} {...handlers} className="flex gap-0 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
         {items.map((p, i) => (
@@ -253,7 +253,7 @@ function HeroProductSlider({ products, onView, onCart }: { products: R[]; onView
   return (
     <div className="flex-1 relative overflow-hidden rounded-sm min-h-[140px]"
       style={{ background: "linear-gradient(135deg,#e8f4fd 0%,#cce8f8 100%)", border: "1px solid #b3d9f0" }}>
-      <div className="absolute top-2 left-3 z-10 text-[10px] font-bold uppercase tracking-wider text-blue-700">Featured today</div>
+      <div className="absolute top-2 left-3 z-10 text-[10px] font-bold uppercase tracking-wider text-emerald-700">Featured today</div>
 
       {items.length > 1 && (
         <>
@@ -262,14 +262,14 @@ function HeroProductSlider({ products, onView, onCart }: { products: R[]; onView
             className="absolute left-1.5 top-1/2 -translate-y-1/2 z-10 w-6 h-6 rounded-full bg-white/80 hover:bg-white flex items-center justify-center shadow-sm transition-colors"
             aria-label="Previous product"
           >
-            <ChevronRight className="w-3.5 h-3.5 rotate-180 text-blue-700" />
+            <ChevronRight className="w-3.5 h-3.5 rotate-180 text-emerald-700" />
           </button>
           <button
             onClick={() => go(index + 1)}
             className="absolute right-1.5 top-1/2 -translate-y-1/2 z-10 w-6 h-6 rounded-full bg-white/80 hover:bg-white flex items-center justify-center shadow-sm transition-colors"
             aria-label="Next product"
           >
-            <ChevronRight className="w-3.5 h-3.5 text-blue-700" />
+            <ChevronRight className="w-3.5 h-3.5 text-emerald-700" />
           </button>
         </>
       )}
@@ -284,11 +284,11 @@ function HeroProductSlider({ products, onView, onCart }: { products: R[]; onView
             {p.compareAtPrice && (
               <span className="text-[11px] text-gray-400 line-through">{fmtZAR(Number(p.compareAtPrice))}</span>
             )}
-            <span className="text-lg font-black" style={{ color: "#0066CC" }}>{fmtZAR(Number(p.price))}</span>
+            <span className="text-lg font-black" style={{ color: "#128A43" }}>{fmtZAR(Number(p.price))}</span>
           </div>
           <button
             onClick={e => { e.stopPropagation(); onCart(p); }}
-            className="mt-2 bg-blue-600 text-white text-xs font-bold px-4 py-1.5 rounded hover:bg-blue-700 transition-colors"
+            className="mt-2 bg-emerald-600 text-white text-xs font-bold px-4 py-1.5 rounded hover:bg-emerald-700 transition-colors"
           >
             Add to cart
           </button>
@@ -308,7 +308,7 @@ function HeroProductSlider({ products, onView, onCart }: { products: R[]; onView
               key={i}
               onClick={() => go(i)}
               className="h-1.5 rounded-full transition-all"
-              style={{ width: index === i ? 16 : 6, background: index === i ? "#0066CC" : "rgba(0,102,204,0.3)" }}
+              style={{ width: index === i ? 16 : 6, background: index === i ? "#128A43" : "rgba(18,138,67,0.3)" }}
               aria-label={`Product ${i + 1}`}
             />
           ))}
@@ -348,8 +348,8 @@ function HomeView({ categories, products, onCategory, onProduct, onCart, wishlis
           <button key={i} onClick={() => { setActiveCatStrip(i); onCategory(); }}
             className="px-3 py-2.5 text-xs font-medium flex-shrink-0 transition-colors border-b-2"
             style={{
-              borderBottomColor: activeCatStrip === i ? "#0066CC" : "transparent",
-              color: activeCatStrip === i ? "#0066CC" : "#333",
+              borderBottomColor: activeCatStrip === i ? "#128A43" : "transparent",
+              color: activeCatStrip === i ? "#128A43" : "#333",
             }}>
             {label}
           </button>
@@ -363,7 +363,7 @@ function HomeView({ categories, products, onCategory, onProduct, onCart, wishlis
           <div className="px-3 py-2 text-[11px] font-bold text-gray-500 uppercase tracking-wide border-b border-gray-100">Departments</div>
           {DEPARTMENTS.map((dept) => (
             <button key={dept} onClick={onCategory}
-              className="w-full text-left px-3 py-2 text-[11px] text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors border-b border-gray-50 leading-snug">
+              className="w-full text-left px-3 py-2 text-[11px] text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors border-b border-gray-50 leading-snug">
               {dept}
             </button>
           ))}
@@ -394,7 +394,7 @@ function HomeView({ categories, products, onCategory, onProduct, onCart, wishlis
                 <div className="text-[10px] font-semibold text-gray-700 mb-1">Check your delivery or collection status</div>
                 <div className="flex gap-1">
                   <input className="flex-1 text-[10px] border border-gray-300 rounded px-2 py-1 outline-none" placeholder="Order #" />
-                  <button className="bg-blue-600 text-white text-[10px] px-2 py-1 rounded hover:bg-blue-700">Go</button>
+                  <button className="bg-emerald-600 text-white text-[10px] px-2 py-1 rounded hover:bg-emerald-700">Go</button>
                 </div>
               </div>
             </div>
@@ -404,7 +404,7 @@ function HomeView({ categories, products, onCategory, onProduct, onCart, wishlis
           <div className="mx-2 mb-2">
             <div className="flex items-center justify-between px-3 py-2 bg-white border-b border-gray-200">
               <span className="text-sm font-bold text-gray-900">Deals of the day</span>
-              <button onClick={onCategory} className="text-xs font-semibold" style={{ color: "#0066CC" }}>View more</button>
+              <button onClick={onCategory} className="text-xs font-semibold" style={{ color: "#128A43" }}>View more</button>
             </div>
             <div ref={dealsSlide.ref} {...dealsSlide.handlers} className="flex gap-0 bg-white overflow-x-auto" style={{ scrollbarWidth: "none" }}>
               {row1.map((p, i) => (
@@ -427,7 +427,7 @@ function HomeView({ categories, products, onCategory, onProduct, onCart, wishlis
                         <div className="mt-auto">
                           {item.was && <p className="text-[10px] text-gray-400 line-through">{item.was}</p>}
                           <p className="text-sm font-bold text-gray-900 mb-2">{item.price}</p>
-                          <button onClick={onCategory} className="w-full text-xs font-semibold py-1.5 border-2 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-colors" style={{ borderColor: "#0066CC", color: "#0066CC" }}>Add to cart</button>
+                          <button onClick={onCategory} className="w-full text-xs font-semibold py-1.5 border-2 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-colors" style={{ borderColor: "#128A43", color: "#128A43" }}>Add to cart</button>
                         </div>
                       </div>
                     </div>
@@ -438,12 +438,12 @@ function HomeView({ categories, products, onCategory, onProduct, onCart, wishlis
           </div>
 
           {/* No petrol strip */}
-          <div className="mx-2 mb-2 bg-blue-700 text-white flex items-center justify-between px-4 py-3 rounded-sm">
+          <div className="mx-2 mb-2 bg-emerald-700 text-white flex items-center justify-between px-4 py-3 rounded-sm">
             <div>
               <p className="text-sm font-bold">No petrol needed — get it delivered</p>
               <p className="text-xs opacity-80">Free delivery on orders over R500 · Same-day available in major cities</p>
             </div>
-            <button onClick={onCategory} className="text-xs font-bold bg-white text-blue-700 px-4 py-1.5 rounded hover:bg-blue-50 transition-colors flex-shrink-0 ml-4">
+            <button onClick={onCategory} className="text-xs font-bold bg-white text-emerald-700 px-4 py-1.5 rounded hover:bg-emerald-50 transition-colors flex-shrink-0 ml-4">
               View more
             </button>
           </div>
@@ -458,7 +458,7 @@ function HomeView({ categories, products, onCategory, onProduct, onCart, wishlis
           <div className="mx-2 mb-4">
             <div className="flex items-center justify-between px-3 py-2 bg-white border-b border-gray-200">
               <span className="text-sm font-bold text-gray-900">iPhone 13 Pro — now reduced</span>
-              <button onClick={onCategory} className="text-xs font-semibold" style={{ color: "#0066CC" }}>View more</button>
+              <button onClick={onCategory} className="text-xs font-semibold" style={{ color: "#128A43" }}>View more</button>
             </div>
             <div ref={phonesSlide.ref} {...phonesSlide.handlers} className="flex gap-0 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
               {(row4.length ? row4 : products.slice(2,6)).map((p, i) => (
@@ -497,7 +497,7 @@ function HomeView({ categories, products, onCategory, onProduct, onCart, wishlis
                     <div className="text-4xl mb-2">📱</div>
                     <div className="text-xs font-bold text-gray-800">Huawei Y7S</div>
                     <div className="text-xs text-gray-500 mt-1">R 2,999</div>
-                    <button onClick={onCategory} className="mt-2 text-xs font-bold px-3 py-1 border-2 hover:bg-blue-600 hover:text-white transition-colors" style={{ borderColor: "#0066CC", color: "#0066CC" }}>Add to cart</button>
+                    <button onClick={onCategory} className="mt-2 text-xs font-bold px-3 py-1 border-2 hover:bg-emerald-600 hover:text-white transition-colors" style={{ borderColor: "#128A43", color: "#128A43" }}>Add to cart</button>
                   </div>
                 )}
               </div>
@@ -517,7 +517,7 @@ function HomeView({ categories, products, onCategory, onProduct, onCart, wishlis
                   <Zap className="w-3.5 h-3.5 text-red-500" />
                   <span className="text-sm font-bold text-gray-900">Flash Deals</span>
                 </div>
-                <button onClick={onCategory} className="text-xs font-semibold" style={{ color: "#0066CC" }}>View more</button>
+                <button onClick={onCategory} className="text-xs font-semibold" style={{ color: "#128A43" }}>View more</button>
               </div>
               <div ref={flashSlide.ref} {...flashSlide.handlers} className="flex gap-0 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
                 {rotate(flashDeals, 0).map((p, i) => (
@@ -1291,11 +1291,11 @@ function OrdersView() {
           ))}
         </div>
         {selected.trackingNumber && (
-          <div className="flex items-center gap-3 p-3.5 rounded-xl bg-blue-50">
-            <Truck className="w-4 h-4 text-blue-600 flex-shrink-0" />
+          <div className="flex items-center gap-3 p-3.5 rounded-xl bg-emerald-50">
+            <Truck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
             <div>
-              <p className="text-xs font-bold text-blue-700">Tracking: {selected.trackingNumber as string}</p>
-              <p className="text-xs text-blue-600">{selected.carrier as string}</p>
+              <p className="text-xs font-bold text-emerald-700">Tracking: {selected.trackingNumber as string}</p>
+              <p className="text-xs text-emerald-600">{selected.carrier as string}</p>
             </div>
           </div>
         )}
@@ -1557,7 +1557,7 @@ export function VinkMarketplace({ isOpen, onClose, initialAction, initialProduct
               <button
                 onMouseDown={() => runSearch(navSearch)}
                 className="w-full flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-left border-t border-gray-100"
-                style={{ color: "#0066CC" }}
+                style={{ color: "#128A43" }}
               >
                 <Search className="w-3.5 h-3.5" /> See all results for "{navSearch}"
               </button>

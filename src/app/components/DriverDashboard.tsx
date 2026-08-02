@@ -355,8 +355,8 @@ function DriverHome({ driver, incomingRide, onGoOnline, onGoOffline, onAccept, o
             {incomingRide.medicalNote && (
               <div className="flex items-start gap-2 p-3 rounded-xl"
                 style={{ background:"#EFF6FF", border:"1px solid #BFDBFE" }}>
-                <Heart className="w-3.5 h-3.5 text-blue-500 mt-0.5 flex-shrink-0"/>
-                <p className="text-xs text-blue-700 italic">"{incomingRide.medicalNote as string}"</p>
+                <Heart className="w-3.5 h-3.5 text-emerald-500 mt-0.5 flex-shrink-0"/>
+                <p className="text-xs text-emerald-700 italic">"{incomingRide.medicalNote as string}"</p>
               </div>
             )}
 
@@ -514,8 +514,8 @@ function NavigatingScreen({ ride, mode, onArrive, onBack }: {
           </div>
           {ride.medicalNote && (
             <div className="mt-2 flex items-start gap-2 p-2.5 rounded-xl" style={{ background:"#EFF6FF" }}>
-              <Heart className="w-3 h-3 text-blue-500 mt-0.5 flex-shrink-0"/>
-              <p className="text-xs text-blue-600 italic">{ride.medicalNote as string}</p>
+              <Heart className="w-3 h-3 text-emerald-500 mt-0.5 flex-shrink-0"/>
+              <p className="text-xs text-emerald-600 italic">{ride.medicalNote as string}</p>
             </div>
           )}
         </div>
@@ -574,12 +574,12 @@ function PickupConfirmScreen({ ride, onConfirm }: { ride: RideData; onConfirm: (
         <button onClick={() => setMedAck(!medAck)}
           className={`flex items-start gap-3 p-4 rounded-2xl text-left transition-all ${medAck?"":"border-dashed"}`}
           style={{ background: medAck ? "#EFF6FF" : "#F0F9FF", border: `2px solid ${medAck?"#3B82F6":"#BFDBFE"}` }}>
-          <div className={`w-5 h-5 rounded-md flex-shrink-0 flex items-center justify-center mt-0.5 ${medAck?"bg-blue-500":"border-2 border-gray-300 bg-white"}`}>
+          <div className={`w-5 h-5 rounded-md flex-shrink-0 flex items-center justify-center mt-0.5 ${medAck?"bg-emerald-500":"border-2 border-gray-300 bg-white"}`}>
             {medAck && <svg viewBox="0 0 12 10" className="w-3 h-3 fill-white"><path d="M1 5l3.5 3.5L11 1"/></svg>}
           </div>
           <div>
-            <p className="text-xs font-bold text-blue-700 mb-0.5">I've read the passenger's medical note</p>
-            <p className="text-xs text-blue-600 italic">"{ride.medicalNote as string}"</p>
+            <p className="text-xs font-bold text-emerald-700 mb-0.5">I've read the passenger's medical note</p>
+            <p className="text-xs text-emerald-600 italic">"{ride.medicalNote as string}"</p>
           </div>
         </button>
       )}
@@ -875,8 +875,8 @@ function DocumentsScreen({ driver }: { driver: DriverData | null }) {
       </div>
 
       <div className="mt-4 p-4 rounded-2xl flex items-start gap-3" style={{ background:"#EFF6FF", border:"1px solid #BFDBFE" }}>
-        <AlertCircle className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0"/>
-        <p className="text-xs text-blue-700">Health-transport drivers must maintain all documents active. Expired documents suspend your ability to accept trips.</p>
+        <AlertCircle className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0"/>
+        <p className="text-xs text-emerald-700">Health-transport drivers must maintain all documents active. Expired documents suspend your ability to accept trips.</p>
       </div>
     </div>
   );

@@ -286,7 +286,7 @@ function MobileDashboardContent({
                 </div>
               ) : alerts.slice(0, 3).map((a, i) => (
                 <div key={i} className="flex items-start gap-2 py-1.5 border-b last:border-0" style={{ borderColor: "#2D2A50" }}>
-                  <div className={`mt-1 w-1.5 h-1.5 rounded-full flex-shrink-0 ${a.severity === "critical" ? "bg-red-500" : a.severity === "warning" ? "bg-amber-400" : "bg-blue-400"}`} />
+                  <div className={`mt-1 w-1.5 h-1.5 rounded-full flex-shrink-0 ${a.severity === "critical" ? "bg-red-500" : a.severity === "warning" ? "bg-amber-400" : "bg-emerald-400"}`} />
                   <div className="flex-1 min-w-0">
                     <p className="text-[10px] text-white leading-tight truncate">{a.message}</p>
                     <p className="text-[9px] mt-0.5" style={{ color: "#8884AA" }}>{a.component} · {ago(a.createdAt)}</p>
@@ -667,7 +667,7 @@ function WebDashboard({
                     ? <div className="flex items-center gap-2 text-emerald-400 text-xs py-3"><CheckCircle className="w-4 h-4" />All clear</div>
                     : alerts.map((a, i) => (
                       <div key={i} className="flex items-start gap-2.5 py-2 border-b last:border-0" style={{ borderColor: "#2D2A50" }}>
-                        <div className={`mt-0.5 w-2 h-2 rounded-full flex-shrink-0 ${a.severity === "critical" ? "bg-red-500" : a.severity === "warning" ? "bg-amber-400" : "bg-blue-400"}`} />
+                        <div className={`mt-0.5 w-2 h-2 rounded-full flex-shrink-0 ${a.severity === "critical" ? "bg-red-500" : a.severity === "warning" ? "bg-amber-400" : "bg-emerald-400"}`} />
                         <div className="flex-1 min-w-0">
                           <p className="text-[11px] text-white leading-tight truncate">{a.message}</p>
                           <div className="flex items-center gap-2 mt-0.5">

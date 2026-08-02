@@ -17,7 +17,7 @@ export const SpecialNeedSection = memo(function SpecialNeedSection() {
               <div className="w-full h-full bg-gradient-to-br from-emerald-500 to-emerald-800 flex items-center justify-center text-8xl">🤝</div>
             </div>
             <div className="rounded-2xl overflow-hidden shadow-lg">
-              <div className="w-full h-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-5xl">🎓</div>
+              <div className="w-full h-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-5xl">🎓</div>
             </div>
             <div className="rounded-2xl overflow-hidden shadow-lg">
               <div className="w-full h-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-5xl">🚌</div>

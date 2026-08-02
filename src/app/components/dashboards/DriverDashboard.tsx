@@ -37,7 +37,7 @@ export function DriverDashboard({ isOpen, onClose }: { isOpen: boolean; onClose:
   return (
     <DashboardShell
       title="Driver Dashboard" subtitle="Devices — Driver Account"
-      accentColor="#3B82F6" gradient="from-blue-600 to-blue-400"
+      accentColor="#3B82F6" gradient="from-emerald-600 to-emerald-400"
       navItems={NAV} activeNav={nav} onNavChange={setNav}
       onClose={onClose} liveConnected userName="James Mokoena"
     >

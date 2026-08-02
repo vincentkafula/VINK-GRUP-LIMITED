@@ -40,7 +40,7 @@ function ProductCard({ p, onClick }: { p: R; onClick: () => void }) {
         </div>
         <div className="flex items-baseline gap-1.5">
           {Boolean(p.compareAtPrice) && <span className="text-[11px] text-gray-400 line-through">{fmtZAR(Number(p.compareAtPrice))}</span>}
-          <span className="text-sm font-black" style={{ color: "#0066CC" }}>{fmtZAR(Number(p.price))}</span>
+          <span className="text-sm font-black" style={{ color: "#128A43" }}>{fmtZAR(Number(p.price))}</span>
         </div>
       </div>
     </button>

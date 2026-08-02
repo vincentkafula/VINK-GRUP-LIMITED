@@ -342,8 +342,8 @@ export function AFCApp({ isOpen, onClose }: Props) {
             )}
           </div>
           <div className="flex items-center gap-2">
-            <Navigation className="w-3 h-3 text-blue-400" title="GPS active" />
-            <Bluetooth className="w-3 h-3 text-blue-400" />
+            <Navigation className="w-3 h-3 text-emerald-400" title="GPS active" />
+            <Bluetooth className="w-3 h-3 text-emerald-400" />
             {networkOnline ? <Wifi className="w-3.5 h-3.5 text-green-400" /> : <WifiOff className="w-3.5 h-3.5 text-red-400" />}
             <span className="text-[9px] font-bold" style={{ color: networkOnline ? "#10B981" : "#9CA3AF" }}>LTE</span>
             <BatteryCharging className="w-3.5 h-3.5 text-green-400" />
@@ -1253,8 +1253,8 @@ function SetupScreen({ initial, onSave, onCancel, P, GOLD }: {
           <>
             <p className="text-white font-black text-sm">Vehicle Documents</p>
             <div className="rounded-xl p-3 flex items-start gap-2 mb-1" style={{ background: "#1E3A5F" }}>
-              <Shield className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-              <p className="text-blue-300 text-[10px] leading-relaxed">Upload photos of each document using the T-T20's dual-lens camera. Numbers are recorded for VINK compliance.</p>
+              <Shield className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+              <p className="text-emerald-300 text-[10px] leading-relaxed">Upload photos of each document using the T-T20's dual-lens camera. Numbers are recorded for VINK compliance.</p>
             </div>
             <F label="Registration Certificate Number" k="registrationCertNumber" placeholder="e.g. ZA/REG/2022/001234" />
             <F label="Reg. Cert. Expiry Date" k="registrationCertExpiry" type="date" placeholder="" />

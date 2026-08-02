@@ -690,7 +690,7 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
                   );
                 })}
               </div>
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800">
+              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-sm text-emerald-800">
                 <strong>Local-fee innovation:</strong> Each card's BIN is registered in its assigned country (ZA, EU, US, etc.). POS terminals recognise it as domestic, eliminating international cross-border surcharges. VINK's internal FX engine handles multi-currency conversion before it ever touches the card network.
               </div>
             </div>

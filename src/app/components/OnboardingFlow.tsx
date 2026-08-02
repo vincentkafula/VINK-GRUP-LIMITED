@@ -174,7 +174,7 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
                 <label className="text-xs font-semibold text-gray-500 block mb-1.5">SA ID Number / Passport Number *</label>
                 <input value={idNumber} onChange={e => setIdNumber(e.target.value)} placeholder="13-digit SA ID number" maxLength={13} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-emerald-500 font-mono" />
               </div>
-              <div className="p-3 rounded-xl border border-blue-100 bg-blue-50 text-xs text-blue-700">
+              <div className="p-3 rounded-xl border border-emerald-100 bg-emerald-50 text-xs text-emerald-700">
                 📸 You will need to upload a clear photo of your ID document and a selfie to complete verification.
               </div>
               <div className="space-y-3">

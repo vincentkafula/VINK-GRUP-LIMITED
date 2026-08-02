@@ -346,9 +346,9 @@ export function VehicleTrackingApplicationViewer({ isOpen, onClose }: Props) {
         {/* SUCCESS */}
         {submitted && (
           <div className="space-y-5">
-            <div className="bg-white rounded-2xl border border-blue-200 p-8 text-center space-y-4 shadow-sm">
+            <div className="bg-white rounded-2xl border border-emerald-200 p-8 text-center space-y-4 shadow-sm">
               <div className="w-24 h-24 rounded-full flex items-center justify-center mx-auto" style={{ background: "linear-gradient(135deg,#DBEAFE,#BFDBFE)" }}>
-                <MapPin className="w-12 h-12 text-blue-600" />
+                <MapPin className="w-12 h-12 text-emerald-600" />
               </div>
               <div>
                 <h2 className="text-2xl font-black text-gray-900">Tracking Activated!</h2>
@@ -357,11 +357,11 @@ export function VehicleTrackingApplicationViewer({ isOpen, onClose }: Props) {
               <div className="grid sm:grid-cols-2 gap-3">
                 <div className="rounded-xl p-4" style={{ background: "#EFF6FF" }}>
                   <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">Device ID</p>
-                  <p className="text-sm font-black text-blue-700 font-mono">{deviceId}</p>
+                  <p className="text-sm font-black text-emerald-700 font-mono">{deviceId}</p>
                 </div>
                 <div className="rounded-xl p-4" style={{ background: "#EFF6FF" }}>
                   <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">Reference</p>
-                  <p className="text-sm font-black text-blue-700">{refNo}</p>
+                  <p className="text-sm font-black text-emerald-700">{refNo}</p>
                 </div>
               </div>
               <div className="rounded-xl p-4 bg-gray-50 space-y-2 text-sm text-gray-600 text-left">

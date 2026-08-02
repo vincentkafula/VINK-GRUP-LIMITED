@@ -378,8 +378,8 @@ We are ready for 500 Global. The product is built. The partnership is signed. Th
       <div className="flex-1 overflow-y-auto px-4 py-6 max-w-3xl mx-auto w-full">
 
         <div className="mb-6 p-4 rounded-xl border" style={{ background: "#EFF6FF", borderColor: "#BFDBFE" }}>
-          <p className="text-sm font-bold text-blue-800 mb-1">How to use this form</p>
-          <p className="text-xs text-blue-700 leading-relaxed">
+          <p className="text-sm font-bold text-emerald-800 mb-1">How to use this form</p>
+          <p className="text-xs text-emerald-700 leading-relaxed">
             Every field below is pre-filled with your VINK system details. Read each answer, edit if you want to personalise the language, then click the copy icon on any field to paste it directly into the 500 Global application at <strong>500.co/flagship</strong>. Use <strong>"Copy All Fields"</strong> above to copy the full document at once.
           </p>
         </div>

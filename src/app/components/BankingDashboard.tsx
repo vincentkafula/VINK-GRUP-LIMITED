@@ -795,7 +795,7 @@ function TreasuryPanel() {
                   <span className="text-[10px] text-gray-400">{ago(s.createdAt as string)} ago</span>
                 </div>
                 <div className="flex gap-1 h-3 rounded-full overflow-hidden">
-                  <div className="h-full bg-blue-500 rounded-l" style={{ width: "75%" }} title="Driver 75%"/>
+                  <div className="h-full bg-emerald-500 rounded-l" style={{ width: "75%" }} title="Driver 75%"/>
                   <div className="h-full bg-amber-400" style={{ width: "10%" }} title="Investor 10%"/>
                   <div className="h-full bg-emerald-500 rounded-r" style={{ width: "15%" }} title="Owner 15%"/>
                 </div>

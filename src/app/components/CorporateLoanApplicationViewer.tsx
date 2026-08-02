@@ -146,8 +146,8 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
           <>
             <FormCard stepN={1} title="Eligibility check" subtitle="All criteria must be confirmed before proceeding">
               <div className="rounded-xl p-3 flex items-start gap-2 text-sm" style={{ background: "#EFF6FF", border: "1px solid #BFDBFE" }}>
-                <AlertTriangle className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
-                <p className="text-blue-700 text-xs">Please confirm all eligibility criteria below before proceeding. <strong>All conditions must be met.</strong></p>
+                <AlertTriangle className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+                <p className="text-emerald-700 text-xs">Please confirm all eligibility criteria below before proceeding. <strong>All conditions must be met.</strong></p>
               </div>
 
               <div className="grid sm:grid-cols-2 gap-2">

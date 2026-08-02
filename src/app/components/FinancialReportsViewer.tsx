@@ -523,7 +523,7 @@ export function FinancialReportsViewer({ isOpen, onClose }: Props) {
                         <td className="px-4 py-3 font-semibold" style={{ color: RED }}>{Number(e.debit) > 0 ? fmt(Number(e.debit)) : ""}</td>
                         <td className="px-4 py-3 font-semibold" style={{ color: GREEN }}>{Number(e.credit) > 0 ? fmt(Number(e.credit)) : ""}</td>
                         <td className="px-4 py-3">
-                          <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${String(e.source) === "auto" ? "bg-blue-50 text-blue-600" : "bg-gray-100 text-gray-500"}`}>
+                          <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${String(e.source) === "auto" ? "bg-emerald-50 text-emerald-600" : "bg-gray-100 text-gray-500"}`}>
                             {String(e.source).toUpperCase()}
                           </span>
                         </td>

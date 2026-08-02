@@ -94,7 +94,7 @@ export function ManagerDashboard({ user, onSignOut }: Props) {
             {tab === "overview" && (
               <div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
-                  <StatCard label="Total customers" value={String(customers.length)} icon={<Users className="w-4 h-4" />} accent="#0066CC" />
+                  <StatCard label="Total customers" value={String(customers.length)} icon={<Users className="w-4 h-4" />} accent="#128A43" />
                   <StatCard label="Total sellers" value={String(sellers.length)} icon={<Store className="w-4 h-4" />} accent="#34A853" />
                   <StatCard label="Total products" value={String(stats?.totalProducts ?? 0)} icon={<Package className="w-4 h-4" />} accent="#10B981" />
                   <StatCard label="Total orders" value={String(stats?.totalOrders ?? 0)} icon={<ShoppingBag className="w-4 h-4" />} accent="#F59E0B" />
@@ -204,7 +204,7 @@ export function ManagerDashboard({ user, onSignOut }: Props) {
                 <div className="grid sm:grid-cols-3 gap-3 mb-5">
                   <StatCard label="Platform revenue" value={fmtZAR(Number(stats?.totalRevenue ?? 0))} icon={<DollarSign className="w-4 h-4" />} accent="#059669" />
                   <StatCard label="Average commission" value={`${sellers.length ? (sellers.reduce((s, x) => s + Number(x.commissionPct ?? 0), 0) / sellers.length).toFixed(1) : 0}%`} icon={<Percent className="w-4 h-4" />} accent="#34A853" />
-                  <StatCard label="Total orders" value={String(orders.length)} icon={<ShoppingBag className="w-4 h-4" />} accent="#0066CC" />
+                  <StatCard label="Total orders" value={String(orders.length)} icon={<ShoppingBag className="w-4 h-4" />} accent="#128A43" />
                 </div>
                 <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
                   <div className="px-4 py-3 border-b border-gray-100"><span className="text-sm font-bold text-gray-900">Commission by Seller</span></div>

@@ -886,7 +886,7 @@ function AdminDashboard({ onClose }: { onClose: () => void }) {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
                       <p className="font-bold text-gray-900">{String(d.name)}</p>
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${d.status === "online" ? "bg-green-50 text-green-700" : d.status === "on_trip" ? "bg-blue-50 text-blue-700" : "bg-gray-100 text-gray-500"}`}>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${d.status === "online" ? "bg-green-50 text-green-700" : d.status === "on_trip" ? "bg-emerald-50 text-emerald-700" : "bg-gray-100 text-gray-500"}`}>
                         {String(d.status).replace("_"," ")}
                       </span>
                     </div>

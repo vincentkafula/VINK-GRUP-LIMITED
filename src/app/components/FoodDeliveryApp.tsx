@@ -555,7 +555,7 @@ function RestaurantApp({ onClose }: { onClose: () => void }) {
                 </div>
                 <div className="text-right flex-shrink-0">
                   <p className="text-sm font-black" style={{ color: ORANGE }}>{fmt(item.price)}</p>
-                  <button className="text-[10px] text-blue-600 font-semibold mt-0.5">Edit</button>
+                  <button className="text-[10px] text-emerald-600 font-semibold mt-0.5">Edit</button>
                 </div>
               </div>
             ))}
@@ -743,7 +743,7 @@ function AdminApp({ onClose }: { onClose: () => void }) {
               <p className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2"><AlertCircle className="w-4 h-4 text-amber-500" />Issues requiring attention</p>
               {[{ msg: "Order ORD-992147 pending for 15 min", severity: "warn" }, { msg: "Driver #drv-003 offline during shift", severity: "info" }, { msg: "Restaurant 'Col'Cacchio' closed early", severity: "info" }].map((a, i) => (
                 <div key={i} className="flex items-start gap-2 py-2 border-b border-gray-50 last:border-0">
-                  <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${a.severity==="warn"?"bg-amber-500":"bg-blue-400"}`} />
+                  <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${a.severity==="warn"?"bg-amber-500":"bg-emerald-400"}`} />
                   <p className="text-xs text-gray-700">{a.msg}</p>
                 </div>
               ))}

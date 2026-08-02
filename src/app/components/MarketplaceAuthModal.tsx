@@ -25,7 +25,7 @@ function Field({ label, value, onChange, type = "text", required = true, placeho
           onChange={e => onChange(e.target.value)}
           type={isPw ? (show ? "text" : "password") : type}
           placeholder={placeholder}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0066CC] focus:ring-1 focus:ring-[#0066CC]"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#128A43] focus:ring-1 focus:ring-[#128A43]"
         />
         {isPw && (
           <button type="button" onClick={() => setShow(s => !s)} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">

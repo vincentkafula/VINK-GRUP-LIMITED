@@ -13,7 +13,7 @@ type R = Record<string, unknown>;
 type Tab = "overview" | "orders" | "addresses" | "payment" | "returns" | "notifications" | "security" | "analytics";
 
 const fmtZAR = (n: number) => `R${Number(n ?? 0).toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-const PIE_COLORS = ["#0066CC", "#FF9900", "#10B981", "#34A853", "#EF4444", "#F59E0B"];
+const PIE_COLORS = ["#128A43", "#FF9900", "#10B981", "#34A853", "#EF4444", "#F59E0B"];
 
 const STATUS_META: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
   pending:      { label: "Pending",    color: "#9CA3AF", icon: <Clock className="w-3.5 h-3.5" /> },
@@ -142,7 +142,7 @@ export function CustomerDashboard({ user, onProduct, onSignOut }: Props) {
                 <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
                   <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
                     <span className="text-sm font-bold text-gray-900">Recent Orders</span>
-                    <button onClick={() => setTab("orders")} className="text-xs font-semibold" style={{ color: "#0066CC" }}>View all</button>
+                    <button onClick={() => setTab("orders")} className="text-xs font-semibold" style={{ color: "#128A43" }}>View all</button>
                   </div>
                   {recentOrders.length === 0 ? (
                     <p className="text-sm text-gray-400 p-6 text-center">No orders yet — start shopping to see them here.</p>
@@ -347,7 +347,7 @@ function AddressBook({ userId, addresses, onChanged }: { userId: string; address
     <div className="bg-white rounded-xl border border-gray-100 p-5">
       <div className="flex items-center justify-between mb-4">
         <span className="text-sm font-bold text-gray-900">Address Book</span>
-        <button onClick={() => setAdding(a => !a)} className="flex items-center gap-1 text-xs font-semibold" style={{ color: "#0066CC" }}>
+        <button onClick={() => setAdding(a => !a)} className="flex items-center gap-1 text-xs font-semibold" style={{ color: "#128A43" }}>
           <Plus className="w-3.5 h-3.5" /> Add address
         </button>
       </div>
@@ -356,7 +356,7 @@ function AddressBook({ userId, addresses, onChanged }: { userId: string; address
         <div className="mb-4 p-4 border border-gray-100 rounded-lg grid grid-cols-2 gap-2">
           {(["firstName","lastName","line1","city","postalCode","phone"] as const).map(f => (
             <input key={f} placeholder={f} value={form[f]} onChange={e => setForm(prev => ({ ...prev, [f]: e.target.value }))}
-              className="border border-gray-200 rounded px-2.5 py-1.5 text-sm outline-none focus:border-[#0066CC]" />
+              className="border border-gray-200 rounded px-2.5 py-1.5 text-sm outline-none focus:border-[#128A43]" />
           ))}
           <button onClick={save} disabled={saving} className="col-span-2 mt-1 py-2 rounded-lg text-white text-sm font-semibold" style={{ background: "#131921" }}>
             {saving ? "Saving..." : "Save address"}
@@ -440,9 +440,9 @@ function SecurityPanel() {
       <p className="text-sm font-bold text-gray-900 mb-4">Change Password</p>
       {msg && <div className={`mb-3 px-3 py-2 rounded-lg text-xs font-medium ${msg.ok ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"}`}>{msg.text}</div>}
       <input type="password" placeholder="Current password" value={current} onChange={e => setCurrent(e.target.value)}
-        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mb-2 outline-none focus:border-[#0066CC]" />
+        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mb-2 outline-none focus:border-[#128A43]" />
       <input type="password" placeholder="New password (min 8 characters)" value={next} onChange={e => setNext(e.target.value)}
-        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mb-3 outline-none focus:border-[#0066CC]" />
+        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mb-3 outline-none focus:border-[#128A43]" />
       <button onClick={submit} disabled={saving} className="py-2 px-4 rounded-lg text-white text-sm font-semibold" style={{ background: "#131921" }}>
         {saving ? "Updating..." : "Update password"}
       </button>
@@ -460,7 +460,7 @@ function SpendingAnalytics({ spending }: { spending: R | null }) {
         <p className="text-sm font-bold text-gray-900 mb-3">Monthly Spending</p>
         {monthly.length === 0 ? <p className="text-sm text-gray-400 text-center py-10">No paid orders yet.</p> : (
           <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={monthly}><CartesianGrid strokeDasharray="3 3" vertical={false} /><XAxis dataKey="month" tick={{ fontSize: 11 }} /><YAxis tick={{ fontSize: 11 }} /><Tooltip formatter={(v: number) => fmtZAR(v)} /><Bar dataKey="total" fill="#0066CC" radius={[4,4,0,0]} /></BarChart>
+            <BarChart data={monthly}><CartesianGrid strokeDasharray="3 3" vertical={false} /><XAxis dataKey="month" tick={{ fontSize: 11 }} /><YAxis tick={{ fontSize: 11 }} /><Tooltip formatter={(v: number) => fmtZAR(v)} /><Bar dataKey="total" fill="#128A43" radius={[4,4,0,0]} /></BarChart>
           </ResponsiveContainer>
         )}
       </div>

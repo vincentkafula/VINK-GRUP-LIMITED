@@ -26,7 +26,7 @@ const SLIDES = [
   {
     image:   heroImage2,
     eyebrow: "VINK Personal Banking",
-    eyebrowDot: "bg-blue-400",
+    eyebrowDot: "bg-emerald-400",
     headline: <>Shop. Pay. Save.<br /><span className="relative inline-block"><span className="relative z-10">All on One Card.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#F5A623" }} /></span></>,
     body: "Tap to buy groceries, pay your taxi fare, earn VinkPoints on every rand spent — and manage it all from the Vink app.",
     ctas: [

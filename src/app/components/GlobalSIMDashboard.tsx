@@ -415,7 +415,7 @@ export function GlobalSIMDashboard({ isOpen, onClose }: Props) {
           {screen === "partners" && (
             <div className="space-y-5 max-w-5xl">
               <h1 className="text-xl font-black text-gray-900">MVNO Partner Networks</h1>
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800 leading-relaxed">
+              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-sm text-emerald-800 leading-relaxed">
                 <strong>How it works:</strong> VINK holds an MVNO (Mobile Virtual Network Operator) agreement with a licensed host network in each country. When a Vink SIM user is in — or calls to — that country, their traffic is routed through the local operator's infrastructure. The call is billed at domestic rates. VINK pays the local partner a wholesale interconnect fee and charges the customer a transparent margin. No international fees pass through.
               </div>
               <div className="space-y-4">

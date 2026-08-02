@@ -55,7 +55,7 @@ function InputField({ label, value, onChange, placeholder, type = "text", requir
         {label}{required && <span className="text-red-500 ml-0.5">*</span>}
       </label>
       <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
-        className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-blue-400 bg-white transition-colors" />
+        className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-emerald-400 bg-white transition-colors" />
     </div>
   );
 }
@@ -69,7 +69,7 @@ function SelectField({ label, value, onChange, options, required }: {
         {label}{required && <span className="text-red-500 ml-0.5">*</span>}
       </label>
       <select value={value} onChange={e => onChange(e.target.value)}
-        className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-blue-400 bg-white transition-colors">
+        className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-emerald-400 bg-white transition-colors">
         {options.map(o => <option key={o} value={o}>{o}</option>)}
       </select>
     </div>
@@ -304,7 +304,7 @@ function Step3({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () 
         ) : !phoneOk ? (
           <div className="flex gap-2 items-center">
             <input value={otpPhone} onChange={e => setOtpPhone(e.target.value)} placeholder="Enter 6-digit OTP"
-              maxLength={6} className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 w-40" />
+              maxLength={6} className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-400 w-40" />
             <button onClick={verifyPhoneOtp} disabled={verifyingPhone || otpPhone.length < 4}
               className="px-4 py-2 rounded-lg text-xs font-bold text-white border-0 disabled:opacity-50 flex items-center gap-1.5"
               style={{ background: BLUE }}>
@@ -334,7 +334,7 @@ function Step3({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () 
         ) : !emailOk ? (
           <div className="flex gap-2 items-center">
             <input value={otpEmail} onChange={e => setOtpEmail(e.target.value)} placeholder="Enter 6-digit OTP"
-              maxLength={6} className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 w-40" />
+              maxLength={6} className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-400 w-40" />
             <button onClick={verifyEmailOtp} disabled={verifyingEmail || otpEmail.length < 4}
               className="px-4 py-2 rounded-lg text-xs font-bold text-white border-0 disabled:opacity-50 flex items-center gap-1.5"
               style={{ background: BLUE }}>
@@ -440,7 +440,7 @@ function Step5({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () 
       <div className="space-y-3">
         {DOCS.map(d => (
           <label key={d.key}
-            className="flex items-center justify-between p-4 bg-white border rounded-xl cursor-pointer hover:bg-blue-50 transition-colors"
+            className="flex items-center justify-between p-4 bg-white border rounded-xl cursor-pointer hover:bg-emerald-50 transition-colors"
             style={{ borderColor: uploaded[d.key] ? "#10B981" : "#E5E7EB" }}>
             <div className="flex items-center gap-3">
               {uploaded[d.key]
@@ -509,7 +509,7 @@ function Step6({ onNext, onBack, submitting }: { onNext: (data: Record<string, s
         <div className="space-y-2">
           {SERVICE_LIST.map(sv => (
             <label key={sv.key}
-              className="flex items-center gap-3 p-3.5 bg-white border rounded-xl cursor-pointer hover:bg-blue-50 transition-colors"
+              className="flex items-center gap-3 p-3.5 bg-white border rounded-xl cursor-pointer hover:bg-emerald-50 transition-colors"
               style={{ borderColor: services[sv.key] ? BLUE : "#E5E7EB" }}>
               <input type="checkbox" checked={!!services[sv.key]} onChange={() => toggle(sv.key)}
                 className="w-4 h-4 flex-shrink-0" style={{ accentColor: BLUE }} />

@@ -429,7 +429,7 @@ export function RevenueDashboard({ isOpen, onClose }: Props) {
           {screen === "devices" && (
             <div className="space-y-4 max-w-4xl">
               <h1 className="text-xl font-black text-gray-900">AFC Devices & Investor Ownership</h1>
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800">
+              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-sm text-emerald-800">
                 <strong>Investor model:</strong> Investors purchase AFC devices and rent them to taxi owners at <strong>R250/month</strong>. Each tap on their device earns them <strong>R0.10</strong> (10% of the R1.00 VINK fee). A device doing 200 taps/day earns the investor R20/day in tap revenue + R250/month rental = ~R850/month per device.
               </div>
               <div className="space-y-4">
@@ -494,10 +494,10 @@ export function RevenueDashboard({ isOpen, onClose }: Props) {
                           <p className="text-xl font-black text-green-700">{levyPct}%</p>
                           <p className="text-[9px] text-green-600">= {fmt(FEES.TRIP_LEVY * levyPct / 100)}/trip</p>
                         </div>
-                        <div className="rounded-xl p-3 text-center bg-blue-50">
+                        <div className="rounded-xl p-3 text-center bg-emerald-50">
                           <p className="text-[9px] text-gray-500">Association keeps</p>
-                          <p className="text-xl font-black text-blue-700">{100-levyPct}%</p>
-                          <p className="text-[9px] text-blue-600">= {fmt(FEES.TRIP_LEVY * (100-levyPct) / 100)}/trip</p>
+                          <p className="text-xl font-black text-emerald-700">{100-levyPct}%</p>
+                          <p className="text-[9px] text-emerald-600">= {fmt(FEES.TRIP_LEVY * (100-levyPct) / 100)}/trip</p>
                         </div>
                         <div className="rounded-xl p-3 text-center bg-gray-50">
                           <p className="text-[9px] text-gray-500">Total levy/trip</p>
