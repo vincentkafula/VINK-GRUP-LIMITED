@@ -27,7 +27,9 @@ export interface AdminUser {
 export interface AuthPayload {
   userId: string;
   username: string;
-  role: AdminUser["role"];
+  // Widened beyond AdminUser["role"] — this JWT/auth system is now shared with
+  // marketplace accounts (customer, seller, marketplace_admin), not just MVNO ops roles.
+  role: string;
 }
 
 // ─── Subscribers / HLR-HSS ──────────────────────────────────────────────────

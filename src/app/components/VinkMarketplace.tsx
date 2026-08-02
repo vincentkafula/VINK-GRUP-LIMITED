@@ -9,12 +9,16 @@ import {
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import {
   mktCategories, mktProducts, mktCart, mktOrders,
-  mktWishlist, mktSellers, mktAdmin, mktAddresses,
+  mktWishlist, mktSellers, mktAdmin, mktAddresses, mktAuth, type MktAuthUser,
 } from "../services/marketplaceApi";
 import { isDemoMode } from "../services/demoMode";
+import { MarketplaceAuthModal } from "./MarketplaceAuthModal";
+import { CustomerDashboard } from "./CustomerDashboard";
+import { SellerDashboard } from "./SellerDashboard";
+import { ManagerDashboard } from "./ManagerDashboard";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-type View = "home" | "catalog" | "product" | "cart" | "checkout" | "orders" | "wishlist" | "seller" | "admin";
+type View = "home" | "catalog" | "product" | "cart" | "checkout" | "orders" | "wishlist" | "seller" | "admin" | "account";
 type CheckoutStep = "address" | "shipping" | "payment" | "confirmation";
 type R = Record<string, unknown>;
 
@@ -1307,186 +1311,6 @@ function WishlistView({ wishlistIds, onProduct, onCart, onWishlist }: {
   );
 }
 
-// ─── SELLER PORTAL ────────────────────────────────────────────────────────────
-function SellerPortal() {
-  const [data, setData] = useState<R | null>(null);
-  const [loading, setLoading] = useState(true);
-  useEffect(() => { mktSellers.analytics("sel-01").then(r => { setData(r.data as R); setLoading(false); }); }, []);
-  if (loading) return <div className="flex-1 flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin" style={{ color: "#6B5ED7" }} /></div>;
-
-  const seller   = data?.seller as R;
-  const revenue  = (data?.revenue as R[]) ?? [];
-  const products = (data?.products as R[]) ?? [];
-
-  return (
-    <div className="flex-1 overflow-y-auto p-4 space-y-5" style={{ background: "#F8F7FF" }}>
-      {/* Store header */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-5 flex items-center gap-4">
-        <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl" style={{ background: "#F3F0FF" }}>🏪</div>
-        <div className="flex-1">
-          <h2 className="text-lg font-black text-gray-900">{seller?.storeName as string}</h2>
-          <div className="flex items-center gap-2 mt-0.5">
-            <Stars rating={Number(seller?.avgRating ?? 4.7)} size={13} />
-            <span className="text-xs text-gray-400">{Number(seller?.totalSales ?? 0).toLocaleString()} sales</span>
-          </div>
-        </div>
-        <div className="text-right">
-          <p className="text-xs text-gray-400">Revenue</p>
-          <p className="text-xl font-black" style={{ color: "#6B5ED7" }}>{fmtZAR(Number(seller?.totalRevenue ?? 0))}</p>
-        </div>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-3">
-        {[
-          { label:"Products",    value:String(products.length),                   color:"#6B5ED7" },
-          { label:"Total Sales", value:Number(seller?.totalSales ?? 0).toLocaleString(), color:"#10B981" },
-          { label:"Avg Rating",  value:Number(seller?.avgRating ?? 4.7).toFixed(1), color:"#F59E0B" },
-        ].map((s, i) => (
-          <div key={i} className="bg-white rounded-2xl border border-gray-100 p-4 text-center">
-            <p className="text-xl font-black" style={{ color: s.color }}>{s.value}</p>
-            <p className="text-xs text-gray-400 mt-0.5">{s.label}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Revenue chart */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-5">
-        <h3 className="text-sm font-bold text-gray-900 mb-4">Revenue — Last 7 Days</h3>
-        <ResponsiveContainer width="100%" height={160}>
-          <BarChart data={revenue}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
-            <XAxis dataKey="day" tick={{ fontSize: 11, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fontSize: 11, fill: "#9CA3AF" }} axisLine={false} tickLine={false}
-              tickFormatter={v => `R${(Number(v) / 1000).toFixed(0)}K`} />
-            <Tooltip formatter={(v: number) => fmtZAR(v)} contentStyle={{ fontSize: 12, borderRadius: 8 }} />
-            <Bar dataKey="revenue" fill="#6B5ED7" radius={[4, 4, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-
-      {/* Products */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-5">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-bold text-gray-900">My Products ({products.length})</h3>
-          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-white" style={{ background: "#6B5ED7" }}>
-            <Plus className="w-3.5 h-3.5" />Add Product
-          </button>
-        </div>
-        <div className="space-y-2">
-          {products.map((p, i) => (
-            <div key={i} className="flex items-center gap-3 py-2.5 border-b border-gray-50 last:border-0">
-              <span className="text-2xl">{p.emoji as string}</span>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900 truncate">{p.name as string}</p>
-                <p className="text-[11px] text-gray-400">{p.totalSold as number} sold · stock: {p.stock as number}</p>
-              </div>
-              <div className="text-right flex-shrink-0">
-                <p className="text-sm font-bold text-gray-900">{fmtZAR(Number(p.price))}</p>
-                <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${p.status === "active" ? "text-green-600 bg-green-50" : "text-amber-600 bg-amber-50"}`}>
-                  {p.status as string}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── ADMIN ────────────────────────────────────────────────────────────────────
-function AdminView() {
-  const [stats, setStats]   = useState<R | null>(null);
-  const [orders, setOrders] = useState<R[]>([]);
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    Promise.all([mktAdmin.stats(), mktAdmin.orders()]).then(([s, o]) => { setStats(s.data as R); setOrders(o.data as R[]); setLoading(false); });
-  }, []);
-  if (loading) return <div className="flex-1 flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin" style={{ color: "#6B5ED7" }} /></div>;
-
-  return (
-    <div className="flex-1 overflow-y-auto p-4 space-y-5" style={{ background: "#F8F7FF" }}>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {[
-          { label:"Products",      value:String(stats?.totalProducts),  color:"#6B5ED7", icon:"📦" },
-          { label:"Sellers",       value:String(stats?.totalSellers),   color:"#10B981", icon:"🏪" },
-          { label:"Orders",        value:String(stats?.totalOrders),    color:"#3B82F6", icon:"🛒" },
-          { label:"Pending Apps.", value:String(stats?.pendingSellerApprovals), color:"#F59E0B", icon:"⏳" },
-          { label:"Revenue",       value:fmtZAR(Number(stats?.totalRevenue ?? 0)), color:"#6B5ED7", icon:"💰" },
-          { label:"Customers",     value:Number(stats?.activeCustomers ?? 0).toLocaleString(), color:"#10B981", icon:"👥" },
-          { label:"Reviews Pending",value:String(stats?.pendingReviews), color:"#8B5CF6", icon:"⭐" },
-          { label:"Fraud Alerts",  value:"0",                           color:"#EF4444", icon:"🛡️" },
-        ].map((s, i) => (
-          <div key={i} className="bg-white rounded-2xl border border-gray-100 p-4 flex items-center gap-3">
-            <span className="text-xl">{s.icon}</span>
-            <div>
-              <p className="text-lg font-black" style={{ color: s.color }}>{s.value}</p>
-              <p className="text-[10px] text-gray-400 leading-tight">{s.label}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Orders table */}
-      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-        <div className="px-5 py-4 border-b border-gray-50 flex items-center justify-between">
-          <h3 className="text-sm font-bold text-gray-900">All Orders</h3>
-          <span className="text-xs text-gray-400">{orders.length} total</span>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead className="bg-gray-50">
-              <tr>
-                {["Order","Customer","Items","Total","Status","Date"].map(h => (
-                  <th key={h} className="px-4 py-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {orders.map((o, i) => (
-                <tr key={i} className="hover:bg-gray-50/50 transition-colors">
-                  <td className="px-4 py-3 text-xs font-semibold text-gray-900">{o.orderNumber as string}</td>
-                  <td className="px-4 py-3 text-xs text-gray-600">{o.customerName as string}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex gap-0.5">{(o.items as R[]).slice(0, 3).map((it, j) => <span key={j} className="text-base">{it.emoji as string}</span>)}</div>
-                  </td>
-                  <td className="px-4 py-3 text-xs font-bold text-gray-900">{fmtZAR(Number(o.totalAmount))}</td>
-                  <td className="px-4 py-3">
-                    <span className="text-[10px] px-2 py-1 rounded-full font-bold capitalize"
-                      style={{ background: (STATUS_COLOR[o.status as string] ?? "#9CA3AF") + "20", color: STATUS_COLOR[o.status as string] ?? "#9CA3AF" }}>
-                      {(o.status as string).replace(/_/g," ")}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-xs text-gray-400">{ago(o.placedAt as string)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Top categories */}
-      {(stats?.topCategories as R[])?.length > 0 && (
-        <div className="bg-white rounded-2xl border border-gray-100 p-5">
-          <h3 className="text-sm font-bold text-gray-900 mb-4">Top Categories</h3>
-          <div className="space-y-2.5">
-            {(stats?.topCategories as R[]).map((c, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <p className="text-xs text-gray-600 w-32 truncate">{c.name as string}</p>
-                <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-full rounded-full transition-all"
-                    style={{ width: `${Math.min(100, Number(c.count) * 25)}%`, background: "#6B5ED7" }} />
-                </div>
-                <span className="text-xs font-semibold text-gray-700 w-6 text-right">{c.count as number}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
 
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
 interface VinkMarketplaceProps { isOpen: boolean; onClose: () => void }
@@ -1500,22 +1324,34 @@ export function VinkMarketplace({ isOpen, onClose }: VinkMarketplaceProps) {
   const [addresses, setAddresses] = useState<R[]>([]);
   const [selProductId, setSelProductId] = useState("");
   const [cartCount, setCartCount] = useState(0);
-  const [role, setRole]           = useState<"customer" | "seller" | "admin">("customer");
+  const [authUser, setAuthUser]   = useState<MktAuthUser | null>(null);
+  const [authSeller, setAuthSeller] = useState<{ id: string; storeName: string; status: string } | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  const MANAGER_ROLES = ["superadmin", "noc_engineer", "billing_admin", "marketplace_admin"];
+  const role: "customer" | "seller" | "manager" | null =
+    !authUser ? null : MANAGER_ROLES.includes(authUser.role) ? "manager" : authUser.role === "seller" ? "seller" : "customer";
+
+  useEffect(() => {
+    const restored = mktAuth.restoreSession();
+    if (restored) { setAuthUser(restored.user); setAuthSeller(restored.seller); }
+  }, []);
 
   const loadInitial = useCallback(async () => {
-    const [catRes, prodRes, cartRes, wishRes, addrRes] = await Promise.allSettled([
-      mktCategories(),
-      mktProducts.list({ sort: "popular", limit: "48" }),
-      mktCart.get("demo-customer-001"),
-      mktWishlist.get("demo-customer-001"),
-      mktAddresses("demo-customer-001"),
-    ]);
+    const promises: Promise<unknown>[] = [mktCategories(), mktProducts.list({ sort: "popular", limit: "48" })];
+    if (authUser) promises.push(mktCart.get(authUser.id), mktWishlist.get(authUser.id), mktAddresses(authUser.id));
+    const results = await Promise.allSettled(promises);
+    const [catRes, prodRes, cartRes, wishRes, addrRes] = results as PromiseSettledResult<{ data: unknown }>[];
     if (catRes.status  === "fulfilled") setCategories(catRes.value.data as R[]);
     if (prodRes.status === "fulfilled") setProducts(prodRes.value.data as R[]);
-    if (cartRes.status === "fulfilled" && cartRes.value.data) setCart(cartRes.value.data as R);
-    if (wishRes.status === "fulfilled") setWishlistIds(new Set((wishRes.value.data as R[]).map(p => String(p.id))));
-    if (addrRes.status === "fulfilled") setAddresses(addrRes.value.data as R[]);
-  }, []);
+    if (authUser) {
+      if (cartRes?.status === "fulfilled" && cartRes.value.data) setCart(cartRes.value.data as R);
+      if (wishRes?.status === "fulfilled") setWishlistIds(new Set(((wishRes.value.data as R[]) ?? []).map(p => String(p.id))));
+      if (addrRes?.status === "fulfilled") setAddresses((addrRes.value.data as R[]) ?? []);
+    } else {
+      setCart(null); setWishlistIds(new Set()); setAddresses([]);
+    }
+  }, [authUser]);
 
   useEffect(() => { if (isOpen) loadInitial(); }, [isOpen, loadInitial]);
   useEffect(() => { setCartCount(((cart?.items as R[]) ?? []).length); }, [cart]);
@@ -1523,40 +1359,68 @@ export function VinkMarketplace({ isOpen, onClose }: VinkMarketplaceProps) {
   if (!isOpen) return null;
 
   const handleAddToCart = async (p: R, variantId?: string) => {
-    const res = await mktCart.add("demo-customer-001", { productId: p.id, variantId: variantId ?? null, quantity: 1 });
+    if (!authUser) { setShowAuthModal(true); return; }
+    const res = await mktCart.add(authUser.id, { productId: p.id, variantId: variantId ?? null, quantity: 1 });
     setCart(res.data as R);
   };
 
   const handleUpdateQty = async (productId: string, qty: number) => {
-    if (qty <= 0) { await mktCart.remove("demo-customer-001", productId); }
-    else { await mktCart.update("demo-customer-001", productId, qty); }
+    if (!authUser) return;
+    if (qty <= 0) { await mktCart.remove(authUser.id, productId); }
+    else { await mktCart.update(authUser.id, productId, qty); }
     loadInitial();
   };
 
   const handleRemove = async (productId: string) => {
-    await mktCart.remove("demo-customer-001", productId);
+    if (!authUser) return;
+    await mktCart.remove(authUser.id, productId);
     loadInitial();
   };
 
   const handleCoupon = async (code: string) => {
-    const res = await mktCart.coupon("demo-customer-001", code);
+    if (!authUser) return;
+    const res = await mktCart.coupon(authUser.id, code);
     if (res.data) setCart(res.data as R);
   };
 
   const handleWishlist = async (productId: string) => {
+    if (!authUser) { setShowAuthModal(true); return; }
     if (wishlistIds.has(productId)) {
-      await mktWishlist.remove("demo-customer-001", productId);
+      await mktWishlist.remove(authUser.id, productId);
       setWishlistIds(prev => { const s = new Set(prev); s.delete(productId); return s; });
     } else {
-      await mktWishlist.add("demo-customer-001", productId);
+      await mktWishlist.add(authUser.id, productId);
       setWishlistIds(prev => new Set([...prev, productId]));
     }
   };
 
+  const handleAuthenticated = (user: MktAuthUser, seller: { id: string; storeName: string; status: string } | null) => {
+    setAuthUser(user);
+    setAuthSeller(seller);
+    setShowAuthModal(false);
+    const dest = MANAGER_ROLES.includes(user.role) ? "admin" : user.role === "seller" ? "seller" : "account";
+    setView(dest as View);
+  };
+
+  const handleSignOut = () => {
+    mktAuth.logout();
+    setAuthUser(null);
+    setAuthSeller(null);
+    setCart(null);
+    setWishlistIds(new Set());
+    setAddresses([]);
+    setView("home");
+  };
+
+  const gateOrPrompt = (dest: View) => {
+    if (!authUser) { setShowAuthModal(true); return; }
+    setView(dest);
+  };
+
   const navItems = [
-    { id:"seller" as View,   label:"Seller Central", icon:<TrendingUp className="w-4 h-4" />, roles:["seller","admin"] },
-    { id:"admin" as View,    label:"Manager Dashboard", icon:<Settings className="w-4 h-4" />, roles:["admin"] },
-  ].filter(n => n.roles.includes(role));
+    { id:"seller" as View,   label:"Seller Central", icon:<TrendingUp className="w-4 h-4" />, roles:["seller"] },
+    { id:"admin" as View,    label:"Manager Dashboard", icon:<Settings className="w-4 h-4" />, roles:["manager"] },
+  ].filter(n => role && n.roles.includes(role));
 
   const CATEGORY_QUICK_LINKS = (categories as R[]).slice(0, 8);
 
@@ -1596,50 +1460,50 @@ export function VinkMarketplace({ isOpen, onClose }: VinkMarketplaceProps) {
 
         <div className="flex items-center gap-0.5 sm:gap-1 ml-auto shrink-0">
           <div className="relative group hidden md:block">
-            <button className="flex flex-col items-start px-2 py-1 rounded border border-transparent hover:border-white/40 text-white">
+            <button onClick={() => { if (!authUser) setShowAuthModal(true); }} className="flex flex-col items-start px-2 py-1 rounded border border-transparent hover:border-white/40 text-white">
               <span className="text-[10px] text-white/60 leading-none flex items-center gap-1">
-                <User className="w-3 h-3" /> Hello, {role === "customer" ? "sign in" : role}
+                <User className="w-3 h-3" /> Hello, {authUser ? authUser.name.split(" ")[0] : "sign in"}
               </span>
               <span className="text-xs font-bold leading-tight mt-0.5 flex items-center gap-0.5">
                 Account &amp; Lists <ChevronDown className="w-3 h-3" />
               </span>
             </button>
-            <div className="absolute right-0 top-full mt-0 w-56 bg-white rounded-b shadow-2xl border border-gray-200 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-30">
-              <p className="px-3 pb-2 mb-1 border-b border-gray-100 text-[11px] text-gray-400">Demo role switcher</p>
-              {(["customer","seller","admin"] as const).map(r => (
-                <button key={r} onClick={() => { setRole(r); setView("home"); }}
-                  className="w-full text-left px-3 py-1.5 text-sm hover:bg-gray-50 flex items-center justify-between"
-                  style={{ color: role === r ? "#FF9900" : "#111827", fontWeight: role === r ? 700 : 400 }}>
-                  {r === "customer" ? "Customer" : r === "seller" ? "Seller" : "Marketplace Manager"}
-                  {role === r && <CheckCircle className="w-3.5 h-3.5" />}
-                </button>
-              ))}
-              {navItems.length > 0 && <div className="border-t border-gray-100 mt-1 pt-1">
+            {authUser && (
+              <div className="absolute right-0 top-full mt-0 w-56 bg-white rounded-b shadow-2xl border border-gray-200 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-30">
+                <p className="px-3 pb-2 mb-1 border-b border-gray-100 text-[11px] text-gray-400">Signed in as {authUser.username} ({role})</p>
+                {role === "customer" && (
+                  <button onClick={() => setView("account")} className="w-full text-left px-3 py-1.5 text-sm hover:bg-gray-50 flex items-center gap-2 text-gray-700">
+                    <User className="w-4 h-4" /> My Account
+                  </button>
+                )}
                 {navItems.map(item => (
                   <button key={item.id} onClick={() => setView(item.id)} className="w-full text-left px-3 py-1.5 text-sm hover:bg-gray-50 flex items-center gap-2 text-gray-700">
                     {item.icon} {item.label}
                   </button>
                 ))}
-              </div>}
-            </div>
+                <div className="border-t border-gray-100 mt-1 pt-1">
+                  <button onClick={handleSignOut} className="w-full text-left px-3 py-1.5 text-sm hover:bg-gray-50 text-red-600">Sign out</button>
+                </div>
+              </div>
+            )}
           </div>
 
           {role === "customer" && (
-            <button onClick={() => setView("orders")} className="hidden sm:flex flex-col items-start px-2 py-1 rounded border border-transparent hover:border-white/40 text-white">
+            <button onClick={() => gateOrPrompt("account")} className="hidden sm:flex flex-col items-start px-2 py-1 rounded border border-transparent hover:border-white/40 text-white">
               <span className="text-[10px] text-white/60 leading-none">Returns</span>
               <span className="text-xs font-bold leading-tight mt-0.5">&amp; Orders</span>
             </button>
           )}
 
-          {role === "customer" && (
-            <button onClick={() => setView("wishlist")} className="relative p-2 rounded border border-transparent hover:border-white/40 text-white">
+          {role !== "seller" && role !== "manager" && (
+            <button onClick={() => gateOrPrompt("wishlist")} className="relative p-2 rounded border border-transparent hover:border-white/40 text-white">
               <Heart className={`w-5 h-5 ${wishlistIds.size > 0 ? "fill-[#FF9900] text-[#FF9900]" : ""}`} />
               {wishlistIds.size > 0 && <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-[#FF9900] text-[#131921] text-[9px] font-bold rounded-full flex items-center justify-center">{wishlistIds.size}</span>}
             </button>
           )}
 
-          {role === "customer" && (
-            <button onClick={() => setView("cart")} className="relative flex items-end gap-1 px-2 py-1 rounded border border-transparent hover:border-white/40 text-white">
+          {role !== "seller" && role !== "manager" && (
+            <button onClick={() => gateOrPrompt("cart")} className="relative flex items-end gap-1 px-2 py-1 rounded border border-transparent hover:border-white/40 text-white">
               <span className="relative">
                 <ShoppingCart className="w-7 h-7" />
                 <span className="absolute -top-1 left-3.5 text-[13px] font-black" style={{ color: "#FF9900" }}>{cartCount}</span>
@@ -1665,8 +1529,8 @@ export function VinkMarketplace({ isOpen, onClose }: VinkMarketplaceProps) {
             {String(c.name)}
           </button>
         ))}
-        {role === "customer" && (
-          <button onClick={() => setView("wishlist")} className="text-white/85 text-xs font-medium whitespace-nowrap hover:text-white transition-colors ml-auto">
+        {role !== "seller" && role !== "manager" && (
+          <button onClick={() => setView("catalog")} className="text-white/85 text-xs font-medium whitespace-nowrap hover:text-white transition-colors ml-auto">
             Today's Deals
           </button>
         )}
@@ -1709,7 +1573,7 @@ export function VinkMarketplace({ isOpen, onClose }: VinkMarketplaceProps) {
               wishlistIds={wishlistIds} onWishlist={handleWishlist}
             />
           )}
-          {view === "cart" && (
+          {view === "cart" && authUser && (
             <CartView
               cart={cart}
               onUpdateQty={handleUpdateQty}
@@ -1718,24 +1582,32 @@ export function VinkMarketplace({ isOpen, onClose }: VinkMarketplaceProps) {
               onCheckout={() => setView("checkout")}
             />
           )}
-          {view === "checkout" && (
+          {view === "checkout" && authUser && (
             <CheckoutView
               cart={cart} addresses={addresses}
               onBack={() => setView("home")}
-              onComplete={() => { loadInitial(); }}
+              onComplete={() => { loadInitial(); setView("account"); }}
             />
           )}
-          {view === "orders"   && <OrdersView />}
-          {view === "wishlist" && (
+          {view === "wishlist" && authUser && (
             <WishlistView
               wishlistIds={wishlistIds}
               onProduct={p => { setSelProductId(String(p.id)); setView("product"); }}
               onCart={handleAddToCart} onWishlist={handleWishlist}
             />
           )}
-          {view === "seller" && <SellerPortal />}
-          {view === "admin"   && <AdminView />}
+          {view === "account" && authUser && role === "customer" && (
+            <CustomerDashboard user={authUser} onProduct={id => { setSelProductId(id); setView("product"); }} onSignOut={handleSignOut} />
+          )}
+          {view === "seller" && authUser && authSeller && role === "seller" && (
+            <SellerDashboard user={authUser} seller={authSeller} onSignOut={handleSignOut} />
+          )}
+          {view === "admin" && authUser && role === "manager" && (
+            <ManagerDashboard user={authUser} onSignOut={handleSignOut} />
+          )}
       </div>
+
+      {showAuthModal && <MarketplaceAuthModal onClose={() => setShowAuthModal(false)} onAuthenticated={handleAuthenticated} />}
     </div>
   );
 }

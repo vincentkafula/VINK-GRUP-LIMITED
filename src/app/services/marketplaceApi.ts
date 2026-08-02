@@ -88,12 +88,68 @@ export const mktSellers = {
   list:     () => api<{ success: boolean; data: unknown[] }>("/api/marketplace/sellers"),
   get:      (id: string) => api<{ success: boolean; data: unknown }>(`/api/marketplace/sellers/${id}`),
   analytics:(id: string) => api<{ success: boolean; data: unknown }>(`/api/marketplace/sellers/${id}/analytics`),
+  register: (body: unknown) => api<{ success: boolean; token: string; user: unknown; seller: unknown; message: string }>("/api/marketplace/sellers/register", { method: "POST", body: JSON.stringify(body) }),
+  myOrders: (sellerId: string) => api<{ success: boolean; data: unknown[] }>(`/api/marketplace/sellers/${sellerId}/orders`),
+  addProduct:    (sellerId: string, body: unknown) => api<{ success: boolean; data: unknown; message: string }>(`/api/marketplace/sellers/${sellerId}/products`, { method: "POST", body: JSON.stringify(body) }),
+  updateProduct: (sellerId: string, productId: string, body: unknown) => api<{ success: boolean; data: unknown }>(`/api/marketplace/sellers/${sellerId}/products/${productId}`, { method: "PATCH", body: JSON.stringify(body) }),
+  deleteProduct: (sellerId: string, productId: string) => api(`/api/marketplace/sellers/${sellerId}/products/${productId}`, { method: "DELETE" }),
+  updateProfile: (sellerId: string, body: unknown) => api<{ success: boolean; data: unknown }>(`/api/marketplace/sellers/${sellerId}`, { method: "PATCH", body: JSON.stringify(body) }),
 };
 
 export const mktAdmin = {
   stats: () => api<{ success: boolean; data: unknown }>("/api/marketplace/admin/stats"),
-  orders: () => api<{ success: boolean; data: unknown[] }>("/api/marketplace/admin/orders"),
+  orders: (status?: string) => api<{ success: boolean; data: unknown[] }>(`/api/marketplace/admin/orders${status ? `?status=${status}` : ""}`),
+  updateOrderStatus: (id: string, body: unknown) => api<{ success: boolean; data: unknown }>(`/api/marketplace/admin/orders/${id}/status`, { method: "PATCH", body: JSON.stringify(body) }),
+  pendingProducts: () => api<{ success: boolean; data: unknown[] }>("/api/marketplace/admin/products/pending"),
+  approveProduct: (id: string) => api<{ success: boolean; data: unknown }>(`/api/marketplace/admin/products/${id}/approve`, { method: "PATCH" }),
+  pendingSellers: () => api<{ success: boolean; data: unknown[] }>("/api/marketplace/admin/sellers/pending"),
+  approveSeller: (id: string) => api<{ success: boolean; data: unknown }>(`/api/marketplace/admin/sellers/${id}/approve`, { method: "PATCH" }),
+  rejectSeller:  (id: string) => api<{ success: boolean; data: unknown }>(`/api/marketplace/admin/sellers/${id}/reject`, { method: "PATCH" }),
+  customers: () => api<{ success: boolean; data: unknown[] }>("/api/marketplace/admin/customers"),
+  reportUrl: (report: "orders" | "products") => `${BASE}/api/marketplace/admin/reports/${report}.csv`,
 };
 
 export const mktAddresses = (userId: string) =>
   api<{ success: boolean; data: unknown[] }>(`/api/marketplace/addresses/${userId}`);
+export const mktAddAddress = (userId: string, body: unknown) =>
+  api<{ success: boolean; data: unknown }>(`/api/marketplace/addresses/${userId}`, { method: "POST", body: JSON.stringify(body) });
+export const mktDeleteAddress = (userId: string, addressId: string) =>
+  api(`/api/marketplace/addresses/${userId}/${addressId}`, { method: "DELETE" });
+
+export const mktCustomer = {
+  stats:    (userId: string) => api<{ success: boolean; data: unknown }>(`/api/marketplace/customers/${userId}/stats`),
+  spending: (userId: string) => api<{ success: boolean; data: unknown }>(`/api/marketplace/customers/${userId}/spending`),
+};
+
+// ── Marketplace auth (separate from the site's admin login) ─────────────────
+export interface MktAuthUser { id: string; username: string; name: string; email: string; role: string; }
+export const mktAuth = {
+  login: async (username: string, password: string) => {
+    const r = await api<{ success: boolean; token: string; user: MktAuthUser; error?: string }>("/api/auth/login", { method: "POST", body: JSON.stringify({ username, password }) });
+    if (r.success && r.token) { setMktToken(r.token); localStorage.setItem("mkt_user", JSON.stringify(r.user)); }
+    return r;
+  },
+  registerCustomer: async (body: { username: string; password: string; name: string; email: string }) => {
+    const r = await api<{ success: boolean; token: string; user: MktAuthUser; error?: string }>("/api/auth/register", { method: "POST", body: JSON.stringify({ ...body, role: "customer" }) });
+    if (r.success && r.token) { setMktToken(r.token); localStorage.setItem("mkt_user", JSON.stringify(r.user)); }
+    return r;
+  },
+  registerSeller: async (body: { username: string; password: string; name: string; email: string; storeName: string; description?: string; phone?: string; taxId?: string }) => {
+    const r = await mktSellers.register(body) as { success: boolean; token: string; user: MktAuthUser; seller: unknown; error?: string };
+    if (r.success && r.token) { setMktToken(r.token); localStorage.setItem("mkt_user", JSON.stringify(r.user)); localStorage.setItem("mkt_seller", JSON.stringify(r.seller)); }
+    return r;
+  },
+  logout: () => { setMktToken(null); localStorage.removeItem("mkt_user"); localStorage.removeItem("mkt_seller"); },
+  changePassword: (currentPassword: string, newPassword: string) =>
+    api<{ success: boolean; message?: string; error?: string }>("/api/auth/change-password", { method: "POST", body: JSON.stringify({ currentPassword, newPassword }) }),
+  restoreSession: (): { user: MktAuthUser; seller: { id: string; storeName: string; status: string } | null } | null => {
+    if (!getMktToken()) return null;
+    const raw = localStorage.getItem("mkt_user");
+    if (!raw) return null;
+    try {
+      const user = JSON.parse(raw) as MktAuthUser;
+      const sellerRaw = localStorage.getItem("mkt_seller");
+      return { user, seller: sellerRaw ? JSON.parse(sellerRaw) : null };
+    } catch { return null; }
+  },
+};

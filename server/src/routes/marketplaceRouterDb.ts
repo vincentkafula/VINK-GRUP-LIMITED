@@ -1,6 +1,10 @@
 import { Router, Request, Response } from "express";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 import { pool } from "../db/pool.js";
-import { requireAuth } from "../middleware/auth.js";
+import { requireAuth, requireRole, JWT_SECRET, JWT_EXPIRES } from "../middleware/auth.js";
+
+const MANAGER_ROLES = ["superadmin", "noc_engineer", "billing_admin", "marketplace_admin"] as const;
 
 const router: ReturnType<typeof Router> = Router();
 
@@ -368,8 +372,20 @@ router.get("/sellers/:id/analytics", requireAuth, async (req: Request, res: Resp
   res.json({ success: true, data: { seller: mapSeller(rows[0]), products, revenue, topProducts: products.slice(0, 3).map(p => ({ id: p.id, name: p.name, emoji: p.emoji, sold: p.totalSold, revenue: p.totalSold * p.price })) } });
 });
 
+router.patch("/sellers/:id", requireAuth, async (req: Request, res: Response): Promise<void> => {
+  const { storeName, description, logoUrl, bannerUrl, phone } = req.body;
+  const sets: string[] = []; const vals: unknown[] = [];
+  const push = (col: string, val: unknown) => { if (val !== undefined) { vals.push(val); sets.push(`${col} = $${vals.length}`); } };
+  push("store_name", storeName); push("description", description); push("logo_url", logoUrl); push("banner_url", bannerUrl); push("phone", phone);
+  if (!sets.length) { res.status(400).json({ success: false, error: "No fields to update" }); return; }
+  vals.push(req.params.id);
+  const { rows } = await pool!.query(`UPDATE mkt_sellers SET ${sets.join(", ")} WHERE id = $${vals.length} RETURNING *`, vals);
+  if (!rows.length) { res.status(404).json({ success: false, error: "Seller not found" }); return; }
+  res.json({ success: true, data: mapSeller(rows[0]) });
+});
+
 // ── ADMIN ─────────────────────────────────────────────────────────────────────
-router.get("/admin/stats", requireAuth, async (_req: Request, res: Response): Promise<void> => {
+router.get("/admin/stats", requireAuth, requireRole(...MANAGER_ROLES), async (_req: Request, res: Response): Promise<void> => {
   const [{ rows: p }, { rows: s }, { rows: o }, { rows: rev }, { rows: pr }, { rows: ps }] = await Promise.all([
     pool!.query(`SELECT COUNT(*)::int AS n FROM mkt_products`),
     pool!.query(`SELECT COUNT(*)::int AS n FROM mkt_sellers`),
@@ -385,13 +401,13 @@ router.get("/admin/stats", requireAuth, async (_req: Request, res: Response): Pr
   }});
 });
 
-router.get("/admin/orders", requireAuth, async (req: Request, res: Response): Promise<void> => {
+router.get("/admin/orders", requireAuth, requireRole(...MANAGER_ROLES), async (req: Request, res: Response): Promise<void> => {
   const { status } = req.query as Record<string, string>;
   const { rows } = await pool!.query(status ? `SELECT * FROM mkt_orders WHERE status = $1 ORDER BY placed_at DESC` : `SELECT * FROM mkt_orders ORDER BY placed_at DESC`, status ? [status] : []);
   res.json({ success: true, data: rows.map(mapOrder), meta: { total: rows.length } });
 });
 
-router.patch("/admin/orders/:id/status", requireAuth, async (req: Request, res: Response): Promise<void> => {
+router.patch("/admin/orders/:id/status", requireAuth, requireRole(...MANAGER_ROLES, "seller"), async (req: Request, res: Response): Promise<void> => {
   const { rows } = await pool!.query(
     `UPDATE mkt_orders SET status = $1, tracking_number = COALESCE($2, tracking_number) WHERE id::text = $3 RETURNING *`,
     [req.body.status, req.body.trackingNumber ?? null, req.params.id]
@@ -400,12 +416,12 @@ router.patch("/admin/orders/:id/status", requireAuth, async (req: Request, res: 
   res.json({ success: true, data: mapOrder(rows[0]) });
 });
 
-router.get("/admin/products/pending", requireAuth, async (_req: Request, res: Response): Promise<void> => {
+router.get("/admin/products/pending", requireAuth, requireRole(...MANAGER_ROLES), async (_req: Request, res: Response): Promise<void> => {
   const { rows } = await pool!.query(`SELECT p.*, s.store_name AS seller_name, c.name AS category_name FROM mkt_products p JOIN mkt_sellers s ON s.id=p.seller_id JOIN mkt_categories c ON c.id=p.category_id WHERE p.status = 'pending_review'`);
   res.json({ success: true, data: rows.map(r => mapProduct(r)), meta: { total: rows.length } });
 });
 
-router.patch("/admin/products/:id/approve", requireAuth, async (req: Request, res: Response): Promise<void> => {
+router.patch("/admin/products/:id/approve", requireAuth, requireRole(...MANAGER_ROLES), async (req: Request, res: Response): Promise<void> => {
   const { rows } = await pool!.query(`UPDATE mkt_products SET status = 'active', updated_at = now() WHERE id::text = $1 RETURNING *`, [req.params.id]);
   if (!rows.length) { res.status(404).json({ success: false, error: "Product not found" }); return; }
   res.json({ success: true, data: mapProduct(rows[0]) });
@@ -415,6 +431,218 @@ router.patch("/admin/products/:id/approve", requireAuth, async (req: Request, re
 router.get("/addresses/:userId", requireAuth, async (req: Request, res: Response): Promise<void> => {
   const { rows } = await pool!.query(`SELECT * FROM mkt_addresses WHERE user_id = $1`, [req.params.userId]);
   res.json({ success: true, data: rows.map(mapAddress) });
+});
+
+router.post("/addresses/:userId", requireAuth, async (req: Request, res: Response): Promise<void> => {
+  const { label, firstName, lastName, line1, line2, city, state, postalCode, country, phone, isDefault } = req.body;
+  if (!firstName || !lastName || !line1 || !city || !postalCode || !phone) {
+    res.status(400).json({ success: false, error: "firstName, lastName, line1, city, postalCode and phone are required" });
+    return;
+  }
+  if (isDefault) await pool!.query(`UPDATE mkt_addresses SET is_default = false WHERE user_id = $1`, [req.params.userId]);
+  const { rows } = await pool!.query(
+    `INSERT INTO mkt_addresses (user_id, label, first_name, last_name, line1, line2, city, state, postal_code, country, phone, is_default)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING *`,
+    [req.params.userId, label ?? "Home", firstName, lastName, line1, line2 ?? null, city, state ?? "", postalCode, country ?? "ZA", phone, Boolean(isDefault)]
+  );
+  res.status(201).json({ success: true, data: mapAddress(rows[0]) });
+});
+
+router.delete("/addresses/:userId/:addressId", requireAuth, async (req: Request, res: Response): Promise<void> => {
+  await pool!.query(`DELETE FROM mkt_addresses WHERE id::text = $1 AND user_id = $2`, [req.params.addressId, req.params.userId]);
+  res.json({ success: true });
+});
+
+// ── CUSTOMER DASHBOARD ───────────────────────────────────────────────────────
+router.get("/customers/:userId/stats", requireAuth, async (req: Request, res: Response): Promise<void> => {
+  const userId = req.params.userId;
+  const { rows: statusRows } = await pool!.query(
+    `SELECT status, COUNT(*)::int AS n FROM mkt_orders WHERE user_id = $1 GROUP BY status`, [userId]
+  );
+  const counts = { inProgress: 0, delivered: 0, cancelled: 0, returned: 0 };
+  for (const r of statusRows) {
+    if (["pending", "confirmed", "processing", "shipped"].includes(r.status)) counts.inProgress += r.n;
+    else if (r.status === "delivered") counts.delivered += r.n;
+    else if (r.status === "cancelled") counts.cancelled += r.n;
+    else if (["return_requested", "returned", "refunded"].includes(r.status)) counts.returned += r.n;
+  }
+  const { rows: recent } = await pool!.query(
+    `SELECT * FROM mkt_orders WHERE user_id = $1 ORDER BY placed_at DESC LIMIT 5`, [userId]
+  );
+  const { rows: spentRows } = await pool!.query(
+    `SELECT COALESCE(SUM(total_amount),0)::float AS total FROM mkt_orders WHERE user_id = $1 AND payment_status = 'paid'`, [userId]
+  );
+  // Reward points: a simple, transparent, deterministic formula (1 point per R10 spent) — not a black box.
+  const rewardPoints = Math.floor(Number(spentRows[0].total) / 10);
+  res.json({
+    success: true,
+    data: {
+      orderCounts: counts,
+      totalSpent: Number(spentRows[0].total),
+      rewardPoints,
+      membership: rewardPoints >= 1000 ? "Premium" : "Standard",
+      recentOrders: recent.map(mapOrder),
+    },
+  });
+});
+
+router.get("/customers/:userId/spending", requireAuth, async (req: Request, res: Response): Promise<void> => {
+  const userId = req.params.userId;
+  const { rows: monthly } = await pool!.query(
+    `SELECT to_char(placed_at, 'Mon') AS month, date_trunc('month', placed_at) AS m, SUM(total_amount)::float AS total
+     FROM mkt_orders WHERE user_id = $1 AND payment_status = 'paid' AND placed_at > now() - interval '6 months'
+     GROUP BY month, m ORDER BY m`, [userId]
+  );
+  const { rows: orders } = await pool!.query(`SELECT items FROM mkt_orders WHERE user_id = $1 AND payment_status = 'paid'`, [userId]);
+  const catTotals: Record<string, number> = {};
+  for (const o of orders) {
+    for (const item of (o.items as any[])) catTotals[item.sellerName ?? "Other"] = (catTotals[item.sellerName ?? "Other"] ?? 0) + item.totalPrice;
+  }
+  res.json({
+    success: true,
+    data: {
+      monthly: monthly.map(m => ({ month: m.month, total: Number(m.total) })),
+      byCategory: Object.entries(catTotals).map(([name, total]) => ({ name, total })),
+    },
+  });
+});
+
+// ── SELLER REGISTRATION ──────────────────────────────────────────────────────
+router.post("/sellers/register", async (req: Request, res: Response): Promise<void> => {
+  const { username, password, name, email, storeName, description, phone, taxId } = req.body;
+  if (!username || !password || !name || !email || !storeName) {
+    res.status(400).json({ success: false, error: "username, password, name, email and storeName are required" });
+    return;
+  }
+  if (password.length < 8) { res.status(400).json({ success: false, error: "password must be at least 8 characters" }); return; }
+
+  const { rows: existing } = await pool!.query(`SELECT 1 FROM users WHERE username = $1 OR email = $2`, [username, email]);
+  if (existing.length) { res.status(409).json({ success: false, error: "An account with that username or email already exists" }); return; }
+
+  const slug = String(storeName).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+  const { rows: slugExists } = await pool!.query(`SELECT 1 FROM mkt_sellers WHERE store_slug = $1`, [slug]);
+  if (slugExists.length) { res.status(409).json({ success: false, error: "That store name is already taken" }); return; }
+
+  const client = await pool!.connect();
+  try {
+    await client.query("BEGIN");
+    const passwordHash = await bcrypt.hash(password, 10);
+    const { rows: userRows } = await client.query(
+      `INSERT INTO users (username, password_hash, role, name, email) VALUES ($1,$2,'seller',$3,$4) RETURNING *`,
+      [username, passwordHash, name, email]
+    );
+    const user = userRows[0];
+    const sellerId = `sel-${user.id.slice(0, 8)}`;
+    await client.query(
+      `INSERT INTO mkt_sellers (id, user_id, store_name, store_slug, description, email, phone, status, kyc_verified, tax_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,'pending_kyc',false,$8)`,
+      [sellerId, user.id, storeName, slug, description ?? "", email, phone ?? "", taxId ?? null]
+    );
+    await client.query("COMMIT");
+    const token = jwt.sign({ userId: user.id, username: user.username, role: user.role }, JWT_SECRET, { expiresIn: JWT_EXPIRES });
+    res.status(201).json({
+      success: true, token,
+      user: { id: user.id, username: user.username, name: user.name, email: user.email, role: user.role },
+      seller: { id: sellerId, storeName, status: "pending_kyc" },
+      message: "Seller account created — your store is pending approval before it goes live.",
+    });
+  } catch (err) {
+    await client.query("ROLLBACK");
+    console.error("[marketplace] Seller registration failed:", err);
+    res.status(500).json({ success: false, error: "Registration failed, please try again" });
+  } finally {
+    client.release();
+  }
+});
+
+// ── SELLER: my orders / my products (CRUD) ──────────────────────────────────
+router.get("/sellers/:id/orders", requireAuth, async (req: Request, res: Response): Promise<void> => {
+  const { rows } = await pool!.query(
+    `SELECT * FROM mkt_orders WHERE items::text LIKE $1 ORDER BY placed_at DESC`, [`%"sellerId":"${req.params.id}"%`]
+  );
+  res.json({ success: true, data: rows.map(mapOrder), meta: { total: rows.length } });
+});
+
+router.post("/sellers/:id/products", requireAuth, async (req: Request, res: Response): Promise<void> => {
+  const { categoryId, name, shortDescription, description, price, compareAtPrice, stock, sku, brand, tags, attributes, emoji, images } = req.body;
+  if (!categoryId || !name || !price) { res.status(400).json({ success: false, error: "categoryId, name and price are required" }); return; }
+  const slug = `${String(name).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}-${Date.now().toString(36)}`;
+  const { rows } = await pool!.query(
+    `INSERT INTO mkt_products (seller_id, category_id, name, slug, short_description, description, price, compare_at_price,
+       currency, images, emoji, status, stock, sku, brand, tags, attributes)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'ZAR',$9,$10,'pending_review',$11,$12,$13,$14,$15) RETURNING *`,
+    [req.params.id, categoryId, name, slug, shortDescription ?? "", description ?? "", price, compareAtPrice ?? null,
+     JSON.stringify(images ?? []), emoji ?? "📦", stock ?? 0, sku ?? null, brand ?? "", JSON.stringify(tags ?? []), JSON.stringify(attributes ?? {})]
+  );
+  res.status(201).json({ success: true, data: mapProduct(rows[0]), message: "Product submitted — it will appear once approved by the marketplace team." });
+});
+
+router.patch("/sellers/:id/products/:productId", requireAuth, async (req: Request, res: Response): Promise<void> => {
+  const { rows: existing } = await pool!.query(`SELECT * FROM mkt_products WHERE id::text = $1 AND seller_id = $2`, [req.params.productId, req.params.id]);
+  if (!existing.length) { res.status(404).json({ success: false, error: "Product not found" }); return; }
+  const fields = ["name","shortDescription","description","price","compareAtPrice","stock","sku","brand","emoji"] as const;
+  const colMap: Record<string,string> = { name:"name", shortDescription:"short_description", description:"description", price:"price", compareAtPrice:"compare_at_price", stock:"stock", sku:"sku", brand:"brand", emoji:"emoji" };
+  const sets: string[] = []; const vals: unknown[] = [];
+  for (const f of fields) {
+    if (req.body[f] !== undefined) { vals.push(req.body[f]); sets.push(`${colMap[f]} = $${vals.length}`); }
+  }
+  if (!sets.length) { res.status(400).json({ success: false, error: "No fields to update" }); return; }
+  vals.push(req.params.productId);
+  const { rows } = await pool!.query(`UPDATE mkt_products SET ${sets.join(", ")}, updated_at = now() WHERE id::text = $${vals.length} RETURNING *`, vals);
+  res.json({ success: true, data: mapProduct(rows[0]) });
+});
+
+router.delete("/sellers/:id/products/:productId", requireAuth, async (req: Request, res: Response): Promise<void> => {
+  await pool!.query(`UPDATE mkt_products SET status = 'inactive', updated_at = now() WHERE id::text = $1 AND seller_id = $2`, [req.params.productId, req.params.id]);
+  res.json({ success: true });
+});
+
+// ── ADMIN: seller approval ───────────────────────────────────────────────────
+router.get("/admin/sellers/pending", requireAuth, requireRole(...MANAGER_ROLES), async (_req: Request, res: Response): Promise<void> => {
+  const { rows } = await pool!.query(`SELECT * FROM mkt_sellers WHERE status = 'pending_kyc' ORDER BY joined_at DESC`);
+  res.json({ success: true, data: rows.map(mapSeller), meta: { total: rows.length } });
+});
+
+router.patch("/admin/sellers/:id/approve", requireAuth, requireRole(...MANAGER_ROLES), async (req: Request, res: Response): Promise<void> => {
+  const { rows } = await pool!.query(`UPDATE mkt_sellers SET status = 'active', kyc_verified = true WHERE id = $1 RETURNING *`, [req.params.id]);
+  if (!rows.length) { res.status(404).json({ success: false, error: "Seller not found" }); return; }
+  res.json({ success: true, data: mapSeller(rows[0]) });
+});
+
+router.patch("/admin/sellers/:id/reject", requireAuth, requireRole(...MANAGER_ROLES), async (req: Request, res: Response): Promise<void> => {
+  const { rows } = await pool!.query(`UPDATE mkt_sellers SET status = 'rejected' WHERE id = $1 RETURNING *`, [req.params.id]);
+  if (!rows.length) { res.status(404).json({ success: false, error: "Seller not found" }); return; }
+  res.json({ success: true, data: mapSeller(rows[0]) });
+});
+
+// ── ADMIN: customers list (User Management) ──────────────────────────────────
+router.get("/admin/customers", requireAuth, requireRole(...MANAGER_ROLES), async (req: Request, res: Response): Promise<void> => {
+  const { rows } = await pool!.query(`SELECT id, username, name, email, role, last_login, created_at FROM users WHERE role = 'customer' ORDER BY created_at DESC`);
+  res.json({ success: true, data: rows.map(u => ({ id: u.id, username: u.username, name: u.name, email: u.email, role: u.role, lastLogin: u.last_login, createdAt: u.created_at })), meta: { total: rows.length } });
+});
+
+// ── REPORTS (CSV export) ─────────────────────────────────────────────────────
+function toCsv(rows: Record<string, unknown>[]): string {
+  if (!rows.length) return "";
+  const headers = Object.keys(rows[0]);
+  const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  return [headers.join(","), ...rows.map(r => headers.map(h => esc(r[h])).join(","))].join("\n");
+}
+
+router.get("/admin/reports/orders.csv", requireAuth, requireRole(...MANAGER_ROLES), async (_req: Request, res: Response): Promise<void> => {
+  const { rows } = await pool!.query(`SELECT order_number, user_id, status, payment_status, total_amount, currency, placed_at FROM mkt_orders ORDER BY placed_at DESC`);
+  const csv = toCsv(rows.map(r => ({ orderNumber: r.order_number, userId: r.user_id, status: r.status, paymentStatus: r.payment_status, totalAmount: r.total_amount, currency: r.currency, placedAt: r.placed_at })));
+  res.setHeader("Content-Type", "text/csv");
+  res.setHeader("Content-Disposition", `attachment; filename="orders-${new Date().toISOString().slice(0,10)}.csv"`);
+  res.send(csv);
+});
+
+router.get("/admin/reports/products.csv", requireAuth, requireRole(...MANAGER_ROLES), async (_req: Request, res: Response): Promise<void> => {
+  const { rows } = await pool!.query(`SELECT p.name, p.sku, p.brand, p.price, p.stock, p.status, p.total_sold, s.store_name FROM mkt_products p JOIN mkt_sellers s ON s.id = p.seller_id ORDER BY p.total_sold DESC`);
+  const csv = toCsv(rows.map(r => ({ name: r.name, sku: r.sku, brand: r.brand, price: r.price, stock: r.stock, status: r.status, totalSold: r.total_sold, seller: r.store_name })));
+  res.setHeader("Content-Type", "text/csv");
+  res.setHeader("Content-Disposition", `attachment; filename="products-${new Date().toISOString().slice(0,10)}.csv"`);
+  res.send(csv);
 });
 
 export default router;
