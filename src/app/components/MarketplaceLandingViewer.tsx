@@ -69,29 +69,34 @@ export function MarketplaceLandingViewer({ isOpen, onClose, onShop, onSell }: Pr
           <X className="w-4 h-4 text-gray-700" />
         </button>
 
-        <div className="relative max-w-3xl mx-auto px-6 sm:px-10 py-24 sm:py-32 text-center">
-          <h1 className="text-4xl sm:text-5xl font-black leading-[1.05] tracking-tight" style={{ color: "#0F3D24" }}>
-            Everything you need,<br />from sellers you trust
-          </h1>
-          <p className="text-base sm:text-lg text-gray-600 mt-5 max-w-xl mx-auto">
-            Thousands of real products across electronics, fashion, home, and more — with buyer protection on every order.
-          </p>
+        <div className="relative max-w-2xl mx-auto px-6 sm:px-10 py-16 sm:py-20 text-center">
+          <div className="backdrop-blur-md rounded-[28px] px-6 sm:px-12 py-10 sm:py-12" style={{ background: "rgba(255,255,255,0.55)", boxShadow: "0 20px 60px -20px rgba(15,61,36,0.25)", border: "1px solid rgba(255,255,255,0.6)" }}>
+            <h1 className="text-3xl sm:text-4xl font-black leading-[1.1] tracking-tight" style={{ color: "#0F3D24" }}>
+              Everything you need,<br />
+              <span style={{ background: "linear-gradient(90deg,#128A43,#FF9900)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                from sellers you trust
+              </span>
+            </h1>
+            <p className="text-sm sm:text-base text-gray-600 mt-4 max-w-md mx-auto leading-relaxed">
+              Thousands of real products across electronics, fashion, home, and more — with buyer protection on every order.
+            </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-9">
-            <button
-              onClick={() => onShop()}
-              className="flex items-center gap-2 px-7 py-3.5 rounded-full text-white text-sm font-bold shadow-lg hover:brightness-105 transition-all"
-              style={{ background: "linear-gradient(135deg,#FF9900,#E67E00)" }}
-            >
-              <ShoppingBag className="w-4 h-4" /> Start Shopping
-            </button>
-            <button
-              onClick={onSell}
-              className="flex items-center gap-2 px-7 py-3.5 rounded-full text-sm font-bold border-2 hover:bg-white/60 transition-colors"
-              style={{ borderColor: "#128A43", color: "#0F3D24", background: "rgba(255,255,255,0.7)" }}
-            >
-              <Store className="w-4 h-4" /> Become a Seller <ArrowRight className="w-4 h-4" />
-            </button>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-7">
+              <button
+                onClick={() => onShop()}
+                className="flex items-center gap-2 px-6 py-3 rounded-full text-white text-sm font-bold transition-all hover:-translate-y-0.5"
+                style={{ background: "linear-gradient(135deg,#FF9900,#E67E00)", boxShadow: "0 10px 24px -8px rgba(230,126,0,0.55)" }}
+              >
+                <ShoppingBag className="w-4 h-4" /> Start Shopping
+              </button>
+              <button
+                onClick={onSell}
+                className="flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold border transition-all hover:-translate-y-0.5"
+                style={{ borderColor: "#128A43", color: "#0F3D24", background: "rgba(255,255,255,0.85)", boxShadow: "0 6px 16px -8px rgba(15,61,36,0.2)" }}
+              >
+                <Store className="w-4 h-4" /> Become a Seller <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
