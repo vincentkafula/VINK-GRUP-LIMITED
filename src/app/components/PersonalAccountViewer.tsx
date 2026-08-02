@@ -1,16 +1,20 @@
 import { useState } from "react";
-import { X } from "lucide-react";
+import {
+  X, ChevronRight, CheckCircle2, Sparkles, Anchor as AnchorIcon, TrendingUp,
+  Sunrise, Mountain, Crown, ArrowRight, UserCheck,
+} from "lucide-react";
 import { ApplyModal } from "./ApplyModal";
 
 interface Props { isOpen: boolean; onClose: () => void; onNavigate: (category: "creditCard" | "loan" | "invest" | "insure" | "rewards") => void }
 
 interface Account {
-  folio: string;
+  id: string;
   name: string;
   desc: string;
-  features?: string[];
-  ceilingLabel: string;
-  ceilingPct: number;
+  icon: React.ReactNode;
+  iconBg: string;
+  iconColor: string;
+  quickFeatures: string[];
   price: string;
   priceSub: string;
   marketingMessage: string;
@@ -20,158 +24,110 @@ interface Account {
 }
 
 const SUB_NAV = ["Account", "Credit Card", "Loan", "Invest", "Insure", "Rewards"];
+const GREEN = "#0F8A4B";
+const ORANGE = "#FF7A1A";
 
-const ROW1: Account[] = [
+const ACCOUNTS: Account[] = [
   {
-    folio: "01",
-    name: "Spark Account",
+    id: "spark", name: "Spark Account",
     desc: "Entry-level account — straightforward day-to-day banking, no monthly fee attached.",
-    ceilingLabel: "R1.5m ceiling",
-    ceilingPct: 49.6,
-    price: "R0",
-    priceSub: "/ month · turnover to R1.5m",
+    icon: <Sparkles className="w-6 h-6" />, iconBg: "#E8F7EE", iconColor: GREEN,
+    quickFeatures: ["No monthly fee", "Free online banking", "35 electronic transactions included"],
+    price: "R0", priceSub: "/ month",
     marketingMessage: "Every great financial journey starts with a spark. Open your account in minutes and experience banking built for your future.",
     targetCustomer: "Students, first-time earners, young adults",
-    appFeatures: [
-      "Instant digital account opening", "Virtual debit card", "QR payments", "Spending insights",
-      "Smart notifications", "Mobile airtime & bill payments", "Biometric login", "Round-up savings",
-    ],
+    appFeatures: ["Instant digital account opening", "Virtual debit card", "QR payments", "Spending insights", "Smart notifications", "Mobile airtime & bill payments", "Biometric login", "Round-up savings"],
   },
   {
-    folio: "02",
-    name: "Anchor Account",
+    id: "anchor", name: "Anchor Account",
     desc: "Standard everyday account — more room to move each month, still free to hold.",
-    ceilingLabel: "R5m ceiling",
-    ceilingPct: 59.2,
-    price: "R0",
-    priceSub: "/ month · turnover to R5m",
+    icon: <AnchorIcon className="w-6 h-6" />, iconBg: "#FFF1E6", iconColor: ORANGE,
+    quickFeatures: ["No monthly fee", "Free online banking", "60 electronic transactions included"],
+    price: "R0", priceSub: "/ month",
     marketingMessage: "The account you can rely on every day. Fast, secure and designed to keep your life moving.",
     targetCustomer: "Salaried professionals & everyday banking",
     inheritsFrom: "Spark",
-    appFeatures: [
-      "Salary deposits", "Scheduled transfers", "Standing orders", "Debit card controls (freeze/unfreeze)",
-      "Subscription manager", "Budget categories", "Family payments", "Digital statements",
-    ],
+    appFeatures: ["Salary deposits", "Scheduled transfers", "Standing orders", "Debit card controls (freeze/unfreeze)", "Subscription manager", "Budget categories", "Family payments", "Digital statements"],
   },
   {
-    folio: "03",
-    name: "Momentum Account",
+    id: "momentum", name: "Momentum Account",
     desc: "Rewards account — built for accounts that carry serious monthly volume.",
-    ceilingLabel: "R500m ceiling",
-    ceilingPct: 96.3,
-    price: "R85",
-    priceSub: "/ month · turnover to R500m",
+    icon: <TrendingUp className="w-6 h-6" />, iconBg: "#E8F7EE", iconColor: GREEN,
+    quickFeatures: ["Monthly fee: R85", "High transaction limits", "Access to exclusive rewards"],
+    price: "R85", priceSub: "/ month",
     marketingMessage: "Every payment should move you forward. Earn rewards, unlock exclusive offers and watch your banking pay you back.",
     targetCustomer: "Active spenders & loyal customers",
     inheritsFrom: "Anchor",
-    appFeatures: [
-      "Cashback rewards", "Merchant discounts", "Loyalty points marketplace", "Monthly reward challenges",
-      "Travel rewards", "Referral bonuses", "Premium card designs", "Spending streak achievements",
-    ],
+    appFeatures: ["Cashback rewards", "Merchant discounts", "Loyalty points marketplace", "Monthly reward challenges", "Travel rewards", "Referral bonuses", "Premium card designs", "Spending streak achievements"],
   },
-];
-
-const ROW2: Account[] = [
   {
-    folio: "04",
-    name: "Horizon Account",
+    id: "horizon", name: "Horizon Account",
     desc: "Savings-focused account — a tighter turnover band, geared to lower-volume activity.",
-    features: [
-      "Free online banking and NotifyMe alerts",
-      "Suitable for all business segments and sectors",
-      "Shariah-compliant option available",
-    ],
-    ceilingLabel: "R5,000 ceiling",
-    ceilingPct: 3.7,
-    price: "R170",
-    priceSub: "/ month · turnover to R5,000",
+    icon: <Sunrise className="w-6 h-6" />, iconBg: "#FFF1E6", iconColor: ORANGE,
+    quickFeatures: ["Low monthly fee", "Smart saving tools", "Ideal for growing balances"],
+    price: "R170", priceSub: "/ month",
     marketingMessage: "Your future deserves more than a savings account. Build wealth automatically, one goal at a time.",
     targetCustomer: "Serious savers",
     inheritsFrom: "Momentum",
-    appFeatures: [
-      "Goal-based savings vaults", "Auto-save rules", "High-interest savings", "Savings progress tracker",
-      "Emergency fund vault", "Lock savings until a chosen date", "AI savings recommendations", "Family savings goals",
-    ],
+    appFeatures: ["Goal-based savings vaults", "Auto-save rules", "High-interest savings", "Savings progress tracker", "Emergency fund vault", "Lock savings until a chosen date", "AI savings recommendations", "Family savings goals"],
   },
   {
-    folio: "05",
-    name: "Summit Account",
+    id: "summit", name: "Summit Account",
     desc: "Premium account — built for sole proprietors who need room to grow.",
-    features: [
-      "35 electronic transactions included",
-      "10 cash deposits/withdrawals at any VINK ATM, capped at R50,000/month",
-      "Limited to sole proprietors",
-      "Free online banking and NotifyMe alerts",
-      "Shariah-compliant option available",
-    ],
-    ceilingLabel: "R500m ceiling",
-    ceilingPct: 96.3,
-    price: "R265",
-    priceSub: "/ month · turnover to R500m",
+    icon: <Mountain className="w-6 h-6" />, iconBg: "#E8F7EE", iconColor: GREEN,
+    quickFeatures: ["Premium benefits", "Higher limits & flexibility", "Priority support"],
+    price: "R265", priceSub: "/ month",
     marketingMessage: "Reach the top with banking that works as hard as you do. Premium benefits without compromise.",
     targetCustomer: "High-income professionals & business leaders",
     inheritsFrom: "Horizon",
-    appFeatures: [
-      "Dedicated relationship manager", "Priority customer support (24/7)", "Airport lounge access",
-      "Travel insurance integration", "Higher transaction limits", "Premium metal card",
-      "Multi-currency wallets", "Early salary access",
-    ],
+    appFeatures: ["Dedicated relationship manager", "Priority customer support (24/7)", "Airport lounge access", "Travel insurance integration", "Higher transaction limits", "Premium metal card", "Multi-currency wallets", "Early salary access"],
   },
   {
-    folio: "06",
-    name: "Legacy Account",
-    desc: "Wealth management account — the highest-capacity personal account, for all business segments and sectors.",
-    features: [
-      "60 electronic transactions included",
-      "15 cash deposits/withdrawals at any VINK ATM, capped at R100,000/month",
-      "Suitable for all business segments and sectors",
-      "Free online banking and NotifyMe alerts",
-      "Shariah-compliant option available",
-    ],
-    ceilingLabel: "R500m ceiling",
-    ceilingPct: 96.3,
-    price: "R415",
-    priceSub: "/ month · turnover to R500m",
+    id: "legacy", name: "Legacy Account",
+    desc: "Wealth management account — the highest-capacity personal account, for all business segments.",
+    icon: <Crown className="w-6 h-6" />, iconBg: "#FFF1E6", iconColor: ORANGE,
+    quickFeatures: ["Highest transaction capacity", "Personal wealth support", "Dedicated relationship manager"],
+    price: "R415", priceSub: "/ month",
     marketingMessage: "Because wealth is more than money—it's the future you create for generations.",
     targetCustomer: "High-net-worth individuals & investors",
     inheritsFrom: "Summit",
-    appFeatures: [
-      "Investment portfolio dashboard", "Stocks & ETFs", "Bonds & treasury products", "Estate planning tools",
-      "Trust account management", "Family wealth dashboard", "Tax document center", "Private banker messaging",
-      "Exclusive investment opportunities offering",
-    ],
+    appFeatures: ["Investment portfolio dashboard", "Stocks & ETFs", "Bonds & treasury products", "Estate planning tools", "Trust account management", "Family wealth dashboard", "Tax document center", "Private banker messaging", "Exclusive investment opportunities offering"],
   },
 ];
 
 function AccountCard({ acct, onApply, onDetails }: { acct: Account; onApply: (name: string, price: string) => void; onDetails: (acct: Account) => void }) {
   return (
-    <div className="pav-card">
-      <div className="pav-folio">Folio No.&nbsp;{acct.folio}</div>
-      <h3 className="pav-acct-name">{acct.name}</h3>
-      <p className="pav-acct-desc">{acct.desc}</p>
-      {acct.features && (
-        <ul className="pav-features">
-          {acct.features.map((f) => <li key={f}>{f}</li>)}
-        </ul>
-      )}
-      <div className="pav-gauge-block">
-        <div className="pav-gauge-label"><span>R5k</span><span className="pav-ceiling-val">{acct.ceilingLabel}</span></div>
-        <div className="pav-gauge" aria-label={`Monthly turnover ceiling: ${acct.ceilingLabel}`}>
-          <div className="pav-gauge-fill" style={{ width: `${acct.ceilingPct}%` }} />
-          <div className="pav-gauge-marker" style={{ left: `${acct.ceilingPct}%` }} />
-        </div>
-        <div className="pav-gauge-ticks"><span>R5k</span><span>R500m</span></div>
-      </div>
-      <div className="pav-price-block">
-        <div className="pav-price"><span className="pav-cur">R</span>{acct.price.replace("R", "")}</div>
-        <div className="pav-price-sub">{acct.priceSub}</div>
-      </div>
-      <div className="pav-cta-group">
-        <button className="pav-btn pav-btn-primary" onClick={() => onApply(acct.name, acct.price)}>
-          Apply now
+    <div className="bg-white rounded-2xl border border-gray-100 p-6 flex flex-col hover:shadow-lg hover:-translate-y-0.5 transition-all relative">
+      <button onClick={() => onDetails(acct)} className="absolute top-5 right-5 w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-700 hover:border-gray-300 transition-colors">
+        <ChevronRight className="w-4 h-4" />
+      </button>
+      <span className="w-12 h-12 rounded-full flex items-center justify-center mb-4" style={{ background: acct.iconBg, color: acct.iconColor }}>
+        {acct.icon}
+      </span>
+      <h3 className="text-lg font-bold mb-1.5" style={{ color: GREEN }}>{acct.name}</h3>
+      <p className="text-[13.5px] text-gray-500 leading-relaxed mb-4">{acct.desc}</p>
+      <ul className="space-y-2 mb-5">
+        {acct.quickFeatures.map(f => (
+          <li key={f} className="flex items-start gap-2 text-[13px] text-gray-700">
+            <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" style={{ color: GREEN }} />
+            <span>{f}</span>
+          </li>
+        ))}
+      </ul>
+      <div className="flex items-center gap-2.5 mt-auto">
+        <button
+          onClick={() => onApply(acct.name, acct.price)}
+          className="flex-1 py-2.5 rounded-lg text-white text-[13.5px] font-bold transition-opacity hover:opacity-90"
+          style={{ background: ORANGE }}
+        >
+          Apply Now
         </button>
-        <button className="pav-btn pav-btn-secondary" onClick={() => onDetails(acct)}>
-          See account details
+        <button
+          onClick={() => onDetails(acct)}
+          className="flex-1 py-2.5 rounded-lg text-[13.5px] font-bold border transition-colors"
+          style={{ borderColor: GREEN, color: GREEN }}
+        >
+          View Details
         </button>
       </div>
     </div>
@@ -180,34 +136,41 @@ function AccountCard({ acct, onApply, onDetails }: { acct: Account; onApply: (na
 
 function AccountDetailModal({ acct, onClose, onApply }: { acct: Account; onClose: () => void; onApply: (name: string, price: string) => void }) {
   return (
-    <div className="pav-detail-backdrop" onClick={onClose}>
-      <div className="pav-detail-card" onClick={(e) => e.stopPropagation()}>
-        <button className="pav-detail-close" onClick={onClose} aria-label="Close"><X className="w-4 h-4" /></button>
+    <div className="fixed inset-0 z-[70] flex items-center justify-center p-5" style={{ background: "rgba(15,30,20,0.55)" }} onClick={onClose}>
+      <div className="relative bg-white max-w-lg w-full max-h-[88vh] overflow-y-auto rounded-2xl p-8 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <button onClick={onClose} className="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-100" aria-label="Close">
+          <X className="w-4 h-4" />
+        </button>
 
-        <div className="pav-detail-folio">Folio No.&nbsp;{acct.folio}</div>
-        <h3 className="pav-detail-name">{acct.name}</h3>
+        <span className="w-12 h-12 rounded-full flex items-center justify-center mb-4" style={{ background: acct.iconBg, color: acct.iconColor }}>{acct.icon}</span>
+        <h3 className="text-2xl font-black mb-3" style={{ color: GREEN }}>{acct.name}</h3>
+        <blockquote className="italic text-gray-600 text-[15px] leading-relaxed mb-5 pl-4" style={{ borderLeft: `3px solid ${ORANGE}` }}>
+          &ldquo;{acct.marketingMessage}&rdquo;
+        </blockquote>
 
-        <blockquote className="pav-detail-quote">&ldquo;{acct.marketingMessage}&rdquo;</blockquote>
-
-        <div className="pav-detail-audience">
-          <span className="pav-detail-audience-label">Best for</span>
-          <span className="pav-detail-audience-value">{acct.targetCustomer}</span>
+        <div className="flex items-baseline gap-2 mb-5 pb-5 border-b border-gray-100">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Best for</span>
+          <span className="text-sm font-semibold text-gray-800">{acct.targetCustomer}</span>
         </div>
 
-        <div className="pav-detail-features-head">
-          {acct.inheritsFrom ? <>Everything in <strong>{acct.inheritsFrom}</strong>, plus:</> : "Exclusive mobile app features"}
-        </div>
-        <ul className="pav-detail-features">
-          {acct.appFeatures.map((f) => <li key={f}>{f}</li>)}
+        <p className="text-sm font-bold text-gray-800 mb-3">
+          {acct.inheritsFrom ? <>Everything in <span style={{ color: GREEN }}>{acct.inheritsFrom}</span>, plus:</> : "Exclusive mobile app features"}
+        </p>
+        <ul className="grid sm:grid-cols-2 gap-x-4 gap-y-2 mb-6">
+          {acct.appFeatures.map(f => (
+            <li key={f} className="flex items-start gap-2 text-[12.8px] text-gray-600">
+              <CheckCircle2 className="w-3.5 h-3.5 shrink-0 mt-0.5" style={{ color: ORANGE }} />
+              <span>{f}</span>
+            </li>
+          ))}
         </ul>
 
-        <div className="pav-detail-price-row">
+        <div className="flex items-center justify-between pt-5 border-t border-gray-100">
           <div>
-            <div className="pav-price"><span className="pav-cur">R</span>{acct.price.replace("R", "")}</div>
-            <div className="pav-price-sub">{acct.priceSub}</div>
+            <div className="text-2xl font-black text-gray-900">{acct.price}<span className="text-sm font-medium text-gray-400">{acct.priceSub}</span></div>
           </div>
-          <button className="pav-btn pav-btn-primary" style={{ width: "auto", padding: "12px 28px" }} onClick={() => onApply(acct.name, acct.price)}>
-            Apply now
+          <button onClick={() => onApply(acct.name, acct.price)} className="px-7 py-3 rounded-full text-white text-sm font-bold" style={{ background: ORANGE }}>
+            Apply Now
           </button>
         </div>
       </div>
@@ -222,166 +185,13 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate }: Props) {
   const openApply = (name: string, price: string) => setApplyProduct({ name, price });
 
   return (
-    <div className="pav-root fixed inset-0 z-50 overflow-y-auto">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
-
-        .pav-root{
-          --pav-ink:        #1D1740;
-          --pav-ink-soft:   #2A2358;
-          --pav-paper:      #F2EFF9;
-          --pav-paper-dim:  #E7E2F3;
-          --pav-gold:       #C6A15B;
-          --pav-gold-dim:   #9C7F49;
-          --pav-plum:       #6B4FA0;
-          --pav-text-on-ink: #EDE9FA;
-          --pav-text-muted-on-ink: #A79CD1;
-          --pav-text-body:  #2A2140;
-          --pav-text-muted: #6E6690;
-          --pav-rule:       rgba(29,23,64,0.14);
-          --pav-rule-on-ink: rgba(237,233,250,0.18);
-          background: var(--pav-paper);
-          color: var(--pav-text-body);
-          font-family: 'IBM Plex Sans', sans-serif;
-          -webkit-font-smoothing: antialiased;
-        }
-        .pav-root a{ color:inherit; }
-        .pav-root :focus-visible{ outline:2px solid var(--pav-gold); outline-offset:3px; }
-        .pav-wrap{ max-width:1160px; margin:0 auto; padding:0 32px; }
-
-        .pav-close{
-          position:fixed; top:20px; right:20px; z-index:60;
-          background:rgba(29,23,64,0.55); color:#EDE9FA;
-          border:1px solid rgba(237,233,250,0.3); border-radius:999px;
-          width:38px; height:38px; display:flex; align-items:center; justify-content:center;
-          cursor:pointer; transition:background 0.15s ease;
-        }
-        .pav-close:hover{ background:rgba(29,23,64,0.85); }
-
-        /* ── Sub-nav bar ── */
-        .pav-subnav{ background:var(--pav-ink); border-bottom:1px solid var(--pav-rule-on-ink); }
-        .pav-subnav-inner{
-          display:flex; align-items:center; gap:4px; overflow-x:auto;
-          padding:0 32px; max-width:1160px; margin:0 auto; height:46px;
-        }
-        .pav-subnav-item{
-          font-family:'IBM Plex Mono', monospace; font-size:12.5px; white-space:nowrap;
-          padding:8px 16px; border-radius:2px; text-decoration:none; cursor:pointer;
-          color:var(--pav-text-muted-on-ink); background:transparent; border:none;
-          transition:color 0.15s ease, background 0.15s ease;
-        }
-        .pav-subnav-item:hover{ color:var(--pav-text-on-ink); }
-        .pav-subnav-item.active{ color:var(--pav-gold); background:rgba(198,161,91,0.12); font-weight:600; }
-
-        .pav-ledger-head{
-          display:flex; justify-content:space-between; align-items:flex-end;
-          padding:32px 0 22px;
-        }
-        .pav-ledger-head h2{ font-family:'Fraunces', serif; font-weight:500; font-size:22px; margin:0; }
-        .pav-scale-note{ font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--pav-text-muted); text-align:right; line-height:1.5; }
-
-        /* ── Two rows of three cards ── */
-        .pav-grid{
-          display:grid; grid-template-columns:repeat(3, 1fr); gap:24px; margin-bottom:24px;
-        }
-        .pav-card{
-          background:#fff; border:1px solid var(--pav-rule); border-radius:2px;
-          padding:28px 26px; display:flex; flex-direction:column;
-          transition:box-shadow 0.2s ease, transform 0.2s ease;
-        }
-        .pav-card:hover{ box-shadow:0 12px 32px rgba(29,23,64,0.1); transform:translateY(-2px); }
-        .pav-folio{ font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--pav-gold-dim); letter-spacing:0.04em; margin-bottom:14px; }
-        .pav-acct-name{ font-family:'Fraunces', serif; font-weight:500; font-size:21px; margin:0 0 8px; letter-spacing:-0.01em; }
-        .pav-acct-desc{ font-size:13.5px; color:var(--pav-text-muted); line-height:1.55; margin:0 0 14px; }
-        .pav-features{ list-style:none; margin:0 0 16px; padding:0; display:flex; flex-direction:column; gap:6px; }
-        .pav-features li{ font-size:12.3px; color:var(--pav-ink-soft); line-height:1.5; padding-left:15px; position:relative; }
-        .pav-features li::before{ content:"—"; position:absolute; left:0; color:var(--pav-gold-dim); }
-
-        .pav-gauge-block{ margin-bottom:18px; }
-        .pav-gauge-label{ font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--pav-text-muted); display:flex; justify-content:space-between; margin-bottom:8px; }
-        .pav-gauge-label .pav-ceiling-val{ color:var(--pav-ink); font-weight:600; }
-        .pav-gauge{ position:relative; height:6px; background:var(--pav-paper-dim); border-radius:3px; overflow:visible; }
-        .pav-gauge-fill{ position:absolute; top:0; left:0; height:100%; background:linear-gradient(90deg, var(--pav-plum), var(--pav-gold)); border-radius:3px; }
-        .pav-gauge-marker{ position:absolute; top:50%; width:11px; height:11px; border-radius:50%; background:var(--pav-ink); border:2px solid var(--pav-gold); transform:translate(-50%,-50%); }
-        .pav-gauge-ticks{ display:flex; justify-content:space-between; margin-top:7px; font-family:'IBM Plex Mono', monospace; font-size:10px; color:var(--pav-text-muted); }
-
-        .pav-price-block{ margin-top:auto; margin-bottom:16px; }
-        .pav-price{ font-family:'IBM Plex Mono', monospace; font-weight:600; font-size:28px; color:var(--pav-ink); line-height:1; }
-        .pav-price .pav-cur{ font-size:16px; vertical-align:top; margin-right:1px; }
-        .pav-price-sub{ font-size:11px; color:var(--pav-text-muted); margin:6px 0 0; font-family:'IBM Plex Mono', monospace; letter-spacing:0.02em; }
-        .pav-cta-group{ display:flex; flex-direction:row; gap:9px; }
-        .pav-btn{
-          display:inline-block; font-family:'IBM Plex Sans', sans-serif; font-size:13.5px; font-weight:600;
-          text-decoration:none; padding:10px 20px; border-radius:2px; cursor:pointer;
-          border:1px solid transparent; text-align:center; width:100%; transition:all 0.15s ease;
-        }
-        .pav-btn-primary{ background:var(--pav-ink); color:var(--pav-text-on-ink); }
-        .pav-btn-primary:hover{ background:var(--pav-plum); }
-        .pav-btn-secondary{ background:transparent; color:var(--pav-ink); border-color:var(--pav-rule); }
-        .pav-btn-secondary:hover{ background:var(--pav-paper-dim); border-color:var(--pav-gold-dim); }
-
-        /* ── Account detail modal ── */
-        .pav-detail-backdrop{
-          position:fixed; inset:0; z-index:70; background:rgba(29,23,64,0.55);
-          display:flex; align-items:center; justify-content:center; padding:20px;
-        }
-        .pav-detail-card{
-          position:relative; background:#fff; max-width:520px; width:100%; max-height:88vh; overflow-y:auto;
-          border-radius:4px; padding:40px 36px 32px; box-shadow:0 30px 80px rgba(29,23,64,0.35);
-        }
-        .pav-detail-close{
-          position:absolute; top:16px; right:16px; width:32px; height:32px; border-radius:50%;
-          background:var(--pav-paper); color:var(--pav-ink); border:1px solid var(--pav-rule);
-          display:flex; align-items:center; justify-content:center; cursor:pointer;
-        }
-        .pav-detail-close:hover{ background:var(--pav-paper-dim); }
-        .pav-detail-folio{ font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--pav-gold-dim); letter-spacing:0.04em; margin-bottom:10px; }
-        .pav-detail-name{ font-family:'Fraunces', serif; font-weight:500; font-size:26px; margin:0 0 18px; letter-spacing:-0.01em; }
-        .pav-detail-quote{
-          margin:0 0 20px; padding:16px 0 16px 18px; border-left:3px solid var(--pav-gold);
-          font-family:'Fraunces', serif; font-style:italic; font-size:16px; line-height:1.55; color:var(--pav-ink-soft);
-        }
-        .pav-detail-audience{
-          display:flex; align-items:baseline; gap:8px; margin-bottom:26px; padding-bottom:20px;
-          border-bottom:1px solid var(--pav-rule);
-        }
-        .pav-detail-audience-label{ font-family:'IBM Plex Mono', monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; color:var(--pav-text-muted); }
-        .pav-detail-audience-value{ font-size:13.5px; font-weight:600; color:var(--pav-ink); }
-        .pav-detail-features-head{ font-size:13px; font-weight:600; color:var(--pav-ink); margin-bottom:12px; }
-        .pav-detail-features-head strong{ color:var(--pav-plum); }
-        .pav-detail-features{ list-style:none; margin:0 0 28px; padding:0; display:grid; grid-template-columns:1fr 1fr; gap:8px 16px; }
-        .pav-detail-features li{ font-size:12.8px; color:var(--pav-ink-soft); line-height:1.5; padding-left:16px; position:relative; }
-        .pav-detail-features li::before{ content:"✓"; position:absolute; left:0; color:var(--pav-gold-dim); font-weight:600; }
-        .pav-detail-price-row{ display:flex; align-items:center; justify-content:space-between; padding-top:22px; border-top:1px solid var(--pav-rule); }
-        @media (max-width:480px){
-          .pav-detail-features{ grid-template-columns:1fr; }
-          .pav-detail-price-row{ flex-direction:column; align-items:flex-start; gap:16px; }
-        }
-
-        .pav-foot{ background:var(--pav-ink); color:var(--pav-text-muted-on-ink); padding:34px 0; font-size:12px; line-height:1.7; font-family:'IBM Plex Mono', monospace; }
-        .pav-foot .pav-wrap{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
-        .pav-foot strong{ color:var(--pav-gold); font-weight:600; }
-
-        @media (max-width:900px){
-          .pav-grid{ grid-template-columns:1fr; }
-          .pav-ledger-head{ flex-direction:column; align-items:flex-start; gap:10px; }
-          .pav-scale-note{ text-align:left; }
-        }
-        @media (prefers-reduced-motion:reduce){
-          .pav-root *{ transition:none !important; }
-        }
-      `}</style>
-
-      <button className="pav-close" onClick={onClose} aria-label="Close">
-        <X className="w-4 h-4" />
-      </button>
-
-      <nav className="pav-subnav">
-        <div className="pav-subnav-inner">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-white">
+      {/* Sub-nav */}
+      <nav className="sticky top-0 z-20 bg-white border-b border-gray-100">
+        <div className="max-w-6xl mx-auto px-6 flex items-center gap-1 h-12 overflow-x-auto">
           {SUB_NAV.map((item) => (
             <button
               key={item}
-              className={`pav-subnav-item${item === "Account" ? " active" : ""}`}
               onClick={() => {
                 if (item === "Account") return;
                 const map: Record<string, "creditCard" | "loan" | "invest" | "insure" | "rewards"> = {
@@ -389,35 +199,101 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate }: Props) {
                 };
                 onNavigate(map[item]);
               }}
+              className="px-3.5 py-1.5 rounded-full text-[13px] font-semibold whitespace-nowrap transition-colors"
+              style={item === "Account" ? { background: "#E8F7EE", color: GREEN } : { color: "#6B7280" }}
             >
               {item}
             </button>
           ))}
+          <button onClick={onClose} className="ml-auto p-2 rounded-full hover:bg-gray-100 transition-colors" aria-label="Close">
+            <X className="w-4 h-4 text-gray-500" />
+          </button>
         </div>
       </nav>
 
-      <section className="pav-ledger-section">
-        <div className="pav-wrap">
-          <div className="pav-ledger-head">
-            <h2>All personal accounts</h2>
-            <div className="pav-scale-note">Monthly turnover ceiling<br />shown on a shared scale, R5k → R500m</div>
+      {/* Hero */}
+      <div className="relative overflow-hidden" style={{ background: "linear-gradient(160deg,#FAFCFB 0%,#F3F9F5 100%)" }}>
+        <div className="absolute -left-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: `linear-gradient(180deg,${GREEN},${ORANGE})`, filter: "blur(60px)" }} />
+        <div className="absolute -right-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: `linear-gradient(180deg,${ORANGE},${GREEN})`, filter: "blur(60px)" }} />
+
+        <div className="relative max-w-6xl mx-auto px-6 py-16 sm:py-20 grid lg:grid-cols-2 gap-10 items-center">
+          <div>
+            <span className="inline-block text-[11px] font-bold tracking-[0.14em] uppercase mb-4" style={{ color: ORANGE }}>Personal Banking</span>
+            <h1 className="text-4xl sm:text-5xl font-black leading-[1.05] text-gray-900">
+              Banking designed for<br />every South African.
+            </h1>
+            <p className="text-gray-500 text-base mt-5 max-w-md">
+              Open an account in minutes and manage your money with the Vink app.
+            </p>
+            <div className="flex flex-wrap items-center gap-3 mt-8">
+              <button onClick={() => openApply(ACCOUNTS[0].name, ACCOUNTS[0].price)}
+                className="px-6 py-3 rounded-full text-white text-sm font-bold shadow-lg" style={{ background: ORANGE }}>
+                Open an Account
+              </button>
+              <button className="px-6 py-3 rounded-full text-sm font-bold border-2" style={{ borderColor: GREEN, color: GREEN }}>
+                Compare Accounts
+              </button>
+            </div>
           </div>
 
-          <div className="pav-grid">
-            {ROW1.map((acct) => <AccountCard key={acct.folio} acct={acct} onApply={openApply} onDetails={setDetailAccount} />)}
+          {/* Decorative app preview */}
+          <div className="relative flex justify-center items-center h-64 sm:h-80">
+            <div className="w-40 h-64 rounded-[28px] shadow-2xl p-3 relative" style={{ background: `linear-gradient(160deg,${GREEN},#0B5C2E)` }}>
+              <div className="w-full h-full rounded-2xl bg-white/10 flex flex-col p-3">
+                <span className="text-white/60 text-[9px] font-bold tracking-widest">VINK</span>
+                <p className="text-white text-lg font-black mt-2">R12,540.00</p>
+                <div className="flex gap-1.5 mt-4">
+                  {["Send","Cards","Rewards"].map(l => (
+                    <span key={l} className="text-[7px] text-white/70 bg-white/10 rounded-full px-2 py-1">{l}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="absolute -right-4 bottom-6 w-24 h-16 rounded-2xl shadow-xl flex items-center justify-center" style={{ background: ORANGE }}>
+              <UserCheck className="w-8 h-8 text-white" />
+            </div>
           </div>
-          <div className="pav-grid">
-            {ROW2.map((acct) => <AccountCard key={acct.folio} acct={acct} onApply={openApply} onDetails={setDetailAccount} />)}
-          </div>
+        </div>
+      </div>
+
+      {/* Choose your account */}
+      <section className="max-w-6xl mx-auto px-6 py-16 sm:py-20">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl sm:text-4xl font-black text-gray-900">
+            Choose <span style={{ color: GREEN }}>Your</span> Account
+          </h2>
+          <div className="w-14 h-1 mx-auto mt-3 rounded-full" style={{ background: ORANGE }} />
+          <p className="text-gray-500 text-sm mt-4">Simple banking solutions for every stage of your journey.</p>
+        </div>
+
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {ACCOUNTS.map((acct) => <AccountCard key={acct.id} acct={acct} onApply={openApply} onDetails={setDetailAccount} />)}
         </div>
       </section>
 
-      <footer className="pav-foot">
-        <div className="pav-wrap">
-          <div><strong>VINK Bank</strong> — an Authorised Financial Services Provider and registered credit provider (NCRCP)</div>
-          <div>State House Building, 8 Rose Street, Cape Town</div>
+      {/* Bottom CTA */}
+      <section className="max-w-6xl mx-auto px-6 pb-16">
+        <div className="relative overflow-hidden rounded-3xl px-8 py-10 flex flex-col sm:flex-row items-center justify-between gap-6" style={{ background: "linear-gradient(100deg,#F3F9F5,#FFF4EA)" }}>
+          <div className="flex items-center gap-4">
+            <span className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style={{ background: "#E8F7EE", color: GREEN }}>
+              <UserCheck className="w-6 h-6" />
+            </span>
+            <div>
+              <p className="text-xl font-black text-gray-900">Ready to get started?</p>
+              <p className="text-gray-500 text-sm mt-1">Open your Vink account online in minutes and start banking your way.</p>
+            </div>
+          </div>
+          <div className="flex flex-col items-center sm:items-end gap-2 shrink-0">
+            <button onClick={() => openApply(ACCOUNTS[0].name, ACCOUNTS[0].price)}
+              className="px-7 py-3 rounded-full text-white text-sm font-bold shadow-lg whitespace-nowrap" style={{ background: ORANGE }}>
+              Open an Account Now
+            </button>
+            <button className="flex items-center gap-1 text-sm font-semibold" style={{ color: GREEN }}>
+              Compare all accounts <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
-      </footer>
+      </section>
 
       {detailAccount && (
         <AccountDetailModal
