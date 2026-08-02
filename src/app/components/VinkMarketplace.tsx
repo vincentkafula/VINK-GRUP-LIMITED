@@ -321,15 +321,18 @@ function HomeView({ categories, products, onCategory, onProduct, onCart, wishlis
   const [activeCatStrip, setActiveCatStrip] = useState(0);
   const flashDeals = products.filter(p => p.isFlashDeal);
   const featured   = products.filter(p => p.isFeatured);
-  // split product rows by index slices for visual variety
-  const row1 = products.slice(0, 3);   // deals of the day
-  const row2 = products.slice(3, 7);   // groceries & household
-  const row3 = products.slice(7, 11);  // clearance men
-  const row4 = products.slice(11, 15); // phones
+  // Rotate the full product pool per row (instead of thin fixed slices) so every
+  // row has many items to auto-slide through, even with a modest catalogue size.
+  const rotate = (arr: R[], n: number) => arr.length ? [...arr.slice(n % arr.length), ...arr.slice(0, n % arr.length)] : arr;
+  const row1 = rotate(products, 0);    // deals of the day
+  const row2 = rotate(products, 3);    // groceries & household
+  const row3 = rotate([...products].reverse(), 1); // clearance men
+  const row4 = rotate(products, 6);    // phones
   const rowHL = products.slice(1, 4);  // highlighted (red band)
-  const row5 = products.slice(4, 7);   // branded microwaves
+  const row5 = rotate(products, 9);    // branded microwaves
   const dealsSlide = useAutoSlide<HTMLDivElement>(row1.length || 3);
   const phonesSlide = useAutoSlide<HTMLDivElement>((row4.length ? row4 : products.slice(2, 6)).length);
+  const flashSlide = useAutoSlide<HTMLDivElement>(flashDeals.length);
 
   return (
     <div className="flex-1 flex flex-col min-h-0 overflow-hidden bg-gray-100">
@@ -442,8 +445,8 @@ function HomeView({ categories, products, onCategory, onProduct, onCart, wishlis
 
           {/* Product row sections */}
           <div className="mx-2">
-            <ProductRow title="Groceries & household" products={row2.length ? row2 : products.slice(0,4)} onProduct={onProduct} onCart={onCart} />
-            <ProductRow title="Shop ClarisMen" products={row3.length ? row3 : products.slice(1,5)} onProduct={onProduct} onCart={onCart} />
+            <ProductRow title="Groceries & household" products={row2.length ? row2 : products.slice(0,4)} onProduct={onProduct} onCart={onCart} slice={[0, 12]} />
+            <ProductRow title="Shop ClarisMen" products={row3.length ? row3 : products.slice(1,5)} onProduct={onProduct} onCart={onCart} slice={[0, 12]} />
           </div>
 
           {/* iPhone / phones section */}
@@ -498,7 +501,7 @@ function HomeView({ categories, products, onCategory, onProduct, onCart, wishlis
 
           {/* Top branded microwaves */}
           <div className="mx-2 mb-6">
-            <ProductRow title="Top branded microwaves" products={row5.length ? row5 : products.slice(0,3)} onProduct={onProduct} onCart={onCart} />
+            <ProductRow title="Top branded microwaves" products={row5.length ? row5 : products.slice(0,3)} onProduct={onProduct} onCart={onCart} slice={[0, 12]} />
           </div>
 
           {/* Flash deals if available */}
@@ -511,11 +514,18 @@ function HomeView({ categories, products, onCategory, onProduct, onCart, wishlis
                 </div>
                 <button onClick={onCategory} className="text-xs font-semibold" style={{ color: "#0066CC" }}>View more</button>
               </div>
-              <div className="flex gap-0 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
-                {flashDeals.map((p, i) => (
+              <div ref={flashSlide.ref} {...flashSlide.handlers} className="flex gap-0 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+                {rotate(flashDeals, 0).map((p, i) => (
                   <HomeProductCard key={i} p={p} onView={() => onProduct(p)} onCart={() => onCart(p)} />
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* Featured products */}
+          {featured.length > 0 && (
+            <div className="mx-2 mb-4">
+              <ProductRow title="Recommended for you" products={rotate(featured, 2)} onProduct={onProduct} onCart={onCart} slice={[0, 12]} />
             </div>
           )}
 
@@ -1495,7 +1505,7 @@ export function VinkMarketplace({ isOpen, onClose }: VinkMarketplaceProps) {
   const loadInitial = useCallback(async () => {
     const [catRes, prodRes, cartRes, wishRes, addrRes] = await Promise.allSettled([
       mktCategories(),
-      mktProducts.list({ sort: "popular" }),
+      mktProducts.list({ sort: "popular", limit: "48" }),
       mktCart.get("demo-customer-001"),
       mktWishlist.get("demo-customer-001"),
       mktAddresses("demo-customer-001"),
