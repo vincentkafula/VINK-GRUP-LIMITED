@@ -1,10 +1,14 @@
-import { ShoppingBag, Store, ShieldCheck, Truck, Tag, ArrowRight, X, Star } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ShoppingBag, Store, ShieldCheck, Truck, Tag, ArrowRight, X, Star, Loader2 } from "lucide-react";
 import heroBg from "../../imports/assets/marketplace-hero-bg.png";
+import { mktProducts } from "../services/marketplaceApi";
+
+type R = Record<string, unknown>;
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  onShop: () => void;
+  onShop: (productId?: string) => void;
   onSell: () => void;
 }
 
@@ -15,7 +19,46 @@ const FEATURES = [
   { icon: <Store className="w-5 h-5" />, title: "Built for Sellers", desc: "List products, manage orders, and track revenue from one dashboard." },
 ];
 
+const fmtZAR = (n: number) => `R${Number(n ?? 0).toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+function ProductCard({ p, onClick }: { p: R; onClick: () => void }) {
+  const imgs = p.images as string[];
+  const discount = p.compareAtPrice ? Math.round((1 - Number(p.price) / Number(p.compareAtPrice)) * 100) : 0;
+  return (
+    <button onClick={onClick} className="text-left bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition-all">
+      <div className="relative flex items-center justify-center h-32" style={{ background: `linear-gradient(135deg,${imgs?.[0] ?? "#eee"},${imgs?.[1] ?? "#ddd"})` }}>
+        <span className="text-5xl">{p.emoji as string}</span>
+        {discount > 0 && <span className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">-{discount}%</span>}
+        {Boolean(p.isFlashDeal) && <span className="absolute top-2 right-2 bg-amber-400 text-white text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5"><Tag className="w-2.5 h-2.5" /> Deal</span>}
+      </div>
+      <div className="p-3">
+        <p className="text-xs text-gray-400 mb-0.5">{p.brand as string}</p>
+        <p className="text-sm font-semibold text-gray-900 line-clamp-2 leading-snug mb-1.5" style={{ minHeight: 34 }}>{p.name as string}</p>
+        <div className="flex items-center gap-1 mb-1.5">
+          <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+          <span className="text-[11px] text-gray-500">{Number(p.avgRating).toFixed(1)} ({String(p.reviewCount)})</span>
+        </div>
+        <div className="flex items-baseline gap-1.5">
+          {Boolean(p.compareAtPrice) && <span className="text-[11px] text-gray-400 line-through">{fmtZAR(Number(p.compareAtPrice))}</span>}
+          <span className="text-sm font-black" style={{ color: "#0066CC" }}>{fmtZAR(Number(p.price))}</span>
+        </div>
+      </div>
+    </button>
+  );
+}
+
 export function MarketplaceLandingViewer({ isOpen, onClose, onShop, onSell }: Props) {
+  const [products, setProducts] = useState<R[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setLoading(true);
+    mktProducts.list({ sort: "popular", limit: "48" })
+      .then(r => setProducts((r.data as R[]) ?? []))
+      .finally(() => setLoading(false));
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
@@ -46,7 +89,7 @@ export function MarketplaceLandingViewer({ isOpen, onClose, onShop, onSell }: Pr
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-9">
             <button
-              onClick={onShop}
+              onClick={() => onShop()}
               className="flex items-center gap-2 px-7 py-3.5 rounded-full text-white text-sm font-bold shadow-lg hover:brightness-105 transition-all"
               style={{ background: "linear-gradient(135deg,#FF9900,#E67E00)" }}
             >
@@ -78,6 +121,35 @@ export function MarketplaceLandingViewer({ isOpen, onClose, onShop, onSell }: Pr
         <div className="mt-10 flex items-center justify-center gap-2 text-sm text-gray-400">
           <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
           <span>Rated by real customers across every category on the platform</span>
+        </div>
+      </div>
+
+      {/* Full product catalogue */}
+      <div className="max-w-6xl mx-auto px-6 sm:px-10 pb-14">
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <p className="text-xl sm:text-2xl font-black" style={{ color: "#0F3D24" }}>Shop the full catalogue</p>
+            <p className="text-sm text-gray-500 mt-1">{products.length} products, live from the marketplace right now.</p>
+          </div>
+          <button onClick={() => onShop()} className="hidden sm:flex items-center gap-1.5 text-sm font-bold" style={{ color: "#128A43" }}>
+            Open full store <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
+
+        {loading ? (
+          <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+            {products.map((p, i) => (
+              <ProductCard key={i} p={p} onClick={() => onShop(String(p.id))} />
+            ))}
+          </div>
+        )}
+
+        <div className="flex sm:hidden justify-center mt-6">
+          <button onClick={() => onShop()} className="flex items-center gap-1.5 text-sm font-bold" style={{ color: "#128A43" }}>
+            Open full store <ArrowRight className="w-4 h-4" />
+          </button>
         </div>
       </div>
 

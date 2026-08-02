@@ -131,6 +131,7 @@ export default function App() {
   const [showPersonalLanding, setShowPersonalLanding]       = useState(false);
   const [showMarketplaceLanding, setShowMarketplaceLanding] = useState(false);
   const [marketplaceInitialAction, setMarketplaceInitialAction] = useState<"sell" | null>(null);
+  const [marketplaceInitialProductId, setMarketplaceInitialProductId] = useState<string | null>(null);
   const [showSafetySecurity, setShowSafetySecurity]         = useState(false);
   const [showPersonalAccount, setShowPersonalAccount]       = useState(false);
   const [showPersonalLedger, setShowPersonalLedger]          = useState(false);
@@ -640,8 +641,8 @@ export default function App() {
       {has("rideHailing")     && <Suspense fallback={null}><RideHailingSystem      isOpen={showRideHailing}     onClose={() => setShowRideHailing(false)} /></Suspense>}
       {has("banking")         && <Suspense fallback={null}><BankingDashboard       isOpen={showBanking}         onClose={() => setShowBanking(false)} /></Suspense>}
       {has("vehicle")         && <Suspense fallback={null}><VehicleTrackingDashboard isOpen={showVehicle}       onClose={() => setShowVehicle(false)} /></Suspense>}
-      {has("marketplaceLanding") && <Suspense fallback={null}><MarketplaceLandingViewer isOpen={showMarketplaceLanding} onClose={() => { setShowMarketplaceLanding(false); pushRoute("/"); }} onShop={() => { setMarketplaceInitialAction(null); setShowMarketplaceLanding(false); mount("marketplace"); setShowMarketplace(true); }} onSell={() => { setMarketplaceInitialAction("sell"); setShowMarketplaceLanding(false); mount("marketplace"); setShowMarketplace(true); }} /></Suspense>}
-      {has("marketplace")     && <Suspense fallback={null}><VinkMarketplace        isOpen={showMarketplace}     onClose={() => { setShowMarketplace(false); pushRoute("/"); }} initialAction={marketplaceInitialAction} /></Suspense>}
+      {has("marketplaceLanding") && <Suspense fallback={null}><MarketplaceLandingViewer isOpen={showMarketplaceLanding} onClose={() => { setShowMarketplaceLanding(false); pushRoute("/"); }} onShop={(productId) => { setMarketplaceInitialAction(null); setMarketplaceInitialProductId(productId ?? null); setShowMarketplaceLanding(false); mount("marketplace"); setShowMarketplace(true); }} onSell={() => { setMarketplaceInitialAction("sell"); setMarketplaceInitialProductId(null); setShowMarketplaceLanding(false); mount("marketplace"); setShowMarketplace(true); }} /></Suspense>}
+      {has("marketplace")     && <Suspense fallback={null}><VinkMarketplace        isOpen={showMarketplace}     onClose={() => { setShowMarketplace(false); pushRoute("/"); }} initialAction={marketplaceInitialAction} initialProductId={marketplaceInitialProductId} /></Suspense>}
 
       {/* Personal products */}
       {has("personalLanding") && <Suspense fallback={null}><PersonalLandingViewer isOpen={showPersonalLanding} onClose={() => { setShowPersonalLanding(false); pushRoute("/"); }} onNavigate={(item) => { setShowPersonalLanding(false); handleSubNavClick(item); }} onApplyClick={() => openSelector("creditCard")} onSecurityClick={() => { mount("safetySecurity"); setShowSafetySecurity(true); }} /></Suspense>}

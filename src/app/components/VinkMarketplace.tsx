@@ -1318,9 +1318,9 @@ function WishlistView({ wishlistIds, onProduct, onCart, onWishlist }: {
 
 
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
-interface VinkMarketplaceProps { isOpen: boolean; onClose: () => void; initialAction?: "sell" | null }
+interface VinkMarketplaceProps { isOpen: boolean; onClose: () => void; initialAction?: "sell" | null; initialProductId?: string | null }
 
-export function VinkMarketplace({ isOpen, onClose, initialAction }: VinkMarketplaceProps) {
+export function VinkMarketplace({ isOpen, onClose, initialAction, initialProductId }: VinkMarketplaceProps) {
   const [view, setView]           = useState<View>("home");
   const [categories, setCategories] = useState<R[]>([]);
   const [products, setProducts]   = useState<R[]>([]);
@@ -1345,6 +1345,10 @@ export function VinkMarketplace({ isOpen, onClose, initialAction }: VinkMarketpl
   useEffect(() => {
     if (isOpen && initialAction === "sell" && !mktAuth.restoreSession()) setShowAuthModal(true);
   }, [isOpen, initialAction]);
+
+  useEffect(() => {
+    if (isOpen && initialProductId) { setSelProductId(initialProductId); setView("product"); }
+  }, [isOpen, initialProductId]);
 
   const loadInitial = useCallback(async () => {
     const promises: Promise<unknown>[] = [mktCategories(), mktProducts.list({ sort: "popular", limit: "48" })];
