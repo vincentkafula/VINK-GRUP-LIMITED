@@ -581,7 +581,7 @@ export default function App() {
   };
 
   return (
-    <div className={`min-h-screen bg-white${showPersistentNav ? " has-persistent-nav" : ""}`}>
+    <div className={`min-h-screen bg-transparent${showPersistentNav ? " has-persistent-nav" : ""}`}>
       <Toaster position="top-right" richColors closeButton duration={4000} />
 
       {showPersistentNav && (
