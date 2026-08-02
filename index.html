@@ -23,9 +23,15 @@
 
     <title>VINK Bank</title>
 
-    <!-- Favicons -->
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- Favicons — plain ICO/PNG only. An SVG wrapping an embedded raster
+         <image> was tried first but Chromium-based browsers frequently fail
+         to render that pattern as a favicon (silently falling back to
+         nothing/cached icon), so this sticks to formats every browser
+         renders reliably. favicon.ico is also checked directly by some
+         browsers regardless of <link> tags. -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192x192.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.json" />
 
