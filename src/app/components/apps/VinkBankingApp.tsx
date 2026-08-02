@@ -1,12 +1,23 @@
 import { useState } from "react";
-import { Home, Send, CreditCard, Clock, Star, Bell, ChevronRight, ArrowUpRight, ArrowDownLeft, Zap, Smartphone, ShoppingCart, Gift, CheckCircle, AlertTriangle, Loader2 } from "lucide-react";
+import { Home, Send, CreditCard, Clock, Star, Bell, ChevronRight, ArrowUpRight, ArrowDownLeft, Zap, Smartphone, ShoppingCart, Gift, CheckCircle, AlertTriangle, Loader2, Sparkles, Anchor as AnchorIcon, TrendingUp, Mountain, Crown, Landmark, Target, Wallet, PiggyBank, Award } from "lucide-react";
 import { MobileAppOverlay, PhoneFrame } from "./PhoneFrame";
 import { globalBankingApi } from "../../services/applicationsApi";
 
-type Screen = "home" | "send" | "cards" | "history" | "rewards";
+type Screen = "onboarding" | "home" | "send" | "cards" | "history" | "rewards";
+type Tier = "Spark" | "Anchor" | "Momentum" | "Horizon" | "Summit" | "Legacy";
 
 const PURPLE = "#0B5C2E";
 const GOLD = "#F5A623";
+
+const TIER_INFO: Record<Tier, { order: number; icon: React.ReactNode; tagline: string; unlocks: string; balanceLabel: string; cardGradient: string }> = {
+  Spark:    { order: 1, icon: <Sparkles className="w-5 h-5" />,     tagline: "Simple, clean entry banking — no clutter, no fees.",         unlocks: "Digital onboarding, payments, virtual card, bill pay",              balanceLabel: "Available Balance", cardGradient: `linear-gradient(135deg, ${PURPLE}, #175E38)` },
+  Anchor:   { order: 2, icon: <AnchorIcon className="w-5 h-5" />,   tagline: "Everyday banking with budgets and money management.",       unlocks: "+ Smart budgets, subscription detection, scheduled payments",       balanceLabel: "Available Balance", cardGradient: `linear-gradient(135deg, ${PURPLE}, #175E38)` },
+  Momentum: { order: 3, icon: <TrendingUp className="w-5 h-5" />,   tagline: "Every payment earns you something back.",                    unlocks: "+ Cashback, loyalty points, merchant offers, challenges",           balanceLabel: "Available Balance", cardGradient: `linear-gradient(135deg, #6B21A8, ${PURPLE})` },
+  Horizon:  { order: 4, icon: <Mountain className="w-5 h-5" />,     tagline: "Built around reaching your savings goals faster.",          unlocks: "+ Goal-based savings, auto-save rules, AI coaching",                balanceLabel: "Available Balance", cardGradient: `linear-gradient(135deg, #0369A1, ${PURPLE})` },
+  Summit:   { order: 5, icon: <Crown className="w-5 h-5" />,        tagline: "Premium banking with concierge-level service.",              unlocks: "+ Relationship manager, lounge access, multi-currency wallet",      balanceLabel: "Available Balance", cardGradient: `linear-gradient(135deg, #B45309, ${PURPLE})` },
+  Legacy:   { order: 6, icon: <Landmark className="w-5 h-5" />,     tagline: "Private banking and wealth management, for generations.",   unlocks: "+ Investments, net worth dashboard, estate planning",               balanceLabel: "Net Worth",         cardGradient: `linear-gradient(135deg, #1E1B4B, #3B1A6E)` },
+};
+const TIER_ORDER: Tier[] = ["Spark", "Anchor", "Momentum", "Horizon", "Summit", "Legacy"];
 
 const TRANSACTIONS = [
   { emoji: "🛒", name: "Shoprite Claremont",       amount: -284.50,  date: "Today",    cat: "Grocery" },
@@ -31,7 +42,81 @@ const REWARDS_HISTORY = [
   { event: "Airtime Purchase",             pts: "+5",   date: "14 Jun" },
 ];
 
-function HomeScreen() {
+function OnboardingScreen({ onSelect }: { onSelect: (tier: Tier) => void }) {
+  const [picked, setPicked] = useState<Tier | null>(null);
+
+  return (
+    <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F8F7FF" }}>
+      <div className="px-5 pt-8 pb-5 text-center" style={{ background: PURPLE }}>
+        <p className="text-xs font-bold tracking-widest" style={{ color: GOLD }}>VINK BANK</p>
+        <p className="text-white text-lg font-bold mt-2">Which account do you want?</p>
+        <p className="text-white/60 text-[11px] mt-1">Every tier keeps everything from the one before it.</p>
+      </div>
+
+      <div className="flex-1 px-3 pt-4 pb-3 space-y-2.5">
+        {TIER_ORDER.map(t => {
+          const info = TIER_INFO[t];
+          const active = picked === t;
+          return (
+            <button
+              key={t}
+              onClick={() => setPicked(t)}
+              className="w-full text-left rounded-2xl p-3.5 transition-all"
+              style={{ background: active ? `${PURPLE}0D` : "#fff", border: `1.5px solid ${active ? PURPLE : "#EEE"}`, boxShadow: active ? `0 4px 14px ${PURPLE}22` : "none" }}
+            >
+              <div className="flex items-center gap-3">
+                <span className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: active ? PURPLE : "#F3F4F6", color: active ? "#fff" : "#6B7280" }}>
+                  {info.icon}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-sm font-bold text-gray-900">{t}</p>
+                    <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "#F3F4F6", color: "#9CA3AF" }}>TIER {info.order}</span>
+                  </div>
+                  <p className="text-gray-500 text-[10.5px] mt-0.5 leading-snug">{info.tagline}</p>
+                </div>
+                {active && <CheckCircle className="w-4 h-4 shrink-0" style={{ color: PURPLE }} />}
+              </div>
+              {active && (
+                <p className="text-[10px] mt-2.5 pt-2.5 border-t leading-relaxed" style={{ borderColor: `${PURPLE}22`, color: PURPLE }}>
+                  <strong>Unlocks:</strong> {info.unlocks}
+                </p>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="px-3 pb-4 flex-shrink-0">
+        <button
+          disabled={!picked}
+          onClick={() => picked && onSelect(picked)}
+          className="w-full py-3 rounded-xl text-white text-sm font-bold disabled:opacity-40 transition-opacity"
+          style={{ background: PURPLE }}
+        >
+          {picked ? `Continue with ${picked}` : "Choose an account to continue"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function VerifyingScreen({ tier, onDone }: { tier: Tier; onDone: () => void }) {
+  useState(() => { const id = setTimeout(onDone, 1400); return () => clearTimeout(id); });
+  return (
+    <div className="flex flex-col items-center justify-center h-full gap-4" style={{ background: "#F8F7FF" }}>
+      <Loader2 className="w-8 h-8 animate-spin" style={{ color: PURPLE }} />
+      <div className="text-center px-8">
+        <p className="text-sm font-bold text-gray-900">Setting up your {tier} Account</p>
+        <p className="text-gray-400 text-[11px] mt-1">Verifying identity and activating your features...</p>
+      </div>
+    </div>
+  );
+}
+function HomeScreen({ tier, onSwitchTier }: { tier: Tier; onSwitchTier: () => void }) {
+  const info = TIER_INFO[tier];
+  const unlockedFrom = (min: number) => info.order >= min;
+
   return (
     <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F8F7FF" }}>
       {/* Header */}
@@ -52,20 +137,50 @@ function HomeScreen() {
       </div>
 
       {/* Balance card */}
-      <div className="mx-3 -mt-1 rounded-2xl p-5 shadow-xl" style={{ background: `linear-gradient(135deg, ${PURPLE}, #3B1A6E)` }}>
-        <p className="text-white/60 text-xs">Vink Summit Account</p>
-        <p className="text-white text-[28px] font-bold tracking-tight mt-1">R 12,847.50</p>
-        <p className="text-white/50 text-xs mt-0.5">****  ****  ****  3421</p>
-        <div className="flex items-center justify-between mt-4">
-          <div>
-            <p className="text-white/50 text-[9px]">VINKPOINTS</p>
-            <p className="font-bold text-xs" style={{ color: GOLD }}>4,230 pts · R42.30</p>
+      <div className="mx-3 -mt-1 rounded-2xl p-5 shadow-xl" style={{ background: info.cardGradient }}>
+        <button onClick={onSwitchTier} className="flex items-center gap-1 text-white/60 text-xs hover:text-white/90 transition-colors">
+          Vink {tier} Account <ChevronRight className="w-3 h-3" />
+        </button>
+        {tier === "Legacy" ? (
+          <>
+            <p className="text-white/50 text-[9px] mt-2 uppercase tracking-wider">Net Worth</p>
+            <p className="text-white text-[28px] font-bold tracking-tight mt-0.5">R 4,218,600.00</p>
+            <div className="flex items-center gap-4 mt-2">
+              <div><p className="text-white/50 text-[8px]">Investments</p><p className="text-white text-[11px] font-bold">R 3.1m</p></div>
+              <div><p className="text-white/50 text-[8px]">Cash</p><p className="text-white text-[11px] font-bold">R 640k</p></div>
+              <div><p className="text-white/50 text-[8px]">Property</p><p className="text-white text-[11px] font-bold">R 478k</p></div>
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="text-white text-[28px] font-bold tracking-tight mt-1">R 12,847.50</p>
+            <p className="text-white/50 text-xs mt-0.5">****  ****  ****  3421</p>
+          </>
+        )}
+        {unlockedFrom(3) && tier !== "Legacy" && (
+          <div className="flex items-center justify-between mt-4">
+            <div>
+              <p className="text-white/50 text-[9px]">VINKPOINTS</p>
+              <p className="font-bold text-xs" style={{ color: GOLD }}>4,230 pts · R42.30</p>
+            </div>
+            <div className="px-3 py-1 rounded-full text-[10px] font-bold" style={{ background: GOLD, color: PURPLE }}>
+              GOLD
+            </div>
           </div>
-          <div className="px-3 py-1 rounded-full text-[10px] font-bold" style={{ background: GOLD, color: PURPLE }}>
-            GOLD
-          </div>
-        </div>
+        )}
       </div>
+
+      {/* Summit+ concierge banner */}
+      {unlockedFrom(5) && (
+        <div className="mx-3 mt-3 rounded-2xl p-3.5 flex items-center gap-3" style={{ background: "#1E1B4B" }}>
+          <span className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ background: GOLD }}><Crown className="w-4 h-4" style={{ color: "#1E1B4B" }} /></span>
+          <div className="flex-1 min-w-0">
+            <p className="text-white text-xs font-bold">Priority Banker · Available now</p>
+            <p className="text-white/50 text-[10px]">Live video banker · Airport lounge access · No queue support</p>
+          </div>
+          <ChevronRight className="w-4 h-4 text-white/40 shrink-0" />
+        </div>
+      )}
 
       {/* Quick actions */}
       <div className="px-3 pt-4">
@@ -87,6 +202,105 @@ function HomeScreen() {
           ))}
         </div>
       </div>
+
+      {/* Anchor+ budget snapshot */}
+      {unlockedFrom(2) && (
+        <div className="px-3 pt-4">
+          <p className="text-gray-500 text-[10px] font-semibold uppercase tracking-wider mb-2">This Month's Budget</p>
+          <div className="rounded-2xl bg-white shadow-sm p-3.5">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-gray-800 text-xs font-semibold">R2,340 of R4,000 spent</span>
+              <span className="text-[10px] font-bold" style={{ color: PURPLE }}>58%</span>
+            </div>
+            <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden"><div className="h-full rounded-full" style={{ width: "58%", background: PURPLE }} /></div>
+            <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-50">
+              <Bell className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+              <p className="text-[10px] text-gray-500">3 subscriptions detected: Netflix, Spotify, Amazon Prime — R458/mo</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Momentum+ rewards & gamification */}
+      {unlockedFrom(3) && (
+        <div className="px-3 pt-4">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-gray-500 text-[10px] font-semibold uppercase tracking-wider">Rewards</p>
+            <button className="text-[10px] font-semibold" style={{ color: PURPLE }}>Points marketplace</button>
+          </div>
+          <div className="rounded-2xl p-3.5" style={{ background: `linear-gradient(135deg,${GOLD}22,${GOLD}0D)`, border: `1px solid ${GOLD}44` }}>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-1.5"><Award className="w-4 h-4" style={{ color: GOLD }} /><span className="text-xs font-bold text-gray-800">Gold Tier</span></div>
+              <span className="text-[10px] text-gray-500">720 pts to Platinum</span>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {[["🍕","Restaurant","10% off"],["⛽","Fuel","R0.50/L back"],["✈️","Travel","2× points"]].map(([e,l,v]) => (
+                <div key={l} className="bg-white rounded-xl p-2 text-center">
+                  <p className="text-base">{e}</p>
+                  <p className="text-[9px] font-semibold text-gray-700 mt-0.5">{l}</p>
+                  <p className="text-[8px] text-gray-400">{v}</p>
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center gap-2 mt-2.5 text-[10px] text-gray-600"><Zap className="w-3 h-3" style={{ color: GOLD }} /> Weekly challenge: Save R100 more → +150 pts</div>
+          </div>
+        </div>
+      )}
+
+      {/* Horizon+ savings goals */}
+      {unlockedFrom(4) && (
+        <div className="px-3 pt-4">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-gray-500 text-[10px] font-semibold uppercase tracking-wider">Savings Goals</p>
+            <button className="text-[10px] font-semibold" style={{ color: PURPLE }}>+ New goal</button>
+          </div>
+          <div className="space-y-2">
+            {[
+              { emoji: "🏖️", name: "Cape Town Getaway", saved: 8400, target: 15000 },
+              { emoji: "🚗", name: "New Car Deposit", saved: 32000, target: 60000 },
+            ].map(g => (
+              <div key={g.name} className="rounded-2xl bg-white shadow-sm p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-lg">{g.emoji}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-gray-800">{g.name}</p>
+                    <p className="text-[9px] text-gray-400">R{g.saved.toLocaleString()} of R{g.target.toLocaleString()}</p>
+                  </div>
+                  <span className="text-[10px] font-bold" style={{ color: PURPLE }}>{Math.round(g.saved / g.target * 100)}%</span>
+                </div>
+                <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden"><div className="h-full rounded-full" style={{ width: `${g.saved / g.target * 100}%`, background: PURPLE }} /></div>
+              </div>
+            ))}
+            <div className="rounded-2xl p-2.5 flex items-center gap-2" style={{ background: `${PURPLE}0D` }}>
+              <Target className="w-3.5 h-3.5 shrink-0" style={{ color: PURPLE }} />
+              <p className="text-[10px]" style={{ color: PURPLE }}>Save R25 more weekly to reach your getaway goal 8 months earlier.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Legacy investments */}
+      {unlockedFrom(6) && (
+        <div className="px-3 pt-4">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-gray-500 text-[10px] font-semibold uppercase tracking-wider">Portfolio</p>
+            <button className="text-[10px] font-semibold" style={{ color: PURPLE }}>Full report</button>
+          </div>
+          <div className="rounded-2xl bg-white shadow-sm p-3.5">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-semibold text-gray-800">Portfolio performance</span>
+              <span className="text-xs font-bold text-green-600">+8.4% YTD</span>
+            </div>
+            {[["Stocks & ETFs","45%","#0B5C2E"],["Bonds & Treasury","25%","#B45309"],["Property","19%","#6B21A8"],["Private Equity","11%","#0369A1"]].map(([label,pct,color]) => (
+              <div key={label} className="flex items-center gap-2 mb-1.5 last:mb-0">
+                <span className="w-16 text-[9px] text-gray-500 shrink-0">{label}</span>
+                <div className="flex-1 h-2 rounded-full bg-gray-100 overflow-hidden"><div className="h-full rounded-full" style={{ width: pct as string, background: color as string }} /></div>
+                <span className="w-8 text-[9px] font-semibold text-gray-700 text-right">{pct}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Recent transactions */}
       <div className="px-3 pt-4">
@@ -484,9 +698,22 @@ function RewardsScreen() {
 }
 
 export function VinkBankingApp({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
-  const [screen, setScreen] = useState<Screen>("home");
+  const [screen, setScreen] = useState<Screen>("onboarding");
+  const [tier, setTier] = useState<Tier>("Spark");
+  const [verifying, setVerifying] = useState(false);
+  const [pendingTier, setPendingTier] = useState<Tier>("Spark");
 
   if (!isOpen) return null;
+
+  const handleTierSelected = (t: Tier) => {
+    setPendingTier(t);
+    setVerifying(true);
+  };
+  const handleVerified = () => {
+    setTier(pendingTier);
+    setVerifying(false);
+    setScreen("home");
+  };
 
   const TABS: { id: Screen; label: string; icon: React.ReactNode }[] = [
     { id: "home",    label: "Home",    icon: <Home className="w-5 h-5" /> },
@@ -495,34 +722,44 @@ export function VinkBankingApp({ isOpen, onClose }: { isOpen: boolean; onClose: 
     { id: "history", label: "History", icon: <Clock className="w-5 h-5" /> },
     { id: "rewards", label: "Rewards", icon: <Star className="w-5 h-5" /> },
   ];
+  const showTabs = screen !== "onboarding" && !verifying;
 
   return (
     <MobileAppOverlay onClose={onClose} appName="Vink Bank" bgColor="#F8F7FF">
       <PhoneFrame statusBarColor={PURPLE} statusBarTextLight>
         <div className="flex-1 overflow-hidden flex flex-col">
-          {screen === "home"    && <HomeScreen />}
-          {screen === "send"    && <SendScreen />}
-          {screen === "cards"   && <CardsScreen />}
-          {screen === "history" && <HistoryScreen />}
-          {screen === "rewards" && <RewardsScreen />}
+          {verifying ? (
+            <VerifyingScreen tier={pendingTier} onDone={handleVerified} />
+          ) : (
+            <>
+              {screen === "onboarding" && <OnboardingScreen onSelect={handleTierSelected} />}
+              {screen === "home"    && <HomeScreen tier={tier} onSwitchTier={() => setScreen("onboarding")} />}
+              {screen === "send"    && <SendScreen />}
+              {screen === "cards"   && <CardsScreen />}
+              {screen === "history" && <HistoryScreen />}
+              {screen === "rewards" && <RewardsScreen />}
+            </>
+          )}
         </div>
         {/* Bottom tab bar */}
-        <div className="flex-shrink-0 flex items-center border-t bg-white" style={{ borderColor: `${PURPLE}22` }}>
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setScreen(tab.id)}
-              className="flex-1 flex flex-col items-center gap-0.5 py-2 relative transition-colors"
-              style={{ color: screen === tab.id ? PURPLE : "#9CA3AF" }}
-            >
-              {tab.icon}
-              <span className="text-[9px] font-semibold">{tab.label}</span>
-              {screen === tab.id && (
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded-full" style={{ background: PURPLE }} />
-              )}
-            </button>
-          ))}
-        </div>
+        {showTabs && (
+          <div className="flex-shrink-0 flex items-center border-t bg-white" style={{ borderColor: `${PURPLE}22` }}>
+            {TABS.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setScreen(tab.id)}
+                className="flex-1 flex flex-col items-center gap-0.5 py-2 relative transition-colors"
+                style={{ color: screen === tab.id ? PURPLE : "#9CA3AF" }}
+              >
+                {tab.icon}
+                <span className="text-[9px] font-semibold">{tab.label}</span>
+                {screen === tab.id && (
+                  <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded-full" style={{ background: PURPLE }} />
+                )}
+              </button>
+            ))}
+          </div>
+        )}
       </PhoneFrame>
     </MobileAppOverlay>
   );
