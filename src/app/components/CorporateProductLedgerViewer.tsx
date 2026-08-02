@@ -10,6 +10,7 @@ interface Props {
   onClose: () => void;
   initialCategory: CorpCategory;
   onNavigate: (item: NavItem) => void;
+  onOpenApp: () => void;
 }
 
 interface CardData {
@@ -289,7 +290,7 @@ function AccountDetailModal({ card, folio, onClose, onApply }: { card: CardData;
   );
 }
 
-export function CorporateProductLedgerViewer({ isOpen, onClose, initialCategory, onNavigate }: Props) {
+export function CorporateProductLedgerViewer({ isOpen, onClose, initialCategory, onNavigate, onOpenApp }: Props) {
   const [category, setCategory] = useState<CorpCategory>(initialCategory);
   const [applyProduct, setApplyProduct] = useState<string | null>(null);
   const [detailCard, setDetailCard] = useState<{ card: CardData; folio: string } | null>(null);
@@ -453,9 +454,16 @@ export function CorporateProductLedgerViewer({ isOpen, onClose, initialCategory,
 
       <section className="pav-ledger-section">
         <div className="pav-wrap">
-          <div className="pav-ledger-head">
-            <h2>{copy.heading}</h2>
-            <p>{copy.tag}</p>
+          <div className="pav-ledger-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: "12px" }}>
+            <div>
+              <h2>{copy.heading}</h2>
+              <p>{copy.tag}</p>
+            </div>
+            {category === "account" && (
+              <button onClick={onOpenApp} className="pav-btn pav-btn-primary" style={{ width: "auto", padding: "10px 20px", marginBottom: "2px" }}>
+                Try the Corporate App
+              </button>
+            )}
           </div>
 
           {sections.map((sec) => (
