@@ -106,59 +106,6 @@ export function MarketplaceLandingViewer({ isOpen, onClose, onShop, onSell }: Pr
         </div>
       </div>
 
-      {/* Advancement band — mirrored triangles flanking the message */}
-      <div className="relative overflow-hidden bg-white py-16 sm:py-20">
-        {/* Left triangle, pointing right toward the center */}
-        <div
-          className="hidden md:block absolute left-0 top-0 h-full"
-          style={{
-            width: "26%",
-            background: "linear-gradient(160deg,#128A43,#0B5C2E)",
-            clipPath: "polygon(0 0, 100% 50%, 0 100%)",
-          }}
-        />
-        <div
-          className="hidden md:block absolute left-0 top-0 h-full"
-          style={{
-            width: "18%",
-            background: "linear-gradient(160deg,#FF9900,#E67E00)",
-            clipPath: "polygon(0 15%, 100% 50%, 0 85%)",
-            opacity: 0.9,
-          }}
-        />
-
-        {/* Right triangle, mirrored — pointing left toward the center */}
-        <div
-          className="hidden md:block absolute right-0 top-0 h-full"
-          style={{
-            width: "26%",
-            background: "linear-gradient(200deg,#128A43,#0B5C2E)",
-            clipPath: "polygon(100% 0, 0 50%, 100% 100%)",
-          }}
-        />
-        <div
-          className="hidden md:block absolute right-0 top-0 h-full"
-          style={{
-            width: "18%",
-            background: "linear-gradient(200deg,#FF9900,#E67E00)",
-            clipPath: "polygon(100% 15%, 0 50%, 100% 85%)",
-            opacity: 0.9,
-          }}
-        />
-
-        <div className="relative max-w-xl mx-auto px-6 text-center">
-          <span className="inline-flex items-center gap-1.5 text-[11px] font-bold tracking-[0.14em] uppercase px-3 py-1.5 rounded-full mb-4" style={{ background: "rgba(21,163,80,0.1)", color: "#128A43" }}>
-            Built for advancement
-          </span>
-          <p className="text-2xl sm:text-[28px] font-black leading-tight" style={{ color: "#0F3D24" }}>
-            Advancing how South Africa buys and sells online
-          </p>
-          <p className="text-sm text-gray-500 mt-3 leading-relaxed">
-            Every order, every listing, every seller approval moves the platform forward — real inventory, real payouts, real growth for the people building on it.
-          </p>
-        </div>
-      </div>
-
       {/* Feature strip */}
       <div className="max-w-5xl mx-auto px-6 sm:px-10 py-14 sm:py-16">
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
