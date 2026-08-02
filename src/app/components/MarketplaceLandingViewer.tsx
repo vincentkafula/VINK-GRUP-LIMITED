@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { ShoppingBag, Store, ShieldCheck, Truck, Tag, ArrowRight, X, Star, Loader2 } from "lucide-react";
-import heroBg from "../../imports/assets/marketplace-hero-bg.png";
+import heroBg from "../../imports/assets/marketplace-hero-wide-bg.png";
 import { mktProducts } from "../services/marketplaceApi";
 
 type R = Record<string, unknown>;
