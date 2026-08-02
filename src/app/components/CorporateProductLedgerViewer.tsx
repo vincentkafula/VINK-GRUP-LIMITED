@@ -24,27 +24,14 @@ const CATEGORY_FOR_NAV: Partial<Record<NavItem, CorpCategory>> = { "Account": "a
 const SECTIONS: Record<CorpCategory, Section[]> = {
   account: [
   {
-    label: "Transport & Infrastructure",
+    label: "Corporate Accounts",
     cards: [
-      { name: "Buses Operator Account",  price: "R0",   featured: false, features: ["RTGS same-day settlements for intercity routes", "Multiple vehicle registration tracking", "Automated route revenue reporting", "Up to 50 driver wallet cards per account"] },
-      { name: "Rail Operator Account",   price: "R0",   featured: false, features: ["Rolling stock and infrastructure financing integration", "Bulk payment processing for season pass revenue", "SAP and Oracle banking system integration", "Dedicated rail industry relationship manager"] },
-      { name: "Construction Account",    price: "R85",  featured: false, features: ["Milestone-based payment releases", "Retention account management", "CIDB-compliant procurement payments", "Multi-project sub-account structure"] },
-    ],
-  },
-  {
-    label: "Agriculture & Industry",
-    cards: [
-      { name: "Commercial Farming Account", price: "R170", featured: false, features: ["Seasonal payment terms aligned to harvest cycles", "Crop-linked overdraft facility", "Agri-input supplier payment integration", "SARS agricultural tax category compliance"] },
-      { name: "Mining Account",             price: "R265", featured: true,  features: ["Multi-site payment management for mine operations", "Royalty disbursement processing", "Mining charter compliance reporting", "FOREX for cross-border mineral sales", "Dedicated mining sector desk"] },
-      { name: "Manufacturers Account",      price: "R415", featured: false, features: ["Supply chain financing and debtor management", "Purchase order finance", "Excon-compliant export payment processing", "EFT batch upload for 1,000+ supplier payments"] },
-    ],
-  },
-  {
-    label: "Logistics & Utilities",
-    cards: [
-      { name: "Shipping Account", price: "R170", featured: false, features: ["FOREX and Bill of Lading financing", "Port fee payment integration", "Multi-currency settlement", "Marine Cargo Insurance facilitation"] },
-      { name: "Plane Account",    price: "R265", featured: false, features: ["Aviation finance and aircraft leasing account management", "Maintenance reserve tracking", "IATA BSP payment settlement", "Multi-currency fuel purchasing"] },
-      { name: "Water Account",    price: "R415", featured: false, features: ["Utility billing infrastructure banking", "Bulk municipal payment processing", "Infrastructure project milestone payments", "Ring-fenced maintenance reserve accounts"] },
+      { name: "Pillar Corporate",   price: "R0",   featured: false, features: ["RTGS same-day settlements across all business units", "Multi-site payment management", "Dedicated relationship manager", "Free online banking and NotifyMe alerts"] },
+      { name: "Keystone Corporate", price: "R0",   featured: false, features: ["Milestone-based payment releases", "Multi-project sub-account structure", "Bulk payment processing", "SAP and Oracle banking system integration"] },
+      { name: "Summit Corporate",   price: "R85",  featured: false, features: ["Supply chain financing and debtor management", "Purchase order finance", "EFT batch upload for 1,000+ supplier payments", "Retention account management"] },
+      { name: "Frontier Corporate", price: "R170", featured: false, features: ["FOREX and multi-currency settlement", "Cross-border trade finance", "Excon-compliant export payment processing", "Marine and aviation asset finance available"] },
+      { name: "Titan Corporate",    price: "R265", featured: true,  features: ["Multi-site payment management for large operations", "Royalty and dividend disbursement processing", "Compliance reporting for regulated sectors", "Dedicated sector desk", "FOREX for cross-border operations"] },
+      { name: "Sovereign Corporate",price: "R415", featured: false, features: ["Infrastructure and utility-scale project milestone payments", "Ring-fenced maintenance reserve accounts", "Bulk municipal and multi-entity payment processing", "Dedicated executive relationship team"] },
     ],
   },
 ],
