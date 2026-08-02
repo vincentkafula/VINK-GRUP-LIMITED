@@ -18,7 +18,7 @@ export const ProtectionSection = memo(function ProtectionSection() {
           </div>
           <div className="order-1 md:order-2 text-center md:text-left">
             <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4"
-              style={{ background: "#EDE9FE", color: "#6B5ED7" }}>Zero Liability</span>
+              style={{ background: "#EDE9FE", color: "#128A43" }}>Zero Liability</span>
             <h2 className="text-2xl sm:text-3xl font-black text-gray-900 mb-4 leading-snug">
               Your Money.<br />Always Protected.
             </h2>
@@ -37,7 +37,7 @@ export const ProtectionSection = memo(function ProtectionSection() {
               ))}
             </div>
             <button className="inline-flex items-center gap-2 px-8 py-3 rounded-xl text-sm font-bold text-white transition-all hover:scale-105 shadow-lg"
-              style={{ background: "linear-gradient(135deg,#6B5ED7,#9585EA)", boxShadow: "0 6px 20px rgba(107,94,215,.35)" }}>
+              style={{ background: "linear-gradient(135deg,#128A43,#5FC97F)", boxShadow: "0 6px 20px rgba(107,94,215,.35)" }}>
               Learn How We Protect You
             </button>
           </div>

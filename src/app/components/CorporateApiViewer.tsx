@@ -4,7 +4,7 @@ import { Footer } from "./Footer";
 
 interface Props { isOpen: boolean; onClose: () => void; onNavigate: (item: string) => void; }
 
-const CORPORATE_PURPLE = "#5B2D8E";
+const CORPORATE_PURPLE = "#0B5C2E";
 const GOLD = "#F5A623";
 
 const CORPORATE_SUB_NAV = ["Account", "Solutions & Credit Cards", "Loan", "API", "Events", "Social Responsibility"];

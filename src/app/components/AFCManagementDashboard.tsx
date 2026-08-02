@@ -22,7 +22,7 @@ import {
 interface Props { isOpen: boolean; onClose: () => void; }
 
 // ─── Color + formatting ───────────────────────────────────────────────────────
-const P   = "#5B2D8E";
+const P   = "#0B5C2E";
 const GOLD = "#F5A623";
 const GREEN = "#10B981";
 const fmt = (n: number) => `R ${Number(n).toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -143,7 +143,7 @@ function AFCTerminal({ device, onTap }: { device: typeof DEVICES[0]; onTap: (tap
           className="relative w-36 h-36 rounded-full flex flex-col items-center justify-center cursor-pointer select-none transition-all"
           style={{
             background: tapState === "approved" ? GREEN : tapState === "declined" ? "#EF4444" : tapState === "processing" ? P : P + "20",
-            border: `3px solid ${tapState === "idle" ? P : tapState === "approved" ? GREEN : tapState === "declined" ? "#EF4444" : "#9585EA"}`,
+            border: `3px solid ${tapState === "idle" ? P : tapState === "approved" ? GREEN : tapState === "declined" ? "#EF4444" : "#5FC97F"}`,
             boxShadow: tapState === "idle" && pulseRing
               ? `0 0 0 12px ${P}20, 0 0 0 24px ${P}10`
               : tapState === "processing" ? `0 0 30px ${P}60` : "none",
@@ -164,7 +164,7 @@ function AFCTerminal({ device, onTap }: { device: typeof DEVICES[0]; onTap: (tap
         </div>
 
         {tapState === "idle" && <p className="text-white/40 text-[10px] text-center">Passenger taps Vink card to pay fare</p>}
-        {tapState === "processing" && <p className="text-purple-300 text-xs animate-pulse">Processing payment…</p>}
+        {tapState === "processing" && <p className="text-emerald-300 text-xs animate-pulse">Processing payment…</p>}
         {tapState === "approved" && lastTap && (
           <div className="text-center space-y-1">
             <p className="text-green-400 font-black">✓ FARE PAID</p>
@@ -189,7 +189,7 @@ function AFCTerminal({ device, onTap }: { device: typeof DEVICES[0]; onTap: (tap
             { label: "Driver (85%)",       amount: +(lastTap.fare * 0.85).toFixed(2), color: GREEN },
             { label: "Association (5%)",   amount: +(lastTap.fare * 0.05).toFixed(2), color: "#3B82F6" },
             { label: "Neighbourhood (5%)", amount: +(lastTap.fare * 0.05).toFixed(2), color: "#F59E0B" },
-            { label: "Community Bank (5%)",amount: +(lastTap.fare * 0.05).toFixed(2), color: "#8B5CF6" },
+            { label: "Community Bank (5%)",amount: +(lastTap.fare * 0.05).toFixed(2), color: "#34A853" },
           ].map(s => (
             <div key={s.label} className="flex justify-between items-center">
               <div className="flex items-center gap-1.5">
@@ -329,7 +329,7 @@ export function AFCManagementDashboard({ isOpen, onClose }: Props) {
                       { pct: "85%", label: "Driver", color: GREEN },
                       { pct: "5%",  label: "Association", color: "#3B82F6" },
                       { pct: "5%",  label: "Neighbourhood Watch", color: GOLD },
-                      { pct: "5%",  label: "Community Bank Fund", color: "#8B5CF6" },
+                      { pct: "5%",  label: "Community Bank Fund", color: "#34A853" },
                     ].map(s => (
                       <div key={s.label} className="rounded-xl p-2.5 text-center" style={{ background: "rgba(255,255,255,.1)" }}>
                         <p className="font-black text-xl" style={{ color: s.color }}>{s.pct}</p>
@@ -364,7 +364,7 @@ export function AFCManagementDashboard({ isOpen, onClose }: Props) {
               {/* Device grid */}
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {DEVICES.map(d => (
-                  <div key={d.id} className="rounded-2xl p-4 cursor-pointer hover:border-purple-600 transition-all"
+                  <div key={d.id} className="rounded-2xl p-4 cursor-pointer hover:border-emerald-600 transition-all"
                     style={{ background: "#1A1A2E", border: `1px solid ${d.status === "online" ? "#2D2A4A" : "#4A1010"}` }}
                     onClick={() => { setSelectedDevice(d); setScreen("terminal"); }}>
                     <div className="flex items-start justify-between mb-3">
@@ -555,7 +555,7 @@ export function AFCManagementDashboard({ isOpen, onClose }: Props) {
                     </div>
                     <div className="text-center hidden md:block">
                       <p className="text-white/40 text-[9px]">Total Taps</p>
-                      <p className="text-purple-400 font-bold text-sm">{w.taps.toLocaleString()}</p>
+                      <p className="text-emerald-400 font-bold text-sm">{w.taps.toLocaleString()}</p>
                     </div>
                     <div className="text-right flex-shrink-0">
                       <p className="text-white/40 text-[9px]">Balance</p>
@@ -584,7 +584,7 @@ export function AFCManagementDashboard({ isOpen, onClose }: Props) {
                   { name: "Lusaka → Kitwe (Zambia)",       fare: 95.00, peak: 110.00,devices: 0, km: 320, mins: 240 },
                 ].map((r, i) => (
                   <div key={i} className="rounded-2xl p-4 flex items-center gap-4" style={{ background: "#1A1A2E", border: "1px solid #2D2A4A" }}>
-                    <MapPin className="w-5 h-5 text-purple-400 flex-shrink-0" />
+                    <MapPin className="w-5 h-5 text-emerald-400 flex-shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-white font-bold">{r.name}</p>
                       <p className="text-white/40 text-xs mt-0.5">{r.km}km · ~{r.mins} min · {r.devices} active device{r.devices !== 1 ? "s" : ""}</p>
@@ -612,7 +612,7 @@ export function AFCManagementDashboard({ isOpen, onClose }: Props) {
                   { label: "Total Devices", value: DEVICES.length.toString(), color: P },
                   { label: "VINK Fee Today", value: `R${(totalTodayTaps * 0.50).toFixed(2)}`, color: GOLD, note: "R0.50 × taps" },
                   { label: "Driver Payouts", value: fmtM(totalTodayRev * 0.85), color: GREEN },
-                  { label: "Community Fund", value: fmtM(totalTodayRev * 0.10), color: "#8B5CF6" },
+                  { label: "Community Fund", value: fmtM(totalTodayRev * 0.10), color: "#34A853" },
                 ].map(k => (
                   <div key={k.label} className="rounded-2xl p-4 text-center" style={{ background: "#1A1A2E" }}>
                     <p className="text-white/40 text-[10px]">{k.label}</p>
@@ -650,7 +650,7 @@ export function AFCManagementDashboard({ isOpen, onClose }: Props) {
                     { label: "Driver wallet",            amount: 11.90, pct: 85, color: GREEN },
                     { label: "Taxi Association",         amount: 0.70,  pct: 5,  color: "#3B82F6" },
                     { label: "Neighbourhood Watch",      amount: 0.70,  pct: 5,  color: GOLD },
-                    { label: "Community Bank Fund",      amount: 0.70,  pct: 5,  color: "#8B5CF6" },
+                    { label: "Community Bank Fund",      amount: 0.70,  pct: 5,  color: "#34A853" },
                     { label: "VINK transaction fee",      amount: 0.50,  pct: 3.5, color: P, note: "Fixed R0.50 — not from fare" },
                   ].map(r => (
                     <div key={r.label}>

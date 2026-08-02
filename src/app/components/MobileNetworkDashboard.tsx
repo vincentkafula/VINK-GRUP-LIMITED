@@ -75,7 +75,7 @@ function LoginScreen({ onLogin, onClose, mode }: {
       <div className={`w-full ${compact ? "max-w-[320px]" : "max-w-sm"}`}>
         <div className={`text-center ${compact ? "mb-5" : "mb-8"}`}>
           <div className={`${compact ? "w-12 h-12" : "w-16 h-16"} rounded-2xl mx-auto flex items-center justify-center mb-3`}
-            style={{ background: "linear-gradient(135deg,#6B5ED7,#9585EA)" }}>
+            style={{ background: "linear-gradient(135deg,#128A43,#5FC97F)" }}>
             <Radio className={compact ? "w-6 h-6 text-white" : "w-8 h-8 text-white"} />
           </div>
           <h1 className={`font-bold text-white ${compact ? "text-lg" : "text-2xl"}`}>MVNO Control</h1>
@@ -91,7 +91,7 @@ function LoginScreen({ onLogin, onClose, mode }: {
             <div key={f.label}>
               <label className={`block font-semibold mb-1 ${compact ? "text-[10px]" : "text-xs"}`} style={{ color: "#8884AA" }}>{f.label}</label>
               <input type={f.type} value={f.value} onChange={e => f.set(e.target.value)} required
-                className={`w-full rounded-lg px-3 text-white outline-none focus:ring-2 focus:ring-[#6B5ED7] ${compact ? "py-2 text-xs" : "py-2.5 text-sm"}`}
+                className={`w-full rounded-lg px-3 text-white outline-none focus:ring-2 focus:ring-[#128A43] ${compact ? "py-2 text-xs" : "py-2.5 text-sm"}`}
                 style={{ background: "#252245", border: "1px solid #3D3A6A" }} />
             </div>
           ))}
@@ -100,7 +100,7 @@ function LoginScreen({ onLogin, onClose, mode }: {
           )}
           <button type="submit" disabled={loading}
             className={`w-full rounded-lg font-semibold text-white transition-opacity disabled:opacity-60 flex items-center justify-center gap-2 ${compact ? "py-2 text-xs" : "py-2.5 text-sm"}`}
-            style={{ background: "linear-gradient(135deg,#6B5ED7,#8B7EE7)" }}>
+            style={{ background: "linear-gradient(135deg,#128A43,#8B7EE7)" }}>
             {loading ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />Signing in…</> : <><Key className="w-3.5 h-3.5" />Sign In</>}
           </button>
           <button type="button" onClick={() => { setDemoMode(true); setToken(DEMO_TOKEN); onLogin(DEMO_TOKEN, { name: "Demo Operator", role: "noc_engineer" }); }}
@@ -204,12 +204,12 @@ function MobileDashboardContent({
   onLogout: () => void;
 }) {
   const kpiCards = [
-    { label: "Subscribers", value: kpiData ? fmt(Number(kpiData.totalSubscribers)) : "…", color: "#6B5ED7", icon: <Users className="w-4 h-4" /> },
+    { label: "Subscribers", value: kpiData ? fmt(Number(kpiData.totalSubscribers)) : "…", color: "#128A43", icon: <Users className="w-4 h-4" /> },
     { label: "Uptime",      value: kpiData ? `${Number(kpiData.networkUptimePct).toFixed(2)}%` : "…", color: "#10B981", icon: <Activity className="w-4 h-4" /> },
     { label: "Data Sessions", value: kpiData ? fmt(Number(kpiData.activeDataSessions)) : "…", color: "#3B82F6", icon: <Wifi className="w-4 h-4" /> },
     { label: "Revenue",     value: billingSum ? fmtUSD(Number(billingSum.totalRevenue)) : "…", color: "#F59E0B", icon: <TrendingUp className="w-4 h-4" /> },
     { label: "Alerts",      value: String(alerts.length), color: "#EF4444", icon: <AlertTriangle className="w-4 h-4" /> },
-    { label: "Net Load",    value: kpiData ? `${kpiData.avgNetworkLoadPct}%` : "…", color: "#8B5CF6", icon: <BarChart3 className="w-4 h-4" /> },
+    { label: "Net Load",    value: kpiData ? `${kpiData.avgNetworkLoadPct}%` : "…", color: "#34A853", icon: <BarChart3 className="w-4 h-4" /> },
   ];
 
   const nodes = [
@@ -300,7 +300,7 @@ function MobileDashboardContent({
               <p className="text-xs font-bold text-white mb-2">Traffic (24h)</p>
               <div className="flex items-end gap-0.5 h-10">
                 {Array.from({ length: 24 }, (_, i) => 30 + Math.sin(i / 3) * 25 + Math.random() * 15).map((h, i) => (
-                  <div key={i} className="flex-1 rounded-sm" style={{ height: `${Math.max(5, h)}%`, background: i === 23 ? "#9585EA" : "#534AB755" }} />
+                  <div key={i} className="flex-1 rounded-sm" style={{ height: `${Math.max(5, h)}%`, background: i === 23 ? "#5FC97F" : "#534AB755" }} />
                 ))}
               </div>
             </div>
@@ -347,7 +347,7 @@ function MobileDashboardContent({
               { label: "Total Revenue", value: billingSum ? fmtUSD(Number(billingSum.totalRevenue)) : "—", color: "#F59E0B" },
               { label: "Paid Invoices", value: billingSum ? String(billingSum.paidInvoices) : "—", color: "#10B981" },
               { label: "Overdue", value: billingSum ? String(billingSum.overdueInvoices) : "—", color: "#EF4444" },
-              { label: "AR Outstanding", value: billingSum ? fmtUSD(Number(billingSum.arOutstanding)) : "—", color: "#8B5CF6" },
+              { label: "AR Outstanding", value: billingSum ? fmtUSD(Number(billingSum.arOutstanding)) : "—", color: "#34A853" },
             ].map((s, i) => (
               <div key={i} className="rounded-xl p-3 flex items-center justify-between"
                 style={{ background: "#1A1738", border: "1px solid #2D2A50" }}>
@@ -391,7 +391,7 @@ function MobileDashboardContent({
         {tabs.map(t => (
           <button key={t.id} onClick={() => setActiveTab(t.id)}
             className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg transition-colors"
-            style={{ color: activeTab === t.id ? "#9585EA" : "#5A5880" }}>
+            style={{ color: activeTab === t.id ? "#5FC97F" : "#5A5880" }}>
             {t.icon}
             <span className="text-[9px] font-medium">{t.label}</span>
             {t.id === "alerts" && alerts.length > 0 && (
@@ -452,12 +452,12 @@ function WebDashboard({
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const kpiCards = [
-    { label: "Total Subscribers", value: kpiData ? fmt(Number(kpiData.totalSubscribers)) : "…", color: "#6B5ED7", up: true,  icon: <Users className="w-5 h-5" /> },
+    { label: "Total Subscribers", value: kpiData ? fmt(Number(kpiData.totalSubscribers)) : "…", color: "#128A43", up: true,  icon: <Users className="w-5 h-5" /> },
     { label: "Network Uptime",    value: kpiData ? `${Number(kpiData.networkUptimePct).toFixed(2)}%` : "…", color: "#10B981", up: true, icon: <Activity className="w-5 h-5" /> },
     { label: "Data Sessions",     value: kpiData ? fmt(Number(kpiData.activeDataSessions)) : "…", color: "#3B82F6", up: true, icon: <Wifi className="w-5 h-5" /> },
     { label: "Revenue Today",     value: billingSum ? fmtUSD(Number(billingSum.totalRevenue)) : "…", color: "#F59E0B", up: true, icon: <TrendingUp className="w-5 h-5" /> },
     { label: "Active Alerts",     value: alertSummary.active != null ? String(alertSummary.active) : "…", color: "#EF4444", up: false, icon: <AlertTriangle className="w-5 h-5" /> },
-    { label: "Avg Network Load",  value: kpiData ? `${kpiData.avgNetworkLoadPct}%` : "…", color: "#8B5CF6", up: false, icon: <BarChart3 className="w-5 h-5" /> },
+    { label: "Avg Network Load",  value: kpiData ? `${kpiData.avgNetworkLoadPct}%` : "…", color: "#34A853", up: false, icon: <BarChart3 className="w-5 h-5" /> },
   ];
 
   const nodes = [
@@ -501,7 +501,7 @@ function WebDashboard({
           {WEB_NAV.map(item => (
             <button key={item.label} onClick={() => setActiveNav(item.label)}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-left"
-              style={{ background: activeNav === item.label ? "#6B5ED722" : "transparent", color: activeNav === item.label ? "#9585EA" : "#8884AA" }}>
+              style={{ background: activeNav === item.label ? "#128A4322" : "transparent", color: activeNav === item.label ? "#5FC97F" : "#8884AA" }}>
               <span className="flex-shrink-0">{item.icon}</span>
               {sidebarOpen && (
                 <span className="text-xs font-medium flex-1 truncate flex items-center justify-between">
@@ -592,7 +592,7 @@ function WebDashboard({
               {/* Subscriber */}
               <div className="flex justify-center">
                 <div className="flex items-center gap-3 px-5 py-2.5 rounded-xl border" style={{ background: "#252245", borderColor: "#3D3A6A" }}>
-                  <Signal className="w-4 h-4" style={{ color: "#9585EA" }} />
+                  <Signal className="w-4 h-4" style={{ color: "#5FC97F" }} />
                   <p className="text-xs font-bold text-white">SIM / Handset</p>
                   <Dot status="online" />
                 </div>
@@ -684,11 +684,11 @@ function WebDashboard({
               <div className="rounded-2xl p-5" style={{ background: "#1A1738", border: "1px solid #2D2A50" }}>
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-sm font-bold text-white">Data Sessions (24h)</h3>
-                  <Zap className="w-4 h-4" style={{ color: "#9585EA" }} />
+                  <Zap className="w-4 h-4" style={{ color: "#5FC97F" }} />
                 </div>
                 <div className="flex items-end gap-0.5 h-14">
                   {sparkVals.map((h, i) => (
-                    <div key={i} className="flex-1 rounded-sm" style={{ height: `${Math.max(5, Math.min(100, h))}%`, background: i === sparkVals.length - 1 ? "#9585EA" : "#534AB755" }} />
+                    <div key={i} className="flex-1 rounded-sm" style={{ height: `${Math.max(5, Math.min(100, h))}%`, background: i === sparkVals.length - 1 ? "#5FC97F" : "#534AB755" }} />
                   ))}
                 </div>
                 <div className="flex justify-between text-[9px] mt-1" style={{ color: "#8884AA" }}>
@@ -699,7 +699,7 @@ function WebDashboard({
               {/* Quick stats */}
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  { label: "Active SIMs",  value: provStats ? fmt(provStats.active) : "—",               color: "#6B5ED7" },
+                  { label: "Active SIMs",  value: provStats ? fmt(provStats.active) : "—",               color: "#128A43" },
                   { label: "Open Tickets", value: supportStats ? String(supportStats.open) : "—",         color: "#F59E0B" },
                   { label: "Roaming",      value: interSum ? fmt(interSum.totalRoamers) : "—",             color: "#10B981" },
                   { label: "Fraud Blocked",value: fraudSum ? String(fraudSum.blocked) : "—",              color: "#EF4444" },
@@ -751,7 +751,7 @@ function PreviewToggle({ mode, onChange }: { mode: PreviewMode; onChange: (m: Pr
         <button key={m} onClick={() => onChange(m)}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
           style={{
-            background: mode === m ? "#6B5ED7" : "transparent",
+            background: mode === m ? "#128A43" : "transparent",
             color: mode === m ? "white" : "#8884AA",
           }}>
           {m === "mobile" ? <Smartphone className="w-3.5 h-3.5" /> : <Monitor className="w-3.5 h-3.5" />}
@@ -850,7 +850,7 @@ export function MobileNetworkDashboard({ isOpen, onClose }: Props) {
         style={{ background: "#13103A", borderBottom: "1px solid #2D2A50" }}>
         {/* Left: brand */}
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg,#6B5ED7,#9585EA)" }}>
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg,#128A43,#5FC97F)" }}>
             <Radio className="w-4 h-4 text-white" />
           </div>
           <div>

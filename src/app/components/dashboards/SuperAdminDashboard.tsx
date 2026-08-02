@@ -68,7 +68,7 @@ export function SuperAdminDashboard({ isOpen, onClose }: { isOpen: boolean; onCl
           <StatCard label="Total Users" value="2,401,840" icon={<Users className="w-5 h-5" />} color="#DC2626" trend="up" />
           <StatCard label="Services Healthy" value={`${healthy}/${SERVICES.length}`} icon={<CheckCircle className="w-5 h-5" />} color="#10B981" />
           <StatCard label="Degraded Services" value={String(degraded)} icon={<AlertTriangle className="w-5 h-5" />} color="#F59E0B" />
-          <StatCard label="System Load" value="68%" icon={<Activity className="w-5 h-5" />} color="#8B5CF6" />
+          <StatCard label="System Load" value="68%" icon={<Activity className="w-5 h-5" />} color="#34A853" />
           <StatCard label="Active Sessions" value="48,290" icon={<Zap className="w-5 h-5" />} color="#3B82F6" trend="up" />
           <StatCard label="Open Alerts" value="6" icon={<Bell className="w-5 h-5" />} color="#EF4444" />
         </div>
@@ -84,7 +84,7 @@ export function SuperAdminDashboard({ isOpen, onClose }: { isOpen: boolean; onCl
                 </h3>
                 <div className="flex gap-2">
                   <Badge text="API" color="#DC2626" />
-                  <Badge text="avg 68%" color="#8B5CF6" />
+                  <Badge text="avg 68%" color="#34A853" />
                 </div>
               </div>
               <Sparkline values={SYSTEM_CHART} color="#DC2626" />
@@ -141,7 +141,7 @@ export function SuperAdminDashboard({ isOpen, onClose }: { isOpen: boolean; onCl
               <ProgressBar label="Memory" value={74} max={100} color="#F59E0B" />
               <ProgressBar label="Disk I/O" value={42} max={100} color="#3B82F6" />
               <ProgressBar label="Network" value={58} max={100} color="#10B981" />
-              <ProgressBar label="DB Connections" value={81} max={100} color="#8B5CF6" />
+              <ProgressBar label="DB Connections" value={81} max={100} color="#34A853" />
             </SectionPanel>
 
             <SectionPanel title="Recent Audit Log">
@@ -168,7 +168,7 @@ export function SuperAdminDashboard({ isOpen, onClose }: { isOpen: boolean; onCl
                   { label: "Rotate JWT Secrets", color: "#F59E0B" },
                   { label: "Clear Cache (All Services)", color: "#3B82F6" },
                   { label: "Export Full Audit Log", color: "#10B981" },
-                  { label: "System Health Report", color: "#8B5CF6" },
+                  { label: "System Health Report", color: "#34A853" },
                 ].map((c, i) => (
                   <button key={i} className="w-full py-2 px-3 rounded-xl text-[11px] font-semibold transition-all hover:opacity-90 text-left"
                     style={{ background: c.color + "15", border: `1px solid ${c.color}30`, color: c.color }}>

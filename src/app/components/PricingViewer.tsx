@@ -107,7 +107,7 @@ function Card({ card, onApply }: { card: PricingCard; onApply: (name: string, pr
 // ─── Main ─────────────────────────────────────────────────────────────────────
 function AppDownloadCard() {
   const [open, setOpen] = useState(false);
-  const BRAND = "#5B2D8E";
+  const BRAND = "#0B5C2E";
   return (
     <div style={{ borderRadius: 14, overflow: "hidden", border: "1px solid rgba(255,255,255,.15)" }}>
       {/* Trigger */}

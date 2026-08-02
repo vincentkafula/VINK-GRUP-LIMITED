@@ -2,7 +2,7 @@ import { X } from "lucide-react";
 import vinkLogo from "../../../imports/LOGO_FINAL.png";
 
 interface Props { isOpen: boolean; onClose: () => void; }
-const P = "#5B2D8E";
+const P = "#0B5C2E";
 const GOLD = "#F5A623";
 
 const FOCUS_AREAS = [

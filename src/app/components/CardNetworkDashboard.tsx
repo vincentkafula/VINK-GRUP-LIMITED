@@ -12,7 +12,7 @@ import {
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
-const P = "#5B2D8E";
+const P = "#0B5C2E";
 const VISA_BLUE = "#1A1F71";
 const MC_RED = "#EB001B";
 const MC_ORANGE = "#F79E1B";
@@ -224,7 +224,7 @@ function AFCSimulator() {
         <div className="p-5 flex flex-col items-center gap-4">
           {/* Card visual */}
           <div className="relative w-48 h-28 rounded-xl flex items-end p-3"
-            style={{ background: `linear-gradient(135deg,${P},#9585EA)` }}>
+            style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
             <div className="absolute top-3 left-3 w-7 h-5 rounded bg-yellow-400/70" />
             <div className="absolute top-3 right-3">
               {currentStep >= 2 ? <NetworkBadge network="visa" /> : <span className="text-white/40 text-xs">VINK</span>}
@@ -337,7 +337,7 @@ function AuthFeed() {
       </div>
       <div className="divide-y divide-gray-50 max-h-80 overflow-y-auto">
         {auths.map((auth, i) => (
-          <div key={auth.id} className={`flex items-center gap-3 px-4 py-2.5 transition-all ${i === 0 ? "bg-purple-50" : ""}`}>
+          <div key={auth.id} className={`flex items-center gap-3 px-4 py-2.5 transition-all ${i === 0 ? "bg-emerald-50" : ""}`}>
             <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
               style={{ background: auth.status === "approved" ? "#D1FAE5" : "#FEE2E2" }}>
               {auth.status === "approved"
@@ -537,7 +537,7 @@ export function CardNetworkDashboard({ isOpen, onClose }: Props) {
           {screen === "bins" && (
             <div className="space-y-4 max-w-5xl">
               <h1 className="text-xl font-black text-gray-900">BIN (Bank Identification Number) Management</h1>
-              <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 text-sm text-purple-800 leading-relaxed">
+              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-sm text-emerald-800 leading-relaxed">
                 <strong>How BINs work:</strong> Each Vink card type is assigned a BIN registered in its target country. When a payment is processed, the card network identifies the BIN and routes the transaction domestically — the acquiring bank sees it as a local card, eliminating cross-border fees. VINK holds Visa and Mastercard principal membership, allowing direct BIN assignment without a third-party BIN sponsor.
               </div>
               <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
@@ -712,12 +712,12 @@ export function CardNetworkDashboard({ isOpen, onClose }: Props) {
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
                     <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Transaction Amount (ZAR)</label>
-                    <input type="number" className="w-full border border-gray-200 rounded-xl px-4 py-3 text-2xl font-black outline-none focus:border-purple-400"
+                    <input type="number" className="w-full border border-gray-200 rounded-xl px-4 py-3 text-2xl font-black outline-none focus:border-emerald-400"
                       value={interchangeAmt} onChange={e => setInterchangeAmt(e.target.value)} />
                   </div>
                   <div>
                     <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Transaction Type</label>
-                    <select className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-purple-400"
+                    <select className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-400"
                       value={interchangeType} onChange={e => setInterchangeType(e.target.value)}>
                       {Object.entries(IC_RATES).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
                     </select>
@@ -785,7 +785,7 @@ export function CardNetworkDashboard({ isOpen, onClose }: Props) {
                     { rule: "AFC Fare Anomaly",           desc: "AFC fare >R200 (normal max R50)",               action: "Hold",    trigger: "Medium", network: "both" },
                     { rule: "After-Hours Large Withdraw", desc: "ATM withdrawal >R5,000 between 22:00–05:00",    action: "SMS Alert", trigger: "Low", network: "both" },
                   ].map((r, i) => (
-                    <div key={i} className="flex items-start gap-3 p-3 rounded-xl border border-gray-100 hover:border-purple-100 hover:bg-purple-50 transition-all">
+                    <div key={i} className="flex items-start gap-3 p-3 rounded-xl border border-gray-100 hover:border-emerald-100 hover:bg-emerald-50 transition-all">
                       <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5"
                         style={{ color: r.trigger === "Critical" ? "#EF4444" : r.trigger === "High" ? "#F59E0B" : r.trigger === "Medium" ? "#3B82F6" : "#10B981" }} />
                       <div className="flex-1 min-w-0">

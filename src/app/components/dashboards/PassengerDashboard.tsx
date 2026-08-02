@@ -46,7 +46,7 @@ export function PassengerDashboard({ isOpen, onClose, onBookRide }: { isOpen: bo
         {/* KPIs */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <StatCard label="Trips This Month" value="24" icon={<Navigation className="w-5 h-5" />} color="#06B6D4" trend="up" />
-          <StatCard label="Total Spent" value="R1,840" icon={<CreditCard className="w-5 h-5" />} color="#8B5CF6" sub="This month" />
+          <StatCard label="Total Spent" value="R1,840" icon={<CreditCard className="w-5 h-5" />} color="#34A853" sub="This month" />
           <StatCard label="Avg Rating Given" value="4.8 ★" icon={<Star className="w-5 h-5" />} color="#F59E0B" />
           <StatCard label="Loyalty Points" value="2,480 pts" icon={<Heart className="w-5 h-5" />} color="#EF4444" trend="up" />
         </div>
@@ -143,7 +143,7 @@ export function PassengerDashboard({ isOpen, onClose, onBookRide }: { isOpen: bo
                   <div key={i} className="flex items-center gap-3 p-3 rounded-xl"
                     style={{ background: "#252245", border: `1px solid ${c.default ? "#06B6D455" : "#3D3A6A"}` }}>
                     <div className="w-8 h-6 rounded flex items-center justify-center text-[9px] font-bold"
-                      style={{ background: c.type === "Vink Wallet" ? "#6B5ED7" : c.type === "Visa" ? "#1A1F71" : "#EB001B", color: "white" }}>
+                      style={{ background: c.type === "Vink Wallet" ? "#128A43" : c.type === "Visa" ? "#1A1F71" : "#EB001B", color: "white" }}>
                       {c.type === "Vink Wallet" ? "V" : c.type[0]}
                     </div>
                     <div className="flex-1">

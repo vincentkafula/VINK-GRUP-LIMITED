@@ -51,7 +51,7 @@ export function MerchantDashboard({ isOpen, onClose }: { isOpen: boolean; onClos
           <StatCard label="Today's Revenue" value="R24,840" icon={<DollarSign className="w-5 h-5" />} color="#0EA5E9" trend="up" sub="+14% vs yesterday" />
           <StatCard label="Orders Today" value="48" icon={<ShoppingBag className="w-5 h-5" />} color="#10B981" trend="up" />
           <StatCard label="Pending Orders" value="8" icon={<RefreshCw className="w-5 h-5" />} color="#F59E0B" />
-          <StatCard label="Active Products" value="124" icon={<Package className="w-5 h-5" />} color="#8B5CF6" />
+          <StatCard label="Active Products" value="124" icon={<Package className="w-5 h-5" />} color="#34A853" />
           <StatCard label="Total Customers" value="4,820" icon={<Users className="w-5 h-5" />} color="#EF4444" trend="up" />
           <StatCard label="Store Rating" value="4.82 ★" icon={<Star className="w-5 h-5" />} color="#F59E0B" trend="up" />
         </div>
@@ -107,7 +107,7 @@ export function MerchantDashboard({ isOpen, onClose }: { isOpen: boolean; onClos
           <div className="space-y-4">
             <SectionPanel title="Sales by Category">
               {[
-                { cat: "SIM & Connectivity", pct: 38, val: "R779K", color: "#8B5CF6" },
+                { cat: "SIM & Connectivity", pct: 38, val: "R779K", color: "#34A853" },
                 { cat: "Hardware Devices", pct: 28, val: "R574K", color: "#EF4444" },
                 { cat: "Software Plans", pct: 22, val: "R451K", color: "#0EA5E9" },
                 { cat: "Fleet Services", pct: 12, val: "R246K", color: "#10B981" },

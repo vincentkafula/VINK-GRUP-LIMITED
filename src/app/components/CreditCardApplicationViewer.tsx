@@ -21,7 +21,7 @@ const STEPS = [
 ];
 
 const CARD_TYPES = [
-  { id: "standard", name: "Vink Standard Card", limit: "R5,000 – R25,000", fee: "R0/month", color: "linear-gradient(135deg,#6B5ED7,#9585EA)" },
+  { id: "standard", name: "Vink Standard Card", limit: "R5,000 – R25,000", fee: "R0/month", color: "linear-gradient(135deg,#128A43,#5FC97F)" },
   { id: "gold",     name: "Vink Gold Card",     limit: "R25,000 – R150,000", fee: "R85/month", color: "linear-gradient(135deg,#B8860B,#DAA520)" },
   { id: "platinum", name: "Vink Platinum Card", limit: "R150,000 – R500,000", fee: "R265/month", color: "linear-gradient(135deg,#374151,#6B7280)" },
 ];
@@ -69,7 +69,7 @@ function FingerprintScanner({ onDone }: { onDone: () => void }) {
       >
         <Fingerprint
           className="w-16 h-16 transition-colors"
-          style={{ color: done ? GREEN : scanning ? CP : "#C4B5FD" }}
+          style={{ color: done ? GREEN : scanning ? CP : "#A7E8BD" }}
         />
         {scanning && (
           <div className="absolute bottom-3 left-3 right-3">
@@ -180,7 +180,7 @@ function SelfieCapture({ onDone }: { onDone: () => void }) {
             <span className="text-xs text-gray-400">or</span>
             <div className="flex-1 h-px bg-gray-200" />
           </div>
-          <label className="w-full text-center cursor-pointer text-sm font-semibold py-2.5 rounded-xl border-2 transition-all hover:bg-purple-50"
+          <label className="w-full text-center cursor-pointer text-sm font-semibold py-2.5 rounded-xl border-2 transition-all hover:bg-emerald-50"
             style={{ borderColor: CP, color: CP }}>
             Upload a clear photo
             <input type="file" accept="image/*" className="hidden" onChange={() => { setState("captured"); onDone(); }} />
@@ -269,7 +269,7 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
         tag="VINK Personal Banking · FICA · POCA Compliant"
         title="New Credit Card Application"
         subtitle="Choose your card, verify your identity, and get approved in minutes."
-        gradient="linear-gradient(135deg,#1a0533 0%,#5B2D8E 50%,#9585EA 100%)"
+        gradient="linear-gradient(135deg,#1a0533 0%,#0B5C2E 50%,#5FC97F 100%)"
       />
 
       {/* ── Step content ── */}
@@ -586,7 +586,7 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
                   }
                 }}
                 className="w-full py-4 rounded-xl text-base font-black text-white transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed shadow-lg"
-                style={{ background: `linear-gradient(135deg,${CP},#9585EA)` }}>
+                style={{ background: `linear-gradient(135deg,${CP},#5FC97F)` }}>
                 {submitting ? "Submitting..." : "Submit Application"}
               </button>
               {submitError && <p className="text-red-600 text-sm text-center mt-2">{submitError}</p>}
@@ -657,7 +657,7 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
 
             <button onClick={onClose}
               className="w-full py-3.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 shadow-lg"
-              style={{ background: `linear-gradient(135deg,${CP},#9585EA)` }}>
+              style={{ background: `linear-gradient(135deg,${CP},#5FC97F)` }}>
               Back to VINK Banking
             </button>
           </div>

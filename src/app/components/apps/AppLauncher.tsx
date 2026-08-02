@@ -25,7 +25,7 @@ const APPS = [
     size: "24.7 MB",
     rating: 4.8,
     reviews: "2,847",
-    gradient: "linear-gradient(135deg,#5B2D8E,#9585EA)",
+    gradient: "linear-gradient(135deg,#0B5C2E,#5FC97F)",
     emoji: "🚌",
     badge: "T-T20 Hardware",
     badgeColor: "#F5A623",
@@ -134,10 +134,10 @@ const APPS = [
     size: "Internal",
     rating: 5.0,
     reviews: "Internal",
-    gradient: "linear-gradient(135deg,#5B2D8E,#F5A623)",
+    gradient: "linear-gradient(135deg,#0B5C2E,#F5A623)",
     emoji: "💹",
     badge: "Operations",
-    badgeColor: "#5B2D8E",
+    badgeColor: "#0B5C2E",
     features: [
       "Per-tap revenue split (Passenger R0.50 · Driver R0.50 · VINK R1.00)",
       "10% of VINK fee → device investor (R0.10/tap)",
@@ -164,7 +164,7 @@ export function AppLauncher({ isOpen, onClose, onLaunchApp }: Props) {
     }, 1500);
   };
 
-  const P = "#5B2D8E";
+  const P = "#0B5C2E";
 
   if (selectedApp) {
     return (
@@ -208,7 +208,7 @@ export function AppLauncher({ isOpen, onClose, onLaunchApp }: Props) {
             <button
               onClick={() => { onLaunchApp(selectedApp.id); onClose(); }}
               className="flex-1 py-3 rounded-2xl text-sm font-black text-white transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg"
-              style={{ background: `linear-gradient(135deg,${P},#9585EA)`, boxShadow: `0 6px 20px ${P}40` }}>
+              style={{ background: `linear-gradient(135deg,${P},#5FC97F)`, boxShadow: `0 6px 20px ${P}40` }}>
               Open App
             </button>
             {downloaded.has(selectedApp.id) ? (
@@ -379,7 +379,7 @@ export function AppLauncher({ isOpen, onClose, onLaunchApp }: Props) {
             <div className="flex items-center justify-between px-4 py-3 border-t border-white/5">
               <button onClick={() => { onLaunchApp(app.id); onClose(); }}
                 className="text-xs font-black px-4 py-2 rounded-xl text-white transition-all hover:scale-[1.03] active:scale-[0.97]"
-                style={{ background: `linear-gradient(135deg,${P},#9585EA)` }}>
+                style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
                 Open App
               </button>
               <div className="flex items-center gap-3">

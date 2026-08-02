@@ -2,7 +2,7 @@ import { ArrowRight, Smartphone } from 'lucide-react';
 
 export function CTASection() {
   return (
-    <div className="bg-gradient-to-br from-[#6B5ED7] to-[#5B4EC7] text-white py-16">
+    <div className="bg-gradient-to-br from-[#128A43] to-[#5B4EC7] text-white py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>
@@ -13,7 +13,7 @@ export function CTASection() {
               Join millions of users who trust Vink for their financial needs. Apply now and get approved in minutes.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <button className="bg-white text-[#6B5ED7] px-8 py-3 rounded-lg hover:bg-gray-100 transition-colors inline-flex items-center justify-center gap-2">
+              <button className="bg-white text-[#128A43] px-8 py-3 rounded-lg hover:bg-gray-100 transition-colors inline-flex items-center justify-center gap-2">
                 Get Started
                 <ArrowRight className="w-5 h-5" />
               </button>

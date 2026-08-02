@@ -5,7 +5,7 @@ import { Footer } from "./Footer";
 
 interface Props { isOpen: boolean; onClose: () => void; onNavigate: (item: string) => void; }
 
-const P = "#5B2D8E";
+const P = "#0B5C2E";
 const PD = "#3d1d63";
 const GOLD = "#F5A623";
 
@@ -98,7 +98,7 @@ function Carousel({ items }: { items: EventCard[] }) {
 
   return (
     <div className="relative">
-      <button onClick={() => scroll(-1)} className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 z-10 w-8 h-8 rounded-full bg-white border border-gray-200 shadow flex items-center justify-center hover:bg-purple-50 transition-colors" style={{ color: P }}>
+      <button onClick={() => scroll(-1)} className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 z-10 w-8 h-8 rounded-full bg-white border border-gray-200 shadow flex items-center justify-center hover:bg-emerald-50 transition-colors" style={{ color: P }}>
         <ChevronLeft className="w-4 h-4" />
       </button>
       <div ref={ref} className="flex gap-3 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
@@ -121,7 +121,7 @@ function Carousel({ items }: { items: EventCard[] }) {
           </div>
         ))}
       </div>
-      <button onClick={() => scroll(1)} className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 z-10 w-8 h-8 rounded-full bg-white border border-gray-200 shadow flex items-center justify-center hover:bg-purple-50 transition-colors" style={{ color: P }}>
+      <button onClick={() => scroll(1)} className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 z-10 w-8 h-8 rounded-full bg-white border border-gray-200 shadow flex items-center justify-center hover:bg-emerald-50 transition-colors" style={{ color: P }}>
         <ChevronRight className="w-4 h-4" />
       </button>
     </div>
@@ -203,7 +203,7 @@ export function CorporateEventsViewer({ isOpen, onClose, onNavigate }: Props) {
         <div className="flex gap-3 overflow-x-auto pb-1 max-w-5xl mx-auto" style={{ scrollbarWidth: "none" }}>
           {QUICK_CATS.map((cat) => (
             <a key={cat.label} href="#"
-              className="flex-none w-24 rounded-xl border-2 border-gray-200 bg-white flex flex-col items-center justify-center gap-1.5 py-3 cursor-pointer text-center text-[.78rem] font-semibold text-gray-700 hover:border-purple-500 hover:shadow-md transition-all no-underline">
+              className="flex-none w-24 rounded-xl border-2 border-gray-200 bg-white flex flex-col items-center justify-center gap-1.5 py-3 cursor-pointer text-center text-[.78rem] font-semibold text-gray-700 hover:border-emerald-500 hover:shadow-md transition-all no-underline">
               <span className="text-3xl">{cat.icon}</span>
               {cat.label}
             </a>

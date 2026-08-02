@@ -19,7 +19,7 @@ import {
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
-const P = "#5B2D8E";
+const P = "#0B5C2E";
 const GOLD = "#F5A623";
 
 // ─── Status config ────────────────────────────────────────────────────────────
@@ -28,13 +28,13 @@ const STATUS_CFG: Record<AppStatus, { label: string; color: string; bg: string; 
   under_review:         { label: "Under Review",     color: "#3B82F6", bg: "#DBEAFE", icon: <Eye className="w-3.5 h-3.5" /> },
   approved:             { label: "Approved",         color: "#10B981", bg: "#D1FAE5", icon: <CheckCircle className="w-3.5 h-3.5" /> },
   declined:             { label: "Declined",         color: "#EF4444", bg: "#FEE2E2", icon: <XCircle className="w-3.5 h-3.5" /> },
-  more_info_required:   { label: "More Info Needed", color: "#8B5CF6", bg: "#EDE9FE", icon: <AlertTriangle className="w-3.5 h-3.5" /> },
+  more_info_required:   { label: "More Info Needed", color: "#34A853", bg: "#EDE9FE", icon: <AlertTriangle className="w-3.5 h-3.5" /> },
 };
 
 // ─── Type config ──────────────────────────────────────────────────────────────
 const TYPE_CFG: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
   account:      { label: "Bank Account",    icon: <Building2 className="w-4 h-4" />,   color: "#3949AB" },
-  creditCard:   { label: "Credit Card",     icon: <CreditCard className="w-4 h-4" />,  color: "#6B5ED7" },
+  creditCard:   { label: "Credit Card",     icon: <CreditCard className="w-4 h-4" />,  color: "#128A43" },
   loan:         { label: "Personal Loan",   icon: <DollarSign className="w-4 h-4" />,  color: "#E53935" },
   invest:       { label: "Investment",      icon: <TrendingUp className="w-4 h-4" />,  color: "#1565C0" },
   insure:       { label: "Insurance",       icon: <Shield className="w-4 h-4" />,      color: "#2E7D32" },
@@ -157,11 +157,11 @@ function ApplicationDetail({ app, onClose, onStatusUpdate }: {
               onChange={e => setNotes(e.target.value)}
               rows={3}
               placeholder="Add review notes or reason for status change…"
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-purple-400 resize-none"
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400 resize-none"
             />
             <button onClick={save} disabled={saving || (newStatus === app.status && notes === app.reviewNotes)}
               className="w-full py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-40"
-              style={{ background: `linear-gradient(135deg,${P},#9585EA)` }}>
+              style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
               {saving ? "Saving…" : "Save Changes"}
             </button>
           </div>

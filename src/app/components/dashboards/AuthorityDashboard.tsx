@@ -53,7 +53,7 @@ export function AuthorityDashboard({ isOpen, onClose }: { isOpen: boolean; onClo
           <StatCard label="Active Incidents" value="4" icon={<AlertTriangle className="w-5 h-5" />} color="#EF4444" trend="up" />
           <StatCard label="Entities Monitored" value="2,401" icon={<Eye className="w-5 h-5" />} color="#059669" />
           <StatCard label="Compliance Score" value="94%" icon={<Shield className="w-5 h-5" />} color="#10B981" trend="up" />
-          <StatCard label="Active Intercepts" value="4" icon={<Lock className="w-5 h-5" />} color="#8B5CF6" />
+          <StatCard label="Active Intercepts" value="4" icon={<Lock className="w-5 h-5" />} color="#34A853" />
           <StatCard label="Reports Pending" value="3" icon={<FileText className="w-5 h-5" />} color="#F59E0B" />
           <StatCard label="System Events (24h)" value="12,840" icon={<Activity className="w-5 h-5" />} color="#3B82F6" />
         </div>

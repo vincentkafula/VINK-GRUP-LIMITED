@@ -24,7 +24,7 @@ const timeAgo = (iso: string) => { const s = Math.floor((Date.now() - new Date(i
 // Vehicle type labels
 const vtLabel = (t: string) => ({ standard: "Standard Sedan", wheelchair: "Wheelchair Accessible", stretcher: "Stretcher / NEMT" }[t] ?? t);
 const vtIcon  = (t: string) => ({ standard: "🚗", wheelchair: "♿", stretcher: "🚑" }[t] ?? "🚗");
-const vtColor = (t: string) => ({ standard: "#6B5ED7", wheelchair: "#10B981", stretcher: "#EF4444" }[t] ?? "#6B5ED7");
+const vtColor = (t: string) => ({ standard: "#128A43", wheelchair: "#10B981", stretcher: "#EF4444" }[t] ?? "#128A43");
 
 // ─── SVG Driver Map ───────────────────────────────────────────────────────────
 function DriverMap({ mode, step }: { mode: "idle" | "to-pickup" | "to-dropoff"; step?: number }) {
@@ -54,7 +54,7 @@ function DriverMap({ mode, step }: { mode: "idle" | "to-pickup" | "to-dropoff"; 
         <path d={mode === "to-pickup"
           ? `M ${driverX} ${driverY} Q 200 100 240 120`
           : `M ${driverX} ${driverY} Q 260 100 295 56`}
-          fill="none" stroke="#6B5ED7" strokeWidth="3" strokeDasharray="8,4" opacity="0.7"/>
+          fill="none" stroke="#128A43" strokeWidth="3" strokeDasharray="8,4" opacity="0.7"/>
       )}
 
       {/* Pickup pin */}
@@ -81,14 +81,14 @@ function DriverMap({ mode, step }: { mode: "idle" | "to-pickup" | "to-dropoff"; 
 
       {/* Driver car */}
       <g transform={`translate(${Math.min(350, Math.max(20, driverX))},${Math.min(200, Math.max(20, driverY))})`}>
-        <circle cx="0" cy="0" r="16" fill="white" stroke="#6B5ED7" strokeWidth="2.5"/>
+        <circle cx="0" cy="0" r="16" fill="white" stroke="#128A43" strokeWidth="2.5"/>
         <text x="0" y="5" textAnchor="middle" fontSize="14">🚗</text>
       </g>
 
       {/* Heading arrow */}
       {mode !== "idle" && (
         <g transform={`translate(${Math.min(350,Math.max(20,driverX))},${Math.min(200,Math.max(20,driverY))})`}>
-          <polygon points="0,-22 4,-30 -4,-30" fill="#6B5ED7" opacity="0.7"/>
+          <polygon points="0,-22 4,-30 -4,-30" fill="#128A43" opacity="0.7"/>
         </g>
       )}
     </svg>
@@ -141,7 +141,7 @@ function DriverBottomNav({ active, onTab }: { active: string; onTab: (s: Screen)
       {tabs.map(t => (
         <button key={t.id} onClick={() => onTab(t.id as Screen)}
           className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl"
-          style={{ color: active === t.id ? "#6B5ED7" : "#9CA3AF" }}>
+          style={{ color: active === t.id ? "#128A43" : "#9CA3AF" }}>
           {t.icon}
           <span className="text-[10px] font-medium">{t.label}</span>
         </button>
@@ -207,14 +207,14 @@ function DriverLogin({ onLogin }: { onLogin: (t: string) => void }) {
             <div key={f.label}>
               <label className="text-xs font-semibold text-gray-500 mb-1 block">{f.label}</label>
               <input type={f.type} value={f.val} onChange={e => f.set(e.target.value)} required
-                className="w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full rounded-xl border px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
                 style={{ borderColor:"#E5E7EB" }}/>
             </div>
           ))}
           {error && <p className="text-xs text-red-500 bg-red-50 rounded-xl px-3 py-2">{error}</p>}
           <button type="submit" disabled={loading}
             className="w-full py-3.5 rounded-2xl text-white font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-60"
-            style={{ background:"linear-gradient(135deg,#6B5ED7,#8B7EE7)" }}>
+            style={{ background:"linear-gradient(135deg,#128A43,#8B7EE7)" }}>
             {loading ? <Loader2 className="w-4 h-4 animate-spin"/> : null}
             Sign In
           </button>
@@ -278,7 +278,7 @@ function DriverHome({ driver, incomingRide, onGoOnline, onGoOffline, onAccept, o
           </div>
           <button onClick={isOnline ? onGoOffline : onGoOnline}
             className="flex items-center gap-2 px-4 py-2.5 rounded-2xl font-bold text-sm transition-all"
-            style={{ background: isOnline ? "#EF4444" : "#6B5ED7", color:"white" }}>
+            style={{ background: isOnline ? "#EF4444" : "#128A43", color:"white" }}>
             {isOnline ? <ToggleRight className="w-4 h-4"/> : <ToggleLeft className="w-4 h-4"/>}
             {isOnline ? "Go Offline" : "Go Online"}
           </button>
@@ -294,7 +294,7 @@ function DriverHome({ driver, incomingRide, onGoOnline, onGoOffline, onAccept, o
       <div className="px-4 mt-3">
         <div className="grid grid-cols-3 gap-2">
           {[
-            { label:"Earnings", value:`R${Number(driver?.earningsToday ?? 0).toFixed(0)}`, icon:"💰", color:"#6B5ED7" },
+            { label:"Earnings", value:`R${Number(driver?.earningsToday ?? 0).toFixed(0)}`, icon:"💰", color:"#128A43" },
             { label:"Trips", value:String(Math.floor(Number(driver?.earningsToday ?? 0) / 120)), icon:"🚗", color:"#10B981" },
             { label:"Rating", value:Number(driver?.avgRating ?? 4.8).toFixed(1), icon:"⭐", color:"#F59E0B" },
           ].map((s, i) => (
@@ -309,10 +309,10 @@ function DriverHome({ driver, incomingRide, onGoOnline, onGoOffline, onAccept, o
 
       {/* Incoming ride request */}
       {incomingRide && isOnline && (
-        <div className="mx-4 mt-4 rounded-2xl overflow-hidden" style={{ border:"2px solid #6B5ED7", boxShadow:"0 4px 20px rgba(107,94,215,0.3)" }}>
+        <div className="mx-4 mt-4 rounded-2xl overflow-hidden" style={{ border:"2px solid #128A43", boxShadow:"0 4px 20px rgba(107,94,215,0.3)" }}>
           {/* Banner */}
           <div className="px-4 py-2.5 flex items-center gap-2"
-            style={{ background:"linear-gradient(135deg,#6B5ED7,#8B7EE7)" }}>
+            style={{ background:"linear-gradient(135deg,#128A43,#8B7EE7)" }}>
             <Bell className="w-4 h-4 text-white animate-bounce"/>
             <p className="text-white font-bold text-sm">New ride request!</p>
             <span className="ml-auto text-xs text-white/80 bg-white/20 px-2 py-0.5 rounded-full">
@@ -325,7 +325,7 @@ function DriverHome({ driver, incomingRide, onGoOnline, onGoOffline, onAccept, o
             {/* Passenger */}
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-sm"
-                style={{ background:"#EDE9FE", color:"#6B5ED7" }}>
+                style={{ background:"#EDE9FE", color:"#128A43" }}>
                 {(incomingRide.passengerName as string)?.split(" ").map((w:string)=>w[0]).join("")}
               </div>
               <div className="flex-1">
@@ -346,7 +346,7 @@ function DriverHome({ driver, incomingRide, onGoOnline, onGoOffline, onAccept, o
               </div>
               <div className="w-px h-3 bg-gray-300 ml-1"/>
               <div className="flex items-start gap-2">
-                <MapPin className="w-3 h-3 text-purple-600 mt-0.5 flex-shrink-0"/>
+                <MapPin className="w-3 h-3 text-emerald-600 mt-0.5 flex-shrink-0"/>
                 <p className="text-xs font-semibold text-gray-900">{(incomingRide.dropoffAddress as {label:string})?.label}</p>
               </div>
             </div>
@@ -363,7 +363,7 @@ function DriverHome({ driver, incomingRide, onGoOnline, onGoOffline, onAccept, o
             {/* Fare + distance */}
             <div className="flex items-center justify-between">
               <div className="text-center">
-                <p className="text-lg font-black" style={{ color:"#6B5ED7" }}>R{Number(incomingRide.estimatedFareZAR).toFixed(0)}</p>
+                <p className="text-lg font-black" style={{ color:"#128A43" }}>R{Number(incomingRide.estimatedFareZAR).toFixed(0)}</p>
                 <p className="text-[10px] text-gray-400">estimated fare</p>
               </div>
               <div className="text-center">
@@ -385,7 +385,7 @@ function DriverHome({ driver, incomingRide, onGoOnline, onGoOffline, onAccept, o
               </button>
               <button onClick={onAccept}
                 className="flex-2 flex-grow py-3 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-1.5"
-                style={{ background:"linear-gradient(135deg,#6B5ED7,#8B7EE7)", flexGrow:2 }}>
+                style={{ background:"linear-gradient(135deg,#128A43,#8B7EE7)", flexGrow:2 }}>
                 <CheckCircle className="w-4 h-4"/> Accept Ride
               </button>
             </div>
@@ -412,7 +412,7 @@ function DriverHome({ driver, incomingRide, onGoOnline, onGoOffline, onAccept, o
                 {[1,2,3,4,5].map(s => <Star key={s} className={`w-2.5 h-2.5 ${s<=t.rating?"fill-yellow-400 text-yellow-400":"text-gray-200"}`}/>)}
               </div>
             </div>
-            <span className="text-sm font-bold" style={{ color:"#6B5ED7" }}>R{t.fare}</span>
+            <span className="text-sm font-bold" style={{ color:"#128A43" }}>R{t.fare}</span>
           </div>
         ))}
       </div>
@@ -461,8 +461,8 @@ function NavigatingScreen({ ride, mode, onArrive, onBack }: {
       <div className="flex-1 overflow-y-auto px-4 pt-3 space-y-3" style={{ paddingBottom:16 }}>
         {/* ETA / distance */}
         <div className="flex items-center gap-4 p-4 rounded-2xl"
-          style={{ background: mode === "to-pickup" ? "#F0FDF4" : "#F3F0FF" }}>
-          <Navigation className="w-6 h-6 flex-shrink-0" style={{ color: mode==="to-pickup"?"#059669":"#6B5ED7" }}/>
+          style={{ background: mode === "to-pickup" ? "#F0FDF4" : "#EAF7EE" }}>
+          <Navigation className="w-6 h-6 flex-shrink-0" style={{ color: mode==="to-pickup"?"#059669":"#128A43" }}/>
           <div className="flex-1">
             <p className="text-xs font-semibold" style={{ color: mode==="to-pickup"?"#065F46":"#5B21B6" }}>
               {mode === "to-pickup" ? "Heading to pickup" : "Heading to destination"}
@@ -470,7 +470,7 @@ function NavigatingScreen({ ride, mode, onArrive, onBack }: {
             <p className="text-sm font-medium text-gray-700 truncate">{dest}</p>
           </div>
           <div className="text-right">
-            <p className="text-xl font-black" style={{ color: mode==="to-pickup"?"#059669":"#6B5ED7" }}>{eta}<span className="text-xs font-normal text-gray-500"> min</span></p>
+            <p className="text-xl font-black" style={{ color: mode==="to-pickup"?"#059669":"#128A43" }}>{eta}<span className="text-xs font-normal text-gray-500"> min</span></p>
             <p className="text-xs text-gray-500">{dist} km</p>
           </div>
         </div>
@@ -486,7 +486,7 @@ function NavigatingScreen({ ride, mode, onArrive, onBack }: {
             <div key={i} className={`flex items-center gap-3 py-2 ${i<2?"border-b":""} ${s.highlight?"":""}` }
               style={{ borderColor:"#F3F4F6" }}>
               <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-sm font-bold flex-shrink-0`}
-                style={{ background: s.highlight ? "#6B5ED7" : "#F3F4F6", color: s.highlight ? "white" : "#374151" }}>
+                style={{ background: s.highlight ? "#128A43" : "#F3F4F6", color: s.highlight ? "white" : "#374151" }}>
                 {s.icon}
               </div>
               <div className="flex-1">
@@ -501,15 +501,15 @@ function NavigatingScreen({ ride, mode, onArrive, onBack }: {
         <div className="p-4 rounded-2xl" style={{ background:"white", border:"1px solid #E5E7EB" }}>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm"
-              style={{ background:"#EDE9FE", color:"#6B5ED7" }}>
+              style={{ background:"#EDE9FE", color:"#128A43" }}>
               {(ride.passengerName as string)?.split(" ").map((w:string)=>w[0]).join("")}
             </div>
             <div className="flex-1">
               <p className="text-sm font-bold text-gray-900">{ride.passengerName as string}</p>
               <p className="text-xs text-gray-500">{(ride.vehicleType as string) === "wheelchair" ? "♿ Wheelchair user" : "Standard passenger"}</p>
             </div>
-            <button className="w-9 h-9 rounded-full flex items-center justify-center" style={{ background:"#F3F0FF" }}>
-              <Phone className="w-4 h-4" style={{ color:"#6B5ED7" }}/>
+            <button className="w-9 h-9 rounded-full flex items-center justify-center" style={{ background:"#EAF7EE" }}>
+              <Phone className="w-4 h-4" style={{ color:"#128A43" }}/>
             </button>
           </div>
           {ride.medicalNote && (
@@ -523,7 +523,7 @@ function NavigatingScreen({ ride, mode, onArrive, onBack }: {
         {/* Arrive button */}
         <button onClick={onArrive}
           className="w-full py-4 rounded-2xl text-white font-bold text-sm flex items-center justify-center gap-2"
-          style={{ background: mode==="to-pickup" ? "linear-gradient(135deg,#10B981,#059669)" : "linear-gradient(135deg,#6B5ED7,#8B7EE7)" }}>
+          style={{ background: mode==="to-pickup" ? "linear-gradient(135deg,#10B981,#059669)" : "linear-gradient(135deg,#128A43,#8B7EE7)" }}>
           {mode === "to-pickup" ? <><CheckCircle className="w-5 h-5"/> I've arrived at pickup</> : <><MapPin className="w-5 h-5"/> Arrived at destination</>}
         </button>
       </div>
@@ -549,15 +549,15 @@ function PickupConfirmScreen({ ride, onConfirm }: { ride: RideData; onConfirm: (
       {/* Passenger */}
       <div className="p-4 rounded-2xl flex items-center gap-3" style={{ background:"white", border:"1px solid #E5E7EB" }}>
         <div className="w-12 h-12 rounded-2xl flex items-center justify-center font-bold"
-          style={{ background:"#EDE9FE", color:"#6B5ED7", fontSize:16 }}>
+          style={{ background:"#EDE9FE", color:"#128A43", fontSize:16 }}>
           {(ride.passengerName as string)?.split(" ").map((w:string)=>w[0]).join("")}
         </div>
         <div>
           <p className="font-bold text-gray-900">{ride.passengerName as string}</p>
           <p className="text-xs text-gray-500">{vtLabel(ride.vehicleType as string)}</p>
         </div>
-        <button className="ml-auto w-10 h-10 rounded-full flex items-center justify-center" style={{ background:"#F3F0FF" }}>
-          <Phone className="w-4 h-4" style={{ color:"#6B5ED7" }}/>
+        <button className="ml-auto w-10 h-10 rounded-full flex items-center justify-center" style={{ background:"#EAF7EE" }}>
+          <Phone className="w-4 h-4" style={{ color:"#128A43" }}/>
         </button>
       </div>
 
@@ -596,7 +596,7 @@ function PickupConfirmScreen({ ride, onConfirm }: { ride: RideData; onConfirm: (
 
       <button disabled={!canStart} onClick={onConfirm}
         className="w-full py-4 rounded-2xl text-white font-bold text-sm disabled:opacity-40 flex items-center justify-center gap-2"
-        style={{ background:"linear-gradient(135deg,#6B5ED7,#8B7EE7)" }}>
+        style={{ background:"linear-gradient(135deg,#128A43,#8B7EE7)" }}>
         <Navigation className="w-4 h-4"/> Start Trip to Destination
       </button>
     </div>
@@ -618,7 +618,7 @@ function DropoffScreen({ ride, onComplete }: { ride: RideData; onComplete: () =>
     <div className="px-4 pt-4 pb-4 flex flex-col gap-4">
       <div className="text-center">
         <div className="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center mb-3 text-3xl"
-          style={{ background:"#F3F0FF" }}>🏁</div>
+          style={{ background:"#EAF7EE" }}>🏁</div>
         <p className="text-lg font-bold text-gray-900">Drop-off Confirmation</p>
         <p className="text-xs text-gray-500 mt-0.5">{(ride.dropoffAddress as { label: string })?.label}</p>
       </div>
@@ -648,10 +648,10 @@ function DropoffScreen({ ride, onComplete }: { ride: RideData; onComplete: () =>
 
       {/* Fare */}
       <div className="flex items-center justify-between p-4 rounded-2xl"
-        style={{ background:"linear-gradient(135deg,#F3F0FF,#EDE9FE)" }}>
+        style={{ background:"linear-gradient(135deg,#EAF7EE,#EDE9FE)" }}>
         <div>
           <p className="text-xs text-gray-500">Trip fare</p>
-          <p className="text-2xl font-black" style={{ color:"#6B5ED7" }}>R{Number(ride.estimatedFareZAR).toFixed(2)}</p>
+          <p className="text-2xl font-black" style={{ color:"#128A43" }}>R{Number(ride.estimatedFareZAR).toFixed(2)}</p>
         </div>
         <div className="text-right">
           <p className="text-xs text-gray-500">Your earnings</p>
@@ -677,9 +677,9 @@ function TripCompletedScreen({ ride, onDone }: { ride: RideData; onDone: () => v
       </div>
       <h2 className="text-2xl font-black text-gray-900 mb-2">Trip Complete!</h2>
       <p className="text-sm text-gray-500 mb-6">You've delivered {(ride.passengerName as string)?.split(" ")[0]} safely.</p>
-      <div className="w-full p-4 rounded-2xl mb-6" style={{ background:"linear-gradient(135deg,#F3F0FF,#EDE9FE)" }}>
+      <div className="w-full p-4 rounded-2xl mb-6" style={{ background:"linear-gradient(135deg,#EAF7EE,#EDE9FE)" }}>
         <p className="text-xs text-gray-500 mb-1">You earned</p>
-        <p className="text-4xl font-black" style={{ color:"#6B5ED7" }}>R{(Number(ride.estimatedFareZAR) * 0.75).toFixed(2)}</p>
+        <p className="text-4xl font-black" style={{ color:"#128A43" }}>R{(Number(ride.estimatedFareZAR) * 0.75).toFixed(2)}</p>
         <p className="text-xs text-gray-400 mt-1">Added to your weekly earnings</p>
       </div>
       <div className="flex gap-4 text-center">
@@ -688,7 +688,7 @@ function TripCompletedScreen({ ride, onDone }: { ride: RideData; onDone: () => v
         <div><p className="text-lg font-black text-gray-800">~{Math.ceil(Number(ride.distanceKm)*2.5)} min</p><p className="text-xs text-gray-400">Duration</p></div>
       </div>
       <button onClick={onDone} className="mt-8 w-full py-3.5 rounded-2xl text-white font-bold text-sm"
-        style={{ background:"linear-gradient(135deg,#6B5ED7,#8B7EE7)" }}>
+        style={{ background:"linear-gradient(135deg,#128A43,#8B7EE7)" }}>
         Back to Home
       </button>
     </div>
@@ -715,7 +715,7 @@ function EarningsScreen({ driver }: { driver: DriverData | null }) {
         {(["today","week","month"] as const).map(p => (
           <button key={p} onClick={() => setPeriod(p)}
             className="flex-1 py-1.5 rounded-xl text-xs font-bold capitalize transition-all"
-            style={{ background: period===p ? "white" : "transparent", color: period===p ? "#6B5ED7" : "#9CA3AF",
+            style={{ background: period===p ? "white" : "transparent", color: period===p ? "#128A43" : "#9CA3AF",
               boxShadow: period===p ? "0 1px 4px rgba(0,0,0,0.1)" : "none" }}>
             {p === "today" ? "Today" : p === "week" ? "This Week" : "This Month"}
           </button>
@@ -724,7 +724,7 @@ function EarningsScreen({ driver }: { driver: DriverData | null }) {
 
       {/* Big amount */}
       <div className="p-5 rounded-2xl mb-4 text-center"
-        style={{ background:"linear-gradient(135deg,#6B5ED7,#8B7EE7)" }}>
+        style={{ background:"linear-gradient(135deg,#128A43,#8B7EE7)" }}>
         <p className="text-white/70 text-xs mb-1">Earnings {period === "today" ? "today" : period === "week" ? "this week" : "this month"}</p>
         <p className="text-white text-4xl font-black">R{amounts[period].toFixed(2)}</p>
         <div className="flex items-center justify-center gap-1 mt-2">
@@ -741,7 +741,7 @@ function EarningsScreen({ driver }: { driver: DriverData | null }) {
           { label:"Rating", value:Number(driver?.avgRating ?? 4.9).toFixed(1) },
         ].map((s,i) => (
           <div key={i} className="p-3 rounded-2xl text-center" style={{ background:"white", border:"1px solid #E5E7EB" }}>
-            <p className="text-base font-black" style={{ color:"#6B5ED7" }}>{s.value}</p>
+            <p className="text-base font-black" style={{ color:"#128A43" }}>{s.value}</p>
             <p className="text-[10px] text-gray-500">{s.label}</p>
           </div>
         ))}
@@ -754,7 +754,7 @@ function EarningsScreen({ driver }: { driver: DriverData | null }) {
           <div key={i} className={`flex items-center gap-3 px-4 py-3 ${i<txns.length-1?"border-b":""}`}
             style={{ borderColor:"#F3F4F6" }}>
             <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ background: t.type==="bonus"?"#FEF3C7":t.type==="tip"?"#FEE2E2":"#F3F0FF" }}>
+              style={{ background: t.type==="bonus"?"#FEF3C7":t.type==="tip"?"#FEE2E2":"#EAF7EE" }}>
               <span className="text-base">{t.type==="bonus"?"⭐":t.type==="tip"?"💝":"🚗"}</span>
             </div>
             <div className="flex-1 min-w-0">
@@ -787,7 +787,7 @@ function ArchitectureScreen() {
   return (
     <div className="px-3 pt-4 pb-20">
       <div className="flex items-center gap-2 mb-3">
-        <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background:"#6B5ED7" }}>
+        <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background:"#128A43" }}>
           <BarChart3 className="w-4 h-4 text-white"/>
         </div>
         <div>
@@ -809,7 +809,7 @@ function ArchitectureScreen() {
         { layer:"SUPPORT",  items:["Payment Svc","Notification Svc","Pricing Engine","Rating & Review","SOS Safety Svc"], color:"#993C1D", bg:"#FAECE7" },
         { layer:"INFRA",    items:["Scheduling · recurring","Accessibility Svc","Driver Compliance","Analytics"], color:"#3B6D11", bg:"#EAF3DE" },
         { layer:"DATA",     items:["PostgreSQL · encrypted","InfluxDB · GPS history","Redis · geo/sessions","S3 · docs/photos"], color:"#5F5E5A", bg:"#F1EFE8" },
-        { layer:"EXTERNAL", items:["Stripe · Flutterwave · MoMo","Africa's Talking · Twilio","Google Maps · Mapbox","Firebase FCM"], color:"#7C3AED", bg:"#F5F3FF" },
+        { layer:"EXTERNAL", items:["Stripe · Flutterwave · MoMo","Africa's Talking · Twilio","Google Maps · Mapbox","Firebase FCM"], color:"#FF9900", bg:"#F5F3FF" },
       ].map((l,i) => (
         <div key={i} className="mb-2 p-3 rounded-xl" style={{ background:l.bg, border:`1px solid ${l.color}30` }}>
           <p className="text-[9px] font-bold uppercase tracking-wider mb-1.5" style={{ color:l.color }}>{l.layer}</p>
@@ -864,7 +864,7 @@ function DocumentsScreen({ driver }: { driver: DriverData | null }) {
                   {d.status}
                 </span>
                 {d.status !== "approved" && (
-                  <button className="text-[10px] font-bold px-2 py-0.5 rounded-lg text-white" style={{ background:"#6B5ED7" }}>
+                  <button className="text-[10px] font-bold px-2 py-0.5 rounded-lg text-white" style={{ background:"#128A43" }}>
                     Upload
                   </button>
                 )}
@@ -1053,11 +1053,11 @@ export function DriverDashboard({ isOpen, onClose }: DriverDashboardProps) {
         <div className="space-y-2">
           {[
             { label:"Online/Offline toggle", color:"#10B981" },
-            { label:"Incoming request with medical note", color:"#6B5ED7" },
+            { label:"Incoming request with medical note", color:"#128A43" },
             { label:"Turn-by-turn navigation", color:"#3B82F6" },
             { label:"Extended boarding for WAV/NEMT", color:"#F59E0B" },
             { label:"Drop-off proof (photo/signature)", color:"#EF4444" },
-            { label:"Earnings & payout dashboard", color:"#6B5ED7" },
+            { label:"Earnings & payout dashboard", color:"#128A43" },
             { label:"Document compliance portal", color:"#10B981" },
           ].map((f,i) => (
             <div key={i} className="flex items-center gap-2 p-2.5 rounded-xl" style={{ background:"#1A1738" }}>

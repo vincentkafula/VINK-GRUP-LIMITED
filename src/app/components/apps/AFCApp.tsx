@@ -313,7 +313,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
 
   if (!isOpen) return null;
 
-  const P = "#5B2D8E";
+  const P = "#0B5C2E";
   const GOLD = "#F5A623";
   const stages = selectedRoute.baseFare < 500 && networkOnline ? OFFLINE_STAGES : ONLINE_STAGES;
   const isOfflinePath = selectedRoute.baseFare < 500 && networkOnline;
@@ -431,7 +431,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
                 {/* Big TAP button */}
                 <button onClick={() => setScreen("tap")}
                   className="w-full py-4 rounded-2xl font-black text-white text-base flex items-center justify-center gap-3 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-xl"
-                  style={{ background: `linear-gradient(135deg,${P},#9585EA)`, boxShadow: `0 8px 32px ${P}50` }}>
+                  style={{ background: `linear-gradient(135deg,${P},#5FC97F)`, boxShadow: `0 8px 32px ${P}50` }}>
                   <span className="text-2xl">📱</span>
                   TAP TO COLLECT FARE
                 </button>
@@ -646,7 +646,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
                     { label: "Gross", value: `R${todayEarnings.toFixed(2)}`, color: "#10B981" },
                     { label: "Your 85%", value: `R${(todayEarnings * 0.85).toFixed(2)}`, color: GOLD },
                     { label: "Association 5%", value: `R${(todayEarnings * 0.05).toFixed(2)}`, color: "#3B82F6" },
-                    { label: "Community 5%", value: `R${(todayEarnings * 0.05).toFixed(2)}`, color: "#8B5CF6" },
+                    { label: "Community 5%", value: `R${(todayEarnings * 0.05).toFixed(2)}`, color: "#34A853" },
                   ].map((s, i) => (
                     <div key={i} className="rounded-xl p-3" style={{ background: "#1A1A2E" }}>
                       <p className="text-white/40 text-[9px]">{s.label}</p>
@@ -753,7 +753,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
                 {/* Spec groups */}
                 {[
                   {
-                    title: "Processor & Memory", icon: <Cpu className="w-3.5 h-3.5" />, color: "#6B5ED7",
+                    title: "Processor & Memory", icon: <Cpu className="w-3.5 h-3.5" />, color: "#128A43",
                     rows: [
                       ["OS",        T_T20_SPEC.processor.os],
                       ["CPU",       T_T20_SPEC.processor.cpu],

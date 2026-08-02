@@ -14,7 +14,7 @@ import { projectId } from "../../../utils/supabase/info";
 interface Props { isOpen: boolean; onClose: () => void; }
 
 const BASE = `https://${projectId}.supabase.co/functions/v1/make-server-3f39932e/ride`;
-const P = "#5B2D8E";
+const P = "#0B5C2E";
 const TEAL = "#14B8A6";
 const GOLD = "#F5A623";
 const GREEN = "#10B981";
@@ -27,7 +27,7 @@ type DriverScreen = "status" | "request" | "navigate" | "chat" | "call" | "earni
 type AdminScreen = "overview" | "trips" | "drivers" | "passengers" | "pricing";
 
 const VEHICLE_TYPES = [
-  { id: "standard",   label: "Standard",   sub: "Everyday sedan/taxi",   emoji: "🚗", color: "#6B5ED7" },
+  { id: "standard",   label: "Standard",   sub: "Everyday sedan/taxi",   emoji: "🚗", color: "#128A43" },
   { id: "premium",    label: "Premium",     sub: "Air-con sedan",         emoji: "🚙", color: "#F59E0B" },
   { id: "xl",         label: "XL / Taxi",   sub: "HiAce / Quantum",       emoji: "🚐", color: "#3B82F6" },
   { id: "accessible", label: "Accessible",  sub: "Wheelchair friendly",   emoji: "♿", color: "#10B981" },
@@ -47,7 +47,7 @@ const CAPE_TOWNS = [
 ];
 
 const STATUS_COLORS: Record<string, string> = {
-  requested: "#F59E0B", assigned: "#3B82F6", driver_enroute: "#8B5CF6",
+  requested: "#F59E0B", assigned: "#3B82F6", driver_enroute: "#34A853",
   arrived: "#14B8A6", in_progress: "#10B981", completed: "#6B7280",
   cancelled: "#EF4444",
 };
@@ -208,7 +208,7 @@ function CallView({ tripId, callerName, receiverName, myId, myRole, onEnd }: { t
       style={{ background: "linear-gradient(135deg,#0F172A,#1E293B)" }}>
       <div className="flex flex-col items-center gap-6 w-full max-w-sm px-6">
         <div className="w-24 h-24 rounded-full flex items-center justify-center text-5xl"
-          style={{ background: `linear-gradient(135deg,${P},#9585EA)` }}>
+          style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
           {myRole === "passenger" ? "🚗" : "👤"}
         </div>
         <div className="text-center">
@@ -361,7 +361,7 @@ function PassengerApp({ onClose }: { onClose: () => void }) {
             <div className="grid grid-cols-2 gap-2">
               {["Home", "Work", "Airport", "Hospital"].map(p => (
                 <button key={p} onClick={() => { setDest(CAPE_TOWNS.find(c => c.label.includes(p === "Airport" ? "Airport" : p === "Hospital" ? "Hospital" : p)) || CAPE_TOWNS[5]); setScreen("booking"); }}
-                  className="flex items-center gap-2 p-2.5 rounded-xl border border-gray-200 text-xs font-medium text-gray-700 hover:border-purple-300 hover:bg-purple-50 transition-all">
+                  className="flex items-center gap-2 p-2.5 rounded-xl border border-gray-200 text-xs font-medium text-gray-700 hover:border-emerald-300 hover:bg-emerald-50 transition-all">
                   <span>{p === "Home" ? "🏠" : p === "Work" ? "💼" : p === "Airport" ? "✈️" : "🏥"}</span>{p}
                 </button>
               ))}
@@ -378,7 +378,7 @@ function PassengerApp({ onClose }: { onClose: () => void }) {
             {/* Pickup */}
             <div>
               <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide block mb-1.5">Pickup</label>
-              <select className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-purple-400"
+              <select className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400"
                 value={pickup.label} onChange={e => setPickup(CAPE_TOWNS.find(c => c.label === e.target.value) ?? pickup)}>
                 {CAPE_TOWNS.map(c => <option key={c.label}>{c.label}</option>)}
               </select>
@@ -386,7 +386,7 @@ function PassengerApp({ onClose }: { onClose: () => void }) {
             {/* Destination */}
             <div>
               <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide block mb-1.5">Destination *</label>
-              <select className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-purple-400"
+              <select className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400"
                 value={dest?.label ?? ""} onChange={e => setDest(CAPE_TOWNS.find(c => c.label === e.target.value) ?? null)}>
                 <option value="">Choose destination…</option>
                 {CAPE_TOWNS.map(c => <option key={c.label}>{c.label}</option>)}
@@ -421,7 +421,7 @@ function PassengerApp({ onClose }: { onClose: () => void }) {
                 {/* Medical note */}
                 <div>
                   <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide block mb-1.5">Medical / accessibility note (optional)</label>
-                  <input className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-purple-400" placeholder="e.g. Wheelchair user, oxygen tank" value={medicalNote} onChange={e => setMedicalNote(e.target.value)} />
+                  <input className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-400" placeholder="e.g. Wheelchair user, oxygen tank" value={medicalNote} onChange={e => setMedicalNote(e.target.value)} />
                 </div>
                 {/* Payment */}
                 <div>
@@ -438,13 +438,13 @@ function PassengerApp({ onClose }: { onClose: () => void }) {
                 </div>
                 {/* Promo */}
                 <div className="flex gap-2">
-                  <input className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-purple-400" placeholder="Promo code (e.g. VINK10)" value={promoCode} onChange={e => setPromoCode(e.target.value.toUpperCase())} />
+                  <input className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-400" placeholder="Promo code (e.g. VINK10)" value={promoCode} onChange={e => setPromoCode(e.target.value.toUpperCase())} />
                   <button onClick={async () => { const r = await api("/promo/validate", "POST", { code: promoCode, fare: selectedEst?.estimatedFare ?? 100 }); if (r.success) setPromoResult(r.data); }} className="px-3 py-2 rounded-xl text-xs font-bold text-white" style={{ background: P }}>Apply</button>
                 </div>
                 {promoResult && <div className="text-xs font-semibold text-green-700 bg-green-50 border border-green-200 px-3 py-2 rounded-xl">✓ Promo applied! Save {fmt(Number((promoResult as Record<string,number>).discountAmount))} → New fare: {fmt(Number((promoResult as Record<string,number>).newFare))}</div>}
                 <button onClick={requestRide} disabled={loading || !dest}
                   className="w-full py-4 rounded-2xl text-base font-black text-white transition-all hover:opacity-90 disabled:opacity-40 flex items-center justify-center gap-2"
-                  style={{ background: `linear-gradient(135deg,${P},#9585EA)` }}>
+                  style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
                   {loading ? <><div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />Requesting…</> : "Request Ride"}
                 </button>
               </>
@@ -462,7 +462,7 @@ function PassengerApp({ onClose }: { onClose: () => void }) {
             {tripStatus === "assigned" || tripStatus === "driver_enroute" || tripStatus === "arrived" ? (
               <>
                 <div className="flex items-center gap-3 p-3 rounded-2xl" style={{ background: P + "12" }}>
-                  <div className="w-10 h-10 rounded-full bg-purple-200 flex items-center justify-center font-black text-purple-800">
+                  <div className="w-10 h-10 rounded-full bg-emerald-200 flex items-center justify-center font-black text-emerald-800">
                     {String(currentTrip.driverName ?? "D")[0]}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -503,7 +503,7 @@ function PassengerApp({ onClose }: { onClose: () => void }) {
               </>
             ) : (
               <div className="text-center py-4">
-                <div className="w-10 h-10 border-2 border-purple-200 border-t-purple-700 rounded-full animate-spin mx-auto mb-3" />
+                <div className="w-10 h-10 border-2 border-emerald-200 border-t-purple-700 rounded-full animate-spin mx-auto mb-3" />
                 <p className="text-sm font-semibold text-gray-800">Finding your driver…</p>
                 <p className="text-xs text-gray-400 mt-1">Usually under 5 seconds</p>
                 <button onClick={cancelTrip} className="mt-3 text-xs text-gray-400 hover:text-gray-700 underline">Cancel</button>
@@ -520,7 +520,7 @@ function PassengerApp({ onClose }: { onClose: () => void }) {
           <h2 className="text-xl font-black text-gray-900 text-center">How was your trip?</h2>
           <p className="text-sm text-gray-500 text-center">Rate your driver {String(currentTrip?.driverName ?? "")}</p>
           <StarRating value={rating} onChange={setRating} size={40} />
-          <textarea className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-purple-400 resize-none" rows={3} placeholder="Leave a review (optional)" value={review} onChange={e => setReview(e.target.value)} />
+          <textarea className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-400 resize-none" rows={3} placeholder="Leave a review (optional)" value={review} onChange={e => setReview(e.target.value)} />
           <button onClick={submitRating} disabled={!rating} className="w-full py-3 rounded-xl text-sm font-bold text-white disabled:opacity-40" style={{ background: P }}>Submit Rating</button>
           <button onClick={() => { setCurrentTrip(null); setScreen("home"); }} className="text-xs text-gray-400 underline">Skip</button>
         </div>

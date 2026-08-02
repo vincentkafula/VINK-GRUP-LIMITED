@@ -21,7 +21,7 @@ const MILESTONES = [
   { year: "Now",  text: "Expansion to gyms, fuel stations, and Vink Online Store underway." },
 ];
 
-const P = "#5B2D8E";
+const P = "#0B5C2E";
 const GOLD = "#F5A623";
 
 export function AboutVINKViewer({ isOpen, onClose }: Props) {

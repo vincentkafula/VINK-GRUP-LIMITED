@@ -23,7 +23,7 @@ async function apiFetch(path: string, opts?: RequestInit): Promise<Response> {
 }
 
 const API = SUPABASE_BASE; // kept for reference
-const P = "#5B2D8E";
+const P = "#0B5C2E";
 const GOLD = "#F5A623";
 const GREEN = "#10B981";
 const RED = "#EF4444";
@@ -47,7 +47,7 @@ function StatRow({ label, value, indent = 0, bold = false, border = false, highl
   label: string; value: string | React.ReactNode; indent?: number; bold?: boolean; border?: boolean; highlight?: boolean; color?: string;
 }) {
   return (
-    <div className={`flex justify-between items-center py-1.5 ${border ? "border-t border-gray-200 mt-1 pt-2" : ""} ${highlight ? "bg-purple-50 px-2 rounded" : ""}`}
+    <div className={`flex justify-between items-center py-1.5 ${border ? "border-t border-gray-200 mt-1 pt-2" : ""} ${highlight ? "bg-emerald-50 px-2 rounded" : ""}`}
       style={{ paddingLeft: indent * 16 }}>
       <span className={`text-sm ${bold ? "font-black text-gray-900" : "text-gray-600"}`}>{label}</span>
       <span className={`text-sm ${bold ? "font-black" : "font-semibold"}`} style={{ color: color ?? (bold ? P : "#374151") }}>{value}</span>
@@ -230,7 +230,7 @@ export function FinancialReportsViewer({ isOpen, onClose }: Props) {
                 <StatRow label="Total Deductions" value={fmt(ps?.totalDeductions ?? 4630)} bold border color={RED} />
 
                 {/* Net pay */}
-                <div className="mt-4 p-4 rounded-2xl text-white" style={{ background: `linear-gradient(135deg,${P},#9585EA)` }}>
+                <div className="mt-4 p-4 rounded-2xl text-white" style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
                   <div className="flex justify-between items-center">
                     <div>
                       <p className="text-white/70 text-xs font-semibold uppercase tracking-wide">NET PAY</p>
@@ -462,11 +462,11 @@ export function FinancialReportsViewer({ isOpen, onClose }: Props) {
               <div className="grid sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wide block mb-1">Date</label>
-                  <input type="date" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-purple-400" value={newEntry.date} onChange={e => setNewEntry(n => ({ ...n, date: e.target.value }))} />
+                  <input type="date" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400" value={newEntry.date} onChange={e => setNewEntry(n => ({ ...n, date: e.target.value }))} />
                 </div>
                 <div>
                   <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wide block mb-1">Account / Category</label>
-                  <select className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-purple-400" value={newEntry.category} onChange={e => setNewEntry(n => ({ ...n, category: e.target.value, account: e.target.options[e.target.selectedIndex].text }))}>
+                  <select className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400" value={newEntry.category} onChange={e => setNewEntry(n => ({ ...n, category: e.target.value, account: e.target.options[e.target.selectedIndex].text }))}>
                     <option value="fuel">Fuel Cost</option>
                     <option value="vehicle_maintenance">Vehicle Maintenance</option>
                     <option value="driver_wages">Driver Wages</option>
@@ -483,20 +483,20 @@ export function FinancialReportsViewer({ isOpen, onClose }: Props) {
                 </div>
                 <div className="sm:col-span-2">
                   <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wide block mb-1">Description</label>
-                  <input className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-purple-400" placeholder="e.g. BP garage fill-up, Shell N2" value={newEntry.description} onChange={e => setNewEntry(n => ({ ...n, description: e.target.value }))} />
+                  <input className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="e.g. BP garage fill-up, Shell N2" value={newEntry.description} onChange={e => setNewEntry(n => ({ ...n, description: e.target.value }))} />
                 </div>
                 <div>
                   <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wide block mb-1">Debit (expense / asset)</label>
-                  <input type="number" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-purple-400" placeholder="0.00" value={newEntry.debit} onChange={e => setNewEntry(n => ({ ...n, debit: e.target.value, credit: "" }))} />
+                  <input type="number" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="0.00" value={newEntry.debit} onChange={e => setNewEntry(n => ({ ...n, debit: e.target.value, credit: "" }))} />
                 </div>
                 <div>
                   <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wide block mb-1">Credit (income / liability)</label>
-                  <input type="number" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-purple-400" placeholder="0.00" value={newEntry.credit} onChange={e => setNewEntry(n => ({ ...n, credit: e.target.value, debit: "" }))} />
+                  <input type="number" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="0.00" value={newEntry.credit} onChange={e => setNewEntry(n => ({ ...n, credit: e.target.value, debit: "" }))} />
                 </div>
               </div>
               <button onClick={addJournalEntry} disabled={!newEntry.description || (!newEntry.debit && !newEntry.credit)}
                 className="mt-4 w-full py-3 rounded-xl text-sm font-black text-white transition-all hover:opacity-90 disabled:opacity-40 flex items-center justify-center gap-2"
-                style={{ background: `linear-gradient(135deg,${P},#9585EA)` }}>
+                style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
                 {entryAdded ? <><CheckCircle className="w-4 h-4" />Entry Added!</> : <><Plus className="w-4 h-4" />Add to Journal</>}
               </button>
               <p className="text-[10px] text-gray-400 text-center mt-2">Card and cash fare entries are added automatically from the AFC app. Add fuel, maintenance, wages, and other items manually here.</p>
@@ -538,7 +538,7 @@ export function FinancialReportsViewer({ isOpen, onClose }: Props) {
 
         {loading && (
           <div className="flex items-center justify-center py-20">
-            <div className="w-8 h-8 border-2 border-purple-200 border-t-purple-700 rounded-full animate-spin" />
+            <div className="w-8 h-8 border-2 border-emerald-200 border-t-purple-700 rounded-full animate-spin" />
           </div>
         )}
       </div>

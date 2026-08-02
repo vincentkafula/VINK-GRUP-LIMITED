@@ -11,7 +11,7 @@ interface Props {
   price?: string;
 }
 
-const P = "#5B2D8E";
+const P = "#0B5C2E";
 
 const EMPLOYMENT_OPTIONS = ["Employed (Full-time)", "Employed (Part-time)", "Self-employed", "Business owner", "Pensioner", "Student", "Unemployed"];
 
@@ -78,7 +78,7 @@ export function ApplyModal({ isOpen, onClose, product, tier, price }: Props) {
                 Apply for another
               </button>
               <button onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white"
-                style={{ background: `linear-gradient(135deg,${P},#9585EA)` }}>
+                style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
                 Done
               </button>
             </div>
@@ -93,39 +93,39 @@ export function ApplyModal({ isOpen, onClose, product, tier, price }: Props) {
               <div className="col-span-2">
                 <label className="text-xs font-semibold text-gray-700 block mb-1">Full Name *</label>
                 <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-purple-400" placeholder="Your full name" />
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="Your full name" />
               </div>
               <div>
                 <label className="text-xs font-semibold text-gray-700 block mb-1">Email *</label>
                 <input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-purple-400" placeholder="your@email.com" />
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="your@email.com" />
               </div>
               <div>
                 <label className="text-xs font-semibold text-gray-700 block mb-1">Phone *</label>
                 <input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-purple-400" placeholder="+27 000 000 0000" />
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="+27 000 000 0000" />
               </div>
               <div>
                 <label className="text-xs font-semibold text-gray-700 block mb-1">ID Number</label>
                 <input value={form.idNumber} onChange={e => setForm(f => ({ ...f, idNumber: e.target.value }))}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-purple-400" placeholder="SA ID number" />
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="SA ID number" />
               </div>
               <div>
                 <label className="text-xs font-semibold text-gray-700 block mb-1">Monthly Income</label>
                 <input value={form.income} onChange={e => setForm(f => ({ ...f, income: e.target.value }))}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-purple-400" placeholder="R 0,000" />
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="R 0,000" />
               </div>
               <div className="col-span-2">
                 <label className="text-xs font-semibold text-gray-700 block mb-1">Employment Status</label>
                 <select value={form.employmentStatus} onChange={e => setForm(f => ({ ...f, employmentStatus: e.target.value }))}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-purple-400 bg-white">
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400 bg-white">
                   {EMPLOYMENT_OPTIONS.map(o => <option key={o}>{o}</option>)}
                 </select>
               </div>
               <div className="col-span-2">
                 <label className="text-xs font-semibold text-gray-700 block mb-1">Additional Notes (optional)</label>
                 <textarea value={form.message} onChange={e => setForm(f => ({ ...f, message: e.target.value }))} rows={2}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-purple-400 resize-none" placeholder="Any additional information..." />
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400 resize-none" placeholder="Any additional information..." />
               </div>
             </div>
 
@@ -135,7 +135,7 @@ export function ApplyModal({ isOpen, onClose, product, tier, price }: Props) {
 
             <button onClick={handleSubmit} disabled={submitting}
               className="w-full py-3 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 disabled:opacity-60 transition-all hover:opacity-90"
-              style={{ background: `linear-gradient(135deg,${P},#9585EA)` }}>
+              style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
               {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Submitting...</> : "Submit Application"}
             </button>
           </div>

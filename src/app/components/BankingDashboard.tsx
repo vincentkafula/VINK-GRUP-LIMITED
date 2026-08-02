@@ -28,8 +28,8 @@ const ago    = (iso: string) => { const s = Math.floor((Date.now() - new Date(is
 const cap    = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 const ROLE_COLOR: Record<BankRole, string> = {
-  passenger: "#6B5ED7", driver: "#3B82F6", investor: "#F59E0B",
-  owner: "#10B981", admin: "#EF4444", compliance: "#8B5CF6", treasury: "#06B6D4",
+  passenger: "#128A43", driver: "#3B82F6", investor: "#F59E0B",
+  owner: "#10B981", admin: "#EF4444", compliance: "#34A853", treasury: "#06B6D4",
 };
 const ROLE_NAV: Record<BankRole, NavSection[]> = {
   passenger: ["overview","accounts","cards","transactions","payments"],
@@ -180,7 +180,7 @@ function KycRow({ k, onApprove, onReject }: { k: R; onApprove: () => void; onRej
       <td className="px-4 py-3">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
-            style={{ background: "#EDE9FE", color: "#6B5ED7" }}>
+            style={{ background: "#EDE9FE", color: "#128A43" }}>
             {u ? `${String(u.firstName)[0]}${String(u.lastName)[0]}` : "?"}
           </div>
           <div>
@@ -189,7 +189,7 @@ function KycRow({ k, onApprove, onReject }: { k: R; onApprove: () => void; onRej
           </div>
         </div>
       </td>
-      <td className="px-4 py-3"><Badge label={cap(String(u?.role ?? ""))} color="#6B5ED7"/></td>
+      <td className="px-4 py-3"><Badge label={cap(String(u?.role ?? ""))} color="#128A43"/></td>
       <td className="px-4 py-3 text-xs text-gray-600">{cap(String(k.documentType)).replace("_"," ")}</td>
       <td className="px-4 py-3">
         {k.faceMatchScore ? <span className="text-xs font-semibold text-gray-700">{String(k.faceMatchScore)}%</span> : <span className="text-xs text-gray-300">—</span>}
@@ -231,7 +231,7 @@ function LoginScreen({ onLogin }: { onLogin: (t: string, u: R) => void }) {
         {/* Bank logo */}
         <div className="text-center mb-8">
           <div className="w-20 h-20 rounded-3xl mx-auto flex items-center justify-center mb-4"
-            style={{ background: "linear-gradient(135deg,#6B5ED7,#9585EA)" }}>
+            style={{ background: "linear-gradient(135deg,#128A43,#5FC97F)" }}>
             <Building2 className="w-10 h-10 text-white"/>
           </div>
           <h1 className="text-2xl font-black text-white">VINK BANK</h1>
@@ -244,14 +244,14 @@ function LoginScreen({ onLogin }: { onLogin: (t: string, u: R) => void }) {
             <div key={f.label}>
               <label className="block text-xs font-semibold text-white/50 mb-1.5">{f.label}</label>
               <input type={f.type} value={f.val} onChange={e => f.set(e.target.value)} required
-                className="w-full rounded-xl px-4 py-3 text-sm text-white outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full rounded-xl px-4 py-3 text-sm text-white outline-none focus:ring-2 focus:ring-emerald-500"
                 style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)" }}/>
             </div>
           ))}
           {error && <p className="text-xs text-red-400 bg-red-900/30 rounded-xl px-3 py-2">{error}</p>}
           <button type="submit" disabled={loading}
             className="w-full py-3.5 rounded-xl text-white font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-60"
-            style={{ background: "linear-gradient(135deg,#6B5ED7,#8B7EE7)" }}>
+            style={{ background: "linear-gradient(135deg,#128A43,#8B7EE7)" }}>
             {loading ? <Loader2 className="w-4 h-4 animate-spin"/> : <Key className="w-4 h-4"/>}
             Sign In to Banking Portal
           </button>
@@ -306,11 +306,11 @@ function OverviewPanel({ role, kpis, accounts, cards, txns, loading }: {
     categories[cat] = (categories[cat] ?? 0) + Number(t.amount);
   });
   const pieData = Object.entries(categories).slice(0, 5).map(([name, value]) => ({ name, value: +value.toFixed(0) }));
-  const PIE_COLORS = ["#6B5ED7", "#10B981", "#F59E0B", "#EF4444", "#3B82F6"];
+  const PIE_COLORS = ["#128A43", "#10B981", "#F59E0B", "#EF4444", "#3B82F6"];
 
   const roleStats = {
     passenger: [
-      { label: "Total Balance", value: fmtZAR(totalBalance), sub: "+2.4%", icon: <Wallet className="w-5 h-5"/>, color: "#6B5ED7" },
+      { label: "Total Balance", value: fmtZAR(totalBalance), sub: "+2.4%", icon: <Wallet className="w-5 h-5"/>, color: "#128A43" },
       { label: "Cards Active", value: String(cards.filter(c=>c.status==="active").length), icon: <CreditCard className="w-5 h-5"/>, color: "#10B981" },
       { label: "This Month Spent", value: fmtZAR(txns.filter(t=>t.type==="debit").reduce((s,t)=>s+Number(t.amount),0)), icon: <ArrowUpRight className="w-5 h-5"/>, color: "#F59E0B" },
       { label: "Transactions", value: String(txns.length), icon: <Activity className="w-5 h-5"/>, color: "#3B82F6" },
@@ -318,38 +318,38 @@ function OverviewPanel({ role, kpis, accounts, cards, txns, loading }: {
     driver: [
       { label: "Earnings Wallet", value: fmtZAR(totalBalance), sub: "+R" + (Math.floor(Math.random()*500+200)), icon: <Wallet className="w-5 h-5"/>, color: "#3B82F6" },
       { label: "Total Earned", value: fmtZAR(txns.filter(t=>t.type==="credit").reduce((s,t)=>s+Number(t.amount),0)), icon: <DollarSign className="w-5 h-5"/>, color: "#10B981" },
-      { label: "This Week Trips", value: String(Math.floor(txns.filter(t=>t.category==="earnings").length * 0.3 + 5)), icon: <Activity className="w-5 h-5"/>, color: "#6B5ED7" },
+      { label: "This Week Trips", value: String(Math.floor(txns.filter(t=>t.category==="earnings").length * 0.3 + 5)), icon: <Activity className="w-5 h-5"/>, color: "#128A43" },
       { label: "Driver Card", value: cards.length > 0 ? "Active" : "Not issued", icon: <CreditCard className="w-5 h-5"/>, color: "#F59E0B" },
     ],
     investor: [
       { label: "Portfolio Value", value: fmtZAR(totalBalance * 1.12), sub: "+12%", icon: <TrendingUp className="w-5 h-5"/>, color: "#F59E0B" },
-      { label: "Capital Deposited", value: fmtZAR(totalBalance), icon: <DollarSign className="w-5 h-5"/>, color: "#6B5ED7" },
+      { label: "Capital Deposited", value: fmtZAR(totalBalance), icon: <DollarSign className="w-5 h-5"/>, color: "#128A43" },
       { label: "Total Returns", value: fmtZAR(totalBalance * 0.12), sub: "+14.5%", icon: <BarChart3 className="w-5 h-5"/>, color: "#10B981" },
       { label: "Dividends Paid", value: fmtZAR(totalBalance * 0.04), icon: <Star className="w-5 h-5"/>, color: "#3B82F6" },
     ],
     owner: [
       { label: "Business Balance", value: fmtZAR(totalBalance), icon: <Building2 className="w-5 h-5"/>, color: "#10B981" },
-      { label: "Revenue Today", value: fmtZAR(kpis ? Number(kpis.revenueToday) : 0), sub: "+8%", icon: <TrendingUp className="w-5 h-5"/>, color: "#6B5ED7" },
+      { label: "Revenue Today", value: fmtZAR(kpis ? Number(kpis.revenueToday) : 0), sub: "+8%", icon: <TrendingUp className="w-5 h-5"/>, color: "#128A43" },
       { label: "Active Employees", value: "24", icon: <Users className="w-5 h-5"/>, color: "#F59E0B" },
       { label: "Pending Settlements", value: String(kpis ? Number(kpis.settlementsPending) : 0), icon: <Globe className="w-5 h-5"/>, color: "#3B82F6" },
     ],
     admin: [
-      { label: "Total Users", value: String(kpis ? Number(kpis.totalUsers) : 0), icon: <Users className="w-5 h-5"/>, color: "#6B5ED7" },
+      { label: "Total Users", value: String(kpis ? Number(kpis.totalUsers) : 0), icon: <Users className="w-5 h-5"/>, color: "#128A43" },
       { label: "Active Cards", value: String(kpis ? Number(kpis.activeCards) : 0), icon: <CreditCard className="w-5 h-5"/>, color: "#10B981" },
       { label: "Fraud Alerts", value: String(kpis ? Number(kpis.fraudAlertsActive) : 0), icon: <AlertTriangle className="w-5 h-5"/>, color: "#EF4444" },
       { label: "KYC Pending", value: String(kpis ? Number(kpis.kycPending) : 0), icon: <Shield className="w-5 h-5"/>, color: "#F59E0B" },
     ],
     compliance: [
-      { label: "KYC Pending", value: String(kpis ? Number(kpis.kycPending) : 0), icon: <Shield className="w-5 h-5"/>, color: "#8B5CF6" },
+      { label: "KYC Pending", value: String(kpis ? Number(kpis.kycPending) : 0), icon: <Shield className="w-5 h-5"/>, color: "#34A853" },
       { label: "Active Fraud Alerts", value: String(kpis ? Number(kpis.fraudAlertsActive) : 0), icon: <AlertTriangle className="w-5 h-5"/>, color: "#EF4444" },
       { label: "AML Reviews", value: "3", icon: <Eye className="w-5 h-5"/>, color: "#F59E0B" },
-      { label: "SARs Filed", value: "0", icon: <FileText className="w-5 h-5"/>, color: "#6B5ED7" },
+      { label: "SARs Filed", value: "0", icon: <FileText className="w-5 h-5"/>, color: "#128A43" },
     ],
     treasury: [
       { label: "Treasury Balance", value: fmtZAR(kpis ? Number(kpis.treasuryBalance) : 0), icon: <Wallet className="w-5 h-5"/>, color: "#06B6D4" },
       { label: "Volume 24h", value: fmtZAR(kpis ? Number(kpis.totalVolume24h) : 0), sub: "+12%", icon: <Activity className="w-5 h-5"/>, color: "#10B981" },
       { label: "Settlements Pending", value: String(kpis ? Number(kpis.settlementsPending) : 0), icon: <Globe className="w-5 h-5"/>, color: "#F59E0B" },
-      { label: "Txns Today", value: fmtNum(kpis ? Number(kpis.txnCount24h) : 0), icon: <BarChart3 className="w-5 h-5"/>, color: "#6B5ED7" },
+      { label: "Txns Today", value: fmtNum(kpis ? Number(kpis.txnCount24h) : 0), icon: <BarChart3 className="w-5 h-5"/>, color: "#128A43" },
     ],
   };
 
@@ -464,7 +464,7 @@ function CardsPanel({ userId, cards, onRefresh }: { userId: string; cards: R[]; 
       <div className="flex items-center justify-between">
         <h2 className="text-base font-bold text-gray-900">My Cards ({userCards.length})</h2>
         <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white"
-          style={{ background: "#6B5ED7" }}>
+          style={{ background: "#128A43" }}>
           <Plus className="w-3.5 h-3.5"/> Request New Card
         </button>
       </div>
@@ -491,7 +491,7 @@ function CardsPanel({ userId, cards, onRefresh }: { userId: string; cards: R[]; 
                 {card.applePayEnrolled && <Badge label="Apple Pay" color="#374151"/>}
                 {card.googlePayEnrolled && <Badge label="Google Pay" color="#4285F4"/>}
                 {card.contactless && <Badge label="Contactless" color="#10B981"/>}
-                {card.internationalEnabled && <Badge label="International" color="#6B5ED7"/>}
+                {card.internationalEnabled && <Badge label="International" color="#128A43"/>}
               </div>
               <div className="flex gap-2">
                 {card.status === "active"
@@ -538,7 +538,7 @@ function TransactionsPanel({ txns }: { txns: R[] }) {
         {[
           { label: "Total In", value: fmtZAR(totalIn), color: "#10B981" },
           { label: "Total Out", value: fmtZAR(totalOut), color: "#EF4444" },
-          { label: "Net", value: fmtZAR(totalIn - totalOut), color: "#6B5ED7" },
+          { label: "Net", value: fmtZAR(totalIn - totalOut), color: "#128A43" },
         ].map((s, i) => (
           <div key={i} className="bg-white rounded-2xl p-4 border border-gray-100 text-center">
             <p className="text-xl font-black" style={{ color: s.color }}>{s.value}</p>
@@ -553,7 +553,7 @@ function TransactionsPanel({ txns }: { txns: R[] }) {
           {(["all","credit","debit"] as const).map(f => (
             <button key={f} onClick={() => setFilter(f)}
               className="px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-all"
-              style={{ background: filter === f ? "white" : "transparent", color: filter === f ? "#6B5ED7" : "#9CA3AF", boxShadow: filter === f ? "0 1px 4px rgba(0,0,0,0.08)" : "none" }}>
+              style={{ background: filter === f ? "white" : "transparent", color: filter === f ? "#128A43" : "#9CA3AF", boxShadow: filter === f ? "0 1px 4px rgba(0,0,0,0.08)" : "none" }}>
               {f}
             </button>
           ))}
@@ -619,7 +619,7 @@ function PaymentsPanel({ userId, accounts }: { userId: string; accounts: R[] }) 
         {(["send","history"] as const).map(t => (
           <button key={t} onClick={() => setTab(t)}
             className="px-5 py-2 rounded-lg text-sm font-semibold capitalize transition-all"
-            style={{ background: tab === t ? "white" : "transparent", color: tab === t ? "#6B5ED7" : "#9CA3AF" }}>
+            style={{ background: tab === t ? "white" : "transparent", color: tab === t ? "#128A43" : "#9CA3AF" }}>
             {t}
           </button>
         ))}
@@ -630,8 +630,8 @@ function PaymentsPanel({ userId, accounts }: { userId: string; accounts: R[] }) 
           <form onSubmit={handleSend} className="bg-white rounded-2xl p-6 border border-gray-100 space-y-4">
             <h3 className="text-sm font-bold text-gray-900">Send Money</h3>
             {fromAcct && (
-              <div className="p-3 rounded-xl flex items-center gap-3" style={{ background: "#F3F0FF" }}>
-                <Wallet className="w-4 h-4" style={{ color: "#6B5ED7" }}/>
+              <div className="p-3 rounded-xl flex items-center gap-3" style={{ background: "#EAF7EE" }}>
+                <Wallet className="w-4 h-4" style={{ color: "#128A43" }}/>
                 <div>
                   <p className="text-xs text-gray-500">From</p>
                   <p className="text-sm font-semibold text-gray-800">{String(fromAcct.label)} · {fmtZAR(fromAcct.balance as number)}</p>
@@ -646,7 +646,7 @@ function PaymentsPanel({ userId, accounts }: { userId: string; accounts: R[] }) 
               <div key={f.label}>
                 <label className="block text-xs font-semibold text-gray-500 mb-1.5">{f.label}</label>
                 <input type={f.type ?? "text"} value={f.val} onChange={e => f.set(e.target.value)} required placeholder={f.placeholder}
-                  className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"/>
+                  className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"/>
               </div>
             ))}
             <div>
@@ -655,8 +655,8 @@ function PaymentsPanel({ userId, accounts }: { userId: string; accounts: R[] }) 
                 {rails.map(r => (
                   <button type="button" key={r.id} onClick={() => setRail(r.id)}
                     className="p-2.5 rounded-xl text-left transition-all"
-                    style={{ background: rail === r.id ? "#F3F0FF" : "#F9FAFB", border: `1.5px solid ${rail === r.id ? "#6B5ED7" : "#E5E7EB"}` }}>
-                    <p className="text-xs font-semibold" style={{ color: rail === r.id ? "#6B5ED7" : "#374151" }}>{r.label}</p>
+                    style={{ background: rail === r.id ? "#EAF7EE" : "#F9FAFB", border: `1.5px solid ${rail === r.id ? "#128A43" : "#E5E7EB"}` }}>
+                    <p className="text-xs font-semibold" style={{ color: rail === r.id ? "#128A43" : "#374151" }}>{r.label}</p>
                     <p className="text-[10px] text-gray-400">{r.fee} · {r.eta}</p>
                   </button>
                 ))}
@@ -669,7 +669,7 @@ function PaymentsPanel({ userId, accounts }: { userId: string; accounts: R[] }) 
             )}
             <button type="submit" disabled={sending || !toIban || !amount}
               className="w-full py-3.5 rounded-xl text-white font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
-              style={{ background: "linear-gradient(135deg,#6B5ED7,#8B7EE7)" }}>
+              style={{ background: "linear-gradient(135deg,#128A43,#8B7EE7)" }}>
               {sending ? <Loader2 className="w-4 h-4 animate-spin"/> : <ArrowUpRight className="w-4 h-4"/>}
               Send Payment
             </button>
@@ -779,7 +779,7 @@ function TreasuryPanel() {
               <YAxis tick={{ fontSize: 11, fill: "#9CA3AF" }} axisLine={false} tickLine={false}/>
               <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }}/>
               <Bar dataKey="volume" fill="#06B6D4" radius={[4,4,0,0]} name="Volume"/>
-              <Bar dataKey="net" fill="#6B5ED7" radius={[4,4,0,0]} name="Net"/>
+              <Bar dataKey="net" fill="#128A43" radius={[4,4,0,0]} name="Net"/>
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -835,7 +835,7 @@ function KycPanel() {
           {["all","pending","in_review","approved","rejected"].map(f => (
             <button key={f} onClick={() => setFilter(f)}
               className="px-3 py-1.5 rounded-lg text-[11px] font-semibold capitalize transition-all"
-              style={{ background: filter === f ? "white" : "transparent", color: filter === f ? "#6B5ED7" : "#9CA3AF" }}>
+              style={{ background: filter === f ? "white" : "transparent", color: filter === f ? "#128A43" : "#9CA3AF" }}>
               {f.replace("_"," ")}
             </button>
           ))}
@@ -844,7 +844,7 @@ function KycPanel() {
 
       <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
         {loading ? (
-          <div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-purple-500"/></div>
+          <div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-emerald-500"/></div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left">
@@ -897,14 +897,14 @@ function FraudPanel() {
           {[["false","Active"],["true","Resolved"]].map(([v,l]) => (
             <button key={v} onClick={() => setFilter(v)}
               className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-              style={{ background: filter === v ? "white" : "transparent", color: filter === v ? "#6B5ED7" : "#9CA3AF" }}>{l}</button>
+              style={{ background: filter === v ? "white" : "transparent", color: filter === v ? "#128A43" : "#9CA3AF" }}>{l}</button>
           ))}
         </div>
       </div>
 
       <div className="space-y-3">
         {loading ? (
-          <div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-purple-500"/></div>
+          <div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-emerald-500"/></div>
         ) : alerts.length === 0 ? (
           <div className="bg-white rounded-2xl p-12 border border-gray-100 flex flex-col items-center gap-2">
             <CheckCircle className="w-10 h-10 text-emerald-400"/>
@@ -971,7 +971,7 @@ function UsersPanel() {
               className="text-sm outline-none bg-transparent w-48"/>
           </div>
           <select value={roleFilter} onChange={e => setRoleFilter(e.target.value)}
-            className="text-sm border border-gray-200 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-purple-500 bg-white">
+            className="text-sm border border-gray-200 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
             <option value="all">All Roles</option>
             {["passenger","driver","investor","owner","admin","compliance","treasury"].map(r => (
               <option key={r} value={r}>{cap(r)}</option>
@@ -982,7 +982,7 @@ function UsersPanel() {
 
       <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
         {loading ? (
-          <div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-purple-500"/></div>
+          <div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-emerald-500"/></div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -1015,7 +1015,7 @@ function UsersPanel() {
                     <td className="px-4 py-3 text-sm text-gray-600">{String(u.cardCount)}</td>
                     <td className="px-4 py-3 text-xs text-gray-400">{ago(u.createdAt as string)} ago</td>
                     <td className="px-4 py-3">
-                      <button className="text-xs font-semibold text-purple-600 hover:underline">View</button>
+                      <button className="text-xs font-semibold text-emerald-600 hover:underline">View</button>
                     </td>
                   </tr>
                 ))}
@@ -1154,7 +1154,7 @@ export function BankingDashboard({ isOpen, onClose }: BankingDashboardProps) {
           <h2 className="text-base font-bold text-gray-900">Investment Portfolio</h2>
           <div className="grid md:grid-cols-2 gap-4">
             {[
-              { label:"Capital Deposited",  val: fmtZAR(accounts.reduce((s,a)=>s+Number(a.balance),0)), color:"#6B5ED7" },
+              { label:"Capital Deposited",  val: fmtZAR(accounts.reduce((s,a)=>s+Number(a.balance),0)), color:"#128A43" },
               { label:"Current Value",      val: fmtZAR(accounts.reduce((s,a)=>s+Number(a.balance),0)*1.12), color:"#10B981" },
               { label:"Total Returns",      val: fmtZAR(accounts.reduce((s,a)=>s+Number(a.balance),0)*0.12), color:"#F59E0B" },
               { label:"Revenue Share",      val: "10% of platform revenue", color:"#3B82F6" },
@@ -1176,7 +1176,7 @@ export function BankingDashboard({ isOpen, onClose }: BankingDashboardProps) {
             <p className="text-xs text-gray-400 mb-4">Generate PDF, Excel or CSV reports for transactions, revenue, KYC, and fraud.</p>
             <div className="flex gap-3 justify-center flex-wrap">
               {["Transaction Report","Revenue Report","KYC Report","Fraud Report","Settlement Report"].map((r,i) => (
-                <button key={i} className="px-4 py-2.5 rounded-xl text-sm font-semibold border border-gray-200 hover:border-purple-300 hover:text-purple-600 transition-colors">
+                <button key={i} className="px-4 py-2.5 rounded-xl text-sm font-semibold border border-gray-200 hover:border-emerald-300 hover:text-emerald-600 transition-colors">
                   {r}
                 </button>
               ))}

@@ -8,7 +8,7 @@ import vinkLogo from "../../../imports/LOGO_FINAL.png";
 import { publicApi } from "../../services/apiClient";
 
 interface Props { isOpen: boolean; onClose: () => void; }
-const P = "#5B2D8E";
+const P = "#0B5C2E";
 const GOLD = "#F5A623";
 
 type TabId = "connect" | "locate" | "feedback";
@@ -171,7 +171,7 @@ function FaqGrid() {
         const isOpen = open === i;
         return (
           <button key={i} onClick={() => setOpen(isOpen ? null : i)}
-            className={`text-left rounded-xl bg-white border px-4 py-3.5 transition-all ${isOpen ? "shadow-md border-purple-200" : "border-gray-200 hover:shadow-sm"}`}>
+            className={`text-left rounded-xl bg-white border px-4 py-3.5 transition-all ${isOpen ? "shadow-md border-emerald-200" : "border-gray-200 hover:shadow-sm"}`}>
             <span className="flex items-center justify-between gap-3">
               <span className="font-semibold text-gray-900 text-sm">{f.q}</span>
               <Plus className={`w-3.5 h-3.5 flex-shrink-0 transition-transform ${isOpen ? "rotate-45" : ""}`} style={{ color: P }} />
@@ -196,7 +196,7 @@ function ConnectTab({ goTo }: { goTo: (t: TabId) => void }) {
             { icon: <MessageCircle className="w-5 h-5" />, title: "Feedback", sub: "Compliments & complaints", cta: "Get started", onClick: () => goTo("feedback") },
             { icon: <AlertTriangle className="w-5 h-5" />, title: "Report Fraud", sub: "Lost cards, suspicious activity", cta: "Call hotline", href: "tel:+27614615035", urgent: true },
           ].map((c, i) => (
-            <div key={i} className="group p-5 bg-white rounded-xl border border-gray-200 hover:border-purple-200 hover:shadow-md transition-all flex flex-col">
+            <div key={i} className="group p-5 bg-white rounded-xl border border-gray-200 hover:border-emerald-200 hover:shadow-md transition-all flex flex-col">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style={{ background: c.urgent ? "#FEE2E2" : "#EDE9FE", color: c.urgent ? "#DC2626" : P }}>{c.icon}</div>
               <p className="font-bold text-gray-900 text-sm">{c.title}</p>
               <p className="text-xs text-gray-500 mt-0.5 flex-1">{c.sub}</p>
@@ -364,7 +364,7 @@ function FeedbackTab() {
             <div>
               <label className="text-sm text-gray-600 block mb-1.5">Please choose a topic</label>
               <select value={form.topic} onChange={e => setForm(f => ({ ...f, topic: e.target.value }))}
-                className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm outline-none focus:border-purple-400 bg-white text-gray-700">
+                className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm outline-none focus:border-emerald-400 bg-white text-gray-700">
                 {TOPICS.map(t => <option key={t} value={t}>{t}</option>)}
               </select>
             </div>
@@ -372,32 +372,32 @@ function FeedbackTab() {
             <div>
               <label className="text-sm text-gray-600 block mb-1.5">Message</label>
               <textarea value={form.message} onChange={e => setForm(f => ({ ...f, message: e.target.value }))} rows={5}
-                className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm outline-none focus:border-purple-400 resize-none" />
+                className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm outline-none focus:border-emerald-400 resize-none" />
             </div>
 
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm text-gray-600 block mb-1.5">Name</label>
                 <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm outline-none focus:border-purple-400" />
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm outline-none focus:border-emerald-400" />
               </div>
               <div>
                 <label className="text-sm text-gray-600 block mb-1.5">Surname</label>
                 <input value={form.surname} onChange={e => setForm(f => ({ ...f, surname: e.target.value }))}
-                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm outline-none focus:border-purple-400" />
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm outline-none focus:border-emerald-400" />
               </div>
             </div>
 
             <div>
               <label className="text-sm text-gray-600 block mb-1.5">Email address *</label>
               <input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm outline-none focus:border-purple-400" />
+                className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm outline-none focus:border-emerald-400" />
             </div>
 
             <div>
               <label className="text-sm text-gray-600 block mb-1.5">Phone number (optional)</label>
               <input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-                className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm outline-none focus:border-purple-400" />
+                className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm outline-none focus:border-emerald-400" />
             </div>
 
             <div>
@@ -406,12 +406,12 @@ function FeedbackTab() {
             </div>
             <div>
               <input value={captchaInput} onChange={e => setCaptchaInput(e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm outline-none focus:border-purple-400 uppercase tracking-widest" placeholder="Type the code" />
+                className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm outline-none focus:border-emerald-400 uppercase tracking-widest" placeholder="Type the code" />
             </div>
 
             <button onClick={handleSubmit} disabled={submitting}
               className="px-8 py-3 rounded-full text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-2"
-              style={{ background: `linear-gradient(135deg,${P},#9585EA)` }}>
+              style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
               {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Sending...</> : "Send Message"}
             </button>
           </div>

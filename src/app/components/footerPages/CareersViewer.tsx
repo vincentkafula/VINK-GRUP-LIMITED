@@ -3,7 +3,7 @@ import vinkLogo from "../../../imports/LOGO_FINAL.png";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
-const P = "#5B2D8E";
+const P = "#0B5C2E";
 const GOLD = "#F5A623";
 
 const BENEFITS = [
@@ -77,7 +77,7 @@ export function CareersViewer({ isOpen, onClose }: Props) {
           <h2 className="text-2xl font-black mb-6" style={{ color: P }}>Why Work at VINK?</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {BENEFITS.map((b, i) => (
-              <div key={i} className="flex items-start gap-3 p-4 rounded-xl border border-gray-200 hover:border-purple-200 hover:bg-purple-50 transition-all">
+              <div key={i} className="flex items-start gap-3 p-4 rounded-xl border border-gray-200 hover:border-emerald-200 hover:bg-emerald-50 transition-all">
                 <span className="text-2xl">{b.icon}</span>
                 <div>
                   <p className="font-bold text-gray-900 text-sm">{b.title}</p>
@@ -95,7 +95,7 @@ export function CareersViewer({ isOpen, onClose }: Props) {
             {ROLES.map((r, i) => (
               <div key={i} className="flex items-center justify-between gap-4 p-4 rounded-xl border border-gray-200 bg-white hover:shadow-md transition-shadow group cursor-pointer">
                 <div className="flex-1 min-w-0">
-                  <p className="font-bold text-gray-900 text-sm group-hover:text-purple-700 transition-colors">{r.title}</p>
+                  <p className="font-bold text-gray-900 text-sm group-hover:text-emerald-700 transition-colors">{r.title}</p>
                   <div className="flex items-center gap-3 mt-1 flex-wrap">
                     <span className="flex items-center gap-1 text-xs text-gray-500"><Briefcase className="w-3 h-3" />{r.dept}</span>
                     <span className="flex items-center gap-1 text-xs text-gray-500"><MapPin className="w-3 h-3" />{r.location}</span>

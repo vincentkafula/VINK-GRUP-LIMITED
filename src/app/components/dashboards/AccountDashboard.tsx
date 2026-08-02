@@ -52,7 +52,7 @@ export function AccountDashboard({ isOpen, onClose }: { isOpen: boolean; onClose
           <StatCard label="Monthly Income" value="R84,200" icon={<ArrowUpRight className="w-5 h-5" />} color="#10B981" trend="up" />
           <StatCard label="Monthly Expenses" value="R31,840" icon={<ArrowDownRight className="w-5 h-5" />} color="#EF4444" trend="down" />
           <StatCard label="Net Position" value="+R52,360" icon={<TrendingUp className="w-5 h-5" />} color="#F59E0B" trend="up" />
-          <StatCard label="Pending Invoices" value="R14,200" icon={<FileText className="w-5 h-5" />} color="#8B5CF6" />
+          <StatCard label="Pending Invoices" value="R14,200" icon={<FileText className="w-5 h-5" />} color="#34A853" />
         </div>
 
         <div className="grid xl:grid-cols-3 gap-5">
@@ -119,7 +119,7 @@ export function AccountDashboard({ isOpen, onClose }: { isOpen: boolean; onClose
               {[
                 { cat: "Driver Payouts", pct: 62, color: "#3B82F6", val: "R19,740" },
                 { cat: "Insurance", pct: 16, color: "#EF4444", val: "R5,094" },
-                { cat: "Software", pct: 8, color: "#8B5CF6", val: "R2,547" },
+                { cat: "Software", pct: 8, color: "#34A853", val: "R2,547" },
                 { cat: "MVNO Data", pct: 14, color: "#F59E0B", val: "R4,458" },
               ].map((s, i) => (
                 <div key={i} className="mb-3">

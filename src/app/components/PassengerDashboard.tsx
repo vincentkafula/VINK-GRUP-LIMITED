@@ -63,13 +63,13 @@ function HealingMap({ mode, etaMin }: { mode: "home" | "tracking" | "live"; etaM
 
       {/* Route line when tracking */}
       {(mode === "tracking" || mode === "live") && (
-        <path d={`M ${driverPos.x} ${driverPos.y} Q 200 120 230 200`} fill="none" stroke="#6B5ED7" strokeWidth="3" strokeDasharray="8,4" opacity="0.8" />
+        <path d={`M ${driverPos.x} ${driverPos.y} Q 200 120 230 200`} fill="none" stroke="#128A43" strokeWidth="3" strokeDasharray="8,4" opacity="0.8" />
       )}
 
       {/* Destination pin */}
       <g transform="translate(220, 185)">
-        <circle cx="0" cy="0" r="12" fill="#6B5ED7" opacity="0.2" />
-        <circle cx="0" cy="0" r="7" fill="#6B5ED7" />
+        <circle cx="0" cy="0" r="12" fill="#128A43" opacity="0.2" />
+        <circle cx="0" cy="0" r="7" fill="#128A43" />
         <circle cx="0" cy="0" r="3" fill="white" />
       </g>
       <rect x="228" y="170" width="56" height="16" rx="3" fill="white" opacity="0.9" />
@@ -78,18 +78,18 @@ function HealingMap({ mode, etaMin }: { mode: "home" | "tracking" | "live"; etaM
       {/* Pickup pin */}
       {mode === "home" && (
         <g transform="translate(150, 120)">
-          <circle cx="0" cy="-20" r={8 + Math.sin(pulse * 0.2) * 2} fill="#6B5ED7" opacity="0.15" />
-          <circle cx="0" cy="-20" r="8" fill="#6B5ED7" />
+          <circle cx="0" cy="-20" r={8 + Math.sin(pulse * 0.2) * 2} fill="#128A43" opacity="0.15" />
+          <circle cx="0" cy="-20" r="8" fill="#128A43" />
           <circle cx="0" cy="-20" r="3.5" fill="white" />
-          <line x1="0" y1="-12" x2="0" y2="0" stroke="#6B5ED7" strokeWidth="1.5" />
+          <line x1="0" y1="-12" x2="0" y2="0" stroke="#128A43" strokeWidth="1.5" />
         </g>
       )}
 
       {/* Driver car */}
       {(mode === "tracking" || mode === "live") && (
         <g transform={`translate(${driverPos.x}, ${driverPos.y})`}>
-          <circle cx="0" cy="0" r={10 + Math.sin(pulse * 0.15) * 2} fill="#6B5ED7" opacity="0.15" />
-          <circle cx="0" cy="0" r="14" fill="white" stroke="#6B5ED7" strokeWidth="2" />
+          <circle cx="0" cy="0" r={10 + Math.sin(pulse * 0.15) * 2} fill="#128A43" opacity="0.15" />
+          <circle cx="0" cy="0" r="14" fill="white" stroke="#128A43" strokeWidth="2" />
           <text x="0" y="5" textAnchor="middle" fontSize="12">🚗</text>
         </g>
       )}
@@ -97,7 +97,7 @@ function HealingMap({ mode, etaMin }: { mode: "home" | "tracking" | "live"; etaM
       {/* ETA badge */}
       {etaMin && (
         <g>
-          <rect x={driverPos.x - 18} y={driverPos.y - 30} width="36" height="16" rx="8" fill="#6B5ED7" />
+          <rect x={driverPos.x - 18} y={driverPos.y - 30} width="36" height="16" rx="8" fill="#128A43" />
           <text x={driverPos.x} y={driverPos.y - 19} textAnchor="middle" fontSize="9" fill="white" fontWeight="bold">{etaMin} min</text>
         </g>
       )}
@@ -165,7 +165,7 @@ function BottomNav({ active, onTab }: { active: string; onTab: (t: Screen) => vo
       {tabs.map(t => (
         <button key={t.id} onClick={() => onTab(t.id as Screen)}
           className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl transition-all"
-          style={{ color: active === t.id ? "#6B5ED7" : "#9CA3AF" }}>
+          style={{ color: active === t.id ? "#128A43" : "#9CA3AF" }}>
           {t.icon}
           <span className="text-[10px] font-medium">{t.label}</span>
         </button>
@@ -202,7 +202,7 @@ function LoginScreen({ onLogin }: { onLogin: (token: string) => void }) {
   };
 
   return (
-    <div className="flex flex-col h-full" style={{ background: "#6B5ED7" }}>
+    <div className="flex flex-col h-full" style={{ background: "#128A43" }}>
       {/* Top art */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 pt-8 pb-4">
         <div className="w-20 h-20 rounded-3xl bg-white/20 flex items-center justify-center mb-4">
@@ -227,7 +227,7 @@ function LoginScreen({ onLogin }: { onLogin: (token: string) => void }) {
             <div className="flex gap-3 justify-center">
               {otp.split("").map((d, i) => (
                 <div key={i} className="w-11 h-12 rounded-xl flex items-center justify-center text-lg font-bold"
-                  style={{ background: "#F3F0FF", color: "#6B5ED7", border: "2px solid #6B5ED7" }}>{d}</div>
+                  style={{ background: "#EAF7EE", color: "#128A43", border: "2px solid #128A43" }}>{d}</div>
               ))}
             </div>
           </>
@@ -235,7 +235,7 @@ function LoginScreen({ onLogin }: { onLogin: (token: string) => void }) {
         {error && <p className="text-xs text-red-500 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
         <button onClick={handleContinue} disabled={loading}
           className="w-full py-3.5 rounded-2xl text-white font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-60"
-          style={{ background: "linear-gradient(135deg,#6B5ED7,#8B7EE7)" }}>
+          style={{ background: "linear-gradient(135deg,#128A43,#8B7EE7)" }}>
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
           {step === "phone" ? "Send OTP" : "Verify & Enter"}
         </button>
@@ -273,9 +273,9 @@ function HomeScreen({ passenger, onBook, onHistory, onScheduled }: {
           <p className="text-base font-bold text-gray-900">{name.split(" ")[0]}</p>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full" style={{ background: "#F3F0FF" }}>
-            <Wallet className="w-3.5 h-3.5" style={{ color: "#6B5ED7" }} />
-            <span className="text-xs font-semibold" style={{ color: "#6B5ED7" }}>R{wallet.toFixed(0)}</span>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full" style={{ background: "#EAF7EE" }}>
+            <Wallet className="w-3.5 h-3.5" style={{ color: "#128A43" }} />
+            <span className="text-xs font-semibold" style={{ color: "#128A43" }}>R{wallet.toFixed(0)}</span>
           </div>
           <button onClick={onHistory} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: "#F3F4F6" }}>
             <Bell className="w-4 h-4 text-gray-600" />
@@ -302,7 +302,7 @@ function HomeScreen({ passenger, onBook, onHistory, onScheduled }: {
           <span className="text-xs font-medium text-gray-800 truncate">Mowbray, Cape Town</span>
         </div>
         <div className="flex items-center gap-3 px-4 py-3" onClick={() => setFocused(true)}>
-          <MapPin className="w-4 h-4 flex-shrink-0" style={{ color: "#6B5ED7" }} />
+          <MapPin className="w-4 h-4 flex-shrink-0" style={{ color: "#128A43" }} />
           <input value={dest} onChange={e => setDest(e.target.value)} onFocus={() => setFocused(true)}
             placeholder="Where are you going?" className="flex-1 text-sm outline-none text-gray-800"
             style={{ background: "transparent" }} />
@@ -317,7 +317,7 @@ function HomeScreen({ passenger, onBook, onHistory, onScheduled }: {
             <button key={i} onClick={() => { setDest(s); setFocused(false); onBook("Mowbray, Cape Town", s); }}
               className="w-full flex items-center gap-3 px-4 py-3 border-b last:border-0 hover:bg-gray-50"
               style={{ borderColor: "#F3F4F6" }}>
-              <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: "#F3F0FF" }}>
+              <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: "#EAF7EE" }}>
                 {s.includes("Hospital") || s.includes("Clinic") ? <span className="text-sm">🏥</span> : <span className="text-sm">💊</span>}
               </div>
               <div className="text-left flex-1 min-w-0">
@@ -352,13 +352,13 @@ function HomeScreen({ passenger, onBook, onHistory, onScheduled }: {
 
           {/* Scheduled ride banner */}
           <div className="mx-4 mt-4 p-3.5 rounded-2xl flex items-center gap-3"
-            style={{ background: "linear-gradient(135deg,#EDE9FE,#F3F0FF)", border: "1px solid #DDD6FE" }}>
-            <Calendar className="w-5 h-5 flex-shrink-0" style={{ color: "#6B5ED7" }} />
+            style={{ background: "linear-gradient(135deg,#EDE9FE,#EAF7EE)", border: "1px solid #DDD6FE" }}>
+            <Calendar className="w-5 h-5 flex-shrink-0" style={{ color: "#128A43" }} />
             <div className="flex-1 min-w-0">
               <p className="text-xs font-bold" style={{ color: "#5B21B6" }}>Upcoming: Physiotherapy</p>
-              <p className="text-xs" style={{ color: "#7C3AED" }}>Tomorrow 09:00 · Netcare Claremont</p>
+              <p className="text-xs" style={{ color: "#FF9900" }}>Tomorrow 09:00 · Netcare Claremont</p>
             </div>
-            <button onClick={onScheduled} className="text-xs font-semibold px-2 py-1 rounded-lg" style={{ color: "#6B5ED7", background: "white" }}>View</button>
+            <button onClick={onScheduled} className="text-xs font-semibold px-2 py-1 rounded-lg" style={{ color: "#128A43", background: "white" }}>View</button>
           </div>
 
           {/* Accessibility info */}
@@ -412,20 +412,20 @@ function RideTypeScreen({ pickup, dropoff, onSelect, onBack }: {
         {vehicles.map(v => (
           <button key={v.type} onClick={() => setSelected(v.type)}
             className="w-full flex items-center gap-3 p-4 rounded-2xl transition-all text-left"
-            style={{ background: selected === v.type ? "#F3F0FF" : "white", border: `2px solid ${selected === v.type ? "#6B5ED7" : "#E5E7EB"}` }}>
+            style={{ background: selected === v.type ? "#EAF7EE" : "white", border: `2px solid ${selected === v.type ? "#128A43" : "#E5E7EB"}` }}>
             <span className="text-3xl">{v.icon}</span>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <p className="text-sm font-bold text-gray-900">{v.label}</p>
                 {v.badge && (
-                  <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold" style={{ background: "#6B5ED7", color: "white" }}>{v.badge}</span>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold" style={{ background: "#128A43", color: "white" }}>{v.badge}</span>
                 )}
               </div>
               <p className="text-xs text-gray-500 mt-0.5">{v.desc}</p>
               <p className="text-xs text-gray-400 mt-0.5">⏱ {v.eta}</p>
             </div>
             <div className="text-right flex-shrink-0">
-              <p className="text-sm font-bold" style={{ color: "#6B5ED7" }}>R{v.fare}</p>
+              <p className="text-sm font-bold" style={{ color: "#128A43" }}>R{v.fare}</p>
               <p className="text-[10px] text-gray-400">est.</p>
             </div>
           </button>
@@ -436,7 +436,7 @@ function RideTypeScreen({ pickup, dropoff, onSelect, onBack }: {
           {payments.map(p => (
             <button key={p.id} onClick={() => setPayment(p.id)}
               className="flex flex-col items-center gap-1 p-2.5 rounded-xl"
-              style={{ background: payment === p.id ? "#F3F0FF" : "#F9FAFB", border: `2px solid ${payment === p.id ? "#6B5ED7" : "#E5E7EB"}`, color: payment === p.id ? "#6B5ED7" : "#6B7280" }}>
+              style={{ background: payment === p.id ? "#EAF7EE" : "#F9FAFB", border: `2px solid ${payment === p.id ? "#128A43" : "#E5E7EB"}`, color: payment === p.id ? "#128A43" : "#6B7280" }}>
               {p.icon}
               <span className="text-[10px] font-medium leading-tight text-center">{p.label}</span>
             </button>
@@ -448,11 +448,11 @@ function RideTypeScreen({ pickup, dropoff, onSelect, onBack }: {
       <div className="px-4 py-4 border-t" style={{ borderColor: "#E5E7EB" }}>
         <div className="flex justify-between items-center mb-3">
           <span className="text-xs text-gray-500">Estimated fare</span>
-          <span className="text-base font-bold" style={{ color: "#6B5ED7" }}>R{chosenFare}.00</span>
+          <span className="text-base font-bold" style={{ color: "#128A43" }}>R{chosenFare}.00</span>
         </div>
         <button onClick={() => onSelect(selected, chosenFare, payment)}
           className="w-full py-3.5 rounded-2xl text-white font-bold text-sm"
-          style={{ background: "linear-gradient(135deg,#6B5ED7,#8B7EE7)" }}>
+          style={{ background: "linear-gradient(135deg,#128A43,#8B7EE7)" }}>
           Next: Add Medical Note
         </button>
       </div>
@@ -491,7 +491,7 @@ function MedicalNoteScreen({ vehicleType, fare, onConfirm, onBack }: {
           {presets.map((p, i) => (
             <button key={i} onClick={() => setNote(n => n ? `${n}. ${p}` : p)}
               className="text-xs px-3 py-1.5 rounded-full border transition-all"
-              style={{ borderColor: "#DDD6FE", color: "#6B5ED7", background: "#F5F3FF" }}>
+              style={{ borderColor: "#DDD6FE", color: "#128A43", background: "#F5F3FF" }}>
               + {p}
             </button>
           ))}
@@ -511,11 +511,11 @@ function MedicalNoteScreen({ vehicleType, fare, onConfirm, onBack }: {
       <div className="px-4 py-4 border-t" style={{ borderColor: "#E5E7EB" }}>
         <div className="flex justify-between items-center mb-3 text-xs text-gray-500">
           <span className="capitalize">🚗 {vehicleType} vehicle</span>
-          <span className="font-bold" style={{ color: "#6B5ED7" }}>R{fare}.00 est.</span>
+          <span className="font-bold" style={{ color: "#128A43" }}>R{fare}.00 est.</span>
         </div>
         <button onClick={() => onConfirm(note)}
           className="w-full py-3.5 rounded-2xl text-white font-bold text-sm"
-          style={{ background: "linear-gradient(135deg,#6B5ED7,#8B7EE7)" }}>
+          style={{ background: "linear-gradient(135deg,#128A43,#8B7EE7)" }}>
           Confirm Booking
         </button>
       </div>
@@ -556,7 +556,7 @@ function SearchingScreen({ vehicleType, onCancel, onFound }: {
       <div className="relative mb-8">
         {[0,1,2].map(i => (
           <div key={i} className="absolute inset-0 rounded-full animate-ping"
-            style={{ background: "#6B5ED7", opacity: 0.1 - i * 0.03, animationDelay: `${i * 0.4}s`, width: 120 + i * 40, height: 120 + i * 40, top: -(i * 20), left: -(i * 20) }} />
+            style={{ background: "#128A43", opacity: 0.1 - i * 0.03, animationDelay: `${i * 0.4}s`, width: 120 + i * 40, height: 120 + i * 40, top: -(i * 20), left: -(i * 20) }} />
         ))}
         <div className="relative w-28 h-28 rounded-full flex items-center justify-center"
           style={{ background: "white", boxShadow: "0 8px 32px rgba(107,94,215,0.3)" }}>
@@ -572,14 +572,14 @@ function SearchingScreen({ vehicleType, onCancel, onFound }: {
         {["Themba — 0.4 km away","Sipho — 0.8 km away","Farai — 1.1 km away"].map((d, i) => (
           <div key={i} className="flex items-center gap-3 px-4 py-3 rounded-2xl"
             style={{ background: "white", border: "1px solid #E5E7EB", opacity: 1 - i * 0.2 }}>
-            <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold" style={{ background: "#EDE9FE", color: "#6B5ED7" }}>{d[0]}</div>
+            <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold" style={{ background: "#EDE9FE", color: "#128A43" }}>{d[0]}</div>
             <div className="flex-1 text-left">
               <p className="text-sm font-semibold text-gray-900">{d.split(" — ")[0]}</p>
               <div className="flex items-center gap-1 text-xs text-gray-500">
                 <span className="text-yellow-400">★</span><span>4.8</span><span>·</span><span>{d.split(" — ")[1]}</span>
               </div>
             </div>
-            <Loader2 className="w-4 h-4 animate-spin" style={{ color: "#6B5ED7" }} />
+            <Loader2 className="w-4 h-4 animate-spin" style={{ color: "#128A43" }} />
           </div>
         ))}
       </div>
@@ -615,10 +615,10 @@ function DriverArrivingScreen({ ride, onSos, onStart }: {
 
       <div className="flex-1 overflow-y-auto px-4 pt-4 space-y-4" style={{ paddingBottom: 80 }}>
         {/* ETA bar */}
-        <div className="flex items-center justify-between p-4 rounded-2xl" style={{ background: "#F3F0FF" }}>
+        <div className="flex items-center justify-between p-4 rounded-2xl" style={{ background: "#EAF7EE" }}>
           <div>
             <p className="text-xs text-gray-500">Driver arriving in</p>
-            <p className="text-3xl font-black" style={{ color: "#6B5ED7" }}>{eta} <span className="text-base font-semibold text-gray-500">min</span></p>
+            <p className="text-3xl font-black" style={{ color: "#128A43" }}>{eta} <span className="text-base font-semibold text-gray-500">min</span></p>
           </div>
           <div className="text-right">
             <p className="text-xs text-gray-500">Estimated fare</p>
@@ -629,7 +629,7 @@ function DriverArrivingScreen({ ride, onSos, onStart }: {
         {/* Driver card */}
         <div className="p-4 rounded-2xl" style={{ background: "white", border: "1px solid #E5E7EB" }}>
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-bold" style={{ background: "#EDE9FE", color: "#6B5ED7" }}>
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-bold" style={{ background: "#EDE9FE", color: "#128A43" }}>
               {(ride.driverName as string)?.split(" ").map((w: string) => w[0]).join("")}
             </div>
             <div className="flex-1">
@@ -640,8 +640,8 @@ function DriverArrivingScreen({ ride, onSos, onStart }: {
                 <span>· Health-transport certified</span>
               </div>
             </div>
-            <button className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: "#F3F0FF" }}>
-              <Phone className="w-4 h-4" style={{ color: "#6B5ED7" }} />
+            <button className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: "#EAF7EE" }}>
+              <Phone className="w-4 h-4" style={{ color: "#128A43" }} />
             </button>
           </div>
 
@@ -727,19 +727,19 @@ function InTripScreen({ ride, onSos, onComplete }: {
           </div>
           <div className="w-px h-4 bg-gray-200 ml-1" />
           <div className="flex items-center gap-2">
-            <MapPin className="w-3.5 h-3.5 text-purple-600 flex-shrink-0" />
+            <MapPin className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
             <p className="text-xs font-semibold text-gray-900">{String(ride.dropoffAddress ?? "Groote Schuur Hospital")}</p>
           </div>
         </div>
 
         {/* Caregiver share */}
         <div className="flex items-center gap-3 p-3.5 rounded-2xl" style={{ background: "#F5F3FF", border: "1px solid #DDD6FE" }}>
-          <Heart className="w-4 h-4 flex-shrink-0" style={{ color: "#6B5ED7" }} />
+          <Heart className="w-4 h-4 flex-shrink-0" style={{ color: "#128A43" }} />
           <div className="flex-1">
             <p className="text-xs font-semibold" style={{ color: "#5B21B6" }}>Share live trip</p>
             <p className="text-xs text-gray-500">Caregiver can follow your journey</p>
           </div>
-          <button className="text-xs font-bold px-3 py-1.5 rounded-xl text-white" style={{ background: "#6B5ED7" }}>Share</button>
+          <button className="text-xs font-bold px-3 py-1.5 rounded-xl text-white" style={{ background: "#128A43" }}>Share</button>
         </div>
 
         {/* SOS — persistent */}
@@ -784,10 +784,10 @@ function RatingScreen({ ride, onDone }: { ride: RideData; onDone: () => void }) 
       </div>
       <h2 className="text-xl font-bold text-gray-900 mb-2">Thank you!</h2>
       <p className="text-sm text-gray-500 mb-6">Your feedback helps us improve healthcare transport for everyone.</p>
-      <p className="text-2xl font-black" style={{ color: "#6B5ED7" }}>R{Number(ride.estimatedFareZAR).toFixed(2)}</p>
+      <p className="text-2xl font-black" style={{ color: "#128A43" }}>R{Number(ride.estimatedFareZAR).toFixed(2)}</p>
       <p className="text-xs text-gray-500 mt-1">charged to your card</p>
       <button onClick={onDone} className="mt-8 w-full py-3.5 rounded-2xl text-white font-bold text-sm"
-        style={{ background: "linear-gradient(135deg,#6B5ED7,#8B7EE7)" }}>
+        style={{ background: "linear-gradient(135deg,#128A43,#8B7EE7)" }}>
         Back to Home
       </button>
     </div>
@@ -796,7 +796,7 @@ function RatingScreen({ ride, onDone }: { ride: RideData; onDone: () => void }) 
   return (
     <div className="flex flex-col h-full px-4 pt-4" style={{ paddingBottom: 16 }}>
       <div className="text-center mb-6">
-        <div className="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center text-2xl font-bold mb-3" style={{ background: "#EDE9FE", color: "#6B5ED7" }}>
+        <div className="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center text-2xl font-bold mb-3" style={{ background: "#EDE9FE", color: "#128A43" }}>
           {(ride.driverName as string)?.split(" ").map((w: string) => w[0]).join("")}
         </div>
         <p className="font-bold text-gray-900">{ride.driverName as string}</p>
@@ -816,7 +816,7 @@ function RatingScreen({ ride, onDone }: { ride: RideData; onDone: () => void }) 
         {tips.map((t, i) => (
           <button key={i} onClick={() => setReview(r => r ? `${r}. ${t}` : t)}
             className="text-xs px-3 py-1.5 rounded-full border"
-            style={{ borderColor: "#DDD6FE", color: "#6B5ED7", background: "#F5F3FF" }}>
+            style={{ borderColor: "#DDD6FE", color: "#128A43", background: "#F5F3FF" }}>
             + {t}
           </button>
         ))}
@@ -828,7 +828,7 @@ function RatingScreen({ ride, onDone }: { ride: RideData; onDone: () => void }) 
 
       <button disabled={stars === 0} onClick={() => setSubmitted(true)}
         className="w-full py-3.5 rounded-2xl text-white font-bold text-sm disabled:opacity-40"
-        style={{ background: "linear-gradient(135deg,#6B5ED7,#8B7EE7)" }}>
+        style={{ background: "linear-gradient(135deg,#128A43,#8B7EE7)" }}>
         Submit Rating
       </button>
     </div>
@@ -865,7 +865,7 @@ function HistoryScreen({ trips }: { trips: RideData[] }) {
                   {[1,2,3,4,5].map(s => <Star key={s} className={`w-3 h-3 ${s <= Number(t.passengerRating) ? "fill-yellow-400 text-yellow-400" : "text-gray-200"}`} />)}
                 </div>
               )}
-              <span className="text-sm font-bold" style={{ color: "#6B5ED7" }}>{fmtR(Number(t.estimatedFareZAR))}</span>
+              <span className="text-sm font-bold" style={{ color: "#128A43" }}>{fmtR(Number(t.estimatedFareZAR))}</span>
             </div>
           </div>
         </div>
@@ -879,7 +879,7 @@ function RiderArchitectureScreen() {
   return (
     <div className="px-3 pt-4 pb-20">
       <div className="flex items-center gap-2 mb-3">
-        <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background:"#6B5ED7" }}>
+        <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background:"#128A43" }}>
           <span className="text-sm">🏗</span>
         </div>
         <div>
@@ -896,7 +896,7 @@ function RiderArchitectureScreen() {
         { layer:"CORE",    items:["Auth Svc","User Svc · KYC","Ride Svc","Matching Engine","Location Svc"], color:"#185FA5", bg:"#E6F1FB" },
         { layer:"SUPPORT", items:["Payment","Notifications","Pricing Engine","Rating","SOS Safety Svc"],  color:"#993C1D", bg:"#FAECE7" },
         { layer:"DATA",    items:["PostgreSQL","InfluxDB · GPS","Redis · geo cache","AWS S3 · docs"],     color:"#5F5E5A", bg:"#F1EFE8" },
-        { layer:"EXTERNAL",items:["Stripe · Flutterwave · MoMo","Africa's Talking · Twilio","Google Maps · Mapbox","Firebase FCM"], color:"#7C3AED", bg:"#F5F3FF" },
+        { layer:"EXTERNAL",items:["Stripe · Flutterwave · MoMo","Africa's Talking · Twilio","Google Maps · Mapbox","Firebase FCM"], color:"#FF9900", bg:"#F5F3FF" },
       ].map((l,i) => (
         <div key={i} className="mb-2 p-3 rounded-xl" style={{ background:l.bg, border:`1px solid ${l.color}30` }}>
           <p className="text-[9px] font-bold uppercase tracking-wider mb-1.5" style={{ color:l.color }}>{l.layer}</p>
@@ -927,19 +927,19 @@ function ScheduledScreen({ onBack }: { onBack: () => void }) {
         <div key={i} className="mb-3 p-4 rounded-2xl" style={{ background: "white", border: "1px solid #E5E7EB" }}>
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm font-bold text-gray-900">{r.label}</p>
-            <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-purple-50 text-purple-600">RECURRING</span>
+            <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-50 text-emerald-600">RECURRING</span>
           </div>
           <p className="text-xs text-gray-500 mb-0.5">🏥 {r.dest}</p>
           <p className="text-xs font-medium text-gray-700 mb-0.5">⏰ {r.time}</p>
           <p className="text-xs text-gray-400">{r.recurrence}</p>
           <div className="flex items-center gap-2 mt-3">
-            <button className="flex-1 py-2 rounded-xl text-xs font-semibold text-center" style={{ background: "#F3F0FF", color: "#6B5ED7" }}>Edit</button>
+            <button className="flex-1 py-2 rounded-xl text-xs font-semibold text-center" style={{ background: "#EAF7EE", color: "#128A43" }}>Edit</button>
             <button className="flex-1 py-2 rounded-xl text-xs font-semibold text-center" style={{ background: "#FEF2F2", color: "#EF4444" }}>Cancel</button>
           </div>
         </div>
       ))}
       <button className="w-full py-3.5 rounded-2xl text-white font-bold text-sm flex items-center justify-center gap-2 mt-2"
-        style={{ background: "linear-gradient(135deg,#6B5ED7,#8B7EE7)" }}>
+        style={{ background: "linear-gradient(135deg,#128A43,#8B7EE7)" }}>
         <Plus className="w-4 h-4" /> Schedule New Ride
       </button>
     </div>
@@ -1068,7 +1068,7 @@ export function PassengerDashboard({ isOpen, onClose }: PassengerDashboardProps)
 
       {/* Phone */}
       <div className="flex-1 flex items-start justify-center" style={{ paddingTop: authed && demoMode ? 88 : 56 }}>
-        <PhoneShell bg={authed ? "#F5F5F7" : "#6B5ED7"}>
+        <PhoneShell bg={authed ? "#F5F5F7" : "#128A43"}>
           {!authed ? (
             <LoginScreen onLogin={handleLogin} />
           ) : (
@@ -1088,7 +1088,7 @@ export function PassengerDashboard({ isOpen, onClose }: PassengerDashboardProps)
         <p className="text-xs" style={{ color: "#8884AA" }}>Healthcare transport for everyone — book accessible rides to clinics, hospitals & therapy.</p>
         <div className="space-y-2">
           {[
-            { label: "Standard Sedan", color: "#6B5ED7", desc: "Regular trips" },
+            { label: "Standard Sedan", color: "#128A43", desc: "Regular trips" },
             { label: "Wheelchair Van", color: "#10B981", desc: "WAV with ramp" },
             { label: "Stretcher/NEMT", color: "#EF4444", desc: "Medical transport" },
           ].map((v, i) => (

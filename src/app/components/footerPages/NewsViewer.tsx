@@ -5,7 +5,7 @@ import vinkLogo from "../../../imports/LOGO_FINAL.png";
 import { publicApi } from "../../services/apiClient";
 
 interface Props { isOpen: boolean; onClose: () => void; }
-const P = "#5B2D8E";
+const P = "#0B5C2E";
 const GOLD = "#F5A623";
 
 const CATEGORIES = ["All", "Product News", "Regulatory Update", "Community Impact", "Technology", "Partnerships"];

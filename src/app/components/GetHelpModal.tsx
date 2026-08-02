@@ -37,7 +37,7 @@ const COLS = [
 const LEGAL_LINKS = ["Privacy Policy", "Terms of Use", "Advertiser Disclosure", "Site Map", "Accessibility", "Ad Choices"];
 
 const CONTACT_CHANNELS = [
-  { icon: <Phone className="w-5 h-5" />, label: "Call Us", value: "0800 VINK (8465)", sub: "Mon–Fri 08:00–20:00 | Sat 09:00–14:00", color: "#6B5ED7" },
+  { icon: <Phone className="w-5 h-5" />, label: "Call Us", value: "0800 VINK (8465)", sub: "Mon–Fri 08:00–20:00 | Sat 09:00–14:00", color: "#128A43" },
   { icon: <MessageCircle className="w-5 h-5" />, label: "Live Chat", value: "Chat on VINK App", sub: "Available 24/7", color: "#10B981" },
   { icon: <Mail className="w-5 h-5" />, label: "Email Support", value: "support@vink.co.za", sub: "Reply within 2 business hours", color: "#3B82F6" },
   { icon: <MapPin className="w-5 h-5" />, label: "Visit Us", value: "8 Rose Street, Cape Town CBD", sub: "By appointment", color: "#F59E0B" },
@@ -118,7 +118,7 @@ export function GetHelpModal({ isOpen, onClose }: GetHelpModalProps) {
                   {col.links.map((link) => (
                     <li key={link}>
                       <a href="#" className="text-white/45 text-[11px] hover:text-white transition-colors flex items-center gap-1 group leading-relaxed">
-                        <ChevronRight className="w-2.5 h-2.5 opacity-0 group-hover:opacity-100 flex-shrink-0 transition-opacity" style={{ color: "#6B5ED7" }} />
+                        <ChevronRight className="w-2.5 h-2.5 opacity-0 group-hover:opacity-100 flex-shrink-0 transition-opacity" style={{ color: "#128A43" }} />
                         {link}
                       </a>
                     </li>

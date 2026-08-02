@@ -105,7 +105,7 @@ export function Product3DViewer({ emoji, colorA, colorB, brand, name, discount }
         <div
           ref={containerRef}
           className="flex items-center justify-center touch-none select-none cursor-grab active:cursor-grabbing"
-          style={{ minHeight: 340, background: "radial-gradient(circle at 50% 40%, #F3F0FF 0%, #E9E4FA 100%)", perspective: 900, overflow: "hidden" }}
+          style={{ minHeight: 340, background: "radial-gradient(circle at 50% 40%, #EAF7EE 0%, #E9E4FA 100%)", perspective: 900, overflow: "hidden" }}
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}

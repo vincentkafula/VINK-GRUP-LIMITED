@@ -9,7 +9,7 @@ const STEPS = [
   { icon: <CreditCard className="w-4 h-4"/>, label: "Apply with one tap" },
 ];
 
-const P = "#6B5ED7";
+const P = "#128A43";
 
 interface CreditResult {
   score: number;
@@ -122,25 +122,25 @@ export function PreApprovalSection() {
             {showForm ? (
               <div className="space-y-3">
                 <input value={form.idNumber} onChange={e => setForm(f => ({ ...f, idNumber: e.target.value }))}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-purple-400" placeholder="ID Number *" />
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-400" placeholder="ID Number *" />
                 <div className="grid grid-cols-2 gap-2">
                   <input value={form.firstName} onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))}
-                    className="border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-purple-400" placeholder="First name" />
+                    className="border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-400" placeholder="First name" />
                   <input value={form.lastName} onChange={e => setForm(f => ({ ...f, lastName: e.target.value }))}
-                    className="border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-purple-400" placeholder="Last name" />
+                    className="border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-400" placeholder="Last name" />
                 </div>
                 <input value={form.income} onChange={e => setForm(f => ({ ...f, income: e.target.value }))}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-purple-400" placeholder="Monthly income (optional)" />
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-400" placeholder="Monthly income (optional)" />
                 <button onClick={handleCreditCheck} disabled={loading}
                   className="w-full py-2.5 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-2 disabled:opacity-60"
-                  style={{ background: `linear-gradient(135deg,${P},#9585EA)` }}>
+                  style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
                   {loading ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Checking...</> : "Check My Score"}
                 </button>
               </div>
             ) : (
               <button onClick={() => setShowForm(true)}
                 className="w-full py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90"
-                style={{ background: `linear-gradient(135deg,${P},#9585EA)` }}>
+                style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
                 Check My Score
               </button>
             )}

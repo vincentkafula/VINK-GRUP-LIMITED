@@ -2,7 +2,7 @@ import { X, MapPin, Clock, Phone } from "lucide-react";
 import vinkLogo from "../../../imports/LOGO_FINAL.png";
 
 interface Props { isOpen: boolean; onClose: () => void; }
-const P = "#5B2D8E";
+const P = "#0B5C2E";
 
 const AGENT_NETWORKS = [
   { name: "Pick n Pay",  icon: "🛒", cover: "Nationwide — all stores",      services: "Card recharge, replacement, cash withdrawals" },

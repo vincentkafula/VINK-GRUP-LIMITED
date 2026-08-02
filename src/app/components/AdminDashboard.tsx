@@ -15,7 +15,7 @@ import vinkLogo from "../../imports/LOGO_FINAL.png";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
-const P = "#5B2D8E";
+const P = "#0B5C2E";
 const GOLD = "#F5A623";
 
 // ─── Status config ────────────────────────────────────────────────────────────
@@ -25,7 +25,7 @@ const STATUS_CONFIG: Record<AppStatus, { label: string; color: string; bg: strin
   under_review:         { label: "Under Review",      color: "#3B82F6", bg: "#DBEAFE", icon: <Eye className="w-3.5 h-3.5" /> },
   approved:             { label: "Approved",          color: "#10B981", bg: "#D1FAE5", icon: <CheckCircle className="w-3.5 h-3.5" /> },
   declined:             { label: "Declined",          color: "#EF4444", bg: "#FEE2E2", icon: <XCircle className="w-3.5 h-3.5" /> },
-  more_info_required:   { label: "More Info Needed",  color: "#8B5CF6", bg: "#EDE9FE", icon: <AlertCircle className="w-3.5 h-3.5" /> },
+  more_info_required:   { label: "More Info Needed",  color: "#34A853", bg: "#EDE9FE", icon: <AlertCircle className="w-3.5 h-3.5" /> },
 };
 
 const TYPE_LABELS: Record<string, string> = {
@@ -35,9 +35,9 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 const TYPE_COLORS: Record<string, string> = {
-  account: "#3949AB", creditCard: "#6B5ED7", loan: "#E53935",
+  account: "#3949AB", creditCard: "#128A43", loan: "#E53935",
   invest: "#1565C0", insure: "#2E7D32", rewards: "#AB47BC",
-  sim: "#F57C00", businessLoan: "#5B2D8E", corporateLoan: "#1A237E",
+  sim: "#F57C00", businessLoan: "#0B5C2E", corporateLoan: "#1A237E",
 };
 
 const REVIEWERS = ["Sarah Mokoena", "Thabo Dlamini", "Priya Naidoo", "James van Berg", "Lindiwe Khumalo"];
@@ -148,7 +148,7 @@ function AppDetailDrawer({ app, onClose, onAction }: {
             <div className="rounded-xl border border-gray-200 p-4 space-y-3">
               <p className="text-xs font-bold text-gray-700 uppercase tracking-wide">Assign to Reviewer</p>
               <div className="flex gap-2">
-                <select className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-purple-400"
+                <select className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-400"
                   value={selectedReviewer} onChange={e => setSelectedReviewer(e.target.value)}>
                   <option value="">Select reviewer…</option>
                   {REVIEWERS.map(r => <option key={r}>{r}</option>)}
@@ -224,14 +224,14 @@ function AppDetailDrawer({ app, onClose, onAction }: {
 
           {showInfoForm && (
             <div className="space-y-2">
-              <p className="text-xs font-bold text-purple-600">Describe the information required</p>
-              <textarea className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-purple-400 resize-none" rows={3}
+              <p className="text-xs font-bold text-emerald-600">Describe the information required</p>
+              <textarea className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400 resize-none" rows={3}
                 placeholder="e.g. Please provide latest 3 months' bank statements…"
                 value={infoNote} onChange={e => setInfoNote(e.target.value)} />
               <div className="flex gap-2">
                 <button onClick={() => { setShowInfoForm(false); setInfoNote(""); }} className="flex-1 py-2 rounded-xl text-xs font-bold text-gray-500 bg-white border border-gray-200">Cancel</button>
                 <button onClick={() => infoNote && doAction("request_info")} disabled={!infoNote || acting === "request_info"}
-                  className="flex-1 py-2 rounded-xl text-xs font-bold text-white disabled:opacity-40" style={{ background: "#8B5CF6" }}>
+                  className="flex-1 py-2 rounded-xl text-xs font-bold text-white disabled:opacity-40" style={{ background: "#34A853" }}>
                   {acting === "request_info" ? "Sending…" : "Send Request"}
                 </button>
               </div>
@@ -254,7 +254,7 @@ function AppDetailDrawer({ app, onClose, onAction }: {
               </button>
               <button onClick={() => setShowInfoForm(true)}
                 className="flex flex-col items-center gap-1.5 py-3 rounded-2xl text-xs font-black text-white transition-all hover:scale-[1.03] active:scale-[0.97]"
-                style={{ background: "linear-gradient(135deg,#8B5CF6,#7C3AED)" }}>
+                style={{ background: "linear-gradient(135deg,#34A853,#FF9900)" }}>
                 <MessageSquare className="w-5 h-5" />
                 More Info
               </button>
@@ -463,7 +463,7 @@ export function AdminDashboard({ isOpen, onClose }: Props) {
                     <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
                       {Object.entries((s?.byType as Record<string,number>) ?? {}).map(([type, count]) => (
                         <button key={type} onClick={() => { setFilterType(type); setFilterStatus(""); setView("applications"); }}
-                          className="rounded-xl p-3 text-center hover:shadow-md transition-all cursor-pointer border border-gray-100 hover:border-purple-200">
+                          className="rounded-xl p-3 text-center hover:shadow-md transition-all cursor-pointer border border-gray-100 hover:border-emerald-200">
                           <p className="text-2xl font-black" style={{ color: TYPE_COLORS[type] ?? P }}>{count}</p>
                           <p className="text-[10px] font-semibold text-gray-500 mt-0.5">{TYPE_LABELS[type] ?? type}</p>
                         </button>
@@ -480,7 +480,7 @@ export function AdminDashboard({ isOpen, onClose }: Props) {
                           Pending Queue — Needs Action
                         </h2>
                         <button onClick={() => { setFilterStatus("pending"); setView("applications"); }}
-                          className="text-xs font-bold text-purple-600 hover:underline">View all →</button>
+                          className="text-xs font-bold text-emerald-600 hover:underline">View all →</button>
                       </div>
                       <div className="space-y-2">
                         {((s?.pendingQueue as Application[]) ?? []).map((app, i) => (
@@ -509,7 +509,7 @@ export function AdminDashboard({ isOpen, onClose }: Props) {
                     <div className="bg-white rounded-2xl border border-gray-100 p-5">
                       <p className="text-sm font-black text-gray-800 mb-1">Contact Form Submissions</p>
                       <p className="text-3xl font-black" style={{ color: P }}>{String(s?.totalContacts ?? 0)}</p>
-                      <button onClick={() => setView("contacts")} className="text-xs text-purple-600 font-semibold mt-2 hover:underline">View all →</button>
+                      <button onClick={() => setView("contacts")} className="text-xs text-emerald-600 font-semibold mt-2 hover:underline">View all →</button>
                     </div>
                     <div className="bg-white rounded-2xl border border-gray-100 p-5">
                       <p className="text-sm font-black text-gray-800 mb-1">Newsletter Subscribers</p>
@@ -537,12 +537,12 @@ export function AdminDashboard({ isOpen, onClose }: Props) {
                   <input className="flex-1 text-sm outline-none bg-transparent" placeholder="Search name, reference, email…"
                     value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} />
                 </div>
-                <select className="border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-purple-400 bg-white"
+                <select className="border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-400 bg-white"
                   value={filterStatus} onChange={e => { setFilterStatus(e.target.value); setPage(1); }}>
                   <option value="">All statuses</option>
                   {Object.entries(STATUS_CONFIG).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
                 </select>
-                <select className="border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-purple-400 bg-white"
+                <select className="border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-400 bg-white"
                   value={filterType} onChange={e => { setFilterType(e.target.value); setPage(1); }}>
                   <option value="">All types</option>
                   {Object.entries(TYPE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
@@ -565,7 +565,7 @@ export function AdminDashboard({ isOpen, onClose }: Props) {
                   <div className="divide-y divide-gray-50">
                     {apps.map((app, i) => (
                       <div key={i}
-                        className={`flex items-center gap-4 px-5 py-3.5 hover:bg-gray-50 transition-colors cursor-pointer ${selectedApp?.referenceNumber === app.referenceNumber ? "bg-purple-50" : ""}`}
+                        className={`flex items-center gap-4 px-5 py-3.5 hover:bg-gray-50 transition-colors cursor-pointer ${selectedApp?.referenceNumber === app.referenceNumber ? "bg-emerald-50" : ""}`}
                         onClick={() => setSelectedApp(selectedApp?.referenceNumber === app.referenceNumber ? null : app)}>
                         <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-black flex-shrink-0"
                           style={{ background: TYPE_COLORS[app.type] ?? P }}>

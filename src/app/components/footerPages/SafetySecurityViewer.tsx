@@ -2,7 +2,7 @@ import { X, Shield, AlertTriangle, CheckCircle } from "lucide-react";
 import vinkLogo from "../../../imports/LOGO_FINAL.png";
 
 interface Props { isOpen: boolean; onClose: () => void; }
-const P = "#5B2D8E";
+const P = "#0B5C2E";
 
 const HOW_VINK_PROTECTS = [
   { icon: "🔍", title: "Real-time fraud monitoring", desc: "Every transaction is monitored 24/7 by our fraud detection engine. Unusual activity is flagged within milliseconds." },

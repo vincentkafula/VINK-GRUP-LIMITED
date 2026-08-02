@@ -70,8 +70,8 @@ export const CATEGORY_CONFIG: Record<ProductCategory, {
     title: "Choose Your Vink Card",
     subtitle: "From your first credit card to a premium Visa Infinite — pick the card that matches your lifestyle.",
     tag: "Personal Banking · Credit Cards",
-    gradient: "linear-gradient(135deg,#4A148C 0%,#6B5ED7 55%,#9585EA 100%)",
-    accentColor: "#6B5ED7",
+    gradient: "linear-gradient(135deg,#4A148C 0%,#128A43 55%,#5FC97F 100%)",
+    accentColor: "#128A43",
   },
   sim: {
     title: "Choose Your Vink SIM Plan",
@@ -97,7 +97,7 @@ export const PRODUCTS: Record<ProductCategory, Product[]> = {
     { id: "everyday", name: "Everyday Checking Account", tagline: "Designed for daily commuters and casual spenders", price: "R0", priceLabel: "/month", emoji: "🚌", gradient: "linear-gradient(135deg,#E8F5E9,#C8E6C9)", features: ["Free taxi fare payments via tap-and-go", "2 free ATM withdrawals/month", "Free airtime and electricity in-app", "Debit order support"] },
     { id: "prime", name: "Prime Checking Account", tagline: "For working adults who want more from their bank", price: "R85", priceLabel: "/month", emoji: "⭐", gradient: "linear-gradient(135deg,#FFF8E1,#FFF3CD)", features: ["5 free ATM withdrawals/month", "Earn 0.5% cashback on all spend", "Overdraft facility up to R5,000", "Dedicated phone support"] },
     { id: "premier", name: "Premier Checking Account", tagline: "For high-earners who need premium everyday banking", price: "R170", priceLabel: "/month", emoji: "💎", gradient: "linear-gradient(135deg,#F3E5F5,#E1BEE7)", features: ["10 free ATM withdrawals at any bank", "1% cashback on all spend", "R15,000 overdraft facility", "Travel notifications included"] },
-    { id: "grain", name: "Grain Account", tagline: "The flagship VINK account — full financial control", price: "R265", priceLabel: "/month", emoji: "🏆", gradient: "linear-gradient(135deg,#5B2D8E,#9585EA)", featured: true, badge: "Most Popular", badgeColor: "#F5A623", features: ["Unlimited ATM withdrawals", "1.5% cashback on all spend", "R30,000 overdraft", "Dedicated relationship manager", "Investment sub-account", "International transfers to 60+ countries"] },
+    { id: "grain", name: "Grain Account", tagline: "The flagship VINK account — full financial control", price: "R265", priceLabel: "/month", emoji: "🏆", gradient: "linear-gradient(135deg,#0B5C2E,#5FC97F)", featured: true, badge: "Most Popular", badgeColor: "#F5A623", features: ["Unlimited ATM withdrawals", "1.5% cashback on all spend", "R30,000 overdraft", "Dedicated relationship manager", "Investment sub-account", "International transfers to 60+ countries"] },
     { id: "animal", name: "Animal Account", tagline: "For high-net-worth individuals", price: "R415", priceLabel: "/month", emoji: "🦁", gradient: "linear-gradient(135deg,#1A1A2E,#4A4A6A)", features: ["Unlimited transactions", "2% cashback on all spend", "Private banking concierge", "R100,000 overdraft", "Multi-currency wallet", "Will and estate planning guidance"] },
   ],
   invest: [

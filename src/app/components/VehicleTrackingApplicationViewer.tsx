@@ -59,7 +59,7 @@ function FingerprintScanner({ onDone }: { onDone: () => void }) {
       <div onClick={!scanning && !done ? start : undefined}
         className="relative w-40 h-40 rounded-3xl flex items-center justify-center cursor-pointer transition-all"
         style={{ background: done ? "#D1FAE5" : scanning ? CP + "15" : "#F3F0FB", border: `3px solid ${done ? GREEN : scanning ? CP : "#DDD6FE"}`, boxShadow: scanning ? `0 0 40px ${CP}35` : done ? `0 0 20px ${GREEN}30` : "none" }}>
-        <Fingerprint className="w-20 h-20" style={{ color: done ? GREEN : scanning ? CP : "#C4B5FD" }} />
+        <Fingerprint className="w-20 h-20" style={{ color: done ? GREEN : scanning ? CP : "#A7E8BD" }} />
         {scanning && <div className="absolute bottom-4 left-4 right-4"><div className="h-2 bg-white/60 rounded-full overflow-hidden"><div className="h-full rounded-full" style={{ width: `${prog}%`, background: CP }} /></div></div>}
         {done && <div className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-green-500 flex items-center justify-center shadow-lg"><CheckCircle className="w-5 h-5 text-white" /></div>}
       </div>

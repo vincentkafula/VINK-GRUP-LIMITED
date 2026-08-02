@@ -5,6 +5,7 @@ import {
   Gift, KeyRound, Loader2,
 } from "lucide-react";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
+import siteHeroBg from "../../imports/assets/site-hero-bg.png";
 import { authApi } from "../services/apiClient";
 import { demoLogin } from "../services/demoMode";
 
@@ -47,7 +48,7 @@ function FormField({
         border: `1px solid ${focused ? "rgba(196,181,253,0.6)" : "rgba(255,255,255,0.14)"}`,
       }}
     >
-      <span className="shrink-0" style={{ color: focused ? "#C4B5FD" : "rgba(255,255,255,0.55)" }}>
+      <span className="shrink-0" style={{ color: focused ? "#A7E8BD" : "rgba(255,255,255,0.55)" }}>
         {icon}
       </span>
       <span className="flex-1 min-w-0">
@@ -147,8 +148,8 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
           maxWidth: 1180,
           maxHeight: "96vh",
           borderRadius: 20,
-          background: "#0F0620",
-          border: "1px solid rgba(139,92,246,0.25)",
+          background: "#0B2E1C",
+          border: "1px solid rgba(52,168,83,0.25)",
           boxShadow: "0 40px 100px rgba(0,0,0,0.75)",
         }}
         onClick={e => e.stopPropagation()}
@@ -178,9 +179,10 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
           {/* ── Left: auth panel ── */}
           <div
             className="w-full lg:w-[420px] shrink-0 p-6 sm:p-8 relative overflow-hidden"
-            style={{ background: "linear-gradient(160deg,#1A0A3C 0%,#12082B 55%,#0D0620 100%)" }}
+            style={{ background: "linear-gradient(160deg,#0F3D24 0%,#0B2E1C 55%,#081A10 100%)" }}
           >
-            <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full" style={{ background: "radial-gradient(circle,rgba(139,92,246,0.25),transparent 70%)" }} />
+            <img src={siteHeroBg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-[0.16] mix-blend-luminosity" />
+            <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full" style={{ background: "radial-gradient(circle,rgba(52,168,83,0.25),transparent 70%)" }} />
 
             <div className="relative z-10">
               <div className="flex items-start justify-between mb-8">
@@ -192,7 +194,7 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
               </div>
 
               <h2 className="text-white text-[26px] font-bold leading-tight">Welcome back</h2>
-              <p className="text-[#C4B5FD] text-sm font-medium mb-6">Log in to your account</p>
+              <p className="text-[#A7E8BD] text-sm font-medium mb-6">Log in to your account</p>
 
               <form onSubmit={handleSubmit} className="space-y-3">
                 <FormField
@@ -233,7 +235,7 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
                 )}
 
                 <div className="flex items-center justify-between pt-3">
-                  <button type="button" className="text-[#C4B5FD] text-sm font-semibold hover:underline">
+                  <button type="button" className="text-[#A7E8BD] text-sm font-semibold hover:underline">
                     Forgot PIN?
                   </button>
                   <button
@@ -241,9 +243,9 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
                     disabled={!canSubmit}
                     className="flex items-center gap-1.5 px-6 py-2.5 rounded-xl font-semibold text-sm transition-opacity disabled:opacity-50"
                     style={{
-                      background: "linear-gradient(135deg,#7C3AED,#A78BFA)",
+                      background: "linear-gradient(135deg,#FF9900,#FFB84D)",
                       color: "white",
-                      boxShadow: "0 6px 20px rgba(124,58,237,0.4)",
+                      boxShadow: "0 6px 20px rgba(255,153,0,0.4)",
                     }}
                   >
                     {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Next <ChevronRight className="w-4 h-4" /></>}
@@ -263,11 +265,11 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
                   className="w-full flex items-center gap-4 px-5 py-4 text-left hover:bg-black/[0.02] transition-colors"
                   style={{ borderBottom: i < INFO_LINKS.length - 1 ? "1px solid rgba(0,0,0,0.06)" : "none" }}
                 >
-                  <span className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: "rgba(124,58,237,0.1)", color: "#7C3AED" }}>
+                  <span className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: "rgba(255,153,0,0.1)", color: "#FF9900" }}>
                     {item.icon}
                   </span>
                   <span className="flex-1 min-w-0">
-                    <span className="block text-[#1A0A3C] text-sm font-semibold">{item.title}</span>
+                    <span className="block text-[#0F3D24] text-sm font-semibold">{item.title}</span>
                     <span className="block text-black/40 text-xs mt-0.5">{item.subtitle}</span>
                   </span>
                   <ChevronRight className="w-4 h-4 text-black/30 shrink-0" />
@@ -278,33 +280,33 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
             {/* Promo card */}
             <div className="rounded-2xl p-6 mb-5 relative overflow-hidden" style={{ background: "linear-gradient(135deg,#F3EEFF,#FCEFE9)" }}>
               <div className="relative z-10 max-w-[70%]">
-                <p className="text-[#1A0A3C] text-lg font-bold leading-snug">VINK Online login has a new look!</p>
+                <p className="text-[#0F3D24] text-lg font-bold leading-snug">VINK Online login has a new look!</p>
                 <p className="text-black/50 text-sm mt-1.5 mb-4">But don't worry, it still works the same way.</p>
-                <button className="px-4 py-2 rounded-lg text-white text-sm font-semibold" style={{ background: "#1A0A3C" }}>
+                <button className="px-4 py-2 rounded-lg text-white text-sm font-semibold" style={{ background: "#0F3D24" }}>
                   Explore more ways
                 </button>
               </div>
-              <Sparkles className="absolute top-5 right-6 w-8 h-8 text-[#C4B5FD]" />
-              <div className="absolute -bottom-6 -right-6 w-32 h-32 rounded-2xl rotate-6" style={{ background: "linear-gradient(135deg,#7C3AED,#312061)" }} />
+              <Sparkles className="absolute top-5 right-6 w-8 h-8 text-[#A7E8BD]" />
+              <div className="absolute -bottom-6 -right-6 w-32 h-32 rounded-2xl rotate-6" style={{ background: "linear-gradient(135deg,#FF9900,#145C34)" }} />
             </div>
 
             {/* Bottom two-up strip */}
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="rounded-2xl bg-white border border-black/5 p-5 flex flex-col gap-3">
-                <ShieldCheck className="w-8 h-8 text-[#7C3AED]" />
-                <p className="text-[#1A0A3C] text-sm font-semibold leading-snug">
+                <ShieldCheck className="w-8 h-8 text-[#FF9900]" />
+                <p className="text-[#0F3D24] text-sm font-semibold leading-snug">
                   Keep your PINs, passwords and transaction verifications safe.
                 </p>
-                <button className="self-start px-4 py-2 rounded-lg border border-[#1A0A3C] text-[#1A0A3C] text-xs font-semibold hover:bg-[#1A0A3C] hover:text-white transition-colors">
+                <button className="self-start px-4 py-2 rounded-lg border border-[#0F3D24] text-[#0F3D24] text-xs font-semibold hover:bg-[#0F3D24] hover:text-white transition-colors">
                   Learn more
                 </button>
               </div>
               <div className="rounded-2xl bg-white border border-black/5 p-5 flex flex-col gap-3">
-                <Gift className="w-8 h-8 text-[#7C3AED]" />
-                <p className="text-[#1A0A3C] text-sm font-semibold leading-snug">
+                <Gift className="w-8 h-8 text-[#FF9900]" />
+                <p className="text-[#0F3D24] text-sm font-semibold leading-snug">
                   Free rewards, better banking and more value.
                 </p>
-                <button className="self-start px-4 py-2 rounded-lg border border-[#1A0A3C] text-[#1A0A3C] text-xs font-semibold hover:bg-[#1A0A3C] hover:text-white transition-colors">
+                <button className="self-start px-4 py-2 rounded-lg border border-[#0F3D24] text-[#0F3D24] text-xs font-semibold hover:bg-[#0F3D24] hover:text-white transition-colors">
                   Learn more
                 </button>
               </div>
@@ -315,7 +317,7 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
         {/* ── Footer ── */}
         <div
           className="flex-shrink-0 px-5 py-3 flex flex-col sm:flex-row items-center justify-between gap-2"
-          style={{ background: "#1A0A3C", borderTop: "1px solid rgba(255,255,255,0.08)" }}
+          style={{ background: "#0F3D24", borderTop: "1px solid rgba(255,255,255,0.08)" }}
         >
           <p className="text-white/40 text-[11px] text-center sm:text-left">
             © VINK Group. Registered financial services provider.

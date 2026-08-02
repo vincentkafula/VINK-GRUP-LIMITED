@@ -27,7 +27,7 @@ interface SnapData { [key: string]: number | string }
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const STATUS_COLOR: Record<string, string> = {
   moving: "#10B981", idle: "#F59E0B", stopped: "#6B7280",
-  offline: "#EF4444", maintenance: "#8B5CF6",
+  offline: "#EF4444", maintenance: "#34A853",
 };
 const ALERT_COLOR: Record<string, string> = {
   critical: "#EF4444", warning: "#F59E0B", info: "#3B82F6",
@@ -319,13 +319,13 @@ export function VehicleTrackingDashboard({ isOpen, onClose }: { isOpen: boolean;
     : vehicles.filter(v => v.status === statusFilter);
 
   const kpiCards = [
-    { label: "Total Vehicles",   value: snapshot ? String(snapshot.totalVehicles)           : "—", color: "#6B5ED7", icon: <Truck className="w-4 h-4" /> },
+    { label: "Total Vehicles",   value: snapshot ? String(snapshot.totalVehicles)           : "—", color: "#128A43", icon: <Truck className="w-4 h-4" /> },
     { label: "Moving Now",       value: snapshot ? String(snapshot.movingNow)               : "—", color: "#10B981", icon: <Navigation className="w-4 h-4" /> },
     { label: "Idle",             value: snapshot ? String(snapshot.idleNow)                 : "—", color: "#F59E0B", icon: <Clock className="w-4 h-4" /> },
     { label: "Offline",          value: snapshot ? String(snapshot.offlineNow)              : "—", color: "#EF4444", icon: <Activity className="w-4 h-4" /> },
     { label: "Active Alerts",    value: String(alertMeta.active ?? alerts.filter(a => !a.resolvedAt).length), color: "#F97316", icon: <Bell className="w-4 h-4" /> },
     { label: "Avg Speed",        value: snapshot ? `${Number(snapshot.avgSpeedKph).toFixed(0)} km/h`  : "—", color: "#3B82F6", icon: <Zap className="w-4 h-4" /> },
-    { label: "Avg Fuel",         value: snapshot ? `${Number(snapshot.avgFuelPercent).toFixed(0)}%`   : "—", color: "#8B5CF6", icon: <Fuel className="w-4 h-4" /> },
+    { label: "Avg Fuel",         value: snapshot ? `${Number(snapshot.avgFuelPercent).toFixed(0)}%`   : "—", color: "#34A853", icon: <Fuel className="w-4 h-4" /> },
     { label: "Km Today",         value: snapshot ? `${Number(snapshot.totalKmToday).toFixed(0)} km`   : "—", color: "#0EA5E9", icon: <TrendingUp className="w-4 h-4" /> },
   ];
 
@@ -468,9 +468,9 @@ export function VehicleTrackingDashboard({ isOpen, onClose }: { isOpen: boolean;
                         <button key={s} onClick={() => setStatusFilter(s)}
                           className="px-3 py-1 rounded-full text-[10px] font-semibold transition-all capitalize"
                           style={{
-                            background: statusFilter === s ? (STATUS_COLOR[s] ?? "#6B5ED7") + "33" : "#252245",
-                            color: statusFilter === s ? (STATUS_COLOR[s] ?? "#9585EA") : "#8884AA",
-                            border: `1px solid ${statusFilter === s ? (STATUS_COLOR[s] ?? "#6B5ED7") + "66" : "#3D3A6A"}`,
+                            background: statusFilter === s ? (STATUS_COLOR[s] ?? "#128A43") + "33" : "#252245",
+                            color: statusFilter === s ? (STATUS_COLOR[s] ?? "#5FC97F") : "#8884AA",
+                            border: `1px solid ${statusFilter === s ? (STATUS_COLOR[s] ?? "#128A43") + "66" : "#3D3A6A"}`,
                           }}>
                           {s} {s !== "all" && `(${vehicles.filter(v => v.status === s).length})`}
                         </button>
@@ -634,7 +634,7 @@ export function VehicleTrackingDashboard({ isOpen, onClose }: { isOpen: boolean;
                             <td className="px-4 py-3" style={{ color: "#8884AA" }}>12.6V</td>
                             <td className="px-4 py-3" style={{ color: "#8884AA" }}>{timeAgo(v.lastSeen)}</td>
                             <td className="px-4 py-3">
-                              <button className="px-2 py-1 rounded text-[10px]" style={{ background: "#6B5ED722", color: "#9585EA" }}>Track</button>
+                              <button className="px-2 py-1 rounded text-[10px]" style={{ background: "#128A4322", color: "#5FC97F" }}>Track</button>
                             </td>
                           </tr>
                         ))}
@@ -725,7 +725,7 @@ export function VehicleTrackingDashboard({ isOpen, onClose }: { isOpen: boolean;
                       {[
                         { label: "4G LTE",     pct: 72, color: "#3B82F6" },
                         { label: "3G",         pct: 18, color: "#F59E0B" },
-                        { label: "Satellite",  pct: 6,  color: "#8B5CF6" },
+                        { label: "Satellite",  pct: 6,  color: "#34A853" },
                         { label: "Offline",    pct: 4,  color: "#EF4444" },
                       ].map((c, i) => (
                         <div key={i} className="flex items-center gap-3 mb-2">
@@ -765,7 +765,7 @@ export function VehicleTrackingDashboard({ isOpen, onClose }: { isOpen: boolean;
                               <td className="px-4 py-3">
                                 <div className="flex items-center gap-2">
                                   <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white"
-                                    style={{ background: "#6B5ED7" }}>{d.avatarInitials as string}</div>
+                                    style={{ background: "#128A43" }}>{d.avatarInitials as string}</div>
                                   <span className="text-white font-medium">{d.name as string}</span>
                                 </div>
                               </td>
@@ -914,7 +914,7 @@ export function VehicleTrackingDashboard({ isOpen, onClose }: { isOpen: boolean;
                         <div className="h-2 rounded-full" style={{ background: "#2D2A50" }}>
                           <div className="h-full rounded-full" style={{
                             width: `${((f.count as number) / 50) * 100}%`,
-                            background: ["#6B5ED7","#10B981","#F59E0B","#EF4444","#8B5CF6"][i % 5],
+                            background: ["#128A43","#10B981","#F59E0B","#EF4444","#34A853"][i % 5],
                           }} />
                         </div>
                       </div>
@@ -928,7 +928,7 @@ export function VehicleTrackingDashboard({ isOpen, onClose }: { isOpen: boolean;
                       <div key={i} className="flex items-center gap-3 mb-3">
                         <span className="text-xs w-20 capitalize" style={{ color: STATUS_COLOR[s.status as string] ?? "#8884AA" }}>{s.status as string}</span>
                         <div className="flex-1 h-2 rounded-full" style={{ background: "#2D2A50" }}>
-                          <div className="h-full rounded-full" style={{ width: `${((s.count as number) / 50) * 100}%`, background: STATUS_COLOR[s.status as string] ?? "#6B5ED7" }} />
+                          <div className="h-full rounded-full" style={{ width: `${((s.count as number) / 50) * 100}%`, background: STATUS_COLOR[s.status as string] ?? "#128A43" }} />
                         </div>
                         <span className="text-xs font-bold text-white w-6 text-right">{s.count as number}</span>
                       </div>

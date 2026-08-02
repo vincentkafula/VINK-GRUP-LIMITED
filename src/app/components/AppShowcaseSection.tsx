@@ -3,7 +3,7 @@ import { memo } from "react";
 interface Props { onOpenApps: () => void; }
 
 const APPS = [
-  { emoji: "🚌", name: "Vink AFC Terminal",  sub: "T-T20 · Fare collection",         gradient: "linear-gradient(135deg,#5B2D8E,#9585EA)", platform: "iOS · Android" },
+  { emoji: "🚌", name: "Vink AFC Terminal",  sub: "T-T20 · Fare collection",         gradient: "linear-gradient(135deg,#0B5C2E,#5FC97F)", platform: "iOS · Android" },
   { emoji: "📍", name: "Vink Fleet Tracker", sub: "Vehicle tracking",         gradient: "linear-gradient(135deg,#065F46,#10B981)", platform: "iOS · Android" },
   { emoji: "💳", name: "Vink Banking",        sub: "Personal & business",      gradient: "linear-gradient(135deg,#3B2D8E,#7B6FE8)", platform: "iOS · Android" },
   { emoji: "🚗", name: "Vink Driver",         sub: "Earn · Drive · Get paid",  gradient: "linear-gradient(135deg,#0F172A,#14B8A6)", platform: "iOS · Android" },
@@ -12,7 +12,7 @@ const APPS = [
 ];
 
 export const AppShowcaseSection = memo(function AppShowcaseSection({ onOpenApps }: Props) {
-  const P = "#5B2D8E";
+  const P = "#0B5C2E";
 
   return (
     <section className="py-16 sm:py-20" style={{ background: "#0A0A14" }}>
@@ -57,7 +57,7 @@ export const AppShowcaseSection = memo(function AppShowcaseSection({ onOpenApps 
           <button
             onClick={onOpenApps}
             className="inline-flex items-center gap-3 px-8 py-4 rounded-2xl text-white font-black text-base transition-all hover:scale-105 active:scale-95 shadow-xl"
-            style={{ background: `linear-gradient(135deg,${P},#9585EA)`, boxShadow: `0 8px 32px ${P}50` }}
+            style={{ background: `linear-gradient(135deg,${P},#5FC97F)`, boxShadow: `0 8px 32px ${P}50` }}
           >
             <span className="text-2xl">📲</span>
             Browse All Apps

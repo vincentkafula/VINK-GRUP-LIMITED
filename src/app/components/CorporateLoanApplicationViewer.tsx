@@ -193,7 +193,7 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
                 disabled={!allEligible}
                 onClick={() => { setEligibilityConfirmed(true); setStep(2); }}
                 className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:scale-105 shadow-md disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
-                style={{ background: allEligible ? `linear-gradient(135deg,${CP},#9585EA)` : "#9CA3AF" }}>
+                style={{ background: allEligible ? `linear-gradient(135deg,${CP},#5FC97F)` : "#9CA3AF" }}>
                 Confirm eligibility &amp; continue →
               </button>
             </div>
@@ -307,7 +307,7 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
               <div className="space-y-2">
                 {LOAN_PRODUCTS.map(p => (
                   <label key={p.id}
-                    className="flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all hover:border-purple-200 select-none"
+                    className="flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all hover:border-emerald-200 select-none"
                     style={{ borderColor: selectedProduct === p.id ? CP : "#E5E7EB", background: selectedProduct === p.id ? CP + "06" : "#fff" }}>
                     <div className="w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all"
                       style={{ borderColor: selectedProduct === p.id ? CP : "#D1D5DB" }}>
@@ -436,7 +436,7 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
               </p>
               <label className="flex items-start gap-3 cursor-pointer mt-2">
                 <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)}
-                  className="mt-0.5 w-4 h-4 accent-purple-700 flex-shrink-0 rounded" />
+                  className="mt-0.5 w-4 h-4 accent-emerald-700 flex-shrink-0 rounded" />
                 <span className="text-sm font-semibold text-gray-700">
                   I confirm the above declaration and consent to the processing of this application
                 </span>
@@ -516,7 +516,7 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
 
             <button onClick={onClose}
               className="w-full py-3.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 shadow-lg"
-              style={{ background: `linear-gradient(135deg,${CP},#9585EA)` }}>
+              style={{ background: `linear-gradient(135deg,${CP},#5FC97F)` }}>
               Back to VINK Corporate Banking
             </button>
           </div>

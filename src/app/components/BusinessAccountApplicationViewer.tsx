@@ -4,7 +4,7 @@ import vinkLogo from "../../imports/LOGO_FINAL.png";
 
 interface Props { isOpen: boolean; onClose: () => void; initialAccountType?: string; }
 
-const PURPLE = "#5B2D8E";
+const PURPLE = "#0B5C2E";
 const GREEN  = "#10B981";
 
 // ─── Step definitions ─────────────────────────────────────────────────────────
@@ -189,7 +189,7 @@ function Step4({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
         <h2 className="text-base font-bold text-gray-900 mb-0.5">Selfie Confirmation</h2>
         <p className="text-xs text-gray-500">Section 4 — Upload a clear selfie to confirm your identity</p>
       </div>
-      <div className="border-2 border-dashed border-gray-200 rounded-2xl p-10 text-center cursor-pointer hover:border-purple-300 hover:bg-purple-50 transition-colors"
+      <div className="border-2 border-dashed border-gray-200 rounded-2xl p-10 text-center cursor-pointer hover:border-emerald-300 hover:bg-emerald-50 transition-colors"
         onClick={() => fileRef.current?.click()}>
         {!captured ? (
           <>
@@ -234,7 +234,7 @@ function Step5({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
       </div>
       <div className="space-y-3">
         {docs.map(d => (
-          <label key={d.key} className="flex items-center justify-between p-4 bg-white border rounded-xl cursor-pointer hover:border-purple-300 hover:bg-purple-50 transition-colors"
+          <label key={d.key} className="flex items-center justify-between p-4 bg-white border rounded-xl cursor-pointer hover:border-emerald-300 hover:bg-emerald-50 transition-colors"
             style={{ borderColor: uploaded[d.key] ? GREEN : "#E5E7EB" }}>
             <div className="flex items-center gap-3">
               {uploaded[d.key]
@@ -286,7 +286,7 @@ function Step6({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-b border-gray-100">
             <div className="flex items-center gap-2">
-              <input type="checkbox" checked={dir.verified} readOnly className="w-4 h-4 accent-purple-600" />
+              <input type="checkbox" checked={dir.verified} readOnly className="w-4 h-4 accent-emerald-600" />
               <span className="text-sm font-semibold text-gray-900">
                 Director {idx + 1}{idx === 0 ? " (Primary applicant)" : ""}
               </span>
@@ -346,7 +346,7 @@ function Step6({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
                 </div>
 
                 {/* Document upload */}
-                <label className="flex items-center justify-center gap-2 p-4 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-purple-300 hover:bg-purple-50 transition-colors text-sm text-gray-500"
+                <label className="flex items-center justify-center gap-2 p-4 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-emerald-300 hover:bg-emerald-50 transition-colors text-sm text-gray-500"
                   onClick={() => setUploadingId(dir.id)}>
                   <Upload className="w-4 h-4" />
                   Upload director documents — click to upload
@@ -365,7 +365,7 @@ function Step6({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
 
       {/* Add director */}
       <button onClick={addDir}
-        className="flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all hover:bg-purple-50"
+        className="flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all hover:bg-emerald-50"
         style={{ borderColor: PURPLE, color: PURPLE }}>
         <Plus className="w-4 h-4" />
         Add another director
@@ -482,7 +482,7 @@ function Step7({ onBack, onClose, initialAccountType }: { onBack: () => void; on
       {/* Terms */}
       <label className="flex items-start gap-3 cursor-pointer">
         <input type="checkbox" checked={agreeTerms} onChange={e => setAgreeTerms(e.target.checked)}
-          className="mt-0.5 w-4 h-4 accent-purple-600 flex-shrink-0" />
+          className="mt-0.5 w-4 h-4 accent-emerald-600 flex-shrink-0" />
         <p className="text-xs text-gray-600 leading-relaxed">
           I confirm that all information provided is accurate and complete. I authorise VINK to perform FICA verification, credit checks, and to open the selected business account on behalf of the registered entity. I have read and agree to the <span className="font-semibold" style={{ color: PURPLE }}>Terms and Conditions</span> and <span className="font-semibold" style={{ color: PURPLE }}>Privacy Policy</span>.
         </p>
@@ -558,7 +558,7 @@ export function BusinessAccountApplicationViewer({ isOpen, onClose, initialAccou
       <style>{`
         .field-label { display: block; font-size: 11px; font-weight: 600; color: #6B7280; margin-bottom: 4px; }
         .field-input { width: 100%; border: 1px solid #E5E7EB; border-radius: 10px; padding: 9px 14px; font-size: 13px; outline: none; background: #fff; color: #111827; }
-        .field-input:focus { border-color: #5B2D8E; }
+        .field-input:focus { border-color: #0B5C2E; }
       `}</style>
 
       <div className="fixed inset-0 z-50 flex flex-col bg-gray-50">

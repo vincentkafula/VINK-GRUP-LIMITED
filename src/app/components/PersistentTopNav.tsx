@@ -45,13 +45,13 @@ export function PersistentTopNav({ active, onSelect, onHome }: Props) {
                 className="relative whitespace-nowrap flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-semibold transition-all duration-150"
                 style={{
                   color: isActive ? "#fff" : "#6B7280",
-                  background: isActive ? "linear-gradient(135deg,#6B5ED7,#5B2D8E)" : "transparent",
-                  boxShadow: isActive ? "0 4px 14px -4px rgba(91,45,142,0.5)" : "none",
+                  background: isActive ? "linear-gradient(135deg,#128A43,#0B5C2E)" : "transparent",
+                  boxShadow: isActive ? "0 4px 14px -4px rgba(11,92,46,0.5)" : "none",
                 }}
                 onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = "#F6F5FF"; }}
                 onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
               >
-                <span className={isActive ? "text-white" : "text-[#6B5ED7]"}>{icon}</span>
+                <span className={isActive ? "text-white" : "text-[#128A43]"}>{icon}</span>
                 <span className="hidden xs:inline sm:inline">{label}</span>
               </button>
             );

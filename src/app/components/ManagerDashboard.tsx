@@ -95,7 +95,7 @@ export function ManagerDashboard({ user, onSignOut }: Props) {
               <div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
                   <StatCard label="Total customers" value={String(customers.length)} icon={<Users className="w-4 h-4" />} accent="#0066CC" />
-                  <StatCard label="Total sellers" value={String(sellers.length)} icon={<Store className="w-4 h-4" />} accent="#8B5CF6" />
+                  <StatCard label="Total sellers" value={String(sellers.length)} icon={<Store className="w-4 h-4" />} accent="#34A853" />
                   <StatCard label="Total products" value={String(stats?.totalProducts ?? 0)} icon={<Package className="w-4 h-4" />} accent="#10B981" />
                   <StatCard label="Total orders" value={String(stats?.totalOrders ?? 0)} icon={<ShoppingBag className="w-4 h-4" />} accent="#F59E0B" />
                   <StatCard label="Platform revenue" value={fmtZAR(Number(stats?.totalRevenue ?? 0))} icon={<DollarSign className="w-4 h-4" />} accent="#059669" />
@@ -108,7 +108,7 @@ export function ManagerDashboard({ user, onSignOut }: Props) {
                   <p className="text-sm font-bold text-gray-900 mb-3">Top Categories</p>
                   {topCategories.length === 0 ? <p className="text-sm text-gray-400 text-center py-8">No data yet.</p> : (
                     <ResponsiveContainer width="100%" height={200}>
-                      <BarChart data={topCategories}><CartesianGrid strokeDasharray="3 3" vertical={false} /><XAxis dataKey="name" tick={{ fontSize: 11 }} /><YAxis tick={{ fontSize: 11 }} /><Tooltip /><Bar dataKey="count" fill="#8B5CF6" radius={[4,4,0,0]} /></BarChart>
+                      <BarChart data={topCategories}><CartesianGrid strokeDasharray="3 3" vertical={false} /><XAxis dataKey="name" tick={{ fontSize: 11 }} /><YAxis tick={{ fontSize: 11 }} /><Tooltip /><Bar dataKey="count" fill="#34A853" radius={[4,4,0,0]} /></BarChart>
                     </ResponsiveContainer>
                   )}
                 </div>
@@ -203,7 +203,7 @@ export function ManagerDashboard({ user, onSignOut }: Props) {
               <div>
                 <div className="grid sm:grid-cols-3 gap-3 mb-5">
                   <StatCard label="Platform revenue" value={fmtZAR(Number(stats?.totalRevenue ?? 0))} icon={<DollarSign className="w-4 h-4" />} accent="#059669" />
-                  <StatCard label="Average commission" value={`${sellers.length ? (sellers.reduce((s, x) => s + Number(x.commissionPct ?? 0), 0) / sellers.length).toFixed(1) : 0}%`} icon={<Percent className="w-4 h-4" />} accent="#8B5CF6" />
+                  <StatCard label="Average commission" value={`${sellers.length ? (sellers.reduce((s, x) => s + Number(x.commissionPct ?? 0), 0) / sellers.length).toFixed(1) : 0}%`} icon={<Percent className="w-4 h-4" />} accent="#34A853" />
                   <StatCard label="Total orders" value={String(orders.length)} icon={<ShoppingBag className="w-4 h-4" />} accent="#0066CC" />
                 </div>
                 <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">

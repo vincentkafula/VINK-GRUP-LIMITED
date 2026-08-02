@@ -13,7 +13,7 @@ interface Props { isOpen: boolean; onClose: () => void; }
 
 const BASE = `https://${projectId}.supabase.co/functions/v1/make-server-3f39932e/club`;
 
-const P = "#5B2D8E";
+const P = "#0B5C2E";
 const GOLD = "#F5A623";
 const GREEN = "#10B981";
 const TEAL = "#0EA5E9";
@@ -92,7 +92,7 @@ function RouteCard({ route, onClick }: { route: Route; onClick: () => void }) {
         <ProgressBar pct={route.fillPct} color={urgency} />
         <div className="flex items-center justify-between">
           {route.visaRequired && (
-            <span className="text-[10px] font-bold flex items-center gap-1" style={{ color: "#7C3AED" }}>
+            <span className="text-[10px] font-bold flex items-center gap-1" style={{ color: "#FF9900" }}>
               <Globe className="w-3 h-3" />Visa required — we can help
             </span>
           )}
@@ -178,7 +178,7 @@ export function ClubBookingViewer({ isOpen, onClose }: Props) {
 
   if (!isOpen) return null;
 
-  const inputCls = "w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-100 transition-all bg-white";
+  const inputCls = "w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 transition-all bg-white";
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-gray-50">
@@ -312,7 +312,7 @@ export function ClubBookingViewer({ isOpen, onClose }: Props) {
             </div>
 
             {loading ? (
-              <div className="flex justify-center py-16"><div className="w-8 h-8 border-2 border-purple-200 border-t-purple-700 rounded-full animate-spin" /></div>
+              <div className="flex justify-center py-16"><div className="w-8 h-8 border-2 border-emerald-200 border-t-purple-700 rounded-full animate-spin" /></div>
             ) : (
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredRoutes.map(r => <RouteCard key={r.id} route={r} onClick={() => { setSelectedRoute(r); setScreen("detail"); }} />)}
@@ -387,8 +387,8 @@ export function ClubBookingViewer({ isOpen, onClose }: Props) {
               </div>
               {selectedRoute.visaRequired && (
                 <div className="rounded-xl p-4" style={{ background: "#F3E8FF", border: "1px solid #DDD6FE" }}>
-                  <p className="text-sm font-bold text-purple-800 flex items-center gap-2"><Globe className="w-4 h-4" />Visa required for {selectedRoute.visaCountry}</p>
-                  <p className="text-xs text-purple-700 mt-1">VINK can assist with your visa application. We handle document preparation and submission guidance.</p>
+                  <p className="text-sm font-bold text-emerald-800 flex items-center gap-2"><Globe className="w-4 h-4" />Visa required for {selectedRoute.visaCountry}</p>
+                  <p className="text-xs text-emerald-700 mt-1">VINK can assist with your visa application. We handle document preparation and submission guidance.</p>
                   <button onClick={() => { setVisaForm(f => ({ ...f, country: selectedRoute.visaCountry ?? "", travelDate: selectedRoute.departureDate, returnDate: selectedRoute.returnDate })); setScreen("visa"); }}
                     className="mt-2 text-xs font-bold px-3 py-1.5 rounded-lg text-white" style={{ background: P }}>
                     Start Visa Application →
@@ -400,7 +400,7 @@ export function ClubBookingViewer({ isOpen, onClose }: Props) {
             {/* CTA */}
             <button onClick={() => setScreen("book")} disabled={selectedRoute.full}
               className="w-full py-4 rounded-2xl text-base font-black text-white transition-all hover:opacity-90 disabled:opacity-50 shadow-lg"
-              style={{ background: selectedRoute.full ? "#6B7280" : `linear-gradient(135deg,${P},#9585EA)` }}>
+              style={{ background: selectedRoute.full ? "#6B7280" : `linear-gradient(135deg,${P},#5FC97F)` }}>
               {selectedRoute.full ? "Route Full — Join Waitlist" : `Book My Seat — ${fmt(selectedRoute.pricePerSeat)}`}
             </button>
           </div>
@@ -440,7 +440,7 @@ export function ClubBookingViewer({ isOpen, onClose }: Props) {
             </div>
 
             {/* Price summary */}
-            <div className="bg-purple-50 rounded-2xl border border-purple-200 p-4">
+            <div className="bg-emerald-50 rounded-2xl border border-emerald-200 p-4">
               <div className="flex justify-between mb-2">
                 <span className="text-sm text-gray-700">{bkForm.seats} × seat @ {fmt(selectedRoute.pricePerSeat)}</span>
                 <span className="font-bold text-gray-900">{fmt(selectedRoute.pricePerSeat * +bkForm.seats)}</span>
@@ -449,7 +449,7 @@ export function ClubBookingViewer({ isOpen, onClose }: Props) {
                 <span>You save vs retail</span>
                 <span className="text-green-600 font-semibold">- {fmt((selectedRoute.originalPrice - selectedRoute.pricePerSeat) * +bkForm.seats)}</span>
               </div>
-              <div className="border-t border-purple-200 pt-2 flex justify-between">
+              <div className="border-t border-emerald-200 pt-2 flex justify-between">
                 <span className="font-black text-gray-900">Total to pay now</span>
                 <span className="font-black text-xl" style={{ color: P }}>{fmt(selectedRoute.pricePerSeat * +bkForm.seats)}</span>
               </div>
@@ -460,7 +460,7 @@ export function ClubBookingViewer({ isOpen, onClose }: Props) {
 
             <button onClick={submitBooking} disabled={bkLoading}
               className="w-full py-4 rounded-2xl text-base font-black text-white transition-all hover:opacity-90 disabled:opacity-60 shadow-lg flex items-center justify-center gap-2"
-              style={{ background: `linear-gradient(135deg,${P},#9585EA)` }}>
+              style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
               {bkLoading ? <><div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />Processing…</> : `Confirm Booking — ${fmt(selectedRoute.pricePerSeat * +bkForm.seats)}`}
             </button>
           </div>
@@ -501,7 +501,7 @@ export function ClubBookingViewer({ isOpen, onClose }: Props) {
               )}
               <div className="flex flex-col gap-2">
                 {selectedRoute?.visaRequired && (
-                  <button onClick={() => setScreen("visa")} className="w-full py-3 rounded-xl text-sm font-bold text-white" style={{ background: "#7C3AED" }}>
+                  <button onClick={() => setScreen("visa")} className="w-full py-3 rounded-xl text-sm font-bold text-white" style={{ background: "#FF9900" }}>
                     <Globe className="w-4 h-4 inline mr-1.5" />Apply for {selectedRoute.visaCountry} Visa Now
                   </button>
                 )}
@@ -533,7 +533,7 @@ export function ClubBookingViewer({ isOpen, onClose }: Props) {
                 { country: "Canada", flag: "🇨🇦", fee: "R3,800", time: "4–8 weeks", type: "Temporary Resident Visa" },
               ].map((v, i) => (
                 <button key={i} onClick={() => setVisaForm(f => ({ ...f, country: v.country }))}
-                  className="p-3 rounded-xl border-2 text-left transition-all hover:border-purple-300"
+                  className="p-3 rounded-xl border-2 text-left transition-all hover:border-emerald-300"
                   style={{ borderColor: visaForm.country === v.country ? P : "#E5E7EB", background: visaForm.country === v.country ? P+"08" : "#fff" }}>
                   <span className="text-2xl block mb-1">{v.flag}</span>
                   <p className="text-xs font-black text-gray-900">{v.country}</p>
@@ -602,7 +602,7 @@ export function ClubBookingViewer({ isOpen, onClose }: Props) {
 
             <button onClick={submitVisa} disabled={visaLoading || !visaForm.name || !visaForm.email || !visaForm.passport || !visaForm.country}
               className="w-full py-4 rounded-2xl text-base font-black text-white transition-all hover:opacity-90 disabled:opacity-50 shadow-lg flex items-center justify-center gap-2"
-              style={{ background: `linear-gradient(135deg,#7C3AED,#9333EA)` }}>
+              style={{ background: `linear-gradient(135deg,#FF9900,#9333EA)` }}>
               {visaLoading ? <><div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />Submitting…</> : "Submit Visa Application"}
             </button>
           </div>
@@ -610,7 +610,7 @@ export function ClubBookingViewer({ isOpen, onClose }: Props) {
 
         {/* ══ VISA SUCCESS ══════════════════════════════════════════════════════ */}
         {screen === "visaSuccess" && confirmedVisa && (
-          <div className="bg-white rounded-2xl border border-purple-200 p-8 text-center space-y-4 shadow-sm">
+          <div className="bg-white rounded-2xl border border-emerald-200 p-8 text-center space-y-4 shadow-sm">
             <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto text-4xl" style={{ background: "#F3E8FF" }}>🛂</div>
             <div>
               <h2 className="text-2xl font-black text-gray-900">Visa Application Received!</h2>

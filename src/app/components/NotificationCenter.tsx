@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Bell, X, Check, CheckCheck, Trash2, Settings, TrendingUp, Shield, CreditCard, Tag, AlertCircle, Plane, ChevronRight } from "lucide-react";
 
-const P = "#5B2D8E";
+const P = "#0B5C2E";
 const GOLD = "#F5A623";
 
 type NotifType = "transaction" | "security" | "account" | "promotion" | "system" | "kyc" | "loan" | "travel";
@@ -37,7 +37,7 @@ const TYPE_COLORS: Record<NotifType, string> = {
   promotion: GOLD,
   system: "#6B7280",
   kyc: "#3B82F6",
-  loan: "#8B5CF6",
+  loan: "#34A853",
   travel: "#F59E0B",
 };
 
@@ -193,7 +193,7 @@ export function NotificationCenter({ className = "" }: Props) {
                   key={n.id}
                   onClick={() => markRead(n.id)}
                   className="group relative flex gap-3 px-4 py-3 cursor-pointer transition-colors hover:bg-white/5 border-b border-white/5"
-                  style={{ background: !n.is_read ? "rgba(91,45,142,0.08)" : "transparent" }}
+                  style={{ background: !n.is_read ? "rgba(11,92,46,0.08)" : "transparent" }}
                 >
                   {/* Unread dot */}
                   {!n.is_read && (

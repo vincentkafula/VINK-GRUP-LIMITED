@@ -38,7 +38,7 @@ const COLORS = {
 };
 
 const CARD_GRADIENTS: Record<string, string> = {
-  debit:        "linear-gradient(135deg,#5B2D8E,#9585EA)",
+  debit:        "linear-gradient(135deg,#0B5C2E,#5FC97F)",
   virtual:      "linear-gradient(135deg,#0F4C81,#2196F3)",
   business:     "linear-gradient(135deg,#1A1A1A,#4A4A4A)",
   "sub-account":"linear-gradient(135deg,#1B5E20,#4CAF50)",
@@ -235,7 +235,7 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
 
   if (!isOpen) return null;
 
-  const P = "#5B2D8E";
+  const P = "#0B5C2E";
   const totalUsdEquiv = Object.entries(balances).reduce((s, [cur, amt]) => {
     const rates: Record<string,number> = { ZAR: 1/18.35, ZMW: 1/27.20, EUR: 1.086, USD: 1, CNY: 1/7.248 };
     return s + amt * (rates[cur] ?? 0);
@@ -297,7 +297,7 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
             <div className="space-y-6 max-w-5xl">
               {/* Unified account card */}
               <div className="rounded-2xl overflow-hidden shadow-xl"
-                style={{ background: `linear-gradient(135deg,${P} 0%,#3d1d63 40%,#7B4DB5 80%,#9585EA 100%)` }}>
+                style={{ background: `linear-gradient(135deg,${P} 0%,#3d1d63 40%,#7B4DB5 80%,#5FC97F 100%)` }}>
                 <div className="relative overflow-hidden px-6 py-5">
                   <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-white/5 pointer-events-none" />
                   <div className="absolute -bottom-8 -left-8 w-36 h-36 rounded-full bg-white/5 pointer-events-none" />
@@ -348,7 +348,7 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
                 {(() => {
                   const kpi = liveData.kpi as Record<string, number> | null;
                   return (<>
-                    <KpiCard label="24h Transactions" value={kpi ? String(kpi.txnCount24h ?? KPI.txnCount24h) : String(KPI.txnCount24h)} sub={liveConnected ? "Live — Supabase" : "Demo data"} icon={<Activity className="w-5 h-5" />} color="#5B2D8E" />
+                    <KpiCard label="24h Transactions" value={kpi ? String(kpi.txnCount24h ?? KPI.txnCount24h) : String(KPI.txnCount24h)} sub={liveConnected ? "Live — Supabase" : "Demo data"} icon={<Activity className="w-5 h-5" />} color="#0B5C2E" />
                     <KpiCard label="Domestic Routing" value={`${kpi ? (kpi.domesticRoutingPct ?? KPI.domesticPct) : KPI.domesticPct}%`} sub="No cross-border fees" icon={<Globe className="w-5 h-5" />} color="#10B981" />
                     <KpiCard label="Interchange Earned" value={`R${fmtM(kpi ? (kpi.interchangeEarnedToday ?? KPI.interchangeToday) : KPI.interchangeToday)}`} sub="Today's card income" icon={<TrendingUp className="w-5 h-5" />} color="#F5A623" />
                     <KpiCard label="Active Cards" value={String(kpi ? (kpi.activeCards ?? KPI.activeCards) : KPI.activeCards)} sub="Visa + Mastercard" icon={<DollarSign className="w-5 h-5" />} color="#3B82F6" />
@@ -408,7 +408,7 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
                     {/* Layer 6 */}
                     <div className="grid grid-cols-4 gap-2 w-full">
                       {["🏧 ATM\nAny Visa/MC ATM", "🛒 POS Purchase\nIn-store · Tap · Chip", "🛍️ Online Checkout\nE-commerce globally", "↔️ P2P Transfer\nRef. no. · Instant"].map((c, i) => (
-                        <div key={i} className="rounded-xl p-2.5 text-center text-xs bg-purple-50 border border-purple-100 whitespace-pre-line font-medium text-purple-800">{c}</div>
+                        <div key={i} className="rounded-xl p-2.5 text-center text-xs bg-emerald-50 border border-emerald-100 whitespace-pre-line font-medium text-emerald-800">{c}</div>
                       ))}
                     </div>
                   </div>
@@ -431,7 +431,7 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
                     return (
                       <div key={String(t.id ?? i)} className="flex items-center gap-3 py-2 border-b border-gray-50 last:border-0">
                         <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 text-white"
-                          style={{ background: dir === "credit" ? "#10B981" : "#5B2D8E" }}>
+                          style={{ background: dir === "credit" ? "#10B981" : "#0B5C2E" }}>
                           {dir === "credit" ? <ArrowDownLeft className="w-3.5 h-3.5" /> : <ArrowUpRight className="w-3.5 h-3.5" />}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -458,7 +458,7 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
           {screen === "nostro" && (
             <div className="space-y-5 max-w-5xl">
               <SectionTitle><Globe className="w-4 h-4" style={{ color: P }} />Nostro (Mirror) Accounts — 5 Countries</SectionTitle>
-              <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 text-sm text-purple-800 leading-relaxed">
+              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-sm text-emerald-800 leading-relaxed">
                 <strong>How it works:</strong> VINK holds a registered bank account in each country. When a customer's card is used at a merchant, the transaction is routed domestically against the local nostro account — eliminating international cross-border fees entirely. The customer's master balance is debited simultaneously via the internal FX engine.
               </div>
               <div className="space-y-4">
@@ -546,20 +546,20 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">From currency</label>
-                    <select className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-purple-400" value={fxFrom} onChange={e => setFxFrom(e.target.value)}>
+                    <select className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-emerald-400" value={fxFrom} onChange={e => setFxFrom(e.target.value)}>
                       {["ZAR","ZMW","EUR","USD","CNY"].map(c => <option key={c}>{c} — {COLORS[c as keyof typeof COLORS]?.label}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">To currency</label>
-                    <select className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-purple-400" value={fxTo} onChange={e => setFxTo(e.target.value)}>
+                    <select className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-emerald-400" value={fxTo} onChange={e => setFxTo(e.target.value)}>
                       {["ZAR","ZMW","EUR","USD","CNY"].filter(c => c !== fxFrom).map(c => <option key={c}>{c} — {COLORS[c as keyof typeof COLORS]?.label}</option>)}
                     </select>
                   </div>
                 </div>
                 <div>
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Amount ({fxFrom})</label>
-                  <input type="number" className="w-full border border-gray-200 rounded-xl px-4 py-3 text-2xl font-black outline-none focus:border-purple-400" value={fxAmt} onChange={e => setFxAmt(e.target.value)} />
+                  <input type="number" className="w-full border border-gray-200 rounded-xl px-4 py-3 text-2xl font-black outline-none focus:border-emerald-400" value={fxAmt} onChange={e => setFxAmt(e.target.value)} />
                 </div>
                 {fxRate && (
                   <div className="rounded-xl p-4" style={{ background: "#F3F0FB" }}>
@@ -593,7 +593,7 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
                   </button>
                   <button onClick={doConvert} disabled={fxConverting}
                     className="flex-1 py-4 rounded-2xl text-base font-black text-white transition-all hover:opacity-90 shadow-lg flex items-center justify-center gap-2 disabled:opacity-60"
-                    style={{ background: `linear-gradient(135deg,${P},#9585EA)` }}>
+                    style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
                     {fxConverting ? <><div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />Converting…</> : `Convert ${fxFrom} → ${fxTo}`}
                   </button>
                 </div>
@@ -756,22 +756,22 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
                     <div className="grid sm:grid-cols-3 gap-3">
                       <div className="sm:col-span-2">
                         <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wide block mb-1">Recipient reference number</label>
-                        <input className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-purple-400" placeholder="VINK-GBL-2024-XXXXX" value={p2pRef} onChange={e => setP2pRef(e.target.value)} />
+                        <input className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="VINK-GBL-2024-XXXXX" value={p2pRef} onChange={e => setP2pRef(e.target.value)} />
                       </div>
                       <div>
                         <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wide block mb-1">Currency</label>
-                        <select className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-purple-400" value={p2pCur} onChange={e => setP2pCur(e.target.value)}>
+                        <select className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-emerald-400" value={p2pCur} onChange={e => setP2pCur(e.target.value)}>
                           {["ZAR","ZMW","EUR","USD","CNY"].map(c => <option key={c}>{c}</option>)}
                         </select>
                       </div>
                     </div>
                     <div>
                       <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wide block mb-1">Amount</label>
-                      <input type="number" className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-xl font-black outline-none focus:border-purple-400" placeholder="0.00" value={p2pAmt} onChange={e => setP2pAmt(e.target.value)} />
+                      <input type="number" className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-xl font-black outline-none focus:border-emerald-400" placeholder="0.00" value={p2pAmt} onChange={e => setP2pAmt(e.target.value)} />
                     </div>
                     <button onClick={doP2P} disabled={!p2pRef || !p2pAmt || p2pLoading}
                       className="w-full py-3 rounded-xl text-sm font-black text-white transition-all hover:opacity-90 shadow-md disabled:opacity-40 flex items-center justify-center gap-2"
-                      style={{ background: `linear-gradient(135deg,${P},#9585EA)` }}>
+                      style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
                       {p2pLoading ? <><div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />Sending…</> : "Send Instantly"}
                     </button>
                   </>
@@ -792,11 +792,11 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
                     { label: "UnionPay", sub: "CNY card-to-card", icon: "🇨🇳", countries: "CN" },
                     { label: "PayShap", sub: "Instant EFT South Africa", icon: "⚡", countries: "ZA" },
                   ].map((ch, i) => (
-                    <div key={i} className="rounded-xl p-4 border border-gray-100 hover:border-purple-200 hover:bg-purple-50 transition-all cursor-pointer">
+                    <div key={i} className="rounded-xl p-4 border border-gray-100 hover:border-emerald-200 hover:bg-emerald-50 transition-all cursor-pointer">
                       <span className="text-2xl block mb-2">{ch.icon}</span>
                       <p className="text-sm font-bold text-gray-800">{ch.label}</p>
                       <p className="text-[10px] text-gray-500 mt-0.5">{ch.sub}</p>
-                      <p className="text-[9px] text-purple-600 font-bold mt-1.5">{ch.countries}</p>
+                      <p className="text-[9px] text-emerald-600 font-bold mt-1.5">{ch.countries}</p>
                     </div>
                   ))}
                 </div>
@@ -897,7 +897,7 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
               <SectionTitle><BarChart3 className="w-4 h-4" style={{ color: P }} />Platform Analytics & Revenue</SectionTitle>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <KpiCard label="Total Accounts" value={KPI.totalAccounts.toLocaleString()} sub="Across 5 countries" icon={<Users className="w-5 h-5" />} color="#5B2D8E" />
+                <KpiCard label="Total Accounts" value={KPI.totalAccounts.toLocaleString()} sub="Across 5 countries" icon={<Users className="w-5 h-5" />} color="#0B5C2E" />
                 <KpiCard label="Active Cards" value={KPI.activeCards.toLocaleString()} sub="Visa + Mastercard" icon={<CreditCard className="w-5 h-5" />} color="#3B82F6" />
                 <KpiCard label="FX Conversions" value={KPI.fxConversions24h.toString()} sub="Last 24 hours" icon={<RefreshCw className="w-5 h-5" />} color="#10B981" />
                 <KpiCard label="Domestic Routing" value={`${KPI.domesticPct}%`} sub="No cross-border fees" icon={<Globe className="w-5 h-5" />} color="#F5A623" />

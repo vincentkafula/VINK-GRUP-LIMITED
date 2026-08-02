@@ -111,7 +111,7 @@ export function SellerDashboard({ user, seller, onSignOut }: Props) {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
                   <StatCard label="Total revenue" value={fmtZAR(Number((sellerData?.seller as R)?.totalRevenue ?? 0))} icon={<TrendingUp className="w-4 h-4" />} accent="#10B981" />
                   <StatCard label="Total orders" value={String(orders.length)} icon={<ShoppingBag className="w-4 h-4" />} accent="#0066CC" />
-                  <StatCard label="Products" value={String(products.length)} icon={<Package className="w-4 h-4" />} accent="#8B5CF6" />
+                  <StatCard label="Products" value={String(products.length)} icon={<Package className="w-4 h-4" />} accent="#34A853" />
                   <StatCard label="Avg. rating" value={String((sellerData?.seller as R)?.avgRating ?? 0)} icon={<Star className="w-4 h-4" />} accent="#F59E0B" />
                 </div>
 

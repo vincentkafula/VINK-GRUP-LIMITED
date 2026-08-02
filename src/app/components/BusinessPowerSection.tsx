@@ -20,7 +20,7 @@ export const BusinessPowerSection = memo(function BusinessPowerSection() {
   return (
     <section className="py-16 sm:py-24 relative overflow-hidden" style={{ background: "#1B1837" }}>
       <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full opacity-5 pointer-events-none"
-        style={{ background: "radial-gradient(circle,#9585EA,transparent)", transform: "translate(30%,-20%)" }} />
+        style={{ background: "radial-gradient(circle,#5FC97F,transparent)", transform: "translate(30%,-20%)" }} />
       <div className="absolute bottom-0 left-0 w-72 h-72 rounded-full opacity-5 pointer-events-none"
         style={{ background: "radial-gradient(circle,#F5C842,transparent)", transform: "translate(-30%,30%)" }} />
 
@@ -54,7 +54,7 @@ export const BusinessPowerSection = memo(function BusinessPowerSection() {
             </ul>
             <div className="flex flex-wrap justify-center lg:justify-start gap-3">
               <button className="px-8 py-3.5 rounded-xl text-sm font-bold text-white transition-all hover:scale-105 active:scale-95 shadow-lg"
-                style={{ background: "linear-gradient(135deg,#6B5ED7,#9585EA)", boxShadow: "0 6px 20px rgba(107,94,215,.4)" }}>
+                style={{ background: "linear-gradient(135deg,#128A43,#5FC97F)", boxShadow: "0 6px 20px rgba(107,94,215,.4)" }}>
                 Open a Business Account
               </button>
               <button className="px-8 py-3.5 rounded-xl text-sm font-semibold transition-all hover:bg-white/10"

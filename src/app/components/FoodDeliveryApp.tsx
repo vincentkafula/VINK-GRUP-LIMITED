@@ -80,7 +80,7 @@ const STATUS_INFO: Record<OrderStatus, { label: string; color: string; icon: Rea
   pending:   { label: "Order Placed",       color: "#F59E0B", icon: <Clock className="w-5 h-5" />,         desc: "Waiting for restaurant to confirm" },
   accepted:  { label: "Order Confirmed",    color: "#3B82F6", icon: <CheckCircle className="w-5 h-5" />,   desc: "Restaurant has accepted your order" },
   preparing: { label: "Being Prepared",     color: ORANGE,    icon: <UtensilsCrossed className="w-5 h-5" />,desc: "Chef is preparing your food" },
-  ready:     { label: "Ready for Pickup",   color: "#8B5CF6", icon: <Package className="w-5 h-5" />,       desc: "Food is ready, driver on the way" },
+  ready:     { label: "Ready for Pickup",   color: "#34A853", icon: <Package className="w-5 h-5" />,       desc: "Food is ready, driver on the way" },
   picked_up: { label: "Out for Delivery",   color: "#10B981", icon: <Truck className="w-5 h-5" />,         desc: "Driver is heading to you" },
   delivered: { label: "Delivered!",          color: "#10B981", icon: <CheckCircle className="w-5 h-5" />,  desc: "Enjoy your meal! 🎉" },
 };
@@ -731,7 +731,7 @@ function AdminApp({ onClose }: { onClose: () => void }) {
         {screen === "dashboard" && (
           <>
             <div className="grid grid-cols-2 gap-3">
-              {[{ label: "Active Orders", value: "47", icon: "📦", color: ORANGE }, { label: "Online Drivers", value: "23", icon: "🚗", color: "#10B981" }, { label: "Restaurants", value: "6", icon: "🍽️", color: "#3B82F6" }, { label: "Today Revenue", value: "R18,420", icon: "💰", color: "#8B5CF6" }].map((s,i) => (
+              {[{ label: "Active Orders", value: "47", icon: "📦", color: ORANGE }, { label: "Online Drivers", value: "23", icon: "🚗", color: "#10B981" }, { label: "Restaurants", value: "6", icon: "🍽️", color: "#3B82F6" }, { label: "Today Revenue", value: "R18,420", icon: "💰", color: "#34A853" }].map((s,i) => (
                 <div key={i} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
                   <div className="flex items-center gap-2 mb-2"><span className="text-2xl">{s.icon}</span></div>
                   <p className="text-xl font-black" style={{ color: s.color }}>{s.value}</p>
@@ -849,7 +849,7 @@ export function FoodDeliveryApp({ isOpen, onClose }: Props) {
             { role: "customer" as AppRole, emoji: "👤", title: "Customer", desc: "Browse restaurants, order food, track delivery", color: ORANGE, gradient: `linear-gradient(135deg,${ORANGE},#FF8A50)` },
             { role: "restaurant" as AppRole, emoji: "🍽️", title: "Restaurant Owner", desc: "Manage orders, menus, and analytics", color: "#10B981", gradient: "linear-gradient(135deg,#065F46,#10B981)" },
             { role: "driver" as AppRole, emoji: "🚗", title: "Delivery Driver", desc: "Accept deliveries, navigate, track earnings", color: "#3B82F6", gradient: "linear-gradient(135deg,#1E40AF,#3B82F6)" },
-            { role: "admin" as AppRole, emoji: "⚙️", title: "Administrator", desc: "Manage users, orders, restaurants & drivers", color: "#8B5CF6", gradient: "linear-gradient(135deg,#4C1D95,#8B5CF6)" },
+            { role: "admin" as AppRole, emoji: "⚙️", title: "Administrator", desc: "Manage users, orders, restaurants & drivers", color: "#34A853", gradient: "linear-gradient(135deg,#0F3D24,#34A853)" },
           ].map(opt => (
             <button key={opt.role} onClick={() => setRole(opt.role)}
               className="flex items-center gap-4 p-5 rounded-2xl text-left transition-all hover:scale-[1.02] active:scale-[0.98]"

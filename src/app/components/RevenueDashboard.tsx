@@ -18,7 +18,7 @@ import { api } from "../services/apiClient";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
-const P = "#5B2D8E";
+const P = "#0B5C2E";
 const GOLD = "#F5A623";
 const fmt = (n: number) => `R${Number(n).toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const fmtM = (n: number) => n >= 1_000_000 ? `R${(n/1_000_000).toFixed(1)}M` : n >= 1000 ? `R${(n/1000).toFixed(1)}K` : fmt(n);
@@ -26,7 +26,7 @@ const fmtM = (n: number) => n >= 1_000_000 ? `R${(n/1_000_000).toFixed(1)}M` : n
 type Screen = "overview" | "tap_simulator" | "accounts" | "devices" | "agreements" | "transactions" | "investor";
 
 const ACCOUNT_COLORS: Record<string, string> = {
-  vink_platform: "#5B2D8E", investor: "#F59E0B", association: "#3B82F6",
+  vink_platform: "#0B5C2E", investor: "#F59E0B", association: "#3B82F6",
   marshall: "#10B981", driver: "#14B8A6", passenger: "#EC4899", taxi_owner: "#6B7280",
 };
 
@@ -267,7 +267,7 @@ export function RevenueDashboard({ isOpen, onClose }: Props) {
                     { label: "Investor Earnings Today",  value: fmtM((snapshot.totalInvestorEarningsToday as number) ?? 0),      color: "#EC4899" },
                     { label: "Levies Collected",         value: fmtM((snapshot.totalLeviesCollectedToday as number) ?? 0),       color: "#3B82F6" },
                     { label: "Marshall Payments",        value: fmtM((snapshot.totalMarshallPaymentsToday as number) ?? 0),      color: "#10B981" },
-                    { label: "Monthly Rentals",          value: fmtM((snapshot.totalRentalsThisMonth as number) ?? 0),           color: "#8B5CF6" },
+                    { label: "Monthly Rentals",          value: fmtM((snapshot.totalRentalsThisMonth as number) ?? 0),           color: "#34A853" },
                     { label: "Active Devices",           value: String((snapshot.activeDevices as number) ?? 0),                 color: "#6B7280" },
                   ].map((k, i) => (
                     <div key={i} className="bg-white rounded-2xl border border-gray-100 p-4 hover:shadow-md transition-shadow">
@@ -320,13 +320,13 @@ export function RevenueDashboard({ isOpen, onClose }: Props) {
                   <div>
                     <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Fare Amount (ZAR)</label>
                     <input type="number" value={simFare} onChange={e => setSimFare(e.target.value)} min="1" max="500"
-                      className="w-full border border-gray-200 rounded-xl px-4 py-3 text-2xl font-black outline-none focus:border-purple-400"
+                      className="w-full border border-gray-200 rounded-xl px-4 py-3 text-2xl font-black outline-none focus:border-emerald-400"
                       style={{ color: P }} />
                   </div>
                   <div>
                     <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Marshall Percentage (%)</label>
                     <input type="number" value={simMarshall} onChange={e => setSimMarshall(e.target.value)} min="0" max="50"
-                      className="w-full border border-gray-200 rounded-xl px-4 py-3 text-2xl font-black outline-none focus:border-purple-400"
+                      className="w-full border border-gray-200 rounded-xl px-4 py-3 text-2xl font-black outline-none focus:border-emerald-400"
                       style={{ color: "#10B981" }} />
                     <p className="text-[10px] text-gray-400 mt-1">% of R20 trip levy that goes to marshall</p>
                   </div>
@@ -334,7 +334,7 @@ export function RevenueDashboard({ isOpen, onClose }: Props) {
 
                 <button onClick={runSimulator} disabled={simProcessing}
                   className="w-full py-4 rounded-2xl text-base font-black text-white transition-all hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-3 shadow-lg"
-                  style={{ background: `linear-gradient(135deg,${P},#9585EA)` }}>
+                  style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
                   {simProcessing ? <><div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />Processing tap…</> : <><Zap className="w-5 h-5" />Simulate Tap &amp; Distribute Revenue</>}
                 </button>
               </div>
@@ -452,7 +452,7 @@ export function RevenueDashboard({ isOpen, onClose }: Props) {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                       {[
                         { label: "Investor earns (taps)", value: fmt(Number(dev.tapCount) * FEES.VINK_FEE_TOTAL * FEES.INVESTOR_SHARE_PCT / 100), color: "#F59E0B" },
-                        { label: "Monthly rental",        value: fmt(Number(dev.monthlyRental)),                    color: "#8B5CF6" },
+                        { label: "Monthly rental",        value: fmt(Number(dev.monthlyRental)),                    color: "#34A853" },
                         { label: "Est. monthly tap revenue", value: fmt(200 * 30 * FEES.VINK_FEE_TOTAL * FEES.INVESTOR_SHARE_PCT / 100), color: "#10B981" },
                         { label: "Total monthly return",  value: fmt(Number(dev.monthlyRental) + 200 * 30 * FEES.VINK_FEE_TOTAL * FEES.INVESTOR_SHARE_PCT / 100), color: P },
                       ].map((s, j) => (
@@ -519,21 +519,21 @@ export function RevenueDashboard({ isOpen, onClose }: Props) {
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
                     <label className="text-xs font-bold text-gray-500 block mb-1">Association ID</label>
-                    <input className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-purple-400" placeholder="assoc-001" value={agrAssoc} onChange={e => setAgrAssoc(e.target.value)} />
+                    <input className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="assoc-001" value={agrAssoc} onChange={e => setAgrAssoc(e.target.value)} />
                   </div>
                   <div>
                     <label className="text-xs font-bold text-gray-500 block mb-1">Marshall ID</label>
-                    <input className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-purple-400" placeholder="marsh-001" value={agrMarshall} onChange={e => setAgrMarshall(e.target.value)} />
+                    <input className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="marsh-001" value={agrMarshall} onChange={e => setAgrMarshall(e.target.value)} />
                   </div>
                   <div>
                     <label className="text-xs font-bold text-gray-500 block mb-1">Marshall Percentage (0–50%)</label>
-                    <input type="number" min="0" max="50" className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-purple-400" value={agrPct} onChange={e => setAgrPct(e.target.value)} />
+                    <input type="number" min="0" max="50" className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-emerald-400" value={agrPct} onChange={e => setAgrPct(e.target.value)} />
                     {agrPct && <p className="text-[10px] text-gray-400 mt-0.5">Marshall: {fmt(FEES.TRIP_LEVY * +agrPct / 100)} · Association: {fmt(FEES.TRIP_LEVY * (100 - +agrPct) / 100)} per trip</p>}
                   </div>
                 </div>
                 <button onClick={saveAgreement} disabled={!agrAssoc || !agrMarshall || agrSaving}
                   className="w-full py-3 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-40 flex items-center justify-center gap-2"
-                  style={{ background: `linear-gradient(135deg,${P},#9585EA)` }}>
+                  style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
                   {agrSaved ? <><CheckCircle className="w-4 h-4" />Agreement Saved!</> : agrSaving ? <><div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />Saving…</> : "Save Agreement"}
                 </button>
               </div>
@@ -554,7 +554,7 @@ export function RevenueDashboard({ isOpen, onClose }: Props) {
                     {transactions.map((txn, i) => {
                       const typeColors: Record<string, string> = {
                         tap_fare: "#14B8A6", tap_fee_passenger: "#EC4899",
-                        tap_fee_driver: "#F59E0B", investor_tap: "#8B5CF6",
+                        tap_fee_driver: "#F59E0B", investor_tap: "#34A853",
                         vink_platform_tap: P, trip_levy: "#3B82F6",
                         marshall_share: "#10B981", device_rental: "#F59E0B",
                       };
@@ -610,7 +610,7 @@ export function RevenueDashboard({ isOpen, onClose }: Props) {
                         { label: "Total taps earned from",    value: totalTaps.toLocaleString(),               color: P },
                         { label: "Tap revenue (lifetime)",    value: fmt(totalTaps * FEES.VINK_FEE_TOTAL * FEES.INVESTOR_SHARE_PCT / 100), color: "#F59E0B" },
                         { label: "Monthly rental income",     value: fmt(invDevices.length * FEES.DEVICE_MONTHLY_RENTAL),               color: "#10B981" },
-                        { label: "Est. monthly total return", value: fmt(invDevices.length * FEES.DEVICE_MONTHLY_RENTAL + 200 * 30 * invDevices.length * FEES.VINK_FEE_TOTAL * FEES.INVESTOR_SHARE_PCT / 100), color: "#8B5CF6" },
+                        { label: "Est. monthly total return", value: fmt(invDevices.length * FEES.DEVICE_MONTHLY_RENTAL + 200 * 30 * invDevices.length * FEES.VINK_FEE_TOTAL * FEES.INVESTOR_SHARE_PCT / 100), color: "#34A853" },
                       ].map((s, j) => (
                         <div key={j} className="rounded-xl p-3 text-center" style={{ background: s.color + "10", border: `1px solid ${s.color}25` }}>
                           <p className="text-[9px] text-gray-500 uppercase tracking-wide leading-tight">{s.label}</p>

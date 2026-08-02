@@ -283,7 +283,7 @@ function FingerprintScanner({ onDone, accentColor }: { onDone: () => void; accen
         style={{ background: done ? "#D1FAE5" : scanning ? accentColor + "15" : "#F3F0FB", border: `3px solid ${done ? GREEN : scanning ? accentColor : "#DDD6FE"}`, boxShadow: scanning ? `0 0 30px ${accentColor}30` : "none" }}
         onClick={!scanning && !done ? () => { setAttempt(a => a + 1); startScan(); } : undefined}
       >
-        <Fingerprint className="w-16 h-16 transition-colors" style={{ color: done ? GREEN : scanning ? accentColor : "#C4B5FD" }} />
+        <Fingerprint className="w-16 h-16 transition-colors" style={{ color: done ? GREEN : scanning ? accentColor : "#A7E8BD" }} />
         {scanning && (
           <div className="absolute bottom-3 left-3 right-3">
             <div className="h-1.5 bg-white/50 rounded-full overflow-hidden">
@@ -690,7 +690,7 @@ export function ServiceApplicationViewer({ isOpen, onClose, serviceType }: Props
             </div>
             <button onClick={onClose}
               className="w-full py-3.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 shadow-lg"
-              style={{ background: `linear-gradient(135deg,${CP},#9585EA)` }}>
+              style={{ background: `linear-gradient(135deg,${CP},#5FC97F)` }}>
               Back to VINK
             </button>
           </div>

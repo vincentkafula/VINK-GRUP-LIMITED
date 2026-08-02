@@ -50,10 +50,10 @@ interface TestimonialCardProps {
 function TestimonialCard({ name, role, image, rating, text }: TestimonialCardProps) {
   return (
     <div className="bg-white border border-border rounded-xl p-6 hover:shadow-lg transition-shadow relative">
-      <Quote className="w-10 h-10 text-[#6B5ED7]/20 absolute top-4 right-4" />
+      <Quote className="w-10 h-10 text-[#128A43]/20 absolute top-4 right-4" />
 
       <div className="flex items-center gap-4 mb-4">
-        <div className="w-12 h-12 bg-gradient-to-br from-[#6B5ED7] to-[#8B7EE7] rounded-full flex items-center justify-center text-white">
+        <div className="w-12 h-12 bg-gradient-to-br from-[#128A43] to-[#8B7EE7] rounded-full flex items-center justify-center text-white">
           {image}
         </div>
         <div>

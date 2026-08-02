@@ -5,7 +5,7 @@ import { Footer } from "./Footer";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
-const P  = "#5B2D8E";
+const P  = "#0B5C2E";
 const PD = "#3d1d63";
 const GOLD = "#F5A623";
 
@@ -67,10 +67,10 @@ const DOCS = [
 ];
 
 const BOARD_MEMBERS = [
-  { name: "Vincent Kafula",       role: "Founder & Chief Executive Officer",    initial: "VK", color: "#5B2D8E" },
+  { name: "Vincent Kafula",       role: "Founder & Chief Executive Officer",    initial: "VK", color: "#0B5C2E" },
   { name: "Siyasanga Mahlulo",    role: "Chief Executive Officer (Operations)", initial: "SM", color: "#3B82F6" },
   { name: "Thabo Dlamini",        role: "Chief Financial Officer",              initial: "TD", color: "#10B981" },
-  { name: "Priya Naidoo",         role: "Chief Operating Officer",              initial: "PN", color: "#8B5CF6" },
+  { name: "Priya Naidoo",         role: "Chief Operating Officer",              initial: "PN", color: "#34A853" },
   { name: "Lindiwe Mokoena",      role: "Independent Non-Exec Director",        initial: "LM", color: "#EF4444" },
   { name: "Sipho Khumalo",        role: "Board Secretary & Compliance",         initial: "SK", color: "#06B6D4" },
 ];
@@ -80,10 +80,10 @@ const MINI_CHART = [1.44,1.62,1.55,1.80,2.10,1.95,2.30,2.45,2.20,2.50,2.38,2.60]
 // ─── Corporate Governance data ────────────────────────────────────────────────
 
 const MANAGEMENT_TEAM = [
-  { name: "Vincent Kafula",      title: "Founder & CEO",                       initial: "VK", color: "#5B2D8E", province: "Cape Town, Western Cape" },
+  { name: "Vincent Kafula",      title: "Founder & CEO",                       initial: "VK", color: "#0B5C2E", province: "Cape Town, Western Cape" },
   { name: "Siyasanga Mahlulo",   title: "Chief Executive Officer (Operations)",initial: "SM", color: "#3B82F6", province: "Cape Town, Western Cape" },
   { name: "Thabo Dlamini",       title: "Chief Financial Officer",             initial: "TD", color: "#10B981", province: "Gauteng" },
-  { name: "Priya Naidoo",        title: "Chief Operating Officer",             initial: "PN", color: "#8B5CF6", province: "KwaZulu-Natal" },
+  { name: "Priya Naidoo",        title: "Chief Operating Officer",             initial: "PN", color: "#34A853", province: "KwaZulu-Natal" },
   { name: "James van der Berg",  title: "Chief Risk Officer",                  initial: "JV", color: "#F59E0B", province: "Western Cape" },
   { name: "Lindiwe Mokoena",     title: "Chief People Officer",                initial: "LM", color: "#EF4444", province: "Gauteng" },
   { name: "Sipho Khumalo",       title: "Chief Technology Officer",            initial: "SK", color: "#06B6D4", province: "Gauteng" },
@@ -94,11 +94,11 @@ const COMMITTEES = [
   {
     name: "AUDIT COMMITTEE",
     color: "#EDE7F6",
-    borderColor: "#7C3AED",
+    borderColor: "#FF9900",
     members: [
-      { initial: "PD", name: "Pieter Du Plessis", role: "Chair",   province: "Western Cape",   color: "#7C3AED" },
-      { initial: "RS", name: "Reza Solomon",       role: "Member",  province: "KwaZulu-Natal",  color: "#7C3AED" },
-      { initial: "AM", name: "Amahle Mokoena",     role: "Member",  province: "Gauteng",         color: "#7C3AED" },
+      { initial: "PD", name: "Pieter Du Plessis", role: "Chair",   province: "Western Cape",   color: "#FF9900" },
+      { initial: "RS", name: "Reza Solomon",       role: "Member",  province: "KwaZulu-Natal",  color: "#FF9900" },
+      { initial: "AM", name: "Amahle Mokoena",     role: "Member",  province: "Gauteng",         color: "#FF9900" },
     ],
   },
   {
@@ -370,7 +370,7 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
               </thead>
               <tbody>
                 {DOCS.map((d, i) => (
-                  <tr key={i} className="border-b border-gray-100 hover:bg-purple-50 transition-colors">
+                  <tr key={i} className="border-b border-gray-100 hover:bg-emerald-50 transition-colors">
                     <td className="px-5 py-3 font-medium text-gray-800">{d.name}</td>
                     <td className="px-5 py-3 text-gray-500 text-xs">{d.size}</td>
                     <td className="px-5 py-3 text-gray-500 text-xs">{d.date}</td>

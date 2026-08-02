@@ -1,9 +1,9 @@
 const FEATURES = [
-  { label: "No Annual Fee",      sub: "Keep every rand working for you",         gradient: "linear-gradient(135deg,#6B5ED7,#9585EA)" },
+  { label: "No Annual Fee",      sub: "Keep every rand working for you",         gradient: "linear-gradient(135deg,#128A43,#5FC97F)" },
   { label: "Rewards Program",    sub: "Earn on rides, fuel, and groceries",       gradient: "linear-gradient(135deg,#F59E0B,#FBBF24)" },
   { label: "Secure Payments",    sub: "Zero-liability, 256-bit encryption",       gradient: "linear-gradient(135deg,#10B981,#34D399)" },
   { label: "Mobile Banking",     sub: "Transact from any device, anytime",        gradient: "linear-gradient(135deg,#3B82F6,#60A5FA)" },
-  { label: "Global Acceptance",  sub: "Accepted in 175+ countries worldwide",     gradient: "linear-gradient(135deg,#8B5CF6,#A78BFA)" },
+  { label: "Global Acceptance",  sub: "Accepted in 175+ countries worldwide",     gradient: "linear-gradient(135deg,#34A853,#FFB84D)" },
   { label: "24/7 Support",       sub: "Real help, day or night",                  gradient: "linear-gradient(135deg,#EF4444,#F87171)" },
 ];
 
@@ -24,7 +24,7 @@ export const FeaturesSection = memo(function FeaturesSection({ onExploreAll }: {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-3"
-            style={{ background: "#EDE9FE", color: "#6B5ED7" }}>Why Choose VINK</span>
+            style={{ background: "#EDE9FE", color: "#128A43" }}>Why Choose VINK</span>
           <h2 className="text-2xl sm:text-3xl font-black text-gray-900 mb-2">Smarter Benefits, Every Day</h2>
           <p className="text-gray-500 text-sm max-w-lg mx-auto">
             One card that pays your taxi fare, fills your fuel tank, and earns rewards at the gym — built for real South African life.
@@ -32,7 +32,7 @@ export const FeaturesSection = memo(function FeaturesSection({ onExploreAll }: {
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-5">
           {FEATURES.map((f, i) => (
-            <div key={i} className="flex flex-col items-center gap-3 p-4 rounded-2xl border border-transparent hover:border-purple-100 hover:shadow-lg hover:-translate-y-1 transition-all group cursor-pointer"
+            <div key={i} className="flex flex-col items-center gap-3 p-4 rounded-2xl border border-transparent hover:border-emerald-100 hover:shadow-lg hover:-translate-y-1 transition-all group cursor-pointer"
               style={{ background: "#FAFAFA" }}>
               <div className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0 group-hover:scale-110 transition-transform"
                 style={{ background: f.gradient }}>
@@ -46,7 +46,7 @@ export const FeaturesSection = memo(function FeaturesSection({ onExploreAll }: {
           ))}
         </div>
         <div className="text-center mt-8">
-          <button onClick={onExploreAll} className="text-sm font-semibold hover:underline bg-transparent border-none cursor-pointer" style={{ color: "#6B5ED7" }}>
+          <button onClick={onExploreAll} className="text-sm font-semibold hover:underline bg-transparent border-none cursor-pointer" style={{ color: "#128A43" }}>
             Explore All Features →
           </button>
         </div>

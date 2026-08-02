@@ -3,7 +3,7 @@ import { X } from "lucide-react";
 import vinkLogo from "../../../imports/LOGO_FINAL.png";
 
 interface Props { isOpen: boolean; onClose: () => void; initialTab?: string; }
-const P = "#5B2D8E";
+const P = "#0B5C2E";
 
 const TABS = [
   { key: "privacy",    label: "Privacy Policy" },

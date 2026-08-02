@@ -27,7 +27,7 @@ const PERF_METRICS = [
   { label: "Safety Score", value: 94, max: 100, color: "#10B981" },
   { label: "On-Time Rate", value: 91, max: 100, color: "#3B82F6" },
   { label: "Fuel Efficiency", value: 78, max: 100, color: "#F59E0B" },
-  { label: "Customer Rating", value: 96, max: 100, color: "#8B5CF6" },
+  { label: "Customer Rating", value: 96, max: 100, color: "#34A853" },
 ];
 
 export function DriverDashboard({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
@@ -47,7 +47,7 @@ export function DriverDashboard({ isOpen, onClose }: { isOpen: boolean; onClose:
           <StatCard label="Trips Today" value="6" icon={<Navigation className="w-5 h-5" />} color="#3B82F6" trend="up" />
           <StatCard label="Earnings Today" value="R892" icon={<DollarSign className="w-5 h-5" />} color="#10B981" trend="up" sub="This month: R14,820" />
           <StatCard label="Distance Today" value="148 km" icon={<MapPin className="w-5 h-5" />} color="#F59E0B" />
-          <StatCard label="Hours Active" value="6.4 hrs" icon={<Clock className="w-5 h-5" />} color="#8B5CF6" />
+          <StatCard label="Hours Active" value="6.4 hrs" icon={<Clock className="w-5 h-5" />} color="#34A853" />
           <StatCard label="Driver Rating" value="4.92 ★" icon={<Star className="w-5 h-5" />} color="#F59E0B" trend="up" />
           <StatCard label="Safety Score" value="94/100" icon={<Shield className="w-5 h-5" />} color="#10B981" trend="up" />
         </div>

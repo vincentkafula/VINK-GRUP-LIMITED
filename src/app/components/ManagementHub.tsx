@@ -67,7 +67,7 @@ const ALL_NAV = [
 const NAVY   = "#0A0F1E";
 const DEEP   = "#111827";
 const SURF   = "#1E293B";
-const P      = "#5B2D8E";
+const P      = "#0B5C2E";
 const GOLD   = "#F5A623";
 const GREEN  = "#10B981";
 const RED    = "#EF4444";
@@ -75,7 +75,7 @@ const TEAL   = "#14B8A6";
 
 const ROLE_COLORS: Record<RoleId, string> = {
   global_director:      "#6366F1",
-  continental_director: "#8B5CF6",
+  continental_director: "#34A853",
   regional_director:    "#3B82F6",
   country_director:     "#0891B2",
   state_director:       "#059669",
@@ -159,7 +159,7 @@ function LoginScreen({ onLogin }: { onLogin: (user: MgmtUser) => void }) {
         {/* Brand */}
         <div className="text-center mb-8">
           <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-2xl"
-            style={{ background: `linear-gradient(135deg,${P},#9585EA)` }}>
+            style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
             <Shield className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-2xl font-black text-white">Management Hub</h1>
@@ -200,7 +200,7 @@ function LoginScreen({ onLogin }: { onLogin: (user: MgmtUser) => void }) {
 
           <button onClick={submit} disabled={loading || !email || !password}
             className="w-full py-3.5 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 disabled:opacity-40 transition-all hover:opacity-90"
-            style={{ background: `linear-gradient(135deg,${P},#9585EA)` }}>
+            style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
             {loading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <LogIn className="w-4 h-4" />}
             {loading ? "Authenticating…" : "Sign In to Management Hub"}
           </button>
@@ -377,14 +377,14 @@ function UsersScreen() {
         <div className="space-y-1">
           {filtered.map((u, i) => (
             <div key={i} className="flex items-center gap-4 px-3 py-3 rounded-xl hover:bg-white/5 transition-colors">
-              <div className="w-8 h-8 rounded-full bg-purple-700 flex items-center justify-center text-white text-xs font-black flex-shrink-0">
+              <div className="w-8 h-8 rounded-full bg-emerald-700 flex items-center justify-center text-white text-xs font-black flex-shrink-0">
                 {u.name.split(" ").map(n => n[0]).join("")}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-white text-sm font-semibold">{u.name}</p>
                 <p className="text-gray-500 text-xs">{u.email}</p>
               </div>
-              <Badge text={u.role} color="#6B5ED7" />
+              <Badge text={u.role} color="#128A43" />
               <Badge text={u.status} color={statusColor(u.status)} />
               <p className="text-gray-600 text-[10px] w-16 text-right flex-shrink-0">{u.last}</p>
               <div className="flex gap-1">
@@ -703,7 +703,7 @@ function DashboardShell({ user, onLogout }: { user: MgmtUser; onLogout: () => vo
         {/* Logo */}
         <div className="flex items-center gap-3 px-4 py-4 border-b" style={{ borderColor: "#1E2A45" }}>
           <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-white font-black text-xs"
-            style={{ background: `linear-gradient(135deg,${P},#9585EA)` }}>V</div>
+            style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>V</div>
           {sidebarOpen && <p className="text-white font-black text-sm leading-tight">VINK<br /><span className="font-normal text-[10px] text-gray-400">Management Hub</span></p>}
         </div>
 

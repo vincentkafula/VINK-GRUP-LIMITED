@@ -35,13 +35,13 @@ export function OwnersDashboard({ isOpen, onClose }: { isOpen: boolean; onClose:
   return (
     <DashboardShell
       title="Owner Dashboard" subtitle="Devices — Fleet Owner Account"
-      accentColor="#8B5CF6" gradient="from-violet-700 to-violet-500"
+      accentColor="#34A853" gradient="from-emerald-700 to-emerald-500"
       navItems={NAV} activeNav={nav} onNavChange={setNav}
       onClose={onClose} userName="Victor Nkosi" alertCount={4}
     >
       <div className="p-5 space-y-5">
         <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-3">
-          <StatCard label="Total Vehicles" value="4" icon={<Car className="w-5 h-5" />} color="#8B5CF6" />
+          <StatCard label="Total Vehicles" value="4" icon={<Car className="w-5 h-5" />} color="#34A853" />
           <StatCard label="Active Drivers" value="3/4" icon={<Users className="w-5 h-5" />} color="#10B981" />
           <StatCard label="Monthly Revenue" value="R55,400" icon={<DollarSign className="w-5 h-5" />} color="#F59E0B" trend="up" sub="+12% vs last month" />
           <StatCard label="Total Trips" value="624" icon={<Briefcase className="w-5 h-5" />} color="#3B82F6" trend="up" />
@@ -56,12 +56,12 @@ export function OwnersDashboard({ isOpen, onClose }: { isOpen: boolean; onClose:
                 <h3 className="text-sm font-bold text-white">Monthly Revenue Trend</h3>
                 <Badge text="+12% MoM" color="#10B981" />
               </div>
-              <Sparkline values={REVENUE} color="#8B5CF6" />
+              <Sparkline values={REVENUE} color="#34A853" />
               <div className="flex justify-between text-[9px] mt-1" style={{ color: "#8884AA" }}>
                 <span>Jan</span><span>Jun</span><span>Dec</span>
               </div>
               <div className="mt-3 grid grid-cols-3 gap-2">
-                {[{ label: "This Month", val: "R55,400", color: "#8B5CF6" }, { label: "Last Month", val: "R49,400", color: "#6B7280" }, { label: "Annual", val: "R494,000", color: "#F59E0B" }].map((s, i) => (
+                {[{ label: "This Month", val: "R55,400", color: "#34A853" }, { label: "Last Month", val: "R49,400", color: "#6B7280" }, { label: "Annual", val: "R494,000", color: "#F59E0B" }].map((s, i) => (
                   <div key={i} className="text-center p-2.5 rounded-xl" style={{ background: "#252245" }}>
                     <p className="text-sm font-black" style={{ color: s.color }}>{s.val}</p>
                     <p className="text-[9px] mt-0.5" style={{ color: "#8884AA" }}>{s.label}</p>
@@ -72,7 +72,7 @@ export function OwnersDashboard({ isOpen, onClose }: { isOpen: boolean; onClose:
 
             <TableCard
               title="Fleet Overview"
-              color="#8B5CF6"
+              color="#34A853"
               columns={["Plate", "Vehicle", "Driver", "Trips", "Revenue", "Status"]}
               rows={MY_FLEET.map(v => [
                 <span className="font-mono text-[10px]">{v.plate}</span>,
@@ -86,7 +86,7 @@ export function OwnersDashboard({ isOpen, onClose }: { isOpen: boolean; onClose:
 
             <TableCard
               title="Driver Performance"
-              color="#8B5CF6"
+              color="#34A853"
               columns={["Driver", "Rating", "Trips", "Earnings"]}
               rows={DRIVER_PERF.map(d => [
                 d.name,
@@ -117,7 +117,7 @@ export function OwnersDashboard({ isOpen, onClose }: { isOpen: boolean; onClose:
               <ProgressBar label="Active Rate" value={75} max={100} color="#10B981" />
               <ProgressBar label="Utilisation" value={68} max={100} color="#3B82F6" />
               <ProgressBar label="Maintenance Due" value={50} max={100} color="#EF4444" />
-              <ProgressBar label="Driver Coverage" value={75} max={100} color="#8B5CF6" />
+              <ProgressBar label="Driver Coverage" value={75} max={100} color="#34A853" />
             </SectionPanel>
 
             <SectionPanel title="Recent Alerts" action={<Badge text="4" color="#EF4444" />}>

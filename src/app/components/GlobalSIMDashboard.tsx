@@ -99,7 +99,7 @@ const SIM_PLANS = [
     id: "essential", name: "Essential 3GB", price: "R99", priceLabel: "/month",
     data: "3GB data", calls: "100 free mins", sms: "100 free SMS",
     globalCalls: "60 free mins to any of 5 countries", badge: "Popular",
-    badgeColor: "#8B5CF6", color: "linear-gradient(135deg,#5B2D8E,#9585EA)",
+    badgeColor: "#34A853", color: "linear-gradient(135deg,#0B5C2E,#5FC97F)",
     features: ["3GB data", "100 mins SA calls", "100 SMS", "60 mins international (local rates)", "VINK app + banking data free", "Wi-Fi calling (VoWiFi)"],
     featured: true,
   },
@@ -185,7 +185,7 @@ const NAV = [
   { id: "analytics", label: "Analytics",      icon: <BarChart3 className="w-4 h-4" /> },
 ];
 
-const P = "#5B2D8E";
+const P = "#0B5C2E";
 const GOLD = "#F5A623";
 
 // ─── Usage ring ───────────────────────────────────────────────────────────────
@@ -297,7 +297,7 @@ export function GlobalSIMDashboard({ isOpen, onClose }: Props) {
 
               {/* Key concept */}
               <div className="rounded-2xl overflow-hidden shadow-lg"
-                style={{ background: `linear-gradient(135deg,${P} 0%,#3d1d63 40%,#7B4DB5 80%,#9585EA 100%)` }}>
+                style={{ background: `linear-gradient(135deg,${P} 0%,#3d1d63 40%,#7B4DB5 80%,#5FC97F 100%)` }}>
                 <div className="p-6 relative overflow-hidden">
                   <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full bg-white/5 pointer-events-none" />
                   <div className="relative z-10">
@@ -358,7 +358,7 @@ export function GlobalSIMDashboard({ isOpen, onClose }: Props) {
                   <div className="w-px h-4 bg-gray-300" />
                   <div className="grid grid-cols-4 gap-2 w-full">
                     {["📱 Voice Call", "📶 Mobile Data", "💬 SMS", "📳 eSIM OTA"].map((t, i) => (
-                      <div key={i} className="rounded-xl p-2.5 text-center text-xs font-semibold text-gray-700 bg-purple-50 border border-purple-100">{t}</div>
+                      <div key={i} className="rounded-xl p-2.5 text-center text-xs font-semibold text-gray-700 bg-emerald-50 border border-emerald-100">{t}</div>
                     ))}
                   </div>
                 </div>
@@ -523,7 +523,7 @@ export function GlobalSIMDashboard({ isOpen, onClose }: Props) {
                         ))}
                       </ul>
                       <button className="w-full mt-4 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90"
-                        style={{ background: selectedPlan === plan.id ? `linear-gradient(135deg,${P},#9585EA)` : "#E5E7EB", color: selectedPlan === plan.id ? "#fff" : "#6B7280" }}>
+                        style={{ background: selectedPlan === plan.id ? `linear-gradient(135deg,${P},#5FC97F)` : "#E5E7EB", color: selectedPlan === plan.id ? "#fff" : "#6B7280" }}>
                         {selectedPlan === plan.id ? "✓ Selected" : "Select Plan"}
                       </button>
                     </div>
@@ -618,21 +618,21 @@ export function GlobalSIMDashboard({ isOpen, onClose }: Props) {
                 <div className="grid sm:grid-cols-3 gap-4">
                   <div>
                     <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Calling from</label>
-                    <select className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-purple-400"
+                    <select className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-400"
                       value={callFrom} onChange={e => setCallFrom(e.target.value)}>
                       {MVNO_PARTNERS.map(p => <option key={p.id} value={p.id}>{p.flag} {p.country}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Calling to</label>
-                    <select className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-purple-400"
+                    <select className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-400"
                       value={callTo} onChange={e => setCallTo(e.target.value)}>
                       {MVNO_PARTNERS.filter(p => p.id !== callFrom).map(p => <option key={p.id} value={p.id}>{p.flag} {p.country}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Duration (minutes)</label>
-                    <input type="number" className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-purple-400" min={1} max={120}
+                    <input type="number" className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-400" min={1} max={120}
                       value={callDuration} onChange={e => setCallDuration(+e.target.value)} />
                   </div>
                 </div>

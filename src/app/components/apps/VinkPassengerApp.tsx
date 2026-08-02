@@ -4,7 +4,7 @@ import { MobileAppOverlay, PhoneFrame } from "./PhoneFrame";
 
 type Screen = "home" | "booking" | "tracking" | "bus" | "hotels";
 
-const PURPLE = "#5B2D8E";
+const PURPLE = "#0B5C2E";
 const LIGHT_BG = "#F8F7FF";
 
 const RECENT_DESTINATIONS = [
@@ -23,7 +23,7 @@ const BUS_ROUTES = [
 const HOTELS = [
   { name: "Cape Town CBD Hotel",      stars: 4, price: "R1,200", dist: "0.2km", grad: "linear-gradient(135deg,#1E293B,#374151)" },
   { name: "Observatory Guesthouse",   stars: 3, price: "R680",   dist: "3.1km", grad: "linear-gradient(135deg,#134E4A,#0F766E)" },
-  { name: "V&A Waterfront Suites",    stars: 5, price: "R2,800", dist: "1.4km", grad: "linear-gradient(135deg,#1E1B4B,#4C1D95)" },
+  { name: "V&A Waterfront Suites",    stars: 5, price: "R2,800", dist: "1.4km", grad: "linear-gradient(135deg,#1E1B4B,#0F3D24)" },
   { name: "Sea Point Lodge",          stars: 3, price: "R450",   dist: "2.8km", grad: "linear-gradient(135deg,#7C2D12,#C2410C)" },
 ];
 
@@ -78,7 +78,7 @@ function HomeScreen({ setScreen }: { setScreen: (s: Screen) => void }) {
         <button
           onClick={() => setScreen("tracking")}
           className="w-full rounded-2xl p-3 flex items-center gap-3 shadow-sm"
-          style={{ background: `linear-gradient(135deg, ${PURPLE}, #7C3AED)` }}
+          style={{ background: `linear-gradient(135deg, ${PURPLE}, #FF9900)` }}
         >
           <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
             <div className="w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse" />
@@ -254,7 +254,7 @@ function BookingScreen({ onBookRide }: { onBookRide?: () => void }) {
         <button
           onClick={onBookRide}
           className="w-full py-3.5 rounded-2xl font-bold text-sm text-white shadow-lg mb-2 active:scale-95 transition-transform"
-          style={{ background: `linear-gradient(135deg, ${PURPLE}, #7C3AED)` }}
+          style={{ background: `linear-gradient(135deg, ${PURPLE}, #FF9900)` }}
         >
           🚕 Find a Driver →
         </button>
@@ -306,7 +306,7 @@ function TrackingScreen() {
         <div className="flex items-center gap-3">
           <div
             className="w-11 h-11 rounded-full flex items-center justify-center font-bold text-sm text-white"
-            style={{ background: `linear-gradient(135deg, ${PURPLE}, #7C3AED)` }}
+            style={{ background: `linear-gradient(135deg, ${PURPLE}, #FF9900)` }}
           >
             SD
           </div>
@@ -424,7 +424,7 @@ function BusScreen() {
                 </div>
                 <button
                   className="px-4 py-1.5 rounded-xl text-xs font-bold text-white"
-                  style={{ background: `linear-gradient(135deg, ${PURPLE}, #7C3AED)` }}
+                  style={{ background: `linear-gradient(135deg, ${PURPLE}, #FF9900)` }}
                 >
                   Book
                 </button>
@@ -527,7 +527,7 @@ function HotelsScreen() {
                 </div>
                 <button
                   className="w-full mt-2 py-1.5 rounded-xl text-xs font-bold text-white"
-                  style={{ background: `linear-gradient(135deg, ${PURPLE}, #7C3AED)` }}
+                  style={{ background: `linear-gradient(135deg, ${PURPLE}, #FF9900)` }}
                 >
                   Book Now
                 </button>
@@ -574,7 +574,7 @@ export function VinkPassengerApp({ isOpen, onClose, onOpenClubBooking, onBookRid
                 {[
                   { emoji: "✈️", label: "Cape Town → New York", sub: "Departs 15 Jul 2026", color: "#1A237E" },
                   { emoji: "✈️", label: "Cape Town → London", sub: "Departs 20 Jul 2026", color: "#1B5E20" },
-                  { emoji: "🚌", label: "Cape Town → Pretoria", sub: "Departs 15 Jul 2026", color: "#5B2D8E" },
+                  { emoji: "🚌", label: "Cape Town → Pretoria", sub: "Departs 15 Jul 2026", color: "#0B5C2E" },
                 ].map((r, i) => (
                   <div key={i} onClick={() => { if (onOpenClubBooking) { onOpenClubBooking(); } }}
                     className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:opacity-90 text-white"
@@ -590,7 +590,7 @@ export function VinkPassengerApp({ isOpen, onClose, onOpenClubBooking, onBookRid
               </div>
               <button onClick={() => { if (onOpenClubBooking) onOpenClubBooking(); }}
                 className="w-full max-w-xs py-3 rounded-2xl text-sm font-black text-white shadow-lg"
-                style={{ background: "linear-gradient(135deg,#5B2D8E,#9585EA)" }}>
+                style={{ background: "linear-gradient(135deg,#0B5C2E,#5FC97F)" }}>
                 Browse All Club Routes
               </button>
             </div>

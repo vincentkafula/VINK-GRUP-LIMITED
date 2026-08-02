@@ -36,12 +36,12 @@ const FLEET_GROUPS = [
   { name: "Executive", total: 8, moving: 3, idle: 5, offline: 0, color: "#F59E0B" },
   { name: "Field Ops", total: 14, moving: 9, idle: 3, offline: 2, color: "#10B981" },
   { name: "Security", total: 10, moving: 8, idle: 2, offline: 0, color: "#EF4444" },
-  { name: "Maintenance", total: 6, moving: 2, idle: 2, offline: 2, color: "#8B5CF6" },
+  { name: "Maintenance", total: 6, moving: 2, idle: 2, offline: 2, color: "#34A853" },
 ];
 
 const TRIPS_HISTORY = Array.from({ length: 24 }, (_, i) => 20 + Math.sin(i / 3) * 12 + Math.random() * 8);
 
-const statusColor: Record<string, string> = { moving: "#10B981", idle: "#F59E0B", stopped: "#6B7280", offline: "#EF4444", maintenance: "#8B5CF6" };
+const statusColor: Record<string, string> = { moving: "#10B981", idle: "#F59E0B", stopped: "#6B7280", offline: "#EF4444", maintenance: "#34A853" };
 
 export function VehicleTrackingDashboard({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const [nav, setNav] = useState("Overview");
@@ -65,7 +65,7 @@ export function VehicleTrackingDashboard({ isOpen, onClose }: { isOpen: boolean;
           <StatCard label="Idle" value="16" icon={<Activity className="w-5 h-5" />} color="#F59E0B" />
           <StatCard label="Offline" value="4" icon={<Zap className="w-5 h-5" />} color="#6B7280" trend="down" />
           <StatCard label="Active Alerts" value={String(alerts)} icon={<AlertTriangle className="w-5 h-5" />} color="#DC2626" trend="up" />
-          <StatCard label="Total Drivers" value="48" icon={<Users className="w-5 h-5" />} color="#8B5CF6" />
+          <StatCard label="Total Drivers" value="48" icon={<Users className="w-5 h-5" />} color="#34A853" />
         </div>
 
         <div className="grid xl:grid-cols-3 gap-5">

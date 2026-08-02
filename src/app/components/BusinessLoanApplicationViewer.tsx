@@ -391,7 +391,7 @@ export function BusinessLoanApplicationViewer({ isOpen, onClose }: Props) {
                   </p>
                   <label className="flex items-start gap-3 cursor-pointer">
                     <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)}
-                      className="mt-0.5 w-4 h-4 rounded accent-purple-700 flex-shrink-0" />
+                      className="mt-0.5 w-4 h-4 rounded accent-emerald-700 flex-shrink-0" />
                     <span className="text-sm font-semibold text-gray-700">
                       I agree to the terms and conditions and consent to a credit check
                     </span>

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { MessageCircle, X, Send, Paperclip, Phone, Video, ChevronDown, Bot, User, Clock, CheckCheck, AlertCircle, Star } from "lucide-react";
 
-const P = "#5B2D8E";
+const P = "#0B5C2E";
 const GOLD = "#F5A623";
 
 type MessageRole = "user" | "agent" | "bot" | "system";
@@ -54,7 +54,7 @@ const BOT_RESPONSES: Record<string, string> = {
 const CATEGORIES = [
   { label: "Account", color: "#3B82F6" },
   { label: "Cards", color: P },
-  { label: "Loans", color: "#8B5CF6" },
+  { label: "Loans", color: "#34A853" },
   { label: "Travel", color: "#F59E0B" },
   { label: "Technical", color: "#10B981" },
   { label: "Complaint", color: "#EF4444" },
@@ -127,7 +127,7 @@ export function CustomerSupportChat() {
       <button
         onClick={open}
         className="fixed bottom-6 right-6 z-[300] flex items-center gap-2 px-4 py-3 rounded-2xl shadow-2xl text-white font-semibold text-sm transition-all hover:scale-105"
-        style={{ background: `linear-gradient(135deg,${P},#9585EA)` }}
+        style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}
       >
         <MessageCircle className="w-5 h-5" />
         Support
@@ -144,7 +144,7 @@ export function CustomerSupportChat() {
       style={{ width: 380, height: 580, background: "#0A0A14", border: "1px solid rgba(255,255,255,0.1)" }}
     >
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10" style={{ background: `linear-gradient(135deg,${P},#9585EA)` }}>
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10" style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
         <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center text-lg">🎧</div>
         <div className="flex-1">
           <p className="text-white font-bold text-sm">VINK Support</p>
@@ -198,7 +198,7 @@ export function CustomerSupportChat() {
                 {(msg.role === "bot" || msg.role === "agent") && (
                   <div className="flex items-end gap-2">
                     <div className="w-7 h-7 rounded-full flex items-center justify-center text-sm flex-shrink-0" style={{ background: msg.role === "bot" ? `${P}44` : "#10B98144" }}>
-                      {msg.role === "bot" ? <Bot className="w-4 h-4 text-purple-300" /> : <User className="w-4 h-4 text-green-300" />}
+                      {msg.role === "bot" ? <Bot className="w-4 h-4 text-emerald-300" /> : <User className="w-4 h-4 text-green-300" />}
                     </div>
                     <div className="max-w-[80%] rounded-2xl rounded-bl-sm px-3 py-2" style={{ background: "rgba(255,255,255,0.08)" }}>
                       <p className="text-xs text-white/90 leading-relaxed whitespace-pre-line"
@@ -225,7 +225,7 @@ export function CustomerSupportChat() {
             {typing && (
               <div className="flex items-end gap-2">
                 <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: `${P}44` }}>
-                  <Bot className="w-4 h-4 text-purple-300" />
+                  <Bot className="w-4 h-4 text-emerald-300" />
                 </div>
                 <div className="rounded-2xl rounded-bl-sm px-4 py-3" style={{ background: "rgba(255,255,255,0.08)" }}>
                   <div className="flex gap-1">

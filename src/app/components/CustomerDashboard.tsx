@@ -13,11 +13,11 @@ type R = Record<string, unknown>;
 type Tab = "overview" | "orders" | "addresses" | "payment" | "returns" | "notifications" | "security" | "analytics";
 
 const fmtZAR = (n: number) => `R${Number(n ?? 0).toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-const PIE_COLORS = ["#0066CC", "#FF9900", "#10B981", "#8B5CF6", "#EF4444", "#F59E0B"];
+const PIE_COLORS = ["#0066CC", "#FF9900", "#10B981", "#34A853", "#EF4444", "#F59E0B"];
 
 const STATUS_META: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
   pending:      { label: "Pending",    color: "#9CA3AF", icon: <Clock className="w-3.5 h-3.5" /> },
-  confirmed:    { label: "Confirmed",  color: "#8B5CF6", icon: <CheckCircle className="w-3.5 h-3.5" /> },
+  confirmed:    { label: "Confirmed",  color: "#34A853", icon: <CheckCircle className="w-3.5 h-3.5" /> },
   processing:   { label: "Processing", color: "#F59E0B", icon: <Clock className="w-3.5 h-3.5" /> },
   shipped:      { label: "Shipped",    color: "#3B82F6", icon: <Truck className="w-3.5 h-3.5" /> },
   delivered:    { label: "Delivered",  color: "#10B981", icon: <CheckCircle className="w-3.5 h-3.5" /> },
@@ -135,7 +135,7 @@ export function CustomerDashboard({ user, onProduct, onSignOut }: Props) {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
                   <StatCard label="Orders in progress" value={String(orderCounts.inProgress)} icon={<Clock className="w-5 h-5" />} accent="#F59E0B" />
                   <StatCard label="Delivered" value={String(orderCounts.delivered)} icon={<CheckCircle className="w-5 h-5" />} accent="#10B981" />
-                  <StatCard label="Returns" value={String(orderCounts.returned)} icon={<RotateCcw className="w-5 h-5" />} accent="#8B5CF6" />
+                  <StatCard label="Returns" value={String(orderCounts.returned)} icon={<RotateCcw className="w-5 h-5" />} accent="#34A853" />
                   <StatCard label="Cancelled" value={String(orderCounts.cancelled)} icon={<XCircle className="w-5 h-5" />} accent="#EF4444" />
                 </div>
 
@@ -306,7 +306,7 @@ function OrderRow({ order, onChanged }: { order: R; onChanged: () => void }) {
               <button onClick={cancel} disabled={busy} className="text-[11px] font-semibold text-red-500 hover:text-red-700 disabled:opacity-50">Cancel</button>
             )}
             {status === "delivered" && (
-              <button onClick={() => setShowReturnForm(s => !s)} className="text-[11px] font-semibold" style={{ color: "#8B5CF6" }}>Request return</button>
+              <button onClick={() => setShowReturnForm(s => !s)} className="text-[11px] font-semibold" style={{ color: "#34A853" }}>Request return</button>
             )}
           </div>
         </td>
@@ -316,8 +316,8 @@ function OrderRow({ order, onChanged }: { order: R; onChanged: () => void }) {
           <td colSpan={6} className="px-4 py-3 bg-gray-50">
             <div className="flex items-center gap-2">
               <input value={reason} onChange={e => setReason(e.target.value)} placeholder="Reason for return"
-                className="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-[#6B5ED7]" />
-              <button onClick={submitReturn} disabled={busy} className="px-3 py-1.5 rounded-lg text-white text-xs font-semibold disabled:opacity-50" style={{ background: "#8B5CF6" }}>
+                className="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-[#128A43]" />
+              <button onClick={submitReturn} disabled={busy} className="px-3 py-1.5 rounded-lg text-white text-xs font-semibold disabled:opacity-50" style={{ background: "#34A853" }}>
                 {busy ? "Submitting..." : "Submit request"}
               </button>
             </div>

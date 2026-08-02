@@ -90,7 +90,7 @@ export function Header({ onDashboardSelect, onSubNavClick, onOpenProfile, isLogg
                     onClick={() => handleNavClick(item)}
                     className={`px-4 py-2 rounded-lg text-base font-semibold transition-all ${
                       activeNav === item
-                        ? "text-[#6B5ED7] bg-[#F3F0FF]"
+                        ? "text-[#128A43] bg-[#EAF7EE]"
                         : "text-gray-700 hover:text-gray-900 hover:bg-gray-50"
                     }`}
                   >
@@ -117,7 +117,7 @@ export function Header({ onDashboardSelect, onSubNavClick, onOpenProfile, isLogg
                     onClick={onOpenProfile}
                     className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full border border-gray-200 hover:bg-gray-50 transition-colors"
                   >
-                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: "linear-gradient(135deg,#5B2D8E,#9585EA)" }}>
+                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: "linear-gradient(135deg,#0B5C2E,#5FC97F)" }}>
                       {userName ? userName[0].toUpperCase() : <User className="w-3.5 h-3.5" />}
                     </div>
                     <span className="text-sm font-medium text-gray-700 hidden sm:block">{userName ?? "Account"}</span>
@@ -127,7 +127,7 @@ export function Header({ onDashboardSelect, onSubNavClick, onOpenProfile, isLogg
               ) : (
                 <button
                   onClick={() => setIsLoginModalOpen(true)}
-                  className="bg-[#6B5ED7] text-white px-5 py-1.5 rounded-full hover:bg-[#5B4EC7] transition-colors flex items-center gap-1.5 text-sm font-medium"
+                  className="bg-[#128A43] text-white px-5 py-1.5 rounded-full hover:bg-[#5B4EC7] transition-colors flex items-center gap-1.5 text-sm font-medium"
                 >
                   <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="12" cy="8" r="4" />
@@ -150,7 +150,7 @@ export function Header({ onDashboardSelect, onSubNavClick, onOpenProfile, isLogg
                   onClick={() => handleNavClick(item)}
                   className={`text-base px-4 py-2.5 rounded-lg text-left w-full transition-colors font-semibold ${
                     activeNav === item
-                      ? "text-[#6B5ED7] bg-[#F3F0FF]"
+                      ? "text-[#128A43] bg-[#EAF7EE]"
                       : "text-gray-700 hover:bg-gray-50"
                   }`}
                 >
@@ -163,7 +163,7 @@ export function Header({ onDashboardSelect, onSubNavClick, onOpenProfile, isLogg
 
         {/* ── Personal sub-nav ── */}
         {showPersonalSubNav && (
-          <div className="bg-[#6B5ED7] transition-all">
+          <div className="bg-[#128A43] transition-all">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="flex items-center justify-between h-10">
                 <nav className="flex items-center gap-5 overflow-x-auto scrollbar-none">
@@ -184,7 +184,7 @@ export function Header({ onDashboardSelect, onSubNavClick, onOpenProfile, isLogg
 
         {/* ── Business sub-nav ── */}
         {showBusinessSubNav && (
-          <div className="bg-[#6B5ED7] transition-all">
+          <div className="bg-[#128A43] transition-all">
             <div className="max-w-7xl mx-auto px-2 sm:px-4">
               <div className="flex items-center h-10 overflow-x-auto scrollbar-none">
                 <nav className="flex items-center gap-0.5">
@@ -206,7 +206,7 @@ export function Header({ onDashboardSelect, onSubNavClick, onOpenProfile, isLogg
 
         {/* ── Corporate sub-nav ── */}
         {showCorporateSubNav && (
-          <div style={{ background: "#5B2D8E" }} className="transition-all">
+          <div style={{ background: "#0B5C2E" }} className="transition-all">
             <div className="max-w-7xl mx-auto px-2 sm:px-4">
               <div className="flex items-center h-10 overflow-x-auto scrollbar-none">
                 <nav className="flex items-center gap-0.5">

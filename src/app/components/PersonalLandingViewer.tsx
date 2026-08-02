@@ -3,6 +3,7 @@ import {
   X, ChevronRight, ChevronLeft, ArrowRight, Gift, Smartphone, Radio, Tag,
   Headphones, ShieldCheck, Wifi, Lock,
 } from "lucide-react";
+import siteHeroBg from "../../imports/assets/site-hero-bg.png";
 
 interface Props {
   isOpen: boolean;
@@ -14,9 +15,9 @@ interface Props {
 }
 
 // ─── Design tokens ──────────────────────────────────────────────────────────
-const INK   = "#150A33";
-const PLUM  = "#5B2D8E";
-const VIOLET = "#6B5ED7";
+const INK   = "#0B2E1C";
+const PLUM  = "#0B5C2E";
+const VIOLET = "#128A43";
 const GOLD  = "#C9A84C";
 
 const SUB_NAV = [
@@ -55,7 +56,7 @@ function CardGraphic() {
         className="absolute rounded-2xl shadow-2xl"
         style={{
           width: 244, height: 154, top: 66, left: 6, rotate: "-9deg",
-          background: "linear-gradient(150deg,#241154 0%,#150A33 100%)",
+          background: "linear-gradient(150deg,#0B2E1C 0%,#0B2E1C 100%)",
           border: "1px solid rgba(255,255,255,0.08)",
         }}
       />
@@ -65,7 +66,7 @@ function CardGraphic() {
         className="absolute rounded-2xl shadow-2xl overflow-hidden"
         style={{
           width: 258, height: 164, top: 30, left: 24, rotate: "6deg",
-          background: "linear-gradient(155deg,#6B5ED7 0%,#4C1D95 55%,#2A1160 100%)",
+          background: "linear-gradient(155deg,#128A43 0%,#0F3D24 55%,#0B2E1C 100%)",
           border: "1px solid rgba(255,255,255,0.12)",
         }}
       >
@@ -169,7 +170,7 @@ export function PersonalLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
           </div>
           <button
             onClick={onApplyClick}
-            className="flex items-center gap-2 px-6 py-3 rounded-full text-white text-sm font-semibold shrink-0 shadow-[0_10px_24px_-8px_rgba(91,45,142,0.55)] hover:brightness-105 transition-all"
+            className="flex items-center gap-2 px-6 py-3 rounded-full text-white text-sm font-semibold shrink-0 shadow-[0_10px_24px_-8px_rgba(11,92,46,0.55)] hover:brightness-105 transition-all"
             style={{ background: `linear-gradient(135deg,${VIOLET},${PLUM})` }}
           >
             Start Now <ArrowRight className="w-4 h-4" />
@@ -180,8 +181,9 @@ export function PersonalLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
       {/* ── Hero carousel ── */}
       <div
         className="relative overflow-hidden"
-        style={{ background: `linear-gradient(120deg, #3D1B7A 0%, ${VIOLET} 58%, ${PLUM} 100%)` }}
+        style={{ background: `linear-gradient(120deg, #14532D 0%, ${VIOLET} 58%, ${PLUM} 100%)` }}
       >
+        <img src={siteHeroBg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-[0.14] mix-blend-luminosity" />
         <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: "radial-gradient(rgba(255,255,255,0.9) 1px, transparent 1px)", backgroundSize: "22px 22px" }} />
 
         <button
@@ -260,7 +262,7 @@ export function PersonalLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
               <div className="flex items-start justify-between">
                 <span
                   className="w-10 h-10 rounded-full flex items-center justify-center"
-                  style={{ background: "#F3F0FF", color: VIOLET }}
+                  style={{ background: "#EAF7EE", color: VIOLET }}
                 >
                   {f.icon}
                 </span>

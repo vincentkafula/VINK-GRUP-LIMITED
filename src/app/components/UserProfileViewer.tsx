@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { X, User, Shield, CreditCard, Bell, Settings, LogOut, Camera, CheckCircle, Clock, AlertTriangle, ChevronRight, Eye, EyeOff, Edit3, Phone, Mail, MapPin, Calendar, FileText, Star, Smartphone, Globe } from "lucide-react";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 
-const P = "#5B2D8E";
+const P = "#0B5C2E";
 const GOLD = "#F5A623";
 
 interface Props {
@@ -90,7 +90,7 @@ export function UserProfileViewer({ isOpen, onClose, onSignOut }: Props) {
         <div className="p-6 border-b border-white/10">
           <div className="flex items-start gap-3 mb-4">
             <div className="relative">
-              <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-black text-white shadow-xl" style={{ background: `linear-gradient(135deg,${P},#9585EA)` }}>
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-black text-white shadow-xl" style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
                 {profile.firstName[0]}{profile.lastName[0]}
               </div>
               <button
@@ -265,7 +265,7 @@ export function UserProfileViewer({ isOpen, onClose, onSignOut }: Props) {
           {tab === "kyc" && (
             <div className="max-w-2xl space-y-6">
               {/* Progress */}
-              <div className="p-6 rounded-2xl" style={{ background: `linear-gradient(135deg,${P},#9585EA)` }}>
+              <div className="p-6 rounded-2xl" style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <p className="text-white/70 text-sm">Verification Level</p>
@@ -403,7 +403,7 @@ export function UserProfileViewer({ isOpen, onClose, onSignOut }: Props) {
           {tab === "cards" && (
             <div className="max-w-2xl space-y-6">
               {[
-                { type: "Mastercard Debit", last4: "4291", expires: "09/28", status: "active", daily: 5000, monthly: 50000, spentToday: 850, spentMonth: 12480, color: "#5B2D8E", online: true, international: false, contactless: true },
+                { type: "Mastercard Debit", last4: "4291", expires: "09/28", status: "active", daily: 5000, monthly: 50000, spentToday: 850, spentMonth: 12480, color: "#0B5C2E", online: true, international: false, contactless: true },
                 { type: "Virtual Card", last4: "7742", expires: "12/26", status: "active", daily: 2000, monthly: 20000, spentToday: 0, spentMonth: 3200, color: "#0F172A", online: true, international: true, contactless: false },
               ].map(card => (
                 <div key={card.last4} className="rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
@@ -525,7 +525,7 @@ function Field({ label, value, edit = false, type = "text", icon, verified, onCh
           readOnly={!edit}
           onChange={e => onChange?.(e.target.value)}
           className="w-full px-3 py-2 rounded-xl border text-sm transition-all"
-          style={{ paddingLeft: icon ? "2rem" : undefined, borderColor: edit ? "#5B2D8E" : "#E5E7EB", background: edit ? "#fff" : "#F9FAFB", color: "#1F2937" }}
+          style={{ paddingLeft: icon ? "2rem" : undefined, borderColor: edit ? "#0B5C2E" : "#E5E7EB", background: edit ? "#fff" : "#F9FAFB", color: "#1F2937" }}
         />
         {verified && (
           <span className="absolute right-3 top-1/2 -translate-y-1/2">

@@ -5,7 +5,7 @@ import { globalBankingApi } from "../../services/applicationsApi";
 
 type Screen = "home" | "send" | "cards" | "history" | "rewards";
 
-const PURPLE = "#5B2D8E";
+const PURPLE = "#0B5C2E";
 const GOLD = "#F5A623";
 
 const TRANSACTIONS = [
@@ -169,7 +169,7 @@ function SendScreen() {
         </div>
         <button onClick={() => { setSuccess(null); setAmount(""); setRecipient(""); setNote(""); }}
           className="w-full max-w-xs py-3.5 rounded-2xl font-bold text-sm text-white"
-          style={{ background: `linear-gradient(135deg,${PURPLE},#7C3AED)` }}>
+          style={{ background: `linear-gradient(135deg,${PURPLE},#FF9900)` }}>
           Send Another
         </button>
       </div>
@@ -247,7 +247,7 @@ function SendScreen() {
         {/* Send button */}
         <button onClick={handleSend} disabled={loading}
           className="w-full py-3.5 rounded-2xl font-bold text-sm text-white mt-2 shadow-lg transition-transform active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
-          style={{ background: `linear-gradient(135deg,${PURPLE},#7C3AED)` }}>
+          style={{ background: `linear-gradient(135deg,${PURPLE},#FF9900)` }}>
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
           {loading ? "Sending…" : "Send Now →"}
         </button>

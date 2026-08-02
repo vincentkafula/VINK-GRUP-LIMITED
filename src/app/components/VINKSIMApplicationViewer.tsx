@@ -24,7 +24,7 @@ const STEPS = [
 ];
 
 const SIM_PLANS = [
-  { id: "prepaid5",  name: "Prepaid 5GB",    data: "5GB",   sms: "100 SMS",  calls: "60 min",  price: "R99/month",   color: "#6B5ED7" },
+  { id: "prepaid5",  name: "Prepaid 5GB",    data: "5GB",   sms: "100 SMS",  calls: "60 min",  price: "R99/month",   color: "#128A43" },
   { id: "prepaid10", name: "Prepaid 10GB",   data: "10GB",  sms: "Unlimited", calls: "120 min", price: "R149/month",  color: "#3B82F6" },
   { id: "postpaid",  name: "Postpaid 20GB",  data: "20GB",  sms: "Unlimited", calls: "Unlimited", price: "R249/month", color: "#10B981" },
   { id: "data",      name: "Data Only 30GB", data: "30GB",  sms: "—",        calls: "—",        price: "R199/month",  color: "#F59E0B" },
@@ -63,7 +63,7 @@ function FingerprintScanner({ onDone }: { onDone: () => void }) {
           boxShadow: scanning ? `0 0 40px ${CP}35` : done ? `0 0 20px ${GREEN}30` : "none",
         }}>
         <Fingerprint className="w-20 h-20 transition-colors"
-          style={{ color: done ? GREEN : scanning ? CP : "#C4B5FD" }} />
+          style={{ color: done ? GREEN : scanning ? CP : "#A7E8BD" }} />
         {scanning && (
           <div className="absolute bottom-4 left-4 right-4">
             <div className="h-2 bg-white/60 rounded-full overflow-hidden">
@@ -192,7 +192,7 @@ export function VINKSIMApplicationViewer({ isOpen, onClose }: Props) {
         tag="VINK MVNO · Cell C Network · ICASA Licensed"
         title="Get Your Vink SIM Card"
         subtitle="Stay connected on South Africa's fastest network. Choose your plan, verify your identity, and get your SIM activated in minutes."
-        gradient="linear-gradient(135deg,#1a0533 0%,#3B2D9E 45%,#6B5ED7 100%)"
+        gradient="linear-gradient(135deg,#1a0533 0%,#3B2D9E 45%,#128A43 100%)"
       />
 
       <div className="max-w-2xl mx-auto w-full px-5 py-8 space-y-5">
@@ -360,7 +360,7 @@ export function VINKSIMApplicationViewer({ isOpen, onClose }: Props) {
                 ))}
               </div>
               <label className="flex items-center gap-3 cursor-pointer">
-                <input type="checkbox" checked={wantToPort} onChange={e => setWantToPort(e.target.checked)} className="w-4 h-4 rounded accent-purple-700" />
+                <input type="checkbox" checked={wantToPort} onChange={e => setWantToPort(e.target.checked)} className="w-4 h-4 rounded accent-emerald-700" />
                 <span className="text-sm text-gray-700 font-medium">I want to port my existing number to Vink</span>
               </label>
               {wantToPort && (
@@ -404,7 +404,7 @@ export function VINKSIMApplicationViewer({ isOpen, onClose }: Props) {
                 setSubmitted(true);
               }}
               className="w-full py-4 rounded-xl text-base font-black text-white transition-all hover:opacity-90 shadow-lg mt-2"
-              style={{ background: `linear-gradient(135deg,${CP},#9585EA)`, boxShadow: `0 6px 24px ${CP}35` }}>
+              style={{ background: `linear-gradient(135deg,${CP},#5FC97F)`, boxShadow: `0 6px 24px ${CP}35` }}>
               Activate My Vink SIM →
             </button>
           </FormCard>
@@ -436,7 +436,7 @@ export function VINKSIMApplicationViewer({ isOpen, onClose }: Props) {
                 <p className="text-xs text-gray-500 mt-1"><strong>SIM type:</strong> {simType === "physical" ? "Physical SIM card will be delivered in 3–5 business days" : "eSIM QR code sent to " + form.email}</p>
               </div>
             </div>
-            <button onClick={onClose} className="w-full py-3.5 rounded-xl text-sm font-bold text-white shadow-lg" style={{ background: `linear-gradient(135deg,${CP},#9585EA)` }}>
+            <button onClick={onClose} className="w-full py-3.5 rounded-xl text-sm font-bold text-white shadow-lg" style={{ background: `linear-gradient(135deg,${CP},#5FC97F)` }}>
               Back to VINK
             </button>
           </div>

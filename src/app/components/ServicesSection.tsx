@@ -65,14 +65,14 @@ function ServiceCard({ icon, title, description, link }: ServiceCardProps) {
   return (
     <a
       href={link}
-      className="group bg-white border border-border rounded-xl p-6 hover:shadow-lg hover:border-[#6B5ED7] transition-all duration-300"
+      className="group bg-white border border-border rounded-xl p-6 hover:shadow-lg hover:border-[#128A43] transition-all duration-300"
     >
-      <div className="text-[#6B5ED7] mb-4 group-hover:scale-110 transition-transform duration-300">
+      <div className="text-[#128A43] mb-4 group-hover:scale-110 transition-transform duration-300">
         {icon}
       </div>
-      <h3 className="mb-2 group-hover:text-[#6B5ED7] transition-colors">{title}</h3>
+      <h3 className="mb-2 group-hover:text-[#128A43] transition-colors">{title}</h3>
       <p className="text-muted-foreground text-sm mb-4">{description}</p>
-      <span className="text-[#6B5ED7] text-sm font-medium inline-flex items-center gap-1 group-hover:gap-2 transition-all">
+      <span className="text-[#128A43] text-sm font-medium inline-flex items-center gap-1 group-hover:gap-2 transition-all">
         Learn more
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { CheckCircle, ArrowRight, User, Shield, CreditCard, Smartphone, Star, X } from "lucide-react";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 
-const P = "#5B2D8E";
+const P = "#0B5C2E";
 const GOLD = "#F5A623";
 
 interface Props {
@@ -61,7 +61,7 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 backdrop-blur-md p-4">
-      <div className="w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl" style={{ background: step === 1 ? `linear-gradient(135deg,${P},#9585EA)` : "#fff" }}>
+      <div className="w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl" style={{ background: step === 1 ? `linear-gradient(135deg,${P},#5FC97F)` : "#fff" }}>
 
         {/* Progress bar */}
         <div className="h-1" style={{ background: "rgba(0,0,0,0.1)" }}>
@@ -145,16 +145,16 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs font-semibold text-gray-500 block mb-1.5">First Name *</label>
-                    <input value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="e.g. Thabo" className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-purple-500" />
+                    <input value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="e.g. Thabo" className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-emerald-500" />
                   </div>
                   <div>
                     <label className="text-xs font-semibold text-gray-500 block mb-1.5">Last Name *</label>
-                    <input value={lastName} onChange={e => setLastName(e.target.value)} placeholder="e.g. Nkosi" className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-purple-500" />
+                    <input value={lastName} onChange={e => setLastName(e.target.value)} placeholder="e.g. Nkosi" className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-emerald-500" />
                   </div>
                 </div>
                 <div>
                   <label className="text-xs font-semibold text-gray-500 block mb-1.5">Mobile Number *</label>
-                  <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="+27 72 123 4567" className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-purple-500" />
+                  <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="+27 72 123 4567" className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-emerald-500" />
                 </div>
               </div>
             </div>
@@ -172,7 +172,7 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
               </div>
               <div>
                 <label className="text-xs font-semibold text-gray-500 block mb-1.5">SA ID Number / Passport Number *</label>
-                <input value={idNumber} onChange={e => setIdNumber(e.target.value)} placeholder="13-digit SA ID number" maxLength={13} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-purple-500 font-mono" />
+                <input value={idNumber} onChange={e => setIdNumber(e.target.value)} placeholder="13-digit SA ID number" maxLength={13} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-emerald-500 font-mono" />
               </div>
               <div className="p-3 rounded-xl border border-blue-100 bg-blue-50 text-xs text-blue-700">
                 📸 You will need to upload a clear photo of your ID document and a selfie to complete verification.
@@ -269,7 +269,7 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
           {/* Step 6 — Done */}
           {step === 6 && (
             <div className="text-center space-y-5">
-              <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mx-auto" style={{ background: `linear-gradient(135deg,${P},#9585EA)` }}>🎉</div>
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mx-auto" style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>🎉</div>
               <div>
                 <h2 className="text-xl font-black text-gray-900">You're all set, {firstName || "welcome"}!</h2>
                 <p className="text-sm text-gray-500 mt-2">Your VINK account is being set up. You'll receive an email with your account details shortly.</p>
@@ -313,7 +313,7 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
             disabled={!canProceed()}
             className="flex-1 py-3 rounded-2xl text-sm font-bold text-white flex items-center justify-center gap-2 transition-all"
             style={{
-              background: !canProceed() ? "#D1D5DB" : step === 1 ? "rgba(255,255,255,0.25)" : `linear-gradient(135deg,${P},#9585EA)`,
+              background: !canProceed() ? "#D1D5DB" : step === 1 ? "rgba(255,255,255,0.25)" : `linear-gradient(135deg,${P},#5FC97F)`,
               color: !canProceed() ? "#9CA3AF" : "#fff",
               border: step === 1 ? "2px solid rgba(255,255,255,0.4)" : "none",
             }}

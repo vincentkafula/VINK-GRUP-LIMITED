@@ -7,7 +7,7 @@ import {
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
-const P    = "#5B2D8E";
+const P    = "#0B5C2E";
 const GOLD = "#F5A623";
 const NAVY = "#0A0F1E";
 
@@ -15,11 +15,11 @@ const PROVINCE_COLORS: Record<string, string> = {
   National:        "#6366F1",
   Gauteng:         "#3B82F6",
   "KwaZulu-Natal": "#0891B2",
-  "Western Cape":  "#5B2D8E",
+  "Western Cape":  "#0B5C2E",
   "Eastern Cape":  "#059669",
   Limpopo:         "#DC2626",
   Mpumalanga:      "#EA580C",
-  "North West":    "#7C3AED",
+  "North West":    "#FF9900",
   "Free State":    "#CA8A04",
   "Northern Cape": "#9CA3AF",
 };
@@ -124,19 +124,19 @@ export function TaxiAssociationsViewer({ isOpen, onClose }: Props) {
           <input
             value={search} onChange={e => setSearch(e.target.value)}
             placeholder="Search association…"
-            className="pl-8 pr-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-purple-400 transition-colors bg-white"
+            className="pl-8 pr-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-emerald-400 transition-colors bg-white"
             style={{ width: 220 }}
           />
         </div>
         {/* Province filter */}
         <select value={provinceFilter} onChange={e => setProvinceFilter(e.target.value)}
-          className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-purple-400 bg-white text-gray-700">
+          className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-400 bg-white text-gray-700">
           <option value="all">All provinces</option>
           {PROVINCES.map(p => <option key={p}>{p}</option>)}
         </select>
         {/* Level filter */}
         <select value={levelFilter} onChange={e => setLevelFilter(e.target.value)}
-          className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-purple-400 bg-white text-gray-700">
+          className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-400 bg-white text-gray-700">
           <option value="all">All levels</option>
           {LEVELS.map(l => <option key={l}>{l}</option>)}
         </select>
@@ -178,7 +178,7 @@ export function TaxiAssociationsViewer({ isOpen, onClose }: Props) {
               )}
               {filtered.map((a, i) => (
                 <div key={i}
-                  className="grid grid-cols-12 gap-0 px-5 py-3.5 border-b border-gray-50 last:border-0 hover:bg-purple-50/50 transition-colors group">
+                  className="grid grid-cols-12 gap-0 px-5 py-3.5 border-b border-gray-50 last:border-0 hover:bg-emerald-50/50 transition-colors group">
                   {/* Province */}
                   <div className="col-span-2 flex items-center gap-1.5">
                     <span className="text-base">{PROVINCE_EMOJIS[a.province] ?? "📍"}</span>
@@ -250,7 +250,7 @@ export function TaxiAssociationsViewer({ isOpen, onClose }: Props) {
                   {isOpen && (
                     <div className="border-t border-gray-100 divide-y divide-gray-50">
                       {associations.map((a, i) => (
-                        <div key={i} className="px-5 py-3.5 flex items-start gap-4 hover:bg-purple-50/40 transition-colors">
+                        <div key={i} className="px-5 py-3.5 flex items-start gap-4 hover:bg-emerald-50/40 transition-colors">
                           <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
                             style={{ background: color + "18" }}>
                             <Users className="w-4 h-4" style={{ color }} />
@@ -346,8 +346,8 @@ export function TaxiAssociationsViewer({ isOpen, onClose }: Props) {
                     </div>
                     {a.notes.includes("+27") && (
                       <div className="mt-3 flex items-center gap-2">
-                        <Phone className="w-3.5 h-3.5 text-indigo-500" />
-                        <p className="text-xs font-semibold text-indigo-600">
+                        <Phone className="w-3.5 h-3.5 text-emerald-500" />
+                        <p className="text-xs font-semibold text-emerald-600">
                           {a.notes.match(/\+27[\d\s]+/)?.[0]?.trim()}
                         </p>
                       </div>
