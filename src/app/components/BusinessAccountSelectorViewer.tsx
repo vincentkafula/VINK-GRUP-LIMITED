@@ -8,6 +8,7 @@ interface Props {
   onClose: () => void;
   onNavigate: (item: NavItem) => void;
   onApply: (accountType: string) => void;
+  onOpenApp: () => void;
 }
 
 const SUB_NAV: NavItem[] = ["Start My Business", "Accounts", "Credit Cards", "Loans", "Invest", "Insure", "Manage My Business", "International", "Studio", "News"];
@@ -84,7 +85,7 @@ function AccountDetailModal({ acct, folio, onClose, onApply }: { acct: BizAccoun
   );
 }
 
-export function BusinessAccountSelectorViewer({ isOpen, onClose, onNavigate, onApply }: Props) {
+export function BusinessAccountSelectorViewer({ isOpen, onClose, onNavigate, onApply, onOpenApp }: Props) {
   const [detailAccount, setDetailAccount] = useState<{ acct: BizAccount; folio: string } | null>(null);
   if (!isOpen) return null;
 
@@ -206,9 +207,14 @@ export function BusinessAccountSelectorViewer({ isOpen, onClose, onNavigate, onA
 
       <section className="pav-ledger-section">
         <div className="pav-wrap">
-          <div className="pav-ledger-head">
-            <h2>All business accounts</h2>
-            <p>Business Banking · Accounts</p>
+          <div className="pav-ledger-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: "12px" }}>
+            <div>
+              <h2>All business accounts</h2>
+              <p>Business Banking · Accounts</p>
+            </div>
+            <button onClick={onOpenApp} className="pav-btn" style={{ width: "auto", padding: "10px 20px", marginBottom: "2px" }}>
+              Try the Business App
+            </button>
           </div>
 
           <div className="pav-grid">
