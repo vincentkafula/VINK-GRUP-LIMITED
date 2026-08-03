@@ -1,9 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   X, ChevronRight, CheckCircle2, Sparkles, Anchor as AnchorIcon, TrendingUp,
-  Sunrise, Mountain, Crown, ArrowRight, UserCheck, Globe2,
+  Sunrise, Mountain, Crown, ArrowRight, UserCheck, Globe2, Star, Zap, ShieldCheck,
+  Gift, Users2, Headphones, CreditCard, PiggyBank, Landmark, Umbrella,
+  Globe as GlobeIcon, ShoppingBag, Tv, ShieldAlert,
 } from "lucide-react";
 import { ApplyModal } from "./ApplyModal";
+import { MarketplaceAuthModal } from "./MarketplaceAuthModal";
+import { mktAuth, mktCustomer, type MktAuthUser } from "../services/marketplaceApi";
 import { formatZAR, useCurrency, setCountryManually } from "../services/currencyStore";
 
 interface Props { isOpen: boolean; onClose: () => void; onNavigate: (category: "creditCard" | "loan" | "invest" | "insure" | "rewards") => void }
@@ -188,8 +192,25 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate }: Props) {
   const currency = useCurrency(); // subscribes this tree to live currency/rate updates
   const [applyProduct, setApplyProduct] = useState<{ name: string; price: string } | null>(null);
   const [detailAccount, setDetailAccount] = useState<Account | null>(null);
+  const [authUser, setAuthUser] = useState<MktAuthUser | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [rewardPoints, setRewardPoints] = useState<number | null>(null);
+
+  useEffect(() => {
+    const restored = mktAuth.restoreSession();
+    if (restored) setAuthUser(restored.user);
+  }, []);
+
+  useEffect(() => {
+    if (!authUser) { setRewardPoints(null); return; }
+    mktCustomer.stats(authUser.id).then(r => {
+      if (r.success) setRewardPoints(Number((r.data as { rewardPoints?: number }).rewardPoints ?? 0));
+    }).catch(() => {});
+  }, [authUser]);
+
   if (!isOpen) return null;
   const openApply = (name: string, price: string) => setApplyProduct({ name, price });
+  const handleSignOut = () => { mktAuth.logout(); setAuthUser(null); };
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-white">
@@ -233,6 +254,21 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate }: Props) {
               ))}
             </div>
           </div>
+          {authUser ? (
+            <div className="relative group shrink-0">
+              <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-semibold text-gray-700 hover:bg-gray-50">
+                <span className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white" style={{ background: GREEN }}>{authUser.name.charAt(0)}</span>
+                {authUser.name.split(" ")[0]}
+              </button>
+              <div className="absolute right-0 top-full mt-0 w-40 bg-white rounded-b shadow-2xl border border-gray-200 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-30">
+                <button onClick={handleSignOut} className="w-full text-left px-3 py-1.5 text-sm hover:bg-gray-50 text-red-600">Sign out</button>
+              </div>
+            </div>
+          ) : (
+            <button onClick={() => setShowAuthModal(true)} className="px-3.5 py-1.5 rounded-full text-[13px] font-semibold text-white shrink-0" style={{ background: GREEN }}>
+              Log in
+            </button>
+          )}
           <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors" aria-label="Close">
             <X className="w-4 h-4 text-gray-500" />
           </button>
@@ -247,16 +283,29 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate }: Props) {
         <div className="relative max-w-6xl mx-auto px-6 py-16 sm:py-20 grid lg:grid-cols-2 gap-10 items-center">
           <div>
             <span className="inline-block text-[11px] font-bold tracking-[0.14em] uppercase mb-4" style={{ color: ORANGE }}>Personal Banking</span>
-            <h1 className="text-4xl sm:text-5xl font-black leading-[1.05] text-gray-900">
-              Banking designed for<br />every South African.
-            </h1>
-            <p className="text-gray-500 text-base mt-5 max-w-md">
-              Open an account in minutes and manage your money with the Vink app.
-            </p>
+            {authUser ? (
+              <>
+                <h1 className="text-4xl sm:text-5xl font-black leading-[1.05] text-gray-900">
+                  Banking that<br />moves with you.
+                </h1>
+                <p className="text-gray-500 text-base mt-5 max-w-md">
+                  Pay. Save. Earn. All in one place, {authUser.name.split(" ")[0]}.
+                </p>
+              </>
+            ) : (
+              <>
+                <h1 className="text-4xl sm:text-5xl font-black leading-[1.05] text-gray-900">
+                  Banking designed for<br />every South African.
+                </h1>
+                <p className="text-gray-500 text-base mt-5 max-w-md">
+                  Open an account in minutes and manage your money with the Vink app.
+                </p>
+              </>
+            )}
             <div className="flex flex-wrap items-center gap-3 mt-8">
-              <button onClick={() => openApply(ACCOUNTS[0].name, ACCOUNTS[0].price)}
+              <button onClick={() => authUser ? setShowAuthModal(false) : openApply(ACCOUNTS[0].name, ACCOUNTS[0].price)}
                 className="px-6 py-3 rounded-full text-white text-sm font-bold shadow-lg" style={{ background: ORANGE }}>
-                Open an Account
+                {authUser ? "Explore Products" : "Open an Account"}
               </button>
               <button className="px-6 py-3 rounded-full text-sm font-bold border-2" style={{ borderColor: GREEN, color: GREEN }}>
                 Compare Accounts
@@ -280,6 +329,16 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate }: Props) {
             <div className="absolute -right-4 bottom-6 w-24 h-16 rounded-2xl shadow-xl flex items-center justify-center" style={{ background: ORANGE }}>
               <UserCheck className="w-8 h-8 text-white" />
             </div>
+            {authUser && (
+              <div className="absolute left-0 sm:-left-6 bottom-2 bg-white rounded-2xl shadow-xl p-3 flex items-center gap-2.5">
+                <span className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ background: "#FFF1E6", color: ORANGE }}><Star className="w-4 h-4 fill-current" /></span>
+                <div>
+                  <p className="text-[9px] text-gray-400">VinkPoints</p>
+                  <p className="text-sm font-black text-gray-900">{rewardPoints !== null ? rewardPoints.toLocaleString() : "—"}</p>
+                  <p className="text-[9px] font-semibold" style={{ color: GREEN }}>View Rewards →</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -296,6 +355,60 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate }: Props) {
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {ACCOUNTS.map((acct) => <AccountCard key={acct.id} acct={acct} onApply={openApply} onDetails={setDetailAccount} />)}
+        </div>
+      </section>
+
+      {/* Benefits strip */}
+      <div className="border-y border-gray-100 bg-gray-50/60">
+        <div className="max-w-6xl mx-auto px-6 py-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6">
+          {[
+            { icon: <Zap className="w-5 h-5" />, title: "Pay with one tap", sub: "Taxi fares, groceries, and more." },
+            { icon: <Star className="w-5 h-5" />, title: "Earn VinkPoints", sub: "Get rewarded on every spend." },
+            { icon: <ShieldCheck className="w-5 h-5" />, title: "Secure & Protected", sub: "Bank with 256-bit encryption." },
+            { icon: <Gift className="w-5 h-5" />, title: "2,100+ Partners", sub: "Shop, save and earn across SA." },
+            { icon: <Users2 className="w-5 h-5" />, title: "Zero Liability", sub: "You're never liable for unauthorised transactions." },
+            { icon: <Headphones className="w-5 h-5" />, title: "24/7 Support", sub: "Real help, any time you need it." },
+          ].map(b => (
+            <div key={b.title} className="flex items-start gap-3">
+              <span className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: "#E8F7EE", color: GREEN }}>{b.icon}</span>
+              <div>
+                <p className="text-[13px] font-bold text-gray-900 leading-tight">{b.title}</p>
+                <p className="text-[11.5px] text-gray-500 mt-0.5 leading-snug">{b.sub}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Explore Our Products */}
+      <section className="max-w-6xl mx-auto px-6 py-14 sm:py-16">
+        <div className="flex items-end justify-between flex-wrap gap-3 mb-8">
+          <h2 className="text-2xl sm:text-3xl font-black text-gray-900">Explore Our Products</h2>
+          <button className="flex items-center gap-1.5 text-sm font-bold shrink-0" style={{ color: GREEN }}>
+            View All Products <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {[
+            { icon: <CreditCard className="w-6 h-6" />, title: "Cards", sub: "Choose the card that fits you.", nav: "creditCard" as const },
+            { icon: <PiggyBank className="w-6 h-6" />, title: "Savings", sub: "Grow your money with great rates.", nav: null },
+            { icon: <Landmark className="w-6 h-6" />, title: "Loans", sub: "Personal, business and more.", nav: "loan" as const },
+            { icon: <Umbrella className="w-6 h-6" />, title: "Insurance", sub: "Protect what matters most.", nav: "insure" as const },
+            { icon: <GlobeIcon className="w-6 h-6" />, title: "Forex", sub: "Send and receive money globally.", nav: null },
+            { icon: <ShoppingBag className="w-6 h-6" />, title: "Marketplace", sub: "Shop, pay and save in one place.", nav: null },
+            { icon: <Tv className="w-6 h-6" />, title: "VMS TV", sub: "Entertainment on the go.", nav: null },
+            { icon: <ShieldAlert className="w-6 h-6" />, title: "Device Guard", sub: "Protect your device and data.", nav: null },
+          ].map(p => (
+            <button
+              key={p.title}
+              onClick={() => p.nav && onNavigate(p.nav)}
+              className="text-left bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all"
+            >
+              <span className="w-11 h-11 rounded-xl flex items-center justify-center mb-3" style={{ background: "#F3F4F6", color: GREEN }}>{p.icon}</span>
+              <p className="text-sm font-bold text-gray-900">{p.title}</p>
+              <p className="text-[11.5px] text-gray-500 mt-1 leading-snug">{p.sub}</p>
+            </button>
+          ))}
         </div>
       </section>
 
@@ -337,6 +450,13 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate }: Props) {
           onClose={() => setApplyProduct(null)}
           product={applyProduct.name}
           price={applyProduct.price}
+        />
+      )}
+
+      {showAuthModal && (
+        <MarketplaceAuthModal
+          onClose={() => setShowAuthModal(false)}
+          onAuthenticated={(user) => { setAuthUser(user); setShowAuthModal(false); }}
         />
       )}
     </div>
