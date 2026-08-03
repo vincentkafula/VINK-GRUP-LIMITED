@@ -1,9 +1,10 @@
 import { useState } from "react";
 import {
   X, ChevronRight, CheckCircle2, Sparkles, Anchor as AnchorIcon, TrendingUp,
-  Sunrise, Mountain, Crown, ArrowRight, UserCheck,
+  Sunrise, Mountain, Crown, ArrowRight, UserCheck, Globe2,
 } from "lucide-react";
 import { ApplyModal } from "./ApplyModal";
+import { formatZAR, useCurrency, setCountryManually } from "../services/currencyStore";
 
 interface Props { isOpen: boolean; onClose: () => void; onNavigate: (category: "creditCard" | "loan" | "invest" | "insure" | "rewards") => void }
 
@@ -15,7 +16,8 @@ interface Account {
   iconBg: string;
   iconColor: string;
   quickFeatures: string[];
-  price: string;
+  price: string;      // real ZAR fee — this is what's actually billed, used for the application flow
+  priceZAR: number;   // same value as a number, for currency-aware display conversion
   priceSub: string;
   marketingMessage: string;
   targetCustomer: string;
@@ -33,7 +35,7 @@ const ACCOUNTS: Account[] = [
     desc: "Entry-level account — straightforward day-to-day banking, no monthly fee attached.",
     icon: <Sparkles className="w-6 h-6" />, iconBg: "#E8F7EE", iconColor: GREEN,
     quickFeatures: ["No monthly fee", "Free online banking", "35 electronic transactions included"],
-    price: "R0", priceSub: "/ month",
+    price: "R0", priceZAR: 0, priceSub: "/ month",
     marketingMessage: "Every great financial journey starts with a spark. Open your account in minutes and experience banking built for your future.",
     targetCustomer: "Students, first-time earners, young adults",
     appFeatures: ["Instant digital account opening", "Virtual debit card", "QR payments", "Spending insights", "Smart notifications", "Mobile airtime & bill payments", "Biometric login", "Round-up savings"],
@@ -43,7 +45,7 @@ const ACCOUNTS: Account[] = [
     desc: "Standard everyday account — more room to move each month, still free to hold.",
     icon: <AnchorIcon className="w-6 h-6" />, iconBg: "#FFF1E6", iconColor: ORANGE,
     quickFeatures: ["No monthly fee", "Free online banking", "60 electronic transactions included"],
-    price: "R0", priceSub: "/ month",
+    price: "R0", priceZAR: 0, priceSub: "/ month",
     marketingMessage: "The account you can rely on every day. Fast, secure and designed to keep your life moving.",
     targetCustomer: "Salaried professionals & everyday banking",
     inheritsFrom: "Spark",
@@ -54,7 +56,7 @@ const ACCOUNTS: Account[] = [
     desc: "Rewards account — built for accounts that carry serious monthly volume.",
     icon: <TrendingUp className="w-6 h-6" />, iconBg: "#E8F7EE", iconColor: GREEN,
     quickFeatures: ["Monthly fee: R85", "High transaction limits", "Access to exclusive rewards"],
-    price: "R85", priceSub: "/ month",
+    price: "R85", priceZAR: 85, priceSub: "/ month",
     marketingMessage: "Every payment should move you forward. Earn rewards, unlock exclusive offers and watch your banking pay you back.",
     targetCustomer: "Active spenders & loyal customers",
     inheritsFrom: "Anchor",
@@ -65,7 +67,7 @@ const ACCOUNTS: Account[] = [
     desc: "Savings-focused account — a tighter turnover band, geared to lower-volume activity.",
     icon: <Sunrise className="w-6 h-6" />, iconBg: "#FFF1E6", iconColor: ORANGE,
     quickFeatures: ["Low monthly fee", "Smart saving tools", "Ideal for growing balances"],
-    price: "R170", priceSub: "/ month",
+    price: "R170", priceZAR: 170, priceSub: "/ month",
     marketingMessage: "Your future deserves more than a savings account. Build wealth automatically, one goal at a time.",
     targetCustomer: "Serious savers",
     inheritsFrom: "Momentum",
@@ -76,7 +78,7 @@ const ACCOUNTS: Account[] = [
     desc: "Premium account — built for sole proprietors who need room to grow.",
     icon: <Mountain className="w-6 h-6" />, iconBg: "#E8F7EE", iconColor: GREEN,
     quickFeatures: ["Premium benefits", "Higher limits & flexibility", "Priority support"],
-    price: "R265", priceSub: "/ month",
+    price: "R265", priceZAR: 265, priceSub: "/ month",
     marketingMessage: "Reach the top with banking that works as hard as you do. Premium benefits without compromise.",
     targetCustomer: "High-income professionals & business leaders",
     inheritsFrom: "Horizon",
@@ -87,7 +89,7 @@ const ACCOUNTS: Account[] = [
     desc: "Wealth management account — the highest-capacity personal account, for all business segments.",
     icon: <Crown className="w-6 h-6" />, iconBg: "#FFF1E6", iconColor: ORANGE,
     quickFeatures: ["Highest transaction capacity", "Personal wealth support", "Dedicated relationship manager"],
-    price: "R415", priceSub: "/ month",
+    price: "R415", priceZAR: 415, priceSub: "/ month",
     marketingMessage: "Because wealth is more than money—it's the future you create for generations.",
     targetCustomer: "High-net-worth individuals & investors",
     inheritsFrom: "Summit",
@@ -135,6 +137,7 @@ function AccountCard({ acct, onApply, onDetails }: { acct: Account; onApply: (na
 }
 
 function AccountDetailModal({ acct, onClose, onApply }: { acct: Account; onClose: () => void; onApply: (name: string, price: string) => void }) {
+  const currency = useCurrency();
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center p-5" style={{ background: "rgba(15,30,20,0.55)" }} onClick={onClose}>
       <div className="relative bg-white max-w-lg w-full max-h-[88vh] overflow-y-auto rounded-2xl p-8 shadow-2xl" onClick={(e) => e.stopPropagation()}>
@@ -167,7 +170,10 @@ function AccountDetailModal({ acct, onClose, onApply }: { acct: Account; onClose
 
         <div className="flex items-center justify-between pt-5 border-t border-gray-100">
           <div>
-            <div className="text-2xl font-black text-gray-900">{acct.price}<span className="text-sm font-medium text-gray-400">{acct.priceSub}</span></div>
+            <div className="text-2xl font-black text-gray-900">{formatZAR(acct.priceZAR)}<span className="text-sm font-medium text-gray-400">{acct.priceSub}</span></div>
+            {currency.country.code !== "ZAR" && (
+              <p className="text-[11px] text-gray-400 mt-1">Estimated in {currency.country.name} — you'll be billed {acct.price}{acct.priceSub} in South African Rand.</p>
+            )}
           </div>
           <button onClick={() => onApply(acct.name, acct.price)} className="px-7 py-3 rounded-full text-white text-sm font-bold" style={{ background: ORANGE }}>
             Apply Now
@@ -179,6 +185,7 @@ function AccountDetailModal({ acct, onClose, onApply }: { acct: Account; onClose
 }
 
 export function PersonalAccountViewer({ isOpen, onClose, onNavigate }: Props) {
+  const currency = useCurrency(); // subscribes this tree to live currency/rate updates
   const [applyProduct, setApplyProduct] = useState<{ name: string; price: string } | null>(null);
   const [detailAccount, setDetailAccount] = useState<Account | null>(null);
   if (!isOpen) return null;
@@ -205,7 +212,28 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate }: Props) {
               {item}
             </button>
           ))}
-          <button onClick={onClose} className="ml-auto p-2 rounded-full hover:bg-gray-100 transition-colors" aria-label="Close">
+          <div className="relative group ml-auto shrink-0">
+            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-semibold text-gray-600 hover:bg-gray-50">
+              <Globe2 className="w-3.5 h-3.5" /> {currency.country.code}
+            </button>
+            <div className="absolute right-0 top-full mt-0 w-64 bg-white rounded-b shadow-2xl border border-gray-200 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-30 max-h-80 overflow-y-auto">
+              <p className="px-3 pb-2 mb-1 border-b border-gray-100 text-[11px] text-gray-400">
+                Fees shown in your local currency for reference. All accounts are billed in South African Rand.
+              </p>
+              {currency.countries.map(c => (
+                <button
+                  key={c.countryCode}
+                  onClick={() => setCountryManually(c.countryCode)}
+                  className="w-full text-left px-3 py-1.5 text-sm hover:bg-gray-50 flex items-center justify-between"
+                  style={{ color: currency.country.countryCode === c.countryCode ? GREEN : "#111827", fontWeight: currency.country.countryCode === c.countryCode ? 700 : 400 }}
+                >
+                  <span>{c.country ?? c.countryCode}</span>
+                  <span className="text-gray-400 text-xs">{c.code}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+          <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors" aria-label="Close">
             <X className="w-4 h-4 text-gray-500" />
           </button>
         </div>

@@ -8,11 +8,12 @@ import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, ResponsiveCo
 import {
   mktCustomer, mktOrders, mktAddresses, mktAddAddress, mktDeleteAddress, mktAuth, type MktAuthUser,
 } from "../services/marketplaceApi";
+import { formatZAR, useCurrency } from "../services/currencyStore";
 
 type R = Record<string, unknown>;
 type Tab = "overview" | "orders" | "addresses" | "payment" | "returns" | "notifications" | "security" | "analytics";
 
-const fmtZAR = (n: number) => `R${Number(n ?? 0).toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const fmtZAR = formatZAR; // now converts + formats in the shopper's local currency
 const PIE_COLORS = ["#128A43", "#FF9900", "#10B981", "#34A853", "#EF4444", "#F59E0B"];
 
 const STATUS_META: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
@@ -56,6 +57,7 @@ interface Props {
 }
 
 export function CustomerDashboard({ user, onProduct, onSignOut }: Props) {
+  useCurrency(); // subscribes this tree to live currency/rate updates
   const [tab, setTab] = useState<Tab>("overview");
   const [stats, setStats] = useState<R | null>(null);
   const [spending, setSpending] = useState<R | null>(null);

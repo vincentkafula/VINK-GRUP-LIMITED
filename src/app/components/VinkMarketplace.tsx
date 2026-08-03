@@ -17,6 +17,7 @@ import { CustomerDashboard } from "./CustomerDashboard";
 import { SellerDashboard } from "./SellerDashboard";
 import { ManagerDashboard } from "./ManagerDashboard";
 import { Product3DViewer } from "./Product3DViewer";
+import { formatZAR, useCurrency, setCountryManually } from "../services/currencyStore";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type View = "home" | "catalog" | "product" | "cart" | "checkout" | "orders" | "wishlist" | "seller" | "admin" | "account";
@@ -24,8 +25,7 @@ type CheckoutStep = "address" | "shipping" | "payment" | "confirmation";
 type R = Record<string, unknown>;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-const fmtZAR = (n: number) =>
-  `R${Number(n).toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const fmtZAR = formatZAR; // now converts + formats in the shopper's local currency
 const ago = (iso: string) => {
   const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
   if (s < 3600) return `${Math.floor(s / 60)}m ago`;
@@ -1366,6 +1366,7 @@ function WishlistView({ wishlistIds, onProduct, onCart, onWishlist }: {
 interface VinkMarketplaceProps { isOpen: boolean; onClose: () => void; initialAction?: "sell" | null; initialProductId?: string | null }
 
 export function VinkMarketplace({ isOpen, onClose, initialAction, initialProductId }: VinkMarketplaceProps) {
+  const currency = useCurrency(); // subscribes this whole tree to live currency/rate updates
   const [view, setView]           = useState<View>("home");
   const [categories, setCategories] = useState<R[]>([]);
   const [products, setProducts]   = useState<R[]>([]);
@@ -1518,12 +1519,30 @@ export function VinkMarketplace({ isOpen, onClose, initialAction, initialProduct
           <span className="hidden sm:inline text-white/50 text-[10px] font-medium ml-1">marketplace</span>
         </button>
 
-        <button className="hidden lg:flex flex-col items-start px-2 py-1 rounded border border-transparent hover:border-white/40 text-white shrink-0">
-          <span className="flex items-center gap-1 text-[10px] text-white/60 leading-none">
-            <MapPin className="w-3 h-3" /> Deliver to
-          </span>
-          <span className="text-xs font-bold leading-tight mt-0.5">South Africa</span>
-        </button>
+        <div className="relative group hidden lg:block shrink-0">
+          <button className="flex flex-col items-start px-2 py-1 rounded border border-transparent hover:border-white/40 text-white">
+            <span className="flex items-center gap-1 text-[10px] text-white/60 leading-none">
+              <MapPin className="w-3 h-3" /> Deliver to
+            </span>
+            <span className="text-xs font-bold leading-tight mt-0.5">{currency.country.country ?? currency.country.countryCode}</span>
+          </button>
+          <div className="absolute left-0 top-full mt-0 w-64 bg-white rounded-b shadow-2xl border border-gray-200 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-30 max-h-80 overflow-y-auto">
+            <p className="px-3 pb-2 mb-1 border-b border-gray-100 text-[11px] text-gray-400">
+              Prices shown in your local currency, converted from ZAR at today's rate.{currency.ratesStale ? " (using last known rate)" : ""}
+            </p>
+            {currency.countries.map(c => (
+              <button
+                key={c.countryCode}
+                onClick={() => setCountryManually(c.countryCode)}
+                className="w-full text-left px-3 py-1.5 text-sm hover:bg-gray-50 flex items-center justify-between"
+                style={{ color: currency.country.countryCode === c.countryCode ? "#FF9900" : "#111827", fontWeight: currency.country.countryCode === c.countryCode ? 700 : 400 }}
+              >
+                <span>{c.country ?? c.countryCode}</span>
+                <span className="text-gray-400 text-xs">{c.code}</span>
+              </button>
+            ))}
+          </div>
+        </div>
 
         <div className="relative flex-1 flex items-stretch max-w-3xl rounded overflow-hidden h-9 min-w-0">
           <div className="hidden sm:flex items-center bg-[#E8E8E8] hover:bg-[#DDD] px-2 text-[11px] text-gray-700 border-r border-gray-300 shrink-0 cursor-pointer">

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { ShoppingBag, Store, Tag, ArrowRight, X, Star, Loader2 } from "lucide-react";
 import heroBg from "../../imports/assets/marketplace-hero-wide-bg.png";
 import { mktProducts } from "../services/marketplaceApi";
+import { formatZAR, useCurrency } from "../services/currencyStore";
 
 // Same continuous drift-left auto-slide used on the home marketplace's
 // product rows — pauses on hover/touch, loops back to the start at the end.
@@ -43,7 +44,7 @@ interface Props {
   onSell: () => void;
 }
 
-const fmtZAR = (n: number) => `R${Number(n ?? 0).toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const fmtZAR = formatZAR; // now converts + formats in the shopper's local currency
 
 function ProductCard({ p, onClick }: { p: R; onClick: () => void }) {
   const imgs = p.images as string[];
@@ -72,6 +73,7 @@ function ProductCard({ p, onClick }: { p: R; onClick: () => void }) {
 }
 
 export function MarketplaceLandingViewer({ isOpen, onClose, onShop, onSell }: Props) {
+  useCurrency(); // subscribes this tree to live currency/rate updates
   const [products, setProducts] = useState<R[]>([]);
   const [loading, setLoading] = useState(true);
   const slide = useAutoSlide<HTMLDivElement>(products.length);

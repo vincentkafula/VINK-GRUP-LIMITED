@@ -30,6 +30,7 @@ import bankComplianceRouter from "./routes/bankCompliance.js";
 import bankUsersRouter from "./routes/bankUsers.js";
 import marketplaceRouter from "./routes/marketplaceRouter.js";
 import marketplaceRouterDb from "./routes/marketplaceRouterDb.js";
+import geoCurrencyRouter from "./routes/geoCurrency.js";
 import publicRouter from "./routes/public.js";
 import globalBankingRouter from "./routes/globalBanking.js";
 import financialReportsRouter from "./routes/financialReports.js";
@@ -56,6 +57,7 @@ const isAllowedOrigin = (origin: string | undefined): boolean => {
 
 // ─── Express App ─────────────────────────────────────────────────────────────
 const app = express();
+app.set("trust proxy", true); // required for correct client IP behind Railway's proxy (used by /api/geo)
 
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(cors({ origin: (origin, cb) => cb(null, isAllowedOrigin(origin)), credentials: true }));
@@ -85,6 +87,8 @@ app.use("/api/bank/treasury",      bankTreasuryRouter);
 app.use("/api/bank/compliance",    bankComplianceRouter);
 app.use("/api/bank/users",         bankUsersRouter);
 app.use("/api/marketplace",        hasDb ? marketplaceRouterDb : marketplaceRouter);
+app.use("/api/geo",                geoCurrencyRouter);
+app.use("/api/currency",           geoCurrencyRouter);
 app.use("/api/public",             publicRouter);
 app.use("/api/global",             globalBankingRouter);
 app.use("/api/financial",          financialReportsRouter);
