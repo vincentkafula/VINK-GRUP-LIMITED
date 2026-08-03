@@ -215,7 +215,7 @@ export function ClubBookingViewer({ isOpen, onClose }: Props) {
           <>
             {/* Hero */}
             <div className="rounded-3xl overflow-hidden shadow-xl text-white relative"
-              style={{ background: `linear-gradient(135deg,${P} 0%,#3d1d63 40%,#7B4DB5 100%)` }}>
+              style={{ background: `linear-gradient(135deg,${P} 0%,#0B2E1C 40%,#34A853 100%)` }}>
               <div className="absolute -right-12 -top-12 w-64 h-64 rounded-full opacity-10 pointer-events-none" style={{ background: "radial-gradient(circle,#fff,transparent)" }} />
               <div className="px-6 py-8 relative z-10">
                 <span className="inline-block text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full mb-4" style={{ background: "rgba(245,166,35,.2)", color: GOLD }}>

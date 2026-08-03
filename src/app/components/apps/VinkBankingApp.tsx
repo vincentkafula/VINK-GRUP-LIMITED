@@ -13,7 +13,7 @@ const GOLD = "#F5A623";
 const TIER_INFO: Record<Tier, { order: number; icon: React.ReactNode; tagline: string; unlocks: string; balanceLabel: string; cardGradient: string }> = {
   Spark:    { order: 1, icon: <Sparkles className="w-5 h-5" />,     tagline: "Simple, clean entry banking — no clutter, no fees.",         unlocks: "Digital onboarding, payments, virtual card, bill pay",              balanceLabel: "Available Balance", cardGradient: `linear-gradient(135deg, ${PURPLE}, #175E38)` },
   Anchor:   { order: 2, icon: <AnchorIcon className="w-5 h-5" />,   tagline: "Everyday banking with budgets and money management.",       unlocks: "+ Smart budgets, subscription detection, scheduled payments",       balanceLabel: "Available Balance", cardGradient: `linear-gradient(135deg, ${PURPLE}, #175E38)` },
-  Momentum: { order: 3, icon: <TrendingUp className="w-5 h-5" />,   tagline: "Every payment earns you something back.",                    unlocks: "+ Cashback, loyalty points, merchant offers, challenges",           balanceLabel: "Available Balance", cardGradient: `linear-gradient(135deg, #6B21A8, ${PURPLE})` },
+  Momentum: { order: 3, icon: <TrendingUp className="w-5 h-5" />,   tagline: "Every payment earns you something back.",                    unlocks: "+ Cashback, loyalty points, merchant offers, challenges",           balanceLabel: "Available Balance", cardGradient: `linear-gradient(135deg, #FF9900, ${PURPLE})` },
   Horizon:  { order: 4, icon: <Mountain className="w-5 h-5" />,     tagline: "Built around reaching your savings goals faster.",          unlocks: "+ Goal-based savings, auto-save rules, AI coaching",                balanceLabel: "Available Balance", cardGradient: `linear-gradient(135deg, #0369A1, ${PURPLE})` },
   Summit:   { order: 5, icon: <Crown className="w-5 h-5" />,        tagline: "Premium banking with concierge-level service.",              unlocks: "+ Relationship manager, lounge access, multi-currency wallet",      balanceLabel: "Available Balance", cardGradient: `linear-gradient(135deg, #B45309, ${PURPLE})` },
   Legacy:   { order: 6, icon: <Landmark className="w-5 h-5" />,     tagline: "Private banking and wealth management, for generations.",   unlocks: "+ Investments, net worth dashboard, estate planning",               balanceLabel: "Net Worth",         cardGradient: `linear-gradient(135deg, #1E1B4B, #3B1A6E)` },
@@ -390,7 +390,7 @@ function HomeScreen({ tier, onSwitchTier, user }: { tier: Tier; onSwitchTier: ()
               <span className="text-xs font-semibold text-gray-800">Portfolio performance</span>
               <span className="text-xs font-bold text-green-600">+8.4% YTD</span>
             </div>
-            {[["Stocks & ETFs","45%","#0B5C2E"],["Bonds & Treasury","25%","#B45309"],["Property","19%","#6B21A8"],["Private Equity","11%","#0369A1"]].map(([label,pct,color]) => (
+            {[["Stocks & ETFs","45%","#0B5C2E"],["Bonds & Treasury","25%","#B45309"],["Property","19%","#FF9900"],["Private Equity","11%","#0369A1"]].map(([label,pct,color]) => (
               <div key={label} className="flex items-center gap-2 mb-1.5 last:mb-0">
                 <span className="w-16 text-[9px] text-gray-500 shrink-0">{label}</span>
                 <div className="flex-1 h-2 rounded-full bg-gray-100 overflow-hidden"><div className="h-full rounded-full" style={{ width: pct as string, background: color as string }} /></div>

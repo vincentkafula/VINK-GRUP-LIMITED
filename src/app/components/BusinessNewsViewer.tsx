@@ -20,7 +20,7 @@ const ARTICLES = [
   { thumb: "linear-gradient(135deg,#1a3a5c,#2980b9)", tag: null,            title: "Splurge exposed: Leather loungers, skinny jeans and R10 000 for a bucket",                                              time: "12h ago" },
   { thumb: "linear-gradient(135deg,#5c1a1a,#c0392b)", tag: null,            title: "Top job after murder charges provisionally withdrawn",                                                                    time: "12h ago" },
   { thumb: "linear-gradient(135deg,#1a5c1a,#27ae60)", tag: "LIVE",          title: "BREAKING NEWS LIVE | Veld fire leads to OR Tambo International Airport closing one of its two runways...",             time: "12h ago" },
-  { thumb: "linear-gradient(135deg,#4a1a5c,#8e44ad)", tag: "FOR SUBSCRIBERS",title: "Adriaan Basson | We have the people to fix SA. So let's do it",                                                       time: "12h ago" },
+  { thumb: "linear-gradient(135deg,#0B5C2E,#128A43)", tag: "FOR SUBSCRIBERS",title: "Adriaan Basson | We have the people to fix SA. So let's do it",                                                       time: "12h ago" },
   { thumb: "linear-gradient(135deg,#1a4a5c,#16a085)", tag: null,            title: "Senzo Meyiwa: One of the accused claims existence of second docket has prejudiced him",                                 time: "12h ago" },
   { thumb: "linear-gradient(135deg,#5c4a1a,#d4ac0d)", tag: "Sponsored Content", title: "Stand a chance to win a Nokia X10 smartphone Valued at R6,999 this Women's Month",                               time: null },
 ];

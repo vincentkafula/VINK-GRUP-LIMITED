@@ -29,7 +29,7 @@ const TRANSACTIONS = [
 const BALANCE_CHART = [28400, 32100, 29800, 34500, 31200, 38900, 36400, 42100, 39800, 45200, 48400, 52800];
 const CARDS = [
   { type: "Vink Business Visa", last4: "4521", limit: 50000, used: 18240, expiry: "09/28", color: "from-[#3D6FD4] to-[#2952B8]" },
-  { type: "Vink Platinum MC", last4: "8834", limit: 100000, used: 34820, expiry: "03/27", color: "from-[#7B5EA7] to-[#4A3080]" },
+  { type: "Vink Platinum MC", last4: "8834", limit: 100000, used: 34820, expiry: "03/27", color: "from-[#5FC97F] to-[#14532D]" },
 ];
 
 const fmt = (n: number) => `R${Math.abs(n).toLocaleString()}`;

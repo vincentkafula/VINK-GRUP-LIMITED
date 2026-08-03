@@ -6,7 +6,7 @@ import { Footer } from "./Footer";
 interface Props { isOpen: boolean; onClose: () => void; onNavigate: (item: string) => void; }
 
 const P = "#0B5C2E";
-const PD = "#3d1d63";
+const PD = "#0B2E1C";
 const GOLD = "#F5A623";
 
 const CORPORATE_SUB_NAV = ["Account", "Solutions & Credit Cards", "Loan", "API", "Events", "Social Responsibility"];
@@ -28,12 +28,12 @@ const CAT_STRIP = ["Sell Your Event With…", "Travel", "On Stage", "Lifestyle",
 interface EventCard { icon: string; name: string; loc: string; date: string; price: string; bg: string; badge?: string; }
 
 const POPULAR: EventCard[] = [
-  { icon: "🛒", name: "Shoprite Gr…", loc: "Gauteng", date: "Fri, 31 Jan 25", price: "From R50", bg: `linear-gradient(135deg,${P},#6C3DB5)` },
+  { icon: "🛒", name: "Shoprite Gr…", loc: "Gauteng", date: "Fri, 31 Jan 25", price: "From R50", bg: `linear-gradient(135deg,${P},#128A43)` },
   { icon: "✈️", name: "Africa Aerospace…", loc: "Gauteng", date: "Sat, 24 Sep 22 – Sun, 25 Sep 22", price: "From R200", bg: "linear-gradient(135deg,#1565C0,#1E88E5)" },
-  { icon: "🎭", name: "The Trolley Dollies…", loc: "Gauteng", date: "Thu, 08 Sep 22 – Sun, 11 Sep 22", price: "From R50", bg: "linear-gradient(135deg,#880E4F,#C2185B)" },
-  { icon: "🛒", name: "Shoprite Gr…", loc: "Gauteng", date: "Fri, 31 Jan 25", price: "From R50", bg: `linear-gradient(135deg,${P},#6C3DB5)` },
-  { icon: "🛒", name: "Shoprite Gr…", loc: "Gauteng", date: "Fri, 31 Jan 25", price: "From R50", bg: `linear-gradient(135deg,${P},#6C3DB5)` },
-  { icon: "🛒", name: "Shoprite Gr…", loc: "Gauteng", date: "Fri, 31 Jan 25", price: "From R50", bg: `linear-gradient(135deg,${P},#6C3DB5)` },
+  { icon: "🎭", name: "The Trolley Dollies…", loc: "Gauteng", date: "Thu, 08 Sep 22 – Sun, 11 Sep 22", price: "From R50", bg: "linear-gradient(135deg,#92400E,#C2185B)" },
+  { icon: "🛒", name: "Shoprite Gr…", loc: "Gauteng", date: "Fri, 31 Jan 25", price: "From R50", bg: `linear-gradient(135deg,${P},#128A43)` },
+  { icon: "🛒", name: "Shoprite Gr…", loc: "Gauteng", date: "Fri, 31 Jan 25", price: "From R50", bg: `linear-gradient(135deg,${P},#128A43)` },
+  { icon: "🛒", name: "Shoprite Gr…", loc: "Gauteng", date: "Fri, 31 Jan 25", price: "From R50", bg: `linear-gradient(135deg,${P},#128A43)` },
 ];
 
 const VOUCHERS: EventCard[] = [
@@ -46,8 +46,8 @@ const VOUCHERS: EventCard[] = [
 ];
 
 const COMEDY: EventCard[] = [
-  { icon: "😂", name: "The Trolley Dollies…", loc: "Gauteng", date: "Fri, 09 Sep 22 – Sun, 11 Sep 22", price: "FROM R200", bg: "linear-gradient(135deg,#7B1FA2,#AB47BC)" },
-  { icon: "😂", name: "Celeste Ntuli…", loc: "Gauteng", date: "Sat, 10 Sep 22", price: "FROM R300", bg: "linear-gradient(135deg,#7B1FA2,#AB47BC)" },
+  { icon: "😂", name: "The Trolley Dollies…", loc: "Gauteng", date: "Fri, 09 Sep 22 – Sun, 11 Sep 22", price: "FROM R200", bg: "linear-gradient(135deg,#FF9900,#FFB84D)" },
+  { icon: "😂", name: "Celeste Ntuli…", loc: "Gauteng", date: "Sat, 10 Sep 22", price: "FROM R300", bg: "linear-gradient(135deg,#FF9900,#FFB84D)" },
   { icon: "🎭", name: "WHO'S AFRAID…", loc: "Gauteng, Western Cape", date: "Wed, 14 Sep 22 – Sun, 06 Nov 22", price: "FROM R150", bg: "linear-gradient(135deg,#B71C1C,#E53935)" },
   { icon: "🎭", name: "FORDSBURG'S FINEST", loc: "Western Cape", date: "Fri, 09 Sep 22 – Sat, 10 Sep 22", price: "FROM R180", bg: "linear-gradient(135deg,#E65100,#FF8F00)" },
   { icon: "😂", name: "BIG AMMA & BIGGS", loc: "Gauteng", date: "Sun, 11 Sep 22", price: "FROM R130", bg: "linear-gradient(135deg,#1565C0,#1E88E5)" },
@@ -56,8 +56,8 @@ const COMEDY: EventCard[] = [
 
 const AFRIKAANS: EventCard[] = [
   { icon: "🎵", name: "Shoprite Gr…", loc: "Gauteng", date: "Fri, 31 Jan 25", price: "From R50", bg: "linear-gradient(135deg,#37474F,#546E7A)", badge: "ON DEMAND" },
-  { icon: "🎵", name: "Africa Aerospace…", loc: "Gauteng", date: "Sat, 24 Sep 22 – Sun, 25 Sep 22", price: "From R200", bg: "linear-gradient(135deg,#4A148C,#7B1FA2)", badge: "ON DEMAND" },
-  { icon: "🎵", name: "The Trolley Dollies…", loc: "Gauteng", date: "Thu, 08 Sep 22 – Sun, 11 Sep 22", price: "From R50", bg: "linear-gradient(135deg,#880E4F,#C2185B)", badge: "ON DEMAND" },
+  { icon: "🎵", name: "Africa Aerospace…", loc: "Gauteng", date: "Sat, 24 Sep 22 – Sun, 25 Sep 22", price: "From R200", bg: "linear-gradient(135deg,#0B5C2E,#FF9900)", badge: "ON DEMAND" },
+  { icon: "🎵", name: "The Trolley Dollies…", loc: "Gauteng", date: "Thu, 08 Sep 22 – Sun, 11 Sep 22", price: "From R50", bg: "linear-gradient(135deg,#92400E,#C2185B)", badge: "ON DEMAND" },
   { icon: "🎵", name: "Shoprite Gr…", loc: "Gauteng", date: "Fri, 31 Jan 25", price: "From R50", bg: "linear-gradient(135deg,#1A237E,#283593)" },
   { icon: "🎵", name: "Shoprite Gr…", loc: "Gauteng", date: "Fri, 31 Jan 25", price: "From R50", bg: "linear-gradient(135deg,#004D40,#00695C)" },
   { icon: "🎵", name: "Shoprite Gr…", loc: "Gauteng", date: "Fri, 31 Jan 25", price: "From R50", bg: "linear-gradient(135deg,#BF360C,#E64A19)" },
@@ -67,25 +67,25 @@ const CONCERTS: EventCard[] = [
   { icon: "🎤", name: "Shoprite Gr…", loc: "Gauteng", date: "Fri, 31 Jan 25", price: "From R50", bg: "linear-gradient(135deg,#212121,#424242)" },
   { icon: "🎤", name: "Africa Aerospace…", loc: "Gauteng", date: "Sat, 24 Sep 22 – Sun, 25 Sep 22", price: "From R200", bg: "linear-gradient(135deg,#311B92,#4527A0)" },
   { icon: "🎤", name: "The Trolley Dollies…", loc: "Gauteng", date: "Thu, 08 Sep 22 – Sun, 11 Sep 22", price: "From R50", bg: "linear-gradient(135deg,#1A237E,#283593)" },
-  { icon: "🎤", name: "Shoprite Gr…", loc: "Gauteng", date: "Fri, 31 Jan 25", price: "From R50", bg: "linear-gradient(135deg,#880E4F,#AD1457)" },
+  { icon: "🎤", name: "Shoprite Gr…", loc: "Gauteng", date: "Fri, 31 Jan 25", price: "From R50", bg: "linear-gradient(135deg,#92400E,#AD1457)" },
   { icon: "🎤", name: "Shoprite Gr…", loc: "Gauteng", date: "Fri, 31 Jan 25", price: "From R50", bg: "linear-gradient(135deg,#B71C1C,#C62828)" },
   { icon: "🎤", name: "Shoprite Gr…", loc: "Gauteng", date: "Fri, 31 Jan 25", price: "From R50", bg: "linear-gradient(135deg,#E65100,#F57F17)" },
 ];
 
 const WATCH_ONLINE: EventCard[] = [
   { icon: "📺", name: "Shoprite Gr…", loc: "Gauteng", date: "Fri, 31 Jan 25", price: "From R50", bg: "linear-gradient(135deg,#1B5E20,#2E7D32)" },
-  { icon: "📺", name: "Africa Aerospace…", loc: "Gauteng", date: "Sat, 24 Sep 22 – Sun, 25 Sep 22", price: "From R200", bg: "linear-gradient(135deg,#4A148C,#6A1B9A)" },
+  { icon: "📺", name: "Africa Aerospace…", loc: "Gauteng", date: "Sat, 24 Sep 22 – Sun, 25 Sep 22", price: "From R200", bg: "linear-gradient(135deg,#0B5C2E,#128A43)" },
   { icon: "📺", name: "The Trolley Dollies…", loc: "Gauteng", date: "Thu, 08 Sep 22 – Sun, 11 Sep 22", price: "From R50", bg: "linear-gradient(135deg,#0D47A1,#1565C0)" },
   { icon: "📺", name: "Shoprite Gr…", loc: "Gauteng", date: "Fri, 31 Jan 25", price: "From R50", bg: "linear-gradient(135deg,#37474F,#455A64)" },
   { icon: "📺", name: "Shoprite Gr…", loc: "Gauteng", date: "Fri, 31 Jan 25", price: "From R50", bg: "linear-gradient(135deg,#BF360C,#D84315)" },
-  { icon: "📺", name: "Shoprite Gr…", loc: "Gauteng", date: "Fri, 31 Jan 25", price: "From R50", bg: "linear-gradient(135deg,#880E4F,#AD1457)" },
+  { icon: "📺", name: "Shoprite Gr…", loc: "Gauteng", date: "Fri, 31 Jan 25", price: "From R50", bg: "linear-gradient(135deg,#92400E,#AD1457)" },
 ];
 
 const REGIONS = [
   { name: "🏙️ Cape Town",       bg: "linear-gradient(135deg,#1565C0,#1E88E5)" },
   { name: "🌊 Port Elizabeth",  bg: "linear-gradient(135deg,#2E7D32,#43A047)" },
   { name: "🌸 Bloemfontein",    bg: "linear-gradient(135deg,#E65100,#FF8F00)" },
-  { name: "🏙️ Johannesburg",    bg: `linear-gradient(135deg,${P},#7B4DB5)` },
+  { name: "🏙️ Johannesburg",    bg: `linear-gradient(135deg,${P},#34A853)` },
   { name: "🏛️ Pretoria",        bg: "linear-gradient(135deg,#B71C1C,#E53935)" },
   { name: "🌿 Potchefstroom",   bg: "linear-gradient(135deg,#37474F,#546E7A)" },
 ];

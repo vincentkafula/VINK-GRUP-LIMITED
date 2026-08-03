@@ -136,7 +136,7 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
         tag="VINK Corporate Banking · Blended Finance Programme"
         title="Corporate Loan — Online Application"
         subtitle="Institutional-grade financing for growth, infrastructure, and working capital."
-        gradient={`linear-gradient(135deg,#0F172A 0%,${CP} 55%,#7B4DB5 100%)`}
+        gradient={`linear-gradient(135deg,#0F172A 0%,${CP} 55%,#34A853 100%)`}
       />
 
       <div className="max-w-2xl mx-auto w-full px-5 py-8 space-y-5">
@@ -464,7 +464,7 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
                   }
                 }}
                 className="w-full py-4 rounded-xl text-base font-black text-white transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed shadow-lg mt-2"
-                style={{ background: agreed && reqDocsCount >= totalReq ? `linear-gradient(135deg,${CP},#7B4DB5)` : "#9CA3AF" }}>
+                style={{ background: agreed && reqDocsCount >= totalReq ? `linear-gradient(135deg,${CP},#34A853)` : "#9CA3AF" }}>
                 {submitting ? "Submitting..." : reqDocsCount < totalReq
                   ? `Upload all required documents first (${reqDocsCount}/${totalReq})`
                   : "Submit Corporate Loan Application"}

@@ -38,10 +38,10 @@ const TYPE_CFG: Record<string, { label: string; icon: React.ReactNode; color: st
   loan:         { label: "Personal Loan",   icon: <DollarSign className="w-4 h-4" />,  color: "#E53935" },
   invest:       { label: "Investment",      icon: <TrendingUp className="w-4 h-4" />,  color: "#1565C0" },
   insure:       { label: "Insurance",       icon: <Shield className="w-4 h-4" />,      color: "#2E7D32" },
-  rewards:      { label: "Rewards",         icon: <Star className="w-4 h-4" />,        color: "#AB47BC" },
+  rewards:      { label: "Rewards",         icon: <Star className="w-4 h-4" />,        color: "#FFB84D" },
   sim:          { label: "SIM Card",        icon: <Smartphone className="w-4 h-4" />,  color: "#F57C00" },
   businessLoan: { label: "Business Loan",   icon: <Briefcase className="w-4 h-4" />,   color: "#C62828" },
-  corporateLoan:{ label: "Corporate Loan",  icon: <Building2 className="w-4 h-4" />,   color: "#4A148C" },
+  corporateLoan:{ label: "Corporate Loan",  icon: <Building2 className="w-4 h-4" />,   color: "#0B5C2E" },
 };
 
 const ALL_TYPES = Object.keys(TYPE_CFG);

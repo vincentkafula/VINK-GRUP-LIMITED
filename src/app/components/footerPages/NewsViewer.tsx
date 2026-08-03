@@ -73,7 +73,7 @@ export function NewsViewer({ isOpen, onClose }: Props) {
       </div>
 
       {/* Hero */}
-      <div className="py-12 px-6 text-white" style={{ background: `linear-gradient(135deg,${P},#7B4DB5)` }}>
+      <div className="py-12 px-6 text-white" style={{ background: `linear-gradient(135deg,${P},#34A853)` }}>
         <div className="max-w-5xl mx-auto">
           <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-3"
             style={{ background: "rgba(245,166,35,.2)", color: GOLD }}>VINK Newsroom</span>
@@ -140,7 +140,7 @@ export function NewsViewer({ isOpen, onClose }: Props) {
         </div>
 
         {/* Newsletter signup */}
-        <div className="rounded-2xl p-8 text-white text-center" style={{ background: `linear-gradient(135deg,${P},#7B4DB5)` }}>
+        <div className="rounded-2xl p-8 text-white text-center" style={{ background: `linear-gradient(135deg,${P},#34A853)` }}>
           <Mail className="w-8 h-8 mx-auto mb-3 opacity-80" />
           <h3 className="text-xl font-black mb-2">Stay Ahead of the Curve</h3>
           <p className="text-white/75 text-sm mb-6 max-w-md mx-auto">

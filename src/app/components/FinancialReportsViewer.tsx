@@ -170,7 +170,7 @@ export function FinancialReportsViewer({ isOpen, onClose }: Props) {
             {/* Payslip document */}
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden print:shadow-none print:border-0">
               {/* Header band */}
-              <div className="px-8 py-5 text-white" style={{ background: `linear-gradient(135deg,${P},#7B4DB5)` }}>
+              <div className="px-8 py-5 text-white" style={{ background: `linear-gradient(135deg,${P},#34A853)` }}>
                 <div className="flex justify-between items-start flex-wrap gap-4">
                   <div>
                     <p className="text-xs font-bold uppercase tracking-widest opacity-70 mb-1">PAYSLIP</p>

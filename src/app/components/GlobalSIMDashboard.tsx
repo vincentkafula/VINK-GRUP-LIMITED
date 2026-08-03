@@ -297,7 +297,7 @@ export function GlobalSIMDashboard({ isOpen, onClose }: Props) {
 
               {/* Key concept */}
               <div className="rounded-2xl overflow-hidden shadow-lg"
-                style={{ background: `linear-gradient(135deg,${P} 0%,#3d1d63 40%,#7B4DB5 80%,#5FC97F 100%)` }}>
+                style={{ background: `linear-gradient(135deg,${P} 0%,#0B2E1C 40%,#34A853 80%,#5FC97F 100%)` }}>
                 <div className="p-6 relative overflow-hidden">
                   <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full bg-white/5 pointer-events-none" />
                   <div className="relative z-10">
@@ -540,7 +540,7 @@ export function GlobalSIMDashboard({ isOpen, onClose }: Props) {
 
               {/* SIM card visual */}
               <div className="rounded-2xl overflow-hidden shadow-xl text-white relative"
-                style={{ background: `linear-gradient(135deg,${P} 0%,#3d1d63 50%,#7B4DB5 100%)`, minHeight: 180 }}>
+                style={{ background: `linear-gradient(135deg,${P} 0%,#0B2E1C 50%,#34A853 100%)`, minHeight: 180 }}>
                 <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/5 pointer-events-none" />
                 <div className="p-6 relative z-10">
                   <div className="flex items-start justify-between">

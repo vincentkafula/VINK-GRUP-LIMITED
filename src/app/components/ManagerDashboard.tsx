@@ -25,7 +25,7 @@ function SideNavButton({ active, onClick, icon, label, badge }: { active: boolea
   return (
     <button onClick={onClick}
       className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm font-medium transition-colors"
-      style={{ background: active ? "#F3E8FF" : "transparent", color: active ? "#6B21A8" : "#374151" }}>
+      style={{ background: active ? "#F3E8FF" : "transparent", color: active ? "#FF9900" : "#374151" }}>
       {icon}<span className="flex-1">{label}</span>
       {Boolean(badge) && <span className="text-[10px] font-bold text-white rounded-full w-4 h-4 flex items-center justify-center" style={{ background: "#EF4444" }}>{badge}</span>}
     </button>

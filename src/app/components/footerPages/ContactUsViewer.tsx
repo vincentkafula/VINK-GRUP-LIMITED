@@ -141,7 +141,7 @@ function DirectoryGrid() {
         return (
           <button key={i} onClick={() => setOpen(isOpen ? null : i)}
             className={`text-left rounded-xl bg-white border transition-all overflow-hidden ${isOpen ? "shadow-md" : "hover:shadow-sm"}`}
-            style={{ borderColor: isOpen ? (it.urgent ? "#FCA5A5" : "#C4B0E0") : "#E5E7EB", borderLeftWidth: 3, borderLeftColor: it.urgent ? "#EF4444" : P }}>
+            style={{ borderColor: isOpen ? (it.urgent ? "#FCA5A5" : "#A7E8BD") : "#E5E7EB", borderLeftWidth: 3, borderLeftColor: it.urgent ? "#EF4444" : P }}>
             <div className="flex items-center gap-3 px-4 py-3.5">
               <span className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
                 style={{ background: it.urgent ? "#FEE2E2" : "#EDE9FE", color: it.urgent ? "#DC2626" : P }}>{it.icon}</span>

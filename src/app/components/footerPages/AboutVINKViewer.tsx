@@ -36,7 +36,7 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
 
       {/* Hero */}
       <div className="relative py-20 px-6 text-white overflow-hidden"
-        style={{ background: `linear-gradient(135deg,${P} 0%,#3d1d63 50%,#7B4DB5 100%)` }}>
+        style={{ background: `linear-gradient(135deg,${P} 0%,#0B2E1C 50%,#34A853 100%)` }}>
         <div className="absolute inset-0 opacity-10 pointer-events-none"
           style={{ background: "radial-gradient(circle at 70% 50%,#fff,transparent 60%)" }} />
         <div className="max-w-4xl mx-auto relative z-10">
@@ -81,7 +81,7 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
 
         {/* Mission & Vision */}
         <section className="grid md:grid-cols-2 gap-6">
-          <div className="rounded-2xl p-6 text-white" style={{ background: `linear-gradient(135deg,${P},#7B4DB5)` }}>
+          <div className="rounded-2xl p-6 text-white" style={{ background: `linear-gradient(135deg,${P},#34A853)` }}>
             <div className="text-3xl mb-3">🎯</div>
             <h3 className="text-lg font-black mb-3">Our Mission</h3>
             <p className="text-white/85 text-sm leading-relaxed">

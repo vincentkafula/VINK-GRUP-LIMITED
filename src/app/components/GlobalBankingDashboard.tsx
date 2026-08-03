@@ -297,7 +297,7 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
             <div className="space-y-6 max-w-5xl">
               {/* Unified account card */}
               <div className="rounded-2xl overflow-hidden shadow-xl"
-                style={{ background: `linear-gradient(135deg,${P} 0%,#3d1d63 40%,#7B4DB5 80%,#5FC97F 100%)` }}>
+                style={{ background: `linear-gradient(135deg,${P} 0%,#0B2E1C 40%,#34A853 80%,#5FC97F 100%)` }}>
                 <div className="relative overflow-hidden px-6 py-5">
                   <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-white/5 pointer-events-none" />
                   <div className="absolute -bottom-8 -left-8 w-36 h-36 rounded-full bg-white/5 pointer-events-none" />

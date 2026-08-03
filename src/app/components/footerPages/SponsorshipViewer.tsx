@@ -28,7 +28,7 @@ export function SponsorshipViewer({ isOpen, onClose }: Props) {
         <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500"><X className="w-5 h-5" /></button>
       </div>
 
-      <div className="py-16 px-6 text-white" style={{ background: `linear-gradient(135deg,${P},#7B4DB5)` }}>
+      <div className="py-16 px-6 text-white" style={{ background: `linear-gradient(135deg,${P},#34A853)` }}>
         <div className="max-w-4xl mx-auto">
           <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4"
             style={{ background: "rgba(245,166,35,.2)", color: GOLD }}>Community Investment</span>
@@ -84,7 +84,7 @@ export function SponsorshipViewer({ isOpen, onClose }: Props) {
           </div>
         </section>
 
-        <section className="rounded-2xl p-8 text-center text-white" style={{ background: `linear-gradient(135deg,${P},#7B4DB5)` }}>
+        <section className="rounded-2xl p-8 text-center text-white" style={{ background: `linear-gradient(135deg,${P},#34A853)` }}>
           <h3 className="text-xl font-black mb-2">Ready to Apply?</h3>
           <p className="text-white/75 text-sm mb-4">Send your proposal to our sponsorship team.</p>
           <a href="mailto:sponsorships@vink.co.za"

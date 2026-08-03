@@ -25,7 +25,7 @@ export function LegalComplianceViewer({ isOpen, onClose, initialTab }: Props) {
       </div>
 
       {/* Hero */}
-      <div className="py-12 px-6 text-white" style={{ background: `linear-gradient(135deg,${P},#3d1d63)` }}>
+      <div className="py-12 px-6 text-white" style={{ background: `linear-gradient(135deg,${P},#0B2E1C)` }}>
         <div className="max-w-4xl mx-auto">
           <h1 className="text-3xl font-black mb-2">Legal &amp; Compliance</h1>
           <p className="text-white/70 text-sm">Vink Group (Pty) Ltd. · Reg: 2018/079316/07</p>

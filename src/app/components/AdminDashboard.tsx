@@ -36,7 +36,7 @@ const TYPE_LABELS: Record<string, string> = {
 
 const TYPE_COLORS: Record<string, string> = {
   account: "#3949AB", creditCard: "#128A43", loan: "#E53935",
-  invest: "#1565C0", insure: "#2E7D32", rewards: "#AB47BC",
+  invest: "#1565C0", insure: "#2E7D32", rewards: "#FFB84D",
   sim: "#F57C00", businessLoan: "#0B5C2E", corporateLoan: "#1A237E",
 };
 

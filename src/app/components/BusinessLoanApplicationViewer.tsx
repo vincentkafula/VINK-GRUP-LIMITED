@@ -95,7 +95,7 @@ export function BusinessLoanApplicationViewer({ isOpen, onClose }: Props) {
         tag="VINK Business Banking · NCRCP Licensed"
         title="Small Business Loan Application"
         subtitle="Fast, transparent funding for South African businesses. Complete all 7 steps to receive your decision."
-        gradient={`linear-gradient(135deg,${CP} 0%,#3d1d63 50%,#7B4DB5 100%)`}
+        gradient={`linear-gradient(135deg,${CP} 0%,#0B2E1C 50%,#34A853 100%)`}
       />
 
       {/* ── Content ── */}
@@ -419,7 +419,7 @@ export function BusinessLoanApplicationViewer({ isOpen, onClose }: Props) {
                     }
                   }}
                   className="w-full py-4 rounded-xl text-base font-black text-white transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed shadow-lg"
-                  style={{ background: agreed ? `linear-gradient(135deg,${CP},#7B4DB5)` : "#9CA3AF" }}>
+                  style={{ background: agreed ? `linear-gradient(135deg,${CP},#34A853)` : "#9CA3AF" }}>
                   {submitting ? "Submitting..." : "Submit Loan Application"}
                 </button>
                 {submitError && <p className="text-red-600 text-sm text-center mt-2">{submitError}</p>}

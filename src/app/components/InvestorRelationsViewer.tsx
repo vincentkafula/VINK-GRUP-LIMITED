@@ -6,7 +6,7 @@ import { Footer } from "./Footer";
 interface Props { isOpen: boolean; onClose: () => void; }
 
 const P  = "#0B5C2E";
-const PD = "#3d1d63";
+const PD = "#0B2E1C";
 const GOLD = "#F5A623";
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
@@ -218,7 +218,7 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
       </div>
 
       {/* ── Hero banner ── */}
-      <div className="px-6 py-8" style={{ background: `linear-gradient(135deg,${PD} 0%,${P} 60%,#7B4DB5 100%)` }}>
+      <div className="px-6 py-8" style={{ background: `linear-gradient(135deg,${PD} 0%,${P} 60%,#34A853 100%)` }}>
         <div className="max-w-5xl mx-auto">
           <p className="text-white/60 text-xs uppercase tracking-widest mb-1">VINK Bank · Corporate</p>
           <h1 className="text-3xl md:text-4xl font-black text-white mb-1">Investor Relations</h1>

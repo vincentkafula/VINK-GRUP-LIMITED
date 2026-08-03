@@ -19,7 +19,7 @@ const TIER_INFO: Record<Tier, {
 }> = {
   Launch:   { order: 1, icon: <Sparkles className="w-5 h-5" />,  tagline: "Where Great Businesses Begin.",                      bestFor: ["Startups", "Freelancers", "Consultants", "Small shops", "Online sellers"], unlocks: "Business account, virtual card, payments, digital receipts", gradient: `linear-gradient(135deg,${GREEN},#175E38)` },
   Forge:    { order: 2, icon: <Hammer className="w-5 h-5" />,    tagline: "Build with Confidence.",                             bestFor: ["Growing SMEs", "Restaurants", "Retail stores", "Service businesses"],       unlocks: "+ Team management, payroll, expense tracking",              gradient: `linear-gradient(135deg,${GREEN},#175E38)` },
-  Catalyst: { order: 3, icon: <Zap className="w-5 h-5" />,       tagline: "Accelerate Every Opportunity.",                      bestFor: ["Fast-growing companies", "E-commerce", "Logistics", "Agencies"],           unlocks: "+ Invoicing, AI cash flow, rewards, financing",              gradient: `linear-gradient(135deg,#6B21A8,${GREEN})` },
+  Catalyst: { order: 3, icon: <Zap className="w-5 h-5" />,       tagline: "Accelerate Every Opportunity.",                      bestFor: ["Fast-growing companies", "E-commerce", "Logistics", "Agencies"],           unlocks: "+ Invoicing, AI cash flow, rewards, financing",              gradient: `linear-gradient(135deg,#FF9900,${GREEN})` },
   Pinnacle: { order: 4, icon: <Mountain className="w-5 h-5" />,  tagline: "Business at Its Highest Level.",                     bestFor: ["Established businesses", "Manufacturers", "Construction", "Import & export"], unlocks: "+ Treasury, multi-currency, business intelligence",       gradient: `linear-gradient(135deg,#0369A1,${GREEN})` },
   Empire:   { order: 5, icon: <Crown className="w-5 h-5" />,     tagline: "Powering Businesses Without Limits.",                bestFor: ["Large enterprises", "National companies", "Corporate groups"],             unlocks: "+ Branch management, corporate cards, approval workflows",  gradient: `linear-gradient(135deg,#B45309,${GREEN})` },
   Sovereign:{ order: 6, icon: <Landmark className="w-5 h-5" />,  tagline: "Private Corporate Banking for Industry Leaders.",    bestFor: ["Multinationals", "Investment companies", "Family offices", "Holding companies"], unlocks: "+ Wealth, private banking, global treasury, family office", gradient: `linear-gradient(135deg,#1E1B4B,#3B1A6E)` },
@@ -254,7 +254,7 @@ function DashboardScreen({ tier }: { tier: Tier }) {
               <span className="text-xs font-semibold text-gray-800">Investment portfolio</span>
               <span className="text-xs font-bold text-green-600">+9.1% YTD</span>
             </div>
-            {[["Money market funds","38%","#0B5C2E"],["Government securities","27%","#B45309"],["Bonds","20%","#6B21A8"],["Private equity","15%","#0369A1"]].map(([label,pct,color]) => (
+            {[["Money market funds","38%","#0B5C2E"],["Government securities","27%","#B45309"],["Bonds","20%","#FF9900"],["Private equity","15%","#0369A1"]].map(([label,pct,color]) => (
               <div key={label} className="flex items-center gap-2 mb-1.5 last:mb-0">
                 <span className="w-24 text-[9px] text-gray-500 shrink-0">{label}</span>
                 <div className="flex-1 h-2 rounded-full bg-gray-100 overflow-hidden"><div className="h-full rounded-full" style={{ width: pct as string, background: color as string }} /></div>

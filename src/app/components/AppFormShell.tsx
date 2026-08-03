@@ -5,7 +5,7 @@
 import { CheckCircle } from "lucide-react";
 
 export const P     = "#0B5C2E";
-export const PD    = "#3d1d63";
+export const PD    = "#0B2E1C";
 export const GOLD  = "#F5A623";
 export const GREEN = "#10B981";
 

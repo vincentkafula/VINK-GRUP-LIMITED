@@ -21,7 +21,7 @@ export function BranchLocatorViewer({ isOpen, onClose }: Props) {
         <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500"><X className="w-5 h-5" /></button>
       </div>
 
-      <div className="py-12 px-6 text-white" style={{ background: `linear-gradient(135deg,${P},#7B4DB5)` }}>
+      <div className="py-12 px-6 text-white" style={{ background: `linear-gradient(135deg,${P},#34A853)` }}>
         <div className="max-w-4xl mx-auto">
           <h1 className="text-3xl font-black mb-2">Find a VINK Service Point</h1>
           <p className="text-white/70 text-sm">VINK is a digital-first bank. Full banking services are available at our Head Office and through our national agent network.</p>

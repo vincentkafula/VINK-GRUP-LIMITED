@@ -12,7 +12,7 @@ type Tier = "Foundation" | "Apex" | "Vertex" | "Nexus" | "Dominion" | "Legacy";
 type Role = "CEO" | "CFO" | "Finance Manager";
 
 const INK = "#1D1740";
-const PLUM = "#6B4FA0";
+const PLUM = "#128A43";
 const GOLD = "#C6A15B";
 
 const TIER_INFO: Record<Tier, { order: number; icon: React.ReactNode; purpose: string; unlocks: string; gradient: string }> = {
@@ -295,12 +295,12 @@ function PaymentsScreen() {
           <div className="pt-2">
             <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Pay to</label>
             <input value={recipient} onChange={e => setRecipient(e.target.value)} placeholder="Supplier, employee or vendor"
-              className="w-full mt-1 px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-purple-500" />
+              className="w-full mt-1 px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-emerald-500" />
           </div>
           <div>
             <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Amount (ZAR)</label>
             <input value={amount} onChange={e => setAmount(e.target.value.replace(/\D/g, ""))} placeholder="0.00" inputMode="numeric"
-              className="w-full mt-1 px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-purple-500" />
+              className="w-full mt-1 px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-emerald-500" />
           </div>
           <button disabled={!amount || !recipient} onClick={() => setSent(true)}
             className="w-full py-3 rounded-xl text-white text-sm font-bold disabled:opacity-40" style={{ background: INK }}>

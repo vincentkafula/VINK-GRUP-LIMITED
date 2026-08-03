@@ -78,7 +78,7 @@ function Card({ card, onApply }: { card: PricingCard; onApply: (name: string, pr
       <ul style={{ listStyle: "none", flex: 1, display: "flex", flexDirection: "column", gap: 9, marginBottom: 24 }}>
         {card.features.map((f, i) => (
           <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: 9, fontSize: 13.5, color: card.featured ? "rgba(255,255,255,.9)" : "#4B4567", lineHeight: 1.45 }}>
-            <span style={{ color: card.featured ? "#B9A8FF" : BRAND, fontSize: 15, flexShrink: 0, marginTop: 1 }}>✔</span>
+            <span style={{ color: card.featured ? "#A7E8BD" : BRAND, fontSize: 15, flexShrink: 0, marginTop: 1 }}>✔</span>
             {f}
           </li>
         ))}
