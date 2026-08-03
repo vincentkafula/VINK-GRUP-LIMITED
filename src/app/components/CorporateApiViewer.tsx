@@ -165,7 +165,7 @@ export function CorporateApiViewer({ isOpen, onClose, onNavigate }: Props) {
       <div className="relative overflow-hidden" style={{ background: "linear-gradient(160deg,#FAFCFB 0%,#F3F9F5 100%)" }}>
         <div className="absolute -right-32 top-0 bottom-0 w-96 rounded-full opacity-30" style={{ background: `linear-gradient(180deg,${GREEN},${ORANGE})`, filter: "blur(80px)" }} />
 
-        <div className="relative max-w-7xl mx-auto px-6 py-14 sm:py-20 grid lg:grid-cols-2 gap-14 items-center">
+        <div className="relative max-w-7xl mx-auto px-6 py-14 sm:py-20 grid md:grid-cols-2 gap-14 items-center">
           <div>
             <span className="inline-flex items-center gap-2 text-[12px] font-semibold px-3.5 py-1.5 rounded-full mb-6" style={{ background: "#E8F7EE", color: DARK_GREEN }}>
               <span className="w-1.5 h-1.5 rounded-full" style={{ background: GREEN }} /> Powering Payments. Mobility. Governance.
@@ -199,7 +199,7 @@ export function CorporateApiViewer({ isOpen, onClose, onNavigate }: Props) {
           </div>
 
           {/* Dashboard mockup */}
-          <div className="relative hidden lg:block" style={{ minHeight: 440 }}>
+          <div className="relative hidden md:block" style={{ minHeight: 440 }}>
             <div className="absolute inset-0 flex items-center">
               <div className="w-full rounded-2xl shadow-2xl overflow-hidden border border-gray-100 bg-white flex">
                 {/* sidebar */}
