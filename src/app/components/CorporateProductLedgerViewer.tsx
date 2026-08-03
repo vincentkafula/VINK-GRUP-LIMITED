@@ -84,17 +84,17 @@ const SECTIONS: Record<CorpCategory, Section[]> = {
   {
     label: "Entry Credit Card Plans",
     cards: [
-      { name: "Advice",   price: "R0",  featured: false, features: ["Annual turnover: R0 to R1,5 million"] },
-      { name: "Platinum", price: "R0",  featured: false, features: ["Annual turnover: R0 to R5 million"] },
-      { name: "Black",    price: "R85", featured: false, features: ["Annual turnover: R0 to R500 million"] },
+      { name: "VINK TitanCredit",   price: "R0",  featured: false, features: ["Annual turnover: R0 to R1,5 million"] },
+      { name: "VINK ApexCapital", price: "R0",  featured: false, features: ["Annual turnover: R0 to R5 million"] },
+      { name: "VINK EnterprisePrime",    price: "R85", featured: false, features: ["Annual turnover: R0 to R500 million"] },
     ],
   },
   {
     label: "Premium Credit Card Plans",
     cards: [
-      { name: "Petrol",      price: "R170", featured: false, features: ["Annual turnover: R0 to R500 million","Free Vink Online Banking and NotifyMes","Suitable for all business segments and sectors","Shariah-compliant option available","Free Online Banking and NotifyMes","Suitable for all business segments and sectors","Shariah-compliant option available"] },
-      { name: "Finance",     price: "R265", featured: true,  features: ["Annual turnover: R0 to R500 million","35 electronic transactions","10 cash deposits/withdrawals at any Vink ATM (capped at R50,000 per month)","Suitable for all business segments and sectors","Free Online Banking and NotifyMes","Limited to Sole Proprietors","Shariah-compliant option available"] },
-      { name: "Manage Cash", price: "R415", featured: false, features: ["Annual turnover: R0 to R500 million","60 electronic transactions","15 cash deposits/withdrawals at any Vink ATM (capped at R100,000 per month)","Suitable for all business segments and sectors","Free Online Banking and NotifyMes","Suitable for all business segments and sectors","Shariah-compliant option available"] },
+      { name: "VINK QuantumCredit",      price: "R170", featured: false, features: ["Annual turnover: R0 to R500 million","Free Vink Online Banking and NotifyMes","Suitable for all business segments and sectors","Shariah-compliant option available","Free Online Banking and NotifyMes","Suitable for all business segments and sectors","Shariah-compliant option available"] },
+      { name: "VINK NexusFinance",     price: "R265", featured: true,  features: ["Annual turnover: R0 to R500 million","35 electronic transactions","10 cash deposits/withdrawals at any Vink ATM (capped at R50,000 per month)","Suitable for all business segments and sectors","Free Online Banking and NotifyMes","Limited to Sole Proprietors","Shariah-compliant option available"] },
+      { name: "VINK SovereignLine", price: "R415", featured: false, features: ["Annual turnover: R0 to R500 million","60 electronic transactions","15 cash deposits/withdrawals at any Vink ATM (capped at R100,000 per month)","Suitable for all business segments and sectors","Free Online Banking and NotifyMes","Suitable for all business segments and sectors","Shariah-compliant option available"] },
     ],
   },
 ],

@@ -1,7 +1,8 @@
-import { useState } from "react";
-import { Home, Send, CreditCard, Clock, Star, Bell, ChevronRight, ArrowUpRight, ArrowDownLeft, Zap, Smartphone, ShoppingCart, Gift, CheckCircle, AlertTriangle, Loader2, Sparkles, Anchor as AnchorIcon, TrendingUp, Mountain, Crown, Landmark, Target, Wallet, PiggyBank, Award } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Home, Send, CreditCard, Clock, Star, Bell, ChevronRight, ArrowUpRight, ArrowDownLeft, Zap, Smartphone, ShoppingCart, Gift, CheckCircle, AlertTriangle, Loader2, Sparkles, Anchor as AnchorIcon, TrendingUp, Mountain, Crown, Landmark, Target, Wallet, PiggyBank, Award, Eye, EyeOff, ShieldCheck, Menu, QrCode, Banknote, User, MoreHorizontal, RefreshCw, CircleDollarSign } from "lucide-react";
 import { MobileAppOverlay, PhoneFrame } from "./PhoneFrame";
 import { globalBankingApi } from "../../services/applicationsApi";
+import { mktAuth, type MktAuthUser } from "../../services/marketplaceApi";
 
 type Screen = "onboarding" | "home" | "send" | "cards" | "history" | "rewards";
 type Tier = "Spark" | "Anchor" | "Momentum" | "Horizon" | "Summit" | "Legacy";
@@ -41,6 +42,64 @@ const REWARDS_HISTORY = [
   { event: "Shell Fuel Purchase",          pts: "+65",  date: "18 Jun" },
   { event: "Airtime Purchase",             pts: "+5",   date: "14 Jun" },
 ];
+
+// ─── Login ────────────────────────────────────────────────────────────────
+function LoginScreen({ onAuthenticated }: { onAuthenticated: (user: MktAuthUser) => void }) {
+  const [mode, setMode] = useState<"signin" | "register">("signin");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const submit = async () => {
+    setError(null);
+    if (!username || !password || (mode === "register" && (!name || !email))) { setError("Fill in all fields."); return; }
+    setLoading(true);
+    const r = mode === "signin"
+      ? await mktAuth.login(username, password)
+      : await mktAuth.registerCustomer({ username, password, name, email });
+    setLoading(false);
+    if (r.success && r.token) onAuthenticated(r.user);
+    else setError((r as { error?: string }).error ?? "Something went wrong. Please try again.");
+  };
+
+  return (
+    <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F8F7FF" }}>
+      <div className="flex-1 flex flex-col justify-center px-6">
+        <div className="text-center mb-8">
+          <p className="text-2xl font-black"><span style={{ color: PURPLE }}>VINK</span> <span style={{ color: GOLD }}>Bank</span></p>
+          <p className="text-gray-400 text-xs mt-1">Banking that moves with you.</p>
+        </div>
+
+        {error && <div className="mb-3 px-3 py-2 rounded-lg bg-red-50 text-red-600 text-xs font-medium">{error}</div>}
+
+        {mode === "register" && (
+          <>
+            <input value={name} onChange={e => setName(e.target.value)} placeholder="Full name"
+              className="w-full mb-2.5 px-3.5 py-3 rounded-xl border border-gray-200 text-sm outline-none" style={{ borderColor: "#E5E7EB" }} />
+            <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" type="email"
+              className="w-full mb-2.5 px-3.5 py-3 rounded-xl border border-gray-200 text-sm outline-none" />
+          </>
+        )}
+        <input value={username} onChange={e => setUsername(e.target.value)} placeholder="Username"
+          className="w-full mb-2.5 px-3.5 py-3 rounded-xl border border-gray-200 text-sm outline-none" />
+        <input value={password} onChange={e => setPassword(e.target.value)} placeholder="Password" type="password"
+          className="w-full mb-4 px-3.5 py-3 rounded-xl border border-gray-200 text-sm outline-none" />
+
+        <button onClick={submit} disabled={loading} className="w-full py-3.5 rounded-xl text-white text-sm font-bold disabled:opacity-50" style={{ background: PURPLE }}>
+          {loading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : mode === "signin" ? "Sign In" : "Create Account"}
+        </button>
+
+        <button onClick={() => { setMode(m => m === "signin" ? "register" : "signin"); setError(null); }} className="text-center text-xs font-semibold mt-4" style={{ color: PURPLE }}>
+          {mode === "signin" ? "New here? Create an account" : "Already have an account? Sign in"}
+        </button>
+      </div>
+      <p className="text-center text-[10px] text-gray-300 pb-6">Same account works on vink.co.za and the Vink app.</p>
+    </div>
+  );
+}
 
 function OnboardingScreen({ onSelect }: { onSelect: (tier: Tier) => void }) {
   const [picked, setPicked] = useState<Tier | null>(null);
@@ -113,31 +172,45 @@ function VerifyingScreen({ tier, onDone }: { tier: Tier; onDone: () => void }) {
     </div>
   );
 }
-function HomeScreen({ tier, onSwitchTier }: { tier: Tier; onSwitchTier: () => void }) {
+function HomeScreen({ tier, onSwitchTier, user }: { tier: Tier; onSwitchTier: () => void; user: MktAuthUser }) {
   const info = TIER_INFO[tier];
   const unlockedFrom = (min: number) => info.order >= min;
+  const [hideBalance, setHideBalance] = useState(false);
+  const balance = tier === "Legacy" ? "R 4,218,600.00" : "R 20,700.00";
 
   return (
     <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F8F7FF" }}>
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 flex-shrink-0" style={{ background: PURPLE }}>
         <div>
-          <p className="text-xs font-bold tracking-widest" style={{ color: GOLD }}>VINK</p>
-          <p className="text-white/70 text-[10px]">Good morning, Thabo</p>
+          <p className="text-white/60 text-[10px]">Hello,</p>
+          <p className="text-white text-sm font-bold">{user.name}</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
+          <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-white/10 text-white/80 text-[9px] font-semibold">
+            <ShieldCheck className="w-3 h-3" /> Secure
+          </span>
           <button className="relative">
             <Bell className="w-5 h-5 text-white/80" />
             <div className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-red-400" />
           </button>
           <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center border border-white/30">
-            <span className="text-white text-xs font-bold">TN</span>
+            <span className="text-white text-xs font-bold">{user.name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}</span>
           </div>
         </div>
       </div>
 
+      {/* Total balance */}
+      <div className="px-4 pt-4 pb-1">
+        <div className="flex items-center gap-1.5">
+          <p className="text-gray-400 text-[10px] font-medium">Total Balance</p>
+          <button onClick={() => setHideBalance(h => !h)}>{hideBalance ? <EyeOff className="w-3 h-3 text-gray-400" /> : <Eye className="w-3 h-3 text-gray-400" />}</button>
+        </div>
+        <p className="text-2xl font-black text-gray-900 mt-0.5">{hideBalance ? "••••••" : balance}</p>
+      </div>
+
       {/* Balance card */}
-      <div className="mx-3 -mt-1 rounded-2xl p-5 shadow-xl" style={{ background: info.cardGradient }}>
+      <div className="mx-3 mt-2 rounded-2xl p-5 shadow-xl" style={{ background: info.cardGradient }}>
         <button onClick={onSwitchTier} className="flex items-center gap-1 text-white/60 text-xs hover:text-white/90 transition-colors">
           Vink {tier} Account <ChevronRight className="w-3 h-3" />
         </button>
@@ -153,8 +226,12 @@ function HomeScreen({ tier, onSwitchTier }: { tier: Tier; onSwitchTier: () => vo
           </>
         ) : (
           <>
-            <p className="text-white text-[28px] font-bold tracking-tight mt-1">R 12,847.50</p>
-            <p className="text-white/50 text-xs mt-0.5">****  ****  ****  3421</p>
+            <div className="flex items-center justify-between mt-1">
+              <p className="text-white text-[15px] font-bold tracking-tight">VINK</p>
+              <ShieldCheck className="w-4 h-4 text-white/70" />
+            </div>
+            <p className="text-white/50 text-xs mt-3 font-mono">**** **** **** 8061</p>
+            <p className="text-white/70 text-[11px] mt-1">{user.name}</p>
           </>
         )}
         {unlockedFrom(3) && tier !== "Legacy" && (
@@ -184,22 +261,44 @@ function HomeScreen({ tier, onSwitchTier }: { tier: Tier; onSwitchTier: () => vo
 
       {/* Quick actions */}
       <div className="px-3 pt-4">
-        <p className="text-gray-500 text-[10px] font-semibold uppercase tracking-wider mb-3">Quick Actions</p>
-        <div className="flex justify-between">
+        <div className="grid grid-cols-4 gap-y-3">
           {[
-            ["Send",     "💸"], ["Receive", "📥"], ["Pay",     "📲"],
-            ["Airtime",  "📱"], ["Electricity","⚡"],
-          ].map(([label, emoji]) => (
-            <div key={label} className="flex flex-col items-center gap-1">
-              <div
-                className="w-11 h-11 rounded-2xl flex items-center justify-center text-lg shadow-sm"
-                style={{ background: `${PURPLE}11`, border: `1.5px solid ${PURPLE}33` }}
-              >
-                {emoji}
+            ["Make\nPayment", <Send className="w-4 h-4" key="s" />],
+            ["Transfer\nFunds", <RefreshCw className="w-4 h-4" key="t" />],
+            ["Scan to\nPay", <QrCode className="w-4 h-4" key="q" />],
+            ["Buy\nAirtime", <Smartphone className="w-4 h-4" key="a" />],
+            ["Cardless Cash\nWithdrawal", <Banknote className="w-4 h-4" key="c" />],
+            ["Me", <User className="w-4 h-4" key="m" />],
+            ["Cards", <CreditCard className="w-4 h-4" key="cc" />],
+            ["More", <MoreHorizontal className="w-4 h-4" key="mo" />],
+          ].map(([label, icon]) => (
+            <div key={label as string} className="flex flex-col items-center gap-1.5">
+              <div className="w-11 h-11 rounded-2xl flex items-center justify-center shadow-sm" style={{ background: `${PURPLE}11`, border: `1.5px solid ${PURPLE}33`, color: PURPLE }}>
+                {icon}
               </div>
-              <span className="text-gray-500 text-[9px] font-medium">{label}</span>
+              <span className="text-gray-500 text-[8.5px] font-medium text-center leading-tight whitespace-pre-line">{label}</span>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Promo carousel */}
+      <div className="px-3 pt-4 flex gap-2.5 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+        <div className="w-56 shrink-0 rounded-2xl p-3.5" style={{ background: PURPLE }}>
+          <div className="flex items-start justify-between">
+            <p className="text-white text-[12.5px] font-bold leading-snug w-32">Earn more with Vink Rewards</p>
+            <Gift className="w-6 h-6" style={{ color: GOLD }} />
+          </div>
+          <p className="text-white/60 text-[9.5px] mt-1.5">Spend, earn and redeem VinkPoints on every transaction.</p>
+          <button className="mt-2.5 text-[10px] font-bold px-3 py-1.5 rounded-lg" style={{ background: GOLD, color: PURPLE }}>Learn More</button>
+        </div>
+        <div className="w-56 shrink-0 rounded-2xl p-3.5" style={{ background: "#FFF1E6" }}>
+          <div className="flex items-start justify-between">
+            <p className="text-[#7A3E00] text-[12.5px] font-bold leading-snug w-32">Pay taxi fares with one tap</p>
+            <Smartphone className="w-6 h-6" style={{ color: "#FF7A1A" }} />
+          </div>
+          <p className="text-[#7A3E00]/70 text-[9.5px] mt-1.5">Fast. Secure. Convenient.</p>
+          <button className="mt-2.5 text-[10px] font-bold px-3 py-1.5 rounded-lg text-white" style={{ background: "#FF7A1A" }}>Learn More</button>
         </div>
       </div>
 
@@ -702,6 +801,14 @@ export function VinkBankingApp({ isOpen, onClose }: { isOpen: boolean; onClose: 
   const [tier, setTier] = useState<Tier>("Spark");
   const [verifying, setVerifying] = useState(false);
   const [pendingTier, setPendingTier] = useState<Tier>("Spark");
+  const [authUser, setAuthUser] = useState<MktAuthUser | null>(null);
+  const [checkedSession, setCheckedSession] = useState(false);
+
+  useEffect(() => {
+    const restored = mktAuth.restoreSession();
+    if (restored) setAuthUser(restored.user);
+    setCheckedSession(true);
+  }, []);
 
   if (!isOpen) return null;
 
@@ -714,6 +821,10 @@ export function VinkBankingApp({ isOpen, onClose }: { isOpen: boolean; onClose: 
     setVerifying(false);
     setScreen("home");
   };
+  const handleAuthenticated = (user: MktAuthUser) => {
+    setAuthUser(user);
+    setScreen("onboarding"); // straight into account-tier selection after login/register
+  };
 
   const TABS: { id: Screen; label: string; icon: React.ReactNode }[] = [
     { id: "home",    label: "Home",    icon: <Home className="w-5 h-5" /> },
@@ -722,18 +833,22 @@ export function VinkBankingApp({ isOpen, onClose }: { isOpen: boolean; onClose: 
     { id: "history", label: "History", icon: <Clock className="w-5 h-5" /> },
     { id: "rewards", label: "Rewards", icon: <Star className="w-5 h-5" /> },
   ];
-  const showTabs = screen !== "onboarding" && !verifying;
+  const showTabs = authUser !== null && screen !== "onboarding" && !verifying;
 
   return (
     <MobileAppOverlay onClose={onClose} appName="Vink Bank" bgColor="#F8F7FF">
       <PhoneFrame statusBarColor={PURPLE} statusBarTextLight>
         <div className="flex-1 overflow-hidden flex flex-col">
-          {verifying ? (
+          {!checkedSession ? (
+            <div className="flex-1 flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin" style={{ color: PURPLE }} /></div>
+          ) : !authUser ? (
+            <LoginScreen onAuthenticated={handleAuthenticated} />
+          ) : verifying ? (
             <VerifyingScreen tier={pendingTier} onDone={handleVerified} />
           ) : (
             <>
               {screen === "onboarding" && <OnboardingScreen onSelect={handleTierSelected} />}
-              {screen === "home"    && <HomeScreen tier={tier} onSwitchTier={() => setScreen("onboarding")} />}
+              {screen === "home"    && <HomeScreen tier={tier} onSwitchTier={() => setScreen("onboarding")} user={authUser} />}
               {screen === "send"    && <SendScreen />}
               {screen === "cards"   && <CardsScreen />}
               {screen === "history" && <HistoryScreen />}

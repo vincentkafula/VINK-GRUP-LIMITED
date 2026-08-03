@@ -22,28 +22,28 @@ interface BizProduct { name: string; price: string; features: string[]; featured
 // ledger-style page.
 const PRODUCTS: Record<BizCategory, BizProduct[]> = {
   creditCard: [
-    { name: "Advice Business Card",   price: "R0",  features: ["R50,000 credit limit", "1% cashback on all business spend", "Expense tracking dashboard", "Monthly PDF statements for accounting", "Up to 3 supplementary cards"] },
-    { name: "Platinum Business Card", price: "R0",  features: ["R150,000 credit limit", "1.5% cashback", "Virtual card for online procurement", "Fraud alerts via SMS", "55-day interest-free period"] },
-    { name: "Black Business Card",    price: "R85", features: ["R300,000 credit limit", "2% cashback on travel and fuel", "Employee card controls", "Integration with Xero and Sage accounting", "Roadside assist included"] },
-    { name: "Petrol Business Card", price: "R170", features: ["Dedicated fuel management card", "Fleet fuel spend tracking", "Rebate of 8c/litre at partner stations", "Monthly fleet fuel usage reports"] },
-    { name: "Finance Business Card", price: "R265", featured: true, features: ["R500,000 credit limit", "3% cashback on travel, 2% on telecoms", "Virtual cards per employee department", "CFO-ready expense dashboard", "Multi-currency capability", "Same-day credit limit reviews"] },
-    { name: "Manage Cash Business Card", price: "R415", features: ["R1,000,000 credit limit", "Integrated sweep facility", "Cash flow forecasting tools", "Dedicated CFO hotline", "International wire transfer included", "0% on supplier invoices for 30 days"] },
+    { name: "VentureLine",   price: "R0",  features: ["R50,000 credit limit", "1% cashback on all business spend", "Expense tracking dashboard", "Monthly PDF statements for accounting", "Up to 3 supplementary cards"] },
+    { name: "GrowthBridge", price: "R0",  features: ["R150,000 credit limit", "1.5% cashback", "Virtual card for online procurement", "Fraud alerts via SMS", "55-day interest-free period"] },
+    { name: "CapitalFlow",    price: "R85", features: ["R300,000 credit limit", "2% cashback on travel and fuel", "Employee card controls", "Integration with Xero and Sage accounting", "Roadside assist included"] },
+    { name: "EnterpriseLift", price: "R170", features: ["Dedicated fuel management card", "Fleet fuel spend tracking", "Rebate of 8c/litre at partner stations", "Monthly fleet fuel usage reports"] },
+    { name: "CommerceFlex", price: "R265", featured: true, features: ["R500,000 credit limit", "3% cashback on travel, 2% on telecoms", "Virtual cards per employee department", "CFO-ready expense dashboard", "Multi-currency capability", "Same-day credit limit reviews"] },
+    { name: "PrimeLedger", price: "R415", features: ["R1,000,000 credit limit", "Integrated sweep facility", "Cash flow forecasting tools", "Dedicated CFO hotline", "International wire transfer included", "0% on supplier invoices for 30 days"] },
   ],
   loan: [
-    { name: "Commercial Property Loan", price: "R0", features: ["Up to 80% LTV on commercial property", "Office, retail, warehouse, and mixed-use eligible", "10–20 year terms", "Linked to prime rate"] },
-    { name: "Business Start-Up Loan", price: "R0", features: ["R50,000–R2,000,000 loan amount", "No collateral required for amounts under R500K with valid business plan", "12–60 month repayment", "Approved within 5 business days"] },
-    { name: "Business Time Accounts", price: "R85", features: ["Fixed-term deposit for businesses", "Lock in 3, 6, 12, or 24 months", "Rates up to 9.2% p.a.", "Early exit penalty of 1.5%"] },
-    { name: "Business Vehicle Finance", price: "R170", features: ["Finance new or used fleet vehicles", "Up to 100% financed", "12–72 month terms", "Group fleet discounts for 5+ vehicles", "Balloon payment option"] },
-    { name: "Business Vehicle Leasing", price: "R265", featured: true, features: ["Full operating lease with maintenance, tyres, and licensing included", "Fixed monthly cost for easy budgeting", "Fuel management optional add-on", "Residual value guaranteed", "Cancel at end of term with no penalty"] },
-    { name: "Business Bridge Loan", price: "R415", features: ["Short-term capital for urgent cash flow needs", "R100,000–R5,000,000", "1–12 month terms", "Draw down as needed", "Interest only on amount drawn"] },
+    { name: "VentureLoan", price: "R0", features: ["Up to 80% LTV on commercial property", "Office, retail, warehouse, and mixed-use eligible", "10–20 year terms", "Linked to prime rate"] },
+    { name: "GrowthCapital", price: "R0", features: ["R50,000–R2,000,000 loan amount", "No collateral required for amounts under R500K with valid business plan", "12–60 month repayment", "Approved within 5 business days"] },
+    { name: "CommerceAdvance", price: "R85", features: ["Fixed-term deposit for businesses", "Lock in 3, 6, 12, or 24 months", "Rates up to 9.2% p.a.", "Early exit penalty of 1.5%"] },
+    { name: "EnterpriseBoost", price: "R170", features: ["Finance new or used fleet vehicles", "Up to 100% financed", "12–72 month terms", "Group fleet discounts for 5+ vehicles", "Balloon payment option"] },
+    { name: "MomentumFund", price: "R265", featured: true, features: ["Full operating lease with maintenance, tyres, and licensing included", "Fixed monthly cost for easy budgeting", "Fuel management optional add-on", "Residual value guaranteed", "Cancel at end of term with no penalty"] },
+    { name: "ApexBusiness Loan", price: "R415", features: ["Short-term capital for urgent cash flow needs", "R100,000–R5,000,000", "1–12 month terms", "Draw down as needed", "Interest only on amount drawn"] },
   ],
   insure: [
-    { name: "Surety Bonds", price: "R0", features: ["Annual turnover: R0 to R1.5 million", "Free VINK Online Banking and NotifyMes", "Suitable for all business segments and sectors", "Shari'ah-compliant option available"] },
-    { name: "Business Owners Policy", price: "R0", features: ["Annual turnover: R0 to R5 million", "Free VINK Online Banking and NotifyMes", "Limited to sole proprietors", "Shari'ah-compliant option available"] },
-    { name: "Commercial Property Insurance", price: "R85", features: ["Annual turnover: R0 to R500 million", "Free VINK Online Banking and NotifyMes", "Suitable for all business segments and sectors", "Shari'ah-compliant option available"] },
-    { name: "General Liability Insurance", price: "R170", features: ["Annual turnover: R0 to R500 million", "Free VINK Online Banking and NotifyMes", "Suitable for all business segments and sectors", "Shari'ah-compliant option available"] },
-    { name: "Commercial Auto Insurance", price: "R265", featured: true, features: ["Annual turnover: R0 to R500 million", "35 electronic transactions", "10 cash deposits/withdrawals at any VINK ATM, capped at R50,000/month", "Suitable for all business segments and sectors"] },
-    { name: "Worker's Compensation", price: "R415", features: ["Annual turnover: R0 to R500 million", "60 electronic transactions", "15 cash deposits/withdrawals at any VINK ATM, capped at R100,000/month", "Suitable for all business segments and sectors"] },
+    { name: "VINK NexusCover", price: "R0", features: ["Annual turnover: R0 to R1.5 million", "Free VINK Online Banking and NotifyMes", "Suitable for all business segments and sectors", "Shari'ah-compliant option available"] },
+    { name: "VINK CommerceProtect", price: "R0", features: ["Annual turnover: R0 to R5 million", "Free VINK Online Banking and NotifyMes", "Limited to sole proprietors", "Shari'ah-compliant option available"] },
+    { name: "VINK CapitalShield", price: "R85", features: ["Annual turnover: R0 to R500 million", "Free VINK Online Banking and NotifyMes", "Suitable for all business segments and sectors", "Shari'ah-compliant option available"] },
+    { name: "VINK FleetFusion", price: "R170", features: ["Annual turnover: R0 to R500 million", "Free VINK Online Banking and NotifyMes", "Suitable for all business segments and sectors", "Shari'ah-compliant option available"] },
+    { name: "VINK RiskSphere", price: "R265", featured: true, features: ["Annual turnover: R0 to R500 million", "35 electronic transactions", "10 cash deposits/withdrawals at any VINK ATM, capped at R50,000/month", "Suitable for all business segments and sectors"] },
+    { name: "VINK RecoveryGuard", price: "R415", features: ["Annual turnover: R0 to R500 million", "60 electronic transactions", "15 cash deposits/withdrawals at any VINK ATM, capped at R100,000/month", "Suitable for all business segments and sectors"] },
   ],
   // NOTE: unlike creditCard/loan/insure above, no genuine business
   // investment product data exists anywhere in this codebase (the one
@@ -54,12 +54,12 @@ const PRODUCTS: Record<BizCategory, BizProduct[]> = {
   // rates or specific investment terms, to avoid presenting invented
   // numbers as real financial product details.
   invest: [
-    { name: "Business Call Account",          price: "R0",   features: ["Same-day access to funds", "No minimum balance", "Tiered interest on the full balance", "No fixed term"] },
-    { name: "Business 32-Day Notice Account",  price: "R0",   features: ["32 days' notice required for withdrawal", "Higher tiered interest than a call account", "No minimum balance"] },
-    { name: "Business Fixed Deposit — Short",  price: "R85",  features: ["3–6 month fixed terms", "Interest rate locked for the term", "Early withdrawal penalty applies"] },
-    { name: "Business Fixed Deposit — Long",   price: "R170", features: ["12–24 month fixed terms", "Interest rate locked for the term", "Early withdrawal penalty applies"] },
-    { name: "Corporate Money Market Account",  price: "R265", featured: true, features: ["Same-day liquidity for larger balances", "Tiered interest scaling with balance size", "Ideal for surplus operating cash"] },
-    { name: "Structured Treasury Deposit",     price: "R415", features: ["For larger corporate balances", "Terms structured with a relationship manager", "Custom notice/fixed-term blend available"] },
+    { name: "VentureFund",          price: "R0",   features: ["Same-day access to funds", "No minimum balance", "Tiered interest on the full balance", "No fixed term"] },
+    { name: "CapitalForge",  price: "R0",   features: ["32 days' notice required for withdrawal", "Higher tiered interest than a call account", "No minimum balance"] },
+    { name: "EnterpriseYield",  price: "R85",  features: ["3–6 month fixed terms", "Interest rate locked for the term", "Early withdrawal penalty applies"] },
+    { name: "ProsperEdge",   price: "R170", features: ["12–24 month fixed terms", "Interest rate locked for the term", "Early withdrawal penalty applies"] },
+    { name: "WealthAxis",  price: "R265", featured: true, features: ["Same-day liquidity for larger balances", "Tiered interest scaling with balance size", "Ideal for surplus operating cash"] },
+    { name: "FutureReserve",     price: "R415", features: ["For larger corporate balances", "Terms structured with a relationship manager", "Custom notice/fixed-term blend available"] },
   ],
 };
 
