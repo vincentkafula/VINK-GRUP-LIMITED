@@ -15,35 +15,35 @@ interface Props {
 const SUB_NAV: NavItem[] = ["Start My Business", "Accounts", "Credit Cards", "Loans", "Invest", "Insure", "Manage My Business", "International", "Studio", "News"];
 const CATEGORY_FOR_NAV: Partial<Record<NavItem, BizCategory>> = { "Credit Cards": "creditCard", "Loans": "loan", "Insure": "insure", "Invest": "invest" };
 
-interface BizProduct { name: string; price: string; features: string[]; featured?: boolean }
+interface BizProduct { name: string; price: string; features: string[]; featured?: boolean; tagline?: string; description?: string }
 
 // Real product data, unchanged — moved as-is out of the old
 // BusinessCreditCardViewer.tsx / BusinessLoansViewer.tsx into this shared
 // ledger-style page.
 const PRODUCTS: Record<BizCategory, BizProduct[]> = {
   creditCard: [
-    { name: "VentureLine",   price: "R0",  features: ["R50,000 credit limit", "1% cashback on all business spend", "Expense tracking dashboard", "Monthly PDF statements for accounting", "Up to 3 supplementary cards"] },
-    { name: "GrowthBridge", price: "R0",  features: ["R150,000 credit limit", "1.5% cashback", "Virtual card for online procurement", "Fraud alerts via SMS", "55-day interest-free period"] },
-    { name: "CapitalFlow",    price: "R85", features: ["R300,000 credit limit", "2% cashback on travel and fuel", "Employee card controls", "Integration with Xero and Sage accounting", "Roadside assist included"] },
-    { name: "EnterpriseLift", price: "R170", features: ["Dedicated fuel management card", "Fleet fuel spend tracking", "Rebate of 8c/litre at partner stations", "Monthly fleet fuel usage reports"] },
-    { name: "CommerceFlex", price: "R265", featured: true, features: ["R500,000 credit limit", "3% cashback on travel, 2% on telecoms", "Virtual cards per employee department", "CFO-ready expense dashboard", "Multi-currency capability", "Same-day credit limit reviews"] },
-    { name: "PrimeLedger", price: "R415", features: ["R1,000,000 credit limit", "Integrated sweep facility", "Cash flow forecasting tools", "Dedicated CFO hotline", "International wire transfer included", "0% on supplier invoices for 30 days"] },
+    { name: "VentureLine",   price: "R0",  tagline: "A flexible line of credit designed to give growing businesses fast, on-demand access to working capital, without the friction of reapplying every time you need funds.", features: ["R50,000 credit limit", "1% cashback on all business spend", "Expense tracking dashboard", "Monthly PDF statements for accounting", "Up to 3 supplementary cards"] },
+    { name: "GrowthBridge", price: "R0",  tagline: "Short-to-medium term financing built to bridge funding gaps during periods of expansion, seasonal demand, or transition.", features: ["R150,000 credit limit", "1.5% cashback", "Virtual card for online procurement", "Fraud alerts via SMS", "55-day interest-free period"] },
+    { name: "CapitalFlow",    price: "R85", tagline: "Revolving credit designed to keep cash flow steady, giving businesses the breathing room to manage day-to-day operations with confidence.", features: ["R300,000 credit limit", "2% cashback on travel and fuel", "Employee card controls", "Integration with Xero and Sage accounting", "Roadside assist included"] },
+    { name: "EnterpriseLift", price: "R170", tagline: "Structured credit facilities built to support larger-scale business investment, expansion projects, and operational scaling.", features: ["Dedicated fuel management card", "Fleet fuel spend tracking", "Rebate of 8c/litre at partner stations", "Monthly fleet fuel usage reports"] },
+    { name: "CommerceFlex", price: "R265", featured: true, tagline: "Adaptable credit designed for businesses with fluctuating capital needs, offering flexible drawdown and repayment terms.", features: ["R500,000 credit limit", "3% cashback on travel, 2% on telecoms", "Virtual cards per employee department", "CFO-ready expense dashboard", "Multi-currency capability", "Same-day credit limit reviews"] },
+    { name: "PrimeLedger", price: "R415", tagline: "Premium business credit for established companies with strong financials, offering competitive rates and higher facility limits.", features: ["R1,000,000 credit limit", "Integrated sweep facility", "Cash flow forecasting tools", "Dedicated CFO hotline", "International wire transfer included", "0% on supplier invoices for 30 days"] },
   ],
   loan: [
-    { name: "VentureLoan", price: "R0", features: ["Up to 80% LTV on commercial property", "Office, retail, warehouse, and mixed-use eligible", "10–20 year terms", "Linked to prime rate"] },
-    { name: "GrowthCapital", price: "R0", features: ["R50,000–R2,000,000 loan amount", "No collateral required for amounts under R500K with valid business plan", "12–60 month repayment", "Approved within 5 business days"] },
-    { name: "CommerceAdvance", price: "R85", features: ["Fixed-term deposit for businesses", "Lock in 3, 6, 12, or 24 months", "Rates up to 9.2% p.a.", "Early exit penalty of 1.5%"] },
-    { name: "EnterpriseBoost", price: "R170", features: ["Finance new or used fleet vehicles", "Up to 100% financed", "12–72 month terms", "Group fleet discounts for 5+ vehicles", "Balloon payment option"] },
-    { name: "MomentumFund", price: "R265", featured: true, features: ["Full operating lease with maintenance, tyres, and licensing included", "Fixed monthly cost for easy budgeting", "Fuel management optional add-on", "Residual value guaranteed", "Cancel at end of term with no penalty"] },
-    { name: "ApexBusiness Loan", price: "R415", features: ["Short-term capital for urgent cash flow needs", "R100,000–R5,000,000", "1–12 month terms", "Draw down as needed", "Interest only on amount drawn"] },
+    { name: "VentureLoan", price: "R0", tagline: "Financing designed for new and early-stage businesses looking to fund launch or initial growth.", features: ["Up to 80% LTV on commercial property", "Office, retail, warehouse, and mixed-use eligible", "10–20 year terms", "Linked to prime rate"] },
+    { name: "GrowthCapital", price: "R0", tagline: "Loan solutions built to fund expansion projects, new locations, or scaling operations.", features: ["R50,000–R2,000,000 loan amount", "No collateral required for amounts under R500K with valid business plan", "12–60 month repayment", "Approved within 5 business days"] },
+    { name: "CommerceAdvance", price: "R85", tagline: "Fast, accessible business financing designed to cover short-term operational or working capital needs.", features: ["Fixed-term deposit for businesses", "Lock in 3, 6, 12, or 24 months", "Rates up to 9.2% p.a.", "Early exit penalty of 1.5%"] },
+    { name: "EnterpriseBoost", price: "R170", tagline: "Structured loans designed to support larger businesses investing in equipment, infrastructure, or capacity.", features: ["Finance new or used fleet vehicles", "Up to 100% financed", "12–72 month terms", "Group fleet discounts for 5+ vehicles", "Balloon payment option"] },
+    { name: "MomentumFund", price: "R265", featured: true, tagline: "Financing designed to help businesses capitalise quickly on time-sensitive growth opportunities.", features: ["Full operating lease with maintenance, tyres, and licensing included", "Fixed monthly cost for easy budgeting", "Fuel management optional add-on", "Residual value guaranteed", "Cancel at end of term with no penalty"] },
+    { name: "ApexBusiness Loan", price: "R415", tagline: "Our premium business loan offering, providing larger facilities and tailored terms for established, high-performing companies.", features: ["Short-term capital for urgent cash flow needs", "R100,000–R5,000,000", "1–12 month terms", "Draw down as needed", "Interest only on amount drawn"] },
   ],
   insure: [
-    { name: "VINK NexusCover", price: "R0", features: ["Annual turnover: R0 to R1.5 million", "Free VINK Online Banking and NotifyMes", "Suitable for all business segments and sectors", "Shari'ah-compliant option available"] },
-    { name: "VINK CommerceProtect", price: "R0", features: ["Annual turnover: R0 to R5 million", "Free VINK Online Banking and NotifyMes", "Limited to sole proprietors", "Shari'ah-compliant option available"] },
-    { name: "VINK CapitalShield", price: "R85", features: ["Annual turnover: R0 to R500 million", "Free VINK Online Banking and NotifyMes", "Suitable for all business segments and sectors", "Shari'ah-compliant option available"] },
-    { name: "VINK FleetFusion", price: "R170", features: ["Annual turnover: R0 to R500 million", "Free VINK Online Banking and NotifyMes", "Suitable for all business segments and sectors", "Shari'ah-compliant option available"] },
-    { name: "VINK RiskSphere", price: "R265", featured: true, features: ["Annual turnover: R0 to R500 million", "35 electronic transactions", "10 cash deposits/withdrawals at any VINK ATM, capped at R50,000/month", "Suitable for all business segments and sectors"] },
-    { name: "VINK RecoveryGuard", price: "R415", features: ["Annual turnover: R0 to R500 million", "60 electronic transactions", "15 cash deposits/withdrawals at any VINK ATM, capped at R100,000/month", "Suitable for all business segments and sectors"] },
+    { name: "VINK NexusCover", price: "R0", tagline: "All-in-one protection for the risks that matter to your business.", description: "VINK NexusCover is a modular, multi-risk business insurance solution that consolidates property, liability, business interruption, and operational risk cover into a single, streamlined policy — built around how your business actually operates.", features: ["Modular cover spanning property, liability, and interruption risk", "Tailored risk assessment to match your industry and operations", "Single consolidated policy with simplified administration", "Scalable limits as your business grows", "Dedicated account management and claims support"] },
+    { name: "VINK CommerceProtect", price: "R0", tagline: "Right-sized protection built for small and medium enterprises.", description: "VINK CommerceProtect is designed specifically for SMEs that need robust cover without enterprise-level complexity or cost. It bundles the protections small businesses need most into an affordable, easy-to-set-up package.", features: ["Bundled cover for property, stock, liability, and equipment", "Fast, simplified application process built for SMEs", "Affordable premiums structured around business size and turnover", "Business interruption cover to protect cash flow", "Easy policy adjustments as your business evolves"] },
+    { name: "VINK CapitalShield", price: "R85", tagline: "Protecting the physical assets your business depends on.", description: "VINK CapitalShield safeguards your commercial property, equipment, machinery, and physical assets against loss or damage, ensuring a single incident never becomes an existential threat to your operations.", features: ["Comprehensive cover for buildings, equipment, and machinery", "Protection against fire, weather, theft, and accidental damage", "Replacement-value and agreed-value cover options", "Cover for assets in transit and at multiple sites", "Rapid claims assessment to minimise operational downtime"] },
+    { name: "VINK FleetFusion", price: "R170", tagline: "Comprehensive cover for your commercial fleet.", description: "VINK FleetFusion protects businesses that rely on vehicles to operate — from single company cars to large logistics fleets — with cover designed around commercial use, driver risk, and operational uptime.", features: ["Cover for single vehicles through to large commercial fleets", "Third-party, fire and theft, and comprehensive cover tiers", "Fleet risk management and driver safety support tools", "Replacement vehicle and downtime cover options", "Centralised fleet policy management and reporting"] },
+    { name: "VINK RiskSphere", price: "R265", featured: true, tagline: "Defending your business against liability and legal exposure.", description: "VINK RiskSphere protects businesses against the financial impact of legal claims, professional liability, and regulatory exposure — covering legal costs, settlements, and the reputational risks that come with them.", features: ["Public liability and professional indemnity cover", "Directors' and officers' liability protection", "Legal defence cost cover for claims and disputes", "Employment practices liability options", "Access to legal advisory support as part of your policy"] },
+    { name: "VINK RecoveryGuard", price: "R415", tagline: "Keeping your business running when the unexpected happens.", description: "VINK RecoveryGuard is built to protect operational continuity after a disruptive event — from natural disasters to system failures — helping businesses recover faster and reduce the financial impact of downtime.", features: ["Business interruption and loss-of-income cover", "Cover for additional costs incurred during recovery", "Disaster recovery and crisis-response support services", "Supply chain and third-party disruption cover options", "Priority claims handling to accelerate recovery timelines"] },
   ],
   // NOTE: unlike creditCard/loan/insure above, no genuine business
   // investment product data exists anywhere in this codebase (the one
@@ -54,12 +54,12 @@ const PRODUCTS: Record<BizCategory, BizProduct[]> = {
   // rates or specific investment terms, to avoid presenting invented
   // numbers as real financial product details.
   invest: [
-    { name: "VentureFund",          price: "R0",   features: ["Same-day access to funds", "No minimum balance", "Tiered interest on the full balance", "No fixed term"] },
-    { name: "CapitalForge",  price: "R0",   features: ["32 days' notice required for withdrawal", "Higher tiered interest than a call account", "No minimum balance"] },
-    { name: "EnterpriseYield",  price: "R85",  features: ["3–6 month fixed terms", "Interest rate locked for the term", "Early withdrawal penalty applies"] },
-    { name: "ProsperEdge",   price: "R170", features: ["12–24 month fixed terms", "Interest rate locked for the term", "Early withdrawal penalty applies"] },
-    { name: "WealthAxis",  price: "R265", featured: true, features: ["Same-day liquidity for larger balances", "Tiered interest scaling with balance size", "Ideal for surplus operating cash"] },
-    { name: "FutureReserve",     price: "R415", features: ["For larger corporate balances", "Terms structured with a relationship manager", "Custom notice/fixed-term blend available"] },
+    { name: "VentureFund",          price: "R0",   tagline: "Investment solutions designed for early-stage and growth-phase businesses seeking capital to fuel expansion.", features: ["Same-day access to funds", "No minimum balance", "Tiered interest on the full balance", "No fixed term"] },
+    { name: "CapitalForge",  price: "R0",   tagline: "Structured investment products built to help businesses build long-term capital reserves and financial resilience.", features: ["32 days' notice required for withdrawal", "Higher tiered interest than a call account", "No minimum balance"] },
+    { name: "EnterpriseYield",  price: "R85",  tagline: "Yield-focused investment solutions designed to generate steady returns on surplus business capital.", features: ["3–6 month fixed terms", "Interest rate locked for the term", "Early withdrawal penalty applies"] },
+    { name: "ProsperEdge",   price: "R170", tagline: "Diversified investment strategies designed to give businesses a competitive edge in capital growth.", features: ["12–24 month fixed terms", "Interest rate locked for the term", "Early withdrawal penalty applies"] },
+    { name: "WealthAxis",  price: "R265", featured: true, tagline: "Balanced investment portfolios built around stability and long-term business wealth accumulation.", features: ["Same-day liquidity for larger balances", "Tiered interest scaling with balance size", "Ideal for surplus operating cash"] },
+    { name: "FutureReserve",     price: "R415", tagline: "Long-horizon investment solutions designed to help businesses build reserves for future obligations and opportunities.", features: ["For larger corporate balances", "Terms structured with a relationship manager", "Custom notice/fixed-term blend available"] },
   ],
 };
 
@@ -77,10 +77,10 @@ function parsePrice(price: string): number | null {
 }
 
 function ProductCard({
-  product, folio, maxPrice, detailsCta, onApply,
+  product, folio, maxPrice, detailsCta, onApply, onDetails,
 }: {
   product: BizProduct; folio: string; maxPrice: number | null; detailsCta: string;
-  onApply: () => void;
+  onApply: () => void; onDetails: () => void;
 }) {
   const numericPrice = parsePrice(product.price);
   const showGauge = numericPrice !== null && maxPrice !== null && maxPrice > 0;
@@ -112,7 +112,26 @@ function ProductCard({
       </div>
       <div className="pav-cta-group">
         <button className="pav-btn pav-btn-primary" onClick={onApply}>Apply now</button>
-        <button className="pav-btn pav-btn-primary" onClick={onApply}>{detailsCta}</button>
+        <button className="pav-btn pav-btn-secondary" onClick={() => product.tagline ? onDetails() : onApply()}>{detailsCta}</button>
+      </div>
+    </div>
+  );
+}
+
+function ProductDetailModal({ product, folio, onClose, onApply }: { product: BizProduct; folio: string; onClose: () => void; onApply: () => void }) {
+  return (
+    <div className="pav-detail-backdrop" onClick={onClose}>
+      <div className="pav-detail-card" onClick={(e) => e.stopPropagation()}>
+        <button className="pav-detail-close" onClick={onClose} aria-label="Close"><X className="w-4 h-4" /></button>
+        <div className="pav-detail-folio">Folio No.&nbsp;{folio}</div>
+        <h3 className="pav-detail-name">{product.name}</h3>
+        {product.tagline && <p className="pav-detail-tagline">{product.tagline}</p>}
+        {product.description && <p className="pav-detail-desc">{product.description}</p>}
+        <div className="pav-detail-features-head">Key Features</div>
+        <ul className="pav-detail-features">
+          {product.features.map((f) => <li key={f}>{f}</li>)}
+        </ul>
+        <button className="pav-btn pav-btn-primary" onClick={onApply}>Apply now</button>
       </div>
     </div>
   );
@@ -120,6 +139,7 @@ function ProductCard({
 
 export function BusinessProductLedgerViewer({ isOpen, onClose, initialCategory, onNavigate, onApply }: Props) {
   const [category, setCategory] = useState<BizCategory>(initialCategory);
+  const [detailProduct, setDetailProduct] = useState<{ product: BizProduct; folio: string } | null>(null);
 
   useEffect(() => { if (isOpen) setCategory(initialCategory); }, [isOpen, initialCategory]);
 
@@ -231,6 +251,24 @@ export function BusinessProductLedgerViewer({ isOpen, onClose, initialCategory, 
         }
         .pav-btn-primary{ background:var(--pav-ink); color:var(--pav-text-on-ink); }
         .pav-btn-primary:hover{ background:var(--pav-plum); }
+        .pav-cta-group{ display:flex; flex-direction:column; gap:9px; margin-top:auto; }
+        .pav-btn-secondary{ background:transparent; color:var(--pav-ink); border-color:var(--pav-rule); }
+        .pav-btn-secondary:hover{ background:var(--pav-paper-dim); border-color:var(--pav-gold-dim); }
+
+        /* ── Product detail modal ── */
+        .pav-detail-backdrop{ position:fixed; inset:0; z-index:70; background:rgba(29,23,64,0.55); display:flex; align-items:center; justify-content:center; padding:20px; }
+        .pav-detail-card{ position:relative; background:#fff; max-width:540px; width:100%; max-height:88vh; overflow-y:auto; border-radius:4px; padding:40px 36px 32px; box-shadow:0 30px 80px rgba(29,23,64,0.35); }
+        .pav-detail-close{ position:absolute; top:16px; right:16px; width:32px; height:32px; border-radius:50%; background:var(--pav-paper); color:var(--pav-ink); border:1px solid var(--pav-rule); display:flex; align-items:center; justify-content:center; cursor:pointer; }
+        .pav-detail-close:hover{ background:var(--pav-paper-dim); }
+        .pav-detail-folio{ font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--pav-gold-dim); letter-spacing:0.04em; margin-bottom:10px; }
+        .pav-detail-name{ font-family:'Fraunces', serif; font-weight:500; font-size:26px; margin:0 0 8px; letter-spacing:-0.01em; color:var(--pav-ink); }
+        .pav-detail-tagline{ font-family:'Fraunces', serif; font-style:italic; font-size:15px; color:var(--pav-plum); margin:0 0 20px; }
+        .pav-detail-desc{ font-size:13.5px; line-height:1.7; color:var(--pav-ink-soft); margin:0 0 26px; padding-bottom:26px; border-bottom:1px solid var(--pav-rule); }
+        .pav-detail-features-head{ font-size:13px; font-weight:600; color:var(--pav-ink); margin-bottom:12px; }
+        .pav-detail-features{ list-style:none; margin:0 0 28px; padding:0; display:grid; grid-template-columns:1fr 1fr; gap:8px 16px; }
+        .pav-detail-features li{ font-size:12.8px; color:var(--pav-ink-soft); line-height:1.5; padding-left:16px; position:relative; }
+        .pav-detail-features li::before{ content:"✓"; position:absolute; left:0; color:var(--pav-gold-dim); font-weight:600; }
+        @media (max-width:480px){ .pav-detail-features{ grid-template-columns:1fr; } }
 
         .pav-foot{ background:var(--pav-ink); color:var(--pav-text-muted-on-ink); padding:34px 0; font-size:12px; line-height:1.7; font-family:'IBM Plex Mono', monospace; }
         .pav-foot .pav-wrap{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
@@ -289,12 +327,12 @@ export function BusinessProductLedgerViewer({ isOpen, onClose, initialCategory, 
 
           <div className="pav-grid">
             {products.slice(0, 3).map((p, i) => (
-              <ProductCard key={p.name} product={p} folio={String(i + 1).padStart(2, "0")} maxPrice={maxPrice} detailsCta={copy.detailsCta} onApply={handleApply} />
+              <ProductCard key={p.name} product={p} folio={String(i + 1).padStart(2, "0")} maxPrice={maxPrice} detailsCta={copy.detailsCta} onApply={handleApply} onDetails={() => setDetailProduct({ product: p, folio: String(i + 1).padStart(2, "0") })} />
             ))}
           </div>
           <div className="pav-grid">
             {products.slice(3, 6).map((p, i) => (
-              <ProductCard key={p.name} product={p} folio={String(i + 4).padStart(2, "0")} maxPrice={maxPrice} detailsCta={copy.detailsCta} onApply={handleApply} />
+              <ProductCard key={p.name} product={p} folio={String(i + 4).padStart(2, "0")} maxPrice={maxPrice} detailsCta={copy.detailsCta} onApply={handleApply} onDetails={() => setDetailProduct({ product: p, folio: String(i + 4).padStart(2, "0") })} />
             ))}
           </div>
         </div>
@@ -306,6 +344,15 @@ export function BusinessProductLedgerViewer({ isOpen, onClose, initialCategory, 
           <div>State House Building, 8 Rose Street, Cape Town</div>
         </div>
       </footer>
+
+      {detailProduct && (
+        <ProductDetailModal
+          product={detailProduct.product}
+          folio={detailProduct.folio}
+          onClose={() => setDetailProduct(null)}
+          onApply={() => { setDetailProduct(null); handleApply(); }}
+        />
+      )}
     </div>
   );
 }
