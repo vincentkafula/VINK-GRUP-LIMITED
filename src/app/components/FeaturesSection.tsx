@@ -1,55 +1,126 @@
-const FEATURES = [
-  { label: "No Annual Fee",      sub: "Keep every rand working for you",         gradient: "linear-gradient(135deg,#128A43,#5FC97F)" },
-  { label: "Rewards Program",    sub: "Earn on rides, fuel, and groceries",       gradient: "linear-gradient(135deg,#F59E0B,#FBBF24)" },
-  { label: "Secure Payments",    sub: "Zero-liability, 256-bit encryption",       gradient: "linear-gradient(135deg,#10B981,#34D399)" },
-  { label: "Mobile Banking",     sub: "Transact from any device, anytime",        gradient: "linear-gradient(135deg,#3B82F6,#60A5FA)" },
-  { label: "Global Acceptance",  sub: "Accepted in 175+ countries worldwide",     gradient: "linear-gradient(135deg,#34A853,#FFB84D)" },
-  { label: "24/7 Support",       sub: "Real help, day or night",                  gradient: "linear-gradient(135deg,#EF4444,#F87171)" },
-];
-
-const ICONS = [
-  <svg key={0} viewBox="0 0 36 36" className="w-7 h-7" fill="none"><rect x="4" y="9" width="28" height="18" rx="3" stroke="white" strokeWidth="2.2"/><line x1="4" y1="15" x2="32" y2="15" stroke="white" strokeWidth="2.2"/><rect x="7" y="19" width="8" height="4" rx="1" fill="white" opacity="0.8"/></svg>,
-  <svg key={1} viewBox="0 0 36 36" className="w-7 h-7" fill="none"><path d="M18 4 L21.5 13 L31 13 L24 19 L27 28 L18 22 L9 28 L12 19 L5 13 L14.5 13 Z" stroke="white" strokeWidth="2" strokeLinejoin="round" fill="rgba(255,255,255,0.2)"/></svg>,
-  <svg key={2} viewBox="0 0 36 36" className="w-7 h-7" fill="none"><path d="M18 4 L7 9 V18 C7 25 12 31 18 33 C24 31 29 25 29 18 V9 Z" stroke="white" strokeWidth="2.2" strokeLinejoin="round" fill="rgba(255,255,255,0.15)"/><path d="M13 18 L17 22 L23 15" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>,
-  <svg key={3} viewBox="0 0 36 36" className="w-7 h-7" fill="none"><rect x="11" y="4" width="14" height="28" rx="3" stroke="white" strokeWidth="2.2"/><rect x="14" y="7" width="8" height="14" rx="1" stroke="white" strokeWidth="1.5" opacity="0.7"/><circle cx="18" cy="26" r="1.5" fill="white"/></svg>,
-  <svg key={4} viewBox="0 0 36 36" className="w-7 h-7" fill="none"><circle cx="18" cy="18" r="13" stroke="white" strokeWidth="2.2"/><ellipse cx="18" cy="18" rx="6" ry="13" stroke="white" strokeWidth="1.6"/><line x1="5" y1="18" x2="31" y2="18" stroke="white" strokeWidth="1.6"/><path d="M7 11 Q18 14 29 11" stroke="white" strokeWidth="1.4" fill="none"/><path d="M7 25 Q18 22 29 25" stroke="white" strokeWidth="1.4" fill="none"/></svg>,
-  <svg key={5} viewBox="0 0 36 36" className="w-7 h-7" fill="none"><path d="M10 14 C10 8 26 8 26 14 C26 17.5 23 19 23 21.5" stroke="white" strokeWidth="2.2" strokeLinecap="round"/><circle cx="23" cy="25.5" r="1.8" fill="white"/><circle cx="18" cy="18" r="14" stroke="white" strokeWidth="1.5" opacity="0.3"/></svg>,
-];
-
 import { memo } from "react";
+import { ArrowRight, ShieldCheck, Headphones } from "lucide-react";
+
+const GREEN = "#128A43";
+const DARK_GREEN = "#0B5C2E";
+const ORANGE = "#FF9900";
+
+const BENEFITS = [
+  { emoji: "🎁", title: "Rewards", desc: "Earn points on every spend and redeem for exciting rewards and offers.", featured: false },
+  { emoji: "💵", title: "Cash Back", desc: "Get real cash back on your purchases and save more every day.", featured: true },
+  { emoji: "🔄", title: "Balance Transfer", desc: "Transfer your balance easily and pay off debt faster.", featured: false },
+  { emoji: "🧳", title: "Travel", desc: "Exclusive travel benefits, airport lounge access, and more.", featured: false },
+  { emoji: "0️⃣", title: "Zero Percent", desc: "Enjoy 0% interest on eligible purchases for a limited time.", featured: false },
+  { emoji: "🛡️", title: "Low Interest", desc: "Competitive interest rates that help you save more.", featured: false },
+];
+
+const STATS = [
+  { emoji: "👑", value: "5X", label: "Points on dining & entertainment" },
+  { emoji: "🎁", value: "100+", label: "Partner brands and offers" },
+  { emoji: "🌍", value: "0", label: "Foreign transaction fees" },
+  { emoji: "📱", value: "24/7", label: "Dedicated customer support" },
+];
+
+function BenefitCard({ b }: { b: (typeof BENEFITS)[number] }) {
+  return (
+    <div
+      className={`rounded-2xl p-5 flex flex-col transition-all hover:-translate-y-1 hover:shadow-xl relative overflow-hidden ${b.featured ? "text-white shadow-xl" : "bg-white border border-gray-100 shadow-sm"}`}
+      style={b.featured ? { background: `linear-gradient(160deg,${DARK_GREEN},${GREEN})` } : undefined}
+    >
+      {b.featured && (
+        <span className="absolute top-3 right-3 flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full" style={{ background: ORANGE, color: "#fff" }}>
+          🔥 Most Popular
+        </span>
+      )}
+      <div className="w-14 h-14 rounded-xl flex items-center justify-center text-3xl mb-4" style={{ background: b.featured ? "rgba(255,255,255,0.12)" : "#F3F4F6" }}>
+        {b.emoji}
+      </div>
+      <p className={`text-base font-bold mb-1.5 ${b.featured ? "text-white" : "text-gray-900"}`}>{b.title}</p>
+      <p className={`text-[13px] leading-relaxed mb-5 ${b.featured ? "text-white/80" : "text-gray-500"}`}>{b.desc}</p>
+      <button
+        className="mt-auto w-9 h-9 rounded-full flex items-center justify-center transition-transform hover:scale-110"
+        style={b.featured ? { background: ORANGE } : { background: "#EAF7EE", color: GREEN }}
+      >
+        <ArrowRight className={`w-4 h-4 ${b.featured ? "text-white" : ""}`} />
+      </button>
+    </div>
+  );
+}
 
 export const FeaturesSection = memo(function FeaturesSection({ onExploreAll }: { onExploreAll?: () => void }) {
   return (
-    <section className="bg-white py-16 sm:py-20">
+    <section className="py-16 sm:py-24" style={{ background: "linear-gradient(160deg,#F3F9F5 0%,#FFF8EF 100%)" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-3"
-            style={{ background: "#EDE9FE", color: "#128A43" }}>Why Choose VINK</span>
-          <h2 className="text-2xl sm:text-3xl font-black text-gray-900 mb-2">Smarter Benefits, Every Day</h2>
-          <p className="text-gray-500 text-sm max-w-lg mx-auto">
-            One card that pays your taxi fare, fills your fuel tank, and earns rewards at the gym — built for real South African life.
-          </p>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-5">
-          {FEATURES.map((f, i) => (
-            <div key={i} className="flex flex-col items-center gap-3 p-4 rounded-2xl border border-transparent hover:border-emerald-100 hover:shadow-lg hover:-translate-y-1 transition-all group cursor-pointer"
-              style={{ background: "#FAFAFA" }}>
-              <div className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0 group-hover:scale-110 transition-transform"
-                style={{ background: f.gradient }}>
-                {ICONS[i]}
+        <div className="grid lg:grid-cols-2 gap-14 items-center">
+          {/* Left: copy + card visual */}
+          <div>
+            <span className="inline-block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: GREEN }}>More Than a Card</span>
+            <div className="w-10 h-1 rounded-full mb-5" style={{ background: GREEN }} />
+            <h2 className="text-3xl sm:text-4xl font-black leading-[1.1] text-gray-900">
+              Designed for the way <span style={{ color: GREEN }}>you</span> live
+            </h2>
+            <p className="text-gray-500 text-base mt-5 max-w-md leading-relaxed">
+              Unlock a world of exclusive benefits that reward your everyday and elevate every moment.
+            </p>
+
+            <div className="relative mt-12 max-w-sm">
+              <div className="absolute -inset-6 rounded-full opacity-40" style={{ background: `radial-gradient(circle,${ORANGE}33,transparent 70%)` }} />
+              <div className="relative rounded-2xl p-5 shadow-2xl" style={{ background: `linear-gradient(140deg,${DARK_GREEN} 0%,${GREEN} 60%,#175E38 100%)` }}>
+                <div className="flex items-center justify-between mb-8">
+                  <div className="w-9 h-7 rounded" style={{ background: "linear-gradient(135deg,#E8C27A,#C9A05A)" }} />
+                  <svg viewBox="0 0 24 24" className="w-5 h-5 text-white/70" fill="none"><path d="M6 10a6 6 0 0112 0M9 13a3 3 0 016 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
+                </div>
+                <p className="text-white font-mono text-lg tracking-widest mb-4">5412&nbsp; 7512&nbsp; 3412&nbsp; 3456</p>
+                <div className="flex items-end justify-between">
+                  <div>
+                    <p className="text-white/50 text-[9px] uppercase">Valid Thru</p>
+                    <p className="text-white text-xs font-mono">12/29</p>
+                    <p className="text-white text-sm font-semibold mt-2 tracking-wide">JOHN DOE</p>
+                  </div>
+                  <span className="text-white text-xl font-black italic">VISA</span>
+                </div>
               </div>
-              <div className="text-center">
-                <p className="text-xs font-bold text-gray-800 leading-tight">{f.label}</p>
-                <p className="text-[10px] text-gray-400 mt-0.5 leading-tight">{f.sub}</p>
+
+              <div className="absolute -top-4 right-2 bg-white rounded-xl shadow-lg px-3 py-2 flex items-center gap-1.5">
+                <Headphones className="w-3.5 h-3.5" style={{ color: GREEN }} />
+                <span className="text-[10px] font-bold text-gray-700 leading-tight">24/7<br />Support</span>
+              </div>
+              <div className="absolute -left-4 bottom-16 bg-white rounded-xl shadow-lg px-3 py-2 flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5" style={{ color: GREEN }} />
+                <span className="text-[10px] font-bold text-gray-700 leading-tight">Secure<br />Transactions</span>
+              </div>
+              <div className="absolute -bottom-4 left-6 rounded-full px-4 py-2 shadow-lg flex items-center gap-1.5" style={{ background: DARK_GREEN }}>
+                <span className="text-white text-[11px] font-bold">✨ Smart. Simple. Smarter.</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Right: benefit cards */}
+          <div className="grid sm:grid-cols-3 gap-4">
+            {BENEFITS.map(b => <BenefitCard key={b.title} b={b} />)}
+          </div>
+        </div>
+
+        {/* Stats strip */}
+        <div className="mt-14 bg-white rounded-2xl shadow-sm border border-gray-100 px-6 py-6 grid grid-cols-2 lg:grid-cols-4 gap-6">
+          {STATS.map(s => (
+            <div key={s.label} className="flex items-center gap-3">
+              <span className="w-11 h-11 rounded-full flex items-center justify-center text-xl shrink-0" style={{ background: "#F3F9F5" }}>{s.emoji}</span>
+              <div>
+                <p className="text-lg font-black text-gray-900 leading-tight">{s.value}</p>
+                <p className="text-[11.5px] text-gray-500 leading-snug">{s.label}</p>
               </div>
             </div>
           ))}
         </div>
-        <div className="text-center mt-8">
-          <button onClick={onExploreAll} className="text-sm font-semibold hover:underline bg-transparent border-none cursor-pointer" style={{ color: "#128A43" }}>
-            Explore All Features →
-          </button>
-        </div>
+
+        {onExploreAll && (
+          <div className="text-center mt-10">
+            <button onClick={onExploreAll} className="text-sm font-semibold hover:underline bg-transparent border-none cursor-pointer" style={{ color: GREEN }}>
+              Explore All Features →
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );
