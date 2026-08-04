@@ -118,7 +118,9 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
     if (result.success) {
       setLoading(false);
       onClose();
-      onSelectDashboard?.("account");
+      const role = (result.data as { user?: { role?: string } } | undefined)?.user?.role ?? "";
+      const isManagement = ["superadmin", "noc_engineer", "billing_admin", "marketplace_admin", "admin"].includes(role);
+      onSelectDashboard?.(isManagement ? "managementPanel" : "account");
       return;
     }
 

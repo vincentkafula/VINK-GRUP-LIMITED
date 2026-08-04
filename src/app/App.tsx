@@ -1,6 +1,6 @@
 import { useState, lazy, Suspense, startTransition, useEffect, useCallback } from "react";
 import { Toaster } from "sonner";
-import { checkHealth } from "./services/apiClient";
+import { checkHealth, getSession } from "./services/apiClient";
 import { Header } from "./components/Header";
 import { SearchSection } from "./components/SearchSection";
 import { HeroSection } from "./components/HeroSection";
@@ -34,6 +34,7 @@ const AuthorityDashboard          = lazy(() => import("./components/dashboards/A
 const SuperAdminDashboard         = lazy(() => import("./components/dashboards/SuperAdminDashboard").then(m => ({ default: m.SuperAdminDashboard })));
 const RideHailingSystem           = lazy(() => import("./components/RideHailingSystem").then(m => ({ default: m.RideHailingSystem })));
 const BankingDashboard            = lazy(() => import("./components/BankingDashboard").then(m => ({ default: m.BankingDashboard })));
+const ManagementPanelViewer       = lazy(() => import("./components/ManagementPanelViewer").then(m => ({ default: m.ManagementPanelViewer })));
 const VehicleTrackingDashboard    = lazy(() => import("./components/VehicleTrackingDashboard").then(m => ({ default: m.VehicleTrackingDashboard })));
 const VinkMarketplace             = lazy(() => import("./components/VinkMarketplace").then(m => ({ default: m.VinkMarketplace })));
 import { PersistentTopNav } from "./components/PersistentTopNav";
@@ -115,6 +116,7 @@ export default function App() {
   const [showSuperAdmin, setShowSuperAdmin]                 = useState(false);
   const [showRideHailing, setShowRideHailing]               = useState(false);
   const [showBanking, setShowBanking]                       = useState(false);
+  const [showManagementPanel, setShowManagementPanel]       = useState(false);
   const [showVehicle, setShowVehicle]                       = useState(false);
   const [showSIMApp, setShowSIMApp]                         = useState(false);
   const [showMarketplace, setShowMarketplace]               = useState(false);
@@ -273,6 +275,7 @@ export default function App() {
         case "restaurant":   mount("foodDelivery");     setShowFoodDelivery(true);     break;
         // Banking & Payments
         case "account":      mount("banking");          setShowBanking(true);          break;
+        case "managementPanel": mount("managementPanel"); setShowManagementPanel(true); break;
         case "payments":
         case "transfer":
         case "cardless":
@@ -644,6 +647,7 @@ export default function App() {
       {has("superAdmin")      && <Suspense fallback={null}><SuperAdminDashboard    isOpen={showSuperAdmin}      onClose={() => setShowSuperAdmin(false)} /></Suspense>}
       {has("rideHailing")     && <Suspense fallback={null}><RideHailingSystem      isOpen={showRideHailing}     onClose={() => setShowRideHailing(false)} /></Suspense>}
       {has("banking")         && <Suspense fallback={null}><BankingDashboard       isOpen={showBanking}         onClose={() => setShowBanking(false)} /></Suspense>}
+      {has("managementPanel") && <Suspense fallback={null}><ManagementPanelViewer  isOpen={showManagementPanel} onClose={() => setShowManagementPanel(false)} adminName={getSession()?.name} adminRole={getSession()?.role === "superadmin" ? "Super Administrator" : getSession()?.role} /></Suspense>}
       {has("vehicle")         && <Suspense fallback={null}><VehicleTrackingDashboard isOpen={showVehicle}       onClose={() => setShowVehicle(false)} /></Suspense>}
       {has("marketplaceLanding") && <Suspense fallback={null}><MarketplaceLandingViewer isOpen={showMarketplaceLanding} onClose={() => { setShowMarketplaceLanding(false); pushRoute("/"); }} onShop={(productId) => { setMarketplaceInitialAction(null); setMarketplaceInitialProductId(productId ?? null); setShowMarketplaceLanding(false); mount("marketplace"); setShowMarketplace(true); }} onSell={() => { setMarketplaceInitialAction("sell"); setMarketplaceInitialProductId(null); setShowMarketplaceLanding(false); mount("marketplace"); setShowMarketplace(true); }} /></Suspense>}
       {has("marketplace")     && <Suspense fallback={null}><VinkMarketplace        isOpen={showMarketplace}     onClose={() => { setShowMarketplace(false); pushRoute("/"); }} initialAction={marketplaceInitialAction} initialProductId={marketplaceInitialProductId} /></Suspense>}
