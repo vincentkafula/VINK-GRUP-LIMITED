@@ -127,6 +127,29 @@ export const authApi = {
   },
 };
 
+// ─── News API ───────────────────────────────────────────────────────────────
+export interface NewsArticleSummary {
+  id: string; slug: string; title: string; subtitle?: string; category: string; author: string;
+  summary: string; tags: string[]; heroGradient: string; emoji: string; readMinutes: number;
+  featured: boolean; breaking: boolean; views: number; publishedAt: string;
+}
+export interface NewsArticle extends NewsArticleSummary { body: string; }
+export interface NewsListMeta { page: number; limit: number; total: number; pages: number }
+
+export const newsApi = {
+  list: (params?: { category?: string; search?: string; page?: number; limit?: number }) => {
+    const qs = new URLSearchParams();
+    if (params?.category) qs.set("category", params.category);
+    if (params?.search) qs.set("search", params.search);
+    if (params?.page) qs.set("page", String(params.page));
+    if (params?.limit) qs.set("limit", String(params.limit));
+    return api.get<NewsArticleSummary[]>(`/api/news/articles?${qs}`) as Promise<{ success: boolean; data?: NewsArticleSummary[]; error?: string; meta?: NewsListMeta }>;
+  },
+  categories: () => api.get<{ category: string; count: number }[]>("/api/news/categories"),
+  trending: () => api.get<NewsArticleSummary[]>("/api/news/trending"),
+  get: (slug: string) => api.get<{ article: NewsArticle; related: NewsArticleSummary[] }>(`/api/news/articles/${slug}`),
+};
+
 // ─── Public API ───────────────────────────────────────────────────────────────
 export const publicApi = {
   contact: (data: {

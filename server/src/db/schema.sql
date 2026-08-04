@@ -152,6 +152,27 @@ CREATE TABLE IF NOT EXISTS mkt_orders (
 CREATE INDEX IF NOT EXISTS idx_mkt_orders_user   ON mkt_orders(user_id);
 CREATE INDEX IF NOT EXISTS idx_mkt_orders_status ON mkt_orders(status);
 
+CREATE TABLE IF NOT EXISTS news_articles (
+  id              TEXT PRIMARY KEY,
+  slug            TEXT UNIQUE NOT NULL,
+  title           TEXT NOT NULL,
+  subtitle        TEXT,
+  category        TEXT NOT NULL,
+  author          TEXT NOT NULL,
+  summary         TEXT NOT NULL,
+  body            TEXT NOT NULL,
+  tags            JSONB NOT NULL DEFAULT '[]',
+  hero_gradient   TEXT NOT NULL DEFAULT 'linear-gradient(135deg,#0B5C2E,#128A43)',
+  emoji           TEXT NOT NULL DEFAULT '📰',
+  read_minutes    INTEGER NOT NULL DEFAULT 4,
+  featured        BOOLEAN NOT NULL DEFAULT false,
+  breaking        BOOLEAN NOT NULL DEFAULT false,
+  views           INTEGER NOT NULL DEFAULT 0,
+  published_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_news_category ON news_articles(category);
+CREATE INDEX IF NOT EXISTS idx_news_published ON news_articles(published_at DESC);
+
 CREATE TABLE IF NOT EXISTS mkt_reviews (
   id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   product_id          UUID NOT NULL REFERENCES mkt_products(id) ON DELETE CASCADE,

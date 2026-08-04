@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import { pool, hasDb } from "./pool.js";
 import { CATEGORIES, SELLERS, PRODUCTS, COUPONS, ADDRESSES } from "../data/marketplaceStore.js";
+import { NEWS_ARTICLES } from "../data/newsData.js";
 import { db as mvnoDb } from "../data/store.js";
 
 /**
@@ -19,6 +20,7 @@ export async function migrateAndSeed(): Promise<void> {
   const { rows } = await pool.query<{ count: string }>("SELECT COUNT(*)::text AS count FROM mkt_products");
   if (Number(rows[0].count) > 0) {
     console.log("[db] Schema up to date, tables already seeded — skipping seed.");
+    await seedNews();
     return;
   }
 
@@ -95,6 +97,39 @@ export async function migrateAndSeed(): Promise<void> {
     await client.query("ROLLBACK");
     console.error("[db] Seed failed, rolled back:", err);
     throw err;
+  } finally {
+    client.release();
+  }
+
+  await seedNews();
+}
+
+// Seeded independently of the main product/user seed above (own gate, own
+// transaction) so news articles land even on a database that was already
+// seeded with everything else before this table existed.
+async function seedNews(): Promise<void> {
+  if (!hasDb || !pool) return;
+  const { rows } = await pool.query<{ count: string }>("SELECT COUNT(*)::text AS count FROM news_articles");
+  if (Number(rows[0].count) > 0) return;
+
+  console.log("[db] Seeding news articles...");
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    for (const a of NEWS_ARTICLES) {
+      await client.query(
+        `INSERT INTO news_articles (id, slug, title, subtitle, category, author, summary, body, tags,
+           hero_gradient, emoji, read_minutes, featured, breaking, views, published_at)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) ON CONFLICT (id) DO NOTHING`,
+        [a.id, a.slug, a.title, a.subtitle ?? null, a.category, a.author, a.summary, a.body, JSON.stringify(a.tags),
+         a.heroGradient, a.emoji, a.readMinutes, a.featured ?? false, a.breaking ?? false, a.views, a.publishedAt]
+      );
+    }
+    await client.query("COMMIT");
+    console.log("[db] News seed complete.");
+  } catch (err) {
+    await client.query("ROLLBACK");
+    console.error("[db] News seed failed, rolled back:", err);
   } finally {
     client.release();
   }
