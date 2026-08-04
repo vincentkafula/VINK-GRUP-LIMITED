@@ -448,7 +448,7 @@ export function CardNetworkDashboard({ isOpen, onClose }: Props) {
               {/* Network membership cards */}
               <div className="grid sm:grid-cols-2 gap-5">
                 {/* Visa */}
-                <div className="rounded-2xl overflow-hidden text-white shadow-lg" style={{ background: `linear-gradient(135deg,${VISA_BLUE},#2E3B8A)` }}>
+                <div className="rounded-2xl overflow-hidden text-white shadow-lg" style={{ background: `linear-gradient(135deg,${VISA_BLUE},#0F3D24)` }}>
                   <div className="p-5">
                     <div className="flex items-center justify-between mb-4">
                       <div className="bg-white rounded px-3 py-1 text-[14px] font-black italic" style={{ color: VISA_BLUE }}>VISA</div>

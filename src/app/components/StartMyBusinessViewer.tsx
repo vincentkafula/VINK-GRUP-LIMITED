@@ -74,7 +74,7 @@ export function StartMyBusinessViewer({ isOpen, onClose, onNavigate }: Props) {
           --pav-gold-dim:   #0B5C2E;
           --pav-plum:       #0F8A4B;
           --pav-text-on-ink: #EDE9FA;
-          --pav-text-muted-on-ink: #A79CD1;
+          --pav-text-muted-on-ink: #A7E8BD;
           --pav-text-body:  #1F2937;
           --pav-text-muted: #6B7280;
           --pav-rule:       rgba(15,138,75,0.14);

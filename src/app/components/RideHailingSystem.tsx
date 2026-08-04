@@ -75,22 +75,22 @@ function MapView({ pickup, dest, driverLat, driverLng, stage }: { pickup?: strin
     <div className="relative flex-1 min-h-0" style={{ background: "#1a1a2e" }}>
       {/* Grid lines */}
       <svg className="absolute inset-0 w-full h-full opacity-20">
-        <defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#4444AA" strokeWidth="0.5"/></pattern></defs>
+        <defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#128A43" strokeWidth="0.5"/></pattern></defs>
         <rect width="100%" height="100%" fill="url(#grid)" />
       </svg>
       {/* Roads suggestion */}
       <svg className="absolute inset-0 w-full h-full opacity-30">
-        <line x1="0" y1="40%" x2="100%" y2="40%" stroke="#5566CC" strokeWidth="2" />
-        <line x1="0" y1="65%" x2="100%" y2="65%" stroke="#5566CC" strokeWidth="1.5" />
-        <line x1="30%" y1="0" x2="30%" y2="100%" stroke="#5566CC" strokeWidth="2" />
-        <line x1="70%" y1="0" x2="70%" y2="100%" stroke="#5566CC" strokeWidth="1.5" />
-        <line x1="10%" y1="20%" x2="90%" y2="80%" stroke="#3344AA" strokeWidth="1" />
-        <line x1="90%" y1="20%" x2="10%" y2="80%" stroke="#3344AA" strokeWidth="1" />
+        <line x1="0" y1="40%" x2="100%" y2="40%" stroke="#128A43" strokeWidth="2" />
+        <line x1="0" y1="65%" x2="100%" y2="65%" stroke="#128A43" strokeWidth="1.5" />
+        <line x1="30%" y1="0" x2="30%" y2="100%" stroke="#128A43" strokeWidth="2" />
+        <line x1="70%" y1="0" x2="70%" y2="100%" stroke="#128A43" strokeWidth="1.5" />
+        <line x1="10%" y1="20%" x2="90%" y2="80%" stroke="#128A43" strokeWidth="1" />
+        <line x1="90%" y1="20%" x2="10%" y2="80%" stroke="#128A43" strokeWidth="1" />
       </svg>
       {/* Route line */}
       {pickup && dest && (
         <svg className="absolute inset-0 w-full h-full">
-          <line x1="30%" y1="70%" x2="70%" y2="30%" stroke="#7B6FE8" strokeWidth="3" strokeDasharray="8 4" />
+          <line x1="30%" y1="70%" x2="70%" y2="30%" stroke="#5FC97F" strokeWidth="3" strokeDasharray="8 4" />
         </svg>
       )}
       {/* Destination pin */}

@@ -179,7 +179,7 @@ function DriverLogin({ onLogin }: { onLogin: (t: string) => void }) {
     <div className="flex flex-col h-full">
       {/* Hero */}
       <div className="flex flex-col items-center justify-center flex-1 px-6 pt-6 pb-4"
-        style={{ background: "linear-gradient(160deg,#1B1837 0%,#2D2060 100%)" }}>
+        style={{ background: "linear-gradient(160deg,#1B1837 0%,#0B2E1C 100%)" }}>
         <div className="w-20 h-20 rounded-3xl flex items-center justify-center mb-4"
           style={{ background: "rgba(255,255,255,0.12)" }}>
           <span className="text-4xl">🚗</span>
@@ -214,7 +214,7 @@ function DriverLogin({ onLogin }: { onLogin: (t: string) => void }) {
           {error && <p className="text-xs text-red-500 bg-red-50 rounded-xl px-3 py-2">{error}</p>}
           <button type="submit" disabled={loading}
             className="w-full py-3.5 rounded-2xl text-white font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-60"
-            style={{ background:"linear-gradient(135deg,#128A43,#8B7EE7)" }}>
+            style={{ background:"linear-gradient(135deg,#128A43,#7ED99A)" }}>
             {loading ? <Loader2 className="w-4 h-4 animate-spin"/> : null}
             Sign In
           </button>
@@ -312,7 +312,7 @@ function DriverHome({ driver, incomingRide, onGoOnline, onGoOffline, onAccept, o
         <div className="mx-4 mt-4 rounded-2xl overflow-hidden" style={{ border:"2px solid #128A43", boxShadow:"0 4px 20px rgba(107,94,215,0.3)" }}>
           {/* Banner */}
           <div className="px-4 py-2.5 flex items-center gap-2"
-            style={{ background:"linear-gradient(135deg,#128A43,#8B7EE7)" }}>
+            style={{ background:"linear-gradient(135deg,#128A43,#7ED99A)" }}>
             <Bell className="w-4 h-4 text-white animate-bounce"/>
             <p className="text-white font-bold text-sm">New ride request!</p>
             <span className="ml-auto text-xs text-white/80 bg-white/20 px-2 py-0.5 rounded-full">
@@ -385,7 +385,7 @@ function DriverHome({ driver, incomingRide, onGoOnline, onGoOffline, onAccept, o
               </button>
               <button onClick={onAccept}
                 className="flex-2 flex-grow py-3 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-1.5"
-                style={{ background:"linear-gradient(135deg,#128A43,#8B7EE7)", flexGrow:2 }}>
+                style={{ background:"linear-gradient(135deg,#128A43,#7ED99A)", flexGrow:2 }}>
                 <CheckCircle className="w-4 h-4"/> Accept Ride
               </button>
             </div>
@@ -464,7 +464,7 @@ function NavigatingScreen({ ride, mode, onArrive, onBack }: {
           style={{ background: mode === "to-pickup" ? "#F0FDF4" : "#EAF7EE" }}>
           <Navigation className="w-6 h-6 flex-shrink-0" style={{ color: mode==="to-pickup"?"#059669":"#128A43" }}/>
           <div className="flex-1">
-            <p className="text-xs font-semibold" style={{ color: mode==="to-pickup"?"#065F46":"#5B21B6" }}>
+            <p className="text-xs font-semibold" style={{ color: mode==="to-pickup"?"#065F46":"#0B5C2E" }}>
               {mode === "to-pickup" ? "Heading to pickup" : "Heading to destination"}
             </p>
             <p className="text-sm font-medium text-gray-700 truncate">{dest}</p>
@@ -523,7 +523,7 @@ function NavigatingScreen({ ride, mode, onArrive, onBack }: {
         {/* Arrive button */}
         <button onClick={onArrive}
           className="w-full py-4 rounded-2xl text-white font-bold text-sm flex items-center justify-center gap-2"
-          style={{ background: mode==="to-pickup" ? "linear-gradient(135deg,#10B981,#059669)" : "linear-gradient(135deg,#128A43,#8B7EE7)" }}>
+          style={{ background: mode==="to-pickup" ? "linear-gradient(135deg,#10B981,#059669)" : "linear-gradient(135deg,#128A43,#7ED99A)" }}>
           {mode === "to-pickup" ? <><CheckCircle className="w-5 h-5"/> I've arrived at pickup</> : <><MapPin className="w-5 h-5"/> Arrived at destination</>}
         </button>
       </div>
@@ -596,7 +596,7 @@ function PickupConfirmScreen({ ride, onConfirm }: { ride: RideData; onConfirm: (
 
       <button disabled={!canStart} onClick={onConfirm}
         className="w-full py-4 rounded-2xl text-white font-bold text-sm disabled:opacity-40 flex items-center justify-center gap-2"
-        style={{ background:"linear-gradient(135deg,#128A43,#8B7EE7)" }}>
+        style={{ background:"linear-gradient(135deg,#128A43,#7ED99A)" }}>
         <Navigation className="w-4 h-4"/> Start Trip to Destination
       </button>
     </div>
@@ -688,7 +688,7 @@ function TripCompletedScreen({ ride, onDone }: { ride: RideData; onDone: () => v
         <div><p className="text-lg font-black text-gray-800">~{Math.ceil(Number(ride.distanceKm)*2.5)} min</p><p className="text-xs text-gray-400">Duration</p></div>
       </div>
       <button onClick={onDone} className="mt-8 w-full py-3.5 rounded-2xl text-white font-bold text-sm"
-        style={{ background:"linear-gradient(135deg,#128A43,#8B7EE7)" }}>
+        style={{ background:"linear-gradient(135deg,#128A43,#7ED99A)" }}>
         Back to Home
       </button>
     </div>
@@ -724,7 +724,7 @@ function EarningsScreen({ driver }: { driver: DriverData | null }) {
 
       {/* Big amount */}
       <div className="p-5 rounded-2xl mb-4 text-center"
-        style={{ background:"linear-gradient(135deg,#128A43,#8B7EE7)" }}>
+        style={{ background:"linear-gradient(135deg,#128A43,#7ED99A)" }}>
         <p className="text-white/70 text-xs mb-1">Earnings {period === "today" ? "today" : period === "week" ? "this week" : "this month"}</p>
         <p className="text-white text-4xl font-black">R{amounts[period].toFixed(2)}</p>
         <div className="flex items-center justify-center gap-1 mt-2">
@@ -804,7 +804,7 @@ function ArchitectureScreen() {
       {/* Layer legend */}
       {[
         { layer:"CLIENT",   items:["Rider App (iOS/Android)","Driver App","Caregiver App","Admin Panel"],  color:"#0F6E56", bg:"#ECFDF5" },
-        { layer:"GATEWAY",  items:["API Gateway","JWT Auth","Rate Limiting","WebSocket Hub"],               color:"#534AB7", bg:"#EEEDFE" },
+        { layer:"GATEWAY",  items:["API Gateway","JWT Auth","Rate Limiting","WebSocket Hub"],               color:"#34A853", bg:"#EEEDFE" },
         { layer:"CORE",     items:["Auth Svc · OTP/JWT","User Svc · KYC","Ride Svc","Matching Engine","Location Svc"], color:"#185FA5", bg:"#E6F1FB" },
         { layer:"SUPPORT",  items:["Payment Svc","Notification Svc","Pricing Engine","Rating & Review","SOS Safety Svc"], color:"#993C1D", bg:"#FAECE7" },
         { layer:"INFRA",    items:["Scheduling · recurring","Accessibility Svc","Driver Compliance","Analytics"], color:"#3B6D11", bg:"#EAF3DE" },

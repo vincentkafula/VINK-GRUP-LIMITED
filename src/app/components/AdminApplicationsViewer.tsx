@@ -33,7 +33,7 @@ const STATUS_CFG: Record<AppStatus, { label: string; color: string; bg: string; 
 
 // ─── Type config ──────────────────────────────────────────────────────────────
 const TYPE_CFG: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
-  account:      { label: "Bank Account",    icon: <Building2 className="w-4 h-4" />,   color: "#3949AB" },
+  account:      { label: "Bank Account",    icon: <Building2 className="w-4 h-4" />,   color: "#128A43" },
   creditCard:   { label: "Credit Card",     icon: <CreditCard className="w-4 h-4" />,  color: "#128A43" },
   loan:         { label: "Personal Loan",   icon: <DollarSign className="w-4 h-4" />,  color: "#E53935" },
   invest:       { label: "Investment",      icon: <TrendingUp className="w-4 h-4" />,  color: "#1565C0" },

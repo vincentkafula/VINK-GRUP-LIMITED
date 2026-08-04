@@ -127,7 +127,7 @@ export function Header({ onDashboardSelect, onSubNavClick, onOpenProfile, isLogg
               ) : (
                 <button
                   onClick={() => setIsLoginModalOpen(true)}
-                  className="bg-[#128A43] text-white px-5 py-1.5 rounded-full hover:bg-[#5B4EC7] transition-colors flex items-center gap-1.5 text-sm font-medium"
+                  className="bg-[#128A43] text-white px-5 py-1.5 rounded-full hover:bg-[#128A43] transition-colors flex items-center gap-1.5 text-sm font-medium"
                 >
                   <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="12" cy="8" r="4" />

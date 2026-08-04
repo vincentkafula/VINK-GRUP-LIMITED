@@ -55,7 +55,7 @@ function VisualCard({ card, compact = false }: { card: R; compact?: boolean }) {
   const [show, setShow] = useState(false);
   const isVisa = card.network === "visa";
   const gradients: Record<string, string> = {
-    standard:  "from-[#4D7AE0] to-[#2952B8]",
+    standard:  "from-[#5FC97F] to-[#128A43]",
     premium:   "from-[#C4922A] to-[#8B6914]",
     platinum:  "from-[#1a1a2e] to-[#374151]",
     corporate: "from-[#065F46] to-[#064E3B]",
@@ -226,7 +226,7 @@ function LoginScreen({ onLogin }: { onLogin: (t: string, u: R) => void }) {
   };
 
   return (
-    <div className="flex-1 flex items-center justify-center" style={{ background: "linear-gradient(135deg,#0F1629 0%,#1E1B4B 60%,#2D2060 100%)" }}>
+    <div className="flex-1 flex items-center justify-center" style={{ background: "linear-gradient(135deg,#0F1629 0%,#1E1B4B 60%,#0B2E1C 100%)" }}>
       <div className="w-full max-w-sm mx-6">
         {/* Bank logo */}
         <div className="text-center mb-8">
@@ -251,7 +251,7 @@ function LoginScreen({ onLogin }: { onLogin: (t: string, u: R) => void }) {
           {error && <p className="text-xs text-red-400 bg-red-900/30 rounded-xl px-3 py-2">{error}</p>}
           <button type="submit" disabled={loading}
             className="w-full py-3.5 rounded-xl text-white font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-60"
-            style={{ background: "linear-gradient(135deg,#128A43,#8B7EE7)" }}>
+            style={{ background: "linear-gradient(135deg,#128A43,#7ED99A)" }}>
             {loading ? <Loader2 className="w-4 h-4 animate-spin"/> : <Key className="w-4 h-4"/>}
             Sign In to Banking Portal
           </button>
@@ -669,7 +669,7 @@ function PaymentsPanel({ userId, accounts }: { userId: string; accounts: R[] }) 
             )}
             <button type="submit" disabled={sending || !toIban || !amount}
               className="w-full py-3.5 rounded-xl text-white font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
-              style={{ background: "linear-gradient(135deg,#128A43,#8B7EE7)" }}>
+              style={{ background: "linear-gradient(135deg,#128A43,#7ED99A)" }}>
               {sending ? <Loader2 className="w-4 h-4 animate-spin"/> : <ArrowUpRight className="w-4 h-4"/>}
               Send Payment
             </button>

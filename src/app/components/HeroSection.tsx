@@ -120,12 +120,12 @@ export function HeroSection() {
 
   return (
     <section className="text-white overflow-hidden relative"
-      style={{ background: "linear-gradient(135deg,#3B2D9E 0%,#5B4EC7 40%,#7B6FE8 75%,#9B8BF0 100%)" }}>
+      style={{ background: "linear-gradient(135deg,#0B5C2E 0%,#128A43 40%,#5FC97F 75%,#A7E8BD 100%)" }}>
       {/* Decorative orbs */}
       <div className="absolute top-0 right-0 w-96 h-96 rounded-full opacity-10 pointer-events-none"
         style={{ background: "radial-gradient(circle,#fff 0%,transparent 70%)", transform: "translate(30%,-30%)" }} />
       <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full opacity-10 pointer-events-none"
-        style={{ background: "radial-gradient(circle,#B8A9F5 0%,transparent 70%)", transform: "translate(-40%,40%)" }} />
+        style={{ background: "radial-gradient(circle,#A7E8BD 0%,transparent 70%)", transform: "translate(-40%,40%)" }} />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 md:py-20 lg:py-24 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
@@ -189,7 +189,7 @@ export function HeroSection() {
           {/* ── Image side ── */}
           <div className="flex justify-center md:justify-end relative">
             <div className="absolute inset-0 rounded-full opacity-20 blur-3xl pointer-events-none"
-              style={{ background: "radial-gradient(circle,#B8A9F5,transparent)" }} />
+              style={{ background: "radial-gradient(circle,#A7E8BD,transparent)" }} />
             <img
               key={current}
               src={slide.image}

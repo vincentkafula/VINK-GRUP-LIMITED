@@ -21,7 +21,7 @@ const TIER_INFO: Record<Tier, { order: number; icon: React.ReactNode; purpose: s
   Vertex:     { order: 3, icon: <Users className="w-5 h-5" />,     purpose: "Manage multiple entities and automate governance.",        unlocks: "+ Multi-company management, approval workflows, ERP/API", gradient: `linear-gradient(135deg,#0369A1,${INK})` },
   Nexus:      { order: 4, icon: <Globe2 className="w-5 h-5" />,    purpose: "Expand globally with cross-border banking.",               unlocks: "+ Multi-currency, FX, SWIFT, trade finance",              gradient: `linear-gradient(135deg,#B45309,${INK})` },
   Dominion:   { order: 5, icon: <Shield className="w-5 h-5" />,    purpose: "Centralize enterprise treasury, risk and compliance.",     unlocks: "+ Enterprise treasury, fraud/AML center, unlimited cards", gradient: `linear-gradient(135deg,#065F46,${INK})` },
-  Legacy:     { order: 6, icon: <Landmark className="w-5 h-5" />,  purpose: "Institutional-grade banking and strategic advisory.",      unlocks: "+ Wealth management, family office, executive banking",   gradient: `linear-gradient(135deg,#3B1A6E,#1E1B4B)` },
+  Legacy:     { order: 6, icon: <Landmark className="w-5 h-5" />,  purpose: "Institutional-grade banking and strategic advisory.",      unlocks: "+ Wealth management, family office, executive banking",   gradient: `linear-gradient(135deg,#0F3D24,#1E1B4B)` },
 };
 const TIER_ORDER: Tier[] = ["Foundation", "Apex", "Vertex", "Nexus", "Dominion", "Legacy"];
 const ROLES: Role[] = ["CEO", "CFO", "Finance Manager"];

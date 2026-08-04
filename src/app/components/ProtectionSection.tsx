@@ -31,7 +31,7 @@ export const ProtectionSection = memo(function ProtectionSection() {
             <div className="flex flex-wrap justify-center md:justify-start gap-3 mb-8">
               {TRUST_ITEMS.map((t, i) => (
                 <span key={i} className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full border"
-                  style={{ borderColor: "#DDD6FE", color: "#5B4EC7", background: "#FAFAFE" }}>
+                  style={{ borderColor: "#DDD6FE", color: "#128A43", background: "#FAFAFE" }}>
                   {t.icon} {t.label}
                 </span>
               ))}

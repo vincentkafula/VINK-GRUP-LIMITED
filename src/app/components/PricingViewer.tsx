@@ -23,9 +23,9 @@ export interface PricingViewerProps {
 }
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
-const BRAND     = "#5B3FC8";
-const BRAND_DARK = "#3B2490";
-const FEAT_BG   = "#4F35B8";
+const BRAND     = "#128A43";
+const BRAND_DARK = "#0F3D24";
+const FEAT_BG   = "#128A43";
 const FOOTER_BG = "#1A1235";
 
 const TOOLS = [
@@ -72,7 +72,7 @@ function Card({ card, onApply }: { card: PricingCard; onApply: (name: string, pr
           / Month
         </span>
       </div>
-      <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", color: card.featured ? "rgba(255,255,255,.8)" : "#7B5FE0", marginBottom: 12 }}>
+      <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", color: card.featured ? "rgba(255,255,255,.8)" : "#5FC97F", marginBottom: 12 }}>
         What you get
       </p>
       <ul style={{ listStyle: "none", flex: 1, display: "flex", flexDirection: "column", gap: 9, marginBottom: 24 }}>

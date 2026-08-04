@@ -53,7 +53,7 @@ function TestimonialCard({ name, role, image, rating, text }: TestimonialCardPro
       <Quote className="w-10 h-10 text-[#128A43]/20 absolute top-4 right-4" />
 
       <div className="flex items-center gap-4 mb-4">
-        <div className="w-12 h-12 bg-gradient-to-br from-[#128A43] to-[#8B7EE7] rounded-full flex items-center justify-center text-white">
+        <div className="w-12 h-12 bg-gradient-to-br from-[#128A43] to-[#7ED99A] rounded-full flex items-center justify-center text-white">
           {image}
         </div>
         <div>

@@ -58,15 +58,15 @@ const AFRIKAANS: EventCard[] = [
   { icon: "🎵", name: "Shoprite Gr…", loc: "Gauteng", date: "Fri, 31 Jan 25", price: "From R50", bg: "linear-gradient(135deg,#37474F,#546E7A)", badge: "ON DEMAND" },
   { icon: "🎵", name: "Africa Aerospace…", loc: "Gauteng", date: "Sat, 24 Sep 22 – Sun, 25 Sep 22", price: "From R200", bg: "linear-gradient(135deg,#0B5C2E,#FF9900)", badge: "ON DEMAND" },
   { icon: "🎵", name: "The Trolley Dollies…", loc: "Gauteng", date: "Thu, 08 Sep 22 – Sun, 11 Sep 22", price: "From R50", bg: "linear-gradient(135deg,#92400E,#C2185B)", badge: "ON DEMAND" },
-  { icon: "🎵", name: "Shoprite Gr…", loc: "Gauteng", date: "Fri, 31 Jan 25", price: "From R50", bg: "linear-gradient(135deg,#1A237E,#283593)" },
+  { icon: "🎵", name: "Shoprite Gr…", loc: "Gauteng", date: "Fri, 31 Jan 25", price: "From R50", bg: "linear-gradient(135deg,#1A237E,#0F3D24)" },
   { icon: "🎵", name: "Shoprite Gr…", loc: "Gauteng", date: "Fri, 31 Jan 25", price: "From R50", bg: "linear-gradient(135deg,#004D40,#00695C)" },
   { icon: "🎵", name: "Shoprite Gr…", loc: "Gauteng", date: "Fri, 31 Jan 25", price: "From R50", bg: "linear-gradient(135deg,#BF360C,#E64A19)" },
 ];
 
 const CONCERTS: EventCard[] = [
   { icon: "🎤", name: "Shoprite Gr…", loc: "Gauteng", date: "Fri, 31 Jan 25", price: "From R50", bg: "linear-gradient(135deg,#212121,#424242)" },
-  { icon: "🎤", name: "Africa Aerospace…", loc: "Gauteng", date: "Sat, 24 Sep 22 – Sun, 25 Sep 22", price: "From R200", bg: "linear-gradient(135deg,#311B92,#4527A0)" },
-  { icon: "🎤", name: "The Trolley Dollies…", loc: "Gauteng", date: "Thu, 08 Sep 22 – Sun, 11 Sep 22", price: "From R50", bg: "linear-gradient(135deg,#1A237E,#283593)" },
+  { icon: "🎤", name: "Africa Aerospace…", loc: "Gauteng", date: "Sat, 24 Sep 22 – Sun, 25 Sep 22", price: "From R200", bg: "linear-gradient(135deg,#0B2E1C,#0B5C2E)" },
+  { icon: "🎤", name: "The Trolley Dollies…", loc: "Gauteng", date: "Thu, 08 Sep 22 – Sun, 11 Sep 22", price: "From R50", bg: "linear-gradient(135deg,#1A237E,#0F3D24)" },
   { icon: "🎤", name: "Shoprite Gr…", loc: "Gauteng", date: "Fri, 31 Jan 25", price: "From R50", bg: "linear-gradient(135deg,#92400E,#AD1457)" },
   { icon: "🎤", name: "Shoprite Gr…", loc: "Gauteng", date: "Fri, 31 Jan 25", price: "From R50", bg: "linear-gradient(135deg,#B71C1C,#C62828)" },
   { icon: "🎤", name: "Shoprite Gr…", loc: "Gauteng", date: "Fri, 31 Jan 25", price: "From R50", bg: "linear-gradient(135deg,#E65100,#F57F17)" },

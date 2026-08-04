@@ -143,7 +143,7 @@ function ProductCard({ p, onView, onCart, wishlistIds, onWishlist }: {
       <div className="px-3 pb-3">
         <button onClick={e => { e.stopPropagation(); onCart(); }}
           className="w-full py-2 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-1.5 transition-opacity hover:opacity-90"
-          style={{ background: "linear-gradient(135deg,#128A43,#8B7EE7)" }}>
+          style={{ background: "linear-gradient(135deg,#128A43,#7ED99A)" }}>
           <ShoppingCart className="w-3.5 h-3.5" />Add to Cart
         </button>
       </div>
@@ -854,7 +854,7 @@ function ProductDetailView({ productId, onBack, onCart, wishlistIds, onWishlist,
           <div className="flex gap-3">
             <button onClick={() => onCart(p, selVariant || undefined)}
               className="flex-1 py-3 rounded-2xl text-sm font-bold text-white flex items-center justify-center gap-2"
-              style={{ background: "linear-gradient(135deg,#128A43,#8B7EE7)" }}>
+              style={{ background: "linear-gradient(135deg,#128A43,#7ED99A)" }}>
               <ShoppingCart className="w-4 h-4" />Add to Cart
             </button>
             <button onClick={() => onWishlist(p.id as string)}
@@ -1078,7 +1078,7 @@ function CartView({ cart, onUpdateQty, onRemove, onApplyCoupon, onCheckout }: {
         </div>
         <button onClick={onCheckout}
           className="w-full py-3.5 rounded-2xl text-sm font-bold text-white flex items-center justify-center gap-2"
-          style={{ background: "linear-gradient(135deg,#128A43,#8B7EE7)" }}>
+          style={{ background: "linear-gradient(135deg,#128A43,#7ED99A)" }}>
           Proceed to Checkout <ChevronRight className="w-4 h-4" />
         </button>
         <div className="flex items-center justify-center gap-3 mt-4 text-xl">
@@ -1151,7 +1151,7 @@ function CheckoutView({ cart, addresses, onBack, onComplete }: {
           ))}
           <button onClick={() => setStep("shipping")}
             className="w-full py-3.5 rounded-2xl text-sm font-bold text-white"
-            style={{ background: "linear-gradient(135deg,#128A43,#8B7EE7)" }}>
+            style={{ background: "linear-gradient(135deg,#128A43,#7ED99A)" }}>
             Continue to Shipping
           </button>
         </div>
@@ -1177,7 +1177,7 @@ function CheckoutView({ cart, addresses, onBack, onComplete }: {
           ))}
           <div className="flex gap-3 pt-2">
             <button onClick={() => setStep("address")} className="flex-1 py-3.5 rounded-2xl text-sm font-semibold border border-gray-200">Back</button>
-            <button onClick={() => setStep("payment")} className="flex-[2] py-3.5 rounded-2xl text-sm font-bold text-white" style={{ background: "linear-gradient(135deg,#128A43,#8B7EE7)" }}>Continue to Payment</button>
+            <button onClick={() => setStep("payment")} className="flex-[2] py-3.5 rounded-2xl text-sm font-bold text-white" style={{ background: "linear-gradient(135deg,#128A43,#7ED99A)" }}>Continue to Payment</button>
           </div>
         </div>
       )}
@@ -1227,7 +1227,7 @@ function CheckoutView({ cart, addresses, onBack, onComplete }: {
             <button onClick={() => setStep("shipping")} className="flex-1 py-3.5 rounded-2xl text-sm font-semibold border border-gray-200">Back</button>
             <button onClick={handlePlace} disabled={placing}
               className="flex-[2] py-3.5 rounded-2xl text-sm font-bold text-white flex items-center justify-center gap-2 disabled:opacity-60"
-              style={{ background: "linear-gradient(135deg,#128A43,#8B7EE7)" }}>
+              style={{ background: "linear-gradient(135deg,#128A43,#7ED99A)" }}>
               {placing ? <><Loader2 className="w-4 h-4 animate-spin" />Processing…</> : <>Place Order · {fmtZAR(Number(cart?.total ?? 0))}</>}
             </button>
           </div>
@@ -1244,7 +1244,7 @@ function CheckoutView({ cart, addresses, onBack, onComplete }: {
             <div className="flex justify-between text-sm"><span className="text-gray-500">Estimated delivery</span><span className="font-semibold">3–5 business days</span></div>
             <div className="flex justify-between text-sm"><span className="text-gray-500">Carrier</span><span className="font-semibold">DHL Express</span></div>
           </div>
-          <button onClick={onBack} className="w-full py-3.5 rounded-2xl text-sm font-bold text-white" style={{ background: "linear-gradient(135deg,#128A43,#8B7EE7)" }}>Continue Shopping</button>
+          <button onClick={onBack} className="w-full py-3.5 rounded-2xl text-sm font-bold text-white" style={{ background: "linear-gradient(135deg,#128A43,#7ED99A)" }}>Continue Shopping</button>
         </div>
       )}
     </div>

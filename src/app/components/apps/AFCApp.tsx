@@ -1148,7 +1148,7 @@ function SetupScreen({ initial, onSave, onCancel, P, GOLD }: {
         onChange={e => set(k, e.target.value)}
         placeholder={placeholder ?? label}
         className="w-full px-3 py-2 rounded-xl text-sm text-white placeholder-white/20 outline-none"
-        style={{ background: "#252245", border: "1px solid #3D3A6A" }}
+        style={{ background: "#252245", border: "1px solid #14532D" }}
       />
     </div>
   );
@@ -1178,7 +1178,7 @@ function SetupScreen({ initial, onSave, onCancel, P, GOLD }: {
               <p className="text-white/50 text-[10px] font-semibold uppercase tracking-wide mb-1">Province</p>
               <select value={assocProvince} onChange={e => { setAssocProvince(e.target.value); set("associationProvince", e.target.value); set("associationName",""); }}
                 className="w-full px-3 py-2 rounded-xl text-sm text-white outline-none"
-                style={{ background: "#252245", border: "1px solid #3D3A6A" }}>
+                style={{ background: "#252245", border: "1px solid #14532D" }}>
                 <option value="">Choose province…</option>
                 {PROVINCES.map(p => <option key={p} value={p}>{PROVINCE_EMOJIS[p] ?? ""} {p}</option>)}
               </select>

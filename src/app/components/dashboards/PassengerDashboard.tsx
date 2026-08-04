@@ -62,19 +62,19 @@ export function PassengerDashboard({ isOpen, onClose, onBookRide }: { isOpen: bo
                   <input value={pickup} onChange={e => setPickup(e.target.value)}
                     placeholder="Pickup location..."
                     className="w-full pl-9 pr-4 py-3 rounded-xl text-sm text-white placeholder-white/30 outline-none focus:ring-2"
-                    style={{ background: "#252245", border: "1px solid #3D3A6A", focusRingColor: "#06B6D4" }} />
+                    style={{ background: "#252245", border: "1px solid #14532D", focusRingColor: "#06B6D4" }} />
                 </div>
                 <div className="relative">
                   <MapPin className="absolute left-3 top-3 w-4 h-4" style={{ color: "#EF4444" }} />
                   <input value={dropoff} onChange={e => setDropoff(e.target.value)}
                     placeholder="Drop-off destination..."
                     className="w-full pl-9 pr-4 py-3 rounded-xl text-sm text-white placeholder-white/30 outline-none"
-                    style={{ background: "#252245", border: "1px solid #3D3A6A" }} />
+                    style={{ background: "#252245", border: "1px solid #14532D" }} />
                 </div>
                 <div className="grid grid-cols-3 gap-2">
                   {["Standard", "Premium", "XL Van"].map((type, i) => (
                     <button key={i} className="py-3 rounded-xl text-xs font-semibold transition-all"
-                      style={{ background: i === 0 ? "#06B6D422" : "#252245", border: `1px solid ${i === 0 ? "#06B6D4" : "#3D3A6A"}`, color: i === 0 ? "#06B6D4" : "#8884AA" }}>
+                      style={{ background: i === 0 ? "#06B6D422" : "#252245", border: `1px solid ${i === 0 ? "#06B6D4" : "#14532D"}`, color: i === 0 ? "#06B6D4" : "#8884AA" }}>
                       <p>{type}</p>
                       <p className="text-[10px] mt-0.5">{["R45–80", "R90–140", "R110–160"][i]}</p>
                     </button>
@@ -122,7 +122,7 @@ export function PassengerDashboard({ isOpen, onClose, onBookRide }: { isOpen: bo
               <div className="space-y-3">
                 {SAVED_PLACES.map((p, i) => (
                   <button key={i} className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors text-left"
-                    style={{ background: "#252245", border: "1px solid #3D3A6A" }}>
+                    style={{ background: "#252245", border: "1px solid #14532D" }}>
                     <span className="text-xl">{p.icon}</span>
                     <div>
                       <p className="text-xs font-semibold text-white">{p.name}</p>
@@ -141,7 +141,7 @@ export function PassengerDashboard({ isOpen, onClose, onBookRide }: { isOpen: bo
                   { type: "Vink Wallet", last4: "R480 bal", default: false },
                 ].map((c, i) => (
                   <div key={i} className="flex items-center gap-3 p-3 rounded-xl"
-                    style={{ background: "#252245", border: `1px solid ${c.default ? "#06B6D455" : "#3D3A6A"}` }}>
+                    style={{ background: "#252245", border: `1px solid ${c.default ? "#06B6D455" : "#14532D"}` }}>
                     <div className="w-8 h-6 rounded flex items-center justify-center text-[9px] font-bold"
                       style={{ background: c.type === "Vink Wallet" ? "#128A43" : c.type === "Visa" ? "#1A1F71" : "#EB001B", color: "white" }}>
                       {c.type === "Vink Wallet" ? "V" : c.type[0]}

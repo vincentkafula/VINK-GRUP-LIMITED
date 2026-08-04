@@ -6,8 +6,8 @@ import { ApplyModal } from "./ApplyModal";
 
 interface Props { isOpen: boolean; onClose: () => void; onNavigate: (item: string) => void }
 
-const BRAND      = "#4B2D9E";
-const BRAND_DARK = "#3a2180";
+const BRAND      = "#0B5C2E";
+const BRAND_DARK = "#0F3D24";
 const TOP_NAV    = ["Personal", "Business", "Corporate", "Marketplace"];
 const BIZ_SUBNAV = ["Start My Business", "Accounts", "Credit Cards", "Loans", "Invest", "Insure", "Manage My Business", "International", "Studio", "News", "Get Help"];
 const ACTIVE_IDX = 7;
@@ -17,7 +17,7 @@ const FEATURES = [
     title: "Affordable Fund Transfer",
     desc: "Send money to 60+ countries at real exchange rates with no hidden markups. Transfers settle in 1–2 business days directly into recipient bank accounts.",
     icon: (
-      <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#4B2D9E" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#0B5C2E" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
         <rect x="2" y="7" width="10" height="14" rx="1"/>
         <path d="M12 10h8m-3-3 3 3-3 3"/>
         <path d="M7 7V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-2"/>
@@ -28,7 +28,7 @@ const FEATURES = [
     title: "Cheap International Call",
     desc: "Make crystal-clear VoIP calls to 180+ countries at a fraction of standard rates. Billed per second with no connection fees or monthly commitments.",
     icon: (
-      <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#4B2D9E" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#0B5C2E" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="12" r="10"/>
         <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
       </svg>
@@ -38,7 +38,7 @@ const FEATURES = [
     title: "Election Management PVT",
     desc: "End-to-end private election management for boards, cooperatives and corporates. Secure digital ballot system with real-time audit trail and tamper-proof result certification.",
     icon: (
-      <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#4B2D9E" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#0B5C2E" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="3" width="18" height="18" rx="2"/>
         <path d="M9 12l2 2 4-4"/>
       </svg>
@@ -48,7 +48,7 @@ const FEATURES = [
     title: "International Vehicle Tracking",
     desc: "Monitor your fleet across borders in real time. Live GPS, geofencing, driver behaviour scoring, and automated border-crossing alerts — all in one dashboard.",
     icon: (
-      <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#4B2D9E" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#0B5C2E" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
         <path d="M8 10V7l2-4h6l2 4v3"/>
         <rect x="2" y="10" width="20" height="8" rx="1"/>
         <circle cx="6" cy="21" r="2"/>
@@ -61,7 +61,7 @@ const FEATURES = [
     title: "Free VOI International Call",
     desc: "Unlimited Voice-over-IP calls to VINK business clients worldwide — included at no extra charge with any Business International account. Ideal for cross-border teams.",
     icon: (
-      <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#4B2D9E" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#0B5C2E" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
         <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.6 1.22h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.89a16 16 0 0 0 6.1 6.1l.98-.98a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
         <path d="M14.5 6.5a5 5 0 0 1 3 3"/>
       </svg>
@@ -71,7 +71,7 @@ const FEATURES = [
     title: "Free International CCTV",
     desc: "Cloud-hosted CCTV access from anywhere in the world. Secure remote viewing, 30-day cloud recording, and AI-powered motion alerts — at no additional monthly cost.",
     icon: (
-      <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#4B2D9E" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#0B5C2E" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
         <path d="M23 7l-7 5 7 5V7z"/>
         <rect x="1" y="5" width="15" height="14" rx="2"/>
       </svg>
@@ -83,7 +83,7 @@ function FeatureCard({ feature }: { feature: typeof FEATURES[0] }) {
   return (
     <div
       style={{ background: "#fff", border: "1.5px solid #e8e8f0", borderRadius: 12, padding: "36px 28px 32px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", transition: "box-shadow .2s, border-color .2s" }}
-      onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.boxShadow = "0 6px 24px rgba(75,45,158,.10)"; (e.currentTarget as HTMLDivElement).style.borderColor = "#6B4FBE"; }}
+      onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.boxShadow = "0 6px 24px rgba(75,45,158,.10)"; (e.currentTarget as HTMLDivElement).style.borderColor = "#34A853"; }}
       onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.boxShadow = "none"; (e.currentTarget as HTMLDivElement).style.borderColor = "#e8e8f0"; }}
     >
       {/* Icon circle */}

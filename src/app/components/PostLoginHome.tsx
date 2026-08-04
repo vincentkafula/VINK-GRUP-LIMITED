@@ -29,7 +29,7 @@ const MENU_ROWS = [
   ],
   [
     { id: "payments", label: "Payments",    icon: <CreditCard className="w-6 h-6" />,      gradient: "from-[#0EA5E9] to-[#0284C7]", glow: "#0EA5E9" },
-    { id: "transfer", label: "Transfer",    icon: <ArrowLeftRight className="w-6 h-6" />,  gradient: "from-[#128A43] to-[#4F46E5]", glow: "#128A43" },
+    { id: "transfer", label: "Transfer",    icon: <ArrowLeftRight className="w-6 h-6" />,  gradient: "from-[#128A43] to-[#0B5C2E]", glow: "#128A43" },
     { id: "cards",    label: "Cards",       icon: <Layers className="w-6 h-6" />,          gradient: "from-[#EC4899] to-[#BE185D]", glow: "#EC4899" },
   ],
   [
@@ -38,7 +38,7 @@ const MENU_ROWS = [
     { id: "insurance",label: "Insurance",   icon: <ShieldCheck className="w-6 h-6" />,     gradient: "from-[#10B981] to-[#047857]", glow: "#10B981" },
   ],
   [
-    { id: "vinktv",    label: "VINK TV",      icon: <Tv className="w-6 h-6" />,              gradient: "from-[#FF9900] to-[#5B21B6]", glow: "#FF9900" },
+    { id: "vinktv",    label: "VINK TV",      icon: <Tv className="w-6 h-6" />,              gradient: "from-[#FF9900] to-[#0B5C2E]", glow: "#FF9900" },
     { id: "cardless", label: "Cardless Cash",icon: <Banknote className="w-6 h-6" />,       gradient: "from-[#D97706] to-[#92400E]", glow: "#D97706" },
     { id: "elections",label: "Elections",   icon: <Vote className="w-6 h-6" />,            gradient: "from-[#0891B2] to-[#164E63]", glow: "#0891B2" },
   ],
@@ -50,7 +50,7 @@ const MENU_ROWS = [
   [
     { id: "forex",    label: "Forex",       icon: <DollarSign className="w-6 h-6" />,      gradient: "from-[#CA8A04] to-[#78350F]", glow: "#CA8A04" },
     { id: "settings", label: "Setting",     icon: <Settings className="w-6 h-6" />,        gradient: "from-[#475569] to-[#1E293B]", glow: "#475569" },
-    { id: "qr",       label: "QR Code",     icon: <QrCode className="w-6 h-6" />,          gradient: "from-[#128A43] to-[#312E81]", glow: "#128A43" },
+    { id: "qr",       label: "QR Code",     icon: <QrCode className="w-6 h-6" />,          gradient: "from-[#128A43] to-[#0F3D24]", glow: "#128A43" },
   ],
 ];
 

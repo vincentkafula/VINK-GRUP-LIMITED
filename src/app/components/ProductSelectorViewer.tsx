@@ -84,8 +84,8 @@ export const CATEGORY_CONFIG: Record<ProductCategory, {
     title: "Choose Your Bank Account",
     subtitle: "From your first account to private banking — find the account that works for your life stage.",
     tag: "Personal Banking · Accounts",
-    gradient: "linear-gradient(135deg,#1A237E 0%,#283593 55%,#5C6BC0 100%)",
-    accentColor: "#3949AB",
+    gradient: "linear-gradient(135deg,#1A237E 0%,#0F3D24 55%,#34A853 100%)",
+    accentColor: "#128A43",
   },
 };
 

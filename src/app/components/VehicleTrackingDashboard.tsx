@@ -77,13 +77,13 @@ function SaMap({ vehicles, selected, onSelect }: {
       {/* Approximate SA coastline (rough polygon) */}
       <polygon
         points="100,20 200,10 310,15 380,40 430,80 445,130 440,180 420,230 390,270 360,300 320,330 280,345 240,350 200,340 160,320 120,295 85,265 60,230 45,195 40,155 50,110 70,65 100,20"
-        fill="#252245" stroke="#3D3A6A" strokeWidth="1.5"
+        fill="#252245" stroke="#14532D" strokeWidth="1.5"
       />
 
       {/* City dots */}
       {CITY_DOTS.map(c => (
         <g key={c.name}>
-          <circle cx={lngToX(c.lng)} cy={latToY(c.lat)} r="3" fill="#534AB7" opacity="0.7" />
+          <circle cx={lngToX(c.lng)} cy={latToY(c.lat)} r="3" fill="#34A853" opacity="0.7" />
           <text x={lngToX(c.lng) + 5} y={latToY(c.lat) + 3} fontSize="7" fill="#8884AA">{c.name}</text>
         </g>
       ))}
@@ -196,13 +196,13 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
             <label className="block text-xs font-semibold mb-1.5" style={{ color: "#8884AA" }}>Username</label>
             <input value={username} onChange={e => setUsername(e.target.value)} required
               className="w-full rounded-lg px-3 py-2.5 text-sm text-white outline-none focus:ring-2 focus:ring-[#EF4444]"
-              style={{ background: "#252245", border: "1px solid #3D3A6A" }} />
+              style={{ background: "#252245", border: "1px solid #14532D" }} />
           </div>
           <div>
             <label className="block text-xs font-semibold mb-1.5" style={{ color: "#8884AA" }}>Password</label>
             <input type="password" value={password} onChange={e => setPassword(e.target.value)} required
               className="w-full rounded-lg px-3 py-2.5 text-sm text-white outline-none focus:ring-2 focus:ring-[#EF4444]"
-              style={{ background: "#252245", border: "1px solid #3D3A6A" }} />
+              style={{ background: "#252245", border: "1px solid #14532D" }} />
           </div>
           {error && (
             <div className="rounded-lg p-3 text-xs" style={{ background: "#EF444422", border: "1px solid #EF444444", color: "#FCA5A5" }}>{error}</div>
@@ -470,7 +470,7 @@ export function VehicleTrackingDashboard({ isOpen, onClose }: { isOpen: boolean;
                           style={{
                             background: statusFilter === s ? (STATUS_COLOR[s] ?? "#128A43") + "33" : "#252245",
                             color: statusFilter === s ? (STATUS_COLOR[s] ?? "#5FC97F") : "#8884AA",
-                            border: `1px solid ${statusFilter === s ? (STATUS_COLOR[s] ?? "#128A43") + "66" : "#3D3A6A"}`,
+                            border: `1px solid ${statusFilter === s ? (STATUS_COLOR[s] ?? "#128A43") + "66" : "#14532D"}`,
                           }}>
                           {s} {s !== "all" && `(${vehicles.filter(v => v.status === s).length})`}
                         </button>
@@ -591,7 +591,7 @@ export function VehicleTrackingDashboard({ isOpen, onClose }: { isOpen: boolean;
                       {["all","moving","idle","offline"].map(s => (
                         <button key={s} onClick={() => setStatusFilter(s)}
                           className="px-2.5 py-1 rounded-lg text-[10px] font-semibold capitalize transition-all"
-                          style={{ background: statusFilter === s ? "#EF444422" : "#252245", color: statusFilter === s ? "#F87171" : "#8884AA", border: "1px solid " + (statusFilter === s ? "#EF444444" : "#3D3A6A") }}>
+                          style={{ background: statusFilter === s ? "#EF444422" : "#252245", color: statusFilter === s ? "#F87171" : "#8884AA", border: "1px solid " + (statusFilter === s ? "#EF444444" : "#14532D") }}>
                           {s}
                         </button>
                       ))}
@@ -663,10 +663,10 @@ export function VehicleTrackingDashboard({ isOpen, onClose }: { isOpen: boolean;
                         <ArchNode label="Satellite Link" sub="Backup in remote areas" color="#3B82F6" icon={<Satellite className="w-3.5 h-3.5" />} />
                       </ArchLayer>
                       <ArchLayer title="Layer 3 — Server / Backend" subtitle="Processes and stores vehicle data"
-                        color="#534AB7" bg="#EEEDFE10" border="#534AB755" arrow>
-                        <ArchNode label="App Server" sub="Business logic" color="#7C6FE8" icon={<Server className="w-3.5 h-3.5" />} />
-                        <ArchNode label="Database" sub="Stores location data" color="#7C6FE8" icon={<Database className="w-3.5 h-3.5" />} />
-                        <ArchNode label="Alerts Engine" sub="Triggers alerts" color="#7C6FE8" icon={<Bell className="w-3.5 h-3.5" />} />
+                        color="#34A853" bg="#EEEDFE10" border="#34A85355" arrow>
+                        <ArchNode label="App Server" sub="Business logic" color="#5FC97F" icon={<Server className="w-3.5 h-3.5" />} />
+                        <ArchNode label="Database" sub="Stores location data" color="#5FC97F" icon={<Database className="w-3.5 h-3.5" />} />
+                        <ArchNode label="Alerts Engine" sub="Triggers alerts" color="#5FC97F" icon={<Bell className="w-3.5 h-3.5" />} />
                       </ArchLayer>
                       <ArchLayer title="Layer 4 — Client / Presentation" subtitle="Displays live vehicle data"
                         color="#0F6E56" bg="#E1F5EE10" border="#0F6E5655">
@@ -683,7 +683,7 @@ export function VehicleTrackingDashboard({ isOpen, onClose }: { isOpen: boolean;
                       {[
                         { label: "Vehicle Data Acquisition", pct: 96, nodes: 3, online: 3, color: "#D85A30", status: "online" },
                         { label: "Communication Layer",      pct: 98, nodes: 2, online: 2, color: "#3B82F6", status: "online" },
-                        { label: "Server / Backend",         pct: 99, nodes: 3, online: 3, color: "#7C6FE8", status: "online" },
+                        { label: "Server / Backend",         pct: 99, nodes: 3, online: 3, color: "#5FC97F", status: "online" },
                         { label: "Client / Presentation",    pct: 100, nodes: 2, online: 2, color: "#10B981", status: "online" },
                       ].map((layer, i) => (
                         <div key={i} className="mb-4">
@@ -708,7 +708,7 @@ export function VehicleTrackingDashboard({ isOpen, onClose }: { isOpen: boolean;
                         {[
                           { label: "GPS pings/min",    value: fmt(vehicles.filter(v => v.status === "moving").length * 20), color: "#D85A30" },
                           { label: "Data packets/min", value: fmt(vehicles.length * 4),  color: "#3B82F6" },
-                          { label: "DB writes/min",    value: fmt(vehicles.length * 12), color: "#7C6FE8" },
+                          { label: "DB writes/min",    value: fmt(vehicles.length * 12), color: "#5FC97F" },
                           { label: "Alert checks/min", value: fmt(vehicles.length * 8),  color: "#10B981" },
                         ].map((s, i) => (
                           <div key={i} className="rounded-xl p-3 text-center" style={{ background: s.color + "11", border: `1px solid ${s.color}33` }}>
@@ -876,7 +876,7 @@ export function VehicleTrackingDashboard({ isOpen, onClose }: { isOpen: boolean;
                     <svg viewBox={`0 0 ${SA_W} ${SA_H}`} className="w-full rounded-xl" style={{ background: "#13103A" }}>
                       <polygon
                         points="100,20 200,10 310,15 380,40 430,80 445,130 440,180 420,230 390,270 360,300 320,330 280,345 240,350 200,340 160,320 120,295 85,265 60,230 45,195 40,155 50,110 70,65 100,20"
-                        fill="#252245" stroke="#3D3A6A" strokeWidth="1" />
+                        fill="#252245" stroke="#14532D" strokeWidth="1" />
                       {(geofences as Record<string, unknown>[]).map((gf, i) => {
                         const cx = lngToX(Number(gf.centerLng));
                         const cy = latToY(Number(gf.centerLat));
@@ -968,7 +968,7 @@ export function VehicleTrackingDashboard({ isOpen, onClose }: { isOpen: boolean;
               {/* ── SETTINGS placeholder ── */}
               {nav === "Settings" && (
                 <div className="rounded-2xl p-8 text-center" style={{ background: "#1A1738", border: "1px solid #2D2A50" }}>
-                  <Settings className="w-12 h-12 mx-auto mb-3" style={{ color: "#534AB7" }} />
+                  <Settings className="w-12 h-12 mx-auto mb-3" style={{ color: "#34A853" }} />
                   <p className="text-white font-bold mb-1">System Settings</p>
                   <p className="text-sm" style={{ color: "#8884AA" }}>Configuration panel — coming in next update.</p>
                 </div>

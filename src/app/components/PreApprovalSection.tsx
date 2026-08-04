@@ -174,7 +174,7 @@ export function PreApprovalSection() {
 
           {/* Card 3 — How it works */}
           <div className="rounded-2xl p-7 text-white relative overflow-hidden"
-            style={{ background: "linear-gradient(135deg,#5B4EC7,#8B6FE8)" }}>
+            style={{ background: "linear-gradient(135deg,#128A43,#5FC97F)" }}>
             <h3 className="font-bold text-white text-base mb-1">Three Steps to Your Card</h3>
             <p className="text-white/70 text-sm mb-6">Getting started with VINK is simple, fast, and completely transparent.</p>
             <div className="space-y-4">

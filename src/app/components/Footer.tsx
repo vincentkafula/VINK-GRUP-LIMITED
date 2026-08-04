@@ -1,9 +1,9 @@
 import { useState } from "react";
 import vinkLogoDark from "../../imports/LOGO_FINAL.png";
 
-const BG       = "#2D1B69";
+const BG       = "#0B2E1C";
 const DARK_BAR = "#1A0F4A";
-const CARD_BG  = "#4A2FBF";
+const CARD_BG  = "#128A43";
 const LINK_HL  = "#00BFFF";
 
 const COLS = [

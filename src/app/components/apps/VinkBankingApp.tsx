@@ -16,7 +16,7 @@ const TIER_INFO: Record<Tier, { order: number; icon: React.ReactNode; tagline: s
   Momentum: { order: 3, icon: <TrendingUp className="w-5 h-5" />,   tagline: "Every payment earns you something back.",                    unlocks: "+ Cashback, loyalty points, merchant offers, challenges",           balanceLabel: "Available Balance", cardGradient: `linear-gradient(135deg, #FF9900, ${PURPLE})` },
   Horizon:  { order: 4, icon: <Mountain className="w-5 h-5" />,     tagline: "Built around reaching your savings goals faster.",          unlocks: "+ Goal-based savings, auto-save rules, AI coaching",                balanceLabel: "Available Balance", cardGradient: `linear-gradient(135deg, #0369A1, ${PURPLE})` },
   Summit:   { order: 5, icon: <Crown className="w-5 h-5" />,        tagline: "Premium banking with concierge-level service.",              unlocks: "+ Relationship manager, lounge access, multi-currency wallet",      balanceLabel: "Available Balance", cardGradient: `linear-gradient(135deg, #B45309, ${PURPLE})` },
-  Legacy:   { order: 6, icon: <Landmark className="w-5 h-5" />,     tagline: "Private banking and wealth management, for generations.",   unlocks: "+ Investments, net worth dashboard, estate planning",               balanceLabel: "Net Worth",         cardGradient: `linear-gradient(135deg, #1E1B4B, #3B1A6E)` },
+  Legacy:   { order: 6, icon: <Landmark className="w-5 h-5" />,     tagline: "Private banking and wealth management, for generations.",   unlocks: "+ Investments, net worth dashboard, estate planning",               balanceLabel: "Net Worth",         cardGradient: `linear-gradient(135deg, #1E1B4B, #0F3D24)` },
 };
 const TIER_ORDER: Tier[] = ["Spark", "Anchor", "Momentum", "Horizon", "Summit", "Legacy"];
 
@@ -739,7 +739,7 @@ function RewardsScreen() {
         {/* Balance */}
         <div
           className="rounded-2xl p-5 text-center shadow-xl"
-          style={{ background: `linear-gradient(135deg, ${PURPLE}, #3B1A6E)` }}
+          style={{ background: `linear-gradient(135deg, ${PURPLE}, #0F3D24)` }}
         >
           <p className="text-white/60 text-xs">Your Balance</p>
           <p className="text-5xl font-bold mt-1" style={{ color: GOLD }}>4,230</p>

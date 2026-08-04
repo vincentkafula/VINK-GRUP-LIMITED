@@ -74,7 +74,7 @@ const RED    = "#EF4444";
 const TEAL   = "#14B8A6";
 
 const ROLE_COLORS: Record<RoleId, string> = {
-  global_director:      "#6366F1",
+  global_director:      "#128A43",
   continental_director: "#34A853",
   regional_director:    "#3B82F6",
   country_director:     "#0891B2",

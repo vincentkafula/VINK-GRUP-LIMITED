@@ -3,7 +3,7 @@ import { useState } from "react";
 const CARDS = [
   {
     name: "Vink Commuter Card", sub: "Mastercard Standard",
-    grad: "linear-gradient(135deg,#3D6FD4,#2952B8)", net: "mc", last4: "4521", expiry: "09/28",
+    grad: "linear-gradient(135deg,#34A853,#128A43)", net: "mc", last4: "4521", expiry: "09/28",
     tier: "Standard", benefit: "Tap to ride. Earn on every journey.",
     features: [
       "R0 annual fee — always",

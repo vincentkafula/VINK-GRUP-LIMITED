@@ -6,8 +6,8 @@ import { ApplyModal } from "./ApplyModal";
 
 interface Props { isOpen: boolean; onClose: () => void; onNavigate: (item: string) => void }
 
-const BRAND      = "#4B2D9E";
-const BRAND_DARK = "#3a2180";
+const BRAND      = "#0B5C2E";
+const BRAND_DARK = "#0F3D24";
 const TOP_NAV    = ["Personal", "Business", "Corporate", "Marketplace"];
 const BIZ_SUBNAV = ["Start My Business", "Accounts", "Credit Cards", "Loans", "Invest", "Insure", "Manage My Business", "International", "Studio", "News", "Get Help"];
 const ACTIVE_IDX = 8;
@@ -17,7 +17,7 @@ const STUDIOS = [
     title: "Television Studio",
     desc: "Broadcast-grade TV studio rental with 4K cameras, LED lighting rigs, teleprompters, green screen, and a live-streaming setup. Ideal for corporate video, adverts, and news productions. Crew and post-production editing available on request.",
     icon: (
-      <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#4B2D9E" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#0B5C2E" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
         <rect x="2" y="7" width="20" height="13" rx="2"/>
         <path d="M16 2l-4 5-4-5"/>
         <line x1="8" y1="21" x2="16" y2="21"/>
@@ -29,7 +29,7 @@ const STUDIOS = [
     title: "Radio Studio",
     desc: "Fully soundproofed radio studio equipped with professional broadcast consoles, condenser microphones, and ISDN/IP codec for remote linking. Perfect for podcasts, live broadcasts, voice-overs, and corporate audio content.",
     icon: (
-      <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#4B2D9E" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#0B5C2E" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
         <rect x="2" y="8" width="20" height="14" rx="2"/>
         <path d="M6 8l10-6"/>
         <circle cx="7" cy="15" r="2"/>
@@ -41,7 +41,7 @@ const STUDIOS = [
     title: "Music Studio",
     desc: "Professional recording studio with acoustic treatment, a large live room, isolation booth, Pro Tools and Logic Pro workstations, and a full backline. From demo tracks to commercial releases — engineered and mastered in-house by our resident sound engineers.",
     icon: (
-      <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#4B2D9E" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#0B5C2E" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
         <path d="M9 18V5l12-2v13"/>
         <circle cx="6" cy="18" r="3"/>
         <circle cx="18" cy="16" r="3"/>
@@ -87,7 +87,7 @@ export function BusinessStudioViewer({ isOpen, onClose, onNavigate }: Props) {
           {STUDIOS.map((studio, i) => (
             <div key={i}
               style={{ background: "#fff", border: "1.5px solid #e8e8f0", borderRadius: 12, padding: "36px 28px 32px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", transition: "box-shadow .2s, border-color .2s" }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.boxShadow = "0 6px 24px rgba(75,45,158,.10)"; (e.currentTarget as HTMLDivElement).style.borderColor = "#6B4FBE"; }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.boxShadow = "0 6px 24px rgba(75,45,158,.10)"; (e.currentTarget as HTMLDivElement).style.borderColor = "#34A853"; }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.boxShadow = "none"; (e.currentTarget as HTMLDivElement).style.borderColor = "#e8e8f0"; }}
             >
               <div style={{ width: 72, height: 72, background: "#f3f0fb", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>

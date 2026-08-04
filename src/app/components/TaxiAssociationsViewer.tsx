@@ -12,7 +12,7 @@ const GOLD = "#F5A623";
 const NAVY = "#0A0F1E";
 
 const PROVINCE_COLORS: Record<string, string> = {
-  National:        "#6366F1",
+  National:        "#128A43",
   Gauteng:         "#3B82F6",
   "KwaZulu-Natal": "#0891B2",
   "Western Cape":  "#0B5C2E",
@@ -334,9 +334,9 @@ export function TaxiAssociationsViewer({ isOpen, onClose }: Props) {
               </div>
               <div className="grid sm:grid-cols-2 gap-3">
                 {TAXI_ASSOCIATIONS.filter(a => a.level === "National").map((a, i) => (
-                  <div key={i} className="p-4 rounded-xl" style={{ background: "#6366F115", border: "1px solid #6366F130" }}>
+                  <div key={i} className="p-4 rounded-xl" style={{ background: "#128A4315", border: "1px solid #128A4330" }}>
                     <div className="flex items-start gap-2">
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "#6366F1", color: "#fff" }}>
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "#128A43", color: "#fff" }}>
                         <Building2 className="w-4 h-4" />
                       </div>
                       <div>

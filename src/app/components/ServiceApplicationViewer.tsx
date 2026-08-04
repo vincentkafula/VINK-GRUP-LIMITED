@@ -80,12 +80,12 @@ const SERVICE_CONFIG: Record<ServiceType, {
     tag:           "VINK Personal Banking · Accounts",
     title:         "Bank Account Application",
     subtitle:      "Open your selected Vink account in minutes — FICA-verified and ready to use.",
-    gradient:      "linear-gradient(135deg,#1A237E 0%,#3949AB 55%,#5C6BC0 100%)",
+    gradient:      "linear-gradient(135deg,#1A237E 0%,#128A43 55%,#34A853 100%)",
     successTitle:  "Account Opened!",
     successBody:   "Your Vink bank account is active. Your Vink card will be delivered to your registered address within 5–7 business days.",
     accountLabel:  "Account number",
     accountPrefix: "VINK-ACC",
-    accentColor:   "#3949AB",
+    accentColor:   "#128A43",
   },
 };
 

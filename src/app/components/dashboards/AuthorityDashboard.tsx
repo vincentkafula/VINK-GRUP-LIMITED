@@ -142,7 +142,7 @@ export function AuthorityDashboard({ isOpen, onClose }: { isOpen: boolean; onClo
                   { warrant: "WARRANT-2024003", auth: "SSA", type: "Data", expires: "2025-02-28" },
                   { warrant: "WARRANT-2024004", auth: "HAWKS", type: "Voice", expires: "2025-03-30" },
                 ].map((li, i) => (
-                  <div key={i} className="p-2.5 rounded-xl" style={{ background: "#252245", border: "1px solid #3D3A6A" }}>
+                  <div key={i} className="p-2.5 rounded-xl" style={{ background: "#252245", border: "1px solid #14532D" }}>
                     <div className="flex justify-between items-start">
                       <p className="text-[10px] font-bold" style={{ color: "#059669" }}>{li.warrant}</p>
                       <Badge text="Active" color="#059669" />

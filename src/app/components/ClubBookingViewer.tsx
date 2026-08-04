@@ -41,7 +41,7 @@ function RouteCard({ route, onClick }: { route: Route; onClick: () => void }) {
     <div onClick={onClick} className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all cursor-pointer overflow-hidden">
       {/* Header band */}
       <div className="px-5 py-4 text-white relative overflow-hidden"
-        style={{ background: isFlying ? `linear-gradient(135deg,#1A237E,#3949AB)` : `linear-gradient(135deg,#1B5E20,#2E7D32)` }}>
+        style={{ background: isFlying ? `linear-gradient(135deg,#1A237E,#128A43)` : `linear-gradient(135deg,#1B5E20,#2E7D32)` }}>
         <div className="absolute -right-6 -top-6 text-6xl opacity-15 select-none">{route.operatorLogo}</div>
         <div className="flex items-start justify-between">
           <div>
@@ -326,7 +326,7 @@ export function ClubBookingViewer({ isOpen, onClose }: Props) {
           <div className="space-y-5">
             {/* Hero */}
             <div className="rounded-2xl overflow-hidden shadow-lg text-white"
-              style={{ background: selectedRoute.type === "flight" ? "linear-gradient(135deg,#1A237E,#3949AB)" : "linear-gradient(135deg,#1B5E20,#2E7D32)" }}>
+              style={{ background: selectedRoute.type === "flight" ? "linear-gradient(135deg,#1A237E,#128A43)" : "linear-gradient(135deg,#1B5E20,#2E7D32)" }}>
               <div className="p-6">
                 <div className="flex items-start justify-between flex-wrap gap-4 mb-5">
                   <div>

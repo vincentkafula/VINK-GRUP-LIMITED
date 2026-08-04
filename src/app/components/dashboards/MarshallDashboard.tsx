@@ -113,7 +113,7 @@ export function MarshallDashboard({ isOpen, onClose }: { isOpen: boolean; onClos
             <SectionPanel title="Team Status">
               <div className="space-y-2.5">
                 {TEAM.map((m, i) => (
-                  <div key={i} className="flex items-center gap-3 p-2.5 rounded-xl" style={{ background: "#252245", border: "1px solid #3D3A6A" }}>
+                  <div key={i} className="flex items-center gap-3 p-2.5 rounded-xl" style={{ background: "#252245", border: "1px solid #14532D" }}>
                     <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
                       style={{ background: m.status === "on-duty" ? "#10B98122" : m.status === "responding" ? "#F59E0B22" : "#2D2A50", color: m.status === "on-duty" ? "#10B981" : m.status === "responding" ? "#F59E0B" : "#6B7280" }}>
                       <Shield className="w-3.5 h-3.5" />

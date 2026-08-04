@@ -114,7 +114,7 @@ const SIM_PLANS = [
     id: "unlimited", name: "Unlimited Talk", price: "R299", priceLabel: "/month",
     data: "5GB data", calls: "Unlimited SA", sms: "300 free SMS",
     globalCalls: "300 free mins to any of 5 countries", badge: "Top Tier",
-    badgeColor: "#EF4444", color: "linear-gradient(135deg,#1A237E,#3949AB)",
+    badgeColor: "#EF4444", color: "linear-gradient(135deg,#1A237E,#128A43)",
     features: ["5GB data", "UNLIMITED SA calls", "300 SMS", "300 mins international (local rates)", "All VINK app data free", "HD voice (VoLTE)", "eSIM + physical SIM"],
   },
 ];

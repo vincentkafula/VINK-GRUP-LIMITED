@@ -286,8 +286,8 @@ function TrackingScreen() {
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill="url(#pgrid)"/>
-          <line x1="0" y1="50%" x2="100%" y2="45%" stroke="#2A2A5F" strokeWidth="6"/>
-          <line x1="40%" y1="0" x2="50%" y2="100%" stroke="#2A2A5F" strokeWidth="5"/>
+          <line x1="0" y1="50%" x2="100%" y2="45%" stroke="#0B2E1C" strokeWidth="6"/>
+          <line x1="40%" y1="0" x2="50%" y2="100%" stroke="#0B2E1C" strokeWidth="5"/>
         </svg>
         {/* Route and pins */}
         <svg className="absolute inset-0 w-full h-full" viewBox="0 0 200 250" preserveAspectRatio="none">

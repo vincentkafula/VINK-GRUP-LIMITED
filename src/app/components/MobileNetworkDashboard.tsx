@@ -92,7 +92,7 @@ function LoginScreen({ onLogin, onClose, mode }: {
               <label className={`block font-semibold mb-1 ${compact ? "text-[10px]" : "text-xs"}`} style={{ color: "#8884AA" }}>{f.label}</label>
               <input type={f.type} value={f.value} onChange={e => f.set(e.target.value)} required
                 className={`w-full rounded-lg px-3 text-white outline-none focus:ring-2 focus:ring-[#128A43] ${compact ? "py-2 text-xs" : "py-2.5 text-sm"}`}
-                style={{ background: "#252245", border: "1px solid #3D3A6A" }} />
+                style={{ background: "#252245", border: "1px solid #14532D" }} />
             </div>
           ))}
           {error && (
@@ -100,7 +100,7 @@ function LoginScreen({ onLogin, onClose, mode }: {
           )}
           <button type="submit" disabled={loading}
             className={`w-full rounded-lg font-semibold text-white transition-opacity disabled:opacity-60 flex items-center justify-center gap-2 ${compact ? "py-2 text-xs" : "py-2.5 text-sm"}`}
-            style={{ background: "linear-gradient(135deg,#128A43,#8B7EE7)" }}>
+            style={{ background: "linear-gradient(135deg,#128A43,#7ED99A)" }}>
             {loading ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />Signing in…</> : <><Key className="w-3.5 h-3.5" />Sign In</>}
           </button>
           <button type="button" onClick={() => { setDemoMode(true); setToken(DEMO_TOKEN); onLogin(DEMO_TOKEN, { name: "Demo Operator", role: "noc_engineer" }); }}
@@ -215,14 +215,14 @@ function MobileDashboardContent({
   const nodes = [
     { id: "cell-towers",    label: "Cell Towers",          metric: towerStats ? `${towerStats.online}/${towerStats.total}` : "—", status: towerStats?.warning ? "warning" : "online",  color: "#D85A30", icon: <Radio className="w-4 h-4" /> },
     { id: "ran-gateway",    label: "RAN Gateway",          metric: kpiData ? `${Number(kpiData.dataThroughputGbps).toFixed(1)} Gbps` : "—", status: "online",  color: "#D85A30", icon: <Wifi className="w-4 h-4" /> },
-    { id: "hlr-hss",        label: "HLR / HSS",            metric: kpiData ? fmt(Number(kpiData.totalSubscribers)) : "—",  status: "online",  color: "#534AB7", icon: <Database className="w-4 h-4" /> },
-    { id: "msc",            label: "MSC / Switching",      metric: kpiData ? fmt(Number(kpiData.activeVoiceCalls)) : "—",  status: "online",  color: "#534AB7", icon: <Phone className="w-4 h-4" /> },
-    { id: "packet-core",    label: "Packet Core",          metric: kpiData ? `${Number(kpiData.dataThroughputGbps).toFixed(1)} Gbps` : "—", status: Number(kpiData?.avgNetworkLoadPct) > 75 ? "warning" : "online", color: "#534AB7", icon: <Globe className="w-4 h-4" /> },
-    { id: "smsc",           label: "SMSC",                 metric: "—",                status: "online",  color: "#534AB7", icon: <MessageSquare className="w-4 h-4" /> },
-    { id: "billing",        label: "Billing / OSS-BSS",    metric: billingSum ? fmtUSD(Number(billingSum.totalRevenue)) : "—", status: "online", color: "#534AB7", icon: <CreditCard className="w-4 h-4" /> },
-    { id: "fraud",          label: "Fraud / Security",     metric: fraudSum ? `${fraudSum.active} active` : "—", status: Number(fraudSum?.active) > 10 ? "warning" : "online", color: "#534AB7", icon: <Shield className="w-4 h-4" /> },
-    { id: "sim-prov",       label: "SIM Provisioning",     metric: provStats ? fmt(provStats.active) : "—", status: "online", color: "#534AB7", icon: <Signal className="w-4 h-4" /> },
-    { id: "cx",             label: "Customer Service",     metric: supportStats ? `${supportStats.open} open` : "—", status: "online", color: "#534AB7", icon: <Headphones className="w-4 h-4" /> },
+    { id: "hlr-hss",        label: "HLR / HSS",            metric: kpiData ? fmt(Number(kpiData.totalSubscribers)) : "—",  status: "online",  color: "#34A853", icon: <Database className="w-4 h-4" /> },
+    { id: "msc",            label: "MSC / Switching",      metric: kpiData ? fmt(Number(kpiData.activeVoiceCalls)) : "—",  status: "online",  color: "#34A853", icon: <Phone className="w-4 h-4" /> },
+    { id: "packet-core",    label: "Packet Core",          metric: kpiData ? `${Number(kpiData.dataThroughputGbps).toFixed(1)} Gbps` : "—", status: Number(kpiData?.avgNetworkLoadPct) > 75 ? "warning" : "online", color: "#34A853", icon: <Globe className="w-4 h-4" /> },
+    { id: "smsc",           label: "SMSC",                 metric: "—",                status: "online",  color: "#34A853", icon: <MessageSquare className="w-4 h-4" /> },
+    { id: "billing",        label: "Billing / OSS-BSS",    metric: billingSum ? fmtUSD(Number(billingSum.totalRevenue)) : "—", status: "online", color: "#34A853", icon: <CreditCard className="w-4 h-4" /> },
+    { id: "fraud",          label: "Fraud / Security",     metric: fraudSum ? `${fraudSum.active} active` : "—", status: Number(fraudSum?.active) > 10 ? "warning" : "online", color: "#34A853", icon: <Shield className="w-4 h-4" /> },
+    { id: "sim-prov",       label: "SIM Provisioning",     metric: provStats ? fmt(provStats.active) : "—", status: "online", color: "#34A853", icon: <Signal className="w-4 h-4" /> },
+    { id: "cx",             label: "Customer Service",     metric: supportStats ? `${supportStats.open} open` : "—", status: "online", color: "#34A853", icon: <Headphones className="w-4 h-4" /> },
     { id: "roaming",        label: "Roaming Partners",     metric: "82 partners",      status: "online",  color: "#0F6E56", icon: <Globe className="w-4 h-4" /> },
     { id: "carrier",        label: "Carrier Interconnect", metric: "99.96% avail",     status: "online",  color: "#0F6E56", icon: <Phone className="w-4 h-4" /> },
     { id: "regulator",      label: "Regulator / LI",       metric: "100% compliant",   status: "online",  color: "#0F6E56", icon: <Shield className="w-4 h-4" /> },
@@ -300,7 +300,7 @@ function MobileDashboardContent({
               <p className="text-xs font-bold text-white mb-2">Traffic (24h)</p>
               <div className="flex items-end gap-0.5 h-10">
                 {Array.from({ length: 24 }, (_, i) => 30 + Math.sin(i / 3) * 25 + Math.random() * 15).map((h, i) => (
-                  <div key={i} className="flex-1 rounded-sm" style={{ height: `${Math.max(5, h)}%`, background: i === 23 ? "#5FC97F" : "#534AB755" }} />
+                  <div key={i} className="flex-1 rounded-sm" style={{ height: `${Math.max(5, h)}%`, background: i === 23 ? "#5FC97F" : "#34A85355" }} />
                 ))}
               </div>
             </div>
@@ -310,9 +310,9 @@ function MobileDashboardContent({
         {/* NETWORK TAB */}
         {activeTab === "network" && (
           <div className="space-y-2">
-            <p className="text-[10px] font-bold uppercase tracking-wider px-1" style={{ color: "#534AB7" }}>Host MNO</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider px-1" style={{ color: "#34A853" }}>Host MNO</p>
             {nodes.slice(0, 2).map(n => <NodeRow key={n.id} n={n} />)}
-            <p className="text-[10px] font-bold uppercase tracking-wider px-1 pt-1" style={{ color: "#534AB7" }}>Core Network</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider px-1 pt-1" style={{ color: "#34A853" }}>Core Network</p>
             {nodes.slice(2, 10).map(n => <NodeRow key={n.id} n={n} />)}
             <p className="text-[10px] font-bold uppercase tracking-wider px-1 pt-1" style={{ color: "#0F6E56" }}>External</p>
             {nodes.slice(10).map(n => <NodeRow key={n.id} n={n} />)}
@@ -373,7 +373,7 @@ function MobileDashboardContent({
                   <p className="text-xs font-semibold text-white">{s.label}</p>
                   <p className="text-[10px] mt-0.5" style={{ color: "#8884AA" }}>{s.sub}</p>
                 </div>
-                <ChevronRight className="w-3.5 h-3.5" style={{ color: "#534AB7" }} />
+                <ChevronRight className="w-3.5 h-3.5" style={{ color: "#34A853" }} />
               </div>
             ))}
             <button onClick={onLogout}
@@ -463,14 +463,14 @@ function WebDashboard({
   const nodes = [
     { id: "cell-towers",    label: "Cell Towers",          sublabel: "Radio spectrum, antennas",     status: towerStats?.warning ? "warning" : "online",                          metric: towerStats ? `${towerStats.online}` : "—",                    color: "#D85A30", layer: "mno",  icon: <Radio className="w-4 h-4" /> },
     { id: "ran-gw",         label: "RAN Gateway",          sublabel: "Hands traffic to core",        status: "online" as const,                                                    metric: kpiData ? `${Number(kpiData.dataThroughputGbps).toFixed(1)}G` : "—", color: "#D85A30", layer: "mno",  icon: <Wifi className="w-4 h-4" /> },
-    { id: "hlr-hss",        label: "HLR / HSS",            sublabel: "Subscriber identity",          status: "online" as const,                                                    metric: kpiData ? fmt(Number(kpiData.totalSubscribers)) : "—",        color: "#534AB7", layer: "core", icon: <Database className="w-4 h-4" /> },
-    { id: "msc",            label: "MSC / Switching",      sublabel: "Call routing",                 status: "online" as const,                                                    metric: kpiData ? fmt(Number(kpiData.activeVoiceCalls)) : "—",        color: "#534AB7", layer: "core", icon: <Phone className="w-4 h-4" /> },
-    { id: "pkt-core",       label: "Packet Core",          sublabel: "Data sessions",                status: Number(kpiData?.avgNetworkLoadPct) > 75 ? "warning" : "online" as const, metric: kpiData ? `${Number(kpiData.dataThroughputGbps).toFixed(1)} Gbps` : "—", color: "#534AB7", layer: "core", icon: <Globe className="w-4 h-4" /> },
-    { id: "smsc",           label: "SMSC",                 sublabel: "SMS routing",                  status: "online" as const,                                                    metric: "—",                                                          color: "#534AB7", layer: "core", icon: <MessageSquare className="w-4 h-4" /> },
-    { id: "billing",        label: "Billing / OSS-BSS",    sublabel: "Rating, invoicing",            status: "online" as const,                                                    metric: billingSum ? fmtUSD(Number(billingSum.totalRevenue)) : "—",   color: "#534AB7", layer: "core", icon: <CreditCard className="w-4 h-4" /> },
-    { id: "fraud",          label: "Fraud / Security",     sublabel: "Monitoring, LI",               status: Number(fraudSum?.active) > 10 ? "warning" : "online" as const,       metric: fraudSum ? `${fraudSum.active} active` : "—",                 color: "#534AB7", layer: "core", icon: <Shield className="w-4 h-4" /> },
-    { id: "sim-prov",       label: "SIM Provisioning",     sublabel: "Activation, mgmt",             status: "online" as const,                                                    metric: provStats ? fmt(provStats.active) : "—",                      color: "#534AB7", layer: "core", icon: <Signal className="w-4 h-4" /> },
-    { id: "cx",             label: "Customer Service",     sublabel: "Support platform",             status: "online" as const,                                                    metric: supportStats ? `${supportStats.avgCsat}/5` : "—",            color: "#534AB7", layer: "core", icon: <Headphones className="w-4 h-4" /> },
+    { id: "hlr-hss",        label: "HLR / HSS",            sublabel: "Subscriber identity",          status: "online" as const,                                                    metric: kpiData ? fmt(Number(kpiData.totalSubscribers)) : "—",        color: "#34A853", layer: "core", icon: <Database className="w-4 h-4" /> },
+    { id: "msc",            label: "MSC / Switching",      sublabel: "Call routing",                 status: "online" as const,                                                    metric: kpiData ? fmt(Number(kpiData.activeVoiceCalls)) : "—",        color: "#34A853", layer: "core", icon: <Phone className="w-4 h-4" /> },
+    { id: "pkt-core",       label: "Packet Core",          sublabel: "Data sessions",                status: Number(kpiData?.avgNetworkLoadPct) > 75 ? "warning" : "online" as const, metric: kpiData ? `${Number(kpiData.dataThroughputGbps).toFixed(1)} Gbps` : "—", color: "#34A853", layer: "core", icon: <Globe className="w-4 h-4" /> },
+    { id: "smsc",           label: "SMSC",                 sublabel: "SMS routing",                  status: "online" as const,                                                    metric: "—",                                                          color: "#34A853", layer: "core", icon: <MessageSquare className="w-4 h-4" /> },
+    { id: "billing",        label: "Billing / OSS-BSS",    sublabel: "Rating, invoicing",            status: "online" as const,                                                    metric: billingSum ? fmtUSD(Number(billingSum.totalRevenue)) : "—",   color: "#34A853", layer: "core", icon: <CreditCard className="w-4 h-4" /> },
+    { id: "fraud",          label: "Fraud / Security",     sublabel: "Monitoring, LI",               status: Number(fraudSum?.active) > 10 ? "warning" : "online" as const,       metric: fraudSum ? `${fraudSum.active} active` : "—",                 color: "#34A853", layer: "core", icon: <Shield className="w-4 h-4" /> },
+    { id: "sim-prov",       label: "SIM Provisioning",     sublabel: "Activation, mgmt",             status: "online" as const,                                                    metric: provStats ? fmt(provStats.active) : "—",                      color: "#34A853", layer: "core", icon: <Signal className="w-4 h-4" /> },
+    { id: "cx",             label: "Customer Service",     sublabel: "Support platform",             status: "online" as const,                                                    metric: supportStats ? `${supportStats.avgCsat}/5` : "—",            color: "#34A853", layer: "core", icon: <Headphones className="w-4 h-4" /> },
     { id: "roaming",        label: "Roaming Partners",     sublabel: "International",                status: "online" as const,                                                    metric: interSum ? `${interSum.activePartners}` : "—",                color: "#0F6E56", layer: "ext",  icon: <Globe className="w-4 h-4" /> },
     { id: "carrier",        label: "Carrier Interconnect", sublabel: "Off-net calls",                status: "online" as const,                                                    metric: interSum ? `${interSum.activeRoutes} routes` : "—",           color: "#0F6E56", layer: "ext",  icon: <Phone className="w-4 h-4" /> },
     { id: "regulator",      label: "Regulator / LI",       sublabel: "Compliance",                   status: "online" as const,                                                    metric: "100%",                                                       color: "#0F6E56", layer: "ext",  icon: <Shield className="w-4 h-4" /> },
@@ -591,7 +591,7 @@ function WebDashboard({
 
               {/* Subscriber */}
               <div className="flex justify-center">
-                <div className="flex items-center gap-3 px-5 py-2.5 rounded-xl border" style={{ background: "#252245", borderColor: "#3D3A6A" }}>
+                <div className="flex items-center gap-3 px-5 py-2.5 rounded-xl border" style={{ background: "#252245", borderColor: "#14532D" }}>
                   <Signal className="w-4 h-4" style={{ color: "#5FC97F" }} />
                   <p className="text-xs font-bold text-white">SIM / Handset</p>
                   <Dot status="online" />
@@ -601,7 +601,7 @@ function WebDashboard({
 
               {["mno","core","ext"].map(layer => {
                 const layerNodes = nodes.filter(n => n.layer === layer);
-                const colors = { mno: "#D85A30", core: "#534AB7", ext: "#0F6E56" };
+                const colors = { mno: "#D85A30", core: "#34A853", ext: "#0F6E56" };
                 const labels = { mno: "Host MNO (Leased)", core: "MVNO Core Network", ext: "External Interconnects" };
                 const online = layerNodes.filter(n => n.status === "online").length;
                 const c = colors[layer as keyof typeof colors];
@@ -638,7 +638,7 @@ function WebDashboard({
                 <h3 className="text-sm font-bold text-white mb-4">System Health</h3>
                 {[
                   { label: "Radio Access", pct: towerStats ? Math.round(towerStats.online / towerStats.total * 100) : 98, color: "#D85A30" },
-                  { label: "Core Network", pct: kpiData ? Math.max(0, 100 - Math.max(0, Number(kpiData.avgNetworkLoadPct) - 70)) : 94, color: "#534AB7" },
+                  { label: "Core Network", pct: kpiData ? Math.max(0, 100 - Math.max(0, Number(kpiData.avgNetworkLoadPct) - 70)) : 94, color: "#34A853" },
                   { label: "External Links", pct: 100, color: "#0F6E56" },
                 ].map((l, i) => (
                   <div key={i} className="mb-3">
@@ -688,7 +688,7 @@ function WebDashboard({
                 </div>
                 <div className="flex items-end gap-0.5 h-14">
                   {sparkVals.map((h, i) => (
-                    <div key={i} className="flex-1 rounded-sm" style={{ height: `${Math.max(5, Math.min(100, h))}%`, background: i === sparkVals.length - 1 ? "#5FC97F" : "#534AB755" }} />
+                    <div key={i} className="flex-1 rounded-sm" style={{ height: `${Math.max(5, Math.min(100, h))}%`, background: i === sparkVals.length - 1 ? "#5FC97F" : "#34A85355" }} />
                   ))}
                 </div>
                 <div className="flex justify-between text-[9px] mt-1" style={{ color: "#8884AA" }}>
@@ -746,7 +746,7 @@ function LayerArrow() {
 // ─── PREVIEW TOGGLE BAR ───────────────────────────────────────────────────────
 function PreviewToggle({ mode, onChange }: { mode: PreviewMode; onChange: (m: PreviewMode) => void }) {
   return (
-    <div className="flex items-center gap-1 p-1 rounded-xl" style={{ background: "#252245", border: "1px solid #3D3A6A" }}>
+    <div className="flex items-center gap-1 p-1 rounded-xl" style={{ background: "#252245", border: "1px solid #14532D" }}>
       {(["mobile", "web"] as PreviewMode[]).map(m => (
         <button key={m} onClick={() => onChange(m)}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"

@@ -67,7 +67,7 @@ export function DriverDashboard({ isOpen, onClose }: { isOpen: boolean; onClose:
                   { label: "Fuel", value: "74%", icon: <TrendingUp className="w-4 h-4" /> },
                   { label: "Odometer", value: "84,210 km", icon: <Navigation className="w-4 h-4" /> },
                 ].map((item, i) => (
-                  <div key={i} className="rounded-xl p-3 text-center" style={{ background: "#252245", border: "1px solid #3D3A6A" }}>
+                  <div key={i} className="rounded-xl p-3 text-center" style={{ background: "#252245", border: "1px solid #14532D" }}>
                     <div className="flex justify-center mb-1.5" style={{ color: "#3B82F6" }}>{item.icon}</div>
                     <p className="text-xs font-bold text-white">{item.value}</p>
                     <p className="text-[9px] mt-0.5" style={{ color: "#8884AA" }}>{item.label}</p>

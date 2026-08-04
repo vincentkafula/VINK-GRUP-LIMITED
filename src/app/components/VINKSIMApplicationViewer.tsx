@@ -192,7 +192,7 @@ export function VINKSIMApplicationViewer({ isOpen, onClose }: Props) {
         tag="VINK MVNO · Cell C Network · ICASA Licensed"
         title="Get Your Vink SIM Card"
         subtitle="Stay connected on South Africa's fastest network. Choose your plan, verify your identity, and get your SIM activated in minutes."
-        gradient="linear-gradient(135deg,#1a0533 0%,#3B2D9E 45%,#128A43 100%)"
+        gradient="linear-gradient(135deg,#1a0533 0%,#0B5C2E 45%,#128A43 100%)"
       />
 
       <div className="max-w-2xl mx-auto w-full px-5 py-8 space-y-5">

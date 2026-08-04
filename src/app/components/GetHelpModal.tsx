@@ -67,7 +67,7 @@ export function GetHelpModal({ isOpen, onClose }: GetHelpModalProps) {
 
       <div className="flex-1">
         {/* ── Hero / Search ── */}
-        <div className="px-6 py-10 text-center border-b" style={{ background: "linear-gradient(135deg,#1E1B4B,#2D2060)", borderColor: "#2D2A4A" }}>
+        <div className="px-6 py-10 text-center border-b" style={{ background: "linear-gradient(135deg,#1E1B4B,#0B2E1C)", borderColor: "#2D2A4A" }}>
           <h1 className="text-2xl md:text-3xl font-black text-white mb-2">How can we help you?</h1>
           <p className="text-white/55 text-sm mb-6">Search our knowledge base or browse topics below</p>
           <div className="flex items-center gap-3 max-w-xl mx-auto bg-white/10 rounded-2xl px-4 py-3 border border-white/15">

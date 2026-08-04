@@ -66,7 +66,7 @@ const APPS = [
     size: "42.8 MB",
     rating: 4.9,
     reviews: "15,842",
-    gradient: "linear-gradient(135deg,#3B2D8E,#7B6FE8)",
+    gradient: "linear-gradient(135deg,#0B5C2E,#5FC97F)",
     emoji: "💳",
     badge: "Most Downloaded",
     badgeColor: "#EF4444",
@@ -299,7 +299,7 @@ export function AppLauncher({ isOpen, onClose, onLaunchApp }: Props) {
       </div>
 
       {/* Hero banner */}
-      <div className="px-5 py-6" style={{ background: "linear-gradient(135deg,#1A0533 0%,#3B2D8E 50%,#5B4EC7 100%)" }}>
+      <div className="px-5 py-6" style={{ background: "linear-gradient(135deg,#1A0533 0%,#0B5C2E 50%,#128A43 100%)" }}>
         <div className="max-w-lg mx-auto">
           <div className="flex items-center gap-2 mb-3">
             <Smartphone className="w-4 h-4 text-yellow-400" />

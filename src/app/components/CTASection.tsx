@@ -2,7 +2,7 @@ import { ArrowRight, Smartphone } from 'lucide-react';
 
 export function CTASection() {
   return (
-    <div className="bg-gradient-to-br from-[#128A43] to-[#5B4EC7] text-white py-16">
+    <div className="bg-gradient-to-br from-[#128A43] to-[#128A43] text-white py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>

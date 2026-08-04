@@ -105,7 +105,7 @@ function HealingMap({ mode, etaMin }: { mode: "home" | "tracking" | "live"; etaM
       {/* Nearby drivers (home mode) */}
       {mode === "home" && [[80,80],[280,100],[100,180],[320,180]].map(([x,y],i) => (
         <g key={i} transform={`translate(${x},${y})`}>
-          <circle cx="0" cy="0" r="10" fill="white" stroke="#9085E8" strokeWidth="1.5" opacity="0.8" />
+          <circle cx="0" cy="0" r="10" fill="white" stroke="#7ED99A" strokeWidth="1.5" opacity="0.8" />
           <text x="0" y="4" textAnchor="middle" fontSize="9">🚗</text>
         </g>
       ))}
@@ -235,7 +235,7 @@ function LoginScreen({ onLogin }: { onLogin: (token: string) => void }) {
         {error && <p className="text-xs text-red-500 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
         <button onClick={handleContinue} disabled={loading}
           className="w-full py-3.5 rounded-2xl text-white font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-60"
-          style={{ background: "linear-gradient(135deg,#128A43,#8B7EE7)" }}>
+          style={{ background: "linear-gradient(135deg,#128A43,#7ED99A)" }}>
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
           {step === "phone" ? "Send OTP" : "Verify & Enter"}
         </button>
@@ -355,7 +355,7 @@ function HomeScreen({ passenger, onBook, onHistory, onScheduled }: {
             style={{ background: "linear-gradient(135deg,#EDE9FE,#EAF7EE)", border: "1px solid #DDD6FE" }}>
             <Calendar className="w-5 h-5 flex-shrink-0" style={{ color: "#128A43" }} />
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold" style={{ color: "#5B21B6" }}>Upcoming: Physiotherapy</p>
+              <p className="text-xs font-bold" style={{ color: "#0B5C2E" }}>Upcoming: Physiotherapy</p>
               <p className="text-xs" style={{ color: "#FF9900" }}>Tomorrow 09:00 · Netcare Claremont</p>
             </div>
             <button onClick={onScheduled} className="text-xs font-semibold px-2 py-1 rounded-lg" style={{ color: "#128A43", background: "white" }}>View</button>
@@ -452,7 +452,7 @@ function RideTypeScreen({ pickup, dropoff, onSelect, onBack }: {
         </div>
         <button onClick={() => onSelect(selected, chosenFare, payment)}
           className="w-full py-3.5 rounded-2xl text-white font-bold text-sm"
-          style={{ background: "linear-gradient(135deg,#128A43,#8B7EE7)" }}>
+          style={{ background: "linear-gradient(135deg,#128A43,#7ED99A)" }}>
           Next: Add Medical Note
         </button>
       </div>
@@ -515,7 +515,7 @@ function MedicalNoteScreen({ vehicleType, fare, onConfirm, onBack }: {
         </div>
         <button onClick={() => onConfirm(note)}
           className="w-full py-3.5 rounded-2xl text-white font-bold text-sm"
-          style={{ background: "linear-gradient(135deg,#128A43,#8B7EE7)" }}>
+          style={{ background: "linear-gradient(135deg,#128A43,#7ED99A)" }}>
           Confirm Booking
         </button>
       </div>
@@ -736,7 +736,7 @@ function InTripScreen({ ride, onSos, onComplete }: {
         <div className="flex items-center gap-3 p-3.5 rounded-2xl" style={{ background: "#F5F3FF", border: "1px solid #DDD6FE" }}>
           <Heart className="w-4 h-4 flex-shrink-0" style={{ color: "#128A43" }} />
           <div className="flex-1">
-            <p className="text-xs font-semibold" style={{ color: "#5B21B6" }}>Share live trip</p>
+            <p className="text-xs font-semibold" style={{ color: "#0B5C2E" }}>Share live trip</p>
             <p className="text-xs text-gray-500">Caregiver can follow your journey</p>
           </div>
           <button className="text-xs font-bold px-3 py-1.5 rounded-xl text-white" style={{ background: "#128A43" }}>Share</button>
@@ -787,7 +787,7 @@ function RatingScreen({ ride, onDone }: { ride: RideData; onDone: () => void }) 
       <p className="text-2xl font-black" style={{ color: "#128A43" }}>R{Number(ride.estimatedFareZAR).toFixed(2)}</p>
       <p className="text-xs text-gray-500 mt-1">charged to your card</p>
       <button onClick={onDone} className="mt-8 w-full py-3.5 rounded-2xl text-white font-bold text-sm"
-        style={{ background: "linear-gradient(135deg,#128A43,#8B7EE7)" }}>
+        style={{ background: "linear-gradient(135deg,#128A43,#7ED99A)" }}>
         Back to Home
       </button>
     </div>
@@ -828,7 +828,7 @@ function RatingScreen({ ride, onDone }: { ride: RideData; onDone: () => void }) 
 
       <button disabled={stars === 0} onClick={() => setSubmitted(true)}
         className="w-full py-3.5 rounded-2xl text-white font-bold text-sm disabled:opacity-40"
-        style={{ background: "linear-gradient(135deg,#128A43,#8B7EE7)" }}>
+        style={{ background: "linear-gradient(135deg,#128A43,#7ED99A)" }}>
         Submit Rating
       </button>
     </div>
@@ -892,7 +892,7 @@ function RiderArchitectureScreen() {
       </div>
       {[
         { layer:"CLIENT",  items:["Rider App (iOS/Android)","Driver App","Caregiver App","Admin Panel"], color:"#0F6E56", bg:"#ECFDF5" },
-        { layer:"GATEWAY", items:["API Gateway","JWT · OTP auth","Rate Limiting","WebSocket Hub"],        color:"#534AB7", bg:"#EEEDFE" },
+        { layer:"GATEWAY", items:["API Gateway","JWT · OTP auth","Rate Limiting","WebSocket Hub"],        color:"#34A853", bg:"#EEEDFE" },
         { layer:"CORE",    items:["Auth Svc","User Svc · KYC","Ride Svc","Matching Engine","Location Svc"], color:"#185FA5", bg:"#E6F1FB" },
         { layer:"SUPPORT", items:["Payment","Notifications","Pricing Engine","Rating","SOS Safety Svc"],  color:"#993C1D", bg:"#FAECE7" },
         { layer:"DATA",    items:["PostgreSQL","InfluxDB · GPS","Redis · geo cache","AWS S3 · docs"],     color:"#5F5E5A", bg:"#F1EFE8" },
@@ -939,7 +939,7 @@ function ScheduledScreen({ onBack }: { onBack: () => void }) {
         </div>
       ))}
       <button className="w-full py-3.5 rounded-2xl text-white font-bold text-sm flex items-center justify-center gap-2 mt-2"
-        style={{ background: "linear-gradient(135deg,#128A43,#8B7EE7)" }}>
+        style={{ background: "linear-gradient(135deg,#128A43,#7ED99A)" }}>
         <Plus className="w-4 h-4" /> Schedule New Ride
       </button>
     </div>
