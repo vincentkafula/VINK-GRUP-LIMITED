@@ -15,7 +15,7 @@ const GOLD = "#F5A623";
 
 type View = "home" | "article" | "category" | "search";
 
-const CATEGORIES = ["Product News", "Technology", "Partnerships", "Community Impact", "Regulatory Update"];
+const CATEGORIES = ["World", "Africa", "Business", "Technology", "Sport", "Entertainment", "Opinion"];
 
 function fmtDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-ZA", { day: "numeric", month: "long", year: "numeric" });
@@ -284,7 +284,7 @@ function HomeView({ onOpenSlug, onCategory }: { onOpenSlug: (s: string) => void;
         <div className="rounded-2xl p-8 text-white text-center mt-14" style={{ background: `linear-gradient(135deg,${GREEN},#34A853)` }}>
           <Mail className="w-8 h-8 mx-auto mb-3 opacity-80" />
           <h3 className="text-xl font-black mb-2">Stay Ahead of the Curve</h3>
-          <p className="text-white/75 text-sm mb-6 max-w-md mx-auto">VINK news, product launches, and industry insights — delivered to your inbox monthly.</p>
+          <p className="text-white/75 text-sm mb-6 max-w-md mx-auto">The day's top stories in business, technology, sport, and more — delivered to your inbox every morning.</p>
           <div className="flex gap-2 max-w-sm mx-auto">
             {nlDone ? (
               <p className="flex-1 text-center text-sm font-semibold text-white/90">✓ You&apos;re subscribed!</p>

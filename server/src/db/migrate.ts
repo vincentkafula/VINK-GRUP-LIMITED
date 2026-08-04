@@ -104,15 +104,17 @@ export async function migrateAndSeed(): Promise<void> {
   await seedNews();
 }
 
-// Seeded independently of the main product/user seed above (own gate, own
-// transaction) so news articles land even on a database that was already
-// seeded with everything else before this table existed.
+// Synced independently of the main product/user seed above (own transaction)
+// so news articles land even on a database that was already seeded with
+// everything else before this table existed. Runs an upsert-and-prune sync
+// on every boot rather than a one-time "only if empty" seed — editorial
+// content changes over time, and a one-time seed would leave old/replaced
+// articles stuck in the database forever with no way to update them short
+// of a manual migration. Preserves view counts on articles that still exist
+// (real reader engagement shouldn't reset just because copy was edited).
 async function seedNews(): Promise<void> {
   if (!hasDb || !pool) return;
-  const { rows } = await pool.query<{ count: string }>("SELECT COUNT(*)::text AS count FROM news_articles");
-  if (Number(rows[0].count) > 0) return;
 
-  console.log("[db] Seeding news articles...");
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
@@ -120,16 +122,26 @@ async function seedNews(): Promise<void> {
       await client.query(
         `INSERT INTO news_articles (id, slug, title, subtitle, category, author, summary, body, tags,
            hero_gradient, emoji, read_minutes, featured, breaking, views, published_at)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) ON CONFLICT (id) DO NOTHING`,
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
+         ON CONFLICT (id) DO UPDATE SET
+           slug = EXCLUDED.slug, title = EXCLUDED.title, subtitle = EXCLUDED.subtitle,
+           category = EXCLUDED.category, author = EXCLUDED.author, summary = EXCLUDED.summary,
+           body = EXCLUDED.body, tags = EXCLUDED.tags, hero_gradient = EXCLUDED.hero_gradient,
+           emoji = EXCLUDED.emoji, read_minutes = EXCLUDED.read_minutes, featured = EXCLUDED.featured,
+           breaking = EXCLUDED.breaking, published_at = EXCLUDED.published_at`,
+        // Note: views intentionally excluded from the UPDATE SET above — real
+        // engagement on an existing article is preserved across content edits.
         [a.id, a.slug, a.title, a.subtitle ?? null, a.category, a.author, a.summary, a.body, JSON.stringify(a.tags),
          a.heroGradient, a.emoji, a.readMinutes, a.featured ?? false, a.breaking ?? false, a.views, a.publishedAt]
       );
     }
+    const currentIds = NEWS_ARTICLES.map(a => a.id);
+    await client.query(`DELETE FROM news_articles WHERE id != ALL($1::text[])`, [currentIds]);
     await client.query("COMMIT");
-    console.log("[db] News seed complete.");
+    console.log(`[db] News sync complete (${NEWS_ARTICLES.length} articles).`);
   } catch (err) {
     await client.query("ROLLBACK");
-    console.error("[db] News seed failed, rolled back:", err);
+    console.error("[db] News sync failed, rolled back:", err);
   } finally {
     client.release();
   }

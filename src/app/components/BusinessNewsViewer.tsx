@@ -14,7 +14,7 @@ const TOP_NAV    = ["Personal", "Business", "Corporate", "Marketplace"];
 const BIZ_SUBNAV = ["Start My Business", "Accounts", "Credit Cards", "Loans", "Invest", "Insure", "Manage My Business", "International", "Studio", "News", "Get Help"];
 const ACTIVE_IDX = 9;
 
-const NEWS_TABS = ["All", "Product News", "Technology", "Partnerships", "Community Impact", "Regulatory Update"];
+const NEWS_TABS = ["All", "World", "Africa", "Business", "Technology", "Sport", "Entertainment", "Opinion"];
 
 function timeAgo(iso: string) {
   const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
@@ -194,7 +194,7 @@ export function BusinessNewsViewer({ isOpen, onClose, onNavigate }: Props) {
           {/* Newsletter */}
           <div style={{ border: "1.5px solid #e8e8f0", borderRadius: 10, padding: 20 }}>
             <h4 style={{ fontSize: 15, fontWeight: 700, color: BRAND, marginBottom: 6, paddingBottom: 10, borderBottom: `2px solid ${BRAND}` }}>VINK Business Newsletter</h4>
-            <p style={{ fontSize: 13, color: "#1e1e2e", margin: "12px 0 10px" }}>Product news and industry insights · Monthly</p>
+            <p style={{ fontSize: 13, color: "#1e1e2e", margin: "12px 0 10px" }}>Top stories across business, technology, and world news · Weekly</p>
             {[
               { label: "First Name",     key: "name" as const,  type: "text" },
               { label: "Email Address",  key: "email" as const, type: "email" },
