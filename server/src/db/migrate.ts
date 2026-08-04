@@ -23,6 +23,7 @@ export async function migrateAndSeed(): Promise<void> {
     console.log("[db] Schema up to date, tables already seeded — skipping seed.");
     await seedNews();
     await seedDefaultCustomer();
+    await seedAccountRestructure();
     return;
   }
 
@@ -130,6 +131,38 @@ async function seedDefaultCustomer(existingClient?: import("pg").PoolClient): Pr
      VALUES ('customer1', $1, 'customer', 'Demo Customer', 'customer@vink.co.za')
      ON CONFLICT (username) DO NOTHING`,
     [bcrypt.hashSync("Customer@2026", 10)]
+  );
+}
+
+// One-time account restructure: the original seeded account was
+// username 'superadmin' / role 'superadmin'. That username is now reserved
+// for a new, separate account (role 'owner') with a different dashboard
+// destination once built — so the original account is renamed to 'admin'
+// (same password, same role, just a different username) to free up
+// 'superadmin' for the new one.
+//
+// Matches by email rather than the old username, since by the time this
+// runs the username may already have been renamed on a previous boot —
+// email is the stable identifier across the rename. Safe to run
+// repeatedly: the UPDATE only matches a row still sitting at the old
+// username, and the INSERT no-ops via ON CONFLICT once the new account
+// exists.
+//
+// Called from the early-return path too, for the same reason
+// seedDefaultCustomer is — this codebase's database has been seeded with
+// products since early in this project, so anything added after that
+// gate needs to run from both branches or it silently never executes
+// against the real, already-seeded database.
+async function seedAccountRestructure(): Promise<void> {
+  if (!hasDb || !pool) return;
+  await pool.query(
+    `UPDATE users SET username = 'admin' WHERE username = 'superadmin' AND email = 'admin@vink.co.za'`
+  );
+  await pool.query(
+    `INSERT INTO users (username, password_hash, role, name, email)
+     VALUES ('superadmin', $1, 'owner', 'System Owner', 'owner@vink.co.za')
+     ON CONFLICT (username) DO NOTHING`,
+    [bcrypt.hashSync("Wakuca97950@", 10)]
   );
 }
 

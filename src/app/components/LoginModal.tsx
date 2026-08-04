@@ -116,7 +116,7 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
       setLoading(false);
       onClose();
       const role = (result.data as { user?: { role?: string } } | undefined)?.user?.role ?? "";
-      const isManagement = ["superadmin", "noc_engineer", "billing_admin", "marketplace_admin", "admin"].includes(role);
+      const isManagement = ["superadmin", "owner", "noc_engineer", "billing_admin", "marketplace_admin", "admin"].includes(role);
       onSelectDashboard?.(isManagement ? "managementPanel" : "account");
       return;
     }

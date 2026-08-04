@@ -17,7 +17,7 @@ export interface AdminUser {
   id: string;
   username: string;
   passwordHash: string;
-  role: "superadmin" | "noc_engineer" | "billing_admin" | "support_agent" | "readonly";
+  role: "superadmin" | "owner" | "noc_engineer" | "billing_admin" | "support_agent" | "readonly";
   name: string;
   email: string;
   lastLogin: string | null;

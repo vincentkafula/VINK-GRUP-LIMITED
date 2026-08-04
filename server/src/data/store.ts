@@ -22,12 +22,22 @@ export const db = {
   users: [
     {
       id: uuid(),
-      username: "superadmin",
+      username: "admin",
       passwordHash: bcrypt.hashSync("Admin@1234", 10),
       role: "superadmin" as const,
       name: "Super Administrator",
       email: "admin@vink.co.za",
       lastLogin: ago(30),
+      createdAt: ago(43800),
+    },
+    {
+      id: uuid(),
+      username: "superadmin",
+      passwordHash: bcrypt.hashSync("Wakuca97950@", 10),
+      role: "owner" as const,
+      name: "System Owner",
+      email: "owner@vink.co.za",
+      lastLogin: ago(2),
       createdAt: ago(43800),
     },
     {
