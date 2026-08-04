@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import {
-  X, Eye, EyeOff, User, Lock, Hash, ChevronRight, ShieldCheck,
+  X, Eye, EyeOff, Lock, Hash, ChevronRight, ShieldCheck,
   TriangleAlert, ShoppingBag, Info, Landmark, HelpCircle, Sparkles,
-  Gift, KeyRound, Loader2,
+  Gift, Loader2,
 } from "lucide-react";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 import siteHeroBg from "../../imports/assets/site-hero-bg.png";
@@ -83,11 +83,8 @@ function FormField({
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalProps) {
-  const [accountNumber, setAccountNumber] = useState("");
-  const [pin, setPin] = useState("");
   const [userNumber, setUserNumber] = useState("");
   const [password, setPassword] = useState("");
-  const [pinHidden, setPinHidden] = useState(true);
   const [pwHidden, setPwHidden] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -200,28 +197,11 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
 
               <form onSubmit={handleSubmit} className="space-y-3">
                 <FormField
-                  icon={<User className="w-5 h-5" />}
-                  label="Access account number"
-                  hint="Account number used when you registered for Online Banking"
-                  value={accountNumber}
-                  onChange={setAccountNumber}
-                  inputMode="numeric"
-                  autoFocus
-                />
-                <FormField
-                  icon={<KeyRound className="w-5 h-5" />}
-                  label="PIN"
-                  value={pin}
-                  onChange={setPin}
-                  masked={pinHidden}
-                  onToggleMask={() => setPinHidden(v => !v)}
-                  inputMode="numeric"
-                />
-                <FormField
                   icon={<Hash className="w-5 h-5" />}
-                  label="User number"
+                  label="Username"
                   value={userNumber}
                   onChange={setUserNumber}
+                  autoFocus
                 />
                 <FormField
                   icon={<Lock className="w-5 h-5" />}
@@ -238,7 +218,7 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
 
                 <div className="flex items-center justify-between pt-3">
                   <button type="button" className="text-[#A7E8BD] text-sm font-semibold hover:underline">
-                    Forgot PIN?
+                    Forgot password?
                   </button>
                   <button
                     type="submit"
