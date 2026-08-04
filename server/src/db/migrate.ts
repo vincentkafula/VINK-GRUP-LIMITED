@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import bcrypt from "bcryptjs";
 import { pool, hasDb } from "./pool.js";
 import { CATEGORIES, SELLERS, PRODUCTS, COUPONS, ADDRESSES } from "../data/marketplaceStore.js";
 import { NEWS_ARTICLES } from "../data/newsData.js";
@@ -90,6 +91,18 @@ export async function migrateAndSeed(): Promise<void> {
         [u.id, u.username, u.passwordHash, u.role, u.name, u.email, u.lastLogin, u.createdAt]
       );
     }
+
+    // Default customer-role account, mirroring the default management
+    // account (superadmin) above — see DEV_CREDENTIALS.md at the repo root
+    // for both. Exists so developers/QA always have one known account per
+    // role type to sign in with, without needing to register a fresh one
+    // every time. Change or remove before any real production launch.
+    await client.query(
+      `INSERT INTO users (username, password_hash, role, name, email)
+       VALUES ('customer1', $1, 'customer', 'Demo Customer', 'customer@vink.co.za')
+       ON CONFLICT (username) DO NOTHING`,
+      [bcrypt.hashSync("Customer@2026", 10)]
+    );
 
     await client.query("COMMIT");
     console.log("[db] Seed complete.");

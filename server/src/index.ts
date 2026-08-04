@@ -58,7 +58,7 @@ const isAllowedOrigin = (origin: string | undefined): boolean => {
 
 // ─── Express App ─────────────────────────────────────────────────────────────
 const app = express();
-app.set("trust proxy", true); // required for correct client IP behind Railway's proxy (used by /api/geo)
+app.set("trust proxy", 1); // trust exactly one hop (Railway's edge) for correct client IP; `true` trusts every hop unconditionally, which is a rate-limit bypass vector
 
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(cors({ origin: (origin, cb) => cb(null, isAllowedOrigin(origin)), credentials: true }));
