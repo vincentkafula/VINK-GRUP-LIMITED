@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { Search, User, Loader2, ChevronDown, Home, ChevronRight } from "lucide-react";
+import { Search, User, Loader2, ChevronDown, Home, ChevronRight, X } from "lucide-react";
 import { toast } from "sonner";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { Footer } from "./Footer";
 import { ApplyModal } from "./ApplyModal";
 import { publicApi, newsApi, type NewsArticleSummary } from "../services/apiClient";
+import { ArticleView, SlidingNewsRow, timeAgo } from "./NewsShared";
 
 interface Props { isOpen: boolean; onClose: () => void; onNavigate: (item: string) => void }
 
@@ -13,14 +14,7 @@ const LIVE_RED = "#D42E2E";
 
 const NAV = ["Home", "World", "Africa", "Business", "Technology", "Politics", "Sport", "Health", "Entertainment"];
 
-function timeAgo(iso: string) {
-  const hrs = Math.floor((Date.now() - new Date(iso).getTime()) / 3600000);
-  if (hrs < 1) return "Just now";
-  if (hrs < 24) return `${hrs}h ago`;
-  const days = Math.floor(hrs / 24);
-  if (days < 30) return `${days}d ago`;
-  return `${Math.floor(days / 30)}mo ago`;
-}
+
 
 function Thumb({ a, size }: { a: NewsArticleSummary; size: number }) {
   return (
@@ -37,6 +31,7 @@ export function BusinessNewsViewer({ isOpen, onClose, onNavigate }: Props) {
   const [newsletter, setNewsletter] = useState({ name: "", email: "" });
   const [subscribing, setSubscribing] = useState(false);
   const [applyOpen, setApplyOpen] = useState(false);
+  const [openSlug, setOpenSlug] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -61,7 +56,6 @@ export function BusinessNewsViewer({ isOpen, onClose, onNavigate }: Props) {
   const hero = articles.find(a => a.featured) ?? articles[0];
   const heroSideItems = articles.filter(a => a.slug !== hero?.slug).slice(0, 4);
   const mostReadTop3 = trending.slice(0, 3);
-  const mostReadCards = trending.length >= 4 ? trending.slice(0, 4) : articles.slice(0, 4);
   const worldItems = articles.filter(a => a.category === "World" || a.category === "Africa").slice(0, 6);
 
   return (
@@ -85,12 +79,14 @@ export function BusinessNewsViewer({ isOpen, onClose, onNavigate }: Props) {
             <Search className="w-4 h-4" /> Search
           </button>
         </div>
-        <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 text-gray-500 text-sm font-semibold sm:hidden">Close</button>
+        <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 text-gray-500 text-sm font-semibold flex items-center gap-1">
+          <X className="w-4 h-4" /> <span className="hidden sm:inline">Close</span>
+        </button>
       </div>
 
       {/* Nav bar */}
       <nav className="flex items-center overflow-x-auto" style={{ background: GREEN, scrollbarWidth: "none" }}>
-        <button onClick={onClose} className="px-4 py-3 text-white/90 hover:bg-white/10 shrink-0"><Home className="w-4 h-4" /></button>
+        <button onClick={() => setOpenSlug(null)} className="px-4 py-3 text-white/90 hover:bg-white/10 shrink-0"><Home className="w-4 h-4" /></button>
         {NAV.map(item => (
           <button key={item} onClick={() => item !== "Home" && onNavigate(item)}
             className="flex items-center gap-1 px-3.5 py-3 text-[13.5px] font-semibold text-white/90 hover:bg-white/10 whitespace-nowrap shrink-0">
@@ -105,13 +101,22 @@ export function BusinessNewsViewer({ isOpen, onClose, onNavigate }: Props) {
 
       {loading ? (
         <div className="flex items-center justify-center py-32"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>
+      ) : openSlug ? (
+        <ArticleView
+          slug={openSlug}
+          onBack={() => setOpenSlug(null)}
+          onOpenSlug={setOpenSlug}
+          onCategory={() => setOpenSlug(null)}
+        />
       ) : (
         <>
           {/* Hero: headline+sub / photo / sidebar */}
           {hero && (
             <div className="max-w-[1400px] mx-auto px-5 sm:px-8 pt-8 pb-6 grid lg:grid-cols-[1fr_1.3fr_320px] gap-8">
               <div>
-                <h1 className="text-3xl font-black text-gray-900 leading-[1.1]">{hero.title}</h1>
+                <button onClick={() => setOpenSlug(hero.slug)} className="text-left">
+                  <h1 className="text-3xl font-black text-gray-900 leading-[1.1] hover:underline">{hero.title}</h1>
+                </button>
                 <p className="text-gray-500 text-[15px] mt-4 leading-relaxed">{hero.summary}</p>
                 <p className="text-xs text-gray-400 mt-4 flex items-center gap-1.5">
                   {timeAgo(hero.publishedAt)} <span className="text-gray-300">|</span> <span className="font-semibold" style={{ color: LIVE_RED }}>{hero.category}</span>
@@ -125,16 +130,16 @@ export function BusinessNewsViewer({ isOpen, onClose, onNavigate }: Props) {
                 </div>
               </div>
 
-              <div className="rounded-xl flex items-center justify-center" style={{ background: hero.heroGradient, minHeight: 320, fontSize: 100 }}>
+              <button onClick={() => setOpenSlug(hero.slug)} className="rounded-xl flex items-center justify-center" style={{ background: hero.heroGradient, minHeight: 320, fontSize: 100 }}>
                 {hero.emoji}
-              </div>
+              </button>
 
               <div className="space-y-4">
                 {heroSideItems.map((a, i) => (
-                  <div key={a.slug} className={i < heroSideItems.length - 1 ? "pb-4 border-b border-gray-100" : ""}>
-                    <p className="text-[15px] font-bold text-gray-900 leading-snug">{a.title}</p>
+                  <button key={a.slug} onClick={() => setOpenSlug(a.slug)} className={`text-left w-full ${i < heroSideItems.length - 1 ? "pb-4 border-b border-gray-100" : ""}`}>
+                    <p className="text-[15px] font-bold text-gray-900 leading-snug hover:underline">{a.title}</p>
                     <p className="text-xs text-gray-400 mt-1.5">{timeAgo(a.publishedAt)} <span className="text-gray-300">|</span> <span className="font-semibold" style={{ color: LIVE_RED }}>{a.category}</span></p>
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>
@@ -142,30 +147,22 @@ export function BusinessNewsViewer({ isOpen, onClose, onNavigate }: Props) {
 
           <div className="border-t border-gray-100" />
 
-          {/* Most Read */}
+          {/* Most Read — sliding right-to-left, click to open the full article */}
           <div className="max-w-[1400px] mx-auto px-5 sm:px-8 py-8">
             <h2 className="text-xl font-black text-gray-900 mb-5">Most Read</h2>
             <div className="grid lg:grid-cols-[280px_1fr] gap-8">
               <div className="space-y-4">
                 {mostReadTop3.map((a, i) => (
-                  <div key={a.slug} className="flex items-start gap-3">
+                  <button key={a.slug} onClick={() => setOpenSlug(a.slug)} className="text-left w-full flex items-start gap-3">
                     <span className="text-2xl font-black shrink-0" style={{ color: LIVE_RED }}>{i + 1}</span>
                     <div>
-                      <p className="text-[14px] font-bold text-gray-900 leading-snug">{a.title}</p>
+                      <p className="text-[14px] font-bold text-gray-900 leading-snug hover:underline">{a.title}</p>
                       <p className="text-xs text-gray-400 mt-1">{a.views.toLocaleString()} viewing</p>
                     </div>
-                  </div>
+                  </button>
                 ))}
               </div>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                {mostReadCards.map(a => (
-                  <div key={a.slug}>
-                    <div className="w-full rounded-lg flex items-center justify-center mb-3" style={{ background: a.heroGradient, height: 130, fontSize: 44 }}>{a.emoji}</div>
-                    <p className="text-[13.5px] font-bold text-gray-900 leading-snug">{a.title}</p>
-                    <p className="text-xs text-gray-400 mt-1.5">{timeAgo(a.publishedAt)} <span className="text-gray-300">|</span> <span className="font-semibold" style={{ color: LIVE_RED }}>{a.category}</span></p>
-                  </div>
-                ))}
-              </div>
+              <SlidingNewsRow articles={articles.length ? articles : trending} onOpenSlug={setOpenSlug} />
             </div>
           </div>
 
@@ -180,13 +177,13 @@ export function BusinessNewsViewer({ isOpen, onClose, onNavigate }: Props) {
               </div>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {worldItems.map(a => (
-                  <div key={a.slug} className="flex gap-3">
+                  <button key={a.slug} onClick={() => setOpenSlug(a.slug)} className="text-left flex gap-3">
                     <Thumb a={a} size={90} />
                     <div className="min-w-0">
-                      <p className="text-[13.5px] font-bold text-gray-900 leading-snug">{a.title}</p>
+                      <p className="text-[13.5px] font-bold text-gray-900 leading-snug hover:underline">{a.title}</p>
                       <p className="text-xs text-gray-400 mt-1.5">{timeAgo(a.publishedAt)} <span className="text-gray-300">|</span> <span className="font-semibold" style={{ color: LIVE_RED }}>{a.category}</span></p>
                     </div>
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>
