@@ -22,6 +22,7 @@ export async function migrateAndSeed(): Promise<void> {
   if (Number(rows[0].count) > 0) {
     console.log("[db] Schema up to date, tables already seeded — skipping seed.");
     await seedNews();
+    await seedDefaultCustomer();
     return;
   }
 
@@ -92,17 +93,7 @@ export async function migrateAndSeed(): Promise<void> {
       );
     }
 
-    // Default customer-role account, mirroring the default management
-    // account (superadmin) above — see DEV_CREDENTIALS.md at the repo root
-    // for both. Exists so developers/QA always have one known account per
-    // role type to sign in with, without needing to register a fresh one
-    // every time. Change or remove before any real production launch.
-    await client.query(
-      `INSERT INTO users (username, password_hash, role, name, email)
-       VALUES ('customer1', $1, 'customer', 'Demo Customer', 'customer@vink.co.za')
-       ON CONFLICT (username) DO NOTHING`,
-      [bcrypt.hashSync("Customer@2026", 10)]
-    );
+    await seedDefaultCustomer(client);
 
     await client.query("COMMIT");
     console.log("[db] Seed complete.");
@@ -115,6 +106,31 @@ export async function migrateAndSeed(): Promise<void> {
   }
 
   await seedNews();
+}
+
+// Default customer-role account, mirroring the default management account
+// (superadmin) — see DEV_CREDENTIALS.md at the repo root for both. Exists
+// so developers/QA always have one known account per role type to sign in
+// with, without needing to register a fresh one every time. Change or
+// remove before any real production launch.
+//
+// Called from BOTH the fresh-seed path (with the transaction's own client,
+// so it commits atomically with everything else) and the already-seeded
+// early-return path above (with its own connection) — a database that was
+// already seeded with products before this account existed would otherwise
+// never reach this insert at all, exactly like the news sync bug fixed
+// earlier. Learn from that: anything added after the early-return gate
+// needs to be called from both branches, not just written once and assumed
+// to run.
+async function seedDefaultCustomer(existingClient?: import("pg").PoolClient): Promise<void> {
+  if (!hasDb || !pool) return;
+  const client = existingClient ?? pool;
+  await client.query(
+    `INSERT INTO users (username, password_hash, role, name, email)
+     VALUES ('customer1', $1, 'customer', 'Demo Customer', 'customer@vink.co.za')
+     ON CONFLICT (username) DO NOTHING`,
+    [bcrypt.hashSync("Customer@2026", 10)]
+  );
 }
 
 // Synced independently of the main product/user seed above (own transaction)
