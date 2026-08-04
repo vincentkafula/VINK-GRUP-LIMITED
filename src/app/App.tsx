@@ -1,6 +1,6 @@
 import { useState, lazy, Suspense, startTransition, useEffect, useCallback } from "react";
 import { Toaster } from "sonner";
-import { checkHealth, getSession } from "./services/apiClient";
+import { checkHealth, getSession, startHealthRecoveryWatch } from "./services/apiClient";
 import { Header } from "./components/Header";
 import { SearchSection } from "./components/SearchSection";
 import { HeroSection } from "./components/HeroSection";
@@ -209,7 +209,7 @@ export default function App() {
   const [showLogin, setShowLogin]                           = useState(false);
 
   // ── Health check ──────────────────────────────────────────────────────────
-  useEffect(() => { checkHealth().catch(() => {}); }, []);
+  useEffect(() => { checkHealth().catch(() => {}); startHealthRecoveryWatch(); }, []);
 
   // ── Body scroll lock ──────────────────────────────────────────────────────
   const anyOverlayOpen = mounted.size > 0 && Array.from(mounted).some(k => {

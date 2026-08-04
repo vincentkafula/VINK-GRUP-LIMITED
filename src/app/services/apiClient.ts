@@ -97,16 +97,48 @@ export const api = {
 };
 
 // ─── Health check ─────────────────────────────────────────────────────────────
-export async function checkHealth(): Promise<boolean> {
+async function pingHealth(timeoutMs: number): Promise<boolean> {
   try {
-    const r = await fetch(`${BASE}/health`, { signal: AbortSignal.timeout(3000) });
+    const r = await fetch(`${BASE}/health`, { signal: AbortSignal.timeout(timeoutMs) });
     const j = await r.json();
-    if (j.status === "ok") { setDemoMode(false); return true; }
-    return false;
+    return j.status === "ok";
   } catch {
-    setDemoMode(true);
     return false;
   }
+}
+
+/**
+ * Checks backend health before deciding to show demo mode. A single slow
+ * response (Railway cold start, brief network blip) shouldn't be enough to
+ * flip the whole app into simulated data for the rest of the session, so
+ * this retries a couple of times with a longer timeout before giving up.
+ */
+export async function checkHealth(): Promise<boolean> {
+  // First attempt: generous timeout, covers a cold-starting backend.
+  if (await pingHealth(8000)) { setDemoMode(false); return true; }
+
+  // Two quick retries in case that was just a transient blip.
+  for (let i = 0; i < 2; i++) {
+    await new Promise(r => setTimeout(r, 1500));
+    if (await pingHealth(5000)) { setDemoMode(false); return true; }
+  }
+
+  setDemoMode(true);
+  return false;
+}
+
+let recoveryTimer: ReturnType<typeof setInterval> | undefined;
+/**
+ * Once demo mode is on, keep checking in the background so the app
+ * recovers automatically the moment the backend comes back — instead of
+ * requiring the person to notice and click "Retry Live" themselves.
+ */
+export function startHealthRecoveryWatch() {
+  if (recoveryTimer) return;
+  recoveryTimer = setInterval(async () => {
+    if (!isDemoMode()) return;
+    if (await pingHealth(5000)) setDemoMode(false);
+  }, 20000);
 }
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
