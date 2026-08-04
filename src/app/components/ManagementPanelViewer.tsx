@@ -10,8 +10,8 @@ import vinkLogo from "../../imports/LOGO_FINAL.png";
 
 interface Props { isOpen: boolean; onClose: () => void; adminName?: string; adminRole?: string }
 
-const GREEN = "#0B5C2E";
-const ORANGE = "#FF9900";
+const GREEN = "#1FAE58";
+const ORANGE = "#F4802F";
 
 const SIDEBAR_MODULES = [
   { label: "Bank Management", icon: <Landmark className="w-4 h-4" /> },
@@ -34,32 +34,32 @@ const SYSTEM_ITEMS = [
 ];
 
 const STATS = [
-  { label: "Total Institutions", value: "128", trend: "+12%", icon: <Landmark className="w-5 h-5" />, iconBg: "#E8F7EE", iconColor: GREEN, trendColor: GREEN },
-  { label: "Total Transactions", value: "24,560", trend: "+18%", icon: <CreditCard className="w-5 h-5" />, iconBg: "#FFF1E6", iconColor: ORANGE, trendColor: ORANGE },
-  { label: "Active Users", value: "8,459", trend: "+9%", icon: <Users className="w-5 h-5" />, iconBg: "#E8F7EE", iconColor: GREEN, trendColor: GREEN },
-  { label: "Total Revenue", value: "R 45.8M", trend: "+21%", icon: <TrendingUp className="w-5 h-5" />, iconBg: "#FFF1E6", iconColor: ORANGE, trendColor: ORANGE },
+  { label: "Total Institutions", value: "128", trend: "+12%", icon: <Landmark className="w-5 h-5" />, iconBg: "#E9F7EF", iconColor: GREEN, trendColor: GREEN },
+  { label: "Total Transactions", value: "24,560", trend: "+18%", icon: <CreditCard className="w-5 h-5" />, iconBg: "#FDECE0", iconColor: ORANGE, trendColor: ORANGE },
+  { label: "Active Users", value: "8,459", trend: "+9%", icon: <Users className="w-5 h-5" />, iconBg: "#E9F7EF", iconColor: GREEN, trendColor: GREEN },
+  { label: "Total Revenue", value: "R 45.8M", trend: "+21%", icon: <TrendingUp className="w-5 h-5" />, iconBg: "#FDECE0", iconColor: ORANGE, trendColor: ORANGE },
 ];
 
 interface ModuleTile { title: string; desc: string; icon: React.ReactNode; iconBg: string; iconColor: string; }
 const MODULE_TILES: ModuleTile[] = [
-  { title: "Bank Management", desc: "Manage bank accounts, branches, services and banking operations.", icon: <Landmark className="w-7 h-7" />, iconBg: "#E8F7EE", iconColor: GREEN },
-  { title: "Payment Management", desc: "Manage payments, settlements, refunds and transaction rules.", icon: <CreditCard className="w-7 h-7" />, iconBg: "#FFF1E6", iconColor: ORANGE },
-  { title: "Marketplace Management", desc: "Manage vendors, products, orders and marketplace activities.", icon: <ShoppingCart className="w-7 h-7" />, iconBg: "#E8F7EE", iconColor: GREEN },
-  { title: "News Management", desc: "Manage news articles, categories, authors and publishing.", icon: <Newspaper className="w-7 h-7" />, iconBg: "#FFF1E6", iconColor: ORANGE },
-  { title: "Mobile Network Management", desc: "Manage mobile operators, packages, USSD, data and airtime services.", icon: <RadioTower className="w-7 h-7" />, iconBg: "#E8F7EE", iconColor: GREEN },
-  { title: "Vehicle Management", desc: "Manage vehicles, fleets, tracking, inspections and documents.", icon: <Car className="w-7 h-7" />, iconBg: "#FFF1E6", iconColor: ORANGE },
-  { title: "Radio & TV Station Management", desc: "Manage radio & TV stations, channels, programs and broadcasts.", icon: <Tv className="w-7 h-7" />, iconBg: "#FFF1E6", iconColor: ORANGE },
-  { title: "Event Management", desc: "Manage events, schedules, registrations and venues.", icon: <Calendar className="w-7 h-7" />, iconBg: "#E8F7EE", iconColor: GREEN },
-  { title: "Company Registration Management", desc: "Manage company registrations, verifications and compliance.", icon: <Building2 className="w-7 h-7" />, iconBg: "#FFF1E6", iconColor: ORANGE },
-  { title: "Insurance Management", desc: "Manage insurance products, policies, claims and providers.", icon: <ShieldCheck className="w-7 h-7" />, iconBg: "#E8F7EE", iconColor: GREEN },
-  { title: "Social Responsibility Management", desc: "Manage CSR initiatives, donations, projects and community impact.", icon: <HeartHandshake className="w-7 h-7" />, iconBg: "#FFF1E6", iconColor: ORANGE },
+  { title: "Bank Management", desc: "Manage bank accounts, branches, services and banking operations.", icon: <Landmark className="w-7 h-7" />, iconBg: "#E9F7EF", iconColor: GREEN },
+  { title: "Payment Management", desc: "Manage payments, settlements, refunds and transaction rules.", icon: <CreditCard className="w-7 h-7" />, iconBg: "#FDECE0", iconColor: ORANGE },
+  { title: "Marketplace Management", desc: "Manage vendors, products, orders and marketplace activities.", icon: <ShoppingCart className="w-7 h-7" />, iconBg: "#E9F7EF", iconColor: GREEN },
+  { title: "News Management", desc: "Manage news articles, categories, authors and publishing.", icon: <Newspaper className="w-7 h-7" />, iconBg: "#FDECE0", iconColor: ORANGE },
+  { title: "Mobile Network Management", desc: "Manage mobile operators, packages, USSD, data and airtime services.", icon: <RadioTower className="w-7 h-7" />, iconBg: "#E9F7EF", iconColor: GREEN },
+  { title: "Vehicle Management", desc: "Manage vehicles, fleets, tracking, inspections and documents.", icon: <Car className="w-7 h-7" />, iconBg: "#FDECE0", iconColor: ORANGE },
+  { title: "Radio & TV Station Management", desc: "Manage radio & TV stations, channels, programs and broadcasts.", icon: <Tv className="w-7 h-7" />, iconBg: "#FDECE0", iconColor: ORANGE },
+  { title: "Event Management", desc: "Manage events, schedules, registrations and venues.", icon: <Calendar className="w-7 h-7" />, iconBg: "#E9F7EF", iconColor: GREEN },
+  { title: "Company Registration Management", desc: "Manage company registrations, verifications and compliance.", icon: <Building2 className="w-7 h-7" />, iconBg: "#FDECE0", iconColor: ORANGE },
+  { title: "Insurance Management", desc: "Manage insurance products, policies, claims and providers.", icon: <ShieldCheck className="w-7 h-7" />, iconBg: "#E9F7EF", iconColor: GREEN },
+  { title: "Social Responsibility Management", desc: "Manage CSR initiatives, donations, projects and community impact.", icon: <HeartHandshake className="w-7 h-7" />, iconBg: "#FDECE0", iconColor: ORANGE },
 ];
 
 const BOTTOM_STATS = [
-  { value: "342", label: "Total Admins", icon: <Users className="w-5 h-5" />, iconBg: "#E8F7EE", iconColor: GREEN },
-  { value: "98%", label: "System Uptime", icon: <ShieldCheck className="w-5 h-5" />, iconBg: "#E8F7EE", iconColor: GREEN },
-  { value: "1,245", label: "Active Sessions", icon: <Monitor className="w-5 h-5" />, iconBg: "#FFF1E6", iconColor: ORANGE },
-  { value: "12", label: "Pending Approvals", icon: <ClipboardList className="w-5 h-5" />, iconBg: "#FFF1E6", iconColor: ORANGE },
+  { value: "342", label: "Total Admins", icon: <Users className="w-5 h-5" />, iconBg: "#E9F7EF", iconColor: GREEN },
+  { value: "98%", label: "System Uptime", icon: <ShieldCheck className="w-5 h-5" />, iconBg: "#E9F7EF", iconColor: GREEN },
+  { value: "1,245", label: "Active Sessions", icon: <Monitor className="w-5 h-5" />, iconBg: "#FDECE0", iconColor: ORANGE },
+  { value: "12", label: "Pending Approvals", icon: <ClipboardList className="w-5 h-5" />, iconBg: "#FDECE0", iconColor: ORANGE },
   { value: "24", label: "System Alerts", icon: <AlertTriangle className="w-5 h-5" />, iconBg: "#FEF2F2", iconColor: "#DC2626" },
 ];
 
@@ -72,10 +72,10 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
   const openModule = (label: string) => toast.info(`${label} — opening this module's full workspace is coming soon.`);
 
   return (
-    <div className="fixed inset-0 z-50 flex bg-gray-50 text-[14px]" style={{ fontFamily: "'Segoe UI', Arial, sans-serif" }}>
+    <div className="fixed inset-0 z-50 flex text-[14px]" style={{ fontFamily: "'Segoe UI', Arial, sans-serif", background: "#F6F7FB" }}>
 
       {/* Sidebar */}
-      <aside className={`${sidebarOpen ? "w-64" : "w-0"} shrink-0 overflow-hidden transition-all duration-200 flex flex-col`} style={{ background: "#0B1420" }}>
+      <aside className={`${sidebarOpen ? "w-64" : "w-0"} shrink-0 overflow-hidden transition-all duration-200 flex flex-col`} style={{ background: "#0E1420" }}>
         <div className="w-64 flex flex-col h-full">
           <div className="px-5 pt-6 pb-5">
             <div className="flex items-baseline gap-0.5">
