@@ -152,6 +152,40 @@ CREATE TABLE IF NOT EXISTS mkt_orders (
 CREATE INDEX IF NOT EXISTS idx_mkt_orders_user   ON mkt_orders(user_id);
 CREATE INDEX IF NOT EXISTS idx_mkt_orders_status ON mkt_orders(status);
 
+-- ─── RBAC: Section Manager application/approval workflow ───────────────────
+CREATE TABLE IF NOT EXISTS section_applications (
+  id              TEXT PRIMARY KEY,
+  user_id         UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  section         TEXT NOT NULL,
+  message         TEXT,
+  status          TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','approved','rejected')),
+  rejection_reason TEXT,
+  reviewed_by     UUID REFERENCES users(id) ON DELETE SET NULL,
+  reviewed_at     TIMESTAMPTZ,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_section_apps_status ON section_applications(status);
+CREATE INDEX IF NOT EXISTS idx_section_apps_user ON section_applications(user_id);
+
+CREATE TABLE IF NOT EXISTS section_permissions (
+  user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  section     TEXT NOT NULL,
+  granted_by  UUID REFERENCES users(id) ON DELETE SET NULL,
+  granted_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (user_id, section)
+);
+
+CREATE TABLE IF NOT EXISTS audit_log (
+  id          TEXT PRIMARY KEY,
+  actor_id    UUID REFERENCES users(id) ON DELETE SET NULL,
+  actor_name  TEXT NOT NULL,
+  action      TEXT NOT NULL,
+  target      TEXT,
+  details     JSONB NOT NULL DEFAULT '{}',
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_audit_created ON audit_log(created_at DESC);
+
 CREATE TABLE IF NOT EXISTS news_articles (
   id              TEXT PRIMARY KEY,
   slug            TEXT UNIQUE NOT NULL,

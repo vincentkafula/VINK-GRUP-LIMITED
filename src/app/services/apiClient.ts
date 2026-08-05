@@ -168,6 +168,29 @@ export interface NewsArticleSummary {
 export interface NewsArticle extends NewsArticleSummary { body: string; }
 export interface NewsListMeta { page: number; limit: number; total: number; pages: number }
 
+// ─── RBAC (section applications, permissions, audit) ────────────────────────
+export interface SectionApplication {
+  id: string; section: string; message: string | null; status: "pending" | "approved" | "rejected";
+  rejection_reason: string | null; created_at: string; reviewed_at: string | null;
+  username?: string; name?: string; email?: string; user_id?: string;
+}
+export interface ManagerRecord { id: string; username: string; name: string; email: string; sections: { section: string; grantedAt: string }[]; }
+export interface AuditEntry { id: string; actor_name: string; action: string; target: string | null; details: object; created_at: string; }
+
+export const rbacApi = {
+  sections: () => api.get<readonly string[]>("/api/rbac/sections"),
+  apply: (section: string, message?: string) => api.post<{ id: string; section: string; status: string }>("/api/rbac/apply", { section, message }, true),
+  myApplications: () => api.get<SectionApplication[]>("/api/rbac/my-applications", true),
+  mySections: () => api.get<string[]>("/api/rbac/my-sections", true),
+  applications: (status?: string) => api.get<SectionApplication[]>(`/api/rbac/applications${status ? `?status=${status}` : ""}`, true),
+  approve: (id: string) => api.post<{ id: string; status: string }>(`/api/rbac/applications/${id}/approve`, {}, true),
+  reject: (id: string, reason?: string) => api.patch<{ id: string; status: string }>(`/api/rbac/applications/${id}/reject`, { reason }, true),
+  managers: () => api.get<ManagerRecord[]>("/api/rbac/managers", true),
+  grant: (userId: string, section: string) => api.post<null>("/api/rbac/permissions", { userId, section }, true),
+  revoke: (userId: string, section: string) => api.delete<null>(`/api/rbac/permissions/${userId}/${encodeURIComponent(section)}`, true),
+  audit: () => api.get<AuditEntry[]>("/api/rbac/audit", true),
+};
+
 export const newsApi = {
   list: (params?: { category?: string; search?: string; page?: number; limit?: number }) => {
     const qs = new URLSearchParams();

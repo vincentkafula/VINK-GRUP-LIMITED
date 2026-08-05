@@ -32,6 +32,7 @@ import marketplaceRouter from "./routes/marketplaceRouter.js";
 import marketplaceRouterDb from "./routes/marketplaceRouterDb.js";
 import geoCurrencyRouter from "./routes/geoCurrency.js";
 import newsRouter from "./routes/news.js";
+import rbacRouter from "./routes/rbac.js";
 import publicRouter from "./routes/public.js";
 import globalBankingRouter from "./routes/globalBanking.js";
 import financialReportsRouter from "./routes/financialReports.js";
@@ -91,6 +92,7 @@ app.use("/api/marketplace",        hasDb ? marketplaceRouterDb : marketplaceRout
 app.use("/api/geo",                geoCurrencyRouter);
 app.use("/api/currency",           geoCurrencyRouter);
 app.use("/api/news",               newsRouter);
+app.use("/api/rbac",               rbacRouter);
 app.use("/api/public",             publicRouter);
 app.use("/api/global",             globalBankingRouter);
 app.use("/api/financial",          financialReportsRouter);

@@ -7,6 +7,7 @@ import {
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 import siteHeroBg from "../../imports/assets/site-hero-bg.png";
 import { authApi } from "../services/apiClient";
+import { rbacApi } from "../services/apiClient";
 import { demoLogin } from "../services/demoMode";
 
 interface LoginModalProps {
@@ -123,7 +124,14 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
       setLoading(false);
       onClose();
       const role = (result.data as { user?: { role?: string } } | undefined)?.user?.role ?? "";
-      const isManagement = ["superadmin", "owner", "noc_engineer", "billing_admin", "marketplace_admin", "admin"].includes(role);
+      let isManagement = ["superadmin", "owner", "noc_engineer", "billing_admin", "marketplace_admin", "admin"].includes(role);
+      // A customer-role account can still be an approved Section Manager —
+      // that's granted via section_permissions, not a role change, so check
+      // it explicitly rather than assuming role alone tells us everything.
+      if (!isManagement) {
+        const sections = await rbacApi.mySections();
+        if (sections.success && (sections.data?.length ?? 0) > 0) isManagement = true;
+      }
       onSelectDashboard?.(isManagement ? "managementPanel" : "account");
       return;
     }

@@ -1,17 +1,33 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   LayoutGrid, Landmark, CreditCard, ShoppingCart, Newspaper, Radio as RadioTower,
   Car, Tv, Calendar, Building2, ShieldCheck, HeartHandshake, Users, Settings,
   ClipboardList, Menu, Search, Bell, ChevronDown, Plus, ArrowRight, TrendingUp,
-  AlertTriangle, Monitor, CheckCircle2, CalendarDays,
+  AlertTriangle, Monitor, CheckCircle2, CalendarDays, FileCheck2, UserCog, Loader2,
+  Check, X as XIcon, Lock,
 } from "lucide-react";
 import { toast } from "sonner";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
+import { rbacApi, getSession, type SectionApplication, type ManagerRecord, type AuditEntry } from "../services/apiClient";
 
-interface Props { isOpen: boolean; onClose: () => void; adminName?: string; adminRole?: string }
+interface Props { isOpen: boolean; onClose: () => void; adminName?: string; adminRole?: string; role?: string }
 
 const GREEN = "#1FAE58";
 const ORANGE = "#F4802F";
+
+const SECTION_ICON: Record<string, React.ReactNode> = {
+  "Bank Management": <Landmark className="w-4 h-4" />,
+  "Payment Management": <CreditCard className="w-4 h-4" />,
+  "Marketplace Management": <ShoppingCart className="w-4 h-4" />,
+  "News Management": <Newspaper className="w-4 h-4" />,
+  "Mobile Network Management": <RadioTower className="w-4 h-4" />,
+  "Vehicle Management": <Car className="w-4 h-4" />,
+  "Radio & TV Station Management": <Tv className="w-4 h-4" />,
+  "Event Management": <Calendar className="w-4 h-4" />,
+  "Company Registration Management": <Building2 className="w-4 h-4" />,
+  "Insurance Management": <ShieldCheck className="w-4 h-4" />,
+  "Social Responsibility Management": <HeartHandshake className="w-4 h-4" />,
+};
 
 const SIDEBAR_MODULES = [
   { label: "Bank Management", icon: <Landmark className="w-4 h-4" /> },
@@ -26,6 +42,25 @@ const SIDEBAR_MODULES = [
   { label: "Insurance Management", icon: <ShieldCheck className="w-4 h-4" /> },
   { label: "Social Responsibility", icon: <HeartHandshake className="w-4 h-4" /> },
 ];
+
+// The sidebar intentionally shows shortened labels (matching the reference
+// design), but the backend's permission system uses full canonical section
+// names — this maps each sidebar label to the name actually stored in
+// section_permissions, so filtering by what a manager is approved for works
+// correctly without changing what's displayed.
+const SIDEBAR_TO_SECTION: Record<string, string> = {
+  "Bank Management": "Bank Management",
+  "Payment Management": "Payment Management",
+  "Marketplace Management": "Marketplace Management",
+  "News Management": "News Management",
+  "Mobile Network Management": "Mobile Network Management",
+  "Vehicle Management": "Vehicle Management",
+  "Radio & TV Management": "Radio & TV Station Management",
+  "Event Management": "Event Management",
+  "Company Registration": "Company Registration Management",
+  "Insurance Management": "Insurance Management",
+  "Social Responsibility": "Social Responsibility Management",
+};
 
 const SYSTEM_ITEMS = [
   { label: "Users & Roles", icon: <Users className="w-4 h-4" /> },
@@ -63,13 +98,81 @@ const BOTTOM_STATS = [
   { value: "24", label: "System Alerts", icon: <AlertTriangle className="w-5 h-5" />, iconBg: "#FEF2F2", iconColor: "#DC2626" },
 ];
 
-export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User", adminRole = "Super Administrator" }: Props) {
+type View = "dashboard" | "applications" | "managers" | "audit" | "apply";
+
+export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User", adminRole = "Super Administrator", role = "superadmin" }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeItem, setActiveItem] = useState("Dashboard");
+  const [view, setView] = useState<View>("dashboard");
+  // Both 'owner' (the new top-authority role) and 'superadmin' (the
+  // original full-access role, kept for the renamed 'admin' account) get
+  // full Super Admin access. Everyone else is a Section Manager, scoped to
+  // whatever they've been explicitly approved for.
+  const isOwner = role === "owner" || role === "superadmin";
+
+  const [mySections, setMySections] = useState<string[] | null>(null); // null = loading
+  const [pendingApps, setPendingApps] = useState<SectionApplication[]>([]);
+  const [allApps, setAllApps] = useState<SectionApplication[]>([]);
+  const [managers, setManagers] = useState<ManagerRecord[]>([]);
+  const [auditLog, setAuditLog] = useState<AuditEntry[]>([]);
+  const [loadingPanel, setLoadingPanel] = useState(false);
+  const [applySection, setApplySection] = useState("");
+  const [applyMessage, setApplyMessage] = useState("");
+  const [applying, setApplying] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    if (isOwner) {
+      rbacApi.applications("pending").then(r => { if (r.success) setPendingApps(r.data ?? []); });
+    } else {
+      rbacApi.mySections().then(r => { if (r.success) setMySections(r.data ?? []); else setMySections([]); });
+    }
+  }, [isOpen, isOwner]);
 
   if (!isOpen) return null;
 
   const openModule = (label: string) => toast.info(`${label} — opening this module's full workspace is coming soon.`);
+
+  const loadApplications = () => { setLoadingPanel(true); rbacApi.applications().then(r => { if (r.success) setAllApps(r.data ?? []); }).finally(() => setLoadingPanel(false)); };
+  const loadManagers = () => { setLoadingPanel(true); rbacApi.managers().then(r => { if (r.success) setManagers(r.data ?? []); }).finally(() => setLoadingPanel(false)); };
+  const loadAudit = () => { setLoadingPanel(true); rbacApi.audit().then(r => { if (r.success) setAuditLog(r.data ?? []); }).finally(() => setLoadingPanel(false)); };
+
+  const goView = (v: View) => {
+    setView(v); setActiveItem(v === "dashboard" ? "Dashboard" : v[0].toUpperCase() + v.slice(1));
+    if (v === "applications") loadApplications();
+    if (v === "managers") loadManagers();
+    if (v === "audit") loadAudit();
+  };
+
+  const handleApprove = async (id: string) => {
+    const r = await rbacApi.approve(id);
+    if (r.success) { toast.success("Application approved — access granted."); loadApplications(); rbacApi.applications("pending").then(x => x.success && setPendingApps(x.data ?? [])); }
+    else toast.error(r.error ?? "Failed to approve");
+  };
+  const handleReject = async (id: string) => {
+    const reason = window.prompt("Reason for rejecting this application (optional):") ?? undefined;
+    const r = await rbacApi.reject(id, reason);
+    if (r.success) { toast.success("Application rejected."); loadApplications(); rbacApi.applications("pending").then(x => x.success && setPendingApps(x.data ?? [])); }
+    else toast.error(r.error ?? "Failed to reject");
+  };
+  const handleRevoke = async (userId: string, section: string) => {
+    if (!window.confirm(`Revoke access to ${section} for this manager?`)) return;
+    const r = await rbacApi.revoke(userId, section);
+    if (r.success) { toast.success("Access revoked."); loadManagers(); }
+    else toast.error(r.error ?? "Failed to revoke");
+  };
+  const handleApply = async () => {
+    if (!applySection) { toast.error("Choose a section to apply for."); return; }
+    setApplying(true);
+    const r = await rbacApi.apply(applySection, applyMessage || undefined);
+    setApplying(false);
+    if (r.success) { toast.success("Application submitted — a Super Administrator will review it."); setApplySection(""); setApplyMessage(""); rbacApi.mySections().then(x => x.success && setMySections(x.data ?? [])); }
+    else toast.error(r.error ?? "Failed to submit application");
+  };
+
+  // Which sidebar/grid sections this account can actually see
+  const visibleSidebarModules = isOwner ? SIDEBAR_MODULES : SIDEBAR_MODULES.filter(m => (mySections ?? []).includes(SIDEBAR_TO_SECTION[m.label]));
+  const visibleTiles = isOwner ? MODULE_TILES : MODULE_TILES.filter(t => (mySections ?? []).includes(t.title));
 
   return (
     <div className="fixed inset-0 z-50 flex text-[14px]" style={{ fontFamily: "'Segoe UI', Arial, sans-serif", background: "#F6F7FB" }}>
@@ -88,15 +191,41 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
 
           <nav className="flex-1 overflow-y-auto px-3 space-y-0.5">
             <button
-              onClick={() => setActiveItem("Dashboard")}
+              onClick={() => goView("dashboard")}
               className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-semibold mb-4"
-              style={activeItem === "Dashboard" ? { background: GREEN, color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
+              style={view === "dashboard" ? { background: GREEN, color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
             >
               <LayoutGrid className="w-4 h-4" /> Dashboard
             </button>
 
-            <p className="px-3 text-[10px] font-bold tracking-[0.12em] text-white/30 mb-2">MANAGEMENT MODULES</p>
-            {SIDEBAR_MODULES.map(m => (
+            {isOwner && (
+              <>
+                <p className="px-3 text-[10px] font-bold tracking-[0.12em] text-white/30 mb-2">SUPER ADMIN</p>
+                <button
+                  onClick={() => goView("applications")}
+                  className="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors"
+                  style={view === "applications" ? { background: GREEN, color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
+                >
+                  <span className="flex items-center gap-2.5"><FileCheck2 className="w-4 h-4" /> Applications</span>
+                  {pendingApps.length > 0 && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white" style={{ background: ORANGE }}>{pendingApps.length}</span>}
+                </button>
+                <button
+                  onClick={() => goView("managers")}
+                  className="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors"
+                  style={view === "managers" ? { background: GREEN, color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
+                >
+                  <span className="flex items-center gap-2.5"><UserCog className="w-4 h-4" /> Managers</span>
+                </button>
+              </>
+            )}
+
+            <p className="px-3 text-[10px] font-bold tracking-[0.12em] text-white/30 mt-5 mb-2">
+              {isOwner ? "MANAGEMENT MODULES (ALL)" : "YOUR SECTIONS"}
+            </p>
+            {mySections !== null && !isOwner && visibleSidebarModules.length === 0 && (
+              <p className="px-3 text-[12px] text-white/40 leading-relaxed">You haven't been approved for any sections yet.</p>
+            )}
+            {visibleSidebarModules.map(m => (
               <button
                 key={m.label}
                 onClick={() => { setActiveItem(m.label); openModule(m.label); }}
@@ -106,16 +235,26 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
                 <ArrowRight className="w-3.5 h-3.5 opacity-40" />
               </button>
             ))}
+            {!isOwner && (
+              <button
+                onClick={() => goView("apply")}
+                className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[13px] font-semibold mt-1 border border-dashed"
+                style={view === "apply" ? { background: GREEN, color: "#fff", borderColor: GREEN } : { color: GREEN, borderColor: "rgba(31,174,88,0.4)" }}
+              >
+                <Plus className="w-4 h-4" /> Apply for a Section
+              </button>
+            )}
 
             <p className="px-3 text-[10px] font-bold tracking-[0.12em] text-white/30 mt-5 mb-2">SYSTEM</p>
             {SYSTEM_ITEMS.map(m => (
               <button
                 key={m.label}
-                onClick={() => { setActiveItem(m.label); openModule(m.label); }}
-                className="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-[13px] font-medium text-white/70 hover:bg-white/5 hover:text-white transition-colors"
+                onClick={() => m.label === "Audit Logs" && isOwner ? goView("audit") : (() => { setActiveItem(m.label); openModule(m.label); })()}
+                className="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors"
+                style={view === "audit" && m.label === "Audit Logs" ? { background: GREEN, color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
               >
                 <span className="flex items-center gap-2.5">{m.icon} {m.label}</span>
-                <ArrowRight className="w-3.5 h-3.5 opacity-40" />
+                {!(m.label === "Audit Logs" && isOwner) && <Lock className="w-3.5 h-3.5 opacity-30" />}
               </button>
             ))}
           </nav>
@@ -166,6 +305,8 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
         </div>
 
         <div className="p-6 sm:p-8">
+          {view === "dashboard" && (
+          <>
           {/* Welcome header */}
           <div className="flex items-start justify-between flex-wrap gap-4 mb-8">
             <div>
@@ -198,7 +339,15 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-5 mb-8">
-            {MODULE_TILES.map(m => (
+            {!isOwner && mySections !== null && visibleTiles.length === 0 && (
+              <div className="col-span-full bg-white rounded-2xl border border-gray-100 p-8 text-center">
+                <Lock className="w-8 h-8 mx-auto text-gray-300 mb-3" />
+                <p className="text-sm font-bold text-gray-900">No sections assigned yet</p>
+                <p className="text-xs text-gray-500 mt-1 mb-4">Apply to manage a section — a Super Administrator will review your request.</p>
+                <button onClick={() => goView("apply")} className="px-4 py-2 rounded-lg text-xs font-bold text-white" style={{ background: GREEN }}>Apply for a Section</button>
+              </div>
+            )}
+            {visibleTiles.map(m => (
               <div key={m.title} className="bg-white rounded-2xl border border-gray-100 p-5 flex flex-col">
                 <span className="w-14 h-14 rounded-full flex items-center justify-center mb-4" style={{ background: m.iconBg, color: m.iconColor }}>{m.icon}</span>
                 <p className="text-[15px] font-bold text-gray-900 leading-snug">{m.title}</p>
@@ -210,6 +359,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
             ))}
 
             {/* Add New Module */}
+            {isOwner && (
             <button onClick={() => toast.info("Custom module builder is coming soon.")} className="bg-white rounded-2xl border-2 border-dashed border-gray-200 p-5 flex flex-col items-center justify-center text-center hover:border-gray-300 transition-colors">
               <span className="w-14 h-14 rounded-full flex items-center justify-center mb-4 bg-gray-100 text-gray-400"><Plus className="w-7 h-7" /></span>
               <p className="text-[15px] font-bold text-gray-900">Add New Module</p>
@@ -218,6 +368,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
                 Create Module <ArrowRight className="w-3 h-3" />
               </span>
             </button>
+            )}
           </div>
 
           {/* Bottom stats strip */}
@@ -239,6 +390,115 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
               </div>
             </div>
           </div>
+          </>
+          )}
+
+          {/* ── Applications (owner only) ── */}
+          {view === "applications" && (
+            <div>
+              <h1 className="text-2xl font-black text-gray-900 mb-1">Section Manager Applications</h1>
+              <p className="text-gray-500 text-sm mb-6">Review, approve, or reject requests to manage a section.</p>
+              {loadingPanel ? <Loader2 className="w-5 h-5 animate-spin text-gray-400" /> : allApps.length === 0 ? (
+                <p className="text-sm text-gray-400">No applications yet.</p>
+              ) : (
+                <div className="bg-white rounded-2xl border border-gray-100 divide-y divide-gray-100">
+                  {allApps.map(a => (
+                    <div key={a.id} className="p-5 flex items-start justify-between gap-4 flex-wrap">
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-gray-900">{a.name} <span className="text-gray-400 font-normal">@{a.username}</span></p>
+                        <p className="text-xs mt-1"><span className="font-semibold" style={{ color: GREEN }}>{a.section}</span> · {new Date(a.created_at).toLocaleDateString()}</p>
+                        {a.message && <p className="text-xs text-gray-500 mt-2 italic">"{a.message}"</p>}
+                        {a.status === "rejected" && a.rejection_reason && <p className="text-xs text-red-500 mt-2">Rejected: {a.rejection_reason}</p>}
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {a.status === "pending" ? (
+                          <>
+                            <button onClick={() => handleApprove(a.id)} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-white" style={{ background: GREEN }}><Check className="w-3.5 h-3.5" /> Approve</button>
+                            <button onClick={() => handleReject(a.id)} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-red-600 border border-red-200"><XIcon className="w-3.5 h-3.5" /> Reject</button>
+                          </>
+                        ) : (
+                          <span className="text-[11px] font-bold px-2.5 py-1 rounded-full" style={a.status === "approved" ? { background: "#E9F7EF", color: GREEN } : { background: "#FEF2F2", color: "#DC2626" }}>
+                            {a.status === "approved" ? "Approved" : "Rejected"}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── Managers (owner only) ── */}
+          {view === "managers" && (
+            <div>
+              <h1 className="text-2xl font-black text-gray-900 mb-1">Section Managers</h1>
+              <p className="text-gray-500 text-sm mb-6">Everyone currently granted access to at least one section.</p>
+              {loadingPanel ? <Loader2 className="w-5 h-5 animate-spin text-gray-400" /> : managers.length === 0 ? (
+                <p className="text-sm text-gray-400">No managers yet — approve an application to grant section access.</p>
+              ) : (
+                <div className="bg-white rounded-2xl border border-gray-100 divide-y divide-gray-100">
+                  {managers.map(m => (
+                    <div key={m.id} className="p-5">
+                      <p className="text-sm font-bold text-gray-900">{m.name} <span className="text-gray-400 font-normal">@{m.username}</span></p>
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        {m.sections.map(s => (
+                          <span key={s.section} className="flex items-center gap-1.5 text-[11px] font-semibold pl-2.5 pr-1.5 py-1 rounded-full" style={{ background: "#E9F7EF", color: GREEN }}>
+                            {s.section}
+                            <button onClick={() => handleRevoke(m.id, s.section)} className="w-4 h-4 rounded-full flex items-center justify-center hover:bg-black/10" title="Revoke"><XIcon className="w-2.5 h-2.5" /></button>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── Audit Log (owner only) ── */}
+          {view === "audit" && (
+            <div>
+              <h1 className="text-2xl font-black text-gray-900 mb-1">Audit Log</h1>
+              <p className="text-gray-500 text-sm mb-6">Every approval, rejection, and permission change made by a Super Administrator.</p>
+              {loadingPanel ? <Loader2 className="w-5 h-5 animate-spin text-gray-400" /> : auditLog.length === 0 ? (
+                <p className="text-sm text-gray-400">No activity logged yet.</p>
+              ) : (
+                <div className="bg-white rounded-2xl border border-gray-100 divide-y divide-gray-100">
+                  {auditLog.map(a => (
+                    <div key={a.id} className="p-4 flex items-center justify-between gap-4 text-sm">
+                      <div>
+                        <span className="font-bold text-gray-900">{a.actor_name}</span>{" "}
+                        <span className="text-gray-500">{a.action.replace(".", " ")}</span>{" "}
+                        {a.target && <span className="font-semibold" style={{ color: GREEN }}>{a.target}</span>}
+                      </div>
+                      <span className="text-xs text-gray-400 shrink-0">{new Date(a.created_at).toLocaleString()}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── Apply for a section (non-owner) ── */}
+          {view === "apply" && (
+            <div className="max-w-lg">
+              <h1 className="text-2xl font-black text-gray-900 mb-1">Apply to Manage a Section</h1>
+              <p className="text-gray-500 text-sm mb-6">Your application is reviewed by a Super Administrator before you're granted access.</p>
+              <div className="bg-white rounded-2xl border border-gray-100 p-6">
+                <label className="text-xs font-bold text-gray-700">Section</label>
+                <select value={applySection} onChange={e => setApplySection(e.target.value)} className="w-full mt-1.5 mb-4 px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none">
+                  <option value="">Choose a section…</option>
+                  {Object.values(SIDEBAR_TO_SECTION).filter(s => !(mySections ?? []).includes(s)).map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+                <label className="text-xs font-bold text-gray-700">Why should you manage this section? (optional)</label>
+                <textarea value={applyMessage} onChange={e => setApplyMessage(e.target.value)} rows={3} className="w-full mt-1.5 mb-4 px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none resize-none" placeholder="Relevant experience, role, or context for the Super Administrator..." />
+                <button onClick={handleApply} disabled={applying} className="w-full py-2.5 rounded-lg text-sm font-bold text-white disabled:opacity-50" style={{ background: GREEN }}>
+                  {applying ? "Submitting…" : "Submit Application"}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="mt-auto flex items-center justify-between px-6 sm:px-8 py-5 text-[11px] text-gray-400 border-t border-gray-100">
