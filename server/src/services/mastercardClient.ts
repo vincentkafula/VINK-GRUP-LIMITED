@@ -1,125 +1,97 @@
-import crypto from "crypto";
-
 /**
- * Mastercard sandbox integration client.
+ * Mastercard Open Banking (MOBS) sandbox integration client.
+ *
+ * CORRECTION: an earlier version of this file implemented Mastercard's
+ * classic OAuth 1.0a RSA-signing scheme (Consumer Key + private key file).
+ * That's wrong for this specific product. Confirmed directly against
+ * Mastercard's own open-banking-reference-application (github.com/
+ * Mastercard/open-banking-reference-application): Open Banking is built on
+ * Finicity's API underneath (their reference app proxies straight to
+ * api.finicity.com), and uses Partner ID + Partner Secret + App Key —
+ * exchanged for a short-lived bearer token — not RSA request signing.
+ * No private key file is needed for this product at all.
  *
  * IMPORTANT — read before using:
  * All credentials here come from environment variables, never hardcoded.
- * The Partner ID / App Key / Secret you get from the Mastercard Developer
- * Portal are set directly in Railway's environment variables (or a local
- * .env file that's gitignored), not in this file or anywhere committed to
- * the repository. See DEV_CREDENTIALS.md and .env.example for the exact
- * variable names this expects.
- *
- * Mastercard's APIs use OAuth 1.0a request signing with an RSA private
- * key (the "Signature Verification Key" you generate in the Developer
- * Portal — the fingerprint you get there is the *public* half; the actual
- * private key file (.p12/.pem) is what needs to be set as
- * MASTERCARD_SIGNING_KEY below). That private key was not provided in
- * this conversation — pasting a private key into chat is itself a bad
- * practice, the same way pasting the App Key/Secret directly would be.
- * You'll need to download it from the Developer Portal and set it as a
- * Railway environment variable (base64-encoded, since it's a multi-line
- * PEM/PKCS12 file) before any signed request will actually succeed.
- *
- * Until that's set, isConfigured() returns false and every call fails
- * fast with a clear error instead of silently doing nothing.
+ * Set them directly in Railway's environment variables (or a local .env
+ * file that's gitignored), never in a file that gets committed. See
+ * DEV_CREDENTIALS.md and .env.example for the exact variable names.
  */
 
 interface MastercardConfig {
-  consumerKey: string;   // MASTERCARD_CONSUMER_KEY — includes your Partner ID, from the Developer Portal
-  signingKeyBase64: string; // MASTERCARD_SIGNING_KEY — your private key file, base64-encoded
-  keyPassword: string;   // MASTERCARD_KEY_PASSWORD — password for the .p12 file, if applicable
-  environment: "sandbox" | "production";
-  baseUrl: string;       // MASTERCARD_API_BASE_URL — differs per Mastercard API product; set per what you've onboarded to
+  partnerId: string;     // MASTERCARD_PARTNER_ID
+  partnerSecret: string; // MASTERCARD_PARTNER_SECRET
+  appKey: string;        // MASTERCARD_APP_KEY
+  baseUrl: string;       // MASTERCARD_API_BASE_URL — defaults to Finicity's sandbox host
 }
 
 function loadConfig(): MastercardConfig {
   return {
-    consumerKey: process.env.MASTERCARD_CONSUMER_KEY ?? "",
-    signingKeyBase64: process.env.MASTERCARD_SIGNING_KEY ?? "",
-    keyPassword: process.env.MASTERCARD_KEY_PASSWORD ?? "",
-    environment: (process.env.MASTERCARD_ENV as "sandbox" | "production") ?? "sandbox",
-    baseUrl: process.env.MASTERCARD_API_BASE_URL ?? "https://sandbox.api.mastercard.com",
+    partnerId: process.env.MASTERCARD_PARTNER_ID ?? "",
+    partnerSecret: process.env.MASTERCARD_PARTNER_SECRET ?? "",
+    appKey: process.env.MASTERCARD_APP_KEY ?? "",
+    baseUrl: process.env.MASTERCARD_API_BASE_URL ?? "https://api.finicity.com",
   };
 }
 
 export function isConfigured(): boolean {
   const c = loadConfig();
-  return Boolean(c.consumerKey && c.signingKeyBase64);
+  return Boolean(c.partnerId && c.partnerSecret && c.appKey);
 }
 
 export function configStatus(): { configured: boolean; missing: string[] } {
   const c = loadConfig();
   const missing: string[] = [];
-  if (!c.consumerKey) missing.push("MASTERCARD_CONSUMER_KEY");
-  if (!c.signingKeyBase64) missing.push("MASTERCARD_SIGNING_KEY");
+  if (!c.partnerId) missing.push("MASTERCARD_PARTNER_ID");
+  if (!c.partnerSecret) missing.push("MASTERCARD_PARTNER_SECRET");
+  if (!c.appKey) missing.push("MASTERCARD_APP_KEY");
   return { configured: missing.length === 0, missing };
 }
 
-// ─── OAuth 1.0a request signing (Mastercard's scheme) ───────────────────────
-// Mastercard extends standard OAuth1 with an oauth_body_hash parameter —
-// a base64-encoded SHA256 hash of the request body — added to the signature
-// base string alongside the usual OAuth1 parameters.
+// ─── Bearer token exchange ───────────────────────────────────────────────
+// Partner ID + Partner Secret + App Key are exchanged for a short-lived
+// token (documented lifetime: ~2 hours). Cached in memory and refreshed
+// automatically when it's missing or close to expiry — every other call
+// just needs the token + App Key as headers, no signing involved.
 
-function percentEncode(str: string): string {
-  return encodeURIComponent(str).replace(/[!*'()]/g, c => "%" + c.charCodeAt(0).toString(16).toUpperCase());
-}
+let cachedToken: { token: string; fetchedAt: number } | null = null;
+const TOKEN_LIFETIME_MS = 110 * 60 * 1000; // refresh a bit before the real ~2h expiry
 
-function bodyHash(body: string): string {
-  return crypto.createHash("sha256").update(body, "utf8").digest("base64");
-}
+async function getBearerToken(config: MastercardConfig): Promise<string> {
+  if (cachedToken && Date.now() - cachedToken.fetchedAt < TOKEN_LIFETIME_MS) {
+    return cachedToken.token;
+  }
 
-function buildSignatureBaseString(method: string, url: string, params: Record<string, string>): string {
-  const sortedKeys = Object.keys(params).sort();
-  const paramString = sortedKeys.map(k => `${percentEncode(k)}=${percentEncode(params[k])}`).join("&");
-  const urlObj = new URL(url);
-  const baseUrl = `${urlObj.protocol}//${urlObj.host}${urlObj.pathname}`;
-  return [method.toUpperCase(), percentEncode(baseUrl), percentEncode(paramString)].join("&");
-}
+  const res = await fetch(`${config.baseUrl}/aggregation/v2/partners/authentication`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Finicity-App-Key": config.appKey,
+    },
+    body: JSON.stringify({ partnerId: config.partnerId, partnerSecret: config.partnerSecret }),
+    signal: AbortSignal.timeout(15000),
+  });
 
-function signWithPrivateKey(baseString: string, privateKeyPem: string): string {
-  const signer = crypto.createSign("RSA-SHA256");
-  signer.update(baseString, "utf8");
-  return signer.sign(privateKeyPem, "base64");
-}
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Mastercard authentication failed (${res.status}): ${text.slice(0, 300)}`);
+  }
+  const data = await res.json() as { token?: string };
+  if (!data.token) throw new Error("Mastercard authentication response had no token");
 
-/** Builds the OAuth1 Authorization header for a signed Mastercard API request. */
-function buildAuthHeader(method: string, url: string, body: string, config: MastercardConfig): string {
-  const privateKeyPem = Buffer.from(config.signingKeyBase64, "base64").toString("utf8");
-
-  const oauthParams: Record<string, string> = {
-    oauth_consumer_key: config.consumerKey,
-    oauth_nonce: crypto.randomBytes(16).toString("hex"),
-    oauth_signature_method: "RSA-SHA256",
-    oauth_timestamp: String(Math.floor(Date.now() / 1000)),
-    oauth_version: "1.0",
-    oauth_body_hash: bodyHash(body),
-  };
-
-  const urlObj = new URL(url);
-  const queryParams: Record<string, string> = {};
-  urlObj.searchParams.forEach((v, k) => { queryParams[k] = v; });
-
-  const allParams = { ...oauthParams, ...queryParams };
-  const baseString = buildSignatureBaseString(method, url, allParams);
-  const signature = signWithPrivateKey(baseString, privateKeyPem);
-
-  const headerParams: Record<string, string> = { ...oauthParams, oauth_signature: signature };
-  const headerString = Object.keys(headerParams)
-    .map(k => `${percentEncode(k)}="${percentEncode(headerParams[k])}"`)
-    .join(", ");
-  return `OAuth ${headerString}`;
+  cachedToken = { token: data.token, fetchedAt: Date.now() };
+  return data.token;
 }
 
 export interface MastercardRequestOptions {
   method: "GET" | "POST" | "PUT" | "DELETE";
-  path: string; // e.g. "/openfinance/accounts/v1/accounts"
+  path: string; // e.g. "/aggregation/v1/customers/{customerId}/accounts"
   body?: object;
 }
 
-/** Makes a signed request against the Mastercard API. Throws a clear error
- *  if credentials aren't configured, rather than failing silently. */
+/** Makes an authenticated request against the Mastercard Open Banking API.
+ *  Throws a clear error if credentials aren't configured, rather than
+ *  failing silently. */
 export async function mastercardRequest<T = unknown>(opts: MastercardRequestOptions): Promise<T> {
   const config = loadConfig();
   if (!isConfigured()) {
@@ -127,18 +99,18 @@ export async function mastercardRequest<T = unknown>(opts: MastercardRequestOpti
     throw new Error(`Mastercard integration not configured — missing: ${missing.join(", ")}. Set these in Railway's environment variables.`);
   }
 
+  const token = await getBearerToken(config);
   const url = `${config.baseUrl}${opts.path}`;
-  const bodyStr = opts.body ? JSON.stringify(opts.body) : "";
-  const authHeader = buildAuthHeader(opts.method, url, bodyStr, config);
 
   const res = await fetch(url, {
     method: opts.method,
     headers: {
-      "Authorization": authHeader,
       "Content-Type": "application/json",
       "Accept": "application/json",
+      "Finicity-App-Key": config.appKey,
+      "Finicity-App-Token": token,
     },
-    body: opts.body ? bodyStr : undefined,
+    body: opts.body ? JSON.stringify(opts.body) : undefined,
     signal: AbortSignal.timeout(15000),
   });
 

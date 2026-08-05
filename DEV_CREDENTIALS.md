@@ -78,25 +78,26 @@ Any new seed logic needs an explicit call from both the early-return
 branch and the fresh-seed branch, the way `seedNews()`,
 `seedDefaultCustomer()`, and `seedAccountRestructure()` all do.
 
-## Mastercard integration (sandbox)
+## Mastercard Open Banking integration (sandbox)
 
-Unlike the accounts above, Mastercard credentials are **not** seeded anywhere in this codebase — they're your own Developer Portal credentials and belong only in Railway's environment variables, never in a file that gets committed.
+Unlike the accounts above, these are **not** seeded anywhere in this codebase — they're your own Developer Portal credentials and belong only in Railway's environment variables, never in a file that gets committed.
 
-What you gave me (Partner IDs, an App Key/Secret pair, a Signature Verification Key fingerprint) confirmed the integration is set up on Mastercard's side, but I didn't put any of those values into the codebase — the App Key/Secret were already masked when you shared them, and the Partner ID/fingerprint alone aren't enough to make a signed request work.
+**Correction worth noting**: the first version of this integration was built against the wrong auth scheme (OAuth 1.0a with an RSA private key, which applies to *other* Mastercard API products). Confirmed directly against Mastercard's own [open-banking-reference-application](https://github.com/Mastercard/open-banking-reference-application) that Open Banking is actually built on Finicity's API underneath, and uses a simpler scheme: **Partner ID + Partner Secret + App Key, exchanged for a short-lived bearer token — no private key file needed at all.**
 
-To actually activate this, set these in Railway's environment variables (backend service):
+To activate this, set these in Railway's environment variables (backend service):
 
 | Variable | Where it comes from |
 |---|---|
-| `MASTERCARD_CONSUMER_KEY` | Developer Portal → your project → API Keys |
-| `MASTERCARD_SIGNING_KEY` | Your private key file (`.p12`/`.pem`, generated alongside the Signature Verification Key), **base64-encoded** since it's a multi-line file and env vars are single strings — encode it with `base64 -i your-key-file.p12` (or `-w0` on Linux to avoid line wraps) |
-| `MASTERCARD_KEY_PASSWORD` | Only if your key file has one |
-| `MASTERCARD_ENV` | `sandbox` (default) or `production` |
-| `MASTERCARD_API_BASE_URL` | Only override if your specific onboarded API product uses a different base URL than `https://sandbox.api.mastercard.com` |
+| `MASTERCARD_PARTNER_ID` | Developer Portal → your project's credentials |
+| `MASTERCARD_PARTNER_SECRET` | Same page |
+| `MASTERCARD_APP_KEY` | Same page (this was the field labeled "App Key" in the portal) |
+| `MASTERCARD_API_BASE_URL` | Only override if instructed otherwise — defaults to `https://api.finicity.com` |
 
-Once set, `GET /api/mastercard/status` (owner/superadmin only) will confirm the integration sees its credentials — it never makes a real signed request itself, so it's safe to check anytime.
+Once set, `GET /api/mastercard/status` (owner/superadmin only) confirms the integration sees its credentials — it never makes a real request itself, so it's safe to check anytime.
 
-**Not yet verified against a live sandbox call** — this environment has no network access to Mastercard's sandbox, and no private key was provided to sign a test request with. The OAuth 1.0a signing logic (`server/src/services/mastercardClient.ts`) is implemented against Mastercard's documented algorithm, but you should make one real test call after setting the environment variables to confirm it actually works end to end before building anything on top of it.
+**Not yet verified against a live sandbox call** — this environment has no network access to Mastercard/Finicity's sandbox. The bearer-token exchange and request logic (`server/src/services/mastercardClient.ts`) is implemented against the documented flow, but make one real test call after setting the environment variables to confirm it actually works before building anything on top of it.
+
+
 
 ## Before any real production launch
 

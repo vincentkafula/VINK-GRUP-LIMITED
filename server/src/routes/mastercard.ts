@@ -15,31 +15,31 @@ router.get("/status", requireAuth, requireRole("owner", "superadmin"), (_req: Re
     data: {
       configured: status.configured,
       missingEnvVars: status.missing,
-      environment: process.env.MASTERCARD_ENV ?? "sandbox",
+      apiBaseUrl: process.env.MASTERCARD_API_BASE_URL ?? "https://api.finicity.com",
     },
   });
 });
 
-// POST /api/mastercard/accounts/link — example Open Finance account-link
-// initiation. Path and payload shape are illustrative — confirm the exact
-// endpoint against whichever specific Mastercard API product you've
-// onboarded to in the Developer Portal before relying on this; Mastercard
-// has several API families (Open Banking Connect, Send, MDES, etc.) with
-// different endpoint structures, and this wasn't verified against a live
-// sandbox call in this environment (no network access to Mastercard's
-// sandbox from this sandbox, and no signing key was provided to test with).
+// POST /api/mastercard/accounts/link — example account-link initiation
+// against Mastercard Open Banking (built on Finicity's aggregation API
+// underneath). Path shown here is illustrative — confirm the exact
+// endpoint and payload shape against the API Reference for your specific
+// onboarded product in the Developer Portal. Not verified against a live
+// sandbox call in this environment (no network access to Mastercard/
+// Finicity's sandbox from here, and real credentials weren't provided to
+// test with).
 router.post("/accounts/link", requireAuth, async (req: Request, res: Response): Promise<void> => {
   if (!isConfigured()) {
     res.status(503).json({
       success: false,
-      error: "Mastercard integration isn't configured yet. Set MASTERCARD_CONSUMER_KEY and MASTERCARD_SIGNING_KEY in Railway's environment variables first.",
+      error: "Mastercard integration isn't configured yet. Set MASTERCARD_PARTNER_ID, MASTERCARD_PARTNER_SECRET, and MASTERCARD_APP_KEY in Railway's environment variables first.",
     });
     return;
   }
   try {
     const data = await mastercardRequest({
       method: "POST",
-      path: "/openfinance/accounts/v1/accounts", // confirm against your actual onboarded product
+      path: "/aggregation/v2/customers/testCustomer/accounts", // confirm against your actual onboarded product's API reference
       body: req.body,
     });
     res.json({ success: true, data });
