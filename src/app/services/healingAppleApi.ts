@@ -1,6 +1,8 @@
 import { isDemoMode, setDemoMode, DEMO_TOKEN, haMock } from "./demoMode";
 
-const BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
+const isLocalhost = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+const BASE = import.meta.env.VITE_API_URL
+  ?? (isLocalhost ? "http://localhost:3001" : "https://vink-grup-limited-production.up.railway.app"); // see apiClient.ts for why this fallback exists
 
 let _token: string | null = localStorage.getItem("ha_token");
 export const setHaToken = (t: string | null) => { _token = t; if (t) localStorage.setItem("ha_token", t); else localStorage.removeItem("ha_token"); };

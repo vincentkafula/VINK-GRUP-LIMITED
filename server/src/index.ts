@@ -49,9 +49,17 @@ const PORT = Number(process.env.PORT) || 3001;
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS ?? "http://localhost:5173,http://localhost:4173")
   .split(",").map((o: string) => o.trim());
 
+// The production custom domain, hardcoded as a fallback rather than relying
+// solely on ALLOWED_ORIGINS being set correctly in Railway's environment —
+// a misconfigured or missing env var there would otherwise silently break
+// every request from the real production site with no obvious error beyond
+// a generic CORS failure in the browser console.
+const PRODUCTION_DOMAINS = ["https://www.vink.co.za", "https://vink.co.za"];
+
 const isAllowedOrigin = (origin: string | undefined): boolean => {
   if (!origin) return true;
   if (ALLOWED_ORIGINS.includes(origin)) return true;
+  if (PRODUCTION_DOMAINS.includes(origin)) return true;
   // Allow all Railway subdomains in production
   if (process.env.NODE_ENV === "production" && origin.endsWith(".up.railway.app")) return true;
   return false;
