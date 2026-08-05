@@ -78,6 +78,26 @@ Any new seed logic needs an explicit call from both the early-return
 branch and the fresh-seed branch, the way `seedNews()`,
 `seedDefaultCustomer()`, and `seedAccountRestructure()` all do.
 
+## Mastercard integration (sandbox)
+
+Unlike the accounts above, Mastercard credentials are **not** seeded anywhere in this codebase — they're your own Developer Portal credentials and belong only in Railway's environment variables, never in a file that gets committed.
+
+What you gave me (Partner IDs, an App Key/Secret pair, a Signature Verification Key fingerprint) confirmed the integration is set up on Mastercard's side, but I didn't put any of those values into the codebase — the App Key/Secret were already masked when you shared them, and the Partner ID/fingerprint alone aren't enough to make a signed request work.
+
+To actually activate this, set these in Railway's environment variables (backend service):
+
+| Variable | Where it comes from |
+|---|---|
+| `MASTERCARD_CONSUMER_KEY` | Developer Portal → your project → API Keys |
+| `MASTERCARD_SIGNING_KEY` | Your private key file (`.p12`/`.pem`, generated alongside the Signature Verification Key), **base64-encoded** since it's a multi-line file and env vars are single strings — encode it with `base64 -i your-key-file.p12` (or `-w0` on Linux to avoid line wraps) |
+| `MASTERCARD_KEY_PASSWORD` | Only if your key file has one |
+| `MASTERCARD_ENV` | `sandbox` (default) or `production` |
+| `MASTERCARD_API_BASE_URL` | Only override if your specific onboarded API product uses a different base URL than `https://sandbox.api.mastercard.com` |
+
+Once set, `GET /api/mastercard/status` (owner/superadmin only) will confirm the integration sees its credentials — it never makes a real signed request itself, so it's safe to check anytime.
+
+**Not yet verified against a live sandbox call** — this environment has no network access to Mastercard's sandbox, and no private key was provided to sign a test request with. The OAuth 1.0a signing logic (`server/src/services/mastercardClient.ts`) is implemented against Mastercard's documented algorithm, but you should make one real test call after setting the environment variables to confirm it actually works end to end before building anything on top of it.
+
 ## Before any real production launch
 
 Delete or rotate every credential in this file. These exist purely so a
