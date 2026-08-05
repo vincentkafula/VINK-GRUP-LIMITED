@@ -110,7 +110,14 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
     setLoading(true);
     setError(null);
 
-    const result = await authApi.login(userNumber.trim(), password);
+    let result = await authApi.login(userNumber.trim(), password);
+
+    // A network blip shouldn't be treated as proof this is a customer
+    // account — retry before giving up, the same way the health check does.
+    if (!result.success && result.error?.toLowerCase().includes("demo mode")) {
+      await new Promise(r => setTimeout(r, 1200));
+      result = await authApi.login(userNumber.trim(), password);
+    }
 
     if (result.success) {
       setLoading(false);
@@ -121,7 +128,12 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
       return;
     }
 
-    // Fall back to demo mode if the backend is unreachable
+    // Still unreachable after a retry — genuinely fall back to demo mode.
+    // Deliberately does NOT guess a dashboard here: we don't know this
+    // account's real role when the backend can't be reached, and silently
+    // assuming "customer" would send a management account to the wrong
+    // dashboard. Demo mode lets the person browse with simulated data
+    // instead, without pretending we know who they are.
     if (result.error?.toLowerCase().includes("demo mode")) {
       demoLogin(userNumber.trim());
       setLoading(false);
