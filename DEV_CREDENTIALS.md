@@ -99,6 +99,29 @@ Once set, `GET /api/mastercard/status` (owner/superadmin only) confirms the inte
 
 
 
+## Visa Developer Platform integration (sandbox)
+
+You uploaded Visa's own official JWE/JWS encryption utility (Java, from the Visa Developer Program) and asked to build a Visa integration from it. Ported faithfully to TypeScript in `server/src/services/visaEncryptionUtils.ts` — every algorithm, key-derivation step, and header field was read directly from the uploaded Java source and verified to round-trip correctly (see the commit message for the exact test scenarios run, matching Visa's own Java test suite).
+
+**What this actually is**: Visa's payload encryption scheme for protecting sensitive fields (card numbers, account details, etc.) inside API request/response bodies sent to Visa Developer Platform APIs. It's not authentication by itself — Visa APIs typically also require separate transport-level auth (mutual TLS, API key headers) depending on the specific product, which isn't included here since no Visa API product/credentials were specified.
+
+Two independent modes, matching the original Java library exactly:
+
+**Shared Secret (symmetric)** — wired into real endpoints:
+
+| Variable | Where it comes from |
+|---|---|
+| `VISA_API_KEY` | Visa Developer Portal → your project |
+| `VISA_SHARED_SECRET` | Same page |
+
+Once set, `GET /api/visa/status` (owner/superadmin only) confirms it's configured. `POST /api/visa/encrypt` and `POST /api/visa/decrypt` do a real encrypt/decrypt round trip — useful for confirming your actual sandbox credentials work before wiring this into a real Visa API call.
+
+**RSA PKI (asymmetric)** — the encryption/decryption functions exist (`createJweRsa`, `decryptJweRsa`, `createJwsRsa`, `verifyAndExtractJweFromJwsRsa`) and were verified correct, but aren't wired into a route yet since no RSA keys were provided to test against. `VISA_RSA_PUBLIC_KEY` and `VISA_KEY_ID` are documented in `.env.example` for when you're ready to use this mode — you'd also need the matching private key, which (same rule as Mastercard's) should go directly into Railway's environment variables, never pasted into chat.
+
+**What was actually verified, not just written**: ran both of Visa's own test scenarios from their Java test suite (shared-secret full round-trip, RSA PKI full round-trip) against this TypeScript port and confirmed identical behavior, plus two additional checks — XML payload content-type handling, and that decryption with the wrong secret is correctly rejected rather than silently succeeding. Also ran a full round trip through the actual HTTP API (`/encrypt` then `/decrypt`) with test credentials, not just the underlying functions in isolation. Caught and fixed one real bug during this process: the RSA public key was initially being imported bound to the wrong algorithm (encryption instead of signature verification), which `jose` correctly rejected — fixed by loading the key with the algorithm it's actually being used for at each call site.
+
+**Not verified**: an actual call against Visa's live sandbox, since real Visa credentials were never provided and this environment has no network access to Visa's servers.
+
 ## Before any real production launch
 
 Delete or rotate every credential in this file. These exist purely so a
