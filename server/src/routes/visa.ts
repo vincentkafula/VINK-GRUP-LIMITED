@@ -4,6 +4,7 @@ import {
   createJweSharedSecret, decryptJweSharedSecret, createJwsSharedSecret,
   verifyAndExtractJweFromJwsSharedSecret, VisaEncryptionError,
 } from "../services/visaEncryptionUtils.js";
+import { generateXPayToken, visaXPayRequest } from "../services/visaXPayToken.js";
 
 const router: ReturnType<typeof Router> = Router();
 
@@ -92,6 +93,51 @@ router.post("/decrypt", requireAuth, requireRole("owner", "superadmin"), async (
     const message = err instanceof VisaEncryptionError ? err.message : "Decryption failed";
     res.status(400).json({ success: false, error: message });
   }
+});
+
+// GET /api/visa/xpaytoken/test-connection — the actual "does my API Key +
+// Shared Secret work against Visa's real sandbox" check. Calls Visa's own
+// documented "helloworld" endpoint (developer.visa.com's standard sanity-
+// check endpoint for X-Pay Token auth specifically), not a made-up one —
+// if this succeeds, X-Pay Token signing is genuinely working end to end
+// against Visa's servers, not just internally self-consistent.
+router.get("/xpaytoken/test-connection", requireAuth, requireRole("owner", "superadmin"), async (_req: Request, res: Response): Promise<void> => {
+  const c = loadConfig();
+  if (!c.apiKey || !c.sharedSecret) {
+    res.status(503).json({
+      success: false,
+      error: "Visa integration isn't configured yet. Set VISA_API_KEY and VISA_SHARED_SECRET in Railway's environment variables first.",
+    });
+    return;
+  }
+  try {
+    const data = await visaXPayRequest({
+      baseUrl: process.env.VISA_API_BASE_URL ?? "https://sandbox.api.visa.com",
+      method: "GET",
+      resourcePath: "helloworld",
+      apiKey: c.apiKey,
+      sharedSecret: c.sharedSecret,
+    });
+    res.json({ success: true, data });
+  } catch (err) {
+    res.status(502).json({ success: false, error: err instanceof Error ? err.message : "Visa API request failed" });
+  }
+});
+
+// GET /api/visa/xpaytoken/generate — generates a token for a given
+// resourcePath without making a real call, useful for debugging a
+// mismatch against Visa's own token-validator tooling.
+router.post("/xpaytoken/generate", requireAuth, requireRole("owner", "superadmin"), (req: Request, res: Response): void => {
+  const c = loadConfig();
+  if (!c.apiKey || !c.sharedSecret) {
+    res.status(503).json({ success: false, error: "Visa integration isn't configured yet." });
+    return;
+  }
+  const { resourcePath, requestBody } = req.body as { resourcePath?: string; requestBody?: string };
+  if (!resourcePath) { res.status(400).json({ success: false, error: "resourcePath is required" }); return; }
+
+  const token = generateXPayToken({ method: "GET", resourcePath, requestBody: requestBody ?? "" }, c.apiKey, c.sharedSecret);
+  res.json({ success: true, data: { token } });
 });
 
 export default router;

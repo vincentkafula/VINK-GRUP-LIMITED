@@ -122,6 +122,29 @@ Once set, `GET /api/visa/status` (owner/superadmin only) confirms it's configure
 
 **Not verified**: an actual call against Visa's live sandbox, since real Visa credentials were never provided and this environment has no network access to Visa's servers.
 
+## Visa X-Pay Token (the real API authentication)
+
+**Correction to the section above**: VISA_API_KEY and VISA_SHARED_SECRET aren't primarily for Message Level Encryption — checking your actual Developer Portal project ("DPS Card and Account Services") showed the real authentication mechanism you're using is **X-Pay Token**, a separate HMAC-based request-signing scheme. This is what actually authenticates a call to Visa's DPS card-processing APIs (Card Activation, PIN Management, CVV2, Transactions, etc.); the JWE/JWS encryption from the uploaded library is an *additional* layer some specific endpoints require on top of this, not the primary auth.
+
+Algorithm confirmed directly against `developer.visa.com/pages/working-with-visa-apis/x-pay-token` and cross-checked against several independent Visa Developer Community reference implementations (all identical):
+
+```
+timestamp  = current Unix time, seconds
+beforeHash = timestamp + resourcePath + queryString + requestBody
+hash       = HMAC-SHA256(beforeHash, sharedSecret), lowercase hex
+token      = "xv2:" + timestamp + ":" + hash
+```
+
+Sent as the `x-pay-token` header, with the API key also present as a query parameter on the request. Implemented in `server/src/services/visaXPayToken.ts`.
+
+Uses the same `VISA_API_KEY` / `VISA_SHARED_SECRET` variables already documented above — no new variables needed.
+
+**Endpoints** (owner/superadmin only):
+- `POST /api/visa/xpaytoken/generate` — generates a token for a given `resourcePath` without making a real call, useful for comparing against Visa's own token-debugging tools
+- `GET /api/visa/xpaytoken/test-connection` — calls Visa's own documented `helloworld` sandbox endpoint (their standard connectivity check for this exact auth method), the real test of whether your credentials actually work
+
+**What was verified**: the token format (`xv2:<timestamp>:<64-char hex>`) is correct, and — critically — an independent re-derivation of the hash (computed separately from the module's own code, to catch any transcription mistake) matches the module's output exactly. Tested `test-connection` with your real credentials from this environment: it correctly generated a valid token and attempted the real HTTPS call to `sandbox.api.visa.com`, failing only at this sandbox's own network allowlist (not at signing, not at a Visa rejection) — the same failure signature confirmed for the Mastercard integration, which is the strongest evidence available without direct network access to Visa's sandbox. **You should run `test-connection` yourself once deployed** — that's the step that actually confirms Visa's servers accept these credentials.
+
 ## Before any real production launch
 
 Delete or rotate every credential in this file. These exist purely so a
