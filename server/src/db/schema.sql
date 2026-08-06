@@ -134,7 +134,7 @@ CREATE TABLE IF NOT EXISTS mkt_orders (
   total_amount        NUMERIC(12,2) NOT NULL DEFAULT 0,
   currency            TEXT NOT NULL DEFAULT 'ZAR',
   status              TEXT NOT NULL DEFAULT 'pending',
-  payment_status      TEXT NOT NULL DEFAULT 'paid',
+  payment_status      TEXT NOT NULL DEFAULT 'pending',
   payment_method      TEXT,
   shipping_address    JSONB,
   shipping_status     TEXT NOT NULL DEFAULT 'not_shipped',
@@ -151,6 +151,36 @@ CREATE TABLE IF NOT EXISTS mkt_orders (
 );
 CREATE INDEX IF NOT EXISTS idx_mkt_orders_user   ON mkt_orders(user_id);
 CREATE INDEX IF NOT EXISTS idx_mkt_orders_status ON mkt_orders(status);
+
+-- The table above may already exist on a live database from before VinkPay
+-- existed, with payment_status defaulting to 'paid' — CREATE TABLE IF NOT
+-- EXISTS is a no-op against an existing table, so that unsafe default needs
+-- fixing explicitly. Safe to run on every boot: ALTER COLUMN SET DEFAULT is
+-- idempotent, and this only changes the default for future inserts — it
+-- deliberately does not touch the payment_status of orders already placed.
+ALTER TABLE mkt_orders ALTER COLUMN payment_status SET DEFAULT 'pending';
+
+-- ─── VinkPay: processor-agnostic payment ledger ─────────────────────────────
+-- Every attempt VinkPay makes to charge an order, regardless of which
+-- underlying processor (Visa, Mastercard, or a future one) actually handled
+-- it. This is the real audit trail — mkt_orders.payment_status reflects the
+-- current state, this table records every attempt that led there.
+CREATE TABLE IF NOT EXISTS vinkpay_transactions (
+  id              TEXT PRIMARY KEY,
+  order_id        UUID NOT NULL REFERENCES mkt_orders(id) ON DELETE CASCADE,
+  order_number    TEXT NOT NULL,
+  processor       TEXT NOT NULL,          -- 'visa' | 'mastercard'
+  payment_method  TEXT NOT NULL,          -- 'card' | 'bank_transfer'
+  amount          NUMERIC(12,2) NOT NULL,
+  currency        TEXT NOT NULL DEFAULT 'ZAR',
+  status          TEXT NOT NULL,          -- 'pending' | 'confirmed' | 'failed'
+  processor_ref   TEXT,                   -- the processor's own transaction/reference ID, once known
+  error_message   TEXT,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_vinkpay_order ON vinkpay_transactions(order_id);
+CREATE INDEX IF NOT EXISTS idx_vinkpay_status ON vinkpay_transactions(status);
 
 -- ─── RBAC: Section Manager application/approval workflow ───────────────────
 CREATE TABLE IF NOT EXISTS section_applications (

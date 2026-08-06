@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { pool } from "../db/pool.js";
 import { requireAuth, requireRole, JWT_SECRET, JWT_EXPIRES } from "../middleware/auth.js";
+import { chargeOrder, getOrderTransactions } from "../services/vinkPay.js";
 
 const MANAGER_ROLES = ["superadmin", "noc_engineer", "billing_admin", "marketplace_admin"] as const;
 
@@ -402,16 +403,61 @@ router.post("/orders", requireAuth, async (req: Request, res: Response): Promise
       `INSERT INTO mkt_orders (order_number, user_id, customer_name, customer_email, items, subtotal, shipping_cost,
          tax_amount, discount_amount, total_amount, currency, status, payment_status, payment_method, shipping_address,
          shipping_status, estimated_delivery, coupon_code, confirmed_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'ZAR','pending','paid',$11,$12,'not_shipped', now() + interval '5 days', $13, now())
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'ZAR','pending','pending',$11,$12,'not_shipped', now() + interval '5 days', $13, NULL)
        RETURNING *`,
       [orderNumber, userId, `${shippingAddress.firstName} ${shippingAddress.lastName}`, customerEmail,
        JSON.stringify(items), cart.subtotal, cart.shipping, cart.tax, cart.coupon_discount, cart.total,
        paymentMethod ?? "card", JSON.stringify(shippingAddress), cart.coupon_code]
     );
+    const order = rows[0];
 
     await client.query(`UPDATE mkt_carts SET items = '[]', coupon_code = NULL, coupon_discount = 0, subtotal = 0, shipping = 0, tax = 0, total = 0, updated_at = now() WHERE id = $1`, [cart.id]);
     await client.query("COMMIT");
-    res.status(201).json({ success: true, data: mapOrder(rows[0]) });
+
+    // Charge through VinkPay *after* releasing the stock locks — a payment
+    // gateway call is a network round trip and shouldn't hold a transaction
+    // (and the FOR UPDATE locks from the stock check above) open while it
+    // waits on an external service.
+    const chargeResult = await chargeOrder({
+      orderId: order.id,
+      orderNumber: order.order_number,
+      amount: Number(order.total_amount),
+      currency: order.currency,
+      paymentMethod: (paymentMethod === "bank_transfer" ? "bank_transfer" : "card"),
+      customerEmail,
+      paymentDetails: req.body.paymentDetails,
+    });
+
+    if (chargeResult.success) {
+      const { rows: paid } = await pool!.query(
+        `UPDATE mkt_orders SET payment_status = 'paid', confirmed_at = now() WHERE id = $1 RETURNING *`,
+        [order.id]
+      );
+      res.status(201).json({ success: true, data: mapOrder(paid[0]) });
+      return;
+    }
+
+    // Payment failed or the processor isn't configured — restock (the
+    // customer's cart items are gone at this point, but the products
+    // shouldn't stay short of the stock this order never actually paid
+    // for) and mark the order clearly rather than silently leaving it
+    // 'pending' forever.
+    const restockClient = await pool!.connect();
+    try {
+      await restockClient.query("BEGIN");
+      for (const item of items) {
+        await restockClient.query(`UPDATE mkt_products SET stock = stock + $1, total_sold = GREATEST(0, total_sold - $1) WHERE id::text = $2`, [item.quantity, item.productId]);
+      }
+      await restockClient.query(`UPDATE mkt_orders SET status = 'payment_failed', payment_status = 'failed' WHERE id = $1`, [order.id]);
+      await restockClient.query("COMMIT");
+    } catch (restockErr) {
+      await restockClient.query("ROLLBACK");
+      console.error("[marketplace] Restock after failed payment also failed:", restockErr);
+    } finally {
+      restockClient.release();
+    }
+
+    res.status(402).json({ success: false, error: chargeResult.error ?? "Payment could not be processed.", data: { orderId: order.id, orderNumber: order.order_number } });
     return;
   } catch (err: any) {
     await client.query("ROLLBACK");
@@ -422,6 +468,19 @@ router.post("/orders", requireAuth, async (req: Request, res: Response): Promise
   } finally {
     client.release();
   }
+});
+
+// GET /orders/:id/transactions — VinkPay's ledger for this order: every
+// charge attempt, which processor handled it, and the outcome. Real audit
+// trail, not just the current payment_status snapshot on the order itself.
+router.get("/orders/:id/transactions", requireAuth, async (req: Request, res: Response): Promise<void> => {
+  const { rows } = await pool!.query(`SELECT user_id FROM mkt_orders WHERE id::text = $1`, [req.params.id]);
+  if (!rows.length) { res.status(404).json({ success: false, error: "Order not found" }); return; }
+  const isManager = MANAGER_ROLES.includes(req.user!.role as any);
+  if (!isManager && rows[0].user_id !== req.user!.userId) { res.status(403).json({ success: false, error: "You can only view your own order's transactions" }); return; }
+
+  const transactions = await getOrderTransactions(req.params.id);
+  res.json({ success: true, data: transactions });
 });
 
 // ── REVIEWS ───────────────────────────────────────────────────────────────────
