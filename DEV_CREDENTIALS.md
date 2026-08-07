@@ -145,6 +145,20 @@ Uses the same `VISA_API_KEY` / `VISA_SHARED_SECRET` variables already documented
 
 **What was verified**: the token format (`xv2:<timestamp>:<64-char hex>`) is correct, and — critically — an independent re-derivation of the hash (computed separately from the module's own code, to catch any transcription mistake) matches the module's output exactly. Tested `test-connection` with your real credentials from this environment: it correctly generated a valid token and attempted the real HTTPS call to `sandbox.api.visa.com`, failing only at this sandbox's own network allowlist (not at signing, not at a Visa rejection) — the same failure signature confirmed for the Mastercard integration, which is the strongest evidence available without direct network access to Visa's sandbox. **You should run `test-connection` yourself once deployed** — that's the step that actually confirms Visa's servers accept these credentials.
 
+## Seller KYC document verification
+
+You confirmed you don't have an account with Smile Identity, Onfido, or any other identity verification provider yet — so this ships with the real architecture (document upload, provider-agnostic interface, webhook confirmation, reconciliation job) but exactly one provider implementation: `NotConfiguredProvider`, which cleanly rejects every submission rather than guessing at an API that might not match whichever provider you eventually choose.
+
+**What's real today:**
+- `POST /api/kyc/sellers/:sellerId/documents` — actual multipart upload, using multer's memory storage. Document bytes exist only in memory for the duration of the request and are never written to disk or the database — confirmed directly by inspecting every column across `mkt_sellers` and `seller_kyc_verifications`.
+- Only the verification *result* is stored: status, provider name, which document *types* were submitted (not their content), timestamps, rejection reason.
+- `GET /api/kyc/sellers/:sellerId/status` — a seller's own verification status.
+- Surfaced in `GET /api/marketplace/admin/sellers/pending` (owner/admin-role only) alongside each pending seller, so a future Bank/Marketplace management workspace has real data to render.
+
+**When you pick a provider**: add one new object implementing `KycProvider` in `server/src/services/kycVerification.ts` (real `submitForVerification`/`checkStatus`/`verifyWebhookSignature` calls against their actual SDK), swap the `ACTIVE_PROVIDER` constant to it, and set its credentials as environment variables the same way as Visa/Mastercard — nothing in `kycRouter.ts`, the webhook handler, or the reconciliation job needs to change.
+
+**POPIA-relevant, stated explicitly**: raw ID/selfie/proof-of-address/business-certificate images are never persisted anywhere in this codebase today. If your eventual provider specifically requires VINK to retain a copy, that needs a deliberate, encrypted-at-rest column added at that point — not something built defensively now for a requirement that may not exist.
+
 ## Before any real production launch
 
 Delete or rotate every credential in this file. These exist purely so a

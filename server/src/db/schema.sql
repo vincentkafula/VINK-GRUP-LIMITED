@@ -64,6 +64,35 @@ CREATE TABLE IF NOT EXISTS mkt_sellers (
 );
 ALTER TABLE mkt_sellers ADD COLUMN IF NOT EXISTS application_data JSONB NOT NULL DEFAULT '{}';
 
+-- ─── Seller KYC verification (provider-agnostic result ledger) ─────────────
+-- Deliberately stores ONLY the verification outcome, never document
+-- content or a pointer to a locally-stored copy of one. document_types_
+-- submitted records WHICH kinds of documents were sent (e.g. 'id_front',
+-- 'selfie') for audit purposes — not the documents themselves. This is the
+-- POPIA-relevant design decision: raw ID/selfie/proof-of-address images
+-- pass through this backend in memory only (see kycRouter.ts, multer
+-- memory storage) on their way to whichever licensed provider is
+-- configured, and are never written to this database or disk. If a future
+-- provider explicitly requires VINK to retain a copy, that needs its own
+-- deliberate, encrypted-at-rest column added at that point — not assumed
+-- or built defensively now for a requirement that may not exist.
+CREATE TABLE IF NOT EXISTS seller_kyc_verifications (
+  id                        TEXT PRIMARY KEY,
+  seller_id                 TEXT NOT NULL REFERENCES mkt_sellers(id) ON DELETE CASCADE,
+  provider                  TEXT,                          -- null until a real provider is configured
+  provider_ref              TEXT,                           -- the provider's own verification/job ID
+  status                    TEXT NOT NULL DEFAULT 'not_submitted', -- not_submitted | submitted | verified | rejected
+  document_types_submitted  TEXT[] NOT NULL DEFAULT '{}',
+  rejection_reason          TEXT,
+  submitted_at              TIMESTAMPTZ,
+  verified_at               TIMESTAMPTZ,
+  webhook_received_at       TIMESTAMPTZ,                    -- idempotency marker, same pattern as vinkpay_transactions
+  created_at                TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at                TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_kyc_seller ON seller_kyc_verifications(seller_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_kyc_provider_ref ON seller_kyc_verifications(provider, provider_ref) WHERE provider_ref IS NOT NULL;
+
 CREATE TABLE IF NOT EXISTS mkt_products (
   id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   seller_id           TEXT NOT NULL REFERENCES mkt_sellers(id),

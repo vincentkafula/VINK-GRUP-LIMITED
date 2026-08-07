@@ -4,7 +4,7 @@ import {
   Users, Globe, MapPin, IdCard, Upload, Check, ChevronLeft, ChevronRight,
   Loader2, ShieldCheck, FileText, Receipt, AlertCircle, CheckCircle2,
 } from "lucide-react";
-import { mktAuth, type MktAuthUser } from "../services/marketplaceApi";
+import { mktAuth, BASE, getMktToken, type MktAuthUser } from "../services/marketplaceApi";
 
 const INK = "#131921";
 const ORANGE = "#FF9900";
@@ -265,9 +265,54 @@ export function SellerApplicationWizard({ onClose, onAuthenticated }: Props) {
       storeName: derivedStoreName, description: form.businessDescription, phone: form.mobile, taxId: form.tin,
       applicationData,
     });
+
+    if (!r.success || !r.token) {
+      setLoading(false);
+      setError((r as { error?: string }).error ?? "Application could not be submitted. Please try again.");
+      return;
+    }
+
+    const sellerId = (r.seller as { id: string } | undefined)?.id;
+    const documentFields: [string, File | null][] = [
+      ["idFront", form.idFront], ["idBack", form.idBack], ["selfie", form.selfie], ["addressProof", form.addressProof],
+      ["certIncorporation", form.certIncorporation], ["businessRegCert", form.businessRegCert],
+      ["businessLicense", form.businessLicense], ["taxCertificate", form.taxCertificate],
+    ];
+    const hasAnyDocument = documentFields.some(([, f]) => f !== null);
+
+    if (sellerId && hasAnyDocument) {
+      const fd = new FormData();
+      for (const [field, file] of documentFields) if (file) fd.append(field, file);
+      fd.append("firstName", form.firstName);
+      fd.append("lastName", form.lastName);
+      fd.append("dob", form.dob);
+      fd.append("idType", form.idType);
+      fd.append("idNumber", form.idNumber);
+      fd.append("idCountry", form.idCountry);
+
+      try {
+        const uploadRes = await fetch(`${BASE}/api/kyc/sellers/${sellerId}/documents`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${getMktToken()}` },
+          body: fd,
+        });
+        const uploadJson = await uploadRes.json();
+        // A real provider isn't configured yet — this will currently
+        // always come back as a clean, expected failure (503), not a
+        // surprise. The seller account itself was still created
+        // successfully above; only document verification is pending on
+        // a provider being set up. Don't block account creation on this,
+        // but don't silently pretend verification happened either.
+        if (!uploadJson.success) {
+          console.warn("[seller registration] Document verification not available yet:", uploadJson.error);
+        }
+      } catch (err) {
+        console.warn("[seller registration] Document upload failed:", err);
+      }
+    }
+
     setLoading(false);
-    if (r.success && r.token) onAuthenticated(r.user, r.seller as { id: string; storeName: string; status: string });
-    else setError((r as { error?: string }).error ?? "Application could not be submitted. Please try again.");
+    onAuthenticated(r.user, r.seller as { id: string; storeName: string; status: string });
   };
 
   return (
@@ -392,7 +437,7 @@ export function SellerApplicationWizard({ onClose, onAuthenticated }: Props) {
               </div>
               <div className="mt-4 flex items-start gap-2 px-3 py-2.5 rounded-lg bg-amber-50 border border-amber-100">
                 <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                <p className="text-[11px] text-amber-800">You can select and preview real files here — they're read into your browser for this application. What doesn't happen: they are <strong>not sent to or stored on our servers</strong> in this demo. There's no secure, encrypted document store or licensed identity-verification provider behind it yet, so treat this as a working form preview rather than a channel for submitting real ID/selfie images.</p>
+                <p className="text-[11px] text-amber-800">Your documents are sent securely for identity verification and are never stored as files on our servers — only the verification result is kept. <strong>Identity verification isn't live yet</strong> (no licensed provider is connected), so submissions will currently be held as pending until that's set up — your seller account itself is still created normally.</p>
               </div>
             </div>
           )}
@@ -408,7 +453,7 @@ export function SellerApplicationWizard({ onClose, onAuthenticated }: Props) {
                 <TextField label="Country" value={form.country} onChange={v => set("country", v)} required />
                 <FileField label="Proof of address (utility bill / bank statement / lease)" file={form.addressProof} onChange={v => set("addressProof", v)} />
               </div>
-              <p className="text-[11px] text-gray-400 mt-3">Document should be less than 3 months old. As on the previous step, this stays in your browser and isn't sent to our servers in this demo.</p>
+              <p className="text-[11px] text-gray-400 mt-3">Document should be less than 3 months old. Sent securely for verification and never stored as a file on our servers — only the verification result is kept.</p>
             </div>
           )}
 

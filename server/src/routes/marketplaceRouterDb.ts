@@ -5,7 +5,12 @@ import { pool } from "../db/pool.js";
 import { requireAuth, requireRole, JWT_SECRET, JWT_EXPIRES } from "../middleware/auth.js";
 import { submitOrderPayment, getOrderTransactions } from "../services/vinkPay.js";
 
-const MANAGER_ROLES = ["superadmin", "noc_engineer", "billing_admin", "marketplace_admin"] as const;
+// 'owner' included alongside the legacy roles below since it's the RBAC
+// system's top-authority role (see rbac.ts's SUPER_ADMIN_ROLES) — without
+// it, the actual Super Admin account couldn't access marketplace admin
+// functions like seller approval at all, which defeats the point of it
+// being the top authority.
+const MANAGER_ROLES = ["owner", "superadmin", "noc_engineer", "billing_admin", "marketplace_admin"] as const;
 
 // Only the account owner (or a marketplace manager) may read/write a
 // customer's own cart, wishlist, addresses, or stats — a valid login alone
@@ -804,8 +809,29 @@ router.delete("/sellers/:id/products/:productId", requireAuth, requireSellerOwne
 
 // ── ADMIN: seller approval ───────────────────────────────────────────────────
 router.get("/admin/sellers/pending", requireAuth, requireRole(...MANAGER_ROLES), async (_req: Request, res: Response): Promise<void> => {
-  const { rows } = await pool!.query(`SELECT * FROM mkt_sellers WHERE status = 'pending_kyc' ORDER BY joined_at DESC`);
-  res.json({ success: true, data: rows.map(mapSeller), meta: { total: rows.length } });
+  const { rows } = await pool!.query(
+    `SELECT s.*, k.status AS kyc_status, k.provider AS kyc_provider, k.document_types_submitted AS kyc_documents_submitted,
+            k.rejection_reason AS kyc_rejection_reason, k.submitted_at AS kyc_submitted_at
+     FROM mkt_sellers s
+     LEFT JOIN LATERAL (
+       SELECT * FROM seller_kyc_verifications WHERE seller_id = s.id ORDER BY created_at DESC LIMIT 1
+     ) k ON true
+     WHERE s.status = 'pending_kyc' ORDER BY s.joined_at DESC`
+  );
+  res.json({
+    success: true,
+    data: rows.map(r => ({
+      ...mapSeller(r),
+      kyc: {
+        status: r.kyc_status ?? "not_submitted",
+        provider: r.kyc_provider,
+        documentsSubmitted: r.kyc_documents_submitted ?? [],
+        rejectionReason: r.kyc_rejection_reason,
+        submittedAt: r.kyc_submitted_at,
+      },
+    })),
+    meta: { total: rows.length },
+  });
 });
 
 router.patch("/admin/sellers/:id/approve", requireAuth, requireRole(...MANAGER_ROLES), async (req: Request, res: Response): Promise<void> => {

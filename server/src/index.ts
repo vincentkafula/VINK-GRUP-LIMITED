@@ -36,6 +36,8 @@ import rbacRouter from "./routes/rbac.js";
 import { setBroadcaster } from "./services/wsBroadcast.js";
 import vinkpayWebhookRouter from "./routes/vinkpayWebhook.js";
 import { startReconciliationJob } from "./services/vinkPay.js";
+import kycRouter from "./routes/kycRouter.js";
+import { startKycReconciliationJob } from "./services/kycVerification.js";
 import mastercardRouter from "./routes/mastercard.js";
 import visaRouter from "./routes/visa.js";
 import publicRouter from "./routes/public.js";
@@ -88,6 +90,11 @@ app.use("/api/vinkpay/webhook", express.json({
 }));
 app.use("/api/vinkpay/webhook", vinkpayWebhookRouter);
 
+app.use("/api/kyc/webhook", express.json({
+  limit: "1mb",
+  verify: (req, _res, buf) => { (req as express.Request & { rawBody?: Buffer }).rawBody = buf; },
+}));
+
 app.use(express.json({ limit: "1mb" }));
 app.use(requestLogger);
 
@@ -120,6 +127,7 @@ app.use("/api/news",               newsRouter);
 app.use("/api/rbac",               rbacRouter);
 app.use("/api/mastercard",         mastercardRouter);
 app.use("/api/visa",               visaRouter);
+app.use("/api/kyc",                kycRouter);
 app.use("/api/public",             publicRouter);
 app.use("/api/global",             globalBankingRouter);
 app.use("/api/financial",          financialReportsRouter);
@@ -254,6 +262,7 @@ wss.on("connection", (ws, req) => {
 const stopSimulator        = startSimulator(broadcast);
 const stopVehicleSimulator = startVehicleSimulator(broadcast);
 const stopReconciliation   = startReconciliationJob();
+const stopKycReconciliation = startKycReconciliationJob();
 
 // ─── Boot ────────────────────────────────────────────────────────────────────
 async function boot() {
