@@ -16,7 +16,13 @@ const ALLOWED_TRANSITIONS: Record<Status, Status[]> = {
   under_review: ["interview", "rejected", "withdrawn"],
   interview: ["offered", "rejected", "withdrawn"],
   offered: ["rejected", "withdrawn"],
-  rejected: [],
+  // Rejected isn't fully terminal — a reviewer can undo a mistaken
+  // rejection. Either send it back through proper review (under_review),
+  // or approve it directly if the mistake is obvious and immediate.
+  // Both paths are fully audited: the status history requires a reason
+  // for every transition, so reversing a rejection is a visible,
+  // accountable correction, not a silent bypass of the original decision.
+  rejected: ["under_review", "offered"],
   withdrawn: [],
 };
 

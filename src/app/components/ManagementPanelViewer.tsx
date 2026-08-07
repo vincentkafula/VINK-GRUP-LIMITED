@@ -716,44 +716,63 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
                 </div>
               )}
 
-              {!["offered", "rejected", "withdrawn"].includes(selectedJobApp.status) && (
-                <div className="rounded-xl border border-gray-200 p-4 space-y-3">
-                  <p className="text-xs font-bold uppercase tracking-wider text-gray-400">Review decision</p>
-                  <textarea value={jobActionReason} onChange={e => setJobActionReason(e.target.value)} rows={2}
-                    placeholder="Reason for this decision (required)…"
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none resize-none" />
+              {(() => {
+                // Mirrors server/src/routes/jobsRouter.ts's ALLOWED_TRANSITIONS —
+                // kept in sync manually since the frontend needs to know which
+                // buttons are even worth showing, not just rely on the backend
+                // rejecting an invalid one after the fact. Update both together.
+                const ALLOWED: Record<string, string[]> = {
+                  submitted: ["under_review", "rejected", "withdrawn"],
+                  under_review: ["interview", "rejected", "withdrawn"],
+                  interview: ["offered", "rejected", "withdrawn"],
+                  offered: ["rejected", "withdrawn"],
+                  rejected: ["under_review", "offered"],
+                  withdrawn: [],
+                };
+                const LABELS: Record<string, { label: string; cls: string }> = {
+                  under_review: { label: selectedJobApp.status === "rejected" ? "Reconsider" : "Start Review", cls: "border border-blue-200 text-blue-700 hover:bg-blue-50" },
+                  interview: { label: "Interview", cls: "border border-blue-200 text-blue-700 hover:bg-blue-50" },
+                  rejected: { label: "Reject", cls: "border border-red-200 text-red-600 hover:bg-red-50" },
+                  offered: { label: "Approve", cls: "text-white" },
+                  withdrawn: { label: "Mark Withdrawn", cls: "border border-gray-200 text-gray-600 hover:bg-gray-50" },
+                };
+                const nextSteps = (ALLOWED[selectedJobApp.status] ?? []).filter(s => s !== "withdrawn");
+                if (!nextSteps.length) return null;
 
-                  {selectedJobApp.status === "interview" && !selectedJobApp.roleGranted && (
-                    <div className="rounded-lg p-3 space-y-2" style={{ background: "#F0FDF4", border: "1px solid #BBF7D0" }}>
-                      <p className="text-xs font-bold text-gray-700">If approving: set their VINK login (only needed if they don't have an account yet)</p>
-                      <div className="grid grid-cols-2 gap-2">
-                        <input value={newAccountUsername} onChange={e => setNewAccountUsername(e.target.value)}
-                          placeholder="Username" className="px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none" />
-                        <input value={newAccountPassword} onChange={e => setNewAccountPassword(e.target.value)} type="text"
-                          placeholder="Password (min 8 characters)" className="px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none" />
+                return (
+                  <div className="rounded-xl border border-gray-200 p-4 space-y-3">
+                    <p className="text-xs font-bold uppercase tracking-wider text-gray-400">
+                      Review decision{selectedJobApp.status === "rejected" ? " — this application was rejected; correct it below if that was a mistake" : ""}
+                    </p>
+                    <textarea value={jobActionReason} onChange={e => setJobActionReason(e.target.value)} rows={2}
+                      placeholder="Reason for this decision (required)…"
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none resize-none" />
+
+                    {nextSteps.includes("offered") && !selectedJobApp.roleGranted && (
+                      <div className="rounded-lg p-3 space-y-2" style={{ background: "#F0FDF4", border: "1px solid #BBF7D0" }}>
+                        <p className="text-xs font-bold text-gray-700">If approving: set their VINK login (only needed if they don't have an account yet)</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          <input value={newAccountUsername} onChange={e => setNewAccountUsername(e.target.value)}
+                            placeholder="Username" className="px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none" />
+                          <input value={newAccountPassword} onChange={e => setNewAccountPassword(e.target.value)} type="text"
+                            placeholder="Password (min 8 characters)" className="px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none" />
+                        </div>
+                        <p className="text-[11px] text-gray-500">Leave both blank if they already have a VINK account under this email — access is granted automatically either way.</p>
                       </div>
-                      <p className="text-[11px] text-gray-500">Leave both blank if they already have a VINK account under this email — access is granted automatically either way.</p>
-                    </div>
-                  )}
-
-                  <div className="grid grid-cols-3 gap-2">
-                    {selectedJobApp.status !== "interview" && (
-                      <button disabled={jobActionBusy} onClick={() => handleJobStatusChange(selectedJobApp.referenceNumber, "interview")}
-                        className="py-2.5 rounded-lg text-xs font-bold border border-blue-200 text-blue-700 hover:bg-blue-50 disabled:opacity-50">
-                        Interview
-                      </button>
                     )}
-                    <button disabled={jobActionBusy} onClick={() => handleJobStatusChange(selectedJobApp.referenceNumber, "rejected")}
-                      className="py-2.5 rounded-lg text-xs font-bold border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-50">
-                      Reject
-                    </button>
-                    <button disabled={jobActionBusy} onClick={() => handleJobStatusChange(selectedJobApp.referenceNumber, "offered")}
-                      className="py-2.5 rounded-lg text-xs font-bold text-white disabled:opacity-50" style={{ background: GREEN, gridColumn: selectedJobApp.status === "interview" ? "auto" : undefined }}>
-                      {jobActionBusy ? "…" : "Approve"}
-                    </button>
+
+                    <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${nextSteps.length}, 1fr)` }}>
+                      {nextSteps.map(step => (
+                        <button key={step} disabled={jobActionBusy} onClick={() => handleJobStatusChange(selectedJobApp.referenceNumber, step)}
+                          className={`py-2.5 rounded-lg text-xs font-bold disabled:opacity-50 ${LABELS[step]?.cls ?? "border border-gray-200 text-gray-600 hover:bg-gray-50"}`}
+                          style={step === "offered" ? { background: GREEN } : undefined}>
+                          {jobActionBusy ? "…" : (LABELS[step]?.label ?? step)}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
             </div>
           </div>
         </div>
