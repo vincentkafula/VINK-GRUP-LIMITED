@@ -1,9 +1,7 @@
 import { isDemoMode, setDemoMode, DEMO_TOKEN, vehicleMock } from "./demoMode";
 import { getToken, connectLiveFeed } from "./mvnoApi";
 
-const isLocalhost = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
-const BASE = import.meta.env.VITE_API_URL
-  ?? (isLocalhost ? "http://localhost:3001" : "https://vink-grup-limited-production.up.railway.app"); // see apiClient.ts for why this fallback exists
+import { API_BASE as BASE } from "./config";
 
 async function apiFetch<T>(path: string, opts: RequestInit = {}): Promise<T> {
   if (isDemoMode()) return vehicleDemoResponse(path, opts) as T;

@@ -1,8 +1,6 @@
 import { useSyncExternalStore } from "react";
 
-const isLocalhost = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
-const BASE = import.meta.env.VITE_API_URL
-  ?? (isLocalhost ? "http://localhost:3001" : "https://vink-grup-limited-production.up.railway.app"); // see apiClient.ts for why this fallback exists
+import { API_BASE as BASE } from "./config";
 const STORAGE_KEY = "vink_country_code";
 
 export interface CountryOption {

@@ -1,8 +1,6 @@
 import { isDemoMode, setDemoMode, demoLogin, DEMO_TOKEN, bankMock } from "./demoMode";
 
-const isLocalhost = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
-const BASE = import.meta.env.VITE_API_URL
-  ?? (isLocalhost ? "http://localhost:3001" : "https://vink-grup-limited-production.up.railway.app"); // see apiClient.ts for why this fallback exists
+import { API_BASE as BASE } from "./config";
 let _token: string | null = localStorage.getItem("bank_token");
 export const setBankToken = (t: string | null) => { _token = t; if (t) localStorage.setItem("bank_token", t); else localStorage.removeItem("bank_token"); };
 export const getBankToken = () => _token;

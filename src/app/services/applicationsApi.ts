@@ -9,9 +9,7 @@
  * backend, same production-safe fallback pattern as every other service
  * file (apiClient.ts, marketplaceApi.ts, etc.).
  */
-const isLocalhost = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
-const BASE = import.meta.env.VITE_API_URL
-  ?? (isLocalhost ? "http://localhost:3001" : "https://vink-grup-limited-production.up.railway.app"); // see apiClient.ts for why this fallback exists
+import { API_BASE as BASE } from "./config";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

@@ -2,16 +2,8 @@
 // Single source of truth for all backend calls. Falls back to demo mode when
 // the server is unreachable.
 
-// If VITE_API_URL wasn't set correctly when this bundle was built (a Railway
-// build-argument misconfiguration, not a code bug — Vite bakes this in at
-// build time, so no runtime env var can fix it after the fact), falling
-// back to localhost:3001 in a deployed production build is guaranteed to
-// fail every request silently. Falling back to the known production
-// backend URL instead at least has a chance of working, and is strictly
-// better than a fallback that can never succeed outside local development.
-const isLocalhost = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
-const BASE = import.meta.env.VITE_API_URL
-  ?? (isLocalhost ? "http://localhost:3001" : "https://vink-grup-limited-production.up.railway.app");
+import { API_BASE as BASE } from "./config";
+
 const TOKEN_KEY = "vink_jwt";
 const DEMO_KEY  = "vink_demo";
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { X, Check, ChevronRight, ChevronLeft, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
+import { API_BASE as BASE } from "../services/config";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
@@ -17,9 +18,6 @@ const LINE = "#D7DCE3";
 const SUCCESS = "#2E7D5B";
 const SUCCESS_BG = "#E8F3ED";
 const ERROR = "#B3261E";
-
-const isLocalhost = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
-const BASE = import.meta.env.VITE_API_URL ?? (isLocalhost ? "http://localhost:3001" : "https://vink-grup-limited-production.up.railway.app");
 
 interface Department {
   id: string; code: string; name: string; positions: string[]; desc: string; reqs: string[];
