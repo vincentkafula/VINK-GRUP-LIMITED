@@ -663,7 +663,12 @@ router.get("/customers/:userId/stats", requireAuth, requireSelf, async (req: Req
   for (const r of statusRows) {
     if (["pending", "confirmed", "processing", "shipped"].includes(r.status)) counts.inProgress += r.n;
     else if (r.status === "delivered") counts.delivered += r.n;
-    else if (r.status === "cancelled") counts.cancelled += r.n;
+    // A payment_failed order is bucketed with cancelled — it never
+    // completed, and stock was already restocked automatically, the same
+    // real-world outcome as a cancellation. Without this, a failed-payment
+    // order matched none of these branches and silently vanished from the
+    // customer's total order count instead of being counted anywhere.
+    else if (r.status === "cancelled" || r.status === "payment_failed") counts.cancelled += r.n;
     else if (["return_requested", "returned", "refunded"].includes(r.status)) counts.returned += r.n;
   }
   const { rows: recent } = await pool!.query(
