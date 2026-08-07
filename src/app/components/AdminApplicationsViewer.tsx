@@ -1,20 +1,20 @@
 /**
  * VINK Bank — Admin Applications Dashboard
- * Connected to Supabase via applicationsApi
+ * Reviewer UI for Personal/Business/Corporate account applications, backed
+ * by the real applications table (server/src/routes/applicationsRouter.ts).
  */
 import { useState, useEffect, useCallback } from "react";
 import {
   X, RefreshCw, Search, Filter, CheckCircle, Clock, XCircle,
   AlertTriangle, TrendingUp, Users, FileText, Eye, ChevronDown,
-  Download, MoreVertical, Building2, CreditCard, DollarSign,
-  Smartphone, Shield, Star, Briefcase,
+  Download, MoreVertical, Building2, Briefcase,
 } from "lucide-react";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 import {
   applicationsApi,
   type Application,
   type AppStatus,
-  type AppType,
+  type AppTier,
 } from "../services/applicationsApi";
 
 interface Props { isOpen: boolean; onClose: () => void; }
@@ -24,28 +24,29 @@ const GOLD = "#F5A623";
 
 // ─── Status config ────────────────────────────────────────────────────────────
 const STATUS_CFG: Record<AppStatus, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
-  pending:              { label: "Pending",          color: "#F59E0B", bg: "#FEF3C7", icon: <Clock className="w-3.5 h-3.5" /> },
+  submitted:            { label: "Submitted",        color: "#F59E0B", bg: "#FEF3C7", icon: <Clock className="w-3.5 h-3.5" /> },
   under_review:         { label: "Under Review",     color: "#3B82F6", bg: "#DBEAFE", icon: <Eye className="w-3.5 h-3.5" /> },
   approved:             { label: "Approved",         color: "#10B981", bg: "#D1FAE5", icon: <CheckCircle className="w-3.5 h-3.5" /> },
   declined:             { label: "Declined",         color: "#EF4444", bg: "#FEE2E2", icon: <XCircle className="w-3.5 h-3.5" /> },
-  more_info_required:   { label: "More Info Needed", color: "#34A853", bg: "#EDE9FE", icon: <AlertTriangle className="w-3.5 h-3.5" /> },
+  more_info_requested:  { label: "More Info Needed", color: "#34A853", bg: "#EDE9FE", icon: <AlertTriangle className="w-3.5 h-3.5" /> },
 };
 
-// ─── Type config ──────────────────────────────────────────────────────────────
-const TYPE_CFG: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
-  account:      { label: "Bank Account",    icon: <Building2 className="w-4 h-4" />,   color: "#128A43" },
-  creditCard:   { label: "Credit Card",     icon: <CreditCard className="w-4 h-4" />,  color: "#128A43" },
-  loan:         { label: "Personal Loan",   icon: <DollarSign className="w-4 h-4" />,  color: "#E53935" },
-  invest:       { label: "Investment",      icon: <TrendingUp className="w-4 h-4" />,  color: "#1565C0" },
-  insure:       { label: "Insurance",       icon: <Shield className="w-4 h-4" />,      color: "#2E7D32" },
-  rewards:      { label: "Rewards",         icon: <Star className="w-4 h-4" />,        color: "#FFB84D" },
-  sim:          { label: "SIM Card",        icon: <Smartphone className="w-4 h-4" />,  color: "#F57C00" },
-  businessLoan: { label: "Business Loan",   icon: <Briefcase className="w-4 h-4" />,   color: "#C62828" },
-  corporateLoan:{ label: "Corporate Loan",  icon: <Building2 className="w-4 h-4" />,   color: "#0B5C2E" },
+// ─── Tier config ──────────────────────────────────────────────────────────────
+// Narrowed to the 3 account tiers this system actually persists — the
+// component was originally built for a broader set of product types
+// (credit card, loan, investment, insurance, SIM, etc.) that this task
+// didn't build persistence for. Those product-specific application flows
+// still submit into nothing today; only Personal/Business/Corporate
+// account applications are real now. Extending this to the other product
+// types would need its own schema/router work, not just a UI relabel.
+const TYPE_CFG: Record<AppTier, { label: string; icon: React.ReactNode; color: string }> = {
+  personal:   { label: "Personal Account",   icon: <Building2 className="w-4 h-4" />, color: "#128A43" },
+  business:   { label: "Business Account",   icon: <Briefcase className="w-4 h-4" />, color: "#1565C0" },
+  corporate:  { label: "Corporate Account",  icon: <Building2 className="w-4 h-4" />, color: "#0B5C2E" },
 };
 
-const ALL_TYPES = Object.keys(TYPE_CFG);
-const ALL_STATUSES: AppStatus[] = ["pending","under_review","approved","declined","more_info_required"];
+const ALL_TYPES: AppTier[] = ["personal", "business", "corporate"];
+const ALL_STATUSES: AppStatus[] = ["submitted", "under_review", "approved", "declined", "more_info_requested"];
 
 function fmtDate(iso: string) {
   if (!iso) return "—";
@@ -70,17 +71,18 @@ function StatCard({ icon, label, value, color, sub }: { icon: React.ReactNode; l
 
 // ─── Application detail panel ─────────────────────────────────────────────────
 function ApplicationDetail({ app, onClose, onStatusUpdate }: {
-  app: Application; onClose: () => void; onStatusUpdate: (ref: string, status: AppStatus, notes?: string) => void;
+  app: Application; onClose: () => void; onStatusUpdate: (ref: string, status: AppStatus, reason: string) => void;
 }) {
   const [newStatus, setNewStatus] = useState<AppStatus>(app.status);
-  const [notes, setNotes] = useState(app.reviewNotes ?? "");
+  const [reason, setReason] = useState("");
   const [saving, setSaving] = useState(false);
   const sc = STATUS_CFG[app.status];
-  const tc = TYPE_CFG[app.type] ?? TYPE_CFG.account;
+  const tc = TYPE_CFG[app.tier] ?? TYPE_CFG.personal;
 
   const save = async () => {
+    if (!reason.trim()) return; // the backend requires a reason for every status change — enforce it here too, not just server-side
     setSaving(true);
-    await onStatusUpdate(app.referenceNumber, newStatus, notes);
+    await onStatusUpdate(app.referenceNumber, newStatus, reason.trim());
     setSaving(false);
   };
 
@@ -95,7 +97,7 @@ function ApplicationDetail({ app, onClose, onStatusUpdate }: {
             </div>
             <div>
               <p className="font-bold text-gray-900 text-sm">{app.referenceNumber}</p>
-              <p className="text-xs text-gray-500">{tc.label} · {app.subType}</p>
+              <p className="text-xs text-gray-500">{tc.label}{app.accountTypeRequested ? ` · ${app.accountTypeRequested}` : ""}</p>
             </div>
           </div>
           <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 text-gray-500"><X className="w-4 h-4" /></button>
@@ -118,19 +120,38 @@ function ApplicationDetail({ app, onClose, onStatusUpdate }: {
               <div><p className="text-xs text-gray-400">Full name</p><p className="font-semibold text-gray-800">{app.applicantName || "—"}</p></div>
               <div><p className="text-xs text-gray-400">Email</p><p className="font-semibold text-gray-800 truncate">{app.applicantEmail || "—"}</p></div>
               <div><p className="text-xs text-gray-400">Phone</p><p className="font-semibold text-gray-800">{app.applicantPhone || "—"}</p></div>
-              <div><p className="text-xs text-gray-400">Product</p><p className="font-semibold text-gray-800">{app.subType || "—"}</p></div>
+              <div><p className="text-xs text-gray-400">Account type requested</p><p className="font-semibold text-gray-800">{app.accountTypeRequested || "—"}</p></div>
             </div>
           </div>
 
-          {/* Form data */}
-          {app.formData && Object.keys(app.formData).length > 0 && (
+          {/* Tier-specific data */}
+          {app.tierData && Object.keys(app.tierData).length > 0 && (
             <div className="rounded-xl border border-gray-200 p-4">
               <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Application data</p>
               <div className="grid grid-cols-2 gap-2">
-                {Object.entries(app.formData).filter(([, v]) => v && String(v).trim()).map(([k, v]) => (
+                {Object.entries(app.tierData).filter(([, v]) => v && String(v).trim() && typeof v !== "object").map(([k, v]) => (
                   <div key={k} className="text-xs">
                     <span className="text-gray-400 capitalize">{k.replace(/([A-Z])/g, " $1").trim()}: </span>
                     <span className="font-medium text-gray-700">{String(v)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Status history */}
+          {app.statusHistory && app.statusHistory.length > 0 && (
+            <div className="rounded-xl border border-gray-200 p-4">
+              <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Status history</p>
+              <div className="space-y-2">
+                {app.statusHistory.map((h, i) => (
+                  <div key={i} className="text-xs flex items-start gap-2">
+                    <span className="font-semibold text-gray-700 shrink-0">{fmtDate(h.createdAt)}</span>
+                    <span className="text-gray-500">
+                      {h.fromStatus ? `${STATUS_CFG[h.fromStatus as AppStatus]?.label ?? h.fromStatus} → ` : ""}
+                      <strong>{STATUS_CFG[h.toStatus as AppStatus]?.label ?? h.toStatus}</strong>
+                      {h.changedByName ? ` by ${h.changedByName}` : ""} — {h.reason}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -153,13 +174,13 @@ function ApplicationDetail({ app, onClose, onStatusUpdate }: {
               })}
             </div>
             <textarea
-              value={notes}
-              onChange={e => setNotes(e.target.value)}
+              value={reason}
+              onChange={e => setReason(e.target.value)}
               rows={3}
-              placeholder="Add review notes or reason for status change…"
+              placeholder="Reason for this status change (required)…"
               className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400 resize-none"
             />
-            <button onClick={save} disabled={saving || (newStatus === app.status && notes === app.reviewNotes)}
+            <button onClick={save} disabled={saving || !reason.trim() || newStatus === app.status}
               className="w-full py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-40"
               style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
               {saving ? "Saving…" : "Save Changes"}
@@ -188,7 +209,7 @@ export function AdminApplicationsViewer({ isOpen, onClose }: Props) {
     setLoading(true);
     const [appsRes, statsRes] = await Promise.allSettled([
       applicationsApi.list({
-        type: filterType === "all" ? undefined : filterType,
+        tier: filterType === "all" ? undefined : filterType,
         status: filterStatus === "all" ? undefined : filterStatus,
         page, limit: 20,
       }),
@@ -206,11 +227,11 @@ export function AdminApplicationsViewer({ isOpen, onClose }: Props) {
 
   useEffect(() => { if (isOpen) load(); }, [isOpen, load]);
 
-  const handleStatusUpdate = async (ref: string, status: AppStatus, notes?: string) => {
-    const result = await applicationsApi.updateStatus(ref, status, notes);
+  const handleStatusUpdate = async (ref: string, status: AppStatus, reason: string) => {
+    const result = await applicationsApi.updateStatus(ref, status, reason);
     if (result.success) {
-      setApps(prev => prev.map(a => a.referenceNumber === ref ? { ...a, status, reviewNotes: notes } : a));
-      if (selectedApp?.referenceNumber === ref) setSelectedApp(a => a ? { ...a, status, reviewNotes: notes } : a);
+      setApps(prev => prev.map(a => a.referenceNumber === ref ? { ...a, status, statusReason: reason } : a));
+      if (selectedApp?.referenceNumber === ref) setSelectedApp(a => a ? { ...a, status, statusReason: reason } : a);
       load(); // refresh
     }
   };
@@ -219,12 +240,12 @@ export function AdminApplicationsViewer({ isOpen, onClose }: Props) {
     !search ||
     a.applicantName.toLowerCase().includes(search.toLowerCase()) ||
     a.referenceNumber.toLowerCase().includes(search.toLowerCase()) ||
-    a.applicantEmail.toLowerCase().includes(search.toLowerCase())
+    (a.applicantEmail ?? "").toLowerCase().includes(search.toLowerCase())
   );
 
   if (!isOpen) return null;
 
-  const statsByType = stats.byType as Record<string, number> ?? {};
+  const statsByTier = stats.byTier as Record<string, number> ?? {};
   const statsByStatus = stats.byStatus as Record<string, number> ?? {};
 
   return (
@@ -236,7 +257,7 @@ export function AdminApplicationsViewer({ isOpen, onClose }: Props) {
             <img src={vinkLogo} alt="Vink" className="h-9 w-auto object-contain" />
             <div className="border-l border-gray-200 pl-3 hidden sm:block">
               <p className="text-sm font-black text-gray-800">Applications Dashboard</p>
-              <p className="text-[11px] text-gray-400">VINK Bank · Admin · Supabase Connected</p>
+              <p className="text-[11px] text-gray-400">VINK Bank · Admin · Personal / Business / Corporate accounts</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -268,21 +289,19 @@ export function AdminApplicationsViewer({ isOpen, onClose }: Props) {
         {activeTab === "stats" && (
           <div className="space-y-6">
             {/* KPI row */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
               <StatCard icon={<FileText className="w-5 h-5" />} label="Total Applications" value={String(stats.totalApplications ?? 0)} color={P} />
-              <StatCard icon={<Clock className="w-5 h-5" />} label="Pending Review" value={String(stats.pendingReview ?? 0)} color="#F59E0B" sub="Requires action" />
-              <StatCard icon={<Users className="w-5 h-5" />} label="Contact Messages" value={String(stats.totalContacts ?? 0)} color="#3B82F6" />
-              <StatCard icon={<TrendingUp className="w-5 h-5" />} label="Newsletter Subs" value={String(stats.newsletterSubscribers ?? 0)} color="#10B981" />
+              <StatCard icon={<Clock className="w-5 h-5" />} label="Awaiting Review" value={String(stats.pendingReview ?? 0)} color="#F59E0B" sub="Status: submitted" />
             </div>
 
-            {/* By type */}
+            {/* By tier */}
             <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-              <h3 className="font-bold text-gray-800 mb-4">Applications by Type</h3>
+              <h3 className="font-bold text-gray-800 mb-4">Applications by Account Tier</h3>
               <div className="space-y-3">
                 {ALL_TYPES.map(t => {
                   const tc = TYPE_CFG[t];
-                  const count = statsByType[t] ?? 0;
-                  const max = Math.max(...Object.values(statsByType), 1);
+                  const count = statsByTier[t] ?? 0;
+                  const max = Math.max(...Object.values(statsByTier), 1);
                   return (
                     <div key={t} className="flex items-center gap-3">
                       <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white flex-shrink-0" style={{ background: tc.color }}>
@@ -371,7 +390,7 @@ export function AdminApplicationsViewer({ isOpen, onClose }: Props) {
                     <tbody className="divide-y divide-gray-50">
                       {filtered.map(app => {
                         const sc = STATUS_CFG[app.status];
-                        const tc = TYPE_CFG[app.type] ?? TYPE_CFG.account;
+                        const tc = TYPE_CFG[app.tier] ?? TYPE_CFG.personal;
                         return (
                           <tr key={app.id} className="hover:bg-gray-50 transition-colors">
                             <td className="px-4 py-3">
@@ -389,7 +408,7 @@ export function AdminApplicationsViewer({ isOpen, onClose }: Props) {
                               <p className="text-[10px] text-gray-400 truncate max-w-[140px]">{app.applicantEmail}</p>
                             </td>
                             <td className="px-4 py-3">
-                              <p className="text-xs text-gray-600 truncate max-w-[120px]">{app.subType || "—"}</p>
+                              <p className="text-xs text-gray-600 truncate max-w-[120px]">{app.accountTypeRequested || "—"}</p>
                             </td>
                             <td className="px-4 py-3">
                               <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full whitespace-nowrap"

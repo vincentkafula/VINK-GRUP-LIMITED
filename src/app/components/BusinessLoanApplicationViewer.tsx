@@ -210,7 +210,7 @@ export function BusinessLoanApplicationViewer({ isOpen, onClose }: Props) {
                   const r = await otpApi.send(form.contactNumber, "sms");
                   setOtpSent(true);
                   if (r.data && (r.data as { demoCode?: string }).demoCode) {
-                    console.info("Demo OTP:", (r.data as { demoCode: string }).demoCode);
+                    console.info("Demo OTP:", (r.data as { demoCode?: string }).demoCode);
                   }
                 }}
                 className="w-full py-3 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90"
@@ -231,7 +231,7 @@ export function BusinessLoanApplicationViewer({ isOpen, onClose }: Props) {
                       const r = await otpApi.send(form.contactNumber, "sms");
                       setForm(f => ({ ...f, otp: "" }));
                       if (r.data && (r.data as { demoCode?: string }).demoCode) {
-                        console.info("Demo OTP:", (r.data as { demoCode: string }).demoCode);
+                        console.info("Demo OTP:", (r.data as { demoCode?: string }).demoCode);
                       }
                     }}
                     className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-800 transition-colors">

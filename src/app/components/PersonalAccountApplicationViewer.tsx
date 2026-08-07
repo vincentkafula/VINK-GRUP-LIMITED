@@ -642,12 +642,12 @@ export function PersonalAccountApplicationViewer({ isOpen, onClose }: Props) {
     updateForm(step6Data);
     setSubmitting(true);
     const r = await applicationsApi.submit({
-      type: "account",
-      subType: "Personal Account",
+      tier: "personal",
+      accountTypeRequested: merged.accountType,
       applicantName: `${merged.firstName ?? ""} ${merged.lastName ?? ""}`.trim() || "Applicant",
       applicantEmail: merged.email,
       applicantPhone: merged.phone,
-      formData: merged,
+      tierData: merged,
     });
     setSubmitting(false);
     if (r.success && r.data?.referenceNumber) {

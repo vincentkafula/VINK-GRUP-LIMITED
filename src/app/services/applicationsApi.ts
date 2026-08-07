@@ -1,43 +1,61 @@
 /**
  * VINK Bank — Applications API client
- * Connects to the Supabase Edge Function backend.
+ *
+ * Was pointed at an orphaned Supabase Edge Function URL from an earlier
+ * prototype iteration that was never migrated when the rest of the
+ * platform moved to the real Express/Postgres backend — meaning every
+ * application submission, OTP send/verify, and admin call through this
+ * file was silently hitting a dead endpoint. Fixed to point at the real
+ * backend, same production-safe fallback pattern as every other service
+ * file (apiClient.ts, marketplaceApi.ts, etc.).
  */
-import { projectId } from "../../../utils/supabase/info";
-
-const BASE = `https://${projectId}.supabase.co/functions/v1/make-server-3f39932e`;
+const isLocalhost = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+const BASE = import.meta.env.VITE_API_URL
+  ?? (isLocalhost ? "http://localhost:3001" : "https://vink-grup-limited-production.up.railway.app"); // see apiClient.ts for why this fallback exists
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type AppType =
-  | "account" | "creditCard" | "loan" | "invest"
-  | "insure"  | "rewards"   | "sim"  | "businessLoan" | "corporateLoan";
+export type AppTier = "personal" | "business" | "corporate";
 
 export type AppStatus =
-  | "pending" | "under_review" | "approved" | "declined" | "more_info_required";
+  | "submitted" | "under_review" | "approved" | "declined" | "more_info_requested";
 
 export interface ApplicationSubmission {
-  type: AppType;
-  subType?: string;
+  tier?: AppTier;
+  accountTypeRequested?: string;
+  currency?: string;
   applicantName: string;
   applicantEmail?: string;
   applicantPhone?: string;
+  tierData?: Record<string, unknown>;
+  /** Legacy fields from other application forms (loans, credit cards, SIM,
+   *  vehicle tracking) that predate the tier-based account-application
+   *  system this file now targets. Accepted here only so those forms keep
+   *  compiling without changes — the real backend doesn't read them and
+   *  requires a valid `tier`, so a call using only these legacy fields
+   *  will get a clear validation error rather than a silent failure.
+   *  Building real persistence for those other application types is a
+   *  separate, not-yet-scoped piece of work. */
+  type?: string;
+  subType?: string;
   formData?: Record<string, unknown>;
 }
 
 export interface Application {
   id: string;
   referenceNumber: string;
-  type: AppType;
-  subType: string;
+  tier: AppTier;
+  accountTypeRequested?: string;
+  currency: string;
   status: AppStatus;
+  statusReason?: string;
   applicantName: string;
-  applicantEmail: string;
-  applicantPhone: string;
-  formData: Record<string, unknown>;
+  applicantEmail?: string;
+  applicantPhone?: string;
+  tierData: Record<string, unknown>;
   submittedAt: string;
   updatedAt: string;
-  reviewNotes?: string;
-  assignedTo?: string;
+  statusHistory?: { fromStatus: string | null; toStatus: string; reason: string; changedBy: string | null; changedByName?: string; createdAt: string }[];
 }
 
 export interface ApiResult<T = unknown> {
@@ -51,14 +69,21 @@ export interface ApiResult<T = unknown> {
 
 // ─── HTTP helper ──────────────────────────────────────────────────────────────
 
-async function request<T>(path: string, options: RequestInit = {}): Promise<ApiResult<T>> {
+import { getToken } from "./apiClient";
+
+async function request<T>(path: string, options: RequestInit = {}): Promise<ApiResult<T> & { demoCode?: string }> {
   try {
+    const token = getToken();
     const res = await fetch(`${BASE}${path}`, {
-      headers: { "Content-Type": "application/json", ...options.headers },
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...options.headers,
+      },
       ...options,
     });
     const json = await res.json();
-    return json as ApiResult<T>;
+    return json as ApiResult<T> & { demoCode?: string };
   } catch (err) {
     return { success: false, error: "Network error — check your connection" };
   }
@@ -67,62 +92,63 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<ApiR
 // ─── Applications ─────────────────────────────────────────────────────────────
 
 export const applicationsApi = {
-  /** Submit a new application and receive a reference number. */
+  /** Submit a new application and receive a reference number. Works
+   *  whether or not the applicant is logged in. */
   submit: (data: ApplicationSubmission) =>
     request<{ referenceNumber: string; id: string; status: AppStatus }>(
-      "/applications",
+      "/api/applications",
       { method: "POST", body: JSON.stringify(data) }
     ),
 
-  /** List applications with optional type/status/pagination filters. */
-  list: (params?: { type?: string; status?: string; page?: number; limit?: number }) => {
+  /** List applications with optional status/tier/pagination filters.
+   *  Reviewer-only (requires an authenticated, privileged session). */
+  list: (params?: { tier?: string; status?: string; page?: number; limit?: number }) => {
     const q = new URLSearchParams();
-    if (params?.type)   q.set("type",   params.type);
+    if (params?.tier)   q.set("tier",   params.tier);
     if (params?.status) q.set("status", params.status);
     if (params?.page)   q.set("page",   String(params.page));
     if (params?.limit)  q.set("limit",  String(params.limit));
-    return request<Application[]>(`/applications?${q}`);
+    return request<Application[]>(`/api/applications?${q}`);
   },
 
-  /** Get a single application by reference number. */
-  get: (ref: string) => request<Application>(`/applications/${ref}`),
+  /** Get a single application by reference number, including its full
+   *  status-change history. Reviewer-only. */
+  get: (ref: string) => request<Application>(`/api/applications/${ref}`),
 
-  /** Update the status of an application. */
-  updateStatus: (ref: string, status: AppStatus, reviewNotes?: string, assignedTo?: string) =>
-    request<Application>(`/applications/${ref}/status`, {
+  /** Change an application's status. reason is required — every
+   *  transition needs a stated reason for the audit trail. Reviewer-only. */
+  updateStatus: (ref: string, status: AppStatus, reason: string) =>
+    request<Application>(`/api/applications/${ref}/status`, {
       method: "PATCH",
-      body: JSON.stringify({ status, reviewNotes, assignedTo }),
+      body: JSON.stringify({ status, reason }),
     }),
 
-  /** Delete an application. */
-  delete: (ref: string) => request(`/applications/${ref}`, { method: "DELETE" }),
-
-  /** Get admin stats. */
+  /** Summary counts by tier and status, computed live from real data.
+   *  Reviewer-only. */
   stats: () =>
     request<{
       totalApplications: number;
-      byType: Record<string, number>;
+      byTier: Record<string, number>;
       byStatus: Record<string, number>;
       pendingReview: number;
-      totalContacts: number;
-      newsletterSubscribers: number;
       lastUpdated: string;
-    }>("/admin/stats"),
+    }>("/api/applications/stats/summary"),
 };
 
 // ─── OTP ──────────────────────────────────────────────────────────────────────
 
 export const otpApi = {
-  /** Send an OTP to a phone number or email. Returns demoCode in dev. */
+  /** Send an OTP to a phone number or email. Returns demoCode until a real
+   *  SMS/email provider is configured — see server/src/routes/otpRouter.ts. */
   send: (destination: string, channel: "sms" | "email" = "sms") =>
-    request<{ demoCode?: string }>("/otp/send", {
+    request<{ sent: boolean; demoCode?: string }>("/api/otp/send", {
       method: "POST",
       body: JSON.stringify({ destination, channel }),
     }),
 
   /** Verify an OTP code. */
   verify: (destination: string, code: string) =>
-    request("/otp/verify", {
+    request("/api/otp/verify", {
       method: "POST",
       body: JSON.stringify({ destination, code }),
     }),

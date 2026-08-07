@@ -29,6 +29,23 @@ export function requireAuth(req: Request, res: Response, next: NextFunction): vo
   }
 }
 
+/** Attaches req.user if a valid token is present, but never rejects the
+ *  request for a missing or invalid one — for routes like application
+ *  submission that should work for a logged-out applicant, but still want
+ *  to capture the applicant_user_id when a session does exist. */
+export function optionalAuth(req: Request, _res: Response, next: NextFunction): void {
+  const header = req.headers.authorization;
+  if (header?.startsWith("Bearer ")) {
+    try {
+      req.user = jwt.verify(header.slice(7), JWT_SECRET) as AuthPayload;
+    } catch {
+      // Invalid/expired token on an optional-auth route — proceed as
+      // logged-out rather than rejecting, unlike requireAuth.
+    }
+  }
+  next();
+}
+
 export function requireRole(...roles: AuthPayload["role"][]) {
   return (req: Request, res: Response, next: NextFunction): void => {
     if (!req.user) {

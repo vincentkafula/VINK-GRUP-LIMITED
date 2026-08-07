@@ -401,7 +401,7 @@ export function ServiceApplicationViewer({ isOpen, onClose, serviceType }: Props
     const r = await otpApi.send(form.phone, "sms");
     setPhoneOtpSent(true);
     if (r.data && (r.data as { demoCode?: string }).demoCode) {
-      console.info("Demo OTP (phone):", (r.data as { demoCode: string }).demoCode);
+      console.info("Demo OTP (phone):", (r.data as { demoCode?: string }).demoCode);
     }
   }, [form.phone]);
 
@@ -409,7 +409,7 @@ export function ServiceApplicationViewer({ isOpen, onClose, serviceType }: Props
     const r = await otpApi.send(form.email, "email");
     setEmailOtpSent(true);
     if (r.data && (r.data as { demoCode?: string }).demoCode) {
-      console.info("Demo OTP (email):", (r.data as { demoCode: string }).demoCode);
+      console.info("Demo OTP (email):", (r.data as { demoCode?: string }).demoCode);
     }
   }, [form.email]);
 

@@ -21,23 +21,23 @@ const GOLD = "#F5A623";
 // ─── Status config ────────────────────────────────────────────────────────────
 
 const STATUS_CONFIG: Record<AppStatus, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
-  pending:              { label: "Pending",           color: "#F59E0B", bg: "#FEF3C7", icon: <Clock className="w-3.5 h-3.5" /> },
+  submitted:            { label: "Submitted",         color: "#F59E0B", bg: "#FEF3C7", icon: <Clock className="w-3.5 h-3.5" /> },
   under_review:         { label: "Under Review",      color: "#3B82F6", bg: "#DBEAFE", icon: <Eye className="w-3.5 h-3.5" /> },
   approved:             { label: "Approved",          color: "#10B981", bg: "#D1FAE5", icon: <CheckCircle className="w-3.5 h-3.5" /> },
   declined:             { label: "Declined",          color: "#EF4444", bg: "#FEE2E2", icon: <XCircle className="w-3.5 h-3.5" /> },
-  more_info_required:   { label: "More Info Needed",  color: "#34A853", bg: "#EDE9FE", icon: <AlertCircle className="w-3.5 h-3.5" /> },
+  more_info_requested:  { label: "More Info Needed",  color: "#34A853", bg: "#EDE9FE", icon: <AlertCircle className="w-3.5 h-3.5" /> },
 };
 
-const TYPE_LABELS: Record<string, string> = {
-  account: "Bank Account", creditCard: "Credit Card", loan: "Personal Loan",
-  invest: "Investment", insure: "Insurance", rewards: "Rewards",
-  sim: "SIM Card", businessLoan: "Business Loan", corporateLoan: "Corporate Loan",
+// Narrowed to the 3 account tiers this system actually persists — see the
+// matching note in AdminApplicationsViewer.tsx, which this component
+// substantially duplicates. Recommend consolidating onto one reviewer UI
+// rather than maintaining both going forward.
+const TYPE_LABELS_TIER: Record<string, string> = {
+  personal: "Personal Account", business: "Business Account", corporate: "Corporate Account",
 };
 
-const TYPE_COLORS: Record<string, string> = {
-  account: "#128A43", creditCard: "#128A43", loan: "#E53935",
-  invest: "#1565C0", insure: "#2E7D32", rewards: "#FFB84D",
-  sim: "#F57C00", businessLoan: "#0B5C2E", corporateLoan: "#1A237E",
+const TYPE_COLORS_TIER: Record<string, string> = {
+  personal: "#128A43", business: "#1565C0", corporate: "#0B5C2E",
 };
 
 const REVIEWERS = ["Sarah Mokoena", "Thabo Dlamini", "Priya Naidoo", "James van Berg", "Lindiwe Khumalo"];
@@ -45,7 +45,7 @@ const REVIEWERS = ["Sarah Mokoena", "Thabo Dlamini", "Priya Naidoo", "James van 
 // ─── Status badge ──────────────────────────────────────────────────────────────
 
 function StatusBadge({ status }: { status: AppStatus }) {
-  const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.pending;
+  const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.submitted;
   return (
     <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full"
       style={{ background: cfg.bg, color: cfg.color }}>
@@ -92,7 +92,7 @@ function AppDetailDrawer({ app, onClose, onAction }: {
     setShowInfoForm(false);
   };
 
-  const formEntries = Object.entries(app.formData ?? {}).filter(([, v]) => v !== "" && v !== null && v !== false);
+  const formEntries = Object.entries(app.tierData ?? {}).filter(([, v]) => v !== "" && v !== null && v !== false);
 
   return (
     <div className="fixed inset-y-0 right-0 z-60 w-full max-w-xl bg-white shadow-2xl flex flex-col border-l border-gray-200">
@@ -100,7 +100,7 @@ function AppDetailDrawer({ app, onClose, onAction }: {
       <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 flex-shrink-0">
         <div>
           <p className="text-sm font-black text-gray-900">{app.referenceNumber}</p>
-          <p className="text-xs text-gray-500 mt-0.5">{app.applicantName} · {TYPE_LABELS[app.type] ?? app.type}</p>
+          <p className="text-xs text-gray-500 mt-0.5">{app.applicantName} · {TYPE_LABELS_TIER[app.tier] ?? app.tier}</p>
         </div>
         <div className="flex items-center gap-2">
           <StatusBadge status={app.status} />
@@ -131,11 +131,11 @@ function AppDetailDrawer({ app, onClose, onAction }: {
                 { label: "Full Name",       value: app.applicantName },
                 { label: "Email",           value: app.applicantEmail || "—" },
                 { label: "Phone",           value: app.applicantPhone || "—" },
-                { label: "Product",         value: app.subType || TYPE_LABELS[app.type] || app.type },
+                { label: "Product",         value: app.accountTypeRequested || TYPE_LABELS_TIER[app.tier] || app.tier },
                 { label: "Submitted",       value: new Date(app.submittedAt).toLocaleDateString("en-ZA", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) },
                 { label: "Last Updated",    value: new Date(app.updatedAt).toLocaleDateString("en-ZA", { day: "2-digit", month: "short", year: "numeric" }) },
-                { label: "Assigned To",     value: app.assignedTo || "Unassigned" },
-                { label: "Review Notes",    value: app.reviewNotes || "None" },
+                { label: "Assigned To",     value: app.statusReason || "Unassigned" },
+                { label: "Review Notes",    value: app.statusReason || "None" },
               ].map((item, i) => (
                 <div key={i} className="p-3 rounded-xl bg-gray-50">
                   <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">{item.label}</p>
@@ -203,7 +203,7 @@ function AppDetailDrawer({ app, onClose, onAction }: {
       </div>
 
       {/* Action bar — only for actionable statuses */}
-      {(app.status === "pending" || app.status === "under_review" || app.status === "more_info_required") && (
+      {(app.status === "submitted" || app.status === "under_review" || app.status === "more_info_requested") && (
         <div className="border-t border-gray-200 p-4 space-y-3 flex-shrink-0 bg-gray-50">
 
           {showDeclineForm && (
@@ -346,7 +346,20 @@ export function AdminDashboard({ isOpen, onClose }: Props) {
 
   if (!isOpen) return null;
 
-  const s = stats as Record<string, number> | null;
+  const s = stats as unknown as {
+    byType?: Record<string, number>;
+    pendingQueue?: Application[];
+    underReviewQueue?: Application[];
+    totalApplications?: number;
+    pendingCount?: number;
+    underReviewCount?: number;
+    approvedCount?: number;
+    declinedCount?: number;
+    moreInfoCount?: number;
+    totalContacts?: number;
+    newsletterSubscribers?: number;
+    lastUpdated?: string;
+  } | null;
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-gray-50">
@@ -464,8 +477,8 @@ export function AdminDashboard({ isOpen, onClose }: Props) {
                       {Object.entries((s?.byType as Record<string,number>) ?? {}).map(([type, count]) => (
                         <button key={type} onClick={() => { setFilterType(type); setFilterStatus(""); setView("applications"); }}
                           className="rounded-xl p-3 text-center hover:shadow-md transition-all cursor-pointer border border-gray-100 hover:border-emerald-200">
-                          <p className="text-2xl font-black" style={{ color: TYPE_COLORS[type] ?? P }}>{count}</p>
-                          <p className="text-[10px] font-semibold text-gray-500 mt-0.5">{TYPE_LABELS[type] ?? type}</p>
+                          <p className="text-2xl font-black" style={{ color: TYPE_COLORS_TIER[type] ?? P }}>{count}</p>
+                          <p className="text-[10px] font-semibold text-gray-500 mt-0.5">{TYPE_LABELS_TIER[type] ?? type}</p>
                         </button>
                       ))}
                     </div>
@@ -487,12 +500,12 @@ export function AdminDashboard({ isOpen, onClose }: Props) {
                           <div key={i} className="flex items-center gap-3 py-2.5 px-3 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer border border-transparent hover:border-gray-200"
                             onClick={() => { setSelectedApp(app); setView("applications"); }}>
                             <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white text-xs font-black flex-shrink-0"
-                              style={{ background: TYPE_COLORS[app.type] ?? P }}>
-                              {(TYPE_LABELS[app.type] ?? app.type)[0]}
+                              style={{ background: TYPE_COLORS_TIER[app.tier] ?? P }}>
+                              {(TYPE_LABELS_TIER[app.tier] ?? app.tier)[0]}
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-bold text-gray-800 truncate">{app.applicantName}</p>
-                              <p className="text-[10px] text-gray-500">{app.referenceNumber} · {TYPE_LABELS[app.type] ?? app.type}</p>
+                              <p className="text-[10px] text-gray-500">{app.referenceNumber} · {TYPE_LABELS_TIER[app.tier] ?? app.tier}</p>
                             </div>
                             <div className="text-right flex-shrink-0">
                               <StatusBadge status={app.status} />
@@ -545,7 +558,7 @@ export function AdminDashboard({ isOpen, onClose }: Props) {
                 <select className="border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-400 bg-white"
                   value={filterType} onChange={e => { setFilterType(e.target.value); setPage(1); }}>
                   <option value="">All types</option>
-                  {Object.entries(TYPE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                  {Object.entries(TYPE_LABELS_TIER).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                 </select>
                 <button onClick={loadApplications} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors">
                   <RefreshCw className="w-4 h-4" />
@@ -568,21 +581,21 @@ export function AdminDashboard({ isOpen, onClose }: Props) {
                         className={`flex items-center gap-4 px-5 py-3.5 hover:bg-gray-50 transition-colors cursor-pointer ${selectedApp?.referenceNumber === app.referenceNumber ? "bg-emerald-50" : ""}`}
                         onClick={() => setSelectedApp(selectedApp?.referenceNumber === app.referenceNumber ? null : app)}>
                         <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-black flex-shrink-0"
-                          style={{ background: TYPE_COLORS[app.type] ?? P }}>
-                          {(TYPE_LABELS[app.type] ?? app.type)[0]}
+                          style={{ background: TYPE_COLORS_TIER[app.tier] ?? P }}>
+                          {(TYPE_LABELS_TIER[app.tier] ?? app.tier)[0]}
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-bold text-gray-800 truncate">{app.applicantName}</p>
                           <p className="text-[11px] text-gray-500">{app.referenceNumber} · {app.applicantEmail || app.applicantPhone}</p>
                         </div>
                         <div className="hidden md:block flex-shrink-0">
-                          <p className="text-xs font-semibold text-gray-600">{TYPE_LABELS[app.type] ?? app.type}</p>
-                          {app.subType && <p className="text-[10px] text-gray-400">{app.subType}</p>}
+                          <p className="text-xs font-semibold text-gray-600">{TYPE_LABELS_TIER[app.tier] ?? app.tier}</p>
+                          {app.accountTypeRequested && <p className="text-[10px] text-gray-400">{app.accountTypeRequested}</p>}
                         </div>
                         <div className="flex-shrink-0"><StatusBadge status={app.status} /></div>
                         <div className="text-right flex-shrink-0 hidden sm:block">
                           <p className="text-[10px] text-gray-400">{new Date(app.submittedAt).toLocaleDateString("en-ZA")}</p>
-                          {app.assignedTo && <p className="text-[10px] text-gray-500 mt-0.5">→ {app.assignedTo}</p>}
+                          {app.statusReason && <p className="text-[10px] text-gray-500 mt-0.5">→ {app.statusReason}</p>}
                         </div>
                         <ChevronRight className="w-4 h-4 text-gray-300 flex-shrink-0" />
                       </div>

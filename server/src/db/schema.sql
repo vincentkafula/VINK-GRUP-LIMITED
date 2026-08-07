@@ -93,6 +93,47 @@ CREATE TABLE IF NOT EXISTS seller_kyc_verifications (
 CREATE INDEX IF NOT EXISTS idx_kyc_seller ON seller_kyc_verifications(seller_id);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_kyc_provider_ref ON seller_kyc_verifications(provider, provider_ref) WHERE provider_ref IS NOT NULL;
 
+-- ─── Account/Loan Applications (Personal, Business, Corporate) ─────────────
+-- Shared schema across all three tiers, matching the confirmed design:
+-- common fields as real columns, tier-specific fields in tier_data JSONB
+-- rather than a wide table with mostly-null columns per tier. Corporate's
+-- extra compliance fields (UBOs, authorized signatories, etc.) never touch
+-- Personal's row shape and vice versa.
+CREATE TABLE IF NOT EXISTS applications (
+  id                      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  reference_number        TEXT UNIQUE NOT NULL,
+  tier                    TEXT NOT NULL CHECK (tier IN ('personal','business','corporate')),
+  account_type_requested  TEXT,
+  currency                TEXT NOT NULL DEFAULT 'ZAR',
+  applicant_user_id       TEXT,                    -- nullable: an applicant may not have a VINK login yet
+  applicant_name          TEXT NOT NULL,
+  applicant_email         TEXT,
+  applicant_phone         TEXT,
+  status                  TEXT NOT NULL DEFAULT 'submitted'
+                            CHECK (status IN ('submitted','under_review','approved','declined','more_info_requested')),
+  status_reason           TEXT,                    -- the reason behind the CURRENT status, mirrors the latest history row
+  tier_data               JSONB NOT NULL DEFAULT '{}', -- tier-specific fields; see kind-specific notes in kycVerification-style service comments
+  submitted_at            TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at              TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_applications_status ON applications(status);
+CREATE INDEX IF NOT EXISTS idx_applications_tier ON applications(tier);
+CREATE INDEX IF NOT EXISTS idx_applications_user ON applications(applicant_user_id);
+
+-- Real audit trail — every status change, not just the current snapshot.
+-- reason is NOT NULL: a status change without a stated reason is exactly
+-- the kind of silent, unaccountable action this table exists to prevent.
+CREATE TABLE IF NOT EXISTS application_status_history (
+  id                TEXT PRIMARY KEY,
+  application_id    UUID NOT NULL REFERENCES applications(id) ON DELETE CASCADE,
+  from_status       TEXT,                          -- NULL for the initial 'submitted' row
+  to_status         TEXT NOT NULL,
+  reason            TEXT NOT NULL,
+  changed_by        TEXT,                           -- reviewer's user id; NULL for the system-generated initial submission row
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_app_history_application ON application_status_history(application_id);
+
 CREATE TABLE IF NOT EXISTS mkt_products (
   id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   seller_id           TEXT NOT NULL REFERENCES mkt_sellers(id),
