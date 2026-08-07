@@ -11,6 +11,8 @@ import {
   Layers, Database, Code2, UserCheck, Smartphone, Car, Navigation,
   DollarSign, RefreshCw, Menu, ChevronDown,
 } from "lucide-react";
+import { getSession } from "../services/apiClient";
+import { SignInElsewhere } from "./SignInElsewhere";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
@@ -20,18 +22,18 @@ type RoleId = "global_director" | "continental_director" | "regional_director" |
 
 interface MgmtUser {
   id: string; name: string; role: RoleId; roleLabel: string;
-  scope: string; email: string; password: string; avatar: string;
+  scope: string; email: string; avatar: string;
   level: number; // 1=highest
 }
 
 const DEMO_USERS: MgmtUser[] = [
-  { id: "u1",  name: "Vincent Kafula",      role: "global_director",       roleLabel: "Global Director",         scope: "Worldwide",       email: "vk@vink.co.za",         password: "VINK@2025",   avatar: "VK", level: 1 },
-  { id: "u2",  name: "Adaeze Okonkwo",      role: "continental_director",  roleLabel: "Continental Director",    scope: "Africa",          email: "adaeze@vink.co.za",      password: "Africa@123", avatar: "AO", level: 2 },
-  { id: "u3",  name: "Sipho Ndlovu",        role: "regional_director",     roleLabel: "Regional Director",       scope: "Southern Africa", email: "sipho@vink.co.za",       password: "Region@123", avatar: "SN", level: 3 },
-  { id: "u4",  name: "Thabo Dlamini",       role: "country_director",      roleLabel: "Country Director",        scope: "South Africa",    email: "thabo@vink.co.za",       password: "Country@1",  avatar: "TD", level: 4 },
-  { id: "u5",  name: "Priya Naidoo",        role: "state_director",        roleLabel: "State / Provincial Dir.", scope: "Western Cape",    email: "priya@vink.co.za",       password: "State@123",  avatar: "PN", level: 5 },
-  { id: "u6",  name: "James van Berg",      role: "branch_manager",        roleLabel: "Branch Manager",          scope: "Cape Town CBD",   email: "james@vink.co.za",       password: "Branch@1",   avatar: "JV", level: 6 },
-  { id: "u7",  name: "Nomsa Zulu",          role: "branch_rep",            roleLabel: "Branch Representative",   scope: "Cape Town CBD",   email: "nomsa@vink.co.za",       password: "Rep@2025",   avatar: "NZ", level: 7 },
+  { id: "u1",  name: "Vincent Kafula",      role: "global_director",       roleLabel: "Global Director",         scope: "Worldwide",       email: "vk@vink.co.za",         avatar: "VK", level: 1 },
+  { id: "u2",  name: "Adaeze Okonkwo",      role: "continental_director",  roleLabel: "Continental Director",    scope: "Africa",          email: "adaeze@vink.co.za",     avatar: "AO", level: 2 },
+  { id: "u3",  name: "Sipho Ndlovu",        role: "regional_director",     roleLabel: "Regional Director",       scope: "Southern Africa", email: "sipho@vink.co.za",      avatar: "SN", level: 3 },
+  { id: "u4",  name: "Thabo Dlamini",       role: "country_director",      roleLabel: "Country Director",        scope: "South Africa",    email: "thabo@vink.co.za",      avatar: "TD", level: 4 },
+  { id: "u5",  name: "Priya Naidoo",        role: "state_director",        roleLabel: "State / Provincial Dir.", scope: "Western Cape",    email: "priya@vink.co.za",      avatar: "PN", level: 5 },
+  { id: "u6",  name: "James van Berg",      role: "branch_manager",        roleLabel: "Branch Manager",          scope: "Cape Town CBD",   email: "james@vink.co.za",      avatar: "JV", level: 6 },
+  { id: "u7",  name: "Nomsa Zulu",          role: "branch_rep",            roleLabel: "Branch Representative",   scope: "Cape Town CBD",   email: "nomsa@vink.co.za",      avatar: "NZ", level: 7 },
 ];
 
 // ─── Role permissions ─────────────────────────────────────────────────────────
@@ -134,111 +136,6 @@ function Badge({ text, color }: { text: string; color: string }) {
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
-// LOGIN SCREEN
-// ──────────────────────────────────────────────────────────────────────────────
-function LoginScreen({ onLogin }: { onLogin: (user: MgmtUser) => void }) {
-  const [email,    setEmail]    = useState("");
-  const [password, setPassword] = useState("");
-  const [show,     setShow]     = useState(false);
-  const [error,    setError]    = useState("");
-  const [loading,  setLoading]  = useState(false);
-  const [showDemo, setShowDemo] = useState(false);
-
-  const submit = async () => {
-    setError(""); setLoading(true);
-    await new Promise(r => setTimeout(r, 700));
-    const user = DEMO_USERS.find(u => u.email === email.trim() && u.password === password);
-    if (user) { onLogin(user); }
-    else { setError("Invalid credentials. Check your email and password."); }
-    setLoading(false);
-  };
-
-  return (
-    <div className="flex-1 flex items-center justify-center p-6" style={{ background: `linear-gradient(135deg, ${NAVY}, #1E0A3E)` }}>
-      <div className="w-full max-w-md">
-        {/* Brand */}
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-2xl"
-            style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
-            <Shield className="w-8 h-8 text-white" />
-          </div>
-          <h1 className="text-2xl font-black text-white">Management Hub</h1>
-          <p className="text-white/50 text-sm mt-1">VINK Banking · Authorised Access Only</p>
-        </div>
-
-        {/* Form */}
-        <div className="rounded-2xl p-6 space-y-4" style={{ background: SURF, border: "1px solid #1E2A45" }}>
-          <div>
-            <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wide block mb-1.5">Email Address</label>
-            <input type="email" value={email} onChange={e => setEmail(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && submit()}
-              placeholder="your@email.com"
-              className="w-full px-4 py-3 rounded-xl text-sm text-white outline-none"
-              style={{ background: DEEP, border: "1px solid #2D2A50" }} />
-          </div>
-          <div>
-            <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wide block mb-1.5">Password</label>
-            <div className="relative">
-              <input type={show ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && submit()}
-                placeholder="••••••••"
-                className="w-full pl-4 pr-11 py-3 rounded-xl text-sm text-white outline-none"
-                style={{ background: DEEP, border: "1px solid #2D2A50" }} />
-              <button onClick={() => setShow(s => !s)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white">
-                {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
-          </div>
-
-          {error && (
-            <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl" style={{ background: RED + "20", border: `1px solid ${RED}40` }}>
-              <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0" />
-              <p className="text-red-400 text-xs">{error}</p>
-            </div>
-          )}
-
-          <button onClick={submit} disabled={loading || !email || !password}
-            className="w-full py-3.5 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 disabled:opacity-40 transition-all hover:opacity-90"
-            style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
-            {loading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <LogIn className="w-4 h-4" />}
-            {loading ? "Authenticating…" : "Sign In to Management Hub"}
-          </button>
-
-          {/* Demo credentials */}
-          <button onClick={() => setShowDemo(s => !s)}
-            className="w-full text-xs text-white/40 hover:text-white/70 transition-colors py-1">
-            {showDemo ? "Hide demo credentials ▲" : "Show demo credentials ▼"}
-          </button>
-          {showDemo && (
-            <div className="rounded-xl overflow-hidden border" style={{ borderColor: "#2D2A50" }}>
-              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide px-3 py-2" style={{ background: DEEP }}>Demo Accounts</p>
-              {DEMO_USERS.map(u => (
-                <button key={u.id} onClick={() => { setEmail(u.email); setPassword(u.password); }}
-                  className="w-full flex items-center gap-3 px-3 py-2 hover:bg-white/5 transition-colors text-left border-t"
-                  style={{ borderColor: "#1E2A45" }}>
-                  <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-black flex-shrink-0"
-                    style={{ background: ROLE_COLORS[u.role] }}>
-                    {u.avatar}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-white text-[11px] font-semibold truncate">{u.name}</p>
-                    <p className="text-gray-500 text-[10px]">{u.roleLabel} · {u.scope}</p>
-                  </div>
-                  <ChevronRight className="w-3 h-3 text-gray-600 flex-shrink-0" />
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <p className="text-center text-white/20 text-xs mt-6">
-          🔒 All sessions are encrypted · Activity is monitored and logged
-        </p>
-      </div>
-    </div>
-  );
-}
 
 // ──────────────────────────────────────────────────────────────────────────────
 // SCREEN: Overview
@@ -779,7 +676,24 @@ function DashboardShell({ user, onLogout }: { user: MgmtUser; onLogout: () => vo
 // ROOT EXPORT
 // ──────────────────────────────────────────────────────────────────────────────
 export function ManagementHub({ isOpen, onClose }: Props) {
-  const [user, setUser] = useState<MgmtUser | null>(null);
+  // This dashboard used to have its own login screen with plaintext demo
+  // passwords hardcoded directly in this file (visible to anyone via
+  // browser devtools — a real security issue on its own, separate from
+  // the "too many logins" problem). It never called a real backend at
+  // all — DEMO_USERS is a self-contained fictional 7-tier hierarchy with
+  // no counterpart in the actual users table. Rather than build real
+  // backend support for that hierarchy (out of scope here) or keep
+  // shipping hardcoded credentials, real owner/superadmin sessions from
+  // the one actual login are granted the highest-tier demo profile
+  // (matching the real owner's actual name); anyone else is directed to
+  // sign in from the main menu instead of a second credentials form.
+  const [user, setUser] = useState<MgmtUser | null>(() => {
+    const session = getSession();
+    if (session && ["owner", "superadmin"].includes(session.role)) {
+      return { ...DEMO_USERS[0], name: session.name, email: session.email };
+    }
+    return null;
+  });
 
   if (!isOpen) return null;
 
@@ -801,7 +715,7 @@ export function ManagementHub({ isOpen, onClose }: Props) {
       </div>
 
       {!user
-        ? <LoginScreen onLogin={u => setUser(u)} />
+        ? <SignInElsewhere onClose={onClose} label="The Management Hub" />
         : <DashboardShell user={user} onLogout={() => setUser(null)} />
       }
     </div>

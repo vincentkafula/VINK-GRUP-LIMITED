@@ -10,6 +10,8 @@ import {
   auth, kpis, network, alertsApi, fraud, provisioning,
   billing, support, interconnects, connectLiveFeed, setToken, getToken,
 } from "../services/mvnoApi";
+import { getToken as getMainToken, getSession } from "../services/apiClient";
+import { SignInElsewhere } from "./SignInElsewhere";
 import { DemoModeBanner } from "./DemoModeBanner";
 import { isDemoMode, setDemoMode, DEMO_TOKEN } from "../services/demoMode";
 
@@ -45,75 +47,6 @@ function SevBadge({ s }: { s: string }) {
   return <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase" style={{ background: c + "22", color: c, border: `1px solid ${c}44` }}>{s}</span>;
 }
 
-// ─── LOGIN SCREEN ─────────────────────────────────────────────────────────────
-function LoginScreen({ onLogin, onClose, mode }: {
-  onLogin: (t: string, u: { name: string; role: string }) => void;
-  onClose: () => void;
-  mode: PreviewMode;
-}) {
-  const [username, setUsername] = useState("noc1");
-  const [password, setPassword] = useState("Noc@5678");
-  const [error, setError]       = useState("");
-  const [loading, setLoading]   = useState(false);
-
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault(); setError(""); setLoading(true);
-    try {
-      const res = await auth.login(username, password);
-      setToken(res.token);
-      onLogin(res.token, res.user);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Login failed";
-      setError(msg.includes("fetch") ? "Cannot reach backend — run: cd server && pnpm dev" : msg);
-    } finally { setLoading(false); }
-  };
-
-  const compact = mode === "mobile";
-
-  return (
-    <div className={`flex-1 flex items-center justify-center ${compact ? "px-3 py-4" : "px-6"}`} style={{ background: "#0D0B1E" }}>
-      <div className={`w-full ${compact ? "max-w-[320px]" : "max-w-sm"}`}>
-        <div className={`text-center ${compact ? "mb-5" : "mb-8"}`}>
-          <div className={`${compact ? "w-12 h-12" : "w-16 h-16"} rounded-2xl mx-auto flex items-center justify-center mb-3`}
-            style={{ background: "linear-gradient(135deg,#128A43,#5FC97F)" }}>
-            <Radio className={compact ? "w-6 h-6 text-white" : "w-8 h-8 text-white"} />
-          </div>
-          <h1 className={`font-bold text-white ${compact ? "text-lg" : "text-2xl"}`}>MVNO Control</h1>
-          <p className={`mt-0.5 ${compact ? "text-[11px]" : "text-sm"}`} style={{ color: "#8884AA" }}>Vink Network Operations</p>
-        </div>
-
-        <form onSubmit={submit} className="rounded-2xl p-5 space-y-3"
-          style={{ background: "#1A1738", border: "1px solid #2D2A50" }}>
-          {[
-            { label: "Username", value: username, set: setUsername, type: "text" },
-            { label: "Password", value: password, set: setPassword, type: "password" },
-          ].map(f => (
-            <div key={f.label}>
-              <label className={`block font-semibold mb-1 ${compact ? "text-[10px]" : "text-xs"}`} style={{ color: "#8884AA" }}>{f.label}</label>
-              <input type={f.type} value={f.value} onChange={e => f.set(e.target.value)} required
-                className={`w-full rounded-lg px-3 text-white outline-none focus:ring-2 focus:ring-[#128A43] ${compact ? "py-2 text-xs" : "py-2.5 text-sm"}`}
-                style={{ background: "#252245", border: "1px solid #14532D" }} />
-            </div>
-          ))}
-          {error && (
-            <div className="rounded-lg p-2.5 text-[11px]" style={{ background: "#EF444422", border: "1px solid #EF444444", color: "#FCA5A5" }}>{error}</div>
-          )}
-          <button type="submit" disabled={loading}
-            className={`w-full rounded-lg font-semibold text-white transition-opacity disabled:opacity-60 flex items-center justify-center gap-2 ${compact ? "py-2 text-xs" : "py-2.5 text-sm"}`}
-            style={{ background: "linear-gradient(135deg,#128A43,#7ED99A)" }}>
-            {loading ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />Signing in…</> : <><Key className="w-3.5 h-3.5" />Sign In</>}
-          </button>
-          <button type="button" onClick={() => { setDemoMode(true); setToken(DEMO_TOKEN); onLogin(DEMO_TOKEN, { name: "Demo Operator", role: "noc_engineer" }); }}
-            className={`w-full rounded-lg font-semibold border border-white/15 text-white/60 hover:text-white hover:border-white/30 transition-all flex items-center justify-center gap-2 ${compact ? "py-1.5 text-[10px]" : "py-2.5 text-xs"}`}
-            style={{ background: "transparent" }}>
-            ⚡ Enter Demo Mode (no server needed)
-          </button>
-          <p className="text-center text-[10px]" style={{ color: "#5A5880" }}>noc1 / Noc@5678 · superadmin / Admin@1234</p>
-        </form>
-      </div>
-    </div>
-  );
-}
 
 // ─── PHONE FRAME ─────────────────────────────────────────────────────────────
 function PhoneFrame({ children }: { children: React.ReactNode }) {
@@ -766,8 +699,16 @@ function PreviewToggle({ mode, onChange }: { mode: PreviewMode; onChange: (m: Pr
 interface Props { isOpen: boolean; onClose: () => void }
 
 export function MobileNetworkDashboard({ isOpen, onClose }: Props) {
-  const [authed, setAuthed]         = useState(!!getToken());
-  const [user, setUser]             = useState<{ name: string; role: string } | null>(null);
+  const [authed, setAuthed] = useState(() => {
+    if (getToken()) return true;
+    const mainToken = getMainToken();
+    if (mainToken) { setToken(mainToken); return true; }
+    return false;
+  });
+  const [user, setUser] = useState<{ name: string; role: string } | null>(() => {
+    const session = getSession();
+    return session ? { name: session.name, role: session.role } : null;
+  });
   const [previewMode, setPreviewMode] = useState<PreviewMode>("web");
   const [mobileTab, setMobileTab]   = useState<MobileTab>("home");
 
@@ -834,7 +775,6 @@ export function MobileNetworkDashboard({ isOpen, onClose }: Props) {
 
   if (!isOpen) return null;
 
-  const handleLogin = (_t: string, u: { name: string; role: string }) => { setUser(u); setAuthed(true); };
   const handleLogout = () => { setToken(null); setAuthed(false); setUser(null); onClose(); };
 
   const sharedProps = {
@@ -873,7 +813,7 @@ export function MobileNetworkDashboard({ isOpen, onClose }: Props) {
 
       {/* ── CONTENT AREA ── */}
       {!authed ? (
-        <LoginScreen onLogin={handleLogin} onClose={onClose} mode={previewMode} />
+        <SignInElsewhere onClose={onClose} />
       ) : previewMode === "mobile" ? (
         // Mobile: phone frame centred on dark canvas
         <div className="flex-1 overflow-hidden" style={{ background: "radial-gradient(ellipse at center, #1a1738 0%, #0D0B1E 70%)" }}>

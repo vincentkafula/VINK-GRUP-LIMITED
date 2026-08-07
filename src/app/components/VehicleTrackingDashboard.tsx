@@ -4,10 +4,12 @@ import {
   Settings, LogOut, Menu, ChevronRight, Navigation, Fuel,
   Zap, Clock, TrendingUp, CheckCircle, Radio, Satellite,
   Database, Server, Monitor, Smartphone, Layers, RefreshCw,
-  MapPin, Activity, Bell, Eye, Key, Loader2, Play, Square,
+  MapPin, Activity, Bell, Eye, Play, Square,
 } from "lucide-react";
 import { vehicleApi, connectLiveFeed } from "../services/vehicleApi";
 import { auth, setToken, getToken } from "../services/mvnoApi";
+import { getToken as getMainToken } from "../services/apiClient";
+import { SignInElsewhere } from "./SignInElsewhere";
 import { DemoModeBanner } from "./DemoModeBanner";
 import { setDemoMode, DEMO_TOKEN } from "../services/demoMode";
 
@@ -159,72 +161,6 @@ function ArchNode({ label, sub, color, icon }: { label: string; sub: string; col
   );
 }
 
-// ─── Login Screen ─────────────────────────────────────────────────────────────
-function LoginScreen({ onLogin }: { onLogin: () => void }) {
-  const [username, setUsername] = useState("noc1");
-  const [password, setPassword] = useState("Noc@5678");
-  const [error, setError]       = useState("");
-  const [loading, setLoading]   = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(""); setLoading(true);
-    try {
-      const res = await auth.login(username, password);
-      setToken(res.token);
-      onLogin();
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Login failed";
-      setError(msg.includes("fetch") ? "Cannot reach backend — run: cd server && pnpm dev" : msg);
-    } finally { setLoading(false); }
-  };
-
-  return (
-    <div className="flex-1 flex items-center justify-center" style={{ background: "#0D0B1E" }}>
-      <div className="w-full max-w-sm mx-4">
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center"
-            style={{ background: "linear-gradient(135deg,#EF4444,#F59E0B)" }}>
-            <Navigation className="w-8 h-8 text-white" />
-          </div>
-          <h1 className="text-2xl font-bold text-white">Fleet Tracker</h1>
-          <p className="text-sm mt-1" style={{ color: "#8884AA" }}>Vehicle Tracking Operations</p>
-        </div>
-        <form onSubmit={handleSubmit} className="rounded-2xl p-6 space-y-4"
-          style={{ background: "#1A1738", border: "1px solid #2D2A50" }}>
-          <div>
-            <label className="block text-xs font-semibold mb-1.5" style={{ color: "#8884AA" }}>Username</label>
-            <input value={username} onChange={e => setUsername(e.target.value)} required
-              className="w-full rounded-lg px-3 py-2.5 text-sm text-white outline-none focus:ring-2 focus:ring-[#EF4444]"
-              style={{ background: "#252245", border: "1px solid #14532D" }} />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold mb-1.5" style={{ color: "#8884AA" }}>Password</label>
-            <input type="password" value={password} onChange={e => setPassword(e.target.value)} required
-              className="w-full rounded-lg px-3 py-2.5 text-sm text-white outline-none focus:ring-2 focus:ring-[#EF4444]"
-              style={{ background: "#252245", border: "1px solid #14532D" }} />
-          </div>
-          {error && (
-            <div className="rounded-lg p-3 text-xs" style={{ background: "#EF444422", border: "1px solid #EF444444", color: "#FCA5A5" }}>{error}</div>
-          )}
-          <button type="submit" disabled={loading}
-            className="w-full py-2.5 rounded-lg font-semibold text-sm text-white flex items-center justify-center gap-2 disabled:opacity-60"
-            style={{ background: "linear-gradient(135deg,#EF4444,#F59E0B)" }}>
-            {loading ? <><Loader2 className="w-4 h-4 animate-spin" />Signing in…</> : <><Key className="w-4 h-4" />Sign In</>}
-          </button>
-          <button type="button"
-            onClick={() => { setDemoMode(true); setToken(DEMO_TOKEN); onLogin(); }}
-            className="w-full py-2.5 rounded-lg font-semibold text-sm border transition-all flex items-center justify-center gap-2"
-            style={{ background: "transparent", borderColor: "#EF444433", color: "#F87171" }}>
-            ⚡ Enter Demo Mode (no server needed)
-          </button>
-          <p className="text-center text-[10px]" style={{ color: "#5A5880" }}>Live: noc1 / Noc@5678 · superadmin / Admin@1234</p>
-        </form>
-      </div>
-    </div>
-  );
-}
-
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 const NAV = [
   { icon: <Map className="w-4 h-4" />,        label: "Live Map"    },
@@ -238,7 +174,18 @@ const NAV = [
 ];
 
 export function VehicleTrackingDashboard({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
-  const [authed, setAuthed]         = useState(!!getToken());
+  // Bridges the one real login (Header/LoginModal, apiClient.ts's vink_jwt)
+  // into mvnoApi's own token store, since both hit the exact same real
+  // /api/auth/login backend under the hood — this dashboard used to show
+  // its own separate credentials form even when the person was already
+  // signed in from the main menu. If already signed in there, use that
+  // session directly instead of asking again.
+  const [authed, setAuthed] = useState(() => {
+    if (getToken()) return true;
+    const mainToken = getMainToken();
+    if (mainToken) { setToken(mainToken); return true; }
+    return false;
+  });
   const [nav, setNav]               = useState("Live Map");
   const [sidebar, setSidebar]       = useState(true);
   const [liveConn, setLiveConn]     = useState(false);
@@ -340,7 +287,7 @@ export function VehicleTrackingDashboard({ isOpen, onClose }: { isOpen: boolean;
               <X className="w-5 h-5" />
             </button>
           </div>
-          <LoginScreen onLogin={() => setAuthed(true)} />
+          <SignInElsewhere onClose={onClose} />
         </div>
       ) : (
         <div className="flex flex-1 min-h-0">

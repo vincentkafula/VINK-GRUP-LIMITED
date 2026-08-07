@@ -7,6 +7,8 @@ import {
   History, Settings, LogOut, Loader2,
 } from "lucide-react";
 import { haAuth, haRides, haPassengers, haSos, setHaToken, getHaToken } from "../services/eHailingAppleApi";
+import { getToken as getMainToken } from "../services/apiClient";
+import { SignInElsewhere } from "./SignInElsewhere";
 import { DemoModePill } from "./DemoModeBanner";
 import { setDemoMode, DEMO_TOKEN } from "../services/demoMode";
 import architectureSvg from "../../imports/ehailing_apple_architecture.svg";
@@ -174,81 +176,6 @@ function BottomNav({ active, onTab }: { active: string; onTab: (t: Screen) => vo
   );
 }
 
-// ─── Login Screen ─────────────────────────────────────────────────────────────
-function LoginScreen({ onLogin }: { onLogin: (token: string) => void }) {
-  const [phone, setPhone] = useState("+27827000000");
-  const [otp, setOtp]     = useState("123456");
-  const [step, setStep]   = useState<"phone" | "otp">("phone");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  const handleContinue = async () => {
-    if (step === "phone") { setStep("otp"); return; }
-    setLoading(true); setError("");
-    try {
-      const res = await haAuth.login("noc1", "Noc@5678");
-      setHaToken(res.token);
-      onLogin(res.token);
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "";
-      // Demo-mode fallback — works without backend
-      if (msg.includes("fetch") || msg.includes("Failed") || msg.includes("NetworkError") || msg.includes("ECONNREFUSED") || !msg) {
-        setHaToken("demo-rider-" + Date.now());
-        onLogin("demo-rider-" + Date.now());
-      } else {
-        setError(msg);
-      }
-    } finally { setLoading(false); }
-  };
-
-  return (
-    <div className="flex flex-col h-full" style={{ background: "#128A43" }}>
-      {/* Top art */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 pt-8 pb-4">
-        <div className="w-20 h-20 rounded-3xl bg-white/20 flex items-center justify-center mb-4">
-          <span className="text-4xl">🚖</span>
-        </div>
-        <h1 className="text-white text-2xl font-bold">E-hailing Apple</h1>
-        <p className="text-white/75 text-sm mt-1 text-center">Public ride-hailing · Healthcare & accessibility</p>
-      </div>
-
-      {/* Form card */}
-      <div className="rounded-t-3xl p-6 space-y-4" style={{ background: "white" }}>
-        <h2 className="text-lg font-bold text-gray-900">{step === "phone" ? "Enter your phone number" : "Verify OTP"}</h2>
-        {step === "phone" ? (
-          <div className="flex items-center gap-2 rounded-xl border px-4 py-3" style={{ borderColor: "#E5E7EB" }}>
-            <span className="text-gray-500 text-sm">🇿🇦 +27</span>
-            <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="82 123 4567"
-              className="flex-1 outline-none text-sm text-gray-800" style={{ background: "transparent" }} />
-          </div>
-        ) : (
-          <>
-            <p className="text-xs text-gray-500">Code sent to <span className="font-semibold text-gray-800">{phone}</span></p>
-            <div className="flex gap-3 justify-center">
-              {otp.split("").map((d, i) => (
-                <div key={i} className="w-11 h-12 rounded-xl flex items-center justify-center text-lg font-bold"
-                  style={{ background: "#EAF7EE", color: "#128A43", border: "2px solid #128A43" }}>{d}</div>
-              ))}
-            </div>
-          </>
-        )}
-        {error && <p className="text-xs text-red-500 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
-        <button onClick={handleContinue} disabled={loading}
-          className="w-full py-3.5 rounded-2xl text-white font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-60"
-          style={{ background: "linear-gradient(135deg,#128A43,#7ED99A)" }}>
-          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-          {step === "phone" ? "Send OTP" : "Verify & Enter"}
-        </button>
-        <button type="button"
-          onClick={() => { setDemoMode(true); setHaToken(DEMO_TOKEN); onLogin(DEMO_TOKEN); }}
-          className="w-full py-2.5 rounded-2xl text-xs font-semibold border border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-300 transition-all mt-1">
-          ⚡ Enter Demo Mode (no server needed)
-        </button>
-        <p className="text-center text-xs text-gray-400">or use OTP to sign in to live server</p>
-      </div>
-    </div>
-  );
-}
 
 // ─── HOME SCREEN ─────────────────────────────────────────────────────────────
 function HomeScreen({ passenger, onBook, onHistory, onScheduled }: {
@@ -962,7 +889,12 @@ const DEMO_TRIPS: RideData[] = [
 interface PassengerDashboardProps { isOpen: boolean; onClose: () => void }
 
 export function PassengerDashboard({ isOpen, onClose }: PassengerDashboardProps) {
-  const [authed, setAuthed]       = useState(!!getHaToken());
+  const [authed, setAuthed] = useState(() => {
+    if (getHaToken()) return true;
+    const mainToken = getMainToken();
+    if (mainToken) { setHaToken(mainToken); return true; }
+    return false;
+  });
   const [demoMode, setDemoMode]   = useState(false);
   const [screen, setScreen]       = useState<Screen>("home");
   const [passenger, setPassenger] = useState<RideData | null>(null);
@@ -1005,7 +937,6 @@ export function PassengerDashboard({ isOpen, onClose }: PassengerDashboardProps)
 
   if (!isOpen) return null;
 
-  const handleLogin = (_token: string) => { setAuthed(true); loadData(); };
   const handleBook  = (pickup: string, dropoff: string) => { setPickupAddr(pickup); setDropoffAddr(dropoff); setScreen("ride-type"); };
   const handleRideTypeSelect = (type: VehicleType, f: number, pm: PaymentMethod) => { setVType(type); setFare(f); setPayment(pm); setScreen("medical-note"); };
   const handleConfirmBooking = async (_note: string) => { setScreen("searching"); };
@@ -1070,7 +1001,7 @@ export function PassengerDashboard({ isOpen, onClose }: PassengerDashboardProps)
       <div className="flex-1 flex items-start justify-center" style={{ paddingTop: authed && demoMode ? 88 : 56 }}>
         <PhoneShell bg={authed ? "#F5F5F7" : "#128A43"}>
           {!authed ? (
-            <LoginScreen onLogin={handleLogin} />
+            <SignInElsewhere onClose={onClose} label="Passenger accounts" />
           ) : (
             <>
               {renderScreen()}

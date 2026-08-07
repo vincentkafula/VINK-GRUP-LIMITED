@@ -15,6 +15,8 @@ import {
   bankTreasury, bankCompliance, bankUsers,
   setBankToken, getBankToken,
 } from "../services/bankingApi";
+import { getToken as getMainToken, getSession } from "../services/apiClient";
+import { SignInElsewhere } from "./SignInElsewhere";
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 type BankRole = "passenger" | "driver" | "investor" | "owner" | "admin" | "compliance" | "treasury";
@@ -207,76 +209,6 @@ function KycRow({ k, onApprove, onReject }: { k: R; onApprove: () => void; onRej
   );
 }
 
-// ─── Login ─────────────────────────────────────────────────────────────────────
-function LoginScreen({ onLogin }: { onLogin: (t: string, u: R) => void }) {
-  const [username, setUsername] = useState("superadmin");
-  const [password, setPassword] = useState("Admin@1234");
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState("");
-
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault(); setError(""); setLoading(true);
-    try {
-      const res = await bankAuth.login(username, password);
-      setBankToken(res.token);
-      onLogin(res.token, res.user as R);
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Login failed");
-    } finally { setLoading(false); }
-  };
-
-  return (
-    <div className="flex-1 flex items-center justify-center" style={{ background: "linear-gradient(135deg,#0F1629 0%,#1E1B4B 60%,#0B2E1C 100%)" }}>
-      <div className="w-full max-w-sm mx-6">
-        {/* Bank logo */}
-        <div className="text-center mb-8">
-          <div className="w-20 h-20 rounded-3xl mx-auto flex items-center justify-center mb-4"
-            style={{ background: "linear-gradient(135deg,#128A43,#5FC97F)" }}>
-            <Building2 className="w-10 h-10 text-white"/>
-          </div>
-          <h1 className="text-2xl font-black text-white">VINK BANK</h1>
-          <p className="text-white/50 text-sm mt-1">Multi-Role Banking Platform</p>
-        </div>
-
-        <form onSubmit={submit} className="rounded-2xl p-6 space-y-4" style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", backdropFilter: "blur(12px)" }}>
-          {[{ label: "Username", val: username, set: setUsername, type: "text" },
-            { label: "Password", val: password, set: setPassword, type: "password" }].map(f => (
-            <div key={f.label}>
-              <label className="block text-xs font-semibold text-white/50 mb-1.5">{f.label}</label>
-              <input type={f.type} value={f.val} onChange={e => f.set(e.target.value)} required
-                className="w-full rounded-xl px-4 py-3 text-sm text-white outline-none focus:ring-2 focus:ring-emerald-500"
-                style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)" }}/>
-            </div>
-          ))}
-          {error && <p className="text-xs text-red-400 bg-red-900/30 rounded-xl px-3 py-2">{error}</p>}
-          <button type="submit" disabled={loading}
-            className="w-full py-3.5 rounded-xl text-white font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-60"
-            style={{ background: "linear-gradient(135deg,#128A43,#7ED99A)" }}>
-            {loading ? <Loader2 className="w-4 h-4 animate-spin"/> : <Key className="w-4 h-4"/>}
-            Sign In to Banking Portal
-          </button>
-          {/* One-click demo mode */}
-          <button type="button" onClick={() => { setDemoMode(true); setBankToken(DEMO_TOKEN); onLogin(DEMO_TOKEN, { id:"demo-001", username:"superadmin", name:"Demo User", role:"superadmin" } as Record<string,unknown>); }}
-            className="w-full py-2.5 rounded-xl text-sm font-semibold border border-white/15 text-white/60 hover:text-white hover:border-white/30 transition-all flex items-center justify-center gap-2">
-            ⚡ Enter Demo Mode (no server needed)
-          </button>
-          <div className="pt-1 border-t border-white/10">
-            <p className="text-center text-[10px] text-white/30 mb-2">Live credentials (server required)</p>
-            <div className="grid grid-cols-2 gap-1.5">
-              {[["superadmin","Admin@1234","Admin"],["noc1","Noc@5678","Operator"],["billing1","Bill@9012","Billing"]].map(([u,p,label]) => (
-                <button key={u} type="button" onClick={() => { setUsername(u); setPassword(p); }}
-                  className="text-[10px] px-2 py-1.5 rounded-lg text-white/50 hover:text-white/80 transition-colors text-left"
-                  style={{ background: "rgba(255,255,255,0.06)" }}>
-                  <span className="font-semibold text-white/70">{label}</span>: {u}
-                </button>
-              ))}
-            </div>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
 
 // ─── OVERVIEW PANEL ────────────────────────────────────────────────────────────
 function OverviewPanel({ role, kpis, accounts, cards, txns, loading }: {
@@ -1070,7 +1002,12 @@ function AccountsPanel({ accounts }: { accounts: R[] }) {
 interface BankingDashboardProps { isOpen: boolean; onClose: () => void }
 
 export function BankingDashboard({ isOpen, onClose }: BankingDashboardProps) {
-  const [authed, setAuthed]   = useState(!!getBankToken());
+  const [authed, setAuthed] = useState(() => {
+    if (getBankToken()) return true;
+    const mainToken = getMainToken();
+    if (mainToken) { setBankToken(mainToken); return true; }
+    return false;
+  });
   const [authUser, setAuthUser] = useState<R | null>(null);
   const [role, setRole]       = useState<BankRole>("passenger");
   const [section, setSection] = useState<NavSection>("overview");
@@ -1120,6 +1057,19 @@ export function BankingDashboard({ isOpen, onClose }: BankingDashboardProps) {
       if (users.length > 0) setUserId(String(users[0].id));
     }).catch(() => {});
   };
+
+  // If authed became true via the main-session bridge above (not through
+  // this dashboard's own login form), authUser/role/userId were never
+  // populated — hydrate them from the real session using the exact same
+  // logic handleLogin already uses, once, on mount.
+  useEffect(() => {
+    if (authed && !authUser) {
+      const session = getSession();
+      const token = getBankToken();
+      if (session && token) handleLogin(token, session as unknown as R);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleRoleChange = async (newRole: BankRole) => {
     setRole(newRole);
@@ -1194,7 +1144,7 @@ export function BankingDashboard({ isOpen, onClose }: BankingDashboardProps) {
           <button onClick={onClose} className="absolute top-4 right-4 z-50 p-2 rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors">
             <X className="w-5 h-5"/>
           </button>
-          <LoginScreen onLogin={handleLogin}/>
+          <SignInElsewhere onClose={onClose} />
         </>
       ) : (
         <>
