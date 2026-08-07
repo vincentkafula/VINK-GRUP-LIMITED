@@ -212,7 +212,8 @@ export const jobsApi = {
   },
   get: (ref: string) => api.get<JobApplication>(`/api/jobs/applications/${ref}`, true),
   updateStatus: (ref: string, status: string, reason: string) => api.patch<JobApplication>(`/api/jobs/applications/${ref}/status`, { status, reason }, true),
-  approve: (ref: string, reason: string) => api.post<{ referenceNumber: string; status: string; roleGranted: boolean }>(`/api/jobs/applications/${ref}/approve`, { reason }, true),
+  approve: (ref: string, reason: string, username?: string, password?: string) =>
+    api.post<{ referenceNumber: string; status: string; roleGranted: boolean; accountCreated?: boolean }>(`/api/jobs/applications/${ref}/approve`, { reason, username, password }, true),
   documentUrl: (ref: string, type: string) => `${BASE}/api/jobs/applications/${ref}/documents/${type}`,
 };
 

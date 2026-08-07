@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
-import { rbacApi, jobsApi, getSession, type SectionApplication, type ManagerRecord, type AuditEntry, type JobApplication } from "../services/apiClient";
+import { rbacApi, jobsApi, getSession, getToken, type SectionApplication, type ManagerRecord, type AuditEntry, type JobApplication } from "../services/apiClient";
 
 interface Props { isOpen: boolean; onClose: () => void; adminName?: string; adminRole?: string; role?: string }
 
@@ -124,6 +124,8 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
   const [selectedJobApp, setSelectedJobApp] = useState<JobApplication | null>(null);
   const [jobActionReason, setJobActionReason] = useState("");
   const [jobActionBusy, setJobActionBusy] = useState(false);
+  const [newAccountUsername, setNewAccountUsername] = useState("");
+  const [newAccountPassword, setNewAccountPassword] = useState("");
 
   useEffect(() => {
     if (!isOpen) return;
@@ -172,23 +174,63 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
     });
   };
 
+  const [openingDoc, setOpeningDoc] = useState<string | null>(null);
+
+  const openDocument = async (ref: string, type: string) => {
+    // The previous plain <a href> pointed directly at an auth-protected
+    // endpoint -- a browser navigating a link doesn't attach the
+    // Authorization header the way fetch() does, so every click was
+    // rejected with "Missing or invalid Authorization header" regardless
+    // of who was signed in. Fetch it properly, with the real token, then
+    // hand the browser a local blob URL to open instead.
+    setOpeningDoc(type);
+    try {
+      const token = getToken();
+      const res = await fetch(jobsApi.documentUrl(ref, type), {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        toast.error(body?.error ?? "Could not load this document.");
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank", "noopener,noreferrer");
+      // Revoke after a delay rather than immediately — the new tab needs
+      // the URL to still be valid by the time it actually loads it.
+      setTimeout(() => URL.revokeObjectURL(url), 30_000);
+    } catch {
+      toast.error("Network error while loading the document.");
+    } finally {
+      setOpeningDoc(null);
+    }
+  };
+
   const handleJobStatusChange = async (ref: string, status: string) => {
     if (!jobActionReason.trim()) { toast.error("A reason is required for this action."); return; }
+    if (status === "offered" && (newAccountUsername.trim() || newAccountPassword) && (!newAccountUsername.trim() || newAccountPassword.length < 8)) {
+      toast.error("Provide both a username and a password of at least 8 characters, or leave both blank.");
+      return;
+    }
     setJobActionBusy(true);
     const r = status === "offered"
-      ? await jobsApi.approve(ref, jobActionReason.trim())
+      ? await jobsApi.approve(ref, jobActionReason.trim(), newAccountUsername.trim() || undefined, newAccountPassword || undefined)
       : await jobsApi.updateStatus(ref, status, jobActionReason.trim());
     setJobActionBusy(false);
     if (!r.success) { toast.error(r.error ?? "Action failed"); return; }
     if (status === "offered") {
-      const data = r.data as { roleGranted?: boolean } | undefined;
-      if (data?.roleGranted) toast.success(`Approved — ${jobDept} access granted.`);
+      const data = r.data as { roleGranted?: boolean; accountCreated?: boolean } | undefined;
+      if (data?.accountCreated) toast.success(`Approved — account created and ${jobDept} access granted.`);
+      else if (data?.roleGranted) toast.success(`Approved — ${jobDept} access granted.`);
       else toast.warning((r as unknown as { warning?: string }).warning ?? "Approved, but the applicant doesn't have a VINK account yet — access will need to be granted once they register.");
     } else {
       toast.success(status === "rejected" ? "Application rejected." : status === "interview" ? "Moved to interview." : "Status updated.");
     }
     setSelectedJobApp(null);
     setJobActionReason("");
+    setNewAccountUsername("");
+    setNewAccountPassword("");
     if (jobDept) loadJobApps(jobDept);
   };
 
@@ -651,10 +693,10 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
                   <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Documents</p>
                   <div className="flex flex-wrap gap-2">
                     {selectedJobApp.documents.map(d => (
-                      <a key={d.type} href={jobsApi.documentUrl(selectedJobApp.referenceNumber, d.type)} target="_blank" rel="noopener noreferrer"
-                        className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50">
-                        <FileCheck2 className="w-3.5 h-3.5" /> {d.filename}
-                      </a>
+                      <button key={d.type} onClick={() => openDocument(selectedJobApp.referenceNumber, d.type)} disabled={openingDoc === d.type}
+                        className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-50">
+                        {openingDoc === d.type ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileCheck2 className="w-3.5 h-3.5" />} {d.filename}
+                      </button>
                     ))}
                   </div>
                 </div>
@@ -680,6 +722,20 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
                   <textarea value={jobActionReason} onChange={e => setJobActionReason(e.target.value)} rows={2}
                     placeholder="Reason for this decision (required)…"
                     className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none resize-none" />
+
+                  {selectedJobApp.status === "interview" && !selectedJobApp.roleGranted && (
+                    <div className="rounded-lg p-3 space-y-2" style={{ background: "#F0FDF4", border: "1px solid #BBF7D0" }}>
+                      <p className="text-xs font-bold text-gray-700">If approving: set their VINK login (only needed if they don't have an account yet)</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        <input value={newAccountUsername} onChange={e => setNewAccountUsername(e.target.value)}
+                          placeholder="Username" className="px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none" />
+                        <input value={newAccountPassword} onChange={e => setNewAccountPassword(e.target.value)} type="text"
+                          placeholder="Password (min 8 characters)" className="px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none" />
+                      </div>
+                      <p className="text-[11px] text-gray-500">Leave both blank if they already have a VINK account under this email — access is granted automatically either way.</p>
+                    </div>
+                  )}
+
                   <div className="grid grid-cols-3 gap-2">
                     {selectedJobApp.status !== "interview" && (
                       <button disabled={jobActionBusy} onClick={() => handleJobStatusChange(selectedJobApp.referenceNumber, "interview")}

@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import multer from "multer";
+import bcrypt from "bcryptjs";
 import { randomUUID } from "crypto";
 import { pool } from "../db/pool.js";
 import { requireAuth, requireRole, optionalAuth } from "../middleware/auth.js";
@@ -245,8 +246,9 @@ router.patch("/applications/:ref/status", requireAuth, requireRole(...REVIEWER_R
 // NULL, and the response says so explicitly rather than silently
 // pretending access was granted when it wasn't.
 router.post("/applications/:ref/approve", requireAuth, requireRole(...REVIEWER_ROLES), async (req: Request, res: Response): Promise<void> => {
-  const { reason } = req.body as { reason?: string };
+  const { reason, username, password } = req.body as { reason?: string; username?: string; password?: string };
   if (!reason?.trim()) { res.status(400).json({ success: false, error: "reason is required" }); return; }
+  if (password && password.length < 8) { res.status(400).json({ success: false, error: "password must be at least 8 characters" }); return; }
 
   const client = await pool!.connect();
   try {
@@ -274,7 +276,31 @@ router.post("/applications/:ref/approve", requireAuth, requireRole(...REVIEWER_R
 
     // Look up a real account by the applicant's email to grant section
     // access to. Matches the RBAC section_permissions schema exactly.
-    const { rows: userRows } = await client.query(`SELECT id FROM users WHERE email = $1`, [app.applicant_email]);
+    let { rows: userRows } = await client.query(`SELECT id FROM users WHERE email = $1`, [app.applicant_email]);
+    let createdAccount = false;
+
+    // No account yet -- if the reviewer supplied login credentials, create
+    // one right here rather than just warning that access is deferred.
+    // Same account-creation shape as the real /api/auth/register endpoint
+    // (bcrypt hash, same users table), so this account works identically
+    // to a self-registered one -- it's just HR/the hiring panel setting
+    // the initial password instead of the new hire choosing their own.
+    if (!userRows.length && username?.trim() && password) {
+      const { rows: clash } = await client.query(`SELECT 1 FROM users WHERE username = $1 OR email = $2`, [username.trim(), app.applicant_email]);
+      if (clash.length) {
+        await client.query("ROLLBACK");
+        res.status(409).json({ success: false, error: "An account with that username or this applicant's email already exists — check Users & Roles rather than creating a new one." });
+        return;
+      }
+      const passwordHash = await bcrypt.hash(password, 10);
+      const { rows: created } = await client.query(
+        `INSERT INTO users (username, password_hash, role, name, email) VALUES ($1,$2,'customer',$3,$4) RETURNING id`,
+        [username.trim(), passwordHash, app.applicant_name, app.applicant_email]
+      );
+      userRows = created;
+      createdAccount = true;
+    }
+
     let roleGranted = false;
     if (userRows.length) {
       const userId = userRows[0].id;
@@ -289,8 +315,8 @@ router.post("/applications/:ref/approve", requireAuth, requireRole(...REVIEWER_R
     await client.query("COMMIT");
     res.json({
       success: true,
-      data: { referenceNumber: app.reference_number, status: "offered", roleGranted },
-      ...(roleGranted ? {} : { warning: `No VINK account found for ${app.applicant_email} yet — approved, but ${app.department} access hasn't been granted. It will need to be granted manually via Users & Roles once they register with this email, or the applicant needs to register first.` }),
+      data: { referenceNumber: app.reference_number, status: "offered", roleGranted, accountCreated: createdAccount },
+      ...(roleGranted ? {} : { warning: `No VINK account found for ${app.applicant_email} yet — approved, but ${app.department} access hasn't been granted. Provide a username and password to create their account now, or grant it manually via Users & Roles once they register with this email.` }),
     });
   } catch (err) {
     await client.query("ROLLBACK");
