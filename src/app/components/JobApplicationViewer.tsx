@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Check, ChevronRight, ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
 
@@ -9,6 +9,7 @@ const NAVY_2 = "#13315C";
 const NAVY_3 = "#1E4172";
 const GOLD = "#B8902E";
 const GOLD_LIGHT = "#E4C878";
+const MONO = "'IBM Plex Mono', monospace";
 const PAPER = "#EEF1F6";
 const INK = "#1B1F27";
 const INK_SOFT = "#5B6472";
@@ -115,6 +116,26 @@ export function JobApplicationViewer({ isOpen, onClose }: Props) {
   const [decl, setDecl] = useState({ accurate: false, consent: false, terms: false, signature: "" });
 
   const dept = DEPARTMENTS.find(d => d.id === deptId) ?? null;
+
+  // The reference design specifies Source Serif 4, Inter, and IBM Plex
+  // Mono via a Google Fonts @import — referencing these font names in
+  // inline styles alone does nothing if the font files were never
+  // actually loaded; the browser silently substitutes a generic serif/
+  // monospace instead, which would look visually different from the
+  // reference despite every color/spacing value matching. Injected only
+  // while this modal is open, removed on close, so it doesn't affect the
+  // rest of the site's font loading.
+  useEffect(() => {
+    if (!isOpen) return;
+    const linkId = "job-application-fonts";
+    if (document.getElementById(linkId)) return;
+    const link = document.createElement("link");
+    link.id = linkId;
+    link.rel = "stylesheet";
+    link.href = "https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap";
+    document.head.appendChild(link);
+    return () => { document.getElementById(linkId)?.remove(); };
+  }, [isOpen]);
 
   const resetAll = () => {
     setPhase("select"); setStep(1); setDeptId(null); setRefNum(""); setErrors(new Set());
@@ -226,8 +247,8 @@ export function JobApplicationViewer({ isOpen, onClose }: Props) {
           <div className="flex-1 flex justify-center px-6 py-11 pb-20">
             <div className="w-full max-w-[760px]">
               <div className="flex justify-between items-baseline mb-1.5">
-                <span className="font-mono text-[11.5px] tracking-wide uppercase" style={{ color: INK_SOFT }}>Step {step} of 7 — {STEP_LABELS[step - 1].t}</span>
-                <span className="font-mono text-[11.5px]" style={{ color: INK_SOFT }}>{dept.code}-APPLICATION</span>
+                <span className="text-[11.5px] tracking-wide uppercase" style={{ color: INK_SOFT, fontFamily: MONO }}>Step {step} of 7 — {STEP_LABELS[step - 1].t}</span>
+                <span className="text-[11.5px]" style={{ color: INK_SOFT, fontFamily: MONO }}>{dept.code}-APPLICATION</span>
               </div>
               <div className="h-0.5 rounded-full mb-7" style={{ background: LINE }}>
                 <div className="h-full rounded-full transition-all duration-300" style={{ width: `${(step / 7) * 100}%`, background: GOLD }} />
@@ -267,15 +288,15 @@ export function JobApplicationViewer({ isOpen, onClose }: Props) {
           <div className="w-full max-w-[640px]">
             <div className="bg-white border rounded p-14 text-center" style={{ borderColor: LINE }}>
               <div className="inline-flex flex-col items-center justify-center w-[160px] h-[160px] rounded-full border-[3px] mb-6" style={{ borderColor: GOLD, color: GOLD, transform: "rotate(-8deg)" }}>
-                <span className="font-mono text-[10px] tracking-widest uppercase">Application</span>
+                <span className="text-[10px] tracking-widest uppercase" style={{ fontFamily: MONO }}>Application</span>
                 <span className="font-bold text-xl my-1" style={{ fontFamily: "'Source Serif 4', serif" }}>Received</span>
-                <span className="font-mono text-[11px]">{refNum}</span>
+                <span className="text-[11px]" style={{ fontFamily: MONO }}>{refNum}</span>
               </div>
               <h1 className="text-2xl font-semibold mb-3" style={{ color: NAVY, fontFamily: "'Source Serif 4', serif" }}>
                 Thank you, {personal.firstName}.
               </h1>
               <p className="text-sm max-w-md mx-auto mb-7 leading-relaxed" style={{ color: INK_SOFT }}>
-                Your application for <strong>{dept.role}</strong> has been submitted. Your reference number is <span className="font-mono">{refNum}</span> — keep this for your records. The hiring panel will contact you at <strong>{personal.email}</strong> regarding next steps.
+                Your application for <strong>{dept.role}</strong> has been submitted. Your reference number is <span style={{ fontFamily: MONO }}>{refNum}</span> — keep this for your records. The hiring panel will contact you at <strong>{personal.email}</strong> regarding next steps.
               </p>
               <button onClick={() => { resetAll(); }} className="px-7 py-2.5 rounded text-sm font-semibold text-white hover:opacity-90 transition-opacity" style={{ background: NAVY }}>
                 Start a new application
@@ -294,14 +315,14 @@ function SelectPhase({ deptId, setDeptId, onClose, onContinue }: { deptId: strin
     <div className="flex justify-center px-6 py-11 pb-20">
       <div className="w-full max-w-[960px] relative">
         <button onClick={onClose} className="absolute right-0 top-0 p-2 rounded-full hover:bg-black/5" style={{ color: INK_SOFT }}><X className="w-5 h-5" /></button>
-        <span className="font-mono text-[11.5px] tracking-wide uppercase" style={{ color: INK_SOFT }}>Careers · Management Roles</span>
+        <span className="text-[11.5px] tracking-wide uppercase" style={{ color: INK_SOFT, fontFamily: MONO }}>Careers · Management Roles</span>
         <h1 className="text-[26px] font-semibold mt-1.5 mb-1.5" style={{ color: NAVY, fontFamily: "'Source Serif 4', serif" }}>
           Select the department you are applying to
         </h1>
         <p className="text-sm mb-8 max-w-2xl leading-relaxed" style={{ color: INK_SOFT }}>
           Choose one management role below. Your application form — including role-specific requirements — will be tailored to your selection. You can only apply to one department per application.
         </p>
-        <div className="grid sm:grid-cols-2 gap-3.5">
+        <div className="grid min-[840px]:grid-cols-2 gap-3.5">
           {DEPARTMENTS.map(d => (
             <button key={d.id} onClick={() => setDeptId(d.id)}
               className="flex gap-3.5 items-start text-left rounded border bg-white transition-colors"
@@ -313,7 +334,7 @@ function SelectPhase({ deptId, setDeptId, onClose, onContinue }: { deptId: strin
               <span>
                 <span className="block text-[14.5px] font-semibold mb-0.5" style={{ color: NAVY }}>{d.name}</span>
                 <span className="block text-xs leading-snug" style={{ color: INK_SOFT }}>{d.desc}</span>
-                <span className="block font-mono text-[10.5px] mt-1.5 tracking-wide" style={{ color: GOLD }}>{d.role.toUpperCase()}</span>
+                <span className="block text-[10.5px] mt-1.5 tracking-wide" style={{ color: GOLD, fontFamily: MONO }}>{d.role.toUpperCase()}</span>
               </span>
             </button>
           ))}
@@ -332,7 +353,7 @@ function SelectPhase({ deptId, setDeptId, onClose, onContinue }: { deptId: strin
 
 function Rail({ dept, step, onClose }: { dept: Department; step: number; onClose: () => void }) {
   return (
-    <div className="hidden lg:flex flex-col w-[280px] flex-shrink-0 sticky top-0 h-screen overflow-y-auto px-7 pt-9 pb-7 text-white"
+    <div className="hidden min-[840px]:flex flex-col w-[280px] flex-shrink-0 sticky top-0 h-screen overflow-y-auto px-7 pt-9 pb-7 text-white"
       style={{ background: `linear-gradient(180deg, ${NAVY} 0%, ${NAVY_2} 100%)` }}>
       <div className="flex items-center gap-2.5 border-b" style={{ borderColor: "rgba(255,255,255,0.14)", paddingBottom: "22px", marginBottom: "26px" }}>
         <span className="w-[34px] h-[34px] rounded-full border flex items-center justify-center font-bold text-[15px]" style={{ borderColor: GOLD_LIGHT, color: GOLD_LIGHT, fontFamily: "'Source Serif 4', serif" }}>M</span>
@@ -352,12 +373,13 @@ function Rail({ dept, step, onClose }: { dept: Department; step: number; onClose
           const isActive = n === step, isDone = n < step;
           return (
             <li key={s.t} className="flex gap-3 items-start py-2.5 relative">
-              <span className="flex-shrink-0 w-[30px] h-[30px] rounded-full border flex items-center justify-center font-mono text-xs z-10"
+              <span className="flex-shrink-0 w-[30px] h-[30px] rounded-full border flex items-center justify-center text-xs z-10"
                 style={{
                   background: isActive ? GOLD : "transparent",
                   borderColor: isActive ? GOLD : isDone ? SUCCESS : "rgba(255,255,255,0.3)",
                   color: isActive ? NAVY : isDone ? SUCCESS : "rgba(255,255,255,0.55)",
                   fontWeight: isActive ? 700 : 400,
+                  fontFamily: MONO,
                 }}>
                 {isDone ? <Check className="w-3.5 h-3.5" /> : n}
               </span>
@@ -399,14 +421,14 @@ function StepPersonal({ personal, setPersonal, natInput, setNatInput, errors }: 
   const set = (k: keyof Personal) => (e: React.ChangeEvent<HTMLInputElement>) => setPersonal(p => ({ ...p, [k]: e.target.value }));
   const addNat = () => { if (natInput.trim()) { setPersonal(p => ({ ...p, otherNats: [...p.otherNats, natInput.trim()] })); setNatInput(""); } };
   return (
-    <div className="grid sm:grid-cols-2 gap-5">
+    <div className="grid min-[840px]:grid-cols-2 gap-5">
       <Field label="First name" required error={errors.has("firstName") ? "First name is required." : undefined}>
         <input className={inputCls} style={inputStyle(errors.has("firstName"))} value={personal.firstName} onChange={set("firstName")} />
       </Field>
       <Field label="Last name" required error={errors.has("lastName") ? "Last name is required." : undefined}>
         <input className={inputCls} style={inputStyle(errors.has("lastName"))} value={personal.lastName} onChange={set("lastName")} />
       </Field>
-      <div className="sm:col-span-2">
+      <div className="min-[840px]:col-span-2">
         <Field label="Middle name(s) (optional)">
           <input className={inputCls} style={inputStyle()} value={personal.middleName} onChange={set("middleName")} />
         </Field>
@@ -429,7 +451,7 @@ function StepPersonal({ personal, setPersonal, natInput, setNatInput, errors }: 
       <Field label="Country of residence" required error={errors.has("countryResidence") ? "Country of residence is required." : undefined}>
         <input className={inputCls} style={inputStyle(errors.has("countryResidence"))} value={personal.countryResidence} onChange={set("countryResidence")} />
       </Field>
-      <div className="sm:col-span-2">
+      <div className="min-[840px]:col-span-2">
         <Field label="Other nationalities (if you hold more than one, add each below)">
           <div className="flex flex-wrap gap-1.5 p-2 rounded border items-center" style={{ borderColor: LINE }}>
             {personal.otherNats.map((n, i) => (
@@ -461,11 +483,11 @@ function StepEducation({ education, setEducation, errors }: { education: Educati
       {education.map((e, i) => (
         <div key={i} className="border rounded p-5" style={{ borderColor: LINE, background: "#FBFCFD" }}>
           <div className="flex justify-between items-center mb-3.5">
-            <span className="font-mono text-[11px] uppercase tracking-wide" style={{ color: INK_SOFT }}>Qualification {i + 1}</span>
+            <span className="text-[11px] uppercase tracking-wide" style={{ color: INK_SOFT, fontFamily: MONO }}>Qualification {i + 1}</span>
             {education.length > 1 && <button onClick={() => setEducation(es => es.filter((_, j) => j !== i))} className="text-xs font-semibold" style={{ color: ERROR }}>Remove</button>}
           </div>
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div className="sm:col-span-2">
+          <div className="grid min-[840px]:grid-cols-2 gap-4">
+            <div className="min-[840px]:col-span-2">
               <Field label="Institution" required error={errors.has(`edu_institution_${i}`) ? "Institution is required." : undefined}>
                 <input className={inputCls} style={inputStyle(errors.has(`edu_institution_${i}`))} value={e.institution} onChange={ev => upd(i, { institution: ev.target.value })} />
               </Field>
@@ -500,10 +522,10 @@ function StepExperience({ experience, setExperience, errors }: { experience: Exp
       {experience.map((e, i) => (
         <div key={i} className="border rounded p-5" style={{ borderColor: LINE, background: "#FBFCFD" }}>
           <div className="flex justify-between items-center mb-3.5">
-            <span className="font-mono text-[11px] uppercase tracking-wide" style={{ color: INK_SOFT }}>Role {i + 1}</span>
+            <span className="text-[11px] uppercase tracking-wide" style={{ color: INK_SOFT, fontFamily: MONO }}>Role {i + 1}</span>
             {experience.length > 1 && <button onClick={() => setExperience(es => es.filter((_, j) => j !== i))} className="text-xs font-semibold" style={{ color: ERROR }}>Remove</button>}
           </div>
-          <div className="grid sm:grid-cols-2 gap-4">
+          <div className="grid min-[840px]:grid-cols-2 gap-4">
             <Field label="Employer" required error={errors.has(`exp_employer_${i}`) ? "Employer is required." : undefined}>
               <input className={inputCls} style={inputStyle(errors.has(`exp_employer_${i}`))} value={e.employer} onChange={ev => upd(i, { employer: ev.target.value })} />
             </Field>
@@ -516,13 +538,13 @@ function StepExperience({ experience, setExperience, errors }: { experience: Exp
             <Field label="End date (leave blank if current)">
               <input type="date" className={inputCls} style={inputStyle()} value={e.end} onChange={ev => upd(i, { end: ev.target.value })} disabled={e.current} />
             </Field>
-            <div className="sm:col-span-2">
+            <div className="min-[840px]:col-span-2">
               <label className="flex items-center gap-2 text-sm" style={{ color: INK }}>
                 <input type="checkbox" checked={e.current} onChange={ev => upd(i, { current: ev.target.checked })} className="w-4 h-4" style={{ accentColor: NAVY_3 }} />
                 This is my current role
               </label>
             </div>
-            <div className="sm:col-span-2">
+            <div className="min-[840px]:col-span-2">
               <Field label="Key responsibilities">
                 <textarea className={inputCls + " min-h-[78px] resize-y"} style={inputStyle()} value={e.responsibilities} onChange={ev => upd(i, { responsibilities: ev.target.value })} />
               </Field>
@@ -637,9 +659,9 @@ function StepReview({ dept, personal, education, experience, reqAnswers, docs, d
     <div className="mb-6.5" style={{ marginBottom: "26px" }}>
       <div className="flex justify-between items-center border-b pb-2 mb-3" style={{ borderColor: LINE }}>
         <h3 className="text-[14.5px] font-semibold" style={{ color: NAVY, fontFamily: "'Source Serif 4', serif" }}>{title}</h3>
-        <button onClick={() => onJump(jump)} className="font-mono text-[11.5px] font-semibold" style={{ color: NAVY_3 }}>{jump === 0 ? "Change" : "Edit"}</button>
+        <button onClick={() => onJump(jump)} className="text-[11.5px] font-semibold" style={{ color: NAVY_3, fontFamily: MONO }}>{jump === 0 ? "Change" : "Edit"}</button>
       </div>
-      <div className="grid sm:grid-cols-2 gap-x-5 gap-y-3">{children}</div>
+      <div className="grid min-[840px]:grid-cols-2 gap-x-5 gap-y-3">{children}</div>
     </div>
   );
   return (
