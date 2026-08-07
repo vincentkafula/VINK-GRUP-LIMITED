@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { X, CheckCircle, Clock, Upload, Plus, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { toast } from "sonner";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
+import { applicationsApi } from "../services/applicationsApi";
 
 interface Props { isOpen: boolean; onClose: () => void; initialAccountType?: string; }
 
@@ -63,9 +65,17 @@ function StepBar({ current }: { current: number }) {
 }
 
 // ─── Step 1 — Business Details ────────────────────────────────────────────────
-function Step1({ onNext }: { onNext: () => void }) {
+function Step1({ onNext, updateForm }: { onNext: () => void; updateForm: (d: Record<string, string>) => void }) {
   const [form, setForm] = useState({ bizName: "", regNo: "", bizType: "Private Company", taxNo: "", addressLine1: "", addressLine2: "", city: "", province: "", postalCode: "", phone: "", website: "" });
   const f = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setForm(p => ({ ...p, [k]: e.target.value }));
+
+  // Fields marked * in the UI below were never actually required — the
+  // Next button had no nextDisabled at all, so this whole step (business
+  // name, registration number, address, phone) could be skipped blank.
+  const isValid = form.bizName.trim() !== "" && form.regNo.trim() !== "" && form.addressLine1.trim() !== ""
+    && form.city.trim() !== "" && form.province.trim() !== "" && form.postalCode.trim() !== "" && form.phone.trim() !== "";
+
+  const handleNext = () => { updateForm(form); onNext(); };
 
   return (
     <div className="space-y-5">
@@ -97,18 +107,20 @@ function Step1({ onNext }: { onNext: () => void }) {
         <Field label="Business phone *" value={form.phone} onChange={f("phone")} placeholder="+27 21 000 0000" />
         <Field label="Website" value={form.website} onChange={f("website")} placeholder="https://example.co.za" />
       </div>
-      <NavButtons onNext={onNext} nextLabel="Next: Verify" />
+      <NavButtons onNext={handleNext} nextLabel="Next: Verify" nextDisabled={!isValid} />
     </div>
   );
 }
 
 // ─── Step 2 — Verify ──────────────────────────────────────────────────────────
-function Step2({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
+function Step2({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () => void; updateForm: (d: Record<string, string>) => void }) {
   const [phone, setPhone] = useState("+27 ");
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [verified, setVerified] = useState(false);
+
+  const handleNext = () => { updateForm({ phone, email }); onNext(); };
 
   return (
     <div className="space-y-5">
@@ -140,14 +152,15 @@ function Step2({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
           Identity verified successfully
         </div>
       )}
-      <NavButtons onBack={onBack} onNext={onNext} nextLabel="Next: Biometrics" nextDisabled={!verified} />
+      <NavButtons onBack={onBack} onNext={handleNext} nextLabel="Next: Biometrics" nextDisabled={!verified} />
     </div>
   );
 }
 
 // ─── Step 3 — Biometrics ──────────────────────────────────────────────────────
-function Step3({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
+function Step3({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () => void; updateForm: (d: Record<string, string>) => void }) {
   const [captured, setCaptured] = useState(false);
+  const handleNext = () => { updateForm({ biometricCaptured: String(captured) }); onNext(); };
   return (
     <div className="space-y-5">
       <div>
@@ -174,15 +187,16 @@ function Step3({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
           </div>
         )}
       </div>
-      <NavButtons onBack={onBack} onNext={onNext} nextLabel="Next: Selfie" nextDisabled={!captured} />
+      <NavButtons onBack={onBack} onNext={handleNext} nextLabel="Next: Selfie" nextDisabled={!captured} />
     </div>
   );
 }
 
 // ─── Step 4 — Selfie ──────────────────────────────────────────────────────────
-function Step4({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
+function Step4({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () => void; updateForm: (d: Record<string, string>) => void }) {
   const [captured, setCaptured] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const handleNext = () => { updateForm({ selfieCaptured: String(captured) }); onNext(); };
   return (
     <div className="space-y-5">
       <div>
@@ -208,13 +222,13 @@ function Step4({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
         )}
         <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={() => setCaptured(true)} />
       </div>
-      <NavButtons onBack={onBack} onNext={onNext} nextLabel="Next: Documents" nextDisabled={!captured} />
+      <NavButtons onBack={onBack} onNext={handleNext} nextLabel="Next: Documents" nextDisabled={!captured} />
     </div>
   );
 }
 
 // ─── Step 5 — Documents ───────────────────────────────────────────────────────
-function Step5({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
+function Step5({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () => void; updateForm: (d: Record<string, string>) => void }) {
   const [uploaded, setUploaded] = useState<Record<string, boolean>>({});
   const docs = [
     { key: "cipc",     label: "CIPC Registration Certificate" },
@@ -225,6 +239,12 @@ function Step5({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
     { key: "fica",     label: "FICA Compliance Documents" },
   ];
   const allDone = docs.every(d => uploaded[d.key]);
+  const handleNext = () => {
+    const data: Record<string, string> = {};
+    docs.forEach(d => { data[`doc_${d.key}`] = uploaded[d.key] ? "uploaded" : ""; });
+    updateForm(data);
+    onNext();
+  };
 
   return (
     <div className="space-y-5">
@@ -252,13 +272,13 @@ function Step5({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
           </label>
         ))}
       </div>
-      <NavButtons onBack={onBack} onNext={onNext} nextLabel="Next: Directors" nextDisabled={!allDone} />
+      <NavButtons onBack={onBack} onNext={handleNext} nextLabel="Next: Directors" nextDisabled={!allDone} />
     </div>
   );
 }
 
 // ─── Step 6 — Directors ───────────────────────────────────────────────────────
-function Step6({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
+function Step6({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () => void; updateForm: (d: Record<string, string>) => void }) {
   const [directors, setDirectors] = useState<Director[]>([
     { id: 1, fullName: "", idPassport: "", cellNumber: "", email: "", otpPending: false, fingerprintPending: false, selfiePending: false, docsUploaded: true, verified: true },
     blankDirector(2),
@@ -272,6 +292,23 @@ function Step6({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
     setDirectors(ds => ds.map(d => d.id === id ? { ...d, ...patch } : d));
   const addDir = () => setDirectors(ds => [...ds, blankDirector(ds.length + 1)]);
   const removeDir = (id: number) => setDirectors(ds => ds.filter(d => d.id !== id));
+
+  // The "Next: Account" button had no nextDisabled at all — a director
+  // added via "Add another director" could sit completely blank (no
+  // name, no ID, no documents) and the form would still let you through
+  // to submission. Every director must be either the pre-verified primary
+  // or have their basic identity fields and documents completed.
+  const directorsValid = directors.every(d => d.verified || (d.fullName.trim() !== "" && d.idPassport.trim() !== "" && d.cellNumber.trim() !== "" && d.email.trim() !== "" && d.docsUploaded));
+
+  const handleNext = () => {
+    updateForm({
+      directors: JSON.stringify(directors.map(d => ({ fullName: d.fullName, idPassport: d.idPassport, cellNumber: d.cellNumber, email: d.email, verified: d.verified }))),
+      advisorFspName: advisor.fspName, advisorFirstName: advisor.firstName, advisorSurname: advisor.surname,
+      advisorCode: advisor.code, advisorDiscretionary: advisor.discretionary,
+      investmentSecurityName: investment.securityName, investmentAmount: investment.amount,
+    });
+    onNext();
+  };
 
   return (
     <div className="space-y-6">
@@ -408,17 +445,40 @@ function Step6({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
         </div>
       </div>
 
-      <NavButtons onBack={onBack} onNext={onNext} nextLabel="Next: Account" />
+      <NavButtons onBack={onBack} onNext={handleNext} nextLabel="Next: Account" nextDisabled={!directorsValid} />
     </div>
   );
 }
 
 // ─── Step 7 — Account ─────────────────────────────────────────────────────────
-function Step7({ onBack, onClose, initialAccountType }: { onBack: () => void; onClose: () => void; initialAccountType?: string }) {
+function Step7({ onBack, onClose, initialAccountType, formData }: { onBack: () => void; onClose: () => void; initialAccountType?: string; formData: Record<string, string> }) {
   const [accountType, setAccountType] = useState(initialAccountType ?? "Launch Business Account");
   const [currency, setCurrency] = useState("ZAR");
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [referenceNumber, setReferenceNumber] = useState("");
+
+  const handleSubmit = async () => {
+    if (!agreeTerms) return;
+    setSubmitting(true);
+    const r = await applicationsApi.submit({
+      tier: "business",
+      accountTypeRequested: accountType,
+      currency,
+      applicantName: formData.bizName || "Business Applicant",
+      applicantEmail: formData.email,
+      applicantPhone: formData.phone,
+      tierData: { ...formData, accountType, currency },
+    });
+    setSubmitting(false);
+    if (r.success && r.data?.referenceNumber) {
+      setReferenceNumber(r.data.referenceNumber);
+      setSubmitted(true);
+    } else {
+      toast.error(r.error ?? "Couldn't submit your application — please check your connection and try again.");
+    }
+  };
 
   if (submitted) {
     return (
@@ -428,7 +488,7 @@ function Step7({ onBack, onClose, initialAccountType }: { onBack: () => void; on
         <p className="text-gray-500 text-sm max-w-md">
           Your business account application has been received. Our team will review it within 2–5 business days and contact you at the email address provided.
         </p>
-        <p className="text-xs text-gray-400">Reference: VINK-{Date.now().toString(36).toUpperCase()}</p>
+        <p className="text-xs text-gray-400">Reference: {referenceNumber}</p>
         <button onClick={onClose}
           className="mt-4 px-8 py-3 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90"
           style={{ background: PURPLE }}>
@@ -467,7 +527,7 @@ function Step7({ onBack, onClose, initialAccountType }: { onBack: () => void; on
           {[
             { label: "Selected account", value: accountType },
             { label: "Currency", value: currency },
-            { label: "Directors confirmed", value: "1 of 2" },
+            { label: "Business name", value: formData.bizName || "—" },
             { label: "Documents", value: "All uploaded" },
             { label: "Identity verification", value: "Complete" },
           ].map(row => (
@@ -494,11 +554,11 @@ function Step7({ onBack, onClose, initialAccountType }: { onBack: () => void; on
           style={{ borderColor: "#D1D5DB" }}>
           <ChevronLeft className="w-4 h-4" /> Back
         </button>
-        <button onClick={() => { if (agreeTerms) setSubmitted(true); }}
-          disabled={!agreeTerms}
+        <button onClick={handleSubmit}
+          disabled={!agreeTerms || submitting}
           className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-40"
           style={{ background: PURPLE }}>
-          Submit &amp; Generate Account
+          {submitting ? "Submitting…" : "Submit & Generate Account"}
         </button>
       </div>
     </div>
@@ -545,10 +605,12 @@ function NavButtons({ onBack, onNext, nextLabel = "Next", nextDisabled = false }
 // ─── Main component ───────────────────────────────────────────────────────────
 export function BusinessAccountApplicationViewer({ isOpen, onClose, initialAccountType }: Props) {
   const [step, setStep] = useState(1);
+  const [formData, setFormData] = useState<Record<string, string>>({});
   const next = () => setStep(s => Math.min(s + 1, 7));
   const back = () => setStep(s => Math.max(s - 1, 1));
+  const updateForm = (d: Record<string, string>) => setFormData(prev => ({ ...prev, ...d }));
 
-  useEffect(() => { if (isOpen) setStep(1); }, [isOpen]);
+  useEffect(() => { if (isOpen) { setStep(1); setFormData({}); } }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -581,13 +643,13 @@ export function BusinessAccountApplicationViewer({ isOpen, onClose, initialAccou
         {/* Content */}
         <div className="flex-1 overflow-y-auto">
           <div className="max-w-2xl mx-auto px-4 py-8">
-            {step === 1 && <Step1 onNext={next} />}
-            {step === 2 && <Step2 onNext={next} onBack={back} />}
-            {step === 3 && <Step3 onNext={next} onBack={back} />}
-            {step === 4 && <Step4 onNext={next} onBack={back} />}
-            {step === 5 && <Step5 onNext={next} onBack={back} />}
-            {step === 6 && <Step6 onNext={next} onBack={back} />}
-            {step === 7 && <Step7 onBack={back} onClose={onClose} initialAccountType={initialAccountType} />}
+            {step === 1 && <Step1 onNext={next} updateForm={updateForm} />}
+            {step === 2 && <Step2 onNext={next} onBack={back} updateForm={updateForm} />}
+            {step === 3 && <Step3 onNext={next} onBack={back} updateForm={updateForm} />}
+            {step === 4 && <Step4 onNext={next} onBack={back} updateForm={updateForm} />}
+            {step === 5 && <Step5 onNext={next} onBack={back} updateForm={updateForm} />}
+            {step === 6 && <Step6 onNext={next} onBack={back} updateForm={updateForm} />}
+            {step === 7 && <Step7 onBack={back} onClose={onClose} initialAccountType={initialAccountType} formData={formData} />}
           </div>
         </div>
       </div>

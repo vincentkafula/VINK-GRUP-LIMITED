@@ -192,6 +192,14 @@ function Step2({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () 
     onNext();
   };
 
+  // employer/jobTitle/income/taxNo default to empty strings with no
+  // validation previously wired in — meaning this entire FICA/KYC step
+  // (employment, income, source of funds, PEP status) could be skipped
+  // blank. status/industry/sourceOfFunds/pep already default to a
+  // reasonable selected value via SelectField, so those aren't included
+  // here; the free-text fields are the ones that need an explicit check.
+  const isValid = employer.trim() !== "" && jobTitle.trim() !== "" && income.trim() !== "" && taxNo.trim() !== "";
+
   return (
     <div className="space-y-5">
       <SectionHead title="Know Your Customer (KYC)" sub="Section 2 — Employment, income, and compliance information" />
@@ -211,7 +219,7 @@ function Step2({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () 
       <div className="rounded-xl p-4 text-xs leading-relaxed" style={{ background: "#EFF6FF", color: "#1D4ED8" }}>
         <strong>Why do we ask this?</strong> VINK is required by the Financial Intelligence Centre Act (FICA) to verify your source of funds and confirm your PEP status. All information is kept strictly confidential.
       </div>
-      <NavButtons onBack={onBack} onNext={handleNext} nextLabel="Next: Verify" />
+      <NavButtons onBack={onBack} onNext={handleNext} nextLabel="Next: Verify" nextDisabled={!isValid} />
     </div>
   );
 }
