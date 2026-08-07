@@ -134,6 +134,50 @@ CREATE TABLE IF NOT EXISTS application_status_history (
 );
 CREATE INDEX IF NOT EXISTS idx_app_history_application ON application_status_history(application_id);
 
+-- ─── Job Applications ───────────────────────────────────────────────────────
+-- Unlike seller_kyc_verifications, documents here ARE meant to be retained
+-- — HR needs to actually read the CV/certificates later, there's no
+-- regulatory reason to avoid storage the way there is for ID documents.
+-- Core fields are real columns for filtering/search; the full structured
+-- payload (education history, work experience, requirement confirmations,
+-- declarations) lives in `details` JSONB, matching the tier_data pattern
+-- already used for account applications — this form's fields are too
+-- specific to this one flow to justify dozens of mostly-empty columns.
+-- Documents are a JSONB array of {type, filename, mimeType, data (base64)}
+-- rather than separate columns per document, since which documents apply
+-- varies (CV/ID/certificates are required, proof of residence and "other"
+-- are optional) and a fixed column set would force nulls either way.
+CREATE TABLE IF NOT EXISTS job_applications (
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  reference_number  TEXT UNIQUE NOT NULL,
+  department        TEXT NOT NULL,   -- one of the 11 management sections, e.g. 'Bank Management'
+  position          TEXT NOT NULL,   -- e.g. 'Head of Bank Management'
+  applicant_name    TEXT NOT NULL,
+  applicant_email   TEXT NOT NULL,
+  applicant_phone   TEXT,
+  details           JSONB NOT NULL DEFAULT '{}',
+  documents         JSONB NOT NULL DEFAULT '[]',
+  status            TEXT NOT NULL DEFAULT 'submitted'
+                      CHECK (status IN ('submitted','under_review','interview','offered','rejected','withdrawn')),
+  status_reason     TEXT,
+  submitted_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at        TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_job_apps_status ON job_applications(status);
+CREATE INDEX IF NOT EXISTS idx_job_apps_department ON job_applications(department);
+
+CREATE TABLE IF NOT EXISTS job_application_status_history (
+  id                  TEXT PRIMARY KEY,
+  job_application_id  UUID NOT NULL REFERENCES job_applications(id) ON DELETE CASCADE,
+  from_status         TEXT,
+  to_status           TEXT NOT NULL,
+  reason              TEXT NOT NULL,
+  changed_by          TEXT,
+  created_at          TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_job_app_history ON job_application_status_history(job_application_id);
+
+
 CREATE TABLE IF NOT EXISTS mkt_products (
   id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   seller_id           TEXT NOT NULL REFERENCES mkt_sellers(id),

@@ -30,7 +30,7 @@ const COLS = [
       "Sponsorship",
       "Careers",
       "VINK at the World Economic Forum",
-      "500 Global Application",
+      "Job Application",
     ],
   },
   {

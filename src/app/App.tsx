@@ -92,6 +92,7 @@ const NewsViewer                  = lazy(() => import("./components/footerPages/
 const ContactUsViewer             = lazy(() => import("./components/footerPages/ContactUsViewer").then(m => ({ default: m.ContactUsViewer })));
 const SwitchToVINKViewer           = lazy(() => import("./components/footerPages/SwitchToVINKViewer").then(m => ({ default: m.SwitchToVINKViewer })));
 const FiveHundredGlobalApplication = lazy(() => import("./components/FiveHundredGlobalApplication").then(m => ({ default: m.FiveHundredGlobalApplication })));
+const JobApplicationViewer = lazy(() => import("./components/JobApplicationViewer").then(m => ({ default: m.JobApplicationViewer })));
 const TaxiAssociationsViewer       = lazy(() => import("./components/TaxiAssociationsViewer").then(m => ({ default: m.TaxiAssociationsViewer })));
 const ManagementHub                = lazy(() => import("./components/ManagementHub").then(m => ({ default: m.ManagementHub })));
 
@@ -200,6 +201,7 @@ export default function App() {
   const [legalTab, setLegalTab]                             = useState<string | undefined>(undefined);
   const [showSwitchToVINK, setShowSwitchToVINK]               = useState(false);
   const [show500App, setShow500App]                         = useState(false);
+  const [showJobApp, setShowJobApp]                         = useState(false);
 
   // ── Login state ───────────────────────────────────────────────────────────
   const [isLoggedIn, setIsLoggedIn]                         = useState(false);
@@ -462,7 +464,7 @@ export default function App() {
 
   const showPersistentNav =
     activeSiteSection !== null || selectorOpen || showContactUs || showAboutVINK || showCareers || showNews ||
-    showSwitchToVINK || showSafetySecurity || showTaxiAssociations || show500App;
+    showSwitchToVINK || showSafetySecurity || showTaxiAssociations || show500App || showJobApp;
 
   const goToSection = (section: "Personal" | "Business" | "Corporate" | "Marketplace") => {
     startTransition(() => {
@@ -562,7 +564,7 @@ export default function App() {
       if (label === "News")                                      open("news",               () => setShowNews(true));
       if (label === "Contact Us")                                open("contactUs",          () => setShowContactUs(true));
       if (label === "Switch to VINK")                             open("switchToVINK",        () => setShowSwitchToVINK(true));
-      if (label === "500 Global Application")                    open("500app",             () => setShow500App(true));
+      if (label === "Job Application")                            open("jobapp",             () => setShowJobApp(true));
       if (label === "Browse Apps")                               startTransition(() => { mount("appLauncher"); setShowAppLauncher(true); });
       if (label === "Investor Relations")                        open("investorRelations",  () => setShowInvestorRelations(true));
       if (label === "Get Help & Information")                    open("contactUs",          () => setShowContactUs(true));
@@ -737,6 +739,7 @@ export default function App() {
       {has("managementHub")      && <Suspense fallback={null}><ManagementHub              isOpen={showManagementHub}       onClose={() => setShowManagementHub(false)} /></Suspense>}
       {has("taxiAssociations")   && <Suspense fallback={null}><TaxiAssociationsViewer       isOpen={showTaxiAssociations} onClose={() => setShowTaxiAssociations(false)} /></Suspense>}
       {has("500app")             && <Suspense fallback={null}><FiveHundredGlobalApplication isOpen={show500App}          onClose={() => setShow500App(false)} /></Suspense>}
+      {has("jobapp")             && <Suspense fallback={null}><JobApplicationViewer         isOpen={showJobApp}          onClose={() => setShowJobApp(false)} /></Suspense>}
     </div>
   );
 }
