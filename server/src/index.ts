@@ -33,6 +33,9 @@ import marketplaceRouterDb from "./routes/marketplaceRouterDb.js";
 import geoCurrencyRouter from "./routes/geoCurrency.js";
 import newsRouter from "./routes/news.js";
 import rbacRouter from "./routes/rbac.js";
+import { setBroadcaster } from "./services/wsBroadcast.js";
+import vinkpayWebhookRouter from "./routes/vinkpayWebhook.js";
+import { startReconciliationJob } from "./services/vinkPay.js";
 import mastercardRouter from "./routes/mastercard.js";
 import visaRouter from "./routes/visa.js";
 import publicRouter from "./routes/public.js";
@@ -73,6 +76,18 @@ app.set("trust proxy", 1); // trust exactly one hop (Railway's edge) for correct
 
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(cors({ origin: (origin, cb) => cb(null, isAllowedOrigin(origin)), credentials: true }));
+
+// The VinkPay webhook needs the exact raw request bytes to verify the
+// signature — re-serializing an already-parsed JSON body can produce a
+// different byte sequence than what was actually signed, which would make
+// signature verification unreliable. Mounted before the global JSON parser
+// below, with its own parser that stashes the raw buffer via `verify`.
+app.use("/api/vinkpay/webhook", express.json({
+  limit: "1mb",
+  verify: (req, _res, buf) => { (req as express.Request & { rawBody?: Buffer }).rawBody = buf; },
+}));
+app.use("/api/vinkpay/webhook", vinkpayWebhookRouter);
+
 app.use(express.json({ limit: "1mb" }));
 app.use(requestLogger);
 
@@ -205,6 +220,7 @@ function broadcast(event: WsEvent | VehicleWsMessage): void {
     if (ws.readyState === WebSocket.OPEN) ws.send(payload);
   });
 }
+setBroadcaster(broadcast as (event: { event: string; timestamp: string; data: unknown }) => void);
 
 wss.on("connection", (ws, req) => {
   const ip = req.socket.remoteAddress ?? "unknown";
@@ -237,6 +253,7 @@ wss.on("connection", (ws, req) => {
 // ─── Start Simulators ────────────────────────────────────────────────────────
 const stopSimulator        = startSimulator(broadcast);
 const stopVehicleSimulator = startVehicleSimulator(broadcast);
+const stopReconciliation   = startReconciliationJob();
 
 // ─── Boot ────────────────────────────────────────────────────────────────────
 async function boot() {

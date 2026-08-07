@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { pool } from "../db/pool.js";
 import { requireAuth, requireRole, JWT_SECRET, JWT_EXPIRES } from "../middleware/auth.js";
-import { chargeOrder, getOrderTransactions } from "../services/vinkPay.js";
+import { submitOrderPayment, getOrderTransactions } from "../services/vinkPay.js";
 
 const MANAGER_ROLES = ["superadmin", "noc_engineer", "billing_admin", "marketplace_admin"] as const;
 
@@ -403,7 +403,7 @@ router.post("/orders", requireAuth, async (req: Request, res: Response): Promise
       `INSERT INTO mkt_orders (order_number, user_id, customer_name, customer_email, items, subtotal, shipping_cost,
          tax_amount, discount_amount, total_amount, currency, status, payment_status, payment_method, shipping_address,
          shipping_status, estimated_delivery, coupon_code, confirmed_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'ZAR','pending','pending',$11,$12,'not_shipped', now() + interval '5 days', $13, NULL)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'ZAR','pending','pending_payment',$11,$12,'not_shipped', now() + interval '5 days', $13, NULL)
        RETURNING *`,
       [orderNumber, userId, `${shippingAddress.firstName} ${shippingAddress.lastName}`, customerEmail,
        JSON.stringify(items), cart.subtotal, cart.shipping, cart.tax, cart.coupon_discount, cart.total,
@@ -414,11 +414,18 @@ router.post("/orders", requireAuth, async (req: Request, res: Response): Promise
     await client.query(`UPDATE mkt_carts SET items = '[]', coupon_code = NULL, coupon_discount = 0, subtotal = 0, shipping = 0, tax = 0, total = 0, updated_at = now() WHERE id = $1`, [cart.id]);
     await client.query("COMMIT");
 
-    // Charge through VinkPay *after* releasing the stock locks — a payment
-    // gateway call is a network round trip and shouldn't hold a transaction
-    // (and the FOR UPDATE locks from the stock check above) open while it
-    // waits on an external service.
-    const chargeResult = await chargeOrder({
+    // Submit the charge *after* releasing the stock locks — a payment
+    // gateway call is a network round trip and shouldn't hold a
+    // transaction (and the FOR UPDATE locks from the stock check above)
+    // open while it waits on an external service.
+    //
+    // This is a SUBMISSION, not a confirmation. success:true here means
+    // "the processor accepted this for processing" — the order stays in
+    // pending_payment either way. The only things that can move it to
+    // payment_confirmed are the verified webhook handler
+    // (handleWebhook in vinkPay.ts) or the reconciliation job actively
+    // querying the processor after a timeout. Never this endpoint.
+    const submission = await submitOrderPayment({
       orderId: order.id,
       orderNumber: order.order_number,
       amount: Number(order.total_amount),
@@ -428,36 +435,40 @@ router.post("/orders", requireAuth, async (req: Request, res: Response): Promise
       paymentDetails: req.body.paymentDetails,
     });
 
-    if (chargeResult.success) {
-      const { rows: paid } = await pool!.query(
-        `UPDATE mkt_orders SET payment_status = 'paid', confirmed_at = now() WHERE id = $1 RETURNING *`,
-        [order.id]
-      );
-      res.status(201).json({ success: true, data: mapOrder(paid[0]) });
+    if (submission.accepted) {
+      // 202 Accepted, not 201 Created-and-done — the order exists, but
+      // payment is still in flight. The frontend should poll
+      // GET /orders/:id or listen for the vinkpay.payment_status_changed
+      // WS event (best-effort nudge only, see wsBroadcast.ts) and re-fetch
+      // the order to see the real, confirmed status.
+      res.status(202).json({
+        success: true,
+        data: mapOrder(order),
+        meta: { paymentStatus: "pending_payment", vinkPayTransactionId: submission.vinkPayTransactionId },
+      });
       return;
     }
 
-    // Payment failed or the processor isn't configured — restock (the
-    // customer's cart items are gone at this point, but the products
-    // shouldn't stay short of the stock this order never actually paid
-    // for) and mark the order clearly rather than silently leaving it
-    // 'pending' forever.
+    // The processor rejected the submission outright (not "still
+    // processing" — an actual immediate failure, e.g. not configured or a
+    // hard decline). Restock immediately rather than waiting on a webhook
+    // that will never come for a submission that was never accepted.
     const restockClient = await pool!.connect();
     try {
       await restockClient.query("BEGIN");
       for (const item of items) {
         await restockClient.query(`UPDATE mkt_products SET stock = stock + $1, total_sold = GREATEST(0, total_sold - $1) WHERE id::text = $2`, [item.quantity, item.productId]);
       }
-      await restockClient.query(`UPDATE mkt_orders SET status = 'payment_failed', payment_status = 'failed' WHERE id = $1`, [order.id]);
+      await restockClient.query(`UPDATE mkt_orders SET status = 'payment_failed', payment_status = 'payment_failed' WHERE id = $1`, [order.id]);
       await restockClient.query("COMMIT");
     } catch (restockErr) {
       await restockClient.query("ROLLBACK");
-      console.error("[marketplace] Restock after failed payment also failed:", restockErr);
+      console.error("[marketplace] Restock after failed payment submission also failed:", restockErr);
     } finally {
       restockClient.release();
     }
 
-    res.status(402).json({ success: false, error: chargeResult.error ?? "Payment could not be processed.", data: { orderId: order.id, orderNumber: order.order_number } });
+    res.status(402).json({ success: false, error: submission.error ?? "Payment could not be submitted.", data: { orderId: order.id, orderNumber: order.order_number } });
     return;
   } catch (err: any) {
     await client.query("ROLLBACK");
@@ -659,7 +670,7 @@ router.get("/customers/:userId/stats", requireAuth, requireSelf, async (req: Req
     `SELECT * FROM mkt_orders WHERE user_id = $1 ORDER BY placed_at DESC LIMIT 5`, [userId]
   );
   const { rows: spentRows } = await pool!.query(
-    `SELECT COALESCE(SUM(total_amount),0)::float AS total FROM mkt_orders WHERE user_id = $1 AND payment_status = 'paid'`, [userId]
+    `SELECT COALESCE(SUM(total_amount),0)::float AS total FROM mkt_orders WHERE user_id = $1 AND payment_status = 'payment_confirmed'`, [userId]
   );
   // Reward points: a simple, transparent, deterministic formula (1 point per R10 spent) — not a black box.
   const rewardPoints = Math.floor(Number(spentRows[0].total) / 10);
@@ -679,10 +690,10 @@ router.get("/customers/:userId/spending", requireAuth, requireSelf, async (req: 
   const userId = req.params.userId;
   const { rows: monthly } = await pool!.query(
     `SELECT to_char(placed_at, 'Mon') AS month, date_trunc('month', placed_at) AS m, SUM(total_amount)::float AS total
-     FROM mkt_orders WHERE user_id = $1 AND payment_status = 'paid' AND placed_at > now() - interval '6 months'
+     FROM mkt_orders WHERE user_id = $1 AND payment_status = 'payment_confirmed' AND placed_at > now() - interval '6 months'
      GROUP BY month, m ORDER BY m`, [userId]
   );
-  const { rows: orders } = await pool!.query(`SELECT items FROM mkt_orders WHERE user_id = $1 AND payment_status = 'paid'`, [userId]);
+  const { rows: orders } = await pool!.query(`SELECT items FROM mkt_orders WHERE user_id = $1 AND payment_status = 'payment_confirmed'`, [userId]);
   const catTotals: Record<string, number> = {};
   for (const o of orders) {
     for (const item of (o.items as any[])) catTotals[item.sellerName ?? "Other"] = (catTotals[item.sellerName ?? "Other"] ?? 0) + item.totalPrice;

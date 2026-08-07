@@ -158,7 +158,12 @@ CREATE INDEX IF NOT EXISTS idx_mkt_orders_status ON mkt_orders(status);
 -- fixing explicitly. Safe to run on every boot: ALTER COLUMN SET DEFAULT is
 -- idempotent, and this only changes the default for future inserts — it
 -- deliberately does not touch the payment_status of orders already placed.
-ALTER TABLE mkt_orders ALTER COLUMN payment_status SET DEFAULT 'pending';
+--
+-- Explicit state machine (replaces the earlier 'pending'/'paid'/'failed'):
+-- pending_payment -> payment_confirmed | payment_failed. payment_confirmed
+-- is only ever set by the verified webhook handler or the reconciliation
+-- job calling verifyTransaction — never by the order-submission endpoint.
+ALTER TABLE mkt_orders ALTER COLUMN payment_status SET DEFAULT 'pending_payment';
 
 -- ─── VinkPay: processor-agnostic payment ledger ─────────────────────────────
 -- Every attempt VinkPay makes to charge an order, regardless of which
@@ -173,14 +178,21 @@ CREATE TABLE IF NOT EXISTS vinkpay_transactions (
   payment_method  TEXT NOT NULL,          -- 'card' | 'bank_transfer'
   amount          NUMERIC(12,2) NOT NULL,
   currency        TEXT NOT NULL DEFAULT 'ZAR',
-  status          TEXT NOT NULL,          -- 'pending' | 'confirmed' | 'failed'
-  processor_ref   TEXT,                   -- the processor's own transaction/reference ID, once known
+  status          TEXT NOT NULL,          -- 'submitted' | 'confirmed' | 'failed'
+  processor_ref   TEXT,                   -- the processor's own transaction/reference ID — VinkPay's stable internal id is `id` above, which stays constant across a future processor migration even though processor_ref would not
   error_message   TEXT,
+  webhook_received_at TIMESTAMPTZ,        -- set only once, by the first webhook delivery — the idempotency marker
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_vinkpay_order ON vinkpay_transactions(order_id);
 CREATE INDEX IF NOT EXISTS idx_vinkpay_status ON vinkpay_transactions(status);
+-- One processor_ref should only ever correspond to one VinkPay transaction
+-- row — this constraint is the actual backstop for webhook idempotency,
+-- not just the application-level check before it. NULLs (a submission that
+-- never got a processor_ref back at all) are allowed to repeat, since
+-- Postgres treats NULLs as distinct in a unique index.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_vinkpay_processor_ref ON vinkpay_transactions(processor, processor_ref) WHERE processor_ref IS NOT NULL;
 
 -- ─── RBAC: Section Manager application/approval workflow ───────────────────
 CREATE TABLE IF NOT EXISTS section_applications (
