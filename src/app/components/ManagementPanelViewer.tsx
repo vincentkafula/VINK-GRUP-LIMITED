@@ -143,13 +143,33 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
     loadJobApps(section);
   };
 
+  const [jobLoadError, setJobLoadError] = useState<string | null>(null);
+
   const loadJobApps = (department: string, status?: string) => {
     setLoadingPanel(true);
-    jobsApi.applications(department, status).then(r => { if (r.success) setJobApps(r.data ?? []); }).finally(() => setLoadingPanel(false));
+    setJobLoadError(null);
+    jobsApi.applications(department, status)
+      .then(r => {
+        if (r.success) { setJobApps(r.data ?? []); return; }
+        // Was silently swallowed before — a 403 (wrong role) or network
+        // failure looked identical to "no applications submitted yet."
+        // This is very likely the actual bug behind "submitted but not
+        // showing up": the submitter and the reviewer don't necessarily
+        // have the same session, and if the account viewing this isn't
+        // one of the reviewer roles, every fetch here has been failing
+        // silently.
+        setJobApps([]);
+        setJobLoadError(r.error ?? "Could not load applications — you may not have reviewer access, or the connection failed.");
+        toast.error(r.error ?? "Could not load applications for this department.");
+      })
+      .finally(() => setLoadingPanel(false));
   };
 
   const openJobApp = (ref: string) => {
-    jobsApi.get(ref).then(r => { if (r.success && r.data) setSelectedJobApp(r.data); });
+    jobsApi.get(ref).then(r => {
+      if (r.success && r.data) { setSelectedJobApp(r.data); return; }
+      toast.error(r.error ?? "Could not load this application.");
+    });
   };
 
   const handleJobStatusChange = async (ref: string, status: string) => {
@@ -541,7 +561,13 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
                 ))}
               </div>
 
-              {loadingPanel ? <Loader2 className="w-5 h-5 animate-spin text-gray-400" /> : jobApps.length === 0 ? (
+              {jobLoadError && (
+                <div className="px-4 py-3 rounded-xl mb-4 text-sm font-semibold" style={{ background: "#FEF2F2", color: "#DC2626" }}>
+                  {jobLoadError}
+                </div>
+              )}
+
+              {loadingPanel ? <Loader2 className="w-5 h-5 animate-spin text-gray-400" /> : jobLoadError ? null : jobApps.length === 0 ? (
                 <p className="text-sm text-gray-400">No applications for {jobDept} yet.</p>
               ) : (
                 <div className="bg-white rounded-2xl border border-gray-100 divide-y divide-gray-100">
