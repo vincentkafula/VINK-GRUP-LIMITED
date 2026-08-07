@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
-import { rbacApi, getSession, type SectionApplication, type ManagerRecord, type AuditEntry } from "../services/apiClient";
+import { rbacApi, jobsApi, getSession, type SectionApplication, type ManagerRecord, type AuditEntry, type JobApplication } from "../services/apiClient";
 
 interface Props { isOpen: boolean; onClose: () => void; adminName?: string; adminRole?: string; role?: string }
 
@@ -98,7 +98,7 @@ const BOTTOM_STATS = [
   { value: "24", label: "System Alerts", icon: <AlertTriangle className="w-5 h-5" />, iconBg: "#FEF2F2", iconColor: "#DC2626" },
 ];
 
-type View = "dashboard" | "applications" | "managers" | "audit" | "apply";
+type View = "dashboard" | "applications" | "managers" | "audit" | "apply" | "jobApplications";
 
 export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User", adminRole = "Super Administrator", role = "superadmin" }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -119,6 +119,11 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
   const [applySection, setApplySection] = useState("");
   const [applyMessage, setApplyMessage] = useState("");
   const [applying, setApplying] = useState(false);
+  const [jobDept, setJobDept] = useState<string | null>(null);
+  const [jobApps, setJobApps] = useState<JobApplication[]>([]);
+  const [selectedJobApp, setSelectedJobApp] = useState<JobApplication | null>(null);
+  const [jobActionReason, setJobActionReason] = useState("");
+  const [jobActionBusy, setJobActionBusy] = useState(false);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -131,7 +136,41 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
 
   if (!isOpen) return null;
 
-  const openModule = (label: string) => toast.info(`${label} — opening this module's full workspace is coming soon.`);
+  const openModule = (label: string) => {
+    const section = SIDEBAR_TO_SECTION[label] ?? label; // sidebar labels are shortened, grid tile titles are already canonical
+    setJobDept(section);
+    goView("jobApplications");
+    loadJobApps(section);
+  };
+
+  const loadJobApps = (department: string, status?: string) => {
+    setLoadingPanel(true);
+    jobsApi.applications(department, status).then(r => { if (r.success) setJobApps(r.data ?? []); }).finally(() => setLoadingPanel(false));
+  };
+
+  const openJobApp = (ref: string) => {
+    jobsApi.get(ref).then(r => { if (r.success && r.data) setSelectedJobApp(r.data); });
+  };
+
+  const handleJobStatusChange = async (ref: string, status: string) => {
+    if (!jobActionReason.trim()) { toast.error("A reason is required for this action."); return; }
+    setJobActionBusy(true);
+    const r = status === "offered"
+      ? await jobsApi.approve(ref, jobActionReason.trim())
+      : await jobsApi.updateStatus(ref, status, jobActionReason.trim());
+    setJobActionBusy(false);
+    if (!r.success) { toast.error(r.error ?? "Action failed"); return; }
+    if (status === "offered") {
+      const data = r.data as { roleGranted?: boolean } | undefined;
+      if (data?.roleGranted) toast.success(`Approved — ${jobDept} access granted.`);
+      else toast.warning((r as unknown as { warning?: string }).warning ?? "Approved, but the applicant doesn't have a VINK account yet — access will need to be granted once they register.");
+    } else {
+      toast.success(status === "rejected" ? "Application rejected." : status === "interview" ? "Moved to interview." : "Status updated.");
+    }
+    setSelectedJobApp(null);
+    setJobActionReason("");
+    if (jobDept) loadJobApps(jobDept);
+  };
 
   const loadApplications = () => { setLoadingPanel(true); rbacApi.applications().then(r => { if (r.success) setAllApps(r.data ?? []); }).finally(() => setLoadingPanel(false)); };
   const loadManagers = () => { setLoadingPanel(true); rbacApi.managers().then(r => { if (r.success) setManagers(r.data ?? []); }).finally(() => setLoadingPanel(false)); };
@@ -480,6 +519,47 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
             </div>
           )}
 
+          {/* ── Job Applications for a specific department ── */}
+          {view === "jobApplications" && jobDept && (
+            <div>
+              <h1 className="text-2xl font-black text-gray-900 mb-1">{jobDept} — Job Applications</h1>
+              <p className="text-gray-500 text-sm mb-6">Applications for positions in this department. Approving one grants real {jobDept} section access, the same as the RBAC "apply to manage a section" flow.</p>
+
+              <div className="flex gap-2 mb-5">
+                {[
+                  { key: undefined, label: "All" },
+                  { key: "submitted", label: "New" },
+                  { key: "under_review", label: "Under Review" },
+                  { key: "interview", label: "Interview" },
+                  { key: "offered", label: "Approved" },
+                  { key: "rejected", label: "Rejected" },
+                ].map(f => (
+                  <button key={f.label} onClick={() => loadJobApps(jobDept, f.key)}
+                    className="px-3 py-1.5 rounded-lg text-xs font-bold border border-gray-200 text-gray-600 hover:bg-gray-50">
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+
+              {loadingPanel ? <Loader2 className="w-5 h-5 animate-spin text-gray-400" /> : jobApps.length === 0 ? (
+                <p className="text-sm text-gray-400">No applications for {jobDept} yet.</p>
+              ) : (
+                <div className="bg-white rounded-2xl border border-gray-100 divide-y divide-gray-100">
+                  {jobApps.map(a => (
+                    <button key={a.id} onClick={() => openJobApp(a.referenceNumber)}
+                      className="w-full text-left p-5 flex items-center justify-between gap-4 hover:bg-gray-50 transition-colors">
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-gray-900">{a.applicantName} <span className="text-gray-400 font-normal">· {a.position}</span></p>
+                        <p className="text-xs text-gray-500 mt-0.5">{a.referenceNumber} · Submitted {new Date(a.submittedAt).toLocaleDateString()}</p>
+                      </div>
+                      <JobStatusBadge status={a.status} />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* ── Apply for a section (non-owner) ── */}
           {view === "apply" && (
             <div className="max-w-lg">
@@ -510,6 +590,105 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
           </div>
         </div>
       </div>
+
+      {/* ── Job application review modal ── */}
+      {selectedJobApp && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50" onClick={() => setSelectedJobApp(null)}>
+          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between z-10">
+              <div>
+                <p className="font-bold text-gray-900 text-sm">{selectedJobApp.applicantName}</p>
+                <p className="text-xs text-gray-500">{selectedJobApp.position} · {selectedJobApp.referenceNumber}</p>
+              </div>
+              <button onClick={() => setSelectedJobApp(null)} className="p-2 rounded-full hover:bg-gray-100 text-gray-500"><XIcon className="w-4 h-4" /></button>
+            </div>
+
+            <div className="p-6 space-y-5">
+              <div className="flex items-center gap-2 flex-wrap">
+                <JobStatusBadge status={selectedJobApp.status} />
+                {selectedJobApp.roleGranted && (
+                  <span className="text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ background: "#E9F7EF", color: GREEN }}>
+                    {jobDept} access granted
+                  </span>
+                )}
+              </div>
+
+              <div className="rounded-xl border border-gray-200 p-4 grid grid-cols-2 gap-3 text-sm">
+                <div><p className="text-xs text-gray-400">Email</p><p className="font-semibold text-gray-800">{selectedJobApp.applicantEmail}</p></div>
+                <div><p className="text-xs text-gray-400">Phone</p><p className="font-semibold text-gray-800">{selectedJobApp.applicantPhone || "—"}</p></div>
+                <div><p className="text-xs text-gray-400">Submitted</p><p className="font-semibold text-gray-800">{new Date(selectedJobApp.submittedAt).toLocaleString()}</p></div>
+                <div><p className="text-xs text-gray-400">Department</p><p className="font-semibold text-gray-800">{selectedJobApp.department}</p></div>
+              </div>
+
+              {selectedJobApp.documents.length > 0 && (
+                <div className="rounded-xl border border-gray-200 p-4">
+                  <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Documents</p>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedJobApp.documents.map(d => (
+                      <a key={d.type} href={jobsApi.documentUrl(selectedJobApp.referenceNumber, d.type)} target="_blank" rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50">
+                        <FileCheck2 className="w-3.5 h-3.5" /> {d.filename}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {selectedJobApp.statusHistory && selectedJobApp.statusHistory.length > 0 && (
+                <div className="rounded-xl border border-gray-200 p-4">
+                  <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">History</p>
+                  <div className="space-y-2">
+                    {selectedJobApp.statusHistory.map((h, i) => (
+                      <div key={i} className="text-xs flex items-start gap-2">
+                        <span className="font-semibold text-gray-700 shrink-0">{new Date(h.createdAt).toLocaleDateString()}</span>
+                        <span className="text-gray-500">{h.fromStatus ? `${h.fromStatus} → ` : ""}<strong>{h.toStatus}</strong>{h.changedByName ? ` by ${h.changedByName}` : ""} — {h.reason}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {!["offered", "rejected", "withdrawn"].includes(selectedJobApp.status) && (
+                <div className="rounded-xl border border-gray-200 p-4 space-y-3">
+                  <p className="text-xs font-bold uppercase tracking-wider text-gray-400">Review decision</p>
+                  <textarea value={jobActionReason} onChange={e => setJobActionReason(e.target.value)} rows={2}
+                    placeholder="Reason for this decision (required)…"
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none resize-none" />
+                  <div className="grid grid-cols-3 gap-2">
+                    {selectedJobApp.status !== "interview" && (
+                      <button disabled={jobActionBusy} onClick={() => handleJobStatusChange(selectedJobApp.referenceNumber, "interview")}
+                        className="py-2.5 rounded-lg text-xs font-bold border border-blue-200 text-blue-700 hover:bg-blue-50 disabled:opacity-50">
+                        Interview
+                      </button>
+                    )}
+                    <button disabled={jobActionBusy} onClick={() => handleJobStatusChange(selectedJobApp.referenceNumber, "rejected")}
+                      className="py-2.5 rounded-lg text-xs font-bold border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-50">
+                      Reject
+                    </button>
+                    <button disabled={jobActionBusy} onClick={() => handleJobStatusChange(selectedJobApp.referenceNumber, "offered")}
+                      className="py-2.5 rounded-lg text-xs font-bold text-white disabled:opacity-50" style={{ background: GREEN, gridColumn: selectedJobApp.status === "interview" ? "auto" : undefined }}>
+                      {jobActionBusy ? "…" : "Approve"}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
+}
+
+function JobStatusBadge({ status }: { status: string }) {
+  const cfg: Record<string, { label: string; bg: string; color: string }> = {
+    submitted: { label: "New", bg: "#FEF3C7", color: "#F59E0B" },
+    under_review: { label: "Under Review", bg: "#DBEAFE", color: "#3B82F6" },
+    interview: { label: "Interview", bg: "#DBEAFE", color: "#3B82F6" },
+    offered: { label: "Approved", bg: "#E9F7EF", color: GREEN },
+    rejected: { label: "Rejected", bg: "#FEE2E2", color: "#EF4444" },
+    withdrawn: { label: "Withdrawn", bg: "#F3F4F6", color: "#6B7280" },
+  };
+  const c = cfg[status] ?? cfg.submitted;
+  return <span className="text-[11px] font-bold px-2.5 py-1 rounded-full shrink-0" style={{ background: c.bg, color: c.color }}>{c.label}</span>;
 }

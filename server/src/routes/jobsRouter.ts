@@ -42,6 +42,8 @@ function mapApplication(r: any) {
     documents: Array.isArray(r.documents) ? r.documents.map((d: any) => ({ type: d.type, filename: d.filename, mimeType: d.mimeType })) : [], // never include base64 content in list/detail responses
     status: r.status,
     statusReason: r.status_reason,
+    roleGranted: Boolean(r.role_granted_at),
+    roleGrantedAt: r.role_granted_at,
     submittedAt: r.submitted_at,
     updatedAt: r.updated_at,
   };
@@ -123,7 +125,7 @@ router.post(
 );
 
 router.get("/applications", requireAuth, requireRole(...REVIEWER_ROLES), async (req: Request, res: Response): Promise<void> => {
-  const { status } = req.query as { status?: string };
+  const { status, department } = req.query as { status?: string; department?: string };
   const page = Math.max(1, Number(req.query.page) || 1);
   const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 20));
   const offset = (page - 1) * limit;
@@ -131,6 +133,7 @@ router.get("/applications", requireAuth, requireRole(...REVIEWER_ROLES), async (
   const conditions: string[] = [];
   const params: unknown[] = [];
   if (status) { params.push(status); conditions.push(`status = $${params.length}`); }
+  if (department) { params.push(department); conditions.push(`department = $${params.length}`); }
   const whereClause = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
 
   const { rows: countRows } = await pool!.query(`SELECT COUNT(*)::int AS n FROM job_applications ${whereClause}`, params);
@@ -221,6 +224,78 @@ router.patch("/applications/:ref/status", requireAuth, requireRole(...REVIEWER_R
     await client.query("ROLLBACK");
     console.error("[jobs] Status change failed:", err);
     res.status(500).json({ success: false, error: "Could not update application status, please try again." });
+  } finally {
+    client.release();
+  }
+});
+
+// POST /api/jobs/applications/:ref/approve — the actual "hire and grant
+// access" action. Moves status to 'offered' (this workflow's terminal
+// success state) and, critically, grants real section access via
+// section_permissions — the exact same table and mechanism the RBAC
+// "apply to manage a section" flow already uses. A job application
+// approval and an RBAC section grant are now the same real permission,
+// not two separate concepts that happen to look similar.
+//
+// The applicant may not have a VINK account yet at the time they submit
+// a job application (submission doesn't require login). Approval looks
+// up a user by the application's email at approval time — if no account
+// exists yet, the application still moves to 'offered' (so the reviewer
+// isn't blocked), but the role grant is deferred: role_granted_at stays
+// NULL, and the response says so explicitly rather than silently
+// pretending access was granted when it wasn't.
+router.post("/applications/:ref/approve", requireAuth, requireRole(...REVIEWER_ROLES), async (req: Request, res: Response): Promise<void> => {
+  const { reason } = req.body as { reason?: string };
+  if (!reason?.trim()) { res.status(400).json({ success: false, error: "reason is required" }); return; }
+
+  const client = await pool!.connect();
+  try {
+    await client.query("BEGIN");
+    const { rows } = await client.query(`SELECT * FROM job_applications WHERE reference_number = $1 FOR UPDATE`, [req.params.ref]);
+    if (!rows.length) { await client.query("ROLLBACK"); res.status(404).json({ success: false, error: "Application not found" }); return; }
+
+    const app = rows[0];
+    const currentStatus = app.status as Status;
+    if (!ALLOWED_TRANSITIONS[currentStatus].includes("offered")) {
+      await client.query("ROLLBACK");
+      res.status(409).json({
+        success: false,
+        error: `Cannot approve from "${currentStatus}". Valid next steps: ${ALLOWED_TRANSITIONS[currentStatus].join(", ") || "none -- this application is in a terminal state"}.`,
+      });
+      return;
+    }
+
+    await client.query(`UPDATE job_applications SET status = 'offered', status_reason = $1, updated_at = now() WHERE id = $2`, [reason.trim(), app.id]);
+    await client.query(
+      `INSERT INTO job_application_status_history (id, job_application_id, from_status, to_status, reason, changed_by)
+       VALUES ($1,$2,$3,'offered',$4,$5)`,
+      [randomUUID(), app.id, currentStatus, reason.trim(), req.user!.userId]
+    );
+
+    // Look up a real account by the applicant's email to grant section
+    // access to. Matches the RBAC section_permissions schema exactly.
+    const { rows: userRows } = await client.query(`SELECT id FROM users WHERE email = $1`, [app.applicant_email]);
+    let roleGranted = false;
+    if (userRows.length) {
+      const userId = userRows[0].id;
+      await client.query(
+        `INSERT INTO section_permissions (user_id, section, granted_by) VALUES ($1,$2,$3) ON CONFLICT (user_id, section) DO NOTHING`,
+        [userId, app.department, req.user!.userId]
+      );
+      await client.query(`UPDATE job_applications SET role_granted_at = now(), role_granted_user_id = $1 WHERE id = $2`, [userId, app.id]);
+      roleGranted = true;
+    }
+
+    await client.query("COMMIT");
+    res.json({
+      success: true,
+      data: { referenceNumber: app.reference_number, status: "offered", roleGranted },
+      ...(roleGranted ? {} : { warning: `No VINK account found for ${app.applicant_email} yet — approved, but ${app.department} access hasn't been granted. It will need to be granted manually via Users & Roles once they register with this email, or the applicant needs to register first.` }),
+    });
+  } catch (err) {
+    await client.query("ROLLBACK");
+    console.error("[jobs] Approval failed:", err);
+    res.status(500).json({ success: false, error: "Could not approve application, please try again." });
   } finally {
     client.release();
   }

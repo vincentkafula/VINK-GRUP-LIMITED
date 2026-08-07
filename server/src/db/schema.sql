@@ -165,6 +165,15 @@ CREATE TABLE IF NOT EXISTS job_applications (
 );
 CREATE INDEX IF NOT EXISTS idx_job_apps_status ON job_applications(status);
 CREATE INDEX IF NOT EXISTS idx_job_apps_department ON job_applications(department);
+-- Tracks whether approval actually granted real section access (via
+-- section_permissions, the same RBAC table the "apply to manage a
+-- section" flow uses) — not just that the status says "offered". Added
+-- via ALTER rather than only in the CREATE TABLE above, since this
+-- table may already exist on a live database from before this feature —
+-- CREATE TABLE IF NOT EXISTS is a no-op against an existing table, the
+-- same lesson already learned twice this session for other tables.
+ALTER TABLE job_applications ADD COLUMN IF NOT EXISTS role_granted_at TIMESTAMPTZ;
+ALTER TABLE job_applications ADD COLUMN IF NOT EXISTS role_granted_user_id UUID;
 
 CREATE TABLE IF NOT EXISTS job_application_status_history (
   id                  TEXT PRIMARY KEY,

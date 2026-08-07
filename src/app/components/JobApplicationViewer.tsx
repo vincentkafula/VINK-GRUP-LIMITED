@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, Check, ChevronRight, ChevronLeft } from "lucide-react";
+import { X, Check, ChevronRight, ChevronLeft, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 
 interface Props { isOpen: boolean; onClose: () => void; }
@@ -22,41 +22,41 @@ const isLocalhost = typeof window !== "undefined" && (window.location.hostname =
 const BASE = import.meta.env.VITE_API_URL ?? (isLocalhost ? "http://localhost:3001" : "https://vink-grup-limited-production.up.railway.app");
 
 interface Department {
-  id: string; code: string; name: string; role: string; desc: string; reqs: string[];
+  id: string; code: string; name: string; positions: string[]; desc: string; reqs: string[];
 }
 
 const DEPARTMENTS: Department[] = [
-  { id: "bank", code: "BM", name: "Bank Management", role: "Head of Bank Management",
+  { id: "bank", code: "BM", name: "Bank Management", positions: ["Head of Bank Management", "Bank Operations Manager", "Compliance Officer"],
     desc: "Manage bank accounts, branches, services and banking operations.",
     reqs: ["Bachelor's degree in Banking, Finance or Economics", "Minimum 5 years experience in retail or commercial banking operations", "Working knowledge of banking regulations and compliance frameworks", "Risk management certification (preferred, not mandatory)"] },
-  { id: "payment", code: "PM", name: "Payment Management", role: "Head of Payment Management",
+  { id: "payment", code: "PM", name: "Payment Management", positions: ["Head of Payment Management", "Payments Operations Manager", "Settlements Analyst"],
     desc: "Manage payments, settlements, refunds and transaction rules.",
     reqs: ["Bachelor's degree in Finance, IT or a related field", "Experience with payment gateways, settlement cycles and reconciliation", "Familiarity with PCI-DSS and payment security standards", "Experience designing transaction and refund rule sets"] },
-  { id: "marketplace", code: "MM", name: "Marketplace Management", role: "Head of Marketplace Management",
+  { id: "marketplace", code: "MM", name: "Marketplace Management", positions: ["Head of Marketplace Management", "Vendor Relations Manager", "Marketplace Operations Analyst"],
     desc: "Manage vendors, products, orders and marketplace activities.",
     reqs: ["Bachelor's degree in Business, Commerce or E-commerce", "Experience managing vendor onboarding and marketplace operations", "Understanding of order fulfilment and dispute resolution", "Data-driven approach to catalogue and pricing oversight"] },
-  { id: "news", code: "NM", name: "News Management", role: "Head of News Management",
+  { id: "news", code: "NM", name: "News Management", positions: ["Head of News Management", "Managing Editor", "Content Operations Manager"],
     desc: "Manage news articles, categories, authors and publishing.",
     reqs: ["Bachelor's degree in Journalism, Media Studies or Communications", "Editorial experience with newsroom or publishing workflows", "Sound judgement on editorial standards and fact-checking", "Experience managing authors and content categorisation"] },
-  { id: "mobile", code: "MN", name: "Mobile Network Management", role: "Head of Mobile Network Management",
+  { id: "mobile", code: "MN", name: "Mobile Network Management", positions: ["Head of Mobile Network Management", "Network Operations Manager", "MVNO Provisioning Specialist"],
     desc: "Manage mobile operators, packages, USSD, data and airtime services.",
     reqs: ["Bachelor's degree in Telecommunications or Electronic Engineering", "Experience in mobile network or MVNO operations", "Knowledge of USSD, data bundle and airtime service platforms", "Familiarity with telecom regulatory requirements"] },
-  { id: "vehicle", code: "VM", name: "Vehicle Management", role: "Head of Vehicle Management",
+  { id: "vehicle", code: "VM", name: "Vehicle Management", positions: ["Head of Vehicle Management", "Fleet Operations Manager", "Vehicle Compliance Officer"],
     desc: "Manage vehicles, fleets, tracking, inspections and documents.",
     reqs: ["Bachelor's degree in Logistics, Supply Chain or Fleet Management", "Experience managing vehicle fleets and inspection schedules", "Working knowledge of GPS tracking and telematics systems", "Understanding of vehicle licensing and documentation compliance"] },
-  { id: "radio", code: "RT", name: "Radio & TV Station Management", role: "Head of Broadcast Management",
+  { id: "radio", code: "RT", name: "Radio & TV Station Management", positions: ["Head of Broadcast Management", "Programme Scheduling Manager", "Station Operations Manager"],
     desc: "Manage radio & TV stations, channels, programs and broadcasts.",
     reqs: ["Bachelor's degree in Broadcasting, Media or Communications", "Experience in programme scheduling and station operations", "Understanding of broadcast licensing and content regulation", "Experience managing on-air and production teams"] },
-  { id: "event", code: "EM", name: "Event Management", role: "Head of Event Management",
+  { id: "event", code: "EM", name: "Event Management", positions: ["Head of Event Management", "Event Operations Manager", "Venue & Logistics Coordinator"],
     desc: "Manage events, schedules, registrations and venues.",
     reqs: ["Bachelor's degree in Events, Hospitality or Business Management", "Experience coordinating venues, schedules and registrations", "Vendor and logistics management experience", "Strong stakeholder and on-site coordination skills"] },
-  { id: "company", code: "CR", name: "Company Registration Management", role: "Head of Company Registration",
+  { id: "company", code: "CR", name: "Company Registration Management", positions: ["Head of Company Registration", "Registration Compliance Officer", "Verification Specialist"],
     desc: "Manage company registrations, verifications and compliance.",
     reqs: ["Bachelor's degree in Law, Business or Corporate Governance", "Experience with company registration and verification processes", "Working knowledge of corporate compliance requirements", "Attention to detail in regulatory documentation"] },
-  { id: "insurance", code: "IM", name: "Insurance Management", role: "Head of Insurance Management",
+  { id: "insurance", code: "IM", name: "Insurance Management", positions: ["Head of Insurance Management", "Underwriting Manager", "Claims Operations Manager"],
     desc: "Manage insurance products, policies, claims and providers.",
     reqs: ["Bachelor's degree in Insurance, Actuarial Science or Finance", "Experience in underwriting, claims or policy administration", "Knowledge of insurance regulatory frameworks", "Relationship management experience with providers"] },
-  { id: "csr", code: "SR", name: "Social Responsibility Management", role: "Head of Social Responsibility",
+  { id: "csr", code: "SR", name: "Social Responsibility Management", positions: ["Head of Social Responsibility", "CSR Programme Manager", "Community Impact Officer"],
     desc: "Manage CSR initiatives, donations, projects and community impact.",
     reqs: ["Bachelor's degree in Social Sciences, Development Studies or related field", "Experience managing CSR or community development projects", "Grant and donation management experience", "Strong impact measurement and reporting skills"] },
 ];
@@ -100,6 +100,7 @@ export function JobApplicationViewer({ isOpen, onClose }: Props) {
   const [phase, setPhase] = useState<"select" | "form" | "done">("select");
   const [step, setStep] = useState(1);
   const [deptId, setDeptId] = useState<string | null>(null);
+  const [position, setPosition] = useState<string>("");
   const [refNum, setRefNum] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Set<string>>(new Set());
@@ -138,7 +139,7 @@ export function JobApplicationViewer({ isOpen, onClose }: Props) {
   }, [isOpen]);
 
   const resetAll = () => {
-    setPhase("select"); setStep(1); setDeptId(null); setRefNum(""); setErrors(new Set());
+    setPhase("select"); setStep(1); setDeptId(null); setPosition(""); setRefNum(""); setErrors(new Set());
     setPersonal({ firstName: "", middleName: "", lastName: "", dob: "", cityBirth: "", countryBirth: "", cityResidence: "", countryResidence: "", nationality: "", otherNats: [], email: "", phone: "" });
     setEducation([{ institution: "", qualification: "", field: "", year: "", country: "" }]);
     setExperience([{ employer: "", title: "", start: "", end: "", current: false, responsibilities: "" }]);
@@ -196,7 +197,7 @@ export function JobApplicationViewer({ isOpen, onClose }: Props) {
     try {
       const fd = new FormData();
       fd.append("department", dept.name);
-      fd.append("position", dept.role);
+      fd.append("position", position);
       fd.append("deptCode", dept.code);
       fd.append("applicantName", `${personal.firstName} ${personal.lastName}`.trim());
       fd.append("applicantEmail", personal.email);
@@ -236,14 +237,15 @@ export function JobApplicationViewer({ isOpen, onClose }: Props) {
       {phase === "select" && (
         <SelectPhase
           deptId={deptId} setDeptId={setDeptId}
+          position={position} setPosition={setPosition}
           onClose={onClose}
-          onContinue={() => { if (deptId) { setPhase("form"); setStep(1); } }}
+          onContinue={() => { if (deptId && position) { setPhase("form"); setStep(1); } }}
         />
       )}
 
       {phase === "form" && dept && (
         <div className="flex min-h-screen">
-          <Rail dept={dept} step={step} onClose={onClose} />
+          <Rail dept={dept} position={position} step={step} onClose={onClose} />
           <div className="flex-1 flex justify-center px-6 py-11 pb-20">
             <div className="w-full max-w-[760px]">
               <div className="flex justify-between items-baseline mb-1.5">
@@ -253,7 +255,7 @@ export function JobApplicationViewer({ isOpen, onClose }: Props) {
               <div className="h-0.5 rounded-full mb-7" style={{ background: LINE }}>
                 <div className="h-full rounded-full transition-all duration-300" style={{ width: `${(step / 7) * 100}%`, background: GOLD }} />
               </div>
-              <StepHeader step={step} dept={dept} />
+              <StepHeader step={step} dept={dept} position={position} />
               {errors.size > 0 && (
                 <div className="px-4 py-3 rounded text-sm mb-5" style={{ background: "#FBEAE8", border: `1px solid ${ERROR}`, color: ERROR }}>
                   Please complete the required fields before continuing.
@@ -266,7 +268,7 @@ export function JobApplicationViewer({ isOpen, onClose }: Props) {
                 {step === 4 && <StepRequirements dept={dept} reqAnswers={reqAnswers} setReqAnswers={setReqAnswers} />}
                 {step === 5 && <StepDocs docs={docs} setDocs={setDocs} errors={errors} />}
                 {step === 6 && <StepDeclarations decl={decl} setDecl={setDecl} errors={errors} />}
-                {step === 7 && <StepReview dept={dept} personal={personal} education={education} experience={experience} reqAnswers={reqAnswers} docs={docs} decl={decl} onJump={(n) => { if (n === 0) setPhase("select"); else setStep(n); }} />}
+                {step === 7 && <StepReview dept={dept} position={position} personal={personal} education={education} experience={experience} reqAnswers={reqAnswers} docs={docs} decl={decl} onJump={(n) => { if (n === 0) setPhase("select"); else setStep(n); }} />}
               </div>
               <div className="flex justify-between items-center mt-7">
                 <button onClick={goBack} className="flex items-center gap-1.5 px-6 py-2.5 rounded text-sm font-semibold border transition-colors hover:border-opacity-70" style={{ color: NAVY, borderColor: LINE }}>
@@ -296,7 +298,7 @@ export function JobApplicationViewer({ isOpen, onClose }: Props) {
                 Thank you, {personal.firstName}.
               </h1>
               <p className="text-sm max-w-md mx-auto mb-7 leading-relaxed" style={{ color: INK_SOFT }}>
-                Your application for <strong>{dept.role}</strong> has been submitted. Your reference number is <span style={{ fontFamily: MONO }}>{refNum}</span> — keep this for your records. The hiring panel will contact you at <strong>{personal.email}</strong> regarding next steps.
+                Your application for <strong>{position}</strong> has been submitted. Your reference number is <span style={{ fontFamily: MONO }}>{refNum}</span> — keep this for your records. The hiring panel will contact you at <strong>{personal.email}</strong> regarding next steps.
               </p>
               <button onClick={() => { resetAll(); }} className="px-7 py-2.5 rounded text-sm font-semibold text-white hover:opacity-90 transition-opacity" style={{ background: NAVY }}>
                 Start a new application
@@ -310,37 +312,59 @@ export function JobApplicationViewer({ isOpen, onClose }: Props) {
   );
 }
 
-function SelectPhase({ deptId, setDeptId, onClose, onContinue }: { deptId: string | null; setDeptId: (id: string) => void; onClose: () => void; onContinue: () => void }) {
+function SelectPhase({ deptId, setDeptId, position, setPosition, onClose, onContinue }: {
+  deptId: string | null; setDeptId: (id: string) => void;
+  position: string; setPosition: (p: string) => void;
+  onClose: () => void; onContinue: () => void;
+}) {
+  const dept = DEPARTMENTS.find(d => d.id === deptId) ?? null;
+  const selectCls = "w-full px-3.5 py-3 rounded border text-sm outline-none bg-white appearance-none cursor-pointer";
   return (
     <div className="flex justify-center px-6 py-11 pb-20">
-      <div className="w-full max-w-[960px] relative">
+      <div className="w-full max-w-[620px] relative">
         <button onClick={onClose} className="absolute right-0 top-0 p-2 rounded-full hover:bg-black/5" style={{ color: INK_SOFT }}><X className="w-5 h-5" /></button>
         <span className="text-[11.5px] tracking-wide uppercase" style={{ color: INK_SOFT, fontFamily: MONO }}>Careers · Management Roles</span>
         <h1 className="text-[26px] font-semibold mt-1.5 mb-1.5" style={{ color: NAVY, fontFamily: "'Source Serif 4', serif" }}>
           Select the department you are applying to
         </h1>
         <p className="text-sm mb-8 max-w-2xl leading-relaxed" style={{ color: INK_SOFT }}>
-          Choose one management role below. Your application form — including role-specific requirements — will be tailored to your selection. You can only apply to one department per application.
+          Choose a department, then the specific position within it. Your application form — including role-specific requirements — will be tailored to your selection.
         </p>
-        <div className="grid min-[840px]:grid-cols-2 gap-3.5">
-          {DEPARTMENTS.map(d => (
-            <button key={d.id} onClick={() => setDeptId(d.id)}
-              className="flex gap-3.5 items-start text-left rounded border bg-white transition-colors"
-              style={{ borderColor: deptId === d.id ? GOLD : LINE, background: deptId === d.id ? "#FFFBF0" : "#fff", boxShadow: deptId === d.id ? `0 0 0 1px ${GOLD}` : "none", padding: "18px" }}>
-              <span className="flex-shrink-0 w-[38px] h-[38px] rounded-full flex items-center justify-center font-bold text-sm"
-                style={{ background: deptId === d.id ? GOLD : NAVY, color: deptId === d.id ? NAVY : GOLD_LIGHT, fontFamily: "'Source Serif 4', serif" }}>
-                {d.code}
-              </span>
-              <span>
-                <span className="block text-[14.5px] font-semibold mb-0.5" style={{ color: NAVY }}>{d.name}</span>
-                <span className="block text-xs leading-snug" style={{ color: INK_SOFT }}>{d.desc}</span>
-                <span className="block text-[10.5px] mt-1.5 tracking-wide" style={{ color: GOLD, fontFamily: MONO }}>{d.role.toUpperCase()}</span>
-              </span>
-            </button>
-          ))}
+
+        <div className="space-y-5">
+          <Field label="Department" required>
+            <div className="relative">
+              <select
+                className={selectCls} style={{ borderColor: LINE, color: deptId ? INK : INK_SOFT }}
+                value={deptId ?? ""}
+                onChange={e => { setDeptId(e.target.value); setPosition(""); }}
+              >
+                <option value="" disabled>Select a department…</option>
+                {DEPARTMENTS.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+              </select>
+              <ChevronDown className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: INK_SOFT }} />
+            </div>
+            {dept && <p className="text-xs mt-2 leading-relaxed" style={{ color: INK_SOFT }}>{dept.desc}</p>}
+          </Field>
+
+          <Field label="Position" required>
+            <div className="relative">
+              <select
+                className={selectCls} style={{ borderColor: LINE, color: position ? INK : INK_SOFT, opacity: dept ? 1 : 0.5 }}
+                value={position}
+                onChange={e => setPosition(e.target.value)}
+                disabled={!dept}
+              >
+                <option value="" disabled>{dept ? "Select a position…" : "Select a department first"}</option>
+                {dept?.positions.map(p => <option key={p} value={p}>{p}</option>)}
+              </select>
+              <ChevronDown className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: INK_SOFT }} />
+            </div>
+          </Field>
         </div>
-        <div className="flex justify-end mt-7">
-          <button onClick={onContinue} disabled={!deptId}
+
+        <div className="flex justify-end mt-8">
+          <button onClick={onContinue} disabled={!deptId || !position}
             className="px-7 py-3 rounded text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
             style={{ background: NAVY }}>
             Continue to application →
@@ -351,7 +375,7 @@ function SelectPhase({ deptId, setDeptId, onClose, onContinue }: { deptId: strin
   );
 }
 
-function Rail({ dept, step, onClose }: { dept: Department; step: number; onClose: () => void }) {
+function Rail({ dept, position, step, onClose }: { dept: Department; position: string; step: number; onClose: () => void }) {
   return (
     <div className="hidden min-[840px]:flex flex-col w-[280px] flex-shrink-0 sticky top-0 h-screen overflow-y-auto px-7 pt-9 pb-7 text-white"
       style={{ background: `linear-gradient(180deg, ${NAVY} 0%, ${NAVY_2} 100%)` }}>
@@ -365,7 +389,7 @@ function Rail({ dept, step, onClose }: { dept: Department; step: number; onClose
       </div>
       <div className="rounded p-3.5 mb-7" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.14)" }}>
         <p className="text-[10px] tracking-wide uppercase mb-1" style={{ color: "rgba(255,255,255,0.5)" }}>Applying for</p>
-        <p className="text-[13.5px] font-semibold leading-snug" style={{ color: GOLD_LIGHT }}>{dept.role}</p>
+        <p className="text-[13.5px] font-semibold leading-snug" style={{ color: GOLD_LIGHT }}>{position}</p>
       </div>
       <ul className="space-y-0">
         {STEP_LABELS.map((s, i) => {
@@ -395,12 +419,12 @@ function Rail({ dept, step, onClose }: { dept: Department; step: number; onClose
   );
 }
 
-function StepHeader({ step, dept }: { step: number; dept: Department }) {
+function StepHeader({ step, dept, position }: { step: number; dept: Department; position: string }) {
   const map: Record<number, [string, string]> = {
     1: ["Personal details", "Provide your full identity information exactly as it appears on your official documents."],
     2: ["Education", "List every qualification relevant to this role, starting with the most recent."],
     3: ["Work experience", "Detail your professional history, most recent role first."],
-    4: [`Requirements for ${dept.role}`, "Confirm how you meet each requirement listed for this management position."],
+    4: [`Requirements for ${position}`, "Confirm how you meet each requirement listed for this management position."],
     5: ["CV & supporting documents", "Upload your CV and the supporting documents listed below."],
     6: ["Declarations & consent", "Please read and confirm each declaration before proceeding."],
     7: ["Review & submit", "Check every section carefully. You can jump back to make changes before submitting."],
@@ -644,8 +668,8 @@ function StepDeclarations({ decl, setDecl, errors }: { decl: { accurate: boolean
   );
 }
 
-function StepReview({ dept, personal, education, experience, reqAnswers, docs, decl, onJump }: {
-  dept: Department; personal: Personal; education: Education[]; experience: Experience[];
+function StepReview({ dept, position, personal, education, experience, reqAnswers, docs, decl, onJump }: {
+  dept: Department; position: string; personal: Personal; education: Education[]; experience: Experience[];
   reqAnswers: Record<number, { met: boolean; note: string }>; docs: Record<string, File | null>;
   decl: { accurate: boolean; consent: boolean; terms: boolean; signature: string }; onJump: (step: number) => void;
 }) {
@@ -667,7 +691,7 @@ function StepReview({ dept, personal, education, experience, reqAnswers, docs, d
   return (
     <div>
       <Section title="Department" jump={0}>
-        <Item k="Applying for" v={dept.role} /><Item k="Department" v={dept.name} />
+        <Item k="Applying for" v={position} /><Item k="Department" v={dept.name} />
       </Section>
       <Section title="Personal details" jump={1}>
         <Item k="Full name" v={[personal.firstName, personal.middleName, personal.lastName].filter(Boolean).join(" ")} />

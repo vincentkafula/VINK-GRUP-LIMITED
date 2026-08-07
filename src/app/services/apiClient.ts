@@ -200,6 +200,30 @@ export const rbacApi = {
   audit: () => api.get<AuditEntry[]>("/api/rbac/audit", true),
 };
 
+export interface JobApplication {
+  id: string; referenceNumber: string; department: string; position: string;
+  applicantName: string; applicantEmail: string; applicantPhone?: string;
+  details: Record<string, unknown>;
+  documents: { type: string; filename: string; mimeType: string }[];
+  status: "submitted" | "under_review" | "interview" | "offered" | "rejected" | "withdrawn";
+  statusReason?: string; roleGranted: boolean; roleGrantedAt?: string;
+  submittedAt: string; updatedAt: string;
+  statusHistory?: { fromStatus: string | null; toStatus: string; reason: string; changedByName?: string; createdAt: string }[];
+}
+
+export const jobsApi = {
+  applications: (department?: string, status?: string) => {
+    const q = new URLSearchParams();
+    if (department) q.set("department", department);
+    if (status) q.set("status", status);
+    return api.get<JobApplication[]>(`/api/jobs/applications?${q}`, true);
+  },
+  get: (ref: string) => api.get<JobApplication>(`/api/jobs/applications/${ref}`, true),
+  updateStatus: (ref: string, status: string, reason: string) => api.patch<JobApplication>(`/api/jobs/applications/${ref}/status`, { status, reason }, true),
+  approve: (ref: string, reason: string) => api.post<{ referenceNumber: string; status: string; roleGranted: boolean }>(`/api/jobs/applications/${ref}/approve`, { reason }, true),
+  documentUrl: (ref: string, type: string) => `${BASE}/api/jobs/applications/${ref}/documents/${type}`,
+};
+
 export const newsApi = {
   list: (params?: { category?: string; search?: string; page?: number; limit?: number }) => {
     const qs = new URLSearchParams();
