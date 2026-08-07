@@ -14,7 +14,7 @@ router.post("/login", async (req: Request, res: Response): Promise<void> => {
   }
   const { rows } = await pool!.query(`SELECT * FROM users WHERE username = $1`, [username]);
   const user = rows[0];
-  if (!user || !(await bcrypt.compare(password, user.password_hash))) {
+  if (!user || !(await bcrypt.compare(password.trim(), user.password_hash))) {
     res.status(401).json({ success: false, error: "Invalid credentials" });
     return;
   }
@@ -43,7 +43,11 @@ router.post("/register", async (req: Request, res: Response): Promise<void> => {
     res.status(409).json({ success: false, error: "An account with that username or email already exists" });
     return;
   }
-  const passwordHash = await bcrypt.hash(password, 10);
+  // Trimmed, matching the username -- accidental leading/trailing
+  // whitespace (easy to introduce via copy-paste) would otherwise create
+  // a stored password that doesn't match what anyone would naturally
+  // type back in to log in.
+  const passwordHash = await bcrypt.hash(password.trim(), 10);
   const { rows } = await pool!.query(
     `INSERT INTO users (username, password_hash, role, name, email) VALUES ($1,$2,$3,$4,$5) RETURNING *`,
     [username, passwordHash, accountRole, name, email]

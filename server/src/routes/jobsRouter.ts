@@ -254,7 +254,7 @@ router.patch("/applications/:ref/status", requireAuth, requireRole(...REVIEWER_R
 router.post("/applications/:ref/approve", requireAuth, requireRole(...REVIEWER_ROLES), async (req: Request, res: Response): Promise<void> => {
   const { reason, username, password } = req.body as { reason?: string; username?: string; password?: string };
   if (!reason?.trim()) { res.status(400).json({ success: false, error: "reason is required" }); return; }
-  if (password && password.length < 8) { res.status(400).json({ success: false, error: "password must be at least 8 characters" }); return; }
+  if (password && password.trim().length < 8) { res.status(400).json({ success: false, error: "password must be at least 8 characters" }); return; }
 
   const client = await pool!.connect();
   try {
@@ -298,7 +298,7 @@ router.post("/applications/:ref/approve", requireAuth, requireRole(...REVIEWER_R
         res.status(409).json({ success: false, error: "An account with that username or this applicant's email already exists — check Users & Roles rather than creating a new one." });
         return;
       }
-      const passwordHash = await bcrypt.hash(password, 10);
+      const passwordHash = await bcrypt.hash(password.trim(), 10);
       const { rows: created } = await client.query(
         `INSERT INTO users (username, password_hash, role, name, email) VALUES ($1,$2,'customer',$3,$4) RETURNING id`,
         [username.trim(), passwordHash, app.applicant_name, app.applicant_email]

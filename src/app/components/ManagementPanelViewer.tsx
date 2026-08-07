@@ -209,7 +209,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
 
   const handleJobStatusChange = async (ref: string, status: string) => {
     if (!jobActionReason.trim()) { toast.error("A reason is required for this action."); return; }
-    if (status === "offered" && (newAccountUsername.trim() || newAccountPassword) && (!newAccountUsername.trim() || newAccountPassword.length < 8)) {
+    if (status === "offered" && (newAccountUsername.trim() || newAccountPassword.trim()) && (!newAccountUsername.trim() || newAccountPassword.trim().length < 8)) {
       toast.error("Provide both a username and a password of at least 8 characters, or leave both blank.");
       return;
     }
