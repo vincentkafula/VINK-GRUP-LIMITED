@@ -9,8 +9,9 @@ import {
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import {
   mktCategories, mktProducts, mktCart, mktOrders,
-  mktWishlist, mktSellers, mktAdmin, mktAddresses, mktAuth, type MktAuthUser,
+  mktWishlist, mktSellers, mktAdmin, mktAddresses, mktAuth, setMktToken, getMktToken, type MktAuthUser,
 } from "../services/marketplaceApi";
+import { getToken as getMainToken, getSession } from "../services/apiClient";
 import { isDemoMode } from "../services/demoMode";
 import { MarketplaceAuthModal } from "./MarketplaceAuthModal";
 import { CustomerDashboard } from "./CustomerDashboard";
@@ -1363,9 +1364,9 @@ function WishlistView({ wishlistIds, onProduct, onCart, onWishlist }: {
 
 
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
-interface VinkMarketplaceProps { isOpen: boolean; onClose: () => void; initialAction?: "sell" | null; initialProductId?: string | null }
+interface VinkMarketplaceProps { isOpen: boolean; onClose: () => void; initialAction?: "sell" | null; initialProductId?: string | null; onOpenManagementPanel?: () => void }
 
-export function VinkMarketplace({ isOpen, onClose, initialAction, initialProductId }: VinkMarketplaceProps) {
+export function VinkMarketplace({ isOpen, onClose, initialAction, initialProductId, onOpenManagementPanel }: VinkMarketplaceProps) {
   const currency = useCurrency(); // subscribes this whole tree to live currency/rate updates
   const [view, setView]           = useState<View>("home");
   const [categories, setCategories] = useState<R[]>([]);
@@ -1384,6 +1385,19 @@ export function VinkMarketplace({ isOpen, onClose, initialAction, initialProduct
     !authUser ? null : MANAGER_ROLES.includes(authUser.role) ? "manager" : authUser.role === "seller" ? "seller" : "customer";
 
   useEffect(() => {
+    // A manager already signed in via the main Login button shouldn't
+    // need to sign in again here just because mkt_token is a separate
+    // key from vink_jwt — both come from the same real /api/auth/login.
+    // Bridged before restoreSession() runs, since it reads both mkt_token
+    // and mkt_user from localStorage directly.
+    if (!getMktToken()) {
+      const mainToken = getMainToken();
+      const session = getSession();
+      if (mainToken && session) {
+        setMktToken(mainToken);
+        localStorage.setItem("mkt_user", JSON.stringify(session));
+      }
+    }
     const restored = mktAuth.restoreSession();
     if (restored) { setAuthUser(restored.user); setAuthSeller(restored.seller); }
   }, []);
@@ -1731,7 +1745,26 @@ export function VinkMarketplace({ isOpen, onClose, initialAction, initialProduct
             <SellerDashboard user={authUser} seller={authSeller} onSignOut={handleSignOut} />
           )}
           {view === "admin" && authUser && role === "manager" && (
-            <ManagerDashboard user={authUser} onSignOut={handleSignOut} />
+            onOpenManagementPanel ? (
+              <div className="flex-1 flex flex-col items-center justify-center text-center px-6 py-20 gap-4">
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-gray-100">
+                  <Settings className="w-7 h-7 text-gray-500" />
+                </div>
+                <div>
+                  <p className="text-base font-bold text-gray-900">Manager tools live in the Management Panel</p>
+                  <p className="text-sm text-gray-500 mt-1 max-w-sm">
+                    Marketplace management — sellers, products, orders — is part of the one Management Panel now, not a separate view here.
+                  </p>
+                </div>
+                <button onClick={() => { onClose(); onOpenManagementPanel(); }}
+                  className="px-6 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90"
+                  style={{ background: "linear-gradient(135deg,#1FAE58,#5FC97F)" }}>
+                  Open Management Panel
+                </button>
+              </div>
+            ) : (
+              <ManagerDashboard user={authUser} onSignOut={handleSignOut} />
+            )
           )}
       </div>
 

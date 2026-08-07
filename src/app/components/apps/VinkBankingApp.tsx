@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { Home, Send, CreditCard, Clock, Star, Bell, ChevronRight, ArrowUpRight, ArrowDownLeft, Zap, Smartphone, ShoppingCart, Gift, CheckCircle, AlertTriangle, Loader2, Sparkles, Anchor as AnchorIcon, TrendingUp, Mountain, Crown, Landmark, Target, Wallet, PiggyBank, Award, Eye, EyeOff, ShieldCheck, Menu, QrCode, Banknote, User, MoreHorizontal, RefreshCw, CircleDollarSign } from "lucide-react";
 import { MobileAppOverlay, PhoneFrame } from "./PhoneFrame";
 import { globalBankingApi } from "../../services/applicationsApi";
-import { mktAuth, getMktToken, type MktAuthUser } from "../../services/marketplaceApi";
-import { rbacApi, setToken, type SectionApplication } from "../../services/apiClient";
+import { mktAuth, getMktToken, setMktToken, type MktAuthUser } from "../../services/marketplaceApi";
+import { rbacApi, setToken, getToken as getMainToken, getSession, type SectionApplication } from "../../services/apiClient";
 
 type Screen = "onboarding" | "home" | "send" | "cards" | "history" | "rewards" | "adminPanel";
 type Tier = "Spark" | "Anchor" | "Momentum" | "Horizon" | "Summit" | "Legacy";
@@ -874,7 +874,7 @@ function RewardsScreen() {
   );
 }
 
-export function VinkBankingApp({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+export function VinkBankingApp({ isOpen, onClose, onOpenManagementPanel }: { isOpen: boolean; onClose: () => void; onOpenManagementPanel?: () => void }) {
   const [screen, setScreen] = useState<Screen>("onboarding");
   const [tier, setTier] = useState<Tier>("Spark");
   const [verifying, setVerifying] = useState(false);
@@ -883,12 +883,29 @@ export function VinkBankingApp({ isOpen, onClose }: { isOpen: boolean; onClose: 
   const [checkedSession, setCheckedSession] = useState(false);
 
   useEffect(() => {
+    // Same duplicate-login problem already fixed for the marketplace and
+    // 6 other dashboards this session — an owner/superadmin already
+    // signed in via the main Login button shouldn't need to sign in
+    // again just because this app keeps its own mkt_token key.
+    if (!getMktToken()) {
+      const mainToken = getMainToken();
+      const session = getSession();
+      if (mainToken && session) {
+        setMktToken(mainToken);
+        localStorage.setItem("mkt_user", JSON.stringify(session));
+      }
+    }
     const restored = mktAuth.restoreSession();
     if (restored) {
       setAuthUser(restored.user);
       const tok = getMktToken();
       if (tok) setToken(tok);
-      if (["owner", "superadmin"].includes(restored.user.role)) setScreen("adminPanel");
+      if (["owner", "superadmin"].includes(restored.user.role) && onOpenManagementPanel) {
+        onClose();
+        onOpenManagementPanel();
+      } else if (["owner", "superadmin"].includes(restored.user.role)) {
+        setScreen("adminPanel"); // fallback if no redirect callback was wired
+      }
     }
     setCheckedSession(true);
   }, []);
@@ -906,6 +923,11 @@ export function VinkBankingApp({ isOpen, onClose }: { isOpen: boolean; onClose: 
   };
   const handleAuthenticated = (user: MktAuthUser) => {
     setAuthUser(user);
+    if (["owner", "superadmin"].includes(user.role) && onOpenManagementPanel) {
+      onClose();
+      onOpenManagementPanel();
+      return;
+    }
     setScreen(["owner", "superadmin"].includes(user.role) ? "adminPanel" : "onboarding");
   };
 
