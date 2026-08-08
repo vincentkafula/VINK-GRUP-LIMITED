@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import heroCardPhone from "../../imports/HeroCardPhone.png";
 import heroImage1 from "../../imports/Picture1-1.png";
-import heroImage2 from "../../imports/Picture1.png";
 import heroImage3 from "../../imports/Picture2.png";
 import heroImage4 from "../../imports/Picture6-2.png";
 import heroImage5 from "../../imports/Picture7.png";
@@ -39,22 +38,6 @@ const SLIDES = [
       { value: "250,000+", label: "AFC Devices Deployed" },
       { value: "15M",      label: "Daily Commuters Served" },
       { value: "4.8 ★",   label: "App Store Rating" },
-    ],
-  },
-  {
-    image:   heroImage2,
-    eyebrow: "VINK Personal Banking",
-    eyebrowDot: "bg-emerald-400",
-    headline: <>Shop. Pay. Save.<br /><span className="relative inline-block"><span className="relative z-10">All on One Card.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#F5A623" }} /></span></>,
-    body: "Tap to buy groceries, pay your taxi fare, earn VinkPoints on every rand spent — and manage it all from the Vink app.",
-    ctas: [
-      { label: "Open an Account",  style: { background: "#F5A623", boxShadow: "0 6px 20px rgba(245,166,35,.4)" } },
-      { label: "Explore Cards",    style: { background: "rgba(255,255,255,.15)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,.25)" } },
-    ],
-    trust: [
-      { value: "R0",     label: "Annual fee — forever" },
-      { value: "2,100+", label: "Partner merchants" },
-      { value: "1% CB",  label: "Cashback on all spend" },
     ],
   },
   {
