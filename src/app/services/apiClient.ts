@@ -50,8 +50,10 @@ async function request<T>(
 
   try {
     const headers: Record<string, string> = { "Content-Type": "application/json" };
+    let hadToken = false;
     if (auth) {
       const tok = getToken();
+      hadToken = Boolean(tok);
       if (tok) headers["Authorization"] = `Bearer ${tok}`;
     }
     const res = await fetch(`${BASE}${path}`, {
@@ -81,7 +83,9 @@ async function request<T>(
     // all while the UI still looks normal.
     if (res.status === 401 && auth) {
       clearToken();
-      window.dispatchEvent(new CustomEvent("vink:session-expired"));
+      window.dispatchEvent(new CustomEvent("vink:session-expired", {
+        detail: { path, hadToken, backendError: json.error ?? null },
+      }));
     }
 
     return json;

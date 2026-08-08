@@ -165,6 +165,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
 
   const [jobLoadError, setJobLoadError] = useState<string | null>(null);
   const [sessionExpired, setSessionExpired] = useState(false);
+  const [sessionExpiredDetail, setSessionExpiredDetail] = useState<{ path: string; hadToken: boolean; backendError: string | null } | null>(null);
 
   // Listen for the global session-expired signal (dispatched by
   // apiClient.ts when any authenticated request comes back 401) rather
@@ -174,7 +175,10 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
   // instead of a small red banner buried in whichever tab happened to be
   // the first to fail.
   useEffect(() => {
-    const handler = () => setSessionExpired(true);
+    const handler = (e: Event) => {
+      setSessionExpired(true);
+      setSessionExpiredDetail((e as CustomEvent).detail ?? null);
+    };
     window.addEventListener("vink:session-expired", handler);
     return () => window.removeEventListener("vink:session-expired", handler);
   }, []);
@@ -317,7 +321,14 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
               <Lock className="w-7 h-7" style={{ color: "#DC2626" }} />
             </div>
             <p className="text-base font-bold text-gray-900 mb-1.5">Your session has expired</p>
-            <p className="text-sm text-gray-500 mb-6">Please sign in again from the main menu to continue.</p>
+            <p className="text-sm text-gray-500 mb-4">Please sign in again from the main menu to continue.</p>
+            {sessionExpiredDetail && (
+              <div className="text-left text-[11px] font-mono bg-gray-50 rounded-lg p-3 mb-4 text-gray-500 break-words">
+                <p><strong>Endpoint:</strong> {sessionExpiredDetail.path}</p>
+                <p><strong>Token was sent:</strong> {sessionExpiredDetail.hadToken ? "Yes" : "No"}</p>
+                <p><strong>Server said:</strong> {sessionExpiredDetail.backendError ?? "—"}</p>
+              </div>
+            )}
             <button onClick={onClose} className="w-full py-2.5 rounded-xl text-sm font-bold text-white hover:opacity-90" style={{ background: GREEN }}>
               Close
             </button>

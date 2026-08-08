@@ -29,9 +29,13 @@ export function NewsManagementDashboard({ isOpen, onClose }: Props) {
   const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(false);
   const [sessionExpired, setSessionExpired] = useState(false);
+  const [sessionExpiredDetail, setSessionExpiredDetail] = useState<{ path: string; hadToken: boolean; backendError: string | null } | null>(null);
 
   useEffect(() => {
-    const handler = () => setSessionExpired(true);
+    const handler = (e: Event) => {
+      setSessionExpired(true);
+      setSessionExpiredDetail((e as CustomEvent).detail ?? null);
+    };
     window.addEventListener("vink:session-expired", handler);
     return () => window.removeEventListener("vink:session-expired", handler);
   }, []);
@@ -78,7 +82,14 @@ export function NewsManagementDashboard({ isOpen, onClose }: Props) {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" style={{ background: "rgba(14,20,32,0.75)" }}>
           <div className="bg-white rounded-2xl max-w-sm w-full p-7 text-center">
             <p className="text-base font-bold text-gray-900 mb-1.5">Your session has expired</p>
-            <p className="text-sm text-gray-500 mb-6">Please sign in again from the main menu to continue.</p>
+            <p className="text-sm text-gray-500 mb-4">Please sign in again from the main menu to continue.</p>
+            {sessionExpiredDetail && (
+              <div className="text-left text-[11px] font-mono bg-gray-50 rounded-lg p-3 mb-4 text-gray-500 break-words">
+                <p><strong>Endpoint:</strong> {sessionExpiredDetail.path}</p>
+                <p><strong>Token was sent:</strong> {sessionExpiredDetail.hadToken ? "Yes" : "No"}</p>
+                <p><strong>Server said:</strong> {sessionExpiredDetail.backendError ?? "—"}</p>
+              </div>
+            )}
             <button onClick={onClose} className="w-full py-2.5 rounded-xl text-sm font-bold text-white hover:opacity-90" style={{ background: GREEN }}>
               Close
             </button>
