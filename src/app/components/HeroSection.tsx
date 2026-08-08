@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import heroCardPhone from "../../imports/HeroCardPhone.png";
 import heroImage1 from "../../imports/Picture1-1.png";
 import heroGlobalSim from "../../imports/HeroGlobalSim.png";
-import heroImage4 from "../../imports/Picture6-2.png";
+import heroBus from "../../imports/HeroBus.png";
 import heroPlane from "../../imports/HeroPlane.png";
 
 // ─── Per-slide content ────────────────────────────────────────────────────────
@@ -58,19 +58,20 @@ const SLIDES = [
     ],
   },
   {
-    image:   heroImage4,
-    eyebrow: "VINK Corporate & Transport Banking",
-    eyebrowDot: "bg-teal-400",
-    headline: <>The Bank Built<br /><span className="relative inline-block"><span className="relative z-10">for Fleet Operators.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#F5A623" }} /></span></>,
-    body: "Taxi associations, bus operators, and logistics companies — manage every driver wallet, fuel spend, and route payment from one business account with R0.50 per transaction.",
+    image:   heroBus,
+    background: "linear-gradient(135deg,#1A0A0A 0%,#4A0E14 45%,#7A1420 75%,#A8531F 100%)",
+    eyebrow: "VINK Go — Bus Travel",
+    eyebrowDot: "bg-amber-400",
+    headline: <>Driven by<br /><span className="relative inline-block"><span className="relative z-10">excellence.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#F5A623" }} /></span></>,
+    body: "Safe. Reliable. Comfortable. Your journey, our priority.",
     ctas: [
-      { label: "Open a Business Account", style: { background: "#F5A623", boxShadow: "0 6px 20px rgba(245,166,35,.4)" } },
+      { label: "🎫 Book Your Ticket Now", style: { background: "#7A1420", boxShadow: "0 6px 20px rgba(122,20,32,.5)" } },
       { label: "Learn More",              style: { background: "rgba(255,255,255,.15)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,.25)" } },
     ],
     trust: [
-      { value: "R0.50",  label: "Per taxi transaction" },
-      { value: "50",     label: "Staff cards per account" },
-      { value: "R0",     label: "Monthly fee — first 12m" },
+      { value: "Safe",  label: "Your safety is our promise" },
+      { value: "24/7",  label: "Support, anytime, anywhere" },
+      { value: "Wide",  label: "Coverage, nationwide" },
     ],
   },
   {
