@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import heroCardPhone from "../../imports/HeroCardPhone.png";
-import heroImage1 from "../../imports/Picture1-1.png";
+import heroTraveler from "../../imports/HeroTraveler.png";
 import heroGlobalSim from "../../imports/HeroGlobalSim.png";
 import heroBus from "../../imports/HeroBus.png";
 import heroPlane from "../../imports/HeroPlane.png";
@@ -25,19 +25,20 @@ const SLIDES = [
     ],
   },
   {
-    image:   heroImage1,
-    eyebrow: "South Africa's first transport-native digital bank",
-    eyebrowDot: "bg-green-400",
-    headline: <>Banking Built for the<br /><span className="relative inline-block"><span className="relative z-10">Way South Africa Moves.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#F5A623" }} /></span></>,
-    body: "Open your Vink account in minutes, earn rewards on every tap, and access money wherever your journey takes you.",
+    image:   heroTraveler,
+    background: "linear-gradient(135deg,#0A2540 0%,#14508C 45%,#2E86D9 75%,#7BC1F0 100%)",
+    eyebrow: "Vink Go — Vacation Booking",
+    eyebrowDot: "bg-orange-400",
+    headline: <>Your vacation<br /><span className="relative inline-block"><span className="relative z-10">awaits!</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#F5A623" }} /></span></>,
+    body: "Discover breathtaking destinations, amazing experiences and memories that last a lifetime.",
     ctas: [
-      { label: "Get Your Vink Card", style: { background: "#F5A623", boxShadow: "0 6px 20px rgba(245,166,35,.4)" } },
-      { label: "See How It Works",   style: { background: "rgba(255,255,255,.15)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,.25)" } },
+      { label: "🧳 Plan Your Getaway →", style: { background: "#EA6A0E", boxShadow: "0 6px 20px rgba(234,106,14,.4)" } },
+      { label: "See How It Works",       style: { background: "rgba(255,255,255,.15)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,.25)" } },
     ],
     trust: [
-      { value: "250,000+", label: "AFC Devices Deployed" },
-      { value: "15M",      label: "Daily Commuters Served" },
-      { value: "4.8 ★",   label: "App Store Rating" },
+      { value: "1000s", label: "Destinations worldwide" },
+      { value: "24/7",  label: "Support, anytime" },
+      { value: "Best",  label: "Deals on flights and stays" },
     ],
   },
   {
