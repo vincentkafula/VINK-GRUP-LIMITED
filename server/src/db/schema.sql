@@ -385,6 +385,23 @@ ALTER TABLE news_articles ADD COLUMN IF NOT EXISTS created_by_name TEXT;
 ALTER TABLE news_articles ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT now();
 CREATE INDEX IF NOT EXISTS idx_news_status ON news_articles(status);
 
+-- Hero image: stored the same way job application documents are (base64
+-- in the row, no object storage configured yet) -- reasonable at current
+-- volume, real object storage (S3/GCS/Cloudinary) is the natural next
+-- step if this needs to scale to a lot of large images.
+ALTER TABLE news_articles ADD COLUMN IF NOT EXISTS hero_image_data TEXT;
+ALTER TABLE news_articles ADD COLUMN IF NOT EXISTS hero_image_mime_type TEXT;
+
+-- Scheduling: 'scheduled' joins the existing status values. A background
+-- job (see startScheduledPublishJob in news.ts) flips scheduled articles
+-- to 'published' once scheduled_at arrives.
+ALTER TABLE news_articles ADD COLUMN IF NOT EXISTS scheduled_at TIMESTAMPTZ;
+CREATE INDEX IF NOT EXISTS idx_news_scheduled ON news_articles(scheduled_at) WHERE status = 'scheduled';
+
+-- SEO / discovery metadata, and tracking whether views should be counted
+-- (kept simple -- a real analytics pipeline is out of scope here).
+ALTER TABLE news_articles ADD COLUMN IF NOT EXISTS meta_description TEXT;
+
 CREATE TABLE IF NOT EXISTS mkt_reviews (
   id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   product_id          UUID NOT NULL REFERENCES mkt_products(id) ON DELETE CASCADE,

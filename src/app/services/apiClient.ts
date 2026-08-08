@@ -181,9 +181,12 @@ export interface AuditEntry { id: string; actor_name: string; action: string; ta
 export interface NewsRole { hasAccess: boolean; position: string | null; tier: "leadership" | "creator" | "viewer" }
 export interface NewsAdminArticle extends NewsArticleSummary {
   body: string;
-  status: "draft" | "pending_review" | "published" | "rejected";
+  status: "draft" | "pending_review" | "published" | "rejected" | "scheduled";
   createdByName?: string;
   updatedAt: string;
+  hasHeroImage?: boolean;
+  scheduledAt?: string | null;
+  metaDescription?: string | null;
 }
 
 export const newsAdminApi = {
@@ -191,8 +194,24 @@ export const newsAdminApi = {
   articles: (status?: string) => api.get<NewsAdminArticle[]>(`/api/news/admin/articles${status ? `?status=${status}` : ""}`, true),
   create: (data: Partial<NewsAdminArticle> & { submitForReview?: boolean }) => api.post<NewsAdminArticle>("/api/news/admin/articles", data, true),
   update: (id: string, data: Partial<NewsAdminArticle>) => api.patch<NewsAdminArticle>(`/api/news/admin/articles/${id}`, data, true),
-  setStatus: (id: string, status: string) => api.patch<NewsAdminArticle>(`/api/news/admin/articles/${id}/status`, { status }, true),
+  setStatus: (id: string, status: string, scheduledAt?: string) => api.patch<NewsAdminArticle>(`/api/news/admin/articles/${id}/status`, { status, scheduledAt }, true),
   remove: (id: string) => api.delete<null>(`/api/news/admin/articles/${id}`, true),
+  imageUrl: (id: string) => `${BASE}/api/news/admin/articles/${id}/image`,
+  uploadImage: async (id: string, file: File): Promise<{ success: boolean; error?: string }> => {
+    const fd = new FormData();
+    fd.append("image", file);
+    try {
+      const res = await fetch(`${BASE}/api/news/admin/articles/${id}/image`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${getToken() ?? ""}` },
+        body: fd,
+      });
+      const json = await res.json();
+      return json;
+    } catch {
+      return { success: false, error: "Network error while uploading the image" };
+    }
+  },
 };
 
 export const rbacApi = {

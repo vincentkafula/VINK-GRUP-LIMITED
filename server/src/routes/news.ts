@@ -1,15 +1,18 @@
 import { Router, Request, Response } from "express";
+import multer from "multer";
 import { randomUUID } from "crypto";
 import { pool, hasDb } from "../db/pool.js";
 import { NEWS_ARTICLES } from "../data/newsData.js";
 import { requireAuth } from "../middleware/auth.js";
 
 const router: ReturnType<typeof Router> = Router();
+const imageUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 8 * 1024 * 1024, files: 1 } });
 
 const mapArticle = (r: any) => ({
   id: r.id, slug: r.slug, title: r.title, subtitle: r.subtitle, category: r.category, author: r.author,
   summary: r.summary, body: r.body, tags: r.tags ?? [], heroGradient: r.hero_gradient, emoji: r.emoji,
   readMinutes: r.read_minutes, featured: r.featured, breaking: r.breaking, views: r.views, publishedAt: r.published_at,
+  hasHeroImage: Boolean(r.hero_image_data), metaDescription: r.meta_description,
 });
 
 // In-memory fallback for environments without DATABASE_URL configured, so
@@ -96,6 +99,21 @@ router.get("/articles/:slug", async (req: Request, res: Response): Promise<void>
   res.json({ success: true, data: { article: mapArticle({ ...article, views: article.views + 1 }), related: relatedRows.map(mapArticle) } });
 });
 
+// GET /api/news/articles/:slug/image — public hero image. Only serves
+// published articles' images, same rule as the article text itself, so a
+// draft's image can't be discovered by guessing its slug.
+router.get("/articles/:slug/image", async (req: Request, res: Response): Promise<void> => {
+  if (!hasDb || !pool) { res.status(404).json({ success: false, error: "No image available" }); return; }
+  const { rows } = await pool.query(
+    `SELECT hero_image_data, hero_image_mime_type FROM news_articles WHERE slug = $1 AND status = 'published'`,
+    [req.params.slug]
+  );
+  if (!rows.length || !rows[0].hero_image_data) { res.status(404).json({ success: false, error: "No image on this article" }); return; }
+  res.setHeader("Content-Type", rows[0].hero_image_mime_type || "image/jpeg");
+  res.setHeader("Cache-Control", "public, max-age=3600");
+  res.send(Buffer.from(rows[0].hero_image_data, "base64"));
+});
+
 // ─── News Management admin dashboard (real content-management backend) ────
 //
 // Role tiers, matching the newsroom positions listed in JobApplicationViewer:
@@ -141,6 +159,7 @@ const adminMapArticle = (r: any) => ({
   summary: r.summary, body: r.body, tags: r.tags ?? [], heroGradient: r.hero_gradient, emoji: r.emoji,
   readMinutes: r.read_minutes, featured: r.featured, breaking: r.breaking, views: r.views,
   status: r.status, createdByName: r.created_by_name, publishedAt: r.published_at, updatedAt: r.updated_at,
+  hasHeroImage: Boolean(r.hero_image_data), scheduledAt: r.scheduled_at, metaDescription: r.meta_description,
 });
 
 function slugify(title: string): string {
@@ -181,7 +200,7 @@ router.post("/admin/articles", requireAuth, requireNewsAccess, async (req: Reque
   const role = (req as Request & { newsRole?: Awaited<ReturnType<typeof getNewsRole>> }).newsRole!;
   if (role.tier === "viewer") { res.status(403).json({ success: false, error: "Your News Management role doesn't include creating articles." }); return; }
 
-  const { title, subtitle, category, summary, body, tags, emoji, readMinutes, featured, breaking, submitForReview } = req.body as Record<string, any>;
+  const { title, subtitle, category, summary, body, tags, emoji, readMinutes, featured, breaking, submitForReview, metaDescription, scheduledAt } = req.body as Record<string, any>;
   if (!title?.trim() || !category?.trim() || !summary?.trim() || !body?.trim()) {
     res.status(400).json({ success: false, error: "title, category, summary, and body are required" });
     return;
@@ -189,18 +208,22 @@ router.post("/admin/articles", requireAuth, requireNewsAccess, async (req: Reque
 
   const id = randomUUID();
   const slug = slugify(title);
-  const canPublishDirectly = role.tier === "leadership" && !submitForReview;
-  const status = canPublishDirectly ? "published" : "pending_review";
+  // Only leadership can schedule or publish directly -- a content creator
+  // requesting either still lands in pending_review, enforced here, not
+  // just hidden in the UI.
+  const wantsSchedule = role.tier === "leadership" && scheduledAt && new Date(scheduledAt).getTime() > Date.now();
+  const canPublishDirectly = role.tier === "leadership" && !submitForReview && !wantsSchedule;
+  const status = wantsSchedule ? "scheduled" : canPublishDirectly ? "published" : "pending_review";
 
   const { rows: userRows } = await pool!.query(`SELECT name FROM users WHERE id = $1`, [req.user!.userId]);
   const authorName = userRows[0]?.name ?? "VINK Newsroom";
 
   const { rows } = await pool!.query(
-    `INSERT INTO news_articles (id, slug, title, subtitle, category, author, summary, body, tags, emoji, read_minutes, featured, breaking, status, created_by_user_id, created_by_name)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) RETURNING *`,
+    `INSERT INTO news_articles (id, slug, title, subtitle, category, author, summary, body, tags, emoji, read_minutes, featured, breaking, status, created_by_user_id, created_by_name, meta_description, scheduled_at)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18) RETURNING *`,
     [id, slug, title.trim(), subtitle ?? null, category.trim(), authorName, summary.trim(), body.trim(),
      JSON.stringify(tags ?? []), emoji ?? "📰", readMinutes ?? 4, Boolean(featured) && role.tier === "leadership", Boolean(breaking) && role.tier === "leadership",
-     status, req.user!.userId, authorName]
+     status, req.user!.userId, authorName, metaDescription ?? null, wantsSchedule ? scheduledAt : null]
   );
   res.status(201).json({ success: true, data: adminMapArticle(rows[0]) });
 });
@@ -221,7 +244,7 @@ router.patch("/admin/articles/:id", requireAuth, requireNewsAccess, async (req: 
     return;
   }
 
-  const { title, subtitle, category, summary, body, tags, emoji, readMinutes, featured, breaking } = req.body as Record<string, any>;
+  const { title, subtitle, category, summary, body, tags, emoji, readMinutes, featured, breaking, metaDescription, scheduledAt } = req.body as Record<string, any>;
   const { rows } = await pool!.query(
     `UPDATE news_articles SET
        title = COALESCE($1, title), subtitle = COALESCE($2, subtitle), category = COALESCE($3, category),
@@ -229,11 +252,14 @@ router.patch("/admin/articles/:id", requireAuth, requireNewsAccess, async (req: 
        emoji = COALESCE($7, emoji), read_minutes = COALESCE($8, read_minutes),
        featured = CASE WHEN $9::boolean IS NOT NULL AND $10 THEN $9 ELSE featured END,
        breaking = CASE WHEN $11::boolean IS NOT NULL AND $10 THEN $11 ELSE breaking END,
+       meta_description = COALESCE($13, meta_description),
+       scheduled_at = CASE WHEN $14::boolean THEN $15 ELSE scheduled_at END,
        updated_at = now()
      WHERE id = $12 RETURNING *`,
     [title?.trim() ?? null, subtitle ?? null, category?.trim() ?? null, summary?.trim() ?? null, body?.trim() ?? null,
      tags ? JSON.stringify(tags) : null, emoji ?? null, readMinutes ?? null,
-     featured ?? null, role.tier === "leadership", breaking ?? null, req.params.id]
+     featured ?? null, role.tier === "leadership", breaking ?? null, req.params.id,
+     metaDescription ?? null, scheduledAt !== undefined && role.tier === "leadership", scheduledAt ?? null]
   );
   res.json({ success: true, data: adminMapArticle(rows[0]) });
 });
@@ -243,15 +269,15 @@ router.patch("/admin/articles/:id", requireAuth, requireNewsAccess, async (req: 
 router.patch("/admin/articles/:id/status", requireAuth, requireNewsAccess, async (req: Request, res: Response): Promise<void> => {
   const role = (req as Request & { newsRole?: Awaited<ReturnType<typeof getNewsRole>> }).newsRole!;
   const { status } = req.body as { status?: string };
-  const VALID = ["draft", "pending_review", "published", "rejected"];
+  const VALID = ["draft", "pending_review", "published", "rejected", "scheduled"];
   if (!status || !VALID.includes(status)) { res.status(400).json({ success: false, error: `status must be one of: ${VALID.join(", ")}` }); return; }
 
   const { rows: existing } = await pool!.query(`SELECT * FROM news_articles WHERE id = $1`, [req.params.id]);
   if (!existing.length) { res.status(404).json({ success: false, error: "Article not found" }); return; }
   const article = existing[0];
 
-  if (status === "published" || status === "rejected") {
-    if (role.tier !== "leadership") { res.status(403).json({ success: false, error: "Only editorial leadership can publish or reject an article." }); return; }
+  if (status === "published" || status === "rejected" || status === "scheduled") {
+    if (role.tier !== "leadership") { res.status(403).json({ success: false, error: "Only editorial leadership can publish, schedule, or reject an article." }); return; }
   } else if (role.tier === "creator" && article.created_by_user_id !== req.user!.userId) {
     res.status(403).json({ success: false, error: "You can only change the status of your own articles." });
     return;
@@ -260,9 +286,18 @@ router.patch("/admin/articles/:id/status", requireAuth, requireNewsAccess, async
     return;
   }
 
+  const { scheduledAt } = req.body as { scheduledAt?: string };
+  if (status === "scheduled") {
+    if (!scheduledAt || new Date(scheduledAt).getTime() <= Date.now()) {
+      res.status(400).json({ success: false, error: "scheduledAt must be a real date/time in the future to schedule an article." });
+      return;
+    }
+  }
+
   const { rows } = await pool!.query(
-    `UPDATE news_articles SET status = $1, published_at = CASE WHEN $1 = 'published' THEN now() ELSE published_at END, updated_at = now() WHERE id = $2 RETURNING *`,
-    [status, req.params.id]
+    `UPDATE news_articles SET status = $1, published_at = CASE WHEN $1 = 'published' THEN now() ELSE published_at END,
+       scheduled_at = CASE WHEN $1 = 'scheduled' THEN $3 ELSE scheduled_at END, updated_at = now() WHERE id = $2 RETURNING *`,
+    [status, req.params.id, scheduledAt ?? null]
   );
   res.json({ success: true, data: adminMapArticle(rows[0]) });
 });
@@ -281,5 +316,78 @@ router.delete("/admin/articles/:id", requireAuth, requireNewsAccess, async (req:
   await pool!.query(`DELETE FROM news_articles WHERE id = $1`, [req.params.id]);
   res.json({ success: true });
 });
+
+// POST /api/news/admin/articles/:id/image — upload/replace the hero image.
+// Same permission rule as editing the article itself.
+router.post(
+  "/admin/articles/:id/image",
+  requireAuth,
+  requireNewsAccess,
+  (req: Request, res: Response, next) => {
+    imageUpload.single("image")(req, res, (err: unknown) => {
+      if (err instanceof multer.MulterError) {
+        const message = err.code === "LIMIT_FILE_SIZE" ? "Image exceeds the 8MB limit" : err.message;
+        res.status(400).json({ success: false, error: message });
+        return;
+      }
+      if (err) { next(err); return; }
+      next();
+    });
+  },
+  async (req: Request, res: Response): Promise<void> => {
+  const role = (req as Request & { newsRole?: Awaited<ReturnType<typeof getNewsRole>> }).newsRole!;
+  if (role.tier === "viewer") { res.status(403).json({ success: false, error: "Your News Management role doesn't include editing articles." }); return; }
+  if (!req.file) { res.status(400).json({ success: false, error: "No image file provided" }); return; }
+  if (!req.file.mimetype.startsWith("image/")) { res.status(400).json({ success: false, error: "File must be an image" }); return; }
+
+  const { rows: existing } = await pool!.query(`SELECT * FROM news_articles WHERE id = $1`, [req.params.id]);
+  if (!existing.length) { res.status(404).json({ success: false, error: "Article not found" }); return; }
+  const article = existing[0];
+  if (role.tier === "creator" && (article.created_by_user_id !== req.user!.userId || article.status === "published")) {
+    res.status(403).json({ success: false, error: "You can only edit your own unpublished articles." });
+    return;
+  }
+
+  await pool!.query(
+    `UPDATE news_articles SET hero_image_data = $1, hero_image_mime_type = $2, updated_at = now() WHERE id = $3`,
+    [req.file.buffer.toString("base64"), req.file.mimetype, req.params.id]
+  );
+  res.json({ success: true, data: { hasHeroImage: true } });
+  }
+);
+
+// GET /api/news/admin/articles/:id/image — preview in the editor regardless
+// of publish status (unlike the public endpoint, which only serves
+// published articles' images).
+router.get("/admin/articles/:id/image", requireAuth, requireNewsAccess, async (req: Request, res: Response): Promise<void> => {
+  const { rows } = await pool!.query(`SELECT hero_image_data, hero_image_mime_type FROM news_articles WHERE id = $1`, [req.params.id]);
+  if (!rows.length || !rows[0].hero_image_data) { res.status(404).json({ success: false, error: "No image on this article" }); return; }
+  res.setHeader("Content-Type", rows[0].hero_image_mime_type || "image/jpeg");
+  res.send(Buffer.from(rows[0].hero_image_data, "base64"));
+});
+
+// ─── Scheduled publishing ───────────────────────────────────────────────────
+// Mirrors the reconciliation-job pattern used for VinkPay and KYC earlier
+// this session: check periodically for anything whose scheduled time has
+// arrived, and flip it live. Idempotent by construction -- the WHERE
+// clause only ever matches rows still sitting in 'scheduled', so a
+// duplicate tick of the interval can't double-publish anything.
+export async function publishScheduledArticles(): Promise<{ published: number }> {
+  if (!hasDb || !pool) return { published: 0 };
+  const { rows } = await pool.query(
+    `UPDATE news_articles SET status = 'published', published_at = now(), updated_at = now()
+     WHERE status = 'scheduled' AND scheduled_at <= now() RETURNING id, title`
+  );
+  return { published: rows.length };
+}
+
+export function startScheduledPublishJob(): () => void {
+  const interval = setInterval(() => {
+    publishScheduledArticles()
+      .then(({ published }) => { if (published > 0) console.log(`[news] Published ${published} scheduled article(s).`); })
+      .catch(err => console.error("[news] Scheduled publish job error:", err));
+  }, 60_000); // checked every minute -- scheduling is typically set to the hour/day, not the second, so this granularity is plenty
+  return () => clearInterval(interval);
+}
 
 export default router;

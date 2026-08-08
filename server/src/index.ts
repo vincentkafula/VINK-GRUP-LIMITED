@@ -31,7 +31,7 @@ import bankUsersRouter from "./routes/bankUsers.js";
 import marketplaceRouter from "./routes/marketplaceRouter.js";
 import marketplaceRouterDb from "./routes/marketplaceRouterDb.js";
 import geoCurrencyRouter from "./routes/geoCurrency.js";
-import newsRouter from "./routes/news.js";
+import newsRouter, { startScheduledPublishJob } from "./routes/news.js";
 import rbacRouter from "./routes/rbac.js";
 import { setBroadcaster } from "./services/wsBroadcast.js";
 import vinkpayWebhookRouter from "./routes/vinkpayWebhook.js";
@@ -269,6 +269,7 @@ const stopSimulator        = startSimulator(broadcast);
 const stopVehicleSimulator = startVehicleSimulator(broadcast);
 const stopReconciliation   = startReconciliationJob();
 const stopKycReconciliation = startKycReconciliationJob();
+const stopScheduledPublish = startScheduledPublishJob();
 
 // ─── Boot ────────────────────────────────────────────────────────────────────
 async function boot() {
