@@ -19,7 +19,7 @@ import { getToken as getMainToken, getSession, rbacApi } from "../services/apiCl
 import { SignInElsewhere } from "./SignInElsewhere";
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
-type BankRole = "passenger" | "driver" | "investor" | "owner" | "admin" | "compliance" | "treasury";
+type BankRole = "passenger" | "driver" | "investor" | "owner" | "admin" | "compliance" | "treasury" | "executive" | "frontline";
 
 // Maps a specific granted Bank Management position (from the job
 // application flow) to which of this dashboard's existing role-based nav
@@ -32,6 +32,13 @@ type BankRole = "passenger" | "driver" | "investor" | "owner" | "admin" | "compl
 // treasury view. A person with no specific position (an older RBAC grant,
 // or an owner/superadmin reviewing generally) defaults to admin, matching
 // this dashboard's prior behaviour before position-based routing existed.
+const EXECUTIVE_POSITIONS = [
+  "Board of Directors", "Chairman of the Board", "Chief Executive Officer (CEO)",
+  "President / Managing Director", "Chief Operating Officer (COO)", "Chief Financial Officer (CFO)",
+];
+const FRONTLINE_POSITIONS = [
+  "Relationship Manager", "Customer Service Manager", "Teller / Cashier", "Loan Officer",
+];
 const COMPLIANCE_POSITIONS = [
   "Chief Risk Officer (CRO)", "Chief Compliance Officer (CCO)", "Chief Audit Executive / Internal Auditor",
   "Legal Counsel / General Counsel", "AML / KYC Officer", "Regulatory Affairs Manager",
@@ -39,6 +46,8 @@ const COMPLIANCE_POSITIONS = [
 const TREASURY_POSITIONS = ["Treasury Manager", "Foreign Exchange / Treasury Dealer"];
 
 function positionToBankRole(position: string | null): BankRole {
+  if (position && EXECUTIVE_POSITIONS.includes(position)) return "executive";
+  if (position && FRONTLINE_POSITIONS.includes(position)) return "frontline";
   if (position && COMPLIANCE_POSITIONS.includes(position)) return "compliance";
   if (position && TREASURY_POSITIONS.includes(position)) return "treasury";
   return "admin";
@@ -55,6 +64,7 @@ const cap    = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const ROLE_COLOR: Record<BankRole, string> = {
   passenger: "#128A43", driver: "#3B82F6", investor: "#F59E0B",
   owner: "#10B981", admin: "#EF4444", compliance: "#34A853", treasury: "#06B6D4",
+  executive: "#7C3AED", frontline: "#F97316",
 };
 const ROLE_NAV: Record<BankRole, NavSection[]> = {
   passenger: ["overview","accounts","cards","transactions","payments"],
@@ -64,6 +74,17 @@ const ROLE_NAV: Record<BankRole, NavSection[]> = {
   admin:     ["overview","users","cards","accounts","kyc","fraud","reports"],
   compliance:["overview","kyc","fraud","reports"],
   treasury:  ["overview","treasury","settlements","reports"],
+  // Board/Chairman/CEO/President/COO/CFO -- strategic, cross-institution
+  // view: accounts, cards, and treasury at a summary level, plus reports.
+  // Deliberately excludes "users" (staff account management) and the raw
+  // kyc/fraud case queues -- those are operational tools for compliance
+  // to work cases, not something an executive dashboard needs to expose.
+  executive: ["overview","accounts","cards","treasury","reports"],
+  // Relationship Manager/Customer Service Manager/Teller/Cashier/Loan
+  // Officer -- day-to-day customer service tools only. No compliance
+  // case queues, no treasury, no staff/user management, no institution-
+  // wide reports -- matches what these roles actually do in a real bank.
+  frontline: ["overview","accounts","cards","transactions"],
 };
 const NAV_ICONS: Partial<Record<NavSection, React.ReactNode>> = {
   overview: <Home className="w-4 h-4"/>, accounts: <Building2 className="w-4 h-4"/>,
@@ -1208,7 +1229,7 @@ export function BankingDashboard({ isOpen, onClose }: BankingDashboardProps) {
               <div className="px-3 py-3 border-b" style={{ borderColor: "#1E2843" }}>
                 <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: "#8884AA" }}>Account Type</p>
                 <div className="grid grid-cols-2 gap-1">
-                  {(["passenger","driver","investor","owner","admin","compliance","treasury"] as BankRole[]).map(r => (
+                  {(["passenger","driver","investor","owner","admin","compliance","treasury","executive","frontline"] as BankRole[]).map(r => (
                     <button key={r} onClick={() => handleRoleChange(r)}
                       className="px-2 py-1.5 rounded-lg text-[10px] font-semibold capitalize transition-all"
                       style={{ background: role === r ? ROLE_COLOR[r] + "22" : "transparent", color: role === r ? ROLE_COLOR[r] : "#8884AA", border: `1px solid ${role === r ? ROLE_COLOR[r] + "44" : "transparent"}` }}>
