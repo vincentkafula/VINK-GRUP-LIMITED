@@ -24,7 +24,27 @@ interface Department {
 }
 
 const DEPARTMENTS: Department[] = [
-  { id: "bank", code: "BM", name: "Bank Management", positions: ["Head of Bank Management", "Bank Operations Manager", "Compliance Officer"],
+  { id: "bank", code: "BM", name: "Bank Management",
+    positions: [
+      // Board & Executive Leadership
+      "Board of Directors", "Chairman of the Board", "Chief Executive Officer (CEO)", "President / Managing Director", "Chief Operating Officer (COO)",
+      // Finance & Risk
+      "Chief Financial Officer (CFO)", "Chief Risk Officer (CRO)", "Chief Compliance Officer (CCO)", "Chief Audit Executive / Internal Auditor", "Treasury Manager",
+      // Core Banking Operations
+      "Head of Retail Banking", "Head of Corporate / Commercial Banking", "Head of Credit / Loans", "Credit Risk Analyst / Underwriter", "Branch Manager", "Operations Manager", "Head of Trade Finance",
+      // Technology & Digital
+      "Chief Information Officer (CIO)", "Chief Information Security Officer (CISO)", "Head of Digital Banking", "Core Banking System Administrator",
+      // Customer-Facing Roles
+      "Relationship Manager", "Customer Service Manager", "Teller / Cashier", "Loan Officer",
+      // Legal & Regulatory
+      "Legal Counsel / General Counsel", "AML / KYC Officer", "Regulatory Affairs Manager",
+      // HR & Administration
+      "HR Manager", "Training & Development Officer", "Facilities / Admin Manager",
+      // Marketing & Business Development
+      "Chief Marketing Officer (CMO)", "Product Development Manager", "Business Development Manager",
+      // Specialized Units
+      "Wealth Management / Private Banking Head", "Investment Banking Division Head", "Card Services Manager", "Foreign Exchange / Treasury Dealer",
+    ],
     desc: "Manage bank accounts, branches, services and banking operations.",
     reqs: ["Bachelor's degree in Banking, Finance or Economics", "Minimum 5 years experience in retail or commercial banking operations", "Working knowledge of banking regulations and compliance frameworks", "Risk management certification (preferred, not mandatory)"] },
   { id: "payment", code: "PM", name: "Payment Management", positions: ["Head of Payment Management", "Payments Operations Manager", "Settlements Analyst"],

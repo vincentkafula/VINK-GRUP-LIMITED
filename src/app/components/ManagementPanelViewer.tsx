@@ -563,7 +563,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
                       <div className="flex flex-wrap gap-2 mt-3">
                         {m.sections.map(s => (
                           <span key={s.section} className="flex items-center gap-1.5 text-[11px] font-semibold pl-2.5 pr-1.5 py-1 rounded-full" style={{ background: "#E9F7EF", color: GREEN }}>
-                            {s.section}
+                            {s.section}{s.position ? ` — ${s.position}` : ""}
                             <button onClick={() => handleRevoke(m.id, s.section)} className="w-4 h-4 rounded-full flex items-center justify-center hover:bg-black/10" title="Revoke"><XIcon className="w-2.5 h-2.5" /></button>
                           </span>
                         ))}

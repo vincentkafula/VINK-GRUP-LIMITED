@@ -15,11 +15,34 @@ import {
   bankTreasury, bankCompliance, bankUsers,
   setBankToken, getBankToken,
 } from "../services/bankingApi";
-import { getToken as getMainToken, getSession } from "../services/apiClient";
+import { getToken as getMainToken, getSession, rbacApi } from "../services/apiClient";
 import { SignInElsewhere } from "./SignInElsewhere";
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 type BankRole = "passenger" | "driver" | "investor" | "owner" | "admin" | "compliance" | "treasury";
+
+// Maps a specific granted Bank Management position (from the job
+// application flow) to which of this dashboard's existing role-based nav
+// views actually fits. Reuses the real admin/compliance/treasury views
+// already built here rather than inventing 40 separate dashboards for 40
+// distinct roles -- most of the executive and operational roles share the
+// same broad "admin" operational view (users, cards, accounts, KYC,
+// fraud, reports), while risk/legal/AML-flavoured roles get the
+// narrower compliance view, and treasury-flavoured roles get the
+// treasury view. A person with no specific position (an older RBAC grant,
+// or an owner/superadmin reviewing generally) defaults to admin, matching
+// this dashboard's prior behaviour before position-based routing existed.
+const COMPLIANCE_POSITIONS = [
+  "Chief Risk Officer (CRO)", "Chief Compliance Officer (CCO)", "Chief Audit Executive / Internal Auditor",
+  "Legal Counsel / General Counsel", "AML / KYC Officer", "Regulatory Affairs Manager",
+];
+const TREASURY_POSITIONS = ["Treasury Manager", "Foreign Exchange / Treasury Dealer"];
+
+function positionToBankRole(position: string | null): BankRole {
+  if (position && COMPLIANCE_POSITIONS.includes(position)) return "compliance";
+  if (position && TREASURY_POSITIONS.includes(position)) return "treasury";
+  return "admin";
+}
 type NavSection = "overview" | "accounts" | "cards" | "transactions" | "payments" | "earnings" | "portfolio" | "treasury" | "users" | "kyc" | "fraud" | "settlements" | "reports";
 type R = Record<string, unknown>;
 
@@ -1045,11 +1068,24 @@ export function BankingDashboard({ isOpen, onClose }: BankingDashboardProps) {
     if (isOpen && authed && userId) loadRoleData(role, userId);
   }, [isOpen, authed, role, userId, loadRoleData]);
 
-  const handleLogin = (_t: string, u: R) => {
+  const handleLogin = async (_t: string, u: R) => {
     setAuthUser(u);
-    const userRole: BankRole = "admin"; // logged-in user sees admin view by default; can switch
+    // Was hardcoded to "admin" for every login regardless of who it
+    // actually was -- a Chief Compliance Officer and a Treasury Dealer
+    // would both land in the same broad operational view. Now looks up
+    // their actual granted position for Bank Management and routes to
+    // the matching existing role view.
+    let userRole: BankRole = "admin";
+    try {
+      const detailed = await rbacApi.mySectionsDetailed();
+      if (detailed.success) {
+        const bankGrant = detailed.data?.find(d => d.section === "Bank Management");
+        if (bankGrant) userRole = positionToBankRole(bankGrant.position);
+      }
+    } catch {
+      // Fall through to the admin default rather than blocking login on this lookup.
+    }
     setRole(userRole);
-    // For demo, use first user matching selected role
     setAuthed(true);
     // Preload — use a demo user id
     bankUsers.list({ role: "passenger" }).then(res => {

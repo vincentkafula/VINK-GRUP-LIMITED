@@ -87,6 +87,17 @@ router.get("/my-sections", requireAuth, async (req: Request, res: Response): Pro
   res.json({ success: true, data: rows.map(r => r.section) });
 });
 
+// GET /api/rbac/my-sections-detailed — same data as /my-sections, but
+// including the specific granted position within each section (e.g.
+// 'Chief Compliance Officer' for Bank Management). Added separately
+// rather than changing /my-sections' response shape, since LoginModal and
+// ManagementPanelViewer already depend on that being a plain string array.
+router.get("/my-sections-detailed", requireAuth, async (req: Request, res: Response): Promise<void> => {
+  if (noDb(res)) return;
+  const { rows } = await pool!.query(`SELECT section, position FROM section_permissions WHERE user_id = $1`, [req.user!.userId]);
+  res.json({ success: true, data: rows });
+});
+
 // ─── Super Admin (role: owner) only, from here down ─────────────────────────
 
 // GET /api/rbac/applications?status=pending
@@ -158,7 +169,7 @@ router.get("/managers", requireAuth, requireRole(...SUPER_ADMIN_ROLES), async (_
   if (noDb(res)) return;
   const { rows } = await pool!.query(
     `SELECT u.id, u.username, u.name, u.email,
-            COALESCE(json_agg(json_build_object('section', p.section, 'grantedAt', p.granted_at)) FILTER (WHERE p.section IS NOT NULL), '[]') AS sections
+            COALESCE(json_agg(json_build_object('section', p.section, 'position', p.position, 'grantedAt', p.granted_at)) FILTER (WHERE p.section IS NOT NULL), '[]') AS sections
      FROM users u JOIN section_permissions p ON p.user_id = u.id
      GROUP BY u.id ORDER BY u.name`
   );
