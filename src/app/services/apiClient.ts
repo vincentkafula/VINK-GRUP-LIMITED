@@ -72,8 +72,17 @@ async function request<T>(
       json = { ...json, success: false, error: httpErrorMessage(res.status) };
     }
 
-    // Auto-clear token on 401
-    if (res.status === 401 && auth) clearToken();
+    // Auto-clear token on 401 -- and tell anyone listening this wasn't a
+    // deliberate logout, so a dashboard mid-use can show a clear "your
+    // session expired" state instead of continuing to silently fail every
+    // subsequent request with no explanation, which is what was actually
+    // happening: one request 401s, the token gets cleared, and every
+    // other request already in flight or fired moments later 401s too,
+    // all while the UI still looks normal.
+    if (res.status === 401 && auth) {
+      clearToken();
+      window.dispatchEvent(new CustomEvent("vink:session-expired"));
+    }
 
     return json;
   } catch (err: unknown) {

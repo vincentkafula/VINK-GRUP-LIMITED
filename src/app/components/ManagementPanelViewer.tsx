@@ -164,6 +164,20 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
   };
 
   const [jobLoadError, setJobLoadError] = useState<string | null>(null);
+  const [sessionExpired, setSessionExpired] = useState(false);
+
+  // Listen for the global session-expired signal (dispatched by
+  // apiClient.ts when any authenticated request comes back 401) rather
+  // than relying on each individual load function's own error banner --
+  // this can happen mid-use, from any of the several data calls this
+  // panel makes, and the person deserves one clear, unmissable message
+  // instead of a small red banner buried in whichever tab happened to be
+  // the first to fail.
+  useEffect(() => {
+    const handler = () => setSessionExpired(true);
+    window.addEventListener("vink:session-expired", handler);
+    return () => window.removeEventListener("vink:session-expired", handler);
+  }, []);
 
   const loadJobApps = (department: string, status?: string) => {
     setLoadingPanel(true);
@@ -295,6 +309,21 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
 
   return (
     <div className="fixed inset-0 z-50 flex text-[14px]" style={{ fontFamily: "'Segoe UI', Arial, sans-serif", background: "#F6F7FB" }}>
+
+      {sessionExpired && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" style={{ background: "rgba(14,20,32,0.75)" }}>
+          <div className="bg-white rounded-2xl max-w-sm w-full p-7 text-center">
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: "#FEF2F2" }}>
+              <Lock className="w-7 h-7" style={{ color: "#DC2626" }} />
+            </div>
+            <p className="text-base font-bold text-gray-900 mb-1.5">Your session has expired</p>
+            <p className="text-sm text-gray-500 mb-6">Please sign in again from the main menu to continue.</p>
+            <button onClick={onClose} className="w-full py-2.5 rounded-xl text-sm font-bold text-white hover:opacity-90" style={{ background: GREEN }}>
+              Close
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Sidebar */}
       <aside className={`${sidebarOpen ? "w-64" : "w-0"} shrink-0 overflow-hidden transition-all duration-200 flex flex-col`} style={{ background: "#0E1420" }}>
