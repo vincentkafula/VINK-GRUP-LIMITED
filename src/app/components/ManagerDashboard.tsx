@@ -5,10 +5,56 @@ import {
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { mktAdmin, mktSellers, getMktToken, type MktAuthUser } from "../services/marketplaceApi";
+import { rbacApi } from "../services/apiClient";
 import { toast } from "sonner";
 
 type R = Record<string, unknown>;
 type Tab = "overview" | "users" | "sellerApproval" | "productApproval" | "orders" | "financial" | "reports" | "security";
+
+// Maps a specific granted Marketplace Management position (from the job
+// application flow) to which of the 8 real tabs this dashboard already
+// has actually fit that role -- same approach as Bank Management: a
+// handful of meaningful tiers reusing existing real functionality,
+// rather than 60 separate dashboards for 60 distinct roles. A position
+// with no more specific mapping (Engineering, Product/Design, Marketing,
+// HR, Data & Analytics, Specialized Divisions -- roles that genuinely
+// don't map to one narrower slice of this particular dashboard) falls
+// through to the full admin view, matching this dashboard's behavior
+// before position-based routing existed.
+const EXECUTIVE_POSITIONS = [
+  "Board of Directors", "Chief Executive Officer (CEO)", "President / COO", "Chief Financial Officer (CFO)", "Chief Strategy Officer",
+];
+const MARKETPLACE_OPS_POSITIONS = [
+  "Head of Marketplace / Third-Party Sellers", "Seller Support Lead", "Category Manager", "Vendor Relationship Manager",
+];
+const FULFILLMENT_POSITIONS = [
+  "Chief Operating Officer (COO)", "VP of Supply Chain / Logistics", "Warehouse / Fulfillment Center Manager",
+  "Inventory Management Lead", "Procurement / Sourcing Manager", "Last-Mile Delivery Manager",
+  "Warehouse Staff / Picker / Packer", "Delivery Driver",
+  "VP of Customer Service", "Customer Support Representative", "Returns / Refunds Manager", "Customer Experience / Insights Analyst",
+];
+const FINANCE_SECURITY_POSITIONS = [
+  "Controller / Chief Accountant", "Treasury Manager", "Tax Compliance Lead", "General Counsel / Legal Team",
+  "Payments / Fraud Prevention Lead", "Chief Information Security Officer (CISO)",
+];
+
+type MarketTier = "executive" | "marketplace_ops" | "fulfillment" | "finance_security" | "admin";
+
+const TIER_TABS: Record<MarketTier, Tab[]> = {
+  executive: ["overview", "financial", "reports"],
+  marketplace_ops: ["overview", "sellerApproval", "productApproval"],
+  fulfillment: ["overview", "orders"],
+  finance_security: ["overview", "financial", "security", "reports"],
+  admin: ["overview", "users", "sellerApproval", "productApproval", "orders", "financial", "reports", "security"],
+};
+
+function positionToMarketTier(position: string | null): MarketTier {
+  if (position && EXECUTIVE_POSITIONS.includes(position)) return "executive";
+  if (position && MARKETPLACE_OPS_POSITIONS.includes(position)) return "marketplace_ops";
+  if (position && FULFILLMENT_POSITIONS.includes(position)) return "fulfillment";
+  if (position && FINANCE_SECURITY_POSITIONS.includes(position)) return "finance_security";
+  return "admin";
+}
 
 const fmtZAR = (n: number) => `R${Number(n ?? 0).toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
@@ -37,6 +83,24 @@ interface Props { user: MktAuthUser; onSignOut: () => void; }
 
 export function ManagerDashboard({ user, onSignOut }: Props) {
   const [tab, setTab] = useState<Tab>("overview");
+  const [tier, setTier] = useState<MarketTier>("admin");
+  const [tierPosition, setTierPosition] = useState<string | null>(null);
+
+  useEffect(() => {
+    rbacApi.mySectionsDetailed().then(r => {
+      if (!r.success) return;
+      const grant = r.data?.find(d => d.section === "Marketplace Management");
+      if (grant) {
+        setTierPosition(grant.position ?? null);
+        const resolvedTier = positionToMarketTier(grant.position);
+        setTier(resolvedTier);
+        // If the current tab isn't visible for this tier, land on the
+        // first tab that is, rather than showing a blank/inaccessible tab.
+        if (!TIER_TABS[resolvedTier].includes(tab)) setTab(TIER_TABS[resolvedTier][0]);
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // The report endpoints require auth -- a plain <a href> can't attach an
   // Authorization header, which is exactly the bug already found and
@@ -89,7 +153,7 @@ export function ManagerDashboard({ user, onSignOut }: Props) {
 
   useEffect(() => { load(); }, [load]);
 
-  const NAV: { id: Tab; label: string; icon: React.ReactNode; badge?: number }[] = [
+  const ALL_NAV: { id: Tab; label: string; icon: React.ReactNode; badge?: number }[] = [
     { id: "overview", label: "Overview", icon: <BarChart3 className="w-4 h-4" /> },
     { id: "users", label: "User Management", icon: <Users className="w-4 h-4" /> },
     { id: "sellerApproval", label: "Seller Approval", icon: <Store className="w-4 h-4" />, badge: pendingSellers.length },
@@ -99,6 +163,7 @@ export function ManagerDashboard({ user, onSignOut }: Props) {
     { id: "reports", label: "Reports", icon: <FileText className="w-4 h-4" /> },
     { id: "security", label: "Security & Fraud", icon: <Shield className="w-4 h-4" /> },
   ];
+  const NAV = ALL_NAV.filter(item => TIER_TABS[tier].includes(item.id));
 
   const topCategories = (stats?.topCategories as R[]) ?? [];
 
@@ -107,7 +172,7 @@ export function ManagerDashboard({ user, onSignOut }: Props) {
       <aside className="w-60 shrink-0 bg-white border-r border-gray-100 p-3 overflow-y-auto flex flex-col">
         <div className="px-1 pb-3 mb-2 border-b border-gray-100">
           <p className="text-sm font-bold text-gray-900">{user.name}</p>
-          <p className="text-[11px] text-gray-400">Marketplace Manager</p>
+          <p className="text-[11px] text-gray-400">{tierPosition ?? "Marketplace Manager"}</p>
         </div>
         <div className="space-y-0.5 flex-1">
           {NAV.map(n => <SideNavButton key={n.id} active={tab === n.id} onClick={() => setTab(n.id)} icon={n.icon} label={n.label} badge={n.badge} />)}

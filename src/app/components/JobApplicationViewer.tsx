@@ -50,7 +50,31 @@ const DEPARTMENTS: Department[] = [
   { id: "payment", code: "PM", name: "Payment Management", positions: ["Head of Payment Management", "Payments Operations Manager", "Settlements Analyst"],
     desc: "Manage payments, settlements, refunds and transaction rules.",
     reqs: ["Bachelor's degree in Finance, IT or a related field", "Experience with payment gateways, settlement cycles and reconciliation", "Familiarity with PCI-DSS and payment security standards", "Experience designing transaction and refund rule sets"] },
-  { id: "marketplace", code: "MM", name: "Marketplace Management", positions: ["Head of Marketplace Management", "Vendor Relations Manager", "Marketplace Operations Analyst"],
+  { id: "marketplace", code: "MM", name: "Marketplace Management",
+    positions: [
+      // Executive Leadership
+      "Board of Directors", "Chief Executive Officer (CEO)", "President / COO", "Chief Financial Officer (CFO)", "Chief Strategy Officer",
+      // Technology & Engineering
+      "Chief Technology Officer (CTO)", "VP of Engineering", "Software Engineer / Developer", "Chief Information Security Officer (CISO)", "Head of Cloud Infrastructure / DevOps", "Data Scientist / AI-ML Engineer", "QA / Testing Lead",
+      // Product & Design
+      "Chief Product Officer (CPO)", "UX / UI Designer", "Product Manager",
+      // Operations & Supply Chain
+      "Chief Operating Officer (COO)", "VP of Supply Chain / Logistics", "Warehouse / Fulfillment Center Manager", "Inventory Management Lead", "Procurement / Sourcing Manager", "Last-Mile Delivery Manager", "Warehouse Staff / Picker / Packer", "Delivery Driver",
+      // Vendor & Marketplace Management
+      "Head of Marketplace / Third-Party Sellers", "Seller Support Lead", "Category Manager", "Vendor Relationship Manager",
+      // Marketing & Growth
+      "Chief Marketing Officer (CMO)", "Digital Marketing Manager", "Brand Manager", "Content Marketing Lead", "Influencer / Affiliate Program Manager", "PR / Communications Lead",
+      // Customer Experience
+      "VP of Customer Service", "Customer Support Representative", "Returns / Refunds Manager", "Customer Experience / Insights Analyst",
+      // Finance & Legal
+      "Controller / Chief Accountant", "Treasury Manager", "Tax Compliance Lead", "General Counsel / Legal Team", "Payments / Fraud Prevention Lead",
+      // Human Resources
+      "Chief Human Resources Officer (CHRO)", "Talent Acquisition Lead", "Training & Development Lead", "Employee Relations / Labor Compliance",
+      // Data & Analytics
+      "Chief Data Officer (CDO)", "Business Intelligence Analyst", "Pricing Strategy Lead",
+      // Specialized Divisions
+      "Cloud Services Division Lead", "Advertising Division Lead", "Subscription Services Manager", "International Expansion Lead", "Sustainability / ESG Officer",
+    ],
     desc: "Manage vendors, products, orders and marketplace activities.",
     reqs: ["Bachelor's degree in Business, Commerce or E-commerce", "Experience managing vendor onboarding and marketplace operations", "Understanding of order fulfilment and dispute resolution", "Data-driven approach to catalogue and pricing oversight"] },
   { id: "news", code: "NM", name: "News Management",
