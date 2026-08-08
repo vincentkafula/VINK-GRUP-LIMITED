@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import heroCardPhone from "../../imports/HeroCardPhone.png";
 import heroImage1 from "../../imports/Picture1-1.png";
-import heroImage3 from "../../imports/Picture2.png";
+import heroGlobalSim from "../../imports/HeroGlobalSim.png";
 import heroImage4 from "../../imports/Picture6-2.png";
 import heroImage5 from "../../imports/Picture7.png";
 
@@ -41,25 +41,20 @@ const SLIDES = [
     ],
   },
   {
-    image:   heroImage3,
+    image:   heroGlobalSim,
+    background: "linear-gradient(135deg,#0A0000 0%,#2B0505 45%,#5C0C0C 75%,#8C1414 100%)",
     eyebrow: "VINK MVNO — Global Connectivity",
-    eyebrowDot: "bg-orange-400",
-    headline: <>🌍 One SIM.<br /><span className="relative inline-block"><span className="relative z-10">Every Country.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#F5A623" }} /></span></>,
-    body: "Stop paying a fortune every time you cross a border. With the Vink Global SIM, international calls sound — and cost — just like a local call, no matter where in the world you are.",
-    bullets: [
-      "Works in 190+ countries",
-      "No roaming fees — ever",
-      "Instant activation",
-      "Keep your existing number",
-    ],
+    eyebrowDot: "bg-red-400",
+    headline: <>All the benefits of SIM,<br /><span className="relative inline-block"><span className="relative z-10">on your phone.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#F5A623" }} /></span></>,
+    body: "Stay connected anywhere in the world with reliable data, clear calls and seamless connectivity.",
     ctas: [
-      { label: "📲 Get Your Global SIM Today", style: { background: "#F5A623", boxShadow: "0 6px 20px rgba(245,166,35,.4)" } },
-      { label: "See Coverage Map",              style: { background: "rgba(255,255,255,.15)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,.25)" } },
+      { label: "💳 Get Your SIM", style: { background: "#B91C1C", boxShadow: "0 6px 20px rgba(185,28,28,.4)" } },
+      { label: "▶ Learn More",    style: { background: "rgba(255,255,255,.15)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,.25)" } },
     ],
     trust: [
-      { value: "190+",   label: "Countries covered" },
-      { value: "R0",     label: "Roaming fees" },
-      { value: "Instant", label: "SIM activation" },
+      { value: "200+",    label: "Countries covered" },
+      { value: "4G/5G",   label: "High-speed data" },
+      { value: "24/7",    label: "Customer support" },
     ],
   },
   {
@@ -155,18 +150,6 @@ export function HeroSection() {
             <p className="text-white/75 text-base sm:text-lg mb-5 leading-relaxed max-w-md mx-auto md:mx-0">
               {slide.body}
             </p>
-
-            {/* Optional bullet list (SIM slide) */}
-            {slide.bullets && (
-              <ul className="mb-6 space-y-1.5 max-w-xs mx-auto md:mx-0 text-left">
-                {slide.bullets.map((b, i) => (
-                  <li key={i} className="flex items-center gap-2 text-sm text-white/85 font-medium">
-                    <span className="text-green-400 font-black text-base">✅</span>
-                    {b}
-                  </li>
-                ))}
-              </ul>
-            )}
 
             {/* CTAs */}
             <div className="flex flex-wrap justify-center md:justify-start gap-3 mb-10">
