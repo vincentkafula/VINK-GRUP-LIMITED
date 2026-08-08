@@ -4,7 +4,8 @@ import {
   Download, Loader2, Clock, Shield, Percent, FileText,
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
-import { mktAdmin, mktSellers, type MktAuthUser } from "../services/marketplaceApi";
+import { mktAdmin, mktSellers, getMktToken, type MktAuthUser } from "../services/marketplaceApi";
+import { toast } from "sonner";
 
 type R = Record<string, unknown>;
 type Tab = "overview" | "users" | "sellerApproval" | "productApproval" | "orders" | "financial" | "reports" | "security";
@@ -36,6 +37,34 @@ interface Props { user: MktAuthUser; onSignOut: () => void; }
 
 export function ManagerDashboard({ user, onSignOut }: Props) {
   const [tab, setTab] = useState<Tab>("overview");
+
+  // The report endpoints require auth -- a plain <a href> can't attach an
+  // Authorization header, which is exactly the bug already found and
+  // fixed for document/image viewing elsewhere in the app (a browser
+  // loading a link directly doesn't send custom headers the way fetch()
+  // does). Fetch properly here and trigger the download via a temporary
+  // blob-backed link instead.
+  const [downloading, setDownloading] = useState<string | null>(null);
+  const downloadReport = async (report: "orders" | "products") => {
+    setDownloading(report);
+    try {
+      const res = await fetch(mktAdmin.reportUrl(report), { headers: { Authorization: `Bearer ${getMktToken() ?? ""}` } });
+      if (!res.ok) { throw new Error("download failed"); }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${report}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error(`Could not download the ${report} report — please try again.`);
+    } finally {
+      setDownloading(null);
+    }
+  };
   const [stats, setStats] = useState<R | null>(null);
   const [pendingSellers, setPendingSellers] = useState<R[]>([]);
   const [pendingProducts, setPendingProducts] = useState<R[]>([]);
@@ -224,12 +253,14 @@ export function ManagerDashboard({ user, onSignOut }: Props) {
                 <p className="text-sm font-bold text-gray-900 mb-1">Download Reports</p>
                 <p className="text-xs text-gray-400 mb-4">Real exports of current marketplace data, generated on demand.</p>
                 <div className="space-y-2">
-                  <a href={mktAdmin.reportUrl("orders")} className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50">
-                    <Download className="w-4 h-4" /> Orders report (CSV)
-                  </a>
-                  <a href={mktAdmin.reportUrl("products")} className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50">
-                    <Download className="w-4 h-4" /> Products report (CSV)
-                  </a>
+                  <button onClick={() => downloadReport("orders")} disabled={downloading === "orders"}
+                    className="w-full flex items-center gap-2 px-4 py-2.5 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">
+                    <Download className="w-4 h-4" /> {downloading === "orders" ? "Downloading…" : "Orders report (CSV)"}
+                  </button>
+                  <button onClick={() => downloadReport("products")} disabled={downloading === "products"}
+                    className="w-full flex items-center gap-2 px-4 py-2.5 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">
+                    <Download className="w-4 h-4" /> {downloading === "products" ? "Downloading…" : "Products report (CSV)"}
+                  </button>
                 </div>
               </div>
             )}

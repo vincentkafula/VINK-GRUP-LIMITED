@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { X, Plus, Edit3, Trash2, Send, CheckCircle2, XCircle, Loader2, Newspaper, Image as ImageIcon, Calendar, Tag as TagIcon } from "lucide-react";
 import { toast } from "sonner";
-import { newsAdminApi, type NewsRole, type NewsAdminArticle } from "../services/apiClient";
+import { newsAdminApi, getToken, type NewsRole, type NewsAdminArticle } from "../services/apiClient";
 import { RichTextEditor } from "./RichTextEditor";
 
 interface Props { isOpen: boolean; onClose: () => void; }
@@ -174,8 +174,24 @@ function ArticleEditor({ article, canPublishDirectly, onClose, onSaved }: {
   const [scheduledAt, setScheduledAt] = useState(article?.scheduledAt ? article.scheduledAt.slice(0, 16) : "");
   const [saving, setSaving] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(article?.hasHeroImage ? newsAdminApi.imageUrl(article.id) : null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+
+  // The admin image endpoint requires auth -- a plain <img src="..."> can't
+  // attach an Authorization header (this is exactly the same class of bug
+  // already fixed for document viewing in ManagementPanelViewer: a browser
+  // loading a resource directly doesn't send custom headers the way
+  // fetch() does). Fetch it properly here and hand the <img> a local blob
+  // URL instead.
+  useEffect(() => {
+    if (!article?.hasHeroImage) return;
+    let objectUrl: string | null = null;
+    fetch(newsAdminApi.imageUrl(article.id), { headers: { Authorization: `Bearer ${getToken() ?? ""}` } })
+      .then(res => { if (!res.ok) throw new Error(); return res.blob(); })
+      .then(blob => { objectUrl = URL.createObjectURL(blob); setImagePreview(objectUrl); })
+      .catch(() => { /* no existing image to preview, or it failed to load -- leave the upload placeholder showing */ });
+    return () => { if (objectUrl) URL.revokeObjectURL(objectUrl); };
+  }, [article?.id, article?.hasHeroImage]);
 
   const addTag = () => {
     const t = tagInput.trim().toLowerCase();
