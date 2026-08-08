@@ -3,7 +3,7 @@ import heroCardPhone from "../../imports/HeroCardPhone.png";
 import heroImage1 from "../../imports/Picture1-1.png";
 import heroGlobalSim from "../../imports/HeroGlobalSim.png";
 import heroImage4 from "../../imports/Picture6-2.png";
-import heroImage5 from "../../imports/Picture7.png";
+import heroPlane from "../../imports/HeroPlane.png";
 
 // ─── Per-slide content ────────────────────────────────────────────────────────
 const SLIDES = [
@@ -74,19 +74,20 @@ const SLIDES = [
     ],
   },
   {
-    image:   heroImage5,
+    image:   heroPlane,
+    background: "linear-gradient(135deg,#050B1F 0%,#0B1F4D 45%,#164A9C 75%,#2E7BC9 100%)",
     eyebrow: "Vink Go — Travel Booking",
-    eyebrowDot: "bg-pink-400",
-    headline: <>Travel Smarter.<br /><span className="relative inline-block"><span className="relative z-10">Spend Less Everywhere.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#F5A623" }} /></span></>,
-    body: "Book your taxi, bus, flight, or hotel from one app — and pay with your Vink card at local rates in 175+ countries. No cross-border fees. No surprises.",
+    eyebrowDot: "bg-blue-400",
+    headline: <>Your journey<br /><span className="relative inline-block"><span className="relative z-10">takes flight.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#F5A623" }} /></span></>,
+    body: "Book your next adventure with ease. Best deals. Trusted service. Unforgettable journeys.",
     ctas: [
-      { label: "Download Vink Go",  style: { background: "#F5A623", boxShadow: "0 6px 20px rgba(245,166,35,.4)" } },
-      { label: "See Our Network",   style: { background: "rgba(255,255,255,.15)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,.25)" } },
+      { label: "✈ Book Your Ticket Now", style: { background: "#0B1F4D", boxShadow: "0 6px 20px rgba(11,31,77,.5)" } },
+      { label: "See Our Network",        style: { background: "rgba(255,255,255,.15)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,.25)" } },
     ],
     trust: [
-      { value: "175+",  label: "Countries, no fees" },
-      { value: "55M+",  label: "Merchant locations" },
-      { value: "24/7",  label: "Support, always on" },
+      { value: "30%",  label: "Off on selected flights" },
+      { value: "Best", label: "Fares, worldwide" },
+      { value: "24/7", label: "Support, always on" },
     ],
   },
 ];
