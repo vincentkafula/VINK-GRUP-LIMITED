@@ -3,7 +3,7 @@ import { Home, Send, CreditCard, Clock, Star, Bell, ChevronRight, ArrowUpRight, 
 import { MobileAppOverlay, PhoneFrame } from "./PhoneFrame";
 import { globalBankingApi } from "../../services/applicationsApi";
 import { mktAuth, getMktToken, setMktToken, type MktAuthUser } from "../../services/marketplaceApi";
-import { rbacApi, setToken, getToken as getMainToken, getSession, type SectionApplication } from "../../services/apiClient";
+import { rbacApi, setToken, setSession as setMainSession, getToken as getMainToken, getSession, type SectionApplication } from "../../services/apiClient";
 
 type Screen = "onboarding" | "home" | "send" | "cards" | "history" | "rewards" | "adminPanel";
 type Tier = "Spark" | "Anchor" | "Momentum" | "Horizon" | "Summit" | "Legacy";
@@ -899,7 +899,7 @@ export function VinkBankingApp({ isOpen, onClose, onOpenManagementPanel }: { isO
     if (restored) {
       setAuthUser(restored.user);
       const tok = getMktToken();
-      if (tok) setToken(tok);
+      if (tok) { setToken(tok); setMainSession(restored.user); }
       if (["owner", "superadmin"].includes(restored.user.role) && onOpenManagementPanel) {
         onClose();
         onOpenManagementPanel();
@@ -923,6 +923,12 @@ export function VinkBankingApp({ isOpen, onClose, onOpenManagementPanel }: { isO
   };
   const handleAuthenticated = (user: MktAuthUser) => {
     setAuthUser(user);
+    // Same bridge the restored-session path above already does (getMktToken
+    // -> setToken) -- missing here meant logging in through this app's own
+    // form and going straight to the Management Panel left vink_jwt unset,
+    // the exact bug reported: every call there failing with "no token sent".
+    const tok = getMktToken();
+    if (tok) { setToken(tok); setMainSession(user); }
     if (["owner", "superadmin"].includes(user.role) && onOpenManagementPanel) {
       onClose();
       onOpenManagementPanel();

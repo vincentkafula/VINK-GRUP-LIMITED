@@ -11,7 +11,7 @@ import {
   mktCategories, mktProducts, mktCart, mktOrders,
   mktWishlist, mktSellers, mktAdmin, mktAddresses, mktAuth, setMktToken, getMktToken, type MktAuthUser,
 } from "../services/marketplaceApi";
-import { getToken as getMainToken, getSession } from "../services/apiClient";
+import { getToken as getMainToken, getSession, setToken as setMainToken, setSession as setMainSession } from "../services/apiClient";
 import { isDemoMode } from "../services/demoMode";
 import { MarketplaceAuthModal } from "./MarketplaceAuthModal";
 import { CustomerDashboard } from "./CustomerDashboard";
@@ -1756,7 +1756,22 @@ export function VinkMarketplace({ isOpen, onClose, initialAction, initialProduct
                     Marketplace management — sellers, products, orders — is part of the one Management Panel now, not a separate view here.
                   </p>
                 </div>
-                <button onClick={() => { onClose(); onOpenManagementPanel(); }}
+                <button onClick={() => {
+                    // MarketplaceAuthModal's own login only ever sets
+                    // mkt_token, never the main site's vink_jwt -- someone
+                    // who authenticated here specifically (not through the
+                    // main Login button) would reach the real Management
+                    // Panel with no session at all, since it reads
+                    // exclusively from vink_jwt. Bridge it here, the
+                    // reverse direction of the bridge this file already
+                    // does on mount (main session -> marketplace).
+                    if (!getMainToken() && getMktToken() && authUser) {
+                      setMainToken(getMktToken()!);
+                      setMainSession(authUser);
+                    }
+                    onClose();
+                    onOpenManagementPanel();
+                  }}
                   className="px-6 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90"
                   style={{ background: "linear-gradient(135deg,#1FAE58,#5FC97F)" }}>
                   Open Management Panel
