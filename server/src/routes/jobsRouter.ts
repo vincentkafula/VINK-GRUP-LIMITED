@@ -311,8 +311,9 @@ router.post("/applications/:ref/approve", requireAuth, requireRole(...REVIEWER_R
     if (userRows.length) {
       const userId = userRows[0].id;
       await client.query(
-        `INSERT INTO section_permissions (user_id, section, granted_by) VALUES ($1,$2,$3) ON CONFLICT (user_id, section) DO NOTHING`,
-        [userId, app.department, req.user!.userId]
+        `INSERT INTO section_permissions (user_id, section, position, granted_by) VALUES ($1,$2,$3,$4)
+         ON CONFLICT (user_id, section) DO UPDATE SET position = EXCLUDED.position, granted_by = EXCLUDED.granted_by`,
+        [userId, app.department, app.position, req.user!.userId]
       );
       await client.query(`UPDATE job_applications SET role_granted_at = now(), role_granted_user_id = $1 WHERE id = $2`, [userId, app.id]);
       roleGranted = true;

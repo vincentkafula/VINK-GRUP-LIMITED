@@ -8,9 +8,9 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
-import { rbacApi, jobsApi, getSession, getToken, type SectionApplication, type ManagerRecord, type AuditEntry, type JobApplication } from "../services/apiClient";
+import { rbacApi, jobsApi, newsAdminApi, getSession, getToken, type SectionApplication, type ManagerRecord, type AuditEntry, type JobApplication } from "../services/apiClient";
 
-interface Props { isOpen: boolean; onClose: () => void; adminName?: string; adminRole?: string; role?: string }
+interface Props { isOpen: boolean; onClose: () => void; adminName?: string; adminRole?: string; role?: string; onOpenNewsManagement?: () => void }
 
 const GREEN = "#1FAE58";
 const ORANGE = "#F4802F";
@@ -100,7 +100,7 @@ const BOTTOM_STATS = [
 
 type View = "dashboard" | "applications" | "managers" | "audit" | "apply" | "jobApplications";
 
-export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User", adminRole = "Super Administrator", role = "superadmin" }: Props) {
+export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User", adminRole = "Super Administrator", role = "superadmin", onOpenNewsManagement }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeItem, setActiveItem] = useState("Dashboard");
   const [view, setView] = useState<View>("dashboard");
@@ -140,6 +140,24 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
 
   const openModule = (label: string) => {
     const section = SIDEBAR_TO_SECTION[label] ?? label; // sidebar labels are shortened, grid tile titles are already canonical
+
+    if (section === "News Management" && onOpenNewsManagement) {
+      // Someone hired into a specific newsroom role (Reporter, Editor,
+      // etc. via the job application flow) gets their own dashboard for
+      // doing that actual work. Someone with only generic News
+      // Management access (an owner reviewing candidates, or an older
+      // RBAC grant with no attached position) gets the reviewer workspace
+      // below instead -- checked live rather than assumed, since section
+      // access alone doesn't say which case this is.
+      newsAdminApi.me().then(r => {
+        if (r.success && r.data?.position) { onOpenNewsManagement(); return; }
+        setJobDept(section);
+        goView("jobApplications");
+        loadJobApps(section);
+      });
+      return;
+    }
+
     setJobDept(section);
     goView("jobApplications");
     loadJobApps(section);

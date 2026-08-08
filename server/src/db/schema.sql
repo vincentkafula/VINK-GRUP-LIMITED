@@ -335,10 +335,12 @@ CREATE INDEX IF NOT EXISTS idx_section_apps_user ON section_applications(user_id
 CREATE TABLE IF NOT EXISTS section_permissions (
   user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   section     TEXT NOT NULL,
+  position    TEXT,        -- the specific role within the section, e.g. 'Reporter / Journalist' for News Management -- null for grants made outside the job-application flow (the original RBAC "apply to manage a section" system, which doesn't have sub-roles)
   granted_by  UUID REFERENCES users(id) ON DELETE SET NULL,
   granted_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
   PRIMARY KEY (user_id, section)
 );
+ALTER TABLE section_permissions ADD COLUMN IF NOT EXISTS position TEXT;
 
 CREATE TABLE IF NOT EXISTS audit_log (
   id          TEXT PRIMARY KEY,
@@ -371,6 +373,17 @@ CREATE TABLE IF NOT EXISTS news_articles (
 );
 CREATE INDEX IF NOT EXISTS idx_news_category ON news_articles(category);
 CREATE INDEX IF NOT EXISTS idx_news_published ON news_articles(published_at DESC);
+-- Editorial workflow: content-creator roles (Reporter, Section Editor, etc.)
+-- submit pending_review, only editorial leadership (General Manager,
+-- Editor-in-Chief, Managing Editor) can move something to published.
+-- Existing seeded articles all default to 'published' so the public
+-- news viewer's existing behavior (which only ever queries published
+-- content) doesn't change for anything already in the table.
+ALTER TABLE news_articles ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'published';
+ALTER TABLE news_articles ADD COLUMN IF NOT EXISTS created_by_user_id UUID;
+ALTER TABLE news_articles ADD COLUMN IF NOT EXISTS created_by_name TEXT;
+ALTER TABLE news_articles ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT now();
+CREATE INDEX IF NOT EXISTS idx_news_status ON news_articles(status);
 
 CREATE TABLE IF NOT EXISTS mkt_reviews (
   id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),

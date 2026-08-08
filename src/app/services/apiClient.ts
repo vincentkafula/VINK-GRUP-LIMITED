@@ -178,6 +178,23 @@ export interface SectionApplication {
 export interface ManagerRecord { id: string; username: string; name: string; email: string; sections: { section: string; grantedAt: string }[]; }
 export interface AuditEntry { id: string; actor_name: string; action: string; target: string | null; details: object; created_at: string; }
 
+export interface NewsRole { hasAccess: boolean; position: string | null; tier: "leadership" | "creator" | "viewer" }
+export interface NewsAdminArticle extends NewsArticleSummary {
+  body: string;
+  status: "draft" | "pending_review" | "published" | "rejected";
+  createdByName?: string;
+  updatedAt: string;
+}
+
+export const newsAdminApi = {
+  me: () => api.get<NewsRole>("/api/news/admin/me", true),
+  articles: (status?: string) => api.get<NewsAdminArticle[]>(`/api/news/admin/articles${status ? `?status=${status}` : ""}`, true),
+  create: (data: Partial<NewsAdminArticle> & { submitForReview?: boolean }) => api.post<NewsAdminArticle>("/api/news/admin/articles", data, true),
+  update: (id: string, data: Partial<NewsAdminArticle>) => api.patch<NewsAdminArticle>(`/api/news/admin/articles/${id}`, data, true),
+  setStatus: (id: string, status: string) => api.patch<NewsAdminArticle>(`/api/news/admin/articles/${id}/status`, { status }, true),
+  remove: (id: string) => api.delete<null>(`/api/news/admin/articles/${id}`, true),
+};
+
 export const rbacApi = {
   sections: () => api.get<readonly string[]>("/api/rbac/sections"),
   apply: (section: string, message?: string) => api.post<{ id: string; section: string; status: string }>("/api/rbac/apply", { section, message }, true),

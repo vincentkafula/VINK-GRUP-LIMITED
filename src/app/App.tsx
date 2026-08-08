@@ -93,6 +93,7 @@ const ContactUsViewer             = lazy(() => import("./components/footerPages/
 const SwitchToVINKViewer           = lazy(() => import("./components/footerPages/SwitchToVINKViewer").then(m => ({ default: m.SwitchToVINKViewer })));
 const FiveHundredGlobalApplication = lazy(() => import("./components/FiveHundredGlobalApplication").then(m => ({ default: m.FiveHundredGlobalApplication })));
 const JobApplicationViewer = lazy(() => import("./components/JobApplicationViewer").then(m => ({ default: m.JobApplicationViewer })));
+const NewsManagementDashboard = lazy(() => import("./components/NewsManagementDashboard").then(m => ({ default: m.NewsManagementDashboard })));
 const TaxiAssociationsViewer       = lazy(() => import("./components/TaxiAssociationsViewer").then(m => ({ default: m.TaxiAssociationsViewer })));
 const ManagementHub                = lazy(() => import("./components/ManagementHub").then(m => ({ default: m.ManagementHub })));
 
@@ -202,6 +203,7 @@ export default function App() {
   const [showSwitchToVINK, setShowSwitchToVINK]               = useState(false);
   const [show500App, setShow500App]                         = useState(false);
   const [showJobApp, setShowJobApp]                         = useState(false);
+  const [showNewsManagement, setShowNewsManagement]         = useState(false);
 
   // ── Login state ───────────────────────────────────────────────────────────
   const [isLoggedIn, setIsLoggedIn]                         = useState(false);
@@ -650,7 +652,8 @@ export default function App() {
       {has("superAdmin")      && <Suspense fallback={null}><SuperAdminDashboard    isOpen={showSuperAdmin}      onClose={() => setShowSuperAdmin(false)} /></Suspense>}
       {has("rideHailing")     && <Suspense fallback={null}><RideHailingSystem      isOpen={showRideHailing}     onClose={() => setShowRideHailing(false)} /></Suspense>}
       {has("banking")         && <Suspense fallback={null}><BankingDashboard       isOpen={showBanking}         onClose={() => setShowBanking(false)} /></Suspense>}
-      {has("managementPanel") && <Suspense fallback={null}><ManagementPanelViewer  isOpen={showManagementPanel} onClose={() => setShowManagementPanel(false)} adminName={getSession()?.name} adminRole={getSession()?.role === "superadmin" ? "Super Administrator" : getSession()?.role === "owner" ? "System Owner" : getSession()?.role} role={getSession()?.role} /></Suspense>}
+      {has("managementPanel") && <Suspense fallback={null}><ManagementPanelViewer  isOpen={showManagementPanel} onClose={() => setShowManagementPanel(false)} adminName={getSession()?.name} adminRole={getSession()?.role === "superadmin" ? "Super Administrator" : getSession()?.role === "owner" ? "System Owner" : getSession()?.role} role={getSession()?.role} onOpenNewsManagement={() => { mount("newsManagement"); setShowNewsManagement(true); }} /></Suspense>}
+      {has("newsManagement")   && <Suspense fallback={null}><NewsManagementDashboard isOpen={showNewsManagement} onClose={() => setShowNewsManagement(false)} /></Suspense>}
       {has("vehicle")         && <Suspense fallback={null}><VehicleTrackingDashboard isOpen={showVehicle}       onClose={() => setShowVehicle(false)} /></Suspense>}
       {has("marketplaceLanding") && <Suspense fallback={null}><MarketplaceLandingViewer isOpen={showMarketplaceLanding} onClose={() => { setShowMarketplaceLanding(false); pushRoute("/"); }} onShop={(productId) => { setMarketplaceInitialAction(null); setMarketplaceInitialProductId(productId ?? null); setShowMarketplaceLanding(false); mount("marketplace"); setShowMarketplace(true); }} onSell={() => { setMarketplaceInitialAction("sell"); setMarketplaceInitialProductId(null); setShowMarketplaceLanding(false); mount("marketplace"); setShowMarketplace(true); }} /></Suspense>}
       {has("marketplace")     && <Suspense fallback={null}><VinkMarketplace        isOpen={showMarketplace}     onClose={() => { setShowMarketplace(false); pushRoute("/"); }} initialAction={marketplaceInitialAction} initialProductId={marketplaceInitialProductId} onOpenManagementPanel={() => { mount("managementPanel"); setShowManagementPanel(true); }} /></Suspense>}
