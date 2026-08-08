@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import heroCardPhone from "../../imports/HeroCardPhone.png";
 import heroImage1 from "../../imports/Picture1-1.png";
 import heroImage2 from "../../imports/Picture1.png";
 import heroImage3 from "../../imports/Picture2.png";
@@ -7,6 +8,23 @@ import heroImage5 from "../../imports/Picture7.png";
 
 // ─── Per-slide content ────────────────────────────────────────────────────────
 const SLIDES = [
+  {
+    image:   heroCardPhone,
+    background: "linear-gradient(135deg,#150A35 0%,#2E1065 45%,#4C2A85 75%,#6B3FA0 100%)",
+    eyebrow: "VINK Card — Now in Your Pocket",
+    eyebrowDot: "bg-purple-400",
+    headline: <>All the benefits of Card,<br /><span className="relative inline-block"><span className="relative z-10">on your phone.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#A78BFA" }} /></span></>,
+    body: "Manage, track and enjoy exclusive benefits anytime, anywhere.",
+    ctas: [
+      { label: "💳 Start Now",  style: { background: "#7C3AED", boxShadow: "0 6px 20px rgba(124,58,237,.4)" } },
+      { label: "▶ Learn more", style: { background: "rgba(255,255,255,.15)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,.25)" } },
+    ],
+    trust: [
+      { value: "24/7",  label: "Card access, anytime" },
+      { value: "0",     label: "Hidden fees" },
+      { value: "1-Tap", label: "Track every benefit" },
+    ],
+  },
   {
     image:   heroImage1,
     eyebrow: "South Africa's first transport-native digital bank",
@@ -120,7 +138,10 @@ export function HeroSection() {
 
   return (
     <section className="text-white overflow-hidden relative"
-      style={{ background: "linear-gradient(135deg,#0B5C2E 0%,#128A43 40%,#5FC97F 75%,#A7E8BD 100%)" }}>
+      style={{
+        background: slide.background ?? "linear-gradient(135deg,#0B5C2E 0%,#128A43 40%,#5FC97F 75%,#A7E8BD 100%)",
+        transition: "background 0.5s ease",
+      }}>
       {/* Decorative orbs */}
       <div className="absolute top-0 right-0 w-96 h-96 rounded-full opacity-10 pointer-events-none"
         style={{ background: "radial-gradient(circle,#fff 0%,transparent 70%)", transform: "translate(30%,-30%)" }} />
