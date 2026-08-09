@@ -268,7 +268,16 @@ export function PricingViewer({ isOpen, onClose, activeSubNav, heroTitle, heroSu
               <a key={i} href="#" style={{ color: "rgba(255,255,255,.5)", textDecoration: "none", fontSize: 11.5 }}>{l}</a>
             ))}
           </div>
-          <div>© Copyright VINK Bank Limited. All Rights Reserved | Registration number 2018/079316/07</div>
+          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "2px 10px" }}>
+            <span>© Copyright VINK-GRUP-LIMITED. All Rights Reserved.</span>
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "2px 10px", fontSize: 11 }}>
+            <span>United States – EIN: 37-2148609</span>
+            <span style={{ opacity: 0.4 }}>|</span>
+            <span>South Africa – Registration No: 2018/079316/07</span>
+            <span style={{ opacity: 0.4 }}>|</span>
+            <span>Zambia – Registration No: 120210020196</span>
+          </div>
         </div>
       </footer>
 

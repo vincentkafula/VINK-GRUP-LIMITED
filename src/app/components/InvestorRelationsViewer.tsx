@@ -23,23 +23,25 @@ const REASONS = [
   {
     title: "Leader",
     icon: "🏆",
-    text: "VINK Group is a category leader in diversified financial services across Southern Africa, consistently outperforming peers on core return metrics and market penetration.",
+    text: "VINK is positioned to become a category leader in diversified financial services across Southern Africa, targeting core return metrics and market penetration that outperform existing peers.",
   },
   {
-    title: "Consistent",
+    title: "Disciplined",
     icon: "📈",
-    text: "The group has delivered uninterrupted dividend growth for four consecutive years, backed by disciplined capital allocation and a diversified revenue base that cushions cyclical headwinds.",
+    text: "VINK's business plan is built on disciplined capital allocation and a diversified revenue base — banking, insurance, telecommunications and e-mobility — designed to cushion cyclical headwinds once operational.",
   },
   {
-    title: "Exceeding expectations",
+    title: "High growth potential",
     icon: "🚀",
-    text: "VINK has surpassed consensus earnings forecasts in each of the last eight quarters, driven by accelerated digital adoption, cost efficiency programmes and strategic corporate acquisitions.",
+    text: "VINK targets rapid adoption from launch, driven by accelerated digital uptake among underbanked commuters, cost efficiency built into the platform from day one, and a clear roadmap for strategic partnerships.",
   },
 ];
 
 const SHARE_ROWS = [
   { label: "STATUS",             value: "Pre-launch — full operation June 2027" },
-  { label: "REGISTRATION",       value: "2018/079316/07" },
+  { label: "US REGISTRATION",    value: "EIN 37-2148609" },
+  { label: "SA REGISTRATION",    value: "2018/079316/07" },
+  { label: "ZAMBIA REGISTRATION", value: "120210020196" },
   { label: "TARGET GROWTH",      value: "7.5% p.a." },
   { label: "FUNDING SOUGHT",     value: "R4.5 Billion" },
   { label: "FUNDING TERM",       value: "60 months @ 7%" },
@@ -245,16 +247,16 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
         {/* ── Company info ── */}
         <div className="grid md:grid-cols-2 gap-6">
           <div>
-            <SectionHeading>VINK MULTI SERVICES PTY LTD</SectionHeading>
+            <SectionHeading>VINK MULTI SERVICES (PTY) LTD</SectionHeading>
             <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-3">
               <p className="text-sm text-gray-700 leading-relaxed">
-                VINK Group PTY LTD is a professional diversified financial services company. Our commitment to financial excellence drives innovative solutions for banking, insurance, telecommunications and e-mobility services across Southern Africa.
+                VINK Multi Services (Pty) Ltd is a professional diversified financial services company. Our commitment to financial excellence drives innovative solutions for banking, insurance, telecommunications and e-mobility services across Southern Africa.
               </p>
               <div className="border-t pt-3 space-y-2 text-sm">
-                <div className="flex justify-between"><span className="text-gray-500">Sovereign Meeting</span><span className="font-semibold text-gray-800">31 January 2022</span></div>
-                <div className="flex justify-between"><span className="text-gray-500">Meeting Hours</span><span className="font-semibold text-gray-800">3 PM – 5 PM</span></div>
-                <div className="flex justify-between"><span className="text-gray-500">JSE Ticker</span><span className="font-semibold" style={{ color: P }}>R.SX: VINK</span></div>
-                <div className="flex justify-between"><span className="text-gray-500">Registration</span><span className="font-semibold text-gray-800">2018/079316/07</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">Status</span><span className="font-semibold text-gray-800">Pre-launch — full operation June 2027</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">United States</span><span className="font-semibold text-gray-800">EIN: 37-2148609</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">South Africa</span><span className="font-semibold text-gray-800">Reg: 2018/079316/07</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">Zambia</span><span className="font-semibold text-gray-800">Reg: 120210020196</span></div>
               </div>
             </div>
           </div>
