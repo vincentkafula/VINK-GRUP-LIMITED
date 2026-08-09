@@ -45,9 +45,10 @@ export const SpecialNeedSection = memo(function SpecialNeedSection() {
               ))}
             </div>
             <div className="flex flex-wrap justify-center md:justify-start gap-3">
-              <button className="px-7 py-3 rounded-xl text-sm font-bold text-white transition-all hover:scale-105 active:scale-95 shadow-lg"
-                style={{ background: "linear-gradient(135deg,#4C1D95,#7C3AED)", boxShadow: "0 6px 20px rgba(124,58,237,.35)" }}>
-                Find My Card
+              <button disabled title="Not available yet — VINK launches June 2027"
+                className="px-7 py-3 rounded-xl text-sm font-bold cursor-not-allowed"
+                style={{ background: "#F1EFF9", color: "#9B93B0", border: "1px solid #E4E0EF" }}>
+                🔒 Available June 2027
               </button>
               <button className="px-7 py-3 rounded-xl text-sm font-semibold transition-all hover:bg-emerald-50"
                 style={{ border: "1.5px solid #5B21B6", color: "#5B21B6" }}>

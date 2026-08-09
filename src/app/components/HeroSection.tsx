@@ -150,9 +150,19 @@ export function HeroSection() {
               {slide.body}
             </p>
 
-            {/* CTAs */}
+            {/* CTAs — the first CTA in each slide is the transactional one
+                (Get Your Card, Book Your Ticket, etc.); it's disabled and
+                relabeled until launch. The second is informational (Learn
+                more / See How It Works) and stays active. */}
             <div className="flex flex-wrap justify-center md:justify-start gap-3 mb-7">
-              {slide.ctas.map((cta, i) => (
+              {slide.ctas.map((cta, i) => i === 0 ? (
+                <button key={i} disabled
+                  title="Not available yet — VINK launches June 2027"
+                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl text-sm font-bold cursor-not-allowed"
+                  style={{ background: "rgba(255,255,255,.12)", color: "rgba(255,255,255,.55)", border: "1px solid rgba(255,255,255,.18)" }}>
+                  🔒 Available June 2027
+                </button>
+              ) : (
                 <button key={i}
                   className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl text-sm font-bold text-white transition-all hover:scale-105 active:scale-95 shadow-lg"
                   style={cta.style as React.CSSProperties}>

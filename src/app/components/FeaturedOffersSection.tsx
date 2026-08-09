@@ -71,9 +71,10 @@ export const FeaturedOffersSection = memo(function FeaturedOffersSection({ onCom
                   style={{ background: "#EDE9FE", color: "#5B21B6" }}>{o.highlight}</span>
                 <p className="text-gray-400 text-xs mb-1">{o.detail}</p>
                 <p className="text-gray-400 text-[11px] mb-4">{o.issuer}</p>
-                <button className="w-full py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 group-hover:scale-[1.02]"
-                  style={{ background: "linear-gradient(135deg,#4C1D95,#7C3AED)" }}>
-                  Apply Today
+                <button disabled title="Not available yet — VINK launches June 2027"
+                  className="w-full py-2.5 rounded-xl text-sm font-semibold cursor-not-allowed"
+                  style={{ background: "#F1EFF9", color: "#9B93B0", border: "1px solid #E4E0EF" }}>
+                  🔒 Available June 2027
                 </button>
               </div>
             </div>

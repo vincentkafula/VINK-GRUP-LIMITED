@@ -120,9 +120,10 @@ export function CreditCardsSection() {
               <h3 className="text-base font-black text-gray-900 mt-2">{card.name}</h3>
               <p className="text-sm font-medium mt-0.5" style={{ color: "#5B21B6" }}>{card.benefit}</p>
             </div>
-            <button className="flex-shrink-0 px-5 py-2 rounded-xl text-sm font-bold text-white transition-all hover:scale-105"
-              style={{ background: "linear-gradient(135deg,#5B21B6,#7C3AED)" }}>
-              Apply Now
+            <button disabled title="Not available yet — VINK launches June 2027"
+              className="flex-shrink-0 px-5 py-2 rounded-xl text-sm font-bold cursor-not-allowed"
+              style={{ background: "#EDEBF5", color: "#9B93B0", border: "1px solid #DDD6E8" }}>
+              🔒 Available June 2027
             </button>
           </div>
           <ul className="space-y-2">
