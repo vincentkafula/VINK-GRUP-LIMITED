@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { X, CheckCircle, Upload, ChevronLeft, ChevronRight, Clock, Loader2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
-import { otpApi } from "../services/applicationsApi";
+import { applicationsApi, otpApi } from "../services/applicationsApi";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
@@ -539,7 +539,7 @@ function Step6({ onNext, onBack, submitting }: { onNext: (data: Record<string, s
         </p>
       </label>
 
-      <NavButtons onBack={onBack} onNext={handleNext} nextLabel="🔒 Applications Open June 2027" nextDisabled={!consent} />
+      <NavButtons onBack={onBack} onNext={handleNext} nextLabel={submitting ? "Submitting…" : "Open My Account"} nextDisabled={!consent || submitting} />
     </div>
   );
 }
@@ -641,13 +641,30 @@ export function PersonalAccountApplicationViewer({ isOpen, onClose }: Props) {
     scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const submitApplication = async (_step6Data: Record<string, string>) => {
-    // VINK is not yet in full operation (launching June 2027) -- block the
-    // real submission here rather than in the child step component's own
-    // button, since that keeps this one change effective regardless of how
-    // that component is structured internally. applicationsApi.submit is
-    // deliberately not called.
-    toast.error("Applications aren't open yet — VINK launches June 2027. You're welcome to browse the application, but submissions aren't available until then.");
+  const submitApplication = async (step6Data: Record<string, string>) => {
+    // Merge synchronously rather than calling updateForm() and reading
+    // formData in the same tick — setFormData doesn't flush before this
+    // function runs, so formData here would otherwise still be missing
+    // everything captured on this final step.
+    const merged = { ...formData, ...step6Data };
+    updateForm(step6Data);
+    setSubmitting(true);
+    const r = await applicationsApi.submit({
+      tier: "personal",
+      accountTypeRequested: merged.accountType,
+      applicantName: `${merged.firstName ?? ""} ${merged.lastName ?? ""}`.trim() || "Applicant",
+      applicantEmail: merged.email,
+      applicantPhone: merged.phone,
+      tierData: merged,
+    });
+    setSubmitting(false);
+    if (r.success && r.data?.referenceNumber) {
+      setReferenceNumber(r.data.referenceNumber);
+      setStep(7);
+      scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      toast.error(r.error ?? "Couldn't submit your application — please check your connection and try again.");
+    }
   };
 
   const back = () => {

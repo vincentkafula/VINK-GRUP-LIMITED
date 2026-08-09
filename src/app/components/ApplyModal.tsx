@@ -23,9 +23,24 @@ export function ApplyModal({ isOpen, onClose, product, tier, price }: Props) {
   if (!isOpen) return null;
 
   const handleSubmit = async () => {
-    // VINK is not yet in full operation (launching June 2027) -- block the
-    // real submission. publicApi.apply is deliberately not called.
-    toast.error("Applications aren't open yet — VINK launches June 2027. You're welcome to browse this form, but submissions aren't available until then.");
+    if (!form.name || !form.email || !form.phone) {
+      toast.error("Please fill in your name, email and phone number.");
+      return;
+    }
+    if (!form.email.includes("@")) {
+      toast.error("Please enter a valid email address.");
+      return;
+    }
+    setSubmitting(true);
+    const r = await publicApi.apply({ product, tier, name: form.name, email: form.email, phone: form.phone, idNumber: form.idNumber, income: form.income, employmentStatus: form.employmentStatus, message: form.message });
+    setSubmitting(false);
+    if (r.success && r.data) {
+      const d = r.data as { referenceNumber: string };
+      setRefNo(d.referenceNumber);
+      toast.success(`Application submitted! Reference: ${d.referenceNumber}`);
+    } else {
+      toast.error(r.error ?? "Application failed. Please try again or contact us.");
+    }
   };
 
   const reset = () => { setRefNo(null); setForm({ name: "", email: "", phone: "", idNumber: "", income: "", employmentStatus: "Employed (Full-time)", message: "" }); };
@@ -118,11 +133,10 @@ export function ApplyModal({ isOpen, onClose, product, tier, price }: Props) {
               By submitting this application you consent to VINK processing your personal information in accordance with POPIA. A soft credit inquiry may be performed.
             </p>
 
-            <button onClick={handleSubmit} disabled
-              title="Not available yet — VINK launches June 2027"
-              className="w-full py-3 rounded-xl text-sm font-bold cursor-not-allowed"
-              style={{ background: "#EDEBF5", color: "#9B93B0", border: "1px solid #DDD6E8" }}>
-              🔒 Applications open June 2027
+            <button onClick={handleSubmit} disabled={submitting}
+              className="w-full py-3 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 disabled:opacity-60 transition-all hover:opacity-90"
+              style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
+              {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Submitting...</> : "Submit Application"}
             </button>
           </div>
         )}

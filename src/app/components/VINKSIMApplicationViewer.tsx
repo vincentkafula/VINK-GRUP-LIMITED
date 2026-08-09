@@ -3,6 +3,7 @@ import {
   X, CheckCircle, RefreshCw,
   User, Shield, Fingerprint, Camera, FileText, Users, Smartphone,
 } from "lucide-react";
+import { applicationsApi } from "../services/applicationsApi";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 import {
   AppHero, StepTracker, ProgressBar, FormCard, Field,
@@ -398,15 +399,14 @@ export function VINKSIMApplicationViewer({ isOpen, onClose }: Props) {
               By activating your Vink SIM you confirm that all information provided is accurate and that you consent to RICA registration, VINK&apos;s Privacy Policy, and the Cell C network Terms of Service.
             </p>
             <button
-              disabled
-              title="Not available yet — VINK launches June 2027"
-              className="w-full py-4 rounded-xl text-base font-black cursor-not-allowed mt-2"
-              style={{ background: "#EDEBF5", color: "#9B93B0", border: "1px solid #DDD6E8" }}>
-              🔒 SIM activation opens June 2027
+              onClick={async () => {
+                await applicationsApi.submit({ type: "sim-application", applicantName: `${form.firstName} ${form.lastName}`.trim() || "Applicant", applicantEmail: form.email, applicantPhone: form.phone, formData: form as unknown as Record<string,unknown> }).catch(() => null);
+                setSubmitted(true);
+              }}
+              className="w-full py-4 rounded-xl text-base font-black text-white transition-all hover:opacity-90 shadow-lg mt-2"
+              style={{ background: `linear-gradient(135deg,${CP},#5FC97F)`, boxShadow: `0 6px 24px ${CP}35` }}>
+              Activate My Vink SIM →
             </button>
-            <p className="text-xs text-gray-400 text-center mt-2">
-              VINK is not yet in full operation. You're welcome to browse this application to see what the process looks like — activation opens when we launch in June 2027.
-            </p>
           </FormCard>
         )}
 

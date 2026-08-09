@@ -2,6 +2,7 @@ import { useState } from "react";
 import { X, CheckCircle, AlertTriangle, Building2, FileText, Users, ClipboardCheck, DollarSign, Phone } from "lucide-react";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { AppHero, StepTracker, ProgressBar, FormCard, Field, DocSlot, NavButtons, inputCls, selectCls, P as CP, GOLD, GREEN } from "./AppFormShell";
+import { applicationsApi } from "../services/applicationsApi";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
@@ -86,6 +87,8 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
   const [docs, setDocs] = useState<Record<string, boolean>>({});
   const [agreed, setAgreed] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const [refNo, setRefNo] = useState(`VINK-CL-${new Date().getFullYear()}-${Math.floor(Math.random() * 90000 + 10000)}`);
 
   const [contact, setContact] = useState({ firstName: "", lastName: "", designation: "", phone: "+27 ", email: "", altPhone: "" });
@@ -440,15 +443,33 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
               </label>
 
               <button
-                disabled
-                title="Not available yet — VINK launches June 2027"
-                className="w-full py-4 rounded-xl text-base font-black cursor-not-allowed mt-2"
-                style={{ background: "#EDEBF5", color: "#9B93B0", border: "1px solid #DDD6E8" }}>
-                🔒 Applications open June 2027
+                disabled={!agreed || reqDocsCount < totalReq || submitting}
+                onClick={async () => {
+                  setSubmitting(true);
+                  setSubmitError("");
+                  const result = await applicationsApi.submit({
+                    type: "corporateLoan",
+                    subType: LOAN_PRODUCTS.find(p => p.id === selectedProduct)?.name ?? selectedProduct,
+                    applicantName: `${contact.firstName} ${contact.lastName}`.trim(),
+                    applicantEmail: contact.email,
+                    applicantPhone: contact.phone,
+                    formData: { contact, company, assets, funding, selectedProduct },
+                  });
+                  setSubmitting(false);
+                  if (result.success && result.data) {
+                    setRefNo(result.data.referenceNumber);
+                    setSubmitted(true);
+                  } else {
+                    setSubmitError(result.error ?? "Submission failed. Please try again.");
+                  }
+                }}
+                className="w-full py-4 rounded-xl text-base font-black text-white transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed shadow-lg mt-2"
+                style={{ background: agreed && reqDocsCount >= totalReq ? `linear-gradient(135deg,${CP},#34A853)` : "#9CA3AF" }}>
+                {submitting ? "Submitting..." : reqDocsCount < totalReq
+                  ? `Upload all required documents first (${reqDocsCount}/${totalReq})`
+                  : "Submit Corporate Loan Application"}
               </button>
-              <p className="text-xs text-gray-400 text-center mt-2">
-                VINK is not yet in full operation. You're welcome to browse this application to see what the process looks like — submissions open when we launch in June 2027.
-              </p>
+              {submitError && <p className="text-red-600 text-sm text-center mt-2">{submitError}</p>}
             </FormCard>
           </>
         )}

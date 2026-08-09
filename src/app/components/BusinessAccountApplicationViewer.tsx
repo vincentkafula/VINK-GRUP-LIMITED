@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { X, CheckCircle, Clock, Upload, Plus, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
+import { applicationsApi } from "../services/applicationsApi";
 
 interface Props { isOpen: boolean; onClose: () => void; initialAccountType?: string; }
 
@@ -460,9 +461,23 @@ function Step7({ onBack, onClose, initialAccountType, formData }: { onBack: () =
 
   const handleSubmit = async () => {
     if (!agreeTerms) return;
-    // VINK is not yet in full operation (launching June 2027) -- block the
-    // real submission. applicationsApi.submit is deliberately not called.
-    toast.error("Business account applications aren't open yet — VINK launches June 2027. You're welcome to browse this application, but submissions aren't available until then.");
+    setSubmitting(true);
+    const r = await applicationsApi.submit({
+      tier: "business",
+      accountTypeRequested: accountType,
+      currency,
+      applicantName: formData.bizName || "Business Applicant",
+      applicantEmail: formData.email,
+      applicantPhone: formData.phone,
+      tierData: { ...formData, accountType, currency },
+    });
+    setSubmitting(false);
+    if (r.success && r.data?.referenceNumber) {
+      setReferenceNumber(r.data.referenceNumber);
+      setSubmitted(true);
+    } else {
+      toast.error(r.error ?? "Couldn't submit your application — please check your connection and try again.");
+    }
   };
 
   if (submitted) {
@@ -539,11 +554,11 @@ function Step7({ onBack, onClose, initialAccountType, formData }: { onBack: () =
           style={{ borderColor: "#D1D5DB" }}>
           <ChevronLeft className="w-4 h-4" /> Back
         </button>
-        <button onClick={handleSubmit} disabled
-          title="Not available yet — VINK launches June 2027"
-          className="flex-1 py-2.5 rounded-xl text-sm font-bold cursor-not-allowed"
-          style={{ background: "#EDEBF5", color: "#9B93B0", border: "1px solid #DDD6E8" }}>
-          🔒 Applications open June 2027
+        <button onClick={handleSubmit}
+          disabled={!agreeTerms || submitting}
+          className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-40"
+          style={{ background: PURPLE }}>
+          {submitting ? "Submitting…" : "Submit & Generate Account"}
         </button>
       </div>
     </div>

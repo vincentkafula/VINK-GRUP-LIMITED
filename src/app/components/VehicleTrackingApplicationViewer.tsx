@@ -3,6 +3,7 @@ import {
   X, CheckCircle, RefreshCw,
   User, Shield, Fingerprint, Camera, FileText, Users, MapPin, Car,
 } from "lucide-react";
+import { applicationsApi } from "../services/applicationsApi";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 import {
   AppHero, StepTracker, ProgressBar, FormCard, Field,
@@ -331,15 +332,14 @@ export function VehicleTrackingApplicationViewer({ isOpen, onClose }: Props) {
               By submitting you consent to VINK installing a GPS tracking device in your vehicle and processing your location data in accordance with POPIA and VINK&apos;s Privacy Policy.
             </p>
             <button
-              disabled
-              title="Not available yet — VINK launches June 2027"
-              className="w-full py-4 rounded-xl text-base font-black cursor-not-allowed mt-2"
-              style={{ background: "#EDEBF5", color: "#9B93B0", border: "1px solid #DDD6E8" }}>
-              🔒 Activation opens June 2027
+              onClick={async () => {
+                await applicationsApi.submit({ type: "vehicle-tracking", applicantName: `${form.firstName ?? ""} ${form.lastName ?? ""}`.trim() || "Applicant", applicantEmail: form.email, applicantPhone: form.phone, formData: { ...form, ...vehicle, fleetSize } }).catch(() => null);
+                setSubmitted(true);
+              }}
+              className="w-full py-4 rounded-xl text-base font-black text-white transition-all hover:opacity-90 shadow-lg mt-2"
+              style={{ background: "linear-gradient(135deg,#1E3A5F,#2563EB)", boxShadow: "0 6px 24px #2563EB35" }}>
+              Activate Vehicle Tracker →
             </button>
-            <p className="text-xs text-gray-400 text-center mt-2">
-              VINK is not yet in full operation. You're welcome to browse this application to see what the process looks like — activation opens when we launch in June 2027.
-            </p>
           </FormCard>
         )}
 

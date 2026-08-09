@@ -53,10 +53,9 @@ export const BusinessPowerSection = memo(function BusinessPowerSection() {
               ))}
             </ul>
             <div className="flex flex-wrap justify-center lg:justify-start gap-3">
-              <button disabled title="Not available yet — VINK launches June 2027"
-                className="px-8 py-3.5 rounded-xl text-sm font-bold cursor-not-allowed"
-                style={{ background: "rgba(255,255,255,.1)", color: "rgba(255,255,255,.45)", border: "1px solid rgba(255,255,255,.15)" }}>
-                🔒 Available June 2027
+              <button className="px-8 py-3.5 rounded-xl text-sm font-bold text-white transition-all hover:scale-105 active:scale-95 shadow-lg"
+                style={{ background: "linear-gradient(135deg,#4C1D95,#7C3AED)", boxShadow: "0 6px 20px rgba(124,58,237,.4)" }}>
+                Open a Business Account
               </button>
               <button className="px-8 py-3.5 rounded-xl text-sm font-semibold transition-all hover:bg-white/10"
                 style={{ border: "1px solid rgba(255,255,255,.2)", color: "rgba(255,255,255,.8)" }}>
