@@ -25,11 +25,40 @@ export class ErrorBoundary extends Component<Props, State> {
 
   reset = () => this.setState({ error: null });
 
+  /** True for the specific "this chunk file no longer exists on the
+   *  server" failure (stale reference after a new deploy) -- distinct
+   *  from a genuine app bug, and not something `reset()` can fix, since
+   *  the already-loaded JS still points at the old, gone filename. Only
+   *  a real page reload re-fetches the current index.html. */
+  isStaleChunkError(error: Error): boolean {
+    const msg = error.message || "";
+    return /Failed to fetch dynamically imported module|error loading dynamically imported module|Importing a module script failed/i.test(msg);
+  }
+
   render() {
     const { error } = this.state;
     if (!error) return this.props.children;
 
     if (this.props.fallback) return this.props.fallback(error, this.reset);
+
+    if (this.isStaleChunkError(error)) {
+      return (
+        <div className="flex flex-col items-center justify-center min-h-[300px] p-8 text-center">
+          <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 bg-blue-50">
+            <RefreshCw className="w-8 h-8 text-blue-500" />
+          </div>
+          <h2 className="text-lg font-black text-gray-900 mb-2">VINK was just updated</h2>
+          <p className="text-sm text-gray-500 mb-6 max-w-sm">
+            This page loaded an older version. Reloading will bring you back to the latest one.
+          </p>
+          <button onClick={() => window.location.reload()}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90"
+            style={{ background: "#5B21B6" }}>
+            <RefreshCw className="w-4 h-4" />Reload page
+          </button>
+        </div>
+      );
+    }
 
     return (
       <div className="flex flex-col items-center justify-center min-h-[300px] p-8 text-center">
