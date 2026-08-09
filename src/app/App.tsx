@@ -95,6 +95,12 @@ const BranchLocatorViewer          = lazy(() => import("./components/footerPages
 const SponsorshipViewer            = lazy(() => import("./components/footerPages/SponsorshipViewer").then(m => ({ default: m.SponsorshipViewer })));
 const WEFViewer                    = lazy(() => import("./components/footerPages/WEFViewer").then(m => ({ default: m.WEFViewer })));
 const BankingFeesViewer            = lazy(() => import("./components/footerPages/BankingFeesViewer").then(m => ({ default: m.BankingFeesViewer })));
+const BankingGuideViewer           = lazy(() => import("./components/footerPages/BankingGuideViewer").then(m => ({ default: m.BankingGuideViewer })));
+const BankingChannelsViewer        = lazy(() => import("./components/footerPages/BankingChannelsViewer").then(m => ({ default: m.BankingChannelsViewer })));
+const ExchangeRatesViewer          = lazy(() => import("./components/footerPages/ExchangeRatesViewer").then(m => ({ default: m.ExchangeRatesViewer })));
+const LatestOffersViewer           = lazy(() => import("./components/footerPages/LatestOffersViewer").then(m => ({ default: m.LatestOffersViewer })));
+const MarketIndicesViewer          = lazy(() => import("./components/footerPages/MarketIndicesViewer").then(m => ({ default: m.MarketIndicesViewer })));
+const VinkBlogViewer               = lazy(() => import("./components/footerPages/VinkBlogViewer").then(m => ({ default: m.VinkBlogViewer })));
 const FiveHundredGlobalApplication = lazy(() => import("./components/FiveHundredGlobalApplication").then(m => ({ default: m.FiveHundredGlobalApplication })));
 const JobApplicationViewer = lazy(() => import("./components/JobApplicationViewer").then(m => ({ default: m.JobApplicationViewer })));
 const NewsManagementDashboard = lazy(() => import("./components/NewsManagementDashboard").then(m => ({ default: m.NewsManagementDashboard })));
@@ -210,6 +216,12 @@ export default function App() {
   const [showSponsorship, setShowSponsorship]                  = useState(false);
   const [showWEF, setShowWEF]                                  = useState(false);
   const [showBankingFees, setShowBankingFees]                  = useState(false);
+  const [showBankingGuide, setShowBankingGuide]                = useState(false);
+  const [showBankingChannels, setShowBankingChannels]          = useState(false);
+  const [showExchangeRates, setShowExchangeRates]              = useState(false);
+  const [showLatestOffers, setShowLatestOffers]                = useState(false);
+  const [showMarketIndices, setShowMarketIndices]              = useState(false);
+  const [showVinkBlog, setShowVinkBlog]                        = useState(false);
   const [show500App, setShow500App]                         = useState(false);
   const [showJobApp, setShowJobApp]                         = useState(false);
   const [showNewsManagement, setShowNewsManagement]         = useState(false);
@@ -599,6 +611,12 @@ export default function App() {
       if (label === "Sponsorship")                               { mount("sponsorship"); setShowSponsorship(true); }
       if (label === "VINK at the World Economic Forum")          { mount("wef"); setShowWEF(true); }
       if (label === "Banking rates and fees")                    { mount("bankingFees"); setShowBankingFees(true); }
+      if (label === "Guide to help you bank")                    { mount("bankingGuide"); setShowBankingGuide(true); }
+      if (label === "App, Online and other banking")             { mount("bankingChannels"); setShowBankingChannels(true); }
+      if (label === "Exchange rates")                            { mount("exchangeRates"); setShowExchangeRates(true); }
+      if (label === "Latest Offers")                             { mount("latestOffers"); setShowLatestOffers(true); }
+      if (label === "Market Indices")                            { mount("marketIndices"); setShowMarketIndices(true); }
+      if (label === "VINK blog")                                 { mount("vinkBlog"); setShowVinkBlog(true); }
     });
   };
 
@@ -766,6 +784,12 @@ export default function App() {
       {has("sponsorship")         && <Suspense fallback={null}><SponsorshipViewer           isOpen={showSponsorship} onClose={() => setShowSponsorship(false)} /></Suspense>}
       {has("wef")                 && <Suspense fallback={null}><WEFViewer                   isOpen={showWEF} onClose={() => setShowWEF(false)} /></Suspense>}
       {has("bankingFees")         && <Suspense fallback={null}><BankingFeesViewer           isOpen={showBankingFees} onClose={() => setShowBankingFees(false)} /></Suspense>}
+      {has("bankingGuide")        && <Suspense fallback={null}><BankingGuideViewer          isOpen={showBankingGuide} onClose={() => setShowBankingGuide(false)} /></Suspense>}
+      {has("bankingChannels")     && <Suspense fallback={null}><BankingChannelsViewer       isOpen={showBankingChannels} onClose={() => setShowBankingChannels(false)} /></Suspense>}
+      {has("exchangeRates")       && <Suspense fallback={null}><ExchangeRatesViewer         isOpen={showExchangeRates} onClose={() => setShowExchangeRates(false)} /></Suspense>}
+      {has("latestOffers")        && <Suspense fallback={null}><LatestOffersViewer          isOpen={showLatestOffers} onClose={() => setShowLatestOffers(false)} /></Suspense>}
+      {has("marketIndices")       && <Suspense fallback={null}><MarketIndicesViewer         isOpen={showMarketIndices} onClose={() => setShowMarketIndices(false)} /></Suspense>}
+      {has("vinkBlog")            && <Suspense fallback={null}><VinkBlogViewer              isOpen={showVinkBlog} onClose={() => setShowVinkBlog(false)} /></Suspense>}
       {has("managementHub")      && <Suspense fallback={null}><ManagementHub              isOpen={showManagementHub}       onClose={() => setShowManagementHub(false)} /></Suspense>}
       {has("taxiAssociations")   && <Suspense fallback={null}><TaxiAssociationsViewer       isOpen={showTaxiAssociations} onClose={() => setShowTaxiAssociations(false)} /></Suspense>}
       {has("500app")             && <Suspense fallback={null}><FiveHundredGlobalApplication isOpen={show500App}          onClose={() => setShow500App(false)} /></Suspense>}
