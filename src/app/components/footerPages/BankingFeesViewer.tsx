@@ -6,14 +6,14 @@ const P = "#0B5C2E";
 const GOLD = "#F5A623";
 
 const ACCOUNT_FEES = [
-  { product: "Vink Commuter Card", monthly: "R0", note: "No monthly fee, ever." },
+  { product: "VINK Commuter Card", monthly: "R0", note: "No monthly fee, ever." },
   { product: "Personal Account", monthly: "R0 for the first 12 months, standard fee applies after", note: "Exact ongoing fee confirmed at launch." },
   { product: "Business Account", monthly: "R0 for the first 12 months, standard fee applies after", note: "Exact ongoing fee confirmed at launch." },
-  { product: "Vink Gold (Visa Infinite Elite)", monthly: "Premium annual fee applies", note: "Full fee schedule published at launch." },
+  { product: "VINK Gold (Visa Infinite Elite)", monthly: "Premium annual fee applies", note: "Full fee schedule published at launch." },
 ];
 
 const TRANSACTION_FEES = [
-  { item: "Taxi fare tap (Vink Commuter Card)", fee: "R0.50 per transaction" },
+  { item: "Taxi fare tap (VINK Commuter Card)", fee: "R0.50 per transaction" },
   { item: "Card purchases in South Africa", fee: "No fee" },
   { item: "ATM withdrawal at partner banks", fee: "Fee-free at listed partner ATMs; standard fee elsewhere" },
   { item: "Foreign transaction (SADC network)", fee: "Confirmed at launch — see Exchange Rates" },
@@ -24,7 +24,7 @@ export function BankingFeesViewer({ isOpen, onClose }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-white">
       <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm">
-        <img src={vinkLogo} alt="Vink" className="h-9 w-auto object-contain" />
+        <img src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
         <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500"><X className="w-5 h-5" /></button>
       </div>
 

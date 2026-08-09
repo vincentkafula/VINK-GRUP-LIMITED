@@ -583,7 +583,7 @@ function PaymentsPanel({ userId, accounts }: { userId: string; accounts: R[] }) 
   };
 
   const rails = [
-    { id: "internal", label: "Vink Internal", fee: "Free", eta: "Instant" },
+    { id: "internal", label: "VINK Internal", fee: "Free", eta: "Instant" },
     { id: "faster_payments", label: "Faster Payments", fee: "Free", eta: "Same day" },
     { id: "sepa", label: "SEPA", fee: "R0.50", eta: "1 business day" },
     { id: "swift", label: "SWIFT", fee: "0.5%", eta: "2-5 days" },

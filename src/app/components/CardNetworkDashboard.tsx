@@ -1,5 +1,5 @@
 /**
- * Vink Card Network Integration Dashboard
+ * VINK Card Network Integration Dashboard
  * Visa + Mastercard principal membership, BIN management,
  * AFC device payment processing, authorization, settlement & clearing.
  */
@@ -213,7 +213,7 @@ function AFCSimulator() {
         <div className="px-4 py-3 flex items-center justify-between border-b border-white/10">
           <div>
             <p className="text-white text-xs font-bold">AFC Terminal · Khayelitsha → CBD Route</p>
-            <p className="text-white/40 text-[10px]">Device ID: AFC-CPT-00847 · Vink AFC v3.2.1</p>
+            <p className="text-white/40 text-[10px]">Device ID: AFC-CPT-00847 · VINK AFC v3.2.1</p>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-[10px] text-green-400 font-bold">● ONLINE</span>
@@ -538,7 +538,7 @@ export function CardNetworkDashboard({ isOpen, onClose }: Props) {
             <div className="space-y-4 max-w-5xl">
               <h1 className="text-xl font-black text-gray-900">BIN (Bank Identification Number) Management</h1>
               <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-sm text-emerald-800 leading-relaxed">
-                <strong>How BINs work:</strong> Each Vink card type is assigned a BIN registered in its target country. When a payment is processed, the card network identifies the BIN and routes the transaction domestically — the acquiring bank sees it as a local card, eliminating cross-border fees. VINK holds Visa and Mastercard principal membership, allowing direct BIN assignment without a third-party BIN sponsor.
+                <strong>How BINs work:</strong> Each VINK card type is assigned a BIN registered in its target country. When a payment is processed, the card network identifies the BIN and routes the transaction domestically — the acquiring bank sees it as a local card, eliminating cross-border fees. VINK holds Visa and Mastercard principal membership, allowing direct BIN assignment without a third-party BIN sponsor.
               </div>
               <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
                 <div className="overflow-x-auto">

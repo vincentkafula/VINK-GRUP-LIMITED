@@ -17,7 +17,7 @@ export function BranchLocatorViewer({ isOpen, onClose }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-gray-50">
       <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm">
-        <img src={vinkLogo} alt="Vink" className="h-9 w-auto object-contain" />
+        <img src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
         <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500"><X className="w-5 h-5" /></button>
       </div>
 
@@ -32,7 +32,7 @@ export function BranchLocatorViewer({ isOpen, onClose }: Props) {
 
         {/* Search */}
         <div className="bg-white rounded-2xl border border-gray-200 p-5">
-          <label className="text-xs font-bold uppercase tracking-wider text-gray-500 block mb-2">Find your nearest Vink card agent</label>
+          <label className="text-xs font-bold uppercase tracking-wider text-gray-500 block mb-2">Find your nearest VINK card agent</label>
           <div className="flex gap-3">
             <div className="flex-1 flex items-center gap-2 border border-gray-200 rounded-xl px-4 py-2.5">
               <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
@@ -94,7 +94,7 @@ export function BranchLocatorViewer({ isOpen, onClose }: Props) {
             ))}
           </div>
           <p className="text-xs text-gray-400 mt-4">
-            * Availability varies by store. Ask in-store for Vink card services.
+            * Availability varies by store. Ask in-store for VINK card services.
           </p>
         </section>
       </div>

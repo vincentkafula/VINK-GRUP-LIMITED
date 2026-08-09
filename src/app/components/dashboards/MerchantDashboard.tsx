@@ -25,11 +25,11 @@ const ORDERS = [
 ];
 
 const TOP_PRODUCTS = [
-  { name: "Vink SIM Card Bundle", sold: 482, revenue: "R96,400", stock: 1840, rating: 4.8 },
+  { name: "VINK SIM Card Bundle", sold: 482, revenue: "R96,400", stock: 1840, rating: 4.8 },
   { name: "Vehicle Tracker Device", sold: 124, revenue: "R186,000", stock: 280, rating: 4.9 },
   { name: "Driver App Premium Plan", sold: 310, revenue: "R62,000", stock: null, rating: 4.7 },
   { name: "Fleet Management Suite", sold: 48, revenue: "R144,000", stock: null, rating: 4.9 },
-  { name: "Vink Data SIM (20GB)", sold: 284, revenue: "R56,800", stock: 920, rating: 4.6 },
+  { name: "VINK Data SIM (20GB)", sold: 284, revenue: "R56,800", stock: 920, rating: 4.6 },
 ];
 
 const SALES = [124000, 148000, 138000, 164000, 152000, 188000, 174000, 196000, 184000, 212000, 204000, 248000];
@@ -44,7 +44,7 @@ export function MerchantDashboard({ isOpen, onClose }: { isOpen: boolean; onClos
       title="Merchant Dashboard" subtitle="Business — Commerce & Sales"
       accentColor="#0EA5E9" gradient="from-sky-600 to-cyan-500"
       navItems={NAV} activeNav={nav} onNavChange={setNav}
-      onClose={onClose} liveConnected userName="Vink Commerce Ltd" alertCount={8}
+      onClose={onClose} liveConnected userName="VINK Commerce Ltd" alertCount={8}
     >
       <div className="p-5 space-y-5">
         <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-3">

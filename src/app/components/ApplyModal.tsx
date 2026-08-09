@@ -113,7 +113,7 @@ export function ApplyModal({ isOpen, onClose, product, tier, price }: Props) {
               <div>
                 <label className="text-xs font-semibold text-gray-700 block mb-1">Monthly Income</label>
                 <input value={form.income} onChange={e => setForm(f => ({ ...f, income: e.target.value }))}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="R 0,000" />
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="R0,000" />
               </div>
               <div className="col-span-2">
                 <label className="text-xs font-semibold text-gray-700 block mb-1">Employment Status</label>

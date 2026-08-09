@@ -70,7 +70,7 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
 
         {/* Top bar */}
         <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: step === 1 ? "1px solid rgba(255,255,255,0.15)" : "1px solid #F3F4F6" }}>
-          <img src={vinkLogo} alt="Vink" className="h-8 w-auto" style={{ filter: step === 1 ? "brightness(0) invert(1)" : "none" }} />
+          <img src={vinkLogo} alt="VINK" className="h-8 w-auto" style={{ filter: step === 1 ? "brightness(0) invert(1)" : "none" }} />
           <div className="flex items-center gap-3">
             <span className="text-sm font-medium" style={{ color: step === 1 ? "rgba(255,255,255,0.7)" : "#9CA3AF" }}>
               Step {step} of {STEPS.length}
@@ -241,7 +241,7 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
               <div>
                 <div className="flex items-center justify-center gap-2 mb-1">
                   <Smartphone className="w-5 h-5" style={{ color: P }} />
-                  <h2 className="text-lg font-black text-gray-900">Download the Vink App</h2>
+                  <h2 className="text-lg font-black text-gray-900">Download the VINK App</h2>
                 </div>
                 <p className="text-sm text-gray-500">Get the full experience on your phone. Your account works on web too.</p>
               </div>

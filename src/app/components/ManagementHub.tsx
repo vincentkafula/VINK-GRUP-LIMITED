@@ -304,7 +304,7 @@ function CustomersScreen({ user }: { user: MgmtUser }) {
   const customers = [
     { name: "Aisha Patel",     type: "Individual", kyc: "verified",  accounts: 2, balance: "R24,840",  since: "Jan 2023" },
     { name: "Thomas Khumalo",  type: "Individual", kyc: "verified",  accounts: 1, balance: "R8,200",   since: "Mar 2023" },
-    { name: "Vink Corp Ltd",   type: "Business",   kyc: "verified",  accounts: 3, balance: "R1.2M",    since: "Jun 2022" },
+    { name: "VINK Corp Ltd",   type: "Business",   kyc: "verified",  accounts: 3, balance: "R1.2M",    since: "Jun 2022" },
     { name: "Mpho Sithole",    type: "Individual", kyc: "pending",   accounts: 1, balance: "R4,100",   since: "May 2024" },
     { name: "Green Tech (Pty)",type: "Business",   kyc: "pending",   accounts: 1, balance: "R280,000", since: "Apr 2024" },
     { name: "Johan van Wyk",   type: "Individual", kyc: "rejected",  accounts: 0, balance: "—",        since: "Jun 2024" },

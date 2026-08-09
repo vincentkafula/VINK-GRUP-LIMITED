@@ -78,7 +78,7 @@ export function BusinessLoanApplicationViewer({ isOpen, onClose }: Props) {
       {/* ── Top bar ── */}
       <div className="sticky top-0 z-20 bg-white border-b border-gray-100 shadow-sm">
         <div className="flex items-center justify-between px-5 py-3">
-          <img src={vinkLogo} alt="Vink" className="h-9 w-auto object-contain" />
+          <img src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
           <div className="flex items-center gap-3">
             <span className="hidden sm:block text-xs text-gray-400 font-medium">Step {step} of {STEPS.length}</span>
             <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-800"><X className="w-5 h-5" /></button>
@@ -387,7 +387,7 @@ export function BusinessLoanApplicationViewer({ isOpen, onClose }: Props) {
 
                 <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm space-y-3">
                   <p className="text-xs text-gray-500 leading-relaxed">
-                    By submitting this application I confirm that all information provided is true and accurate. I authorise Vink Group (Pty) Ltd to conduct a credit bureau inquiry and verify my information. I have read and agree to the <span className="font-semibold" style={{ color: CP }}>Loan Terms and Conditions</span> and <span className="font-semibold" style={{ color: CP }}>Privacy Policy</span>.
+                    By submitting this application I confirm that all information provided is true and accurate. I authorise VINK Group (Pty) Ltd to conduct a credit bureau inquiry and verify my information. I have read and agree to the <span className="font-semibold" style={{ color: CP }}>Loan Terms and Conditions</span> and <span className="font-semibold" style={{ color: CP }}>Privacy Policy</span>.
                   </p>
                   <label className="flex items-start gap-3 cursor-pointer">
                     <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)}

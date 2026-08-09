@@ -10,7 +10,7 @@ export function CTASection() {
               Ready to get started?
             </h2>
             <p className="text-lg text-white/90 mb-8">
-              Join millions of users who trust Vink for their financial needs. Apply now and get approved in minutes.
+              Join millions of users who trust VINK for their financial needs. Apply now and get approved in minutes.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <button className="bg-white text-[#128A43] px-8 py-3 rounded-lg hover:bg-gray-100 transition-colors inline-flex items-center justify-center gap-2">

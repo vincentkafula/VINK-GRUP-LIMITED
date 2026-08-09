@@ -113,7 +113,7 @@ function AppDownloadCard() {
       {/* Trigger */}
       <button onClick={() => setOpen(o => !o)}
         style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", background: BRAND, border: "none", cursor: "pointer" }}>
-        <span style={{ color: "#fff", fontSize: 14, fontWeight: 700 }}>📲 Download the Vink Apps</span>
+        <span style={{ color: "#fff", fontSize: 14, fontWeight: 700 }}>📲 Download the VINK Apps</span>
         <span style={{ color: "rgba(255,255,255,.7)", fontSize: 11, fontWeight: 600, padding: "2px 10px", borderRadius: 20, border: "1px solid rgba(255,255,255,.3)" }}>
           {open ? "Hide ▲" : "iOS & Android ▼"}
         </span>

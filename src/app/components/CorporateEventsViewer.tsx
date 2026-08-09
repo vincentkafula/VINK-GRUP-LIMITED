@@ -147,7 +147,7 @@ export function CorporateEventsViewer({ isOpen, onClose, onNavigate }: Props) {
 
       {/* ── Top bar ── */}
       <div className="sticky top-0 z-20 flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200 shadow-sm">
-        <img src={vinkLogo} alt="Vink" className="h-9 w-auto object-contain" />
+        <img src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
         <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-800">
           <X className="w-5 h-5" />
         </button>

@@ -78,7 +78,7 @@ export function Header({ onDashboardSelect, onSubNavClick, onOpenProfile, isLogg
                 {/* Light logo on white nav — 180px wide on desktop, 120px on mobile (brand guide: desktop navbar 160-200px) */}
                 <img
                   src={vinkLogoLight}
-                  alt="Vink Group"
+                  alt="VINK Group"
                   className="w-[120px] sm:w-[180px] h-auto object-contain"
                   loading="eager"
                 />

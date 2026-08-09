@@ -420,7 +420,7 @@ export const WorldMapSection = memo(function WorldMapSection() {
               One Card.<br />Everywhere You Go.
             </h2>
             <p className="text-white/70 text-sm leading-relaxed mb-6 max-w-sm mx-auto md:mx-0">
-              Your Vink card is accepted at millions of merchant locations in over 175 countries — and across every major taxi route, fuel station, and retailer in South Africa. Tap-to-pay and contactless payments work instantly at partner merchants.
+              Your VINK card is accepted at millions of merchant locations in over 175 countries — and across every major taxi route, fuel station, and retailer in South Africa. Tap-to-pay and contactless payments work instantly at partner merchants.
             </p>
             <div className="flex justify-center md:justify-start gap-8 mb-8">
               {STATS.map((s,i) => (

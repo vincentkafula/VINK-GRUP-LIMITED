@@ -200,7 +200,7 @@ export function PostLoginHome({ isOpen, onClose, onNavigate }: PostLoginHomeProp
                 <p className="text-white/65 text-xs font-medium mb-0.5">🔒 Secure Payments</p>
                 <div className="flex items-center gap-2">
                   <p className="text-white font-black text-2xl tracking-tight">
-                    {balanceVisible ? "R 24,850.00" : "R ••••••"}
+                    {balanceVisible ? "R24,850.00" : "R ••••••"}
                   </p>
                   <button onClick={() => setBalanceVisible(!balanceVisible)}
                     className="text-white/60 hover:text-white transition-colors">
@@ -209,7 +209,7 @@ export function PostLoginHome({ isOpen, onClose, onNavigate }: PostLoginHomeProp
                 </div>
                 <p className="text-white/50 text-[10px] mt-0.5">Account ending ••4521</p>
               </div>
-              <img src={vinkLogo} alt="Vink" className="w-[160px] h-auto object-contain opacity-90" />
+              <img src={vinkLogo} alt="VINK" className="w-[160px] h-auto object-contain opacity-90" />
             </div>
 
             {/* Make Payment button */}

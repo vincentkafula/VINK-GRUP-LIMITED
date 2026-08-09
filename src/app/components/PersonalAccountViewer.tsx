@@ -298,7 +298,7 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate }: Props) {
                   Banking designed for<br />every South African.
                 </h1>
                 <p className="text-gray-500 text-base mt-5 max-w-md">
-                  Open an account in minutes and manage your money with the Vink app.
+                  Open an account in minutes and manage your money with the VINK app.
                 </p>
               </>
             )}
@@ -421,7 +421,7 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate }: Props) {
             </span>
             <div>
               <p className="text-xl font-black text-gray-900">Ready to get started?</p>
-              <p className="text-gray-500 text-sm mt-1">Open your Vink account online in minutes and start banking your way.</p>
+              <p className="text-gray-500 text-sm mt-1">Open your VINK account online in minutes and start banking your way.</p>
             </div>
           </div>
           <div className="flex flex-col items-center sm:items-end gap-2 shrink-0">

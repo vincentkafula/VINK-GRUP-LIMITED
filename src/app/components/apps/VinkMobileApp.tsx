@@ -1,5 +1,5 @@
 /**
- * Vink Mobile App — Main Home Screen
+ * VINK Mobile App — Main Home Screen
  * Matches the attached design exactly.
  * Every tile directly opens the corresponding built dashboard/viewer.
  */

@@ -174,15 +174,15 @@ The South African government has been calling for cashless transit since 2009. S
 
   /* ── Solution ── */
   const [solution, setSolution] = useState(
-    `VINK installs an Android-based AFC (Automatic Fare Collection) terminal in any minibus taxi in under 2 hours. Passengers tap a Vink Smart Pay Card. Fare deducted, driver credited, association levy distributed, and device investor dividend allocated — all in one transaction in under 3 seconds, offline-capable.
+    `VINK installs an Android-based AFC (Automatic Fare Collection) terminal in any minibus taxi in under 2 hours. Passengers tap a VINK Smart Pay Card. Fare deducted, driver credited, association levy distributed, and device investor dividend allocated — all in one transaction in under 3 seconds, offline-capable.
 
 This is the wedge. From there, VINK radiates outward:
 
-• Vink Banking App — personal and business accounts, multi-currency cards (Visa/Mastercard), FX across ZAR, ZMW, EUR, USD, CNY.
-• Vink Driver App — earnings dashboard, ride-hailing, cash-fare entry, payslips, bank statements.
-• Vink Ride — full Uber-like platform: passenger booking, driver matching, in-app chat, masked calling, surge pricing.
-• Vink Fleet Tracker — live GPS, geofencing, driver behaviour scoring, maintenance scheduling.
-• Vink SIM (MVNO) — affordable data and calls for drivers and passengers via Cell C infrastructure.
+• VINK Banking App — personal and business accounts, multi-currency cards (Visa/Mastercard), FX across ZAR, ZMW, EUR, USD, CNY.
+• VINK Driver App — earnings dashboard, ride-hailing, cash-fare entry, payslips, bank statements.
+• VINK Ride — full Uber-like platform: passenger booking, driver matching, in-app chat, masked calling, surge pricing.
+• VINK Fleet Tracker — live GPS, geofencing, driver behaviour scoring, maintenance scheduling.
+• VINK SIM (MVNO) — affordable data and calls for drivers and passengers via Cell C infrastructure.
 
 The insight that competitors miss: we don't ask drivers or passengers to change behaviour. We install our device in the vehicle. The driver's employment depends on the device. Adoption is structural, not optional.`
   );
@@ -197,7 +197,7 @@ The insight that competitors miss: we don't ask drivers or passengers to change 
 • Financial reporting system: PAYE/UIF payslips, bank statements, income statements, balance sheets, cash flow statements — all auto-generated from transaction data.
 
 Partnerships:
-• MVNO agreement finalised with Cell C (South Africa's 3rd largest mobile network) — Vink SIM can be activated for any driver or passenger today.
+• MVNO agreement finalised with Cell C (South Africa's 3rd largest mobile network) — VINK SIM can be activated for any driver or passenger today.
 
 Funding:
 • Formal business plan submitted for R4.5 billion funding round (60-month, 7% p.a. structured instrument).
@@ -215,9 +215,9 @@ Market validation:
 
 2. Banking & Cards — interchange (1.5–2%), monthly account fees (R59–R199/month by tier), and FX spreads (0.5–1% on cross-border). 500,000 driver accounts = R354M/year at R59 base tier.
 
-3. MVNO / SIM — data bundles, voice, and SMS sold through the Vink SIM on Cell C infrastructure. Wholesale margin: ~40%. Target: 200,000 active SIMs by Year 2.
+3. MVNO / SIM — data bundles, voice, and SMS sold through the VINK SIM on Cell C infrastructure. Wholesale margin: ~40%. Target: 200,000 active SIMs by Year 2.
 
-4. Ride-Hailing Commission — 15–20% on all Vink Ride trips. Driver-side acquisition already built into the Driver App ecosystem.
+4. Ride-Hailing Commission — 15–20% on all VINK Ride trips. Driver-side acquisition already built into the Driver App ecosystem.
 
 5. AFC Device Rental — R250/month per device paid to device investors. VINK earns 10% of its own per-tap fee via the investor dividend model — creating a self-funding hardware deployment mechanism.
 
@@ -288,8 +288,8 @@ Use of $112,500:
 
 Post-programme, we will close a $7.5M Series A (target valuation $35–50M) based on:
 • 1,000 AFC devices live, generating real daily transaction data
-• 50,000 Vink Banking accounts with 3+ months transaction history
-• 500+ daily active Vink Driver users
+• 50,000 VINK Banking accounts with 3+ months transaction history
+• 500+ daily active VINK Driver users
 • A functional MVNO subscriber base with Cell C
 
 We have identified 4 Development Finance Institutions (DFIs) and 2 African-focused VC funds as primary Series A targets, all of whom have expressed preliminary interest pending traction metrics.`

@@ -211,7 +211,7 @@ export function BusinessAccountSelectorViewer({ isOpen, onClose, onNavigate, onA
         <div className="relative max-w-6xl mx-auto px-8 py-14 sm:py-16">
           <span className="inline-block text-[11px] font-bold tracking-[0.14em] uppercase mb-3" style={{ color: "#FF7A1A" }}>Business Banking</span>
           <h1 className="text-3xl sm:text-4xl font-black leading-[1.1] text-gray-900">Banking designed for<br />every South African business.</h1>
-          <p className="text-gray-500 text-sm sm:text-base mt-4 max-w-lg">Open a business account in minutes and manage your finances with the Vink app.</p>
+          <p className="text-gray-500 text-sm sm:text-base mt-4 max-w-lg">Open a business account in minutes and manage your finances with the VINK app.</p>
         </div>
       </div>
 

@@ -1,7 +1,7 @@
 /**
  * AFC (Automatic Fare Collection) Management Dashboard
  *
- * Core concept: When a passenger taps their Vink card on the AFC device,
+ * Core concept: When a passenger taps their VINK card on the AFC device,
  * they deposit the fare directly to the driver's wallet.
  * Each device has a unique reference number and is registered to one driver.
  *
@@ -163,7 +163,7 @@ function AFCTerminal({ device, onTap }: { device: typeof DEVICES[0]; onTap: (tap
           )}
         </div>
 
-        {tapState === "idle" && <p className="text-white/40 text-[10px] text-center">Passenger taps Vink card to pay fare</p>}
+        {tapState === "idle" && <p className="text-white/40 text-[10px] text-center">Passenger taps VINK card to pay fare</p>}
         {tapState === "processing" && <p className="text-emerald-300 text-xs animate-pulse">Processing payment…</p>}
         {tapState === "approved" && lastTap && (
           <div className="text-center space-y-1">
@@ -176,7 +176,7 @@ function AFCTerminal({ device, onTap }: { device: typeof DEVICES[0]; onTap: (tap
         {tapState === "declined" && (
           <div className="text-center">
             <p className="text-red-400 font-black">PAYMENT DECLINED</p>
-            <p className="text-white/50 text-[10px] mt-1">Ask passenger to top up Vink card</p>
+            <p className="text-white/50 text-[10px] mt-1">Ask passenger to top up VINK card</p>
           </div>
         )}
       </div>
@@ -320,7 +320,7 @@ export function AFCManagementDashboard({ isOpen, onClose }: Props) {
                   <p className="text-white/60 text-[9px] uppercase tracking-widest mb-2">How It Works</p>
                   <h2 className="text-white font-black text-xl mb-3">Passenger Taps → Driver Gets Paid Instantly</h2>
                   <div className="flex items-center gap-2 flex-wrap text-sm">
-                    {["📱 Passenger taps Vink card", "→", "🔑 Device ref number routes payment", "→", "💰 Driver wallet credited instantly", "→", "📶 WiFi session granted"].map((s, i) => (
+                    {["📱 Passenger taps VINK card", "→", "🔑 Device ref number routes payment", "→", "💰 Driver wallet credited instantly", "→", "📶 WiFi session granted"].map((s, i) => (
                       <span key={i} className={s === "→" ? "text-white/30" : "text-white/80 bg-white/10 px-2 py-0.5 rounded-full text-[11px]"}>{s}</span>
                     ))}
                   </div>
@@ -530,7 +530,7 @@ export function AFCManagementDashboard({ isOpen, onClose }: Props) {
               <p className="text-white font-black text-lg">Driver Wallets</p>
               <div className="rounded-2xl p-4" style={{ background: "#1A1A2E" }}>
                 <p className="text-white/50 text-xs leading-relaxed">
-                  Each driver has a Vink Driver Wallet linked to their AFC device via the device's reference number. When a passenger taps, 85% of the fare is credited instantly. Drivers can withdraw to any SA bank account or use the balance directly for fuel, groceries, and bill payments.
+                  Each driver has a VINK Driver Wallet linked to their AFC device via the device's reference number. When a passenger taps, 85% of the fare is credited instantly. Drivers can withdraw to any SA bank account or use the balance directly for fuel, groceries, and bill payments.
                 </p>
               </div>
               <div className="space-y-3">

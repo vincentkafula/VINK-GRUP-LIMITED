@@ -39,7 +39,7 @@ const FEATURES = [
 ];
 
 const SLIDES = [
-  { eyebrow: "Vink Card, everywhere",  heading: "All the benefits of Card,\non your phone", body: "Personalise your results in a few simple steps and carry every card in one place.", cta: "Learn more" },
+  { eyebrow: "VINK Card, everywhere",  heading: "All the benefits of Card,\non your phone", body: "Personalise your results in a few simple steps and carry every card in one place.", cta: "Learn more" },
   { eyebrow: "Real-time visibility",   heading: "Track every rand,\nin real time",           body: "See spending the moment it happens, right in the app — no surprises at month end.", cta: "See how it works" },
   { eyebrow: "One tap, total control", heading: "Freeze your card\nin one tap",               body: "Lost it? Lock it instantly and keep shopping with a digital card while it's away.", cta: "Explore card controls" },
 ];
@@ -82,7 +82,7 @@ function CardGraphic() {
           <div>
             <p className="text-white/85 text-[13px] font-mono tracking-[0.18em]">•••• •••• •••• 4521</p>
             <div className="flex items-center justify-between mt-2">
-              <p className="text-white/55 text-[9px] tracking-wide uppercase">Vink Personal</p>
+              <p className="text-white/55 text-[9px] tracking-wide uppercase">VINK Personal</p>
               <p className="text-white text-[13px] font-black italic tracking-tight">VISA</p>
             </div>
           </div>
@@ -244,7 +244,7 @@ export function PersonalLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
         <div className="text-center mb-12">
           <span className="inline-block text-[11px] font-semibold tracking-[0.16em] uppercase mb-3" style={{ color: GOLD }}>
-            Why choose Vink
+            Why choose VINK
           </span>
           <h2 className="text-[26px] sm:text-[32px] font-medium tracking-tight" style={{ color: INK, fontFamily: "'Fraunces', serif" }}>
             Card Features and Benefits

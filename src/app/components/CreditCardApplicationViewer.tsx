@@ -21,9 +21,9 @@ const STEPS = [
 ];
 
 const CARD_TYPES = [
-  { id: "standard", name: "Vink Standard Card", limit: "R5,000 – R25,000", fee: "R0/month", color: "linear-gradient(135deg,#128A43,#5FC97F)" },
-  { id: "gold",     name: "Vink Gold Card",     limit: "R25,000 – R150,000", fee: "R85/month", color: "linear-gradient(135deg,#B8860B,#DAA520)" },
-  { id: "platinum", name: "Vink Platinum Card", limit: "R150,000 – R500,000", fee: "R265/month", color: "linear-gradient(135deg,#374151,#6B7280)" },
+  { id: "standard", name: "VINK Standard Card", limit: "R5,000 – R25,000", fee: "R0/month", color: "linear-gradient(135deg,#128A43,#5FC97F)" },
+  { id: "gold",     name: "VINK Gold Card",     limit: "R25,000 – R150,000", fee: "R85/month", color: "linear-gradient(135deg,#B8860B,#DAA520)" },
+  { id: "platinum", name: "VINK Platinum Card", limit: "R150,000 – R500,000", fee: "R265/month", color: "linear-gradient(135deg,#374151,#6B7280)" },
 ];
 
 const DOC_SLOTS = [
@@ -252,7 +252,7 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
       {/* ── Top bar ── */}
       <div className="sticky top-0 z-20 bg-white border-b border-gray-100 shadow-sm">
         <div className="flex items-center justify-between px-5 py-3">
-          <img src={vinkLogo} alt="Vink" className="h-9 w-auto object-contain" />
+          <img src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
           <div className="flex items-center gap-3">
             <span className="hidden sm:block text-xs text-gray-400 font-medium">Step {step} of {STEPS.length}</span>
             <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-800"><X className="w-5 h-5" /></button>
@@ -603,7 +603,7 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
               </div>
               <div>
                 <h2 className="text-2xl font-black text-gray-900">Account Created!</h2>
-                <p className="text-gray-500 text-sm mt-1">Your Vink credit card has been approved and issued.</p>
+                <p className="text-gray-500 text-sm mt-1">Your VINK credit card has been approved and issued.</p>
               </div>
 
               {/* Virtual card preview */}
@@ -623,7 +623,7 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
                   <div className="flex justify-between items-end">
                     <div>
                       <p className="text-[8px] opacity-55 uppercase">Card Holder</p>
-                      <p className="text-xs font-medium">{form.firstName || "Vink"} {form.lastName || "Cardholder"}</p>
+                      <p className="text-xs font-medium">{form.firstName || "VINK"} {form.lastName || "Cardholder"}</p>
                     </div>
                     <p className="text-base font-black italic">VISA</p>
                   </div>

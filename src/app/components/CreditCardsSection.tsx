@@ -2,7 +2,7 @@ import { useState } from "react";
 
 const CARDS = [
   {
-    name: "Vink Commuter Card", sub: "Mastercard Standard",
+    name: "VINK Commuter Card", sub: "Mastercard Standard",
     grad: "linear-gradient(135deg,#34A853,#5B21B6)", net: "mc", last4: "4521", expiry: "09/28",
     tier: "Standard", benefit: "Tap to ride. Earn on every journey.",
     features: [
@@ -14,7 +14,7 @@ const CARDS = [
     ],
   },
   {
-    name: "Vink Driver Card", sub: "Visa Premium",
+    name: "VINK Driver Card", sub: "Visa Premium",
     grad: "linear-gradient(135deg,#7C3AED,#065F46)", net: "visa", last4: "8834", expiry: "03/27",
     tier: "Premium", benefit: "Your earnings. Your card. Your control.",
     features: [
@@ -26,7 +26,7 @@ const CARDS = [
     ],
   },
   {
-    name: "Vink Gold", sub: "Visa Infinite Elite",
+    name: "VINK Gold", sub: "Visa Infinite Elite",
     grad: "linear-gradient(135deg,#D4A843,#B88A20)", net: "visa", last4: "2291", expiry: "12/26",
     tier: "Elite", benefit: "Premium rewards for every rand you spend.",
     features: [
@@ -92,7 +92,7 @@ export function CreditCardsSection() {
         <div className="text-center mb-10">
           <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-3"
             style={{ background: "#EDE9FE", color: "#5B21B6" }}>Compare Cards</span>
-          <h2 className="text-2xl sm:text-3xl font-black text-gray-900">Choose Your Perfect Vink Card</h2>
+          <h2 className="text-2xl sm:text-3xl font-black text-gray-900">Choose Your Perfect VINK Card</h2>
         </div>
 
         <div className="flex justify-center gap-4 sm:gap-6 flex-wrap mb-6">

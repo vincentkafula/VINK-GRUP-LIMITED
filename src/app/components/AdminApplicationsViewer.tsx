@@ -254,7 +254,7 @@ export function AdminApplicationsViewer({ isOpen, onClose }: Props) {
       <div className="sticky top-0 z-20 bg-white border-b border-gray-100 shadow-sm">
         <div className="flex items-center justify-between px-5 py-3">
           <div className="flex items-center gap-3">
-            <img src={vinkLogo} alt="Vink" className="h-9 w-auto object-contain" />
+            <img src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
             <div className="border-l border-gray-200 pl-3 hidden sm:block">
               <p className="text-sm font-black text-gray-800">Applications Dashboard</p>
               <p className="text-[11px] text-gray-400">VINK Bank · Admin · Personal / Business / Corporate accounts</p>

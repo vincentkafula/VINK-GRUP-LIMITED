@@ -49,7 +49,7 @@ export function CreditCardViewer({ isOpen, onClose }: Props) {
       onClose={onClose}
       activeSubNav="Credit Card"
       heroTitle="Credit That Works as Hard as You Do"
-      heroSub="Build credit, earn rewards, or travel in style — find the Vink credit card made for your life stage."
+      heroSub="Build credit, earn rewards, or travel in style — find the VINK credit card made for your life stage."
       row1={ROW1}
       row2={ROW2}
     />

@@ -19,8 +19,8 @@ const ROW1 = [
 
 const ROW2 = [
   { name: "Home Contents Insurance", price: "R170", featured: false, features: ["Covers theft, fire, flood, and accidental damage", "Replacement value (not book value) basis", "Fast online claims via VINK app"] },
-  { name: "Motor Insurance",         price: "R265", featured: true,  features: ["Comprehensive cover for personal and commercial vehicles", "Roadside assist included", "No-claims bonus after 12 months", "Linked to Vink Driver Card for taxi operators"] },
-  { name: "Hospital Cash Plan",      price: "R415", featured: false, features: ["R500–R2,000 per day while hospitalised", "No network restrictions", "Covers maternity and planned procedures", "Payout direct to your Vink account"] },
+  { name: "Motor Insurance",         price: "R265", featured: true,  features: ["Comprehensive cover for personal and commercial vehicles", "Roadside assist included", "No-claims bonus after 12 months", "Linked to VINK Driver Card for taxi operators"] },
+  { name: "Hospital Cash Plan",      price: "R415", featured: false, features: ["R500–R2,000 per day while hospitalised", "No network restrictions", "Covers maternity and planned procedures", "Payout direct to your VINK account"] },
 ];
 
 function Card({ card }: { card: { name: string; price: string; featured?: boolean; features: string[] } }) {

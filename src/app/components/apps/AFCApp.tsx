@@ -704,7 +704,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
                   { label: "CPU",              value: "Quad-Core 2.0 GHz" },
                   { label: "Floor limit",      value: "R500.00" },
                   { label: "Batch interval",   value: "30 minutes" },
-                  { label: "App version",      value: "Vink AFC v3.2.1" },
+                  { label: "App version",      value: "VINK AFC v3.2.1" },
                   { label: "EMV kernel",       value: "Contactless L1 · Paywave · Paypass" },
                   { label: "SAM slots",        value: "4 × SAM active" },
                   { label: "PCI DSS",          value: "Compliant" },

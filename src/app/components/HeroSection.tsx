@@ -25,7 +25,7 @@ const SLIDES = [
   },
   {
     image:   heroTraveler,
-    eyebrow: "Vink Go — Vacation Booking",
+    eyebrow: "VINK Go — Vacation Booking",
     headline: <>Your vacation<br /><span className="relative inline-block"><span className="relative z-10">awaits!</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#F5A623" }} /></span></>,
     body: "Discover breathtaking destinations, amazing experiences and memories that last a lifetime.",
     ctas: [
@@ -70,7 +70,7 @@ const SLIDES = [
   },
   {
     image:   heroPlane,
-    eyebrow: "Vink Go — Travel Booking",
+    eyebrow: "VINK Go — Travel Booking",
     headline: <>Your journey<br /><span className="relative inline-block"><span className="relative z-10">takes flight.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#F5A623" }} /></span></>,
     body: "Book your next adventure with ease. Best deals. Trusted service. Unforgettable journeys.",
     ctas: [

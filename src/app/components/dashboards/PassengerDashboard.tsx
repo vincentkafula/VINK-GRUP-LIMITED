@@ -83,7 +83,7 @@ export function PassengerDashboard({ isOpen, onClose, onBookRide }: { isOpen: bo
                 <button onClick={onBookRide}
                   className="w-full py-3 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 active:scale-95"
                   style={{ background: "linear-gradient(135deg,#0891B2,#06B6D4)" }}>
-                  🚕 Book via Vink Ride
+                  🚕 Book via VINK Ride
                 </button>
               </div>
             </div>
@@ -138,13 +138,13 @@ export function PassengerDashboard({ isOpen, onClose, onBookRide }: { isOpen: bo
                 {[
                   { type: "Visa", last4: "4521", default: true },
                   { type: "Mastercard", last4: "8834", default: false },
-                  { type: "Vink Wallet", last4: "R480 bal", default: false },
+                  { type: "VINK Wallet", last4: "R480 bal", default: false },
                 ].map((c, i) => (
                   <div key={i} className="flex items-center gap-3 p-3 rounded-xl"
                     style={{ background: "#252245", border: `1px solid ${c.default ? "#06B6D455" : "#14532D"}` }}>
                     <div className="w-8 h-6 rounded flex items-center justify-center text-[9px] font-bold"
-                      style={{ background: c.type === "Vink Wallet" ? "#128A43" : c.type === "Visa" ? "#1A1F71" : "#EB001B", color: "white" }}>
-                      {c.type === "Vink Wallet" ? "V" : c.type[0]}
+                      style={{ background: c.type === "VINK Wallet" ? "#128A43" : c.type === "Visa" ? "#1A1F71" : "#EB001B", color: "white" }}>
+                      {c.type === "VINK Wallet" ? "V" : c.type[0]}
                     </div>
                     <div className="flex-1">
                       <p className="text-[11px] font-semibold text-white">{c.type}</p>

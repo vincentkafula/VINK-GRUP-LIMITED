@@ -34,7 +34,7 @@ export const BusinessPowerSection = memo(function BusinessPowerSection() {
               <span style={{ color: "#F5C842" }}>80,000 bonus points</span>{" "}
               or{" "}
               <span style={{ color: "#F5C842" }}>R3,000 cash back</span>{" "}
-              when you open a Vink Business Account this month.
+              when you open a VINK Business Account this month.
             </h2>
             <p className="text-white/60 text-sm leading-relaxed mb-7 max-w-md mx-auto lg:mx-0">
               VINK Business Banking is designed for the operators who keep South Africa moving — taxi associations, fleet owners, fuel stations, gym franchises, and independent retailers. Get instant settlements, no hidden fees, and a payment infrastructure that scales with you.

@@ -67,15 +67,15 @@ export const CATEGORY_CONFIG: Record<ProductCategory, {
     accentColor: "#E53935",
   },
   creditCard: {
-    title: "Choose Your Vink Card",
+    title: "Choose Your VINK Card",
     subtitle: "From your first credit card to a premium Visa Infinite — pick the card that matches your lifestyle.",
     tag: "Personal Banking · Credit Cards",
     gradient: "linear-gradient(135deg,#0B5C2E 0%,#128A43 55%,#5FC97F 100%)",
     accentColor: "#128A43",
   },
   sim: {
-    title: "Choose Your Vink SIM Plan",
-    subtitle: "Stay connected on the Cell C network — affordable data, calls, and SMS bundled with your Vink wallet.",
+    title: "Choose Your VINK SIM Plan",
+    subtitle: "Stay connected on the Cell C network — affordable data, calls, and SMS bundled with your VINK wallet.",
     tag: "VINK MVNO · Cell C Network",
     gradient: "linear-gradient(135deg,#E65100 0%,#F57C00 55%,#FFB74D 100%)",
     accentColor: "#F57C00",
@@ -93,7 +93,7 @@ export const CATEGORY_CONFIG: Record<ProductCategory, {
 
 export const PRODUCTS: Record<ProductCategory, Product[]> = {
   account: [
-    { id: "clear-access", name: "Spark Account", tagline: "For anyone starting their banking journey", price: "R0", priceLabel: "/month — always free", emoji: "🌱", gradient: "linear-gradient(135deg,#E3F2FD,#BBDEFB)", features: ["No minimum balance", "Free Vink card included", "Instant transaction notifications", "Online and app banking"], badge: "Free Forever", badgeColor: "#10B981" },
+    { id: "clear-access", name: "Spark Account", tagline: "For anyone starting their banking journey", price: "R0", priceLabel: "/month — always free", emoji: "🌱", gradient: "linear-gradient(135deg,#E3F2FD,#BBDEFB)", features: ["No minimum balance", "Free VINK card included", "Instant transaction notifications", "Online and app banking"], badge: "Free Forever", badgeColor: "#10B981" },
     { id: "everyday", name: "Anchor Account", tagline: "Designed for daily commuters and casual spenders", price: "R0", priceLabel: "/month", emoji: "🚌", gradient: "linear-gradient(135deg,#E8F5E9,#C8E6C9)", features: ["Free taxi fare payments via tap-and-go", "2 free ATM withdrawals/month", "Free airtime and electricity in-app", "Debit order support"] },
     { id: "prime", name: "Momentum Account", tagline: "For working adults who want more from their bank", price: "R85", priceLabel: "/month", emoji: "⭐", gradient: "linear-gradient(135deg,#FFF8E1,#FFF3CD)", features: ["5 free ATM withdrawals/month", "Earn 0.5% cashback on all spend", "Overdraft facility up to R5,000", "Dedicated phone support"] },
     { id: "premier", name: "Horizon Account", tagline: "For high-earners who need premium everyday banking", price: "R170", priceLabel: "/month", emoji: "💎", gradient: "linear-gradient(135deg,#F3E5F5,#EAF7EE)", features: ["10 free ATM withdrawals at any bank", "1% cashback on all spend", "R15,000 overdraft facility", "Travel notifications included"] },
@@ -142,10 +142,10 @@ export const PRODUCTS: Record<ProductCategory, Product[]> = {
   ],
   sim: [
     { id: "payg", name: "Pay-As-You-Go", tagline: "No commitment — pay only for what you use", price: "R0", priceLabel: "/month", emoji: "📱", gradient: "linear-gradient(135deg,#E8F5E9,#C8E6C9)", badge: "No Contract", badgeColor: "#10B981", features: ["No monthly fee", "Data from R0.50/MB", "Calls from R0.80/min", "SMS from R0.20 each"] },
-    { id: "starter-1gb", name: "Starter 1GB", tagline: "Perfect for light data users", price: "R49", priceLabel: "/month", emoji: "🌱", gradient: "linear-gradient(135deg,#E3F2FD,#BBDEFB)", features: ["1GB data included", "50 free SMS", "Free Vink app data", "Rollover unused data (30 days)"] },
-    { id: "essential-3gb", name: "Essential 3GB", tagline: "Stay connected every day", price: "R99", priceLabel: "/month", emoji: "📶", gradient: "linear-gradient(135deg,#FFF8E1,#FFF3CD)", features: ["3GB data included", "100 free SMS", "Free Vink app data", "Free Wi-Fi on VINK taxis"] },
-    { id: "plus-10gb", name: "Plus 10GB", tagline: "Serious data for busy lifestyles", price: "R199", priceLabel: "/month", emoji: "🚀", gradient: "linear-gradient(135deg,#F3E5F5,#EAF7EE)", featured: true, badge: "Best Value", badgeColor: "#F5A623", features: ["10GB data included", "200 free SMS", "100 free minutes", "Free Vink app data", "Free Wi-Fi on VINK taxis"] },
-    { id: "unlimited", name: "Unlimited Calls & 5GB", tagline: "Talk as much as you want", price: "R299", priceLabel: "/month", emoji: "📞", gradient: "linear-gradient(135deg,#E65100,#F57C00)", features: ["Unlimited calls to all SA networks", "5GB data included", "200 free SMS", "Free Vink app data", "HD voice quality on Cell C network"] },
+    { id: "starter-1gb", name: "Starter 1GB", tagline: "Perfect for light data users", price: "R49", priceLabel: "/month", emoji: "🌱", gradient: "linear-gradient(135deg,#E3F2FD,#BBDEFB)", features: ["1GB data included", "50 free SMS", "Free VINK app data", "Rollover unused data (30 days)"] },
+    { id: "essential-3gb", name: "Essential 3GB", tagline: "Stay connected every day", price: "R99", priceLabel: "/month", emoji: "📶", gradient: "linear-gradient(135deg,#FFF8E1,#FFF3CD)", features: ["3GB data included", "100 free SMS", "Free VINK app data", "Free Wi-Fi on VINK taxis"] },
+    { id: "plus-10gb", name: "Plus 10GB", tagline: "Serious data for busy lifestyles", price: "R199", priceLabel: "/month", emoji: "🚀", gradient: "linear-gradient(135deg,#F3E5F5,#EAF7EE)", featured: true, badge: "Best Value", badgeColor: "#F5A623", features: ["10GB data included", "200 free SMS", "100 free minutes", "Free VINK app data", "Free Wi-Fi on VINK taxis"] },
+    { id: "unlimited", name: "Unlimited Calls & 5GB", tagline: "Talk as much as you want", price: "R299", priceLabel: "/month", emoji: "📞", gradient: "linear-gradient(135deg,#E65100,#F57C00)", features: ["Unlimited calls to all SA networks", "5GB data included", "200 free SMS", "Free VINK app data", "HD voice quality on Cell C network"] },
   ],
 };
 
@@ -231,7 +231,7 @@ export function ProductSelectorViewer({ isOpen, onClose, category, onSelect }: P
       {/* ── Top bar ── */}
       <div className="sticky top-0 z-20 bg-white border-b border-gray-100 shadow-sm flex items-center justify-between px-5 py-3">
         <div className="flex items-center gap-3">
-          <img src={vinkLogo} alt="Vink" className="h-9 w-auto object-contain" />
+          <img src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
           <div className="hidden sm:block border-l border-gray-200 pl-3">
             <p className="text-sm font-bold text-gray-800">Product Selection</p>
             <p className="text-[11px] text-gray-400">{cfg.tag}</p>

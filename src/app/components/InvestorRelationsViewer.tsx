@@ -23,7 +23,7 @@ const REASONS = [
   {
     title: "Leader",
     icon: "🏆",
-    text: "Vink Group is a category leader in diversified financial services across Southern Africa, consistently outperforming peers on core return metrics and market penetration.",
+    text: "VINK Group is a category leader in diversified financial services across Southern Africa, consistently outperforming peers on core return metrics and market penetration.",
   },
   {
     title: "Consistent",
@@ -192,7 +192,7 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
       {/* ── Top bar ── */}
       <div className="sticky top-0 z-20 flex items-center justify-between px-4 py-3 bg-white border-b shadow-sm" style={{ borderColor: "#e0e0e0" }}>
         <div className="flex items-center gap-3">
-          <img src={vinkLogo} alt="Vink" className="h-9 w-auto object-contain" />
+          <img src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
           <div className="hidden sm:flex items-center gap-6 text-sm ml-4">
             {["Personal", "Business", "Corporate", "Marketplace"].map(n => (
               <span key={n} className="text-gray-500 hover:text-gray-800 cursor-pointer transition-colors">{n}</span>
@@ -248,7 +248,7 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
             <SectionHeading>VINK MULTI SERVICES PTY LTD</SectionHeading>
             <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-3">
               <p className="text-sm text-gray-700 leading-relaxed">
-                Vink Group PTY LTD is a professional diversified financial services company. Our commitment to financial excellence drives innovative solutions for banking, insurance, telecommunications and e-mobility services across Southern Africa.
+                VINK Group PTY LTD is a professional diversified financial services company. Our commitment to financial excellence drives innovative solutions for banking, insurance, telecommunications and e-mobility services across Southern Africa.
               </p>
               <div className="border-t pt-3 space-y-2 text-sm">
                 <div className="flex justify-between"><span className="text-gray-500">Sovereign Meeting</span><span className="font-semibold text-gray-800">31 January 2022</span></div>

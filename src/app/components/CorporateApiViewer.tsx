@@ -58,7 +58,7 @@ interface ApiProduct {
   desc: string; price: string;
 }
 const API_PRODUCTS: ApiProduct[] = [
-  { id: "wallet",   name: "VINK Wallet API",   icon: <Wallet className="w-6 h-6" />,   iconBg: "#E8F7EE", iconColor: GREEN,  desc: "Create, manage and transact with Vink wallets programmatically", price: "R0" },
+  { id: "wallet",   name: "VINK Wallet API",   icon: <Wallet className="w-6 h-6" />,   iconBg: "#E8F7EE", iconColor: GREEN,  desc: "Create, manage and transact with VINK wallets programmatically", price: "R0" },
   { id: "payments", name: "Payments API",       icon: <CreditCard className="w-6 h-6" />, iconBg: "#FFF1E6", iconColor: ORANGE, desc: "Initiate, verify and settle payments across the VINK AFC network", price: "R0" },
   { id: "vmvo",     name: "VMVO API",           icon: <Bus className="w-6 h-6" />,      iconBg: "#E8F7EE", iconColor: GREEN,  desc: "Validate, manage and operate AFC transactions in real time", price: "R0" },
   { id: "election", name: "Election API",       icon: <Vote className="w-6 h-6" />,     iconBg: "#FFF1E6", iconColor: ORANGE, desc: "Secure digital voting for AGMs and board resolutions", price: "R85" },

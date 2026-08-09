@@ -86,7 +86,7 @@ export function MarketplaceAuthModal({ onClose, onAuthenticated, initialTab = "s
           {([
             { id: "signin" as Tab, label: "Sign In" },
             { id: "customer" as Tab, label: "New Customer" },
-            { id: "seller" as Tab, label: "Sell on Vink" },
+            { id: "seller" as Tab, label: "Sell on VINK" },
           ]).map(t => (
             <button key={t.id} onClick={() => { setTab(t.id); setError(null); }}
               className="flex-1 text-xs font-semibold py-2.5 border-b-2 transition-colors"
@@ -131,7 +131,7 @@ export function MarketplaceAuthModal({ onClose, onAuthenticated, initialTab = "s
               <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3" style={{ background: "#FFF4E5", color: "#B75C00" }}>
                 <Store className="w-6 h-6" />
               </div>
-              <p className="text-sm font-bold text-gray-900 mb-1">Sell on Vink</p>
+              <p className="text-sm font-bold text-gray-900 mb-1">Sell on VINK</p>
               <p className="text-xs text-gray-500 mb-5 max-w-xs mx-auto">Our full seller application covers your account, business details, identity verification, and tax information — about 5 minutes.</p>
               <button onClick={() => setShowWizard(true)}
                 className="w-full py-2.5 rounded-lg font-bold text-sm text-white flex items-center justify-center gap-2"

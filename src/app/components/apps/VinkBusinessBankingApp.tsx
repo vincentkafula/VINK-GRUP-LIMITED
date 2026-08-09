@@ -146,20 +146,20 @@ function DashboardScreen({ tier }: { tier: Tier }) {
         {tier === "Sovereign" ? (
           <>
             <p className="text-white/50 text-[9px] uppercase tracking-wider">Corporate Net Worth</p>
-            <p className="text-white text-[26px] font-bold tracking-tight mt-0.5">R 48.2m</p>
+            <p className="text-white text-[26px] font-bold tracking-tight mt-0.5">R48.2m</p>
             <div className="flex items-center gap-4 mt-2">
-              <div><p className="text-white/50 text-[8px]">Assets</p><p className="text-white text-[11px] font-bold">R 61.4m</p></div>
-              <div><p className="text-white/50 text-[8px]">Liabilities</p><p className="text-white text-[11px] font-bold">R 13.2m</p></div>
+              <div><p className="text-white/50 text-[8px]">Assets</p><p className="text-white text-[11px] font-bold">R61.4m</p></div>
+              <div><p className="text-white/50 text-[8px]">Liabilities</p><p className="text-white text-[11px] font-bold">R13.2m</p></div>
               <div><p className="text-white/50 text-[8px]">Global exposure</p><p className="text-white text-[11px] font-bold">6 markets</p></div>
             </div>
           </>
         ) : (
           <>
             <p className="text-white/60 text-xs">Available Balance</p>
-            <p className="text-white text-[26px] font-bold tracking-tight mt-1">R 284,650.00</p>
+            <p className="text-white text-[26px] font-bold tracking-tight mt-1">R284,650.00</p>
             <div className="flex items-center gap-4 mt-3">
-              <div><p className="text-white/50 text-[8px]">Today's revenue</p><p className="text-white text-[11px] font-bold">+R 24,500</p></div>
-              <div><p className="text-white/50 text-[8px]">Pending</p><p className="text-white text-[11px] font-bold">R 8,900</p></div>
+              <div><p className="text-white/50 text-[8px]">Today's revenue</p><p className="text-white text-[11px] font-bold">+R24,500</p></div>
+              <div><p className="text-white/50 text-[8px]">Pending</p><p className="text-white text-[11px] font-bold">R8,900</p></div>
               <div><p className="text-white/50 text-[8px]">Credit score</p><p className="text-white text-[11px] font-bold">742</p></div>
             </div>
           </>
@@ -217,7 +217,7 @@ function DashboardScreen({ tier }: { tier: Tier }) {
         <div className="px-3 pt-4">
           <p className="text-gray-500 text-[10px] font-semibold uppercase tracking-wider mb-2">Treasury & FX</p>
           <div className="grid grid-cols-3 gap-2">
-            {[["USD","R 214,300"],["EUR","R 88,150"],["GBP","R 41,900"]].map(([cur, val]) => (
+            {[["USD","R214,300"],["EUR","R88,150"],["GBP","R41,900"]].map(([cur, val]) => (
               <div key={cur} className="rounded-xl bg-white shadow-sm p-2.5 text-center">
                 <p className="text-[9px] text-gray-400">{cur} Wallet</p>
                 <p className="text-[11px] font-bold text-gray-800 mt-0.5">{val}</p>
@@ -522,7 +522,7 @@ export function VinkBusinessBankingApp({ isOpen, onClose }: { isOpen: boolean; o
   const showTabs = screen !== "onboarding" && !verifying;
 
   return (
-    <MobileAppOverlay onClose={onClose} appName="Vink Business" bgColor="#F7F9F8">
+    <MobileAppOverlay onClose={onClose} appName="VINK Business" bgColor="#F7F9F8">
       <PhoneFrame statusBarColor={INK} statusBarTextLight>
         <div className="flex-1 overflow-hidden flex flex-col">
           {verifying ? (

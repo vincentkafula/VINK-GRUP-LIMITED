@@ -214,7 +214,7 @@ export function NewsViewer({ isOpen, onClose }: Props) {
         <div className="flex items-center justify-between px-5 py-3">
           <div className="flex items-center gap-3">
             <button onClick={goHome} className="flex items-center gap-2">
-              <img src={vinkLogo} alt="Vink" className="h-8 w-auto object-contain" />
+              <img src={vinkLogo} alt="VINK" className="h-8 w-auto object-contain" />
               <span className="font-black text-lg tracking-tight" style={{ color: GREEN }}>NEWS</span>
             </button>
           </div>

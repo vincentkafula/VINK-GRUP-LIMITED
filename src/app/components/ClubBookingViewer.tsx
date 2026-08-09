@@ -193,9 +193,9 @@ export function ClubBookingViewer({ isOpen, onClose }: Props) {
                 <ChevronRight className="w-5 h-5 rotate-180" />
               </button>
             )}
-            <img src={vinkLogo} alt="Vink" className="h-8 w-auto object-contain" />
+            <img src={vinkLogo} alt="VINK" className="h-8 w-auto object-contain" />
             <div className="hidden sm:block border-l border-gray-200 pl-3">
-              <p className="text-sm font-black text-gray-900">Vink Club Travel</p>
+              <p className="text-sm font-black text-gray-900">VINK Club Travel</p>
               <p className="text-[10px] text-gray-400">Group bookings · Better rates · Visa assistance</p>
             </div>
           </div>
@@ -260,7 +260,7 @@ export function ClubBookingViewer({ isOpen, onClose }: Props) {
               <div className="grid sm:grid-cols-4 gap-4">
                 {[
                   { n: "1", icon: "🎯", title: "Choose your route", desc: "Pick from available club flights or buses with fixed departure dates." },
-                  { n: "2", icon: "🪑", title: "Reserve your seat", desc: "Pay the club price via your Vink wallet. Your seat is secured." },
+                  { n: "2", icon: "🪑", title: "Reserve your seat", desc: "Pay the club price via your VINK wallet. Your seat is secured." },
                   { n: "3", icon: "👥", title: "Group fills up", desc: "Once all seats are booked, VINK pays the airline or bus company." },
                   { n: "4", icon: "✅", title: "Travel confirmed", desc: "You receive your ticket/boarding pass from the operator directly." },
                 ].map((s, i) => (
@@ -430,8 +430,8 @@ export function ClubBookingViewer({ isOpen, onClose }: Props) {
                   </select></div>
                 <div><label className="text-[10px] font-black uppercase tracking-wide text-gray-500 block mb-1.5">Payment method</label>
                   <select className={inputCls} value={bkForm.method} onChange={e => setBkForm(f => ({ ...f, method: e.target.value }))}>
-                    <option value="vink_wallet">Vink Wallet</option>
-                    <option value="card">Vink Card</option>
+                    <option value="vink_wallet">VINK Wallet</option>
+                    <option value="card">VINK Card</option>
                     <option value="eft">EFT / Bank transfer</option>
                   </select></div>
               </div>
@@ -453,7 +453,7 @@ export function ClubBookingViewer({ isOpen, onClose }: Props) {
                 <span className="font-black text-gray-900">Total to pay now</span>
                 <span className="font-black text-xl" style={{ color: P }}>{fmt(selectedRoute.pricePerSeat * +bkForm.seats)}</span>
               </div>
-              <p className="text-[10px] text-gray-500 mt-2">Payment is held by VINK until the route group is full. If the route is cancelled, you receive a full refund to your Vink wallet.</p>
+              <p className="text-[10px] text-gray-500 mt-2">Payment is held by VINK until the route group is full. If the route is cancelled, you receive a full refund to your VINK wallet.</p>
             </div>
 
             {bkError && <div className="flex items-center gap-2 p-3 rounded-xl text-sm font-semibold text-red-700 bg-red-50 border border-red-200"><AlertTriangle className="w-4 h-4" />{bkError}</div>}

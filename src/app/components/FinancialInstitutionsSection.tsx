@@ -16,7 +16,7 @@ export const FinancialInstitutionsSection = memo(function FinancialInstitutionsS
         <div className="text-center mb-10">
           <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Trusted Partners</p>
           <h2 className="text-lg sm:text-xl font-bold text-gray-800">
-            Find a Vink card through your preferred financial institution or partner network.
+            Find a VINK card through your preferred financial institution or partner network.
           </h2>
         </div>
         <div className="flex flex-wrap items-center justify-center gap-10 md:gap-14">

@@ -105,21 +105,21 @@ function VerifyingScreen({ tier, onDone }: { tier: Tier; onDone: () => void }) {
 // ─── Dashboard ────────────────────────────────────────────────────────────
 const ROLE_KPIS: Record<Role, { label: string; value: string }[]> = {
   CEO: [
-    { label: "Total corporate assets", value: "R 412.6m" },
-    { label: "Net cash position", value: "R 84.2m" },
-    { label: "Total investments", value: "R 118.5m" },
+    { label: "Total corporate assets", value: "R412.6m" },
+    { label: "Net cash position", value: "R84.2m" },
+    { label: "Total investments", value: "R118.5m" },
     { label: "FX exposure", value: "6 currencies" },
   ],
   CFO: [
-    { label: "Cash position", value: "R 84.2m" },
-    { label: "Liquidity", value: "R 61.0m" },
-    { label: "Receivables", value: "R 22.4m" },
-    { label: "Payables", value: "R 14.8m" },
+    { label: "Cash position", value: "R84.2m" },
+    { label: "Liquidity", value: "R61.0m" },
+    { label: "Receivables", value: "R22.4m" },
+    { label: "Payables", value: "R14.8m" },
   ],
   "Finance Manager": [
     { label: "Pending approvals", value: "7" },
-    { label: "Supplier payments", value: "R 3.2m" },
-    { label: "Payroll queue", value: "R 1.9m" },
+    { label: "Supplier payments", value: "R3.2m" },
+    { label: "Payroll queue", value: "R1.9m" },
     { label: "Budget utilization", value: "68%" },
   ],
 };
@@ -483,7 +483,7 @@ export function VinkCorporateBankingApp({ isOpen, onClose }: { isOpen: boolean; 
   const showTabs = screen !== "onboarding" && !verifying;
 
   return (
-    <MobileAppOverlay onClose={onClose} appName="Vink Corporate" bgColor="#F5F3FA">
+    <MobileAppOverlay onClose={onClose} appName="VINK Corporate" bgColor="#F5F3FA">
       <PhoneFrame statusBarColor={INK} statusBarTextLight>
         <div className="flex-1 overflow-hidden flex flex-col">
           {verifying ? (

@@ -7,14 +7,14 @@ const GOLD = "#F5A623";
 
 const STEPS = [
   { n: "1", title: "Open your account", desc: "Apply online in minutes — a personal, business, or commuter card account. FICA verification happens digitally, no branch visit required." },
-  { n: "2", title: "Get your card", desc: "Your Vink card is issued digitally the moment your account is approved, so you can start using it in the app immediately while your physical card is on its way." },
-  { n: "3", title: "Tap, pay, and track", desc: "Tap your card at any Vink-enabled taxi, retailer, or partner merchant. Every transaction shows up in the app in real time — no waiting for statements." },
+  { n: "2", title: "Get your card", desc: "Your VINK card is issued digitally the moment your account is approved, so you can start using it in the app immediately while your physical card is on its way." },
+  { n: "3", title: "Tap, pay, and track", desc: "Tap your card at any VINK-enabled taxi, retailer, or partner merchant. Every transaction shows up in the app in real time — no waiting for statements." },
   { n: "4", title: "Manage it all in one app", desc: "Check your balance, freeze your card, add money, set spending limits, and reach support — all from the same app you used to apply." },
 ];
 
 const TOPICS = [
-  { icon: "💳", title: "Understanding your card", desc: "How your Vink card works, what tap-and-go actually does, and how to read a transaction on your statement." },
-  { icon: "📱", title: "Using the Vink app", desc: "Navigating your dashboard, setting up notifications, and finding your virtual card details for online purchases." },
+  { icon: "💳", title: "Understanding your card", desc: "How your VINK card works, what tap-and-go actually does, and how to read a transaction on your statement." },
+  { icon: "📱", title: "Using the VINK app", desc: "Navigating your dashboard, setting up notifications, and finding your virtual card details for online purchases." },
   { icon: "🔒", title: "Keeping your account secure", desc: "PINs, one-time passwords, and what to do immediately if your card is lost or you spot something unfamiliar." },
   { icon: "💰", title: "Fees and how to avoid them", desc: "Which everyday transactions are free, and which have a cost — see our full Banking Rates & Fees page for the complete list." },
 ];
@@ -24,7 +24,7 @@ export function BankingGuideViewer({ isOpen, onClose }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-white">
       <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm">
-        <img src={vinkLogo} alt="Vink" className="h-9 w-auto object-contain" />
+        <img src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
         <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500"><X className="w-5 h-5" /></button>
       </div>
 

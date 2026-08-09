@@ -227,7 +227,7 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
                 textAlign: "left",
               }}>
               <p style={{ color: "#fff", fontSize: 16, fontWeight: 700, margin: 0 }}>
-                📲 Download the Vink Apps
+                📲 Download the VINK Apps
               </p>
               <span style={{
                 color: "rgba(255,255,255,0.6)", fontSize: 11, fontWeight: 600,

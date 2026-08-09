@@ -30,7 +30,7 @@ const COLS = [
   },
   {
     title: "Company",
-    links: ["About Vink", "Careers", "Press", "Blog", "Partner With Us", "Advertise", "Affiliate Program"],
+    links: ["About VINK", "Careers", "Press", "Blog", "Partner With Us", "Advertise", "Affiliate Program"],
   },
 ];
 
@@ -54,7 +54,7 @@ export function GetHelpModal({ isOpen, onClose }: GetHelpModalProps) {
       {/* ── Sticky top bar ── */}
       <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b" style={{ background: "#14112B", borderColor: "#2D2A4A" }}>
         <div className="flex items-center gap-3">
-          <img src={vinkLogo} alt="Vink" className="w-[140px] h-auto object-contain" />
+          <img src={vinkLogo} alt="VINK" className="w-[140px] h-auto object-contain" />
           <span className="text-white/60 text-sm">Get Help &amp; Information</span>
         </div>
         <button
@@ -135,7 +135,7 @@ export function GetHelpModal({ isOpen, onClose }: GetHelpModalProps) {
             {/* App badges */}
             <div>
               <p className="text-white/45 text-[10px] uppercase tracking-wider mb-1">Take VINK Everywhere</p>
-              <p className="text-white/60 text-xs mb-3">Download the Vink app for instant payments, card management, rewards, and more.</p>
+              <p className="text-white/60 text-xs mb-3">Download the VINK app for instant payments, card management, rewards, and more.</p>
               <div className="flex gap-3">
                 {/* Apple */}
                 <a href="#" className="flex items-center gap-3 bg-white/10 rounded-xl px-4 py-2.5 hover:bg-white/20 transition-colors">
@@ -190,8 +190,8 @@ export function GetHelpModal({ isOpen, onClose }: GetHelpModalProps) {
         <div className="px-6 py-6">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-4">
             <div className="flex items-center gap-2">
-              <img src={vinkLogo} alt="Vink" className="w-[120px] h-auto object-contain opacity-60" />
-              <p className="text-white/35 text-[11px]">&copy; 2026 Vink Financial Services, Inc. All rights reserved.</p>
+              <img src={vinkLogo} alt="VINK" className="w-[120px] h-auto object-contain opacity-60" />
+              <p className="text-white/35 text-[11px]">&copy; 2026 VINK Financial Services, Inc. All rights reserved.</p>
             </div>
             <div className="flex flex-wrap gap-4">
               {LEGAL_LINKS.map((l) => (

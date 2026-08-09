@@ -398,7 +398,7 @@ function EarningsScreen() {
             <p className="text-gray-400 text-[10px] font-semibold uppercase tracking-wider">Next Payout</p>
           </div>
           <p className="text-white font-bold text-sm">Friday · R4,238.00</p>
-          <p className="text-gray-500 text-[10px] mt-0.5">Direct deposit to Vink account ****3421</p>
+          <p className="text-gray-500 text-[10px] mt-0.5">Direct deposit to VINK account ****3421</p>
         </div>
 
         {/* Community contribution */}
@@ -618,7 +618,7 @@ export function VinkDriverApp({ isOpen, onClose }: { isOpen: boolean; onClose: (
   ];
 
   return (
-    <MobileAppOverlay onClose={onClose} appName="Vink Driver" bgColor={DARK}>
+    <MobileAppOverlay onClose={onClose} appName="VINK Driver" bgColor={DARK}>
       <PhoneFrame statusBarColor={DARK2} statusBarTextLight>
         <div className="flex-1 overflow-hidden flex flex-col">
           {screen === "status"     && <StatusScreen online={online} setOnline={setOnline} />}

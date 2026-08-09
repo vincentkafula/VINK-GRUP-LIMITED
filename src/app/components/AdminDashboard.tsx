@@ -374,7 +374,7 @@ export function AdminDashboard({ isOpen, onClose }: Props) {
       {/* Top bar */}
       <div className="flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm flex-shrink-0 z-10">
         <div className="flex items-center gap-3">
-          <img src={vinkLogo} alt="Vink" className="h-8 w-auto object-contain" />
+          <img src={vinkLogo} alt="VINK" className="h-8 w-auto object-contain" />
           <div className="border-l border-gray-200 pl-3">
             <p className="text-sm font-black text-gray-900 leading-none">Admin Dashboard</p>
             <p className="text-[10px] text-gray-400 mt-0.5">Application Review & Approval Centre</p>

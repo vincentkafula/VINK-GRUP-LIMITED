@@ -1,6 +1,6 @@
 const OFFERS = [
   {
-    name: "Vink Everyday Cashback", issuer: "VINK Standard",
+    name: "VINK Everyday Cashback", issuer: "VINK Standard",
     grad: "linear-gradient(135deg,#1A3A6E 0%,#128A43 60%,#5FC97F 100%)",
     badge: "Best Value", badgeColor: "#10B981",
     highlight: "3% cashback at supermarkets and spaza shops",
@@ -8,7 +8,7 @@ const OFFERS = [
     net: "visa",
   },
   {
-    name: "Vink Rewards Gold", issuer: "VINK Premier",
+    name: "VINK Rewards Gold", issuer: "VINK Premier",
     grad: "linear-gradient(135deg,#7A5C2A 0%,#C4922A 60%,#E6B85A 100%)",
     badge: "Top Pick", badgeColor: "#F59E0B",
     highlight: "Earn 2 VinkPoints per R10 on all spend",
@@ -16,7 +16,7 @@ const OFFERS = [
     net: "amex",
   },
   {
-    name: "Vink Commuter Unlimited", issuer: "VINK Commuter",
+    name: "VINK Commuter Unlimited", issuer: "VINK Commuter",
     grad: "linear-gradient(135deg,#1B4D1B 0%,#2E7D32 60%,#4CAF50 100%)",
     badge: "No Limits", badgeColor: "#3B82F6",
     highlight: "Unlimited tap-and-go rides on any VINK-enabled taxi",

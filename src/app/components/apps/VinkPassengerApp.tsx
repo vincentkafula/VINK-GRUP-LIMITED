@@ -133,7 +133,7 @@ function BookingScreen({ onBookRide }: { onBookRide?: () => void }) {
   const [vehicleType, setVehicleType] = useState<"Standard"|"Wheelchair"|"Stretcher">("Standard");
   const [schedule, setSchedule] = useState<"Now"|"Later">("Now");
   const [recurring, setRecurring] = useState<"Never"|"Daily"|"Weekly">("Never");
-  const [payment, setPayment] = useState<"Vink"|"Card"|"Cash">("Vink");
+  const [payment, setPayment] = useState<"VINK"|"Card"|"Cash">("VINK");
   const [note, setNote] = useState("");
 
   const vehicleTypes = [
@@ -237,14 +237,14 @@ function BookingScreen({ onBookRide }: { onBookRide?: () => void }) {
         <div>
           <p className="text-gray-500 text-[10px] font-semibold uppercase tracking-wider mb-1">Payment</p>
           <div className="flex gap-1 p-1 rounded-xl bg-white border" style={{ borderColor: `${PURPLE}22` }}>
-            {(["Vink","Card","Cash"] as const).map(p => (
+            {(["VINK","Card","Cash"] as const).map(p => (
               <button
                 key={p}
                 onClick={() => setPayment(p)}
                 className="flex-1 py-1.5 rounded-lg text-xs font-semibold transition-colors"
                 style={{ background: payment === p ? PURPLE : "transparent", color: payment === p ? "#fff" : PURPLE }}
               >
-                {p === "Vink" ? "💜 Vink" : p === "Card" ? "💳 Card" : "💵 Cash"}
+                {p === "VINK" ? "💜 VINK" : p === "Card" ? "💳 Card" : "💵 Cash"}
               </button>
             ))}
           </div>
@@ -554,7 +554,7 @@ export function VinkPassengerApp({ isOpen, onClose, onOpenClubBooking, onBookRid
   ];
 
   return (
-    <MobileAppOverlay onClose={onClose} appName="Vink Passenger" bgColor={LIGHT_BG}>
+    <MobileAppOverlay onClose={onClose} appName="VINK Passenger" bgColor={LIGHT_BG}>
       <PhoneFrame statusBarColor={PURPLE} statusBarTextLight>
         <div className="flex-1 overflow-hidden flex flex-col">
           {screen === "home"     && <HomeScreen setScreen={setScreen} />}

@@ -6,10 +6,10 @@ const P = "#0B5C2E";
 const GOLD = "#F5A623";
 
 const OFFERS = [
-  { badge: "Best Value", name: "Vink Everyday Cashback", detail: "3% cashback at supermarkets and spaza shops, 1.5% at fuel stations, 0.5% everywhere else." },
-  { badge: "Top Pick", name: "Vink Rewards Gold", detail: "Earn 2 VinkPoints per R10 on all spend — redeemable for taxi fares, gym sessions, or airtime." },
-  { badge: "No Limits", name: "Vink Commuter Unlimited", detail: "Unlimited tap-and-go rides on any Vink-enabled taxi, with free card replacement and no minimum balance." },
-  { badge: "Launch Offer", name: "Business Account Bonus", detail: "Up to 80,000 bonus points or R3,000 cash back for businesses that open a Vink Business Account in the first month after launch." },
+  { badge: "Best Value", name: "VINK Everyday Cashback", detail: "3% cashback at supermarkets and spaza shops, 1.5% at fuel stations, 0.5% everywhere else." },
+  { badge: "Top Pick", name: "VINK Rewards Gold", detail: "Earn 2 VinkPoints per R10 on all spend — redeemable for taxi fares, gym sessions, or airtime." },
+  { badge: "No Limits", name: "VINK Commuter Unlimited", detail: "Unlimited tap-and-go rides on any VINK-enabled taxi, with free card replacement and no minimum balance." },
+  { badge: "Launch Offer", name: "Business Account Bonus", detail: "Up to 80,000 bonus points or R3,000 cash back for businesses that open a VINK Business Account in the first month after launch." },
 ];
 
 export function LatestOffersViewer({ isOpen, onClose }: Props) {
@@ -17,7 +17,7 @@ export function LatestOffersViewer({ isOpen, onClose }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-white">
       <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm">
-        <img src={vinkLogo} alt="Vink" className="h-9 w-auto object-contain" />
+        <img src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
         <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500"><X className="w-5 h-5" /></button>
       </div>
 

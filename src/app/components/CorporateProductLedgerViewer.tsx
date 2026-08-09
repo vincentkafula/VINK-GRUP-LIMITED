@@ -127,7 +127,7 @@ const SECTIONS: Record<CorpCategory, Section[]> = {
         price: "R170",
         features: [
           "Annual turnover: R0 to R500 million",
-          "Free Vink Online Banking and NotifyMes",
+          "Free VINK Online Banking and NotifyMes",
           "Suitable for all business segments and sectors",
           "Shariah-compliant option available",
           "Free Online Banking and NotifyMes",
@@ -142,7 +142,7 @@ const SECTIONS: Record<CorpCategory, Section[]> = {
         features: [
           "Annual turnover: R0 to R500 million",
           "35 electronic transactions",
-          "10 cash deposits/withdrawals at any Vink ATM (capped at R50,000 per month)",
+          "10 cash deposits/withdrawals at any VINK ATM (capped at R50,000 per month)",
           "Suitable for all business segments and sectors",
           "Free Online Banking and NotifyMes",
           "Limited to Sole Proprietors",
@@ -155,7 +155,7 @@ const SECTIONS: Record<CorpCategory, Section[]> = {
         features: [
           "Annual turnover: R0 to R500 million",
           "60 electronic transactions",
-          "15 cash deposits/withdrawals at any Vink ATM (capped at R100,000 per month)",
+          "15 cash deposits/withdrawals at any VINK ATM (capped at R100,000 per month)",
           "Suitable for all business segments and sectors",
           "Free Online Banking and NotifyMes",
           "Suitable for all business segments and sectors",
@@ -172,7 +172,7 @@ const SECTIONS: Record<CorpCategory, Section[]> = {
         price: "R170",
         features: [
           "Annual turnover: R0 to R500 million",
-          "Free Vink Online Banking and NotifyMes",
+          "Free VINK Online Banking and NotifyMes",
           "Suitable for all business segments and sectors",
           "Shariah-compliant option available",
         ],
@@ -183,7 +183,7 @@ const SECTIONS: Record<CorpCategory, Section[]> = {
         features: [
           "Annual turnover: R0 to R500 million",
           "35 electronic transactions",
-          "10 cash deposits/withdrawals at any Vink ATM (capped at R50,000 per month)",
+          "10 cash deposits/withdrawals at any VINK ATM (capped at R50,000 per month)",
           "Suitable for all business segments and sectors",
         ],
       },
@@ -193,7 +193,7 @@ const SECTIONS: Record<CorpCategory, Section[]> = {
         features: [
           "Annual turnover: R0 to R500 million",
           "60 electronic transactions",
-          "15 cash deposits/withdrawals at any Vink ATM (capped at R100,000 per month)",
+          "15 cash deposits/withdrawals at any VINK ATM (capped at R100,000 per month)",
           "Suitable for all business segments and sectors",
         ],
       },

@@ -28,7 +28,7 @@ export const ProtectionSection = memo(function ProtectionSection() {
               VINK monitors every transaction in real time, 24 hours a day, seven days a week. Our fraud detection engine flags unusual activity the moment it occurs — and you&apos;ll receive an instant notification on your phone before we act. Your peace of mind is never more than a tap away.
             </p>
             <p className="text-gray-500 text-sm leading-relaxed mb-6">
-              Whether you&apos;re shopping online or tapping your Vink card on a taxi AFC device, our zero-liability guarantee means you will never be held responsible for unauthorised transactions. If something goes wrong, VINK makes it right — fast.
+              Whether you&apos;re shopping online or tapping your VINK card on a taxi AFC device, our zero-liability guarantee means you will never be held responsible for unauthorised transactions. If something goes wrong, VINK makes it right — fast.
             </p>
             <div className="flex flex-wrap justify-center md:justify-start gap-3 mb-8">
               {TRUST_ITEMS.map((t, i) => (

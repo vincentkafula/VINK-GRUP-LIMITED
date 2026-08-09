@@ -119,7 +119,7 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
       {/* ── Top bar ── */}
       <div className="sticky top-0 z-20 bg-white border-b border-gray-100 shadow-sm">
         <div className="flex items-center justify-between px-5 py-3">
-          <img src={vinkLogo} alt="Vink" className="h-9 w-auto object-contain" />
+          <img src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
           <div className="flex items-center gap-3">
             <span className="hidden sm:block text-xs text-gray-400 font-medium">Step {step} of {STEPS.length}</span>
             <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-800"><X className="w-5 h-5" /></button>
@@ -429,7 +429,7 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
 
             <FormCard stepN={undefined} title="Declaration" subtitle="Please read and confirm before submitting">
               <p className="text-xs text-gray-600 leading-relaxed">
-                I, the undersigned, declare that I am duly authorised by the applicant company to submit this application. I confirm that all information provided is true, complete, and accurate to the best of my knowledge and belief. I authorise Vink Group (Pty) Ltd to conduct credit bureau inquiries, verify all stated information with relevant institutions (including SARS, CIPC, and credit bureaux), and to share application information with co-lending partners where applicable.
+                I, the undersigned, declare that I am duly authorised by the applicant company to submit this application. I confirm that all information provided is true, complete, and accurate to the best of my knowledge and belief. I authorise VINK Group (Pty) Ltd to conduct credit bureau inquiries, verify all stated information with relevant institutions (including SARS, CIPC, and credit bureaux), and to share application information with co-lending partners where applicable.
               </p>
               <p className="text-xs text-gray-600 leading-relaxed">
                 I understand that submission of this form does not constitute an offer of credit, and that any credit facility is subject to VINK's full credit assessment process, internal credit committee approval, and applicable regulatory requirements.

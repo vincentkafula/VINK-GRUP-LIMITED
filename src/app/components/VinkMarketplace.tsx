@@ -414,9 +414,9 @@ function HomeView({ categories, products, onCategory, onProduct, onCart, wishlis
               {row1.length === 0 && (
                 <div className="flex gap-0">
                   {[
-                    { name: "Samsung 1000 ssh 2048 SSD & USB Charging Power 150V", price: "R 509", was: "R 1,295", stars: 4, emoji: "📺" },
-                    { name: "Melitta Q/100 Gas Grill Grey", price: "R 4,039", was: "R 4,099", stars: 4, emoji: "🔥" },
-                    { name: "Energizer Vision Rechargeable 6V Torch 280lm", price: "R 879", was: null, stars: 3, emoji: "🔦" },
+                    { name: "Samsung 1000 ssh 2048 SSD & USB Charging Power 150V", price: "R509", was: "R1,295", stars: 4, emoji: "📺" },
+                    { name: "Melitta Q/100 Gas Grill Grey", price: "R4,039", was: "R4,099", stars: 4, emoji: "🔥" },
+                    { name: "Energizer Vision Rechargeable 6V Torch 280lm", price: "R879", was: null, stars: 3, emoji: "🔦" },
                   ].map((item, i) => (
                     <div key={i} className="bg-white border border-gray-200 flex flex-col cursor-pointer hover:shadow-md transition-shadow min-w-[150px] max-w-[190px] flex-shrink-0">
                       <div className="w-full flex items-center justify-center text-5xl py-4 bg-gray-50 min-h-[100px]">{item.emoji}</div>
@@ -476,7 +476,7 @@ function HomeView({ categories, products, onCategory, onProduct, onCart, wishlis
                 <div>
                   <div className="text-white text-xs font-bold mb-1 opacity-80">FEATURED</div>
                   <div className="text-white text-base font-black leading-tight">Huawei nova 11s</div>
-                  <div className="text-white/70 text-xs mt-1">R 3,449</div>
+                  <div className="text-white/70 text-xs mt-1">R3,449</div>
                 </div>
                 <button onClick={onCategory} className="self-start mt-3 bg-white text-red-700 text-xs font-bold px-3 py-1.5 rounded hover:bg-red-50 transition-colors">Shop Now</button>
               </div>
@@ -485,7 +485,7 @@ function HomeView({ categories, products, onCategory, onProduct, onCart, wishlis
                 <div>
                   <div className="text-white text-xs font-bold mb-1 opacity-70">NEW</div>
                   <div className="text-white text-base font-black leading-tight">Huawei nova 11S Plus</div>
-                  <div className="text-yellow-400 text-xs mt-1">R 5,000 <span className="line-through text-gray-400 text-[10px]">R 6,099</span></div>
+                  <div className="text-yellow-400 text-xs mt-1">R5,000 <span className="line-through text-gray-400 text-[10px]">R6,099</span></div>
                 </div>
                 <button onClick={onCategory} className="self-start mt-3 bg-yellow-400 text-gray-900 text-xs font-bold px-3 py-1.5 rounded hover:bg-yellow-300 transition-colors">Shop Now</button>
               </div>
@@ -497,7 +497,7 @@ function HomeView({ categories, products, onCategory, onProduct, onCart, wishlis
                   <div className="p-4 flex flex-col items-center justify-center h-full text-center">
                     <div className="text-4xl mb-2">📱</div>
                     <div className="text-xs font-bold text-gray-800">Huawei Y7S</div>
-                    <div className="text-xs text-gray-500 mt-1">R 2,999</div>
+                    <div className="text-xs text-gray-500 mt-1">R2,999</div>
                     <button onClick={onCategory} className="mt-2 text-xs font-bold px-3 py-1 border-2 hover:bg-emerald-600 hover:text-white transition-colors" style={{ borderColor: "#128A43", color: "#128A43" }}>Add to cart</button>
                   </div>
                 )}
@@ -952,7 +952,7 @@ function ProductDetailView({ productId, onBack, onCart, wishlistIds, onWishlist,
                 <div>
                   <p className="font-bold text-gray-900">{seller.storeName as string}</p>
                   <div className="flex items-center gap-1 mt-0.5"><Stars rating={Number(seller.avgRating ?? 4.5)} size={12} /></div>
-                  <p className="text-xs text-gray-500 mt-0.5">{String(seller.description ?? "Trusted Vink seller")}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{String(seller.description ?? "Trusted VINK seller")}</p>
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-3">
@@ -1164,7 +1164,7 @@ function CheckoutView({ cart, addresses, onBack, onComplete }: {
           {[
             { id:"standard", label:"Standard Delivery", sub:"3–5 business days", price:"R99" },
             { id:"express",  label:"Express Delivery",  sub:"Next business day", price:"R199" },
-            { id:"collect",  label:"Click & Collect",   sub:"At your nearest Vink Hub", price:"FREE" },
+            { id:"collect",  label:"Click & Collect",   sub:"At your nearest VINK Hub", price:"FREE" },
           ].map(opt => (
             <button key={opt.id} onClick={() => setShipping(opt.id)}
               className={`w-full p-4 rounded-2xl text-left border flex items-center gap-3 transition-all ${shipping === opt.id ? "border-emerald-400 bg-emerald-50" : "border-gray-200 bg-white"}`}>
@@ -1193,7 +1193,7 @@ function CheckoutView({ cart, addresses, onBack, onComplete }: {
               { id:"apple_pay",  label:"Apple Pay",         icon:"🍎" },
               { id:"google_pay", label:"Google Pay",        icon:"🔴" },
               { id:"bnpl",       label:"Buy Now Pay Later", icon:"📅" },
-              { id:"wallet",     label:"Vink Wallet",       icon:"👛" },
+              { id:"wallet",     label:"VINK Wallet",       icon:"👛" },
             ].map(opt => (
               <button key={opt.id} onClick={() => setPayment(opt.id)}
                 className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl border transition-all ${payment === opt.id ? "border-emerald-400 bg-emerald-50" : "border-gray-200 bg-white"}`}>
@@ -1568,7 +1568,7 @@ export function VinkMarketplace({ isOpen, onClose, initialAction, initialProduct
             onKeyDown={e => { if (e.key === "Enter") runSearch(navSearch); if (e.key === "Escape") setShowSuggests(false); }}
             onFocus={() => { if (navSuggests.length) setShowSuggests(true); }}
             onBlur={() => setTimeout(() => setShowSuggests(false), 150)}
-            placeholder="Search Vink Marketplace"
+            placeholder="Search VINK Marketplace"
             className="flex-1 min-w-0 bg-white px-3 text-sm outline-none text-gray-800"
           />
           <button onClick={() => runSearch(navSearch)} className="w-11 flex items-center justify-center shrink-0" style={{ background: "#FF9900" }}>

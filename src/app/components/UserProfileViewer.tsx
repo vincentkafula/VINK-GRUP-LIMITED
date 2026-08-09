@@ -24,9 +24,9 @@ const KYC_STEPS = [
 
 const SECURITY_EVENTS = [
   { action: "Sign in", device: "Chrome · MacBook Pro", location: "Cape Town, ZA", time: "2 minutes ago", current: true },
-  { action: "Sign in", device: "Vink Banking App · iPhone 15", location: "Cape Town, ZA", time: "3 hours ago", current: false },
+  { action: "Sign in", device: "VINK Banking App · iPhone 15", location: "Cape Town, ZA", time: "3 hours ago", current: false },
   { action: "Password changed", device: "Chrome · Windows PC", location: "Johannesburg, ZA", time: "5 days ago", current: false },
-  { action: "Card freeze (Virtual card ••4291)", device: "Vink Banking App · Samsung S24", location: "Cape Town, ZA", time: "12 days ago", current: false },
+  { action: "Card freeze (Virtual card ••4291)", device: "VINK Banking App · Samsung S24", location: "Cape Town, ZA", time: "12 days ago", current: false },
 ];
 
 const NOTIF_PREFS = [
@@ -169,7 +169,7 @@ export function UserProfileViewer({ isOpen, onClose, onSignOut }: Props) {
         {/* Top bar */}
         <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-100 shadow-sm">
           <div className="flex items-center gap-3">
-            <img src={vinkLogo} alt="Vink" className="h-8 w-auto" />
+            <img src={vinkLogo} alt="VINK" className="h-8 w-auto" />
             <span className="text-gray-400">/</span>
             <span className="font-semibold text-gray-800">{tabs.find(t => t.id === tab)?.label}</span>
           </div>

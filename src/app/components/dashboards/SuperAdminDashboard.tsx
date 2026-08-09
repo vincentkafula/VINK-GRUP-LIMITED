@@ -34,7 +34,7 @@ const ALL_USERS = [
   { name: "Commander Ndlovu", role: "Marshall", dashboard: "Marshall", lastLogin: "5m ago", status: "active" },
   { name: "NOC Engineer 1", role: "NOC", dashboard: "Mobile Network", lastLogin: "10m ago", status: "active" },
   { name: "Compliance Officer", role: "Authority", dashboard: "Authority", lastLogin: "1h ago", status: "idle" },
-  { name: "Vink Finance Admin", role: "Finance", dashboard: "Account", lastLogin: "3h ago", status: "idle" },
+  { name: "VINK Finance Admin", role: "Finance", dashboard: "Account", lastLogin: "3h ago", status: "idle" },
 ];
 
 const AUDIT = [

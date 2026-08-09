@@ -16,7 +16,7 @@ interface Props {
 const APPS = [
   {
     id: "afc",
-    name: "Vink AFC Terminal",
+    name: "VINK AFC Terminal",
     subtitle: "Telpo T-T20 · Automatic Fare Collection",
     description: "Runs on the Telpo T-T20 — a 7-inch Android 12 transit validator with ISO 14443 Type A/B NFC, EMV Contactless L1 (Visa Paywave · Mastercard Paypass), 1D/2D QR decoding, face recognition, 4G LTE, GPS, and 4 SAM slots. Processes fares in under 3 seconds offline. IP65 · IK08 · CE · RoHS certified.",
     platform: ["iOS", "Android"],
@@ -40,7 +40,7 @@ const APPS = [
   },
   {
     id: "tracking",
-    name: "Vink Fleet Tracker",
+    name: "VINK Fleet Tracker",
     subtitle: "Vehicle Tracking & Monitoring",
     description: "Monitor your entire fleet in real time from any device. Live GPS, geofencing, driver behaviour scoring, speed alerts, and automated border-crossing notifications across the SADC region.",
     platform: ["iOS", "Android"],
@@ -57,9 +57,9 @@ const APPS = [
   },
   {
     id: "banking",
-    name: "Vink Banking",
+    name: "VINK Banking",
     subtitle: "Personal & Business Banking",
-    description: "Your full Vink bank account in your pocket. Send money, manage cards, earn VinkPoints, pay utility bills, and access all your financial products — available 24/7 on iOS and Android.",
+    description: "Your full VINK bank account in your pocket. Send money, manage cards, earn VinkPoints, pay utility bills, and access all your financial products — available 24/7 on iOS and Android.",
     platform: ["iOS", "Android"],
     category: "Banking & Finance",
     version: "v5.1.3",
@@ -74,9 +74,9 @@ const APPS = [
   },
   {
     id: "driver",
-    name: "Vink Driver",
+    name: "VINK Driver",
     subtitle: "Earn. Drive. Get Paid.",
-    description: "Built for taxi drivers, e-hailing operators, and delivery drivers. Accept ride requests, navigate to passengers, track your earnings in real time, and get paid directly to your Vink Driver Wallet.",
+    description: "Built for taxi drivers, e-hailing operators, and delivery drivers. Accept ride requests, navigate to passengers, track your earnings in real time, and get paid directly to your VINK Driver Wallet.",
     platform: ["iOS", "Android"],
     category: "Gig Economy · Transport",
     version: "v4.0.2",
@@ -91,9 +91,9 @@ const APPS = [
   },
   {
     id: "passenger",
-    name: "Vink Go",
+    name: "VINK Go",
     subtitle: "Rides, Buses, Flights & Hotels",
-    description: "Book a taxi, charter a bus, catch a flight, or reserve a hotel — all from one app. Vink Go connects passengers to South Africa's transport network with accessible vehicle options for medical needs.",
+    description: "Book a taxi, charter a bus, catch a flight, or reserve a hotel — all from one app. VINK Go connects passengers to South Africa's transport network with accessible vehicle options for medical needs.",
     platform: ["iOS", "Android"],
     category: "Travel & Transport",
     version: "v3.5.1",
@@ -108,7 +108,7 @@ const APPS = [
   },
   {
     id: "ride",
-    name: "Vink Ride",
+    name: "VINK Ride",
     subtitle: "Book Rides · Earn as a Driver",
     description: "South Africa's transport-native ride-hailing app. Request a taxi or e-hail, track your driver live, chat and call through masked numbers, pay with card or cash, and rate your trip — all in one place.",
     platform: ["iOS", "Android"],
@@ -263,7 +263,7 @@ export function AppLauncher({ isOpen, onClose, onLaunchApp }: Props) {
           <div className="rounded-2xl p-4 space-y-3" style={{ background: "#ffffff08" }}>
             <p className="text-white/50 text-xs uppercase tracking-wide font-bold">System Information</p>
             {[
-              { label: "Developer", value: "Vink Group (Pty) Ltd." },
+              { label: "Developer", value: "VINK Group (Pty) Ltd." },
               { label: "Backend API", value: "VINK Central API v2 · Cape Town" },
               { label: "Real-time", value: "WebSocket · sub-100ms latency" },
               { label: "Security", value: "256-bit AES · JWT Auth · FICA Compliant" },
@@ -287,7 +287,7 @@ export function AppLauncher({ isOpen, onClose, onLaunchApp }: Props) {
       <div className="sticky top-0 z-10 px-5 py-4 border-b border-white/10 flex items-center justify-between"
         style={{ background: "#0A0A14" }}>
         <div className="flex items-center gap-3">
-          <img src={vinkLogo} alt="Vink" className="h-8 w-auto object-contain" style={{ filter: "brightness(0) invert(1)" }} />
+          <img src={vinkLogo} alt="VINK" className="h-8 w-auto object-contain" style={{ filter: "brightness(0) invert(1)" }} />
           <div>
             <p className="text-sm font-black text-white">VINK App Ecosystem</p>
             <p className="text-[10px] text-white/50">5 connected apps · 1 backend system</p>

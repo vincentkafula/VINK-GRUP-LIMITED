@@ -1,10 +1,10 @@
 /**
- * Vink Global SIM Card System
+ * VINK Global SIM Card System
  *
  * Architecture mirrors the Global Banking Card System:
- * One Vink SIM number → 5-country MVNO partner network → local call routing everywhere
+ * One VINK SIM number → 5-country MVNO partner network → local call routing everywhere
  *
- * When a Vink SIM user calls any number in the world, the call is routed through
+ * When a VINK SIM user calls any number in the world, the call is routed through
  * VINK's local MVNO partner in the destination country — billed as a LOCAL call.
  * Zero international tariffs. Same principle as the nostro banking accounts.
  */
@@ -251,7 +251,7 @@ export function GlobalSIMDashboard({ isOpen, onClose }: Props) {
             📶
           </div>
           <div>
-            <p className="text-sm font-black text-gray-900 leading-none">Vink Global SIM · MVNO System</p>
+            <p className="text-sm font-black text-gray-900 leading-none">VINK Global SIM · MVNO System</p>
             <p className="text-[10px] text-gray-400 mt-0.5">One SIM · Local rates in 5 countries · {totalSubscribers.toLocaleString()} subscribers</p>
           </div>
         </div>
@@ -308,7 +308,7 @@ export function GlobalSIMDashboard({ isOpen, onClose }: Props) {
                       One SIM. Local Call Rates.<br />Everywhere in the World.
                     </h2>
                     <p className="text-white/75 text-sm leading-relaxed max-w-2xl">
-                      The Vink Global SIM uses the same architecture as our card system. Just as VINK holds a local bank account in each country so card transactions are routed domestically, we hold an MVNO agreement with a local network operator in each country — so every call you make is terminated locally. No international tariffs. Ever.
+                      The VINK Global SIM uses the same architecture as our card system. Just as VINK holds a local bank account in each country so card transactions are routed domestically, we hold an MVNO agreement with a local network operator in each country — so every call you make is terminated locally. No international tariffs. Ever.
                     </p>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-5">
                       {[
@@ -332,7 +332,7 @@ export function GlobalSIMDashboard({ isOpen, onClose }: Props) {
                 <h3 className="text-sm font-black text-gray-800 mb-5">System Architecture — Local Routing Model</h3>
                 <div className="flex flex-col items-center gap-2">
                   <div className="w-full rounded-xl p-3 text-center text-white text-sm font-bold" style={{ background: P }}>
-                    Vink SIM (Single MSISDN · One account · All countries)
+                    VINK SIM (Single MSISDN · One account · All countries)
                   </div>
                   <div className="w-px h-4 bg-gray-300" />
                   <div className="grid grid-cols-5 gap-2 w-full">
@@ -391,7 +391,7 @@ export function GlobalSIMDashboard({ isOpen, onClose }: Props) {
                       <div className="flex items-center justify-between px-4 py-2.5 bg-gray-50">
                         <span className="text-sm font-bold text-gray-800">{s.from} → {s.to}</span>
                         <span className="text-xs font-black px-3 py-1 rounded-full text-white" style={{ background: s.color }}>
-                          {s.saving} cheaper with Vink
+                          {s.saving} cheaper with VINK
                         </span>
                       </div>
                       <div className="grid sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-gray-100">
@@ -400,7 +400,7 @@ export function GlobalSIMDashboard({ isOpen, onClose }: Props) {
                           <p className="text-xs text-gray-600 whitespace-pre-line">{s.traditional}</p>
                         </div>
                         <div className="px-4 py-3" style={{ background: s.color + "06" }}>
-                          <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: s.color }}>✓ Vink Local Routing</p>
+                          <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: s.color }}>✓ VINK Local Routing</p>
                           <p className="text-xs text-gray-600 whitespace-pre-line">{s.vink}</p>
                         </div>
                       </div>
@@ -416,7 +416,7 @@ export function GlobalSIMDashboard({ isOpen, onClose }: Props) {
             <div className="space-y-5 max-w-5xl">
               <h1 className="text-xl font-black text-gray-900">MVNO Partner Networks</h1>
               <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-sm text-emerald-800 leading-relaxed">
-                <strong>How it works:</strong> VINK holds an MVNO (Mobile Virtual Network Operator) agreement with a licensed host network in each country. When a Vink SIM user is in — or calls to — that country, their traffic is routed through the local operator's infrastructure. The call is billed at domestic rates. VINK pays the local partner a wholesale interconnect fee and charges the customer a transparent margin. No international fees pass through.
+                <strong>How it works:</strong> VINK holds an MVNO (Mobile Virtual Network Operator) agreement with a licensed host network in each country. When a VINK SIM user is in — or calls to — that country, their traffic is routed through the local operator's infrastructure. The call is billed at domestic rates. VINK pays the local partner a wholesale interconnect fee and charges the customer a transparent margin. No international fees pass through.
               </div>
               <div className="space-y-4">
                 {MVNO_PARTNERS.map(p => (
@@ -536,7 +536,7 @@ export function GlobalSIMDashboard({ isOpen, onClose }: Props) {
           {/* ══ MY SIM ══ */}
           {screen === "mysim" && (
             <div className="space-y-5 max-w-3xl">
-              <h1 className="text-xl font-black text-gray-900">My Vink SIM</h1>
+              <h1 className="text-xl font-black text-gray-900">My VINK SIM</h1>
 
               {/* SIM card visual */}
               <div className="rounded-2xl overflow-hidden shadow-xl text-white relative"
@@ -645,7 +645,7 @@ export function GlobalSIMDashboard({ isOpen, onClose }: Props) {
                     <p className="text-[10px] text-red-400 mt-2">International routing · cross-border fees · termination charges</p>
                   </div>
                   <div className="rounded-2xl p-5 border-2 border-green-200 bg-green-50">
-                    <p className="text-xs font-bold text-green-600 uppercase tracking-wide mb-2">✓ Vink Local Routing</p>
+                    <p className="text-xs font-bold text-green-600 uppercase tracking-wide mb-2">✓ VINK Local Routing</p>
                     <p className="text-3xl font-black text-green-700">R{vinkCost}</p>
                     <p className="text-xs text-green-600 mt-1">At R{vinkRatePerMin}/min (local {toPartner?.country} rate)</p>
                     <p className="text-[10px] text-green-500 mt-2">Routed via VINK {toPartner?.partner} — local termination, no IDD fees</p>
@@ -663,12 +663,12 @@ export function GlobalSIMDashboard({ isOpen, onClose }: Props) {
                 <p className="text-sm font-black text-gray-800 mb-5">How the Call Routes — Step by Step</p>
                 <div className="relative pl-6 border-l-2" style={{ borderColor: P }}>
                   {[
-                    { step: "1", title: "Call initiated", desc: `You dial a ${toPartner?.country} number from your Vink SIM in ${fromPartner?.country}.`, icon: "📱" },
-                    { step: "2", title: "Authentication", desc: "Vink network validates your MSISDN and checks available balance/plan minutes.", icon: "🔐" },
+                    { step: "1", title: "Call initiated", desc: `You dial a ${toPartner?.country} number from your VINK SIM in ${fromPartner?.country}.`, icon: "📱" },
+                    { step: "2", title: "Authentication", desc: "VINK network validates your MSISDN and checks available balance/plan minutes.", icon: "🔐" },
                     { step: "3", title: "Routing decision", desc: `VINK routing engine identifies the destination country (${toPartner?.country}) and selects the local MVNO partner: ${toPartner?.partner}.`, icon: "🔀" },
                     { step: "4", title: "Local handoff", desc: `The call is handed to ${toPartner?.partner}'s local network in ${toPartner?.country}. From the terminating network's perspective, this is a domestic call.`, icon: "📡" },
                     { step: "5", title: "Local termination", desc: `Call terminates at the destination number as a local ${toPartner?.country} call. The recipient sees a local or recognised number.`, icon: "✅" },
-                    { step: "6", title: "Billing", desc: `Your Vink balance is debited at the local ${toPartner?.country} rate (${toPartner?.localCallRate}). VINK pays the partner wholesale interconnect fee. No international tariff applied.`, icon: "💳" },
+                    { step: "6", title: "Billing", desc: `Your VINK balance is debited at the local ${toPartner?.country} rate (${toPartner?.localCallRate}). VINK pays the partner wholesale interconnect fee. No international tariff applied.`, icon: "💳" },
                   ].map((s, i) => (
                     <div key={i} className="mb-5 relative">
                       <div className="absolute -left-[34px] top-0 w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-black border-2 border-white"

@@ -208,8 +208,8 @@ function CustomerApp({ onClose }: { onClose: () => void }) {
               <div className="rounded-2xl p-4 text-white flex items-center justify-between"
                 style={{ background: "linear-gradient(135deg,#1a1a1a,#333)" }}>
                 <div>
-                  <p className="font-black text-base">Pay with Vink</p>
-                  <p className="text-white/70 text-xs mt-0.5">Get R20 off your first order when you pay with your Vink card</p>
+                  <p className="font-black text-base">Pay with VINK</p>
+                  <p className="text-white/70 text-xs mt-0.5">Get R20 off your first order when you pay with your VINK card</p>
                 </div>
                 <span className="text-3xl">💳</span>
               </div>
@@ -366,7 +366,7 @@ function CustomerApp({ onClose }: { onClose: () => void }) {
                 {/* Payment */}
                 <div className="bg-white rounded-2xl border border-gray-100 p-4">
                   <p className="text-sm font-bold text-gray-900 mb-2">Payment method</p>
-                  {[{ icon: "💳", label: "Vink Card •••• 4291", sub: "Earn VinkPoints on this order" }, { icon: "💵", label: "Cash on Delivery", sub: "" }].map((p, i) => (
+                  {[{ icon: "💳", label: "VINK Card •••• 4291", sub: "Earn VinkPoints on this order" }, { icon: "💵", label: "Cash on Delivery", sub: "" }].map((p, i) => (
                     <div key={i} className={`flex items-center gap-3 p-2.5 rounded-xl mb-1.5 ${i === 0 ? "border-2" : "border border-gray-100"}`}
                       style={{ borderColor: i === 0 ? ORANGE : undefined, background: i === 0 ? ORANGE + "05" : undefined }}>
                       <span className="text-xl">{p.icon}</span>

@@ -67,11 +67,11 @@ const SERVICE_CONFIG: Record<ServiceType, {
   },
   sim: {
     tag:           "VINK MVNO · Cell C Network",
-    title:         "Vink SIM Card Application",
-    subtitle:      "Get your Vink SIM on the Cell C network — affordable data, calls, and SMS bundled with your Vink wallet.",
+    title:         "VINK SIM Card Application",
+    subtitle:      "Get your VINK SIM on the Cell C network — affordable data, calls, and SMS bundled with your VINK wallet.",
     gradient:      "linear-gradient(135deg,#E65100 0%,#F57C00 50%,#FFB74D 100%)",
     successTitle:  "SIM Card Issued!",
-    successBody:   "Your Vink SIM card will be delivered to your address within 3–5 business days. Your number is active immediately.",
+    successBody:   "Your VINK SIM card will be delivered to your address within 3–5 business days. Your number is active immediately.",
     accountLabel:  "MSISDN / mobile number",
     accountPrefix: "VINK-SIM",
     accentColor:   "#F57C00",
@@ -79,10 +79,10 @@ const SERVICE_CONFIG: Record<ServiceType, {
   account: {
     tag:           "VINK Personal Banking · Accounts",
     title:         "Bank Account Application",
-    subtitle:      "Open your selected Vink account in minutes — FICA-verified and ready to use.",
+    subtitle:      "Open your selected VINK account in minutes — FICA-verified and ready to use.",
     gradient:      "linear-gradient(135deg,#1A237E 0%,#128A43 55%,#34A853 100%)",
     successTitle:  "Account Opened!",
-    successBody:   "Your Vink bank account is active. Your Vink card will be delivered to your registered address within 5–7 business days.",
+    successBody:   "Your VINK bank account is active. Your VINK card will be delivered to your registered address within 5–7 business days.",
     accountLabel:  "Account number",
     accountPrefix: "VINK-ACC",
     accentColor:   "#128A43",
@@ -172,7 +172,7 @@ function Step1Form({
               {REWARD_CARDS.map(p => <option key={p}>{p}</option>)}
             </select>
           </Field>
-          <Field label="Linked Vink card number (if existing)">
+          <Field label="Linked VINK card number (if existing)">
             <input className={inputCls} placeholder="Leave blank to apply for new card" value={form.cardNumber} onChange={set("cardNumber")} />
           </Field>
           <Field label="Preferred redemption method">
@@ -244,7 +244,7 @@ const SERVICE_DOCS: Record<ServiceType, { key: string; label: string; required: 
   rewards: [
     { key: "id",      label: "Certified copy of SA ID or passport",          required: true },
     { key: "address", label: "Proof of residential address (≤3 months)",     required: true },
-    { key: "card",    label: "Photo of existing Vink card (if linking)",     required: false },
+    { key: "card",    label: "Photo of existing VINK card (if linking)",     required: false },
   ],
   sim: [
     { key: "id",      label: "Certified copy of SA ID or passport (RICA)",   required: true },
@@ -437,7 +437,7 @@ export function ServiceApplicationViewer({ isOpen, onClose, serviceType }: Props
       {/* ── Top bar ── */}
       <div className="sticky top-0 z-20 bg-white border-b border-gray-100 shadow-sm">
         <div className="flex items-center justify-between px-5 py-3">
-          <img src={vinkLogo} alt="Vink" className="h-9 w-auto object-contain" />
+          <img src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
           <div className="flex items-center gap-3">
             <span className="hidden sm:block text-xs text-gray-400 font-medium">Step {step} of {STEPS.length}</span>
             <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-800"><X className="w-5 h-5" /></button>

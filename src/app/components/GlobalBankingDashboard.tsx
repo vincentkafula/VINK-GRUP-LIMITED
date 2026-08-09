@@ -83,14 +83,14 @@ const CARDS = [
 ];
 
 const TRANSACTIONS = [
-  { id: "t1",  dir: "debit",  desc: "Shoprite Claremont",     merchant: "Shoprite",     cat: "Grocery",     country: "ZA", local: "R 2,847.50",  billed: "R 2,847.50",  channel: "card_pos",    domestic: true,  time: "14:32" },
-  { id: "t2",  dir: "debit",  desc: "Amazon DE Order",        merchant: "Amazon DE",    cat: "E-commerce",  country: "EU", local: "€ 89.99",     billed: "R 1,794.22",  channel: "card_online", domestic: true,  time: "12:18" },
+  { id: "t1",  dir: "debit",  desc: "Shoprite Claremont",     merchant: "Shoprite",     cat: "Grocery",     country: "ZA", local: "R2,847.50",  billed: "R2,847.50",  channel: "card_pos",    domestic: true,  time: "14:32" },
+  { id: "t2",  dir: "debit",  desc: "Amazon DE Order",        merchant: "Amazon DE",    cat: "E-commerce",  country: "EU", local: "€ 89.99",     billed: "R1,794.22",  channel: "card_online", domestic: true,  time: "12:18" },
   { id: "t3",  dir: "debit",  desc: "AWS Cloud Services",     merchant: "Amazon Web Services", cat: "Tech", country: "US", local: "$ 842.00",   billed: "$ 842.00",    channel: "card_pos",    domestic: true,  time: "09:44" },
-  { id: "t4",  dir: "credit", desc: "P2P from Nomsa Zulu",    merchant: "Nomsa Zulu",   cat: "P2P",         country: "ZA", local: "R 5,000.00",  billed: "R 5,000.00",  channel: "p2p",         domestic: true,  time: "08:30" },
-  { id: "t5",  dir: "credit", desc: "EFT Deposit — Salary",   merchant: "VINK Payroll",  cat: "Deposit",     country: "ZA", local: "R 85,000.00", billed: "R 85,000.00", channel: "deposit",     domestic: true,  time: "Yesterday" },
-  { id: "t6",  dir: "debit",  desc: "ATM Standard Bank CPT",  merchant: "Standard Bank", cat: "ATM",        country: "ZA", local: "R 2,000.00",  billed: "R 2,000.00",  channel: "atm",         domestic: true,  time: "Yesterday" },
-  { id: "t7",  dir: "debit",  desc: "Netflix Subscription",   merchant: "Netflix",      cat: "Entertainment",country: "US",local: "$ 15.49",     billed: "R 284.24",    channel: "card_online", domestic: false, time: "2 days ago" },
-  { id: "t8",  dir: "credit", desc: "FX Conversion ZAR→USD",  merchant: "VINK FX Engine",cat: "FX",          country: "US", local: "R 50,000",    billed: "$ 2,724.25",  channel: "fx",          domestic: true,  time: "2 days ago" },
+  { id: "t4",  dir: "credit", desc: "P2P from Nomsa Zulu",    merchant: "Nomsa Zulu",   cat: "P2P",         country: "ZA", local: "R5,000.00",  billed: "R5,000.00",  channel: "p2p",         domestic: true,  time: "08:30" },
+  { id: "t5",  dir: "credit", desc: "EFT Deposit — Salary",   merchant: "VINK Payroll",  cat: "Deposit",     country: "ZA", local: "R85,000.00", billed: "R85,000.00", channel: "deposit",     domestic: true,  time: "Yesterday" },
+  { id: "t6",  dir: "debit",  desc: "ATM Standard Bank CPT",  merchant: "Standard Bank", cat: "ATM",        country: "ZA", local: "R2,000.00",  billed: "R2,000.00",  channel: "atm",         domestic: true,  time: "Yesterday" },
+  { id: "t7",  dir: "debit",  desc: "Netflix Subscription",   merchant: "Netflix",      cat: "Entertainment",country: "US",local: "$ 15.49",     billed: "R284.24",    channel: "card_online", domestic: false, time: "2 days ago" },
+  { id: "t8",  dir: "credit", desc: "FX Conversion ZAR→USD",  merchant: "VINK FX Engine",cat: "FX",          country: "US", local: "R50,000",    billed: "$ 2,724.25",  channel: "fx",          domestic: true,  time: "2 days ago" },
 ];
 
 const KPI = {

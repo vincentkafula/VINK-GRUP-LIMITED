@@ -946,13 +946,13 @@ export function RideHailingSystem({ isOpen, onClose }: Props) {
     return (
       <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto" style={{ background: "linear-gradient(135deg,#0F172A,#1E293B)" }}>
         <div className="flex items-center justify-between px-5 py-4">
-          <p className="text-white font-black text-lg">Vink Ride</p>
+          <p className="text-white font-black text-lg">VINK Ride</p>
           <button onClick={onClose} className="p-2 rounded-full hover:bg-white/10 text-white/50"><X className="w-5 h-5" /></button>
         </div>
         <div className="flex-1 flex flex-col items-center justify-center px-6 gap-6">
           <div className="text-center mb-4">
             <span className="text-6xl">🚗</span>
-            <h1 className="text-3xl font-black text-white mt-3">Vink Ride</h1>
+            <h1 className="text-3xl font-black text-white mt-3">VINK Ride</h1>
             <p className="text-white/50 text-sm mt-2 max-w-xs">Safe, reliable transport across South Africa. Request a ride, earn as a driver, or manage your fleet.</p>
           </div>
           <div className="w-full max-w-sm space-y-3">

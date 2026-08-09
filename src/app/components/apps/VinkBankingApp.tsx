@@ -31,13 +31,13 @@ const TRANSACTIONS = [
   { emoji: "🍕", name: "Steers",                    amount: -89.00,   date: "15 Jun",   cat: "Food" },
   { emoji: "💳", name: "Refund — Takealot",         amount: 340.00,   date: "14 Jun",   cat: "Refund" },
   { emoji: "📱", name: "MTN Airtime",               amount: -50.00,   date: "14 Jun",   cat: "Airtime" },
-  { emoji: "🚕", name: "Vink Taxi Fare",            amount: -68.00,   date: "13 Jun",   cat: "Transport" },
+  { emoji: "🚕", name: "VINK Taxi Fare",            amount: -68.00,   date: "13 Jun",   cat: "Transport" },
   { emoji: "🏢", name: "City of Cape Town — Rates", amount: -1440.00, date: "12 Jun",   cat: "Municipal" },
   { emoji: "☕", name: "Truth Coffee Roasting",     amount: -42.00,   date: "11 Jun",   cat: "Food" },
 ];
 
 const REWARDS_HISTORY = [
-  { event: "Taxi Fare — Vink Ride",       pts: "+68",  date: "Today" },
+  { event: "Taxi Fare — VINK Ride",       pts: "+68",  date: "Today" },
   { event: "Shoprite Purchase",            pts: "+28",  date: "Today" },
   { event: "Monthly Salary Deposit",       pts: "+185", date: "Yesterday" },
   { event: "Shell Fuel Purchase",          pts: "+65",  date: "18 Jun" },
@@ -174,7 +174,7 @@ function LoginScreen({ onAuthenticated }: { onAuthenticated: (user: MktAuthUser)
           {mode === "signin" ? "New here? Create an account" : "Already have an account? Sign in"}
         </button>
       </div>
-      <p className="text-center text-[10px] text-gray-300 pb-6">Same account works on vink.co.za and the Vink app.</p>
+      <p className="text-center text-[10px] text-gray-300 pb-6">Same account works on vink.co.za and the VINK app.</p>
     </div>
   );
 }
@@ -254,7 +254,7 @@ function HomeScreen({ tier, onSwitchTier, user }: { tier: Tier; onSwitchTier: ()
   const info = TIER_INFO[tier];
   const unlockedFrom = (min: number) => info.order >= min;
   const [hideBalance, setHideBalance] = useState(false);
-  const balance = tier === "Legacy" ? "R 4,218,600.00" : "R 20,700.00";
+  const balance = tier === "Legacy" ? "R4,218,600.00" : "R20,700.00";
 
   return (
     <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F8F7FF" }}>
@@ -290,16 +290,16 @@ function HomeScreen({ tier, onSwitchTier, user }: { tier: Tier; onSwitchTier: ()
       {/* Balance card */}
       <div className="mx-3 mt-2 rounded-2xl p-5 shadow-xl" style={{ background: info.cardGradient }}>
         <button onClick={onSwitchTier} className="flex items-center gap-1 text-white/60 text-xs hover:text-white/90 transition-colors">
-          Vink {tier} Account <ChevronRight className="w-3 h-3" />
+          VINK {tier} Account <ChevronRight className="w-3 h-3" />
         </button>
         {tier === "Legacy" ? (
           <>
             <p className="text-white/50 text-[9px] mt-2 uppercase tracking-wider">Net Worth</p>
-            <p className="text-white text-[28px] font-bold tracking-tight mt-0.5">R 4,218,600.00</p>
+            <p className="text-white text-[28px] font-bold tracking-tight mt-0.5">R4,218,600.00</p>
             <div className="flex items-center gap-4 mt-2">
-              <div><p className="text-white/50 text-[8px]">Investments</p><p className="text-white text-[11px] font-bold">R 3.1m</p></div>
-              <div><p className="text-white/50 text-[8px]">Cash</p><p className="text-white text-[11px] font-bold">R 640k</p></div>
-              <div><p className="text-white/50 text-[8px]">Property</p><p className="text-white text-[11px] font-bold">R 478k</p></div>
+              <div><p className="text-white/50 text-[8px]">Investments</p><p className="text-white text-[11px] font-bold">R3.1m</p></div>
+              <div><p className="text-white/50 text-[8px]">Cash</p><p className="text-white text-[11px] font-bold">R640k</p></div>
+              <div><p className="text-white/50 text-[8px]">Property</p><p className="text-white text-[11px] font-bold">R478k</p></div>
             </div>
           </>
         ) : (
@@ -364,7 +364,7 @@ function HomeScreen({ tier, onSwitchTier, user }: { tier: Tier; onSwitchTier: ()
       <div className="px-3 pt-4 flex gap-2.5 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
         <div className="w-56 shrink-0 rounded-2xl p-3.5" style={{ background: PURPLE }}>
           <div className="flex items-start justify-between">
-            <p className="text-white text-[12.5px] font-bold leading-snug w-32">Earn more with Vink Rewards</p>
+            <p className="text-white text-[12.5px] font-bold leading-snug w-32">Earn more with VINK Rewards</p>
             <Gift className="w-6 h-6" style={{ color: GOLD }} />
           </div>
           <p className="text-white/60 text-[9.5px] mt-1.5">Spend, earn and redeem VinkPoints on every transaction.</p>
@@ -571,12 +571,12 @@ function SendScreen() {
     <div className="flex flex-col h-full" style={{ background: "#F8F7FF" }}>
       <div className="px-4 py-3 flex-shrink-0" style={{ background: PURPLE }}>
         <p className="text-white font-bold text-base">Send Money</p>
-        <p className="text-white/60 text-xs">Transfer to any Vink account</p>
+        <p className="text-white/60 text-xs">Transfer to any VINK account</p>
       </div>
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
         {/* Recipient */}
         <div>
-          <label className="text-gray-500 text-xs font-semibold">To (Vink Reference or Phone)</label>
+          <label className="text-gray-500 text-xs font-semibold">To (VINK Reference or Phone)</label>
           <input type="text" value={recipient} onChange={e => setRecipient(e.target.value)}
             placeholder="VINK-GBL-2024-XXXXX or 082 555 1234"
             className="w-full mt-1.5 px-3 py-2.5 rounded-xl text-sm bg-white border text-gray-800 outline-none"
@@ -947,7 +947,7 @@ export function VinkBankingApp({ isOpen, onClose, onOpenManagementPanel }: { isO
   const showTabs = authUser !== null && screen !== "onboarding" && screen !== "adminPanel" && !verifying;
 
   return (
-    <MobileAppOverlay onClose={onClose} appName="Vink Bank" bgColor="#F8F7FF">
+    <MobileAppOverlay onClose={onClose} appName="VINK Bank" bgColor="#F8F7FF">
       <PhoneFrame statusBarColor={PURPLE} statusBarTextLight>
         <div className="flex-1 overflow-hidden flex flex-col">
           {!checkedSession ? (

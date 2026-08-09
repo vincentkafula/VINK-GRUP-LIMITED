@@ -7,7 +7,7 @@ export function TestimonialsSection() {
         <div className="text-center mb-12">
           <h2 className="text-3xl mb-4">What Our Customers Say</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Real stories from real people who love using Vink
+            Real stories from real people who love using VINK
           </p>
         </div>
 
@@ -17,14 +17,14 @@ export function TestimonialsSection() {
             role="Small Business Owner"
             image="SJ"
             rating={5}
-            text="Vink has transformed how I manage my business finances. The cashback rewards are incredible, and the customer service is always there when I need them."
+            text="VINK has transformed how I manage my business finances. The cashback rewards are incredible, and the customer service is always there when I need them."
           />
           <TestimonialCard
             name="Michael Chen"
             role="Freelance Designer"
             image="MC"
             rating={5}
-            text="I've tried many credit cards, but Vink is by far the best. No hidden fees, great rewards, and the mobile app is so easy to use. Highly recommend!"
+            text="I've tried many credit cards, but VINK is by far the best. No hidden fees, great rewards, and the mobile app is so easy to use. Highly recommend!"
           />
           <TestimonialCard
             name="Emily Rodriguez"

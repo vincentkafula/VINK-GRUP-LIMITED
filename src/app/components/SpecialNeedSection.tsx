@@ -1,6 +1,6 @@
 const AUDIENCES = [
   { icon: "🎓", label: "Students",         desc: "Build your credit history from day one, with zero fees and a low starting limit" },
-  { icon: "🏗️", label: "Credit Builders",  desc: "Secured Vink cards with a clear upgrade pathway as your score improves" },
+  { icon: "🏗️", label: "Credit Builders",  desc: "Secured VINK cards with a clear upgrade pathway as your score improves" },
   { icon: "🚌", label: "Taxi Operators",   desc: "Manage fleet payments, fuel spend, and team wallets from one business account" },
   { icon: "🌍", label: "Newcomers to SA",  desc: "Simple FICA-compliant accounts with no prior banking history required" },
 ];
@@ -31,7 +31,7 @@ export const SpecialNeedSection = memo(function SpecialNeedSection() {
               <span style={{ color: "#5B21B6" }}>We Can Help.</span>
             </h2>
             <p className="text-gray-500 text-sm leading-relaxed mb-6 max-w-md mx-auto md:mx-0">
-              Not every customer is at the same place in life — and not every bank card fits every situation. VINK offers targeted solutions for specific life stages, from students building credit for the first time to new South African residents setting up their financial lives. Whatever your circumstance, there&apos;s a Vink product designed for you.
+              Not every customer is at the same place in life — and not every bank card fits every situation. VINK offers targeted solutions for specific life stages, from students building credit for the first time to new South African residents setting up their financial lives. Whatever your circumstance, there&apos;s a VINK product designed for you.
             </p>
             <div className="grid grid-cols-2 gap-3 mb-8 max-w-md mx-auto md:mx-0">
               {AUDIENCES.map((a, i) => (

@@ -72,7 +72,7 @@ const STATS = [
   { label: "Total Institutions", value: "128", trend: "+12%", icon: <Landmark className="w-5 h-5" />, iconBg: "#E9F7EF", iconColor: GREEN, trendColor: GREEN },
   { label: "Total Transactions", value: "24,560", trend: "+18%", icon: <CreditCard className="w-5 h-5" />, iconBg: "#FDECE0", iconColor: ORANGE, trendColor: ORANGE },
   { label: "Active Users", value: "8,459", trend: "+9%", icon: <Users className="w-5 h-5" />, iconBg: "#E9F7EF", iconColor: GREEN, trendColor: GREEN },
-  { label: "Total Revenue", value: "R 45.8M", trend: "+21%", icon: <TrendingUp className="w-5 h-5" />, iconBg: "#FDECE0", iconColor: ORANGE, trendColor: ORANGE },
+  { label: "Total Revenue", value: "R45.8M", trend: "+21%", icon: <TrendingUp className="w-5 h-5" />, iconBg: "#FDECE0", iconColor: ORANGE, trendColor: ORANGE },
 ];
 
 interface ModuleTile { title: string; desc: string; icon: React.ReactNode; iconBg: string; iconColor: string; }

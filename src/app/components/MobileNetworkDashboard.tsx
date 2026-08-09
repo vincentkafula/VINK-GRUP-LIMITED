@@ -176,7 +176,7 @@ function MobileDashboardContent({
       <div className="px-4 pt-2 pb-3" style={{ background: "#13103A", borderBottom: "1px solid #2D2A50" }}>
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-[10px] font-medium" style={{ color: "#8884AA" }}>Vink MVNO</p>
+            <p className="text-[10px] font-medium" style={{ color: "#8884AA" }}>VINK MVNO</p>
             <p className="text-sm font-bold text-white">Network Operations</p>
           </div>
           <div className="flex items-center gap-2">

@@ -495,7 +495,7 @@ function Step6({ onNext, onBack, submitting }: { onNext: (data: Record<string, s
     { key: "internetBanking", label: "Internet Banking",        sub: "Manage your account online" },
     { key: "mobileApp",       label: "VINK Mobile App",          sub: "Transact via smartphone" },
     { key: "smsAlerts",       label: "SMS Transaction Alerts",   sub: "Instant notifications for each transaction" },
-    { key: "debitCard",       label: "Vink Debit Card",          sub: "Tap-and-go payments everywhere" },
+    { key: "debitCard",       label: "VINK Debit Card",          sub: "Tap-and-go payments everywhere" },
     { key: "overdraft",       label: "Overdraft Facility",       sub: "Subject to credit assessment" },
     { key: "emailStatement",  label: "Monthly Email Statement",  sub: "PDF statement delivered to your inbox" },
   ];
@@ -684,7 +684,7 @@ export function PersonalAccountApplicationViewer({ isOpen, onClose }: Props) {
       {/* Top bar */}
       <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm flex-shrink-0">
         <div className="flex items-center gap-3">
-          <img src={vinkLogo} alt="Vink" className="h-9 w-auto object-contain" />
+          <img src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
           <span className="text-sm font-semibold text-gray-700 hidden sm:block">Personal Account Application</span>
         </div>
         <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500">
