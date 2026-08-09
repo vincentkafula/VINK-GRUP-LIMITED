@@ -26,10 +26,10 @@ const REVENUE_CHART = [820000, 940000, 870000, 1100000, 980000, 1240000, 1380000
 const RETURN_CHART = [8.1, 9.4, 7.8, 11.2, 10.4, 12.8, 13.4, 11.9, 14.2, 15.6, 14.8, 16.2];
 
 const DIVIDENDS = [
-  { period: "Q4 2024", amount: "R124,800", yield: "4.2%", paid: "2025-01-15", status: "paid" },
-  { period: "Q3 2024", amount: "R118,400", yield: "3.9%", paid: "2024-10-15", status: "paid" },
-  { period: "Q2 2024", amount: "R108,200", yield: "3.6%", paid: "2024-07-15", status: "paid" },
-  { period: "Q1 2025", amount: "R134,600", yield: "4.5%", paid: "2025-04-15", status: "upcoming" },
+  { period: "Q3 2027", amount: "R124,800", yield: "4.2%", paid: "2027-10-15", status: "projected" },
+  { period: "Q4 2027", amount: "R134,600", yield: "4.5%", paid: "2028-01-15", status: "projected" },
+  { period: "Q1 2028", amount: "R142,100", yield: "4.7%", paid: "2028-04-15", status: "projected" },
+  { period: "Q2 2028", amount: "R151,300", yield: "5.0%", paid: "2028-07-15", status: "projected" },
 ];
 
 const fmt = (n: number) => n >= 1000000 ? `R${(n/1000000).toFixed(2)}M` : `R${(n/1000).toFixed(0)}K`;

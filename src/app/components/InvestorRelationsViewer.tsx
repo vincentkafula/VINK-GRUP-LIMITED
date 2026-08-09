@@ -38,32 +38,19 @@ const REASONS = [
 ];
 
 const SHARE_ROWS = [
-  { label: "LAST PRICE",         value: "2.60 ZAR" },
-  { label: "PROPOSED TICKER",    value: "R.SX: VINK" },
+  { label: "STATUS",             value: "Pre-launch — full operation June 2027" },
   { label: "REGISTRATION",       value: "2018/079316/07" },
-  { label: "ANNUAL GROWTH",      value: "7.5% p.a." },
-  { label: "FUNDING RAISED",     value: "R4.5 Billion" },
+  { label: "TARGET GROWTH",      value: "7.5% p.a." },
+  { label: "FUNDING SOUGHT",     value: "R4.5 Billion" },
   { label: "FUNDING TERM",       value: "60 months @ 7%" },
-  { label: "NET PROFIT (YR1)",   value: "R45.4B" },
+  { label: "ADDRESSABLE MARKET", value: "R11B / year (TAM)" },
   { label: "TAX RATE",           value: "28%" },
 ];
 
-const INVESTOR_NEWS = [
-  { date: "15 Jun 2022", title: "VINK Quarterly Financial Statements for the quarter ended 15 June 2022", type: "PDF", color: "#EF4444" },
-  { date: "17 Mar 2022", title: "VINK Quarterly Financial Statements for the quarter ended 17 March 2022", type: "PDF", color: "#EF4444" },
-  { date: "02 Feb 2022", title: "VINK: Release of 2021–2022 Annual Report", type: "PDF", color: "#EF4444" },
-  { date: "14 Nov 2021", title: "VINK Notice of Annual General Meeting — November 2021", type: "PDF", color: "#EF4444" },
-];
+const INVESTOR_NEWS: { date: string; title: string; type: string; color: string }[] = [];
 
-const DOCS = [
-  { name: "Annual Report 2021–2022",         size: "4.2 MB",  date: "Feb 2022" },
-  { name: "Quarterly Results Q3 2022",        size: "1.8 MB",  date: "Jun 2022" },
-  { name: "Quarterly Results Q2 2022",        size: "1.7 MB",  date: "Mar 2022" },
-  { name: "Integrated Report 2021",           size: "6.1 MB",  date: "Mar 2021" },
-  { name: "Environmental & Social Report",    size: "2.9 MB",  date: "Jan 2022" },
-  { name: "Notice of AGM 2022",               size: "0.9 MB",  date: "Oct 2022" },
+const DOCS: { name: string; size: string; date: string }[] = [
   { name: "Memorandum of Incorporation",      size: "1.1 MB",  date: "2018" },
-  { name: "Shareholders' Compact 2022",       size: "0.5 MB",  date: "Jan 2022" },
 ];
 
 const BOARD_MEMBERS = [
@@ -336,6 +323,11 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
         {/* ── Investor News ── */}
         <div>
           <SectionHeading>Investor News</SectionHeading>
+          {INVESTOR_NEWS.length === 0 ? (
+            <div className="bg-white rounded-xl border border-gray-200 p-6 text-center">
+              <p className="text-sm text-gray-500">VINK is not yet in full operation. Investor news and quarterly updates will be published here as we approach our June 2027 launch.</p>
+            </div>
+          ) : (
           <div className="space-y-2">
             {INVESTOR_NEWS.map((n, i) => (
               <div key={i} className="bg-white rounded-xl border border-gray-200 flex items-center gap-4 p-4 hover:shadow-sm transition-shadow cursor-pointer">
@@ -353,6 +345,7 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
               </div>
             ))}
           </div>
+          )}
         </div>
 
         {/* ── Documents and Reports ── */}
