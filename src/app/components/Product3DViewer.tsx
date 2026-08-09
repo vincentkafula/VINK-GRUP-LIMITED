@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useState, useEffect, useCallback, type ReactNode } from "react";
 import { RotateCcw, Play, Pause, ZoomIn, ZoomOut, Box, Image as ImageIcon } from "lucide-react";
 
 interface Props {
@@ -8,6 +8,9 @@ interface Props {
   brand: string;
   name: string;
   discount?: number;
+  /** Optional original illustration to render instead of the emoji, for
+   *  listings that have one (see PRODUCT_ILLUSTRATIONS in VinkMarketplace). */
+  illustration?: () => ReactNode;
 }
 
 const SIZE = 180; // half-extent of the cube in px (face size = SIZE)
@@ -19,7 +22,7 @@ const SIZE = 180; // half-extent of the cube in px (face size = SIZE)
  * built from the product's own emoji + brand colours, so it stays accurate
  * to the actual listing instead of a generic placeholder shape.
  */
-export function Product3DViewer({ emoji, colorA, colorB, brand, name, discount }: Props) {
+export function Product3DViewer({ emoji, colorA, colorB, brand, name, discount, illustration }: Props) {
   const [mode, setMode] = useState<"3d" | "photo">("3d");
   const [rotX, setRotX] = useState(-14);
   const [rotY, setRotY] = useState(28);
@@ -99,7 +102,7 @@ export function Product3DViewer({ emoji, colorA, colorB, brand, name, discount }
     <div className="relative" style={{ minHeight: 340 }}>
       {mode === "photo" ? (
         <div className="flex items-center justify-center p-16" style={{ background: `linear-gradient(135deg,${colorA},${colorB})`, minHeight: 340 }}>
-          <span className="text-9xl select-none">{emoji}</span>
+          {illustration ? <div className="w-40 h-40">{illustration()}</div> : <span className="text-9xl select-none">{emoji}</span>}
         </div>
       ) : (
         <div
@@ -125,7 +128,9 @@ export function Product3DViewer({ emoji, colorA, colorB, brand, name, discount }
             }}
           >
             <div style={faceStyle(`translateZ(${SIZE}px)`, 1.08)}>
-              <span className="text-8xl select-none pointer-events-none" style={{ transform: "translateZ(1px)" }}>{emoji}</span>
+              {illustration
+                ? <div className="w-32 h-32 pointer-events-none" style={{ transform: "translateZ(1px)" }}>{illustration()}</div>
+                : <span className="text-8xl select-none pointer-events-none" style={{ transform: "translateZ(1px)" }}>{emoji}</span>}
               {Boolean(discount) && (
                 <span className="absolute top-4 left-4 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-md">-{discount}%</span>
               )}

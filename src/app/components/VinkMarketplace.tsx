@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, type ReactNode } from "react";
 import {
   X, Search, ShoppingCart, Heart, Star, ChevronRight, ArrowLeft,
   SlidersHorizontal, Grid, List, Plus, Minus, Trash2,
@@ -13,6 +13,24 @@ import {
 } from "../services/marketplaceApi";
 import { getToken as getMainToken, getSession, setToken as setMainToken, setSession as setMainSession } from "../services/apiClient";
 import { isDemoMode } from "../services/demoMode";
+import {
+  ExecutiveChairIllustration, MeshTaskChairIllustration, ManagerChairIllustration,
+  ConferenceChairIllustration, DraftingStoolIllustration, VisitorChairIllustration,
+  GamingChairIllustration,
+} from "./ChairIllustrations";
+
+// Maps a product id to an original illustration component, used in place of
+// the plain emoji for listings that have one (currently the 7 generic
+// office chair products). Falls back to the emoji for everything else.
+const PRODUCT_ILLUSTRATIONS: Record<string, () => ReactNode> = {
+  "p-13": ExecutiveChairIllustration,
+  "p-14": MeshTaskChairIllustration,
+  "p-15": ManagerChairIllustration,
+  "p-16": ConferenceChairIllustration,
+  "p-17": DraftingStoolIllustration,
+  "p-18": VisitorChairIllustration,
+  "p-19": GamingChairIllustration,
+};
 import { MarketplaceAuthModal } from "./MarketplaceAuthModal";
 import { CustomerDashboard } from "./CustomerDashboard";
 import { SellerDashboard } from "./SellerDashboard";
@@ -105,7 +123,9 @@ function ProductCard({ p, onView, onCart, wishlistIds, onWishlist }: {
       <div className="relative cursor-pointer" style={{ height: 180 }} onClick={onView}>
         <div className="w-full h-full flex items-center justify-center text-7xl"
           style={{ background: `linear-gradient(135deg,${imgs?.[0] ?? "#F3F4F6"},${imgs?.[1] ?? "#E5E7EB"})` }}>
-          {p.emoji as string}
+          {PRODUCT_ILLUSTRATIONS[p.id as string]
+            ? <div className="w-24 h-24">{PRODUCT_ILLUSTRATIONS[p.id as string]()}</div>
+            : (p.emoji as string)}
         </div>
         {p.isFlashDeal && (
           <div className="absolute top-2 left-2 bg-red-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
@@ -177,7 +197,9 @@ function HomeProductCard({ p, onView, onCart }: { p: R; onView: () => void; onCa
       <div className="relative" onClick={onView}>
         <div className="w-full flex items-center justify-center text-5xl py-4"
           style={{ background: `linear-gradient(135deg,${imgs?.[0] ?? "#f5f5f5"},${imgs?.[1] ?? "#e8e8e8"})`, minHeight: 100 }}>
-          {p.emoji as string}
+          {PRODUCT_ILLUSTRATIONS[p.id as string]
+            ? <div className="w-16 h-16">{PRODUCT_ILLUSTRATIONS[p.id as string]()}</div>
+            : (p.emoji as string)}
         </div>
         {discount > 0 && (
           <div className="absolute top-1 left-1 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5">-{discount}%</div>
@@ -295,10 +317,12 @@ function HeroProductSlider({ products, onView, onCart }: { products: R[]; onView
           </button>
         </div>
         <div
-          className="shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center text-4xl sm:text-5xl shadow-sm"
+          className="shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center text-4xl sm:text-5xl shadow-sm overflow-hidden"
           style={{ background: `linear-gradient(135deg,${imgs?.[0] ?? "#fff"},${imgs?.[1] ?? "#e8e8e8"})` }}
         >
-          {p.emoji as string}
+          {PRODUCT_ILLUSTRATIONS[p.id as string]
+            ? <div className="w-14 h-14 sm:w-16 sm:h-16">{PRODUCT_ILLUSTRATIONS[p.id as string]()}</div>
+            : (p.emoji as string)}
         </div>
       </div>
 
@@ -679,8 +703,12 @@ function CatalogView({ categories, onProduct, onCart, wishlistIds, onWishlist, i
               const imgs = p.images as string[];
               return (
                 <div key={i} className="bg-white rounded-2xl border border-gray-100 p-4 flex items-center gap-4 hover:shadow-md cursor-pointer transition-all" onClick={() => onProduct(p)}>
-                  <div className="w-20 h-20 rounded-xl flex items-center justify-center text-3xl flex-shrink-0"
-                    style={{ background: `linear-gradient(135deg,${imgs?.[0]},${imgs?.[1]})` }}>{p.emoji as string}</div>
+                  <div className="w-20 h-20 rounded-xl flex items-center justify-center text-3xl flex-shrink-0 overflow-hidden"
+                    style={{ background: `linear-gradient(135deg,${imgs?.[0]},${imgs?.[1]})` }}>
+                    {PRODUCT_ILLUSTRATIONS[p.id as string]
+                      ? <div className="w-14 h-14">{PRODUCT_ILLUSTRATIONS[p.id as string]()}</div>
+                      : (p.emoji as string)}
+                  </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs text-gray-400">{p.brand as string}</p>
                     <p className="text-sm font-semibold text-gray-900 truncate">{p.name as string}</p>
@@ -773,6 +801,7 @@ function ProductDetailView({ productId, onBack, onCart, wishlistIds, onWishlist,
             brand={(p.brand as string) ?? ""}
             name={p.name as string}
             discount={discount}
+            illustration={PRODUCT_ILLUSTRATIONS[p.id as string]}
           />
           {p.isFlashDeal && (
             <div className="mx-4 my-3 flex items-center gap-2 p-3 rounded-xl bg-red-50 border border-red-100">
