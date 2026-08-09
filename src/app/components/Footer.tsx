@@ -210,12 +210,12 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
 
           {/* ── Download card ────────────────────────── */}
           <div style={{
-            background: `linear-gradient(160deg,${DARK_BAR} 0%,${CARD_BG} 100%)`,
+            background: "linear-gradient(160deg,#0E3823 0%,#0B2E1C 100%)",
             borderRadius: 14,
             padding: 20,
             display: "flex", flexDirection: "column", gap: 10,
-            border: "1px solid rgba(255,255,255,0.15)",
-            boxShadow: "0 8px 32px rgba(45,15,90,0.4)",
+            border: "1px solid rgba(255,255,255,0.12)",
+            boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
           }}>
             {/* App Store */}
             <a href="#" style={{
