@@ -28,12 +28,11 @@ export interface ApplicationSubmission {
   tierData?: Record<string, unknown>;
   /** Legacy fields from other application forms (loans, credit cards, SIM,
    *  vehicle tracking) that predate the tier-based account-application
-   *  system this file now targets. Accepted here only so those forms keep
-   *  compiling without changes — the real backend doesn't read them and
-   *  requires a valid `tier`, so a call using only these legacy fields
-   *  will get a clear validation error rather than a silent failure.
-   *  Building real persistence for those other application types is a
-   *  separate, not-yet-scoped piece of work. */
+   *  system this file now targets. The backend derives a valid `tier` from
+   *  `type` when `tier` itself isn't provided (see TYPE_TO_TIER in
+   *  applicationsRouter.ts), and stores `subType`/`type` as
+   *  accountTypeRequested and `formData` as tierData, so these older forms
+   *  now persist real applications rather than getting a validation error. */
   type?: string;
   subType?: string;
   formData?: Record<string, unknown>;

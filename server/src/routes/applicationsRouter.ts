@@ -10,6 +10,21 @@ const REVIEWER_ROLES = ["owner", "superadmin", "noc_engineer", "billing_admin"] 
 const VALID_TIERS = ["personal", "business", "corporate"] as const;
 type Tier = (typeof VALID_TIERS)[number];
 
+// Several older application forms (credit card, business loan, corporate
+// loan, SIM, vehicle tracking, generic services) predate the tier-based
+// system below and send a product `type` instead of a `tier`. Rather than
+// require every one of those frontend forms to know about `tier`, map the
+// type to the correct tier here in one place. Unrecognised/future type
+// values default to "personal" rather than being rejected outright, so a
+// new application type added later doesn't silently break again.
+const TYPE_TO_TIER: Record<string, Tier> = {
+  creditCard: "personal",
+  businessLoan: "business",
+  corporateLoan: "corporate",
+  "sim-application": "personal",
+  "vehicle-tracking": "personal",
+};
+
 const VALID_STATUSES = ["submitted", "under_review", "approved", "declined", "more_info_requested"] as const;
 type Status = (typeof VALID_STATUSES)[number];
 
@@ -46,10 +61,24 @@ function mapApplication(r: any) {
 }
 
 router.post("/", optionalAuth, async (req: Request, res: Response): Promise<void> => {
-  const { tier, accountTypeRequested, currency, applicantName, applicantEmail, applicantPhone, tierData } = req.body as {
+  const { tier: rawTier, accountTypeRequested: rawAccountType, currency, applicantName, applicantEmail, applicantPhone, tierData, type, subType, formData } = req.body as {
     tier?: string; accountTypeRequested?: string; currency?: string;
     applicantName?: string; applicantEmail?: string; applicantPhone?: string; tierData?: object;
+    // Legacy fields from the credit card, business loan, corporate loan,
+    // SIM, vehicle tracking, and generic service application forms.
+    type?: string; subType?: string; formData?: object;
   };
+
+  // Prefer an explicit tier; fall back to deriving one from `type` for the
+  // older forms that don't send `tier` directly.
+  const tier = rawTier ?? (type ? TYPE_TO_TIER[type] ?? "personal" : undefined);
+  // If the caller didn't set accountTypeRequested directly, use whichever of
+  // subType/type is more specific, so the actual product applied for isn't
+  // lost just because this endpoint's primary shape is tier-based.
+  const accountTypeRequested = rawAccountType ?? subType ?? type;
+  // Legacy callers send `formData` instead of `tierData` -- store whichever
+  // was actually provided rather than silently dropping the real one.
+  const storedData = tierData ?? formData ?? {};
 
   if (!tier || !VALID_TIERS.includes(tier as Tier)) {
     res.status(400).json({ success: false, error: `tier must be one of: ${VALID_TIERS.join(", ")}` });
@@ -70,7 +99,7 @@ router.post("/", optionalAuth, async (req: Request, res: Response): Promise<void
     await client.query(
       `INSERT INTO applications (id, reference_number, tier, account_type_requested, currency, applicant_user_id, applicant_name, applicant_email, applicant_phone, tier_data)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
-      [id, referenceNumber, tier, accountTypeRequested ?? null, currency ?? "ZAR", applicantUserId, applicantName.trim(), applicantEmail ?? null, applicantPhone ?? null, JSON.stringify(tierData ?? {})]
+      [id, referenceNumber, tier, accountTypeRequested ?? null, currency ?? "ZAR", applicantUserId, applicantName.trim(), applicantEmail ?? null, applicantPhone ?? null, JSON.stringify(storedData)]
     );
     await client.query(
       `INSERT INTO application_status_history (id, application_id, from_status, to_status, reason, changed_by)
