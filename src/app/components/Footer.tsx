@@ -212,11 +212,11 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
 
           {/* ── Download card ────────────────────────── */}
           <div style={{
-            background: CARD_BG,
+            background: `linear-gradient(160deg,${DARK_BAR} 0%,${CARD_BG} 100%)`,
             borderRadius: 14,
             overflow: "hidden",
             border: "1px solid rgba(255,255,255,0.15)",
-            boxShadow: "0 8px 32px rgba(0,0,0,0.35)",
+            boxShadow: "0 8px 32px rgba(45,15,90,0.4)",
           }}>
             {/* Trigger link — always visible */}
             <button
@@ -226,13 +226,14 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
                 padding: "20px 24px", background: "transparent", border: "none", cursor: "pointer",
                 textAlign: "left",
               }}>
-              <p style={{ color: "#fff", fontSize: 16, fontWeight: 700, margin: 0 }}>
-                📲 Download the VINK Apps
+              <p style={{ color: "#fff", fontSize: 16, fontWeight: 700, margin: 0, letterSpacing: "-0.01em" }}>
+                Download the VINK Apps
               </p>
               <span style={{
-                color: "rgba(255,255,255,0.6)", fontSize: 11, fontWeight: 600,
-                padding: "3px 10px", borderRadius: 20,
+                color: "rgba(255,255,255,0.65)", fontSize: 11, fontWeight: 600,
+                padding: "4px 11px", borderRadius: 20,
                 border: "1px solid rgba(255,255,255,0.25)",
+                letterSpacing: "0.02em",
                 transition: "all 0.2s",
               }}>
                 {showDownload ? "Hide ▲" : "View ▼"}
@@ -253,13 +254,6 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
                   </p>
                 </div>
 
-                {/* Platform labels */}
-                <div style={{ display: "flex", gap: 8 }}>
-                  {["🍎 iOS", "🤖 Android"].map(p => (
-                    <span key={p} style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.8)", background: "rgba(255,255,255,0.1)", padding: "3px 10px", borderRadius: 20, border: "1px solid rgba(255,255,255,0.2)" }}>{p}</span>
-                  ))}
-                </div>
-
                 {/* Divider */}
                 <div style={{ height: 1, background: "rgba(255,255,255,0.15)" }} />
 
@@ -268,43 +262,46 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
               {/* App Store */}
               <a href="#" style={{
                 display: "flex", alignItems: "center", gap: 12,
-                background: "#000", borderRadius: 9,
-                padding: "10px 16px", textDecoration: "none",
-                border: "1px solid rgba(255,255,255,0.2)",
-                transition: "opacity 0.2s",
+                background: "linear-gradient(180deg,#1a1a1a,#000)", borderRadius: 10,
+                padding: "11px 18px", textDecoration: "none",
+                border: "1px solid rgba(255,255,255,0.15)",
+                boxShadow: "0 4px 14px rgba(0,0,0,0.35)",
+                transition: "transform 0.25s ease, box-shadow 0.25s ease",
               }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.opacity = "0.82"; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.opacity = "1"; }}
+                onMouseEnter={(e) => { const el = e.currentTarget as HTMLAnchorElement; el.style.transform = "translateY(-2px)"; el.style.boxShadow = "0 8px 22px rgba(0,0,0,0.45)"; }}
+                onMouseLeave={(e) => { const el = e.currentTarget as HTMLAnchorElement; el.style.transform = "translateY(0)"; el.style.boxShadow = "0 4px 14px rgba(0,0,0,0.35)"; }}
               >
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="white">
-                  <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="white">
+                  <path d="M17.05 12.5c-.03-2.4 1.96-3.56 2.05-3.61-1.12-1.63-2.86-1.86-3.48-1.88-1.48-.15-2.89.87-3.64.87-.75 0-1.9-.85-3.13-.83-1.6.02-3.09.94-3.92 2.38-1.68 2.9-.43 7.19 1.2 9.55.8 1.15 1.75 2.45 3 2.4 1.21-.05 1.66-.78 3.12-.78 1.46 0 1.87.78 3.15.75 1.3-.02 2.13-1.17 2.92-2.32.92-1.33 1.3-2.62 1.32-2.69-.03-.01-2.53-.97-2.56-3.84h-.03z"/>
+                  <path d="M14.7 5.42c.66-.8 1.11-1.92 .99-3.03-.95.04-2.11.63-2.8 1.43-.61.7-1.15 1.86-1 2.94 1.06.08 2.15-.53 2.81-1.34z"/>
                 </svg>
                 <div>
-                  <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 9, lineHeight: 1, margin: 0, letterSpacing: "0.04em" }}>Available on the</p>
-                  <p style={{ color: "#fff", fontSize: 13, fontWeight: 600, lineHeight: "18px", margin: "3px 0 0" }}>App Store</p>
+                  <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 9.5, lineHeight: 1, margin: 0, letterSpacing: "0.06em" }}>Available on the</p>
+                  <p style={{ color: "#fff", fontSize: 15, fontWeight: 600, lineHeight: "20px", margin: "3px 0 0", letterSpacing: "-0.01em" }}>App Store</p>
                 </div>
               </a>
 
               {/* Google Play */}
               <a href="#" style={{
                 display: "flex", alignItems: "center", gap: 12,
-                background: "#000", borderRadius: 9,
-                padding: "10px 16px", textDecoration: "none",
-                border: "1px solid rgba(255,255,255,0.2)",
-                transition: "opacity 0.2s",
+                background: "linear-gradient(180deg,#1a1a1a,#000)", borderRadius: 10,
+                padding: "11px 18px", textDecoration: "none",
+                border: "1px solid rgba(255,255,255,0.15)",
+                boxShadow: "0 4px 14px rgba(0,0,0,0.35)",
+                transition: "transform 0.25s ease, box-shadow 0.25s ease",
               }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.opacity = "0.82"; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.opacity = "1"; }}
+                onMouseEnter={(e) => { const el = e.currentTarget as HTMLAnchorElement; el.style.transform = "translateY(-2px)"; el.style.boxShadow = "0 8px 22px rgba(0,0,0,0.45)"; }}
+                onMouseLeave={(e) => { const el = e.currentTarget as HTMLAnchorElement; el.style.transform = "translateY(0)"; el.style.boxShadow = "0 4px 14px rgba(0,0,0,0.35)"; }}
               >
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none">
                   <path d="M3 3L13.5 12 3 21V3Z"           fill="#EA4335" />
                   <path d="M3 3L13.5 12 21 7.5 7.5 1 3 3Z" fill="#FBBC04" />
                   <path d="M3 21L13.5 12 21 16.5 7.5 23 3 21Z" fill="#34A853" />
                   <path d="M13.5 12L21 7.5V16.5L13.5 12Z"  fill="#4285F4" />
                 </svg>
                 <div>
-                  <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 9, lineHeight: 1, margin: 0, letterSpacing: "0.04em" }}>GET IT ON</p>
-                  <p style={{ color: "#fff", fontSize: 13, fontWeight: 600, lineHeight: "18px", margin: "3px 0 0" }}>Google Play</p>
+                  <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 9.5, lineHeight: 1, margin: 0, letterSpacing: "0.06em" }}>GET IT ON</p>
+                  <p style={{ color: "#fff", fontSize: 15, fontWeight: 600, lineHeight: "20px", margin: "3px 0 0", letterSpacing: "-0.01em" }}>Google Play</p>
                 </div>
               </a>
             </div>
@@ -313,16 +310,16 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
                 <button
                   onClick={() => onLinkClick?.("Browse Apps")}
                   style={{
-                    width: "100%", padding: "11px 16px", borderRadius: 9, border: "none",
-                    background: "rgba(255,255,255,0.15)", color: "#fff",
-                    fontSize: 13, fontWeight: 700, cursor: "pointer", letterSpacing: ".02em",
+                    width: "100%", padding: "13px 16px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.18)",
+                    background: "rgba(255,255,255,0.08)", color: "#fff",
+                    fontSize: 13.5, fontWeight: 700, cursor: "pointer", letterSpacing: ".01em",
                     display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                    transition: "background 0.2s",
+                    transition: "transform 0.25s ease, background 0.25s ease",
                   }}
-                  onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.22)")}
-                  onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,255,255,0.15)")}
+                  onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.15)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.08)"; e.currentTarget.style.transform = "translateY(0)"; }}
                 >
-                  📲 Browse All 6 Apps
+                  Browse All 6 Apps →
                 </button>
             </div>
             )}
