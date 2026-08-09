@@ -18,7 +18,7 @@ import { memo } from "react";
 
 export const BusinessPowerSection = memo(function BusinessPowerSection() {
   return (
-    <section className="py-16 sm:py-24 relative overflow-hidden" style={{ background: "#2E1065" }}>
+    <section className="py-10 sm:py-16 relative overflow-hidden" style={{ background: "#2E1065" }}>
       <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full opacity-5 pointer-events-none"
         style={{ background: "radial-gradient(circle,#7C3AED,transparent)", transform: "translate(30%,-20%)" }} />
       <div className="absolute bottom-0 left-0 w-72 h-72 rounded-full opacity-5 pointer-events-none"

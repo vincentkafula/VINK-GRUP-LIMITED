@@ -29,7 +29,7 @@ import { memo } from "react";
 
 export const FeaturedOffersSection = memo(function FeaturedOffersSection({ onCompareCards }: { onCompareCards?: () => void }) {
   return (
-    <section className="py-14 sm:py-20" style={{ background: "#F8F7FF" }}>
+    <section className="py-10 sm:py-14" style={{ background: "#F8F7FF" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-end justify-between mb-8 gap-4 flex-wrap">
           <div>

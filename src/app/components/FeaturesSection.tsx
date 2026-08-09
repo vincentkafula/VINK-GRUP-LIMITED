@@ -49,7 +49,7 @@ function BenefitCard({ b }: { b: (typeof BENEFITS)[number] }) {
 
 export const FeaturesSection = memo(function FeaturesSection({ onExploreAll }: { onExploreAll?: () => void }) {
   return (
-    <section className="py-16 sm:py-24" style={{ background: "linear-gradient(160deg,#F7F4FD 0%,#FFF8EF 100%)" }}>
+    <section className="py-10 sm:py-14" style={{ background: "linear-gradient(160deg,#F7F4FD 0%,#FFF8EF 100%)" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-14 items-center">
           {/* Left: copy + card visual */}
@@ -63,7 +63,7 @@ export const FeaturesSection = memo(function FeaturesSection({ onExploreAll }: {
               Unlock a world of exclusive benefits that reward your everyday and elevate every moment.
             </p>
 
-            <div className="relative mt-12 max-w-sm">
+            <div className="relative mt-8 max-w-sm">
               <div className="absolute -inset-6 rounded-full opacity-40" style={{ background: `radial-gradient(circle,${GOLD}33,transparent 70%)` }} />
               <div className="relative rounded-2xl p-5 shadow-2xl" style={{ background: `linear-gradient(140deg,${DEEP_PURPLE} 0%,${PURPLE} 60%,#175E38 100%)` }}>
                 <div className="flex items-center justify-between mb-8">
@@ -102,7 +102,7 @@ export const FeaturesSection = memo(function FeaturesSection({ onExploreAll }: {
         </div>
 
         {/* Stats strip */}
-        <div className="mt-14 bg-white rounded-2xl shadow-sm border border-gray-100 px-6 py-6 grid grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="mt-8 bg-white rounded-2xl shadow-sm border border-gray-100 px-6 py-5 grid grid-cols-2 lg:grid-cols-4 gap-6">
           {STATS.map(s => (
             <div key={s.label} className="flex items-center gap-3">
               <span className="w-11 h-11 rounded-full flex items-center justify-center text-xl shrink-0" style={{ background: "#F1EBFB" }}>{s.emoji}</span>
@@ -115,7 +115,7 @@ export const FeaturesSection = memo(function FeaturesSection({ onExploreAll }: {
         </div>
 
         {onExploreAll && (
-          <div className="text-center mt-10">
+          <div className="text-center mt-7">
             <button onClick={onExploreAll} className="text-sm font-semibold hover:underline bg-transparent border-none cursor-pointer" style={{ color: PURPLE }}>
               Explore All Features →
             </button>

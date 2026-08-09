@@ -10,7 +10,6 @@ import heroValidator from "../../imports/HeroValidator.png";
 const SLIDES = [
   {
     image:   heroCardPhone,
-    background: "linear-gradient(135deg,#150A35 0%,#2E1065 45%,#4C2A85 75%,#6B3FA0 100%)",
     eyebrow: "VINK Card — Now in Your Pocket",
     headline: <>All the benefits of Card,<br /><span className="relative inline-block"><span className="relative z-10">on your phone.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#A78BFA" }} /></span></>,
     body: "Manage, track and enjoy exclusive benefits anytime, anywhere.",
@@ -26,7 +25,6 @@ const SLIDES = [
   },
   {
     image:   heroTraveler,
-    background: "linear-gradient(135deg,#0A2540 0%,#14508C 45%,#2E86D9 75%,#7BC1F0 100%)",
     eyebrow: "Vink Go — Vacation Booking",
     headline: <>Your vacation<br /><span className="relative inline-block"><span className="relative z-10">awaits!</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#F5A623" }} /></span></>,
     body: "Discover breathtaking destinations, amazing experiences and memories that last a lifetime.",
@@ -42,7 +40,6 @@ const SLIDES = [
   },
   {
     image:   heroGlobalSim,
-    background: "linear-gradient(135deg,#0A0000 0%,#2B0505 45%,#5C0C0C 75%,#8C1414 100%)",
     eyebrow: "VINK MVNO — Global Connectivity",
     headline: <>All the benefits of SIM,<br /><span className="relative inline-block"><span className="relative z-10">on your phone.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#F5A623" }} /></span></>,
     body: "Stay connected anywhere in the world with reliable data, clear calls and seamless connectivity.",
@@ -58,7 +55,6 @@ const SLIDES = [
   },
   {
     image:   heroBus,
-    background: "linear-gradient(135deg,#1A0A0A 0%,#4A0E14 45%,#7A1420 75%,#A8531F 100%)",
     eyebrow: "VINK Go — Bus Travel",
     headline: <>Driven by<br /><span className="relative inline-block"><span className="relative z-10">excellence.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#F5A623" }} /></span></>,
     body: "Safe. Reliable. Comfortable. Your journey, our priority.",
@@ -74,7 +70,6 @@ const SLIDES = [
   },
   {
     image:   heroPlane,
-    background: "linear-gradient(135deg,#050B1F 0%,#0B1F4D 45%,#164A9C 75%,#2E7BC9 100%)",
     eyebrow: "Vink Go — Travel Booking",
     headline: <>Your journey<br /><span className="relative inline-block"><span className="relative z-10">takes flight.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#F5A623" }} /></span></>,
     body: "Book your next adventure with ease. Best deals. Trusted service. Unforgettable journeys.",
@@ -90,7 +85,6 @@ const SLIDES = [
   },
   {
     image:   heroValidator,
-    background: "linear-gradient(135deg,#1A0A2E 0%,#4A0E2A 45%,#7A1420 75%,#C9861F 100%)",
     eyebrow: "VINK AFC — Today's Market Multi-ticketing Validator",
     headline: <>Multi-ticketing<br /><span className="relative inline-block"><span className="relative z-10">validator.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#F5A623" }} /></span></>,
     body: "Smarter, faster and cashless payments for a seamless travel experience — multi-channel, integrated in one system.",
@@ -131,15 +125,12 @@ export function HeroSection() {
 
   return (
     <section className="text-white overflow-hidden relative"
-      style={{
-        background: slide.background ?? "linear-gradient(135deg,#0B5C2E 0%,#128A43 40%,#5FC97F 75%,#A7E8BD 100%)",
-        transition: "background 0.5s ease",
-      }}>
+      style={{ background: "linear-gradient(160deg,#150A35 0%,#2E1065 45%,#4C2A85 75%,#6B3FA0 100%)" }}>
       {/* Decorative orbs */}
       <div className="absolute top-0 right-0 w-96 h-96 rounded-full opacity-10 pointer-events-none"
         style={{ background: "radial-gradient(circle,#fff 0%,transparent 70%)", transform: "translate(30%,-30%)" }} />
       <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full opacity-10 pointer-events-none"
-        style={{ background: "radial-gradient(circle,#A7E8BD 0%,transparent 70%)", transform: "translate(-40%,40%)" }} />
+        style={{ background: "radial-gradient(circle,#A78BFA 0%,transparent 70%)", transform: "translate(-40%,40%)" }} />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 lg:py-14 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
@@ -184,14 +175,18 @@ export function HeroSection() {
           {/* ── Image side ── */}
           <div className="flex justify-center md:justify-end relative">
             <div className="absolute inset-0 rounded-full opacity-20 blur-3xl pointer-events-none"
-              style={{ background: "radial-gradient(circle,#A7E8BD,transparent)" }} />
+              style={{ background: "radial-gradient(circle,#A78BFA,transparent)" }} />
             <img
               key={current}
               src={slide.image}
               alt={slide.eyebrow}
               className="relative z-10 w-full max-w-sm sm:max-w-md md:max-w-lg object-contain drop-shadow-2xl"
               draggable={false}
-              style={{ transition: "opacity 0.4s ease", opacity: fading ? 0 : 1 }}
+              style={{
+                transition: "opacity 0.4s ease", opacity: fading ? 0 : 1,
+                maskImage: "radial-gradient(ellipse 68% 68% at 50% 50%, black 45%, transparent 92%)",
+                WebkitMaskImage: "radial-gradient(ellipse 68% 68% at 50% 50%, black 45%, transparent 92%)",
+              }}
             />
 
             {/* Dot indicators */}

@@ -9,7 +9,7 @@ import { memo } from "react";
 
 export const SpecialNeedSection = memo(function SpecialNeedSection() {
   return (
-    <section className="bg-white py-16 sm:py-24">
+    <section className="bg-white py-10 sm:py-14">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-14 items-center">
           <div className="grid grid-cols-2 gap-3 h-72 sm:h-80">

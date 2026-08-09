@@ -11,7 +11,7 @@ import { memo } from "react";
 
 export const FinancialInstitutionsSection = memo(function FinancialInstitutionsSection() {
   return (
-    <section className="bg-white py-14 border-t" style={{ borderColor: "#F0EEFF" }}>
+    <section className="bg-white py-8 border-t" style={{ borderColor: "#F0EEFF" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-10">
           <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Trusted Partners</p>

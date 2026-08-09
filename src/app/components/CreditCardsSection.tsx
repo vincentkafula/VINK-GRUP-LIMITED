@@ -87,7 +87,7 @@ export function CreditCardsSection() {
   const card = CARDS[active];
 
   return (
-    <section className="py-14 sm:py-20" style={{ background: "#F6F5FF" }}>
+    <section className="py-10 sm:py-14" style={{ background: "#F6F5FF" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-10">
           <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-3"

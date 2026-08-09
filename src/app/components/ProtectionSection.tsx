@@ -11,7 +11,7 @@ const TRUST_ITEMS = [
 
 export const ProtectionSection = memo(function ProtectionSection() {
   return (
-    <section className="bg-white py-14 sm:py-20">
+    <section className="bg-white py-10 sm:py-14">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16 items-center">
           <div className="flex justify-center order-2 md:order-1">

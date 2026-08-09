@@ -43,7 +43,7 @@ export function PreApprovalSection() {
   const scoreColor = (s: number) => s >= 750 ? "#10B981" : s >= 650 ? "#3B82F6" : s >= 550 ? "#F59E0B" : "#EF4444";
 
   return (
-    <section className="py-16 sm:py-20" style={{ background: "#F8F7FF" }}>
+    <section className="py-10 sm:py-14" style={{ background: "#F8F7FF" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-3"
