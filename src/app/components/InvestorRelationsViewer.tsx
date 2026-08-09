@@ -14,9 +14,9 @@ const GOLD = "#F5A623";
 const SELLER_PILLS = ["Integrity", "Commitment", "Performance", "Loyalty", "Insight"];
 
 const KPI_CARDS = [
-  { label: "Year 1 Revenue Projection", value: "R74.2B", sub: "FY2021/22 business plan projection", color: "#10B981" },
-  { label: "5-Year Cumulative Profit",  value: "R266.4B", sub: "Projected net profit over 5 years", color: "#3B82F6" },
-  { label: "Annual Growth Rate",         value: "7.5%", sub: "Assumed year-on-year growth", color: "#F5A623" },
+  { label: "Addressable Market", value: "R11B", sub: "Estimated annual TAM across the national taxi network", color: "#10B981" },
+  { label: "Revenue Model", value: "Per-Tap", sub: "R0.50–R1.00 per transaction, scaling with network volume", color: "#3B82F6" },
+  { label: "Target Growth", value: "Multi-Year", sub: "Detailed year-by-year projections available on request", color: "#F5A623" },
 ];
 
 const REASONS = [
@@ -222,9 +222,9 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
         <div className="max-w-5xl mx-auto">
           <p className="text-white/60 text-xs uppercase tracking-widest mb-1">VINK Bank · Corporate</p>
           <h1 className="text-3xl md:text-4xl font-black text-white mb-1">Investor Relations</h1>
-          <p className="text-white/70 text-sm mb-6">FY – 2022</p>
+          <p className="text-white/70 text-sm mb-6">Business Plan &amp; Projections</p>
           <p className="text-white/80 text-sm max-w-2xl leading-relaxed mb-6">
-            In 2022, Vink Group achieved a historic milestone: South Africa's first transport-native digital bank, processing over 250,000 AFC device transactions with a projected Year 1 revenue of R74.2 billion. Registered under CIPC number 2018/079316/07, VINK is building the financial infrastructure that 15 million daily commuters deserve.
+            VINK is building South Africa's first transport-native digital bank, with a national rollout plan for 250,000+ AFC devices across the minibus taxi network. Registered under CIPC number 2018/079316/07, VINK is building the financial infrastructure that 15 million daily commuters deserve.
           </p>
 
           {/* KPI cards */}

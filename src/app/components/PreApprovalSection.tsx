@@ -91,7 +91,7 @@ export function PreApprovalSection() {
               ))}
             </div>
             <div className="mt-6 pt-5 border-t border-white/20 text-center">
-              <p className="text-white/60 text-xs">Trusted by over 2 million South Africans on the move.</p>
+              <p className="text-white/60 text-xs">Built for the 15 million South Africans on the move every day.</p>
             </div>
           </div>
         </div>
