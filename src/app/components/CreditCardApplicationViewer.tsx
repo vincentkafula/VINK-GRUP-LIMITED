@@ -6,7 +6,6 @@ import {
 } from "lucide-react";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { AppHero, StepTracker, ProgressBar, FormCard, Field, DocSlot, OtpInput, NavButtons, inputCls, selectCls, VerifiedBadge, P as CP, GOLD, GREEN } from "./AppFormShell";
-import { applicationsApi } from "../services/applicationsApi";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
@@ -236,8 +235,6 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
 
   // Step 7
   const [submitted, setSubmitted] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState("");
   const [accountNumber, setAccountNumber] = useState(`4${Math.floor(Math.random() * 900000000 + 100000000)} ${Math.floor(Math.random() * 9000 + 1000)}`);
 
   if (!isOpen) return null;
@@ -564,32 +561,15 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
               <p className="text-xs text-gray-500 leading-relaxed">
                 By submitting I confirm all information is true and accurate. I authorise VINK to conduct credit bureau inquiries and verify my identity with SARS, CIPC, and Home Affairs.
               </p>
-              <button
-                disabled={submitting}
-                onClick={async () => {
-                  setSubmitting(true);
-                  setSubmitError("");
-                  const result = await applicationsApi.submit({
-                    type: "creditCard",
-                    subType: CARD_TYPES.find(c => c.id === selectedCard)?.name ?? selectedCard,
-                    applicantName: `${form.firstName} ${form.lastName}`.trim(),
-                    applicantEmail: form.email,
-                    applicantPhone: form.phone,
-                    formData: form,
-                  });
-                  setSubmitting(false);
-                  if (result.success && result.data) {
-                    setAccountNumber(result.data.referenceNumber);
-                    setSubmitted(true);
-                  } else {
-                    setSubmitError(result.error ?? "Submission failed. Please try again.");
-                  }
-                }}
-                className="w-full py-4 rounded-xl text-base font-black text-white transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed shadow-lg"
-                style={{ background: `linear-gradient(135deg,${CP},#5FC97F)` }}>
-                {submitting ? "Submitting..." : "Submit Application"}
+              <button disabled
+                title="Not available yet — VINK launches June 2027"
+                className="w-full py-4 rounded-xl text-base font-black cursor-not-allowed"
+                style={{ background: "#EDEBF5", color: "#9B93B0", border: "1px solid #DDD6E8" }}>
+                🔒 Applications open June 2027
               </button>
-              {submitError && <p className="text-red-600 text-sm text-center mt-2">{submitError}</p>}
+              <p className="text-xs text-gray-400 text-center mt-2">
+                VINK is not yet in full operation. You're welcome to browse this application to see what the process looks like — submissions open when we launch in June 2027.
+              </p>
             </div>
           </div>
         )}

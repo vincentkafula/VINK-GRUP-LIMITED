@@ -4,7 +4,7 @@ import {
   Users, Globe, MapPin, IdCard, Upload, Check, ChevronLeft, ChevronRight,
   Loader2, ShieldCheck, FileText, Receipt, AlertCircle, CheckCircle2,
 } from "lucide-react";
-import { mktAuth, BASE, getMktToken, type MktAuthUser } from "../services/marketplaceApi";
+import { type MktAuthUser } from "../services/marketplaceApi";
 
 const INK = "#131921";
 const ORANGE = "#FF9900";
@@ -240,79 +240,14 @@ export function SellerApplicationWizard({ onClose, onAuthenticated }: Props) {
   const back = () => { setError(null); if (step > 0) setStep(s => s - 1); };
 
   const submit = async () => {
-    setLoading(true); setError(null);
-    const derivedStoreName = form.tradingName || form.businessName || `${form.firstName} ${form.lastName}`.trim() || form.email.split("@")[0];
-    const username = form.email.split("@")[0] + Math.floor(Math.random() * 900 + 100);
-    const applicationData = {
-      sellerType: form.sellerType,
-      personal: { firstName: form.firstName, middleName: form.middleName, lastName: form.lastName, dob: form.dob, gender: form.gender, nationality: form.nationality, altPhone: form.altPhone, contactEmail: form.contactEmail },
-      identity: { idType: form.idType, idNumber: form.idNumber, idCountry: form.idCountry, idExpiry: form.idExpiry, documentsAttached: [form.idFront, form.idBack, form.selfie].filter(Boolean).length, verificationStatus: "pending" },
-      address: { street: form.street, city: form.city, province: form.province, postalCode: form.postalCode, country: form.country, proofAttached: Boolean(form.addressProof) },
-      business: isIndividual ? null : {
-        businessName: form.businessName, tradingName: form.tradingName, businessType: form.businessType, registrationNumber: form.registrationNumber,
-        taxNumber: form.taxNumber, vatNumber: form.vatNumber, dateRegistered: form.dateRegistered, countryOfRegistration: form.countryOfRegistration,
-        website: form.website, yearsInBusiness: form.yearsInBusiness, employees: form.employees, annualRevenue: form.annualRevenue, description: form.businessDescription,
-      },
-      registrationDocs: isIndividual ? null : {
-        companyStatus: form.companyStatus, companyAddress: form.companyAddress,
-        documentsAttached: [form.certIncorporation, form.businessRegCert, form.businessLicense].filter(Boolean).length,
-      },
-      tax: { tin: form.tin, vatRegNumber: form.vatRegNumber, taxCountry: form.taxCountry, certificateAttached: Boolean(form.taxCertificate) },
-    };
-
-    const r = await mktAuth.registerSeller({
-      username, password: form.password, name: `${form.firstName} ${form.lastName}`.trim(), email: form.email,
-      storeName: derivedStoreName, description: form.businessDescription, phone: form.mobile, taxId: form.tin,
-      applicationData,
-    });
-
-    if (!r.success || !r.token) {
-      setLoading(false);
-      setError((r as { error?: string }).error ?? "Application could not be submitted. Please try again.");
-      return;
-    }
-
-    const sellerId = (r.seller as { id: string } | undefined)?.id;
-    const documentFields: [string, File | null][] = [
-      ["idFront", form.idFront], ["idBack", form.idBack], ["selfie", form.selfie], ["addressProof", form.addressProof],
-      ["certIncorporation", form.certIncorporation], ["businessRegCert", form.businessRegCert],
-      ["businessLicense", form.businessLicense], ["taxCertificate", form.taxCertificate],
-    ];
-    const hasAnyDocument = documentFields.some(([, f]) => f !== null);
-
-    if (sellerId && hasAnyDocument) {
-      const fd = new FormData();
-      for (const [field, file] of documentFields) if (file) fd.append(field, file);
-      fd.append("firstName", form.firstName);
-      fd.append("lastName", form.lastName);
-      fd.append("dob", form.dob);
-      fd.append("idType", form.idType);
-      fd.append("idNumber", form.idNumber);
-      fd.append("idCountry", form.idCountry);
-
-      try {
-        const uploadRes = await fetch(`${BASE}/api/kyc/sellers/${sellerId}/documents`, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${getMktToken()}` },
-          body: fd,
-        });
-        const uploadJson = await uploadRes.json();
-        // A real provider isn't configured yet — this will currently
-        // always come back as a clean, expected failure (503), not a
-        // surprise. The seller account itself was still created
-        // successfully above; only document verification is pending on
-        // a provider being set up. Don't block account creation on this,
-        // but don't silently pretend verification happened either.
-        if (!uploadJson.success) {
-          console.warn("[seller registration] Document verification not available yet:", uploadJson.error);
-        }
-      } catch (err) {
-        console.warn("[seller registration] Document upload failed:", err);
-      }
-    }
-
-    setLoading(false);
-    onAuthenticated(r.user, r.seller as { id: string; storeName: string; status: string });
+    // VINK Marketplace is not yet in full operation (launching June 2027).
+    // This flow used to create a real account (with password) and upload
+    // real KYC documents (ID front/back, selfie, address proof, business
+    // registration, tax certificates) via mktAuth.registerSeller and
+    // /api/kyc/sellers/:id/documents -- both removed here rather than left
+    // unreachable, since none of the local state they used is referenced
+    // anywhere else in this component.
+    setError("Seller registration isn't open yet — VINK Marketplace launches June 2027. You're welcome to browse this application, but registration isn't available until then.");
   };
 
   return (
@@ -514,10 +449,11 @@ export function SellerApplicationWizard({ onClose, onAuthenticated }: Props) {
             <ChevronLeft className="w-4 h-4" /> {step === 0 ? "Cancel" : "Back"}
           </button>
           <div className="hidden sm:block text-[11px] text-gray-400">{Math.round(((step + 1) / effectiveSteps.length) * 100)}% complete</div>
-          <button onClick={next} disabled={loading}
-            className="flex items-center gap-1.5 text-sm font-bold px-5 py-2.5 rounded-lg text-white disabled:opacity-60"
-            style={{ background: step === effectiveSteps.length - 1 ? "#10B981" : ORANGE }}>
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : step === effectiveSteps.length - 1 ? <>Submit Application <Check className="w-4 h-4" /></> : <>Next <ChevronRight className="w-4 h-4" /></>}
+          <button onClick={next} disabled={loading || step === effectiveSteps.length - 1}
+            title={step === effectiveSteps.length - 1 ? "Not available yet — VINK launches June 2027" : undefined}
+            className="flex items-center gap-1.5 text-sm font-bold px-5 py-2.5 rounded-lg text-white disabled:cursor-not-allowed"
+            style={step === effectiveSteps.length - 1 ? { background: "#EDEBF5", color: "#9B93B0", border: "1px solid #DDD6E8" } : { background: ORANGE, opacity: loading ? 0.6 : 1 }}>
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : step === effectiveSteps.length - 1 ? <>🔒 Available June 2027</> : <>Next <ChevronRight className="w-4 h-4" /></>}
           </button>
         </div>
       </div>

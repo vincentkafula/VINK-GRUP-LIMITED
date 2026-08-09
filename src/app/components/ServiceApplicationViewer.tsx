@@ -17,7 +17,7 @@ import {
   inputCls, selectCls, VerifiedBadge,
   P as CP, GREEN,
 } from "./AppFormShell";
-import { applicationsApi, otpApi } from "../services/applicationsApi";
+import { otpApi } from "../services/applicationsApi";
 import { useFormValidation, validators } from "../hooks/useFormValidation";
 import { InlineError } from "./ErrorBoundary";
 
@@ -382,7 +382,6 @@ export function ServiceApplicationViewer({ isOpen, onClose, serviceType }: Props
   const [submitted, setSubmitted] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [accountNo, setAccountNo] = useState(`${cfg.accountPrefix}-${new Date().getFullYear()}-${Math.floor(Math.random() * 900000 + 100000)}`);
-  const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
   // Step 1 validation
@@ -641,30 +640,16 @@ export function ServiceApplicationViewer({ isOpen, onClose, serviceType }: Props
               <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)} className="mt-0.5 w-4 h-4 rounded flex-shrink-0" />
               <span className="text-sm font-semibold text-gray-700">I agree to the Terms and Conditions and consent to the processing of this application</span>
             </label>
-            <button disabled={!agreed || submitting} onClick={async () => {
-                setSubmitting(true);
-                setSubmitError("");
-                const result = await applicationsApi.submit({
-                  type: serviceType,
-                  subType: form.product || form.plan || serviceType,
-                  applicantName: `${form.firstName} ${form.lastName}`.trim(),
-                  applicantEmail: form.email,
-                  applicantPhone: form.phone,
-                  formData: form,
-                });
-                setSubmitting(false);
-                if (result.success && result.data) {
-                  setAccountNo(result.data.referenceNumber);
-                  setSubmitted(true);
-                } else {
-                  setSubmitError(result.error ?? "Submission failed. Please try again.");
-                }
-              }}
-              className="w-full py-4 rounded-xl text-base font-black text-white transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed shadow-lg"
-              style={{ background: agreed ? `linear-gradient(135deg,${cfg.accentColor},${cfg.accentColor}CC)` : "#9CA3AF" }}>
-              {submitting ? "Submitting..." : "Submit Application"}
+            <button
+              disabled
+              title="Not available yet — VINK launches June 2027"
+              className="w-full py-4 rounded-xl text-base font-black cursor-not-allowed"
+              style={{ background: "#EDEBF5", color: "#9B93B0", border: "1px solid #DDD6E8" }}>
+              🔒 Applications open June 2027
             </button>
-            {submitError && <p className="text-red-600 text-sm text-center mt-2">{submitError}</p>}
+            <p className="text-xs text-gray-400 text-center mt-2">
+              VINK is not yet in full operation. You're welcome to browse this application to see what the process looks like — submissions open when we launch in June 2027.
+            </p>
           </FormCard>
         )}
 

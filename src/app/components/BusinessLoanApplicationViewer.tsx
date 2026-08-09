@@ -2,7 +2,7 @@ import { useState } from "react";
 import { X, CheckCircle, RefreshCw, User, Building2, FileText, Shield, Camera, Users, ClipboardCheck } from "lucide-react";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { AppHero, StepTracker, ProgressBar, FormCard, Field, DocSlot, OtpInput, NavButtons, inputCls, selectCls, VerifiedBadge, P as CP, GOLD, GREEN } from "./AppFormShell";
-import { applicationsApi, otpApi } from "../services/applicationsApi";
+import { otpApi } from "../services/applicationsApi";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
@@ -50,8 +50,6 @@ export function BusinessLoanApplicationViewer({ isOpen, onClose }: Props) {
   const [docs, setDocs] = useState<Record<string, boolean>>({});
   const [agreed, setAgreed] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState("");
 
   const [form, setForm] = useState({
     fullName: "", idNumber: "", contactNumber: "+27 ", email: "", businessName: "",
@@ -399,30 +397,15 @@ export function BusinessLoanApplicationViewer({ isOpen, onClose }: Props) {
                 </div>
 
                 <button
-                  disabled={!agreed || submitting}
-                  onClick={async () => {
-                    setSubmitting(true);
-                    setSubmitError("");
-                    const result = await applicationsApi.submit({
-                      type: "businessLoan",
-                      subType: form.loanPurpose || "Business Loan",
-                      applicantName: form.fullName,
-                      applicantEmail: form.email,
-                      applicantPhone: form.contactNumber,
-                      formData: form,
-                    });
-                    setSubmitting(false);
-                    if (result.success && result.data) {
-                      setSubmitted(true);
-                    } else {
-                      setSubmitError(result.error ?? "Submission failed. Please try again.");
-                    }
-                  }}
-                  className="w-full py-4 rounded-xl text-base font-black text-white transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed shadow-lg"
-                  style={{ background: agreed ? `linear-gradient(135deg,${CP},#34A853)` : "#9CA3AF" }}>
-                  {submitting ? "Submitting..." : "Submit Loan Application"}
+                  disabled
+                  title="Not available yet — VINK launches June 2027"
+                  className="w-full py-4 rounded-xl text-base font-black cursor-not-allowed"
+                  style={{ background: "#EDEBF5", color: "#9B93B0", border: "1px solid #DDD6E8" }}>
+                  🔒 Applications open June 2027
                 </button>
-                {submitError && <p className="text-red-600 text-sm text-center mt-2">{submitError}</p>}
+                <p className="text-xs text-gray-400 text-center mt-2">
+                  VINK is not yet in full operation. You're welcome to browse this application to see what the process looks like — submissions open when we launch in June 2027.
+                </p>
               </>
             ) : (
               <div className="bg-white rounded-2xl border border-green-200 p-8 shadow-sm text-center space-y-4">
