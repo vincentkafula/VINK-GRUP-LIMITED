@@ -12,7 +12,6 @@ const SLIDES = [
     image:   heroCardPhone,
     background: "linear-gradient(135deg,#150A35 0%,#2E1065 45%,#4C2A85 75%,#6B3FA0 100%)",
     eyebrow: "VINK Card — Now in Your Pocket",
-    eyebrowDot: "bg-purple-400",
     headline: <>All the benefits of Card,<br /><span className="relative inline-block"><span className="relative z-10">on your phone.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#A78BFA" }} /></span></>,
     body: "Manage, track and enjoy exclusive benefits anytime, anywhere.",
     ctas: [
@@ -29,7 +28,6 @@ const SLIDES = [
     image:   heroTraveler,
     background: "linear-gradient(135deg,#0A2540 0%,#14508C 45%,#2E86D9 75%,#7BC1F0 100%)",
     eyebrow: "Vink Go — Vacation Booking",
-    eyebrowDot: "bg-orange-400",
     headline: <>Your vacation<br /><span className="relative inline-block"><span className="relative z-10">awaits!</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#F5A623" }} /></span></>,
     body: "Discover breathtaking destinations, amazing experiences and memories that last a lifetime.",
     ctas: [
@@ -46,7 +44,6 @@ const SLIDES = [
     image:   heroGlobalSim,
     background: "linear-gradient(135deg,#0A0000 0%,#2B0505 45%,#5C0C0C 75%,#8C1414 100%)",
     eyebrow: "VINK MVNO — Global Connectivity",
-    eyebrowDot: "bg-red-400",
     headline: <>All the benefits of SIM,<br /><span className="relative inline-block"><span className="relative z-10">on your phone.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#F5A623" }} /></span></>,
     body: "Stay connected anywhere in the world with reliable data, clear calls and seamless connectivity.",
     ctas: [
@@ -63,7 +60,6 @@ const SLIDES = [
     image:   heroBus,
     background: "linear-gradient(135deg,#1A0A0A 0%,#4A0E14 45%,#7A1420 75%,#A8531F 100%)",
     eyebrow: "VINK Go — Bus Travel",
-    eyebrowDot: "bg-amber-400",
     headline: <>Driven by<br /><span className="relative inline-block"><span className="relative z-10">excellence.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#F5A623" }} /></span></>,
     body: "Safe. Reliable. Comfortable. Your journey, our priority.",
     ctas: [
@@ -80,7 +76,6 @@ const SLIDES = [
     image:   heroPlane,
     background: "linear-gradient(135deg,#050B1F 0%,#0B1F4D 45%,#164A9C 75%,#2E7BC9 100%)",
     eyebrow: "Vink Go — Travel Booking",
-    eyebrowDot: "bg-blue-400",
     headline: <>Your journey<br /><span className="relative inline-block"><span className="relative z-10">takes flight.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#F5A623" }} /></span></>,
     body: "Book your next adventure with ease. Best deals. Trusted service. Unforgettable journeys.",
     ctas: [
@@ -97,7 +92,6 @@ const SLIDES = [
     image:   heroValidator,
     background: "linear-gradient(135deg,#1A0A2E 0%,#4A0E2A 45%,#7A1420 75%,#C9861F 100%)",
     eyebrow: "VINK AFC — Today's Market Multi-ticketing Validator",
-    eyebrowDot: "bg-amber-400",
     headline: <>Multi-ticketing<br /><span className="relative inline-block"><span className="relative z-10">validator.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#F5A623" }} /></span></>,
     body: "Smarter, faster and cashless payments for a seamless travel experience — multi-channel, integrated in one system.",
     ctas: [
@@ -147,7 +141,7 @@ export function HeroSection() {
       <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full opacity-10 pointer-events-none"
         style={{ background: "radial-gradient(circle,#A7E8BD 0%,transparent 70%)", transform: "translate(-40%,40%)" }} />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 md:py-20 lg:py-24 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 lg:py-14 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
 
           {/* ── Text side — fades with the slide ── */}
@@ -155,13 +149,6 @@ export function HeroSection() {
             className="text-center md:text-left transition-all duration-400"
             style={{ opacity: fading ? 0 : 1, transform: fading ? "translateY(8px)" : "translateY(0)" }}
           >
-            {/* Eyebrow */}
-            <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full mb-5"
-              style={{ background: "rgba(255,255,255,.15)", backdropFilter: "blur(8px)" }}>
-              <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${slide.eyebrowDot}`} />
-              {slide.eyebrow}
-            </span>
-
             {/* Headline */}
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black leading-[1.1] mb-5 tracking-tight">
               {slide.headline}
@@ -173,7 +160,7 @@ export function HeroSection() {
             </p>
 
             {/* CTAs */}
-            <div className="flex flex-wrap justify-center md:justify-start gap-3 mb-10">
+            <div className="flex flex-wrap justify-center md:justify-start gap-3 mb-7">
               {slide.ctas.map((cta, i) => (
                 <button key={i}
                   className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl text-sm font-bold text-white transition-all hover:scale-105 active:scale-95 shadow-lg"
@@ -202,7 +189,7 @@ export function HeroSection() {
               key={current}
               src={slide.image}
               alt={slide.eyebrow}
-              className="relative z-10 w-full max-w-xs sm:max-w-sm md:max-w-md object-contain drop-shadow-2xl"
+              className="relative z-10 w-full max-w-sm sm:max-w-md md:max-w-lg object-contain drop-shadow-2xl"
               draggable={false}
               style={{ transition: "opacity 0.4s ease", opacity: fading ? 0 : 1 }}
             />
