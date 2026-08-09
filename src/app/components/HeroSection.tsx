@@ -4,6 +4,7 @@ import heroTraveler from "../../imports/HeroTraveler.png";
 import heroGlobalSim from "../../imports/HeroGlobalSim.png";
 import heroBus from "../../imports/HeroBus.png";
 import heroPlane from "../../imports/HeroPlane.png";
+import heroValidator from "../../imports/HeroValidator.png";
 
 // ─── Per-slide content ────────────────────────────────────────────────────────
 const SLIDES = [
@@ -90,6 +91,23 @@ const SLIDES = [
       { value: "30%",  label: "Off on selected flights" },
       { value: "Best", label: "Fares, worldwide" },
       { value: "24/7", label: "Support, always on" },
+    ],
+  },
+  {
+    image:   heroValidator,
+    background: "linear-gradient(135deg,#1A0A2E 0%,#4A0E2A 45%,#7A1420 75%,#C9861F 100%)",
+    eyebrow: "VINK AFC — Today's Market Multi-ticketing Validator",
+    eyebrowDot: "bg-amber-400",
+    headline: <>Multi-ticketing<br /><span className="relative inline-block"><span className="relative z-10">validator.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#F5A623" }} /></span></>,
+    body: "Smarter, faster and cashless payments for a seamless travel experience — multi-channel, integrated in one system.",
+    ctas: [
+      { label: "Experience Smart Travel →", style: { background: "#C9861F", boxShadow: "0 6px 20px rgba(201,134,31,.4)" } },
+      { label: "See How It Works",          style: { background: "rgba(255,255,255,.15)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,.25)" } },
+    ],
+    trust: [
+      { value: "NFC",  label: "Card, QR & mobile payments" },
+      { value: "R/T",  label: "Balance & GPS, in real time" },
+      { value: "1",    label: "Card. Endless journeys." },
     ],
   },
 ];
