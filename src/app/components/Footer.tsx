@@ -3,7 +3,7 @@ import vinkLogoDark from "../../imports/LOGO_FINAL.png";
 
 const BG       = "#0B2E1C";
 const DARK_BAR = "#1A0F4A";
-const CARD_BG  = "#128A43";
+const CARD_BG  = "#5B21B6";
 const LINK_HL  = "#00BFFF";
 
 const COLS = [

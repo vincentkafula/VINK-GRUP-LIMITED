@@ -34,10 +34,10 @@ export const FeaturedOffersSection = memo(function FeaturedOffersSection({ onCom
         <div className="flex items-end justify-between mb-8 gap-4 flex-wrap">
           <div>
             <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-2"
-              style={{ background: "#EDE9FE", color: "#128A43" }}>Partner Offers</span>
+              style={{ background: "#EDE9FE", color: "#5B21B6" }}>Partner Offers</span>
             <h2 className="text-2xl sm:text-3xl font-black text-gray-900">Featured Card Offers</h2>
           </div>
-          <button onClick={onCompareCards} className="text-sm font-semibold hover:underline flex-shrink-0 bg-transparent border-none cursor-pointer" style={{ color: "#128A43" }}>
+          <button onClick={onCompareCards} className="text-sm font-semibold hover:underline flex-shrink-0 bg-transparent border-none cursor-pointer" style={{ color: "#5B21B6" }}>
             Compare all cards →
           </button>
         </div>
@@ -68,11 +68,11 @@ export const FeaturedOffersSection = memo(function FeaturedOffersSection({ onCom
               </div>
               <div className="p-5">
                 <span className="text-xs font-bold px-2.5 py-1 rounded-full block mb-2"
-                  style={{ background: "#EDE9FE", color: "#128A43" }}>{o.highlight}</span>
+                  style={{ background: "#EDE9FE", color: "#5B21B6" }}>{o.highlight}</span>
                 <p className="text-gray-400 text-xs mb-1">{o.detail}</p>
                 <p className="text-gray-400 text-[11px] mb-4">{o.issuer}</p>
                 <button className="w-full py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 group-hover:scale-[1.02]"
-                  style={{ background: "linear-gradient(135deg,#128A43,#5FC97F)" }}>
+                  style={{ background: "linear-gradient(135deg,#4C1D95,#7C3AED)" }}>
                   Apply Today
                 </button>
               </div>

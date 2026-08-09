@@ -25,10 +25,10 @@ export const SpecialNeedSection = memo(function SpecialNeedSection() {
           </div>
           <div className="text-center md:text-left">
             <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4"
-              style={{ background: "#EDE9FE", color: "#128A43" }}>Tailored for You</span>
+              style={{ background: "#EDE9FE", color: "#5B21B6" }}>Tailored for You</span>
             <h2 className="text-2xl sm:text-3xl font-black text-gray-900 leading-snug mb-3">
               Have a Special Need?<br />
-              <span style={{ color: "#128A43" }}>We Can Help.</span>
+              <span style={{ color: "#5B21B6" }}>We Can Help.</span>
             </h2>
             <p className="text-gray-500 text-sm leading-relaxed mb-6 max-w-md mx-auto md:mx-0">
               Not every customer is at the same place in life — and not every bank card fits every situation. VINK offers targeted solutions for specific life stages, from students building credit for the first time to new South African residents setting up their financial lives. Whatever your circumstance, there&apos;s a Vink product designed for you.
@@ -46,11 +46,11 @@ export const SpecialNeedSection = memo(function SpecialNeedSection() {
             </div>
             <div className="flex flex-wrap justify-center md:justify-start gap-3">
               <button className="px-7 py-3 rounded-xl text-sm font-bold text-white transition-all hover:scale-105 active:scale-95 shadow-lg"
-                style={{ background: "linear-gradient(135deg,#128A43,#5FC97F)", boxShadow: "0 6px 20px rgba(107,94,215,.35)" }}>
+                style={{ background: "linear-gradient(135deg,#4C1D95,#7C3AED)", boxShadow: "0 6px 20px rgba(124,58,237,.35)" }}>
                 Find My Card
               </button>
               <button className="px-7 py-3 rounded-xl text-sm font-semibold transition-all hover:bg-emerald-50"
-                style={{ border: "1.5px solid #128A43", color: "#128A43" }}>
+                style={{ border: "1.5px solid #5B21B6", color: "#5B21B6" }}>
                 Talk to an Expert
               </button>
             </div>

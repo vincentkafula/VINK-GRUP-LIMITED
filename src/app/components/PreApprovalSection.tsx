@@ -9,7 +9,7 @@ const STEPS = [
   { icon: <CreditCard className="w-4 h-4"/>, label: "Apply with one tap" },
 ];
 
-const P = "#128A43";
+const P = "#5B21B6";
 
 interface CreditResult {
   score: number;
@@ -133,14 +133,14 @@ export function PreApprovalSection() {
                   className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-400" placeholder="Monthly income (optional)" />
                 <button onClick={handleCreditCheck} disabled={loading}
                   className="w-full py-2.5 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-2 disabled:opacity-60"
-                  style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
+                  style={{ background: `linear-gradient(135deg,${P},#7C3AED)` }}>
                   {loading ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Checking...</> : "Check My Score"}
                 </button>
               </div>
             ) : (
               <button onClick={() => setShowForm(true)}
                 className="w-full py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90"
-                style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
+                style={{ background: `linear-gradient(135deg,${P},#7C3AED)` }}>
                 Check My Score
               </button>
             )}
@@ -174,7 +174,7 @@ export function PreApprovalSection() {
 
           {/* Card 3 — How it works */}
           <div className="rounded-2xl p-7 text-white relative overflow-hidden"
-            style={{ background: "linear-gradient(135deg,#128A43,#5FC97F)" }}>
+            style={{ background: "linear-gradient(135deg,#4C1D95,#7C3AED)" }}>
             <h3 className="font-bold text-white text-base mb-1">Three Steps to Your Card</h3>
             <p className="text-white/70 text-sm mb-6">Getting started with VINK is simple, fast, and completely transparent.</p>
             <div className="space-y-4">
