@@ -74,7 +74,7 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
               From a single idea in the Cape Town CBD to a fully developed AFC payment platform, VINK was born from the belief that financial tools should serve everyone — not just those with traditional banking histories.
             </p>
             <p className="text-gray-600 leading-relaxed">
-              VINK charges just R0.50 per taxi transaction — the lowest processing fee in the industry. Of that: 10% goes to the financing bank, 5% to the driver&apos;s taxi association, 5% to neighbourhood watch in the area served, and 10% is retained to seed a future VINK community bank specifically designed for taxi drivers.
+              VINK charges just R0.50 per taxi transaction — the lowest processing fee in the industry. That revenue is shared across the ecosystem that makes the transaction possible: the financing bank, the driver&apos;s taxi association, neighbourhood watch initiatives in the area served, and a portion retained to seed a future VINK community bank built specifically for taxi drivers.
             </p>
           </div>
         </section>
