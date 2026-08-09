@@ -11,7 +11,7 @@ const SLIDES = [
   {
     image:   heroCardPhone,
     eyebrow: "VINK Card — Now in Your Pocket",
-    headline: <>All the benefits of Card,<br /><span className="relative inline-block"><span className="relative z-10">on your phone.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#A78BFA" }} /></span></>,
+    headline: <>All the benefits of Card,<br /><span className="relative inline-block"><span className="relative z-10">on your phone.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#F5A623" }} /></span></>,
     body: "Manage, track and enjoy exclusive benefits anytime, anywhere.",
     ctas: [
       { label: "💳 Start Now",  style: { background: "#7C3AED", boxShadow: "0 6px 20px rgba(124,58,237,.4)" } },
@@ -125,8 +125,21 @@ export function HeroSection() {
 
   return (
     <section className="text-white overflow-hidden relative"
-      style={{ background: "linear-gradient(160deg,#150A35 0%,#2E1065 45%,#4C2A85 75%,#6B3FA0 100%)" }}>
-      {/* Decorative orbs */}
+      style={{ background: "linear-gradient(160deg,#120a2e 0%,#2a0f5c 40%,#4C2A85 72%,#6B3FA0 100%)" }}>
+      {/* Signature motif — concentric "tap" rings, evoking the NFC contactless
+          gesture that's central to how VINK actually works. Deliberately
+          restrained: one quiet element per section rather than scattered
+          decoration, positioned so it reads as ambient texture, not a focal
+          point competing with the headline or product image. */}
+      <div className="absolute -right-24 top-1/2 -translate-y-1/2 w-[560px] h-[560px] pointer-events-none hidden md:block" aria-hidden="true">
+        {[0, 1, 2, 3].map(i => (
+          <div key={i} className="absolute inset-0 rounded-full"
+            style={{
+              border: "1px solid rgba(245,166,35,0.14)",
+              transform: `scale(${1 - i * 0.19})`,
+            }} />
+        ))}
+      </div>
       <div className="absolute top-0 right-0 w-96 h-96 rounded-full opacity-10 pointer-events-none"
         style={{ background: "radial-gradient(circle,#fff 0%,transparent 70%)", transform: "translate(30%,-30%)" }} />
       <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full opacity-10 pointer-events-none"
@@ -141,7 +154,8 @@ export function HeroSection() {
             style={{ opacity: fading ? 0 : 1, transform: fading ? "translateY(8px)" : "translateY(0)" }}
           >
             {/* Headline */}
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black leading-[1.1] mb-5 tracking-tight">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl leading-[1.05] mb-5"
+              style={{ fontFamily: "'Fraunces', serif", fontWeight: 600, letterSpacing: "-0.01em" }}>
               {slide.headline}
             </h1>
 
@@ -154,8 +168,8 @@ export function HeroSection() {
             <div className="flex flex-wrap justify-center md:justify-start gap-3 mb-7">
               {slide.ctas.map((cta, i) => (
                 <button key={i}
-                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl text-sm font-bold text-white transition-all hover:scale-105 active:scale-95 shadow-lg"
-                  style={cta.style as React.CSSProperties}>
+                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl text-sm font-bold text-white transition-all duration-300 ease-out hover:scale-[1.03] hover:-translate-y-0.5 active:scale-95 shadow-lg"
+                  style={{ ...(cta.style as React.CSSProperties), letterSpacing: "0.01em" }}>
                   {cta.label}
                 </button>
               ))}
@@ -165,7 +179,7 @@ export function HeroSection() {
             <div className="flex justify-center md:justify-start gap-8">
               {slide.trust.map((t, i) => (
                 <div key={i} className="text-center md:text-left">
-                  <p className="text-xl font-black" style={{ color: "#F5C842" }}>{t.value}</p>
+                  <p className="text-xl" style={{ color: "#F5C842", fontFamily: "'JetBrains Mono', monospace", fontWeight: 700 }}>{t.value}</p>
                   <p className="text-white/60 text-[11px] font-medium mt-0.5">{t.label}</p>
                 </div>
               ))}

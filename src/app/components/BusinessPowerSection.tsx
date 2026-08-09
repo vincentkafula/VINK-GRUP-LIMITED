@@ -27,9 +27,9 @@ export const BusinessPowerSection = memo(function BusinessPowerSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
           <div className="text-center lg:text-left">
-            <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-full mb-5"
+            <span className="inline-block text-xs font-bold uppercase tracking-[0.14em] px-3 py-1.5 rounded-full mb-5"
               style={{ background: "rgba(245,200,66,.15)", color: "#F5C842" }}>Business Banking</span>
-            <h2 className="text-3xl sm:text-4xl font-black text-white leading-tight mb-4">
+            <h2 className="text-3xl sm:text-4xl leading-[1.15] text-white mb-4" style={{ fontFamily: "'Fraunces', serif", fontWeight: 600 }}>
               Power your business and earn{" "}
               <span style={{ color: "#F5C842" }}>80,000 bonus points</span>{" "}
               or{" "}
@@ -53,8 +53,8 @@ export const BusinessPowerSection = memo(function BusinessPowerSection() {
               ))}
             </ul>
             <div className="flex flex-wrap justify-center lg:justify-start gap-3">
-              <button className="px-8 py-3.5 rounded-xl text-sm font-bold text-white transition-all hover:scale-105 active:scale-95 shadow-lg"
-                style={{ background: "linear-gradient(135deg,#4C1D95,#7C3AED)", boxShadow: "0 6px 20px rgba(124,58,237,.4)" }}>
+              <button className="px-8 py-3.5 rounded-xl text-sm font-bold text-white transition-all duration-300 ease-out hover:scale-[1.03] hover:-translate-y-0.5"
+                style={{ background: "linear-gradient(135deg,#4C1D95,#7C3AED)", boxShadow: "0 10px 28px -6px rgba(124,58,237,.5)", letterSpacing: "0.01em" }}>
                 Open a Business Account
               </button>
               <button className="px-8 py-3.5 rounded-xl text-sm font-semibold transition-all hover:bg-white/10"
@@ -65,11 +65,11 @@ export const BusinessPowerSection = memo(function BusinessPowerSection() {
           </div>
           <div className="grid grid-cols-3 gap-4 lg:gap-6">
             {STATS.map((s, i) => (
-              <div key={i} className="rounded-2xl p-5 text-center flex flex-col items-center gap-3 hover:scale-105 transition-transform"
+              <div key={i} className="rounded-2xl p-5 text-center flex flex-col items-center gap-3 hover:scale-105 transition-transform duration-300"
                 style={{ background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.1)" }}>
                 <div className="opacity-80">{s.icon}</div>
                 <div>
-                  <p className="text-2xl font-black text-white mb-0.5">{s.value}</p>
+                  <p className="text-2xl mb-0.5 text-white" style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 700 }}>{s.value}</p>
                   <p className="text-xs font-semibold text-white/70">{s.label}</p>
                   <p className="text-[10px] text-white/40 mt-0.5">{s.sub}</p>
                 </div>

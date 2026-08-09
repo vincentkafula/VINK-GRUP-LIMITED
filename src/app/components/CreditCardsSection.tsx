@@ -42,12 +42,12 @@ const CARDS = [
 
 function CardVisual({ card, active }: { card: typeof CARDS[0]; active: boolean }) {
   return (
-    <div className="relative rounded-2xl text-white overflow-hidden flex-shrink-0 transition-all duration-300 cursor-pointer select-none"
+    <div className="relative rounded-2xl text-white overflow-hidden flex-shrink-0 transition-all duration-500 ease-out cursor-pointer select-none"
       style={{
         width: "min(260px, 72vw)", height: 160, background: card.grad,
         transform: active ? "translateY(-8px) scale(1.04)" : "scale(0.95)",
         opacity: active ? 1 : 0.72,
-        boxShadow: active ? "0 16px 40px rgba(0,0,0,0.28)" : "0 4px 12px rgba(0,0,0,0.15)",
+        boxShadow: active ? "0 20px 44px -10px rgba(91,33,182,0.45)" : "0 4px 14px -4px rgba(91,33,182,0.18)",
       }}>
       <div className="absolute top-0 right-0 w-36 h-36 rounded-full bg-white/10 -mr-14 -mt-14" />
       <div className="relative z-10 p-5 flex flex-col justify-between h-full">
@@ -89,9 +89,9 @@ export function CreditCardsSection() {
     <section className="py-10 sm:py-14" style={{ background: "#F6F5FF" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-10">
-          <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-3"
+          <span className="inline-block text-xs font-bold uppercase tracking-[0.14em] px-3 py-1 rounded-full mb-3"
             style={{ background: "#EDE9FE", color: "#5B21B6" }}>Compare Cards</span>
-          <h2 className="text-2xl sm:text-3xl font-black text-gray-900">Choose Your Perfect VINK Card</h2>
+          <h2 className="text-2xl sm:text-3xl text-gray-900" style={{ fontFamily: "'Fraunces', serif", fontWeight: 600 }}>Choose Your Perfect VINK Card</h2>
         </div>
 
         <div className="flex justify-center gap-4 sm:gap-6 flex-wrap mb-6">

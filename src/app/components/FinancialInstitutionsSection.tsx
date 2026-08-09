@@ -14,7 +14,7 @@ export const FinancialInstitutionsSection = memo(function FinancialInstitutionsS
     <section className="bg-white py-8 border-t" style={{ borderColor: "#F0EEFF" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-10">
-          <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Trusted Partners</p>
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-gray-400 mb-1">Trusted Partners</p>
           <h2 className="text-lg sm:text-xl font-bold text-gray-800">
             Find a VINK card through your preferred financial institution or partner network.
           </h2>

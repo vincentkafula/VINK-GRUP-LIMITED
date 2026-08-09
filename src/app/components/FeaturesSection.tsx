@@ -24,8 +24,11 @@ const STATS = [
 function BenefitCard({ b }: { b: (typeof BENEFITS)[number] }) {
   return (
     <div
-      className={`rounded-2xl p-5 flex flex-col transition-all hover:-translate-y-1 hover:shadow-xl relative overflow-hidden ${b.featured ? "text-white shadow-xl" : "bg-white border border-gray-100 shadow-sm"}`}
-      style={b.featured ? { background: `linear-gradient(160deg,${DEEP_PURPLE},${PURPLE})` } : undefined}
+      className={`rounded-2xl p-5 flex flex-col transition-all duration-300 hover:-translate-y-1 relative overflow-hidden ${b.featured ? "text-white" : "bg-white border border-gray-100"}`}
+      style={{
+        ...(b.featured ? { background: `linear-gradient(160deg,${DEEP_PURPLE},${PURPLE})` } : {}),
+        boxShadow: b.featured ? "0 10px 30px -8px rgba(91,33,182,0.45)" : "0 2px 10px -4px rgba(91,33,182,0.08)",
+      }}
     >
       {b.featured && (
         <span className="absolute top-3 right-3 flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full" style={{ background: GOLD, color: "#fff" }}>
@@ -54,9 +57,9 @@ export const FeaturesSection = memo(function FeaturesSection({ onExploreAll }: {
         <div className="grid lg:grid-cols-2 gap-14 items-center">
           {/* Left: copy + card visual */}
           <div>
-            <span className="inline-block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: PURPLE }}>More Than a Card</span>
-            <div className="w-10 h-1 rounded-full mb-5" style={{ background: PURPLE }} />
-            <h2 className="text-3xl sm:text-4xl font-black leading-[1.1] text-gray-900">
+            <span className="inline-block text-xs font-bold uppercase tracking-[0.14em] mb-2" style={{ color: PURPLE }}>More Than a Card</span>
+            <div className="w-10 h-1 rounded-full mb-5" style={{ background: `linear-gradient(90deg,${PURPLE},${GOLD})` }} />
+            <h2 className="text-3xl sm:text-4xl leading-[1.08] text-gray-900" style={{ fontFamily: "'Fraunces', serif", fontWeight: 600, letterSpacing: "-0.01em" }}>
               Designed for the way <span style={{ color: PURPLE }}>you</span> live
             </h2>
             <p className="text-gray-500 text-base mt-5 max-w-md leading-relaxed">
@@ -102,12 +105,12 @@ export const FeaturesSection = memo(function FeaturesSection({ onExploreAll }: {
         </div>
 
         {/* Stats strip */}
-        <div className="mt-8 bg-white rounded-2xl shadow-sm border border-gray-100 px-6 py-5 grid grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="mt-8 bg-white rounded-2xl border border-gray-100 px-6 py-5 grid grid-cols-2 lg:grid-cols-4 gap-6" style={{ boxShadow: "0 2px 16px -6px rgba(91,33,182,0.10)" }}>
           {STATS.map(s => (
             <div key={s.label} className="flex items-center gap-3">
               <span className="w-11 h-11 rounded-full flex items-center justify-center text-xl shrink-0" style={{ background: "#F1EBFB" }}>{s.emoji}</span>
               <div>
-                <p className="text-lg font-black text-gray-900 leading-tight">{s.value}</p>
+                <p className="text-lg leading-tight text-gray-900" style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 700 }}>{s.value}</p>
                 <p className="text-[11.5px] text-gray-500 leading-snug">{s.label}</p>
               </div>
             </div>

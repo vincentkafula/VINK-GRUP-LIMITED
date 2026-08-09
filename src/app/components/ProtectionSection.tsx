@@ -19,9 +19,9 @@ export const ProtectionSection = memo(function ProtectionSection() {
               className="w-full max-w-xs sm:max-w-sm object-contain" draggable={false} loading="lazy" />
           </div>
           <div className="order-1 md:order-2 text-center md:text-left">
-            <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4"
+            <span className="inline-block text-xs font-bold uppercase tracking-[0.14em] px-3 py-1 rounded-full mb-4"
               style={{ background: "#EDE9FE", color: PURPLE }}>Zero Liability</span>
-            <h2 className="text-2xl sm:text-3xl font-black text-gray-900 mb-4 leading-snug">
+            <h2 className="text-2xl sm:text-3xl mb-4 leading-[1.15] text-gray-900" style={{ fontFamily: "'Fraunces', serif", fontWeight: 600 }}>
               Your Money.<br />Always Protected.
             </h2>
             <p className="text-gray-600 text-sm leading-relaxed mb-4">
@@ -38,8 +38,8 @@ export const ProtectionSection = memo(function ProtectionSection() {
                 </span>
               ))}
             </div>
-            <button className="inline-flex items-center gap-2 px-8 py-3 rounded-xl text-sm font-bold text-white transition-all hover:scale-105 shadow-lg"
-              style={{ background: "linear-gradient(135deg,#4C1D95,#7C3AED)", boxShadow: "0 6px 20px rgba(124,58,237,.35)" }}>
+            <button className="inline-flex items-center gap-2 px-8 py-3 rounded-xl text-sm font-bold text-white transition-all duration-300 ease-out hover:scale-[1.03] hover:-translate-y-0.5"
+              style={{ background: "linear-gradient(135deg,#4C1D95,#7C3AED)", boxShadow: "0 10px 28px -6px rgba(124,58,237,.45)", letterSpacing: "0.01em" }}>
               Learn How We Protect You
             </button>
           </div>
