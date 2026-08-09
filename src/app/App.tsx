@@ -91,6 +91,9 @@ const CareersViewer               = lazy(() => import("./components/footerPages/
 const NewsViewer                  = lazy(() => import("./components/footerPages/NewsViewer").then(m => ({ default: m.NewsViewer })));
 const ContactUsViewer             = lazy(() => import("./components/footerPages/ContactUsViewer").then(m => ({ default: m.ContactUsViewer })));
 const SwitchToVINKViewer           = lazy(() => import("./components/footerPages/SwitchToVINKViewer").then(m => ({ default: m.SwitchToVINKViewer })));
+const BranchLocatorViewer          = lazy(() => import("./components/footerPages/BranchLocatorViewer").then(m => ({ default: m.BranchLocatorViewer })));
+const SponsorshipViewer            = lazy(() => import("./components/footerPages/SponsorshipViewer").then(m => ({ default: m.SponsorshipViewer })));
+const WEFViewer                    = lazy(() => import("./components/footerPages/WEFViewer").then(m => ({ default: m.WEFViewer })));
 const FiveHundredGlobalApplication = lazy(() => import("./components/FiveHundredGlobalApplication").then(m => ({ default: m.FiveHundredGlobalApplication })));
 const JobApplicationViewer = lazy(() => import("./components/JobApplicationViewer").then(m => ({ default: m.JobApplicationViewer })));
 const NewsManagementDashboard = lazy(() => import("./components/NewsManagementDashboard").then(m => ({ default: m.NewsManagementDashboard })));
@@ -201,6 +204,9 @@ export default function App() {
   const [showLegal, setShowLegal]                           = useState(false);
   const [legalTab, setLegalTab]                             = useState<string | undefined>(undefined);
   const [showSwitchToVINK, setShowSwitchToVINK]               = useState(false);
+  const [showBranchLocator, setShowBranchLocator]              = useState(false);
+  const [showSponsorship, setShowSponsorship]                  = useState(false);
+  const [showWEF, setShowWEF]                                  = useState(false);
   const [show500App, setShow500App]                         = useState(false);
   const [showJobApp, setShowJobApp]                         = useState(false);
   const [showNewsManagement, setShowNewsManagement]         = useState(false);
@@ -568,7 +574,6 @@ export default function App() {
       if (label === "Switch to VINK")                             open("switchToVINK",        () => setShowSwitchToVINK(true));
       if (label === "Job Application")                            open("jobapp",             () => setShowJobApp(true));
       if (label === "Browse Apps")                               startTransition(() => { mount("appLauncher"); setShowAppLauncher(true); });
-      if (label === "Investor Relations")                        open("investorRelations",  () => setShowInvestorRelations(true));
       if (label === "Get Help & Information")                    open("contactUs",          () => setShowContactUs(true));
       if (label === "Message Us")                                open("contactUs",          () => setShowContactUs(true));
       if (label === "Legal and Compliance")                      { setLegalTab("compliance"); open("legal", () => setShowLegal(true)); }
@@ -576,6 +581,18 @@ export default function App() {
       if (label === "Banking regulations" || label === "Banking Regulations") { setLegalTab("regulatory"); open("legal", () => setShowLegal(true)); }
       if (label === "Privacy Statement")                         { setLegalTab("privacy");    open("legal", () => setShowLegal(true)); }
       if (label === "Security Centre")                           { setLegalTab("privacy");    open("legal", () => setShowLegal(true)); }
+      // Previously dead links -- each of these already has a real,
+      // built destination elsewhere in the app that just wasn't wired
+      // to the footer yet.
+      if (label === "Safety and Security")                       { mount("safetySecurity"); setShowSafetySecurity(true); }
+      if (label === "Personal Banking")                          goToSection("Personal");
+      if (label === "Business Banking")                          goToSection("Business");
+      if (label === "Corporate and Investment Banking")          goToSection("Corporate");
+      if (label === "Wealth and Investment Management")          { mount("invest"); setShowInvest(true); }
+      if (label === "Social Responsibility")                     { mount("corpCSR"); setShowCorporateCSR(true); }
+      if (label === "Find the Branch")                           { mount("branchLocator"); setShowBranchLocator(true); }
+      if (label === "Sponsorship")                               { mount("sponsorship"); setShowSponsorship(true); }
+      if (label === "VINK at the World Economic Forum")          { mount("wef"); setShowWEF(true); }
     });
   };
 
@@ -739,6 +756,9 @@ export default function App() {
       {has("contactUs")          && <Suspense fallback={null}><ContactUsViewer            isOpen={showContactUs}  onClose={() => { setShowContactUs(false); pushRoute("/"); }} /></Suspense>}
       {has("legal")              && <Suspense fallback={null}><LegalComplianceViewer      isOpen={showLegal}      onClose={() => setShowLegal(false)} initialTab={legalTab} /></Suspense>}
       {has("switchToVINK")        && <Suspense fallback={null}><SwitchToVINKViewer          isOpen={showSwitchToVINK} onClose={() => setShowSwitchToVINK(false)} /></Suspense>}
+      {has("branchLocator")       && <Suspense fallback={null}><BranchLocatorViewer         isOpen={showBranchLocator} onClose={() => setShowBranchLocator(false)} /></Suspense>}
+      {has("sponsorship")         && <Suspense fallback={null}><SponsorshipViewer           isOpen={showSponsorship} onClose={() => setShowSponsorship(false)} /></Suspense>}
+      {has("wef")                 && <Suspense fallback={null}><WEFViewer                   isOpen={showWEF} onClose={() => setShowWEF(false)} /></Suspense>}
       {has("managementHub")      && <Suspense fallback={null}><ManagementHub              isOpen={showManagementHub}       onClose={() => setShowManagementHub(false)} /></Suspense>}
       {has("taxiAssociations")   && <Suspense fallback={null}><TaxiAssociationsViewer       isOpen={showTaxiAssociations} onClose={() => setShowTaxiAssociations(false)} /></Suspense>}
       {has("500app")             && <Suspense fallback={null}><FiveHundredGlobalApplication isOpen={show500App}          onClose={() => setShow500App(false)} /></Suspense>}

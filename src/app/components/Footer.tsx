@@ -59,8 +59,6 @@ const COLS = [
       "Switch to VINK",
       "Business debit order switching",
       "Send your feedback",
-      "Applications Dashboard",
-      "Management Hub",
     ],
   },
 ];
