@@ -228,7 +228,7 @@ export function CorporateEventsViewer({ isOpen, onClose, onNavigate }: Props) {
           <span className="text-3xl">🎪</span>
           <div className="flex-1">
             <h3 className="text-white font-bold text-base">Sell Your Event With VINK</h3>
-            <p className="text-sm mt-0.5" style={{ color: "rgba(255,255,255,.75)" }}>Flights, Buses, Cars and Packages — reach thousands of customers</p>
+            <p className="text-sm mt-0.5" style={{ color: "rgba(255,255,255,.75)" }}>Flights, Buses, Cars and Packages — reach VINK's growing customer base at launch</p>
           </div>
           <span className="text-2xl font-bold" style={{ color: GOLD }}>›</span>
         </div>
