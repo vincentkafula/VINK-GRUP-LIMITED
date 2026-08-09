@@ -13,9 +13,6 @@ const FeaturesSection              = lazy(() => import("./components/FeaturesSec
 const ProtectionSection            = lazy(() => import("./components/ProtectionSection").then(m => ({ default: m.ProtectionSection })));
 const CreditCardsSection           = lazy(() => import("./components/CreditCardsSection").then(m => ({ default: m.CreditCardsSection })));
 const BusinessPowerSection         = lazy(() => import("./components/BusinessPowerSection").then(m => ({ default: m.BusinessPowerSection })));
-const PreApprovalSection           = lazy(() => import("./components/PreApprovalSection").then(m => ({ default: m.PreApprovalSection })));
-const FeaturedOffersSection        = lazy(() => import("./components/FeaturedOffersSection").then(m => ({ default: m.FeaturedOffersSection })));
-const SpecialNeedSection           = lazy(() => import("./components/SpecialNeedSection").then(m => ({ default: m.SpecialNeedSection })));
 const FinancialInstitutionsSection = lazy(() => import("./components/FinancialInstitutionsSection").then(m => ({ default: m.FinancialInstitutionsSection })));
 const AppShowcaseSection           = lazy(() => import("./components/AppShowcaseSection").then(m => ({ default: m.AppShowcaseSection })));
 const Footer                       = lazy(() => import("./components/Footer").then(m => ({ default: m.Footer })));
@@ -665,9 +662,6 @@ export default function App() {
       <LazySection><Suspense fallback={null}><ProtectionSection /></Suspense></LazySection>
       <LazySection><Suspense fallback={null}><CreditCardsSection onApply={() => openSelector("creditCard")} /></Suspense></LazySection>
       <LazySection><Suspense fallback={null}><BusinessPowerSection onSubNavClick={handleSubNavClick} /></Suspense></LazySection>
-      <LazySection><Suspense fallback={null}><PreApprovalSection onApply={() => openSelector("loan")} /></Suspense></LazySection>
-      <LazySection><Suspense fallback={null}><FeaturedOffersSection onCompareCards={() => openSelector("creditCard")} /></Suspense></LazySection>
-      <LazySection><Suspense fallback={null}><SpecialNeedSection /></Suspense></LazySection>
       <LazySection><Suspense fallback={null}><FinancialInstitutionsSection /></Suspense></LazySection>
       {/* AppShowcaseSection removed from homepage — accessible via footer "Download the App Now!" only */}
       <LazySection>
