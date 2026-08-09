@@ -407,8 +407,8 @@ function Globe() {
 // ─── Section ──────────────────────────────────────────────────────────────────
 export const WorldMapSection = memo(function WorldMapSection() {
   return (
-    <section className="text-white py-14 sm:py-20 overflow-hidden"
-      style={{ background: "linear-gradient(135deg,#0A0A1A 0%,#121230 40%,#1A1845 100%)" }}>
+    <section className="text-white py-10 sm:py-14 overflow-hidden"
+      style={{ background: "linear-gradient(135deg,#150A35 0%,#2E1065 40%,#4C2A85 100%)" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
           <div className="text-center md:text-left">
@@ -445,7 +445,7 @@ export const WorldMapSection = memo(function WorldMapSection() {
                 </div>
               ))}
             </div>
-            <button className="bg-white text-[#1A1845] hover:bg-gray-100 px-8 py-3 rounded-xl transition-colors text-sm font-bold shadow-lg">
+            <button className="bg-white text-[#2E1065] hover:bg-gray-100 px-8 py-3 rounded-xl transition-colors text-sm font-bold shadow-lg">
               See Our Network
             </button>
           </div>
