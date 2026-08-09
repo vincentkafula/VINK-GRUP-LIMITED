@@ -191,7 +191,7 @@ function ConnectTab({ goTo }: { goTo: (t: TabId) => void }) {
       <section>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {[
-            { icon: <Phone className="w-5 h-5" />, title: "Customer Care", sub: "Speak to a consultant", cta: "Call now", href: "tel:+27210000000" },
+            { icon: <Phone className="w-5 h-5" />, title: "Customer Care", sub: "Speak to a consultant", cta: "Call now", href: "tel:+27210095100" },
             { icon: <MapPin className="w-5 h-5" />, title: "Branches & Agents", sub: "Head Office & national network", cta: "Search", onClick: () => goTo("locate") },
             { icon: <MessageCircle className="w-5 h-5" />, title: "Feedback", sub: "Compliments & complaints", cta: "Get started", onClick: () => goTo("feedback") },
             { icon: <AlertTriangle className="w-5 h-5" />, title: "Report Fraud", sub: "Lost cards, suspicious activity", cta: "Call hotline", href: "tel:+27614615035", urgent: true },
