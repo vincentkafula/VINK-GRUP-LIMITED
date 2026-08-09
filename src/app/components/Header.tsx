@@ -61,6 +61,13 @@ export function Header({ onDashboardSelect, onSubNavClick, onOpenProfile, isLogg
 
       <header className="bg-white shadow-sm sticky top-0 z-40">
 
+        {/* ── Launch status notice — visible on every page this header renders on ── */}
+        <div className="text-white text-center px-4 py-2 text-[12.5px] sm:text-sm font-semibold leading-snug"
+          style={{ background: "linear-gradient(90deg,#4C1D95,#7C3AED)" }}>
+          VINK is not yet in full operation — all information on this site is a preview.{" "}
+          <span className="whitespace-nowrap">Full launch: June 2027.</span>
+        </div>
+
         {/* ── Main nav bar ──────────────────────────────────────────────── */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20 sm:h-24">

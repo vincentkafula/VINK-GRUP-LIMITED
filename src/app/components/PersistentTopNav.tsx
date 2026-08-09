@@ -24,10 +24,21 @@ const ITEMS: { label: Exclude<SiteSection, null>; icon: React.ReactNode }[] = [
  */
 export function PersistentTopNav({ active, onSelect, onHome }: Props) {
   return (
-    <div
-      className="fixed top-0 inset-x-0 z-[100] bg-white/95 backdrop-blur-md border-b border-black/[0.07] shadow-[0_1px_2px_rgba(21,10,51,0.04)]"
-      style={{ height: 56 }}
-    >
+    <div className="fixed top-0 inset-x-0 z-[100]" style={{ height: 88 }}>
+      {/* Launch status notice — this nav renders on every non-homepage page,
+          so this is the banner most visitors actually see. Fixed height
+          (32px) so the CSS offset in theme.css (.has-persistent-nav
+          .fixed.inset-0 { top: ... }) can be calculated exactly. */}
+      <div className="text-white text-center px-4 flex items-center justify-center text-[11.5px] sm:text-[13px] font-semibold leading-tight"
+        style={{ height: 32, background: "linear-gradient(90deg,#4C1D95,#7C3AED)" }}>
+        VINK is not yet in full operation — all information on this site is a preview.{" "}
+        <span className="hidden sm:inline whitespace-nowrap">&nbsp;Full launch: June 2027.</span>
+      </div>
+
+      <div
+        className="bg-white/95 backdrop-blur-md border-b border-black/[0.07] shadow-[0_1px_2px_rgba(21,10,51,0.04)]"
+        style={{ height: 56 }}
+      >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center gap-3 sm:gap-4">
         <button onClick={onHome} className="shrink-0 opacity-90 hover:opacity-100 transition-opacity" aria-label="VINK home">
           <img src={vinkLogo} alt="VINK" className="h-7 w-auto object-contain" />
@@ -45,13 +56,13 @@ export function PersistentTopNav({ active, onSelect, onHome }: Props) {
                 className="relative whitespace-nowrap flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-semibold transition-all duration-150"
                 style={{
                   color: isActive ? "#fff" : "#6B7280",
-                  background: isActive ? "linear-gradient(135deg,#128A43,#0B5C2E)" : "transparent",
-                  boxShadow: isActive ? "0 4px 14px -4px rgba(11,92,46,0.5)" : "none",
+                  background: isActive ? "linear-gradient(135deg,#5B21B6,#2E1065)" : "transparent",
+                  boxShadow: isActive ? "0 4px 14px -4px rgba(91,33,182,0.5)" : "none",
                 }}
                 onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = "#F6F5FF"; }}
                 onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
               >
-                <span className={isActive ? "text-white" : "text-[#128A43]"}>{icon}</span>
+                <span className={isActive ? "text-white" : "text-[#5B21B6]"}>{icon}</span>
                 <span className="hidden xs:inline sm:inline">{label}</span>
               </button>
             );
@@ -66,6 +77,7 @@ export function PersistentTopNav({ active, onSelect, onHome }: Props) {
         >
           Close <X className="w-3.5 h-3.5" />
         </button>
+      </div>
       </div>
     </div>
   );
