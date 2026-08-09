@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import vinkLogo from "../../../imports/LOGO_FINAL.png";
 import { publicApi } from "../../services/apiClient";
 
-interface Props { isOpen: boolean; onClose: () => void; }
+interface Props { isOpen: boolean; onClose: () => void; initialTab?: TabId; }
 const P = "#0B5C2E";
 const GOLD = "#F5A623";
 
@@ -443,8 +443,9 @@ function FeedbackTab() {
 }
 
 // ── Main component ──────────────────────────────────────────────────────
-export function ContactUsViewer({ isOpen, onClose }: Props) {
-  const [tab, setTab] = useState<TabId>("connect");
+export function ContactUsViewer({ isOpen, onClose, initialTab }: Props) {
+  const [tab, setTab] = useState<TabId>(initialTab ?? "connect");
+  useEffect(() => { if (isOpen && initialTab) setTab(initialTab); }, [isOpen, initialTab]);
   if (!isOpen) return null;
 
   return (

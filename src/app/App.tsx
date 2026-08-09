@@ -94,6 +94,7 @@ const SwitchToVINKViewer           = lazy(() => import("./components/footerPages
 const BranchLocatorViewer          = lazy(() => import("./components/footerPages/BranchLocatorViewer").then(m => ({ default: m.BranchLocatorViewer })));
 const SponsorshipViewer            = lazy(() => import("./components/footerPages/SponsorshipViewer").then(m => ({ default: m.SponsorshipViewer })));
 const WEFViewer                    = lazy(() => import("./components/footerPages/WEFViewer").then(m => ({ default: m.WEFViewer })));
+const BankingFeesViewer            = lazy(() => import("./components/footerPages/BankingFeesViewer").then(m => ({ default: m.BankingFeesViewer })));
 const FiveHundredGlobalApplication = lazy(() => import("./components/FiveHundredGlobalApplication").then(m => ({ default: m.FiveHundredGlobalApplication })));
 const JobApplicationViewer = lazy(() => import("./components/JobApplicationViewer").then(m => ({ default: m.JobApplicationViewer })));
 const NewsManagementDashboard = lazy(() => import("./components/NewsManagementDashboard").then(m => ({ default: m.NewsManagementDashboard })));
@@ -203,10 +204,12 @@ export default function App() {
   const [showContactUs, setShowContactUs]                   = useState(false);
   const [showLegal, setShowLegal]                           = useState(false);
   const [legalTab, setLegalTab]                             = useState<string | undefined>(undefined);
+  const [contactTab, setContactTab]                          = useState<"connect" | "locate" | "feedback">("connect");
   const [showSwitchToVINK, setShowSwitchToVINK]               = useState(false);
   const [showBranchLocator, setShowBranchLocator]              = useState(false);
   const [showSponsorship, setShowSponsorship]                  = useState(false);
   const [showWEF, setShowWEF]                                  = useState(false);
+  const [showBankingFees, setShowBankingFees]                  = useState(false);
   const [show500App, setShow500App]                         = useState(false);
   const [showJobApp, setShowJobApp]                         = useState(false);
   const [showNewsManagement, setShowNewsManagement]         = useState(false);
@@ -570,12 +573,14 @@ export default function App() {
       if (label === "Investor Relations")                        open("investorRelations",  () => setShowInvestorRelations(true));
       if (label === "Careers")                                   open("careers",            () => setShowCareers(true));
       if (label === "News")                                      open("news",               () => setShowNews(true));
-      if (label === "Contact Us")                                open("contactUs",          () => setShowContactUs(true));
+      if (label === "Contact Us")                                { setContactTab("connect"); open("contactUs", () => setShowContactUs(true)); }
+      if (label === "Send your feedback")                        { setContactTab("feedback"); open("contactUs", () => setShowContactUs(true)); }
       if (label === "Switch to VINK")                             open("switchToVINK",        () => setShowSwitchToVINK(true));
+      if (label === "Business debit order switching")            open("switchToVINK",        () => setShowSwitchToVINK(true));
       if (label === "Job Application")                            open("jobapp",             () => setShowJobApp(true));
       if (label === "Browse Apps")                               startTransition(() => { mount("appLauncher"); setShowAppLauncher(true); });
-      if (label === "Get Help & Information")                    open("contactUs",          () => setShowContactUs(true));
-      if (label === "Message Us")                                open("contactUs",          () => setShowContactUs(true));
+      if (label === "Get Help & Information")                    { setContactTab("connect"); open("contactUs", () => setShowContactUs(true)); }
+      if (label === "Message Us")                                { setContactTab("connect"); open("contactUs", () => setShowContactUs(true)); }
       if (label === "Legal and Compliance")                      { setLegalTab("compliance"); open("legal", () => setShowLegal(true)); }
       if (label === "Terms of use" || label === "Terms Of Use")  { setLegalTab("terms");      open("legal", () => setShowLegal(true)); }
       if (label === "Banking regulations" || label === "Banking Regulations") { setLegalTab("regulatory"); open("legal", () => setShowLegal(true)); }
@@ -593,6 +598,7 @@ export default function App() {
       if (label === "Find the Branch")                           { mount("branchLocator"); setShowBranchLocator(true); }
       if (label === "Sponsorship")                               { mount("sponsorship"); setShowSponsorship(true); }
       if (label === "VINK at the World Economic Forum")          { mount("wef"); setShowWEF(true); }
+      if (label === "Banking rates and fees")                    { mount("bankingFees"); setShowBankingFees(true); }
     });
   };
 
@@ -753,12 +759,13 @@ export default function App() {
       {has("aboutVINK")           && <Suspense fallback={null}><AboutVINKViewer       isOpen={showAboutVINK}           onClose={() => setShowAboutVINK(false)} /></Suspense>}
       {has("careers")            && <Suspense fallback={null}><CareersViewer        isOpen={showCareers}            onClose={() => setShowCareers(false)} /></Suspense>}
       {has("news")               && <Suspense fallback={null}><NewsViewer           isOpen={showNews}               onClose={() => setShowNews(false)} /></Suspense>}
-      {has("contactUs")          && <Suspense fallback={null}><ContactUsViewer            isOpen={showContactUs}  onClose={() => { setShowContactUs(false); pushRoute("/"); }} /></Suspense>}
+      {has("contactUs")          && <Suspense fallback={null}><ContactUsViewer            isOpen={showContactUs}  onClose={() => { setShowContactUs(false); pushRoute("/"); }} initialTab={contactTab} /></Suspense>}
       {has("legal")              && <Suspense fallback={null}><LegalComplianceViewer      isOpen={showLegal}      onClose={() => setShowLegal(false)} initialTab={legalTab} /></Suspense>}
       {has("switchToVINK")        && <Suspense fallback={null}><SwitchToVINKViewer          isOpen={showSwitchToVINK} onClose={() => setShowSwitchToVINK(false)} /></Suspense>}
       {has("branchLocator")       && <Suspense fallback={null}><BranchLocatorViewer         isOpen={showBranchLocator} onClose={() => setShowBranchLocator(false)} /></Suspense>}
       {has("sponsorship")         && <Suspense fallback={null}><SponsorshipViewer           isOpen={showSponsorship} onClose={() => setShowSponsorship(false)} /></Suspense>}
       {has("wef")                 && <Suspense fallback={null}><WEFViewer                   isOpen={showWEF} onClose={() => setShowWEF(false)} /></Suspense>}
+      {has("bankingFees")         && <Suspense fallback={null}><BankingFeesViewer           isOpen={showBankingFees} onClose={() => setShowBankingFees(false)} /></Suspense>}
       {has("managementHub")      && <Suspense fallback={null}><ManagementHub              isOpen={showManagementHub}       onClose={() => setShowManagementHub(false)} /></Suspense>}
       {has("taxiAssociations")   && <Suspense fallback={null}><TaxiAssociationsViewer       isOpen={showTaxiAssociations} onClose={() => setShowTaxiAssociations(false)} /></Suspense>}
       {has("500app")             && <Suspense fallback={null}><FiveHundredGlobalApplication isOpen={show500App}          onClose={() => setShow500App(false)} /></Suspense>}
