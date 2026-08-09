@@ -356,8 +356,15 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
           </div>
           {/* Copyright */}
           <div style={{ paddingBottom: 16, textAlign: "center" }}>
-            <p style={{ color: "rgba(255,255,255,0.28)", fontSize: 12, margin: 0 }}>
-              © Copyright. VINK-GRUP-LIMITED. All Rights Reserved | Registration number 2018/079316/07
+            <p style={{ color: "rgba(255,255,255,0.28)", fontSize: 12, margin: "0 0 6px" }}>
+              © Copyright. VINK-GRUP-LIMITED. All Rights Reserved.
+            </p>
+            <p style={{ color: "rgba(255,255,255,0.28)", fontSize: 12, margin: 0, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "0 10px" }}>
+              <span>United States – EIN: 37-2148609</span>
+              <span style={{ color: "rgba(255,255,255,0.15)" }}>|</span>
+              <span>South Africa – Registration No: 2018/079316/07</span>
+              <span style={{ color: "rgba(255,255,255,0.15)" }}>|</span>
+              <span>Zambia – Registration No: 120210020196</span>
             </p>
           </div>
         </div>
