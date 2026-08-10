@@ -4,7 +4,7 @@ import {
   CreditCard, ArrowLeftRight, Layers, Smartphone, Shield, ShieldCheck,
   Tv, Banknote, Vote, ScanLine, UtensilsCrossed, Plane,
   DollarSign, Settings, Bell, ChevronRight, Eye, EyeOff,
-  X, Home, BarChart3, User, QrCode, LayoutGrid
+  X, Home, BarChart3, User, QrCode
 } from "lucide-react";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 
@@ -17,9 +17,6 @@ interface PostLoginHomeProps {
 // ─── Menu rows exactly as specified ──────────────────────────────────────────
 
 const MENU_ROWS = [
-  [
-    { id: "managementPanel", label: "Management Panel", icon: <LayoutGrid className="w-6 h-6" />, gradient: "from-[#0B5C2E] to-[#FF9900]", glow: "#0B5C2E" },
-  ],
   [
     { id: "login",    label: "Login",       icon: <LogIn className="w-6 h-6" />,           gradient: "from-[#128A43] to-[#9333EA]", glow: "#128A43" },
     { id: "message",  label: "Message",     icon: <MessageSquare className="w-6 h-6" />,   gradient: "from-[#3B82F6] to-[#06B6D4]", glow: "#3B82F6" },
