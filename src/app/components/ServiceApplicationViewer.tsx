@@ -20,6 +20,7 @@ import {
 import { applicationsApi, otpApi } from "../services/applicationsApi";
 import { useFormValidation, validators } from "../hooks/useFormValidation";
 import { InlineError } from "./ErrorBoundary";
+import { Footer } from "./Footer";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type ServiceType = "invest" | "insure" | "rewards" | "sim" | "account";
@@ -712,6 +713,8 @@ export function ServiceApplicationViewer({ isOpen, onClose, serviceType }: Props
         )}
         {submitError && <InlineError message={submitError} onRetry={() => setSubmitError("")} />}
       </div>
+
+      <Footer />
     </div>
   );
 }

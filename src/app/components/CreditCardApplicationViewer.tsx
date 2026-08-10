@@ -7,6 +7,7 @@ import {
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { AppHero, StepTracker, ProgressBar, FormCard, Field, DocSlot, OtpInput, NavButtons, inputCls, selectCls, VerifiedBadge, P as CP, GOLD, GREEN } from "./AppFormShell";
 import { applicationsApi } from "../services/applicationsApi";
+import { Footer } from "./Footer";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
@@ -678,6 +679,8 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
           />
         )}
       </div>
+
+      <Footer />
     </div>
   );
 }

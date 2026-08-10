@@ -3,6 +3,7 @@ import { X, CheckCircle, AlertTriangle, Building2, FileText, Users, ClipboardChe
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { AppHero, StepTracker, ProgressBar, FormCard, Field, DocSlot, NavButtons, inputCls, selectCls, P as CP, GOLD, GREEN } from "./AppFormShell";
 import { applicationsApi } from "../services/applicationsApi";
+import { Footer } from "./Footer";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
@@ -536,6 +537,8 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
           />
         )}
       </div>
+
+      <Footer />
     </div>
   );
 }

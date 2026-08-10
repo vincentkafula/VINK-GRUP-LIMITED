@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { X, Check, ChevronRight, ChevronLeft, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import { API_BASE as BASE } from "../services/config";
+import { Footer } from "./Footer";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
@@ -357,6 +358,8 @@ export function JobApplicationViewer({ isOpen, onClose }: Props) {
           </div>
         </div>
       )}
+
+      <Footer />
     </div>
   );
 }

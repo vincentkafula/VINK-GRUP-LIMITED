@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { applicationsApi } from "../services/applicationsApi";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
+import { Footer } from "./Footer";
 import {
   AppHero, StepTracker, ProgressBar, FormCard, Field,
   DocSlot, OtpInput, NavButtons, inputCls, selectCls,
@@ -381,6 +382,8 @@ export function VehicleTrackingApplicationViewer({ isOpen, onClose }: Props) {
           <NavButtons onBack={step > 1 ? back : undefined} onNext={step < 7 ? next : undefined} hideBack={step === 1} />
         )}
       </div>
+
+      <Footer />
     </div>
   );
 }
