@@ -818,24 +818,23 @@ export function VinkBankingApp({ isOpen, onClose, onOpenManagementPanel, onOpenA
       }
     }
     const restored = mktAuth.restoreSession();
-    if (restored) {
+    if (restored && restored.user.username !== "superadmin" && restored.user.username !== "admin") {
+      // The intended case this restore handles: signed in via the main
+      // site's Login button first, then opened this app -- shouldn't need
+      // to sign in again just because this app keeps its own mkt_token key.
       setAuthUser(restored.user);
       const tok = getMktToken();
       if (tok) { setToken(tok); setMainSession(restored.user); }
-      // Which desktop panel opens depends on the specific username, not just
-      // role -- "superadmin" and "admin" are two distinct accounts (owner and
-      // superadmin roles respectively) that go to two different dashboards.
-      // Neither renders inside the mobile app itself; if a callback wasn't
-      // wired for some reason, this account just continues into the normal
-      // mobile app rather than falling back to an in-app admin view, since
-      // no Management Panel-style content belongs in the mobile app at all.
-      if (restored.user.username === "superadmin" && onOpenManagementPanel) {
-        onClose();
-        onOpenManagementPanel();
-      } else if (restored.user.username === "admin" && onOpenAdminPanel) {
-        onClose();
-        onOpenAdminPanel();
-      }
+    } else if (restored) {
+      // A restored admin/superadmin session auto-redirecting here on every
+      // mount is exactly what broke testing both accounts: whichever one
+      // logged in first would win every subsequent visit, since this ran
+      // before the login screen ever rendered -- there was no way to reach
+      // it to try the other account's credentials. Clearing the stale
+      // session here (rather than restoring and redirecting) means the
+      // login screen always shows fresh for these two accounts, and only
+      // an explicit, current login decides which dashboard opens.
+      mktAuth.logout();
     }
     setCheckedSession(true);
   }, []);
