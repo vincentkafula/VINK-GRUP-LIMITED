@@ -13,15 +13,15 @@ const PURPLE = "#5B21B6";
 const DEEP_PURPLE = "#2E1065";
 const GOLD = "#F5A623";
 
-interface Benefit { emoji: string; icon?: string; title: string; desc: string; featured: boolean }
+interface Benefit { emoji: string; icon?: string; title: string; desc: string; featured: boolean; color: string; colorDark: string }
 
 const BENEFITS: Benefit[] = [
-  { emoji: "🎁", icon: iconRewards, title: "Rewards", desc: "Earn points on every spend and redeem for exciting rewards and offers.", featured: false },
-  { emoji: "💵", icon: iconCashBack, title: "Cash Back", desc: "Get real cash back on your purchases and save more every day.", featured: true },
-  { emoji: "🔄", icon: iconBalanceTransfer, title: "Balance Transfer", desc: "Transfer your balance easily and pay off debt faster.", featured: false },
-  { emoji: "🧳", icon: iconTravel, title: "Travel", desc: "Exclusive travel benefits, airport lounge access, and more.", featured: false },
-  { emoji: "0️⃣", icon: iconZeroPercent, title: "Zero Percent", desc: "Enjoy 0% interest on eligible purchases for a limited time.", featured: false },
-  { emoji: "🛡️", icon: iconLowInterest, title: "Low Interest", desc: "Competitive interest rates that help you save more.", featured: false },
+  { emoji: "🎁", icon: iconRewards, title: "Rewards", desc: "Earn points on every spend and redeem for exciting rewards and offers.", featured: false, color: "#7C3AED", colorDark: "#2E1065" },
+  { emoji: "💵", icon: iconCashBack, title: "Cash Back", desc: "Get real cash back on your purchases and save more every day.", featured: true, color: "#4ADE80", colorDark: "#0F3D1F" },
+  { emoji: "🔄", icon: iconBalanceTransfer, title: "Balance Transfer", desc: "Transfer your balance easily and pay off debt faster.", featured: false, color: "#3B82F6", colorDark: "#0F2A4A" },
+  { emoji: "🧳", icon: iconTravel, title: "Travel", desc: "Exclusive travel benefits, airport lounge access, and more.", featured: false, color: "#F97316", colorDark: "#4A2008" },
+  { emoji: "0️⃣", icon: iconZeroPercent, title: "Zero Percent", desc: "Enjoy 0% interest on eligible purchases for a limited time.", featured: false, color: "#2DD4BF", colorDark: "#0D3B36" },
+  { emoji: "🛡️", icon: iconLowInterest, title: "Low Interest", desc: "Competitive interest rates that help you save more.", featured: false, color: "#EC4899", colorDark: "#4A0F2E" },
 ];
 
 const STATS = [
@@ -31,30 +31,35 @@ const STATS = [
   { emoji: "📱", value: "24/7", label: "Dedicated customer support" },
 ];
 
-function BenefitCard({ b }: { b: (typeof BENEFITS)[number] }) {
+function BenefitCard({ b }: { b: Benefit }) {
   return (
     <div
-      className={`rounded-2xl p-5 flex flex-col transition-all duration-300 hover:-translate-y-1 relative overflow-hidden ${b.featured ? "text-white" : "bg-white border border-gray-100"}`}
+      className="rounded-2xl p-5 flex flex-col transition-all duration-300 hover:-translate-y-1 relative overflow-hidden text-white"
       style={{
-        ...(b.featured ? { background: `linear-gradient(160deg,${DEEP_PURPLE},${PURPLE})` } : {}),
-        boxShadow: b.featured ? "0 10px 30px -8px rgba(91,33,182,0.45)" : "0 2px 10px -4px rgba(91,33,182,0.08)",
+        background: `linear-gradient(160deg,${b.colorDark} 0%,#0D0620 85%)`,
+        border: `1px solid ${b.color}33`,
+        boxShadow: `0 10px 30px -10px ${b.color}55`,
       }}
     >
+      {/* Ambient glow behind the icon, echoing the reference's per-icon lighting */}
+      <div className="absolute -top-6 -right-6 w-32 h-32 rounded-full pointer-events-none"
+        style={{ background: `radial-gradient(circle,${b.color}40,transparent 70%)` }} />
+
       {b.featured && (
-        <span className="absolute top-3 right-3 flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full" style={{ background: GOLD, color: "#fff" }}>
+        <span className="absolute top-3 right-3 flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full z-10" style={{ background: GOLD, color: "#fff" }}>
           🔥 Most Popular
         </span>
       )}
-      <div className="w-14 h-14 rounded-xl flex items-center justify-center text-3xl mb-4 overflow-hidden" style={{ background: b.featured ? "rgba(255,255,255,0.12)" : "#F3F4F6" }}>
-        {b.icon ? <img src={b.icon} alt="" aria-hidden="true" className="w-full h-full object-cover" draggable={false} /> : b.emoji}
+      <div className="relative w-24 h-24 rounded-2xl flex items-center justify-center text-5xl mb-4 overflow-hidden mx-auto sm:mx-0">
+        {b.icon ? <img src={b.icon} alt="" aria-hidden="true" className="w-full h-full object-contain scale-125" draggable={false} /> : b.emoji}
       </div>
-      <p className={`text-base font-bold mb-1.5 ${b.featured ? "text-white" : "text-gray-900"}`}>{b.title}</p>
-      <p className={`text-[13px] leading-relaxed mb-5 ${b.featured ? "text-white/80" : "text-gray-500"}`}>{b.desc}</p>
+      <p className="text-base font-bold mb-1.5 text-center sm:text-left" style={{ color: b.color }}>{b.title}</p>
+      <p className="text-[13px] leading-relaxed mb-5 text-white/70 text-center sm:text-left">{b.desc}</p>
       <button
-        className="mt-auto w-9 h-9 rounded-full flex items-center justify-center transition-transform hover:scale-110"
-        style={b.featured ? { background: GOLD } : { background: "#F1EBFB", color: PURPLE }}
+        className="mt-auto w-9 h-9 rounded-full flex items-center justify-center transition-transform hover:scale-110 mx-auto sm:mx-0"
+        style={{ background: `${b.color}25`, color: b.color }}
       >
-        <ArrowRight className={`w-4 h-4 ${b.featured ? "text-white" : ""}`} />
+        <ArrowRight className="w-4 h-4" />
       </button>
     </div>
   );
