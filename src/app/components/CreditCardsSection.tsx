@@ -1,10 +1,12 @@
 import { useState } from "react";
+import vinkBronzeCard from "../../imports/VinkBronzeCard.png";
 
 const CARDS = [
   {
     name: "VINK Commuter Card", sub: "Mastercard Standard",
     grad: "linear-gradient(135deg,#34A853,#5B21B6)", net: "mc", last4: "4521", expiry: "09/28",
     tier: "Standard", benefit: "Tap to ride. Earn on every journey.",
+    image: vinkBronzeCard,
     features: [
       "R0 annual fee — always",
       "3-second tap-and-go fare payment on all taxi routes",
@@ -41,14 +43,19 @@ const CARDS = [
 ];
 
 function CardVisual({ card, active }: { card: typeof CARDS[0]; active: boolean }) {
+  const image = "image" in card ? card.image : undefined;
   return (
     <div className="relative rounded-2xl text-white overflow-hidden flex-shrink-0 transition-all duration-500 ease-out cursor-pointer select-none"
       style={{
-        width: "min(260px, 72vw)", height: 160, background: card.grad,
+        width: "min(260px, 72vw)", height: 160, background: image ? "#1a1512" : card.grad,
         transform: active ? "translateY(-8px) scale(1.04)" : "scale(0.95)",
         opacity: active ? 1 : 0.72,
         boxShadow: active ? "0 20px 44px -10px rgba(91,33,182,0.45)" : "0 4px 14px -4px rgba(91,33,182,0.18)",
       }}>
+      {image ? (
+        <img src={image} alt={`${card.name} — physical card design`} className="w-full h-full object-cover" draggable={false} />
+      ) : (
+      <>
       <div className="absolute top-0 right-0 w-36 h-36 rounded-full bg-white/10 -mr-14 -mt-14" />
       <div className="relative z-10 p-5 flex flex-col justify-between h-full">
         <div className="flex justify-between items-start">
@@ -78,6 +85,8 @@ function CardVisual({ card, active }: { card: typeof CARDS[0]; active: boolean }
           </div>
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 }
