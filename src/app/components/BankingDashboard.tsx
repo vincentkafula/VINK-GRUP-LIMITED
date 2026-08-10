@@ -1216,7 +1216,7 @@ export function BankingDashboard({ isOpen, onClose }: BankingDashboardProps) {
                     <Building2 className="w-5 h-5" style={{ color: accentColor }}/>
                     <span className="text-white font-black text-base">VINK BANK</span>
                   </div>
-                  <p className="text-[10px]" style={{ color: "#8884AA" }}>Multi-Role Banking Platform</p>
+                  <p className="text-[10px]" style={{ color: "#8884AA" }}>Manager Panel</p>
                 </div>
               )}
               <button onClick={() => setSidebarOpen(!sidebarOpen)} className="ml-auto p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/50 hover:text-white flex-shrink-0">
