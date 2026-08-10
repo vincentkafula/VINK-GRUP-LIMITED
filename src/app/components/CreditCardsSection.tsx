@@ -1,6 +1,7 @@
 import { useState } from "react";
 import vinkBronzeCard from "../../imports/VinkBronzeCard.png";
 import vinkBlueVisaCard from "../../imports/VinkBlueVisaCard.png";
+import vinkBlackVisaCard from "../../imports/VinkBlackVisaCard.png";
 
 const CARDS = [
   {
@@ -33,6 +34,7 @@ const CARDS = [
     name: "VINK Gold", sub: "Visa Infinite Elite",
     grad: "linear-gradient(135deg,#D4A843,#B88A20)", net: "visa", last4: "2291", expiry: "12/26",
     tier: "Elite", benefit: "Premium rewards for every rand you spend.",
+    image: vinkBlackVisaCard,
     features: [
       "2% cashback on all spend",
       "Dedicated relationship manager",
