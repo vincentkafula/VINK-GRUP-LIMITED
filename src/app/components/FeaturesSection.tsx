@@ -1,5 +1,6 @@
 import { memo } from "react";
 import { ArrowRight, ShieldCheck, Headphones } from "lucide-react";
+import vinkGoldFeatureCard from "../../imports/VinkGoldFeatureCard.png";
 
 const PURPLE = "#5B21B6";
 const DEEP_PURPLE = "#2E1065";
@@ -68,21 +69,7 @@ export const FeaturesSection = memo(function FeaturesSection({ onExploreAll }: {
 
             <div className="relative mt-8 max-w-sm">
               <div className="absolute -inset-6 rounded-full opacity-40" style={{ background: `radial-gradient(circle,${GOLD}33,transparent 70%)` }} />
-              <div className="relative rounded-2xl p-5 shadow-2xl" style={{ background: `linear-gradient(140deg,${DEEP_PURPLE} 0%,${PURPLE} 60%,#175E38 100%)` }}>
-                <div className="flex items-center justify-between mb-8">
-                  <div className="w-9 h-7 rounded" style={{ background: "linear-gradient(135deg,#E8C27A,#C9A05A)" }} />
-                  <svg viewBox="0 0 24 24" className="w-5 h-5 text-white/70" fill="none"><path d="M6 10a6 6 0 0112 0M9 13a3 3 0 016 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
-                </div>
-                <p className="text-white font-mono text-lg tracking-widest mb-4">5412&nbsp; 7512&nbsp; 3412&nbsp; 3456</p>
-                <div className="flex items-end justify-between">
-                  <div>
-                    <p className="text-white/50 text-[9px] uppercase">Valid Thru</p>
-                    <p className="text-white text-xs font-mono">12/29</p>
-                    <p className="text-white text-sm font-semibold mt-2 tracking-wide">JOHN DOE</p>
-                  </div>
-                  <span className="text-white text-xl font-black italic">VISA</span>
-                </div>
-              </div>
+              <img src={vinkGoldFeatureCard} alt="VINK Visa Signature card" className="relative w-full rounded-2xl shadow-2xl" draggable={false} />
 
               <div className="absolute -top-4 right-2 bg-white rounded-xl shadow-lg px-3 py-2 flex items-center gap-1.5">
                 <Headphones className="w-3.5 h-3.5" style={{ color: PURPLE }} />
