@@ -2,6 +2,7 @@ import { useState } from "react";
 import vinkBronzeCard from "../../imports/VinkBronzeCard.png";
 import vinkBlueVisaCard from "../../imports/VinkBlueVisaCard.png";
 import vinkBlackVisaCard from "../../imports/VinkBlackVisaCard.png";
+import vinkBlueMastercard from "../../imports/VinkBlueMastercard.png";
 import { Card3DViewer } from "./Card3DViewer";
 
 const CARDS = [
@@ -43,6 +44,19 @@ const CARDS = [
       "Access to 1,000+ airport lounges worldwide",
       "Priority customer support — average response under 2 minutes",
       "Credit limit up to R500,000",
+    ],
+  },
+  {
+    name: "VINK Business Card", sub: "Mastercard World",
+    grad: "linear-gradient(135deg,#1E3A8A,#0F2A4A)", net: "mc", last4: "6178", expiry: "05/28",
+    tier: "Business", benefit: "Built for the way your business moves.",
+    image: vinkBlueMastercard,
+    features: [
+      "Issue up to 50 employee cards from one account",
+      "Real-time spend tracking and receipt capture per cardholder",
+      "R0 monthly fee for the first 12 months",
+      "Fuel and fleet discounts at partner filling stations nationwide",
+      "Dedicated business support line, 7am–8pm every day",
     ],
   },
 ];
