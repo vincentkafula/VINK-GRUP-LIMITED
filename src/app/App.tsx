@@ -10,6 +10,7 @@ import { useBodyScrollLock } from "./hooks/useBodyScrollLock";
 
 // ─── Below-fold homepage sections — code-split ────────────────────────────────
 const FeaturesSection              = lazy(() => import("./components/FeaturesSection").then(m => ({ default: m.FeaturesSection })));
+const RewardsSection               = lazy(() => import("./components/RewardsSection").then(m => ({ default: m.RewardsSection })));
 const ProtectionSection            = lazy(() => import("./components/ProtectionSection").then(m => ({ default: m.ProtectionSection })));
 const CreditCardsSection           = lazy(() => import("./components/CreditCardsSection").then(m => ({ default: m.CreditCardsSection })));
 const BusinessPowerSection         = lazy(() => import("./components/BusinessPowerSection").then(m => ({ default: m.BusinessPowerSection })));
@@ -659,6 +660,7 @@ export default function App() {
       <SearchSection />
 
       <LazySection><Suspense fallback={null}><FeaturesSection onExploreAll={() => { mount("appLauncher"); setShowAppLauncher(true); }} /></Suspense></LazySection>
+      <LazySection><Suspense fallback={null}><RewardsSection /></Suspense></LazySection>
       <LazySection><Suspense fallback={null}><ProtectionSection /></Suspense></LazySection>
       <LazySection><Suspense fallback={null}><CreditCardsSection onApply={() => openSelector("creditCard")} /></Suspense></LazySection>
       <LazySection><Suspense fallback={null}><BusinessPowerSection onSubNavClick={handleSubNavClick} /></Suspense></LazySection>

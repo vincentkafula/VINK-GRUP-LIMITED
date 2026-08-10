@@ -8,7 +8,6 @@ const DEEP_PURPLE = "#2E1065";
 const GOLD = "#F5A623";
 
 const BENEFITS = [
-  { emoji: "🎁", title: "Rewards", desc: "Earn points on every spend and redeem for exciting rewards and offers.", featured: false },
   { emoji: "💵", title: "Cash Back", desc: "Get real cash back on your purchases and save more every day.", featured: true },
   { emoji: "🔄", title: "Balance Transfer", desc: "Transfer your balance easily and pay off debt faster.", featured: false },
   { emoji: "🧳", title: "Travel", desc: "Exclusive travel benefits, airport lounge access, and more.", featured: false },
