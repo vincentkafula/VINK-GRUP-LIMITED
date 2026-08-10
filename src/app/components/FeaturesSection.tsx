@@ -25,16 +25,16 @@ const BENEFITS: Benefit[] = [
 ];
 
 const STATS = [
-  { emoji: "👑", value: "5X", label: "Points on dining & entertainment" },
-  { emoji: "🎁", value: "100+", label: "Partner brands and offers" },
-  { emoji: "🌍", value: "0", label: "Foreign transaction fees" },
-  { emoji: "📱", value: "24/7", label: "Dedicated customer support" },
+  { emoji: "👑", value: "5X", label: "Points on dining & entertainment", color: "#7C3AED" },
+  { emoji: "🎁", value: "100+", label: "Partner brands and offers", color: "#F97316" },
+  { emoji: "🌍", value: "0", label: "Foreign transaction fees", color: "#2DD4BF" },
+  { emoji: "📱", value: "24/7", label: "Dedicated customer support", color: "#EC4899" },
 ];
 
 function BenefitCard({ b }: { b: Benefit }) {
   return (
     <div
-      className="rounded-2xl p-5 flex flex-col transition-all duration-300 hover:-translate-y-1 relative overflow-hidden text-white"
+      className="rounded-2xl p-4 flex flex-col transition-all duration-300 hover:-translate-y-1 relative overflow-hidden text-white"
       style={{
         background: `linear-gradient(160deg,${b.colorDark} 0%,#0D0620 85%)`,
         border: `1px solid ${b.color}33`,
@@ -50,13 +50,13 @@ function BenefitCard({ b }: { b: Benefit }) {
           🔥 Most Popular
         </span>
       )}
-      <div className="relative w-24 h-24 rounded-2xl flex items-center justify-center text-5xl mb-4 overflow-hidden mx-auto sm:mx-0">
+      <div className="relative w-20 h-20 rounded-2xl flex items-center justify-center text-5xl mb-2.5 overflow-hidden mx-auto sm:mx-0">
         {b.icon ? <img src={b.icon} alt="" aria-hidden="true" className="w-full h-full object-contain scale-125" draggable={false} /> : b.emoji}
       </div>
-      <p className="text-base font-bold mb-1.5 text-center sm:text-left" style={{ color: b.color }}>{b.title}</p>
-      <p className="text-[13px] leading-relaxed mb-5 text-white/70 text-center sm:text-left">{b.desc}</p>
+      <p className="text-base font-bold mb-1 text-center sm:text-left" style={{ color: b.color }}>{b.title}</p>
+      <p className="text-[13px] leading-relaxed mb-3 text-white/70 text-center sm:text-left">{b.desc}</p>
       <button
-        className="mt-auto w-9 h-9 rounded-full flex items-center justify-center transition-transform hover:scale-110 mx-auto sm:mx-0"
+        className="mt-auto w-8 h-8 rounded-full flex items-center justify-center transition-transform hover:scale-110 mx-auto sm:mx-0"
         style={{ background: `${b.color}25`, color: b.color }}
       >
         <ArrowRight className="w-4 h-4" />
@@ -111,9 +111,9 @@ export const FeaturesSection = memo(function FeaturesSection({ onExploreAll }: {
         <div className="mt-8 bg-white rounded-2xl border border-gray-100 px-6 py-5 grid grid-cols-2 lg:grid-cols-4 gap-6" style={{ boxShadow: "0 2px 16px -6px rgba(91,33,182,0.10)" }}>
           {STATS.map(s => (
             <div key={s.label} className="flex items-center gap-3">
-              <span className="w-11 h-11 rounded-full flex items-center justify-center text-xl shrink-0" style={{ background: "#F1EBFB" }}>{s.emoji}</span>
+              <span className="w-11 h-11 rounded-full flex items-center justify-center text-xl shrink-0" style={{ background: `${s.color}18` }}>{s.emoji}</span>
               <div>
-                <p className="text-lg leading-tight text-gray-900" style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 700 }}>{s.value}</p>
+                <p className="text-lg leading-tight" style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, color: s.color }}>{s.value}</p>
                 <p className="text-[11.5px] text-gray-500 leading-snug">{s.label}</p>
               </div>
             </div>

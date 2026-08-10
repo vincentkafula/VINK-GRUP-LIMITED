@@ -25,7 +25,7 @@ export function SearchSection() {
               ))}
             </div>
           </div>
-          <button className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold text-white shadow-md transition-all hover:scale-105 active:scale-95 flex-shrink-0"
+          <button className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold text-white transition-all duration-300 ease-out hover:scale-[1.03] hover:-translate-y-0.5 active:scale-95 flex-shrink-0"
             style={{ background: "linear-gradient(135deg,#4C1D95,#7C3AED)", boxShadow: "0 4px 14px rgba(124,58,237,.35)" }}>
             <CreditCard className="w-4 h-4" />
             Find My Card
