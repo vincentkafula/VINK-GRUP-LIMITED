@@ -1,17 +1,10 @@
 const STATS = [
-  { value: "2,100+", label: "Partner Merchants", sub: "Fuel, gyms, restaurants, and retailers",
-    icon: <svg viewBox="0 0 44 44" className="w-8 h-8" fill="none"><rect x="5" y="14" width="34" height="22" rx="3" stroke="white" strokeWidth="2" opacity="0.7"/><line x1="5" y1="22" x2="39" y2="22" stroke="white" strokeWidth="2"/><rect x="9" y="27" width="9" height="5" rx="1.5" fill="white" opacity="0.6"/><rect x="21" y="27" width="13" height="5" rx="1.5" fill="white" opacity="0.3"/></svg> },
-  { value: "R0.50", label: "Per Transaction", sub: "Lowest taxi fare processing fee in SA",
+  { value: "4", label: "Initial Markets", sub: "South Africa, the US, Zambia, and China",
+    icon: <svg viewBox="0 0 44 44" className="w-8 h-8" fill="none"><circle cx="22" cy="22" r="17" stroke="white" strokeWidth="2" opacity="0.7"/><path d="M5 22h34M22 5c5 5 8 11 8 17s-3 12-8 17c-5-5-8-11-8-17s3-12 8-17Z" stroke="white" strokeWidth="2" opacity="0.6"/></svg> },
+  { value: "Local", label: "Rates, Always", sub: "No international fees, no hidden markups",
     icon: <svg viewBox="0 0 44 44" className="w-8 h-8" fill="none"><path d="M22 5 L26 17 L39 17 L29 24 L33 37 L22 29 L11 37 L15 24 L5 17 L18 17 Z" stroke="white" strokeWidth="2" strokeLinejoin="round" opacity="0.8" fill="rgba(255,255,255,0.1)"/></svg> },
   { value: "256-bit", label: "Encryption", sub: "Bank-grade security on every payment",
     icon: <svg viewBox="0 0 44 44" className="w-8 h-8" fill="none"><path d="M22 5 L8 11 V24 C8 34 15 42 22 44 C29 42 36 34 36 24 V11 Z" stroke="white" strokeWidth="2" strokeLinejoin="round" opacity="0.8" fill="rgba(255,255,255,0.1)"/><path d="M15 23 L19 27 L28 19" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg> },
-];
-
-const PERKS = [
-  "Zero monthly account fee for the first 12 months",
-  "Same-day transfers to any South African bank account",
-  "Multi-card setup — issue up to 50 employee cards from one account",
-  "Dedicated business relationship manager available 8am–8pm",
 ];
 
 import { memo } from "react";
@@ -28,34 +21,28 @@ export const BusinessPowerSection = memo(function BusinessPowerSection() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
           <div className="text-center lg:text-left">
             <span className="inline-block text-xs font-bold uppercase tracking-[0.14em] px-3 py-1.5 rounded-full mb-5"
-              style={{ background: "rgba(245,200,66,.15)", color: "#F5C842" }}>Business Banking</span>
-            <h2 className="text-3xl sm:text-4xl leading-[1.15] text-white mb-4" style={{ fontFamily: "'Fraunces', serif", fontWeight: 600 }}>
-              Power your business and earn{" "}
-              <span style={{ color: "#F5C842" }}>80,000 bonus points</span>{" "}
-              or{" "}
-              <span style={{ color: "#F5C842" }}>R3,000 cash back</span>{" "}
-              when you open a VINK Business Account this month.
+              style={{ background: "rgba(245,200,66,.15)", color: "#F5C842" }}>Global Payments</span>
+            <h2 className="text-3xl sm:text-4xl leading-[1.15] text-white mb-5" style={{ fontFamily: "'Fraunces', serif", fontWeight: 600 }}>
+              Cross-border payments shouldn't cost a fortune.
             </h2>
-            <p className="text-white/60 text-sm leading-relaxed mb-7 max-w-md mx-auto lg:mx-0">
-              VINK Business Banking is designed for the operators who keep South Africa moving — taxi associations, fleet owners, fuel stations, gym franchises, and independent retailers. Get instant settlements, no hidden fees, and a payment infrastructure that scales with you.
-            </p>
-            <ul className="space-y-2.5 mb-8 text-left max-w-md mx-auto lg:mx-0">
-              {PERKS.map((perk, i) => (
-                <li key={i} className="flex items-start gap-2.5 text-sm text-white/70">
-                  <span className="mt-0.5 w-4 h-4 rounded-full flex-shrink-0 flex items-center justify-center"
-                    style={{ background: "rgba(245,200,66,.2)" }}>
-                    <svg viewBox="0 0 12 12" className="w-2.5 h-2.5" fill="none">
-                      <path d="M2 6l3 3 5-5" stroke="#F5C842" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </span>
-                  {perk}
-                </li>
-              ))}
-            </ul>
+            <div className="space-y-4 mb-8 max-w-md mx-auto lg:mx-0 text-left">
+              <p className="text-white/60 text-sm leading-relaxed">
+                People around the world pay a fortune to send money across borders — often 10% or more in fees just to support a loved one. Businesses fare no better, losing significant money to fees every time they purchase or import goods from abroad.
+              </p>
+              <p className="text-white/60 text-sm leading-relaxed">
+                VINK is changing that. We've eliminated these fees in our initial markets — South Africa, the United States, Zambia, and China — with more countries coming soon.
+              </p>
+              <p className="text-white/60 text-sm leading-relaxed">
+                Once you qualify for a VINK card, every transaction is charged at local rates — even cross-border transfers. No international fees, no hidden markups, just local pricing wherever you send or spend.
+              </p>
+              <p className="text-white/60 text-sm leading-relaxed">
+                We're not a traditional bank. VINK is a cloud-based banking platform issuing Visa and Mastercard-powered cards built for how people and businesses actually move money today.
+              </p>
+            </div>
             <div className="flex flex-wrap justify-center lg:justify-start gap-3">
               <button className="px-8 py-3.5 rounded-xl text-sm font-bold text-white transition-all duration-300 ease-out hover:scale-[1.03] hover:-translate-y-0.5"
                 style={{ background: "linear-gradient(135deg,#4C1D95,#7C3AED)", boxShadow: "0 10px 28px -6px rgba(124,58,237,.5)", letterSpacing: "0.01em" }}>
-                Open a Business Account
+                See How It Works
               </button>
               <button className="px-8 py-3.5 rounded-xl text-sm font-semibold transition-all hover:bg-white/10"
                 style={{ border: "1px solid rgba(255,255,255,.2)", color: "rgba(255,255,255,.8)" }}>
