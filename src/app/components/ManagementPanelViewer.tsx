@@ -100,7 +100,7 @@ const BOTTOM_STATS = [
 
 type View = "dashboard" | "applications" | "managers" | "audit" | "apply" | "jobApplications";
 
-export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User", adminRole = "Super Administrator", role = "superadmin", onOpenNewsManagement }: Props) {
+export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User", adminRole = "Staff Member", role = "", onOpenNewsManagement }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeItem, setActiveItem] = useState("Dashboard");
   const [view, setView] = useState<View>("dashboard");
@@ -127,8 +127,25 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
   const [newAccountUsername, setNewAccountUsername] = useState("");
   const [newAccountPassword, setNewAccountPassword] = useState("");
 
+  const [sessionExpired, setSessionExpired] = useState(false);
+  const [sessionExpiredDetail, setSessionExpiredDetail] = useState<{ path: string; hadToken: boolean; backendError: string | null } | null>(null);
+
   useEffect(() => {
     if (!isOpen) return;
+    // A missing/unknown role used to silently default to "superadmin" (the
+    // highest privilege, not the lowest -- backwards, and the actual root
+    // cause of the bug this comment is fixing), which made this effect
+    // attempt an owner-only call with no way to succeed whenever someone
+    // reached this panel without a real, current session. Checking for an
+    // actual token before attempting either branch means a missing session
+    // shows the same clear "please sign in again" state this component
+    // already has for a session that expires mid-use, instead of firing a
+    // request that was always going to 401.
+    if (!getToken()) {
+      setSessionExpired(true);
+      setSessionExpiredDetail({ path: isOwner ? "/api/rbac/applications?status=pending" : "/api/rbac/my-sections", hadToken: false, backendError: "No session found — please sign in again." });
+      return;
+    }
     if (isOwner) {
       rbacApi.applications("pending").then(r => { if (r.success) setPendingApps(r.data ?? []); });
     } else {
@@ -164,8 +181,6 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
   };
 
   const [jobLoadError, setJobLoadError] = useState<string | null>(null);
-  const [sessionExpired, setSessionExpired] = useState(false);
-  const [sessionExpiredDetail, setSessionExpiredDetail] = useState<{ path: string; hadToken: boolean; backendError: string | null } | null>(null);
 
   // Listen for the global session-expired signal (dispatched by
   // apiClient.ts when any authenticated request comes back 401) rather
@@ -320,7 +335,11 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
             <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: "#FEF2F2" }}>
               <Lock className="w-7 h-7" style={{ color: "#DC2626" }} />
             </div>
-            <p className="text-base font-bold text-gray-900 mb-1.5">Your session has expired</p>
+            <p className="text-base font-bold text-gray-900 mb-1.5">
+              {sessionExpiredDetail?.backendError === "No session found — please sign in again."
+                ? "You're not signed in"
+                : "Your session has expired"}
+            </p>
             <p className="text-sm text-gray-500 mb-4">Please sign in again from the main menu to continue.</p>
             {sessionExpiredDetail && (
               <div className="text-left text-[11px] font-mono bg-gray-50 rounded-lg p-3 mb-4 text-gray-500 break-words">
