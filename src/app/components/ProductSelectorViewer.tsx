@@ -4,6 +4,7 @@
  */
 import { useState } from "react";
 import { X, ChevronRight, CheckCircle, Star } from "lucide-react";
+import { Footer } from "./Footer";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -319,6 +320,7 @@ export function ProductSelectorViewer({ isOpen, onClose, category, onSelect }: P
         </div>
       </div>
 
+      <Footer />
     </div>
   );
 }

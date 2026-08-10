@@ -6,6 +6,7 @@ import {
   Globe as GlobeIcon, ShoppingBag, Tv, ShieldAlert,
 } from "lucide-react";
 import { ApplyModal } from "./ApplyModal";
+import { Footer } from "./Footer";
 import { MarketplaceAuthModal } from "./MarketplaceAuthModal";
 import { mktAuth, mktCustomer, type MktAuthUser } from "../services/marketplaceApi";
 import { formatZAR, useCurrency, setCountryManually } from "../services/currencyStore";
@@ -459,6 +460,8 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate }: Props) {
           onAuthenticated={(user) => { setAuthUser(user); setShowAuthModal(false); }}
         />
       )}
+
+      <Footer />
     </div>
   );
 }

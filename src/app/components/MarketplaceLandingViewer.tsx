@@ -3,6 +3,7 @@ import { ShoppingBag, Store, Tag, ArrowRight, X, Star, Loader2 } from "lucide-re
 import heroBg from "../../imports/assets/marketplace-hero-wide-bg.png";
 import { mktProducts } from "../services/marketplaceApi";
 import { formatZAR, useCurrency } from "../services/currencyStore";
+import { Footer } from "./Footer";
 
 // Same continuous drift-left auto-slide used on the home marketplace's
 // product rows — pauses on hover/touch, loops back to the start at the end.
@@ -184,6 +185,8 @@ export function MarketplaceLandingViewer({ isOpen, onClose, onShop, onSell }: Pr
           </button>
         </div>
       </div>
+
+      <Footer />
     </div>
   );
 }

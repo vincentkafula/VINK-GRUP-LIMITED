@@ -2,6 +2,7 @@ import { useState } from "react";
 import { X } from "lucide-react";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { ApplyModal } from "./ApplyModal";
+import { Footer } from "./Footer";
 
 // ─── Shared types ─────────────────────────────────────────────────────────────
 
@@ -26,20 +27,8 @@ export interface PricingViewerProps {
 const BRAND     = "#128A43";
 const BRAND_DARK = "#0F3D24";
 const FEAT_BG   = "#128A43";
-const FOOTER_BG = "#1A1235";
 
-const TOOLS = [
-  "Latest Offers", "Find the Branch", "Safety and Security", "Market Indices",
-  "Guide to help you bank", "App, Online and other banking", "Exchange rates", "Banking rates and fees",
-];
-const SOCIAL = ["f", "𝕏", "in", "▶"];
 const SUB_NAV_ITEMS = ["Account", "Credit Card", "Loan", "Invest", "Insure", "Rewards"];
-const FOOTER_COLS = [
-  { title: "Who We Are",  links: ["About VINK", "Investor Relations", "Social Responsibility", "News", "Sponsorship", "Careers", "VINK at the World Economic Forum"] },
-  { title: "Our Sites",   links: ["Personal Banking", "Business Banking", "Wealth and Investment Management", "Corporate and Investment Banking", "VINK blog"] },
-  { title: "Support",     links: ["Contact Us", "Switch to VINK", "Business debit order switching", "Send your feedback"] },
-  { title: "Legal",       links: ["Legal and Compliance", "Terms of use", "Banking regulations", "Privacy Statement"] },
-];
 
 // ─── Card component ───────────────────────────────────────────────────────────
 function Card({ card, onApply }: { card: PricingCard; onApply: (name: string, price: string) => void }) {
@@ -218,68 +207,8 @@ export function PricingViewer({ isOpen, onClose, activeSubNav, heroTitle, heroSu
         <style>{`@media(max-width:900px){.pricing-row-2{grid-template-columns:1fr!important}}`}</style>
       </div>
 
-      {/* Footer */}
-      <footer style={{ background: FOOTER_BG, color: "rgba(255,255,255,.65)", padding: "56px 48px 24px" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 40, paddingBottom: 40, borderBottom: "1px solid rgba(255,255,255,.1)" }}>
+      <Footer />
 
-          {/* Social + Useful Tools */}
-          <div>
-            <h4 style={{ color: "#fff", fontSize: 12, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 16 }}>Social</h4>
-            <div style={{ display: "flex", gap: 10, marginBottom: 24 }}>
-              {SOCIAL.map((s, i) => (
-                <div key={i} style={{ width: 32, height: 32, borderRadius: 6, background: "rgba(255,255,255,.1)", display: "grid", placeItems: "center", color: "rgba(255,255,255,.7)", fontSize: 13, cursor: "pointer" }}>{s}</div>
-              ))}
-            </div>
-            <h4 style={{ color: "#fff", fontSize: 12, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 16 }}>Useful Tools</h4>
-            <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 9 }}>
-              {TOOLS.map((t, i) => <li key={i}><a href="#" style={{ color: "rgba(255,255,255,.6)", fontSize: 13, textDecoration: "none" }}>{t}</a></li>)}
-            </ul>
-          </div>
-
-          {FOOTER_COLS.map((col) => (
-            <div key={col.title}>
-              <h4 style={{ color: "#fff", fontSize: 12, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 16 }}>{col.title}</h4>
-              <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 9 }}>
-                {col.links.map((l, i) => <li key={i}><a href="#" style={{ color: "rgba(255,255,255,.6)", fontSize: 13, textDecoration: "none" }}>{l}</a></li>)}
-              </ul>
-              {col.title === "Support" && (
-                <>
-                  <br />
-                  <h4 style={{ color: "#fff", fontSize: 12, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 12, marginTop: 8 }}>Lost or Stolen Cards</h4>
-                  <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 9 }}>
-                    {["+27(0) 21 007 0772", "+27(0) 61 461 5035"].map((n, i) => (
-                      <li key={i}><a href={`tel:${n.replace(/[^+\d]/g, "")}`} style={{ color: "rgba(255,255,255,.6)", fontSize: 13, textDecoration: "none" }}>{n}</a></li>
-                    ))}
-                  </ul>
-                </>
-              )}
-            </div>
-          ))}
-
-          {/* App card — click to reveal */}
-          <AppDownloadCard />
-        </div>
-
-        {/* Bottom bar */}
-        <div style={{ maxWidth: 1200, margin: "24px auto 0", display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center", justifyContent: "space-between", fontSize: 11.5, color: "rgba(255,255,255,.4)" }}>
-          <div>VINK Head Office: State House Building, 8 Rose Street, Cape Town, South Africa</div>
-          <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-            {["Terms Of Use", "Banking Regulations", "Privacy Statement", "Security Centre"].map((l, i) => (
-              <a key={i} href="#" style={{ color: "rgba(255,255,255,.5)", textDecoration: "none", fontSize: 11.5 }}>{l}</a>
-            ))}
-          </div>
-          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "2px 10px" }}>
-            <span>© Copyright VINK-GRUP-LIMITED. All Rights Reserved.</span>
-          </div>
-          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "2px 10px", fontSize: 11 }}>
-            <span>United States – EIN: 37-2148609</span>
-            <span style={{ opacity: 0.4 }}>|</span>
-            <span>South Africa – Registration No: 2018/079316/07</span>
-            <span style={{ opacity: 0.4 }}>|</span>
-            <span>Zambia – Registration No: 120210020196</span>
-          </div>
-        </div>
-      </footer>
 
       {/* Apply modal — triggered by any Apply Now button */}
       {applyProduct && (

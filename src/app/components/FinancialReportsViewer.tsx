@@ -6,6 +6,7 @@
  */
 import { useState, useEffect } from "react";
 import { X, Printer, TrendingUp, TrendingDown, DollarSign, FileText, BarChart3, Activity, RefreshCw, Plus, CheckCircle } from "lucide-react";
+import { Footer } from "./Footer";
 import { projectId } from "../../../utils/supabase/info";
 
 interface Props { isOpen: boolean; onClose: () => void; }
@@ -162,7 +163,8 @@ export function FinancialReportsViewer({ isOpen, onClose }: Props) {
       </div>
 
       {/* ── Content ── */}
-      <div className="flex-1 overflow-y-auto px-4 py-5 max-w-4xl mx-auto w-full">
+      <div className="flex-1 overflow-y-auto">
+        <div className="px-4 py-5 max-w-4xl mx-auto w-full">
 
         {/* ══ PAYSLIP ══════════════════════════════════════════════════════════ */}
         {screen === "payslip" && (
@@ -541,6 +543,9 @@ export function FinancialReportsViewer({ isOpen, onClose }: Props) {
             <div className="w-8 h-8 border-2 border-emerald-200 border-t-purple-700 rounded-full animate-spin" />
           </div>
         )}
+        </div>
+
+        <Footer />
       </div>
     </div>
   );

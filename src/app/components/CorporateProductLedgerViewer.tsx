@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { ApplyModal } from "./ApplyModal";
+import { Footer } from "./Footer";
 
 type CorpCategory = "account" | "solutions" | "loan";
 type NavItem = "Account" | "Solutions & Credit Cards" | "Loan" | "API" | "Events" | "Social Responsibility";
@@ -491,12 +492,7 @@ export function CorporateProductLedgerViewer({ isOpen, onClose, initialCategory,
         </div>
       </section>
 
-      <footer className="pav-foot">
-        <div className="pav-wrap">
-          <div><strong>VINK Bank</strong> — an Authorised Financial Services Provider and registered credit provider (NCRCP)</div>
-          <div>State House Building, 8 Rose Street, Cape Town</div>
-        </div>
-      </footer>
+      <Footer />
 
       {applyProduct && (
         <ApplyModal isOpen={!!applyProduct} onClose={() => setApplyProduct(null)} product={applyProduct} />

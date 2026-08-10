@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
+import { Footer } from "./Footer";
 
 type BizCategory = "creditCard" | "loan" | "insure" | "invest";
 type NavItem = "Start My Business" | "Accounts" | "Credit Cards" | "Loans" | "Invest" | "Insure" | "Manage My Business" | "International" | "Studio" | "News";
@@ -338,12 +339,7 @@ export function BusinessProductLedgerViewer({ isOpen, onClose, initialCategory, 
         </div>
       </section>
 
-      <footer className="pav-foot">
-        <div className="pav-wrap">
-          <div><strong>VINK Bank</strong> — an Authorised Financial Services Provider and registered credit provider (NCRCP)</div>
-          <div>State House Building, 8 Rose Street, Cape Town</div>
-        </div>
-      </footer>
+      <Footer />
 
       {detailProduct && (
         <ProductDetailModal

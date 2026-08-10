@@ -4,6 +4,7 @@ import {
   Headphones, ShieldCheck, Wifi, Lock,
 } from "lucide-react";
 import siteHeroBg from "../../imports/assets/site-hero-bg.png";
+import { Footer } from "./Footer";
 
 interface Props {
   isOpen: boolean;
@@ -303,6 +304,8 @@ export function PersonalLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
           </button>
         </div>
       </div>
+
+      <Footer />
     </div>
   );
 }

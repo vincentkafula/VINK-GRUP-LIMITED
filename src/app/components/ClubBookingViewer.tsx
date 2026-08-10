@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import { X, Plane, Bus, Users, Calendar, Clock, CheckCircle, AlertTriangle, ChevronRight, RefreshCw, FileText, Globe, Shield, ArrowRight } from "lucide-react";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { projectId } from "../../../utils/supabase/info";
+import { Footer } from "./Footer";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
@@ -672,6 +673,8 @@ export function ClubBookingViewer({ isOpen, onClose }: Props) {
           </div>
         )}
       </div>
+
+      <Footer />
     </div>
   );
 }

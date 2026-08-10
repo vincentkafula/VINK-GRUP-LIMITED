@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 import { ApplyModal } from "./ApplyModal";
+import { Footer } from "./Footer";
 
 interface Props { isOpen: boolean; onClose: () => void; onNavigate: (item: string) => void }
 
@@ -213,12 +214,7 @@ export function ManageMyBusinessViewer({ isOpen, onClose, onNavigate }: Props) {
         </div>
       </section>
 
-      <footer className="pav-foot">
-        <div className="pav-wrap">
-          <div><strong>VINK Bank</strong> — an Authorised Financial Services Provider and registered credit provider (NCRCP)</div>
-          <div>State House Building, 8 Rose Street, Cape Town</div>
-        </div>
-      </footer>
+      <Footer />
 
       {applyService && (
         <ApplyModal isOpen={!!applyService} onClose={() => setApplyService(null)} product={applyService} />

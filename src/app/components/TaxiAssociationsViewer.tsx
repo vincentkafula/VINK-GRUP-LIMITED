@@ -4,6 +4,7 @@ import {
   TAXI_ASSOCIATIONS, PROVINCES, LEVELS, LEVEL_COLORS, PROVINCE_EMOJIS,
   type AssociationLevel,
 } from "../data/taxiAssociations";
+import { Footer } from "./Footer";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
@@ -380,6 +381,8 @@ export function TaxiAssociationsViewer({ isOpen, onClose }: Props) {
             );
           })}
         </div>
+
+        <Footer />
       </div>
     </div>
   );
