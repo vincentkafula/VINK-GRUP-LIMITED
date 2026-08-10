@@ -1,6 +1,7 @@
 import { memo, useState } from "react";
 import { ArrowRight, ShieldCheck, Headphones } from "lucide-react";
 import vinkGoldFeatureCard from "../../imports/VinkGoldFeatureCard.png";
+import rewardsSmallIcon from "../../imports/RewardsSmallIcon.png";
 import { Card3DViewer } from "./Card3DViewer";
 
 const PURPLE = "#5B21B6";
@@ -8,7 +9,7 @@ const DEEP_PURPLE = "#2E1065";
 const GOLD = "#F5A623";
 
 const BENEFITS = [
-  { emoji: "🎁", title: "Rewards", desc: "Earn points on every spend and redeem for exciting rewards and offers.", featured: false },
+  { emoji: "🎁", icon: rewardsSmallIcon, title: "Rewards", desc: "Earn points on every spend and redeem for exciting rewards and offers.", featured: false },
   { emoji: "💵", title: "Cash Back", desc: "Get real cash back on your purchases and save more every day.", featured: true },
   { emoji: "🔄", title: "Balance Transfer", desc: "Transfer your balance easily and pay off debt faster.", featured: false },
   { emoji: "🧳", title: "Travel", desc: "Exclusive travel benefits, airport lounge access, and more.", featured: false },
@@ -37,8 +38,8 @@ function BenefitCard({ b }: { b: (typeof BENEFITS)[number] }) {
           🔥 Most Popular
         </span>
       )}
-      <div className="w-14 h-14 rounded-xl flex items-center justify-center text-3xl mb-4" style={{ background: b.featured ? "rgba(255,255,255,0.12)" : "#F3F4F6" }}>
-        {b.emoji}
+      <div className="w-14 h-14 rounded-xl flex items-center justify-center text-3xl mb-4 overflow-hidden" style={{ background: b.featured ? "rgba(255,255,255,0.12)" : "#F3F4F6" }}>
+        {"icon" in b ? <img src={b.icon} alt="" className="w-full h-full object-cover" draggable={false} /> : b.emoji}
       </div>
       <p className={`text-base font-bold mb-1.5 ${b.featured ? "text-white" : "text-gray-900"}`}>{b.title}</p>
       <p className={`text-[13px] leading-relaxed mb-5 ${b.featured ? "text-white/80" : "text-gray-500"}`}>{b.desc}</p>
