@@ -1,6 +1,7 @@
-import { memo } from "react";
+import { memo, useState } from "react";
 import { ArrowRight, ShieldCheck, Headphones } from "lucide-react";
 import vinkGoldFeatureCard from "../../imports/VinkGoldFeatureCard.png";
+import { Card3DViewer } from "./Card3DViewer";
 
 const PURPLE = "#5B21B6";
 const DEEP_PURPLE = "#2E1065";
@@ -52,6 +53,7 @@ function BenefitCard({ b }: { b: (typeof BENEFITS)[number] }) {
 }
 
 export const FeaturesSection = memo(function FeaturesSection({ onExploreAll }: { onExploreAll?: () => void }) {
+  const [showCardViewer, setShowCardViewer] = useState(false);
   return (
     <section className="py-10 sm:py-14" style={{ background: "linear-gradient(160deg,#F7F4FD 0%,#FFF8EF 100%)" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -69,7 +71,8 @@ export const FeaturesSection = memo(function FeaturesSection({ onExploreAll }: {
 
             <div className="relative mt-8 max-w-sm">
               <div className="absolute -inset-6 rounded-full opacity-40" style={{ background: `radial-gradient(circle,${GOLD}33,transparent 70%)` }} />
-              <img src={vinkGoldFeatureCard} alt="VINK Visa Signature card" className="relative w-full rounded-2xl shadow-2xl" draggable={false} />
+              <img src={vinkGoldFeatureCard} alt="VINK Visa Signature card" onClick={() => setShowCardViewer(true)}
+                className="relative w-full rounded-2xl shadow-2xl cursor-pointer transition-transform duration-300 hover:scale-[1.02]" draggable={false} />
 
               <div className="absolute -top-4 right-2 bg-white rounded-xl shadow-lg px-3 py-2 flex items-center gap-1.5">
                 <Headphones className="w-3.5 h-3.5" style={{ color: PURPLE }} />
@@ -112,6 +115,8 @@ export const FeaturesSection = memo(function FeaturesSection({ onExploreAll }: {
           </div>
         )}
       </div>
+
+      <Card3DViewer isOpen={showCardViewer} onClose={() => setShowCardViewer(false)} image={vinkGoldFeatureCard} name="VINK Visa Signature" />
     </section>
   );
 });

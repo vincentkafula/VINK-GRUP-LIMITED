@@ -2,6 +2,7 @@ import { useState } from "react";
 import vinkBronzeCard from "../../imports/VinkBronzeCard.png";
 import vinkBlueVisaCard from "../../imports/VinkBlueVisaCard.png";
 import vinkBlackVisaCard from "../../imports/VinkBlackVisaCard.png";
+import { Card3DViewer } from "./Card3DViewer";
 
 const CARDS = [
   {
@@ -97,6 +98,7 @@ function CardVisual({ card, active }: { card: typeof CARDS[0]; active: boolean }
 
 export function CreditCardsSection() {
   const [active, setActive] = useState(0);
+  const [viewerCard, setViewerCard] = useState<typeof CARDS[0] | null>(null);
 
   return (
     <section className="py-10 sm:py-14" style={{ background: "#F6F5FF" }}>
@@ -109,7 +111,7 @@ export function CreditCardsSection() {
 
         <div className="flex justify-center gap-4 sm:gap-6 flex-wrap mb-6">
           {CARDS.map((c, i) => (
-            <div key={i} onClick={() => setActive(i)} className="flex flex-col items-center gap-2">
+            <div key={i} onClick={() => { setActive(i); setViewerCard(c); }} className="flex flex-col items-center gap-2">
               <CardVisual card={c} active={active === i} />
               <p className="text-[11px] text-gray-500 font-medium">{c.sub}</p>
             </div>
@@ -123,6 +125,10 @@ export function CreditCardsSection() {
           ))}
         </div>
       </div>
+
+      {viewerCard && "image" in viewerCard && (
+        <Card3DViewer isOpen onClose={() => setViewerCard(null)} image={viewerCard.image} name={viewerCard.name} />
+      )}
     </section>
   );
 }
