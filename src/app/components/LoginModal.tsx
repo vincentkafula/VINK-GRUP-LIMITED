@@ -123,7 +123,17 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
     if (result.success) {
       setLoading(false);
       onClose();
-      const role = (result.data as { user?: { role?: string } } | undefined)?.user?.role ?? "";
+      const user = (result.data as { user?: { username?: string; role?: string } } | undefined)?.user;
+      const role = user?.role ?? "";
+      const username = user?.username ?? "";
+      // "admin" is a distinct account (role "superadmin", confusingly) from
+      // "superadmin" (role "owner") -- both are management accounts, but
+      // they go to two different dashboards, so username decides which one
+      // specifically, not role alone.
+      if (username === "admin") {
+        onSelectDashboard?.("adminBankingPanel");
+        return;
+      }
       let isManagement = ["superadmin", "owner", "noc_engineer", "billing_admin", "marketplace_admin", "admin"].includes(role);
       // A customer-role account can still be an approved Section Manager —
       // that's granted via section_permissions, not a role change, so check

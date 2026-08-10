@@ -158,6 +158,19 @@ async function seedAccountRestructure(): Promise<void> {
   await pool.query(
     `UPDATE users SET username = 'admin' WHERE username = 'superadmin' AND email = 'admin@vink.co.za'`
   );
+  // The admin account's password was previously "Admin@1234" (see
+  // DEV_CREDENTIALS.md's git history) -- now explicitly set to match
+  // "superadmin"'s password, per the requirement that both management
+  // accounts share one password and only the username determines which
+  // dashboard a login routes to (admin -> BankingDashboard, superadmin ->
+  // Management Panel; see LoginModal.tsx). Set unconditionally (not
+  // ON CONFLICT DO NOTHING) since this needs to actually change the
+  // password on a database that already seeded this row with the old one,
+  // not just skip if the account already exists.
+  await pool.query(
+    `UPDATE users SET password_hash = $1 WHERE username = 'admin' AND email = 'admin@vink.co.za'`,
+    [bcrypt.hashSync("Wakuca97950@", 10)]
+  );
   await pool.query(
     `INSERT INTO users (username, password_hash, role, name, email)
      VALUES ('superadmin', $1, 'owner', 'System Owner', 'owner@vink.co.za')

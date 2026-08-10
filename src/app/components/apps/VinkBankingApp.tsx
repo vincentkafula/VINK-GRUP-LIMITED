@@ -3,9 +3,9 @@ import { Home, Send, CreditCard, Clock, Star, Bell, ChevronRight, ArrowUpRight, 
 import { MobileAppOverlay, PhoneFrame } from "./PhoneFrame";
 import { globalBankingApi } from "../../services/applicationsApi";
 import { mktAuth, getMktToken, setMktToken, type MktAuthUser } from "../../services/marketplaceApi";
-import { rbacApi, setToken, setSession as setMainSession, getToken as getMainToken, getSession, type SectionApplication } from "../../services/apiClient";
+import { setToken, setSession as setMainSession, getToken as getMainToken, getSession } from "../../services/apiClient";
 
-type Screen = "onboarding" | "home" | "send" | "cards" | "history" | "rewards" | "adminPanel";
+type Screen = "onboarding" | "home" | "send" | "cards" | "history" | "rewards";
 type Tier = "Spark" | "Anchor" | "Momentum" | "Horizon" | "Summit" | "Legacy";
 
 const PURPLE = "#0B5C2E";
@@ -43,84 +43,6 @@ const REWARDS_HISTORY = [
   { event: "Shell Fuel Purchase",          pts: "+65",  date: "18 Jun" },
   { event: "Airtime Purchase",             pts: "+5",   date: "14 Jun" },
 ];
-
-// ─── Mobile Admin Panel (owner / superadmin) ────────────────────────────────
-function MobileAdminPanel({ user, onSignOut }: { user: MktAuthUser; onSignOut: () => void }) {
-  const [apps, setApps] = useState<SectionApplication[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [busyId, setBusyId] = useState<string | null>(null);
-
-  const load = () => {
-    setLoading(true);
-    rbacApi.applications("pending").then(r => { if (r.success) setApps(r.data ?? []); }).finally(() => setLoading(false));
-  };
-  useEffect(() => { load(); }, []);
-
-  const approve = async (id: string) => {
-    setBusyId(id);
-    const r = await rbacApi.approve(id);
-    setBusyId(null);
-    if (r.success) load(); else alert(r.error ?? "Failed to approve");
-  };
-  const reject = async (id: string) => {
-    setBusyId(id);
-    const r = await rbacApi.reject(id);
-    setBusyId(null);
-    if (r.success) load(); else alert(r.error ?? "Failed to reject");
-  };
-
-  return (
-    <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F8F7FF" }}>
-      <div className="px-5 py-4 flex items-center justify-between" style={{ background: "#0E1420" }}>
-        <div>
-          <p className="text-white/50 text-[10px]">Signed in as</p>
-          <p className="text-white text-sm font-bold">{user.name}</p>
-          <span className="inline-block mt-1 text-[9px] font-bold px-2 py-0.5 rounded-full" style={{ background: "#1FAE58", color: "#fff" }}>
-            {user.role === "owner" ? "SUPER ADMIN" : "ADMIN"}
-          </span>
-        </div>
-        <button onClick={onSignOut} className="text-white/60 text-xs font-semibold">Sign out</button>
-      </div>
-
-      <div className="p-4">
-        <p className="text-gray-900 text-lg font-black mb-1">Management Panel</p>
-        <p className="text-gray-500 text-xs mb-5">A compact view of what needs your attention. Full controls are on the web dashboard.</p>
-
-        <div className="rounded-2xl p-4 mb-4" style={{ background: "#1FAE58" }}>
-          <p className="text-white/80 text-[11px] font-semibold">Pending Applications</p>
-          <p className="text-white text-3xl font-black mt-1">{loading ? "—" : apps.length}</p>
-        </div>
-
-        {loading ? (
-          <div className="flex justify-center py-10"><Loader2 className="w-5 h-5 animate-spin text-gray-400" /></div>
-        ) : apps.length === 0 ? (
-          <p className="text-center text-gray-400 text-xs py-10">No pending applications right now.</p>
-        ) : (
-          <div className="space-y-3">
-            {apps.map(a => (
-              <div key={a.id} className="bg-white rounded-2xl p-4 shadow-sm">
-                <p className="text-sm font-bold text-gray-900">{a.name} <span className="text-gray-400 font-normal text-xs">@{a.username}</span></p>
-                <p className="text-xs font-semibold mt-0.5" style={{ color: "#1FAE58" }}>{a.section}</p>
-                {a.message && <p className="text-xs text-gray-500 mt-2 italic">"{a.message}"</p>}
-                <div className="flex gap-2 mt-3">
-                  <button onClick={() => approve(a.id)} disabled={busyId === a.id}
-                    className="flex-1 py-2 rounded-lg text-xs font-bold text-white disabled:opacity-50" style={{ background: "#1FAE58" }}>
-                    {busyId === a.id ? "…" : "Approve"}
-                  </button>
-                  <button onClick={() => reject(a.id)} disabled={busyId === a.id}
-                    className="flex-1 py-2 rounded-lg text-xs font-bold text-red-600 border border-red-200 disabled:opacity-50">
-                    Reject
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 
 function LoginScreen({ onAuthenticated }: { onAuthenticated: (user: MktAuthUser) => void }) {
   const [mode, setMode] = useState<"signin" | "register">("signin");
@@ -874,7 +796,7 @@ function RewardsScreen() {
   );
 }
 
-export function VinkBankingApp({ isOpen, onClose, onOpenManagementPanel }: { isOpen: boolean; onClose: () => void; onOpenManagementPanel?: () => void }) {
+export function VinkBankingApp({ isOpen, onClose, onOpenManagementPanel, onOpenAdminPanel }: { isOpen: boolean; onClose: () => void; onOpenManagementPanel?: () => void; onOpenAdminPanel?: () => void }) {
   const [screen, setScreen] = useState<Screen>("onboarding");
   const [tier, setTier] = useState<Tier>("Spark");
   const [verifying, setVerifying] = useState(false);
@@ -900,11 +822,19 @@ export function VinkBankingApp({ isOpen, onClose, onOpenManagementPanel }: { isO
       setAuthUser(restored.user);
       const tok = getMktToken();
       if (tok) { setToken(tok); setMainSession(restored.user); }
-      if (["owner", "superadmin"].includes(restored.user.role) && onOpenManagementPanel) {
+      // Which desktop panel opens depends on the specific username, not just
+      // role -- "superadmin" and "admin" are two distinct accounts (owner and
+      // superadmin roles respectively) that go to two different dashboards.
+      // Neither renders inside the mobile app itself; if a callback wasn't
+      // wired for some reason, this account just continues into the normal
+      // mobile app rather than falling back to an in-app admin view, since
+      // no Management Panel-style content belongs in the mobile app at all.
+      if (restored.user.username === "superadmin" && onOpenManagementPanel) {
         onClose();
         onOpenManagementPanel();
-      } else if (["owner", "superadmin"].includes(restored.user.role)) {
-        setScreen("adminPanel"); // fallback if no redirect callback was wired
+      } else if (restored.user.username === "admin" && onOpenAdminPanel) {
+        onClose();
+        onOpenAdminPanel();
       }
     }
     setCheckedSession(true);
@@ -929,12 +859,17 @@ export function VinkBankingApp({ isOpen, onClose, onOpenManagementPanel }: { isO
     // the exact bug reported: every call there failing with "no token sent".
     const tok = getMktToken();
     if (tok) { setToken(tok); setMainSession(user); }
-    if (["owner", "superadmin"].includes(user.role) && onOpenManagementPanel) {
+    if (user.username === "superadmin" && onOpenManagementPanel) {
       onClose();
       onOpenManagementPanel();
       return;
     }
-    setScreen(["owner", "superadmin"].includes(user.role) ? "adminPanel" : "onboarding");
+    if (user.username === "admin" && onOpenAdminPanel) {
+      onClose();
+      onOpenAdminPanel();
+      return;
+    }
+    setScreen("onboarding");
   };
 
   const TABS: { id: Screen; label: string; icon: React.ReactNode }[] = [
@@ -944,7 +879,7 @@ export function VinkBankingApp({ isOpen, onClose, onOpenManagementPanel }: { isO
     { id: "history", label: "History", icon: <Clock className="w-5 h-5" /> },
     { id: "rewards", label: "Rewards", icon: <Star className="w-5 h-5" /> },
   ];
-  const showTabs = authUser !== null && screen !== "onboarding" && screen !== "adminPanel" && !verifying;
+  const showTabs = authUser !== null && screen !== "onboarding" && !verifying;
 
   return (
     <MobileAppOverlay onClose={onClose} appName="VINK Bank" bgColor="#F8F7FF">
@@ -958,7 +893,6 @@ export function VinkBankingApp({ isOpen, onClose, onOpenManagementPanel }: { isO
             <VerifyingScreen tier={pendingTier} onDone={handleVerified} />
           ) : (
             <>
-              {screen === "adminPanel" && <MobileAdminPanel user={authUser} onSignOut={() => { mktAuth.logout(); setAuthUser(null); setScreen("onboarding"); }} />}
               {screen === "onboarding" && <OnboardingScreen onSelect={handleTierSelected} />}
               {screen === "home"    && <HomeScreen tier={tier} onSwitchTier={() => setScreen("onboarding")} user={authUser} />}
               {screen === "send"    && <SendScreen />}

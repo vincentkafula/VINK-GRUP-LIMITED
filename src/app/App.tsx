@@ -275,6 +275,7 @@ export default function App() {
       else if (id === "ridehailing")       { mount("rideHailing");      setShowRideHailing(true); }
       else if (id === "account")           { mount("banking");          setShowBanking(true); }
       else if (id === "managementPanel")   { mount("managementPanel");  setShowManagementPanel(true); }
+      else if (id === "adminBankingPanel") { mount("banking");          setShowBanking(true); }
       else if (id === "vehicle")           { mount("vehicle");          setShowVehicle(true); }
       else if (id === "marketplace")       { mount("marketplaceLanding"); setShowMarketplaceLanding(true); pushRoute("/marketplace"); }
       else if (id === "appLauncher")       { mount("appLauncher");      setShowAppLauncher(true); }
@@ -762,7 +763,7 @@ export default function App() {
       {has("afcApp")             && <Suspense fallback={null}><AFCApp                isOpen={showAFCApp}             onClose={() => setShowAFCApp(false)} /></Suspense>}
       {has("revenueDash")        && <Suspense fallback={null}><RevenueDashboard      isOpen={showRevenueDashboard}   onClose={() => setShowRevenueDashboard(false)} /></Suspense>}
       {has("vehicleTrackingApp") && <Suspense fallback={null}><VehicleTrackingApp    isOpen={showVehicleTrackingApp} onClose={() => setShowVehicleTrackingApp(false)} /></Suspense>}
-      {has("vinkBankingApp")     && <Suspense fallback={null}><VinkBankingApp        isOpen={showVinkBankingApp}     onClose={() => setShowVinkBankingApp(false)} onOpenManagementPanel={() => { mount("managementPanel"); setShowManagementPanel(true); }} /></Suspense>}
+      {has("vinkBankingApp")     && <Suspense fallback={null}><VinkBankingApp        isOpen={showVinkBankingApp}     onClose={() => setShowVinkBankingApp(false)} onOpenManagementPanel={() => { mount("managementPanel"); setShowManagementPanel(true); }} onOpenAdminPanel={() => { mount("banking"); setShowBanking(true); }} /></Suspense>}
       {has("vinkBusinessBankingApp") && <Suspense fallback={null}><VinkBusinessBankingApp isOpen={showVinkBusinessBankingApp} onClose={() => setShowVinkBusinessBankingApp(false)} /></Suspense>}
       {has("vinkCorporateBankingApp") && <Suspense fallback={null}><VinkCorporateBankingApp isOpen={showVinkCorporateBankingApp} onClose={() => setShowVinkCorporateBankingApp(false)} /></Suspense>}
       {has("vinkDriverApp")      && <Suspense fallback={null}><VinkDriverApp         isOpen={showVinkDriverApp}      onClose={() => setShowVinkDriverApp(false)} /></Suspense>}

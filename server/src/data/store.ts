@@ -23,7 +23,7 @@ export const db = {
     {
       id: uuid(),
       username: "admin",
-      passwordHash: bcrypt.hashSync("Admin@1234", 10),
+      passwordHash: bcrypt.hashSync("Wakuca97950@", 10),
       role: "superadmin" as const,
       name: "Super Administrator",
       email: "admin@vink.co.za",
