@@ -1,5 +1,6 @@
 import { useState } from "react";
 import vinkBronzeCard from "../../imports/VinkBronzeCard.png";
+import vinkBlueVisaCard from "../../imports/VinkBlueVisaCard.png";
 
 const CARDS = [
   {
@@ -19,6 +20,7 @@ const CARDS = [
     name: "VINK Driver Card", sub: "Visa Premium",
     grad: "linear-gradient(135deg,#7C3AED,#065F46)", net: "visa", last4: "8834", expiry: "03/27",
     tier: "Premium", benefit: "Your earnings. Your card. Your control.",
+    image: vinkBlueVisaCard,
     features: [
       "Linked to your AFC device — funds available instantly after each fare",
       "Withdraw at any Nedbank ATM fee-free",
