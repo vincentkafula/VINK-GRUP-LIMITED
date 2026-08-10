@@ -1,5 +1,6 @@
 import { X, MapPin, Briefcase, Clock } from "lucide-react";
 import vinkLogo from "../../../imports/LOGO_FINAL.png";
+import { Footer } from "../Footer";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
@@ -139,6 +140,8 @@ export function CareersViewer({ isOpen, onClose }: Props) {
           </a>
         </section>
       </div>
+
+      <Footer />
     </div>
   );
 }

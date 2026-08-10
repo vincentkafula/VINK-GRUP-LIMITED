@@ -130,6 +130,17 @@ function LinkColumn({ title, links, onLinkClick }: { title: string; links: strin
 }
 
 export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void }) {
+  // Footer now renders on every informational/application page, not just
+  // the homepage (see App.tsx's global "vink:footer-link" listener). Most
+  // of those pages have no reason to know about App.tsx's navigation
+  // internals, so rather than prop-drill onLinkClick through 50+ page
+  // components, Footer falls back to dispatching a global CustomEvent when
+  // no explicit handler is passed -- the same window-event pattern already
+  // used elsewhere in this app (see the vite:preloadError/session-expired
+  // handling), rather than introducing a new cross-component pattern.
+  const handleLinkClick = onLinkClick ?? ((label: string) => {
+    window.dispatchEvent(new CustomEvent("vink:footer-link", { detail: { label } }));
+  });
   return (
     <footer style={{ background: BG, fontFamily: "'Inter','Roboto',sans-serif" }}>
 
@@ -171,18 +182,18 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
         {/* Five link columns + download card */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "40px 32px" }}>
           {/* Useful Tools (merged with Column 1 label) */}
-          <LinkColumn title="Useful Tools" links={COLS[0].links} onLinkClick={onLinkClick} />
-          <LinkColumn title="Who We Are"   links={COLS[1].links} onLinkClick={onLinkClick} />
+          <LinkColumn title="Useful Tools" links={COLS[0].links} onLinkClick={handleLinkClick} />
+          <LinkColumn title="Who We Are"   links={COLS[1].links} onLinkClick={handleLinkClick} />
 
           {/* Our Sites + Legal stacked */}
           <div style={{ display: "flex", flexDirection: "column", gap: 36 }}>
-            <LinkColumn title="Our Sites" links={COLS[2].links} onLinkClick={onLinkClick} />
-            <LinkColumn title="Legal"     links={COLS[3].links} onLinkClick={onLinkClick} />
+            <LinkColumn title="Our Sites" links={COLS[2].links} onLinkClick={handleLinkClick} />
+            <LinkColumn title="Legal"     links={COLS[3].links} onLinkClick={handleLinkClick} />
           </div>
 
           {/* Support + Lost cards stacked */}
           <div style={{ display: "flex", flexDirection: "column", gap: 36 }}>
-            <LinkColumn title="Support" links={COLS[4].links} onLinkClick={onLinkClick} />
+            <LinkColumn title="Support" links={COLS[4].links} onLinkClick={handleLinkClick} />
 
             {/* Lost / stolen cards */}
             <div>
@@ -260,7 +271,7 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
 
             {/* App ecosystem entry point */}
             <button
-              onClick={() => onLinkClick?.("Browse Apps")}
+              onClick={() => handleLinkClick("Browse Apps")}
               style={{
                 width: "100%", padding: "13px 16px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.18)",
                 background: "rgba(255,255,255,0.08)", color: "#fff",
@@ -285,7 +296,7 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
           <div style={{ height: 56, display: "flex", alignItems: "center", justifyContent: "center", flexWrap: "wrap", gap: "6px 0" }}>
             {["Terms Of Use", "Banking Regulations", "Privacy Statement", "Security Centre"].map((item, i, arr) => (
               <span key={item} style={{ display: "flex", alignItems: "center" }}>
-                <a href="#" onClick={(e) => { e.preventDefault(); onLinkClick?.(item); }} style={{ color: "rgba(255,255,255,0.55)", fontSize: 12, fontWeight: 700, textDecoration: "none", padding: "0 12px", whiteSpace: "nowrap" }}
+                <a href="#" onClick={(e) => { e.preventDefault(); handleLinkClick(item); }} style={{ color: "rgba(255,255,255,0.55)", fontSize: 12, fontWeight: 700, textDecoration: "none", padding: "0 12px", whiteSpace: "nowrap" }}
                   onMouseEnter={(e) => { (e.target as HTMLAnchorElement).style.color = "#fff"; }}
                   onMouseLeave={(e) => { (e.target as HTMLAnchorElement).style.color = "rgba(255,255,255,0.55)"; }}
                 >

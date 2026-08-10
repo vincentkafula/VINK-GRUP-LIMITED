@@ -1,5 +1,6 @@
 import { X } from "lucide-react";
 import vinkLogo from "../../../imports/LOGO_FINAL.png";
+import { Footer } from "../Footer";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
@@ -144,6 +145,8 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
           <p className="text-white/60 text-xs mt-2">Registration: 2018/079316/07 · CIPC Registered · South Africa</p>
         </section>
       </div>
+
+      <Footer />
     </div>
   );
 }

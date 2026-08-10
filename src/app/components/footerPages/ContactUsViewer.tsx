@@ -6,6 +6,7 @@ import {
 import { toast } from "sonner";
 import vinkLogo from "../../../imports/LOGO_FINAL.png";
 import { publicApi } from "../../services/apiClient";
+import { Footer } from "../Footer";
 
 interface Props { isOpen: boolean; onClose: () => void; initialTab?: TabId; }
 const P = "#0B5C2E";
@@ -501,6 +502,8 @@ export function ContactUsViewer({ isOpen, onClose, initialTab }: Props) {
           </div>
         </div>
       </div>
+
+      <Footer />
     </div>
   );
 }

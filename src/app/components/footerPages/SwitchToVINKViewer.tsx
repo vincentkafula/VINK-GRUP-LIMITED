@@ -1,5 +1,6 @@
 import { X, CheckCircle } from "lucide-react";
 import vinkLogo from "../../../imports/LOGO_FINAL.png";
+import { Footer } from "../Footer";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 const P = "#0B5C2E";
@@ -128,6 +129,8 @@ export function SwitchToVINKViewer({ isOpen, onClose }: Props) {
           <p className="text-white/50 text-xs mt-4">8 Rose Street, Cape Town CBD · Mon–Fri 08:00–17:00</p>
         </section>
       </div>
+
+      <Footer />
     </div>
   );
 }

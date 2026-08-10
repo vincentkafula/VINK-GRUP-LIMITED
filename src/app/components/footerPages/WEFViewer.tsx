@@ -1,5 +1,6 @@
 import { X } from "lucide-react";
 import vinkLogo from "../../../imports/LOGO_FINAL.png";
+import { Footer } from "../Footer";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 const P = "#0B5C2E";
@@ -75,6 +76,8 @@ export function WEFViewer({ isOpen, onClose }: Props) {
           </a>
         </section>
       </div>
+
+      <Footer />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import {
   Menu, TrendingUp,
 } from "lucide-react";
 import { toast } from "sonner";
+import { Footer } from "../Footer";
 import vinkLogo from "../../../imports/LOGO_FINAL.png";
 import { publicApi, newsApi, type NewsArticleSummary } from "../../services/apiClient";
 import { StoryCard, ListRow, ArticleView, SlidingNewsRow, timeAgo } from "../NewsShared";
@@ -253,6 +254,8 @@ export function NewsViewer({ isOpen, onClose }: Props) {
       {view === "article" && <ArticleView slug={slug} onBack={goHome} onOpenSlug={openSlug} onCategory={openCategory} />}
       {view === "category" && <ListingView title={category} category={category} onOpenSlug={openSlug} />}
       {view === "search" && <ListingView title="Search Results" search={searchQuery} onOpenSlug={openSlug} />}
+
+      <Footer />
     </div>
   );
 }

@@ -616,6 +616,23 @@ export default function App() {
     });
   };
 
+  // Footer now renders on every informational/application page, not just
+  // the homepage -- those Footer instances don't have handleFooterLink
+  // passed to them directly (would mean prop-drilling it through 50+ page
+  // components), so they dispatch a "vink:footer-link" CustomEvent instead
+  // (see Footer.tsx). This is the single listener that catches all of
+  // those and routes them through the exact same navigation logic the
+  // homepage's own Footer already uses, so a link behaves identically
+  // regardless of which page it was clicked from.
+  useEffect(() => {
+    const listener = (e: Event) => {
+      const label = (e as CustomEvent<{ label: string }>).detail?.label;
+      if (label) handleFooterLink(label);
+    };
+    window.addEventListener("vink:footer-link", listener);
+    return () => window.removeEventListener("vink:footer-link", listener);
+  });
+
   const handleSelectorSelect = (type: string, productId: string) => {
     setSelectorOpen(false);
     startTransition(() => {

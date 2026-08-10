@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import vinkLogo from "../../../imports/LOGO_FINAL.png";
+import { Footer } from "../Footer";
 
 interface Props { isOpen: boolean; onClose: () => void; initialTab?: string; }
 const P = "#0B5C2E";
@@ -106,6 +107,8 @@ export function LegalComplianceViewer({ isOpen, onClose, initialTab }: Props) {
           </div>
         )}
       </div>
+
+      <Footer />
     </div>
   );
 }
