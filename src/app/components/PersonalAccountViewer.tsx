@@ -1,9 +1,7 @@
 import { useState, useEffect } from "react";
 import {
   X, ChevronRight, CheckCircle2, Sparkles, Anchor as AnchorIcon, TrendingUp,
-  Sunrise, Mountain, Crown, ArrowRight, UserCheck, Globe2, Star, Zap, ShieldCheck,
-  Gift, Users2, Headphones, CreditCard, PiggyBank, Landmark, Umbrella,
-  Globe as GlobeIcon, ShoppingBag, Tv, ShieldAlert,
+  Sunrise, Mountain, Crown, ArrowRight, UserCheck, Globe2, Star,
 } from "lucide-react";
 import { ApplyModal } from "./ApplyModal";
 import { Footer } from "./Footer";
@@ -356,60 +354,6 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate }: Props) {
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {ACCOUNTS.map((acct) => <AccountCard key={acct.id} acct={acct} onApply={openApply} onDetails={setDetailAccount} />)}
-        </div>
-      </section>
-
-      {/* Benefits strip */}
-      <div className="border-y border-gray-100 bg-gray-50/60">
-        <div className="max-w-6xl mx-auto px-6 py-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6">
-          {[
-            { icon: <Zap className="w-5 h-5" />, title: "Pay with one tap", sub: "Taxi fares, groceries, and more." },
-            { icon: <Star className="w-5 h-5" />, title: "Earn VinkPoints", sub: "Get rewarded on every spend." },
-            { icon: <ShieldCheck className="w-5 h-5" />, title: "Secure & Protected", sub: "Bank with 256-bit encryption." },
-            { icon: <Gift className="w-5 h-5" />, title: "2,100+ Partners", sub: "Shop, save and earn across SA." },
-            { icon: <Users2 className="w-5 h-5" />, title: "Zero Liability", sub: "You're never liable for unauthorised transactions." },
-            { icon: <Headphones className="w-5 h-5" />, title: "24/7 Support", sub: "Real help, any time you need it." },
-          ].map(b => (
-            <div key={b.title} className="flex items-start gap-3">
-              <span className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: "#E8F7EE", color: GREEN }}>{b.icon}</span>
-              <div>
-                <p className="text-[13px] font-bold text-gray-900 leading-tight">{b.title}</p>
-                <p className="text-[11.5px] text-gray-500 mt-0.5 leading-snug">{b.sub}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Explore Our Products */}
-      <section className="max-w-6xl mx-auto px-6 py-14 sm:py-16">
-        <div className="flex items-end justify-between flex-wrap gap-3 mb-8">
-          <h2 className="text-2xl sm:text-3xl font-black text-gray-900">Explore Our Products</h2>
-          <button className="flex items-center gap-1.5 text-sm font-bold shrink-0" style={{ color: GREEN }}>
-            View All Products <ArrowRight className="w-4 h-4" />
-          </button>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {[
-            { icon: <CreditCard className="w-6 h-6" />, title: "Cards", sub: "Choose the card that fits you.", nav: "creditCard" as const },
-            { icon: <PiggyBank className="w-6 h-6" />, title: "Savings", sub: "Grow your money with great rates.", nav: null },
-            { icon: <Landmark className="w-6 h-6" />, title: "Loans", sub: "Personal, business and more.", nav: "loan" as const },
-            { icon: <Umbrella className="w-6 h-6" />, title: "Insurance", sub: "Protect what matters most.", nav: "insure" as const },
-            { icon: <GlobeIcon className="w-6 h-6" />, title: "Forex", sub: "Send and receive money globally.", nav: null },
-            { icon: <ShoppingBag className="w-6 h-6" />, title: "Marketplace", sub: "Shop, pay and save in one place.", nav: null },
-            { icon: <Tv className="w-6 h-6" />, title: "VMS TV", sub: "Entertainment on the go.", nav: null },
-            { icon: <ShieldAlert className="w-6 h-6" />, title: "Device Guard", sub: "Protect your device and data.", nav: null },
-          ].map(p => (
-            <button
-              key={p.title}
-              onClick={() => p.nav && onNavigate(p.nav)}
-              className="text-left bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all"
-            >
-              <span className="w-11 h-11 rounded-xl flex items-center justify-center mb-3" style={{ background: "#F3F4F6", color: GREEN }}>{p.icon}</span>
-              <p className="text-sm font-bold text-gray-900">{p.title}</p>
-              <p className="text-[11.5px] text-gray-500 mt-1 leading-snug">{p.sub}</p>
-            </button>
-          ))}
         </div>
       </section>
 
