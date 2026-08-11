@@ -38,6 +38,7 @@ export function Header({ onDashboardSelect, onSubNavClick, onOpenProfile, isLogg
       onSubNavClick?.("PersonalHome");
     } else if (item === "Business") {
       setActiveNav(prev => (prev === "Business" ? null : "Business"));
+      onSubNavClick?.("BusinessHome");
     } else if (item === "Corporate") {
       setActiveNav(prev => (prev === "Corporate" ? null : "Corporate"));
     } else {

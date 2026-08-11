@@ -38,6 +38,7 @@ import { PersistentTopNav } from "./components/PersistentTopNav";
 const MarketplaceLandingViewer    = lazy(() => import("./components/MarketplaceLandingViewer").then(m => ({ default: m.MarketplaceLandingViewer })));
 const PersonalAccountViewer       = lazy(() => import("./components/PersonalAccountViewer").then(m => ({ default: m.PersonalAccountViewer })));
 const PersonalLandingViewer       = lazy(() => import("./components/PersonalLandingViewer").then(m => ({ default: m.PersonalLandingViewer })));
+const BusinessLandingViewer       = lazy(() => import("./components/BusinessLandingViewer").then(m => ({ default: m.BusinessLandingViewer })));
 const SafetySecurityViewer        = lazy(() => import("./components/footerPages/SafetySecurityViewer").then(m => ({ default: m.SafetySecurityViewer })));
 const PersonalProductLedgerViewer = lazy(() => import("./components/PersonalProductLedgerViewer").then(m => ({ default: m.PersonalProductLedgerViewer })));
 const CreditCardViewer            = lazy(() => import("./components/CreditCardViewer").then(m => ({ default: m.CreditCardViewer })));
@@ -144,6 +145,7 @@ export default function App() {
 
   // ── Personal products ──────────────────────────────────────────────────────
   const [showPersonalLanding, setShowPersonalLanding]       = useState(false);
+  const [showBusinessLanding, setShowBusinessLanding]       = useState(false);
   const [showMarketplaceLanding, setShowMarketplaceLanding] = useState(false);
   const [marketplaceInitialAction, setMarketplaceInitialAction] = useState<"sell" | null>(null);
   const [marketplaceInitialProductId, setMarketplaceInitialProductId] = useState<string | null>(null);
@@ -400,6 +402,7 @@ export default function App() {
 
   const NAV_PATH: Record<string, string> = {
     "PersonalHome": "/personal",
+    "BusinessHome": "/business",
     "Account": "/personal/account", "Credit Card": "/personal/credit-card", "Loan": "/personal/loan",
     "Invest": "/personal/invest", "Insure": "/personal/insure", "Rewards": "/personal/rewards",
     "Start My Business": "/business/start-my-business", "Accounts": "/business/accounts",
@@ -421,6 +424,7 @@ export default function App() {
       if (item === "Business:Invest")   { mount("bizLedger");          setBusinessLedgerCategory("invest"); setShowBusinessLedger(true); return; }
       // Personal — top-level nav click opens the landing page; subnav items go through product selector
       if (item === "PersonalHome")      { mount("personalLanding"); setShowPersonalLanding(true); return; }
+      if (item === "BusinessHome")      { mount("businessLanding"); setShowBusinessLanding(true); return; }
      if (item === "Account")           { mount("personalAccount"); setShowPersonalAccount(true); return; }
       if (item === "Credit Card")       { mount("personalAccount"); mount("personalLedger"); setLedgerCategory("creditCard"); setShowPersonalLedger(true); return; }
       if (item === "Loan")              { mount("personalAccount"); mount("personalLedger"); setLedgerCategory("loan"); setShowPersonalLedger(true); return; }
@@ -517,7 +521,7 @@ export default function App() {
       return true;
     }
     if (seg[0] === "business" && !seg[1]) {
-      mount("startBusiness"); setShowStartBusiness(true); return true;
+      mount("businessLanding"); setShowBusinessLanding(true); return true;
     }
     if (seg[0] === "business" && seg[1]) {
       const map: Record<string, string> = {
@@ -728,6 +732,7 @@ export default function App() {
 
       {/* Personal products */}
       {has("personalLanding") && <Suspense fallback={null}><PersonalLandingViewer isOpen={showPersonalLanding} onClose={() => { setShowPersonalLanding(false); pushRoute("/"); }} onNavigate={(item) => { setShowPersonalLanding(false); handleSubNavClick(item); }} onApplyClick={() => { setShowPersonalLanding(false); handleSubNavClick("Account"); }} onSecurityClick={() => { mount("safetySecurity"); setShowSafetySecurity(true); }} /></Suspense>}
+      {has("businessLanding") && <Suspense fallback={null}><BusinessLandingViewer isOpen={showBusinessLanding} onClose={() => { setShowBusinessLanding(false); pushRoute("/"); }} onNavigate={(item) => { setShowBusinessLanding(false); handleSubNavClick(item); }} onApplyClick={() => { setShowBusinessLanding(false); handleSubNavClick("Accounts"); }} onSecurityClick={() => { mount("safetySecurity"); setShowSafetySecurity(true); }} /></Suspense>}
       {has("safetySecurity")  && <Suspense fallback={null}><SafetySecurityViewer  isOpen={showSafetySecurity} onClose={() => setShowSafetySecurity(false)} /></Suspense>}
       {has("personalAccount") && <Suspense fallback={null}><PersonalAccountViewer  isOpen={showPersonalAccount} onClose={() => { setShowPersonalAccount(false); pushRoute("/"); }} onNavigate={(cat) => { setShowPersonalAccount(false); setLedgerCategory(cat); setShowPersonalLedger(true); pushRoute(`/personal/${cat === "creditCard" ? "credit-card" : cat}`); }} /></Suspense>}
       {has("personalLedger")  && <Suspense fallback={null}><PersonalProductLedgerViewer isOpen={showPersonalLedger} onClose={() => { setShowPersonalLedger(false); pushRoute("/"); }} initialCategory={ledgerCategory} onNavigateToAccount={() => { setShowPersonalLedger(false); setShowPersonalAccount(true); pushRoute("/personal/account"); }} onApply={applyForProductCategory} /></Suspense>}
