@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { X, Plane, Calendar, Users, ArrowLeftRight, Search, CheckCircle2, Minus, Plus, ShieldCheck, Clock, Tag, Headphones, ArrowRight } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { X, Plane, Calendar, Users, ArrowLeftRight, Search, CheckCircle2, Minus, Plus, ShieldCheck, Clock, Tag, Headphones, ArrowRight, AlertCircle } from "lucide-react";
+import { AIRPORTS } from "../data/airports";
 
 const GOLD = "#F5A623";
 const INK = "#0A1830";
@@ -17,15 +18,35 @@ interface Props {
 
 type TripType = "one" | "round" | "multi";
 type CabinClass = "Economy" | "Premium Economy" | "Business" | "First Class";
+type Airport = typeof AIRPORTS[number];
 
-const CITY_OPTIONS = [
-  { code: "JNB", city: "Johannesburg, South Africa" },
-  { code: "CPT", city: "Cape Town, South Africa" },
-  { code: "DUR", city: "Durban, South Africa" },
-  { code: "LHR", city: "London, United Kingdom" },
-  { code: "DXB", city: "Dubai, UAE" },
-  { code: "JFK", city: "New York, United States" },
-];
+function findAirport(code: string): Airport {
+  return AIRPORTS.find(a => a[0] === code) ?? AIRPORTS[0];
+}
+
+/** Ranks a match the same way as the reference: exact code match first,
+ *  then city-starts-with, then code-starts-with, then a plain substring
+ *  match anywhere. Anything that matches none of those is excluded. */
+function scoreAirport(a: Airport, q: string): number {
+  const [code, city, country] = a;
+  const hay = `${code} ${city} ${country}`.toLowerCase();
+  if (code.toLowerCase() === q) return 0;
+  if (city.toLowerCase().startsWith(q)) return 1;
+  if (code.toLowerCase().startsWith(q)) return 2;
+  if (hay.includes(q)) return 3;
+  return -1;
+}
+
+function searchAirports(query: string): Airport[] {
+  const q = query.trim().toLowerCase();
+  if (!q) return AIRPORTS.slice(0, 8);
+  return AIRPORTS
+    .map(a => [scoreAirport(a, q), a] as const)
+    .filter(([s]) => s >= 0)
+    .sort((x, y) => x[0] - y[0])
+    .slice(0, 8)
+    .map(([, a]) => a);
+}
 
 const TRUST_ITEMS = [
   { icon: <Tag className="w-[18px] h-[18px]" />, title: "Best fare match", desc: "We recheck prices for 24 hours", color: GOLD },
@@ -89,10 +110,68 @@ const POPULAR_ROUTES = [
  * results -- it captures the search as a genuine interest submission,
  * and the footer says plainly that this is a preview, not live inventory.
  */
+/** A searchable origin/destination field -- shows the current selection
+ *  (code + city/country) plus a text input that filters the full airport
+ *  list as you type, closing on an outside click or a pick. Reused for
+ *  both the simple from/to fields and every multi-city leg, so the
+ *  autocomplete behavior only needs to be right in one place. */
+function AirportAutocomplete({ label, code, onPick }: { label: string; code: string; onPick: (a: Airport) => void }) {
+  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const airport = findAirport(code);
+
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => { if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener("click", onClick);
+    return () => document.removeEventListener("click", onClick);
+  }, []);
+
+  const results = searchAirports(query);
+
+  return (
+    <div ref={wrapRef} className="p-4 relative">
+      <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-1.5">{label}</label>
+      <p className="text-white text-xl font-semibold leading-none" style={{ fontFamily: "'Fraunces',serif" }}>{airport[0]}</p>
+      <p className="text-[11.5px] text-white/50 mt-1 truncate">{airport[1]}, {airport[2]}</p>
+      <input
+        value={query}
+        onChange={e => { setQuery(e.target.value); setOpen(true); }}
+        onFocus={() => setOpen(true)}
+        placeholder="City or airport"
+        className="bg-transparent text-white/70 text-xs outline-none w-full mt-1.5 placeholder:text-white/25"
+      />
+      {open && (
+        <div className="absolute top-[calc(100%+6px)] left-0 w-[280px] max-h-[260px] overflow-y-auto rounded-xl p-2 z-50"
+          style={{ background: "#0F213F", border: `1px solid ${LINE}`, boxShadow: "0 24px 50px -12px rgba(0,0,0,.65)" }}>
+          {results.length === 0 ? (
+            <p className="text-center text-white/40 text-xs py-3">No matching airport found</p>
+          ) : (
+            <>
+              <p className="text-[10px] font-mono uppercase tracking-wider text-white/30 px-2 pt-1 pb-2">Airports & cities</p>
+              {results.map(a => (
+                <button key={a[0]} onClick={() => { onPick(a); setQuery(""); setOpen(false); }}
+                  className="w-full flex items-center gap-3 p-2 rounded-lg text-left transition-colors hover:bg-white/5">
+                  <span className="text-[11px] font-mono font-bold w-9 text-center py-1 rounded shrink-0" style={{ background: "rgba(245,166,35,.12)", color: GOLD }}>{a[0]}</span>
+                  <span className="min-w-0">
+                    <span className="block text-[13px] font-semibold text-white truncate">{a[1]}, {a[2]}</span>
+                    <span className="block text-[11px] text-white/40 truncate">{a[3]}</span>
+                  </span>
+                </button>
+              ))}
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function FlightBookingViewer({ isOpen, onClose }: Props) {
   const [trip, setTrip] = useState<TripType>("one");
   const [from, setFrom] = useState("JNB");
   const [to, setTo] = useState("CPT");
+  const [legs, setLegs] = useState<{ from: string; to: string }[]>([{ from: "JNB", to: "CPT" }, { from: "CPT", to: "LHR" }]);
   const [departDate, setDepartDate] = useState("");
   const [returnDate, setReturnDate] = useState("");
   const [adults, setAdults] = useState(1);
@@ -104,15 +183,25 @@ export function FlightBookingViewer({ isOpen, onClose }: Props) {
   const [promo, setPromo] = useState("");
   const [showTravelers, setShowTravelers] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [formError, setFormError] = useState("");
 
   if (!isOpen) return null;
 
-  const fromCity = CITY_OPTIONS.find(c => c.code === from);
-  const toCity = CITY_OPTIONS.find(c => c.code === to);
+  const fromAirport = findAirport(from);
+  const toAirport = findAirport(to);
   const totalTravelers = adults + children + infants;
 
   const handleSwap = () => { setFrom(to); setTo(from); };
-  const handleSearch = () => { if (departDate) setSubmitted(true); };
+  const handleSearch = () => {
+    if (trip !== "multi" && from === to) { setFormError("Origin and destination can't be the same airport."); return; }
+    if (trip !== "multi" && !departDate) { setFormError("Pick a departure date to continue."); return; }
+    setFormError("");
+    setSubmitted(true);
+  };
+  const addLeg = () => { if (legs.length < 6) setLegs(l => [...l, { from: "JNB", to: "CPT" }]); };
+  const removeLeg = (i: number) => setLegs(l => l.filter((_, idx) => idx !== i));
+  const updateLeg = (i: number, field: "from" | "to", code: string) =>
+    setLegs(l => l.map((leg, idx) => (idx === i ? { ...leg, [field]: code } : leg)));
   const jumpToRoute = (r: typeof POPULAR_ROUTES[0]) => {
     setFrom(r.from); setTo(r.to); setSubmitted(false);
     document.getElementById("vink-flight-booking-card")?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -156,7 +245,7 @@ export function FlightBookingViewer({ isOpen, onClose }: Props) {
           </h2>
           <p className="text-sm max-w-sm mx-auto leading-relaxed mb-8" style={{ color: FOG }}>
             VINK Go's flight booking is launching alongside VINK's full platform in June 2027.
-            We'll notify you the moment {fromCity?.city.split(",")[0]} → {toCity?.city.split(",")[0]}{airline ? ` fares on ${airline}` : " fares"} go live.
+            We'll notify you the moment {fromAirport[1]} → {toAirport[1]}{airline ? ` fares on ${airline}` : " fares"} go live.
           </p>
           <button onClick={() => setSubmitted(false)}
             className="px-8 py-3 rounded-xl text-sm font-bold transition-all hover:scale-105"
@@ -216,31 +305,20 @@ export function FlightBookingViewer({ isOpen, onClose }: Props) {
                     ))}
                   </div>
 
-                  <div className="grid grid-cols-[1fr_auto_1fr] items-center rounded-xl mb-3.5 relative" style={{ background: "rgba(0,0,0,.2)", border: `1px solid ${LINE}` }}>
-                    <div className="p-4">
-                      <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-1.5">From</label>
-                      <select value={from} onChange={e => setFrom(e.target.value)}
-                        className="bg-transparent text-white text-xl font-semibold outline-none w-full" style={{ fontFamily: "'Fraunces',serif" }}>
-                        {CITY_OPTIONS.map(c => <option key={c.code} value={c.code} style={{ background: INK_2 }}>{c.code}</option>)}
-                      </select>
-                      <p className="text-[11.5px] text-white/50 mt-0.5">{fromCity?.city}</p>
-                    </div>
+                  {trip !== "multi" && (
+                  <div className="grid grid-cols-[1fr_auto_1fr] items-start rounded-xl mb-3.5 relative" style={{ background: "rgba(0,0,0,.2)", border: `1px solid ${LINE}` }}>
+                    <AirportAutocomplete label="From" code={from} onPick={a => setFrom(a[0])} />
                     <button onClick={handleSwap}
-                      className="w-9 h-9 rounded-full flex items-center justify-center text-white z-10 transition-transform hover:rotate-180 duration-300"
+                      className="w-9 h-9 rounded-full flex items-center justify-center text-white z-10 transition-transform hover:rotate-180 duration-300 mt-4"
                       style={{ background: INK_2, border: `1px solid ${LINE}` }} aria-label="Swap origin and destination">
                       <ArrowLeftRight className="w-4 h-4" />
                     </button>
-                    <div className="p-4">
-                      <label className="block text-[10px] font-bold uppercase tracking-widest text-white/40 mb-1.5">To</label>
-                      <select value={to} onChange={e => setTo(e.target.value)}
-                        className="bg-transparent text-white text-xl font-semibold outline-none w-full" style={{ fontFamily: "'Fraunces',serif" }}>
-                        {CITY_OPTIONS.map(c => <option key={c.code} value={c.code} style={{ background: INK_2 }}>{c.code}</option>)}
-                      </select>
-                      <p className="text-[11.5px] text-white/50 mt-0.5">{toCity?.city}</p>
-                    </div>
+                    <AirportAutocomplete label="To" code={to} onPick={a => setTo(a[0])} />
                   </div>
+                  )}
 
-                  <div className={`grid gap-2.5 mb-3.5 ${trip === "one" ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1 sm:grid-cols-3"}`}>
+                  <div className={`grid gap-2.5 mb-3.5 ${trip === "multi" ? "grid-cols-1" : trip === "one" ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1 sm:grid-cols-3"}`}>
+                    {trip !== "multi" && (
                     <div className="p-3.5 rounded-xl" style={{ background: "rgba(0,0,0,.2)", border: `1px solid ${LINE}` }}>
                       <label className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-white/40 mb-1.5">
                         <Calendar className="w-3 h-3" /> Departure
@@ -248,7 +326,8 @@ export function FlightBookingViewer({ isOpen, onClose }: Props) {
                       <input type="date" value={departDate} onChange={e => setDepartDate(e.target.value)}
                         className="bg-transparent text-white text-sm font-semibold outline-none w-full [color-scheme:dark]" />
                     </div>
-                    {trip !== "one" && (
+                    )}
+                    {trip === "round" && (
                       <div className="p-3.5 rounded-xl" style={{ background: "rgba(0,0,0,.2)", border: `1px solid ${LINE}` }}>
                         <label className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-white/40 mb-1.5">
                           <Calendar className="w-3 h-3" /> Return
@@ -301,6 +380,33 @@ export function FlightBookingViewer({ isOpen, onClose }: Props) {
                     </div>
                   </div>
 
+                  {trip === "multi" && (
+                    <div className="mb-3.5 space-y-2.5">
+                      {legs.map((leg, i) => (
+                        <div key={i} className="relative rounded-xl grid grid-cols-[1fr_auto] items-start" style={{ background: "rgba(0,0,0,.2)", border: `1px solid ${LINE}` }}>
+                          <span className="absolute -top-2 left-3.5 text-[10px] font-mono text-white/40 px-1.5" style={{ background: INK }}>Flight {i + 1}</span>
+                          <div className="grid grid-cols-2">
+                            <AirportAutocomplete label="From" code={leg.from} onPick={a => updateLeg(i, "from", a[0])} />
+                            <AirportAutocomplete label="To" code={leg.to} onPick={a => updateLeg(i, "to", a[0])} />
+                          </div>
+                          {legs.length > 2 && (
+                            <button onClick={() => removeLeg(i)} aria-label={`Remove flight ${i + 1}`}
+                              className="w-6 h-6 rounded-full flex items-center justify-center text-white/50 hover:text-white transition-colors m-3 shrink-0"
+                              style={{ border: "1px solid rgba(255,255,255,.15)" }}>
+                              <X className="w-3 h-3" />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                      {legs.length < 6 && (
+                        <button onClick={addLeg}
+                          className="w-full py-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-colors"
+                          style={{ border: `1px dashed ${LINE}`, color: "#F2C177" }}>
+                          <Plus className="w-3.5 h-3.5" /> Add another flight
+                        </button>
+                      )}
+                    </div>
+                  )}
                   <div className="p-3.5 rounded-xl mb-3.5" style={{ background: "rgba(0,0,0,.2)", border: `1px solid ${LINE}` }}>
                     <label className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-white/40 mb-1.5">
                       <Plane className="w-3 h-3" /> Preferred Airline (optional)
@@ -332,12 +438,18 @@ export function FlightBookingViewer({ isOpen, onClose }: Props) {
                       style={{ background: "rgba(0,0,0,.2)", border: `1px solid ${LINE}` }} />
                   </div>
 
-                  <button onClick={handleSearch} disabled={!departDate}
+                  <button onClick={handleSearch} disabled={trip !== "multi" && !departDate}
                     className="w-full py-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2.5 transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:enabled:scale-[1.01]"
                     style={{ background: `linear-gradient(135deg,${GOLD},#C9772F)`, color: "#1A1000", boxShadow: "0 14px 30px -10px rgba(245,166,35,.4)" }}>
                     <Search className="w-4 h-4" /> Search flights
                   </button>
-                  {!departDate && <p className="text-center text-[11.5px] text-white/40 mt-2.5">Pick a departure date to continue</p>}
+                  {formError ? (
+                    <p className="flex items-center justify-center gap-1.5 text-center text-[11.5px] mt-2.5" style={{ color: "#F87171" }}>
+                      <AlertCircle className="w-3.5 h-3.5" /> {formError}
+                    </p>
+                  ) : trip !== "multi" && !departDate ? (
+                    <p className="text-center text-[11.5px] text-white/40 mt-2.5">Pick a departure date to continue</p>
+                  ) : null}
                 </div>
               </div>
             </div>
