@@ -40,31 +40,17 @@ const MODULE_COLORS: Record<string, { bg: string; color: string }> = {
   "Social Responsibility Management":  { bg: "#FCE7F3", color: "#DB2777" },
 };
 
-const SECTION_ICON: Record<string, React.ReactNode> = {
-  "Bank Management": <Landmark className="w-4 h-4" />,
-  "Payment Management": <CreditCard className="w-4 h-4" />,
-  "Marketplace Management": <ShoppingCart className="w-4 h-4" />,
-  "News Management": <Newspaper className="w-4 h-4" />,
-  "Mobile Network Management": <RadioTower className="w-4 h-4" />,
-  "Vehicle Management": <Car className="w-4 h-4" />,
-  "Radio & TV Station Management": <Tv className="w-4 h-4" />,
-  "Event Management": <Calendar className="w-4 h-4" />,
-  "Company Registration Management": <Building2 className="w-4 h-4" />,
-  "Insurance Management": <ShieldCheck className="w-4 h-4" />,
-  "Social Responsibility Management": <HeartHandshake className="w-4 h-4" />,
-};
-
 const SIDEBAR_MODULES = [
-  { label: "Bank Management", icon: <Landmark className="w-4 h-4" /> },
-  { label: "Payment Management", icon: <CreditCard className="w-4 h-4" /> },
-  { label: "Marketplace Management", icon: <ShoppingCart className="w-4 h-4" /> },
-  { label: "News Management", icon: <Newspaper className="w-4 h-4" /> },
-  { label: "Mobile Network Management", icon: <RadioTower className="w-4 h-4" /> },
-  { label: "Vehicle Management", icon: <Car className="w-4 h-4" /> },
-  { label: "Radio & TV Management", icon: <Tv className="w-4 h-4" /> },
-  { label: "Event Management", icon: <Calendar className="w-4 h-4" /> },
+  { label: "Bank", icon: <Landmark className="w-4 h-4" /> },
+  { label: "Payment", icon: <CreditCard className="w-4 h-4" /> },
+  { label: "Marketplace", icon: <ShoppingCart className="w-4 h-4" /> },
+  { label: "News", icon: <Newspaper className="w-4 h-4" /> },
+  { label: "Mobile Network", icon: <RadioTower className="w-4 h-4" /> },
+  { label: "Vehicle", icon: <Car className="w-4 h-4" /> },
+  { label: "Radio & TV", icon: <Tv className="w-4 h-4" /> },
+  { label: "Event", icon: <Calendar className="w-4 h-4" /> },
   { label: "Company Registration", icon: <Building2 className="w-4 h-4" /> },
-  { label: "Insurance Management", icon: <ShieldCheck className="w-4 h-4" /> },
+  { label: "Insurance", icon: <ShieldCheck className="w-4 h-4" /> },
   { label: "Social Responsibility", icon: <HeartHandshake className="w-4 h-4" /> },
 ];
 
@@ -74,16 +60,16 @@ const SIDEBAR_MODULES = [
 // section_permissions, so filtering by what a manager is approved for works
 // correctly without changing what's displayed.
 const SIDEBAR_TO_SECTION: Record<string, string> = {
-  "Bank Management": "Bank Management",
-  "Payment Management": "Payment Management",
-  "Marketplace Management": "Marketplace Management",
-  "News Management": "News Management",
-  "Mobile Network Management": "Mobile Network Management",
-  "Vehicle Management": "Vehicle Management",
-  "Radio & TV Management": "Radio & TV Station Management",
-  "Event Management": "Event Management",
+  "Bank": "Bank Management",
+  "Payment": "Payment Management",
+  "Marketplace": "Marketplace Management",
+  "News": "News Management",
+  "Mobile Network": "Mobile Network Management",
+  "Vehicle": "Vehicle Management",
+  "Radio & TV": "Radio & TV Station Management",
+  "Event": "Event Management",
   "Company Registration": "Company Registration Management",
-  "Insurance Management": "Insurance Management",
+  "Insurance": "Insurance Management",
   "Social Responsibility": "Social Responsibility Management",
 };
 
@@ -100,19 +86,19 @@ const STATS = [
   { label: "Total Revenue", value: "R45.8M", trend: "+21%", icon: <TrendingUp className="w-5 h-5" />, iconBg: "#FDECE0", iconColor: ORANGE, trendColor: GREEN, spark: [5, 8, 6, 11, 8, 14, 10, 16, 12, 18] },
 ];
 
-interface ModuleTile { title: string; desc: string; icon: React.ReactNode; iconBg: string; iconColor: string; }
+interface ModuleTile { title: string; displayTitle: string; desc: string; icon: React.ReactNode; iconBg: string; iconColor: string; }
 const MODULE_TILES: ModuleTile[] = [
-  { title: "Bank Management", desc: "Manage bank accounts, branches, services and banking operations.", icon: <Landmark className="w-7 h-7" />, iconBg: MODULE_COLORS["Bank Management"].bg, iconColor: MODULE_COLORS["Bank Management"].color },
-  { title: "Payment Management", desc: "Manage payments, settlements, refunds and transaction rules.", icon: <CreditCard className="w-7 h-7" />, iconBg: MODULE_COLORS["Payment Management"].bg, iconColor: MODULE_COLORS["Payment Management"].color },
-  { title: "Marketplace Management", desc: "Manage vendors, products, orders and marketplace activities.", icon: <ShoppingCart className="w-7 h-7" />, iconBg: MODULE_COLORS["Marketplace Management"].bg, iconColor: MODULE_COLORS["Marketplace Management"].color },
-  { title: "News Management", desc: "Manage news articles, categories, authors and publishing.", icon: <Newspaper className="w-7 h-7" />, iconBg: MODULE_COLORS["News Management"].bg, iconColor: MODULE_COLORS["News Management"].color },
-  { title: "Mobile Network Management", desc: "Manage mobile operators, packages, USSD, data and airtime services.", icon: <RadioTower className="w-7 h-7" />, iconBg: MODULE_COLORS["Mobile Network Management"].bg, iconColor: MODULE_COLORS["Mobile Network Management"].color },
-  { title: "Vehicle Management", desc: "Manage vehicles, fleets, tracking, inspections and documents.", icon: <Car className="w-7 h-7" />, iconBg: MODULE_COLORS["Vehicle Management"].bg, iconColor: MODULE_COLORS["Vehicle Management"].color },
-  { title: "Radio & TV Station Management", desc: "Manage radio & TV stations, channels, programs and broadcasts.", icon: <Tv className="w-7 h-7" />, iconBg: MODULE_COLORS["Radio & TV Station Management"].bg, iconColor: MODULE_COLORS["Radio & TV Station Management"].color },
-  { title: "Event Management", desc: "Manage events, schedules, registrations and venues.", icon: <Calendar className="w-7 h-7" />, iconBg: MODULE_COLORS["Event Management"].bg, iconColor: MODULE_COLORS["Event Management"].color },
-  { title: "Company Registration Management", desc: "Manage company registrations, verifications and compliance.", icon: <Building2 className="w-7 h-7" />, iconBg: MODULE_COLORS["Company Registration Management"].bg, iconColor: MODULE_COLORS["Company Registration Management"].color },
-  { title: "Insurance Management", desc: "Manage insurance products, policies, claims and providers.", icon: <ShieldCheck className="w-7 h-7" />, iconBg: MODULE_COLORS["Insurance Management"].bg, iconColor: MODULE_COLORS["Insurance Management"].color },
-  { title: "Social Responsibility Management", desc: "Manage CSR initiatives, donations, projects and community impact.", icon: <HeartHandshake className="w-7 h-7" />, iconBg: MODULE_COLORS["Social Responsibility Management"].bg, iconColor: MODULE_COLORS["Social Responsibility Management"].color },
+  { title: "Bank Management", displayTitle: "Bank", desc: "Manage bank accounts, branches, services and banking operations.", icon: <Landmark className="w-7 h-7" />, iconBg: MODULE_COLORS["Bank Management"].bg, iconColor: MODULE_COLORS["Bank Management"].color },
+  { title: "Payment Management", displayTitle: "Payment", desc: "Manage payments, settlements, refunds and transaction rules.", icon: <CreditCard className="w-7 h-7" />, iconBg: MODULE_COLORS["Payment Management"].bg, iconColor: MODULE_COLORS["Payment Management"].color },
+  { title: "Marketplace Management", displayTitle: "Marketplace", desc: "Manage vendors, products, orders and marketplace activities.", icon: <ShoppingCart className="w-7 h-7" />, iconBg: MODULE_COLORS["Marketplace Management"].bg, iconColor: MODULE_COLORS["Marketplace Management"].color },
+  { title: "News Management", displayTitle: "News", desc: "Manage news articles, categories, authors and publishing.", icon: <Newspaper className="w-7 h-7" />, iconBg: MODULE_COLORS["News Management"].bg, iconColor: MODULE_COLORS["News Management"].color },
+  { title: "Mobile Network Management", displayTitle: "Mobile Network", desc: "Manage mobile operators, packages, USSD, data and airtime services.", icon: <RadioTower className="w-7 h-7" />, iconBg: MODULE_COLORS["Mobile Network Management"].bg, iconColor: MODULE_COLORS["Mobile Network Management"].color },
+  { title: "Vehicle Management", displayTitle: "Vehicle", desc: "Manage vehicles, fleets, tracking, inspections and documents.", icon: <Car className="w-7 h-7" />, iconBg: MODULE_COLORS["Vehicle Management"].bg, iconColor: MODULE_COLORS["Vehicle Management"].color },
+  { title: "Radio & TV Station Management", displayTitle: "Radio & TV", desc: "Manage radio & TV stations, channels, programs and broadcasts.", icon: <Tv className="w-7 h-7" />, iconBg: MODULE_COLORS["Radio & TV Station Management"].bg, iconColor: MODULE_COLORS["Radio & TV Station Management"].color },
+  { title: "Event Management", displayTitle: "Event", desc: "Manage events, schedules, registrations and venues.", icon: <Calendar className="w-7 h-7" />, iconBg: MODULE_COLORS["Event Management"].bg, iconColor: MODULE_COLORS["Event Management"].color },
+  { title: "Company Registration Management", displayTitle: "Company Registration", desc: "Manage company registrations, verifications and compliance.", icon: <Building2 className="w-7 h-7" />, iconBg: MODULE_COLORS["Company Registration Management"].bg, iconColor: MODULE_COLORS["Company Registration Management"].color },
+  { title: "Insurance Management", displayTitle: "Insurance", desc: "Manage insurance products, policies, claims and providers.", icon: <ShieldCheck className="w-7 h-7" />, iconBg: MODULE_COLORS["Insurance Management"].bg, iconColor: MODULE_COLORS["Insurance Management"].color },
+  { title: "Social Responsibility Management", displayTitle: "Social Responsibility", desc: "Manage CSR initiatives, donations, projects and community impact.", icon: <HeartHandshake className="w-7 h-7" />, iconBg: MODULE_COLORS["Social Responsibility Management"].bg, iconColor: MODULE_COLORS["Social Responsibility Management"].color },
 ];
 
 const BOTTOM_STATS = [
@@ -578,7 +564,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
             {visibleTiles.map(m => (
               <div key={m.title} className="bg-white rounded-2xl border border-gray-100 p-5 flex flex-col">
                 <span className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ background: m.iconBg, color: m.iconColor }}>{m.icon}</span>
-                <p className="text-[15px] font-bold text-gray-900 leading-snug">{m.title}</p>
+                <p className="text-[15px] font-bold text-gray-900 leading-snug">{m.displayTitle}</p>
                 <p className="text-xs text-gray-500 mt-2 leading-relaxed flex-1">{m.desc}</p>
                 <button onClick={() => openModule(m.title)} className="mt-4 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold transition-colors" style={{ background: m.iconBg, color: m.iconColor }}>
                   Manage <ArrowRight className="w-3 h-3" />
