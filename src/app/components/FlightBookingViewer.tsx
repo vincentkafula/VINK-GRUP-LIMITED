@@ -34,6 +34,40 @@ const TRUST_ITEMS = [
   { icon: <Headphones className="w-[18px] h-[18px]" />, title: "24/7 travel desk", desc: "Real humans, no hold music", color: GOLD },
 ];
 
+const AIRLINES_BY_REGION: { region: string; airlines: string[] }[] = [
+  { region: "North America", airlines: [
+    "American Airlines", "Delta Air Lines", "United Airlines", "Southwest Airlines", "JetBlue",
+    "Alaska Airlines", "Air Canada", "WestJet", "Aeromexico", "Volaris", "Spirit Airlines", "Frontier Airlines",
+  ]},
+  { region: "Europe", airlines: [
+    "Lufthansa", "British Airways", "Air France", "KLM", "Turkish Airlines", "Swiss International Air Lines",
+    "Austrian Airlines", "Iberia", "TAP Air Portugal", "SAS (Scandinavian Airlines)", "Finnair",
+    "LOT Polish Airlines", "Aer Lingus", "Ryanair", "easyJet", "Wizz Air", "Vueling", "Norwegian Air",
+    "Brussels Airlines", "Alitalia/ITA Airways", "Aeroflot",
+  ]},
+  { region: "Middle East", airlines: [
+    "Emirates", "Qatar Airways", "Etihad Airways", "Saudia (Saudi Arabian Airlines)", "Oman Air",
+    "Kuwait Airways", "Royal Jordanian", "El Al", "Gulf Air", "flydubai", "Air Arabia",
+  ]},
+  { region: "Asia", airlines: [
+    "Singapore Airlines", "Cathay Pacific", "ANA (All Nippon Airways)", "Japan Airlines", "Korean Air",
+    "Asiana Airlines", "China Southern", "China Eastern", "Air China", "Hainan Airlines", "Air India",
+    "IndiGo", "Vistara", "Thai Airways", "Malaysia Airlines", "Garuda Indonesia", "Philippine Airlines",
+    "Vietnam Airlines", "EVA Air", "China Airlines (Taiwan)", "AirAsia", "Scoot", "Nok Air", "Cebu Pacific",
+  ]},
+  { region: "Oceania", airlines: [
+    "Qantas", "Air New Zealand", "Virgin Australia", "Jetstar", "Fiji Airways",
+  ]},
+  { region: "Africa", airlines: [
+    "Ethiopian Airlines", "South African Airways", "Kenya Airways", "EgyptAir", "Royal Air Maroc",
+    "Air Namibia", "RwandAir", "Nigeria Air", "Tunisair",
+  ]},
+  { region: "South America", airlines: [
+    "LATAM Airlines", "Avianca", "Copa Airlines (Panama)", "Gol Linhas Aéreas", "Azul Brazilian Airlines",
+    "Aerolíneas Argentinas",
+  ]},
+];
+
 const POPULAR_ROUTES = [
   { from: "JNB", to: "CPT", city: "Cape Town", desc: "Table Mountain, wine country, and the coast — a two-hour hop from Joburg.", price: "R1,349" },
   { from: "JNB", to: "LHR", city: "London", desc: "Direct overnight service, arriving into Heathrow Terminal 5.", price: "R9,820" },
@@ -66,6 +100,7 @@ export function FlightBookingViewer({ isOpen, onClose }: Props) {
   const [infants, setInfants] = useState(0);
   const [cabinClass, setCabinClass] = useState<CabinClass>("Economy");
   const [nonstop, setNonstop] = useState(true);
+  const [airline, setAirline] = useState("");
   const [promo, setPromo] = useState("");
   const [showTravelers, setShowTravelers] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -121,7 +156,7 @@ export function FlightBookingViewer({ isOpen, onClose }: Props) {
           </h2>
           <p className="text-sm max-w-sm mx-auto leading-relaxed mb-8" style={{ color: FOG }}>
             VINK Go's flight booking is launching alongside VINK's full platform in June 2027.
-            We'll notify you the moment {fromCity?.city.split(",")[0]} → {toCity?.city.split(",")[0]} fares go live.
+            We'll notify you the moment {fromCity?.city.split(",")[0]} → {toCity?.city.split(",")[0]}{airline ? ` fares on ${airline}` : " fares"} go live.
           </p>
           <button onClick={() => setSubmitted(false)}
             className="px-8 py-3 rounded-xl text-sm font-bold transition-all hover:scale-105"
@@ -264,6 +299,23 @@ export function FlightBookingViewer({ isOpen, onClose }: Props) {
                         </div>
                       )}
                     </div>
+                  </div>
+
+                  <div className="p-3.5 rounded-xl mb-3.5" style={{ background: "rgba(0,0,0,.2)", border: `1px solid ${LINE}` }}>
+                    <label className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-white/40 mb-1.5">
+                      <Plane className="w-3 h-3" /> Preferred Airline (optional)
+                    </label>
+                    <select value={airline} onChange={e => setAirline(e.target.value)}
+                      className="bg-transparent text-white text-sm font-semibold outline-none w-full">
+                      <option value="" style={{ background: INK_2 }}>Any airline</option>
+                      {AIRLINES_BY_REGION.map(group => (
+                        <optgroup key={group.region} label={group.region} style={{ background: INK_2, color: FOG }}>
+                          {group.airlines.map(a => (
+                            <option key={a} value={a} style={{ background: INK_2, color: CLOUD }}>{a}</option>
+                          ))}
+                        </optgroup>
+                      ))}
+                    </select>
                   </div>
 
                   <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
