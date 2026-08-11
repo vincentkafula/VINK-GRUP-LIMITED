@@ -1,6 +1,7 @@
 import { useState, lazy, Suspense, startTransition, useEffect, useCallback } from "react";
 import { Toaster } from "sonner";
 import { checkHealth, getSession, startHealthRecoveryWatch } from "./services/apiClient";
+import { setPageMeta, PAGE_META } from "./services/seo";
 import { Header } from "./components/Header";
 import { SearchSection } from "./components/SearchSection";
 import { HeroSection } from "./components/HeroSection";
@@ -515,6 +516,9 @@ export default function App() {
       if (cat === "account") { setShowPersonalAccount(true); } else { mount("personalLedger"); setLedgerCategory(cat as any); setShowPersonalLedger(true); }
       return true;
     }
+    if (seg[0] === "business" && !seg[1]) {
+      mount("startBusiness"); setShowStartBusiness(true); return true;
+    }
     if (seg[0] === "business" && seg[1]) {
       const map: Record<string, string> = {
         "start-my-business": "startBusiness", "accounts": "bizAccountSelector", "credit-cards": "bizLedger:creditCard",
@@ -546,6 +550,7 @@ export default function App() {
       return true;
     }
     if (path === "/contact-us") { mount("contactUs"); setShowContactUs(true); return true; }
+    if (path === "/news") { mount("news"); setShowNews(true); return true; }
     if (path === "/marketplace") { mount("marketplaceLanding"); setShowMarketplaceLanding(true); return true; }
     return false;
   };
@@ -581,7 +586,7 @@ export default function App() {
       if (label === "About VINK")                                 open("aboutVINK",          () => setShowAboutVINK(true));
       if (label === "Investor Relations")                        open("investorRelations",  () => setShowInvestorRelations(true));
       if (label === "Careers")                                   open("careers",            () => setShowCareers(true));
-      if (label === "News")                                      open("news",               () => setShowNews(true));
+      if (label === "News")                                      { pushRoute("/news"); open("news",               () => setShowNews(true)); }
       if (label === "Contact Us")                                { setContactTab("connect"); open("contactUs", () => setShowContactUs(true)); }
       if (label === "Send your feedback")                        { setContactTab("feedback"); open("contactUs", () => setShowContactUs(true)); }
       if (label === "Switch to VINK")                             open("switchToVINK",        () => setShowSwitchToVINK(true));
@@ -633,6 +638,18 @@ export default function App() {
     window.addEventListener("vink:footer-link", listener);
     return () => window.removeEventListener("vink:footer-link", listener);
   });
+
+  // Dynamic <title>/meta description per section -- without this, every
+  // route in this single-page app shares one static title/description
+  // (set once in index.html), so Google would see identical metadata for
+  // /business, /marketplace, /news, and /corporate/events regardless of
+  // which one was actually visited. Each of these four gets its own real,
+  // keyword-relevant metadata while open, restored to the site default
+  // when closed again.
+  useEffect(() => { if (showStartBusiness)      return setPageMeta(PAGE_META.business.title,     PAGE_META.business.description); }, [showStartBusiness]);
+  useEffect(() => { if (showMarketplaceLanding) return setPageMeta(PAGE_META.marketplace.title,  PAGE_META.marketplace.description); }, [showMarketplaceLanding]);
+  useEffect(() => { if (showNews)               return setPageMeta(PAGE_META.news.title,         PAGE_META.news.description); }, [showNews]);
+  useEffect(() => { if (showCorporateEvents)    return setPageMeta(PAGE_META.events.title,        PAGE_META.events.description); }, [showCorporateEvents]);
 
   const handleSelectorSelect = (type: string, productId: string) => {
     setSelectorOpen(false);
