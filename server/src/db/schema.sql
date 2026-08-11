@@ -92,6 +92,11 @@ CREATE TABLE IF NOT EXISTS seller_kyc_verifications (
 );
 CREATE INDEX IF NOT EXISTS idx_kyc_seller ON seller_kyc_verifications(seller_id);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_kyc_provider_ref ON seller_kyc_verifications(provider, provider_ref) WHERE provider_ref IS NOT NULL;
+-- Same CREATE TABLE IF NOT EXISTS no-op issue as vinkpay_transactions below
+-- (this table's own comment already notes they share the same pattern) --
+-- explicit ALTER needed for this to actually land on a database where this
+-- table already existed before webhook_received_at was added.
+ALTER TABLE seller_kyc_verifications ADD COLUMN IF NOT EXISTS webhook_received_at TIMESTAMPTZ;
 
 -- ─── Account/Loan Applications (Personal, Business, Corporate) ─────────────
 -- Shared schema across all three tiers, matching the confirmed design:
@@ -310,6 +315,14 @@ CREATE TABLE IF NOT EXISTS vinkpay_transactions (
 );
 CREATE INDEX IF NOT EXISTS idx_vinkpay_order ON vinkpay_transactions(order_id);
 CREATE INDEX IF NOT EXISTS idx_vinkpay_status ON vinkpay_transactions(status);
+-- Same issue as job_applications above: CREATE TABLE IF NOT EXISTS is a
+-- no-op against a table that already existed in production before this
+-- column was added to the definition -- webhook_received_at needs its own
+-- explicit ALTER to actually land on an already-deployed database, not
+-- just a freshly-created one. This is the real cause of the production
+-- error "column t.webhook_received_at does not exist" in the
+-- reconciliation job (vinkPay.ts) once this table already existed live.
+ALTER TABLE vinkpay_transactions ADD COLUMN IF NOT EXISTS webhook_received_at TIMESTAMPTZ;
 -- One processor_ref should only ever correspond to one VinkPay transaction
 -- row — this constraint is the actual backstop for webhook idempotency,
 -- not just the application-level check before it. NULLs (a submission that
