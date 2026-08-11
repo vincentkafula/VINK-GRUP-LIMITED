@@ -4,7 +4,7 @@ import {
   Car, Tv, Calendar, Building2, ShieldCheck, HeartHandshake, Users, Settings,
   ClipboardList, Menu, Search, Bell, ChevronDown, Plus, ArrowRight, TrendingUp,
   AlertTriangle, Monitor, CheckCircle2, CalendarDays, FileCheck2, UserCog, Loader2,
-  Check, X as XIcon, Lock,
+  Check, X as XIcon, Lock, Moon,
 } from "lucide-react";
 import { toast } from "sonner";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
@@ -14,6 +14,31 @@ interface Props { isOpen: boolean; onClose: () => void; adminName?: string; admi
 
 const GREEN = "#1FAE58";
 const ORANGE = "#F4802F";
+const PURPLE = "#6D5DFC";
+
+// One distinct, meaningful color per module rather than alternating between
+// two -- this is what actually makes a module grid read as "professional":
+// each icon is instantly distinguishable from its neighbors at a glance,
+// not just decorated. Colors chosen to fit each module's own association
+// (blue for payments/network — common fintech convention, red for
+// alerts/broadcast, teal for registration/compliance, etc.) rather than
+// picked arbitrarily.
+const MODULE_COLORS: Record<string, { bg: string; color: string }> = {
+  "Bank Management":                   { bg: "#EEEBFF", color: "#6D5DFC" },
+  "Payment Management":                { bg: "#E6F0FF", color: "#2563EB" },
+  "Marketplace Management":            { bg: "#E9F7EF", color: "#1FAE58" },
+  "News Management":                   { bg: "#F3E8FF", color: "#9333EA" },
+  "Mobile Network Management":         { bg: "#E0F2FE", color: "#0284C7" },
+  "Vehicle Management":                { bg: "#FDECE0", color: "#F4802F" },
+  "Radio & TV Management":             { bg: "#FEE2E2", color: "#DC2626" },
+  "Radio & TV Station Management":     { bg: "#FEE2E2", color: "#DC2626" },
+  "Event Management":                  { bg: "#EEEBFF", color: "#6D5DFC" },
+  "Company Registration":              { bg: "#CCFBF1", color: "#0D9488" },
+  "Company Registration Management":   { bg: "#CCFBF1", color: "#0D9488" },
+  "Insurance Management":              { bg: "#E9F7EF", color: "#059669" },
+  "Social Responsibility":             { bg: "#FCE7F3", color: "#DB2777" },
+  "Social Responsibility Management":  { bg: "#FCE7F3", color: "#DB2777" },
+};
 
 const SECTION_ICON: Record<string, React.ReactNode> = {
   "Bank Management": <Landmark className="w-4 h-4" />,
@@ -69,36 +94,51 @@ const SYSTEM_ITEMS = [
 ];
 
 const STATS = [
-  { label: "Total Institutions", value: "128", trend: "+12%", icon: <Landmark className="w-5 h-5" />, iconBg: "#E9F7EF", iconColor: GREEN, trendColor: GREEN },
-  { label: "Total Transactions", value: "24,560", trend: "+18%", icon: <CreditCard className="w-5 h-5" />, iconBg: "#FDECE0", iconColor: ORANGE, trendColor: ORANGE },
-  { label: "Active Users", value: "8,459", trend: "+9%", icon: <Users className="w-5 h-5" />, iconBg: "#E9F7EF", iconColor: GREEN, trendColor: GREEN },
-  { label: "Total Revenue", value: "R45.8M", trend: "+21%", icon: <TrendingUp className="w-5 h-5" />, iconBg: "#FDECE0", iconColor: ORANGE, trendColor: ORANGE },
+  { label: "Total Institutions", value: "128", trend: "+12%", icon: <Landmark className="w-5 h-5" />, iconBg: "#EEEBFF", iconColor: PURPLE, trendColor: GREEN, spark: [4, 7, 5, 9, 6, 10, 8, 12, 9, 14] },
+  { label: "Total Transactions", value: "24,560", trend: "+18%", icon: <CreditCard className="w-5 h-5" />, iconBg: "#E6F0FF", iconColor: "#2563EB", trendColor: GREEN, spark: [6, 5, 8, 7, 11, 9, 13, 10, 15, 13] },
+  { label: "Active Users", value: "8,459", trend: "+9%", icon: <Users className="w-5 h-5" />, iconBg: "#E9F7EF", iconColor: GREEN, trendColor: GREEN, spark: [8, 9, 7, 10, 9, 12, 10, 13, 11, 14] },
+  { label: "Total Revenue", value: "R45.8M", trend: "+21%", icon: <TrendingUp className="w-5 h-5" />, iconBg: "#FDECE0", iconColor: ORANGE, trendColor: GREEN, spark: [5, 8, 6, 11, 8, 14, 10, 16, 12, 18] },
 ];
 
 interface ModuleTile { title: string; desc: string; icon: React.ReactNode; iconBg: string; iconColor: string; }
 const MODULE_TILES: ModuleTile[] = [
-  { title: "Bank Management", desc: "Manage bank accounts, branches, services and banking operations.", icon: <Landmark className="w-7 h-7" />, iconBg: "#E9F7EF", iconColor: GREEN },
-  { title: "Payment Management", desc: "Manage payments, settlements, refunds and transaction rules.", icon: <CreditCard className="w-7 h-7" />, iconBg: "#FDECE0", iconColor: ORANGE },
-  { title: "Marketplace Management", desc: "Manage vendors, products, orders and marketplace activities.", icon: <ShoppingCart className="w-7 h-7" />, iconBg: "#E9F7EF", iconColor: GREEN },
-  { title: "News Management", desc: "Manage news articles, categories, authors and publishing.", icon: <Newspaper className="w-7 h-7" />, iconBg: "#FDECE0", iconColor: ORANGE },
-  { title: "Mobile Network Management", desc: "Manage mobile operators, packages, USSD, data and airtime services.", icon: <RadioTower className="w-7 h-7" />, iconBg: "#E9F7EF", iconColor: GREEN },
-  { title: "Vehicle Management", desc: "Manage vehicles, fleets, tracking, inspections and documents.", icon: <Car className="w-7 h-7" />, iconBg: "#FDECE0", iconColor: ORANGE },
-  { title: "Radio & TV Station Management", desc: "Manage radio & TV stations, channels, programs and broadcasts.", icon: <Tv className="w-7 h-7" />, iconBg: "#FDECE0", iconColor: ORANGE },
-  { title: "Event Management", desc: "Manage events, schedules, registrations and venues.", icon: <Calendar className="w-7 h-7" />, iconBg: "#E9F7EF", iconColor: GREEN },
-  { title: "Company Registration Management", desc: "Manage company registrations, verifications and compliance.", icon: <Building2 className="w-7 h-7" />, iconBg: "#FDECE0", iconColor: ORANGE },
-  { title: "Insurance Management", desc: "Manage insurance products, policies, claims and providers.", icon: <ShieldCheck className="w-7 h-7" />, iconBg: "#E9F7EF", iconColor: GREEN },
-  { title: "Social Responsibility Management", desc: "Manage CSR initiatives, donations, projects and community impact.", icon: <HeartHandshake className="w-7 h-7" />, iconBg: "#FDECE0", iconColor: ORANGE },
+  { title: "Bank Management", desc: "Manage bank accounts, branches, services and banking operations.", icon: <Landmark className="w-7 h-7" />, iconBg: MODULE_COLORS["Bank Management"].bg, iconColor: MODULE_COLORS["Bank Management"].color },
+  { title: "Payment Management", desc: "Manage payments, settlements, refunds and transaction rules.", icon: <CreditCard className="w-7 h-7" />, iconBg: MODULE_COLORS["Payment Management"].bg, iconColor: MODULE_COLORS["Payment Management"].color },
+  { title: "Marketplace Management", desc: "Manage vendors, products, orders and marketplace activities.", icon: <ShoppingCart className="w-7 h-7" />, iconBg: MODULE_COLORS["Marketplace Management"].bg, iconColor: MODULE_COLORS["Marketplace Management"].color },
+  { title: "News Management", desc: "Manage news articles, categories, authors and publishing.", icon: <Newspaper className="w-7 h-7" />, iconBg: MODULE_COLORS["News Management"].bg, iconColor: MODULE_COLORS["News Management"].color },
+  { title: "Mobile Network Management", desc: "Manage mobile operators, packages, USSD, data and airtime services.", icon: <RadioTower className="w-7 h-7" />, iconBg: MODULE_COLORS["Mobile Network Management"].bg, iconColor: MODULE_COLORS["Mobile Network Management"].color },
+  { title: "Vehicle Management", desc: "Manage vehicles, fleets, tracking, inspections and documents.", icon: <Car className="w-7 h-7" />, iconBg: MODULE_COLORS["Vehicle Management"].bg, iconColor: MODULE_COLORS["Vehicle Management"].color },
+  { title: "Radio & TV Station Management", desc: "Manage radio & TV stations, channels, programs and broadcasts.", icon: <Tv className="w-7 h-7" />, iconBg: MODULE_COLORS["Radio & TV Station Management"].bg, iconColor: MODULE_COLORS["Radio & TV Station Management"].color },
+  { title: "Event Management", desc: "Manage events, schedules, registrations and venues.", icon: <Calendar className="w-7 h-7" />, iconBg: MODULE_COLORS["Event Management"].bg, iconColor: MODULE_COLORS["Event Management"].color },
+  { title: "Company Registration Management", desc: "Manage company registrations, verifications and compliance.", icon: <Building2 className="w-7 h-7" />, iconBg: MODULE_COLORS["Company Registration Management"].bg, iconColor: MODULE_COLORS["Company Registration Management"].color },
+  { title: "Insurance Management", desc: "Manage insurance products, policies, claims and providers.", icon: <ShieldCheck className="w-7 h-7" />, iconBg: MODULE_COLORS["Insurance Management"].bg, iconColor: MODULE_COLORS["Insurance Management"].color },
+  { title: "Social Responsibility Management", desc: "Manage CSR initiatives, donations, projects and community impact.", icon: <HeartHandshake className="w-7 h-7" />, iconBg: MODULE_COLORS["Social Responsibility Management"].bg, iconColor: MODULE_COLORS["Social Responsibility Management"].color },
 ];
 
 const BOTTOM_STATS = [
-  { value: "342", label: "Total Admins", icon: <Users className="w-5 h-5" />, iconBg: "#E9F7EF", iconColor: GREEN },
-  { value: "98%", label: "System Uptime", icon: <ShieldCheck className="w-5 h-5" />, iconBg: "#E9F7EF", iconColor: GREEN },
-  { value: "1,245", label: "Active Sessions", icon: <Monitor className="w-5 h-5" />, iconBg: "#FDECE0", iconColor: ORANGE },
-  { value: "12", label: "Pending Approvals", icon: <ClipboardList className="w-5 h-5" />, iconBg: "#FDECE0", iconColor: ORANGE },
-  { value: "24", label: "System Alerts", icon: <AlertTriangle className="w-5 h-5" />, iconBg: "#FEF2F2", iconColor: "#DC2626" },
+  { value: "342", label: "Total Admins", icon: <Users className="w-5 h-5" />, iconBg: "#EEEBFF", iconColor: PURPLE, spark: [3, 5, 4, 6, 5, 7, 6, 8] },
+  { value: "98%", label: "System Uptime", icon: <ShieldCheck className="w-5 h-5" />, iconBg: "#E9F7EF", iconColor: GREEN, spark: [7, 8, 7, 9, 8, 9, 8, 9] },
+  { value: "1,245", label: "Active Sessions", icon: <Monitor className="w-5 h-5" />, iconBg: "#E6F0FF", iconColor: "#2563EB", spark: [4, 6, 5, 8, 6, 9, 7, 10] },
+  { value: "12", label: "Pending Approvals", icon: <ClipboardList className="w-5 h-5" />, iconBg: "#FDECE0", iconColor: ORANGE, spark: [6, 5, 7, 4, 6, 3, 5, 4] },
+  { value: "24", label: "System Alerts", icon: <AlertTriangle className="w-5 h-5" />, iconBg: "#FEF2F2", iconColor: "#DC2626", spark: [8, 6, 9, 5, 7, 4, 6, 3] },
 ];
 
 type View = "dashboard" | "applications" | "managers" | "audit" | "apply" | "jobApplications";
+
+/** A small trend-line sparkline, matching the mini charts on each stat
+ *  card in the reference. Pure SVG, no charting library needed for
+ *  something this simple. */
+function Sparkline({ data, color }: { data: number[]; color: string }) {
+  const max = Math.max(...data);
+  const min = Math.min(...data);
+  const range = max - min || 1;
+  const points = data.map((v, i) => `${(i / (data.length - 1)) * 100},${28 - ((v - min) / range) * 26}`).join(" ");
+  return (
+    <svg viewBox="0 0 100 28" preserveAspectRatio="none" className="w-full h-7 mt-2">
+      <polyline points={points} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.55" />
+    </svg>
+  );
+}
 
 export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User", adminRole = "Staff Member", role = "", onOpenNewsManagement }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -371,7 +411,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
             <button
               onClick={() => goView("dashboard")}
               className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-semibold mb-4"
-              style={view === "dashboard" ? { background: GREEN, color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
+              style={view === "dashboard" ? { background: PURPLE, color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
             >
               <LayoutGrid className="w-4 h-4" /> Dashboard
             </button>
@@ -382,7 +422,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
                 <button
                   onClick={() => goView("applications")}
                   className="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors"
-                  style={view === "applications" ? { background: GREEN, color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
+                  style={view === "applications" ? { background: PURPLE, color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
                 >
                   <span className="flex items-center gap-2.5"><FileCheck2 className="w-4 h-4" /> Applications</span>
                   {pendingApps.length > 0 && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white" style={{ background: ORANGE }}>{pendingApps.length}</span>}
@@ -390,7 +430,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
                 <button
                   onClick={() => goView("managers")}
                   className="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors"
-                  style={view === "managers" ? { background: GREEN, color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
+                  style={view === "managers" ? { background: PURPLE, color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
                 >
                   <span className="flex items-center gap-2.5"><UserCog className="w-4 h-4" /> Managers</span>
                 </button>
@@ -429,7 +469,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
                 key={m.label}
                 onClick={() => m.label === "Audit Logs" && isOwner ? goView("audit") : (() => { setActiveItem(m.label); openModule(m.label); })()}
                 className="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors"
-                style={view === "audit" && m.label === "Audit Logs" ? { background: GREEN, color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
+                style={view === "audit" && m.label === "Audit Logs" ? { background: PURPLE, color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
               >
                 <span className="flex items-center gap-2.5">{m.icon} {m.label}</span>
                 {!(m.label === "Audit Logs" && isOwner) && <Lock className="w-3.5 h-3.5 opacity-30" />}
@@ -461,12 +501,19 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
           </button>
           <div className="flex-1 max-w-md relative">
             <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input placeholder="Search anything..." className="w-full pl-9 pr-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-green-600" />
+            <input placeholder="Search anything..." className="w-full pl-9 pr-14 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-green-600" />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-semibold text-gray-400 border border-gray-200 rounded px-1.5 py-0.5">⌘K</span>
           </div>
           <div className="flex items-center gap-4 ml-auto shrink-0">
             <button className="relative p-2 rounded-lg hover:bg-gray-50">
               <Bell className="w-4.5 h-4.5 text-gray-500" />
               <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-[9px] font-bold text-white flex items-center justify-center" style={{ background: ORANGE }}>6</span>
+            </button>
+            <button onClick={() => toast.info("Dark mode is coming soon.")} className="p-2 rounded-lg hover:bg-gray-50" aria-label="Toggle dark mode">
+              <Moon className="w-4.5 h-4.5 text-gray-500" />
+            </button>
+            <button onClick={() => toast.info("Settings are coming soon.")} className="p-2 rounded-lg hover:bg-gray-50" aria-label="Settings">
+              <Settings className="w-4.5 h-4.5 text-gray-500" />
             </button>
             <button className="flex items-center gap-2.5 pl-2">
               <span className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: GREEN }}>
@@ -499,21 +546,24 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
           {/* Stat cards */}
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
             {STATS.map(s => (
-              <div key={s.label} className="bg-white rounded-2xl border border-gray-100 p-5 flex items-center gap-4">
-                <span className="w-12 h-12 rounded-full flex items-center justify-center shrink-0" style={{ background: s.iconBg, color: s.iconColor }}>{s.icon}</span>
-                <div className="min-w-0">
-                  <p className="text-xs text-gray-400">{s.label}</p>
-                  <p className="text-xl font-black text-gray-900 mt-0.5">{s.value}</p>
-                  <p className="text-[11px] font-semibold mt-0.5" style={{ color: s.trendColor }}>↑ {s.trend} from last month</p>
+              <div key={s.label} className="bg-white rounded-2xl border border-gray-100 p-5">
+                <div className="flex items-center gap-4">
+                  <span className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style={{ background: s.iconBg, color: s.iconColor }}>{s.icon}</span>
+                  <div className="min-w-0">
+                    <p className="text-xs text-gray-400">{s.label}</p>
+                    <p className="text-xl font-black text-gray-900 mt-0.5">{s.value}</p>
+                    <p className="text-[11px] font-semibold mt-0.5" style={{ color: s.trendColor }}>↑ {s.trend} from last month</p>
+                  </div>
                 </div>
+                <Sparkline data={s.spark} color={s.iconColor} />
               </div>
             ))}
           </div>
 
           {/* Management Modules */}
           <div className="flex items-center justify-between mb-5">
-            <h2 className="text-lg font-black text-gray-900">Management Modules</h2>
-            <button className="flex items-center gap-1 text-sm font-bold" style={{ color: GREEN }}>View all modules <ArrowRight className="w-4 h-4" /></button>
+            <h2 className="flex items-center gap-2 text-lg font-black text-gray-900"><LayoutGrid className="w-4 h-4" style={{ color: PURPLE }} /> Management Modules</h2>
+            <button className="flex items-center gap-1 text-sm font-bold" style={{ color: PURPLE }}>View all modules <ArrowRight className="w-4 h-4" /></button>
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-5 mb-8">
@@ -527,10 +577,10 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
             )}
             {visibleTiles.map(m => (
               <div key={m.title} className="bg-white rounded-2xl border border-gray-100 p-5 flex flex-col">
-                <span className="w-14 h-14 rounded-full flex items-center justify-center mb-4" style={{ background: m.iconBg, color: m.iconColor }}>{m.icon}</span>
+                <span className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ background: m.iconBg, color: m.iconColor }}>{m.icon}</span>
                 <p className="text-[15px] font-bold text-gray-900 leading-snug">{m.title}</p>
                 <p className="text-xs text-gray-500 mt-2 leading-relaxed flex-1">{m.desc}</p>
-                <button onClick={() => openModule(m.title)} className="mt-4 flex items-center justify-center gap-1.5 py-2 rounded-lg border border-gray-200 text-xs font-bold text-gray-700 hover:bg-gray-50">
+                <button onClick={() => openModule(m.title)} className="mt-4 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold transition-colors" style={{ background: m.iconBg, color: m.iconColor }}>
                   Manage <ArrowRight className="w-3 h-3" />
                 </button>
               </div>
@@ -539,7 +589,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
             {/* Add New Module */}
             {isOwner && (
             <button onClick={() => toast.info("Custom module builder is coming soon.")} className="bg-white rounded-2xl border-2 border-dashed border-gray-200 p-5 flex flex-col items-center justify-center text-center hover:border-gray-300 transition-colors">
-              <span className="w-14 h-14 rounded-full flex items-center justify-center mb-4 bg-gray-100 text-gray-400"><Plus className="w-7 h-7" /></span>
+              <span className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 bg-gray-100 text-gray-400"><Plus className="w-7 h-7" /></span>
               <p className="text-[15px] font-bold text-gray-900">Add New Module</p>
               <p className="text-xs text-gray-500 mt-2">Create a new management module for your platform.</p>
               <span className="mt-4 flex items-center justify-center gap-1.5 py-2 px-4 rounded-lg text-xs font-bold" style={{ background: "#EAF7EE", color: GREEN }}>
@@ -550,21 +600,28 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
           </div>
 
           {/* Bottom stats strip */}
-          <div className="bg-white rounded-2xl border border-gray-100 p-5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6 items-center">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-5">
             {BOTTOM_STATS.map(s => (
-              <div key={s.label} className="flex items-center gap-3">
-                <span className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ background: s.iconBg, color: s.iconColor }}>{s.icon}</span>
-                <div className="min-w-0">
-                  <p className="text-base font-black text-gray-900 leading-tight">{s.value}</p>
-                  <p className="text-[11px] text-gray-400 leading-tight">{s.label}</p>
+              <div key={s.label} className="bg-white rounded-2xl border border-gray-100 p-4">
+                <div className="flex items-center gap-2.5">
+                  <span className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: s.iconBg, color: s.iconColor }}>{s.icon}</span>
+                  <div className="min-w-0">
+                    <p className="text-base font-black text-gray-900 leading-tight">{s.value}</p>
+                    <p className="text-[11px] text-gray-400 leading-tight">{s.label}</p>
+                  </div>
                 </div>
+                <Sparkline data={s.spark} color={s.iconColor} />
               </div>
             ))}
-            <div className="flex items-center gap-2 lg:justify-self-end">
-              <CheckCircle2 className="w-5 h-5 shrink-0" style={{ color: GREEN }} />
-              <div>
-                <p className="text-[13px] font-bold text-gray-900 leading-tight">System Health</p>
-                <p className="text-[11px] leading-tight" style={{ color: GREEN }}>All systems operational</p>
+            <div className="bg-white rounded-2xl border border-gray-100 p-4 flex flex-col justify-center">
+              <div className="flex items-center gap-2.5">
+                <span className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "#E9F7EF" }}>
+                  <CheckCircle2 className="w-5 h-5" style={{ color: GREEN }} />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-[13px] font-bold text-gray-900 leading-tight">System Health</p>
+                  <p className="text-[11px] leading-tight" style={{ color: GREEN }}>All systems operational</p>
+                </div>
               </div>
             </div>
           </div>
