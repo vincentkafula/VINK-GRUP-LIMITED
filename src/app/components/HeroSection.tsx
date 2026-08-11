@@ -5,6 +5,7 @@ import heroGlobalSim from "../../imports/HeroGlobalSim.png";
 import heroBus from "../../imports/HeroBus.png";
 import heroPlane from "../../imports/HeroPlane.png";
 import heroValidator from "../../imports/HeroValidator.png";
+import { FlightBookingViewer } from "./FlightBookingViewer";
 
 // ─── Per-slide content ────────────────────────────────────────────────────────
 const SLIDES = [
@@ -74,7 +75,7 @@ const SLIDES = [
     headline: <>Your journey<br /><span className="relative inline-block"><span className="relative z-10">takes flight.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#F5A623" }} /></span></>,
     body: "Book your next adventure with ease. Best deals. Trusted service. Unforgettable journeys.",
     ctas: [
-      { label: "✈ Book Your Ticket Now", style: { background: "#0B1F4D", boxShadow: "0 6px 20px rgba(11,31,77,.5)" } },
+      { label: "✈ Book Your Ticket Now", action: "flightBooking" as const, style: { background: "#0B1F4D", boxShadow: "0 6px 20px rgba(11,31,77,.5)" } },
       { label: "See Our Network",        style: { background: "rgba(255,255,255,.15)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,.25)" } },
     ],
     trust: [
@@ -103,6 +104,7 @@ const SLIDES = [
 export function HeroSection() {
   const [current, setCurrent] = useState(0);
   const [fading, setFading] = useState(false);
+  const [showFlightBooking, setShowFlightBooking] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -168,6 +170,7 @@ export function HeroSection() {
             <div className="flex flex-wrap justify-center md:justify-start gap-3 mb-7">
               {slide.ctas.map((cta, i) => (
                 <button key={i}
+                  onClick={() => { if ("action" in cta && cta.action === "flightBooking") setShowFlightBooking(true); }}
                   className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl text-sm font-bold text-white transition-all duration-300 ease-out hover:scale-[1.03] hover:-translate-y-0.5 active:scale-95 shadow-lg"
                   style={{ ...(cta.style as React.CSSProperties), letterSpacing: "0.01em" }}>
                   {cta.label}
@@ -218,6 +221,8 @@ export function HeroSection() {
 
         </div>
       </div>
+
+      <FlightBookingViewer isOpen={showFlightBooking} onClose={() => setShowFlightBooking(false)} />
     </section>
   );
 }
