@@ -9,6 +9,7 @@ import {
   notifications, balanceSheet, incomeStatement, cashFlow, taxSubmissions,
   taxAssociationFees, computed, type AssocStat,
 } from "../data/taxiAssociationDashboardData";
+import { DeviceTerminalModal } from "./DeviceTerminalModal";
 
 const NAVY = "#0B1330";
 const COLOR_MAP: Record<string, string> = {
@@ -86,6 +87,7 @@ const SIDEBAR_GROUPS: { id: View; label: string; icon: React.ReactNode }[][] = [
 export function TaxiAssociationDashboardViewer({ isOpen, onClose }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [view, setView] = useState<View>("dashboard");
+  const [terminalVehicle, setTerminalVehicle] = useState<typeof vehicles[number] | null>(null);
 
   if (!isOpen) return null;
 
@@ -260,7 +262,7 @@ export function TaxiAssociationDashboardViewer({ isOpen, onClose }: Props) {
                     <th className="px-5 py-3 font-semibold">Reg</th><th className="px-5 py-3 font-semibold">Model</th>
                     <th className="px-5 py-3 font-semibold">Owner</th><th className="px-5 py-3 font-semibold">Status</th>
                     <th className="px-5 py-3 font-semibold">Driver</th><th className="px-5 py-3 font-semibold">Mileage</th>
-                    <th className="px-5 py-3 font-semibold">Last Service</th>
+                    <th className="px-5 py-3 font-semibold">Last Service</th><th className="px-5 py-3 font-semibold">Device</th>
                   </tr></thead>
                   <tbody>
                     {vehicles.map(v => (
@@ -272,6 +274,11 @@ export function TaxiAssociationDashboardViewer({ isOpen, onClose }: Props) {
                         <td className="px-5 py-3 text-gray-700">{v.driver}</td>
                         <td className="px-5 py-3 text-gray-500">{v.mileage.toLocaleString()} km</td>
                         <td className="px-5 py-3 text-gray-500">{v.lastService}</td>
+                        <td className="px-5 py-3">
+                          {v.status !== "Inactive" && (
+                            <button onClick={() => setTerminalVehicle(v)} className="text-xs font-bold text-blue-600 whitespace-nowrap">View terminal →</button>
+                          )}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -549,6 +556,12 @@ export function TaxiAssociationDashboardViewer({ isOpen, onClose }: Props) {
           )}
         </div>
       </div>
+      {terminalVehicle && (
+        <DeviceTerminalModal
+          device={{ serial: `VEH-${terminalVehicle.reg.replace(/\s/g, "")}`, status: terminalVehicle.status === "Active" ? "online" : "offline", battery: 74, signal: "Strong", lastSync: "4 min ago", vehicle: `${terminalVehicle.model} · ${terminalVehicle.reg}`, driver: terminalVehicle.driver }}
+          onClose={() => setTerminalVehicle(null)}
+        />
+      )}
     </div>
   );
 }

@@ -11,6 +11,7 @@ import {
   AreaChart, Area, LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip,
   ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell,
 } from "recharts";
+import { DeviceTerminalModal } from "./DeviceTerminalModal";
 
 /**
  * Driver Dashboard -- built from the uploaded reference, a full 9-page
@@ -464,6 +465,7 @@ function DashboardView({ trips, gross, uif, paye, netPay, driverName }: { trips:
 
 // ─── Power page ─────────────────────────────────────────────────────────
 function PowerView({ deviceOn, setDeviceOn }: { deviceOn: boolean; setDeviceOn: (v: boolean) => void }) {
+  const [showTerminal, setShowTerminal] = useState(false);
   const [log] = useState([
     { action: "Turned on", by: "Driver", time: "Today, 06:02 AM" },
     { action: "Turned off", by: "Driver", time: "Yesterday, 09:47 PM" },
@@ -482,10 +484,13 @@ function PowerView({ deviceOn, setDeviceOn }: { deviceOn: boolean; setDeviceOn: 
         </div>
 
         <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-6">
-          <h3 className="font-semibold text-slate-800 mb-4">Device information</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-slate-800">Device information</h3>
+            <button onClick={() => setShowTerminal(true)} className="text-xs font-bold text-blue-600 flex items-center gap-1">View full terminal specs <ChevronRight size={12} /></button>
+          </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
             <div><div className="text-slate-400 text-xs mb-1">Serial number</div><div className="font-medium text-slate-800">DRV-CM-88213</div></div>
-            <div><div className="text-slate-400 text-xs mb-1">Model</div><div className="font-medium text-slate-800">TapPay P200</div></div>
+            <div><div className="text-slate-400 text-xs mb-1">Model</div><div className="font-medium text-slate-800">Telpo T-T20</div></div>
             <div><div className="text-slate-400 text-xs mb-1">Vehicle</div><div className="font-medium text-slate-800">CA 123-456</div></div>
             <div>
               <div className="text-slate-400 text-xs mb-1">Connectivity</div>
@@ -509,6 +514,12 @@ function PowerView({ deviceOn, setDeviceOn }: { deviceOn: boolean; setDeviceOn: 
           </div>
         </div>
       </div>
+      {showTerminal && (
+        <DeviceTerminalModal
+          device={{ serial: "DRV-CM-88213", status: deviceOn ? "online" : "offline", battery: 86, signal: "Strong", lastSync: "2 min ago", vehicle: "CA 123-456", driver: "Driver" }}
+          onClose={() => setShowTerminal(false)}
+        />
+      )}
     </div>
   );
 }

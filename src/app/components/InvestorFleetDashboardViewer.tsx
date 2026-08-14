@@ -9,6 +9,7 @@ import {
   AreaChart, Area, LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip,
   ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell,
 } from "recharts";
+import { DeviceTerminalModal } from "./DeviceTerminalModal";
 
 /**
  * Investor Dashboard -- built from the uploaded reference, the most
@@ -141,6 +142,7 @@ export function InvestorFleetDashboardViewer({ isOpen, onClose, investorName = "
   const [tripDeviceFilter, setTripDeviceFilter] = useState("all");
   const [tripMethodFilter, setTripMethodFilter] = useState("all");
   const [contractType, setContractType] = useState<"fixed" | "target">("fixed");
+  const [terminalDevice, setTerminalDevice] = useState<Device | null>(null);
 
   // ── The financial engine -- every downstream number derives from here ──
   const f = useMemo(() => {
@@ -440,7 +442,7 @@ export function InvestorFleetDashboardViewer({ isOpen, onClose, investorName = "
                           <div><p className="text-gray-400">Fee earned (R{INVESTOR_TAP_SHARE.toFixed(2)}/tap)</p><p className="font-bold">{R2(feeEarned)}</p></div>
                           <div><p className="text-gray-400">Total earned</p><p className="font-bold" style={{ color: BLUE }}>{R2(DEVICE_MONTHLY_RENTAL + feeEarned)}</p></div>
                         </div>
-                        <div className="mt-2.5"><Pill tone={d.status === "online" ? "green" : "grey"}>{d.status === "online" ? "Online" : "Offline"}</Pill></div>
+                        <div className="mt-2.5 flex items-center justify-between"><Pill tone={d.status === "online" ? "green" : "grey"}>{d.status === "online" ? "Online" : "Offline"}</Pill><button onClick={() => setTerminalDevice(d)} className="text-[11.5px] font-bold" style={{ color: BLUE }}>View terminal →</button></div>
                       </div>
                     );
                   })}
@@ -786,6 +788,13 @@ export function InvestorFleetDashboardViewer({ isOpen, onClose, investorName = "
       {showDeviceModal && <AddDeviceModal onClose={() => setShowDeviceModal(false)} onSubmit={submitDevice} />}
       {/* New Contract modal */}
       {showContractModal && <NewContractModal contractType={contractType} setContractType={setContractType} onClose={() => setShowContractModal(false)} onSubmit={submitContract} />}
+      {/* Device terminal modal */}
+      {terminalDevice && (
+        <DeviceTerminalModal
+          device={{ serial: terminalDevice.code, status: terminalDevice.status, battery: 82, signal: "Strong", lastSync: "3 min ago", vehicle: terminalDevice.vehicle, driver: terminalDevice.driver }}
+          onClose={() => setTerminalDevice(null)}
+        />
+      )}
     </div>
   );
 }
