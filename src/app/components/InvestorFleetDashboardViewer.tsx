@@ -27,7 +27,7 @@ import {
  * under some inputs but not others.
  */
 
-interface Props { isOpen: boolean; onClose: () => void; investorName?: string }
+interface Props { isOpen: boolean; onClose: () => void; investorName?: string; onOpenRevenueDashboard?: () => void }
 
 const NAVY_900 = "#0b1130", NAVY_950 = "#080c22";
 const BLUE = "#2f5fed", PURPLE = "#7a5cf0", GREEN = "#17a869", ORANGE = "#f2790a", RED = "#e0463e";
@@ -35,7 +35,7 @@ const R = (n: number) => "R " + Math.round(n).toLocaleString("en-ZA");
 const R2 = (n: number) => "R " + n.toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 // ─── Types ──────────────────────────────────────────────────────────────
-interface Device { id: string; code: string; driver: string; vehicle: string; fixed: number; cost: number; status: "online" | "offline" }
+interface Device { id: string; code: string; driver: string; vehicle: string; cost: number; status: "online" | "offline" }
 interface Contract { id: string; driver: string; owner: string; vehicle: string; type: "fixed" | "target"; amount: number; target: number; assocFee: number; status: "active" | "pending renewal" }
 interface Txn { id: string; deviceId: string; device: string; driver: string; date: Date; amount: number; method: "online" | "offline" }
 
@@ -43,12 +43,12 @@ function uid(prefix: string) { return prefix + "-" + Math.random().toString(36).
 
 function seedDevices(): Device[] {
   return [
-    { id: "DEV-1001", code: "TAP-1001", driver: "Thabo Nkosi", vehicle: "Toyota Corolla · CA 123-456", fixed: 1200, cost: 3500, status: "online" },
-    { id: "DEV-1002", code: "TAP-1002", driver: "Sipho Dlamini", vehicle: "VW Polo Vivo · CA 234-567", fixed: 1200, cost: 3500, status: "online" },
-    { id: "DEV-1003", code: "TAP-1003", driver: "Naledi Mokoena", vehicle: "Toyota Etios · CA 345-678", fixed: 1000, cost: 3200, status: "offline" },
-    { id: "DEV-1004", code: "TAP-1004", driver: "Johan van Wyk", vehicle: "Renault Kwid · CA 456-789", fixed: 1000, cost: 3200, status: "online" },
-    { id: "DEV-1005", code: "TAP-1005", driver: "Zanele Khumalo", vehicle: "Nissan Almera · CA 567-890", fixed: 1500, cost: 4000, status: "online" },
-    { id: "DEV-1006", code: "TAP-1006", driver: "Kabelo Seane", vehicle: "Hyundai Grand i10 · CA 678-901", fixed: 1200, cost: 3500, status: "online" },
+    { id: "DEV-1001", code: "TAP-1001", driver: "Thabo Nkosi", vehicle: "Toyota Corolla · CA 123-456", cost: 3500, status: "online" },
+    { id: "DEV-1002", code: "TAP-1002", driver: "Sipho Dlamini", vehicle: "VW Polo Vivo · CA 234-567", cost: 3500, status: "online" },
+    { id: "DEV-1003", code: "TAP-1003", driver: "Naledi Mokoena", vehicle: "Toyota Etios · CA 345-678", cost: 3200, status: "offline" },
+    { id: "DEV-1004", code: "TAP-1004", driver: "Johan van Wyk", vehicle: "Renault Kwid · CA 456-789", cost: 3200, status: "online" },
+    { id: "DEV-1005", code: "TAP-1005", driver: "Zanele Khumalo", vehicle: "Nissan Almera · CA 567-890", cost: 4000, status: "online" },
+    { id: "DEV-1006", code: "TAP-1006", driver: "Kabelo Seane", vehicle: "Hyundai Grand i10 · CA 678-901", cost: 3500, status: "online" },
   ];
 }
 function seedContracts(): Contract[] {
@@ -84,6 +84,15 @@ function seedTransactions(devices: Device[]): Txn[] {
 const INVESTOR_CAPITAL = 150000;
 const RETAINED_EARNINGS_OPENING = 45000;
 
+// ─── Same VINK AFC revenue model as RevenueDashboard.tsx (the backend-
+// connected "AFC Revenue Distribution & Investor Portal") -- matched
+// exactly so both dashboards report consistent numbers for the same
+// investor, rather than two different, disconnected revenue models. ───
+const DEVICE_MONTHLY_RENTAL = 250;
+const VINK_FEE_PER_TAP = 1.00;
+const INVESTOR_SHARE_PCT = 10;
+const INVESTOR_TAP_SHARE = +(VINK_FEE_PER_TAP * INVESTOR_SHARE_PCT / 100).toFixed(2); // R0.10/tap
+
 function Sparkline({ color = BLUE }: { color?: string }) {
   const data = useMemo(() => Array.from({ length: 14 }, () => 40 + Math.random() * 60), []);
   return (
@@ -117,7 +126,7 @@ const NAV_GROUPS: { label: string; items: { id: View; label: string; icon: any }
   { label: "Financial statements", items: [{ id: "income-statement", label: "Income Statement", icon: DollarSign }, { id: "balance-sheet", label: "Balance Sheet", icon: Scale }, { id: "cash-flow", label: "Statement of Cash Flow", icon: Wallet }, { id: "tax", label: "Tax", icon: Percent }] },
 ];
 
-export function InvestorFleetDashboardViewer({ isOpen, onClose, investorName = "Investor" }: Props) {
+export function InvestorFleetDashboardViewer({ isOpen, onClose, investorName = "Investor", onOpenRevenueDashboard }: Props) {
   const [view, setView] = useState<View>("dashboard");
   const [devices, setDevices] = useState<Device[]>(seedDevices);
   const [initialDeviceIds] = useState<string[]>(() => seedDevices().map(d => d.id));
@@ -135,9 +144,9 @@ export function InvestorFleetDashboardViewer({ isOpen, onClose, investorName = "
 
   // ── The financial engine -- every downstream number derives from here ──
   const f = useMemo(() => {
-    const fixedIncomeTotal = devices.reduce((s, d) => s + d.fixed, 0);
-    const feeOnline = transactions.filter(t => t.method === "online").reduce((s, t) => s + t.amount * 0.10, 0);
-    const feeOffline = transactions.filter(t => t.method === "offline").reduce((s, t) => s + t.amount * 0.10, 0);
+    const fixedIncomeTotal = devices.length * DEVICE_MONTHLY_RENTAL;
+    const feeOnline = transactions.filter(t => t.method === "online").length * INVESTOR_TAP_SHARE;
+    const feeOffline = transactions.filter(t => t.method === "offline").length * INVESTOR_TAP_SHARE;
     const feeTotal = feeOnline + feeOffline;
     const grossRevenue = fixedIncomeTotal + feeTotal;
 
@@ -197,12 +206,12 @@ export function InvestorFleetDashboardViewer({ isOpen, onClose, investorName = "
     const fare = Math.round((15 + Math.random() * 35) * 100) / 100;
     const method: "online" | "offline" = Math.random() < 0.8 ? "online" : "offline";
     setTransactions(ts => [{ id: "TRP-" + Math.floor(Math.random() * 9000 + 1000), deviceId: d.id, device: d.code, driver: d.driver, date: new Date(), amount: fare, method }, ...ts]);
-    toast.success(`Tap on ${d.code}: ${R2(fare)} fare · your fee ${R2(fare * 0.1)}`);
+    toast.success(`Tap on ${d.code}: ${R2(fare)} fare · your fee ${R2(INVESTOR_TAP_SHARE)}`);
   };
 
-  const submitDevice = (driver: string, vehicle: string, fixed: number, cost: number) => {
-    setDevices(ds => [...ds, { id: uid("DEV"), code: "TAP-" + (1007 + ds.length - 6), driver: driver || "New Driver", vehicle: vehicle || "Unassigned vehicle", fixed: fixed || 1000, cost: cost || 3200, status: "online" }]);
-    toast.success(`Device added — earning ${R(fixed || 1000)}/mo plus 10% of every trip`);
+  const submitDevice = (driver: string, vehicle: string, cost: number) => {
+    setDevices(ds => [...ds, { id: uid("DEV"), code: "TAP-" + (1007 + ds.length - 6), driver: driver || "New Driver", vehicle: vehicle || "Unassigned vehicle", cost: cost || 3200, status: "online" }]);
+    toast.success(`Device added — earning ${R(DEVICE_MONTHLY_RENTAL)}/mo plus ${R2(INVESTOR_TAP_SHARE)} per tap`);
     setShowDeviceModal(false);
   };
 
@@ -256,6 +265,14 @@ export function InvestorFleetDashboardViewer({ isOpen, onClose, investorName = "
         ))}
 
         <div className="mt-auto space-y-2.5 pt-3">
+          {onOpenRevenueDashboard && (
+            <button onClick={() => { onClose(); onOpenRevenueDashboard(); }}
+              className="w-full text-left rounded-xl p-3.5 transition-colors hover:brightness-110"
+              style={{ background: `linear-gradient(135deg,${BLUE},${PURPLE})` }}>
+              <p className="text-white text-[12.5px] font-bold">⚡ Live AFC Revenue System</p>
+              <p className="text-white/70 text-[11px] mt-0.5 leading-snug">See real-time taps, agreements &amp; audit trail across all investors →</p>
+            </button>
+          )}
           <div className="rounded-xl p-3.5" style={{ background: "#111a42", border: "1px solid #1c2758" }}>
             <p className="text-white text-[12.5px] font-semibold">💠 Portfolio secured</p>
             <p className="text-white/50 text-[11.5px] mt-0.5 leading-snug">Device balances &amp; statements reconcile automatically each tap.</p>
@@ -301,7 +318,7 @@ export function InvestorFleetDashboardViewer({ isOpen, onClose, investorName = "
                 {[
                   { label: "Gross Income", value: R(f.grossRevenue), bg: "#efeafd", color: PURPLE, icon: TrendingUp },
                   { label: "Fixed Device Income", value: R(f.fixedIncomeTotal), bg: "#e4f8ee", color: GREEN, icon: Smartphone },
-                  { label: "Transaction Fees (10%)", value: R(f.feeTotal), bg: "#fef0df", color: ORANGE, icon: Zap },
+                  { label: `Transaction Fees (${R2(INVESTOR_TAP_SHARE)}/tap)`, value: R(f.feeTotal), bg: "#fef0df", color: ORANGE, icon: Zap },
                   { label: "Net Income (after tax)", value: R(f.netIncome), bg: "#e6edff", color: BLUE, icon: DollarSign },
                 ].map(s => (
                   <div key={s.label} className="bg-white rounded-2xl border border-gray-100 p-5">
@@ -400,7 +417,7 @@ export function InvestorFleetDashboardViewer({ isOpen, onClose, investorName = "
                 {[
                   { l: "Devices owned", v: String(devices.length), s: `${devices.filter(d => d.status === "online").length} online now` },
                   { l: "Fixed income / month", v: R(f.fixedIncomeTotal), s: "accumulates per device" },
-                  { l: "Fee income to date", v: R(f.feeTotal), s: "10% of every trip" },
+                  { l: "Fee income to date", v: R(f.feeTotal), s: `${R2(INVESTOR_TAP_SHARE)} per tap` },
                   { l: "Portfolio value (cost)", v: R(f.grossDeviceCost), s: "device book value" },
                 ].map(k => <div key={k.l} className="bg-white rounded-2xl border border-gray-100 p-4"><p className="text-[11.5px] text-gray-500 font-semibold">{k.l}</p><p className="text-[19px] font-black mt-1">{k.v}</p><p className="text-[11px] text-gray-400 mt-1">{k.s}</p></div>)}
               </div>
@@ -409,7 +426,7 @@ export function InvestorFleetDashboardViewer({ isOpen, onClose, investorName = "
                 <div className="grid sm:grid-cols-2 gap-3.5">
                   {devices.map(d => {
                     const trips = transactions.filter(t => t.deviceId === d.id);
-                    const feeEarned = trips.reduce((s, t) => s + t.amount * 0.1, 0);
+                    const feeEarned = trips.length * INVESTOR_TAP_SHARE;
                     return (
                       <div key={d.id} className="border border-gray-100 rounded-2xl p-4">
                         <div className="flex items-center justify-between"><div><p className="font-bold text-[14px]">{d.code}</p><p className="text-xs text-gray-400">{d.driver}</p></div>
@@ -418,10 +435,10 @@ export function InvestorFleetDashboardViewer({ isOpen, onClose, investorName = "
                         <div className="h-px bg-gray-100 my-3" />
                         <p className="text-[12.5px] text-gray-600 mb-2">{d.vehicle}</p>
                         <div className="grid grid-cols-2 gap-2 text-[12.5px]">
-                          <div><p className="text-gray-400">Fixed income</p><p className="font-bold">{R(d.fixed)}/mo</p></div>
+                          <div><p className="text-gray-400">Device rental</p><p className="font-bold">{R(DEVICE_MONTHLY_RENTAL)}/mo</p></div>
                           <div><p className="text-gray-400">Trips</p><p className="font-bold">{trips.length}</p></div>
-                          <div><p className="text-gray-400">Fee earned (10%)</p><p className="font-bold">{R2(feeEarned)}</p></div>
-                          <div><p className="text-gray-400">Total earned</p><p className="font-bold" style={{ color: BLUE }}>{R2(d.fixed + feeEarned)}</p></div>
+                          <div><p className="text-gray-400">Fee earned (R{INVESTOR_TAP_SHARE.toFixed(2)}/tap)</p><p className="font-bold">{R2(feeEarned)}</p></div>
+                          <div><p className="text-gray-400">Total earned</p><p className="font-bold" style={{ color: BLUE }}>{R2(DEVICE_MONTHLY_RENTAL + feeEarned)}</p></div>
                         </div>
                         <div className="mt-2.5"><Pill tone={d.status === "online" ? "green" : "grey"}>{d.status === "online" ? "Online" : "Offline"}</Pill></div>
                       </div>
@@ -429,7 +446,7 @@ export function InvestorFleetDashboardViewer({ isOpen, onClose, investorName = "
                   })}
                 </div>
               </div>
-              <p className="text-[11.5px] text-gray-400 mt-2.5 leading-relaxed">Each device pays a fixed monthly income to you regardless of usage, plus 10% of the value of every trip tapped on it. Earnings across all devices accumulate into one portfolio total — the more devices you hold, the larger both your fixed base and your variable fee income become.</p>
+              <p className="text-[11.5px] text-gray-400 mt-2.5 leading-relaxed">Each device pays a flat {R(DEVICE_MONTHLY_RENTAL)}/month rental to you regardless of usage, plus {R2(INVESTOR_TAP_SHARE)} for every tap on it. Earnings across all devices accumulate into one portfolio total — the more devices you hold, the larger both your rental base and your tap-fee income become.</p>
             </div>
           )}
 
@@ -437,7 +454,7 @@ export function InvestorFleetDashboardViewer({ isOpen, onClose, investorName = "
           {view === "trips" && (
             <div>
               <div className="flex items-start justify-between flex-wrap gap-3.5 mb-5">
-                <div><h1 className="text-[23px] font-bold">Trips &amp; Taps</h1><p className="text-gray-500 text-[13.5px] mt-1">Preview of every fare tapped across your fleet, with your 10% fee per trip.</p></div>
+                <div><h1 className="text-[23px] font-bold">Trips &amp; Taps</h1><p className="text-gray-500 text-[13.5px] mt-1">Preview of every fare tapped across your fleet, with your {R2(INVESTOR_TAP_SHARE)} fee per tap.</p></div>
                 <button onClick={simulateTap} className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-[13px] font-bold"><Zap className="w-4 h-4" /> Simulate Tap</button>
               </div>
               <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-3.5 mb-5">
@@ -445,7 +462,7 @@ export function InvestorFleetDashboardViewer({ isOpen, onClose, investorName = "
                   { l: "Total trips", v: String(f.tripsCount), s: "across all devices" },
                   { l: "Online payments", v: String(transactions.filter(t => t.method === "online").length), s: "settled immediately" },
                   { l: "Offline payments", v: String(transactions.filter(t => t.method === "offline").length), s: "pending settlement" },
-                  { l: "Fee income earned", v: R(f.feeTotal), s: "10% of trip value" },
+                  { l: "Fee income earned", v: R(f.feeTotal), s: `${R2(INVESTOR_TAP_SHARE)} per tap` },
                 ].map(k => <div key={k.l} className="bg-white rounded-2xl border border-gray-100 p-4"><p className="text-[11.5px] text-gray-500 font-semibold">{k.l}</p><p className="text-[19px] font-black mt-1">{k.v}</p><p className="text-[11px] text-gray-400 mt-1">{k.s}</p></div>)}
               </div>
               <div className="bg-white rounded-2xl border border-gray-100 p-5">
@@ -457,14 +474,14 @@ export function InvestorFleetDashboardViewer({ isOpen, onClose, investorName = "
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-[13px]">
-                    <thead><tr className="text-left text-gray-400 text-[11px] uppercase tracking-wide border-b border-gray-100"><th className="py-2.5 px-2.5 font-semibold">Trip</th><th className="py-2.5 px-2.5 font-semibold">Device</th><th className="py-2.5 px-2.5 font-semibold">Driver</th><th className="py-2.5 px-2.5 font-semibold">Date &amp; time</th><th className="py-2.5 px-2.5 font-semibold">Fare</th><th className="py-2.5 px-2.5 font-semibold">Payment</th><th className="py-2.5 px-2.5 font-semibold">Your fee (10%)</th></tr></thead>
+                    <thead><tr className="text-left text-gray-400 text-[11px] uppercase tracking-wide border-b border-gray-100"><th className="py-2.5 px-2.5 font-semibold">Trip</th><th className="py-2.5 px-2.5 font-semibold">Device</th><th className="py-2.5 px-2.5 font-semibold">Driver</th><th className="py-2.5 px-2.5 font-semibold">Date &amp; time</th><th className="py-2.5 px-2.5 font-semibold">Fare</th><th className="py-2.5 px-2.5 font-semibold">Payment</th><th className="py-2.5 px-2.5 font-semibold">Your fee ({R2(INVESTOR_TAP_SHARE)})</th></tr></thead>
                     <tbody>
                       {filteredTrips.length === 0 ? <tr><td colSpan={7} className="text-center py-10 text-gray-400 text-sm">No trips match your filters</td></tr> : filteredTrips.map(t => (
                         <tr key={t.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50">
                           <td className="py-2.5 px-2.5 font-mono text-gray-700">{t.id}</td><td className="py-2.5 px-2.5">{t.device}</td><td className="py-2.5 px-2.5">{t.driver}</td>
                           <td className="py-2.5 px-2.5 text-gray-500">{t.date.toLocaleDateString("en-ZA", { day: "2-digit", month: "short" })} · {t.date.toLocaleTimeString("en-ZA", { hour: "2-digit", minute: "2-digit" })}</td>
                           <td className="py-2.5 px-2.5">{R2(t.amount)}</td><td className="py-2.5 px-2.5"><Pill tone={t.method === "online" ? "blue" : "orange"}>{t.method === "online" ? "Online" : "Offline"}</Pill></td>
-                          <td className="py-2.5 px-2.5 font-bold" style={{ color: GREEN }}>+{R2(t.amount * 0.1)}</td>
+                          <td className="py-2.5 px-2.5 font-bold" style={{ color: GREEN }}>+{R2(INVESTOR_TAP_SHARE)}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -477,25 +494,25 @@ export function InvestorFleetDashboardViewer({ isOpen, onClose, investorName = "
           {/* ── Income ── */}
           {view === "income" && (
             <div>
-              <div className="mb-5"><h1 className="text-[23px] font-bold">Income</h1><p className="text-gray-500 text-[13.5px] mt-1">Gross monthly earnings — fixed device income plus 10% transaction fees, per device and combined.</p></div>
+              <div className="mb-5"><h1 className="text-[23px] font-bold">Income</h1><p className="text-gray-500 text-[13.5px] mt-1">Gross monthly earnings — {R(DEVICE_MONTHLY_RENTAL)}/month device rental plus {R2(INVESTOR_TAP_SHARE)}-per-tap fees, per device and combined.</p></div>
               <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-3.5 mb-5">
                 {[
                   { l: "Gross monthly income", v: R(f.grossRevenue), s: "fixed + fees, all devices" },
                   { l: "Fixed base income", v: R(f.fixedIncomeTotal), s: `${devices.length} devices` },
-                  { l: "Transaction fee income", v: R(f.feeTotal), s: `${f.tripsCount} trips at 10%` },
+                  { l: "Transaction fee income", v: R(f.feeTotal), s: `${f.tripsCount} taps at ${R2(INVESTOR_TAP_SHARE)}` },
                   { l: "Avg. income per device", v: R(devices.length ? f.grossRevenue / devices.length : 0), s: "blended" },
                 ].map(k => <div key={k.l} className="bg-white rounded-2xl border border-gray-100 p-4"><p className="text-[11.5px] text-gray-500 font-semibold">{k.l}</p><p className="text-[19px] font-black mt-1">{k.v}</p><p className="text-[11px] text-gray-400 mt-1">{k.s}</p></div>)}
               </div>
               <div className="grid lg:grid-cols-[1.3fr_1fr] gap-4.5">
                 <div className="bg-white rounded-2xl border border-gray-100 p-5 overflow-x-auto">
-                  <p className="text-[15px] font-bold mb-1">Income by device</p><p className="text-xs text-gray-400 mb-3.5">Fixed base + accumulated 10% fee income</p>
+                  <p className="text-[15px] font-bold mb-1">Income by device</p><p className="text-xs text-gray-400 mb-3.5">{R(DEVICE_MONTHLY_RENTAL)}/month rental + accumulated {R2(INVESTOR_TAP_SHARE)}-per-tap fee income</p>
                   <table className="w-full text-[13px]">
                     <thead><tr className="text-left text-gray-400 text-[11px] uppercase tracking-wide border-b border-gray-100"><th className="py-2.5 px-2.5 font-semibold">Device</th><th className="py-2.5 px-2.5 font-semibold">Driver</th><th className="py-2.5 px-2.5 font-semibold">Fixed</th><th className="py-2.5 px-2.5 font-semibold">Trips</th><th className="py-2.5 px-2.5 font-semibold">Fee</th><th className="py-2.5 px-2.5 font-semibold">Total</th></tr></thead>
                     <tbody>
                       {devices.map(d => {
                         const trips = transactions.filter(t => t.deviceId === d.id);
-                        const fee = trips.reduce((s, t) => s + t.amount * 0.1, 0);
-                        return <tr key={d.id} className="border-b border-gray-50 last:border-0"><td className="py-2.5 px-2.5 font-bold">{d.code}</td><td className="py-2.5 px-2.5">{d.driver}</td><td className="py-2.5 px-2.5">{R(d.fixed)}</td><td className="py-2.5 px-2.5">{trips.length}</td><td className="py-2.5 px-2.5">{R2(fee)}</td><td className="py-2.5 px-2.5 font-black" style={{ color: BLUE }}>{R2(d.fixed + fee)}</td></tr>;
+                        const fee = trips.length * INVESTOR_TAP_SHARE;
+                        return <tr key={d.id} className="border-b border-gray-50 last:border-0"><td className="py-2.5 px-2.5 font-bold">{d.code}</td><td className="py-2.5 px-2.5">{d.driver}</td><td className="py-2.5 px-2.5">{R(DEVICE_MONTHLY_RENTAL)}</td><td className="py-2.5 px-2.5">{trips.length}</td><td className="py-2.5 px-2.5">{R2(fee)}</td><td className="py-2.5 px-2.5 font-black" style={{ color: BLUE }}>{R2(DEVICE_MONTHLY_RENTAL + fee)}</td></tr>;
                       })}
                       <tr><td colSpan={5} className="py-2.5 px-2.5 font-black">Portfolio total</td><td className="py-2.5 px-2.5 font-black" style={{ color: BLUE }}>{R(f.grossRevenue)}</td></tr>
                     </tbody>
@@ -505,9 +522,9 @@ export function InvestorFleetDashboardViewer({ isOpen, onClose, investorName = "
                   <p className="text-[15px] font-bold mb-3.5">How your income accumulates</p>
                   <div className="space-y-3">
                     {[
-                      { n: "1. Fixed monthly income", s: "Every device you own pays a guaranteed base amount each month, whether or not it's tapped.", icon: Smartphone, bg: "#efeafd", c: PURPLE },
-                      { n: "2. +10% per trip tapped", s: "Each time a driver turns on the device for a fare, you earn 10% of that trip's value on top of the fixed amount.", icon: Zap, bg: "#e4f8ee", c: GREEN },
-                      { n: `3. Income accumulates across devices`, s: `Own more devices and both the fixed base and the 10% fee income stack together into one portfolio total — currently ${R(f.grossRevenue)}.`, icon: DollarSign, bg: "#e6edff", c: BLUE },
+                      { n: "1. Monthly device rental", s: `Every device you own pays a guaranteed ${R(DEVICE_MONTHLY_RENTAL)}/month, whether or not it's tapped.`, icon: Smartphone, bg: "#efeafd", c: PURPLE },
+                      { n: `2. +${R2(INVESTOR_TAP_SHARE)} per tap`, s: `Each time a driver turns on the device for a fare, you earn ${R2(INVESTOR_TAP_SHARE)} — your 10% share of VINK's flat R1.00 transaction fee — on top of the monthly rental.`, icon: Zap, bg: "#e4f8ee", c: GREEN },
+                      { n: `3. Income accumulates across devices`, s: `Own more devices and both the rental base and the tap-fee income stack together into one portfolio total — currently ${R(f.grossRevenue)}.`, icon: DollarSign, bg: "#e6edff", c: BLUE },
                     ].map(x => <div key={x.n} className="flex items-start gap-3"><span className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: x.bg, color: x.c }}><x.icon className="w-4 h-4" /></span><div><p className="text-[12.8px] font-bold">{x.n}</p><p className="text-[11.5px] text-gray-400 mt-0.5 leading-relaxed">{x.s}</p></div></div>)}
                   </div>
                 </div>
@@ -599,7 +616,7 @@ export function InvestorFleetDashboardViewer({ isOpen, onClose, investorName = "
                     <tbody>
                       <StatementRow kind="section" label="Revenue" />
                       <StatementRow kind="indent" label="Fixed device income" value={R2(f.fixedIncomeTotal)} />
-                      <StatementRow kind="indent" label="Transaction fee income (10%)" value={R2(f.feeTotal)} />
+                      <StatementRow kind="indent" label={`Transaction fee income (${R2(INVESTOR_TAP_SHARE)}/tap)`} value={R2(f.feeTotal)} />
                       <StatementRow kind="subtotal" label="Total revenue" value={R2(f.grossRevenue)} />
                       <StatementRow kind="section" label="Operating expenses" />
                       <StatementRow kind="indent" label="Device maintenance" value={R2(f.maintenance)} />
@@ -751,7 +768,7 @@ export function InvestorFleetDashboardViewer({ isOpen, onClose, investorName = "
                 <div className="bg-white rounded-2xl border border-gray-100 p-5">
                   <p className="text-[15px] font-bold mb-3.5">Portfolio assumptions</p>
                   <div className="space-y-3">
-                    <div><label className="block text-xs font-bold text-gray-600 mb-1.5">Transaction fee per device</label><input className="w-full px-3 py-2 rounded-lg border border-gray-200 text-[13px] bg-gray-50" value="10% of every trip fare" readOnly /></div>
+                    <div><label className="block text-xs font-bold text-gray-600 mb-1.5">Transaction fee per device</label><input className="w-full px-3 py-2 rounded-lg border border-gray-200 text-[13px] bg-gray-50" value={`${R2(INVESTOR_TAP_SHARE)} per tap (10% of VINK's R1.00 fee)`} readOnly /></div>
                     <div><label className="block text-xs font-bold text-gray-600 mb-1.5">Device cost basis</label><input className="w-full px-3 py-2 rounded-lg border border-gray-200 text-[13px] bg-gray-50" value="Set per device on creation" readOnly /></div>
                     <div><label className="block text-xs font-bold text-gray-600 mb-1.5">Reset demo data</label>
                       <button onClick={() => { setDevices(seedDevices()); setContracts(seedContracts()); setTransactions(seedTransactions(seedDevices())); setTaxRate(18); setTaxRateInput("18"); toast.success("Sample data restored"); }}
@@ -773,24 +790,21 @@ export function InvestorFleetDashboardViewer({ isOpen, onClose, investorName = "
   );
 }
 
-function AddDeviceModal({ onClose, onSubmit }: { onClose: () => void; onSubmit: (driver: string, vehicle: string, fixed: number, cost: number) => void }) {
-  const [driver, setDriver] = useState(""), [vehicle, setVehicle] = useState(""), [fixed, setFixed] = useState("1200"), [cost, setCost] = useState("3500");
+function AddDeviceModal({ onClose, onSubmit }: { onClose: () => void; onSubmit: (driver: string, vehicle: string, cost: number) => void }) {
+  const [driver, setDriver] = useState(""), [vehicle, setVehicle] = useState(""), [cost, setCost] = useState("3500");
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center p-5" style={{ background: "rgba(10,14,35,.55)" }} onClick={onClose}>
       <div className="bg-white rounded-2xl w-full max-w-[420px] p-5" onClick={e => e.stopPropagation()}>
         <h3 className="text-[17px] font-bold mb-1">Add a device</h3>
-        <p className="text-[12.5px] text-gray-400 mb-4">New tap-to-pay units earn fixed monthly income plus 10% of every trip from the moment they're added.</p>
+        <p className="text-[12.5px] text-gray-400 mb-4">New tap-to-pay units earn {R(DEVICE_MONTHLY_RENTAL)}/month device rental plus {R2(INVESTOR_TAP_SHARE)} per tap from the moment they're added.</p>
         <div className="space-y-3">
           <div><label className="block text-xs font-bold text-gray-600 mb-1.5">Driver name</label><input value={driver} onChange={e => setDriver(e.target.value)} placeholder="e.g. Lindiwe Ngcobo" className="w-full px-3 py-2 rounded-lg border border-gray-200 text-[13px]" /></div>
           <div><label className="block text-xs font-bold text-gray-600 mb-1.5">Vehicle</label><input value={vehicle} onChange={e => setVehicle(e.target.value)} placeholder="e.g. Toyota Quantum – CA 111-222" className="w-full px-3 py-2 rounded-lg border border-gray-200 text-[13px]" /></div>
-          <div className="grid grid-cols-2 gap-2.5">
-            <div><label className="block text-xs font-bold text-gray-600 mb-1.5">Fixed monthly income (R)</label><input type="number" value={fixed} onChange={e => setFixed(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-gray-200 text-[13px]" /></div>
-            <div><label className="block text-xs font-bold text-gray-600 mb-1.5">Device cost (R)</label><input type="number" value={cost} onChange={e => setCost(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-gray-200 text-[13px]" /></div>
-          </div>
+          <div><label className="block text-xs font-bold text-gray-600 mb-1.5">Device cost (R)</label><input type="number" value={cost} onChange={e => setCost(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-gray-200 text-[13px]" /></div>
         </div>
         <div className="flex gap-2.5 mt-4">
           <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-[13px] font-bold">Cancel</button>
-          <button onClick={() => onSubmit(driver, vehicle, parseFloat(fixed), parseFloat(cost))} className="flex-1 py-2.5 rounded-xl text-white text-[13px] font-bold" style={{ background: `linear-gradient(90deg,${BLUE},#4f7cf5)` }}>Add device</button>
+          <button onClick={() => onSubmit(driver, vehicle, parseFloat(cost))} className="flex-1 py-2.5 rounded-xl text-white text-[13px] font-bold" style={{ background: `linear-gradient(90deg,${BLUE},#4f7cf5)` }}>Add device</button>
         </div>
       </div>
     </div>
