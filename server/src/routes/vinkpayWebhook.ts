@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import { handleWebhook, type WebhookPayload } from "../services/vinkPay.js";
+import { emit } from "../services/wsBroadcast.js";
 
 const router: ReturnType<typeof Router> = Router();
 
@@ -55,6 +56,17 @@ router.post("/:processor", async (req: Request, res: Response): Promise<void> =>
     const status = result.error === "Invalid webhook signature" ? 401 : 400;
     res.status(status).json({ success: false, error: result.error });
     return;
+  }
+
+  // Notify any connected client -- this is the wsBroadcast.ts module's
+  // intended caller (see its own comment: "VinkPay, the webhook handler"),
+  // wired up here for the first time. Global broadcast, not per-user
+  // targeted, same caveat as wsBroadcast.ts's own comment -- a client
+  // receiving this should treat it as "a payment was confirmed somewhere,
+  // maybe worth refetching your own order/trip status" rather than
+  // assuming it's necessarily about the current user's own transaction.
+  if (!result.duplicate) {
+    emit("payment_confirmed", { processorRef: payload.processorRef, status: payload.status });
   }
 
   // Always 200 once handled, including duplicates — a webhook that's

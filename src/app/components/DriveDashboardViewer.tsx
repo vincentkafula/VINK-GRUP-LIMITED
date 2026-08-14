@@ -12,6 +12,7 @@ import {
   ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell,
 } from "recharts";
 import { DeviceTerminalModal } from "./DeviceTerminalModal";
+import { connectLiveSocket } from "../services/liveSocket";
 
 /**
  * Driver Dashboard -- built from the uploaded reference, a full 9-page
@@ -534,6 +535,44 @@ function PreviewView({ trips, deviceOn }: { trips: Trip[]; deviceOn: boolean }) 
   const [feed, setFeed] = useState<Trip[]>(() => trips.slice(0, 9).map((t, i) => ({ ...t, id: 9000 + i, day: "Today", time: timeNow(), _seenAt: Date.now() - i * 60000 })));
   const [flashId, setFlashId] = useState<number | null>(null);
   const [scanning, setScanning] = useState(false);
+  const [wsConnected, setWsConnected] = useState(false);
+
+  // Real WebSocket connection to the backend's live event stream --
+  // separate from the demo tap simulation below, which still drives the
+  // UI in demo mode / when no real device is actually tapping. Listens
+  // for a "tap" event specifically, matching this screen's purpose (card
+  // machine taps) -- honest caveat: no backend route currently emits
+  // this exact event, since a real AFC device integration doesn't exist
+  // in this codebase yet (transit taps here are simulated client-side
+  // throughout every dashboard this session built). This is a correctly-
+  // wired listener ready for that integration, not something already
+  // firing end-to-end today. The WS infrastructure itself is proven
+  // functional right now via a different, currently-real event:
+  // server/src/routes/vinkpayWebhook.ts emits "payment_confirmed" when
+  // an actual card payment webhook arrives -- same connectLiveSocket
+  // plumbing, a genuine event source instead of a not-yet-built one.
+  useEffect(() => {
+    const disconnect = connectLiveSocket(
+      (event, data) => {
+        if (event !== "tap" || !data || typeof data !== "object") return;
+        const d = data as Record<string, unknown>;
+        const newTrip: Trip = {
+          id: (nextId.current += 1), day: "Today", time: timeNow(),
+          amount: typeof d.amount === "number" ? d.amount : 0,
+          type: d.type === "cash" ? "cash" : "card",
+          location: typeof d.location === "string" ? d.location : "Unknown",
+          status: d.status === "declined" ? "declined" : "approved",
+          last4: typeof d.last4 === "string" ? d.last4 : null,
+          _seenAt: Date.now(),
+        };
+        setFeed(f => [newTrip, ...f].slice(0, 40));
+        setFlashId(newTrip.id);
+        setTimeout(() => setFlashId(null), 1600);
+      },
+      setWsConnected,
+    );
+    return disconnect;
+  }, []);
 
   useEffect(() => {
     if (!deviceOn) return;
@@ -574,9 +613,15 @@ function PreviewView({ trips, deviceOn }: { trips: Trip[]; deviceOn: boolean }) 
     <div>
       <SectionHeader eyebrow="Drive module" title="Preview" subtitle="A visible, real-time view of every tap on the card machine as it happens."
         right={
-          <div className={`flex items-center gap-2 text-xs font-semibold px-3.5 py-2 rounded-full ${deviceOn ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-500"}`}>
-            <span className={`w-2 h-2 rounded-full ${deviceOn ? "bg-emerald-500" : "bg-slate-400"}`} style={deviceOn ? { animation: "dotBlink 1.4s ease-in-out infinite" } : {}} />
-            {deviceOn ? "Machine listening for taps" : "Machine offline"}
+          <div className="flex items-center gap-2">
+            <div className={`flex items-center gap-2 text-xs font-semibold px-3.5 py-2 rounded-full ${deviceOn ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-500"}`}>
+              <span className={`w-2 h-2 rounded-full ${deviceOn ? "bg-emerald-500" : "bg-slate-400"}`} style={deviceOn ? { animation: "dotBlink 1.4s ease-in-out infinite" } : {}} />
+              {deviceOn ? "Machine listening for taps" : "Machine offline"}
+            </div>
+            <div className={`flex items-center gap-2 text-xs font-semibold px-3.5 py-2 rounded-full ${wsConnected ? "bg-blue-100 text-blue-700" : "bg-slate-200 text-slate-500"}`} title="Real backend WebSocket connection -- separate from the demo tap simulation above">
+              <span className={`w-2 h-2 rounded-full ${wsConnected ? "bg-blue-500" : "bg-slate-400"}`} />
+              {wsConnected ? "Live" : "Demo mode"}
+            </div>
           </div>
         } />
 
