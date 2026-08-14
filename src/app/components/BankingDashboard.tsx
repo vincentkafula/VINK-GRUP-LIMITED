@@ -1043,9 +1043,9 @@ function AccountsPanel({ accounts }: { accounts: R[] }) {
 }
 
 // ─── MAIN DASHBOARD ────────────────────────────────────────────────────────────
-interface BankingDashboardProps { isOpen: boolean; onClose: () => void; onOpenDriveDashboard?: () => void; onOpenOwnerDashboard?: () => void }
+interface BankingDashboardProps { isOpen: boolean; onClose: () => void; onOpenDriveDashboard?: () => void; onOpenOwnerDashboard?: () => void; onOpenTaxiAssociationDashboard?: () => void }
 
-export function BankingDashboard({ isOpen, onClose, onOpenDriveDashboard, onOpenOwnerDashboard }: BankingDashboardProps) {
+export function BankingDashboard({ isOpen, onClose, onOpenDriveDashboard, onOpenOwnerDashboard, onOpenTaxiAssociationDashboard }: BankingDashboardProps) {
   const [authed, setAuthed] = useState(() => {
     if (getBankToken()) return true;
     const mainToken = getMainToken();
@@ -1237,6 +1237,13 @@ export function BankingDashboard({ isOpen, onClose, onOpenDriveDashboard, onOpen
                     </button>
                   ))}
                 </div>
+                {onOpenTaxiAssociationDashboard && (
+                  <button onClick={onOpenTaxiAssociationDashboard}
+                    className="w-full mt-2 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-[10.5px] font-bold transition-all"
+                    style={{ background: "rgba(234,88,12,.12)", color: "#EA580C", border: "1px solid rgba(234,88,12,.25)" }}>
+                    Taxi Association Dashboard
+                  </button>
+                )}
               </div>
             )}
 
