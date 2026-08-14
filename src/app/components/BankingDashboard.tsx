@@ -1043,9 +1043,9 @@ function AccountsPanel({ accounts }: { accounts: R[] }) {
 }
 
 // ─── MAIN DASHBOARD ────────────────────────────────────────────────────────────
-interface BankingDashboardProps { isOpen: boolean; onClose: () => void; onOpenDriveDashboard?: () => void; onOpenOwnerDashboard?: () => void; onOpenTaxiAssociationDashboard?: () => void; onOpenInvestorDashboard?: () => void }
+interface BankingDashboardProps { isOpen: boolean; onClose: () => void; onOpenDriveDashboard?: () => void; onOpenOwnerDashboard?: () => void; onOpenTaxiAssociationDashboard?: () => void; onOpenInvestorDashboard?: () => void; onOpenPassengerDashboard?: () => void }
 
-export function BankingDashboard({ isOpen, onClose, onOpenDriveDashboard, onOpenOwnerDashboard, onOpenTaxiAssociationDashboard, onOpenInvestorDashboard }: BankingDashboardProps) {
+export function BankingDashboard({ isOpen, onClose, onOpenDriveDashboard, onOpenOwnerDashboard, onOpenTaxiAssociationDashboard, onOpenInvestorDashboard, onOpenPassengerDashboard }: BankingDashboardProps) {
   const [authed, setAuthed] = useState(() => {
     if (getBankToken()) return true;
     const mainToken = getMainToken();
@@ -1230,7 +1230,7 @@ export function BankingDashboard({ isOpen, onClose, onOpenDriveDashboard, onOpen
                 <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: "#8884AA" }}>Account Type</p>
                 <div className="grid grid-cols-2 gap-1">
                   {(["passenger","driver","investor","owner","admin","compliance","treasury","executive","frontline"] as BankRole[]).map(r => (
-                    <button key={r} onClick={() => (r === "driver" && onOpenDriveDashboard ? onOpenDriveDashboard() : r === "owner" && onOpenOwnerDashboard ? onOpenOwnerDashboard() : r === "investor" && onOpenInvestorDashboard ? onOpenInvestorDashboard() : handleRoleChange(r))}
+                    <button key={r} onClick={() => (r === "driver" && onOpenDriveDashboard ? onOpenDriveDashboard() : r === "owner" && onOpenOwnerDashboard ? onOpenOwnerDashboard() : r === "investor" && onOpenInvestorDashboard ? onOpenInvestorDashboard() : r === "passenger" && onOpenPassengerDashboard ? onOpenPassengerDashboard() : handleRoleChange(r))}
                       className="px-2 py-1.5 rounded-lg text-[10px] font-semibold capitalize transition-all"
                       style={{ background: role === r ? ROLE_COLOR[r] + "22" : "transparent", color: role === r ? ROLE_COLOR[r] : "#8884AA", border: `1px solid ${role === r ? ROLE_COLOR[r] + "44" : "transparent"}` }}>
                       {r}
