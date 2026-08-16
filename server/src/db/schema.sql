@@ -491,3 +491,48 @@ CREATE INDEX IF NOT EXISTS idx_fraud_flags_type ON fraud_flags(type);
 ALTER TABLE vinkpay_transactions ADD COLUMN IF NOT EXISTS card_fingerprint TEXT;
 CREATE INDEX IF NOT EXISTS idx_vinkpay_card_fingerprint ON vinkpay_transactions(card_fingerprint) WHERE card_fingerprint IS NOT NULL;
 
+-- ─── AFC Terminal Registration & Tap Ingestion ──────────────────────────────
+-- A "terminal" is a physical device (Telpo T-T20 or equivalent) authorized
+-- to submit tap events. Deliberately NOT authenticated with a user JWT --
+-- the caller is a device, not a logged-in person, so it gets its own
+-- credential (api_key_hash), same reasoning as vinkpayWebhook.ts not using
+-- requireAuth for processor callbacks. api_key itself is never stored --
+-- only its hash, same as password_hash on users -- issued once at
+-- registration time and shown to the operator exactly once.
+CREATE TABLE IF NOT EXISTS terminals (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  serial          TEXT UNIQUE NOT NULL,
+  model           TEXT NOT NULL DEFAULT 'Telpo T-T20',
+  api_key_hash    TEXT NOT NULL,
+  status          TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active','inactive','revoked')),
+  assigned_driver TEXT,                    -- free-text label for now (driver name/id); not a FK, since there's no drivers table yet in this schema
+  registered_by   TEXT,                    -- username of the admin who provisioned it
+  last_seen_at    TIMESTAMPTZ,
+  registered_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_terminals_status ON terminals(status);
+
+-- One row per tap event the terminal reports. Card data here is
+-- deliberately narrow -- masked_pan (never a full PAN), scheme (from the
+-- EMV AID, e.g. "visa"/"mastercard"), and emv_cryptogram_ref, which is
+-- whatever OPAQUE reference the certified EMV kernel itself returns (a
+-- token, not the raw cryptographic Application Cryptogram) -- once a real
+-- kernel is integrated. The route layer enforces this at the boundary:
+-- see terminalRouter.ts's PAN-shape rejection check.
+CREATE TABLE IF NOT EXISTS terminal_taps (
+  id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  terminal_id         UUID NOT NULL REFERENCES terminals(id),
+  masked_pan          TEXT,                -- e.g. "**** **** **** 4242" -- last 4 digits only, never more
+  scheme              TEXT,                -- 'visa' | 'mastercard' | 'other', from the EMV AID the kernel selected
+  amount              NUMERIC(12,2) NOT NULL,
+  currency            TEXT NOT NULL DEFAULT 'ZAR',
+  cardholder_verification TEXT,            -- 'contactless_no_cvm' | 'pin' | 'signature' -- whatever the kernel reports
+  emv_cryptogram_ref  TEXT,                -- opaque token/reference only -- never the raw AC
+  status              TEXT NOT NULL DEFAULT 'received' CHECK (status IN ('received','processing','confirmed','declined')),
+  vinkpay_transaction_id TEXT REFERENCES vinkpay_transactions(id), -- set once this tap is submitted into the existing VinkPay settlement flow
+  error_message       TEXT,
+  received_at         TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_terminal_taps_terminal ON terminal_taps(terminal_id);
+CREATE INDEX IF NOT EXISTS idx_terminal_taps_status ON terminal_taps(status);
+

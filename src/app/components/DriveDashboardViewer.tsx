@@ -13,6 +13,7 @@ import {
 } from "recharts";
 import { DeviceTerminalModal } from "./DeviceTerminalModal";
 import { connectLiveSocket } from "../services/liveSocket";
+import { isNativeTerminalAvailable, isTerminalReady } from "../services/telpoTerminal";
 
 /**
  * Driver Dashboard -- built from the uploaded reference, a full 9-page
@@ -467,12 +468,20 @@ function DashboardView({ trips, gross, uif, paye, netPay, driverName }: { trips:
 // ─── Power page ─────────────────────────────────────────────────────────
 function PowerView({ deviceOn, setDeviceOn }: { deviceOn: boolean; setDeviceOn: (v: boolean) => void }) {
   const [showTerminal, setShowTerminal] = useState(false);
+  const [nativeAvailable, setNativeAvailable] = useState(false);
+  const [readerReady, setReaderReady] = useState(false);
   const [log] = useState([
     { action: "Turned on", by: "Driver", time: "Today, 06:02 AM" },
     { action: "Turned off", by: "Driver", time: "Yesterday, 09:47 PM" },
     { action: "Turned on", by: "Driver", time: "Yesterday, 05:58 AM" },
     { action: "Turned off (auto — low battery)", by: "System", time: "2 days ago, 11:12 PM" },
   ]);
+
+  useEffect(() => {
+    setNativeAvailable(isNativeTerminalAvailable());
+    isTerminalReady().then(setReaderReady);
+  }, []);
+
   return (
     <div>
       <SectionHeader eyebrow="Drive module" title="Turn on or off" subtitle="Control the card-tap machine mounted in your vehicle." />
@@ -502,6 +511,20 @@ function PowerView({ deviceOn, setDeviceOn }: { deviceOn: boolean; setDeviceOn: 
             </div>
             <div><div className="text-slate-400 text-xs mb-1">Battery</div><div className="font-medium text-slate-800 flex items-center gap-1.5"><Battery size={14} className="text-emerald-500" /> 86%</div></div>
             <div><div className="text-slate-400 text-xs mb-1">Signal</div><div className="font-medium text-slate-800 flex items-center gap-1.5"><RadioTower size={14} className="text-emerald-500" /> Strong</div></div>
+          </div>
+
+          <div className="mt-5 rounded-xl p-4 flex items-start gap-3" style={{ background: readerReady ? "#ECFDF5" : "#FFFBEB" }}>
+            <CircleAlert size={18} className="shrink-0 mt-0.5" style={{ color: readerReady ? "#059669" : "#D97706" }} />
+            <div>
+              <p className="text-sm font-semibold text-slate-800">Tap-to-pay card reader: {readerReady ? "Ready" : "Not yet integrated"}</p>
+              <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                {!nativeAvailable
+                  ? "You're viewing this in a browser. Tap-to-pay only works inside the installed VINK Android app on a Telpo T-T20."
+                  : readerReady
+                  ? "The device's certified EMV card reader is connected and ready to accept taps."
+                  : "This device is running the VINK app, but the certified EMV card-reader integration hasn't been added yet — taps aren't accepted until that's wired up on the hardware side."}
+              </p>
+            </div>
           </div>
 
           <h3 className="font-semibold text-slate-800 mt-6 mb-3">Activity log</h3>
