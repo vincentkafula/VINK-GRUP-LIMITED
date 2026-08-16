@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import { pool } from "../db/pool.js";
 import { requireAuth, requireRole, JWT_SECRET, JWT_EXPIRES } from "../middleware/auth.js";
 import { submitOrderPayment, getOrderTransactions } from "../services/vinkPay.js";
+import { checkPaymentVelocity } from "../services/fraudRiskChecks.js";
 
 // 'owner' included alongside the legacy roles below since it's the RBAC
 // system's top-authority role (see rbac.ts's SUPER_ADMIN_ROLES) — without
@@ -418,6 +419,12 @@ router.post("/orders", requireAuth, async (req: Request, res: Response): Promise
 
     await client.query(`UPDATE mkt_carts SET items = '[]', coupon_code = NULL, coupon_discount = 0, subtotal = 0, shipping = 0, tax = 0, total = 0, updated_at = now() WHERE id = $1`, [cart.id]);
     await client.query("COMMIT");
+
+    // Deliberately fire-and-forget, same discipline as the application risk
+    // check in applicationsRouter.ts -- advisory only (Section 5.1.4: flags,
+    // never blocks), so a failure here must never delay order confirmation
+    // or the payment submission call right below it.
+    checkPaymentVelocity(order.id, userId).catch(err => console.error("[fraud-risk] Payment velocity check failed:", err));
 
     // Submit the charge *after* releasing the stock locks — a payment
     // gateway call is a network round trip and shouldn't hold a

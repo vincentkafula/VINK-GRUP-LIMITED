@@ -548,9 +548,11 @@ function PreviewView({ trips, deviceOn }: { trips: Trip[]; deviceOn: boolean }) 
   // wired listener ready for that integration, not something already
   // firing end-to-end today. The WS infrastructure itself is proven
   // functional right now via a different, currently-real event:
-  // server/src/routes/vinkpayWebhook.ts emits "payment_confirmed" when
-  // an actual card payment webhook arrives -- same connectLiveSocket
-  // plumbing, a genuine event source instead of a not-yet-built one.
+  // server/src/services/vinkPay.ts's handleWebhook() emits
+  // "vinkpay.payment_status_changed" when an actual card payment webhook
+  // arrives (or the reconciliation job resolves a stalled one) -- same
+  // connectLiveSocket plumbing, a genuine event source instead of a
+  // not-yet-built one.
   useEffect(() => {
     const disconnect = connectLiveSocket(
       (event, data) => {

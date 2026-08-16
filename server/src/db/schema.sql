@@ -455,3 +455,39 @@ CREATE TABLE IF NOT EXISTS mkt_addresses (
   is_default    BOOLEAN NOT NULL DEFAULT false
 );
 CREATE INDEX IF NOT EXISTS idx_mkt_addresses_user ON mkt_addresses(user_id);
+
+-- ─── Fraud & Risk Basics (M1 5.1.4) ─────────────────────────────────────────
+-- Rule-based, flag-only -- never auto-blocks. Every flag lands in front of a
+-- human reviewer via the /api/fraud-risk endpoints, same discipline as
+-- application_status_history: a decision (dismiss/confirm) requires a
+-- reason, and the flag itself is never silently deleted, only marked
+-- resolved, so the review trail survives.
+CREATE TABLE IF NOT EXISTS fraud_flags (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  type            TEXT NOT NULL CHECK (type IN ('velocity_applications','velocity_payments','duplicate_phone','duplicate_email','duplicate_card')),
+  severity        TEXT NOT NULL DEFAULT 'warning' CHECK (severity IN ('info','warning','critical')),
+  subject_type    TEXT NOT NULL CHECK (subject_type IN ('user','application','order')),
+  subject_id      TEXT NOT NULL,          -- id of the user/application/order that triggered the flag
+  related_ids     JSONB NOT NULL DEFAULT '[]', -- the other applications/orders/users this flag ties together (e.g. the accounts sharing one phone number)
+  description     TEXT NOT NULL,
+  status          TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open','confirmed','dismissed')),
+  resolution_note TEXT,                   -- required before status can leave 'open', enforced at the route layer
+  resolved_by     TEXT,
+  resolved_at     TIMESTAMPTZ,
+  detected_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_fraud_flags_status ON fraud_flags(status);
+CREATE INDEX IF NOT EXISTS idx_fraud_flags_subject ON fraud_flags(subject_type, subject_id);
+CREATE INDEX IF NOT EXISTS idx_fraud_flags_type ON fraud_flags(type);
+
+-- Card-fingerprint duplicate detection (Section 5.1.4 / glossary definition:
+-- "a non-reversible identifier derived from a card's details ... without
+-- storing or exposing the underlying card number"). Populated from
+-- whatever stable, non-reversible identifier the processor's own response
+-- provides (e.g. a token or last-4 + expiry hash) -- never the card number
+-- itself. NULL until a processor response actually supplies one; duplicate
+-- detection simply skips transactions where this is NULL rather than
+-- treating NULL as a match.
+ALTER TABLE vinkpay_transactions ADD COLUMN IF NOT EXISTS card_fingerprint TEXT;
+CREATE INDEX IF NOT EXISTS idx_vinkpay_card_fingerprint ON vinkpay_transactions(card_fingerprint) WHERE card_fingerprint IS NOT NULL;
+

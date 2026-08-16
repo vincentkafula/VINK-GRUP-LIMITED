@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import { randomUUID } from "crypto";
 import { pool } from "../db/pool.js";
 import { requireAuth, requireRole, optionalAuth } from "../middleware/auth.js";
+import { checkApplicationRisk } from "../services/fraudRiskChecks.js";
 
 const router: ReturnType<typeof Router> = Router();
 
@@ -115,6 +116,13 @@ router.post("/", optionalAuth, async (req: Request, res: Response): Promise<void
   } finally {
     client.release();
   }
+
+  // Deliberately after commit and outside the transaction above -- a risk
+  // check is advisory (Section 5.1.4: flags only, never blocks), so a
+  // failure here must never roll back or delay a legitimate submission.
+  // Errors are logged, not surfaced to the applicant.
+  checkApplicationRisk(id, applicantUserId, applicantPhone ?? null, applicantEmail ?? null)
+    .catch(err => console.error("[fraud-risk] Application risk check failed:", err));
 
   res.status(201).json({ success: true, data: { id, referenceNumber, status: "submitted" } });
 });

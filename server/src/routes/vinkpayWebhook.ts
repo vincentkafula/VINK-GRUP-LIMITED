@@ -1,6 +1,5 @@
 import { Router, Request, Response } from "express";
 import { handleWebhook, type WebhookPayload } from "../services/vinkPay.js";
-import { emit } from "../services/wsBroadcast.js";
 
 const router: ReturnType<typeof Router> = Router();
 
@@ -58,16 +57,15 @@ router.post("/:processor", async (req: Request, res: Response): Promise<void> =>
     return;
   }
 
-  // Notify any connected client -- this is the wsBroadcast.ts module's
-  // intended caller (see its own comment: "VinkPay, the webhook handler"),
-  // wired up here for the first time. Global broadcast, not per-user
-  // targeted, same caveat as wsBroadcast.ts's own comment -- a client
-  // receiving this should treat it as "a payment was confirmed somewhere,
-  // maybe worth refetching your own order/trip status" rather than
-  // assuming it's necessarily about the current user's own transaction.
-  if (!result.duplicate) {
-    emit("payment_confirmed", { processorRef: payload.processorRef, status: payload.status });
-  }
+  // handleWebhook() (in vinkPay.ts) already emits "vinkpay.payment_status_changed"
+  // internally once the transaction/order update actually commits -- with
+  // orderId and orderNumber, which this route doesn't have access to at all.
+  // An earlier version of this route added a second, redundant
+  // emit("payment_confirmed", ...) here without checking vinkPay.ts's own
+  // emit call first -- removed, since two differently-named events for the
+  // same occurrence is confusing for any consumer and this route has no
+  // additional information worth broadcasting beyond what handleWebhook()
+  // already sends.
 
   // Always 200 once handled, including duplicates — a webhook that's
   // already been processed is not an error from the processor's point of
