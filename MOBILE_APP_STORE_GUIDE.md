@@ -99,3 +99,56 @@ do — I can help with anything code-related that comes up during that
 process (build errors, permission issues, adjusting what the app
 requests access to), but account creation, payment, and the final
 submission itself have to happen through you.
+
+## Update (2026-08-17): Real Telpo/Deka EMV SDK integrated
+
+You provided the real P10/P18Q Android SDK (`P10_amp_P18Q_Android_SDK_V1_2-250903`).
+This changes the picture from the "honest scaffold" described above --
+`TelpoTerminalPlugin.java` now uses the SDK's real, genuine EMV kernel,
+not a stub. Verified before writing any integration code by extracting
+and reading the vendor's own working demo project
+(`MasterAndVisa` -- Visa + Mastercard contactless read flow), and
+double-checked every method call against the actual compiled `.class`
+files via `javap` rather than trusting my reading of the Kotlin sample
+alone (caught and fixed one real bug this way -- `TlvAns.tags` is a
+public field, not a `getTags()` method, which would have failed to
+compile).
+
+**What's genuinely real here:**
+- The kernel talks to a tapped card at the actual protocol level
+  (PPSE selection, AID selection, GPO, record reading, cryptogram
+  generation) -- confirmed native (JNI) code, not a mock.
+- Scheme detection (Visa vs. Mastercard) via a real PPSE select + AID
+  read, matching the vendor's own demo technique exactly.
+- A strict data boundary: raw track/PAN data and the EMV cryptogram
+  block never leave the native layer. Only a masked PAN (last 4
+  digits), the scheme, and a SHA-256 reference are ever exposed to the
+  web layer or backend -- matching what `terminalRouter.ts`'s own
+  PAN-shape rejection guardrail already expects.
+
+**What's still not real, and matters more than the above:**
+1. **The CAPK keys are test-only.** They're copied verbatim from the
+   vendor's own demo, using RID `A0000000999` -- EMVCo's reserved test
+   range, not Visa's actual production RID (`A0000000003`). This will
+   read EMVCo/Visa **test** cards correctly. It will not correctly
+   validate a real customer's real card. Getting real production CAPKs
+   requires a formal process with Visa/Mastercard or your acquiring
+   processor -- this isn't bundled in any SDK sample, from any vendor,
+   ever, for good reason.
+2. **No certification documentation was found in the SDK archive.**
+   That doesn't prove the P18Q lacks EMV Level 1/2 or PCI PTS
+   certification -- vendors often hold this separately -- but I
+   can't confirm it from what was provided. Ask Telpo/Deka directly
+   before relying on this for anything beyond testing.
+3. **A successful read still isn't a charge.** The kernel produces an
+   EMV data block that would need to go to a real acquirer for online
+   authorization. Per the platform milestone plan, VinkPay is still
+   Phase 1 (sponsored processing, no confirmed processor). This
+   integration reads cards; it cannot complete a real transaction on
+   its own, and won't be able to until that partnership exists.
+
+**Net effect**: this is real progress, not a demo -- but "real EMV
+kernel talking to real hardware" and "ready to accept real customer
+payments" are two different milestones, and only the first one is
+true today.
+
