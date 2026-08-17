@@ -57,8 +57,13 @@ router.post("/register", requireAuth, requireRole(...REVIEWER_ROLES), async (req
  * IMPORTANT: nothing calls this endpoint with real production data yet.
  * A real Deka EMV kernel is integrated on the device side (see
  * android/app/src/main/java/za/co/vink/app/terminal/P18QTerminalPlugin.java),
- * but it currently runs against test-only CAPK keys (EMVCo's reserved
- * test range, not Visa's production RID) -- this route is the
+ * running on a reader chip (SCR916, confirmed to be the same chip in
+ * the standard P18Q's built-in reader) that genuinely holds EMVCo
+ * Level 1 and Visa/Mastercard Level 2 certification (the latter
+ * conditional on SAM pairing, per the SDK's own FOL-SCR916.pdf). That
+ * hardware certification is separate from the CAPK keys currently
+ * loaded, which are still the vendor demo's test-only keys (EMVCo's
+ * reserved test range, not Visa's production RID) -- this route is the
  * receiving end, built and ready for when real production CAPKs and an
  * acquirer relationship exist. It is not itself a payment terminal, and
  * does not simulate one.

@@ -41,12 +41,23 @@ import java.util.Locale;
  *    not something included in any SDK sample, and not something this
  *    integration can substitute for.
  *
- * 3. No EMV Level 1/2 or PCI certification documentation was found
- *    anywhere in the provided SDK archive. That doesn't necessarily mean
- *    the P18Q lacks it -- hardware vendors often hold certification
- *    separately -- but it means this integration cannot confirm
- *    certification status, and you should confirm directly with
- *    Deka before relying on this for real transactions.
+ * 3. UPDATE 2026-08-17: real certification documentation for this
+ *    hardware WAS found, in a part of the SDK archive not checked in
+ *    the first pass (FOL-SCR916.pdf / EFOL-SCR916.pdf, under the
+ *    "SCR916 -Planeta Reader Module SDK" folder). SCR916 is the
+ *    contactless reader chip -- confirmed by Vincent to be the same
+ *    chip used in the standard P18Q's built-in reader, not a separate
+ *    accessory. Real, stated certifications: EMVCo L1 (EMV Level 1
+ *    standard 3.0), and Visa/Mastercard (TQM)/Amex/Discover L2 --
+ *    the L2 (kernel) certification is stated as conditional: "when
+ *    paired with VSAM" (a specific Secure Access Module), not
+ *    unconditional. This is genuine progress on the hardware
+ *    certification question -- but it does NOT by itself change point
+ *    2 above: hardware/reader certification and having real production
+ *    CAPK keys loaded in this integration are two separate
+ *    requirements. The CAPKs in this file are still the vendor demo's
+ *    test-only keys regardless of what the reader chip itself is
+ *    certified for.
  *
  * 4. Even with real production CAPKs and confirmed device certification,
  *    a successful read here only produces the EMV data block (ICC data /

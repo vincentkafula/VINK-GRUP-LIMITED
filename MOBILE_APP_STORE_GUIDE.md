@@ -135,12 +135,21 @@ compile).
    requires a formal process with Visa/Mastercard or your acquiring
    processor -- this isn't bundled in any SDK sample, from any vendor,
    ever, for good reason.
-2. **No certification documentation was found in the SDK archive.**
-   That doesn't prove the P18Q lacks EMV Level 1/2 or PCI PTS
-   certification -- vendors often hold this separately -- but I
-   can't confirm it from what was provided. Ask Deka (the SDK vendor)
-   or your hardware supplier directly before relying on this for
-   anything beyond testing.
+2. **UPDATE 2026-08-17: real EMVCo Level 1 certification documentation
+   was found**, in a folder my first pass missed
+   (`FOL-SCR916.pdf`/`EFOL-SCR916.pdf`, under "SCR916 -Planeta Reader
+   Module SDK"). The certified component is SCR916, the contactless
+   reader chip -- you confirmed this is the same chip in the standard
+   P18Q's built-in reader, not a separate accessory. Stated
+   certifications: **EMVCo L1** (EMV Level 1 standard 3.0), and
+   **Visa/Mastercard (TQM)/Amex/Discover L2** -- the L2 (kernel)
+   certification is stated as conditional ("when paired with VSAM," a
+   specific Secure Access Module), not unconditional. This is genuine,
+   confirmed progress -- but it's a separate fact from point 1 above:
+   hardware certification and having real production CAPK keys loaded
+   don't imply each other. The CAPKs in the code today are still the
+   vendor demo's test-only keys regardless of what the reader chip
+   itself is certified for.
 3. **A successful read still isn't a charge.** The kernel produces an
    EMV data block that would need to go to a real acquirer for online
    authorization. Per the platform milestone plan, VinkPay is still
