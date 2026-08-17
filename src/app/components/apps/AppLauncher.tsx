@@ -17,8 +17,8 @@ const APPS = [
   {
     id: "afc",
     name: "VINK AFC Terminal",
-    subtitle: "Telpo T-T20 · Automatic Fare Collection",
-    description: "Runs on the Telpo T-T20 — a 7-inch Android 12 transit validator with ISO 14443 Type A/B NFC, EMV Contactless L1 (Visa Paywave · Mastercard Paypass), 1D/2D QR decoding, face recognition, 4G LTE, GPS, and 4 SAM slots. Processes fares in under 3 seconds offline. IP65 · IK08 · CE · RoHS certified.",
+    subtitle: "P18Q · Automatic Fare Collection",
+    description: "Runs on the P18Q — a 7-inch Android 12 transit validator with ISO 14443 Type A/B NFC, EMV Contactless L1 (Visa Paywave · Mastercard Paypass), 1D/2D QR decoding, face recognition, 4G LTE, GPS, and 4 SAM slots. Processes fares in under 3 seconds offline. IP65 · IK08 · CE · RoHS certified.",
     platform: ["iOS", "Android"],
     category: "Transport · Payments · Fare Collection",
     version: "v3.2.1",
@@ -27,10 +27,10 @@ const APPS = [
     reviews: "2,847",
     gradient: "linear-gradient(135deg,#0B5C2E,#5FC97F)",
     emoji: "🚌",
-    badge: "T-T20 Hardware",
+    badge: "P18Q Hardware",
     badgeColor: "#F5A623",
     features: [
-      "Telpo T-T20 · Android 12 · Quad-Core 2.0 GHz · 7\" 720×1280",
+      "P18Q · Android 12 · Quad-Core 2.0 GHz · 7\" 720×1280",
       "ISO 14443 A/B NFC · Mifare · EMV L1 · Paywave · Paypass",
       "1D/2D QR hard decoding · Face recognition (dual-lens RGB+IR)",
       "4G LTE · WiFi · Bluetooth · GPS built-in · 4× SAM slots",

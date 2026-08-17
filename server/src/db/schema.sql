@@ -492,17 +492,17 @@ ALTER TABLE vinkpay_transactions ADD COLUMN IF NOT EXISTS card_fingerprint TEXT;
 CREATE INDEX IF NOT EXISTS idx_vinkpay_card_fingerprint ON vinkpay_transactions(card_fingerprint) WHERE card_fingerprint IS NOT NULL;
 
 -- ─── AFC Terminal Registration & Tap Ingestion ──────────────────────────────
--- A "terminal" is a physical device (Telpo T-T20 or equivalent) authorized
--- to submit tap events. Deliberately NOT authenticated with a user JWT --
--- the caller is a device, not a logged-in person, so it gets its own
--- credential (api_key_hash), same reasoning as vinkpayWebhook.ts not using
--- requireAuth for processor callbacks. api_key itself is never stored --
--- only its hash, same as password_hash on users -- issued once at
--- registration time and shown to the operator exactly once.
+-- A "terminal" is a physical device (P18Q bus validator or equivalent)
+-- authorized to submit tap events. Deliberately NOT authenticated with a
+-- user JWT -- the caller is a device, not a logged-in person, so it gets
+-- its own credential (api_key_hash), same reasoning as vinkpayWebhook.ts
+-- not using requireAuth for processor callbacks. api_key itself is never
+-- stored -- only its hash, same as password_hash on users -- issued once
+-- at registration time and shown to the operator exactly once.
 CREATE TABLE IF NOT EXISTS terminals (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   serial          TEXT UNIQUE NOT NULL,
-  model           TEXT NOT NULL DEFAULT 'Telpo T-T20',
+  model           TEXT NOT NULL DEFAULT 'P18Q Bus Validator',
   api_key_hash    TEXT NOT NULL,
   status          TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active','inactive','revoked')),
   assigned_driver TEXT,                    -- free-text label for now (driver name/id); not a FK, since there's no drivers table yet in this schema

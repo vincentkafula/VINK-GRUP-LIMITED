@@ -36,7 +36,7 @@ router.post("/register", requireAuth, requireRole(...REVIEWER_ROLES), async (req
     return;
   }
   try {
-    const result = await registerTerminal(serial.trim(), model?.trim() || "Telpo T-T20", req.user!.username);
+    const result = await registerTerminal(serial.trim(), model?.trim() || "P18Q Bus Validator", req.user!.username);
     res.status(201).json({ success: true, data: result });
   } catch (err: any) {
     if (err?.code === "23505") { // unique_violation on serial
@@ -54,11 +54,14 @@ router.post("/register", requireAuth, requireRole(...REVIEWER_ROLES), async (req
  * the caller is the physical terminal itself. Deliberately does NOT sit
  * behind requireAuth, same reasoning as vinkpayWebhook.ts.
  *
- * IMPORTANT: nothing calls this endpoint with real data yet. There is no
- * certified EMV kernel integrated on the device side (see the Capacitor
- * plugin scaffold in src/native/TelpoTerminalPlugin) -- this route is the
- * receiving end, built and ready for when that integration exists. It is
- * not itself a payment terminal, and does not simulate one.
+ * IMPORTANT: nothing calls this endpoint with real production data yet.
+ * A real Deka EMV kernel is integrated on the device side (see
+ * android/app/src/main/java/za/co/vink/app/terminal/P18QTerminalPlugin.java),
+ * but it currently runs against test-only CAPK keys (EMVCo's reserved
+ * test range, not Visa's production RID) -- this route is the
+ * receiving end, built and ready for when real production CAPKs and an
+ * acquirer relationship exist. It is not itself a payment terminal, and
+ * does not simulate one.
  */
 router.post("/tap", async (req: Request, res: Response): Promise<void> => {
   if (!hasDb || !pool) { res.status(503).json({ success: false, error: "Database not configured" }); return; }

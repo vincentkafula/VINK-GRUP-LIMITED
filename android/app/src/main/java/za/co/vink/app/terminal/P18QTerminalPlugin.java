@@ -18,8 +18,8 @@ import java.util.Date;
 import java.util.Locale;
 
 /**
- * Bridges the web app (src/app/services/telpoTerminal.ts) to the P18Q's
- * built-in contactless card reader, using the real Deka/Telpo EMV SDK
+ * Bridges the web app (src/app/services/p18qTerminal.ts) to the P18Q's
+ * built-in contactless card reader, using the real Deka EMV SDK
  * (android/app/libs/visa_master_library-release.aar,
  * dc_reader_release_20240221112325.aar, utils-1.0.3.aar,
  * business-1.0.1.jar -- from the SDK archive provided 2026-08-17).
@@ -46,7 +46,7 @@ import java.util.Locale;
  *    the P18Q lacks it -- hardware vendors often hold certification
  *    separately -- but it means this integration cannot confirm
  *    certification status, and you should confirm directly with
- *    Telpo/Deka before relying on this for real transactions.
+ *    Deka before relying on this for real transactions.
  *
  * 4. Even with real production CAPKs and confirmed device certification,
  *    a successful read here only produces the EMV data block (ICC data /
@@ -67,10 +67,10 @@ import java.util.Locale;
  *    server/src/routes/terminalRouter.ts already expects and enforces
  *    on the backend side.
  */
-@CapacitorPlugin(name = "TelpoTerminal")
-public class TelpoTerminalPlugin extends Plugin {
+@CapacitorPlugin(name = "P18QTerminal")
+public class P18QTerminalPlugin extends Plugin {
 
-    private static final String TAG = "TelpoTerminal";
+    private static final String TAG = "P18QTerminal";
     private static final String READER_PATH = "/dev/dc_spi32765.0"; // P18Q-X1 smart terminal path, per the vendor's own Interface Document section "1.2 P18Q-X1 smart terminal"
     private volatile boolean listening = false;
     private Thread pollThread;
@@ -115,7 +115,7 @@ public class TelpoTerminalPlugin extends Plugin {
             return;
         }
         listening = true;
-        pollThread = new Thread(this::pollLoop, "telpo-card-poll");
+        pollThread = new Thread(this::pollLoop, "p18q-card-poll");
         pollThread.start();
         call.resolve(new JSObject().put("started", true));
     }

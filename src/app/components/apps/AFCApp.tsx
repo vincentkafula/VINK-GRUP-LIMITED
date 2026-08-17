@@ -1,6 +1,6 @@
 /**
- * AFC (Automatic Fare Collection) App — T-T20 Terminal
- * Hardware: Telpo T-T20 · Android 12 · 7" 720×1280 · Quad-Core 2.0 GHz
+ * AFC (Automatic Fare Collection) App — P18Q Terminal
+ * Hardware: P18Q · Android 12 · 7" 720×1280 · Quad-Core 2.0 GHz
  *
  * Card reading:
  * • ISO 14443 Type A/B contactless (NFC)
@@ -29,9 +29,9 @@ import {
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
-// ─── T-T20 Hardware Specification ────────────────────────────────────────────
-const T_T20_SPEC = {
-  model: "T-T20",
+// ─── P18Q Hardware Specification ────────────────────────────────────────────
+const P18Q_SPEC = {
+  model: "P18Q",
   name: "Ticket Validator — T Line",
   certifications: ["CE", "RoHS", "IK08", "IP65"],
   processor: {
@@ -79,9 +79,9 @@ const T_T20_SPEC = {
   applications: ["Concerts", "Festivals", "Stadiums", "Venues", "Transit"],
 };
 
-// Offline processing stages — on T-T20 device (ISO 14443 Type A/B NFC, 4× SAM)
+// Offline processing stages — on P18Q device (ISO 14443 Type A/B NFC, 4× SAM)
 const OFFLINE_STAGES = [
-  { label: "ISO 14443 A/B read",    ms: 55,  desc: "T-T20 NFC field reads card chip data" },
+  { label: "ISO 14443 A/B read",    ms: 55,  desc: "P18Q NFC field reads card chip data" },
   { label: "SAM key lookup",        ms: 30,  desc: "SAM slot 1: issuer public key retrieved" },
   { label: "ARQC verify",           ms: 80,  desc: "Offline cryptogram validated on-device" },
   { label: "Floor limit check",     ms: 15,  desc: "Fare < R500 floor limit → offline approved" },
@@ -89,9 +89,9 @@ const OFFLINE_STAGES = [
   { label: "APPROVED",              ms: 10,  desc: "Fare deducted · LED green · Audio beep" },
 ];
 
-// Online fast path — T-T20 LTE / WCDMA / WiFi
+// Online fast path — P18Q LTE / WCDMA / WiFi
 const ONLINE_STAGES = [
-  { label: "ISO 14443 A/B read",    ms: 55,  desc: "T-T20 NFC field reads card chip data" },
+  { label: "ISO 14443 A/B read",    ms: 55,  desc: "P18Q NFC field reads card chip data" },
   { label: "SAM ARQC generate",     ms: 80,  desc: "SAM slot 1: online cryptogram generated" },
   { label: "LTE auth request",      ms: 45,  desc: "ISO 8583 → VINK via LTE (persistent WS)" },
   { label: "Balance check",         ms: 120, desc: "Real-time balance verified at VINK server" },
@@ -389,7 +389,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
                 {/* Device badge */}
                 <div className="flex items-center justify-between px-1">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[9px] font-black tracking-widest" style={{ color: GOLD }}>TELPO T-T20</span>
+                    <span className="text-[9px] font-black tracking-widest" style={{ color: GOLD }}>P18Q</span>
                     <span className="text-[8px] text-white/30">·</span>
                     <span className="text-[9px] text-white/40">Android 12 · Quad-Core 2.0 GHz</span>
                   </div>
@@ -698,8 +698,8 @@ export function AFCApp({ isOpen, onClose }: Props) {
                   </div>
                 ))}
                 {[
-                  { label: "Device ID",        value: "T-T20 · AFC-CPT-00847" },
-                  { label: "Hardware model",   value: "Telpo T-T20 Ticket Validator" },
+                  { label: "Device ID",        value: "P18Q · AFC-CPT-00847" },
+                  { label: "Hardware model",   value: "P18Q Bus Validator" },
                   { label: "OS",               value: "Android 12" },
                   { label: "CPU",              value: "Quad-Core 2.0 GHz" },
                   { label: "Floor limit",      value: "R500.00" },
@@ -724,7 +724,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
               </div>
             )}
 
-            {/* DEVICE SPEC — T-T20 full hardware sheet */}
+            {/* DEVICE SPEC — P18Q full hardware sheet */}
             {screen === "device" && (
               <div className="space-y-4">
                 {/* Header */}
@@ -732,18 +732,18 @@ export function AFCApp({ isOpen, onClose }: Props) {
                   <div className="flex items-start justify-between">
                     <div>
                       <p className="text-[10px] font-bold tracking-widest" style={{ color: GOLD }}>VINK AFC TERMINAL</p>
-                      <p className="text-white font-black text-lg mt-0.5">{T_T20_SPEC.model}</p>
-                      <p className="text-white/50 text-[10px]">{T_T20_SPEC.name}</p>
+                      <p className="text-white font-black text-lg mt-0.5">{P18Q_SPEC.model}</p>
+                      <p className="text-white/50 text-[10px]">{P18Q_SPEC.name}</p>
                     </div>
                     <div className="flex flex-wrap gap-1 justify-end">
-                      {T_T20_SPEC.certifications.map(c => (
+                      {P18Q_SPEC.certifications.map(c => (
                         <span key={c} className="px-1.5 py-0.5 rounded text-[9px] font-bold"
                           style={{ background: GOLD + "25", color: GOLD }}>{c}</span>
                       ))}
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-1.5 mt-3">
-                    {T_T20_SPEC.applications.map(a => (
+                    {P18Q_SPEC.applications.map(a => (
                       <span key={a} className="px-2 py-0.5 rounded-full text-[9px] font-semibold"
                         style={{ background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)" }}>{a}</span>
                     ))}
@@ -755,60 +755,60 @@ export function AFCApp({ isOpen, onClose }: Props) {
                   {
                     title: "Processor & Memory", icon: <Cpu className="w-3.5 h-3.5" />, color: "#128A43",
                     rows: [
-                      ["OS",        T_T20_SPEC.processor.os],
-                      ["CPU",       T_T20_SPEC.processor.cpu],
-                      ["RAM",       T_T20_SPEC.processor.ram],
-                      ["Storage",   T_T20_SPEC.processor.storage],
-                      ["Expansion", T_T20_SPEC.processor.expansion],
+                      ["OS",        P18Q_SPEC.processor.os],
+                      ["CPU",       P18Q_SPEC.processor.cpu],
+                      ["RAM",       P18Q_SPEC.processor.ram],
+                      ["Storage",   P18Q_SPEC.processor.storage],
+                      ["Expansion", P18Q_SPEC.processor.expansion],
                     ],
                   },
                   {
                     title: "Display & Input", icon: <QrCode className="w-3.5 h-3.5" />, color: "#3B82F6",
                     rows: [
-                      ["Screen",   T_T20_SPEC.display.size],
-                      ["Keys",     T_T20_SPEC.display.keys],
-                      ["Barcode",  T_T20_SPEC.display.barcode],
-                      ["Camera",   T_T20_SPEC.display.camera],
+                      ["Screen",   P18Q_SPEC.display.size],
+                      ["Keys",     P18Q_SPEC.display.keys],
+                      ["Barcode",  P18Q_SPEC.display.barcode],
+                      ["Camera",   P18Q_SPEC.display.camera],
                     ],
                   },
                   {
                     title: "Card Reading & Security", icon: <Shield className="w-3.5 h-3.5" />, color: GOLD,
                     rows: [
-                      ["Contactless", T_T20_SPEC.cardReading.contactless],
-                      ["EMV",         T_T20_SPEC.cardReading.emv],
-                      ["SAM slots",   T_T20_SPEC.cardReading.sam],
-                      ["LED",         T_T20_SPEC.cardReading.led],
+                      ["Contactless", P18Q_SPEC.cardReading.contactless],
+                      ["EMV",         P18Q_SPEC.cardReading.emv],
+                      ["SAM slots",   P18Q_SPEC.cardReading.sam],
+                      ["LED",         P18Q_SPEC.cardReading.led],
                     ],
                   },
                   {
                     title: "Connectivity", icon: <Wifi className="w-3.5 h-3.5" />, color: "#10B981",
                     rows: [
-                      ["Mobile",  T_T20_SPEC.connectivity.mobile],
-                      ["Local",   T_T20_SPEC.connectivity.local],
-                      ["GPS",     T_T20_SPEC.connectivity.gps],
-                      ["SIM",     T_T20_SPEC.connectivity.sim],
+                      ["Mobile",  P18Q_SPEC.connectivity.mobile],
+                      ["Local",   P18Q_SPEC.connectivity.local],
+                      ["GPS",     P18Q_SPEC.connectivity.gps],
+                      ["SIM",     P18Q_SPEC.connectivity.sim],
                     ],
                   },
                   {
                     title: "Ports & Power", icon: <BatteryCharging className="w-3.5 h-3.5" />, color: "#EF4444",
                     rows: [
-                      ["USB",     T_T20_SPEC.ports.usb],
-                      ["Serial",  T_T20_SPEC.ports.serial],
-                      ["Network", T_T20_SPEC.ports.network],
-                      ["GPIO",    T_T20_SPEC.ports.gpio],
-                      ["Relay",   T_T20_SPEC.ports.relay],
-                      ["POE",     T_T20_SPEC.ports.poe],
-                      ["Power",   T_T20_SPEC.ports.power],
+                      ["USB",     P18Q_SPEC.ports.usb],
+                      ["Serial",  P18Q_SPEC.ports.serial],
+                      ["Network", P18Q_SPEC.ports.network],
+                      ["GPIO",    P18Q_SPEC.ports.gpio],
+                      ["Relay",   P18Q_SPEC.ports.relay],
+                      ["POE",     P18Q_SPEC.ports.poe],
+                      ["Power",   P18Q_SPEC.ports.power],
                     ],
                   },
                   {
                     title: "Environment & Build", icon: <Navigation className="w-3.5 h-3.5" />, color: "#14B8A6",
                     rows: [
-                      ["Op. Temp",  T_T20_SPEC.environment.opTemp],
-                      ["Storage",   T_T20_SPEC.environment.storage],
-                      ["Audio",     T_T20_SPEC.environment.audio],
-                      ["Bracket",   T_T20_SPEC.environment.bracket],
-                      ["Security",  T_T20_SPEC.environment.security],
+                      ["Op. Temp",  P18Q_SPEC.environment.opTemp],
+                      ["Storage",   P18Q_SPEC.environment.storage],
+                      ["Audio",     P18Q_SPEC.environment.audio],
+                      ["Bracket",   P18Q_SPEC.environment.bracket],
+                      ["Security",  P18Q_SPEC.environment.security],
                     ],
                   },
                 ].map(group => (
@@ -1254,7 +1254,7 @@ function SetupScreen({ initial, onSave, onCancel, P, GOLD }: {
             <p className="text-white font-black text-sm">Vehicle Documents</p>
             <div className="rounded-xl p-3 flex items-start gap-2 mb-1" style={{ background: "#1E3A5F" }}>
               <Shield className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-              <p className="text-emerald-300 text-[10px] leading-relaxed">Upload photos of each document using the T-T20's dual-lens camera. Numbers are recorded for VINK compliance.</p>
+              <p className="text-emerald-300 text-[10px] leading-relaxed">Upload photos of each document using the P18Q's dual-lens camera. Numbers are recorded for VINK compliance.</p>
             </div>
             <F label="Registration Certificate Number" k="registrationCertNumber" placeholder="e.g. ZA/REG/2022/001234" />
             <F label="Reg. Cert. Expiry Date" k="registrationCertExpiry" type="date" placeholder="" />

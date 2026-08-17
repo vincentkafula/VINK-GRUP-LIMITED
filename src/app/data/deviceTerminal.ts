@@ -1,10 +1,12 @@
-/** Shared Telpo T-T20 specs, used consistently everywhere a device
- *  terminal is shown across the Driver, Owner, Investor and Taxi
- *  Association dashboards, so the same device is described identically
- *  no matter which dashboard someone is looking at it from. */
-export const T_T20_SPEC = {
-  model: "Telpo T-T20",
-  category: "7-inch Android 12 Transit Validator",
+/** Shared P18Q bus validator specs, used consistently everywhere a
+ *  device terminal is shown across the Driver, Owner, Investor and
+ *  Taxi Association dashboards, so the same device is described
+ *  identically no matter which dashboard someone is looking at it
+ *  from. Confirmed against the real vendor SDK/documentation provided
+ *  2026-08-17 ("P18Q Bus Validator User Manual"). */
+export const P18Q_SPEC = {
+  model: "P18Q Bus Validator",
+  category: "7-inch Android Transit Validator",
   os: "Android 12",
   chipset: "Quad-Core 2.0 GHz",
   screen: '7" 720×1280',

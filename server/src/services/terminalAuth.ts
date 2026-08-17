@@ -4,8 +4,8 @@ import { pool, hasDb } from "../db/pool.js";
 
 /**
  * AFC terminal registration and authentication -- the device-credential
- * equivalent of user login, but for a physical Telpo T-T20 (or equivalent)
- * unit rather than a person. A terminal authenticates with a serial +
+ * equivalent of user login, but for a physical P18Q bus validator (or
+ * equivalent) unit rather than a person. A terminal authenticates with a serial +
  * API key pair, not a JWT, since it isn't a logged-in user session.
  *
  * Same hashing convention as user passwords elsewhere in this codebase

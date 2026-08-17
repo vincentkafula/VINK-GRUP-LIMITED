@@ -3,7 +3,7 @@ import { memo } from "react";
 interface Props { onOpenApps: () => void; }
 
 const APPS = [
-  { emoji: "🚌", name: "VINK AFC Terminal",  sub: "T-T20 · Fare collection",         gradient: "linear-gradient(135deg,#0B5C2E,#5FC97F)", platform: "iOS · Android" },
+  { emoji: "🚌", name: "VINK AFC Terminal",  sub: "P18Q · Fare collection",         gradient: "linear-gradient(135deg,#0B5C2E,#5FC97F)", platform: "iOS · Android" },
   { emoji: "📍", name: "VINK Fleet Tracker", sub: "Vehicle tracking",         gradient: "linear-gradient(135deg,#065F46,#10B981)", platform: "iOS · Android" },
   { emoji: "💳", name: "VINK Banking",        sub: "Personal & business",      gradient: "linear-gradient(135deg,#0B5C2E,#5FC97F)", platform: "iOS · Android" },
   { emoji: "🚗", name: "VINK Driver",         sub: "Earn · Drive · Get paid",  gradient: "linear-gradient(135deg,#0F172A,#14B8A6)", platform: "iOS · Android" },

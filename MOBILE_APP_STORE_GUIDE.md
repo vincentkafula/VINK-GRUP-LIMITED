@@ -100,11 +100,11 @@ process (build errors, permission issues, adjusting what the app
 requests access to), but account creation, payment, and the final
 submission itself have to happen through you.
 
-## Update (2026-08-17): Real Telpo/Deka EMV SDK integrated
+## Update (2026-08-17): Real P18Q/Deka EMV SDK integrated
 
 You provided the real P10/P18Q Android SDK (`P10_amp_P18Q_Android_SDK_V1_2-250903`).
 This changes the picture from the "honest scaffold" described above --
-`TelpoTerminalPlugin.java` now uses the SDK's real, genuine EMV kernel,
+`P18QTerminalPlugin.java` now uses the SDK's real, genuine EMV kernel,
 not a stub. Verified before writing any integration code by extracting
 and reading the vendor's own working demo project
 (`MasterAndVisa` -- Visa + Mastercard contactless read flow), and
@@ -138,8 +138,9 @@ compile).
 2. **No certification documentation was found in the SDK archive.**
    That doesn't prove the P18Q lacks EMV Level 1/2 or PCI PTS
    certification -- vendors often hold this separately -- but I
-   can't confirm it from what was provided. Ask Telpo/Deka directly
-   before relying on this for anything beyond testing.
+   can't confirm it from what was provided. Ask Deka (the SDK vendor)
+   or your hardware supplier directly before relying on this for
+   anything beyond testing.
 3. **A successful read still isn't a charge.** The kernel produces an
    EMV data block that would need to go to a real acquirer for online
    authorization. Per the platform milestone plan, VinkPay is still

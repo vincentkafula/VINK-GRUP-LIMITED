@@ -1,8 +1,8 @@
 import { X, Cpu, Smartphone, Wifi, ShieldCheck, Zap, CreditCard, ScanLine, UserCheck, Radio, Thermometer, Building2 } from "lucide-react";
-import { T_T20_SPEC, type DeviceTerminal } from "../data/deviceTerminal";
+import { P18Q_SPEC, type DeviceTerminal } from "../data/deviceTerminal";
 
 /**
- * Shared device terminal detail view -- the same Telpo T-T20 hardware
+ * Shared device terminal detail view -- the same P18Q hardware
  * every dashboard's own device/vehicle table links out to, so a driver,
  * an owner, an investor and an association admin all see identical
  * hardware specs for the same physical unit, just with the live
@@ -10,17 +10,17 @@ import { T_T20_SPEC, type DeviceTerminal } from "../data/deviceTerminal";
  */
 export function DeviceTerminalModal({ device, onClose }: { device: DeviceTerminal; onClose: () => void }) {
   const rows: { icon: any; label: string; value: string }[] = [
-    { icon: Cpu, label: "Model", value: `${T_T20_SPEC.model} · ${T_T20_SPEC.category}` },
-    { icon: Smartphone, label: "System", value: `${T_T20_SPEC.os} · ${T_T20_SPEC.chipset} · ${T_T20_SPEC.screen}` },
-    { icon: CreditCard, label: "NFC & EMV", value: `${T_T20_SPEC.nfc} · ${T_T20_SPEC.emv}` },
-    { icon: ScanLine, label: "QR & biometrics", value: `${T_T20_SPEC.qr} · ${T_T20_SPEC.faceRecognition}` },
-    { icon: Wifi, label: "Connectivity", value: `${T_T20_SPEC.connectivity} · ${T_T20_SPEC.samSlots}` },
-    { icon: Zap, label: "Processing speed", value: `Offline: ${T_T20_SPEC.offlineSpeed} · Online: ${T_T20_SPEC.onlineSpeed}` },
-    { icon: ShieldCheck, label: "Certifications", value: T_T20_SPEC.certifications },
-    { icon: Thermometer, label: "Operating range", value: T_T20_SPEC.operatingRange },
-    { icon: Radio, label: "Real-time link", value: T_T20_SPEC.realtime },
-    { icon: UserCheck, label: "Security", value: T_T20_SPEC.security },
-    { icon: Building2, label: "Backend", value: `${T_T20_SPEC.backendApi} · ${T_T20_SPEC.dataNetwork}` },
+    { icon: Cpu, label: "Model", value: `${P18Q_SPEC.model} · ${P18Q_SPEC.category}` },
+    { icon: Smartphone, label: "System", value: `${P18Q_SPEC.os} · ${P18Q_SPEC.chipset} · ${P18Q_SPEC.screen}` },
+    { icon: CreditCard, label: "NFC & EMV", value: `${P18Q_SPEC.nfc} · ${P18Q_SPEC.emv}` },
+    { icon: ScanLine, label: "QR & biometrics", value: `${P18Q_SPEC.qr} · ${P18Q_SPEC.faceRecognition}` },
+    { icon: Wifi, label: "Connectivity", value: `${P18Q_SPEC.connectivity} · ${P18Q_SPEC.samSlots}` },
+    { icon: Zap, label: "Processing speed", value: `Offline: ${P18Q_SPEC.offlineSpeed} · Online: ${P18Q_SPEC.onlineSpeed}` },
+    { icon: ShieldCheck, label: "Certifications", value: P18Q_SPEC.certifications },
+    { icon: Thermometer, label: "Operating range", value: P18Q_SPEC.operatingRange },
+    { icon: Radio, label: "Real-time link", value: P18Q_SPEC.realtime },
+    { icon: UserCheck, label: "Security", value: P18Q_SPEC.security },
+    { icon: Building2, label: "Backend", value: `${P18Q_SPEC.backendApi} · ${P18Q_SPEC.dataNetwork}` },
   ];
 
   return (
@@ -28,8 +28,8 @@ export function DeviceTerminalModal({ device, onClose }: { device: DeviceTermina
       <div className="bg-white rounded-2xl w-full max-w-xl max-h-[88vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <div className="p-5 flex items-start justify-between" style={{ background: "linear-gradient(135deg,#0B1330,#1c2a5e)" }}>
           <div>
-            <p className="text-white font-black text-[17px]">{T_T20_SPEC.model}</p>
-            <p className="text-white/50 text-[12px] mt-0.5">{T_T20_SPEC.category}</p>
+            <p className="text-white font-black text-[17px]">{P18Q_SPEC.model}</p>
+            <p className="text-white/50 text-[12px] mt-0.5">{P18Q_SPEC.category}</p>
           </div>
           <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 text-white/70"><X className="w-4 h-4" /></button>
         </div>

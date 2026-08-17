@@ -4,7 +4,7 @@
 *.apk
 *.aar
 # Exception: real vendor SDK libraries the P18Q terminal integration
-# depends on (za.co.vink.app.terminal.TelpoTerminalPlugin) -- these are
+# depends on (za.co.vink.app.terminal.P18QTerminalPlugin) -- these are
 # checked-in third-party dependencies, not build output, and the blanket
 # *.aar rule above would otherwise silently exclude them from version
 # control, breaking the build for anyone else who checks out this repo.

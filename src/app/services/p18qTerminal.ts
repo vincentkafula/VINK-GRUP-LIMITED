@@ -1,18 +1,24 @@
 import { registerPlugin } from "@capacitor/core";
 
 /**
- * Web-app-facing wrapper around the native TelpoTerminal Capacitor
+ * Web-app-facing wrapper around the native P18QTerminal Capacitor
  * plugin (android/app/src/main/java/za/co/vink/app/terminal/
- * TelpoTerminalPlugin.java). See that file's own top comment for the
- * full honest picture: this plumbing is real and correctly wired, but
- * there is no certified EMV kernel behind it yet. Calling
- * startCardListener() today returns { started: false, error: "..." }
- * rather than a fabricated success.
+ * P18QTerminalPlugin.java) -- bridges to the P18Q bus validator's
+ * built-in contactless card reader, using the real Deka EMV SDK
+ * (provided 2026-08-17).
+ *
+ * See that file's own top comment for the full honest picture: the
+ * kernel genuinely talks to a tapped card at the protocol level, but
+ * uses test-only CAPK keys (EMVCo's reserved test range, not Visa's
+ * real production RID), so it reads test cards correctly, not real
+ * production cards, until real production CAPKs are obtained through
+ * Visa/Mastercard or your acquirer.
  *
  * On web (not running inside the Capacitor Android shell), this plugin
  * simply doesn't exist -- registerPlugin's web fallback throws
  * "not implemented" if called, so any UI offering tap-to-pay should
- * check isNativePlatform (see below) before showing that control at all.
+ * check isNativeTerminalAvailable (see below) before showing that
+ * control at all.
  */
 
 export interface CardTapEvent {
@@ -22,14 +28,14 @@ export interface CardTapEvent {
   emvCryptogramRef: string | null;
 }
 
-interface TelpoTerminalPlugin {
+interface P18QTerminalPlugin {
   startCardListener(): Promise<{ started: boolean; error?: string }>;
   stopCardListener(): Promise<{ stopped: boolean }>;
   isReady(): Promise<{ ready: boolean }>;
   addListener(eventName: "cardTapped", listenerFunc: (event: CardTapEvent) => void): Promise<{ remove: () => void }>;
 }
 
-const TelpoTerminal = registerPlugin<TelpoTerminalPlugin>("TelpoTerminal");
+const P18QTerminal = registerPlugin<P18QTerminalPlugin>("P18QTerminal");
 
 /** True only when running inside the actual native Android app shell, not the plain web build. */
 export function isNativeTerminalAvailable(): boolean {
@@ -39,25 +45,25 @@ export function isNativeTerminalAvailable(): boolean {
 
 export async function startCardListener(): Promise<{ started: boolean; error?: string }> {
   if (!isNativeTerminalAvailable()) {
-    return { started: false, error: "Not running inside the native Android app -- tap-to-pay requires the installed VINK app on a Telpo device." };
+    return { started: false, error: "Not running inside the native Android app -- tap-to-pay requires the installed VINK app on a P18Q device." };
   }
-  return TelpoTerminal.startCardListener();
+  return P18QTerminal.startCardListener();
 }
 
 export async function stopCardListener(): Promise<void> {
   if (!isNativeTerminalAvailable()) return;
-  await TelpoTerminal.stopCardListener();
+  await P18QTerminal.stopCardListener();
 }
 
 export async function isTerminalReady(): Promise<boolean> {
   if (!isNativeTerminalAvailable()) return false;
-  const result = await TelpoTerminal.isReady();
+  const result = await P18QTerminal.isReady();
   return result.ready;
 }
 
 export function onCardTapped(handler: (event: CardTapEvent) => void): () => void {
   if (!isNativeTerminalAvailable()) return () => {};
   let removeFn: (() => void) | null = null;
-  TelpoTerminal.addListener("cardTapped", handler).then(h => { removeFn = h.remove; });
+  P18QTerminal.addListener("cardTapped", handler).then(h => { removeFn = h.remove; });
   return () => removeFn?.();
 }

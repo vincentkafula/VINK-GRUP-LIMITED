@@ -13,7 +13,7 @@ import {
 } from "recharts";
 import { DeviceTerminalModal } from "./DeviceTerminalModal";
 import { connectLiveSocket } from "../services/liveSocket";
-import { isNativeTerminalAvailable, isTerminalReady } from "../services/telpoTerminal";
+import { isNativeTerminalAvailable, isTerminalReady } from "../services/p18qTerminal";
 
 /**
  * Driver Dashboard -- built from the uploaded reference, a full 9-page
@@ -500,7 +500,7 @@ function PowerView({ deviceOn, setDeviceOn }: { deviceOn: boolean; setDeviceOn: 
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
             <div><div className="text-slate-400 text-xs mb-1">Serial number</div><div className="font-medium text-slate-800">DRV-CM-88213</div></div>
-            <div><div className="text-slate-400 text-xs mb-1">Model</div><div className="font-medium text-slate-800">Telpo T-T20</div></div>
+            <div><div className="text-slate-400 text-xs mb-1">Model</div><div className="font-medium text-slate-800">P18Q Bus Validator</div></div>
             <div><div className="text-slate-400 text-xs mb-1">Vehicle</div><div className="font-medium text-slate-800">CA 123-456</div></div>
             <div>
               <div className="text-slate-400 text-xs mb-1">Connectivity</div>
@@ -519,7 +519,7 @@ function PowerView({ deviceOn, setDeviceOn }: { deviceOn: boolean; setDeviceOn: 
               <p className="text-sm font-semibold text-slate-800">Tap-to-pay card reader: {readerReady ? "Ready" : "Not yet integrated"}</p>
               <p className="text-xs text-slate-500 mt-1 leading-relaxed">
                 {!nativeAvailable
-                  ? "You're viewing this in a browser. Tap-to-pay only works inside the installed VINK Android app on a Telpo T-T20."
+                  ? "You're viewing this in a browser. Tap-to-pay only works inside the installed VINK Android app on a P18Q device."
                   : readerReady
                   ? "The device's certified EMV card reader is connected and ready to accept taps."
                   : "This device is running the VINK app, but the certified EMV card-reader integration hasn't been added yet — taps aren't accepted until that's wired up on the hardware side."}
