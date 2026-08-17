@@ -223,40 +223,32 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
           <div style={{
             display: "flex", flexDirection: "column", gap: 10,
           }}>
-            {/* App Store */}
-            <a href="#" style={{
+            {/* App Store -- Coming Soon: not yet published */}
+            <div style={{
               display: "flex", alignItems: "center", gap: 12,
               background: "linear-gradient(180deg,#1a1a1a,#000)", borderRadius: 10,
-              padding: "11px 18px", textDecoration: "none",
+              padding: "11px 18px",
               border: "1px solid rgba(255,255,255,0.15)",
-              boxShadow: "0 4px 14px rgba(0,0,0,0.35)",
-              transition: "transform 0.25s ease, box-shadow 0.25s ease",
-            }}
-              onMouseEnter={(e) => { const el = e.currentTarget as HTMLAnchorElement; el.style.transform = "translateY(-2px)"; el.style.boxShadow = "0 8px 22px rgba(0,0,0,0.45)"; }}
-              onMouseLeave={(e) => { const el = e.currentTarget as HTMLAnchorElement; el.style.transform = "translateY(0)"; el.style.boxShadow = "0 4px 14px rgba(0,0,0,0.35)"; }}
-            >
+              opacity: 0.55,
+            }}>
               <svg viewBox="0 0 24 24" width="24" height="24" fill="white">
                 <path d="M17.05 12.5c-.03-2.4 1.96-3.56 2.05-3.61-1.12-1.63-2.86-1.86-3.48-1.88-1.48-.15-2.89.87-3.64.87-.75 0-1.9-.85-3.13-.83-1.6.02-3.09.94-3.92 2.38-1.68 2.9-.43 7.19 1.2 9.55.8 1.15 1.75 2.45 3 2.4 1.21-.05 1.66-.78 3.12-.78 1.46 0 1.87.78 3.15.75 1.3-.02 2.13-1.17 2.92-2.32.92-1.33 1.3-2.62 1.32-2.69-.03-.01-2.53-.97-2.56-3.84h-.03z"/>
                 <path d="M14.7 5.42c.66-.8 1.11-1.92 .99-3.03-.95.04-2.11.63-2.8 1.43-.61.7-1.15 1.86-1 2.94 1.06.08 2.15-.53 2.81-1.34z"/>
               </svg>
               <div>
-                <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 9.5, lineHeight: 1, margin: 0, letterSpacing: "0.06em" }}>Available on the</p>
-                <p style={{ color: "#fff", fontSize: 15, fontWeight: 600, lineHeight: "20px", margin: "3px 0 0", letterSpacing: "-0.01em" }}>App Store</p>
+                <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 9.5, lineHeight: 1, margin: 0, letterSpacing: "0.06em" }}>App Store</p>
+                <p style={{ color: "#fff", fontSize: 15, fontWeight: 600, lineHeight: "20px", margin: "3px 0 0", letterSpacing: "-0.01em" }}>Coming Soon</p>
               </div>
-            </a>
+            </div>
 
-            {/* Google Play */}
-            <a href="#" style={{
+            {/* Google Play -- Coming Soon: not yet published */}
+            <div style={{
               display: "flex", alignItems: "center", gap: 12,
               background: "linear-gradient(180deg,#1a1a1a,#000)", borderRadius: 10,
-              padding: "11px 18px", textDecoration: "none",
+              padding: "11px 18px",
               border: "1px solid rgba(255,255,255,0.15)",
-              boxShadow: "0 4px 14px rgba(0,0,0,0.35)",
-              transition: "transform 0.25s ease, box-shadow 0.25s ease",
-            }}
-              onMouseEnter={(e) => { const el = e.currentTarget as HTMLAnchorElement; el.style.transform = "translateY(-2px)"; el.style.boxShadow = "0 8px 22px rgba(0,0,0,0.45)"; }}
-              onMouseLeave={(e) => { const el = e.currentTarget as HTMLAnchorElement; el.style.transform = "translateY(0)"; el.style.boxShadow = "0 4px 14px rgba(0,0,0,0.35)"; }}
-            >
+              opacity: 0.55,
+            }}>
               <svg viewBox="0 0 24 24" width="24" height="24" fill="none">
                 <path d="M3 3L13.5 12 3 21V3Z"           fill="#EA4335" />
                 <path d="M3 3L13.5 12 21 7.5 7.5 1 3 3Z" fill="#FBBC04" />
@@ -264,10 +256,10 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
                 <path d="M13.5 12L21 7.5V16.5L13.5 12Z"  fill="#4285F4" />
               </svg>
               <div>
-                <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 9.5, lineHeight: 1, margin: 0, letterSpacing: "0.06em" }}>GET IT ON</p>
-                <p style={{ color: "#fff", fontSize: 15, fontWeight: 600, lineHeight: "20px", margin: "3px 0 0", letterSpacing: "-0.01em" }}>Google Play</p>
+                <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 9.5, lineHeight: 1, margin: 0, letterSpacing: "0.06em" }}>Google Play</p>
+                <p style={{ color: "#fff", fontSize: 15, fontWeight: 600, lineHeight: "20px", margin: "3px 0 0", letterSpacing: "-0.01em" }}>Coming Soon</p>
               </div>
-            </a>
+            </div>
 
             {/* App ecosystem entry point */}
             <button

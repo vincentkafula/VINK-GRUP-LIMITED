@@ -63,20 +63,18 @@ export const AppShowcaseSection = memo(function AppShowcaseSection({ onOpenApps 
             Browse All Apps
           </button>
           <div className="flex items-center gap-3">
-            {/* App Store badge */}
-            <a href="#" onClick={e => { e.preventDefault(); onOpenApps(); }}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/20 hover:border-white/40 hover:bg-white/5 transition-all">
+            {/* App Store badge -- Coming Soon: not yet published, this must not imply a live download */}
+            <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/10 opacity-60 cursor-default">
               <svg viewBox="0 0 24 24" className="w-5 h-5 fill-white flex-shrink-0">
                 <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
               </svg>
               <div>
-                <p className="text-white/50 text-[8px] leading-none">Download on the</p>
-                <p className="text-white text-xs font-bold leading-tight">App Store</p>
+                <p className="text-white/50 text-[8px] leading-none">App Store</p>
+                <p className="text-white text-xs font-bold leading-tight">Coming Soon</p>
               </div>
-            </a>
-            {/* Google Play badge */}
-            <a href="#" onClick={e => { e.preventDefault(); onOpenApps(); }}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/20 hover:border-white/40 hover:bg-white/5 transition-all">
+            </div>
+            {/* Google Play badge -- Coming Soon: not yet published, this must not imply a live download */}
+            <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/10 opacity-60 cursor-default">
               <svg viewBox="0 0 24 24" className="w-5 h-5 flex-shrink-0">
                 <path fill="#34A853" d="m1.22 0 .65.65 11.65 11.65-11.65 11.65-.65.65C.46 23.62 0 22.64 0 21.56V2.44C0 1.36.46.38 1.22 0z"/>
                 <path fill="#FBBC04" d="m17.8 12-2.35 2.35L3.73 6.56 7.07 3.22z"/>
@@ -84,10 +82,10 @@ export const AppShowcaseSection = memo(function AppShowcaseSection({ onOpenApps 
                 <path fill="#4285F4" d="m1.22 24 .65-.65L17.8 12l3.68 3.68-17.48 8.86C3.17 25.03 2.02 24.88 1.22 24z"/>
               </svg>
               <div>
-                <p className="text-white/50 text-[8px] leading-none">Get it on</p>
-                <p className="text-white text-xs font-bold leading-tight">Google Play</p>
+                <p className="text-white/50 text-[8px] leading-none">Google Play</p>
+                <p className="text-white text-xs font-bold leading-tight">Coming Soon</p>
               </div>
-            </a>
+            </div>
           </div>
         </div>
 

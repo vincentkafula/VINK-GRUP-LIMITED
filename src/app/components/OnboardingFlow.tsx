@@ -18,7 +18,7 @@ const STEPS = [
   { n: 2, label: "Profile" },
   { n: 3, label: "Verification" },
   { n: 4, label: "First Product" },
-  { n: 5, label: "Download App" },
+  { n: 5, label: "App Coming Soon" },
   { n: 6, label: "Done!" },
 ];
 
@@ -235,33 +235,29 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
             </div>
           )}
 
-          {/* Step 5 — Download App */}
+          {/* Step 5 — App Coming Soon */}
           {step === 5 && (
             <div className="space-y-5 text-center">
               <div>
                 <div className="flex items-center justify-center gap-2 mb-1">
                   <Smartphone className="w-5 h-5" style={{ color: P }} />
-                  <h2 className="text-lg font-black text-gray-900">Download the VINK App</h2>
+                  <h2 className="text-lg font-black text-gray-900">The VINK App Is Coming Soon</h2>
                 </div>
-                <p className="text-sm text-gray-500">Get the full experience on your phone. Your account works on web too.</p>
+                <p className="text-sm text-gray-500">Your account is already fully set up on web. We'll let you know the moment the app is ready.</p>
               </div>
               <div className="flex gap-3 justify-center">
                 {[
-                  { store: "App Store", icon: "🍎", sub: "Download on the" },
-                  { store: "Google Play", icon: "🤖", sub: "Get it on" },
+                  { store: "App Store", icon: "🍎" },
+                  { store: "Google Play", icon: "🤖" },
                 ].map(s => (
-                  <button key={s.store} className="flex items-center gap-3 px-4 py-3 rounded-2xl border-2 text-left transition-all hover:scale-105" style={{ borderColor: P, background: `${P}08` }}>
+                  <div key={s.store} className="flex items-center gap-3 px-4 py-3 rounded-2xl border-2 text-left opacity-50" style={{ borderColor: P, background: `${P}08` }}>
                     <span className="text-2xl">{s.icon}</span>
                     <div>
-                      <p className="text-[10px] text-gray-500">{s.sub}</p>
-                      <p className="text-sm font-bold text-gray-900">{s.store}</p>
+                      <p className="text-[10px] text-gray-500">{s.store}</p>
+                      <p className="text-sm font-bold text-gray-900">Coming Soon</p>
                     </div>
-                  </button>
+                  </div>
                 ))}
-              </div>
-              <div className="p-4 rounded-2xl text-left" style={{ background: `${P}08`, border: `1.5px dashed ${P}40` }}>
-                <p className="text-xs font-bold" style={{ color: P }}>🔗 Or scan the QR code</p>
-                <div className="mt-2 w-24 h-24 rounded-xl bg-gray-100 flex items-center justify-center mx-auto text-xs text-gray-400">QR Code</div>
               </div>
             </div>
           )}

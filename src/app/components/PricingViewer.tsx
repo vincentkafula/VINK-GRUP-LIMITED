@@ -102,7 +102,7 @@ function AppDownloadCard() {
       {/* Trigger */}
       <button onClick={() => setOpen(o => !o)}
         style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", background: BRAND, border: "none", cursor: "pointer" }}>
-        <span style={{ color: "#fff", fontSize: 14, fontWeight: 700 }}>📲 Download the VINK Apps</span>
+        <span style={{ color: "#fff", fontSize: 14, fontWeight: 700 }}>📲 VINK Apps -- Coming Soon</span>
         <span style={{ color: "rgba(255,255,255,.7)", fontSize: 11, fontWeight: 600, padding: "2px 10px", borderRadius: 20, border: "1px solid rgba(255,255,255,.3)" }}>
           {open ? "Hide ▲" : "iOS & Android ▼"}
         </span>
@@ -110,19 +110,19 @@ function AppDownloadCard() {
       {open && (
         <div style={{ background: BRAND, padding: "0 20px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
           <div style={{ height: 1, background: "rgba(255,255,255,.15)" }} />
-          <h4 style={{ color: "#fff", fontSize: 15, fontWeight: 700, margin: 0 }}>Download the App Now!</h4>
+          <h4 style={{ color: "#fff", fontSize: 15, fontWeight: 700, margin: 0 }}>Our app is coming soon</h4>
           <p style={{ fontSize: 12.5, color: "rgba(255,255,255,.8)", lineHeight: 1.6, margin: 0 }}>
             Your credit score is a tool to help you meet your goals. Want to get better rates on loans and credit cards? Your credit score could make it happen.
           </p>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            {[{ label: "App Store", icon: "🍎", sub: "Available on the" }, { label: "Google Play", icon: "▶", sub: "GET IT ON" }].map(b => (
-              <a key={b.label} href="#" onClick={e => e.preventDefault()} style={{ display: "flex", alignItems: "center", gap: 10, background: "#000", borderRadius: 9, padding: "9px 14px", textDecoration: "none", border: "1px solid rgba(255,255,255,.2)", minWidth: 130 }}>
+            {[{ label: "App Store", icon: "🍎" }, { label: "Google Play", icon: "▶" }].map(b => (
+              <div key={b.label} style={{ display: "flex", alignItems: "center", gap: 10, background: "#000", borderRadius: 9, padding: "9px 14px", border: "1px solid rgba(255,255,255,.2)", minWidth: 130, opacity: 0.55 }}>
                 <span style={{ fontSize: 18 }}>{b.icon}</span>
                 <div>
-                  <p style={{ color: "rgba(255,255,255,.55)", fontSize: 9, margin: 0, letterSpacing: ".04em" }}>{b.sub}</p>
-                  <p style={{ color: "#fff", fontSize: 13, fontWeight: 600, margin: "2px 0 0" }}>{b.label}</p>
+                  <p style={{ color: "rgba(255,255,255,.55)", fontSize: 9, margin: 0, letterSpacing: ".04em" }}>{b.label}</p>
+                  <p style={{ color: "#fff", fontSize: 13, fontWeight: 600, margin: "2px 0 0" }}>Coming Soon</p>
                 </div>
-              </a>
+              </div>
             ))}
           </div>
         </div>

@@ -1,7 +1,9 @@
 /**
  * VINK Super App Launcher
- * Shows all 5 downloadable apps as an app-store-style grid.
- * Each app can be launched directly or "downloaded".
+ * Shows all apps as an app-store-style grid, browsable in-site. Real
+ * download/install isn't live yet -- shows "Coming Soon" everywhere a
+ * store download used to be simulated. Each app can still be launched
+ * directly to preview its in-site simulator.
  */
 import { useState } from "react";
 import { X, Star, Download, ChevronRight, CheckCircle, Smartphone } from "lucide-react";
@@ -151,18 +153,13 @@ const APPS = [
 
 export function AppLauncher({ isOpen, onClose, onLaunchApp }: Props) {
   const [selectedApp, setSelectedApp] = useState<typeof APPS[0] | null>(null);
-  const [downloaded, setDownloaded] = useState<Set<string>>(new Set());
-  const [downloading, setDownloading] = useState<string | null>(null);
+  // Real download/install isn't available yet -- no app is published to
+  // either store. This used to simulate a fake "Downloading... /
+  // Downloaded" state with a setTimeout, which implied something
+  // happened when nothing did. Removed in favor of an honest
+  // "Coming Soon" label everywhere a download/install action used to be.
 
   if (!isOpen) return null;
-
-  const handleDownload = (appId: string) => {
-    setDownloading(appId);
-    setTimeout(() => {
-      setDownloaded(prev => new Set([...prev, appId]));
-      setDownloading(null);
-    }, 1500);
-  };
 
   const P = "#0B5C2E";
 
@@ -211,24 +208,10 @@ export function AppLauncher({ isOpen, onClose, onLaunchApp }: Props) {
               style={{ background: `linear-gradient(135deg,${P},#5FC97F)`, boxShadow: `0 6px 20px ${P}40` }}>
               Open App
             </button>
-            {downloaded.has(selectedApp.id) ? (
-              <button className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2"
-                style={{ background: "#10B98120", color: "#10B981", border: "1px solid #10B98140" }}>
-                <CheckCircle className="w-4 h-4" />Downloaded
-              </button>
-            ) : (
-              <button
-                onClick={() => handleDownload(selectedApp.id)}
-                disabled={downloading === selectedApp.id}
-                className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-all"
-                style={{ background: "#ffffff15", color: "#fff", border: "1px solid rgba(255,255,255,.2)" }}>
-                {downloading === selectedApp.id ? (
-                  <><div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />Downloading…</>
-                ) : (
-                  <><Download className="w-4 h-4" />Download</>
-                )}
-              </button>
-            )}
+            <button disabled className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 cursor-default"
+              style={{ background: "#ffffff10", color: "rgba(255,255,255,.5)", border: "1px solid rgba(255,255,255,.15)" }}>
+              <Download className="w-4 h-4" />Coming Soon
+            </button>
           </div>
 
           {/* Info pills */}
@@ -383,19 +366,9 @@ export function AppLauncher({ isOpen, onClose, onLaunchApp }: Props) {
                 Open App
               </button>
               <div className="flex items-center gap-3">
-                {downloaded.has(app.id) ? (
-                  <span className="text-xs font-bold flex items-center gap-1" style={{ color: "#10B981" }}>
-                    <CheckCircle className="w-3.5 h-3.5" />Downloaded
-                  </span>
-                ) : (
-                  <button onClick={() => handleDownload(app.id)} disabled={downloading === app.id}
-                    className="text-xs font-semibold flex items-center gap-1.5 text-white/50 hover:text-white transition-colors">
-                    {downloading === app.id
-                      ? <><div className="w-3 h-3 border border-white/40 border-t-white rounded-full animate-spin" />Installing…</>
-                      : <><Download className="w-3.5 h-3.5" />Install</>
-                    }
-                  </button>
-                )}
+                <span className="text-xs font-semibold flex items-center gap-1.5 text-white/35">
+                  <Download className="w-3.5 h-3.5" />Coming Soon
+                </span>
                 <button onClick={() => setSelectedApp(app)} className="text-white/30 hover:text-white/60 transition-colors">
                   <ChevronRight className="w-4 h-4" />
                 </button>
