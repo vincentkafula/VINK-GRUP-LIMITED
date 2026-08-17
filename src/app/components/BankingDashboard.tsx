@@ -1043,9 +1043,9 @@ function AccountsPanel({ accounts }: { accounts: R[] }) {
 }
 
 // ─── MAIN DASHBOARD ────────────────────────────────────────────────────────────
-interface BankingDashboardProps { isOpen: boolean; onClose: () => void; onOpenDriveDashboard?: () => void; onOpenOwnerDashboard?: () => void; onOpenTaxiAssociationDashboard?: () => void; onOpenInvestorDashboard?: () => void; onOpenPassengerDashboard?: () => void }
+interface BankingDashboardProps { isOpen: boolean; onClose: () => void; onOpenDriveDashboard?: () => void; onOpenOwnerDashboard?: () => void; onOpenTaxiAssociationDashboard?: () => void; onOpenInvestorDashboard?: () => void; onOpenPassengerDashboard?: () => void; onOpenTerminalManagement?: () => void }
 
-export function BankingDashboard({ isOpen, onClose, onOpenDriveDashboard, onOpenOwnerDashboard, onOpenTaxiAssociationDashboard, onOpenInvestorDashboard, onOpenPassengerDashboard }: BankingDashboardProps) {
+export function BankingDashboard({ isOpen, onClose, onOpenDriveDashboard, onOpenOwnerDashboard, onOpenTaxiAssociationDashboard, onOpenInvestorDashboard, onOpenPassengerDashboard, onOpenTerminalManagement }: BankingDashboardProps) {
   const [authed, setAuthed] = useState(() => {
     if (getBankToken()) return true;
     const mainToken = getMainToken();
@@ -1242,6 +1242,13 @@ export function BankingDashboard({ isOpen, onClose, onOpenDriveDashboard, onOpen
                     className="w-full mt-2 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-[10.5px] font-bold transition-all"
                     style={{ background: "rgba(234,88,12,.12)", color: "#EA580C", border: "1px solid rgba(234,88,12,.25)" }}>
                     Taxi Association Dashboard
+                  </button>
+                )}
+                {onOpenTerminalManagement && (
+                  <button onClick={onOpenTerminalManagement}
+                    className="w-full mt-2 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-[10.5px] font-bold transition-all"
+                    style={{ background: "rgba(15,61,36,.12)", color: "#0F3D24", border: "1px solid rgba(15,61,36,.25)" }}>
+                    Terminal Access Control
                   </button>
                 )}
               </div>

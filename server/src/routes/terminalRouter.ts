@@ -143,4 +143,29 @@ router.get("/terminals", requireAuth, requireRole(...REVIEWER_ROLES), async (_re
   res.json({ success: true, data: rows });
 });
 
+/**
+ * PATCH /api/terminal/terminals/:id
+ * Admin-only. This is the actual access-control lever, not a
+ * decorative status field: authenticateTerminal() (terminalAuth.ts)
+ * already rejects any request where status !== 'active', so setting a
+ * terminal to 'inactive' or 'revoked' here immediately blocks every
+ * subsequent POST /api/terminal/tap call from that physical device,
+ * regardless of whether its API key is still technically valid.
+ */
+router.patch("/terminals/:id", requireAuth, requireRole(...REVIEWER_ROLES), async (req: Request, res: Response): Promise<void> => {
+  if (!hasDb || !pool) { res.status(503).json({ success: false, error: "Database not configured" }); return; }
+  const { status, assignedDriver } = req.body as { status?: string; assignedDriver?: string };
+  if (status && !["active", "inactive", "revoked"].includes(status)) {
+    res.status(400).json({ success: false, error: "status must be 'active', 'inactive', or 'revoked'" });
+    return;
+  }
+  const { rows } = await pool.query(
+    `UPDATE terminals SET status = COALESCE($1, status), assigned_driver = COALESCE($2, assigned_driver) WHERE id = $3
+     RETURNING id, serial, model, status, assigned_driver, last_seen_at, registered_at`,
+    [status ?? null, assignedDriver ?? null, req.params.id]
+  );
+  if (!rows.length) { res.status(404).json({ success: false, error: "Terminal not found" }); return; }
+  res.json({ success: true, data: rows[0] });
+});
+
 export default router;
