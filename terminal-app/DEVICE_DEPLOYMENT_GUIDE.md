@@ -119,3 +119,40 @@ following the steps below.
 needs its own dedicated upgrade tool app running and open on the
 device *before* inserting the drive -- it's not a passive
 "plug in and it installs" flow the way app installation is.
+
+## 4. Diagnostics -- capturing SAM and RF logs
+
+Two separate log-capture procedures, useful when card reading behaves
+unexpectedly on real hardware. This is the concrete way to actually
+investigate the open `dc_card_hex` vs `dc_card_n_hex` question flagged
+directly in `P18QTerminalPlugin.java`'s `pollLoop()` -- if card
+detection is ever unreliable, these logs are what would show whether
+it's an RF/reader-level issue versus something in the app's own EMV
+kernel handling.
+
+### SAM (Secure Access Module) log
+1. Run the SAM card application (a vendor-provided test/demo app
+   distinct from VINK Terminal).
+2. Use its "read PSAM log" / "write PSAM log" functions as needed.
+3. Pull the resulting log file to your computer:
+   ```
+   adb pull /sdcard/data/data/DecardP18qDemo.txt
+   ```
+
+### RF (radio frequency / contactless reader) log
+1. Run the actual business application being diagnosed (for this
+   project, that's VINK Terminal itself -- tap a card, let the flow
+   complete, then close the app). This is the step that produces the
+   RF activity worth capturing.
+2. Run the separate `DcReadRFLog` vendor diagnostic app, tap
+   **"read log"**.
+3. Tap **"save log"** -- written to `/sdcard/DcReadRFLog.txt` on the
+   device. Pull it the same way as the SAM log above if you need it on
+   a computer (`adb pull /sdcard/DcReadRFLog.txt`).
+
+**When this is worth doing:** if a real device ever shows card taps
+not being detected reliably, or the wrong card scheme being identified
+(Visa vs. Mastercard), capturing an RF log immediately after
+reproducing the issue -- before doing anything else on the device --
+is the vendor-recommended way to get a real diagnostic trace, rather
+than guessing from app-level logs (`Log.e(TAG, ...)` calls) alone.
