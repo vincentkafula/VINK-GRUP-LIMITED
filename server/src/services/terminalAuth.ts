@@ -40,6 +40,9 @@ export async function registerTerminal(serial: string, model: string, registered
 export interface TerminalAuthResult {
   authenticated: boolean;
   terminalId?: string;
+  investorId?: string | null;
+  ownerId?: string | null;
+  driverId?: string | null;
   error?: string;
 }
 
@@ -47,7 +50,7 @@ export async function authenticateTerminal(serial: string, apiKey: string): Prom
   if (!hasDb || !pool) return { authenticated: false, error: "Database not configured" };
   if (!serial || !apiKey) return { authenticated: false, error: "Missing terminal serial or API key" };
 
-  const { rows } = await pool.query(`SELECT id, api_key_hash, status FROM terminals WHERE serial = $1`, [serial]);
+  const { rows } = await pool.query(`SELECT id, api_key_hash, status, investor_id, owner_id, driver_id FROM terminals WHERE serial = $1`, [serial]);
   if (!rows.length) return { authenticated: false, error: "Unknown terminal" };
 
   const terminal = rows[0];
@@ -57,5 +60,5 @@ export async function authenticateTerminal(serial: string, apiKey: string): Prom
   if (!valid) return { authenticated: false, error: "Invalid API key" };
 
   await pool.query(`UPDATE terminals SET last_seen_at = now() WHERE id = $1`, [terminal.id]);
-  return { authenticated: true, terminalId: terminal.id };
+  return { authenticated: true, terminalId: terminal.id, investorId: terminal.investor_id, ownerId: terminal.owner_id, driverId: terminal.driver_id };
 }

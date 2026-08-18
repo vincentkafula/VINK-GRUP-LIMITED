@@ -506,11 +506,26 @@ CREATE TABLE IF NOT EXISTS terminals (
   api_key_hash    TEXT NOT NULL,
   status          TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active','inactive','revoked')),
   assigned_driver TEXT,                    -- free-text label for now (driver name/id); not a FK, since there's no drivers table yet in this schema
+  -- Real ownership-chain references, added for multi-party revenue
+  -- splitting (2026-08-18): who actually gets paid for taps on this
+  -- specific device. All nullable -- a terminal can be registered
+  -- before these are assigned, and the split calculation treats an
+  -- unassigned party as "nothing withheld for them" rather than
+  -- failing the whole tap. driver_id is separate from the older
+  -- assigned_driver text field above (kept as-is for backward
+  -- compatibility with existing code) since the split logic needs a
+  -- real users.id to credit, not a free-text label.
+  investor_id     UUID REFERENCES users(id),
+  owner_id        UUID REFERENCES users(id),
+  driver_id       UUID REFERENCES users(id),
+  association_id  UUID REFERENCES users(id), -- not used in the per-tap split itself (association fees are a separate flat monthly charge, not a per-tap cut) -- stored here for reporting/filtering by association's fleet
   registered_by   TEXT,                    -- username of the admin who provisioned it
   last_seen_at    TIMESTAMPTZ,
   registered_at   TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_terminals_status ON terminals(status);
+CREATE INDEX IF NOT EXISTS idx_terminals_investor ON terminals(investor_id);
+CREATE INDEX IF NOT EXISTS idx_terminals_owner ON terminals(owner_id);
 
 -- One row per tap event the terminal reports. Card data here is
 -- deliberately narrow -- masked_pan (never a full PAN), scheme (from the
@@ -531,6 +546,22 @@ CREATE TABLE IF NOT EXISTS terminal_taps (
   status              TEXT NOT NULL DEFAULT 'received' CHECK (status IN ('received','processing','confirmed','declined')),
   vinkpay_transaction_id TEXT REFERENCES vinkpay_transactions(id), -- set once this tap is submitted into the existing VinkPay settlement flow
   error_message       TEXT,
+  -- Multi-party revenue split (2026-08-18), calculated once per tap by
+  -- revenueSplitService.ts and persisted here so the real number is
+  -- fixed at the moment of the transaction, not recalculated later off
+  -- percentages that might change. VINK's flat fee is confirmed as two
+  -- named halves (R0.50 "device side" + R0.50 "card side"), not a
+  -- single R1.00 blob, since the business wants to report on them
+  -- separately. The remainder after that fee splits 75% driver / 15%
+  -- owner / 10% investor -- confirmed directly, not assumed. Nullable:
+  -- a tap can be recorded even if the terminal has no investor/owner/
+  -- driver assigned yet, in which case these are null rather than the
+  -- tap failing outright.
+  vink_fee_device     NUMERIC(10,2),
+  vink_fee_card       NUMERIC(10,2),
+  driver_share        NUMERIC(10,2),
+  owner_share         NUMERIC(10,2),
+  investor_share      NUMERIC(10,2),
   received_at         TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_terminal_taps_terminal ON terminal_taps(terminal_id);

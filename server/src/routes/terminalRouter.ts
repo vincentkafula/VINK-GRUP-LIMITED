@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import { pool, hasDb } from "../db/pool.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { registerTerminal, authenticateTerminal } from "../services/terminalAuth.js";
+import { calculateRevenueSplit } from "../services/revenueSplitService.js";
 import { emit } from "../services/wsBroadcast.js";
 
 const router: ReturnType<typeof Router> = Router();
@@ -98,14 +99,25 @@ router.post("/tap", async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
+  // Multi-party revenue split -- confirmed model (2026-08-18): VINK's
+  // flat R1.00 fee (tracked as two named halves) comes off first, then
+  // the remainder splits 75% driver / 15% owner / 10% investor. See
+  // revenueSplitService.ts for the full reasoning, including the
+  // feeExceedsFare edge case for a fare too small to cover VINK's fee.
+  const split = calculateRevenueSplit(amount);
+  if (split.feeExceedsFare) {
+    console.error(`[terminal] Tap from terminal ${serial}: fare ${amount} is below VINK's flat fee (${split.vinkFeeTotal}) -- driver/owner/investor shares are zero for this tap`);
+  }
+
   const { rows } = await pool.query(
-    `INSERT INTO terminal_taps (terminal_id, masked_pan, scheme, amount, currency, cardholder_verification, emv_cryptogram_ref)
-     VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, received_at`,
-    [auth.terminalId, maskedPan ?? null, scheme ?? null, amount, currency ?? "ZAR", cardholderVerification ?? null, emvCryptogramRef ?? null]
+    `INSERT INTO terminal_taps (terminal_id, masked_pan, scheme, amount, currency, cardholder_verification, emv_cryptogram_ref, vink_fee_device, vink_fee_card, driver_share, owner_share, investor_share)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING id, received_at`,
+    [auth.terminalId, maskedPan ?? null, scheme ?? null, amount, currency ?? "ZAR", cardholderVerification ?? null, emvCryptogramRef ?? null,
+     split.vinkFeeDevice, split.vinkFeeCard, split.driverShare, split.ownerShare, split.investorShare]
   );
 
   const tap = rows[0];
-  emit("terminal.tap_received", { tapId: tap.id, terminalId: auth.terminalId, amount, currency: currency ?? "ZAR" });
+  emit("terminal.tap_received", { tapId: tap.id, terminalId: auth.terminalId, amount, currency: currency ?? "ZAR", split });
 
   // What happens next -- actually settling this tap through VinkPay's
   // existing submitOrderPayment/handleWebhook flow -- is deliberately not
@@ -113,8 +125,12 @@ router.post("/tap", async (req: Request, res: Response): Promise<void> => {
   // different things (this table records that a card was presented; an
   // actual charge needs an order to charge against), and building that
   // link out is the next real step once there's a genuine EMV kernel
-  // producing genuine tap events to link.
-  res.status(201).json({ success: true, data: { tapId: tap.id, receivedAt: tap.received_at, status: "received" } });
+  // producing genuine tap events to link. The revenue split calculated
+  // here is real and persisted, but crediting it into an actual
+  // investor/owner/driver wallet balance is a further step, not yet
+  // built -- this endpoint records the correct split amounts, it does
+  // not yet move money into any account.
+  res.status(201).json({ success: true, data: { tapId: tap.id, receivedAt: tap.received_at, status: "received", split } });
 });
 
 /**
@@ -139,30 +155,47 @@ router.get("/taps", requireAuth, requireRole(...REVIEWER_ROLES), async (req: Req
  */
 router.get("/terminals", requireAuth, requireRole(...REVIEWER_ROLES), async (_req: Request, res: Response): Promise<void> => {
   if (!hasDb || !pool) { res.json({ success: true, data: [] }); return; }
-  const { rows } = await pool.query(`SELECT id, serial, model, status, assigned_driver, last_seen_at, registered_at FROM terminals ORDER BY registered_at DESC`);
+  const { rows } = await pool.query(`SELECT id, serial, model, status, assigned_driver, investor_id, owner_id, driver_id, association_id, last_seen_at, registered_at FROM terminals ORDER BY registered_at DESC`);
   res.json({ success: true, data: rows });
 });
 
 /**
  * PATCH /api/terminal/terminals/:id
- * Admin-only. This is the actual access-control lever, not a
- * decorative status field: authenticateTerminal() (terminalAuth.ts)
- * already rejects any request where status !== 'active', so setting a
- * terminal to 'inactive' or 'revoked' here immediately blocks every
- * subsequent POST /api/terminal/tap call from that physical device,
- * regardless of whether its API key is still technically valid.
+ * Admin-only. Two things this endpoint does, both real:
+ * 1. Status is the access-control lever, not a decorative field:
+ *    authenticateTerminal() (terminalAuth.ts) already rejects any
+ *    request where status !== 'active', so setting a terminal to
+ *    'inactive' or 'revoked' here immediately blocks every subsequent
+ *    POST /api/terminal/tap call from that physical device, regardless
+ *    of whether its API key is still technically valid.
+ * 2. Assigning investorId/ownerId/driverId/associationId is what makes
+ *    the multi-party revenue split in POST /tap possible at all --
+ *    without these set, a tap's split is calculated but has no real
+ *    account to credit (authenticateTerminal() returns null for any
+ *    unassigned party). This is the actual provisioning step: register
+ *    a terminal, then assign it here before real revenue splitting can
+ *    happen for it.
  */
 router.patch("/terminals/:id", requireAuth, requireRole(...REVIEWER_ROLES), async (req: Request, res: Response): Promise<void> => {
   if (!hasDb || !pool) { res.status(503).json({ success: false, error: "Database not configured" }); return; }
-  const { status, assignedDriver } = req.body as { status?: string; assignedDriver?: string };
+  const { status, assignedDriver, investorId, ownerId, driverId, associationId } = req.body as {
+    status?: string; assignedDriver?: string; investorId?: string; ownerId?: string; driverId?: string; associationId?: string;
+  };
   if (status && !["active", "inactive", "revoked"].includes(status)) {
     res.status(400).json({ success: false, error: "status must be 'active', 'inactive', or 'revoked'" });
     return;
   }
   const { rows } = await pool.query(
-    `UPDATE terminals SET status = COALESCE($1, status), assigned_driver = COALESCE($2, assigned_driver) WHERE id = $3
-     RETURNING id, serial, model, status, assigned_driver, last_seen_at, registered_at`,
-    [status ?? null, assignedDriver ?? null, req.params.id]
+    `UPDATE terminals SET
+       status = COALESCE($1, status),
+       assigned_driver = COALESCE($2, assigned_driver),
+       investor_id = COALESCE($3, investor_id),
+       owner_id = COALESCE($4, owner_id),
+       driver_id = COALESCE($5, driver_id),
+       association_id = COALESCE($6, association_id)
+     WHERE id = $7
+     RETURNING id, serial, model, status, assigned_driver, investor_id, owner_id, driver_id, association_id, last_seen_at, registered_at`,
+    [status ?? null, assignedDriver ?? null, investorId ?? null, ownerId ?? null, driverId ?? null, associationId ?? null, req.params.id]
   );
   if (!rows.length) { res.status(404).json({ success: false, error: "Terminal not found" }); return; }
   res.json({ success: true, data: rows[0] });

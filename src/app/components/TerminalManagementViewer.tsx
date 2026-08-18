@@ -25,6 +25,10 @@ interface Terminal {
   model: string;
   status: "active" | "inactive" | "revoked";
   assigned_driver: string | null;
+  investor_id: string | null;
+  owner_id: string | null;
+  driver_id: string | null;
+  association_id: string | null;
   last_seen_at: string | null;
   registered_at: string;
 }
@@ -43,6 +47,7 @@ export function TerminalManagementViewer({ isOpen, onClose }: Props) {
   const [terminals, setTerminals] = useState<Terminal[]>([]);
   const [loading, setLoading] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
+  const [assigningTerminal, setAssigningTerminal] = useState<Terminal | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const token = () => getBankToken() ?? "";
@@ -116,9 +121,13 @@ export function TerminalManagementViewer({ isOpen, onClose }: Props) {
                     <div className="flex-1 min-w-[180px]">
                       <p className="text-[13.5px] font-bold text-gray-900 font-mono">{t.serial}</p>
                       <p className="text-[11.5px] text-gray-400">{t.model} {t.assigned_driver ? `· ${t.assigned_driver}` : ""} {t.last_seen_at ? `· last seen ${new Date(t.last_seen_at).toLocaleString()}` : "· never connected"}</p>
+                      <p className="text-[11px] mt-1" style={{ color: (t.investor_id && t.owner_id && t.driver_id) ? "#059669" : "#D97706" }}>
+                        {(t.investor_id && t.owner_id && t.driver_id) ? "Ownership assigned -- revenue split active" : "Ownership not fully assigned -- taps will not split to real accounts yet"}
+                      </p>
                     </div>
                     <span className="px-2.5 py-1 rounded-full text-[11px] font-bold" style={{ background: s.bg, color: s.color }}>{s.label}</span>
                     <div className="flex items-center gap-1.5">
+                      <button onClick={() => setAssigningTerminal(t)} className="px-3 py-1.5 rounded-lg text-[11.5px] font-bold border border-indigo-200 text-indigo-600 hover:bg-indigo-50">Assign ownership</button>
                       {t.status !== "active" && <button onClick={() => updateStatus(t.id, "active")} className="px-3 py-1.5 rounded-lg text-[11.5px] font-bold border border-gray-200 text-gray-600 hover:bg-gray-50">Activate</button>}
                       {t.status !== "inactive" && <button onClick={() => updateStatus(t.id, "inactive")} className="px-3 py-1.5 rounded-lg text-[11.5px] font-bold border border-gray-200 text-gray-600 hover:bg-gray-50">Deactivate</button>}
                       {t.status !== "revoked" && <button onClick={() => updateStatus(t.id, "revoked")} className="px-3 py-1.5 rounded-lg text-[11.5px] font-bold border border-red-200 text-red-600 hover:bg-red-50">Revoke</button>}
@@ -132,6 +141,7 @@ export function TerminalManagementViewer({ isOpen, onClose }: Props) {
       </div>
 
       {showRegister && <RegisterTerminalModal onClose={() => setShowRegister(false)} onRegistered={() => { setShowRegister(false); loadTerminals(); }} token={token()} />}
+      {assigningTerminal && <AssignOwnershipModal terminal={assigningTerminal} onClose={() => setAssigningTerminal(null)} onSaved={() => { setAssigningTerminal(null); loadTerminals(); }} token={token()} />}
     </div>
   );
 }
@@ -201,6 +211,81 @@ function RegisterTerminalModal({ onClose, onRegistered, token }: { onClose: () =
             <button onClick={onRegistered} className="w-full mt-5 py-2.5 rounded-xl text-white text-[13px] font-bold" style={{ background: "#0F3D24" }}>Done</button>
           </>
         )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Assigns the ownership chain (investor/owner/driver/association) that
+ * makes the real multi-party revenue split in POST /api/terminal/tap
+ * possible at all -- without these, a tap's split is calculated but has
+ * no real account to credit. Takes raw user IDs (UUIDs) rather than a
+ * search/autocomplete picker -- a real first version of this admin flow,
+ * not a placeholder, but a search-by-name picker is a reasonable follow-up
+ * once there's a "list users by role" endpoint to back it with.
+ */
+function AssignOwnershipModal({ terminal, onClose, onSaved, token }: { terminal: Terminal; onClose: () => void; onSaved: () => void; token: string }) {
+  const [investorId, setInvestorId] = useState(terminal.investor_id ?? "");
+  const [ownerId, setOwnerId] = useState(terminal.owner_id ?? "");
+  const [driverId, setDriverId] = useState(terminal.driver_id ?? "");
+  const [associationId, setAssociationId] = useState(terminal.association_id ?? "");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSave() {
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch(`${API_BASE}/api/terminal/terminals/${terminal.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          investorId: investorId.trim() || undefined,
+          ownerId: ownerId.trim() || undefined,
+          driverId: driverId.trim() || undefined,
+          associationId: associationId.trim() || undefined,
+        }),
+      });
+      const json = await res.json();
+      if (json.success) onSaved();
+      else setError(json.error ?? "Could not save ownership assignment");
+    } catch {
+      setError("Could not reach the server");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-[130] flex items-center justify-center p-5" style={{ background: "rgba(10,14,35,.6)" }} onClick={onClose}>
+      <div className="bg-white rounded-2xl w-full max-w-md p-5" onClick={e => e.stopPropagation()}>
+        <h3 className="text-[16px] font-black text-gray-900 mb-1">Assign ownership</h3>
+        <p className="text-[12.5px] text-gray-400 mb-4 font-mono">{terminal.serial}</p>
+        <p className="text-[12px] text-gray-500 mb-4">Enter each party's VINK account ID (UUID). This determines who a real tap on this device actually pays -- 75% of the fare (after VINK's flat fee) to the driver, 15% to the owner, 10% to the investor.</p>
+        <div className="space-y-3">
+          <div>
+            <label className="block text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">Investor account ID</label>
+            <input value={investorId} onChange={e => setInvestorId(e.target.value)} placeholder="UUID" className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none font-mono" />
+          </div>
+          <div>
+            <label className="block text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">Owner account ID</label>
+            <input value={ownerId} onChange={e => setOwnerId(e.target.value)} placeholder="UUID" className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none font-mono" />
+          </div>
+          <div>
+            <label className="block text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">Driver account ID</label>
+            <input value={driverId} onChange={e => setDriverId(e.target.value)} placeholder="UUID" className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none font-mono" />
+          </div>
+          <div>
+            <label className="block text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">Association account ID <span className="normal-case font-normal text-gray-400">(reporting only -- not part of the per-tap split)</span></label>
+            <input value={associationId} onChange={e => setAssociationId(e.target.value)} placeholder="UUID" className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none font-mono" />
+          </div>
+        </div>
+        {error && <p className="text-[12px] text-red-600 mt-3">{error}</p>}
+        <div className="flex gap-2.5 mt-5">
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-[13px] font-bold">Cancel</button>
+          <button onClick={handleSave} disabled={saving} className="flex-1 py-2.5 rounded-xl text-white text-[13px] font-bold disabled:opacity-50" style={{ background: "#0F3D24" }}>{saving ? "Saving..." : "Save"}</button>
+        </div>
       </div>
     </div>
   );
