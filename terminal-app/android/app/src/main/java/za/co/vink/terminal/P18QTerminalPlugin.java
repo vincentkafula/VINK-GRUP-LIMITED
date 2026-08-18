@@ -113,13 +113,26 @@ public class P18QTerminalPlugin extends Plugin {
         // opens -- it does NOT mean production CAPKs are configured. A
         // true here with test-only CAPKs will read test cards, not
         // accept real production cards. See the class-level comment.
+        //
+        // Success check is devHandle > 0, not >= 0 -- confirmed against
+        // the vendor's own Interface Document, whose sample code
+        // consistently uses if(devHandle>0) throughout, never >=0. A
+        // handle of exactly 0 is not treated as success anywhere in the
+        // vendor's own documentation or samples.
         int handle = -1;
         try {
             handle = BasicOper.dc_open("COM", null, READER_PATH, 115200);
+            // This call only probes whether the reader is reachable --
+            // it must not hold the port open afterward. The vendor's own
+            // sample code always pairs dc_open() with a later dc_exit()
+            // ("Close the port and release resources"); leaving this
+            // handle open would compete with pollLoop()'s own dc_open()
+            // the next time startCardListener() runs.
+            if (handle > 0) BasicOper.dc_exit();
         } catch (Throwable t) {
             Log.e(TAG, "isReady: reader open failed", t);
         }
-        ret.put("ready", handle >= 0);
+        ret.put("ready", handle > 0);
         call.resolve(ret);
     }
 
@@ -150,35 +163,50 @@ public class P18QTerminalPlugin extends Plugin {
      * kernel flow.
      */
     private void pollLoop() {
+        // Success check is devHandle > 0, not < 0 as failure -- same
+        // convention fix as isReady(), confirmed against the vendor's
+        // own sample code pattern (if(devHandle>0)) throughout their
+        // Interface Document.
         int devHandle = BasicOper.dc_open("COM", null, READER_PATH, 115200);
-        if (devHandle < 0) {
+        if (devHandle <= 0) {
             Log.e(TAG, "pollLoop: could not open reader at " + READER_PATH);
             listening = false;
             return;
         }
-        while (listening) {
-            try {
-                BasicOper.dc_reset();
-                String cardResult = BasicOper.dc_card_hex(0x01);
-                if (cardResult != null && cardResult.startsWith("0000")) {
-                    String scheme = detectScheme();
-                    if ("visa".equals(scheme)) {
-                        runVisaFlow();
-                    } else if ("mastercard".equals(scheme)) {
-                        runMasterFlow();
+        try {
+            while (listening) {
+                try {
+                    BasicOper.dc_reset();
+                    String cardResult = BasicOper.dc_card_hex(0x01);
+                    if (cardResult != null && cardResult.startsWith("0000")) {
+                        String scheme = detectScheme();
+                        if ("visa".equals(scheme)) {
+                            runVisaFlow();
+                        } else if ("mastercard".equals(scheme)) {
+                            runMasterFlow();
+                        }
+                        // Whether the read succeeded or not, wait before the
+                        // next poll rather than hammering the reader in a
+                        // tight loop.
+                        Thread.sleep(1500);
+                    } else {
+                        Thread.sleep(400);
                     }
-                    // Whether the read succeeded or not, wait before the
-                    // next poll rather than hammering the reader in a
-                    // tight loop.
-                    Thread.sleep(1500);
-                } else {
-                    Thread.sleep(400);
+                } catch (InterruptedException e) {
+                    break;
+                } catch (Throwable t) {
+                    Log.e(TAG, "pollLoop iteration failed", t);
                 }
-            } catch (InterruptedException e) {
-                break;
-            } catch (Throwable t) {
-                Log.e(TAG, "pollLoop iteration failed", t);
             }
+        } finally {
+            // Release the port regardless of how the loop above exited
+            // (normal stop, interrupt, or an uncaught error) -- the
+            // vendor's own sample code always pairs dc_open() with a
+            // later dc_exit() ("Close the port and release resources").
+            // Leaving this open would compete with the next
+            // startCardListener() call's own dc_open() on the same
+            // device path.
+            BasicOper.dc_exit();
         }
     }
 

@@ -34,6 +34,15 @@
          not requested speculatively: -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Required by the Deka EMV SDK (P18QTerminalPlugin), per the
+         vendor's own Interface Document's project-setup section.
+         READ_PHONE_STATE is a "dangerous" permission on Android 6.0+
+         and this manifest entry alone does not grant it -- a runtime
+         permission request (ActivityCompat.requestPermissions) is
+         still needed before it takes effect, not yet implemented. -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <!-- RideHailingSystem's live driver tracking, DriveDashboardViewer's
          device location, PassengerDashboard's accessible-transport
