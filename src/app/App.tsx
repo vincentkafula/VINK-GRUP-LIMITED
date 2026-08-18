@@ -610,7 +610,6 @@ export default function App() {
       if (label === "Switch to VINK")                             open("switchToVINK",        () => setShowSwitchToVINK(true));
       if (label === "Business debit order switching")            open("switchToVINK",        () => setShowSwitchToVINK(true));
       if (label === "Job Application")                            open("jobapp",             () => setShowJobApp(true));
-      if (label === "Browse Apps")                               startTransition(() => { mount("appLauncher"); setShowAppLauncher(true); });
       if (label === "Get Help & Information")                    { setContactTab("connect"); open("contactUs", () => setShowContactUs(true)); }
       if (label === "Message Us")                                { setContactTab("connect"); open("contactUs", () => setShowContactUs(true)); }
       if (label === "Legal and Compliance")                      { setLegalTab("compliance"); open("legal", () => setShowLegal(true)); }
@@ -711,12 +710,18 @@ export default function App() {
 
       <SearchSection />
 
-      <LazySection><Suspense fallback={null}><FeaturesSection onExploreAll={() => { mount("appLauncher"); setShowAppLauncher(true); }} /></Suspense></LazySection>
+      <LazySection><Suspense fallback={null}><FeaturesSection /></Suspense></LazySection>
       <LazySection><Suspense fallback={null}><ProtectionSection /></Suspense></LazySection>
       <LazySection><Suspense fallback={null}><CreditCardsSection onApply={() => openSelector("creditCard")} /></Suspense></LazySection>
       <LazySection><Suspense fallback={null}><BusinessPowerSection onSubNavClick={handleSubNavClick} /></Suspense></LazySection>
       <LazySection><Suspense fallback={null}><FinancialInstitutionsSection /></Suspense></LazySection>
-      {/* AppShowcaseSection removed from homepage — accessible via footer "Download the App Now!" only */}
+      {/* AppShowcaseSection and the App Launcher are admin-only now --
+          see BankingDashboard's "App Preview" sidebar button. Not
+          reachable from the public site at all: none of the apps are
+          actually published yet (every download CTA now says "Coming
+          Soon"), so a public-facing "browse and preview our apps"
+          experience would be showing incomplete/simulated features to
+          real visitors as if they were real. */}
       <LazySection>
         <Suspense fallback={null}>
           <Footer onLinkClick={handleFooterLink} />
@@ -737,7 +742,7 @@ export default function App() {
       {has("authority")       && <Suspense fallback={null}><AuthorityDashboard     isOpen={showAuthority}       onClose={() => setShowAuthority(false)} /></Suspense>}
       {has("superAdmin")      && <Suspense fallback={null}><SuperAdminDashboard    isOpen={showSuperAdmin}      onClose={() => setShowSuperAdmin(false)} /></Suspense>}
       {has("rideHailing")     && <Suspense fallback={null}><RideHailingSystem      isOpen={showRideHailing}     onClose={() => setShowRideHailing(false)} /></Suspense>}
-      {has("banking")         && <Suspense fallback={null}><BankingDashboard       isOpen={showBanking}         onClose={() => setShowBanking(false)} onOpenDriveDashboard={() => { mount("driveDashboard"); setShowDriveDashboard(true); }} onOpenOwnerDashboard={() => { mount("ownerDashboard"); setShowOwnerDashboard(true); }} onOpenTaxiAssociationDashboard={() => { mount("taxiAssociationDashboard"); setShowTaxiAssociationDashboard(true); }} onOpenInvestorDashboard={() => { mount("investorDashboard"); setShowInvestorDashboard(true); }} onOpenPassengerDashboard={() => { mount("vinkGoDashboard"); setShowVinkGoDashboard(true); }} onOpenTerminalManagement={() => { mount("terminalManagement"); setShowTerminalManagement(true); }} /></Suspense>}
+      {has("banking")         && <Suspense fallback={null}><BankingDashboard       isOpen={showBanking}         onClose={() => setShowBanking(false)} onOpenDriveDashboard={() => { mount("driveDashboard"); setShowDriveDashboard(true); }} onOpenOwnerDashboard={() => { mount("ownerDashboard"); setShowOwnerDashboard(true); }} onOpenTaxiAssociationDashboard={() => { mount("taxiAssociationDashboard"); setShowTaxiAssociationDashboard(true); }} onOpenInvestorDashboard={() => { mount("investorDashboard"); setShowInvestorDashboard(true); }} onOpenPassengerDashboard={() => { mount("vinkGoDashboard"); setShowVinkGoDashboard(true); }} onOpenTerminalManagement={() => { mount("terminalManagement"); setShowTerminalManagement(true); }} onOpenAppLauncher={() => { mount("appLauncher"); setShowAppLauncher(true); }} /></Suspense>}
       {has("terminalManagement") && <Suspense fallback={null}><TerminalManagementViewer isOpen={showTerminalManagement} onClose={() => setShowTerminalManagement(false)} /></Suspense>}
       {has("driveDashboard")  && <Suspense fallback={null}><DriveDashboardViewer   isOpen={showDriveDashboard}  onClose={() => setShowDriveDashboard(false)} driverName={getSession()?.name} /></Suspense>}
       {has("ownerDashboard")  && <Suspense fallback={null}><OwnerFleetDashboardViewer isOpen={showOwnerDashboard} onClose={() => setShowOwnerDashboard(false)} /></Suspense>}

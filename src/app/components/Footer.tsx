@@ -260,22 +260,6 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
                 <p style={{ color: "#fff", fontSize: 15, fontWeight: 600, lineHeight: "20px", margin: "3px 0 0", letterSpacing: "-0.01em" }}>Coming Soon</p>
               </div>
             </div>
-
-            {/* App ecosystem entry point */}
-            <button
-              onClick={() => handleLinkClick("Browse Apps")}
-              style={{
-                width: "100%", padding: "13px 16px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.18)",
-                background: "rgba(255,255,255,0.08)", color: "#fff",
-                fontSize: 13.5, fontWeight: 700, cursor: "pointer", letterSpacing: ".01em",
-                display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                transition: "transform 0.25s ease, background 0.25s ease",
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.15)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.08)"; e.currentTarget.style.transform = "translateY(0)"; }}
-            >
-              Browse All 6 Apps →
-            </button>
           </div>
         </div>
       </div>

@@ -1043,9 +1043,9 @@ function AccountsPanel({ accounts }: { accounts: R[] }) {
 }
 
 // ─── MAIN DASHBOARD ────────────────────────────────────────────────────────────
-interface BankingDashboardProps { isOpen: boolean; onClose: () => void; onOpenDriveDashboard?: () => void; onOpenOwnerDashboard?: () => void; onOpenTaxiAssociationDashboard?: () => void; onOpenInvestorDashboard?: () => void; onOpenPassengerDashboard?: () => void; onOpenTerminalManagement?: () => void }
+interface BankingDashboardProps { isOpen: boolean; onClose: () => void; onOpenDriveDashboard?: () => void; onOpenOwnerDashboard?: () => void; onOpenTaxiAssociationDashboard?: () => void; onOpenInvestorDashboard?: () => void; onOpenPassengerDashboard?: () => void; onOpenTerminalManagement?: () => void; onOpenAppLauncher?: () => void }
 
-export function BankingDashboard({ isOpen, onClose, onOpenDriveDashboard, onOpenOwnerDashboard, onOpenTaxiAssociationDashboard, onOpenInvestorDashboard, onOpenPassengerDashboard, onOpenTerminalManagement }: BankingDashboardProps) {
+export function BankingDashboard({ isOpen, onClose, onOpenDriveDashboard, onOpenOwnerDashboard, onOpenTaxiAssociationDashboard, onOpenInvestorDashboard, onOpenPassengerDashboard, onOpenTerminalManagement, onOpenAppLauncher }: BankingDashboardProps) {
   const [authed, setAuthed] = useState(() => {
     if (getBankToken()) return true;
     const mainToken = getMainToken();
@@ -1249,6 +1249,13 @@ export function BankingDashboard({ isOpen, onClose, onOpenDriveDashboard, onOpen
                     className="w-full mt-2 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-[10.5px] font-bold transition-all"
                     style={{ background: "rgba(15,61,36,.12)", color: "#0F3D24", border: "1px solid rgba(15,61,36,.25)" }}>
                     Terminal Access Control
+                  </button>
+                )}
+                {onOpenAppLauncher && (
+                  <button onClick={onOpenAppLauncher}
+                    className="w-full mt-2 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-[10.5px] font-bold transition-all"
+                    style={{ background: "rgba(79,70,229,.12)", color: "#4F46E5", border: "1px solid rgba(79,70,229,.25)" }}>
+                    App Preview (internal)
                   </button>
                 )}
               </div>
