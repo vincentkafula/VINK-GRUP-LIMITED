@@ -121,8 +121,8 @@ export function TerminalManagementViewer({ isOpen, onClose }: Props) {
                     <div className="flex-1 min-w-[180px]">
                       <p className="text-[13.5px] font-bold text-gray-900 font-mono">{t.serial}</p>
                       <p className="text-[11.5px] text-gray-400">{t.model} {t.assigned_driver ? `· ${t.assigned_driver}` : ""} {t.last_seen_at ? `· last seen ${new Date(t.last_seen_at).toLocaleString()}` : "· never connected"}</p>
-                      <p className="text-[11px] mt-1" style={{ color: (t.investor_id && t.owner_id && t.driver_id) ? "#059669" : "#D97706" }}>
-                        {(t.investor_id && t.owner_id && t.driver_id) ? "Ownership assigned -- revenue split active" : "Ownership not fully assigned -- taps will not split to real accounts yet"}
+                      <p className="text-[11px] mt-1" style={{ color: (t.investor_id && t.owner_id) ? "#059669" : "#D97706" }}>
+                        {(t.investor_id && t.owner_id) ? "Ownership assigned -- revenue split active" : "Investor/owner not assigned -- taps will not split to real accounts yet"}
                       </p>
                     </div>
                     <span className="px-2.5 py-1 rounded-full text-[11px] font-bold" style={{ background: s.bg, color: s.color }}>{s.label}</span>
@@ -262,7 +262,7 @@ function AssignOwnershipModal({ terminal, onClose, onSaved, token }: { terminal:
       <div className="bg-white rounded-2xl w-full max-w-md p-5" onClick={e => e.stopPropagation()}>
         <h3 className="text-[16px] font-black text-gray-900 mb-1">Assign ownership</h3>
         <p className="text-[12.5px] text-gray-400 mb-4 font-mono">{terminal.serial}</p>
-        <p className="text-[12px] text-gray-500 mb-4">Enter each party's VINK account ID (UUID). This determines who a real tap on this device actually pays -- 75% of the fare (after VINK's flat fee) to the driver, 15% to the owner, 10% to the investor.</p>
+        <p className="text-[12px] text-gray-500 mb-4">Enter each party's VINK account ID (UUID). On every real tap: VINK keeps a flat R1.00 fee, of which 10% (R0.10) goes to the investor. The owner receives everything else. The driver's pay is a separate fixed amount agreed privately with the owner -- VINK's system doesn't calculate or touch it.</p>
         <div className="space-y-3">
           <div>
             <label className="block text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">Investor account ID</label>
@@ -273,7 +273,7 @@ function AssignOwnershipModal({ terminal, onClose, onSaved, token }: { terminal:
             <input value={ownerId} onChange={e => setOwnerId(e.target.value)} placeholder="UUID" className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none font-mono" />
           </div>
           <div>
-            <label className="block text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">Driver account ID</label>
+            <label className="block text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">Driver account ID <span className="normal-case font-normal text-gray-400">(identification only -- not part of the per-tap split)</span></label>
             <input value={driverId} onChange={e => setDriverId(e.target.value)} placeholder="UUID" className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none font-mono" />
           </div>
           <div>

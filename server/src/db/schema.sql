@@ -546,21 +546,24 @@ CREATE TABLE IF NOT EXISTS terminal_taps (
   status              TEXT NOT NULL DEFAULT 'received' CHECK (status IN ('received','processing','confirmed','declined')),
   vinkpay_transaction_id TEXT REFERENCES vinkpay_transactions(id), -- set once this tap is submitted into the existing VinkPay settlement flow
   error_message       TEXT,
-  -- Multi-party revenue split (2026-08-18), calculated once per tap by
-  -- revenueSplitService.ts and persisted here so the real number is
-  -- fixed at the moment of the transaction, not recalculated later off
-  -- percentages that might change. VINK's flat fee is confirmed as two
-  -- named halves (R0.50 "device side" + R0.50 "card side"), not a
-  -- single R1.00 blob, since the business wants to report on them
-  -- separately. The remainder after that fee splits 75% driver / 15%
-  -- owner / 10% investor -- confirmed directly, not assumed. Nullable:
-  -- a tap can be recorded even if the terminal has no investor/owner/
-  -- driver assigned yet, in which case these are null rather than the
-  -- tap failing outright.
+  -- Multi-party revenue split (2026-08-18, corrected same day after
+  -- an initial wrong version used percentage splits for all three
+  -- parties). VINK's flat fee is two named halves (R0.50 "device
+  -- side" + R0.50 "card side"). The driver's pay is a fixed amount
+  -- privately agreed between driver and owner -- deliberately NOT a
+  -- column here, since VINK's system doesn't calculate or touch it at
+  -- all. The investor's only per-tap income is 10% of VINK's own fee
+  -- (R0.10/tap, not 10% of the fare) -- their monthly device rental
+  -- from the owner is a separate, non-per-tap billing relationship
+  -- also not represented here. The owner receives everything left
+  -- after VINK's fee alone (never fee-plus-investor-share -- the
+  -- investor's cut comes out of VINK's own fee, not on top of it).
+  -- Nullable: a tap can be recorded even if the terminal has no
+  -- investor/owner assigned yet, in which case these are null rather
+  -- than the tap failing outright.
   vink_fee_device     NUMERIC(10,2),
   vink_fee_card       NUMERIC(10,2),
-  driver_share        NUMERIC(10,2),
-  owner_share         NUMERIC(10,2),
+  owner_settlement    NUMERIC(10,2),
   investor_share      NUMERIC(10,2),
   received_at         TIMESTAMPTZ NOT NULL DEFAULT now()
 );

@@ -99,21 +99,24 @@ router.post("/tap", async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  // Multi-party revenue split -- confirmed model (2026-08-18): VINK's
-  // flat R1.00 fee (tracked as two named halves) comes off first, then
-  // the remainder splits 75% driver / 15% owner / 10% investor. See
-  // revenueSplitService.ts for the full reasoning, including the
-  // feeExceedsFare edge case for a fare too small to cover VINK's fee.
+  // Multi-party revenue split -- corrected model (2026-08-18): VINK's
+  // flat R1.00 fee (two named halves) comes off first. The driver's
+  // pay is a fixed amount privately agreed with the owner and is NOT
+  // calculated here at all. The investor gets 10% of VINK's fee
+  // specifically (R0.10/tap), not 10% of the fare. The owner gets
+  // everything else. See revenueSplitService.ts for the full
+  // reasoning, including the feeExceedsFare edge case for a fare too
+  // small to cover VINK's fee.
   const split = calculateRevenueSplit(amount);
   if (split.feeExceedsFare) {
-    console.error(`[terminal] Tap from terminal ${serial}: fare ${amount} is below VINK's flat fee (${split.vinkFeeTotal}) -- driver/owner/investor shares are zero for this tap`);
+    console.error(`[terminal] Tap from terminal ${serial}: fare ${amount} is below VINK's flat fee (${split.vinkFeeTotal}) -- owner/investor amounts are zero for this tap`);
   }
 
   const { rows } = await pool.query(
-    `INSERT INTO terminal_taps (terminal_id, masked_pan, scheme, amount, currency, cardholder_verification, emv_cryptogram_ref, vink_fee_device, vink_fee_card, driver_share, owner_share, investor_share)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING id, received_at`,
+    `INSERT INTO terminal_taps (terminal_id, masked_pan, scheme, amount, currency, cardholder_verification, emv_cryptogram_ref, vink_fee_device, vink_fee_card, owner_settlement, investor_share)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id, received_at`,
     [auth.terminalId, maskedPan ?? null, scheme ?? null, amount, currency ?? "ZAR", cardholderVerification ?? null, emvCryptogramRef ?? null,
-     split.vinkFeeDevice, split.vinkFeeCard, split.driverShare, split.ownerShare, split.investorShare]
+     split.vinkFeeDevice, split.vinkFeeCard, split.ownerSettlement, split.investorShare]
   );
 
   const tap = rows[0];
