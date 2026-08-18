@@ -1,7 +1,7 @@
 # P18Q Device Deployment Guide
 
-Two separate procedures, both using a USB flash drive but for different
-things. Don't confuse them.
+Three separate procedures, all using a USB flash drive but for
+genuinely different things. Don't confuse them.
 
 ## 1. Installing/updating the VINK Terminal app itself (USB "DecardApk" method)
 
@@ -79,3 +79,43 @@ in the package filename can be manually edited to match (e.g. renaming
 device's actual current model via the same About Device screen before
 attempting this, and treat this rename as a vendor-documented but
 still fairly manual workaround, not a routine step.
+
+## 3. Card reader firmware upgrade (the EMV reader chip's own firmware -- not the device OS, not the app)
+
+A third, separate thing again. This updates the firmware running
+*inside the physical contactless reader module itself* -- the
+component `P18QTerminalPlugin.java` actually talks to via `BasicOper`,
+`VisaApi`, and `MasterApi`. Directly relevant to the EMV integration:
+if card detection or reading is ever unreliable in a way that looks
+like a hardware/firmware issue rather than an app bug, checking for
+a reader firmware update is a legitimate first troubleshooting step,
+separate from anything in the app's own code.
+
+**This requires installing a separate, dedicated app first**
+(`DeCard_Firmware_Upgrade_Tool_V1.0.3.apk`) -- not the VINK Terminal
+app, a vendor-provided maintenance tool. Install this the same way as
+any `.apk` (via the `DecardApk` USB method above, or ADB) before
+following the steps below.
+
+**Steps:**
+1. Prepare a **FAT32-formatted** USB flash drive specifically (not
+   exFAT or NTFS -- this matters, unlike the `DecardApk` method above
+   which doesn't specify a filesystem requirement).
+2. Create a `/DECARD_ANDROID/firmware` folder in the root directory,
+   and copy the reader firmware package (a `.drv` file) into it. If
+   this is the first time using this tool, the vendor recommends just
+   copying their entire provided `DECARD_ANDROID` folder to the drive
+   root directly, rather than recreating the folder structure by hand.
+3. Open the DeCard Firmware Upgrade Tool app on the device, then
+   insert the USB drive -- it auto-detects and loads the firmware
+   package from the drive.
+4. Once the firmware file is auto-selected, tap the upgrade button to
+   start.
+5. The device powers off automatically when the firmware upgrade
+   finishes. After it restarts, the upgrade tool app lets you confirm
+   whether the upgrade succeeded.
+
+**Note:** unlike the `DecardApk` app-install method, this specifically
+needs its own dedicated upgrade tool app running and open on the
+device *before* inserting the drive -- it's not a passive
+"plug in and it installs" flow the way app installation is.
