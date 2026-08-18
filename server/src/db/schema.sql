@@ -570,3 +570,94 @@ CREATE TABLE IF NOT EXISTS terminal_taps (
 CREATE INDEX IF NOT EXISTS idx_terminal_taps_terminal ON terminal_taps(terminal_id);
 CREATE INDEX IF NOT EXISTS idx_terminal_taps_status ON terminal_taps(status);
 
+-- ── GPS Route Assignment, Geofence Violations, Driver Fine Ledger ────────────
+-- Confirmed model (2026-08-18): an association defines a route as an
+-- ordered set of waypoints (a path, not a single circular zone -- this
+-- is deliberately a different, new concept from the older, simpler
+-- vehicleDb.geofences mock circular-zone data used elsewhere in this
+-- codebase, since a taxi route is a path with a tolerance buffer, not
+-- a single point-radius zone). A vehicle reporting a GPS position more
+-- than tolerance_meters from the nearest point on its assigned route's
+-- path is a violation, and each violation deducts a fixed R50 from the
+-- driver's ledger -- a genuinely new concept, since regular per-tap
+-- driver pay is deliberately never tracked in this system (see
+-- terminal_taps' own comment above). Fines needed their own ledger to
+-- have any real balance to deduct from at all.
+CREATE TABLE IF NOT EXISTS vehicle_routes (
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  terminal_id       UUID NOT NULL REFERENCES terminals(id),
+  association_id    UUID REFERENCES users(id), -- who defined this route; nullable since a route could be created by an admin on an association's behalf
+  name              TEXT NOT NULL,
+  tolerance_meters  NUMERIC(8,2) NOT NULL DEFAULT 200, -- how far off the path is still considered on-route
+  active            BOOLEAN NOT NULL DEFAULT true,
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_vehicle_routes_terminal ON vehicle_routes(terminal_id);
+
+-- The path itself -- an ordered sequence of lat/lng points. sequence
+-- determines the order the points are joined into a path; the
+-- geofence tolerance is checked against distance to the nearest
+-- segment of this path, not just to the individual points.
+CREATE TABLE IF NOT EXISTS route_waypoints (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  route_id    UUID NOT NULL REFERENCES vehicle_routes(id) ON DELETE CASCADE,
+  sequence    INTEGER NOT NULL,
+  lat         NUMERIC(9,6) NOT NULL,
+  lng         NUMERIC(9,6) NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_route_waypoints_route ON route_waypoints(route_id, sequence);
+
+-- One row per GPS position report from a device. Deliberately
+-- separate from terminal_taps -- a position report and a card tap are
+-- different event types from the same physical device, same reasoning
+-- terminal_taps' own comment gives for keeping a tap event and a
+-- payment submission as two different things.
+CREATE TABLE IF NOT EXISTS vehicle_positions (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  terminal_id   UUID NOT NULL REFERENCES terminals(id),
+  lat           NUMERIC(9,6) NOT NULL,
+  lng           NUMERIC(9,6) NOT NULL,
+  recorded_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_vehicle_positions_terminal ON vehicle_positions(terminal_id, recorded_at DESC);
+
+-- One row per confirmed off-route violation -- fine_amount is stored
+-- at the moment of the violation (currently always R50, but stored
+-- explicitly rather than recalculated later, same discipline as
+-- terminal_taps' own persisted revenue split) so a future change to
+-- the fine amount doesn't retroactively change historical records.
+-- The corresponding driver_ledger entry (if the fine was successfully
+-- posted) is found via driver_ledger.reference_id = route_violations.id
+-- -- no back-reference column needed here, which also avoids a
+-- circular foreign key between these two tables.
+CREATE TABLE IF NOT EXISTS route_violations (
+  id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  terminal_id           UUID NOT NULL REFERENCES terminals(id),
+  route_id              UUID NOT NULL REFERENCES vehicle_routes(id),
+  position_id           UUID NOT NULL REFERENCES vehicle_positions(id),
+  distance_from_route_m NUMERIC(10,2) NOT NULL,
+  fine_amount           NUMERIC(10,2) NOT NULL,
+  created_at            TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_route_violations_terminal ON route_violations(terminal_id);
+
+-- A genuinely new concept: regular per-tap driver pay is deliberately
+-- never tracked anywhere in this system (it's a private, fixed
+-- arrangement with the owner -- see terminal_taps' own comment), but
+-- fines need an actual account to deduct from, so this ledger exists
+-- specifically and only for that. balance_after is a running balance
+-- computed and stored at insert time (not recalculated from history on
+-- every read) so a driver's current fine balance is a fast, direct
+-- lookup of their most recent ledger row.
+CREATE TABLE IF NOT EXISTS driver_ledger (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  driver_id       UUID NOT NULL REFERENCES users(id),
+  entry_type      TEXT NOT NULL DEFAULT 'fine' CHECK (entry_type IN ('fine')), -- deliberately only 'fine' for now -- this ledger exists solely for route violations, not a general driver account; widen this CHECK if a real second use case appears later
+  amount          NUMERIC(10,2) NOT NULL, -- negative for a fine (a debit)
+  balance_after   NUMERIC(10,2) NOT NULL,
+  reference_id    UUID REFERENCES route_violations(id),
+  description     TEXT,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_driver_ledger_driver ON driver_ledger(driver_id, created_at DESC);
+

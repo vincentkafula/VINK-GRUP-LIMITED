@@ -3,9 +3,13 @@ import { pool, hasDb } from "../db/pool.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { registerTerminal, authenticateTerminal } from "../services/terminalAuth.js";
 import { calculateRevenueSplit } from "../services/revenueSplitService.js";
+import { checkOffRoute } from "../services/routeGeofenceService.js";
 import { emit } from "../services/wsBroadcast.js";
 
 const router: ReturnType<typeof Router> = Router();
+
+// Confirmed fixed amount (2026-08-18) -- R50 per off-route violation.
+const ROUTE_VIOLATION_FINE_AMOUNT = 50;
 
 const REVIEWER_ROLES = ["owner", "superadmin", "noc_engineer", "billing_admin"] as const;
 
@@ -202,6 +206,104 @@ router.patch("/terminals/:id", requireAuth, requireRole(...REVIEWER_ROLES), asyn
   );
   if (!rows.length) { res.status(404).json({ success: false, error: "Terminal not found" }); return; }
   res.json({ success: true, data: rows[0] });
+});
+
+/**
+ * POST /api/terminal/position
+ * Device-authenticated, same pattern as /tap -- a GPS position report
+ * is a different event type from the same physical device, not a
+ * payment event. Checks the reported position against the terminal's
+ * currently active route (if any), and if off-route by more than the
+ * route's tolerance, records a violation and posts a real R50 fine to
+ * the driver's ledger -- but only if the terminal actually has a
+ * driver_id assigned (see authenticateTerminal()); a violation is
+ * still recorded either way, but a fine can't be posted to nobody.
+ */
+router.post("/position", async (req: Request, res: Response): Promise<void> => {
+  if (!hasDb || !pool) { res.status(503).json({ success: false, error: "Database not configured" }); return; }
+
+  const serial = req.header("x-terminal-serial");
+  const apiKey = req.header("x-terminal-api-key");
+  const auth = await authenticateTerminal(serial ?? "", apiKey ?? "");
+  if (!auth.authenticated) {
+    res.status(401).json({ success: false, error: auth.error ?? "Terminal authentication failed" });
+    return;
+  }
+
+  const { lat, lng } = req.body as { lat?: number; lng?: number };
+  if (typeof lat !== "number" || typeof lng !== "number" || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+    res.status(400).json({ success: false, error: "lat/lng must be valid numbers within real coordinate ranges" });
+    return;
+  }
+
+  const posResult = await pool.query(
+    `INSERT INTO vehicle_positions (terminal_id, lat, lng) VALUES ($1, $2, $3) RETURNING id`,
+    [auth.terminalId, lat, lng]
+  );
+  const positionId = posResult.rows[0].id;
+
+  const routeResult = await pool.query(
+    `SELECT id, tolerance_meters FROM vehicle_routes WHERE terminal_id = $1 AND active = true ORDER BY created_at DESC LIMIT 1`,
+    [auth.terminalId]
+  );
+
+  if (!routeResult.rows.length) {
+    // No active route assigned -- position recorded, nothing to check against.
+    res.status(201).json({ success: true, data: { positionId, routeChecked: false } });
+    return;
+  }
+
+  const route = routeResult.rows[0];
+  const waypointsResult = await pool.query(
+    `SELECT lat, lng FROM route_waypoints WHERE route_id = $1 ORDER BY sequence ASC`,
+    [route.id]
+  );
+  if (!waypointsResult.rows.length) {
+    // A route exists but has no waypoints -- nothing to check against, but this is worth logging since it likely means the route was set up incompletely.
+    console.error(`[terminal] Terminal ${serial}'s active route ${route.id} has no waypoints -- cannot check position against it`);
+    res.status(201).json({ success: true, data: { positionId, routeChecked: false } });
+    return;
+  }
+
+  const waypoints = waypointsResult.rows.map((w: { lat: string; lng: string }) => ({ lat: Number(w.lat), lng: Number(w.lng) }));
+  const offRoute = checkOffRoute({ lat, lng }, waypoints, Number(route.tolerance_meters));
+
+  if (!offRoute.isOffRoute) {
+    res.status(201).json({ success: true, data: { positionId, routeChecked: true, isOffRoute: false, distanceFromRouteM: offRoute.distanceFromRouteM } });
+    return;
+  }
+
+  const violationResult = await pool.query(
+    `INSERT INTO route_violations (terminal_id, route_id, position_id, distance_from_route_m, fine_amount)
+     VALUES ($1, $2, $3, $4, $5) RETURNING id`,
+    [auth.terminalId, route.id, positionId, offRoute.distanceFromRouteM, ROUTE_VIOLATION_FINE_AMOUNT]
+  );
+  const violationId = violationResult.rows[0].id;
+
+  let fineLedgerId: string | null = null;
+  if (auth.driverId) {
+    const balanceResult = await pool.query(
+      `SELECT balance_after FROM driver_ledger WHERE driver_id = $1 ORDER BY created_at DESC LIMIT 1`,
+      [auth.driverId]
+    );
+    const currentBalance = balanceResult.rows.length ? Number(balanceResult.rows[0].balance_after) : 0;
+    const newBalance = +(currentBalance - ROUTE_VIOLATION_FINE_AMOUNT).toFixed(2);
+    const ledgerResult = await pool.query(
+      `INSERT INTO driver_ledger (driver_id, entry_type, amount, balance_after, reference_id, description)
+       VALUES ($1, 'fine', $2, $3, $4, $5) RETURNING id`,
+      [auth.driverId, -ROUTE_VIOLATION_FINE_AMOUNT, newBalance, violationId, `Off-route violation -- ${offRoute.distanceFromRouteM}m from assigned route (tolerance ${route.tolerance_meters}m)`]
+    );
+    fineLedgerId = ledgerResult.rows[0].id;
+  } else {
+    console.error(`[terminal] Off-route violation on terminal ${serial} but no driver_id assigned -- violation recorded, no fine posted`);
+  }
+
+  emit("route.violation", { violationId, terminalId: auth.terminalId, distanceFromRouteM: offRoute.distanceFromRouteM, fineAmount: ROUTE_VIOLATION_FINE_AMOUNT, finePosted: !!fineLedgerId });
+
+  res.status(201).json({
+    success: true,
+    data: { positionId, routeChecked: true, isOffRoute: true, distanceFromRouteM: offRoute.distanceFromRouteM, violationId, fineAmount: ROUTE_VIOLATION_FINE_AMOUNT, finePosted: !!fineLedgerId },
+  });
 });
 
 export default router;
