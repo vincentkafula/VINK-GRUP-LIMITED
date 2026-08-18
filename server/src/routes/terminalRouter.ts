@@ -243,7 +243,7 @@ router.post("/position", async (req: Request, res: Response): Promise<void> => {
   const positionId = posResult.rows[0].id;
 
   const routeResult = await pool.query(
-    `SELECT id, tolerance_meters FROM vehicle_routes WHERE terminal_id = $1 AND active = true ORDER BY created_at DESC LIMIT 1`,
+    `SELECT id, tolerance_meters, association_id FROM vehicle_routes WHERE terminal_id = $1 AND active = true ORDER BY created_at DESC LIMIT 1`,
     [auth.terminalId]
   );
 
@@ -273,36 +273,78 @@ router.post("/position", async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  const violationResult = await pool.query(
-    `INSERT INTO route_violations (terminal_id, route_id, position_id, distance_from_route_m, fine_amount)
-     VALUES ($1, $2, $3, $4, $5) RETURNING id`,
-    [auth.terminalId, route.id, positionId, offRoute.distanceFromRouteM, ROUTE_VIOLATION_FINE_AMOUNT]
-  );
-  const violationId = violationResult.rows[0].id;
+  // Off-route: record the violation, debit the driver, and credit the
+  // route's owning association -- a real transfer of money between two
+  // accounts, done as one transaction so a failure partway through
+  // (e.g. the credit failing after the debit succeeded) can't leave the
+  // two ledgers out of sync with each other.
+  const client = await pool.connect();
+  let violationId: string;
+  let driverFinePosted = false;
+  let associationCreditPosted = false;
+  try {
+    await client.query("BEGIN");
 
-  let fineLedgerId: string | null = null;
-  if (auth.driverId) {
-    const balanceResult = await pool.query(
-      `SELECT balance_after FROM driver_ledger WHERE driver_id = $1 ORDER BY created_at DESC LIMIT 1`,
-      [auth.driverId]
+    const violationResult = await client.query(
+      `INSERT INTO route_violations (terminal_id, route_id, position_id, distance_from_route_m, fine_amount)
+       VALUES ($1, $2, $3, $4, $5) RETURNING id`,
+      [auth.terminalId, route.id, positionId, offRoute.distanceFromRouteM, ROUTE_VIOLATION_FINE_AMOUNT]
     );
-    const currentBalance = balanceResult.rows.length ? Number(balanceResult.rows[0].balance_after) : 0;
-    const newBalance = +(currentBalance - ROUTE_VIOLATION_FINE_AMOUNT).toFixed(2);
-    const ledgerResult = await pool.query(
-      `INSERT INTO driver_ledger (driver_id, entry_type, amount, balance_after, reference_id, description)
-       VALUES ($1, 'fine', $2, $3, $4, $5) RETURNING id`,
-      [auth.driverId, -ROUTE_VIOLATION_FINE_AMOUNT, newBalance, violationId, `Off-route violation -- ${offRoute.distanceFromRouteM}m from assigned route (tolerance ${route.tolerance_meters}m)`]
-    );
-    fineLedgerId = ledgerResult.rows[0].id;
-  } else {
-    console.error(`[terminal] Off-route violation on terminal ${serial} but no driver_id assigned -- violation recorded, no fine posted`);
+    violationId = violationResult.rows[0].id;
+
+    if (auth.driverId) {
+      const driverBalanceResult = await client.query(
+        `SELECT balance_after FROM driver_ledger WHERE driver_id = $1 ORDER BY created_at DESC LIMIT 1`,
+        [auth.driverId]
+      );
+      const driverCurrentBalance = driverBalanceResult.rows.length ? Number(driverBalanceResult.rows[0].balance_after) : 0;
+      const driverNewBalance = +(driverCurrentBalance - ROUTE_VIOLATION_FINE_AMOUNT).toFixed(2);
+      await client.query(
+        `INSERT INTO driver_ledger (driver_id, entry_type, amount, balance_after, reference_id, description)
+         VALUES ($1, 'fine', $2, $3, $4, $5)`,
+        [auth.driverId, -ROUTE_VIOLATION_FINE_AMOUNT, driverNewBalance, violationId, `Off-route violation -- ${offRoute.distanceFromRouteM}m from assigned route (tolerance ${route.tolerance_meters}m)`]
+      );
+      driverFinePosted = true;
+    } else {
+      console.error(`[terminal] Off-route violation on terminal ${serial} but no driver_id assigned -- violation recorded, no fine debited`);
+    }
+
+    if (route.association_id) {
+      const assocBalanceResult = await client.query(
+        `SELECT balance_after FROM association_ledger WHERE association_id = $1 ORDER BY created_at DESC LIMIT 1`,
+        [route.association_id]
+      );
+      const assocCurrentBalance = assocBalanceResult.rows.length ? Number(assocBalanceResult.rows[0].balance_after) : 0;
+      const assocNewBalance = +(assocCurrentBalance + ROUTE_VIOLATION_FINE_AMOUNT).toFixed(2);
+      await client.query(
+        `INSERT INTO association_ledger (association_id, entry_type, amount, balance_after, reference_id, description)
+         VALUES ($1, 'fine_credit', $2, $3, $4, $5)`,
+        [route.association_id, ROUTE_VIOLATION_FINE_AMOUNT, assocNewBalance, violationId, `Off-route fine -- terminal ${serial}, ${offRoute.distanceFromRouteM}m from route "${route.id}"`]
+      );
+      associationCreditPosted = true;
+    } else {
+      // A route with no association assigned -- the violation and any
+      // driver debit still happen, but there's no real account to
+      // credit the fine to. Worth logging clearly since a route ought
+      // to have an association if fines are meant to reach one.
+      console.error(`[terminal] Off-route violation on terminal ${serial}: route ${route.id} has no association_id -- fine debited from driver (if assigned) but not credited anywhere`);
+    }
+
+    await client.query("COMMIT");
+  } catch (err) {
+    await client.query("ROLLBACK");
+    console.error(`[terminal] Failed to process off-route violation for terminal ${serial}:`, err);
+    res.status(500).json({ success: false, error: "Could not process route violation" });
+    return;
+  } finally {
+    client.release();
   }
 
-  emit("route.violation", { violationId, terminalId: auth.terminalId, distanceFromRouteM: offRoute.distanceFromRouteM, fineAmount: ROUTE_VIOLATION_FINE_AMOUNT, finePosted: !!fineLedgerId });
+  emit("route.violation", { violationId, terminalId: auth.terminalId, distanceFromRouteM: offRoute.distanceFromRouteM, fineAmount: ROUTE_VIOLATION_FINE_AMOUNT, driverFinePosted, associationCreditPosted });
 
   res.status(201).json({
     success: true,
-    data: { positionId, routeChecked: true, isOffRoute: true, distanceFromRouteM: offRoute.distanceFromRouteM, violationId, fineAmount: ROUTE_VIOLATION_FINE_AMOUNT, finePosted: !!fineLedgerId },
+    data: { positionId, routeChecked: true, isOffRoute: true, distanceFromRouteM: offRoute.distanceFromRouteM, violationId, fineAmount: ROUTE_VIOLATION_FINE_AMOUNT, driverFinePosted, associationCreditPosted },
   });
 });
 

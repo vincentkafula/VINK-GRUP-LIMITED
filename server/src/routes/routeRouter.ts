@@ -145,4 +145,19 @@ router.get("/drivers/:driverId/ledger", requireAuth, requireRole(...REVIEWER_ROL
   res.json({ success: true, data: { balance, entries: rows } });
 });
 
+/**
+ * GET /api/routes/associations/:associationId/ledger
+ * The other side of a fine transfer -- an association's credited fine
+ * balance from route violations on its own routes.
+ */
+router.get("/associations/:associationId/ledger", requireAuth, requireRole(...REVIEWER_ROLES), async (req: Request, res: Response): Promise<void> => {
+  if (!hasDb || !pool) { res.json({ success: true, data: { balance: 0, entries: [] } }); return; }
+  const { rows } = await pool.query(
+    `SELECT * FROM association_ledger WHERE association_id = $1 ORDER BY created_at DESC`,
+    [req.params.associationId]
+  );
+  const balance = rows.length ? Number(rows[0].balance_after) : 0;
+  res.json({ success: true, data: { balance, entries: rows } });
+});
+
 export default router;

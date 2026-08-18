@@ -661,3 +661,22 @@ CREATE TABLE IF NOT EXISTS driver_ledger (
 );
 CREATE INDEX IF NOT EXISTS idx_driver_ledger_driver ON driver_ledger(driver_id, created_at DESC);
 
+-- The other half of a fine transfer (2026-08-18): the driver's ledger
+-- goes down by the fine amount, the owning association's ledger goes
+-- up by the same amount -- a real transfer, not a debit with no
+-- destination. Which association is credited is determined by the
+-- route the violation happened on (vehicle_routes.association_id),
+-- not by any other relationship -- a route's association is the
+-- single source of truth for where its fines go.
+CREATE TABLE IF NOT EXISTS association_ledger (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  association_id  UUID NOT NULL REFERENCES users(id),
+  entry_type      TEXT NOT NULL DEFAULT 'fine_credit' CHECK (entry_type IN ('fine_credit')), -- same discipline as driver_ledger -- narrow on purpose, widen if a real second use case appears
+  amount          NUMERIC(10,2) NOT NULL, -- positive for a fine credit
+  balance_after   NUMERIC(10,2) NOT NULL,
+  reference_id    UUID REFERENCES route_violations(id),
+  description     TEXT,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_association_ledger_association ON association_ledger(association_id, created_at DESC);
+
