@@ -173,6 +173,22 @@ public class P18QTerminalPlugin extends Plugin {
             while (listening) {
                 try {
                     BasicOper.dc_reset();
+                    // OPEN QUESTION, confirmed genuine via javap against the
+                    // actual compiled class, not resolved with certainty:
+                    // dc_card_hex(int) and dc_card_n_hex(int) are two
+                    // separate, distinct native methods that both exist.
+                    // The vendor's own working MasterAndVisa EMV demo uses
+                    // dc_card_hex specifically, which is why this code does
+                    // too. The separate "03-API-P18 All-In-One Reader"
+                    // document (P18-model-specific, not EMV-kernel-specific)
+                    // documents dc_card_n_hex for "Detect Type A Card" and
+                    // never mentions dc_card_hex at all. Both share the same
+                    // documented behavior elsewhere (card search + anti-
+                    // collision + select in one call), so they may be
+                    // functionally equivalent -- but this isn't confirmed.
+                    // If real-device testing ever shows unreliable card
+                    // detection, trying dc_card_n_hex(0x01) here is the
+                    // concrete first thing to test.
                     String cardResult = BasicOper.dc_card_hex(0x01);
                     if (cardResult != null && cardResult.startsWith("0000")) {
                         String scheme = detectScheme();
