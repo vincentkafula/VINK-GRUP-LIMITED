@@ -348,4 +348,167 @@ router.post("/position", async (req: Request, res: Response): Promise<void> => {
   });
 });
 
+/**
+ * POST /api/terminal/heartbeat
+ * Device-authenticated, same pattern as /tap and /position. A device
+ * checks in periodically with its current app version and battery
+ * level. Updates terminals' latest-status snapshot columns and appends
+ * to device_status_reports history, then -- since the device is
+ * already checking in -- returns whether a newer app version exists,
+ * so a separate update-check call isn't needed.
+ *
+ * Honest limit, not glossed over: "available" here means the device
+ * gets told a newer version exists and where to download it, which
+ * still requires the operator to tap-confirm Android's own install
+ * prompt -- this is not a silent remote push. A true silent push would
+ * need the device enrolled as an Android Enterprise "Device Owner",
+ * a separate OS-level provisioning process this endpoint has nothing
+ * to do with, and which hasn't been set up for these devices.
+ */
+router.post("/heartbeat", async (req: Request, res: Response): Promise<void> => {
+  if (!hasDb || !pool) { res.status(503).json({ success: false, error: "Database not configured" }); return; }
+
+  const serial = req.header("x-terminal-serial");
+  const apiKey = req.header("x-terminal-api-key");
+  const auth = await authenticateTerminal(serial ?? "", apiKey ?? "");
+  if (!auth.authenticated) {
+    res.status(401).json({ success: false, error: auth.error ?? "Terminal authentication failed" });
+    return;
+  }
+
+  const { appVersion, batteryPct } = req.body as { appVersion?: string; batteryPct?: number };
+  if (typeof batteryPct === "number" && (batteryPct < 0 || batteryPct > 100)) {
+    res.status(400).json({ success: false, error: "batteryPct must be between 0 and 100" });
+    return;
+  }
+
+  await pool.query(
+    `UPDATE terminals SET app_version = COALESCE($1, app_version), battery_pct = COALESCE($2, battery_pct), last_heartbeat_at = now() WHERE id = $3`,
+    [appVersion ?? null, batteryPct ?? null, auth.terminalId]
+  );
+  await pool.query(
+    `INSERT INTO device_status_reports (terminal_id, app_version, battery_pct) VALUES ($1, $2, $3)`,
+    [auth.terminalId, appVersion ?? null, batteryPct ?? null]
+  );
+
+  const latestRelease = await pool.query(
+    `SELECT version, download_url, release_notes, mandatory FROM app_releases WHERE active = true ORDER BY created_at DESC LIMIT 1`
+  );
+
+  const latest = latestRelease.rows[0];
+  const updateAvailable = !!latest && !!appVersion && latest.version !== appVersion;
+
+  res.status(201).json({
+    success: true,
+    data: {
+      acknowledged: true,
+      updateAvailable,
+      latestVersion: latest?.version ?? null,
+      downloadUrl: updateAvailable ? latest.download_url : null,
+      releaseNotes: updateAvailable ? latest.release_notes : null,
+      mandatory: updateAvailable ? latest.mandatory : false,
+    },
+  });
+});
+
+/**
+ * POST /api/terminal/fault
+ * Device-authenticated. A device reports a fault it detected on
+ * itself (e.g. reader hardware error, GPS signal lost). Deliberately
+ * separate from heartbeat -- a fault is an event to react to, not a
+ * routine status snapshot.
+ */
+router.post("/fault", async (req: Request, res: Response): Promise<void> => {
+  if (!hasDb || !pool) { res.status(503).json({ success: false, error: "Database not configured" }); return; }
+
+  const serial = req.header("x-terminal-serial");
+  const apiKey = req.header("x-terminal-api-key");
+  const auth = await authenticateTerminal(serial ?? "", apiKey ?? "");
+  if (!auth.authenticated) {
+    res.status(401).json({ success: false, error: auth.error ?? "Terminal authentication failed" });
+    return;
+  }
+
+  const { faultCode, message, severity } = req.body as { faultCode?: string; message?: string; severity?: string };
+  if (!faultCode) {
+    res.status(400).json({ success: false, error: "faultCode is required" });
+    return;
+  }
+  if (severity && !["info", "warning", "critical"].includes(severity)) {
+    res.status(400).json({ success: false, error: "severity must be 'info', 'warning', or 'critical'" });
+    return;
+  }
+
+  const { rows } = await pool.query(
+    `INSERT INTO device_faults (terminal_id, fault_code, message, severity) VALUES ($1, $2, $3, COALESCE($4, 'warning')) RETURNING id, reported_at`,
+    [auth.terminalId, faultCode, message ?? null, severity ?? null]
+  );
+
+  emit("terminal.fault_reported", { faultId: rows[0].id, terminalId: auth.terminalId, faultCode, severity: severity ?? "warning" });
+  res.status(201).json({ success: true, data: { faultId: rows[0].id, reportedAt: rows[0].reported_at } });
+});
+
+/**
+ * GET /api/terminal/faults
+ * Admin-facing. Optional ?resolved=false to see only active alarms --
+ * uses the same partial index defined on device_faults(resolved) for
+ * that specific, common query.
+ */
+router.get("/faults", requireAuth, requireRole(...REVIEWER_ROLES), async (req: Request, res: Response): Promise<void> => {
+  if (!hasDb || !pool) { res.json({ success: true, data: [] }); return; }
+  const { resolved } = req.query as { resolved?: string };
+  const { rows } = resolved !== undefined
+    ? await pool.query(`SELECT f.*, t.serial FROM device_faults f JOIN terminals t ON t.id = f.terminal_id WHERE f.resolved = $1 ORDER BY f.reported_at DESC`, [resolved === "true"])
+    : await pool.query(`SELECT f.*, t.serial FROM device_faults f JOIN terminals t ON t.id = f.terminal_id ORDER BY f.reported_at DESC`);
+  res.json({ success: true, data: rows });
+});
+
+/**
+ * PATCH /api/terminal/faults/:id
+ * Admin-facing. Marks a fault as resolved -- keeps the historical
+ * record rather than deleting it, records who resolved it.
+ */
+router.patch("/faults/:id", requireAuth, requireRole(...REVIEWER_ROLES), async (req: Request, res: Response): Promise<void> => {
+  if (!hasDb || !pool) { res.status(503).json({ success: false, error: "Database not configured" }); return; }
+  const { rows } = await pool.query(
+    `UPDATE device_faults SET resolved = true, resolved_at = now(), resolved_by = $1 WHERE id = $2 RETURNING *`,
+    [req.user?.username ?? "admin", req.params.id]
+  );
+  if (!rows.length) { res.status(404).json({ success: false, error: "Fault not found" }); return; }
+  res.json({ success: true, data: rows[0] });
+});
+
+/**
+ * POST /api/terminal/app-releases (kept alongside the rest of the
+ * device-management surface rather than a separate router file, since
+ * it's tightly coupled to the device-authenticated /heartbeat check
+ * above)
+ * Admin-facing. Publishes a new app version. download_url should point
+ * to a real, hosted .apk -- this endpoint doesn't host files itself,
+ * only tracks where to find them.
+ */
+router.post("/app-releases", requireAuth, requireRole(...REVIEWER_ROLES), async (req: Request, res: Response): Promise<void> => {
+  if (!hasDb || !pool) { res.status(503).json({ success: false, error: "Database not configured" }); return; }
+  const { version, downloadUrl, releaseNotes, mandatory } = req.body as { version?: string; downloadUrl?: string; releaseNotes?: string; mandatory?: boolean };
+  if (!version || !downloadUrl) {
+    res.status(400).json({ success: false, error: "version and downloadUrl are required" });
+    return;
+  }
+  const { rows } = await pool.query(
+    `INSERT INTO app_releases (version, download_url, release_notes, mandatory) VALUES ($1, $2, $3, COALESCE($4, false)) RETURNING *`,
+    [version, downloadUrl, releaseNotes ?? null, mandatory ?? null]
+  );
+  res.status(201).json({ success: true, data: rows[0] });
+});
+
+/**
+ * GET /api/terminal/app-releases
+ * Admin-facing listing of published releases.
+ */
+router.get("/app-releases", requireAuth, requireRole(...REVIEWER_ROLES), async (_req: Request, res: Response): Promise<void> => {
+  if (!hasDb || !pool) { res.json({ success: true, data: [] }); return; }
+  const { rows } = await pool.query(`SELECT * FROM app_releases ORDER BY created_at DESC`);
+  res.json({ success: true, data: rows });
+});
+
 export default router;

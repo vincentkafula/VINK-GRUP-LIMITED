@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { CreditCard, Settings, History, CheckCircle2, XCircle, Wifi, WifiOff, Loader2 } from "lucide-react";
+import { CreditCard, Settings, History, CheckCircle2, XCircle, Wifi, WifiOff, Loader2, DownloadCloud } from "lucide-react";
 import { startCardListener, stopCardListener, isTerminalReady, isNativeTerminalAvailable, onCardTapped, type CardTapEvent } from "./services/p18qTerminal";
-import { submitTap } from "./services/api";
+import { submitTap, sendHeartbeat } from "./services/api";
 
 /**
  * VINK Terminal -- standalone fare-collection app for P18Q device
@@ -24,6 +24,7 @@ export default function App() {
   const [serial, setSerial] = useState("");
   const [apiKey, setApiKey] = useState("");
   const [paired, setPaired] = useState(false);
+  const [updateInfo, setUpdateInfo] = useState<{ version: string; downloadUrl: string; releaseNotes: string | null; mandatory: boolean } | null>(null);
 
   useEffect(() => {
     const s = localStorage.getItem(STORAGE_KEY_SERIAL);
@@ -35,6 +36,23 @@ export default function App() {
       setScreen("ready");
     }
   }, []);
+
+  // MDM heartbeat: once paired, check in immediately and then every 30
+  // minutes. A device sitting unattended for days should still surface
+  // an available update reasonably promptly without hammering the
+  // server every few seconds.
+  useEffect(() => {
+    if (!paired) return;
+    const check = async () => {
+      const res = await sendHeartbeat(serial, apiKey, __APP_VERSION__);
+      if (res.success && res.data?.updateAvailable && res.data.downloadUrl && res.data.latestVersion) {
+        setUpdateInfo({ version: res.data.latestVersion, downloadUrl: res.data.downloadUrl, releaseNotes: res.data.releaseNotes, mandatory: res.data.mandatory });
+      }
+    };
+    check();
+    const interval = setInterval(check, 30 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [paired, serial, apiKey]);
 
   const handlePair = (s: string, k: string) => {
     localStorage.setItem(STORAGE_KEY_SERIAL, s);
@@ -60,6 +78,26 @@ export default function App() {
         <span className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-[#0F3D24] bg-white text-sm">V</span>
         <div><p className="font-black text-[15px] leading-tight">VINK Terminal</p><p className="text-[10px] text-white/40">Fare Collection</p></div>
       </header>
+
+      {updateInfo && (
+        <div className="px-5 py-3 flex items-center gap-3" style={{ background: "rgba(245,166,35,0.15)", borderBottom: "1px solid rgba(245,166,35,0.3)" }}>
+          <DownloadCloud className="w-4 h-4 shrink-0" style={{ color: "#F5A623" }} />
+          <div className="flex-1 min-w-0">
+            <p className="text-[12.5px] font-bold">Update available -- v{updateInfo.version}</p>
+            {updateInfo.releaseNotes && <p className="text-[11px] text-white/60 truncate">{updateInfo.releaseNotes}</p>}
+          </div>
+          <button
+            onClick={() => window.open(updateInfo.downloadUrl, "_system")}
+            className="shrink-0 px-3 py-1.5 rounded-lg text-[11.5px] font-bold"
+            style={{ background: "#F5A623", color: "#0F3D24" }}
+          >
+            Install
+          </button>
+          {!updateInfo.mandatory && (
+            <button onClick={() => setUpdateInfo(null)} className="shrink-0 text-white/40 text-[11px]">Later</button>
+          )}
+        </div>
+      )}
 
       <main className="flex-1 overflow-y-auto p-5">
         {screen === "setup" && <SetupScreen onPair={handlePair} />}

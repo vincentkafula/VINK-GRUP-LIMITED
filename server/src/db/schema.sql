@@ -680,3 +680,69 @@ CREATE TABLE IF NOT EXISTS association_ledger (
 );
 CREATE INDEX IF NOT EXISTS idx_association_ledger_association ON association_ledger(association_id, created_at DESC);
 
+-- ── MDM: Device Status, Fault Alarms, App Update Tracking ────────────────────
+-- Applies across P18-L2C, P18-Q, and P10 device models without any
+-- schema change needed for that -- terminals.model is already a
+-- free-text field per device (default 'P18Q Bus Validator', but never
+-- constrained to only that value), so a P10 or P18-L2C terminal is
+-- just a terminals row with a different model string, using the exact
+-- same MDM tables and endpoints as a P18Q.
+
+-- Latest-status snapshot columns added directly to terminals, same
+-- discipline as driver_ledger/association_ledger's own balance_after:
+-- store the current value for fast lookup (an admin dashboard querying
+-- "show me every terminal's current battery level" shouldn't need a
+-- subquery per terminal), with the full history kept separately below
+-- for trend analysis and fault detection over time.
+ALTER TABLE terminals ADD COLUMN IF NOT EXISTS app_version TEXT;
+ALTER TABLE terminals ADD COLUMN IF NOT EXISTS battery_pct INTEGER;
+ALTER TABLE terminals ADD COLUMN IF NOT EXISTS last_heartbeat_at TIMESTAMPTZ;
+
+-- Full heartbeat history -- one row per check-in. Deliberately
+-- separate from vehicle_positions (a status heartbeat and a GPS
+-- position are different event types, same reasoning terminal_taps'
+-- own comment gives for keeping taps and payments separate).
+CREATE TABLE IF NOT EXISTS device_status_reports (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  terminal_id   UUID NOT NULL REFERENCES terminals(id),
+  app_version   TEXT,
+  battery_pct   INTEGER,
+  reported_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_device_status_reports_terminal ON device_status_reports(terminal_id, reported_at DESC);
+
+-- Explicit fault reports from a device (e.g. "reader hardware error",
+-- "GPS signal lost"). resolved/resolved_at let an admin acknowledge a
+-- fault without deleting the historical record of it having happened.
+CREATE TABLE IF NOT EXISTS device_faults (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  terminal_id   UUID NOT NULL REFERENCES terminals(id),
+  fault_code    TEXT NOT NULL,
+  message       TEXT,
+  severity      TEXT NOT NULL DEFAULT 'warning' CHECK (severity IN ('info','warning','critical')),
+  resolved      BOOLEAN NOT NULL DEFAULT false,
+  resolved_at   TIMESTAMPTZ,
+  resolved_by   TEXT,
+  reported_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_device_faults_terminal ON device_faults(terminal_id, reported_at DESC);
+CREATE INDEX IF NOT EXISTS idx_device_faults_unresolved ON device_faults(resolved) WHERE resolved = false;
+
+-- App version catalog for the update check-and-prompt flow. A device
+-- checks its own current version against the newest active row here;
+-- if newer, the app shows an update prompt with download_url (opening
+-- Android's standard install flow, which still requires the operator
+-- to tap-confirm -- see the honest note in the endpoint's own comment
+-- about what "push" can and can't mean on stock Android without a full
+-- Device Owner/Android Enterprise enrollment).
+CREATE TABLE IF NOT EXISTS app_releases (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  version         TEXT NOT NULL,
+  download_url    TEXT NOT NULL,
+  release_notes   TEXT,
+  mandatory       BOOLEAN NOT NULL DEFAULT false,
+  active          BOOLEAN NOT NULL DEFAULT true,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_app_releases_active ON app_releases(active, created_at DESC);
+
