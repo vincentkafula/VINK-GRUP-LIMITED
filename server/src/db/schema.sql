@@ -942,3 +942,33 @@ CREATE TABLE IF NOT EXISTS till_device_faults (
 CREATE INDEX IF NOT EXISTS idx_till_device_faults_terminal ON till_device_faults(terminal_id, reported_at DESC);
 CREATE INDEX IF NOT EXISTS idx_till_device_faults_unresolved ON till_device_faults(resolved) WHERE resolved = false;
 
+-- ── RICA (SIM Registration) Compliance ────────────────────────────────────────
+-- South Africa's mandatory SIM registration law (RICA Act 70 of 2002,
+-- ICASA oversight) -- confirmed via research before building this, not
+-- assumed: applies to prepaid, contract, physical, and eSIM alike.
+-- Requires proof of identity (SA ID/passport/refugee document) AND
+-- proof of address dated within 3 months, with an affidavit accepted
+-- specifically for informal-settlement residents who may not have a
+-- utility bill in their name -- a real, confirmed exception, not an
+-- afterthought. subscriber_ref links to the existing (currently
+-- in-memory mock) subscriber record by IMSI/MSISDN rather than a
+-- foreign key, since that store isn't in this database.
+CREATE TABLE IF NOT EXISTS rica_registrations (
+  id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  subscriber_ref        TEXT NOT NULL, -- IMSI or MSISDN of the SIM being registered
+  id_type               TEXT NOT NULL CHECK (id_type IN ('smart_id','green_id_book','passport','refugee_document')),
+  id_number             TEXT NOT NULL,
+  full_name             TEXT NOT NULL,
+  date_of_birth         DATE, -- auto-extracted from the ID number for smart_id/green_id_book (SA IDs encode this); entered manually for passport/refugee_document, which don't
+  proof_of_address_type TEXT NOT NULL CHECK (proof_of_address_type IN ('utility_bill','bank_statement','lease_agreement','affidavit')),
+  proof_of_address_date DATE NOT NULL, -- must be within 3 months of registration -- enforced at the application layer, not just documented here
+  document_refs         JSONB, -- references/URLs to the uploaded ID and proof-of-address scans -- this table stores metadata, not the files themselves
+  verification_status   TEXT NOT NULL DEFAULT 'pending' CHECK (verification_status IN ('pending','verified','rejected')),
+  verification_notes    TEXT,
+  verified_at           TIMESTAMPTZ,
+  verified_by           TEXT,
+  created_at            TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_rica_registrations_subscriber ON rica_registrations(subscriber_ref);
+CREATE INDEX IF NOT EXISTS idx_rica_registrations_status ON rica_registrations(verification_status);
+
