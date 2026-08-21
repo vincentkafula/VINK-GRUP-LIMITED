@@ -497,4 +497,24 @@ router.get("/app-releases", requireAuth, requireRole(...REVIEWER_ROLES), async (
   res.json({ success: true, data: rows });
 });
 
+/**
+ * GET /api/terminal/positions?terminalId=...&limit=...
+ * Real gap found while wiring the vehicle tracking dashboard to real
+ * data: vehicle_positions was only ever written to (POST /position
+ * above), never queryable. Defaults to the most recent 100 positions
+ * across all terminals if terminalId isn't given, since this table
+ * grows unboundedly and an unfiltered, unlimited query would be a real
+ * problem once it has meaningful volume.
+ */
+router.get("/positions", requireAuth, requireRole(...REVIEWER_ROLES), async (req: Request, res: Response): Promise<void> => {
+  if (!hasDb || !pool) { res.json({ success: true, data: [] }); return; }
+  const { terminalId, limit } = req.query as { terminalId?: string; limit?: string };
+  const cappedLimit = Math.min(Number(limit) || 100, 500);
+
+  const { rows } = terminalId
+    ? await pool.query(`SELECT * FROM vehicle_positions WHERE terminal_id = $1 ORDER BY recorded_at DESC LIMIT $2`, [terminalId, cappedLimit])
+    : await pool.query(`SELECT * FROM vehicle_positions ORDER BY recorded_at DESC LIMIT $1`, [cappedLimit]);
+  res.json({ success: true, data: rows });
+});
+
 export default router;

@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { vehicleApi, connectLiveFeed } from "../services/vehicleApi";
 import { auth, setToken, getToken } from "../services/mvnoApi";
+import { API_BASE } from "../services/config";
 import { getToken as getMainToken } from "../services/apiClient";
 import { SignInElsewhere } from "./SignInElsewhere";
 import { DemoModeBanner } from "./DemoModeBanner";
@@ -165,6 +166,7 @@ function ArchNode({ label, sub, color, icon }: { label: string; sub: string; col
 const NAV = [
   { icon: <Map className="w-4 h-4" />,        label: "Live Map"    },
   { icon: <Truck className="w-4 h-4" />,       label: "Fleet"       },
+  { icon: <Satellite className="w-4 h-4" />,   label: "Real GPS Data" },
   { icon: <Layers className="w-4 h-4" />,      label: "Architecture"},
   { icon: <Users className="w-4 h-4" />,       label: "Drivers"     },
   { icon: <AlertTriangle className="w-4 h-4" />,label: "Alerts"     },
@@ -591,6 +593,9 @@ export function VehicleTrackingDashboard({ isOpen, onClose }: { isOpen: boolean;
                 </div>
               )}
 
+              {/* ── REAL GPS DATA ── */}
+              {nav === "Real GPS Data" && <RealGpsDataSection />}
+
               {/* ── ARCHITECTURE ── */}
               {nav === "Architecture" && (
                 <div className="grid xl:grid-cols-2 gap-4">
@@ -922,6 +927,94 @@ export function VehicleTrackingDashboard({ isOpen, onClose }: { isOpen: boolean;
               )}
             </div>
           </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * The one genuinely real section in this dashboard -- everywhere else
+ * here (Live Map, Fleet, Architecture, Drivers, Alerts, Geofences,
+ * Analytics) shows simulated data from /api/vehicles/*, backed by
+ * vehicleSimulator.ts's mock position generator. This section is
+ * different: it calls the real GET /api/terminal/positions endpoint
+ * (added specifically to close this gap -- vehicle_positions was
+ * previously write-only, populated by real P18Q taxi terminals via
+ * POST /api/terminal/position from the GPS route/geofence work, but
+ * never queryable until now), so what's shown here is genuinely
+ * persisted GPS data, not generated.
+ */
+function RealGpsDataSection() {
+  const [positions, setPositions] = useState<Record<string, unknown>[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function load() {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${API_BASE}/api/terminal/positions?limit=100`, {
+        headers: { Authorization: `Bearer ${getToken() ?? ""}` },
+      });
+      const json = await res.json();
+      if (json.success) setPositions(json.data);
+      else setError(json.error ?? "Could not load positions");
+    } catch {
+      setError("Could not reach the server");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => { load(); }, []);
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-white font-bold text-sm flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" /> Real data — not simulated
+          </p>
+          <p className="text-[11px] mt-0.5" style={{ color: "#8884AA" }}>
+            GPS positions actually reported by real P18Q taxi terminals via POST /api/terminal/position, unrelated to the simulated fleet shown elsewhere in this dashboard.
+          </p>
+        </div>
+        <button onClick={load} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11.5px] font-bold" style={{ background: "#1E1B3A", color: "#8884AA", border: "1px solid #2D2A50" }}>
+          <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} /> Refresh
+        </button>
+      </div>
+
+      {error && <div className="p-3 rounded-xl text-[12.5px]" style={{ background: "#EF444422", color: "#FCA5A5" }}>{error}</div>}
+
+      {positions.length === 0 && !loading ? (
+        <div className="text-center py-12" style={{ color: "#8884AA" }}>
+          <Satellite className="w-8 h-8 mx-auto mb-2" />
+          <p className="text-sm">No real GPS positions reported yet</p>
+          <p className="text-[11px] mt-1">These appear once a real P18Q terminal calls POST /api/terminal/position.</p>
+        </div>
+      ) : (
+        <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid #2D2A50" }}>
+          <table className="w-full text-left">
+            <thead>
+              <tr style={{ background: "#1E1B3A" }}>
+                <th className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-wide" style={{ color: "#8884AA" }}>Terminal</th>
+                <th className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-wide" style={{ color: "#8884AA" }}>Latitude</th>
+                <th className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-wide" style={{ color: "#8884AA" }}>Longitude</th>
+                <th className="px-4 py-2.5 text-[11px] font-bold uppercase tracking-wide" style={{ color: "#8884AA" }}>Recorded</th>
+              </tr>
+            </thead>
+            <tbody>
+              {positions.map((p: any, i: number) => (
+                <tr key={p.id ?? i} style={{ borderTop: "1px solid #2D2A50" }}>
+                  <td className="px-4 py-2.5 text-[12.5px] font-mono text-white">{String(p.terminal_id).slice(0, 8)}…</td>
+                  <td className="px-4 py-2.5 text-[12.5px] text-white">{p.lat}</td>
+                  <td className="px-4 py-2.5 text-[12.5px] text-white">{p.lng}</td>
+                  <td className="px-4 py-2.5 text-[12.5px]" style={{ color: "#8884AA" }}>{new Date(p.recorded_at).toLocaleString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </div>
