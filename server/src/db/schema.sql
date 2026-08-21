@@ -972,3 +972,31 @@ CREATE TABLE IF NOT EXISTS rica_registrations (
 CREATE INDEX IF NOT EXISTS idx_rica_registrations_subscriber ON rica_registrations(subscriber_ref);
 CREATE INDEX IF NOT EXISTS idx_rica_registrations_status ON rica_registrations(verification_status);
 
+-- ── CPE Device Provisioning ────────────────────────────────────────────────
+-- The real end-to-end router provisioning flow described in the
+-- original MVNO conversation: a router is manufactured/flashed with a
+-- unique serial before it ever ships, a customer later claims that
+-- serial against their own (RICA-verified) account, and provisioning
+-- then means creating the real Open5GS subscriber and pushing real
+-- initial config via GenieACS -- reusing open5gsClient.ts and
+-- genieAcsClient.ts rather than duplicating that logic.
+--
+-- genieacs_device_id starts null and is only populated once the
+-- physical device has actually contacted a real ACS for the first
+-- time (GenieACS assigns that ID itself, from the device's own
+-- TR-069 Inform) -- this table can't invent that value in advance.
+CREATE TABLE IF NOT EXISTS cpe_devices (
+  id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  serial_number         TEXT UNIQUE NOT NULL, -- pre-registered at manufacture/flash time, before the device ships
+  model                 TEXT,
+  genieacs_device_id    TEXT, -- populated once the real device's first TR-069 Inform reaches GenieACS
+  rica_registration_id  UUID REFERENCES rica_registrations(id), -- set once a customer claims this device -- claiming requires an already-VERIFIED registration, enforced at the application layer
+  subscriber_imsi       TEXT, -- set once the corresponding Open5GS subscriber exists for this device's SIM
+  status                TEXT NOT NULL DEFAULT 'manufactured' CHECK (status IN ('manufactured','shipped','claimed','provisioned','active','deactivated')),
+  claimed_at            TIMESTAMPTZ,
+  provisioned_at        TIMESTAMPTZ,
+  created_at            TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_cpe_devices_status ON cpe_devices(status);
+CREATE INDEX IF NOT EXISTS idx_cpe_devices_rica ON cpe_devices(rica_registration_id);
+
