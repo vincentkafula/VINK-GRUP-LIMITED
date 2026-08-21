@@ -1000,3 +1000,55 @@ CREATE TABLE IF NOT EXISTS cpe_devices (
 CREATE INDEX IF NOT EXISTS idx_cpe_devices_status ON cpe_devices(status);
 CREATE INDEX IF NOT EXISTS idx_cpe_devices_rica ON cpe_devices(rica_registration_id);
 
+-- ── Restaurant Ordering -- connects to the till, not a parallel system ───────
+-- Confirmed requirement: a restaurant must connect to the till, not
+-- run its own separate product/menu system. Menu items ARE till
+-- products (products.merchant_id already scopes them per-business,
+-- so a restaurant is simply a merchant whose products happen to be
+-- menu items) -- restaurant_order_items references products directly,
+-- the same table till checkout already uses. The genuine restaurant-
+-- specific addition is order lifecycle (a kitchen needs to track
+-- received -> preparing -> ready -> served before payment happens,
+-- which a simple till sale doesn't need) and physical tables.
+CREATE TABLE IF NOT EXISTS restaurant_tables (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  merchant_id   UUID NOT NULL REFERENCES retail_merchants(id),
+  table_number  TEXT NOT NULL,
+  active        BOOLEAN NOT NULL DEFAULT true,
+  UNIQUE (merchant_id, table_number)
+);
+
+-- An order precedes payment (the real restaurant pattern -- order
+-- first, kitchen prepares, pay at the end), unlike till checkout where
+-- payment happens at the point of sale. sale_id starts null and is set
+-- once the order is actually paid via the till's existing POST
+-- /api/till/sale flow -- this table doesn't duplicate payment logic,
+-- it hands off to the till's own proven code for that.
+CREATE TABLE IF NOT EXISTS restaurant_orders (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  terminal_id   UUID NOT NULL REFERENCES till_terminals(id),
+  merchant_id   UUID NOT NULL REFERENCES retail_merchants(id),
+  table_id      UUID REFERENCES restaurant_tables(id),
+  status        TEXT NOT NULL DEFAULT 'received' CHECK (status IN ('received','preparing','ready','served','paid','cancelled')),
+  sale_id       UUID REFERENCES sales(id), -- set once the till has actually processed payment for this order
+  notes         TEXT,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_restaurant_orders_merchant ON restaurant_orders(merchant_id, status);
+CREATE INDEX IF NOT EXISTS idx_restaurant_orders_status ON restaurant_orders(status);
+
+-- References products directly -- this IS the till connection. A menu
+-- item is a till product, full stop, not a separate concept with its
+-- own table.
+CREATE TABLE IF NOT EXISTS restaurant_order_items (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_id      UUID NOT NULL REFERENCES restaurant_orders(id) ON DELETE CASCADE,
+  product_id    UUID REFERENCES products(id),
+  product_name  TEXT NOT NULL, -- captured at order time, same reasoning sale_items' own comment gives: a later menu change shouldn't alter historical orders
+  quantity      INTEGER NOT NULL,
+  unit_price    NUMERIC(10,2) NOT NULL,
+  notes         TEXT -- per-item special requests ("no onions"), common in real restaurant ordering, not needed at the till's own simpler checkout level
+);
+CREATE INDEX IF NOT EXISTS idx_restaurant_order_items_order ON restaurant_order_items(order_id);
+

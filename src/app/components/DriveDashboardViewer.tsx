@@ -567,27 +567,28 @@ function PreviewView({ trips, deviceOn }: { trips: Trip[]; deviceOn: boolean }) 
   // machine taps) -- honest caveat: no backend route currently emits
   // this exact event, since a real AFC device integration doesn't exist
   // in this codebase yet (transit taps here are simulated client-side
-  // throughout every dashboard this session built). This is a correctly-
-  // wired listener ready for that integration, not something already
-  // firing end-to-end today. The WS infrastructure itself is proven
-  // functional right now via a different, currently-real event:
-  // server/src/services/vinkPay.ts's handleWebhook() emits
-  // "vinkpay.payment_status_changed" when an actual card payment webhook
-  // arrives (or the reconciliation job resolves a stalled one) -- same
-  // connectLiveSocket plumbing, a genuine event source instead of a
-  // not-yet-built one.
+  // Listens for the real event terminalRouter.ts's own POST /tap
+  // endpoint actually emits -- "terminal.tap_received", with a real
+  // shape { tapId, terminalId, amount, currency, split }. Previously
+  // listened for a generic "tap" event with a fabricated shape
+  // (type/location/status/last4) that no backend code ever emitted --
+  // fixed to the real event name and real fields. Taxi taps are always
+  // card (EMV-only, per terminal_taps' own schema), so type is fixed
+  // rather than read from a field that doesn't exist in the real
+  // payload; location isn't part of the real payload either, so a
+  // terminal-ID-based label stands in rather than a fabricated one.
   useEffect(() => {
     const disconnect = connectLiveSocket(
       (event, data) => {
-        if (event !== "tap" || !data || typeof data !== "object") return;
+        if (event !== "terminal.tap_received" || !data || typeof data !== "object") return;
         const d = data as Record<string, unknown>;
         const newTrip: Trip = {
           id: (nextId.current += 1), day: "Today", time: timeNow(),
           amount: typeof d.amount === "number" ? d.amount : 0,
-          type: d.type === "cash" ? "cash" : "card",
-          location: typeof d.location === "string" ? d.location : "Unknown",
-          status: d.status === "declined" ? "declined" : "approved",
-          last4: typeof d.last4 === "string" ? d.last4 : null,
+          type: "card",
+          location: typeof d.terminalId === "string" ? `Terminal ${d.terminalId.slice(0, 8)}` : "Unknown",
+          status: "approved",
+          last4: null,
           _seenAt: Date.now(),
         };
         setFeed(f => [newTrip, ...f].slice(0, 40));
