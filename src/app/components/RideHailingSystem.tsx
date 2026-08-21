@@ -69,6 +69,29 @@ async function api(path: string, method = "GET", body?: object) {
   } catch { return { success: false, error: "Network error" }; }
 }
 
+// Separate base for the main VINK backend -- this system's own rides
+// live in Supabase (see BASE above), a genuinely different backend.
+// This relay is deliberately NOT a migration of that data layer, just
+// a bridge so ride events also reach the same real-time WS
+// infrastructure the rest of this session's work (Control Centre,
+// DriveDashboardViewer, till/restaurant) already broadcasts through --
+// see server/src/routes/rideRelayRouter.ts's own comment for why this
+// is safe to call without auth (every event through wsBroadcast.ts is
+// a best-effort UI nudge, never authoritative data). Failures here are
+// deliberately silent/non-blocking -- a ride action succeeding in the
+// real Supabase backend should never fail because this secondary,
+// best-effort broadcast didn't get through.
+const VINK_API_BASE = import.meta.env.VITE_API_URL || "https://vink-grup-limited-production.up.railway.app";
+async function relayRideEvent(event: string, data: object) {
+  try {
+    await fetch(`${VINK_API_BASE}/api/rides/relay-event`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ event, data }),
+    });
+  } catch { /* best-effort only -- never blocks the real ride action */ }
+}
+
 // ─── Map placeholder ──────────────────────────────────────────────────────────
 function MapView({ pickup, dest, driverLat, driverLng, stage }: { pickup?: string; dest?: string; driverLat?: number; driverLng?: number; stage?: string }) {
   return (
@@ -305,12 +328,17 @@ function PassengerApp({ onClose }: { onClose: () => void }) {
       paymentMethod, promoCode: promoCode || undefined, medicalNote,
     });
     setLoading(false);
-    if (r.success) { setCurrentTrip(r.data); setScreen("matching"); }
+    if (r.success) {
+      setCurrentTrip(r.data);
+      setScreen("matching");
+      relayRideEvent("ride.requested", { tripId: r.data?.id, vehicleType, pickupAddress: pickup.label, destinationAddress: dest.label });
+    }
   };
 
   const cancelTrip = async () => {
     if (!currentTrip) return;
     await api(`/trips/${currentTrip.id}/status`, "PATCH", { status: "cancelled", cancelReason: "Passenger cancelled" });
+    relayRideEvent("ride.cancelled", { tripId: currentTrip.id, cancelledBy: "passenger" });
     setCurrentTrip(null); setScreen("home");
   };
 
@@ -598,6 +626,7 @@ function DriverApp({ onClose }: { onClose: () => void }) {
   const acceptTrip = async () => {
     if (!currentTrip) return;
     await api(`/trips/${currentTrip.id}/status`, "PATCH", { status: "driver_enroute" });
+    relayRideEvent("ride.driver_assigned", { tripId: currentTrip.id });
     setScreen("navigate");
   };
 
@@ -606,6 +635,7 @@ function DriverApp({ onClose }: { onClose: () => void }) {
   const updateStatus = async (status: string) => {
     if (!currentTrip) return;
     await api(`/trips/${currentTrip.id}/status`, "PATCH", { status });
+    relayRideEvent(status === "completed" ? "ride.completed" : "ride.status_changed", { tripId: currentTrip.id, status });
     const r = await api(`/trips/${currentTrip.id}`);
     if (r.success) setCurrentTrip(r.data);
     if (status === "completed") { setScreen("status"); setCurrentTrip(null); }
