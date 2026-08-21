@@ -837,3 +837,108 @@ CREATE TABLE IF NOT EXISTS retail_device_faults (
 CREATE INDEX IF NOT EXISTS idx_retail_device_faults_terminal ON retail_device_faults(terminal_id, reported_at DESC);
 CREATE INDEX IF NOT EXISTS idx_retail_device_faults_unresolved ON retail_device_faults(resolved) WHERE resolved = false;
 
+-- ── Till/POS System: Products, Sales, Line Items ──────────────────────────────
+-- A genuinely separate, broader system from retail_terminals above
+-- (which is card-payment-acceptance only) -- a till handles the full
+-- checkout flow: a product catalog, a sale that can contain multiple
+-- items, and a payment that's either cash (no VINK fee, the full
+-- amount is the merchant's) or card (2.5% VINK fee, same
+-- retailRevenueSplitService.ts calculation already proven for retail
+-- POS, reused here rather than reimplemented). Connects to the same
+-- real banking system the same way every other role in this schema
+-- does: merchant_id references retail_merchants, which already
+-- references the real users(id) banking account.
+CREATE TABLE IF NOT EXISTS till_terminals (
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  serial            TEXT UNIQUE NOT NULL,
+  model             TEXT NOT NULL DEFAULT 'Till Device',
+  api_key_hash      TEXT NOT NULL,
+  status            TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active','inactive','revoked')),
+  merchant_id       UUID REFERENCES retail_merchants(id),
+  app_version       TEXT,
+  battery_pct       INTEGER,
+  last_heartbeat_at TIMESTAMPTZ,
+  last_seen_at      TIMESTAMPTZ,
+  registered_by     TEXT,
+  registered_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_till_terminals_status ON till_terminals(status);
+CREATE INDEX IF NOT EXISTS idx_till_terminals_merchant ON till_terminals(merchant_id);
+
+CREATE TABLE IF NOT EXISTS products (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  merchant_id   UUID NOT NULL REFERENCES retail_merchants(id),
+  name          TEXT NOT NULL,
+  sku           TEXT,
+  price         NUMERIC(10,2) NOT NULL,
+  stock_qty     INTEGER, -- nullable: some merchants may not track stock at all, not every product needs inventory counting
+  active        BOOLEAN NOT NULL DEFAULT true,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_products_merchant ON products(merchant_id, active);
+
+-- vink_fee_amount and merchant_settlement are 0/full-amount for cash,
+-- and the real 2.5%-derived split for card -- stored explicitly either
+-- way at the moment of the sale, same discipline every other
+-- transaction table in this schema already uses (a later fee-policy
+-- change shouldn't retroactively alter historical records).
+CREATE TABLE IF NOT EXISTS sales (
+  id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  terminal_id           UUID NOT NULL REFERENCES till_terminals(id),
+  merchant_id           UUID NOT NULL REFERENCES retail_merchants(id),
+  subtotal              NUMERIC(12,2) NOT NULL,
+  tax_amount            NUMERIC(10,2) NOT NULL DEFAULT 0,
+  total                 NUMERIC(12,2) NOT NULL,
+  payment_method        TEXT NOT NULL CHECK (payment_method IN ('cash','card')),
+  masked_pan            TEXT, -- only set for payment_method = 'card'
+  scheme                TEXT,
+  cardholder_verification TEXT,
+  emv_cryptogram_ref    TEXT,
+  vink_fee_pct          NUMERIC(5,2) NOT NULL DEFAULT 0,
+  vink_fee_amount        NUMERIC(10,2) NOT NULL DEFAULT 0,
+  merchant_settlement   NUMERIC(12,2) NOT NULL,
+  status                TEXT NOT NULL DEFAULT 'completed' CHECK (status IN ('completed','voided')),
+  created_at            TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_sales_terminal ON sales(terminal_id);
+CREATE INDEX IF NOT EXISTS idx_sales_merchant ON sales(merchant_id, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS sale_items (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  sale_id       UUID NOT NULL REFERENCES sales(id) ON DELETE CASCADE,
+  product_id    UUID REFERENCES products(id), -- nullable: a line item could be a manual/one-off entry not tied to the catalog
+  product_name  TEXT NOT NULL, -- captured at time of sale, so a later product rename/deletion doesn't alter historical receipts
+  quantity      INTEGER NOT NULL,
+  unit_price    NUMERIC(10,2) NOT NULL,
+  line_total    NUMERIC(12,2) NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_sale_items_sale ON sale_items(sale_id);
+
+-- MDM history for till terminals, mirroring retail_device_status_reports
+-- / retail_device_faults exactly, same reasoning: a status heartbeat
+-- and a fault report are different event types, kept as their own
+-- tables per device fleet rather than one shared table across three
+-- different terminal types with different FKs.
+CREATE TABLE IF NOT EXISTS till_device_status_reports (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  terminal_id   UUID NOT NULL REFERENCES till_terminals(id),
+  app_version   TEXT,
+  battery_pct   INTEGER,
+  reported_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_till_device_status_reports_terminal ON till_device_status_reports(terminal_id, reported_at DESC);
+
+CREATE TABLE IF NOT EXISTS till_device_faults (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  terminal_id   UUID NOT NULL REFERENCES till_terminals(id),
+  fault_code    TEXT NOT NULL,
+  message       TEXT,
+  severity      TEXT NOT NULL DEFAULT 'warning' CHECK (severity IN ('info','warning','critical')),
+  resolved      BOOLEAN NOT NULL DEFAULT false,
+  resolved_at   TIMESTAMPTZ,
+  resolved_by   TEXT,
+  reported_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_till_device_faults_terminal ON till_device_faults(terminal_id, reported_at DESC);
+CREATE INDEX IF NOT EXISTS idx_till_device_faults_unresolved ON till_device_faults(resolved) WHERE resolved = false;
+
