@@ -1043,9 +1043,9 @@ function AccountsPanel({ accounts }: { accounts: R[] }) {
 }
 
 // ─── MAIN DASHBOARD ────────────────────────────────────────────────────────────
-interface BankingDashboardProps { isOpen: boolean; onClose: () => void; onOpenDriveDashboard?: () => void; onOpenOwnerDashboard?: () => void; onOpenTaxiAssociationDashboard?: () => void; onOpenInvestorDashboard?: () => void; onOpenPassengerDashboard?: () => void; onOpenTerminalManagement?: () => void; onOpenAppLauncher?: () => void }
+interface BankingDashboardProps { isOpen: boolean; onClose: () => void; onOpenDriveDashboard?: () => void; onOpenOwnerDashboard?: () => void; onOpenTaxiAssociationDashboard?: () => void; onOpenInvestorDashboard?: () => void; onOpenPassengerDashboard?: () => void; onOpenTerminalManagement?: () => void; onOpenRetailTillManagement?: () => void; onOpenAppLauncher?: () => void }
 
-export function BankingDashboard({ isOpen, onClose, onOpenDriveDashboard, onOpenOwnerDashboard, onOpenTaxiAssociationDashboard, onOpenInvestorDashboard, onOpenPassengerDashboard, onOpenTerminalManagement, onOpenAppLauncher }: BankingDashboardProps) {
+export function BankingDashboard({ isOpen, onClose, onOpenDriveDashboard, onOpenOwnerDashboard, onOpenTaxiAssociationDashboard, onOpenInvestorDashboard, onOpenPassengerDashboard, onOpenTerminalManagement, onOpenRetailTillManagement, onOpenAppLauncher }: BankingDashboardProps) {
   const [authed, setAuthed] = useState(() => {
     if (getBankToken()) return true;
     const mainToken = getMainToken();
@@ -1249,6 +1249,13 @@ export function BankingDashboard({ isOpen, onClose, onOpenDriveDashboard, onOpen
                     className="w-full mt-2 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-[10.5px] font-bold transition-all"
                     style={{ background: "rgba(15,61,36,.12)", color: "#0F3D24", border: "1px solid rgba(15,61,36,.25)" }}>
                     Terminal Access Control
+                  </button>
+                )}
+                {onOpenRetailTillManagement && (
+                  <button onClick={onOpenRetailTillManagement}
+                    className="w-full mt-2 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-[10.5px] font-bold transition-all"
+                    style={{ background: "rgba(30,58,138,.12)", color: "#1E3A8A", border: "1px solid rgba(30,58,138,.25)" }}>
+                    Retail &amp; Till Management
                   </button>
                 )}
                 {onOpenAppLauncher && (

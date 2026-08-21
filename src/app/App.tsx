@@ -35,6 +35,7 @@ const DriveDashboardViewer        = lazy(() => import("./components/DriveDashboa
 const OwnerFleetDashboardViewer   = lazy(() => import("./components/OwnerFleetDashboardViewer").then(m => ({ default: m.OwnerFleetDashboardViewer })));
 const TaxiAssociationDashboardViewer = lazy(() => import("./components/TaxiAssociationDashboardViewer").then(m => ({ default: m.TaxiAssociationDashboardViewer })));
 const TerminalManagementViewer = lazy(() => import("./components/TerminalManagementViewer").then(m => ({ default: m.TerminalManagementViewer })));
+const RetailTillManagementViewer = lazy(() => import("./components/RetailTillManagementViewer").then(m => ({ default: m.RetailTillManagementViewer })));
 const InvestorFleetDashboardViewer = lazy(() => import("./components/InvestorFleetDashboardViewer").then(m => ({ default: m.InvestorFleetDashboardViewer })));
 const VinkGoDashboardViewer       = lazy(() => import("./components/VinkGoDashboardViewer").then(m => ({ default: m.VinkGoDashboardViewer })));
 const FlightBookingViewerForVinkGo = lazy(() => import("./components/FlightBookingViewer").then(m => ({ default: m.FlightBookingViewer })));
@@ -137,6 +138,7 @@ export default function App() {
   const [showOwnerDashboard, setShowOwnerDashboard]          = useState(false);
   const [showTaxiAssociationDashboard, setShowTaxiAssociationDashboard] = useState(false);
   const [showTerminalManagement, setShowTerminalManagement] = useState(false);
+  const [showRetailTillManagement, setShowRetailTillManagement] = useState(false);
   const [showInvestorDashboard, setShowInvestorDashboard] = useState(false);
   const [showVinkGoDashboard, setShowVinkGoDashboard] = useState(false);
   const [showFlightBookingFromVinkGo, setShowFlightBookingFromVinkGo] = useState(false);
@@ -742,8 +744,9 @@ export default function App() {
       {has("authority")       && <Suspense fallback={null}><AuthorityDashboard     isOpen={showAuthority}       onClose={() => setShowAuthority(false)} /></Suspense>}
       {has("superAdmin")      && <Suspense fallback={null}><SuperAdminDashboard    isOpen={showSuperAdmin}      onClose={() => setShowSuperAdmin(false)} /></Suspense>}
       {has("rideHailing")     && <Suspense fallback={null}><RideHailingSystem      isOpen={showRideHailing}     onClose={() => setShowRideHailing(false)} /></Suspense>}
-      {has("banking")         && <Suspense fallback={null}><BankingDashboard       isOpen={showBanking}         onClose={() => setShowBanking(false)} onOpenDriveDashboard={() => { mount("driveDashboard"); setShowDriveDashboard(true); }} onOpenOwnerDashboard={() => { mount("ownerDashboard"); setShowOwnerDashboard(true); }} onOpenTaxiAssociationDashboard={() => { mount("taxiAssociationDashboard"); setShowTaxiAssociationDashboard(true); }} onOpenInvestorDashboard={() => { mount("investorDashboard"); setShowInvestorDashboard(true); }} onOpenPassengerDashboard={() => { mount("vinkGoDashboard"); setShowVinkGoDashboard(true); }} onOpenTerminalManagement={() => { mount("terminalManagement"); setShowTerminalManagement(true); }} onOpenAppLauncher={() => { mount("appLauncher"); setShowAppLauncher(true); }} /></Suspense>}
+      {has("banking")         && <Suspense fallback={null}><BankingDashboard       isOpen={showBanking}         onClose={() => setShowBanking(false)} onOpenDriveDashboard={() => { mount("driveDashboard"); setShowDriveDashboard(true); }} onOpenOwnerDashboard={() => { mount("ownerDashboard"); setShowOwnerDashboard(true); }} onOpenTaxiAssociationDashboard={() => { mount("taxiAssociationDashboard"); setShowTaxiAssociationDashboard(true); }} onOpenInvestorDashboard={() => { mount("investorDashboard"); setShowInvestorDashboard(true); }} onOpenPassengerDashboard={() => { mount("vinkGoDashboard"); setShowVinkGoDashboard(true); }} onOpenTerminalManagement={() => { mount("terminalManagement"); setShowTerminalManagement(true); }} onOpenRetailTillManagement={() => { mount("retailTillManagement"); setShowRetailTillManagement(true); }} onOpenAppLauncher={() => { mount("appLauncher"); setShowAppLauncher(true); }} /></Suspense>}
       {has("terminalManagement") && <Suspense fallback={null}><TerminalManagementViewer isOpen={showTerminalManagement} onClose={() => setShowTerminalManagement(false)} /></Suspense>}
+      {has("retailTillManagement") && <Suspense fallback={null}><RetailTillManagementViewer isOpen={showRetailTillManagement} onClose={() => setShowRetailTillManagement(false)} /></Suspense>}
       {has("driveDashboard")  && <Suspense fallback={null}><DriveDashboardViewer   isOpen={showDriveDashboard}  onClose={() => setShowDriveDashboard(false)} driverName={getSession()?.name} /></Suspense>}
       {has("ownerDashboard")  && <Suspense fallback={null}><OwnerFleetDashboardViewer isOpen={showOwnerDashboard} onClose={() => setShowOwnerDashboard(false)} /></Suspense>}
       {has("taxiAssociationDashboard") && <Suspense fallback={null}><TaxiAssociationDashboardViewer isOpen={showTaxiAssociationDashboard} onClose={() => setShowTaxiAssociationDashboard(false)} /></Suspense>}

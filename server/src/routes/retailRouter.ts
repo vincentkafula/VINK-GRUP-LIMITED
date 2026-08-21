@@ -146,6 +146,27 @@ router.post("/transaction", async (req: Request, res: Response): Promise<void> =
 });
 
 /**
+ * GET /api/retail/transactions?merchantId=...
+ * Admin-facing transaction history. Filtering by merchantId requires a
+ * join to retail_terminals, since retail_transactions itself only has
+ * terminal_id, not merchant_id directly -- unlike sales, which stores
+ * merchant_id on the row itself for exactly this kind of lookup. Not a
+ * bug, just a real structural difference between how these two tables
+ * were designed, worth noting rather than silently working around.
+ */
+router.get("/transactions", requireAuth, requireRole(...REVIEWER_ROLES), async (req: Request, res: Response): Promise<void> => {
+  if (!hasDb || !pool) { res.json({ success: true, data: [] }); return; }
+  const { merchantId } = req.query as { merchantId?: string };
+  const { rows } = merchantId
+    ? await pool.query(
+        `SELECT rt.* FROM retail_transactions rt JOIN retail_terminals t ON t.id = rt.terminal_id WHERE t.merchant_id = $1 ORDER BY rt.received_at DESC LIMIT 200`,
+        [merchantId]
+      )
+    : await pool.query(`SELECT * FROM retail_transactions ORDER BY received_at DESC LIMIT 200`);
+  res.json({ success: true, data: rows });
+});
+
+/**
  * POST /api/retail/heartbeat
  * MDM check-in, mirrors POST /api/terminal/heartbeat exactly --
  * updates the status snapshot + history, and returns whether a newer

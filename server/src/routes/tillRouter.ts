@@ -98,6 +98,77 @@ router.get("/products", async (req: Request, res: Response): Promise<void> => {
 });
 
 /**
+ * GET /api/till/admin/products?merchantId=...
+ * Admin-facing equivalent of the device endpoint above -- deliberately
+ * a separate path rather than overloading /products with two auth
+ * modes, since mixing "authenticate via terminal headers" and
+ * "authenticate via admin JWT" on one endpoint is exactly the kind of
+ * ambiguity worth avoiding in payment-adjacent code. Includes inactive
+ * products too (unlike the device endpoint, which only shows what a
+ * till should actually be able to sell), since an admin managing a
+ * catalog needs to see everything, active or not.
+ */
+router.get("/admin/products", requireAuth, requireRole(...REVIEWER_ROLES), async (req: Request, res: Response): Promise<void> => {
+  if (!hasDb || !pool) { res.json({ success: true, data: [] }); return; }
+  const { merchantId } = req.query as { merchantId?: string };
+  const { rows } = merchantId
+    ? await pool.query(`SELECT * FROM products WHERE merchant_id = $1 ORDER BY name ASC`, [merchantId])
+    : await pool.query(`SELECT * FROM products ORDER BY name ASC`);
+  res.json({ success: true, data: rows });
+});
+
+/**
+ * PATCH /api/till/products/:id
+ * Admin-facing. Edits price/stock/active status -- name and merchant
+ * are deliberately not editable here (renaming would be fine, but
+ * reassigning a product to a different merchant is a bigger, riskier
+ * operation better handled as delete-and-recreate than a silent field
+ * update).
+ */
+router.patch("/products/:id", requireAuth, requireRole(...REVIEWER_ROLES), async (req: Request, res: Response): Promise<void> => {
+  if (!hasDb || !pool) { res.status(503).json({ success: false, error: "Database not configured" }); return; }
+  const { name, price, stockQty, active } = req.body as { name?: string; price?: number; stockQty?: number; active?: boolean };
+  if (price !== undefined && (typeof price !== "number" || price < 0)) {
+    res.status(400).json({ success: false, error: "price must be a non-negative number" });
+    return;
+  }
+  const { rows } = await pool.query(
+    `UPDATE products SET name = COALESCE($1, name), price = COALESCE($2, price), stock_qty = COALESCE($3, stock_qty), active = COALESCE($4, active) WHERE id = $5 RETURNING *`,
+    [name ?? null, price ?? null, stockQty ?? null, active ?? null, req.params.id]
+  );
+  if (!rows.length) { res.status(404).json({ success: false, error: "Product not found" }); return; }
+  res.json({ success: true, data: rows[0] });
+});
+
+/**
+ * GET /api/till/sales?merchantId=...
+ * Admin-facing sales history, with line items included so the caller
+ * doesn't need a second request per sale.
+ */
+router.get("/sales", requireAuth, requireRole(...REVIEWER_ROLES), async (req: Request, res: Response): Promise<void> => {
+  if (!hasDb || !pool) { res.json({ success: true, data: [] }); return; }
+  const { merchantId } = req.query as { merchantId?: string };
+  const salesResult = merchantId
+    ? await pool.query(`SELECT * FROM sales WHERE merchant_id = $1 ORDER BY created_at DESC LIMIT 200`, [merchantId])
+    : await pool.query(`SELECT * FROM sales ORDER BY created_at DESC LIMIT 200`);
+
+  const sales = salesResult.rows;
+  if (!sales.length) { res.json({ success: true, data: [] }); return; }
+
+  const itemsResult = await pool.query(
+    `SELECT * FROM sale_items WHERE sale_id = ANY($1::uuid[])`,
+    [sales.map((s: { id: string }) => s.id)]
+  );
+  const itemsBySale = new Map<string, unknown[]>();
+  for (const item of itemsResult.rows) {
+    if (!itemsBySale.has(item.sale_id)) itemsBySale.set(item.sale_id, []);
+    itemsBySale.get(item.sale_id)!.push(item);
+  }
+
+  res.json({ success: true, data: sales.map((s: { id: string }) => ({ ...s, items: itemsBySale.get(s.id) ?? [] })) });
+});
+
+/**
  * POST /api/till/sale
  * Device-authenticated. Confirmed model: cash sales carry zero VINK
  * fee (the full amount is the merchant's), card sales use the exact
@@ -108,6 +179,7 @@ router.get("/products", async (req: Request, res: Response): Promise<void> => {
  */
 router.post("/sale", async (req: Request, res: Response): Promise<void> => {
   if (!hasDb || !pool) { res.status(503).json({ success: false, error: "Database not configured" }); return; }
+
 
   const serial = req.header("x-terminal-serial");
   const apiKey = req.header("x-terminal-api-key");
