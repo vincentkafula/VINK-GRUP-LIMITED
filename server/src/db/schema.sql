@@ -1052,3 +1052,74 @@ CREATE TABLE IF NOT EXISTS restaurant_order_items (
 );
 CREATE INDEX IF NOT EXISTS idx_restaurant_order_items_order ON restaurant_order_items(order_id);
 
+-- ── Ride-Hailing (migrated from a separate Supabase backend) ─────────────────
+-- The full real API surface RideHailingSystem.tsx actually calls,
+-- confirmed by reading every api() call and every currentTrip.* field
+-- access in that file before designing this schema, not guessed at.
+-- passenger_id/driver_id are deliberately TEXT, not a users(id) FK --
+-- the current frontend hardcodes demo values ("pax-001", "drv-101")
+-- with no real auth integration for this feature yet, same reasoning
+-- terminals.assigned_driver stayed TEXT before a real driver identity
+-- system existed for that flow.
+CREATE TABLE IF NOT EXISTS ride_trips (
+  id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  passenger_id          TEXT NOT NULL,
+  passenger_name        TEXT,
+  passenger_phone       TEXT,
+  driver_id             TEXT,
+  driver_name           TEXT,
+  driver_plate          TEXT,
+  driver_lat            NUMERIC(9,6),
+  driver_lng            NUMERIC(9,6),
+  vehicle_type          TEXT,
+  pickup_address        TEXT NOT NULL,
+  pickup_lat            NUMERIC(9,6) NOT NULL,
+  pickup_lng            NUMERIC(9,6) NOT NULL,
+  destination_address   TEXT NOT NULL,
+  destination_lat       NUMERIC(9,6) NOT NULL,
+  destination_lng       NUMERIC(9,6) NOT NULL,
+  payment_method        TEXT,
+  promo_code            TEXT,
+  medical_note          TEXT,
+  status                TEXT NOT NULL DEFAULT 'requested' CHECK (status IN ('requested','assigned','driver_enroute','arrived','in_progress','completed','cancelled')),
+  cancel_reason         TEXT,
+  estimated_fare        NUMERIC(10,2),
+  final_fare            NUMERIC(10,2),
+  rating                INTEGER CHECK (rating BETWEEN 1 AND 5),
+  review                TEXT,
+  created_at            TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at            TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_ride_trips_passenger ON ride_trips(passenger_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_ride_trips_driver ON ride_trips(driver_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_ride_trips_status ON ride_trips(status);
+
+CREATE TABLE IF NOT EXISTS ride_messages (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  trip_id       UUID NOT NULL REFERENCES ride_trips(id) ON DELETE CASCADE,
+  sender_id     TEXT NOT NULL,
+  sender_role   TEXT NOT NULL,
+  sender_name   TEXT,
+  text          TEXT NOT NULL,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_ride_messages_trip ON ride_messages(trip_id, created_at ASC);
+
+CREATE TABLE IF NOT EXISTS ride_calls (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  trip_id       UUID NOT NULL REFERENCES ride_trips(id) ON DELETE CASCADE,
+  caller_id     TEXT NOT NULL,
+  caller_role   TEXT NOT NULL,
+  receiver_id   TEXT,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_ride_calls_trip ON ride_calls(trip_id);
+
+CREATE TABLE IF NOT EXISTS ride_promo_codes (
+  code            TEXT PRIMARY KEY,
+  discount_pct    NUMERIC(5,2),
+  discount_amount NUMERIC(10,2),
+  active          BOOLEAN NOT NULL DEFAULT true,
+  expires_at      TIMESTAMPTZ
+);
+
