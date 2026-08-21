@@ -1,0 +1,19 @@
+{
+  "name": "vink-router-cwmp-client",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Real TR-069/CWMP client -- the device-side software a VINK router would run to talk to a real GenieACS ACS (server/src/services/genieAcsClient.ts is the server-side counterpart already built and verified against GenieACS's own docs). This is a genuine, standards-based protocol implementation -- SOAP/XML over HTTP, per Broadband Forum TR-069 -- not a placeholder. What this package does NOT include: the full OpenWrt firmware build, kernel drivers, or real modem/WiFi hardware integration, which need actual router hardware to build and test against. The parameter model here is an honest in-memory store standing in for what real hardware state would populate -- see src/parameterModel.ts's own comment.",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "fast-xml-parser": "^4.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.6.3"
+  }
+}
