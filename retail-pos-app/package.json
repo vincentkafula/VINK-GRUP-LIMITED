@@ -1,0 +1,30 @@
+{
+  "name": "vink-retail-pos-app",
+  "private": true,
+  "version": "1.0.0",
+  "description": "VINK Retail POS -- standalone card-payment app for small retail merchants. Genuinely separate hardware/vendor from the P18Q taxi terminal (unconfirmed as of this writing, no real SDK integrated yet -- see src/services/cardReader.ts for the honest placeholder), but connects to the same real VINK banking system.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.5.0",
+    "@capacitor/core": "^8.5.0",
+    "lucide-react": "0.487.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.5.0",
+    "@tailwindcss/vite": "4.1.12",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.3",
+    "tailwindcss": "4.1.12",
+    "typescript": "^5.6.3",
+    "vite": "6.3.5"
+  }
+}

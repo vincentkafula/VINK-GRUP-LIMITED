@@ -4,6 +4,7 @@ import { requireAuth, requireRole } from "../middleware/auth.js";
 import { registerTerminal, authenticateTerminal } from "../services/terminalAuth.js";
 import { calculateRevenueSplit } from "../services/revenueSplitService.js";
 import { checkOffRoute } from "../services/routeGeofenceService.js";
+import { containsUnmaskedPan } from "../services/panValidation.js";
 import { emit } from "../services/wsBroadcast.js";
 
 const router: ReturnType<typeof Router> = Router();
@@ -12,21 +13,6 @@ const router: ReturnType<typeof Router> = Router();
 const ROUTE_VIOLATION_FINE_AMOUNT = 50;
 
 const REVIEWER_ROLES = ["owner", "superadmin", "noc_engineer", "billing_admin"] as const;
-
-/**
- * A raw card number (PAN) is 13-19 consecutive digits. masked_pan should
- * never contain that -- it should look like "**** **** **** 4242" or
- * similar. This is a defensive backstop, not the only control: the real
- * control is that this route never expects or documents a field for a
- * full PAN in the first place. But if a field somehow contains something
- * PAN-shaped anyway (a misconfigured caller, a bug upstream), reject the
- * whole request outright rather than storing it.
- */
-function containsUnmaskedPan(value: unknown): boolean {
-  if (typeof value !== "string") return false;
-  const digitsOnly = value.replace(/[\s-]/g, "");
-  return /^\d{13,19}$/.test(digitsOnly);
-}
 
 /**
  * POST /api/terminal/register

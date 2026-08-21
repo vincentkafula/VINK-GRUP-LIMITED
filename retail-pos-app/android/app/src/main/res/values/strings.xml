@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">VINK Retail POS</string>
+    <string name="title_activity_main">VINK Retail POS</string>
+    <string name="package_name">za.co.vink.retailpos</string>
+    <string name="custom_url_scheme">za.co.vink.retailpos</string>
+</resources>
