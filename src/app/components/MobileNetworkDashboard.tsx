@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import {
   auth, kpis, network, alertsApi, fraud, provisioning,
-  billing, support, interconnects, connectLiveFeed, setToken, getToken,
+  billing, support, interconnects, connectLiveFeed, setToken, getToken, API_BASE,
 } from "../services/mvnoApi";
 import { getToken as getMainToken, getSession } from "../services/apiClient";
 import { SignInElsewhere } from "./SignInElsewhere";
@@ -490,6 +490,10 @@ function WebDashboard({
         <DemoModeBanner dark />
         {/* Body */}
         <div className="flex-1 overflow-y-auto p-5 space-y-5 text-white">
+          {activeNav === "Subscribers" ? (
+            <SubscribersSection />
+          ) : (
+          <>
           {/* KPIs */}
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
             {kpiCards.map((k, i) => (
@@ -645,8 +649,124 @@ function WebDashboard({
               </div>
             </div>
           </div>
+          </>
+          )}
         </div>
       </div>
+    </div>
+  );
+}
+
+/**
+ * The one genuinely real section in this dashboard -- everywhere else
+ * here (KPIs, network topology, alerts, billing, fraud) is a
+ * simulation, since it would need an actual running core network to
+ * be real. This section is different: it calls the real
+ * RICA/CPE-provisioning backend built in prior work
+ * (server/src/routes/ricaRouter.ts,
+ * server/src/routes/cpeProvisioningRouter.ts), so what's shown here is
+ * genuinely persisted in Postgres, not generated.
+ */
+function SubscribersSection() {
+  const [registrations, setRegistrations] = useState<Record<string, unknown>[]>([]);
+  const [devices, setDevices] = useState<Record<string, unknown>[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [tab, setTab] = useState<"rica" | "devices">("rica");
+
+  const authHeaders = () => ({ Authorization: `Bearer ${getToken() ?? ""}` });
+
+  async function load() {
+    setLoading(true);
+    setError(null);
+    try {
+      const [ricaRes, devicesRes] = await Promise.all([
+        fetch(`${API_BASE}/api/rica/registrations`, { headers: authHeaders() }),
+        fetch(`${API_BASE}/api/provisioning/cpe/devices`, { headers: authHeaders() }),
+      ]);
+      const ricaJson = await ricaRes.json();
+      const devicesJson = await devicesRes.json();
+      if (ricaJson.success) setRegistrations(ricaJson.data);
+      else setError(ricaJson.error);
+      if (devicesJson.success) setDevices(devicesJson.data);
+      else if (!ricaJson.error) setError(devicesJson.error);
+    } catch {
+      setError("Could not reach the server");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => { load(); }, []);
+
+  const statusColor = (status: string) => {
+    if (status === "verified" || status === "active" || status === "provisioned") return "#10B981";
+    if (status === "rejected" || status === "deactivated") return "#EF4444";
+    return "#F59E0B";
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-white font-bold text-sm flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" /> Real data -- not simulated
+          </p>
+          <p className="text-[11px] mt-0.5" style={{ color: "#8884AA" }}>RICA registrations and CPE device provisioning, from the actual backend.</p>
+        </div>
+        <button onClick={load} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11.5px] font-bold" style={{ background: "#1E1B3A", color: "#8884AA", border: "1px solid #2D2A50" }}>
+          <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} /> Refresh
+        </button>
+      </div>
+
+      <div className="flex gap-1">
+        {([["rica", "RICA Registrations"], ["devices", "CPE Devices"]] as const).map(([key, label]) => (
+          <button key={key} onClick={() => setTab(key)} className="px-3.5 py-2 text-[12px] font-bold rounded-lg"
+            style={tab === key ? { background: "#128A4322", color: "#5FC97F" } : { color: "#8884AA" }}>
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {error && <div className="p-3 rounded-xl text-[12.5px]" style={{ background: "#EF444422", color: "#FCA5A5" }}>{error}</div>}
+
+      {tab === "rica" && (
+        registrations.length === 0 && !loading ? (
+          <div className="text-center py-12" style={{ color: "#8884AA" }}><Users className="w-8 h-8 mx-auto mb-2" /><p className="text-sm">No RICA registrations yet</p></div>
+        ) : (
+          <div className="space-y-2">
+            {registrations.map((r: any) => (
+              <div key={r.id} className="rounded-xl p-3.5 flex items-center gap-3" style={{ background: "#1A1738", border: "1px solid #2D2A50" }}>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-bold text-white">{r.full_name}</p>
+                  <p className="text-[11px]" style={{ color: "#8884AA" }}>{r.subscriber_ref} · {r.id_type} · {r.proof_of_address_type}</p>
+                </div>
+                <span className="px-2.5 py-1 rounded-full text-[10.5px] font-bold capitalize" style={{ background: statusColor(r.verification_status) + "22", color: statusColor(r.verification_status) }}>{r.verification_status}</span>
+              </div>
+            ))}
+          </div>
+        )
+      )}
+
+      {tab === "devices" && (
+        devices.length === 0 && !loading ? (
+          <div className="text-center py-12" style={{ color: "#8884AA" }}><Wifi className="w-8 h-8 mx-auto mb-2" /><p className="text-sm">No CPE devices registered yet</p></div>
+        ) : (
+          <div className="space-y-2">
+            {devices.map((d: any) => (
+              <div key={d.id} className="rounded-xl p-3.5 flex items-center gap-3" style={{ background: "#1A1738", border: "1px solid #2D2A50" }}>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-bold text-white font-mono">{d.serial_number}</p>
+                  <p className="text-[11px]" style={{ color: "#8884AA" }}>
+                    {d.model ?? "Unknown model"} {d.genieacs_device_id ? `· ACS-linked` : "· not yet ACS-linked"} {d.subscriber_imsi ? `· IMSI ${d.subscriber_imsi}` : ""}
+                  </p>
+                </div>
+                <span className="px-2.5 py-1 rounded-full text-[10.5px] font-bold capitalize" style={{ background: statusColor(d.status) + "22", color: statusColor(d.status) }}>{d.status}</span>
+              </div>
+            ))}
+          </div>
+        )
+      )}
     </div>
   );
 }
