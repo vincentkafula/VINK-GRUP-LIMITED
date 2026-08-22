@@ -206,6 +206,36 @@ router.post("/", optionalAuth, async (req: Request, res: Response): Promise<void
   res.status(201).json({ success: true, data: { id, referenceNumber, accountNumber, status: "submitted" } });
 });
 
+/**
+ * GET /api/applications/mine
+ * Real, customer-facing endpoint -- lets a logged-in customer see
+ * their own application(s), specifically the real account number
+ * generated for them. No role restriction (any authenticated user can
+ * see their own applications), unlike every other GET endpoint in
+ * this router, which is admin-only.
+ *
+ * Matches by applicant_email against req.user.username (the JWT's own
+ * field, not a separate email claim -- confirmed this token shape has
+ * no email field, but customer accounts always use their email as
+ * their username, set that way by mktAuth.registerCustomer()) rather
+ * than applicant_user_id. That column is genuinely null for these
+ * applications in the real, common flow: PersonalAccountApplicationViewer
+ * submits the application via optionalAuth before the login account
+ * even exists (the whole point being to generate the account number
+ * up front, then create the login afterward), so there was no
+ * authenticated user yet to attach to applicant_user_id at submission
+ * time. Email is the only reliable link between the two.
+ */
+router.get("/mine", requireAuth, async (req: Request, res: Response): Promise<void> => {
+  if (!pool) { res.json({ success: true, data: [] }); return; }
+  const email = req.user!.username;
+  const { rows } = await pool.query(
+    `SELECT * FROM applications WHERE applicant_email = $1 OR applicant_user_id = $2 ORDER BY submitted_at DESC LIMIT 10`,
+    [email, req.user!.userId]
+  );
+  res.json({ success: true, data: rows.map(mapApplication) });
+});
+
 router.get("/", requireAuth, requireRole(...REVIEWER_ROLES), async (req: Request, res: Response): Promise<void> => {
   const { status, tier } = req.query as { status?: string; tier?: string };
   const page = Math.max(1, Number(req.query.page) || 1);

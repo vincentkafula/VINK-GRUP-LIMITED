@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   LogIn, MessageSquare, Phone, Store, ShoppingCart, Wifi,
   CreditCard, ArrowLeftRight, Layers, Smartphone, Shield, ShieldCheck,
@@ -7,6 +7,8 @@ import {
   X, Home, BarChart3, User, QrCode
 } from "lucide-react";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
+import { mktAuth } from "../services/marketplaceApi";
+import { applicationsApi, type Application } from "../services/applicationsApi";
 
 interface PostLoginHomeProps {
   isOpen: boolean;
@@ -93,6 +95,24 @@ function MenuIcon({ item, onClick }: {
 export function PostLoginHome({ isOpen, onClose, onNavigate }: PostLoginHomeProps) {
   const [balanceVisible, setBalanceVisible] = useState(true);
   const [activeTab, setActiveTab] = useState("home");
+  const [authUser, setAuthUser] = useState<{ name: string; email: string } | null>(null);
+  const [myApplication, setMyApplication] = useState<Application | null>(null);
+
+  // Real session + real account data, replacing what was previously
+  // hardcoded here regardless of who actually logged in ("Alexa
+  // Smith", a fixed R24,850.00 balance, a fixed "••4521" account
+  // ending) -- confirmed those were static values, not tied to any
+  // real user, before fixing this.
+  useEffect(() => {
+    if (!isOpen) return;
+    const restored = mktAuth.restoreSession();
+    if (restored) {
+      setAuthUser({ name: restored.user.name, email: restored.user.email });
+      applicationsApi.mine().then(r => {
+        if (r.success && r.data && r.data.length > 0) setMyApplication(r.data[0]);
+      }).catch(() => {});
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -100,6 +120,15 @@ export function PostLoginHome({ isOpen, onClose, onNavigate }: PostLoginHomeProp
   const hour = now.getHours();
   const greeting = hour < 12 ? "Good Morning," : hour < 17 ? "Good Afternoon," : "Good Evening,";
   const timeStr = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+
+  const displayName = authUser?.name ?? "Guest";
+  const initials = displayName.split(" ").filter(Boolean).slice(0, 2).map(w => w[0]?.toUpperCase()).join("") || "?";
+  // A genuinely new account has no real transaction history yet in
+  // this system -- R0.00 is the honest, accurate balance for that,
+  // not an invented figure. Real balance tracking (deposits,
+  // transfers, payments) is a separate, larger feature this doesn't
+  // build.
+  const accountLast4 = myApplication?.accountNumber ? myApplication.accountNumber.slice(-4) : null;
 
   const handleMenuClick = (id: string) => {
     if (onNavigate) onNavigate(id);
@@ -158,11 +187,11 @@ export function PostLoginHome({ isOpen, onClose, onNavigate }: PostLoginHomeProp
             {/* Avatar */}
             <div className="w-11 h-11 rounded-full flex items-center justify-center text-white font-bold text-base flex-shrink-0"
               style={{ background: "linear-gradient(135deg,#128A43,#9333EA)", boxShadow: "0 0 0 2px rgba(107,94,215,0.4)" }}>
-              AS
+              {initials}
             </div>
             <div>
               <p className="text-white/55 text-xs">{greeting}</p>
-              <p className="text-white font-bold text-base leading-tight">Alexa Smith</p>
+              <p className="text-white font-bold text-base leading-tight">{displayName}</p>
             </div>
           </div>
           <div className="flex items-center gap-2.5">
@@ -197,14 +226,14 @@ export function PostLoginHome({ isOpen, onClose, onNavigate }: PostLoginHomeProp
                 <p className="text-white/65 text-xs font-medium mb-0.5">🔒 Secure Payments</p>
                 <div className="flex items-center gap-2">
                   <p className="text-white font-black text-2xl tracking-tight">
-                    {balanceVisible ? "R24,850.00" : "R ••••••"}
+                    {balanceVisible ? "R0.00" : "R ••••••"}
                   </p>
                   <button onClick={() => setBalanceVisible(!balanceVisible)}
                     className="text-white/60 hover:text-white transition-colors">
                     {balanceVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                   </button>
                 </div>
-                <p className="text-white/50 text-[10px] mt-0.5">Account ending ••4521</p>
+                <p className="text-white/50 text-[10px] mt-0.5">{accountLast4 ? `Account ending ••${accountLast4}` : "No linked account yet"}</p>
               </div>
               <img src={vinkLogo} alt="VINK" className="w-[160px] h-auto object-contain opacity-90" />
             </div>

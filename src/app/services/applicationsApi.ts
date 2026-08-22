@@ -112,6 +112,12 @@ export const applicationsApi = {
       { method: "POST", body: JSON.stringify(data) }
     ),
 
+  /** The logged-in user's own applications (most recent first) --
+   *  real, customer-facing, no admin role required, matched by email
+   *  server-side since applicant_user_id isn't set for applications
+   *  submitted before the login account existed. */
+  mine: () => request<Application[]>("/api/applications/mine"),
+
   /** List applications with optional status/tier/pagination filters.
    *  Reviewer-only (requires an authenticated, privileged session). */
   list: (params?: { tier?: string; status?: string; page?: number; limit?: number }) => {
