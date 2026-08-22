@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { applicationsApi, otpApi } from "../services/applicationsApi";
 import { mktAuth } from "../services/marketplaceApi";
+import { COUNTRIES, SA_PROVINCES, idDocumentTypesForCountry } from "../data/countries";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
@@ -118,7 +119,9 @@ function Step1({ onNext, updateForm }: { onNext: () => void; updateForm: (d: Rec
   const [lastName, setLastName] = useState("");
   const [dob, setDob] = useState("");
   const [gender, setGender] = useState("Male");
+  const [country, setCountry] = useState("South Africa");
   const [nationality, setNationality] = useState("South African");
+  const idTypeOptions = idDocumentTypesForCountry(country);
   const [idType, setIdType] = useState("South African ID");
   const [idNumber, setIdNumber] = useState("");
   const [marital, setMarital] = useState("Single");
@@ -132,12 +135,25 @@ function Step1({ onNext, updateForm }: { onNext: () => void; updateForm: (d: Rec
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
+  // Whenever the country changes, the currently-selected ID document
+  // type may no longer make sense (e.g. "South African ID" stops being
+  // valid the moment the applicant switches away from South Africa) --
+  // reset to the first option that's actually valid for the new
+  // country, rather than leaving a stale, invalid selection in place.
+  useEffect(() => {
+    if (!idDocumentTypesForCountry(country).includes(idType as any)) {
+      setIdType(idDocumentTypesForCountry(country)[0]);
+    }
+    setProvince(country === "South Africa" ? "Western Cape" : "");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [country]);
+
   const isValid = firstName.trim() && lastName.trim() && dob && idNumber.trim() && phone.length > 5 && email.includes("@") && addr1.trim() && city.trim() && postal.trim()
     && password.length >= 8 && password === confirmPassword;
 
   const handleNext = () => {
     updateForm({
-      title, firstName, middleName, lastName, dob, gender, nationality, idType, idNumber,
+      title, firstName, middleName, lastName, dob, gender, country, nationality, idType, idNumber,
       marital, phone, email, addr1, addr2, city, province, postal, password,
     });
     onNext();
@@ -153,10 +169,10 @@ function Step1({ onNext, updateForm }: { onNext: () => void; updateForm: (d: Rec
         <InputField label="Last / Surname" value={lastName} onChange={setLastName} placeholder="Family name" required />
         <InputField label="Date of birth" value={dob} onChange={setDob} type="date" required />
         <SelectField label="Gender" value={gender} onChange={setGender} options={["Male","Female","Non-binary","Prefer not to say"]} />
+        <SelectField label="Country" value={country} onChange={setCountry} options={COUNTRIES} />
         <SelectField label="Nationality" value={nationality} onChange={setNationality}
           options={["South African","Zimbabwean","Mozambican","Zambian","Malawian","Namibian","Botswanan","Other"]} />
-        <SelectField label="ID type" value={idType} onChange={setIdType}
-          options={["South African ID","Passport","Asylum Seeker Permit","Work Permit"]} />
+        <SelectField label="ID type" value={idType} onChange={setIdType} options={idTypeOptions} />
         <InputField label="ID / Passport number" value={idNumber} onChange={setIdNumber} placeholder="Your identity number" required />
         <SelectField label="Marital status" value={marital} onChange={setMarital}
           options={["Single","Married in community","Married out of community","Divorced","Widowed"]} />
@@ -169,8 +185,11 @@ function Step1({ onNext, updateForm }: { onNext: () => void; updateForm: (d: Rec
           <InputField label="Address line 1" value={addr1} onChange={setAddr1} placeholder="Street address" required />
           <InputField label="Address line 2 (optional)" value={addr2} onChange={setAddr2} placeholder="Suburb / Unit" />
           <InputField label="City" value={city} onChange={setCity} placeholder="Cape Town" required />
-          <SelectField label="Province" value={province} onChange={setProvince}
-            options={["Western Cape","Gauteng","KwaZulu-Natal","Eastern Cape","Limpopo","Mpumalanga","North West","Free State","Northern Cape"]} />
+          {country === "South Africa" ? (
+            <SelectField label="Province" value={province} onChange={setProvince} options={SA_PROVINCES} />
+          ) : (
+            <InputField label="State / Province / Region" value={province} onChange={setProvince} placeholder="e.g. Ontario" />
+          )}
           <InputField label="Postal code" value={postal} onChange={setPostal} placeholder="8001" required />
         </div>
       </div>

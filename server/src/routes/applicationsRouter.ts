@@ -116,6 +116,10 @@ function mapApplication(r: any) {
 }
 
 router.post("/", optionalAuth, async (req: Request, res: Response): Promise<void> => {
+  if (!pool) {
+    res.status(503).json({ success: false, error: "Database not configured" });
+    return;
+  }
   const { tier: rawTier, accountTypeRequested: rawAccountType, currency, applicantName, applicantEmail, applicantPhone, tierData, type, subType, formData } = req.body as {
     tier?: string; accountTypeRequested?: string; currency?: string;
     applicantName?: string; applicantEmail?: string; applicantPhone?: string; tierData?: object;
@@ -154,7 +158,17 @@ router.post("/", optionalAuth, async (req: Request, res: Response): Promise<void
   try {
     accountNumber = await generateUniqueAccountNumber();
   } catch (err) {
-    console.error("[applications] Failed to generate a unique account number:", err);
+    const pgErr = err as { code?: string; message?: string };
+    // Postgres error code 42703 = "column does not exist" -- if this is
+    // the actual cause, it means the account_number column hasn't been
+    // added to this database yet (schema.sql's own ALTER TABLE ADD
+    // COLUMN IF NOT EXISTS runs automatically on every server boot via
+    // migrateAndSeed(), so this points at a server that hasn't restarted
+    // since that migration was added, not a bug in this endpoint's own
+    // logic). Logged with the real Postgres error code/message so this
+    // is actually diagnosable from server logs, rather than only ever
+    // seeing the same generic message regardless of cause.
+    console.error(`[applications] Failed to generate a unique account number (code: ${pgErr.code ?? "unknown"}):`, pgErr.message ?? err);
     res.status(500).json({ success: false, error: "Could not generate an account number, please try again." });
     return;
   }
