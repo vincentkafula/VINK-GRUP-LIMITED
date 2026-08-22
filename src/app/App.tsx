@@ -20,6 +20,7 @@ const Footer                       = lazy(() => import("./components/Footer").th
 
 // ─── Overlays ─────────────────────────────────────────────────────────────────
 const PostLoginHome               = lazy(() => import("./components/PostLoginHome").then(m => ({ default: m.PostLoginHome })));
+const UserProfileViewer           = lazy(() => import("./components/UserProfileViewer").then(m => ({ default: m.UserProfileViewer })));
 const MobileNetworkDashboard      = lazy(() => import("./components/MobileNetworkDashboard").then(m => ({ default: m.MobileNetworkDashboard })));
 const DriverDashboard             = lazy(() => import("./components/DriverDashboard").then(m => ({ default: m.DriverDashboard })));
 const PassengerDashboard          = lazy(() => import("./components/PassengerDashboard").then(m => ({ default: m.PassengerDashboard })));
@@ -126,6 +127,7 @@ export default function App() {
 
   // ── Overlay visibility states ──────────────────────────────────────────────
   const [showPostLogin, setShowPostLogin]                   = useState(false);
+  const [showUserProfile, setShowUserProfile]                = useState(false);
   const [showMobileNetwork, setShowMobileNetwork]           = useState(false);
   const [showDriver, setShowDriver]                         = useState(false);
   const [showRider, setShowRider]                           = useState(false);
@@ -312,6 +314,7 @@ export default function App() {
     startTransition(() => {
       setShowPostLogin(false);
       switch (id) {
+        case "profile":      mount("userProfile");     setShowUserProfile(true);      break;
         // Transport & Devices
         case "driver":       mount("driver");           setShowDriver(true);           break;
         case "passenger":    mount("rider");            setShowRider(true);            break;
@@ -739,6 +742,7 @@ export default function App() {
 
       {/* Post-login */}
       {has("postLogin")       && <Suspense fallback={null}><PostLoginHome          isOpen={showPostLogin}       onClose={() => setShowPostLogin(false)}    onNavigate={handleHomeNavigate} onDashboardSelect={handleDashboardSelect} /></Suspense>}
+      {has("userProfile")     && <Suspense fallback={null}><UserProfileViewer      isOpen={showUserProfile}     onClose={() => setShowUserProfile(false)}  onSignOut={() => { setShowUserProfile(false); mount("postLogin"); setShowPostLogin(true); }} /></Suspense>}
       {has("mobileNetwork")   && <Suspense fallback={null}><MobileNetworkDashboard isOpen={showMobileNetwork}   onClose={() => setShowMobileNetwork(false)} /></Suspense>}
       {has("driver")          && <Suspense fallback={null}><DriverDashboard        isOpen={showDriver}          onClose={() => setShowDriver(false)} /></Suspense>}
       {has("rider")           && <Suspense fallback={null}><PassengerDashboard     isOpen={showRider}           onClose={() => setShowRider(false)} onBookRide={() => startTransition(() => { setShowRider(false); mount("rideHailing"); setShowRideHailing(true); })} /></Suspense>}
