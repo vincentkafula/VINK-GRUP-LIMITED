@@ -181,7 +181,16 @@ export function idDocumentTypesForCountry(country: string): IdDocumentType[] {
   if (realIdName) {
     return [realIdName, "Passport", "Asylum Seeker Permit", "Refugee ID", "Work Permit"];
   }
-  return ["Passport", "Asylum Seeker Permit", "Refugee ID", "Work Permit"];
+  // No specific, researched document name for this country (the ~53
+  // small territories in the CONFIRMED_NO_NATIONAL_ID set or simply
+  // not yet researched) -- rather than leave these with no identity-
+  // document-category option at all, offer a genuinely generic
+  // "National Identity Document" choice. This is honest specifically
+  // because it doesn't claim a false, specific proper name (unlike
+  // inventing "XYZ National ID Card" for a country never actually
+  // researched) -- it names the real category without asserting a
+  // fact not yet verified.
+  return ["National Identity Document", "Passport", "Asylum Seeker Permit", "Refugee ID", "Work Permit"];
 }
 
 const CALLING_CODES: Record<string, string> = countryCodesCustomList("countryCode", "{countryCallingCode}");
