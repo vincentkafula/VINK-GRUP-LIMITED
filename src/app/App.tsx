@@ -300,7 +300,7 @@ export default function App() {
       else if (id === "finance")           { mount("financialReports"); setShowFinancialReports(true); }
       else if (id === "business")          { mount("banking");          setShowBanking(true); }
       else if (id === "ridehailing")       { mount("rideHailing");      setShowRideHailing(true); }
-      else if (id === "account")           { mount("banking");          setShowBanking(true); }
+      else if (id === "account")           { mount("postLogin");        setShowPostLogin(true); }
       else if (id === "managementPanel")   { mount("managementPanel");  setShowManagementPanel(true); }
       else if (id === "adminBankingPanel") { mount("banking");          setShowBanking(true); }
       else if (id === "vehicle")           { mount("vehicle");          setShowVehicle(true); }
@@ -325,7 +325,7 @@ export default function App() {
         case "vehicle":      mount("vehicle");          setShowVehicle(true);          break;
         case "restaurant":   mount("foodDelivery");     setShowFoodDelivery(true);     break;
         // Banking & Payments
-        case "account":      mount("banking");          setShowBanking(true);          break;
+        case "account":      setVinkBankingAppInitialScreen(undefined); mount("vinkBankingApp"); setShowVinkBankingApp(true); break;
         case "managementPanel": mount("managementPanel"); setShowManagementPanel(true); break;
         case "payments":
         case "transfer":
