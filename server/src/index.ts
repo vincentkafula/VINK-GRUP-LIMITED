@@ -61,7 +61,7 @@ import levySystemRouter from "./routes/levySystem.js";
 import afcRouter from "./routes/afc.js";
 import { startSimulator } from "./services/simulator.js";
 import { startVehicleSimulator } from "./services/vehicleSimulator.js";
-import { hasDb } from "./db/pool.js";
+import { hasDb, pool } from "./db/pool.js";
 import { migrateAndSeed } from "./db/migrate.js";
 import type { WsEvent } from "./types/mvno.js";
 import type { VehicleWsMessage } from "./types/vehicles.js";
@@ -166,8 +166,52 @@ app.use("/api/ha/passengers", passengersRouter);
 app.use("/api/ha/sos",        sosRouter);
 
 // Health check
+let migrationFailed = false;
+
 app.get("/health", (_req, res) => {
-  res.json({ status: "ok", uptime: process.uptime(), timestamp: new Date().toISOString(), database: hasDb ? "connected" : "in-memory" });
+  res.json({
+    status: migrationFailed ? "degraded" : "ok",
+    uptime: process.uptime(), timestamp: new Date().toISOString(), database: hasDb ? "connected" : "in-memory",
+    migrationFailed,
+  });
+});
+
+/**
+ * GET /health/schema -- a real, checkable way to confirm the database
+ * migration actually completed, rather than only ever finding out via
+ * server logs. Directly relevant here: boot()'s own migrateAndSeed()
+ * call is wrapped in a try/catch that logs a failure and still starts
+ * the server anyway ("server will still start, but ... will error
+ * until this is fixed") -- meaning a genuinely failed migration
+ * (permissions issue, transient connection problem during deploy,
+ * etc.) leaves the server running indefinitely with an out-of-date
+ * schema and no obvious symptom apart from specific endpoints failing,
+ * unless someone happens to check the logs at the right moment. This
+ * endpoint checks for the presence of account_number specifically
+ * (the column POST /api/applications depends on), so a real "could not
+ * generate account number" report can be diagnosed directly rather
+ * than guessed at.
+ */
+app.get("/health/schema", async (_req, res) => {
+  if (!hasDb || !pool) {
+    res.json({ hasDb: false, note: "No DATABASE_URL configured -- running on in-memory demo data, schema checks don't apply." });
+    return;
+  }
+  try {
+    const { rows } = await pool.query(`
+      SELECT column_name FROM information_schema.columns
+      WHERE table_name = 'applications' AND column_name IN ('account_number', 'rejected_at')
+    `);
+    const found = rows.map((r: { column_name: string }) => r.column_name);
+    res.json({
+      hasDb: true,
+      applicationsAccountNumberColumn: found.includes("account_number"),
+      applicationsRejectedAtColumn: found.includes("rejected_at"),
+      note: found.length === 2 ? "Schema is up to date." : "Migration has not completed -- restart the server to re-run migrateAndSeed(), or check startup logs for the actual migration error.",
+    });
+  } catch (err) {
+    res.status(500).json({ hasDb: true, error: "Could not query schema state", detail: err instanceof Error ? err.message : String(err) });
+  }
 });
 
 // API index
@@ -299,6 +343,7 @@ async function boot() {
     try {
       await migrateAndSeed();
     } catch (err) {
+      migrationFailed = true;
       console.error("[db] Migration failed — server will still start, but /api/auth and /api/marketplace will error until this is fixed:", err);
     }
   } else {
