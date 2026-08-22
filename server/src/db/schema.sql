@@ -125,6 +125,18 @@ CREATE INDEX IF NOT EXISTS idx_applications_status ON applications(status);
 CREATE INDEX IF NOT EXISTS idx_applications_tier ON applications(tier);
 CREATE INDEX IF NOT EXISTS idx_applications_user ON applications(applicant_user_id);
 
+-- Confirmed requirement (2026-08-22): an account number is generated
+-- immediately on submission, not held back until approval. If the
+-- application is later approved, this same number becomes the real,
+-- permanent account number -- no regeneration. If rejected,
+-- rejected_at records when that happened, and the number is cleared
+-- (set NULL) 14 days after rejection -- see sweepExpiredAccountNumbers()
+-- in applicationsRouter.ts for the real logic, and its own comment for
+-- why this is computed on read as well as swept by that function,
+-- rather than relying solely on a scheduled job actually running.
+ALTER TABLE applications ADD COLUMN IF NOT EXISTS account_number TEXT UNIQUE;
+ALTER TABLE applications ADD COLUMN IF NOT EXISTS rejected_at TIMESTAMPTZ;
+
 -- Real audit trail — every status change, not just the current snapshot.
 -- reason is NOT NULL: a status change without a stated reason is exactly
 -- the kind of silent, unaccountable action this table exists to prevent.

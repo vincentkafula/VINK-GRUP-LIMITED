@@ -41,6 +41,9 @@ export interface ApplicationSubmission {
 export interface Application {
   id: string;
   referenceNumber: string;
+  accountNumber: string | null;
+  accountNumberStatus: "provisional" | "confirmed" | "expiring" | "expired";
+  rejectedAt: string | null;
   tier: AppTier;
   accountTypeRequested?: string;
   currency: string;
@@ -92,7 +95,7 @@ export const applicationsApi = {
   /** Submit a new application and receive a reference number. Works
    *  whether or not the applicant is logged in. */
   submit: (data: ApplicationSubmission) =>
-    request<{ referenceNumber: string; id: string; status: AppStatus }>(
+    request<{ referenceNumber: string; accountNumber: string; id: string; status: AppStatus }>(
       "/api/applications",
       { method: "POST", body: JSON.stringify(data) }
     ),

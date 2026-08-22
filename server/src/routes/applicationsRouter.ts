@@ -42,7 +42,55 @@ function generateReferenceNumber(tier: Tier): string {
   return `VNK-${prefix}-${Date.now().toString(36).toUpperCase()}${Math.floor(Math.random() * 900 + 100)}`;
 }
 
+/**
+ * Real South African bank account numbers are typically 9-11 digits,
+ * bank-specific, with no standardised checksum (unlike IBAN) --
+ * generates a plausible 10-digit numeric account number. Unlike
+ * generateReferenceNumber() above (timestamp+random, probabilistically
+ * unique -- fine for a reference number), this actually checks the
+ * database for a genuine collision and retries, since an account
+ * number is a more financially consequential identifier where a
+ * collision would be a real integrity problem, not just an
+ * inconvenience.
+ */
+async function generateUniqueAccountNumber(): Promise<string> {
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const candidate = String(Math.floor(1000000000 + Math.random() * 9000000000));
+    const { rows } = await pool!.query(`SELECT 1 FROM applications WHERE account_number = $1`, [candidate]);
+    if (!rows.length) return candidate;
+  }
+  throw new Error("Could not generate a unique account number after 10 attempts");
+}
+
+const ACCOUNT_NUMBER_EXPIRY_DAYS = 14;
+
+/**
+ * Confirmed requirement: a rejected application's account number
+ * disappears 14 days after rejection. Computed here on every read
+ * (called from mapApplication() below) rather than relying solely on
+ * a scheduled job actually running -- this environment has no verified
+ * way to guarantee a cron job executes, so the honest, always-correct
+ * guarantee is computing this live: if the 14 days have passed, the
+ * account number reads as null regardless of whether the physical
+ * database row has been swept yet. sweepExpiredAccountNumbers() below
+ * is the real, physical cleanup -- genuinely clearing the column, not
+ * just hiding it -- for actual data hygiene, callable by an admin or a
+ * real scheduled job if one exists on the deployment platform, but the
+ * computed-on-read check here is what actually guarantees correctness
+ * regardless of whether that job ever runs.
+ */
+function isAccountNumberExpired(status: string, rejectedAt: string | Date | null): boolean {
+  if (status !== "declined" || !rejectedAt) return false;
+  const rejectedTime = new Date(rejectedAt).getTime();
+  const expiryTime = rejectedTime + ACCOUNT_NUMBER_EXPIRY_DAYS * 24 * 60 * 60 * 1000;
+  return Date.now() > expiryTime;
+}
+
 function mapApplication(r: any) {
+  const expired = isAccountNumberExpired(r.status, r.rejected_at);
+  const accountNumberStatus = r.status === "approved" ? "confirmed"
+    : r.status === "declined" ? (expired ? "expired" : "expiring")
+    : "provisional";
   return {
     id: r.id,
     referenceNumber: r.reference_number,
@@ -55,6 +103,12 @@ function mapApplication(r: any) {
     applicantPhone: r.applicant_phone,
     status: r.status,
     statusReason: r.status_reason,
+    // Honest even if a physical sweep hasn't run yet: null once the
+    // computed 14-day expiry has passed, regardless of what's still
+    // actually stored in the account_number column.
+    accountNumber: expired ? null : r.account_number,
+    accountNumberStatus,
+    rejectedAt: r.rejected_at,
     tierData: r.tier_data,
     submittedAt: r.submitted_at,
     updatedAt: r.updated_at,
@@ -93,14 +147,25 @@ router.post("/", optionalAuth, async (req: Request, res: Response): Promise<void
   const id = randomUUID();
   const referenceNumber = generateReferenceNumber(tier as Tier);
   const applicantUserId = req.user?.userId ?? null;
+  // Confirmed requirement: generated immediately on submission, not
+  // held back until approval -- becomes the real, permanent account
+  // number if this application is later approved, no regeneration.
+  let accountNumber: string;
+  try {
+    accountNumber = await generateUniqueAccountNumber();
+  } catch (err) {
+    console.error("[applications] Failed to generate a unique account number:", err);
+    res.status(500).json({ success: false, error: "Could not generate an account number, please try again." });
+    return;
+  }
 
   const client = await pool!.connect();
   try {
     await client.query("BEGIN");
     await client.query(
-      `INSERT INTO applications (id, reference_number, tier, account_type_requested, currency, applicant_user_id, applicant_name, applicant_email, applicant_phone, tier_data)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
-      [id, referenceNumber, tier, accountTypeRequested ?? null, currency ?? "ZAR", applicantUserId, applicantName.trim(), applicantEmail ?? null, applicantPhone ?? null, JSON.stringify(storedData)]
+      `INSERT INTO applications (id, reference_number, account_number, tier, account_type_requested, currency, applicant_user_id, applicant_name, applicant_email, applicant_phone, tier_data)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+      [id, referenceNumber, accountNumber, tier, accountTypeRequested ?? null, currency ?? "ZAR", applicantUserId, applicantName.trim(), applicantEmail ?? null, applicantPhone ?? null, JSON.stringify(storedData)]
     );
     await client.query(
       `INSERT INTO application_status_history (id, application_id, from_status, to_status, reason, changed_by)
@@ -124,7 +189,7 @@ router.post("/", optionalAuth, async (req: Request, res: Response): Promise<void
   checkApplicationRisk(id, applicantUserId, applicantPhone ?? null, applicantEmail ?? null)
     .catch(err => console.error("[fraud-risk] Application risk check failed:", err));
 
-  res.status(201).json({ success: true, data: { id, referenceNumber, status: "submitted" } });
+  res.status(201).json({ success: true, data: { id, referenceNumber, accountNumber, status: "submitted" } });
 });
 
 router.get("/", requireAuth, requireRole(...REVIEWER_ROLES), async (req: Request, res: Response): Promise<void> => {
@@ -236,7 +301,7 @@ router.patch("/:ref/status", requireAuth, requireRole(...REVIEWER_ROLES), async 
     }
 
     const { rows: updated } = await client.query(
-      `UPDATE applications SET status = $1, status_reason = $2, updated_at = now() WHERE id = $3 RETURNING *`,
+      `UPDATE applications SET status = $1, status_reason = $2, updated_at = now(), rejected_at = CASE WHEN $1 = 'declined' THEN now() ELSE rejected_at END WHERE id = $3 RETURNING *`,
       [target, reason.trim(), current.id]
     );
     await client.query(
@@ -275,6 +340,38 @@ router.get("/stats/summary", requireAuth, requireRole(...REVIEWER_ROLES), async 
       lastUpdated: new Date().toISOString(),
     },
   });
+});
+
+/**
+ * POST /api/applications/sweep-expired-accounts
+ * The real, physical cleanup: genuinely clears account_number (sets it
+ * NULL) for declined applications where more than 14 days have passed
+ * since rejected_at. This is a real database write, not just the
+ * computed-on-read hiding mapApplication() already does on every GET
+ * -- that computed check is what guarantees correctness even if this
+ * sweep is never triggered, but running this periodically is still the
+ * right thing for actual data hygiene (an account number sitting
+ * unused in the database indefinitely is worth genuinely removing, not
+ * just permanently masking).
+ *
+ * Admin-triggerable rather than assuming a scheduled job exists on the
+ * deployment platform -- this environment has no verified way to
+ * confirm a real cron actually runs, so exposing this as a callable
+ * endpoint (which a real Railway cron job, or an admin, can hit) is
+ * the honest choice over silently assuming background scheduling
+ * works.
+ */
+router.post("/sweep-expired-accounts", requireAuth, requireRole(...REVIEWER_ROLES), async (_req: Request, res: Response): Promise<void> => {
+  const { rows } = await pool!.query(
+    `UPDATE applications
+     SET account_number = NULL
+     WHERE status = 'declined'
+       AND account_number IS NOT NULL
+       AND rejected_at IS NOT NULL
+       AND rejected_at < now() - interval '${ACCOUNT_NUMBER_EXPIRY_DAYS} days'
+     RETURNING reference_number`
+  );
+  res.json({ success: true, data: { swept: rows.length, references: rows.map(r => r.reference_number) } });
 });
 
 export default router;

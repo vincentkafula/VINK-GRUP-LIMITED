@@ -559,8 +559,8 @@ function Step6({ onNext, onBack, submitting }: { onNext: (data: Record<string, s
 }
 
 // ─── Step 7 — Account Opened (matches image) ─────────────────────────────────
-function Step7({ onClose, referenceNumber, loginUsername, loginCreated, loginError }: {
-  onClose: () => void; referenceNumber: string; loginUsername: string; loginCreated: boolean; loginError: string;
+function Step7({ onClose, referenceNumber, accountNumber, loginUsername, loginCreated, loginError }: {
+  onClose: () => void; referenceNumber: string; accountNumber: string; loginUsername: string; loginCreated: boolean; loginError: string;
 }) {
   const SUMMARY_ITEMS = [
     "Identity verified via OTP, fingerprint and selfie",
@@ -584,8 +584,22 @@ function Step7({ onClose, referenceNumber, loginUsername, loginCreated, loginErr
         </p>
         <div className="w-12 h-px bg-gray-300 mx-auto mb-4" />
         <p className="text-2xl font-black tracking-widest" style={{ color: BLUE }}>{referenceNumber}</p>
-        <p className="text-[11px] text-gray-400 mt-3">Quote this reference if you contact us about your application. Your account number will be issued once KYC review is complete.</p>
+        <p className="text-[11px] text-gray-400 mt-3">Quote this reference if you contact us about your application.</p>
       </div>
+
+      {/* Account number box */}
+      {accountNumber && (
+        <div className="border border-gray-200 rounded-xl p-6 text-center bg-white">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3">
+            YOUR ACCOUNT NUMBER
+          </p>
+          <div className="w-12 h-px bg-gray-300 mx-auto mb-4" />
+          <p className="text-2xl font-black tracking-widest" style={{ color: BLUE }}>{accountNumber}</p>
+          <p className="text-[11px] text-gray-500 mt-3 leading-relaxed">
+            This is your account number now, generated as soon as you applied. It becomes permanent once your application is approved. <strong>If your application is declined, this number is removed 14 days after that decision.</strong>
+          </p>
+        </div>
+      )}
 
       {/* Banking app login details */}
       {loginCreated ? (
@@ -673,6 +687,7 @@ export function PersonalAccountApplicationViewer({ isOpen, onClose }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [referenceNumber, setReferenceNumber] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
   const [loginUsername, setLoginUsername] = useState("");
   const [loginCreated, setLoginCreated] = useState(false);
   const [loginError, setLoginError] = useState("");
@@ -743,6 +758,7 @@ export function PersonalAccountApplicationViewer({ isOpen, onClose }: Props) {
 
     setSubmitting(false);
     setReferenceNumber(r.data.referenceNumber);
+    setAccountNumber(r.data.accountNumber ?? "");
     setLoginUsername(merged.email ?? "");
     setLoginCreated(didCreateLogin);
     setLoginError(createLoginError ?? "");
@@ -757,7 +773,7 @@ export function PersonalAccountApplicationViewer({ isOpen, onClose }: Props) {
 
   // Reset to step 1 when reopened
   useEffect(() => {
-    if (isOpen) { setStep(1); setFormData({}); setReferenceNumber(""); setLoginUsername(""); setLoginCreated(false); setLoginError(""); }
+    if (isOpen) { setStep(1); setFormData({}); setReferenceNumber(""); setAccountNumber(""); setLoginUsername(""); setLoginCreated(false); setLoginError(""); }
   }, [isOpen]);
 
   if (!isOpen) return null;
@@ -792,7 +808,7 @@ export function PersonalAccountApplicationViewer({ isOpen, onClose }: Props) {
               submitting={submitting}
             />
           )}
-          {step === 7 && <Step7 onClose={onClose} referenceNumber={referenceNumber} loginUsername={loginUsername} loginCreated={loginCreated} loginError={loginError} />}
+          {step === 7 && <Step7 onClose={onClose} referenceNumber={referenceNumber} accountNumber={accountNumber} loginUsername={loginUsername} loginCreated={loginCreated} loginError={loginError} />}
         </div>
       </div>
     </div>
