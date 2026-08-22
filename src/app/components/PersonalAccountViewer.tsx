@@ -3,7 +3,7 @@ import {
   X, ChevronRight, CheckCircle2, Sparkles, Anchor as AnchorIcon, TrendingUp,
   Sunrise, Mountain, Crown, ArrowRight, UserCheck, Globe2, Star,
 } from "lucide-react";
-import { ApplyModal } from "./ApplyModal";
+import { PersonalAccountApplicationViewer } from "./PersonalAccountApplicationViewer";
 import { Footer } from "./Footer";
 import { MarketplaceAuthModal } from "./MarketplaceAuthModal";
 import { mktAuth, mktCustomer, type MktAuthUser } from "../services/marketplaceApi";
@@ -189,7 +189,7 @@ function AccountDetailModal({ acct, onClose, onApply }: { acct: Account; onClose
 
 export function PersonalAccountViewer({ isOpen, onClose, onNavigate }: Props) {
   const currency = useCurrency(); // subscribes this tree to live currency/rate updates
-  const [applyProduct, setApplyProduct] = useState<{ name: string; price: string } | null>(null);
+  const [showApplication, setShowApplication] = useState(false);
   const [detailAccount, setDetailAccount] = useState<Account | null>(null);
   const [authUser, setAuthUser] = useState<MktAuthUser | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -208,7 +208,7 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate }: Props) {
   }, [authUser]);
 
   if (!isOpen) return null;
-  const openApply = (name: string, price: string) => setApplyProduct({ name, price });
+  const openApply = () => setShowApplication(true);
   const handleSignOut = () => { mktAuth.logout(); setAuthUser(null); };
 
   return (
@@ -302,7 +302,7 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate }: Props) {
               </>
             )}
             <div className="flex flex-wrap items-center gap-3 mt-8">
-              <button onClick={() => authUser ? setShowAuthModal(false) : openApply(ACCOUNTS[0].name, ACCOUNTS[0].price)}
+              <button onClick={() => authUser ? setShowAuthModal(false) : openApply()}
                 className="px-6 py-3 rounded-full text-white text-sm font-bold shadow-lg" style={{ background: ORANGE }}>
                 {authUser ? "Explore Products" : "Open an Account"}
               </button>
@@ -370,7 +370,7 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate }: Props) {
             </div>
           </div>
           <div className="flex flex-col items-center sm:items-end gap-2 shrink-0">
-            <button onClick={() => openApply(ACCOUNTS[0].name, ACCOUNTS[0].price)}
+            <button onClick={() => openApply()}
               className="px-7 py-3 rounded-full text-white text-sm font-bold shadow-lg whitespace-nowrap" style={{ background: ORANGE }}>
               Open an Account Now
             </button>
@@ -385,18 +385,14 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate }: Props) {
         <AccountDetailModal
           acct={detailAccount}
           onClose={() => setDetailAccount(null)}
-          onApply={(name, price) => { setDetailAccount(null); openApply(name, price); }}
+          onApply={() => { setDetailAccount(null); openApply(); }}
         />
       )}
 
-      {applyProduct && (
-        <ApplyModal
-          isOpen={!!applyProduct}
-          onClose={() => setApplyProduct(null)}
-          product={applyProduct.name}
-          price={applyProduct.price}
-        />
-      )}
+      <PersonalAccountApplicationViewer
+        isOpen={showApplication}
+        onClose={() => setShowApplication(false)}
+      />
 
       {showAuthModal && (
         <MarketplaceAuthModal
