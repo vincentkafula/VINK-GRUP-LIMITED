@@ -3,6 +3,7 @@ import { X, CheckCircle, Upload, ChevronLeft, ChevronRight, Clock, Loader2, Aler
 import { toast } from "sonner";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { applicationsApi, otpApi } from "../services/applicationsApi";
+import { mktAuth } from "../services/marketplaceApi";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
@@ -128,13 +129,16 @@ function Step1({ onNext, updateForm }: { onNext: () => void; updateForm: (d: Rec
   const [city, setCity] = useState("");
   const [province, setProvince] = useState("Western Cape");
   const [postal, setPostal] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  const isValid = firstName.trim() && lastName.trim() && dob && idNumber.trim() && phone.length > 5 && email.includes("@") && addr1.trim() && city.trim() && postal.trim();
+  const isValid = firstName.trim() && lastName.trim() && dob && idNumber.trim() && phone.length > 5 && email.includes("@") && addr1.trim() && city.trim() && postal.trim()
+    && password.length >= 8 && password === confirmPassword;
 
   const handleNext = () => {
     updateForm({
       title, firstName, middleName, lastName, dob, gender, nationality, idType, idNumber,
-      marital, phone, email, addr1, addr2, city, province, postal,
+      marital, phone, email, addr1, addr2, city, province, postal, password,
     });
     onNext();
   };
@@ -169,6 +173,16 @@ function Step1({ onNext, updateForm }: { onNext: () => void; updateForm: (d: Rec
             options={["Western Cape","Gauteng","KwaZulu-Natal","Eastern Cape","Limpopo","Mpumalanga","North West","Free State","Northern Cape"]} />
           <InputField label="Postal code" value={postal} onChange={setPostal} placeholder="8001" required />
         </div>
+      </div>
+      <div>
+        <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-3">Set Your Banking App Login</p>
+        <p className="text-xs text-gray-500 mb-3">You'll use your email address and this password to log into the VINK Banking App once your application is submitted.</p>
+        <div className="grid sm:grid-cols-2 gap-4">
+          <InputField label="Password" value={password} onChange={setPassword} type="password" placeholder="At least 8 characters" required />
+          <InputField label="Confirm password" value={confirmPassword} onChange={setConfirmPassword} type="password" placeholder="Re-enter your password" required />
+        </div>
+        {password.length > 0 && password.length < 8 && <p className="text-xs text-red-500 mt-1.5">Password must be at least 8 characters.</p>}
+        {confirmPassword.length > 0 && password !== confirmPassword && <p className="text-xs text-red-500 mt-1.5">Passwords don't match.</p>}
       </div>
       {!isValid && <p className="text-xs text-red-500">Please fill in all required fields before continuing.</p>}
       <NavButtons onNext={handleNext} nextLabel="Next: KYC" nextDisabled={!isValid} />
@@ -545,7 +559,9 @@ function Step6({ onNext, onBack, submitting }: { onNext: (data: Record<string, s
 }
 
 // ─── Step 7 — Account Opened (matches image) ─────────────────────────────────
-function Step7({ onClose, referenceNumber }: { onClose: () => void; referenceNumber: string }) {
+function Step7({ onClose, referenceNumber, loginUsername, loginCreated, loginError }: {
+  onClose: () => void; referenceNumber: string; loginUsername: string; loginCreated: boolean; loginError: string;
+}) {
   const SUMMARY_ITEMS = [
     "Identity verified via OTP, fingerprint and selfie",
     "KYC documents received and processed",
@@ -570,6 +586,32 @@ function Step7({ onClose, referenceNumber }: { onClose: () => void; referenceNum
         <p className="text-2xl font-black tracking-widest" style={{ color: BLUE }}>{referenceNumber}</p>
         <p className="text-[11px] text-gray-400 mt-3">Quote this reference if you contact us about your application. Your account number will be issued once KYC review is complete.</p>
       </div>
+
+      {/* Banking app login details */}
+      {loginCreated ? (
+        <div className="border rounded-xl p-5 bg-white" style={{ borderColor: "#10B981" }}>
+          <div className="flex items-center gap-2 mb-3">
+            <CheckCircle className="w-4 h-4 text-green-500" />
+            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">YOUR VINK BANKING APP LOGIN</p>
+          </div>
+          <p className="text-xs text-gray-600 leading-relaxed mb-3">You can log into the VINK Banking App right now with the email and password you set in Section 1.</p>
+          <div className="rounded-lg p-3" style={{ background: "#F0FDF4" }}>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">Username / Email</p>
+            <p className="text-sm font-bold text-gray-900">{loginUsername}</p>
+          </div>
+        </div>
+      ) : (
+        <div className="border rounded-xl p-5 bg-white" style={{ borderColor: "#F59E0B" }}>
+          <div className="flex items-center gap-2 mb-2">
+            <AlertTriangle className="w-4 h-4" style={{ color: "#F59E0B" }} />
+            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">BANKING APP LOGIN</p>
+          </div>
+          <p className="text-xs text-gray-600 leading-relaxed">
+            {loginError || "Your application was submitted, but we couldn't set up your banking app login automatically."}
+            {" "}If you already have a VINK account, log in with your existing details. Otherwise, contact our support team and quote your reference number above.
+          </p>
+        </div>
+      )}
 
       {/* Account summary */}
       <div className="border border-gray-200 rounded-xl p-5 bg-white">
@@ -631,6 +673,9 @@ export function PersonalAccountApplicationViewer({ isOpen, onClose }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [referenceNumber, setReferenceNumber] = useState("");
+  const [loginUsername, setLoginUsername] = useState("");
+  const [loginCreated, setLoginCreated] = useState(false);
+  const [loginError, setLoginError] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const updateForm = (data: Record<string, string>) =>
@@ -649,22 +694,60 @@ export function PersonalAccountApplicationViewer({ isOpen, onClose }: Props) {
     const merged = { ...formData, ...step6Data };
     updateForm(step6Data);
     setSubmitting(true);
+
+    // Security: password/confirmPassword must never be stored in
+    // tierData (a generic JSONB "whatever the form collected" column
+    // that admin reviewers can see in plaintext) -- extracted out here
+    // and used ONLY for the real registration call below, which
+    // properly hashes it server-side. Everything else in merged is
+    // safe to store as-is, same as before this change.
+    const { password, confirmPassword: _confirmPassword, ...tierDataSafe } = merged;
+
     const r = await applicationsApi.submit({
       tier: "personal",
       accountTypeRequested: merged.accountType,
       applicantName: `${merged.firstName ?? ""} ${merged.lastName ?? ""}`.trim() || "Applicant",
       applicantEmail: merged.email,
       applicantPhone: merged.phone,
-      tierData: merged,
+      tierData: tierDataSafe,
     });
-    setSubmitting(false);
-    if (r.success && r.data?.referenceNumber) {
-      setReferenceNumber(r.data.referenceNumber);
-      setStep(7);
-      scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
-    } else {
+
+    if (!r.success || !r.data?.referenceNumber) {
+      setSubmitting(false);
       toast.error(r.error ?? "Couldn't submit your application — please check your connection and try again.");
+      return;
     }
+
+    // The application itself succeeded (the real KYC/business record
+    // exists) regardless of what happens next -- account creation is a
+    // real, separate concern. If it fails (e.g. this email already has
+    // an account), the applicant still has a valid application and
+    // reference number; Step7 shows a clear, honest message either way
+    // rather than silently hiding a login-account failure behind a
+    // generic success screen.
+    let didCreateLogin = false;
+    let createLoginError: string | undefined;
+    if (password && merged.email) {
+      const regResult = await mktAuth.registerCustomer({
+        username: merged.email,
+        password,
+        name: `${merged.firstName ?? ""} ${merged.lastName ?? ""}`.trim() || "Applicant",
+        email: merged.email,
+      });
+      if (regResult.success) {
+        didCreateLogin = true;
+      } else {
+        createLoginError = regResult.error ?? "Could not create your banking app login automatically.";
+      }
+    }
+
+    setSubmitting(false);
+    setReferenceNumber(r.data.referenceNumber);
+    setLoginUsername(merged.email ?? "");
+    setLoginCreated(didCreateLogin);
+    setLoginError(createLoginError ?? "");
+    setStep(7);
+    scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const back = () => {
@@ -674,7 +757,7 @@ export function PersonalAccountApplicationViewer({ isOpen, onClose }: Props) {
 
   // Reset to step 1 when reopened
   useEffect(() => {
-    if (isOpen) { setStep(1); setFormData({}); setReferenceNumber(""); }
+    if (isOpen) { setStep(1); setFormData({}); setReferenceNumber(""); setLoginUsername(""); setLoginCreated(false); setLoginError(""); }
   }, [isOpen]);
 
   if (!isOpen) return null;
@@ -709,7 +792,7 @@ export function PersonalAccountApplicationViewer({ isOpen, onClose }: Props) {
               submitting={submitting}
             />
           )}
-          {step === 7 && <Step7 onClose={onClose} referenceNumber={referenceNumber} />}
+          {step === 7 && <Step7 onClose={onClose} referenceNumber={referenceNumber} loginUsername={loginUsername} loginCreated={loginCreated} loginError={loginError} />}
         </div>
       </div>
     </div>
