@@ -518,23 +518,36 @@ CREATE TABLE IF NOT EXISTS terminals (
   api_key_hash    TEXT NOT NULL,
   status          TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active','inactive','revoked')),
   assigned_driver TEXT,                    -- free-text label for now (driver name/id); not a FK, since there's no drivers table yet in this schema
-  -- Real ownership-chain references, added for multi-party revenue
-  -- splitting (2026-08-18): who actually gets paid for taps on this
-  -- specific device. All nullable -- a terminal can be registered
-  -- before these are assigned, and the split calculation treats an
-  -- unassigned party as "nothing withheld for them" rather than
-  -- failing the whole tap. driver_id is separate from the older
-  -- assigned_driver text field above (kept as-is for backward
-  -- compatibility with existing code) since the split logic needs a
-  -- real users.id to credit, not a free-text label.
-  investor_id     UUID REFERENCES users(id),
-  owner_id        UUID REFERENCES users(id),
-  driver_id       UUID REFERENCES users(id),
-  association_id  UUID REFERENCES users(id), -- not used in the per-tap split itself (association fees are a separate flat monthly charge, not a per-tap cut) -- stored here for reporting/filtering by association's fleet
   registered_by   TEXT,                    -- username of the admin who provisioned it
   last_seen_at    TIMESTAMPTZ,
   registered_at   TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+-- Real ownership-chain references, added for multi-party revenue
+-- splitting (2026-08-18): who actually gets paid for taps on this
+-- specific device. All nullable -- a terminal can be registered
+-- before these are assigned, and the split calculation treats an
+-- unassigned party as "nothing withheld for them" rather than
+-- failing the whole tap. driver_id is separate from the older
+-- assigned_driver text field above (kept as-is for backward
+-- compatibility with existing code) since the split logic needs a
+-- real users.id to credit, not a free-text label.
+--
+-- Confirmed real production bug (2026-08-22): these were originally
+-- added directly inside the CREATE TABLE statement above rather than
+-- as their own ALTER TABLE, which silently does nothing on a database
+-- where terminals already existed from before this feature shipped --
+-- CREATE TABLE IF NOT EXISTS skips the whole statement, columns
+-- included, when the table is already there. This broke the live
+-- migration outright (a later CREATE INDEX referencing investor_id
+-- failed with "column does not exist"), confirmed by replaying every
+-- historical version of this file against a real test database in
+-- sequence and reproducing the exact same failure. Moved to a proper,
+-- idempotent ALTER TABLE here, the same pattern already used correctly
+-- for applications.account_number/rejected_at.
+ALTER TABLE terminals ADD COLUMN IF NOT EXISTS investor_id UUID REFERENCES users(id);
+ALTER TABLE terminals ADD COLUMN IF NOT EXISTS owner_id UUID REFERENCES users(id);
+ALTER TABLE terminals ADD COLUMN IF NOT EXISTS driver_id UUID REFERENCES users(id);
+ALTER TABLE terminals ADD COLUMN IF NOT EXISTS association_id UUID REFERENCES users(id); -- not used in the per-tap split itself (association fees are a separate flat monthly charge, not a per-tap cut) -- stored here for reporting/filtering by association's fleet
 CREATE INDEX IF NOT EXISTS idx_terminals_status ON terminals(status);
 CREATE INDEX IF NOT EXISTS idx_terminals_investor ON terminals(investor_id);
 CREATE INDEX IF NOT EXISTS idx_terminals_owner ON terminals(owner_id);
