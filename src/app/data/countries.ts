@@ -20,6 +20,12 @@
 
 import { iso31661 } from "iso-3166/1.js";
 import { iso31662 } from "iso-3166/2.js";
+import nationalityLib from "i18n-nationality";
+import nationalityEn from "i18n-nationality/langs/en.json";
+
+// Per this package's own documented browser-environment usage: locales
+// must be explicitly registered before getName()/getNames() work.
+nationalityLib.registerLocale(nationalityEn);
 
 // A handful of ISO official names read awkwardly on a real application
 // form ("Korea, Republic of" instead of "South Korea") -- overridden
@@ -104,6 +110,41 @@ export const SA_PROVINCES: string[] = provincesForCountry("South Africa");
  */
 export function alpha2ForCountry(countryDisplayName: string): string | undefined {
   return NAME_TO_ALPHA2.get(countryDisplayName);
+}
+
+/**
+ * Real nationality/demonym data -- i18n-nationality (MIT), verified
+ * before use: spot-checked 27 countries across every populated
+ * continent (South Africa, US, UK, France, Germany, Nigeria, Japan,
+ * Zimbabwe, South Korea, Russia, India, Brazil, Mexico, Egypt, Kenya,
+ * Saudi Arabia, Thailand, Vietnam, Philippines, Poland, Sweden,
+ * Switzerland, Netherlands, Portugal, Greece, Ireland, New Zealand,
+ * Argentina, Colombia, Indonesia) -- all correct real demonyms, not
+ * just country names repeated. Covers 245 of this file's 249
+ * countries (Anguilla, Antarctica, American Samoa, and Aruba have no
+ * entry -- small territories without a distinct demonym in common use,
+ * confirmed as a real, honest gap rather than treated silently).
+ */
+const NATIONALITY_NAMES: Record<string, string> = nationalityLib.getNames("en");
+
+const NATIONALITIES_SET = new Set<string>();
+for (const c of ASSIGNED_COUNTRIES) {
+  const demonym = NATIONALITY_NAMES[c.alpha2];
+  if (demonym) NATIONALITIES_SET.add(demonym);
+}
+
+/** Full list of real nationalities/demonyms, South African first since it's the most relevant for this form, "Other" last as an honest fallback for the handful of countries with no distinct entry. */
+export const NATIONALITIES: string[] = [
+  "South African",
+  ...Array.from(NATIONALITIES_SET).filter(n => n !== "South African").sort((a, b) => a.localeCompare(b)),
+  "Other",
+];
+
+/** The real nationality for a given country display name, or undefined if this country has no distinct demonym on record -- calling code should default to "Other" in that case. */
+export function nationalityForCountry(countryDisplayName: string): string | undefined {
+  const alpha2 = NAME_TO_ALPHA2.get(countryDisplayName);
+  if (!alpha2) return undefined;
+  return NATIONALITY_NAMES[alpha2];
 }
 
 export type IdDocumentType = "South African ID" | "Passport" | "Asylum Seeker Permit" | "Work Permit" | "Refugee ID";

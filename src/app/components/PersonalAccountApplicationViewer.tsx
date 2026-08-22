@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { applicationsApi, otpApi } from "../services/applicationsApi";
 import { mktAuth } from "../services/marketplaceApi";
-import { COUNTRIES, provincesForCountry, alpha2ForCountry, idDocumentTypesForCountry } from "../data/countries";
+import { COUNTRIES, provincesForCountry, alpha2ForCountry, idDocumentTypesForCountry, NATIONALITIES } from "../data/countries";
 import { validatePostalCode, getCountryByCode, getPostalLabel } from "postal-code-checker";
 import { API_BASE } from "../services/config";
 
@@ -209,8 +209,7 @@ function Step1({ onNext, updateForm }: { onNext: () => void; updateForm: (d: Rec
         <InputField label="Date of birth" value={dob} onChange={setDob} type="date" required />
         <SelectField label="Gender" value={gender} onChange={setGender} options={["Male","Female","Non-binary","Prefer not to say"]} />
         <SelectField label="Country" value={country} onChange={setCountry} options={COUNTRIES} />
-        <SelectField label="Nationality" value={nationality} onChange={setNationality}
-          options={["South African","Zimbabwean","Mozambican","Zambian","Malawian","Namibian","Botswanan","Other"]} />
+        <SelectField label="Nationality" value={nationality} onChange={setNationality} options={NATIONALITIES} />
         <SelectField label="ID type" value={idType} onChange={setIdType} options={idTypeOptions} />
         <InputField label="ID / Passport number" value={idNumber} onChange={setIdNumber} placeholder="Your identity number" required />
         <SelectField label="Marital status" value={marital} onChange={setMarital}
