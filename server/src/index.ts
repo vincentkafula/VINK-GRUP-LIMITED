@@ -63,6 +63,7 @@ import { startSimulator } from "./services/simulator.js";
 import { startVehicleSimulator } from "./services/vehicleSimulator.js";
 import { hasDb, pool } from "./db/pool.js";
 import { migrateAndSeed } from "./db/migrate.js";
+import { requireAuth, requireRole } from "./middleware/auth.js";
 import type { WsEvent } from "./types/mvno.js";
 import type { VehicleWsMessage } from "./types/vehicles.js";
 
@@ -211,6 +212,39 @@ app.get("/health/schema", async (_req, res) => {
     });
   } catch (err) {
     res.status(500).json({ hasDb: true, error: "Could not query schema state", detail: err instanceof Error ? err.message : String(err) });
+  }
+});
+
+/**
+ * POST /api/admin/migrate -- lets an admin re-run migrateAndSeed()
+ * directly, without needing to restart the whole Railway service.
+ * Built specifically because /health/schema confirmed a real,
+ * concrete need: the live database's account_number/rejected_at
+ * columns were genuinely missing, meaning the migration either never
+ * ran or failed silently (boot()'s own try/catch logs a migration
+ * failure but still starts the server regardless -- see that comment
+ * for why this leaves no obvious symptom otherwise). Safe to call
+ * repeatedly: every statement in schema.sql is idempotent (CREATE
+ * TABLE IF NOT EXISTS / ADD COLUMN IF NOT EXISTS / ON CONFLICT DO
+ * NOTHING), the same guarantee boot()'s own call already relies on.
+ * Requires real admin auth rather than being open, since this
+ * touches the database even though it's idempotent -- an open
+ * endpoint that runs database migrations on request is a reasonable
+ * thing to gate even when the operation itself is safe to repeat.
+ */
+app.post("/api/admin/migrate", requireAuth, requireRole("owner", "superadmin"), async (_req, res) => {
+  if (!hasDb) {
+    res.status(503).json({ success: false, error: "No DATABASE_URL configured -- nothing to migrate." });
+    return;
+  }
+  try {
+    await migrateAndSeed();
+    migrationFailed = false;
+    res.json({ success: true, message: "Migration re-run completed successfully." });
+  } catch (err) {
+    migrationFailed = true;
+    console.error("[db] Manual migration re-run failed:", err);
+    res.status(500).json({ success: false, error: "Migration failed", detail: err instanceof Error ? err.message : String(err) });
   }
 });
 
