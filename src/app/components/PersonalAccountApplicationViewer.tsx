@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { applicationsApi, otpApi } from "../services/applicationsApi";
 import { mktAuth } from "../services/marketplaceApi";
-import { COUNTRIES, SA_PROVINCES, idDocumentTypesForCountry } from "../data/countries";
+import { COUNTRIES, provincesForCountry, idDocumentTypesForCountry } from "../data/countries";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
@@ -134,17 +134,20 @@ function Step1({ onNext, updateForm }: { onNext: () => void; updateForm: (d: Rec
   const [postal, setPostal] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const provinceOptions = provincesForCountry(country);
 
-  // Whenever the country changes, the currently-selected ID document
-  // type may no longer make sense (e.g. "South African ID" stops being
-  // valid the moment the applicant switches away from South Africa) --
-  // reset to the first option that's actually valid for the new
-  // country, rather than leaving a stale, invalid selection in place.
+  // Whenever the country changes, both the ID document type and the
+  // province/state options may no longer make sense for the newly-
+  // selected country (e.g. "South African ID" stops being valid, and
+  // "Western Cape" isn't a real province of any other country) --
+  // reset both to something actually valid for the new country rather
+  // than leaving a stale, invalid selection in place.
   useEffect(() => {
     if (!idDocumentTypesForCountry(country).includes(idType as any)) {
       setIdType(idDocumentTypesForCountry(country)[0]);
     }
-    setProvince(country === "South Africa" ? "Western Cape" : "");
+    const realProvinces = provincesForCountry(country);
+    setProvince(realProvinces.length ? realProvinces[0] : "");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [country]);
 
@@ -185,8 +188,8 @@ function Step1({ onNext, updateForm }: { onNext: () => void; updateForm: (d: Rec
           <InputField label="Address line 1" value={addr1} onChange={setAddr1} placeholder="Street address" required />
           <InputField label="Address line 2 (optional)" value={addr2} onChange={setAddr2} placeholder="Suburb / Unit" />
           <InputField label="City" value={city} onChange={setCity} placeholder="Cape Town" required />
-          {country === "South Africa" ? (
-            <SelectField label="Province" value={province} onChange={setProvince} options={SA_PROVINCES} />
+          {provinceOptions.length > 0 ? (
+            <SelectField label="Province / State / Region" value={province} onChange={setProvince} options={provinceOptions} />
           ) : (
             <InputField label="State / Province / Region" value={province} onChange={setProvince} placeholder="e.g. Ontario" />
           )}
@@ -455,12 +458,17 @@ function Step4({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () 
 }
 
 // ─── Step 5 — Documents ──────────────────────────────────────────────────────
-function Step5({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () => void; updateForm: (d: Record<string, string>) => void }) {
+function Step5({ onNext, onBack, updateForm, idType }: { onNext: () => void; onBack: () => void; updateForm: (d: Record<string, string>) => void; idType: string }) {
   const [uploaded, setUploaded] = useState<Record<string, boolean>>({});
   const [fileNames, setFileNames] = useState<Record<string, string>>({});
 
   const DOCS = [
-    { key: "id",       label: "Certified copy of ID / Passport" },
+    // Reflects the actual document type chosen in Section 1 (e.g. "South
+    // African ID", "Passport", "Asylum Seeker Permit") rather than a
+    // generic "ID / Passport" label that didn't match what the applicant
+    // actually has, especially once the country/ID-type selection could
+    // genuinely be anything from idDocumentTypesForCountry().
+    { key: "id",       label: `Certified copy of your ${idType || "ID / Passport"}` },
     { key: "proofRes", label: "Proof of residence (not older than 3 months)" },
     { key: "payslip",  label: "Latest payslip or proof of income" },
     { key: "bankStat", label: "3 months bank statements" },
@@ -819,7 +827,7 @@ export function PersonalAccountApplicationViewer({ isOpen, onClose }: Props) {
           {step === 2 && <Step2 onNext={next} onBack={back} updateForm={updateForm} />}
           {step === 3 && <Step3 onNext={next} onBack={back} updateForm={updateForm} />}
           {step === 4 && <Step4 onNext={next} onBack={back} updateForm={updateForm} />}
-          {step === 5 && <Step5 onNext={next} onBack={back} updateForm={updateForm} />}
+          {step === 5 && <Step5 onNext={next} onBack={back} updateForm={updateForm} idType={formData.idType ?? ""} />}
           {step === 6 && (
             <Step6
               onNext={submitApplication}
