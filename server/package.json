@@ -25,6 +25,7 @@
     "multer": "^2.2.0",
     "pg": "^8.22.0",
     "uuid": "^9.0.1",
+    "world-cities-json": "^1.0.1",
     "ws": "^8.16.0"
   },
   "devDependencies": {

@@ -94,6 +94,18 @@ export function provincesForCountry(countryDisplayName: string): string[] {
 /** Kept for backward compatibility with existing callers -- South Africa's 9 real provinces, now sourced from the same verified dataset rather than a separate hand-typed list. */
 export const SA_PROVINCES: string[] = provincesForCountry("South Africa");
 
+/**
+ * The reliable ISO 3166-1 alpha-2 code for a country display name --
+ * used to query the backend's GET /api/geo/cities endpoint, which
+ * deliberately keys by this code rather than a country name string,
+ * avoiding the exact kind of name-mismatch bug found and fixed in
+ * provincesForCountry() above (see DISPLAY_NAME_OVERRIDES' own
+ * comment on the "United States of America" case).
+ */
+export function alpha2ForCountry(countryDisplayName: string): string | undefined {
+  return NAME_TO_ALPHA2.get(countryDisplayName);
+}
+
 export type IdDocumentType = "South African ID" | "Passport" | "Asylum Seeker Permit" | "Work Permit" | "Refugee ID";
 
 /**

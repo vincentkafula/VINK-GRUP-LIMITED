@@ -4,7 +4,9 @@ import { toast } from "sonner";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { applicationsApi, otpApi } from "../services/applicationsApi";
 import { mktAuth } from "../services/marketplaceApi";
-import { COUNTRIES, provincesForCountry, idDocumentTypesForCountry } from "../data/countries";
+import { COUNTRIES, provincesForCountry, alpha2ForCountry, idDocumentTypesForCountry } from "../data/countries";
+import { validatePostalCode, getCountryByCode, getPostalLabel } from "postal-code-checker";
+import { API_BASE } from "../services/config";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
@@ -47,17 +49,25 @@ function StepBar({ current }: { current: number }) {
 }
 
 // ─── Shared field components ──────────────────────────────────────────────────
-function InputField({ label, value, onChange, placeholder, type = "text", required }: {
+let datalistIdCounter = 0;
+
+function InputField({ label, value, onChange, placeholder, type = "text", required, suggestions }: {
   label: string; value: string; onChange: (v: string) => void;
-  placeholder?: string; type?: string; required?: boolean;
+  placeholder?: string; type?: string; required?: boolean; suggestions?: string[];
 }) {
+  const listId = useRef(suggestions ? `dl-${++datalistIdCounter}` : undefined).current;
   return (
     <div>
       <label className="block text-[11px] font-semibold text-gray-600 mb-1">
         {label}{required && <span className="text-red-500 ml-0.5">*</span>}
       </label>
-      <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
+      <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} list={listId}
         className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-emerald-400 bg-white transition-colors" />
+      {suggestions && listId && (
+        <datalist id={listId}>
+          {suggestions.map(s => <option key={s} value={s} />)}
+        </datalist>
+      )}
     </div>
   );
 }
@@ -135,6 +145,32 @@ function Step1({ onNext, updateForm }: { onNext: () => void; updateForm: (d: Rec
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const provinceOptions = provincesForCountry(country);
+  const countryAlpha2 = alpha2ForCountry(country);
+  const postalMeta = countryAlpha2 ? getCountryByCode(countryAlpha2) : null;
+  const postalExample = postalMeta?.examplePostalCodes[0] ?? "8001";
+  const postalLabel = countryAlpha2 ? getPostalLabel(countryAlpha2) : "Postal code";
+  const postalValid = !postal.trim() || !countryAlpha2 || validatePostalCode(countryAlpha2, postal.trim());
+  const [cityOptions, setCityOptions] = useState<string[]>([]);
+
+  // Real city suggestions for the selected country, fetched from the
+  // backend (server/src/routes/geoCurrency.ts's GET /api/geo/cities) --
+  // not bundled client-side, since the full real dataset is ~12MB
+  // unpacked. Deliberately queries by alpha2 code, not country name, to
+  // avoid the exact kind of name-mismatch bug already found and fixed
+  // in provincesForCountry() above. Best-effort: a failed fetch (offline,
+  // slow connection) just means no suggestions are offered, not a
+  // blocked form -- city remains a real, freely-editable text field
+  // either way.
+  useEffect(() => {
+    const alpha2 = alpha2ForCountry(country);
+    if (!alpha2) { setCityOptions([]); return; }
+    let cancelled = false;
+    fetch(`${API_BASE}/api/geo/cities?countryCode=${alpha2}`)
+      .then(r => r.json())
+      .then(r => { if (!cancelled && r.success) setCityOptions(r.data); })
+      .catch(() => { if (!cancelled) setCityOptions([]); });
+    return () => { cancelled = true; };
+  }, [country]);
 
   // Whenever the country changes, both the ID document type and the
   // province/state options may no longer make sense for the newly-
@@ -151,7 +187,7 @@ function Step1({ onNext, updateForm }: { onNext: () => void; updateForm: (d: Rec
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [country]);
 
-  const isValid = firstName.trim() && lastName.trim() && dob && idNumber.trim() && phone.length > 5 && email.includes("@") && addr1.trim() && city.trim() && postal.trim()
+  const isValid = firstName.trim() && lastName.trim() && dob && idNumber.trim() && phone.length > 5 && email.includes("@") && addr1.trim() && city.trim() && postal.trim() && postalValid
     && password.length >= 8 && password === confirmPassword;
 
   const handleNext = () => {
@@ -187,13 +223,16 @@ function Step1({ onNext, updateForm }: { onNext: () => void; updateForm: (d: Rec
         <div className="grid sm:grid-cols-2 gap-4">
           <InputField label="Address line 1" value={addr1} onChange={setAddr1} placeholder="Street address" required />
           <InputField label="Address line 2 (optional)" value={addr2} onChange={setAddr2} placeholder="Suburb / Unit" />
-          <InputField label="City" value={city} onChange={setCity} placeholder="Cape Town" required />
+          <InputField label="City" value={city} onChange={setCity} placeholder="Cape Town" required suggestions={cityOptions} />
           {provinceOptions.length > 0 ? (
             <SelectField label="Province / State / Region" value={province} onChange={setProvince} options={provinceOptions} />
           ) : (
             <InputField label="State / Province / Region" value={province} onChange={setProvince} placeholder="e.g. Ontario" />
           )}
-          <InputField label="Postal code" value={postal} onChange={setPostal} placeholder="8001" required />
+          <div>
+            <InputField label={postalLabel.charAt(0).toUpperCase() + postalLabel.slice(1)} value={postal} onChange={setPostal} placeholder={postalExample} required />
+            {postal.trim() && !postalValid && <p className="text-xs text-red-500 mt-1.5">Doesn't look like a valid {postalLabel} for {country}. Example: {postalExample}</p>}
+          </div>
         </div>
       </div>
       <div>

@@ -1,4 +1,5 @@
 import { Router, Request, Response } from "express";
+import { cities as WORLD_CITIES } from "world-cities-json";
 
 const router: ReturnType<typeof Router> = Router();
 
@@ -77,6 +78,46 @@ router.get("/detect", async (req: Request, res: Response): Promise<void> => {
 router.get("/countries", (_req: Request, res: Response): void => {
   const list = Object.entries(COUNTRY_CURRENCY).map(([countryCode, c]) => ({ countryCode, ...c }));
   res.json({ success: true, data: list });
+});
+
+/**
+ * GET /api/geo/cities?countryCode=ZA — real cities for a given country,
+ * sourced from world-cities-json (SimpleMaps World Cities Database,
+ * CC-BY-4.0), verified before use: 44,691 real cities total, spot-
+ * checked South Africa's real major cities (Johannesburg, Cape Town,
+ * Durban, Pretoria all present and correct) before building this
+ * endpoint around it. Deliberately queries by ISO alpha2 code, not a
+ * country name string -- name-matching between two independently-
+ * sourced datasets is exactly what caused a real, confirmed bug in the
+ * province feature (frontend's own countries.ts, "United States of
+ * America" vs "United States"), so this avoids repeating that by using
+ * the one identifier both this dataset and the frontend's ISO country
+ * list agree on unambiguously.
+ *
+ * Deliberately kept server-side rather than shipped to the client --
+ * the full dataset is ~12MB unpacked, an unacceptable frontend bundle
+ * size increase (the real ISO 3166-2 province data added for the
+ * previous feature was already an explicitly-accepted ~480KB
+ * tradeoff; a further 12MB was not). This endpoint filters
+ * server-side and returns only the relevant country's cities, capped
+ * at the 200 largest by population so a country with thousands of
+ * entries (e.g. the US has 5,393) doesn't return an unreasonably large
+ * response for what's meant to be an autocomplete/suggestion list, not
+ * an exhaustive one -- callers should still allow free-text entry for
+ * a town not in the list.
+ */
+router.get("/cities", (req: Request, res: Response): void => {
+  const { countryCode } = req.query as { countryCode?: string };
+  if (!countryCode) {
+    res.status(400).json({ success: false, error: "countryCode is required (ISO 3166-1 alpha-2, e.g. ZA)" });
+    return;
+  }
+  const matches = WORLD_CITIES
+    .filter(c => c.iso2 === countryCode.toUpperCase())
+    .sort((a, b) => (Number(b.population) || 0) - (Number(a.population) || 0))
+    .slice(0, 200)
+    .map(c => c.city);
+  res.json({ success: true, data: matches });
 });
 
 // ─── Live FX rates ───────────────────────────────────────────────────────────
