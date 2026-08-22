@@ -823,16 +823,32 @@ export function PersonalAccountApplicationViewer({ isOpen, onClose }: Props) {
     let didCreateLogin = false;
     let createLoginError: string | undefined;
     if (password && merged.email) {
-      const regResult = await mktAuth.registerCustomer({
-        username: merged.email,
-        password,
-        name: `${merged.firstName ?? ""} ${merged.lastName ?? ""}`.trim() || "Applicant",
-        email: merged.email,
-      });
-      if (regResult.success) {
-        didCreateLogin = true;
-      } else {
-        createLoginError = regResult.error ?? "Could not create your banking app login automatically.";
+      // registerCustomer() can genuinely throw, not just return
+      // { success: false } -- api()'s own `if (!res.ok) throw new
+      // Error(...)` converts any non-2xx response (e.g. a real 409 for
+      // "an account with that email already exists", the exact real
+      // case if this email was already used in an earlier attempt)
+      // into an actual exception. Previously uncaught here, which
+      // silently killed the rest of this function -- including
+      // setSubmitting(false) -- leaving the UI stuck on "submitting"
+      // forever with no error ever shown. Now handled the same honest
+      // way as any other login-creation failure: the application
+      // itself still succeeded, Step7 explains the login issue
+      // clearly, and the user is never left waiting indefinitely.
+      try {
+        const regResult = await mktAuth.registerCustomer({
+          username: merged.email,
+          password,
+          name: `${merged.firstName ?? ""} ${merged.lastName ?? ""}`.trim() || "Applicant",
+          email: merged.email,
+        });
+        if (regResult.success) {
+          didCreateLogin = true;
+        } else {
+          createLoginError = regResult.error ?? "Could not create your banking app login automatically.";
+        }
+      } catch (err) {
+        createLoginError = err instanceof Error ? err.message : "Could not create your banking app login automatically.";
       }
     }
 

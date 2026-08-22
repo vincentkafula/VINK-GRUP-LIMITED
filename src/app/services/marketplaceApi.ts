@@ -10,8 +10,14 @@ async function api<T>(path: string, opts: RequestInit = {}): Promise<T> {
   if (isDemoMode()) return mktDemoResponse(path, opts) as T;
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (_token) headers["Authorization"] = `Bearer ${_token}`;
+  // Previously no timeout existed here at all -- a genuinely stalled
+  // connection (not an error response, just no response ever) would
+  // hang indefinitely regardless of any try/catch at the call site,
+  // since neither resolve nor reject would ever fire.
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 20000);
   try {
-    const res = await fetch(`${BASE}${path}`, { ...opts, headers });
+    const res = await fetch(`${BASE}${path}`, { ...opts, headers, signal: controller.signal });
     const j = await res.json();
     if (!res.ok) throw new Error(j.error ?? `HTTP ${res.status}`);
     return j;
@@ -21,6 +27,8 @@ async function api<T>(path: string, opts: RequestInit = {}): Promise<T> {
       return mktDemoResponse(path, opts) as T;
     }
     throw err;
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 

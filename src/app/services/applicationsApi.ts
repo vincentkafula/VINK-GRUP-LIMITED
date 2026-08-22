@@ -72,6 +72,12 @@ export interface ApiResult<T = unknown> {
 import { getToken } from "./apiClient";
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<ApiResult<T> & { demoCode?: string }> {
+  // Previously no timeout existed at all -- a slow network or a
+  // stalled connection to the backend would leave the caller waiting
+  // indefinitely with no way to recover except reloading the page.
+  // 20s is generous for a real API call but still bounded.
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 20000);
   try {
     const token = getToken();
     const res = await fetch(`${BASE}${path}`, {
@@ -80,12 +86,18 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<ApiR
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...options.headers,
       },
+      signal: controller.signal,
       ...options,
     });
     const json = await res.json();
     return json as ApiResult<T> & { demoCode?: string };
   } catch (err) {
+    if (err instanceof Error && err.name === "AbortError") {
+      return { success: false, error: "The request took too long and timed out — please check your connection and try again." };
+    }
     return { success: false, error: "Network error — check your connection" };
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 
