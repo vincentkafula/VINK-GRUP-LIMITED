@@ -59,6 +59,19 @@ export const NATIONAL_ID_NAMES: Record<string, string> = {
   MC: "Monégasque Identity Card", MN: "Citizen Identity Card", ME: "Lična Karta",
   MA: "Carte Nationale d'Identité Électronique", MZ: "Bilhete de Identidade", MM: "Citizenship Scrutiny Card",
   NA: "National ID Card", NP: "National Identity Card", NL: "Identiteitskaart",
+  // Found and fixed after a real coverage gap was reported: these were
+  // all genuinely present in the same original Wikipedia source
+  // already fetched and read for this file, but missed during the
+  // first transcription pass -- re-verified each against that same
+  // source before adding, not guessed. Bangladesh in particular is a
+  // major omission (a real, compulsory, electronic biometric national
+  // ID -- "National Identity Card (NID-Card)" -- for a country of
+  // ~170 million people) that should never have been missed.
+  BD: "National Identity Card (NID)", DK: "Danish National Identity Card",
+  DM: "National Multipurpose Identification Card", GD: "Voter Identification Card",
+  KN: "National Identity Card", LC: "National Identity Card", WS: "Government Identity Card",
+  SB: "National Voter's Identity Card", TO: "National ID Card",
+  ET: "National Digital ID", CD: "National Identity Card",
   NI: "Cédula de Identidad", NE: "Carte Nationale d'Identité", NG: "National Identity Card",
   KP: "National Identity Card", MK: "Lična Karta", NO: "Norwegian National Identity Card",
   OM: "National Identity Card", PK: "Computerised National Identity Card (CNIC)", PS: "Palestinian Identity Card",
