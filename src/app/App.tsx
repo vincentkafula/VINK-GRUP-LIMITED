@@ -57,6 +57,8 @@ const InvestViewer                = lazy(() => import("./components/InvestViewer
 const InsureViewer                = lazy(() => import("./components/InsureViewer").then(m => ({ default: m.InsureViewer })));
 const RewardsViewer               = lazy(() => import("./components/RewardsViewer").then(m => ({ default: m.RewardsViewer })));
 const ServiceApplicationViewer    = lazy(() => import("./components/ServiceApplicationViewer").then(m => ({ default: m.ServiceApplicationViewer })));
+const VINKSIMApplicationViewer    = lazy(() => import("./components/VINKSIMApplicationViewer").then(m => ({ default: m.VINKSIMApplicationViewer })));
+const VehicleTrackingApplicationViewer = lazy(() => import("./components/VehicleTrackingApplicationViewer").then(m => ({ default: m.VehicleTrackingApplicationViewer })));
 const ProductSelectorViewer       = lazy(() => import("./components/ProductSelectorViewer").then(m => ({ default: m.ProductSelectorViewer })));
 const ClubBookingViewer           = lazy(() => import("./components/ClubBookingViewer").then(m => ({ default: m.ClubBookingViewer })));
 const StartMyBusinessViewer       = lazy(() => import("./components/StartMyBusinessViewer").then(m => ({ default: m.StartMyBusinessViewer })));
@@ -152,6 +154,7 @@ export default function App() {
   // ── Super App Ecosystem ────────────────────────────────────────────────────
   const [showAFCApp, setShowAFCApp]                         = useState(false);
   const [showVehicleTrackingApp, setShowVehicleTrackingApp] = useState(false);
+  const [showVehicleTrackingApplication, setShowVehicleTrackingApplication] = useState(false);
   const [showVinkBankingApp, setShowVinkBankingApp]         = useState(false);
   const [showVinkBusinessBankingApp, setShowVinkBusinessBankingApp] = useState(false);
   const [showVinkCorporateBankingApp, setShowVinkCorporateBankingApp] = useState(false);
@@ -597,7 +600,7 @@ export default function App() {
       else if (id === "driver")      { mount("vinkDriverApp");   setShowVinkDriverApp(true); }
       else if (id === "passenger")   { mount("vinkPassengerApp");setShowVinkPassengerApp(true); }
       else if (id === "afc")         { mount("afcApp");          setShowAFCApp(true); }
-      else if (id === "tracking")    { mount("vehicleTrackingApp"); setShowVehicleTrackingApp(true); }
+      else if (id === "tracking")    { mount("vehicleTrackingApplication"); setShowVehicleTrackingApplication(true); }
       else if (id === "food")        { mount("foodDelivery");    setShowFoodDelivery(true); }
       else if (id === "ride")        { mount("rideHailing");     setShowRideHailing(true); }
     });
@@ -777,7 +780,7 @@ export default function App() {
       {has("investApp")       && <Suspense fallback={null}><ServiceApplicationViewer serviceType="invest"   isOpen={showInvestApp}     onClose={() => setShowInvestApp(false)} /></Suspense>}
       {has("insureApp")       && <Suspense fallback={null}><ServiceApplicationViewer serviceType="insure"   isOpen={showInsureApp}     onClose={() => setShowInsureApp(false)} /></Suspense>}
       {has("rewardsApp")      && <Suspense fallback={null}><ServiceApplicationViewer serviceType="rewards"  isOpen={showRewardsApp}    onClose={() => setShowRewardsApp(false)} /></Suspense>}
-      {has("simApp")          && <Suspense fallback={null}><ServiceApplicationViewer serviceType="sim"      isOpen={showSIMServiceApp} onClose={() => setShowSIMServiceApp(false)} /></Suspense>}
+      {has("simApp")          && <Suspense fallback={null}><VINKSIMApplicationViewer isOpen={showSIMServiceApp} onClose={() => setShowSIMServiceApp(false)} /></Suspense>}
       {has("accountApp")      && <Suspense fallback={null}><ServiceApplicationViewer serviceType="account"  isOpen={showAccountApp}    onClose={() => setShowAccountApp(false)} /></Suspense>}
       {has("clubBooking")     && <Suspense fallback={null}><ClubBookingViewer      isOpen={showClubBooking}     onClose={() => setShowClubBooking(false)} /></Suspense>}
 
@@ -817,6 +820,7 @@ export default function App() {
       {has("afcApp")             && <Suspense fallback={null}><AFCApp                isOpen={showAFCApp}             onClose={() => setShowAFCApp(false)} /></Suspense>}
       {has("revenueDash")        && <Suspense fallback={null}><RevenueDashboard      isOpen={showRevenueDashboard}   onClose={() => setShowRevenueDashboard(false)} /></Suspense>}
       {has("vehicleTrackingApp") && <Suspense fallback={null}><VehicleTrackingApp    isOpen={showVehicleTrackingApp} onClose={() => setShowVehicleTrackingApp(false)} /></Suspense>}
+      {has("vehicleTrackingApplication") && <Suspense fallback={null}><VehicleTrackingApplicationViewer isOpen={showVehicleTrackingApplication} onClose={() => setShowVehicleTrackingApplication(false)} /></Suspense>}
       {has("vinkBankingApp")     && <Suspense fallback={null}><VinkBankingApp        isOpen={showVinkBankingApp}     onClose={() => setShowVinkBankingApp(false)} onOpenManagementPanel={() => { mount("managementPanel"); setShowManagementPanel(true); }} onOpenAdminPanel={() => { mount("banking"); setShowBanking(true); }} /></Suspense>}
       {has("vinkBusinessBankingApp") && <Suspense fallback={null}><VinkBusinessBankingApp isOpen={showVinkBusinessBankingApp} onClose={() => setShowVinkBusinessBankingApp(false)} /></Suspense>}
       {has("vinkCorporateBankingApp") && <Suspense fallback={null}><VinkCorporateBankingApp isOpen={showVinkCorporateBankingApp} onClose={() => setShowVinkCorporateBankingApp(false)} /></Suspense>}
