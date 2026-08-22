@@ -796,7 +796,7 @@ function RewardsScreen() {
   );
 }
 
-export function VinkBankingApp({ isOpen, onClose, onOpenManagementPanel, onOpenAdminPanel }: { isOpen: boolean; onClose: () => void; onOpenManagementPanel?: () => void; onOpenAdminPanel?: () => void }) {
+export function VinkBankingApp({ isOpen, onClose, onOpenManagementPanel, onOpenAdminPanel, initialScreen }: { isOpen: boolean; onClose: () => void; onOpenManagementPanel?: () => void; onOpenAdminPanel?: () => void; initialScreen?: Screen }) {
   const [screen, setScreen] = useState<Screen>("onboarding");
   const [tier, setTier] = useState<Tier>("Spark");
   const [verifying, setVerifying] = useState(false);
@@ -825,6 +825,17 @@ export function VinkBankingApp({ isOpen, onClose, onOpenManagementPanel, onOpenA
       setAuthUser(restored.user);
       const tok = getMktToken();
       if (tok) { setToken(tok); setMainSession(restored.user); }
+      // Real bug fixed here: this never actually skipped onboarding for
+      // an already-authenticated user before -- screen stayed at its
+      // "onboarding" default regardless of whether a real session was
+      // just restored, so a customer who'd just registered and clicked
+      // through from the real dashboard would see the tier-selection
+      // screen again every time, as if they'd never signed up.
+      // initialScreen (set by whichever dashboard tile opened this app,
+      // e.g. "send" for the Transfer tile) only takes effect here, once
+      // a real session is confirmed -- never as a way to skip
+      // authentication for someone who isn't actually logged in.
+      setScreen(initialScreen ?? "home");
     } else if (restored) {
       // A restored admin/superadmin session auto-redirecting here on every
       // mount is exactly what broke testing both accounts: whichever one

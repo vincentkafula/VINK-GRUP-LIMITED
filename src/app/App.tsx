@@ -158,6 +158,7 @@ export default function App() {
   const [showVehicleTrackingApp, setShowVehicleTrackingApp] = useState(false);
   const [showVehicleTrackingApplication, setShowVehicleTrackingApplication] = useState(false);
   const [showVinkBankingApp, setShowVinkBankingApp]         = useState(false);
+  const [vinkBankingAppInitialScreen, setVinkBankingAppInitialScreen] = useState<"home" | "send" | "cards" | "history" | "rewards" | undefined>(undefined);
   const [showVinkBusinessBankingApp, setShowVinkBusinessBankingApp] = useState(false);
   const [showVinkCorporateBankingApp, setShowVinkCorporateBankingApp] = useState(false);
   const [showVinkDriverApp, setShowVinkDriverApp]           = useState(false);
@@ -328,9 +329,9 @@ export default function App() {
         case "managementPanel": mount("managementPanel"); setShowManagementPanel(true); break;
         case "payments":
         case "transfer":
-        case "cardless":
-        case "qr":
-        case "login":        mount("vinkBankingApp");   setShowVinkBankingApp(true);   break;
+        case "cardless":     setVinkBankingAppInitialScreen("send"); mount("vinkBankingApp"); setShowVinkBankingApp(true); break;
+        case "qr":           setVinkBankingAppInitialScreen("home"); mount("vinkBankingApp"); setShowVinkBankingApp(true); break;
+        case "login":        setVinkBankingAppInitialScreen(undefined); mount("vinkBankingApp"); setShowVinkBankingApp(true); break;
         case "cards":        mount("creditCard");       setShowCreditCard(true);       break;
         case "forex":        mount("globalBanking");    setShowGlobalBanking(true);    break;
         // Insurance & Rewards
@@ -599,7 +600,7 @@ export default function App() {
   const handleMobileNavigate = (id: string) => {
     startTransition(() => {
       setShowVinkMobileApp(false);
-      if      (id === "banking")     { mount("vinkBankingApp");  setShowVinkBankingApp(true); }
+      if      (id === "banking")     { setVinkBankingAppInitialScreen(undefined); mount("vinkBankingApp");  setShowVinkBankingApp(true); }
       else if (id === "driver")      { mount("vinkDriverApp");   setShowVinkDriverApp(true); }
       else if (id === "passenger")   { mount("vinkPassengerApp");setShowVinkPassengerApp(true); }
       else if (id === "afc")         { mount("afcApp");          setShowAFCApp(true); }
@@ -825,7 +826,7 @@ export default function App() {
       {has("revenueDash")        && <Suspense fallback={null}><RevenueDashboard      isOpen={showRevenueDashboard}   onClose={() => setShowRevenueDashboard(false)} /></Suspense>}
       {has("vehicleTrackingApp") && <Suspense fallback={null}><VehicleTrackingApp    isOpen={showVehicleTrackingApp} onClose={() => setShowVehicleTrackingApp(false)} /></Suspense>}
       {has("vehicleTrackingApplication") && <Suspense fallback={null}><VehicleTrackingApplicationViewer isOpen={showVehicleTrackingApplication} onClose={() => setShowVehicleTrackingApplication(false)} /></Suspense>}
-      {has("vinkBankingApp")     && <Suspense fallback={null}><VinkBankingApp        isOpen={showVinkBankingApp}     onClose={() => setShowVinkBankingApp(false)} onOpenManagementPanel={() => { mount("managementPanel"); setShowManagementPanel(true); }} onOpenAdminPanel={() => { mount("banking"); setShowBanking(true); }} /></Suspense>}
+      {has("vinkBankingApp")     && <Suspense fallback={null}><VinkBankingApp        isOpen={showVinkBankingApp}     onClose={() => setShowVinkBankingApp(false)} onOpenManagementPanel={() => { mount("managementPanel"); setShowManagementPanel(true); }} onOpenAdminPanel={() => { mount("banking"); setShowBanking(true); }} initialScreen={vinkBankingAppInitialScreen} /></Suspense>}
       {has("vinkBusinessBankingApp") && <Suspense fallback={null}><VinkBusinessBankingApp isOpen={showVinkBusinessBankingApp} onClose={() => setShowVinkBusinessBankingApp(false)} /></Suspense>}
       {has("vinkCorporateBankingApp") && <Suspense fallback={null}><VinkCorporateBankingApp isOpen={showVinkCorporateBankingApp} onClose={() => setShowVinkCorporateBankingApp(false)} /></Suspense>}
       {has("vinkDriverApp")      && <Suspense fallback={null}><VinkDriverApp         isOpen={showVinkDriverApp}      onClose={() => setShowVinkDriverApp(false)} /></Suspense>}
@@ -837,7 +838,7 @@ export default function App() {
           if (id === "afc")       { mount("afcApp");             setShowAFCApp(true); }
           if (id === "revenue")   { mount("revenueDash");        setShowRevenueDashboard(true); }
           if (id === "tracking")  { mount("vehicleTrackingApp"); setShowVehicleTrackingApp(true); }
-          if (id === "banking")   { mount("vinkBankingApp");     setShowVinkBankingApp(true); }
+          if (id === "banking")   { setVinkBankingAppInitialScreen(undefined); mount("vinkBankingApp");     setShowVinkBankingApp(true); }
           if (id === "driver")    { mount("vinkDriverApp");      setShowVinkDriverApp(true); }
           if (id === "passenger") { mount("vinkPassengerApp");   setShowVinkPassengerApp(true); }
           if (id === "food")      { mount("foodDelivery");       setShowFoodDelivery(true); }
