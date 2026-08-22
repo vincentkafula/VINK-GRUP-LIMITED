@@ -8,7 +8,7 @@ import { COUNTRIES, provincesForCountry, alpha2ForCountry, idDocumentTypesForCou
 import { validatePostalCode, getCountryByCode, getPostalLabel } from "postal-code-checker";
 import { API_BASE } from "../services/config";
 
-interface Props { isOpen: boolean; onClose: () => void; }
+interface Props { isOpen: boolean; onClose: () => void; onGoToDashboard?: () => void; }
 
 const BLUE = "#1B6FD8";
 
@@ -639,8 +639,8 @@ function Step6({ onNext, onBack, submitting }: { onNext: (data: Record<string, s
 }
 
 // ─── Step 7 — Account Opened (matches image) ─────────────────────────────────
-function Step7({ onClose, referenceNumber, accountNumber, loginUsername, loginCreated, loginError }: {
-  onClose: () => void; referenceNumber: string; accountNumber: string; loginUsername: string; loginCreated: boolean; loginError: string;
+function Step7({ onClose, onGoToDashboard, referenceNumber, accountNumber, loginUsername, loginCreated, loginError }: {
+  onClose: () => void; onGoToDashboard: () => void; referenceNumber: string; accountNumber: string; loginUsername: string; loginCreated: boolean; loginError: string;
 }) {
   const SUMMARY_ITEMS = [
     "Identity verified via OTP, fingerprint and selfie",
@@ -752,17 +752,25 @@ function Step7({ onClose, referenceNumber, accountNumber, loginUsername, loginCr
         </div>
       </div>
 
-      <button onClick={onClose}
-        className="w-full py-3 rounded-lg text-sm font-bold text-white transition-all hover:opacity-90 border-0"
-        style={{ background: BLUE }}>
-        Done — Go to Home
-      </button>
+      {loginCreated ? (
+        <button onClick={onGoToDashboard}
+          className="w-full py-3 rounded-lg text-sm font-bold text-white transition-all hover:opacity-90 border-0"
+          style={{ background: BLUE }}>
+          Go to Your Dashboard
+        </button>
+      ) : (
+        <button onClick={onClose}
+          className="w-full py-3 rounded-lg text-sm font-bold text-white transition-all hover:opacity-90 border-0"
+          style={{ background: BLUE }}>
+          Done — Go to Home
+        </button>
+      )}
     </div>
   );
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
-export function PersonalAccountApplicationViewer({ isOpen, onClose }: Props) {
+export function PersonalAccountApplicationViewer({ isOpen, onClose, onGoToDashboard }: Props) {
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState<Record<string, string>>({});
@@ -904,7 +912,7 @@ export function PersonalAccountApplicationViewer({ isOpen, onClose }: Props) {
               submitting={submitting}
             />
           )}
-          {step === 7 && <Step7 onClose={onClose} referenceNumber={referenceNumber} accountNumber={accountNumber} loginUsername={loginUsername} loginCreated={loginCreated} loginError={loginError} />}
+          {step === 7 && <Step7 onClose={onClose} onGoToDashboard={onGoToDashboard ?? onClose} referenceNumber={referenceNumber} accountNumber={accountNumber} loginUsername={loginUsername} loginCreated={loginCreated} loginError={loginError} />}
         </div>
       </div>
     </div>

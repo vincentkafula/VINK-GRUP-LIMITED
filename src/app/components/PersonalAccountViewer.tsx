@@ -9,7 +9,7 @@ import { MarketplaceAuthModal } from "./MarketplaceAuthModal";
 import { mktAuth, mktCustomer, type MktAuthUser } from "../services/marketplaceApi";
 import { formatZAR, useCurrency, setCountryManually } from "../services/currencyStore";
 
-interface Props { isOpen: boolean; onClose: () => void; onNavigate: (category: "creditCard" | "loan" | "invest" | "insure" | "rewards") => void }
+interface Props { isOpen: boolean; onClose: () => void; onNavigate: (category: "creditCard" | "loan" | "invest" | "insure" | "rewards") => void; onOpenBankingApp?: () => void }
 
 interface Account {
   id: string;
@@ -187,7 +187,7 @@ function AccountDetailModal({ acct, onClose, onApply }: { acct: Account; onClose
   );
 }
 
-export function PersonalAccountViewer({ isOpen, onClose, onNavigate }: Props) {
+export function PersonalAccountViewer({ isOpen, onClose, onNavigate, onOpenBankingApp }: Props) {
   const currency = useCurrency(); // subscribes this tree to live currency/rate updates
   const [showApplication, setShowApplication] = useState(false);
   const [detailAccount, setDetailAccount] = useState<Account | null>(null);
@@ -392,6 +392,7 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate }: Props) {
       <PersonalAccountApplicationViewer
         isOpen={showApplication}
         onClose={() => setShowApplication(false)}
+        onGoToDashboard={onOpenBankingApp ? () => { setShowApplication(false); onOpenBankingApp(); } : undefined}
       />
 
       {showAuthModal && (
