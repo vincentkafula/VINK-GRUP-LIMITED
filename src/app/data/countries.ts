@@ -22,6 +22,7 @@ import { iso31661 } from "iso-3166/1.js";
 import { iso31662 } from "iso-3166/2.js";
 import nationalityLib from "i18n-nationality";
 import nationalityEn from "i18n-nationality/langs/en.json";
+import { NATIONAL_ID_NAMES } from "./idDocumentNames";
 
 // Per this package's own documented browser-environment usage: locales
 // must be explicitly registered before getName()/getNames() work.
@@ -147,20 +148,30 @@ export function nationalityForCountry(countryDisplayName: string): string | unde
   return NATIONALITY_NAMES[alpha2];
 }
 
-export type IdDocumentType = "South African ID" | "Passport" | "Asylum Seeker Permit" | "Work Permit" | "Refugee ID";
+export type IdDocumentType = string;
 
 /**
  * Which identity document types actually make sense for a given
- * country -- a South African ID is only a real, valid document for
- * someone in/from South Africa; a foreign national from any other
- * country wouldn't have one. Confirmed reasoning, not arbitrary: this
- * mirrors the same real distinction RICA registration already draws
- * elsewhere in this codebase (server/src/services/saIdValidator.ts and
- * ricaRouter.ts) between an SA ID and a passport/refugee document.
+ * country -- previously only distinguished South Africa (with its own
+ * real ID type) from every other country (Passport/Asylum/Refugee/
+ * Work Permit only, regardless of what that country's own national ID
+ * is actually called). Now uses NATIONAL_ID_NAMES
+ * (idDocumentNames.ts), the real, per-country ID document names
+ * transcribed from a cited Wikipedia source -- so an applicant from
+ * any of the ~180 countries with a real national ID sees the actual
+ * name of their own country's document, not just South Africa's.
+ * Countries confirmed by that same source to have NO national ID card
+ * (the US, UK, Canada, Australia, New Zealand, and a few others,
+ * listed in CONFIRMED_NO_NATIONAL_ID) correctly get Passport-only
+ * options, rather than a fabricated "National ID" that doesn't
+ * correspond to anything real for that country.
  */
 export function idDocumentTypesForCountry(country: string): IdDocumentType[] {
-  if (country === "South Africa") {
-    return ["South African ID", "Passport"];
+  const alpha2 = NAME_TO_ALPHA2.get(country);
+  const realIdName = alpha2 ? NATIONAL_ID_NAMES[alpha2] : undefined;
+
+  if (realIdName) {
+    return [realIdName, "Passport", "Asylum Seeker Permit", "Refugee ID", "Work Permit"];
   }
   return ["Passport", "Asylum Seeker Permit", "Refugee ID", "Work Permit"];
 }
