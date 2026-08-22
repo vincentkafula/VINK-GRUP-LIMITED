@@ -333,15 +333,28 @@ export default function App() {
         case "qr":           setVinkBankingAppInitialScreen("home"); mount("vinkBankingApp"); setShowVinkBankingApp(true); break;
         case "login":        setVinkBankingAppInitialScreen(undefined); mount("vinkBankingApp"); setShowVinkBankingApp(true); break;
         case "cards":        mount("creditCard");       setShowCreditCard(true);       break;
-        case "forex":        mount("globalBanking");    setShowGlobalBanking(true);    break;
+        // "Forex" previously opened GlobalBankingDashboard -- confirmed
+        // that's a genuine treasury/operations tool ("Unified
+        // Reference Account -> 5-country Nostro layer -> Core Engine
+        // (FX + Compliance)", its own file header), not a consumer
+        // feature. No dedicated personal-consumer forex screen exists
+        // yet, so this stays on the consumer dashboard.
+        case "forex":        mount("postLogin");        setShowPostLogin(true);        break;
         // Insurance & Rewards
         case "guardme":
         case "insurance":    mount("insure");           setShowInsure(true);           break;
         case "rewards":      mount("rewards");          setShowRewards(true);          break;
-        // Connectivity
+        // Connectivity -- "Connect" and "VINK TV" previously opened
+        // MobileNetworkDashboard, a genuine backoffice NOC/operations
+        // tool (tower stats, subscriber KPIs, fraud summaries) meant
+        // for telecom staff, not customers -- confirmed by checking
+        // that dashboard's own real content before concluding this
+        // was a real leak, not assumed. No real consumer-facing
+        // feature exists for these tiles yet, so they stay on the
+        // consumer dashboard rather than open a staff tool.
         case "connect":
         case "mobile":
-        case "vinktv":        mount("mobileNetwork");    setShowMobileNetwork(true);    break;
+        case "vinktv":       mount("postLogin");        setShowPostLogin(true);        break;
         // Commerce
         case "marketplace":  mount("marketplaceLanding"); setShowMarketplaceLanding(true); pushRoute("/marketplace"); break;
         case "buy":
@@ -349,8 +362,11 @@ export default function App() {
         // Contact & Support
         case "message":
         case "contact":      mount("contactUs");        setShowContactUs(true);        break;
-        // Elections / fallback
-        case "elections":    mount("globalBanking");    setShowGlobalBanking(true);    break;
+        // "Elections" previously opened the same treasury dashboard as
+        // "forex" above (same GlobalBankingDashboard mismatch) -- no
+        // dedicated feature exists for this at all, so it now behaves
+        // the same as the default fallback.
+        case "elections":    mount("postLogin");        setShowPostLogin(true);        break;
         default:             mount("postLogin");        setShowPostLogin(true);        break;
       }
     });
