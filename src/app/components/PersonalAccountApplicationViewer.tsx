@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { applicationsApi, otpApi } from "../services/applicationsApi";
 import { mktAuth } from "../services/marketplaceApi";
-import { COUNTRIES, provincesForCountry, alpha2ForCountry, idDocumentTypesForCountry, NATIONALITIES } from "../data/countries";
+import { COUNTRIES, provincesForCountry, alpha2ForCountry, idDocumentTypesForCountry, NATIONALITIES, callingCodeForCountry } from "../data/countries";
 import { validatePostalCode, getCountryByCode, getPostalLabel } from "postal-code-checker";
 import { API_BASE } from "../services/config";
 
@@ -136,6 +136,7 @@ function Step1({ onNext, updateForm }: { onNext: () => void; updateForm: (d: Rec
   const [idNumber, setIdNumber] = useState("");
   const [marital, setMarital] = useState("Single");
   const [phone, setPhone] = useState("+27 ");
+  const lastAutoFilledPrefix = useRef("+27 ");
   const [email, setEmail] = useState("");
   const [addr1, setAddr1] = useState("");
   const [addr2, setAddr2] = useState("");
@@ -184,6 +185,20 @@ function Step1({ onNext, updateForm }: { onNext: () => void; updateForm: (d: Rec
     }
     const realProvinces = provincesForCountry(country);
     setProvince(realProvinces.length ? realProvinces[0] : "");
+
+    // Real calling code for the selected country -- only overwrites
+    // the phone field if it still exactly matches the previously
+    // auto-filled prefix (i.e. the applicant hasn't typed a real
+    // number yet). Once they've typed anything beyond that prefix,
+    // switching country again must not destroy what they entered.
+    const callingCode = callingCodeForCountry(country);
+    if (callingCode) {
+      const newPrefix = `+${callingCode} `;
+      if (phone === lastAutoFilledPrefix.current) {
+        setPhone(newPrefix);
+      }
+      lastAutoFilledPrefix.current = newPrefix;
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [country]);
 

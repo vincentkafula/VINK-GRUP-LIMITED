@@ -95,13 +95,29 @@ export const NATIONAL_ID_NAMES: Record<string, string> = {
   VN: "Căn Cước (Citizen Identity Card)", YE: "National Identity Card", ZM: "National Registration Card",
   ZW: "National Registration Card", VA: "Vatican City Identity Card", EH: "Sahrawi National Identity Card",
   FI: "Finnish National Identity Card",
+  // Confirmed genuinely no compulsory "national ID card" for these
+  // three (multiple independent, recent sources agree), but each has
+  // a real, distinct, government-issued identity document commonly
+  // used in its place -- verified via direct research before adding,
+  // not assumed. The US Passport Card is confirmed in the same
+  // original Wikipedia source already used for this file ("as for
+  // Ireland, the U.S. passport card is issued...") -- a real,
+  // separate, wallet-sized document from the standard passport book,
+  // not the same thing relabeled. The UK's own current guidance
+  // (multiple 2026 sources) confirms the photocard driving licence is
+  // the real, primary alternative UK residents actually use since the
+  // 2010 ID card scheme was abolished. Australia's own government
+  // guidance similarly points to state-issued photo ID/driver
+  // licences as the real substitute.
+  US: "US Passport Card", GB: "UK Photocard Driving Licence", AU: "Photo ID Card / Driver Licence",
 };
 
 // Countries confirmed by the same cited Wikipedia source to have NO
-// national identity card at all -- listed explicitly so this is a
+// national identity card at all, AND no confirmed real alternative
+// document researched for this file -- listed explicitly so this is a
 // deliberate, sourced omission, not an oversight. idDocumentTypesForCountry()
 // in countries.ts correctly offers Passport-only (plus the other real
 // options) for these, never a fabricated "National ID".
 export const CONFIRMED_NO_NATIONAL_ID = new Set([
-  "US", "GB", "CA", "AU", "NZ", "BS", "NR", "TV", "AD",
+  "CA", "NZ", "BS", "NR", "TV", "AD",
 ]);

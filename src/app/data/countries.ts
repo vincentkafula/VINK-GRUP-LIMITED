@@ -23,6 +23,7 @@ import { iso31662 } from "iso-3166/2.js";
 import nationalityLib from "i18n-nationality";
 import nationalityEn from "i18n-nationality/langs/en.json";
 import { NATIONAL_ID_NAMES } from "./idDocumentNames";
+import { customList as countryCodesCustomList } from "country-codes-list";
 
 // Per this package's own documented browser-environment usage: locales
 // must be explicitly registered before getName()/getNames() work.
@@ -158,13 +159,20 @@ export type IdDocumentType = string;
  * is actually called). Now uses NATIONAL_ID_NAMES
  * (idDocumentNames.ts), the real, per-country ID document names
  * transcribed from a cited Wikipedia source -- so an applicant from
- * any of the ~180 countries with a real national ID sees the actual
- * name of their own country's document, not just South Africa's.
- * Countries confirmed by that same source to have NO national ID card
- * (the US, UK, Canada, Australia, New Zealand, and a few others,
+ * any of the ~190 countries with a real named identity document sees
+ * the actual name of their own country's document, not just South
+ * Africa's. Countries confirmed by that same source to have no
+ * compulsory national ID card AND no other researched real
+ * alternative (Canada, New Zealand, and a few small island nations,
  * listed in CONFIRMED_NO_NATIONAL_ID) correctly get Passport-only
  * options, rather than a fabricated "National ID" that doesn't
- * correspond to anything real for that country.
+ * correspond to anything real for that country. The US, UK, and
+ * Australia also have no compulsory national ID card, but each has a
+ * real, distinct, government-issued alternative document (US Passport
+ * Card, UK photocard driving licence, Australian photo ID/driver
+ * licence) -- researched and confirmed individually, so they're listed
+ * in NATIONAL_ID_NAMES with that real document rather than treated the
+ * same as a country with no real option at all.
  */
 export function idDocumentTypesForCountry(country: string): IdDocumentType[] {
   const alpha2 = NAME_TO_ALPHA2.get(country);
@@ -174,5 +182,23 @@ export function idDocumentTypesForCountry(country: string): IdDocumentType[] {
     return [realIdName, "Passport", "Asylum Seeker Permit", "Refugee ID", "Work Permit"];
   }
   return ["Passport", "Asylum Seeker Permit", "Refugee ID", "Work Permit"];
+}
+
+const CALLING_CODES: Record<string, string> = countryCodesCustomList("countryCode", "{countryCallingCode}");
+
+/**
+ * Real international calling code for a country display name (e.g.
+ * "South Africa" -> "27", "United States" -> "1"), from
+ * country-codes-list (MIT, sourced from Wikipedia/ITU-T E.164).
+ * Verified against 18 known-correct codes across every populated
+ * continent before use (South Africa, Zambia, US, UK, France,
+ * Germany, Japan, China, India, Brazil, Australia, Nigeria, Kenya,
+ * Mexico, Russia, Canada, UAE, Bangladesh) -- all correct. Returns the
+ * code without a leading "+"; calling code always includes it.
+ */
+export function callingCodeForCountry(country: string): string | undefined {
+  const alpha2 = NAME_TO_ALPHA2.get(country);
+  if (!alpha2) return undefined;
+  return CALLING_CODES[alpha2];
 }
 
