@@ -301,7 +301,7 @@ export default function App() {
       else if (id === "business")          { mount("banking");          setShowBanking(true); }
       else if (id === "ridehailing")       { mount("rideHailing");      setShowRideHailing(true); }
       else if (id === "account")           { mount("postLogin");        setShowPostLogin(true); }
-      else if (id === "managementPanel")   { mount("managementPanel");  setShowManagementPanel(true); }
+      else if (id === "managementPanel")   { mount("managementPanel");  setShowManagementPanel(true); pushRoute("/management-panel"); }
       else if (id === "adminBankingPanel") { mount("banking");          setShowBanking(true); }
       else if (id === "vehicle")           { mount("vehicle");          setShowVehicle(true); }
       else if (id === "marketplace")       { mount("marketplaceLanding"); setShowMarketplaceLanding(true); pushRoute("/marketplace"); }
@@ -326,7 +326,7 @@ export default function App() {
         case "restaurant":   mount("foodDelivery");     setShowFoodDelivery(true);     break;
         // Banking & Payments
         case "account":      setVinkBankingAppInitialScreen(undefined); mount("vinkBankingApp"); setShowVinkBankingApp(true); break;
-        case "managementPanel": mount("managementPanel"); setShowManagementPanel(true); break;
+        case "managementPanel": mount("managementPanel"); setShowManagementPanel(true); pushRoute("/management-panel"); break;
         case "payments":
         case "transfer":
         case "cardless":     setVinkBankingAppInitialScreen("send"); mount("vinkBankingApp"); setShowVinkBankingApp(true); break;
@@ -597,6 +597,7 @@ export default function App() {
     if (path === "/contact-us") { mount("contactUs"); setShowContactUs(true); return true; }
     if (path === "/news") { mount("news"); setShowNews(true); return true; }
     if (path === "/marketplace") { mount("marketplaceLanding"); setShowMarketplaceLanding(true); return true; }
+    if (path === "/management-panel") { mount("managementPanel"); setShowManagementPanel(true); return true; }
     return false;
   };
 
@@ -780,11 +781,11 @@ export default function App() {
       {has("investorDashboard") && <Suspense fallback={null}><InvestorFleetDashboardViewer isOpen={showInvestorDashboard} onClose={() => setShowInvestorDashboard(false)} investorName={getSession()?.name} onOpenRevenueDashboard={() => { mount("revenueDash"); setShowRevenueDashboard(true); }} /></Suspense>}
       {has("vinkGoDashboard")  && <Suspense fallback={null}><VinkGoDashboardViewer  isOpen={showVinkGoDashboard}  onClose={() => setShowVinkGoDashboard(false)} passengerName={getSession()?.name} onOpenRideHailing={() => { mount("rideHailing"); setShowRideHailing(true); }} onOpenFlightBooking={() => setShowFlightBookingFromVinkGo(true)} onOpenAccessibleTransport={() => { mount("rider"); setShowRider(true); }} /></Suspense>}
       {showFlightBookingFromVinkGo && <Suspense fallback={null}><FlightBookingViewerForVinkGo isOpen={showFlightBookingFromVinkGo} onClose={() => setShowFlightBookingFromVinkGo(false)} /></Suspense>}
-      {has("managementPanel") && <Suspense fallback={null}><ManagementPanelViewer  isOpen={showManagementPanel} onClose={() => setShowManagementPanel(false)} adminName={getSession()?.name} adminRole={getSession()?.role === "superadmin" ? "Super Administrator" : getSession()?.role === "owner" ? "System Owner" : getSession()?.role} role={getSession()?.role} onOpenNewsManagement={() => { mount("newsManagement"); setShowNewsManagement(true); }} /></Suspense>}
+      {has("managementPanel") && <Suspense fallback={null}><ManagementPanelViewer  isOpen={showManagementPanel} onClose={() => { setShowManagementPanel(false); pushRoute("/"); }} adminName={getSession()?.name} adminRole={getSession()?.role === "superadmin" ? "Super Administrator" : getSession()?.role === "owner" ? "System Owner" : getSession()?.role} role={getSession()?.role} onOpenNewsManagement={() => { mount("newsManagement"); setShowNewsManagement(true); }} /></Suspense>}
       {has("newsManagement")   && <Suspense fallback={null}><NewsManagementDashboard isOpen={showNewsManagement} onClose={() => setShowNewsManagement(false)} /></Suspense>}
       {has("vehicle")         && <Suspense fallback={null}><VehicleTrackingDashboard isOpen={showVehicle}       onClose={() => setShowVehicle(false)} /></Suspense>}
       {has("marketplaceLanding") && <Suspense fallback={null}><MarketplaceLandingViewer isOpen={showMarketplaceLanding} onClose={() => { setShowMarketplaceLanding(false); pushRoute("/"); }} onShop={(productId) => { setMarketplaceInitialAction(null); setMarketplaceInitialProductId(productId ?? null); setShowMarketplaceLanding(false); mount("marketplace"); setShowMarketplace(true); }} onSell={() => { setMarketplaceInitialAction("sell"); setMarketplaceInitialProductId(null); setShowMarketplaceLanding(false); mount("marketplace"); setShowMarketplace(true); }} /></Suspense>}
-      {has("marketplace")     && <Suspense fallback={null}><VinkMarketplace        isOpen={showMarketplace}     onClose={() => { setShowMarketplace(false); pushRoute("/"); }} initialAction={marketplaceInitialAction} initialProductId={marketplaceInitialProductId} onOpenManagementPanel={() => { mount("managementPanel"); setShowManagementPanel(true); }} /></Suspense>}
+      {has("marketplace")     && <Suspense fallback={null}><VinkMarketplace        isOpen={showMarketplace}     onClose={() => { setShowMarketplace(false); pushRoute("/"); }} initialAction={marketplaceInitialAction} initialProductId={marketplaceInitialProductId} onOpenManagementPanel={() => { mount("managementPanel"); setShowManagementPanel(true); pushRoute("/management-panel"); }} /></Suspense>}
 
       {/* Personal products */}
       {has("personalLanding") && <Suspense fallback={null}><PersonalLandingViewer isOpen={showPersonalLanding} onClose={() => { setShowPersonalLanding(false); pushRoute("/"); }} onNavigate={(item) => { setShowPersonalLanding(false); handleSubNavClick(item); }} onApplyClick={() => { setShowPersonalLanding(false); handleSubNavClick("Account"); }} onSecurityClick={() => { mount("safetySecurity"); setShowSafetySecurity(true); }} /></Suspense>}
@@ -842,7 +843,7 @@ export default function App() {
       {has("revenueDash")        && <Suspense fallback={null}><RevenueDashboard      isOpen={showRevenueDashboard}   onClose={() => setShowRevenueDashboard(false)} /></Suspense>}
       {has("vehicleTrackingApp") && <Suspense fallback={null}><VehicleTrackingApp    isOpen={showVehicleTrackingApp} onClose={() => setShowVehicleTrackingApp(false)} /></Suspense>}
       {has("vehicleTrackingApplication") && <Suspense fallback={null}><VehicleTrackingApplicationViewer isOpen={showVehicleTrackingApplication} onClose={() => setShowVehicleTrackingApplication(false)} /></Suspense>}
-      {has("vinkBankingApp")     && <Suspense fallback={null}><VinkBankingApp        isOpen={showVinkBankingApp}     onClose={() => setShowVinkBankingApp(false)} onOpenManagementPanel={() => { mount("managementPanel"); setShowManagementPanel(true); }} onOpenAdminPanel={() => { mount("banking"); setShowBanking(true); }} initialScreen={vinkBankingAppInitialScreen} /></Suspense>}
+      {has("vinkBankingApp")     && <Suspense fallback={null}><VinkBankingApp        isOpen={showVinkBankingApp}     onClose={() => setShowVinkBankingApp(false)} onOpenManagementPanel={() => { mount("managementPanel"); setShowManagementPanel(true); pushRoute("/management-panel"); }} onOpenAdminPanel={() => { mount("banking"); setShowBanking(true); }} initialScreen={vinkBankingAppInitialScreen} /></Suspense>}
       {has("vinkBusinessBankingApp") && <Suspense fallback={null}><VinkBusinessBankingApp isOpen={showVinkBusinessBankingApp} onClose={() => setShowVinkBusinessBankingApp(false)} /></Suspense>}
       {has("vinkCorporateBankingApp") && <Suspense fallback={null}><VinkCorporateBankingApp isOpen={showVinkCorporateBankingApp} onClose={() => setShowVinkCorporateBankingApp(false)} /></Suspense>}
       {has("vinkDriverApp")      && <Suspense fallback={null}><VinkDriverApp         isOpen={showVinkDriverApp}      onClose={() => setShowVinkDriverApp(false)} /></Suspense>}

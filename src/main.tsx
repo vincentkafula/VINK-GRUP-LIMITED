@@ -31,6 +31,28 @@ if (!root) throw new Error("No #root element found in index.html");
 
 initCurrency();
 
+// Registers the service worker required for Chrome/Edge to offer
+// "Install app" (Windows desktop install). Guarded to production/HTTPS —
+// `vite dev` doesn't serve /sw.js from the right scope, and localhost
+// already satisfies Chrome's installability checks without one.
+if ("serviceWorker" in navigator && import.meta.env.PROD) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch((err) => {
+      console.warn("[pwa] Service worker registration failed:", err);
+    });
+  });
+}
+
+// The Management Panel installs as its own desktop app, distinct from the
+// main VINK Bank consumer app — same origin, but its own name/icon/
+// start_url via a separate manifest. Swapping the <link rel="manifest">
+// href based on the current path is what lets "Install app" pick up the
+// right one when an admin installs while on /management-panel.
+if (window.location.pathname === "/management-panel") {
+  const manifestLink = document.querySelector('link[rel="manifest"]');
+  if (manifestLink) manifestLink.setAttribute("href", "/manifest-admin.json");
+}
+
 createRoot(root).render(
   <StrictMode>
     <App />
