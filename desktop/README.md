@@ -63,6 +63,16 @@ Output lands in `desktop/release/`.
 - `build/icon.ico` — multi-resolution Windows icon, generated from the
   existing `public/icons/icon-512x512.png`.
 
+## Signing in
+
+The app opens on the normal VINK Bank homepage, same as the website —
+click **Sign In** and log in with a staff account (see
+`DEV_CREDENTIALS.md`, e.g. `admin` / `Admin@1234`). Staff roles route
+into the Management Panel automatically after login, exactly like on
+vink.co.za. Your session is remembered between launches (Electron
+persists `localStorage` to disk the same way a browser does), so this is
+only needed once until the session expires.
+
 ## Pointing it at a different URL
 
 Set `VINK_APP_URL` before launching (useful for a staging build):
