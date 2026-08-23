@@ -1,0 +1,56 @@
+name: Build VINK Management Panel (Windows)
+
+# Producing a real Windows .exe requires an actual Windows build
+# environment for electron-builder's NSIS step — not something available
+# in a Linux sandbox. GitHub's hosted windows-latest runner is the
+# standard, free way to do this.
+#
+# Triggers:
+#   - Push a tag like desktop-v1.0.0 -> builds AND publishes a GitHub
+#     Release with the installer attached (a stable, permanent download
+#     link, the same experience as downloading any other desktop app).
+#   - Manual "Run workflow" button in the Actions tab -> builds and
+#     attaches the installer as a downloadable workflow artifact, without
+#     needing a new tag/release each time (handy while iterating).
+
+on:
+  push:
+    tags:
+      - "desktop-v*"
+  workflow_dispatch: {}
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build Windows installer
+        run: npm run build:win
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: VINK-Management-Panel-Windows
+          path: |
+            desktop/release/*.exe
+          if-no-files-found: error
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/desktop-v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: desktop/release/*.exe
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

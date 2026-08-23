@@ -1,0 +1,44 @@
+{
+  "name": "vink-management-panel-desktop",
+  "version": "1.0.0",
+  "description": "VINK Management Panel — Windows desktop app",
+  "private": true,
+  "main": "main.js",
+  "author": "VINK Group",
+  "scripts": {
+    "start": "electron .",
+    "build:win": "electron-builder --win --x64"
+  },
+  "devDependencies": {
+    "electron": "^32.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "co.za.vink.managementpanel",
+    "productName": "VINK Management Panel",
+    "asar": true,
+    "files": [
+      "main.js",
+      "package.json",
+      "build/icon.ico"
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "win": {
+      "target": [
+        { "target": "nsis", "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "VINK Management Panel"
+    }
+  }
+}
