@@ -48,11 +48,45 @@ function createWindow() {
 
   // No in-app menu bar needed for what is effectively a site-specific
   // browser — autoHideMenuBar above already keeps it out of the way, but
-  // removing the menu entirely avoids a stray Alt-key flash revealing an
-  // Electron default menu (File/Edit/View/...) that doesn't apply here.
-  Menu.setApplicationMenu(null);
+  // an entirely empty menu with no Reload item meant there was no way to
+  // force a refresh if the window ever showed a stale cached page (see
+  // the cache-clearing below) short of quitting and reopening the whole
+  // app. Keep one minimal menu with a real Reload command instead of
+  // removing the menu outright.
+  Menu.setApplicationMenu(
+    Menu.buildFromTemplate([
+      {
+        label: "View",
+        submenu: [
+          {
+            label: "Reload",
+            accelerator: "CmdOrCtrl+R",
+            click: () => mainWindow?.webContents.reloadIgnoringCache(),
+          },
+        ],
+      },
+    ])
+  );
 
-  mainWindow.loadURL(APP_URL);
+  // Electron's default session keeps a real on-disk HTTP cache, same as
+  // a normal browser — so once this window has loaded the site once, a
+  // later app deploy to www.vink.co.za can go completely unnoticed here,
+  // silently serving old cached HTML/JS instead of the "always shows
+  // whatever's in production" behavior this shell is supposed to have.
+  // Clear the cache before every load so a fresh launch always fetches
+  // current content, not what happened to be cached from last time.
+  session.defaultSession.clearCache().then(() => {
+    mainWindow.loadURL(APP_URL);
+  });
+
+  // If a load ever fails outright (network blip, a deploy landing mid
+  // request), retry once automatically after a short delay instead of
+  // leaving the window stuck on a browser error page with no visible
+  // way to recover.
+  mainWindow.webContents.on("did-fail-load", (_event, errorCode) => {
+    if (errorCode === -3) return; // ERR_ABORTED — a normal cancelled navigation, not a real failure
+    setTimeout(() => mainWindow?.webContents.reloadIgnoringCache(), 1500);
+  });
 
   // Links that open a new window/tab (target="_blank", window.open, the
   // marketplace's "view listing" style links, etc.) should open in the
