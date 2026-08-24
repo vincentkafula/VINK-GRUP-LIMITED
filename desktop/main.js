@@ -15,17 +15,20 @@ const path = require("node:path");
 // Overridable at build/run time (e.g. for pointing a staging build at a
 // different host) without needing a code change.
 //
-// Deliberately loads the site root, NOT /management-panel directly. A
-// cold launch has no session yet (Electron's storage is a separate,
-// empty profile from any browser the person normally uses), and landing
-// straight on the panel's deep link with no token just shows its "you're
-// not signed in" dead end -- the panel renders as a full-screen overlay,
-// so the homepage's own Sign In button underneath it isn't visible or
-// reachable without first dismissing that dialog. Starting at "/" shows
-// the same login flow every user already knows from the website; signing
-// in with a staff account (see DEV_CREDENTIALS.md) then routes into the
-// Management Panel automatically, the same way it does on vink.co.za.
-const APP_URL = process.env.VINK_APP_URL || "https://www.vink.co.za/";
+// Loads with ?mode=staff, NOT the bare site root. This is a back-office
+// tool for staff, not a general browser for the whole consumer site --
+// with no mode flag, the window would land on the full marketing
+// homepage (hero banners, product pages, marketplace, news) same as any
+// regular visitor, and someone would have to notice the small "Sign In"
+// button up in the header and click it themselves. ?mode=staff tells
+// Header.tsx to open the login prompt immediately instead (see the
+// isStaffMode() check there) -- a cold launch has no session yet
+// (Electron's storage is a separate, empty profile from any browser the
+// person normally uses), so this always lands on a real, working sign-in
+// screen rather than the marketing page. Signing in with a staff account
+// (see DEV_CREDENTIALS.md) then routes into the Management Panel
+// automatically, the same way it does on vink.co.za.
+const APP_URL = process.env.VINK_APP_URL || "https://www.vink.co.za/?mode=staff";
 
 let mainWindow = null;
 

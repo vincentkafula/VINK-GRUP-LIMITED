@@ -1,5 +1,5 @@
 import { Search, Menu, X, User, ChevronDown } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { GetHelpModal } from "./GetHelpModal";
 import { LoginModal } from "./LoginModal";
 import { NotificationCenter } from "./NotificationCenter";
@@ -20,11 +20,38 @@ const PERSONAL_SUB_NAV = ["Account", "Credit Card", "Loan", "Invest", "Insure", 
 const BUSINESS_SUB_NAV   = ["Start My Business", "Accounts", "Credit Cards", "Loans", "Invest", "Insure", "Manage My Business", "International", "Studio", "News"] as const;
 const CORPORATE_SUB_NAV  = ["Account", "Solutions & Credit Cards", "Loan", "API", "Events", "Social Responsibility"] as const;
 
+// The desktop staff app (see /desktop) loads this site with ?mode=staff so
+// it can skip straight to signing in instead of showing the full consumer
+// marketing homepage first — a back-office tool has no reason to lead with
+// hero banners and product marketing. Regular browser visitors never carry
+// this param, so nothing here changes for them.
+//
+// Read into sessionStorage once on first load rather than re-checking
+// window.location.search every time: this SPA's own pushRoute() rewrites
+// the URL on every navigation (e.g. opening the Management Panel, or
+// closing it back to "/") without preserving the query string, so the
+// param itself disappears from the address bar within a few clicks —
+// sessionStorage survives that since it isn't tied to the current URL.
+function isStaffMode() {
+  if (typeof window === "undefined") return false;
+  if (new URLSearchParams(window.location.search).get("mode") === "staff") {
+    sessionStorage.setItem("vink_staff_mode", "1");
+  }
+  return sessionStorage.getItem("vink_staff_mode") === "1";
+}
+
 export function Header({ onDashboardSelect, onSubNavClick, onOpenProfile, isLoggedIn = false, userName }: HeaderProps) {
   const [isHelpModalOpen, setIsHelpModalOpen]   = useState(false);
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(isStaffMode());
   const [mobileOpen, setMobileOpen]             = useState(false);
   const [activeNav, setActiveNav]               = useState<NavItem | null>(null);
+
+  // Re-open automatically after a logout while still in staff mode, so
+  // closing the login modal (or signing out later) doesn't strand the
+  // window back on the marketing homepage with no obvious way back in.
+  useEffect(() => {
+    if (isStaffMode() && !isLoggedIn) setIsLoginModalOpen(true);
+  }, [isLoggedIn]);
 
   const handleNavClick = (item: NavItem) => {
     if (item === "Marketplace") {
