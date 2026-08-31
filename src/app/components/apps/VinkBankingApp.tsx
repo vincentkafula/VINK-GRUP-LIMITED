@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import { Home, Send, CreditCard, Clock, Star, Bell, ChevronRight, ArrowUpRight, ArrowDownLeft, Zap, Smartphone, ShoppingCart, Gift, CheckCircle, AlertTriangle, Loader2, Sparkles, Anchor as AnchorIcon, TrendingUp, Mountain, Crown, Landmark, Target, Wallet, PiggyBank, Award, Eye, EyeOff, ShieldCheck, Menu, QrCode, Banknote, User, MoreHorizontal, RefreshCw, CircleDollarSign } from "lucide-react";
 import { MobileAppOverlay, PhoneFrame } from "./PhoneFrame";
 import { globalBankingApi } from "../../services/applicationsApi";
-import { mktAuth, getMktToken, setMktToken, type MktAuthUser } from "../../services/marketplaceApi";
-import { setToken, setSession as setMainSession, getToken as getMainToken, getSession } from "../../services/apiClient";
+import { authApi, getSession, clearSession, type ApiUser } from "../../services/apiClient";
 
 type Screen = "onboarding" | "home" | "send" | "cards" | "history" | "rewards";
 type Tier = "Spark" | "Anchor" | "Momentum" | "Horizon" | "Summit" | "Legacy";
@@ -44,7 +43,7 @@ const REWARDS_HISTORY = [
   { event: "Airtime Purchase",             pts: "+5",   date: "14 Jun" },
 ];
 
-function LoginScreen({ onAuthenticated }: { onAuthenticated: (user: MktAuthUser) => void }) {
+function LoginScreen({ onAuthenticated }: { onAuthenticated: (user: ApiUser) => void }) {
   const [mode, setMode] = useState<"signin" | "register">("signin");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -58,10 +57,10 @@ function LoginScreen({ onAuthenticated }: { onAuthenticated: (user: MktAuthUser)
     if (!username || !password || (mode === "register" && (!name || !email))) { setError("Fill in all fields."); return; }
     setLoading(true);
     const r = mode === "signin"
-      ? await mktAuth.login(username, password)
-      : await mktAuth.registerCustomer({ username, password, name, email });
+      ? await authApi.login(username, password)
+      : await authApi.register({ username, password, name, email });
     setLoading(false);
-    if (r.success && r.token) { setToken(r.token); onAuthenticated(r.user); }
+    if (r.success && r.data) { onAuthenticated((r.data as { user: ApiUser }).user); }
     else setError((r as { error?: string }).error ?? "Something went wrong. Please try again.");
   };
 
@@ -172,7 +171,7 @@ function VerifyingScreen({ tier, onDone }: { tier: Tier; onDone: () => void }) {
     </div>
   );
 }
-function HomeScreen({ tier, onSwitchTier, user }: { tier: Tier; onSwitchTier: () => void; user: MktAuthUser }) {
+function HomeScreen({ tier, onSwitchTier, user }: { tier: Tier; onSwitchTier: () => void; user: ApiUser }) {
   const info = TIER_INFO[tier];
   const unlockedFrom = (min: number) => info.order >= min;
   const [hideBalance, setHideBalance] = useState(false);
@@ -801,30 +800,16 @@ export function VinkBankingApp({ isOpen, onClose, onOpenManagementPanel, onOpenA
   const [tier, setTier] = useState<Tier>("Spark");
   const [verifying, setVerifying] = useState(false);
   const [pendingTier, setPendingTier] = useState<Tier>("Spark");
-  const [authUser, setAuthUser] = useState<MktAuthUser | null>(null);
+  const [authUser, setAuthUser] = useState<ApiUser | null>(null);
   const [checkedSession, setCheckedSession] = useState(false);
 
   useEffect(() => {
-    // Same duplicate-login problem already fixed for the marketplace and
-    // 6 other dashboards this session — an owner/superadmin already
-    // signed in via the main Login button shouldn't need to sign in
-    // again just because this app keeps its own mkt_token key.
-    if (!getMktToken()) {
-      const mainToken = getMainToken();
-      const session = getSession();
-      if (mainToken && session) {
-        setMktToken(mainToken);
-        localStorage.setItem("mkt_user", JSON.stringify(session));
-      }
-    }
-    const restored = mktAuth.restoreSession();
-    if (restored && restored.user.username !== "superadmin" && restored.user.username !== "admin") {
+    const session = getSession();
+    if (session && session.username !== "superadmin" && session.username !== "admin") {
       // The intended case this restore handles: signed in via the main
       // site's Login button first, then opened this app -- shouldn't need
-      // to sign in again just because this app keeps its own mkt_token key.
-      setAuthUser(restored.user);
-      const tok = getMktToken();
-      if (tok) { setToken(tok); setMainSession(restored.user); }
+      // to sign in again just because this is a separate in-app "screen".
+      setAuthUser(session);
       // Real bug fixed here: this never actually skipped onboarding for
       // an already-authenticated user before -- screen stayed at its
       // "onboarding" default regardless of whether a real session was
@@ -836,7 +821,7 @@ export function VinkBankingApp({ isOpen, onClose, onOpenManagementPanel, onOpenA
       // a real session is confirmed -- never as a way to skip
       // authentication for someone who isn't actually logged in.
       setScreen(initialScreen ?? "home");
-    } else if (restored) {
+    } else if (session) {
       // A restored admin/superadmin session auto-redirecting here on every
       // mount is exactly what broke testing both accounts: whichever one
       // logged in first would win every subsequent visit, since this ran
@@ -845,7 +830,7 @@ export function VinkBankingApp({ isOpen, onClose, onOpenManagementPanel, onOpenA
       // session here (rather than restoring and redirecting) means the
       // login screen always shows fresh for these two accounts, and only
       // an explicit, current login decides which dashboard opens.
-      mktAuth.logout();
+      clearSession();
     }
     setCheckedSession(true);
   }, []);
@@ -861,14 +846,8 @@ export function VinkBankingApp({ isOpen, onClose, onOpenManagementPanel, onOpenA
     setVerifying(false);
     setScreen("home");
   };
-  const handleAuthenticated = (user: MktAuthUser) => {
+  const handleAuthenticated = (user: ApiUser) => {
     setAuthUser(user);
-    // Same bridge the restored-session path above already does (getMktToken
-    // -> setToken) -- missing here meant logging in through this app's own
-    // form and going straight to the Management Panel left vink_jwt unset,
-    // the exact bug reported: every call there failing with "no token sent".
-    const tok = getMktToken();
-    if (tok) { setToken(tok); setMainSession(user); }
     if (user.username === "superadmin" && onOpenManagementPanel) {
       onClose();
       onOpenManagementPanel();

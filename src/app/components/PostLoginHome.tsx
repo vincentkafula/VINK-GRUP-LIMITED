@@ -7,7 +7,7 @@ import {
   X, Home, BarChart3, User, QrCode
 } from "lucide-react";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
-import { mktAuth } from "../services/marketplaceApi";
+import { getSession } from "../services/apiClient";
 import { applicationsApi, type Application } from "../services/applicationsApi";
 
 interface PostLoginHomeProps {
@@ -105,9 +105,9 @@ export function PostLoginHome({ isOpen, onClose, onNavigate }: PostLoginHomeProp
   // real user, before fixing this.
   useEffect(() => {
     if (!isOpen) return;
-    const restored = mktAuth.restoreSession();
-    if (restored) {
-      setAuthUser({ name: restored.user.name, email: restored.user.email });
+    const session = getSession();
+    if (session) {
+      setAuthUser({ name: session.name, email: session.email });
       applicationsApi.mine().then(r => {
         if (r.success && r.data && r.data.length > 0) setMyApplication(r.data[0]);
       }).catch(() => {});

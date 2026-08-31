@@ -9,6 +9,13 @@ import { LazySection } from "./components/LazySection";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { useBodyScrollLock } from "./hooks/useBodyScrollLock";
 
+// Marketplace now lives in its own deployed app (separate frontend +
+// backend, separate accounts) — set VITE_MARKETPLACE_URL in this app's
+// Railway environment variables to that deployment's public URL. Every
+// "Marketplace" nav entry below opens it in a new tab rather than
+// mounting an in-app component.
+const MARKETPLACE_URL = import.meta.env.VITE_MARKETPLACE_URL ?? "https://vink-marketplace.up.railway.app";
+
 // ─── Below-fold homepage sections — code-split ────────────────────────────────
 const FeaturesSection              = lazy(() => import("./components/FeaturesSection").then(m => ({ default: m.FeaturesSection })));
 const ProtectionSection            = lazy(() => import("./components/ProtectionSection").then(m => ({ default: m.ProtectionSection })));
@@ -43,9 +50,7 @@ const VinkGoDashboardViewer       = lazy(() => import("./components/VinkGoDashbo
 const FlightBookingViewerForVinkGo = lazy(() => import("./components/FlightBookingViewer").then(m => ({ default: m.FlightBookingViewer })));
 const ManagementPanelViewer       = lazy(() => import("./components/ManagementPanelViewer").then(m => ({ default: m.ManagementPanelViewer })));
 const VehicleTrackingDashboard    = lazy(() => import("./components/VehicleTrackingDashboard").then(m => ({ default: m.VehicleTrackingDashboard })));
-const VinkMarketplace             = lazy(() => import("./components/VinkMarketplace").then(m => ({ default: m.VinkMarketplace })));
 import { PersistentTopNav } from "./components/PersistentTopNav";
-const MarketplaceLandingViewer    = lazy(() => import("./components/MarketplaceLandingViewer").then(m => ({ default: m.MarketplaceLandingViewer })));
 const PersonalAccountViewer       = lazy(() => import("./components/PersonalAccountViewer").then(m => ({ default: m.PersonalAccountViewer })));
 const PersonalLandingViewer       = lazy(() => import("./components/PersonalLandingViewer").then(m => ({ default: m.PersonalLandingViewer })));
 const BusinessLandingViewer       = lazy(() => import("./components/BusinessLandingViewer").then(m => ({ default: m.BusinessLandingViewer })));
@@ -151,7 +156,6 @@ export default function App() {
   const [showManagementPanel, setShowManagementPanel]       = useState(false);
   const [showVehicle, setShowVehicle]                       = useState(false);
   const [showSIMApp, setShowSIMApp]                         = useState(false);
-  const [showMarketplace, setShowMarketplace]               = useState(false);
 
   // ── Super App Ecosystem ────────────────────────────────────────────────────
   const [showAFCApp, setShowAFCApp]                         = useState(false);
@@ -170,9 +174,6 @@ export default function App() {
   // ── Personal products ──────────────────────────────────────────────────────
   const [showPersonalLanding, setShowPersonalLanding]       = useState(false);
   const [showBusinessLanding, setShowBusinessLanding]       = useState(false);
-  const [showMarketplaceLanding, setShowMarketplaceLanding] = useState(false);
-  const [marketplaceInitialAction, setMarketplaceInitialAction] = useState<"sell" | null>(null);
-  const [marketplaceInitialProductId, setMarketplaceInitialProductId] = useState<string | null>(null);
   const [showSafetySecurity, setShowSafetySecurity]         = useState(false);
   const [showPersonalAccount, setShowPersonalAccount]       = useState(false);
   const [showPersonalLedger, setShowPersonalLedger]          = useState(false);
@@ -304,7 +305,7 @@ export default function App() {
       else if (id === "managementPanel")   { mount("managementPanel");  setShowManagementPanel(true); pushRoute("/management-panel"); }
       else if (id === "adminBankingPanel") { mount("banking");          setShowBanking(true); }
       else if (id === "vehicle")           { mount("vehicle");          setShowVehicle(true); }
-      else if (id === "marketplace")       { mount("marketplaceLanding"); setShowMarketplaceLanding(true); pushRoute("/marketplace"); }
+      else if (id === "marketplace")       { window.open(MARKETPLACE_URL, "_blank", "noopener,noreferrer"); }
       else if (id === "appLauncher")       { mount("appLauncher");      setShowAppLauncher(true); }
       else if (id === "afcApp")            { mount("afcApp");           setShowAFCApp(true); }
       else                                 { mount("postLogin");        setShowPostLogin(true); }
@@ -356,7 +357,7 @@ export default function App() {
         case "mobile":
         case "vinktv":       mount("postLogin");        setShowPostLogin(true);        break;
         // Commerce
-        case "marketplace":  mount("marketplaceLanding"); setShowMarketplaceLanding(true); pushRoute("/marketplace"); break;
+        case "marketplace":  window.open(MARKETPLACE_URL, "_blank", "noopener,noreferrer"); break;
         case "buy":
         case "settings":     mount("vinkMobileApp");    setShowVinkMobileApp(true);    break;
         // Contact & Support
@@ -454,7 +455,6 @@ export default function App() {
     "Corporate:Account": "/corporate/account", "Corporate:Solutions & Credit Cards": "/corporate/solutions-credit-cards",
     "Corporate:Loan": "/corporate/loan", "Corporate:API": "/corporate/api", "Corporate:Events": "/corporate/events",
     "Corporate:Social Responsibility": "/corporate/social-responsibility",
-    "Marketplace": "/marketplace",
     "Contact Us": "/contact-us",
   };
 
@@ -491,8 +491,8 @@ export default function App() {
       if (item === "Corporate:API")                       { mount("corpApi");       setShowCorporateApi(true); return; }
       if (item === "Corporate:Events")                    { mount("corpEvents");    setShowCorporateEvents(true); return; }
       if (item === "Corporate:Social Responsibility")     { mount("corpCSR");       setShowCorporateCSR(true); return; }
-      // Marketplace
-      if (item === "Marketplace")       { mount("marketplaceLanding"); setShowMarketplaceLanding(true); return; }
+      // Marketplace — separate deployed app now, opened in a new tab
+      if (item === "Marketplace")       { window.open(MARKETPLACE_URL, "_blank", "noopener,noreferrer"); return; }
     });
   };
 
@@ -507,7 +507,6 @@ export default function App() {
     setShowBusinessLedger(false); setShowManageBusiness(false); setShowBusinessInternational(false);
     setShowBusinessStudio(false); setShowBusinessNews(false);
     setShowCorporateLedger(false); setShowCorporateApi(false); setShowCorporateEvents(false); setShowCorporateCSR(false);
-    setShowMarketplace(false); setShowMarketplaceLanding(false);
     setShowContactUs(false); setShowAboutVINK(false); setShowCareers(false); setShowNews(false);
     setShowSwitchToVINK(false); setShowSafetySecurity(false); setShowInvestorRelations(false);
     setShowTaxiAssociations(false); setShow500App(false);
@@ -525,7 +524,6 @@ export default function App() {
       ? "Business" :
     (showCorporateLedger || showCorporateLoanApp || showCorporateApi || showCorporateEvents || showCorporateCSR ||
      showInvestorRelations) ? "Corporate" :
-    showMarketplace ? "Marketplace" :
     null;
 
   const showPersistentNav =
@@ -538,7 +536,7 @@ export default function App() {
       if (section === "Personal")    { mount("personalLanding");     setShowPersonalLanding(true);     pushRoute("/personal"); }
       if (section === "Business")    { mount("bizAccountSelector");  setShowBusinessAccountSelector(true); pushRoute("/business/accounts"); }
       if (section === "Corporate")   { mount("corpLedger"); setCorporateLedgerCategory("account"); setShowCorporateLedger(true); pushRoute("/corporate/account"); }
-      if (section === "Marketplace") { mount("marketplaceLanding"); setShowMarketplaceLanding(true); pushRoute("/marketplace"); }
+      if (section === "Marketplace") { window.open(MARKETPLACE_URL, "_blank", "noopener,noreferrer"); }
     });
   };
 
@@ -596,7 +594,7 @@ export default function App() {
     }
     if (path === "/contact-us") { mount("contactUs"); setShowContactUs(true); return true; }
     if (path === "/news") { mount("news"); setShowNews(true); return true; }
-    if (path === "/marketplace") { mount("marketplaceLanding"); setShowMarketplaceLanding(true); return true; }
+    if (path === "/marketplace") { window.location.href = MARKETPLACE_URL; return true; }
     if (path === "/management-panel") { mount("managementPanel"); setShowManagementPanel(true); return true; }
     return false;
   };
@@ -687,12 +685,10 @@ export default function App() {
   // Dynamic <title>/meta description per section -- without this, every
   // route in this single-page app shares one static title/description
   // (set once in index.html), so Google would see identical metadata for
-  // /business, /marketplace, /news, and /corporate/events regardless of
-  // which one was actually visited. Each of these four gets its own real,
-  // keyword-relevant metadata while open, restored to the site default
-  // when closed again.
+  // /business, /news, and /corporate/events regardless of which one was
+  // actually visited. Each of these gets its own real, keyword-relevant
+  // metadata while open, restored to the site default when closed again.
   useEffect(() => { if (showStartBusiness)      return setPageMeta(PAGE_META.business.title,     PAGE_META.business.description); }, [showStartBusiness]);
-  useEffect(() => { if (showMarketplaceLanding) return setPageMeta(PAGE_META.marketplace.title,  PAGE_META.marketplace.description); }, [showMarketplaceLanding]);
   useEffect(() => { if (showNews)               return setPageMeta(PAGE_META.news.title,         PAGE_META.news.description); }, [showNews]);
   useEffect(() => { if (showCorporateEvents)    return setPageMeta(PAGE_META.events.title,        PAGE_META.events.description); }, [showCorporateEvents]);
 
@@ -784,8 +780,6 @@ export default function App() {
       {has("managementPanel") && <Suspense fallback={null}><ManagementPanelViewer  isOpen={showManagementPanel} onClose={() => { setShowManagementPanel(false); pushRoute("/"); }} adminName={getSession()?.name} adminRole={getSession()?.role === "superadmin" ? "Super Administrator" : getSession()?.role === "owner" ? "System Owner" : getSession()?.role} role={getSession()?.role} onOpenNewsManagement={() => { mount("newsManagement"); setShowNewsManagement(true); }} /></Suspense>}
       {has("newsManagement")   && <Suspense fallback={null}><NewsManagementDashboard isOpen={showNewsManagement} onClose={() => setShowNewsManagement(false)} /></Suspense>}
       {has("vehicle")         && <Suspense fallback={null}><VehicleTrackingDashboard isOpen={showVehicle}       onClose={() => setShowVehicle(false)} /></Suspense>}
-      {has("marketplaceLanding") && <Suspense fallback={null}><MarketplaceLandingViewer isOpen={showMarketplaceLanding} onClose={() => { setShowMarketplaceLanding(false); pushRoute("/"); }} onShop={(productId) => { setMarketplaceInitialAction(null); setMarketplaceInitialProductId(productId ?? null); setShowMarketplaceLanding(false); mount("marketplace"); setShowMarketplace(true); }} onSell={() => { setMarketplaceInitialAction("sell"); setMarketplaceInitialProductId(null); setShowMarketplaceLanding(false); mount("marketplace"); setShowMarketplace(true); }} /></Suspense>}
-      {has("marketplace")     && <Suspense fallback={null}><VinkMarketplace        isOpen={showMarketplace}     onClose={() => { setShowMarketplace(false); pushRoute("/"); }} initialAction={marketplaceInitialAction} initialProductId={marketplaceInitialProductId} onOpenManagementPanel={() => { mount("managementPanel"); setShowManagementPanel(true); pushRoute("/management-panel"); }} /></Suspense>}
 
       {/* Personal products */}
       {has("personalLanding") && <Suspense fallback={null}><PersonalLandingViewer isOpen={showPersonalLanding} onClose={() => { setShowPersonalLanding(false); pushRoute("/"); }} onNavigate={(item) => { setShowPersonalLanding(false); handleSubNavClick(item); }} onApplyClick={() => { setShowPersonalLanding(false); handleSubNavClick("Account"); }} onSecurityClick={() => { mount("safetySecurity"); setShowSafetySecurity(true); }} /></Suspense>}

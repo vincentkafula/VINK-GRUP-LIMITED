@@ -16,7 +16,8 @@ export function setDemoMode(on: boolean)   { on ? localStorage.setItem(DEMO_KEY,
 
 // ─── Logged-in user (stored after login) ─────────────────────────────────────
 const SESSION_KEY = "vink_session";
-export function getSession(): { id: string; username: string; name: string; email: string; role: string } | null {
+export interface ApiUser { id: string; username: string; name: string; email: string; role: string }
+export function getSession(): ApiUser | null {
   try { return JSON.parse(localStorage.getItem(SESSION_KEY) ?? "null"); } catch { return null; }
 }
 export function setSession(user: object) { localStorage.setItem(SESSION_KEY, JSON.stringify(user)); }
@@ -159,6 +160,15 @@ export function startHealthRecoveryWatch() {
 export const authApi = {
   login: async (username: string, password: string) => {
     const r = await api.post<{ token: string; user: object }>("/api/auth/login", { username, password });
+    if (r.success && r.data) {
+      setToken((r.data as { token: string }).token);
+      setSession((r.data as { user: object }).user);
+      setDemoMode(false);
+    }
+    return r;
+  },
+  register: async (body: { username: string; password: string; name: string; email: string; role?: "customer" | "seller" }) => {
+    const r = await api.post<{ token: string; user: object }>("/api/auth/register", body);
     if (r.success && r.data) {
       setToken((r.data as { token: string }).token);
       setSession((r.data as { user: object }).user);

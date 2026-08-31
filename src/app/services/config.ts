@@ -1,6 +1,6 @@
 /**
  * The one place the frontend's backend URL is defined. Every service file
- * (apiClient, marketplaceApi, mvnoApi, bankingApi, healingAppleApi,
+ * (apiClient, mvnoApi, bankingApi, healingAppleApi,
  * vehicleApi, currencyStore, applicationsApi) and any component that needs
  * to build a raw fetch/FormData request (e.g. JobApplicationViewer, which
  * can't use the JSON-only api() wrapper because it uploads files) imports

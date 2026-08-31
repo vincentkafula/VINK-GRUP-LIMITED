@@ -217,7 +217,8 @@ router.post("/", optionalAuth, async (req: Request, res: Response): Promise<void
  * Matches by applicant_email against req.user.username (the JWT's own
  * field, not a separate email claim -- confirmed this token shape has
  * no email field, but customer accounts always use their email as
- * their username, set that way by mktAuth.registerCustomer()) rather
+ * their username, set that way by PersonalAccountApplicationViewer's call
+ * to /api/auth/register) rather
  * than applicant_user_id. That column is genuinely null for these
  * applications in the real, common flow: PersonalAccountApplicationViewer
  * submits the application via optionalAuth before the login account

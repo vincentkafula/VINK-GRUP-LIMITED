@@ -7,7 +7,7 @@
  * application submission, OTP send/verify, and admin call through this
  * file was silently hitting a dead endpoint. Fixed to point at the real
  * backend, same production-safe fallback pattern as every other service
- * file (apiClient.ts, marketplaceApi.ts, etc.).
+ * file (apiClient.ts, bankingApi.ts, etc.).
  */
 import { API_BASE as BASE } from "./config";
 

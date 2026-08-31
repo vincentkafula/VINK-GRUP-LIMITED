@@ -3,7 +3,7 @@
  * every route in this SPA (a single index.html served for every path -- see
  * the Dockerfile/nginx setup) shares the exact same static title and
  * description, meaning Google would see identical metadata for
- * /marketplace, /news, /business, and /corporate/events, which badly limits
+ * /news, /business, and /corporate/events, which badly limits
  * how well any one of them can rank for its own relevant searches. Each
  * section gets its own real, keyword-relevant title/description here,
  * matching what people actually search for related to that content

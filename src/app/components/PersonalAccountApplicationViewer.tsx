@@ -3,7 +3,7 @@ import { X, CheckCircle, Upload, ChevronLeft, ChevronRight, Clock, Loader2, Aler
 import { toast } from "sonner";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { applicationsApi, otpApi } from "../services/applicationsApi";
-import { mktAuth } from "../services/marketplaceApi";
+import { authApi } from "../services/apiClient";
 import { COUNTRIES, provincesForCountry, alpha2ForCountry, idDocumentTypesForCountry, NATIONALITIES, callingCodeForCountry } from "../data/countries";
 import { validatePostalCode, getCountryByCode, getPostalLabel } from "postal-code-checker";
 import { API_BASE } from "../services/config";
@@ -844,7 +844,7 @@ export function PersonalAccountApplicationViewer({ isOpen, onClose, onGoToDashbo
       // itself still succeeded, Step7 explains the login issue
       // clearly, and the user is never left waiting indefinitely.
       try {
-        const regResult = await mktAuth.registerCustomer({
+        const regResult = await authApi.register({
           username: merged.email,
           password,
           name: `${merged.firstName ?? ""} ${merged.lastName ?? ""}`.trim() || "Applicant",

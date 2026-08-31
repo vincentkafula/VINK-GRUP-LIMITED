@@ -39,8 +39,6 @@ import bankPaymentsRouter from "./routes/bankPayments.js";
 import bankTreasuryRouter from "./routes/bankTreasury.js";
 import bankComplianceRouter from "./routes/bankCompliance.js";
 import bankUsersRouter from "./routes/bankUsers.js";
-import marketplaceRouter from "./routes/marketplaceRouter.js";
-import marketplaceRouterDb from "./routes/marketplaceRouterDb.js";
 import geoCurrencyRouter from "./routes/geoCurrency.js";
 import newsRouter, { startScheduledPublishJob } from "./routes/news.js";
 import rbacRouter from "./routes/rbac.js";
@@ -146,7 +144,6 @@ app.use("/api/bank/payments",      bankPaymentsRouter);
 app.use("/api/bank/treasury",      bankTreasuryRouter);
 app.use("/api/bank/compliance",    bankComplianceRouter);
 app.use("/api/bank/users",         bankUsersRouter);
-app.use("/api/marketplace",        hasDb ? marketplaceRouterDb : marketplaceRouter);
 app.use("/api/geo",                geoCurrencyRouter);
 app.use("/api/currency",           geoCurrencyRouter);
 app.use("/api/news",               newsRouter);
@@ -378,10 +375,10 @@ async function boot() {
       await migrateAndSeed();
     } catch (err) {
       migrationFailed = true;
-      console.error("[db] Migration failed — server will still start, but /api/auth and /api/marketplace will error until this is fixed:", err);
+      console.error("[db] Migration failed — server will still start, but /api/auth will error until this is fixed:", err);
     }
   } else {
-    console.log("[db] DATABASE_URL not set — auth and marketplace are running on in-memory demo data.");
+    console.log("[db] DATABASE_URL not set — auth is running on in-memory demo data.");
   }
 
   server.listen(PORT, () => {

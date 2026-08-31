@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react";
 import {
   X, ChevronRight, CheckCircle2, Sparkles, Anchor as AnchorIcon, TrendingUp,
-  Sunrise, Mountain, Crown, ArrowRight, UserCheck, Globe2, Star,
+  Sunrise, Mountain, Crown, ArrowRight, UserCheck, Globe2,
 } from "lucide-react";
 import { PersonalAccountApplicationViewer } from "./PersonalAccountApplicationViewer";
 import { Footer } from "./Footer";
-import { MarketplaceAuthModal } from "./MarketplaceAuthModal";
-import { mktAuth, mktCustomer, type MktAuthUser } from "../services/marketplaceApi";
+import { getSession, clearSession } from "../services/apiClient";
 import { formatZAR, useCurrency, setCountryManually } from "../services/currencyStore";
 
 interface Props { isOpen: boolean; onClose: () => void; onNavigate: (category: "creditCard" | "loan" | "invest" | "insure" | "rewards") => void; onOpenBankingApp?: () => void }
@@ -191,25 +190,16 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate, onOpenBanki
   const currency = useCurrency(); // subscribes this tree to live currency/rate updates
   const [showApplication, setShowApplication] = useState(false);
   const [detailAccount, setDetailAccount] = useState<Account | null>(null);
-  const [authUser, setAuthUser] = useState<MktAuthUser | null>(null);
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [rewardPoints, setRewardPoints] = useState<number | null>(null);
+  const [authUser, setAuthUser] = useState<{ id: string; name: string; email: string } | null>(null);
 
   useEffect(() => {
-    const restored = mktAuth.restoreSession();
-    if (restored) setAuthUser(restored.user);
-  }, []);
-
-  useEffect(() => {
-    if (!authUser) { setRewardPoints(null); return; }
-    mktCustomer.stats(authUser.id).then(r => {
-      if (r.success) setRewardPoints(Number((r.data as { rewardPoints?: number }).rewardPoints ?? 0));
-    }).catch(() => {});
-  }, [authUser]);
+    const session = getSession();
+    if (session) setAuthUser(session);
+  }, [isOpen]);
 
   if (!isOpen) return null;
   const openApply = () => setShowApplication(true);
-  const handleSignOut = () => { mktAuth.logout(); setAuthUser(null); };
+  const handleSignOut = () => { clearSession(); setAuthUser(null); };
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-white">
@@ -264,8 +254,8 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate, onOpenBanki
               </div>
             </div>
           ) : (
-            <button onClick={() => setShowAuthModal(true)} className="px-3.5 py-1.5 rounded-full text-[13px] font-semibold text-white shrink-0" style={{ background: GREEN }}>
-              Log in
+            <button onClick={openApply} className="px-3.5 py-1.5 rounded-full text-[13px] font-semibold text-white shrink-0" style={{ background: GREEN }}>
+              Open an Account
             </button>
           )}
           <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors" aria-label="Close">
@@ -302,7 +292,7 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate, onOpenBanki
               </>
             )}
             <div className="flex flex-wrap items-center gap-3 mt-8">
-              <button onClick={() => authUser ? setShowAuthModal(false) : openApply()}
+              <button onClick={() => authUser ? onClose() : openApply()}
                 className="px-6 py-3 rounded-full text-white text-sm font-bold shadow-lg" style={{ background: ORANGE }}>
                 {authUser ? "Explore Products" : "Open an Account"}
               </button>
@@ -328,16 +318,6 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate, onOpenBanki
             <div className="absolute -right-4 bottom-6 w-24 h-16 rounded-2xl shadow-xl flex items-center justify-center" style={{ background: ORANGE }}>
               <UserCheck className="w-8 h-8 text-white" />
             </div>
-            {authUser && (
-              <div className="absolute left-0 sm:-left-6 bottom-2 bg-white rounded-2xl shadow-xl p-3 flex items-center gap-2.5">
-                <span className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ background: "#FFF1E6", color: ORANGE }}><Star className="w-4 h-4 fill-current" /></span>
-                <div>
-                  <p className="text-[9px] text-gray-400">VinkPoints</p>
-                  <p className="text-sm font-black text-gray-900">{rewardPoints !== null ? rewardPoints.toLocaleString() : "—"}</p>
-                  <p className="text-[9px] font-semibold" style={{ color: GREEN }}>View Rewards →</p>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -394,13 +374,6 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate, onOpenBanki
         onClose={() => setShowApplication(false)}
         onGoToDashboard={onOpenBankingApp ? () => { setShowApplication(false); onOpenBankingApp(); } : undefined}
       />
-
-      {showAuthModal && (
-        <MarketplaceAuthModal
-          onClose={() => setShowAuthModal(false)}
-          onAuthenticated={(user) => { setAuthUser(user); setShowAuthModal(false); }}
-        />
-      )}
 
       <Footer />
     </div>
