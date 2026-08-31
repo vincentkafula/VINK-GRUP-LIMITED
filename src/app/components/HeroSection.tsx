@@ -1,11 +1,7 @@
 import { useState, useEffect } from "react";
 import heroCardPhone from "../../imports/HeroCardPhone.png";
-import heroTraveler from "../../imports/HeroTraveler.png";
 import heroGlobalSim from "../../imports/HeroGlobalSim.png";
-import heroBus from "../../imports/HeroBus.png";
-import heroPlane from "../../imports/HeroPlane.png";
 import heroValidator from "../../imports/HeroValidator.png";
-import { FlightBookingViewer } from "./FlightBookingViewer";
 
 // ─── Per-slide content ────────────────────────────────────────────────────────
 const SLIDES = [
@@ -25,21 +21,6 @@ const SLIDES = [
     ],
   },
   {
-    image:   heroTraveler,
-    eyebrow: "VINK Go — Vacation Booking",
-    headline: <>Your vacation<br /><span className="relative inline-block"><span className="relative z-10">awaits!</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#F5A623" }} /></span></>,
-    body: "Discover breathtaking destinations, amazing experiences and memories that last a lifetime.",
-    ctas: [
-      { label: "🧳 Plan Your Getaway →", style: { background: "#EA6A0E", boxShadow: "0 6px 20px rgba(234,106,14,.4)" } },
-      { label: "See How It Works",       style: { background: "rgba(255,255,255,.15)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,.25)" } },
-    ],
-    trust: [
-      { value: "1000s", label: "Destinations worldwide" },
-      { value: "24/7",  label: "Support, anytime" },
-      { value: "Best",  label: "Deals on flights and stays" },
-    ],
-  },
-  {
     image:   heroGlobalSim,
     eyebrow: "VINK MVNO — Global Connectivity",
     headline: <>All the benefits of SIM,<br /><span className="relative inline-block"><span className="relative z-10">on your phone.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#F5A623" }} /></span></>,
@@ -52,36 +33,6 @@ const SLIDES = [
       { value: "200+",    label: "Countries covered" },
       { value: "4G/5G",   label: "High-speed data" },
       { value: "24/7",    label: "Customer support" },
-    ],
-  },
-  {
-    image:   heroBus,
-    eyebrow: "VINK Go — Bus Travel",
-    headline: <>Driven by<br /><span className="relative inline-block"><span className="relative z-10">excellence.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#F5A623" }} /></span></>,
-    body: "Safe. Reliable. Comfortable. Your journey, our priority.",
-    ctas: [
-      { label: "🎫 Book Your Ticket Now", style: { background: "#7A1420", boxShadow: "0 6px 20px rgba(122,20,32,.5)" } },
-      { label: "Learn More",              style: { background: "rgba(255,255,255,.15)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,.25)" } },
-    ],
-    trust: [
-      { value: "Safe",  label: "Your safety is our promise" },
-      { value: "24/7",  label: "Support, anytime, anywhere" },
-      { value: "Wide",  label: "Coverage, nationwide" },
-    ],
-  },
-  {
-    image:   heroPlane,
-    eyebrow: "VINK Go — Travel Booking",
-    headline: <>Your journey<br /><span className="relative inline-block"><span className="relative z-10">takes flight.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#F5A623" }} /></span></>,
-    body: "Book your next adventure with ease. Best deals. Trusted service. Unforgettable journeys.",
-    ctas: [
-      { label: "✈ Book Your Ticket Now", action: "flightBooking" as const, style: { background: "#0B1F4D", boxShadow: "0 6px 20px rgba(11,31,77,.5)" } },
-      { label: "See Our Network",        style: { background: "rgba(255,255,255,.15)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,.25)" } },
-    ],
-    trust: [
-      { value: "30%",  label: "Off on selected flights" },
-      { value: "Best", label: "Fares, worldwide" },
-      { value: "24/7", label: "Support, always on" },
     ],
   },
   {
@@ -104,7 +55,6 @@ const SLIDES = [
 export function HeroSection() {
   const [current, setCurrent] = useState(0);
   const [fading, setFading] = useState(false);
-  const [showFlightBooking, setShowFlightBooking] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -170,7 +120,6 @@ export function HeroSection() {
             <div className="flex flex-wrap justify-center md:justify-start gap-3 mb-7">
               {slide.ctas.map((cta, i) => (
                 <button key={i}
-                  onClick={() => { if ("action" in cta && cta.action === "flightBooking") setShowFlightBooking(true); }}
                   className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl text-sm font-bold text-white transition-all duration-300 ease-out hover:scale-[1.03] hover:-translate-y-0.5 active:scale-95 shadow-lg"
                   style={{ ...(cta.style as React.CSSProperties), letterSpacing: "0.01em" }}>
                   {cta.label}
@@ -222,7 +171,6 @@ export function HeroSection() {
         </div>
       </div>
 
-      <FlightBookingViewer isOpen={showFlightBooking} onClose={() => setShowFlightBooking(false)} />
     </section>
   );
 }
