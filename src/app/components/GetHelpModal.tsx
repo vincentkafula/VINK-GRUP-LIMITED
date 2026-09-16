@@ -25,10 +25,6 @@ const COLS = [
     links: ["Stocks & ETFs", "Mutual Funds", "Retirement (IRA)", "Managed Portfolios", "Crypto", "Options", "Bonds"],
   },
   {
-    title: "Insurance",
-    links: ["Life Insurance", "Auto Insurance", "Home Insurance", "Health Insurance", "Travel Insurance", "Pet Insurance", "Business Insurance"],
-  },
-  {
     title: "Company",
     links: ["About VINK", "Careers", "Press", "Blog", "Partner With Us", "Advertise", "Affiliate Program"],
   },

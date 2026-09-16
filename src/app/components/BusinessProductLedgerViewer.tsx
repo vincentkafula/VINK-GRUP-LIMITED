@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { Footer } from "./Footer";
 
-type BizCategory = "creditCard" | "loan" | "insure" | "invest";
-type NavItem = "Start My Business" | "Accounts" | "Credit Cards" | "Loans" | "Invest" | "Insure" | "Manage My Business";
+type BizCategory = "creditCard" | "loan" | "invest";
+type NavItem = "Start My Business" | "Accounts" | "Credit Cards" | "Loans" | "Invest" | "Manage My Business";
 
 interface Props {
   isOpen: boolean;
@@ -13,8 +13,8 @@ interface Props {
   onApply: (category: BizCategory) => void;
 }
 
-const SUB_NAV: NavItem[] = ["Start My Business", "Accounts", "Credit Cards", "Loans", "Invest", "Insure", "Manage My Business"];
-const CATEGORY_FOR_NAV: Partial<Record<NavItem, BizCategory>> = { "Credit Cards": "creditCard", "Loans": "loan", "Insure": "insure", "Invest": "invest" };
+const SUB_NAV: NavItem[] = ["Start My Business", "Accounts", "Credit Cards", "Loans", "Invest", "Manage My Business"];
+const CATEGORY_FOR_NAV: Partial<Record<NavItem, BizCategory>> = { "Credit Cards": "creditCard", "Loans": "loan", "Invest": "invest" };
 
 interface BizProduct { name: string; price: string; features: string[]; featured?: boolean; tagline?: string; description?: string }
 
@@ -38,15 +38,7 @@ const PRODUCTS: Record<BizCategory, BizProduct[]> = {
     { name: "MomentumFund", price: "R265", featured: true, tagline: "Financing designed to help businesses capitalise quickly on time-sensitive growth opportunities.", features: ["Full operating lease with maintenance, tyres, and licensing included", "Fixed monthly cost for easy budgeting", "Fuel management optional add-on", "Residual value guaranteed", "Cancel at end of term with no penalty"] },
     { name: "ApexBusiness Loan", price: "R415", tagline: "Our premium business loan offering, providing larger facilities and tailored terms for established, high-performing companies.", features: ["Short-term capital for urgent cash flow needs", "R100,000–R5,000,000", "1–12 month terms", "Draw down as needed", "Interest only on amount drawn"] },
   ],
-  insure: [
-    { name: "VINK NexusCover", price: "R0", tagline: "All-in-one protection for the risks that matter to your business.", description: "VINK NexusCover is a modular, multi-risk business insurance solution that consolidates property, liability, business interruption, and operational risk cover into a single, streamlined policy — built around how your business actually operates.", features: ["Modular cover spanning property, liability, and interruption risk", "Tailored risk assessment to match your industry and operations", "Single consolidated policy with simplified administration", "Scalable limits as your business grows", "Dedicated account management and claims support"] },
-    { name: "VINK CommerceProtect", price: "R0", tagline: "Right-sized protection built for small and medium enterprises.", description: "VINK CommerceProtect is designed specifically for SMEs that need robust cover without enterprise-level complexity or cost. It bundles the protections small businesses need most into an affordable, easy-to-set-up package.", features: ["Bundled cover for property, stock, liability, and equipment", "Fast, simplified application process built for SMEs", "Affordable premiums structured around business size and turnover", "Business interruption cover to protect cash flow", "Easy policy adjustments as your business evolves"] },
-    { name: "VINK CapitalShield", price: "R85", tagline: "Protecting the physical assets your business depends on.", description: "VINK CapitalShield safeguards your commercial property, equipment, machinery, and physical assets against loss or damage, ensuring a single incident never becomes an existential threat to your operations.", features: ["Comprehensive cover for buildings, equipment, and machinery", "Protection against fire, weather, theft, and accidental damage", "Replacement-value and agreed-value cover options", "Cover for assets in transit and at multiple sites", "Rapid claims assessment to minimise operational downtime"] },
-    { name: "VINK FleetFusion", price: "R170", tagline: "Comprehensive cover for your commercial fleet.", description: "VINK FleetFusion protects businesses that rely on vehicles to operate — from single company cars to large logistics fleets — with cover designed around commercial use, driver risk, and operational uptime.", features: ["Cover for single vehicles through to large commercial fleets", "Third-party, fire and theft, and comprehensive cover tiers", "Fleet risk management and driver safety support tools", "Replacement vehicle and downtime cover options", "Centralised fleet policy management and reporting"] },
-    { name: "VINK RiskSphere", price: "R265", featured: true, tagline: "Defending your business against liability and legal exposure.", description: "VINK RiskSphere protects businesses against the financial impact of legal claims, professional liability, and regulatory exposure — covering legal costs, settlements, and the reputational risks that come with them.", features: ["Public liability and professional indemnity cover", "Directors' and officers' liability protection", "Legal defence cost cover for claims and disputes", "Employment practices liability options", "Access to legal advisory support as part of your policy"] },
-    { name: "VINK RecoveryGuard", price: "R415", tagline: "Keeping your business running when the unexpected happens.", description: "VINK RecoveryGuard is built to protect operational continuity after a disruptive event — from natural disasters to system failures — helping businesses recover faster and reduce the financial impact of downtime.", features: ["Business interruption and loss-of-income cover", "Cover for additional costs incurred during recovery", "Disaster recovery and crisis-response support services", "Supply chain and third-party disruption cover options", "Priority claims handling to accelerate recovery timelines"] },
-  ],
-  // NOTE: unlike creditCard/loan/insure above, no genuine business
+  // NOTE: unlike creditCard/loan above, no genuine business
   // investment product data exists anywhere in this codebase (the one
   // reference file found — vms-bank-business-invest.html — is a
   // mislabeled copy of unrelated account-tier content, not real
@@ -67,7 +59,6 @@ const PRODUCTS: Record<BizCategory, BizProduct[]> = {
 const PAGE_COPY: Record<BizCategory, { heading: string; tag: string; scaleNote: string; detailsCta: string; heroEyebrow: string; heroTitle: string; heroSubtitle: string }> = {
   creditCard: { heading: "All business credit cards", tag: "Business Banking · Credit Cards", scaleNote: "Monthly card fee shown on a shared scale, R0 → R415", detailsCta: "See card details", heroEyebrow: "Business Credit Cards", heroTitle: "Credit cards built for\nhow your business spends.", heroSubtitle: "From day-to-day expenses to team spending — find the card that fits your business." },
   loan:       { heading: "All business loans",         tag: "Business Banking · Loans",        scaleNote: "Admin / monthly fee shown on a shared scale, R0 → R415", detailsCta: "See loan details", heroEyebrow: "Business Loans", heroTitle: "Funding that moves\nas fast as your business.", heroSubtitle: "Quick approvals and clear terms — access capital on your timeline." },
-  insure:     { heading: "All business insurance",     tag: "Business Banking · Insure",       scaleNote: "Monthly premium / admin fee shown on a shared scale, R0 → R415", detailsCta: "See cover details", heroEyebrow: "Business Insurance", heroTitle: "Protection built around\nyour operations.", heroSubtitle: "Cover that's easy to understand and even easier to claim on, when you need it." },
   invest:     { heading: "All business investment accounts", tag: "Business Banking · Invest", scaleNote: "Admin fee shown on a shared scale, R0 → R415", detailsCta: "See account details", heroEyebrow: "Business Investment", heroTitle: "Put surplus cash\nto work.", heroSubtitle: "Investment and treasury accounts built for businesses of every size." },
 };
 
@@ -151,7 +142,7 @@ export function BusinessProductLedgerViewer({ isOpen, onClose, initialCategory, 
   const parsed = products.map(p => parsePrice(p.price)).filter((n): n is number => n !== null);
   const maxPrice = parsed.length ? Math.max(...parsed) : null;
   const handleApply = () => { onClose(); onApply(category); };
-  const activeLabel: NavItem = category === "creditCard" ? "Credit Cards" : category === "loan" ? "Loans" : category === "insure" ? "Insure" : "Invest";
+  const activeLabel: NavItem = category === "creditCard" ? "Credit Cards" : category === "loan" ? "Loans" : "Invest";
 
   return (
     <div className="pav-root fixed inset-0 z-50 overflow-y-auto">

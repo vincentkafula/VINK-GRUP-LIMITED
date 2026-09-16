@@ -46,7 +46,6 @@ const CreditCardViewer            = lazy(() => import("./components/CreditCardVi
 const CreditCardApplicationViewer = lazy(() => import("./components/CreditCardApplicationViewer").then(m => ({ default: m.CreditCardApplicationViewer })));
 const LoanViewer                  = lazy(() => import("./components/LoanViewer").then(m => ({ default: m.LoanViewer })));
 const InvestViewer                = lazy(() => import("./components/InvestViewer").then(m => ({ default: m.InvestViewer })));
-const InsureViewer                = lazy(() => import("./components/InsureViewer").then(m => ({ default: m.InsureViewer })));
 const RewardsViewer               = lazy(() => import("./components/RewardsViewer").then(m => ({ default: m.RewardsViewer })));
 const ServiceApplicationViewer    = lazy(() => import("./components/ServiceApplicationViewer").then(m => ({ default: m.ServiceApplicationViewer })));
 const VINKSIMApplicationViewer    = lazy(() => import("./components/VINKSIMApplicationViewer").then(m => ({ default: m.VINKSIMApplicationViewer })));
@@ -140,22 +139,20 @@ export default function App() {
   const [showSafetySecurity, setShowSafetySecurity]         = useState(false);
   const [showPersonalAccount, setShowPersonalAccount]       = useState(false);
   const [showPersonalLedger, setShowPersonalLedger]          = useState(false);
-  const [ledgerCategory, setLedgerCategory]                  = useState<"creditCard" | "loan" | "invest" | "insure" | "rewards">("creditCard");
+  const [ledgerCategory, setLedgerCategory]                  = useState<"creditCard" | "loan" | "invest" | "rewards">("creditCard");
   const [showCreditCard, setShowCreditCard]                 = useState(false);
   const [showCreditCardApp, setShowCreditCardApp]           = useState(false);
   const [showLoan, setShowLoan]                             = useState(false);
   const [showInvest, setShowInvest]                         = useState(false);
-  const [showInsure, setShowInsure]                         = useState(false);
   const [showRewards, setShowRewards]                       = useState(false);
   const [showInvestApp, setShowInvestApp]                   = useState(false);
-  const [showInsureApp, setShowInsureApp]                   = useState(false);
   const [showRewardsApp, setShowRewardsApp]                 = useState(false);
   const [showSIMServiceApp, setShowSIMServiceApp]           = useState(false);
   const [showAccountApp, setShowAccountApp]                 = useState(false);
 
   // ── Product selector ───────────────────────────────────────────────────────
   const [selectorOpen, setSelectorOpen]                     = useState(false);
-  const [selectorCategory, setSelectorCategory]             = useState<"account"|"creditCard"|"loan"|"invest"|"insure"|"rewards"|"sim"|null>(null);
+  const [selectorCategory, setSelectorCategory]             = useState<"account"|"creditCard"|"loan"|"invest"|"rewards"|"sim"|null>(null);
 
   // ── Business ──────────────────────────────────────────────────────────────
   const [showStartBusiness, setShowStartBusiness]           = useState(false);
@@ -163,7 +160,7 @@ export default function App() {
   const [showBusinessAccountSelector, setShowBusinessAccountSelector] = useState(false);
   const [chosenBusinessAccountType, setChosenBusinessAccountType] = useState<string | undefined>(undefined);
   const [showBusinessLedger, setShowBusinessLedger]         = useState(false);
-  const [businessLedgerCategory, setBusinessLedgerCategory] = useState<"creditCard" | "loan" | "insure" | "invest">("creditCard");
+  const [businessLedgerCategory, setBusinessLedgerCategory] = useState<"creditCard" | "loan" | "invest">("creditCard");
   const [showBusinessLoanApp, setShowBusinessLoanApp]       = useState(false);
   const [showManageBusiness, setShowManageBusiness]         = useState(false);
 
@@ -283,9 +280,11 @@ export default function App() {
         // feature. No dedicated personal-consumer forex screen exists
         // yet, so this stays on the consumer dashboard.
         case "forex":        mount("postLogin");        setShowPostLogin(true);        break;
-        // Insurance & Rewards
+        // Rewards -- "GuardMe" and "Insurance" tiles have no consumer-facing
+        // destination anymore (insurance was removed), so they land on the
+        // consumer dashboard rather than dead-end.
         case "guardme":
-        case "insurance":    mount("insure");           setShowInsure(true);           break;
+        case "insurance":    mount("postLogin");        setShowPostLogin(true);        break;
         case "rewards":      mount("rewards");          setShowRewards(true);          break;
         // Connectivity -- "Connect", "Mobile", and "VINK TV" tiles have no
         // consumer-facing destination (the backoffice mobile-network tool
@@ -317,10 +316,9 @@ export default function App() {
     });
   }, [mount]);
 
-  const applyForProductCategory = (category: "creditCard" | "loan" | "invest" | "insure" | "rewards") => {
+  const applyForProductCategory = (category: "creditCard" | "loan" | "invest" | "rewards") => {
     startTransition(() => {
       if (category === "invest")      { mount("investApp");     setShowInvestApp(true); }
-      else if (category === "insure") { mount("insureApp");     setShowInsureApp(true); }
       else if (category === "rewards"){ mount("rewardsApp");    setShowRewardsApp(true); }
       else if (category === "creditCard") { mount("creditCardApp"); setShowCreditCardApp(true); }
       else if (category === "loan")   { mount("bizLoanApp");    setShowBusinessLoanApp(true); }
@@ -345,7 +343,7 @@ export default function App() {
   const BIZ_PATH: Record<string, string> = {
     "Start My Business": "/business/start-my-business", "Accounts": "/business/accounts",
     "Credit Cards": "/business/credit-cards", "Loans": "/business/loans",
-    "Invest": "/business/invest", "Insure": "/business/insure",
+    "Invest": "/business/invest",
     "Manage My Business": "/business/manage-my-business",
   };
   const navigateBusinessItem = (item: string) => {
@@ -359,7 +357,6 @@ export default function App() {
     if (item === "Credit Cards")      { mount("bizLedger"); setBusinessLedgerCategory("creditCard"); setShowBusinessLedger(true); return; }
     if (item === "Loans")             { mount("bizLedger"); setBusinessLedgerCategory("loan"); setShowBusinessLedger(true); return; }
     if (item === "Invest")            { mount("bizLedger"); setBusinessLedgerCategory("invest"); setShowBusinessLedger(true); return; }
-    if (item === "Insure")            { mount("bizLedger"); setBusinessLedgerCategory("insure"); setShowBusinessLedger(true); return; }
     if (item === "Manage My Business"){ mount("manageBusiness");   setShowManageBusiness(true); return; }
   };
 
@@ -371,10 +368,10 @@ export default function App() {
     "PersonalHome": "/personal",
     "BusinessHome": "/business",
     "Account": "/personal/account", "Credit Card": "/personal/credit-card", "Loan": "/personal/loan",
-    "Invest": "/personal/invest", "Insure": "/personal/insure", "Rewards": "/personal/rewards",
+    "Invest": "/personal/invest", "Rewards": "/personal/rewards",
     "Start My Business": "/business/start-my-business", "Accounts": "/business/accounts",
     "Credit Cards": "/business/credit-cards", "Loans": "/business/loans",
-    "Business:Invest": "/business/invest", "Business:Insure": "/business/insure",
+    "Business:Invest": "/business/invest",
     "Manage My Business": "/business/manage-my-business",
     "Corporate:Account": "/corporate/account", "Corporate:Solutions & Credit Cards": "/corporate/solutions-credit-cards",
     "Corporate:Loan": "/corporate/loan",
@@ -385,7 +382,6 @@ export default function App() {
   const handleSubNavClick = (item: string) => {
     if (NAV_PATH[item]) pushRoute(NAV_PATH[item]);
     startTransition(() => {
-      if (item === "Business:Insure")   { mount("bizLedger");          setBusinessLedgerCategory("insure"); setShowBusinessLedger(true); return; }
       if (item === "Business:Invest")   { mount("bizLedger");          setBusinessLedgerCategory("invest"); setShowBusinessLedger(true); return; }
       // Personal — top-level nav click opens the landing page; subnav items go through product selector
       if (item === "PersonalHome")      { mount("personalLanding"); setShowPersonalLanding(true); return; }
@@ -394,7 +390,6 @@ export default function App() {
       if (item === "Credit Card")       { mount("personalAccount"); mount("personalLedger"); setLedgerCategory("creditCard"); setShowPersonalLedger(true); return; }
       if (item === "Loan")              { mount("personalAccount"); mount("personalLedger"); setLedgerCategory("loan"); setShowPersonalLedger(true); return; }
       if (item === "Invest")            { mount("personalAccount"); mount("personalLedger"); setLedgerCategory("invest"); setShowPersonalLedger(true); return; }
-      if (item === "Insure")            { mount("personalAccount"); mount("personalLedger"); setLedgerCategory("insure"); setShowPersonalLedger(true); return; }
       if (item === "Rewards")           { mount("personalAccount"); mount("personalLedger"); setLedgerCategory("rewards"); setShowPersonalLedger(true); return; }
       if (item === "SIM")               return openSelector("sim");
       // Business — Header.tsx's BUSINESS_SUB_NAV sends these exact bare labels
@@ -417,7 +412,7 @@ export default function App() {
     setShowPersonalLanding(false);
     setShowPersonalAccount(false); setShowPersonalLedger(false);
     setShowCreditCard(false); setShowCreditCardApp(false); setShowLoan(false); setShowInvest(false);
-    setShowInsure(false); setShowRewards(false); setShowInvestApp(false); setShowInsureApp(false);
+    setShowRewards(false); setShowInvestApp(false);
     setShowRewardsApp(false); setShowSIMServiceApp(false); setShowAccountApp(false);
     setSelectorOpen(false);
     setShowStartBusiness(false); setShowBusinessAccountSelector(false); setShowBusinessAccounts(false);
@@ -433,7 +428,7 @@ export default function App() {
   // requires backing out to the homepage first.
   const activeSiteSection: "Personal" | "Business" | "Corporate" | null =
     (showPersonalLanding || showPersonalAccount || showPersonalLedger || showCreditCard || showCreditCardApp ||
-     showLoan || showInvest || showInsure || showRewards || showInvestApp || showInsureApp || showRewardsApp ||
+     showLoan || showInvest || showRewards || showInvestApp || showRewardsApp ||
      showSIMServiceApp || showAccountApp) ? "Personal" :
     (showStartBusiness || showBusinessAccountSelector || showBusinessAccounts || showBusinessLedger ||
      showBusinessLoanApp || showManageBusiness)
@@ -467,7 +462,7 @@ export default function App() {
       return true;
     }
     if (seg[0] === "personal" && seg[1]) {
-      const map: Record<string, string> = { account: "account", "credit-card": "creditCard", loan: "loan", invest: "invest", insure: "insure", rewards: "rewards" };
+      const map: Record<string, string> = { account: "account", "credit-card": "creditCard", loan: "loan", invest: "invest", rewards: "rewards" };
       const cat = map[seg[1]];
       if (!cat) return false;
       mount("personalAccount");
@@ -480,7 +475,7 @@ export default function App() {
     if (seg[0] === "business" && seg[1]) {
       const map: Record<string, string> = {
         "start-my-business": "startBusiness", "accounts": "bizAccountSelector", "credit-cards": "bizLedger:creditCard",
-        "loans": "bizLedger:loan", "invest": "bizLedger:invest", "insure": "bizLedger:insure",
+        "loans": "bizLedger:loan", "invest": "bizLedger:invest",
         "manage-my-business": "manageBusiness",
       };
       const key = map[seg[1]];
@@ -597,7 +592,6 @@ export default function App() {
     setSelectorOpen(false);
     startTransition(() => {
       if (type === "invest")     { mount("investApp");      setShowInvestApp(true); }
-      else if (type === "insure"){ mount("insureApp");      setShowInsureApp(true); }
       else if (type === "rewards"){ mount("rewardsApp");    setShowRewardsApp(true); }
       else if (type === "sim")   { mount("simApp");         setShowSIMServiceApp(true); }
       else if (type === "account"){ mount("accountApp");    setShowAccountApp(true); }
@@ -684,10 +678,8 @@ export default function App() {
       {has("creditCardApp")   && <Suspense fallback={null}><CreditCardApplicationViewer isOpen={showCreditCardApp} onClose={() => setShowCreditCardApp(false)} /></Suspense>}
       {has("loan")            && <Suspense fallback={null}><LoanViewer             isOpen={showLoan}            onClose={() => setShowLoan(false)} /></Suspense>}
       {has("invest")          && <Suspense fallback={null}><InvestViewer           isOpen={showInvest}          onClose={() => setShowInvest(false)} /></Suspense>}
-      {has("insure")          && <Suspense fallback={null}><InsureViewer           isOpen={showInsure}          onClose={() => setShowInsure(false)} /></Suspense>}
       {has("rewards")         && <Suspense fallback={null}><RewardsViewer          isOpen={showRewards}         onClose={() => setShowRewards(false)} /></Suspense>}
       {has("investApp")       && <Suspense fallback={null}><ServiceApplicationViewer serviceType="invest"   isOpen={showInvestApp}     onClose={() => setShowInvestApp(false)} /></Suspense>}
-      {has("insureApp")       && <Suspense fallback={null}><ServiceApplicationViewer serviceType="insure"   isOpen={showInsureApp}     onClose={() => setShowInsureApp(false)} /></Suspense>}
       {has("rewardsApp")      && <Suspense fallback={null}><ServiceApplicationViewer serviceType="rewards"  isOpen={showRewardsApp}    onClose={() => setShowRewardsApp(false)} /></Suspense>}
       {has("simApp")          && <Suspense fallback={null}><VINKSIMApplicationViewer isOpen={showSIMServiceApp} onClose={() => setShowSIMServiceApp(false)} /></Suspense>}
       {has("accountApp")      && <Suspense fallback={null}><ServiceApplicationViewer serviceType="account"  isOpen={showAccountApp}    onClose={() => setShowAccountApp(false)} /></Suspense>}

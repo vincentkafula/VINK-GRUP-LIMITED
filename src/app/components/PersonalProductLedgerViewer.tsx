@@ -20,7 +20,6 @@ const SUB_NAV: { label: string; category: ProductCategory }[] = [
   { label: "Credit Card", category: "creditCard" },
   { label: "Loan",        category: "loan" },
   { label: "Invest",      category: "invest" },
-  { label: "Insure",      category: "insure" },
   { label: "Rewards",     category: "rewards" },
 ];
 
@@ -29,7 +28,6 @@ const PAGE_COPY: Record<ProductCategory, { heading: string; scaleNote: string; d
   creditCard: { heading: "All personal credit cards", scaleNote: "Monthly card fee shown on a shared scale, R0 → R415",          detailsCta: "See card details", heroEyebrow: "Credit Cards", heroTitle: "Credit cards built for\nhow you spend.", heroSubtitle: "From everyday essentials to premium rewards — find the card that fits your life." },
   loan:       { heading: "All personal loans",       scaleNote: "Application / admin fee shown on a shared scale, R0 → R415",   detailsCta: "See loan details", heroEyebrow: "Loans", heroTitle: "Loans that move\nas fast as you do.", heroSubtitle: "Quick approvals and clear terms — borrow with confidence, on your timeline." },
   invest:     { heading: "All investment products",  scaleNote: "Entry cost or rate varies by product type",                    detailsCta: "See investment details", heroEyebrow: "Invest", heroTitle: "Grow your wealth\nwith confidence.", heroSubtitle: "Investment products for every goal, from your first fund to long-term wealth." },
-  insure:     { heading: "All insurance cover",      scaleNote: "Monthly premium or admin fee shown on a shared scale, R0 → R415", detailsCta: "See cover details", heroEyebrow: "Insure", heroTitle: "Protection for\nwhat matters most.", heroSubtitle: "Cover that's easy to understand and even easier to claim on, when you need it." },
   rewards:    { heading: "All rewards cards",        scaleNote: "Monthly card fee shown on a shared scale, R0 → R415",          detailsCta: "See card details", heroEyebrow: "Rewards", heroTitle: "Get more out of\neveryday banking.", heroSubtitle: "Earn on every swipe and unlock offers built around how you already spend." },
   sim: { heading: "", scaleNote: "", detailsCta: "", heroEyebrow: "", heroTitle: "", heroSubtitle: "" },
 };

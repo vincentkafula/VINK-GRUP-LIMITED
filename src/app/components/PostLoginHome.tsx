@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import {
   LogIn, MessageSquare, Phone, ShoppingCart, Wifi,
-  CreditCard, ArrowLeftRight, Layers, Smartphone, Shield, ShieldCheck,
+  CreditCard, ArrowLeftRight, Layers, Smartphone,
   Tv, Banknote, Vote, ScanLine, UtensilsCrossed, Plane,
   DollarSign, Settings, Bell, ChevronRight, Eye, EyeOff,
   X, Home, BarChart3, User, QrCode
@@ -35,8 +35,6 @@ const MENU_ROWS = [
   ],
   [
     { id: "device",   label: "Device",      icon: <Smartphone className="w-6 h-6" />,      gradient: "from-[#64748B] to-[#334155]", glow: "#64748B" },
-    { id: "guardme",  label: "Guard Me",    icon: <Shield className="w-6 h-6" />,          gradient: "from-[#EF4444] to-[#991B1B]", glow: "#EF4444" },
-    { id: "insurance",label: "Insurance",   icon: <ShieldCheck className="w-6 h-6" />,     gradient: "from-[#10B981] to-[#047857]", glow: "#10B981" },
   ],
   [
     { id: "vinktv",    label: "VINK TV",      icon: <Tv className="w-6 h-6" />,              gradient: "from-[#FF9900] to-[#0B5C2E]", glow: "#FF9900" },

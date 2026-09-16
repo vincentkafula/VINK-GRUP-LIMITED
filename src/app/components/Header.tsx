@@ -16,8 +16,8 @@ interface HeaderProps {
 
 type NavItem = "Personal" | "Business" | "Corporate";
 
-const PERSONAL_SUB_NAV = ["Account", "Credit Card", "Loan", "Invest", "Insure", "Rewards"] as const;
-const BUSINESS_SUB_NAV   = ["Start My Business", "Accounts", "Credit Cards", "Loans", "Invest", "Insure", "Manage My Business"] as const;
+const PERSONAL_SUB_NAV = ["Account", "Credit Card", "Loan", "Invest", "Rewards"] as const;
+const BUSINESS_SUB_NAV   = ["Start My Business", "Accounts", "Credit Cards", "Loans", "Invest", "Manage My Business"] as const;
 const CORPORATE_SUB_NAV  = ["Account", "Solutions & Credit Cards", "Loan", "Social Responsibility"] as const;
 
 // The desktop staff app (see /desktop) loads this site with ?mode=staff so
@@ -218,7 +218,7 @@ export function Header({ onDashboardSelect, onSubNavClick, onOpenProfile, isLogg
               <div className="flex items-center h-10 overflow-x-auto scrollbar-none">
                 <nav className="flex items-center gap-0.5">
                   {BUSINESS_SUB_NAV.map(item => (
-                    <button key={item} onClick={() => { onSubNavClick?.(item === "Insure" ? "Business:Insure" : item === "Invest" ? "Business:Invest" : item); setActiveNav(null); }}
+                    <button key={item} onClick={() => { onSubNavClick?.(item === "Invest" ? "Business:Invest" : item); setActiveNav(null); }}
                       className="whitespace-nowrap text-white/90 hover:text-white transition-colors hover:underline underline-offset-4 px-3"
                       style={{ fontSize: 12 }}>
                       {item}

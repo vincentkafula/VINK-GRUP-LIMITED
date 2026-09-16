@@ -32,7 +32,6 @@ const SUB_NAV = [
   { label: "Credit Cards", item: "Credit Cards" },
   { label: "Loans", item: "Loans" },
   { label: "Invest", item: "Business:Invest" },
-  { label: "Insure", item: "Business:Insure" },
   { label: "Manage", item: "Manage My Business" },
 ];
 

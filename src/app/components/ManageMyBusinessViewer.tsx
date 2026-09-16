@@ -5,7 +5,7 @@ import { Footer } from "./Footer";
 
 interface Props { isOpen: boolean; onClose: () => void; onNavigate: (item: string) => void }
 
-const SUB_NAV = ["Start My Business", "Accounts", "Credit Cards", "Loans", "Invest", "Insure", "Manage My Business"];
+const SUB_NAV = ["Start My Business", "Accounts", "Credit Cards", "Loans", "Invest", "Manage My Business"];
 
 interface Service { name: string; price: string; featured?: boolean; features: string[] }
 

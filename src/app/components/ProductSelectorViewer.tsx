@@ -10,7 +10,7 @@ import vinkLogo from "../../imports/LOGO_FINAL.png";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type ProductCategory =
-  | "invest" | "insure" | "rewards" | "loan" | "creditCard" | "sim" | "account";
+  | "invest" | "rewards" | "loan" | "creditCard" | "sim" | "account";
 
 export interface Product {
   id: string;
@@ -45,13 +45,6 @@ export const CATEGORY_CONFIG: Record<ProductCategory, {
     tag: "Personal Banking · Investments",
     gradient: "linear-gradient(135deg,#0F4C81 0%,#1565C0 55%,#42A5F5 100%)",
     accentColor: "#1565C0",
-  },
-  insure: {
-    title: "Choose Your Insurance Cover",
-    subtitle: "Protect what matters most — select the cover type that fits your life, your vehicle, your family, or your health.",
-    tag: "Personal Banking · Insurance",
-    gradient: "linear-gradient(135deg,#1B5E20 0%,#2E7D32 55%,#66BB6A 100%)",
-    accentColor: "#2E7D32",
   },
   rewards: {
     title: "Choose Your Rewards Programme",
@@ -108,14 +101,6 @@ export const PRODUCTS: Record<ProductCategory, Product[]> = {
     { id: "unit-trust", name: "InfinityGrowth", tagline: "A high-growth investment option for investors comfortable with a longer time horizon and higher return potential.", price: "R500", priceLabel: "minimum/month", emoji: "📊", gradient: "linear-gradient(135deg,#FFF8E1,#FFF3CD)", features: ["Diversified across equity, bonds, and property", "Managed by qualified portfolio team", "Monthly or lump-sum contributions", "Quarterly investment statements"] },
     { id: "ra", name: "Evergreen Portfolio", tagline: "A stability-focused investment portfolio designed to preserve and steadily grow capital over time.", price: "27.5%", priceLabel: "of income tax-deductible", emoji: "🎯", gradient: "linear-gradient(135deg,#F3E5F5,#EAF7EE)", features: ["Tax-deductible contributions up to 27.5% of income", "Lump-sum or monthly contributions", "Choice of underlying fund", "Portable between employers"] },
     { id: "money-market", name: "LegacyBuilder", tagline: "An investment plan designed to help individuals build and protect wealth to pass on to future generations.", price: "R0", priceLabel: "no minimum balance", emoji: "💰", gradient: "linear-gradient(135deg,#E0F2F1,#B2DFDB)", features: ["Instant access", "Daily interest accrual", "Rate linked to repo rate", "No minimum balance required"] },
-  ],
-  insure: [
-    { id: "life", name: "VINK LifeNest", tagline: "Life insurance focused on protecting your family's future.", price: "R0", priceLabel: "admin fee · premium from R89/month", emoji: "❤️", gradient: "linear-gradient(135deg,#FFEBEE,#FFCDD2)", badge: "Most Important", badgeColor: "#EF4444", features: ["Lump-sum or income-based payout options for beneficiaries", "Guaranteed insurability options as your family grows", "Optional critical illness and terminal illness acceleration benefits", "Flexible terms from short-term cover to whole-of-life protection", "Transparent, fixed premiums with no hidden escalations"] },
-    { id: "disability", name: "VINK SecureStride", tagline: "Income protection and disability cover for working professionals.", price: "R0", priceLabel: "admin fee · premium from R59/month", emoji: "🦺", gradient: "linear-gradient(135deg,#FFF8E1,#FFF3CD)", features: ["Monthly income replacement during illness, injury, or disability", "Own-occupation cover options for specialised professions", "Short-term and long-term disability benefit structures", "Rehabilitation and return-to-work support included", "Cover that adjusts automatically as your salary grows"] },
-    { id: "funeral", name: "VINK ShieldOne", tagline: "Comprehensive everyday personal protection.", price: "R85", priceLabel: "/month", emoji: "🌹", gradient: "linear-gradient(135deg,#F3E5F5,#EAF7EE)", features: ["All-in-one cover for accidents, personal liability, and everyday risks", "Single premium, single policy, single point of contact", "Flexible cover levels that scale with life stage and income", "24/7 claims support with fast-track digital claims", "Optional add-ons to tailor protection to your household"] },
-    { id: "home-contents", name: "VINK HomeHarbour", tagline: "Protection for your home and personal belongings.", price: "R170", priceLabel: "/month", emoji: "🏠", gradient: "linear-gradient(135deg,#E8F5E9,#C8E6C9)", features: ["Buildings and contents cover, individually or combined", "All-risk protection for valuables, electronics, and personal items", "Cover for temporary accommodation after an insured event", "Home office and remote-work equipment protection", "Optional cover extensions for high-value items and specified goods"] },
-    { id: "motor", name: "VINK JourneyGuard", tagline: "Travel and journey protection for personal trips.", price: "R265", priceLabel: "/month", emoji: "🚗", gradient: "linear-gradient(135deg,#E3F2FD,#BBDEFB)", featured: true, badge: "Most Chosen", badgeColor: "#F5A623", features: ["Emergency medical cover and evacuation while travelling", "Trip cancellation, curtailment, and delay protection", "Baggage, personal effects, and travel document cover", "24/7 global emergency assistance line", "Single-trip and annual multi-trip options available"] },
-    { id: "hospital-cash", name: "VINK CareCircle", tagline: "Health and accident cover with wellness benefits.", price: "R415", priceLabel: "/month", emoji: "🏥", gradient: "linear-gradient(135deg,#E0F2F1,#B2DFDB)", features: ["Hospital, day-to-day medical, and accident cover in one plan", "Wellness rewards for health screenings, fitness, and preventative care", "Access to a curated network of healthcare providers", "Telehealth and virtual consultation access", "Family cover options with dependant discounts"] },
   ],
   rewards: [
     { id: "balance-transfer", name: "LifePerks", tagline: "A rewards programme built around everyday life, offering benefits on the purchases and services people use most.", price: "R0", priceLabel: "/month", emoji: "🔄", gradient: "linear-gradient(135deg,#E8F5E9,#C8E6C9)", features: ["0% interest for 6 months on transferred balance", "3% transfer fee (minimum R50)", "No annual fee", "Reports to all 4 credit bureaux"] },

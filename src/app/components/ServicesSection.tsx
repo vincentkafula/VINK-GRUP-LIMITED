@@ -1,4 +1,4 @@
-import { Wallet, TrendingUp, Shield, Building2, Banknote, Award } from 'lucide-react';
+import { Wallet, TrendingUp, Building2, Banknote, Award } from 'lucide-react';
 
 export function ServicesSection() {
   return (
@@ -22,12 +22,6 @@ export function ServicesSection() {
             icon={<TrendingUp className="w-10 h-10" />}
             title="Investment"
             description="Grow your wealth with smart investment options"
-            link="#"
-          />
-          <ServiceCard
-            icon={<Shield className="w-10 h-10" />}
-            title="Insurance"
-            description="Protect what matters most with our insurance plans"
             link="#"
           />
           <ServiceCard

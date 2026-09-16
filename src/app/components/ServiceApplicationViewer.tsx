@@ -1,6 +1,6 @@
 /**
  * Universal 7-step application form for:
- *   invest | insure | rewards | sim
+ *   invest | rewards | sim
  *
  * Steps 2–6 (OTP, fingerprint, selfie, documents, director) are shared.
  * Steps 1 and 7 adapt to each service type.
@@ -23,7 +23,7 @@ import { InlineError } from "./ErrorBoundary";
 import { Footer } from "./Footer";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-type ServiceType = "invest" | "insure" | "rewards" | "sim" | "account";
+type ServiceType = "invest" | "rewards" | "sim" | "account";
 
 interface Props { isOpen: boolean; onClose: () => void; serviceType: ServiceType; }
 
@@ -43,17 +43,6 @@ const SERVICE_CONFIG: Record<ServiceType, {
     accountLabel:  "Investment account number",
     accountPrefix: "VINK-INV",
     accentColor:   "#1565C0",
-  },
-  insure: {
-    tag:           "VINK Personal Banking · Insurance",
-    title:         "Insurance Policy Application",
-    subtitle:      "Apply for Life Cover, Disability, Funeral Plan, Home Contents, Motor Insurance or Hospital Cash Plan.",
-    gradient:      "linear-gradient(135deg,#1B5E20 0%,#2E7D32 50%,#66BB6A 100%)",
-    successTitle:  "Policy Activated!",
-    successBody:   "Your insurance policy is active. Your policy schedule will be emailed to you within 2 business hours.",
-    accountLabel:  "Policy number",
-    accountPrefix: "VINK-INS",
-    accentColor:   "#2E7D32",
   },
   rewards: {
     tag:           "VINK Personal Banking · VinkPoints",
@@ -105,10 +94,6 @@ const INVEST_PRODUCTS = [
   "Unit Trust — Money Market", "Unit Trust — Balanced Fund", "Unit Trust — Equity Fund",
   "Retirement Annuity", "Endowment Policy", "Money Market Account",
 ];
-const INSURE_PRODUCTS = [
-  "Life Cover", "Disability Cover", "Funeral Plan", "Home Contents Insurance",
-  "Motor Insurance (Comprehensive)", "Motor Insurance (Third Party)", "Hospital Cash Plan",
-];
 const SIM_PLANS = [
   "Pay-as-you-go (no monthly fee)", "Starter 1GB — R49/month",
   "Essential 3GB — R99/month", "Plus 10GB — R199/month",
@@ -146,22 +131,6 @@ function Step1Form({
           </Field>
           <Field label="Monthly contribution (ZAR)">
             <input type="number" className={inputCls} placeholder="Optional recurring amount" value={form.monthly} onChange={set("monthly")} />
-          </Field>
-        </>
-      )}
-      {type === "insure" && (
-        <>
-          <Field label="Select insurance product" required full>
-            <select className={selectCls} value={form.product} onChange={set("product")}>
-              <option value="">Choose product…</option>
-              {INSURE_PRODUCTS.map(p => <option key={p}>{p}</option>)}
-            </select>
-          </Field>
-          <Field label="Cover amount required (ZAR)" required>
-            <input type="number" className={inputCls} placeholder="e.g. 1000000" value={form.coverAmount} onChange={set("coverAmount")} />
-          </Field>
-          <Field label="Any pre-existing conditions / vehicle details">
-            <input className={inputCls} placeholder="Optional — declare if applicable" value={form.extras} onChange={set("extras")} />
           </Field>
         </>
       )}
@@ -234,13 +203,6 @@ const SERVICE_DOCS: Record<ServiceType, { key: string; label: string; required: 
     { key: "tax",     label: "SARS income tax number confirmation",           required: true },
     { key: "bank",    label: "Latest 3 months' bank statements",              required: true },
     { key: "source",  label: "Proof of source of funds",                      required: false },
-  ],
-  insure: [
-    { key: "id",      label: "Certified copy of SA ID or passport",          required: true },
-    { key: "address", label: "Proof of residential address (≤3 months)",     required: true },
-    { key: "income",  label: "Latest 3 months' payslips or bank statements", required: true },
-    { key: "vehicle", label: "Vehicle registration / licence disc (if motor)", required: false },
-    { key: "home",    label: "Municipal rates / lease agreement (if home contents)", required: false },
   ],
   rewards: [
     { key: "id",      label: "Certified copy of SA ID or passport",          required: true },

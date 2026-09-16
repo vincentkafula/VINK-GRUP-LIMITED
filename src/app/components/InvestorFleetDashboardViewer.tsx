@@ -193,6 +193,11 @@ export function InvestorFleetDashboardViewer({ isOpen, onClose, investorName = "
     };
   }, [devices, transactions, contracts, taxRate, initialDeviceIds]);
 
+  const trendData = useMemo(() => Array.from({ length: 14 }, (_, i) => {
+    const d = new Date("2025-04-26T00:00:00"); d.setDate(d.getDate() + i);
+    return { day: d.toLocaleDateString("en-ZA", { day: "2-digit", month: "short" }), total: Math.round(f.grossRevenue / 16 * (0.7 + Math.random() * 0.6)) };
+  }), [f.grossRevenue]);
+
   if (!isOpen) return null;
 
   const toggleDevice = (id: string) => {
@@ -236,10 +241,6 @@ export function InvestorFleetDashboardViewer({ isOpen, onClose, investorName = "
     { name: "Online trip fees", value: f.feeOnline, color: GREEN },
     { name: "Offline trip fees", value: f.feeOffline, color: ORANGE },
   ];
-  const trendData = useMemo(() => Array.from({ length: 14 }, (_, i) => {
-    const d = new Date("2025-04-26T00:00:00"); d.setDate(d.getDate() + i);
-    return { day: d.toLocaleDateString("en-ZA", { day: "2-digit", month: "short" }), total: Math.round(f.grossRevenue / 16 * (0.7 + Math.random() * 0.6)) };
-  }), [f.grossRevenue]);
 
   const bsBalanced = Math.abs(f.totalAssets - (f.totalLiabilities + f.totalEquity)) < 1;
 

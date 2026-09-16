@@ -9,7 +9,7 @@ import { Footer } from "./Footer";
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  /** Fires with the exact sub-nav label ("Account" | "Credit Card" | "Loan" | "Invest" | "Insure" | "Rewards") */
+  /** Fires with the exact sub-nav label ("Account" | "Credit Card" | "Loan" | "Invest" | "Rewards") */
   onNavigate: (item: string) => void;
   onApplyClick: () => void;
   onSecurityClick: () => void;
@@ -26,7 +26,6 @@ const SUB_NAV = [
   { label: "Cards",    item: "Credit Card" },
   { label: "Loans",    item: "Loan" },
   { label: "Invest",   item: "Invest" },
-  { label: "Insure",   item: "Insure" },
   { label: "Rewards",  item: "Rewards" },
 ];
 

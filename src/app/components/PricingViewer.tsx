@@ -28,7 +28,7 @@ const BRAND     = "#128A43";
 const BRAND_DARK = "#0F3D24";
 const FEAT_BG   = "#128A43";
 
-const SUB_NAV_ITEMS = ["Account", "Credit Card", "Loan", "Invest", "Insure", "Rewards"];
+const SUB_NAV_ITEMS = ["Account", "Credit Card", "Loan", "Invest", "Rewards"];
 
 // ─── Card component ───────────────────────────────────────────────────────────
 function Card({ card, onApply }: { card: PricingCard; onApply: (name: string, price: string) => void }) {

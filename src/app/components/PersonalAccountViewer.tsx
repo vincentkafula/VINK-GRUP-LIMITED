@@ -8,7 +8,7 @@ import { Footer } from "./Footer";
 import { getSession, clearSession } from "../services/apiClient";
 import { formatZAR, useCurrency, setCountryManually } from "../services/currencyStore";
 
-interface Props { isOpen: boolean; onClose: () => void; onNavigate: (category: "creditCard" | "loan" | "invest" | "insure" | "rewards") => void; onOpenBankingApp?: () => void }
+interface Props { isOpen: boolean; onClose: () => void; onNavigate: (category: "creditCard" | "loan" | "invest" | "rewards") => void; onOpenBankingApp?: () => void }
 
 interface Account {
   id: string;
@@ -27,7 +27,7 @@ interface Account {
   appFeatures: string[];
 }
 
-const SUB_NAV = ["Account", "Credit Card", "Loan", "Invest", "Insure", "Rewards"];
+const SUB_NAV = ["Account", "Credit Card", "Loan", "Invest", "Rewards"];
 const GREEN = "#0F8A4B";
 const ORANGE = "#FF7A1A";
 
@@ -211,8 +211,8 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate, onOpenBanki
               key={item}
               onClick={() => {
                 if (item === "Account") return;
-                const map: Record<string, "creditCard" | "loan" | "invest" | "insure" | "rewards"> = {
-                  "Credit Card": "creditCard", "Loan": "loan", "Invest": "invest", "Insure": "insure", "Rewards": "rewards",
+                const map: Record<string, "creditCard" | "loan" | "invest" | "rewards"> = {
+                  "Credit Card": "creditCard", "Loan": "loan", "Invest": "invest", "Rewards": "rewards",
                 };
                 onNavigate(map[item]);
               }}
