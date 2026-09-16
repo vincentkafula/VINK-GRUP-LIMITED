@@ -1,7 +1,7 @@
-import { User, Briefcase, Building2, ShoppingBag, X } from "lucide-react";
+import { User, Briefcase, Building2, X } from "lucide-react";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 
-export type SiteSection = "Personal" | "Business" | "Corporate" | "Marketplace" | null;
+export type SiteSection = "Personal" | "Business" | "Corporate" | null;
 
 interface Props {
   active: SiteSection;
@@ -13,12 +13,11 @@ const ITEMS: { label: Exclude<SiteSection, null>; icon: React.ReactNode }[] = [
   { label: "Personal",    icon: <User className="w-3.5 h-3.5" /> },
   { label: "Business",    icon: <Briefcase className="w-3.5 h-3.5" /> },
   { label: "Corporate",   icon: <Building2 className="w-3.5 h-3.5" /> },
-  { label: "Marketplace", icon: <ShoppingBag className="w-3.5 h-3.5" /> },
 ];
 
 /**
  * A slim nav strip that stays visible above every full-screen site page
- * (Personal / Business / Corporate / Marketplace and everything nested under
+ * (Personal / Business / Corporate and everything nested under
  * them), so switching sections never requires backing out to the homepage
  * first. Rendered once in App.tsx, above all overlays.
  */

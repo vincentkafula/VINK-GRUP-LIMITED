@@ -146,7 +146,7 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
         onSelectDashboard?.("adminBankingPanel");
         return;
       }
-      let isManagement = ["superadmin", "owner", "noc_engineer", "billing_admin", "marketplace_admin", "admin"].includes(role);
+      let isManagement = ["superadmin", "owner", "noc_engineer", "billing_admin", "admin"].includes(role);
       // A customer-role account can still be an approved Section Manager —
       // that's granted via section_permissions, not a role change, so check
       // it explicitly rather than assuming role alone tells us everything.
@@ -228,7 +228,7 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
                 Welcome back to the tools that keep <span className="text-[#FFB84D]">VINK running</span>
               </h1>
               <p className="text-[#e7d9cd] text-[15px] leading-[1.7] mb-8">
-                Staff-only access to Banking, Payments, Marketplace, Mobile Network,
+                Staff-only access to Banking, Payments, Mobile Network,
                 Vehicle Management and every other section your role covers.
               </p>
               <div className="flex gap-8 flex-wrap">

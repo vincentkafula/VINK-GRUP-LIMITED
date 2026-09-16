@@ -36,10 +36,6 @@ export const PAGE_META = {
     title: "Business Banking for South African Entrepreneurs | VINK",
     description: "Open a business bank account built for taxi associations, fleet owners, fuel stations, and small businesses across South Africa. No monthly fees, fast settlements, employee cards, and cross-border payments at local rates.",
   },
-  marketplace: {
-    title: "VINK Marketplace — Shop Electronics, Fashion, Home & More",
-    description: "Buy and sell electronics, fashion, home goods, office furniture and more on VINK Marketplace. Earn cashback and VinkPoints on every purchase, all from your VINK account.",
-  },
   news: {
     title: "VINK News — World, Africa, Business & Technology Headlines",
     description: "Stay informed with VINK News: World, Africa, Business, Technology, Sport, Entertainment and Opinion coverage, updated regularly.",

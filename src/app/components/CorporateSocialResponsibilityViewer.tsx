@@ -29,7 +29,7 @@ export function CorporateSocialResponsibilityViewer({ isOpen, onClose, onNavigat
 
       {/* ── Main nav ── */}
       <div className="bg-white border-b px-6 flex gap-6 overflow-x-auto text-sm" style={{ borderColor: "#e8e8f0" }}>
-        {["Personal", "Business", "Corporate", "Marketplace"].map((item) => (
+        {["Personal", "Business", "Corporate"].map((item) => (
           <span key={item} className="py-3 flex-shrink-0 font-medium"
             style={{ color: item === "Corporate" ? P : "#5a5a72", borderBottom: item === "Corporate" ? `2px solid ${P}` : "2px solid transparent" }}>
             {item}

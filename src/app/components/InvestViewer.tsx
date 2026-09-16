@@ -7,7 +7,7 @@ interface Props { isOpen: boolean; onClose: () => void }
 const BRAND      = "#0B5C2E";
 const BRAND_DARK = "#0F3D24";
 const FEAT_BG    = "#0B5C2E";
-const TOP_NAV    = ["Personal", "Business", "Corporate", "Marketplace"];
+const TOP_NAV    = ["Personal", "Business", "Corporate"];
 const BIZ_SUBNAV = ["Start my business", "Accounts", "Credit cards", "Loans", "Invest", "Insure", "Manage my Business", "International", "Studio", "news", "Get Help"];
 const ACTIVE_IDX = 4;
 

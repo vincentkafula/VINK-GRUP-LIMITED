@@ -18,8 +18,8 @@ export function timeAgo(iso: string) {
   return `${Math.floor(days / 365)} years ago`;
 }
 
-/** Continuous right-to-left drift, same behaviour as the marketplace's
- *  product-row auto-slide — pauses on hover/touch, loops seamlessly. */
+/** Continuous right-to-left drift, same auto-slide pattern used
+ *  elsewhere in the app — pauses on hover/touch, loops seamlessly. */
 export function useAutoSlide<T extends HTMLElement>(itemCount: number, speed = 0.6) {
   const ref = useRef<T>(null);
   const paused = useRef(false);

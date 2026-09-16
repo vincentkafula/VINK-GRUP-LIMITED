@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import {
-  LogIn, MessageSquare, Phone, Store, ShoppingCart, Wifi,
+  LogIn, MessageSquare, Phone, ShoppingCart, Wifi,
   CreditCard, ArrowLeftRight, Layers, Smartphone, Shield, ShieldCheck,
   Tv, Banknote, Vote, ScanLine, UtensilsCrossed, Plane,
   DollarSign, Settings, Bell, ChevronRight, Eye, EyeOff,
@@ -25,7 +25,6 @@ const MENU_ROWS = [
     { id: "contact",  label: "Contact Us",  icon: <Phone className="w-6 h-6" />,           gradient: "from-[#10B981] to-[#059669]", glow: "#10B981" },
   ],
   [
-    { id: "marketplace", label: "Market Place", icon: <Store className="w-6 h-6" />,       gradient: "from-[#F59E0B] to-[#D97706]", glow: "#F59E0B" },
     { id: "buy",      label: "Buy",         icon: <ShoppingCart className="w-6 h-6" />,    gradient: "from-[#EF4444] to-[#DC2626]", glow: "#EF4444" },
     { id: "connect",  label: "Connect",     icon: <Wifi className="w-6 h-6" />,            gradient: "from-[#34A853] to-[#FF9900]", glow: "#34A853" },
   ],

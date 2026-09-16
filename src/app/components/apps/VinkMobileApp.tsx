@@ -18,7 +18,6 @@ const TILES = [
   { id: "login",        label: "Login",         bg: "#EDE9FE", fg: "#FF9900", icon: LoginIcon },
   { id: "message",      label: "Message",       bg: "#D1FAE5", fg: "#059669", icon: MessageIcon },
   { id: "contactus",    label: "Contact Us",    bg: "#FEF3C7", fg: "#D97706", icon: PhoneIcon },
-  { id: "marketplace",  label: "Market Place",  bg: "#FEE2E2", fg: "#DC2626", icon: MarketIcon },
   { id: "buy",          label: "Buy",           bg: "#DBEAFE", fg: "#2563EB", icon: CartIcon },
   { id: "connect",      label: "Connect",       bg: "#D1FAE5", fg: "#059669", icon: ConnectIcon },
   { id: "payments",     label: "Payments",      bg: "#FEF3C7", fg: "#D97706", icon: PayIcon },
@@ -46,9 +45,6 @@ function MessageIcon({ color }: { color: string }) {
 }
 function PhoneIcon({ color }: { color: string }) {
   return <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.61 19a19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 3.1 4.18 2 2 0 0 1 5.08 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L9.4 9.57a16 16 0 0 0 6 6l.95-.93a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 23 17z"/></svg>;
-}
-function MarketIcon({ color }: { color: string }) {
-  return <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>;
 }
 function CartIcon({ color }: { color: string }) {
   return <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>;

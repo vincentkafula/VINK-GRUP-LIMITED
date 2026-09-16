@@ -8,7 +8,7 @@ interface Props { isOpen: boolean; onClose: () => void; onNavigate: (item: strin
 
 const BRAND      = "#0B5C2E";
 const BRAND_DARK = "#0F3D24";
-const TOP_NAV    = ["Personal", "Business", "Corporate", "Marketplace"];
+const TOP_NAV    = ["Personal", "Business", "Corporate"];
 const BIZ_SUBNAV = ["Start My Business", "Accounts", "Credit Cards", "Loans", "Invest", "Insure", "Manage My Business", "International", "Studio", "News", "Get Help"];
 const ACTIVE_IDX = 7;
 

@@ -155,7 +155,7 @@ export function CorporateEventsViewer({ isOpen, onClose, onNavigate }: Props) {
 
       {/* ── Main nav ── */}
       <div className="bg-white border-b border-gray-200 px-4 flex gap-6 overflow-x-auto text-sm">
-        {["Menu", "Personal", "Business", "Corporate", "Marketplace"].map((item) => (
+        {["Menu", "Personal", "Business", "Corporate"].map((item) => (
           <span key={item} className="py-3 flex-shrink-0 font-medium"
             style={{ color: item === "Corporate" ? P : "#444", borderBottom: item === "Corporate" ? `2px solid ${P}` : "2px solid transparent" }}>
             {item}

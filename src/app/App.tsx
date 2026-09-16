@@ -9,13 +9,6 @@ import { LazySection } from "./components/LazySection";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { useBodyScrollLock } from "./hooks/useBodyScrollLock";
 
-// Marketplace now lives in its own deployed app (separate frontend +
-// backend, separate accounts) — set VITE_MARKETPLACE_URL in this app's
-// Railway environment variables to that deployment's public URL. Every
-// "Marketplace" nav entry below opens it in a new tab rather than
-// mounting an in-app component.
-const MARKETPLACE_URL = import.meta.env.VITE_MARKETPLACE_URL ?? "https://vink-marketplace.up.railway.app";
-
 // ─── Below-fold homepage sections — code-split ────────────────────────────────
 const FeaturesSection              = lazy(() => import("./components/FeaturesSection").then(m => ({ default: m.FeaturesSection })));
 const ProtectionSection            = lazy(() => import("./components/ProtectionSection").then(m => ({ default: m.ProtectionSection })));
@@ -286,7 +279,6 @@ export default function App() {
       else if (id === "managementPanel")   { mount("managementPanel");  setShowManagementPanel(true); pushRoute("/management-panel"); }
       else if (id === "adminBankingPanel") { mount("banking");          setShowBanking(true); }
       else if (id === "vehicle")           { mount("vehicle");          setShowVehicle(true); }
-      else if (id === "marketplace")       { window.open(MARKETPLACE_URL, "_blank", "noopener,noreferrer"); }
       else if (id === "appLauncher")       { mount("appLauncher");      setShowAppLauncher(true); }
       else if (id === "afcApp")            { mount("afcApp");           setShowAFCApp(true); }
       else                                 { mount("postLogin");        setShowPostLogin(true); }
@@ -333,8 +325,6 @@ export default function App() {
         case "connect":
         case "mobile":
         case "vinktv":       mount("postLogin");        setShowPostLogin(true);        break;
-        // Commerce
-        case "marketplace":  window.open(MARKETPLACE_URL, "_blank", "noopener,noreferrer"); break;
         case "buy":
         case "settings":     mount("vinkMobileApp");    setShowVinkMobileApp(true);    break;
         // Contact & Support
@@ -468,8 +458,6 @@ export default function App() {
       if (item === "Corporate:API")                       { mount("corpApi");       setShowCorporateApi(true); return; }
       if (item === "Corporate:Events")                    { mount("corpEvents");    setShowCorporateEvents(true); return; }
       if (item === "Corporate:Social Responsibility")     { mount("corpCSR");       setShowCorporateCSR(true); return; }
-      // Marketplace — separate deployed app now, opened in a new tab
-      if (item === "Marketplace")       { window.open(MARKETPLACE_URL, "_blank", "noopener,noreferrer"); return; }
     });
   };
 
@@ -489,10 +477,10 @@ export default function App() {
     setShowTaxiAssociations(false); setShow500App(false);
   };
 
-  // ── Persistent top nav (Personal/Business/Corporate/Marketplace) ─────────
+  // ── Persistent top nav (Personal/Business/Corporate) ─────────
   // Shown above every full-screen site page so switching sections never
   // requires backing out to the homepage first.
-  const activeSiteSection: "Personal" | "Business" | "Corporate" | "Marketplace" | null =
+  const activeSiteSection: "Personal" | "Business" | "Corporate" | null =
     (showPersonalLanding || showPersonalAccount || showPersonalLedger || showCreditCard || showCreditCardApp ||
      showLoan || showInvest || showInsure || showRewards || showInvestApp || showInsureApp || showRewardsApp ||
      showSIMServiceApp || showAccountApp) ? "Personal" :
@@ -507,13 +495,12 @@ export default function App() {
     activeSiteSection !== null || selectorOpen || showContactUs || showAboutVINK || showCareers || showNews ||
     showSwitchToVINK || showSafetySecurity || showTaxiAssociations || show500App || showJobApp;
 
-  const goToSection = (section: "Personal" | "Business" | "Corporate" | "Marketplace") => {
+  const goToSection = (section: "Personal" | "Business" | "Corporate") => {
     startTransition(() => {
       closeAllRoutedViewers();
       if (section === "Personal")    { mount("personalLanding");     setShowPersonalLanding(true);     pushRoute("/personal"); }
       if (section === "Business")    { mount("bizAccountSelector");  setShowBusinessAccountSelector(true); pushRoute("/business/accounts"); }
       if (section === "Corporate")   { mount("corpLedger"); setCorporateLedgerCategory("account"); setShowCorporateLedger(true); pushRoute("/corporate/account"); }
-      if (section === "Marketplace") { window.open(MARKETPLACE_URL, "_blank", "noopener,noreferrer"); }
     });
   };
 
@@ -571,7 +558,6 @@ export default function App() {
     }
     if (path === "/contact-us") { mount("contactUs"); setShowContactUs(true); return true; }
     if (path === "/news") { mount("news"); setShowNews(true); return true; }
-    if (path === "/marketplace") { window.location.href = MARKETPLACE_URL; return true; }
     if (path === "/management-panel") { mount("managementPanel"); setShowManagementPanel(true); return true; }
     return false;
   };

@@ -14,7 +14,7 @@ interface HeaderProps {
   userName?: string;
 }
 
-type NavItem = "Personal" | "Business" | "Corporate" | "Marketplace";
+type NavItem = "Personal" | "Business" | "Corporate";
 
 const PERSONAL_SUB_NAV = ["Account", "Credit Card", "Loan", "Invest", "Insure", "Rewards"] as const;
 const BUSINESS_SUB_NAV   = ["Start My Business", "Accounts", "Credit Cards", "Loans", "Invest", "Insure", "Manage My Business", "International", "Studio", "News"] as const;
@@ -54,12 +54,6 @@ export function Header({ onDashboardSelect, onSubNavClick, onOpenProfile, isLogg
   }, [isLoggedIn]);
 
   const handleNavClick = (item: NavItem) => {
-    if (item === "Marketplace") {
-      onDashboardSelect?.("marketplace");
-      setActiveNav(null);
-      if (mobileOpen) setMobileOpen(false);
-      return;
-    }
     if (item === "Personal") {
       setActiveNav(prev => (prev === "Personal" ? null : "Personal"));
       onSubNavClick?.("PersonalHome");
@@ -119,7 +113,7 @@ export function Header({ onDashboardSelect, onSubNavClick, onOpenProfile, isLogg
 
               {/* Desktop nav items */}
               <nav className="hidden md:flex items-center gap-1">
-                {(["Personal", "Business", "Corporate", "Marketplace"] as NavItem[]).map(item => (
+                {(["Personal", "Business", "Corporate"] as NavItem[]).map(item => (
                   <button
                     key={item}
                     onClick={() => handleNavClick(item)}
@@ -179,7 +173,7 @@ export function Header({ onDashboardSelect, onSubNavClick, onOpenProfile, isLogg
           {/* Mobile nav dropdown */}
           {mobileOpen && (
             <div className="md:hidden border-t border-gray-100 py-3 flex flex-col gap-1">
-              {(["Personal", "Business", "Corporate", "Marketplace"] as NavItem[]).map(item => (
+              {(["Personal", "Business", "Corporate"] as NavItem[]).map(item => (
                 <button
                   key={item}
                   onClick={() => handleNavClick(item)}

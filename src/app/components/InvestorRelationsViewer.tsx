@@ -196,7 +196,7 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
         <div className="flex items-center gap-3">
           <img src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
           <div className="hidden sm:flex items-center gap-6 text-sm ml-4">
-            {["Personal", "Business", "Corporate", "Marketplace"].map(n => (
+            {["Personal", "Business", "Corporate"].map(n => (
               <span key={n} className="text-gray-500 hover:text-gray-800 cursor-pointer transition-colors">{n}</span>
             ))}
           </div>

@@ -146,7 +146,7 @@ export function PricingViewer({ isOpen, onClose, activeSubNav, heroTitle, heroSu
           <img src={vinkLogo} alt="VINK" style={{ height: 44, width: "auto", objectFit: "contain" }} />
 
           <ul style={{ display: "flex", gap: 28, listStyle: "none", margin: 0, padding: 0 }} className="hidden md:flex">
-            {["Personal", "Business", "Corporate", "Marketplace"].map((item, i) => (
+            {["Personal", "Business", "Corporate"].map((item, i) => (
               <li key={item}>
                 <a href="#" style={{ fontSize: 14, fontWeight: i === 0 ? 700 : 500, color: i === 0 ? BRAND : "#4B4567", textDecoration: "none" }}>{item}</a>
               </li>
