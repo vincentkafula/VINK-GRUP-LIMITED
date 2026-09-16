@@ -38,6 +38,7 @@ const InvestorFleetDashboardViewer = lazy(() => import("./components/InvestorFle
 const ManagementPanelViewer       = lazy(() => import("./components/ManagementPanelViewer").then(m => ({ default: m.ManagementPanelViewer })));
 import { PersistentTopNav } from "./components/PersistentTopNav";
 const PersonalAccountViewer       = lazy(() => import("./components/PersonalAccountViewer").then(m => ({ default: m.PersonalAccountViewer })));
+const PersonalLandingViewer       = lazy(() => import("./components/PersonalLandingViewer").then(m => ({ default: m.PersonalLandingViewer })));
 const BusinessLandingViewer       = lazy(() => import("./components/BusinessLandingViewer").then(m => ({ default: m.BusinessLandingViewer })));
 const SafetySecurityViewer        = lazy(() => import("./components/footerPages/SafetySecurityViewer").then(m => ({ default: m.SafetySecurityViewer })));
 const PersonalProductLedgerViewer = lazy(() => import("./components/PersonalProductLedgerViewer").then(m => ({ default: m.PersonalProductLedgerViewer })));
@@ -134,6 +135,7 @@ export default function App() {
   const [showRevenueDashboard, setShowRevenueDashboard]     = useState(false);
 
   // ── Personal products ──────────────────────────────────────────────────────
+  const [showPersonalLanding, setShowPersonalLanding]       = useState(false);
   const [showBusinessLanding, setShowBusinessLanding]       = useState(false);
   const [showSafetySecurity, setShowSafetySecurity]         = useState(false);
   const [showPersonalAccount, setShowPersonalAccount]       = useState(false);
@@ -386,7 +388,7 @@ export default function App() {
       if (item === "Business:Insure")   { mount("bizLedger");          setBusinessLedgerCategory("insure"); setShowBusinessLedger(true); return; }
       if (item === "Business:Invest")   { mount("bizLedger");          setBusinessLedgerCategory("invest"); setShowBusinessLedger(true); return; }
       // Personal — top-level nav click opens the landing page; subnav items go through product selector
-      if (item === "PersonalHome")      { setVinkBankingAppInitialScreen(undefined); mount("vinkBankingApp"); setShowVinkBankingApp(true); return; }
+      if (item === "PersonalHome")      { mount("personalLanding"); setShowPersonalLanding(true); return; }
       if (item === "BusinessHome")      { mount("businessLanding"); setShowBusinessLanding(true); return; }
      if (item === "Account")           { mount("personalAccount"); setShowPersonalAccount(true); return; }
       if (item === "Credit Card")       { mount("personalAccount"); mount("personalLedger"); setLedgerCategory("creditCard"); setShowPersonalLedger(true); return; }
@@ -412,7 +414,7 @@ export default function App() {
   };
 
   const closeAllRoutedViewers = () => {
-    setShowVinkBankingApp(false);
+    setShowPersonalLanding(false);
     setShowPersonalAccount(false); setShowPersonalLedger(false);
     setShowCreditCard(false); setShowCreditCardApp(false); setShowLoan(false); setShowInvest(false);
     setShowInsure(false); setShowRewards(false); setShowInvestApp(false); setShowInsureApp(false);
@@ -430,7 +432,7 @@ export default function App() {
   // Shown above every full-screen site page so switching sections never
   // requires backing out to the homepage first.
   const activeSiteSection: "Personal" | "Business" | "Corporate" | null =
-    (showVinkBankingApp || showPersonalAccount || showPersonalLedger || showCreditCard || showCreditCardApp ||
+    (showPersonalLanding || showPersonalAccount || showPersonalLedger || showCreditCard || showCreditCardApp ||
      showLoan || showInvest || showInsure || showRewards || showInvestApp || showInsureApp || showRewardsApp ||
      showSIMServiceApp || showAccountApp) ? "Personal" :
     (showStartBusiness || showBusinessAccountSelector || showBusinessAccounts || showBusinessLedger ||
@@ -447,7 +449,7 @@ export default function App() {
   const goToSection = (section: "Personal" | "Business" | "Corporate") => {
     startTransition(() => {
       closeAllRoutedViewers();
-      if (section === "Personal")    { setVinkBankingAppInitialScreen(undefined); mount("vinkBankingApp"); setShowVinkBankingApp(true); pushRoute("/personal"); }
+      if (section === "Personal")    { mount("personalLanding");     setShowPersonalLanding(true);     pushRoute("/personal"); }
       if (section === "Business")    { mount("bizAccountSelector");  setShowBusinessAccountSelector(true); pushRoute("/business/accounts"); }
       if (section === "Corporate")   { mount("corpLedger"); setCorporateLedgerCategory("account"); setShowCorporateLedger(true); pushRoute("/corporate/account"); }
     });
@@ -460,9 +462,8 @@ export default function App() {
   const openRoute = (path: string): boolean => {
     const seg = path.replace(/^\/|\/$/g, "").split("/");
     if (seg[0] === "personal" && !seg[1]) {
-      setVinkBankingAppInitialScreen(undefined);
-      mount("vinkBankingApp");
-      setShowVinkBankingApp(true);
+      mount("personalLanding");
+      setShowPersonalLanding(true);
       return true;
     }
     if (seg[0] === "personal" && seg[1]) {
@@ -674,6 +675,7 @@ export default function App() {
       {has("managementPanel") && <Suspense fallback={null}><ManagementPanelViewer  isOpen={showManagementPanel} onClose={() => { setShowManagementPanel(false); pushRoute("/"); }} adminName={getSession()?.name} adminRole={getSession()?.role === "superadmin" ? "Super Administrator" : getSession()?.role === "owner" ? "System Owner" : getSession()?.role} role={getSession()?.role} /></Suspense>}
 
       {/* Personal products */}
+      {has("personalLanding") && <Suspense fallback={null}><PersonalLandingViewer isOpen={showPersonalLanding} onClose={() => { setShowPersonalLanding(false); pushRoute("/"); }} onNavigate={(item) => { setShowPersonalLanding(false); handleSubNavClick(item); }} onApplyClick={() => { setShowPersonalLanding(false); handleSubNavClick("Account"); }} onSecurityClick={() => { mount("safetySecurity"); setShowSafetySecurity(true); }} /></Suspense>}
       {has("businessLanding") && <Suspense fallback={null}><BusinessLandingViewer isOpen={showBusinessLanding} onClose={() => { setShowBusinessLanding(false); pushRoute("/"); }} onNavigate={(item) => { setShowBusinessLanding(false); handleSubNavClick(item); }} onApplyClick={() => { setShowBusinessLanding(false); handleSubNavClick("Accounts"); }} onSecurityClick={() => { mount("safetySecurity"); setShowSafetySecurity(true); }} /></Suspense>}
       {has("safetySecurity")  && <Suspense fallback={null}><SafetySecurityViewer  isOpen={showSafetySecurity} onClose={() => setShowSafetySecurity(false)} /></Suspense>}
       {has("personalAccount") && <Suspense fallback={null}><PersonalAccountViewer  isOpen={showPersonalAccount} onClose={() => { setShowPersonalAccount(false); pushRoute("/"); }} onNavigate={(cat) => { setShowPersonalAccount(false); setLedgerCategory(cat); setShowPersonalLedger(true); pushRoute(`/personal/${cat === "creditCard" ? "credit-card" : cat}`); }} onOpenBankingApp={() => { setShowPersonalAccount(false); mount("postLogin"); setShowPostLogin(true); }} /></Suspense>}
