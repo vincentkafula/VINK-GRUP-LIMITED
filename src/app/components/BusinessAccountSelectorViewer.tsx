@@ -2,7 +2,7 @@ import { useState } from "react";
 import { X } from "lucide-react";
 import { Footer } from "./Footer";
 
-type NavItem = "Start My Business" | "Accounts" | "Credit Cards" | "Loans" | "Invest" | "Insure" | "Manage My Business" | "International" | "Studio" | "News";
+type NavItem = "Start My Business" | "Accounts" | "Credit Cards" | "Loans" | "Invest" | "Insure" | "Manage My Business";
 
 interface Props {
   isOpen: boolean;
@@ -12,7 +12,7 @@ interface Props {
   onOpenApp: () => void;
 }
 
-const SUB_NAV: NavItem[] = ["Start My Business", "Accounts", "Credit Cards", "Loans", "Invest", "Insure", "Manage My Business", "International", "Studio", "News"];
+const SUB_NAV: NavItem[] = ["Start My Business", "Accounts", "Credit Cards", "Loans", "Invest", "Insure", "Manage My Business"];
 
 // These are the exact 6 account types already defined inside
 // BusinessAccountApplicationViewer's own Step 7 — surfaced here as a

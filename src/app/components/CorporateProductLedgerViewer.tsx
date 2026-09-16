@@ -4,7 +4,7 @@ import { ApplyModal } from "./ApplyModal";
 import { Footer } from "./Footer";
 
 type CorpCategory = "account" | "solutions" | "loan";
-type NavItem = "Account" | "Solutions & Credit Cards" | "Loan" | "API" | "Events" | "Social Responsibility";
+type NavItem = "Account" | "Solutions & Credit Cards" | "Loan" | "Social Responsibility";
 
 interface Props {
   isOpen: boolean;
@@ -20,7 +20,7 @@ interface CardData {
 }
 interface Section { label: string; cards: CardData[] }
 
-const SUB_NAV: NavItem[] = ["Account", "Solutions & Credit Cards", "Loan", "API", "Events", "Social Responsibility"];
+const SUB_NAV: NavItem[] = ["Account", "Solutions & Credit Cards", "Loan", "Social Responsibility"];
 const CATEGORY_FOR_NAV: Partial<Record<NavItem, CorpCategory>> = { "Account": "account", "Solutions & Credit Cards": "solutions", "Loan": "loan" };
 
 // Real product data, unchanged — moved as-is out of the old

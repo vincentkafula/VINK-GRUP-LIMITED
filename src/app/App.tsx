@@ -60,13 +60,8 @@ const BusinessAccountApplicationViewer = lazy(() => import("./components/Busines
 const BusinessAccountSelectorViewer = lazy(() => import("./components/BusinessAccountSelectorViewer").then(m => ({ default: m.BusinessAccountSelectorViewer })));
 const BusinessLoanApplicationViewer = lazy(() => import("./components/BusinessLoanApplicationViewer").then(m => ({ default: m.BusinessLoanApplicationViewer })));
 const ManageMyBusinessViewer      = lazy(() => import("./components/ManageMyBusinessViewer").then(m => ({ default: m.ManageMyBusinessViewer })));
-const BusinessInternationalViewer = lazy(() => import("./components/BusinessInternationalViewer").then(m => ({ default: m.BusinessInternationalViewer })));
-const BusinessStudioViewer        = lazy(() => import("./components/BusinessStudioViewer").then(m => ({ default: m.BusinessStudioViewer })));
-const BusinessNewsViewer          = lazy(() => import("./components/BusinessNewsViewer").then(m => ({ default: m.BusinessNewsViewer })));
 const CorporateProductLedgerViewer = lazy(() => import("./components/CorporateProductLedgerViewer").then(m => ({ default: m.CorporateProductLedgerViewer })));
 const CorporateLoanApplicationViewer = lazy(() => import("./components/CorporateLoanApplicationViewer").then(m => ({ default: m.CorporateLoanApplicationViewer })));
-const CorporateApiViewer          = lazy(() => import("./components/CorporateApiViewer").then(m => ({ default: m.CorporateApiViewer })));
-const CorporateEventsViewer       = lazy(() => import("./components/CorporateEventsViewer").then(m => ({ default: m.CorporateEventsViewer })));
 const CorporateSocialResponsibilityViewer = lazy(() => import("./components/CorporateSocialResponsibilityViewer").then(m => ({ default: m.CorporateSocialResponsibilityViewer })));
 const InvestorRelationsViewer     = lazy(() => import("./components/InvestorRelationsViewer").then(m => ({ default: m.InvestorRelationsViewer })));
 const GlobalBankingDashboard      = lazy(() => import("./components/GlobalBankingDashboard").then(m => ({ default: m.GlobalBankingDashboard })));
@@ -88,7 +83,6 @@ const AppLauncher                 = lazy(() => import("./components/apps/AppLaun
 const AboutVINKViewer              = lazy(() => import("./components/footerPages/AboutVINKViewer").then(m => ({ default: m.AboutVINKViewer })));
 const LegalComplianceViewer         = lazy(() => import("./components/footerPages/LegalComplianceViewer").then(m => ({ default: m.LegalComplianceViewer })));
 const CareersViewer               = lazy(() => import("./components/footerPages/CareersViewer").then(m => ({ default: m.CareersViewer })));
-const NewsViewer                  = lazy(() => import("./components/footerPages/NewsViewer").then(m => ({ default: m.NewsViewer })));
 const ContactUsViewer             = lazy(() => import("./components/footerPages/ContactUsViewer").then(m => ({ default: m.ContactUsViewer })));
 const SwitchToVINKViewer           = lazy(() => import("./components/footerPages/SwitchToVINKViewer").then(m => ({ default: m.SwitchToVINKViewer })));
 const BranchLocatorViewer          = lazy(() => import("./components/footerPages/BranchLocatorViewer").then(m => ({ default: m.BranchLocatorViewer })));
@@ -103,7 +97,6 @@ const MarketIndicesViewer          = lazy(() => import("./components/footerPages
 const VinkBlogViewer               = lazy(() => import("./components/footerPages/VinkBlogViewer").then(m => ({ default: m.VinkBlogViewer })));
 const FiveHundredGlobalApplication = lazy(() => import("./components/FiveHundredGlobalApplication").then(m => ({ default: m.FiveHundredGlobalApplication })));
 const JobApplicationViewer = lazy(() => import("./components/JobApplicationViewer").then(m => ({ default: m.JobApplicationViewer })));
-const NewsManagementDashboard = lazy(() => import("./components/NewsManagementDashboard").then(m => ({ default: m.NewsManagementDashboard })));
 const TaxiAssociationsViewer       = lazy(() => import("./components/TaxiAssociationsViewer").then(m => ({ default: m.TaxiAssociationsViewer })));
 const ManagementHub                = lazy(() => import("./components/ManagementHub").then(m => ({ default: m.ManagementHub })));
 
@@ -181,16 +174,11 @@ export default function App() {
   const [businessLedgerCategory, setBusinessLedgerCategory] = useState<"creditCard" | "loan" | "insure" | "invest">("creditCard");
   const [showBusinessLoanApp, setShowBusinessLoanApp]       = useState(false);
   const [showManageBusiness, setShowManageBusiness]         = useState(false);
-  const [showBusinessInternational, setShowBusinessInternational] = useState(false);
-  const [showBusinessStudio, setShowBusinessStudio]         = useState(false);
-  const [showBusinessNews, setShowBusinessNews]             = useState(false);
 
   // ── Corporate ─────────────────────────────────────────────────────────────
   const [showCorporateLedger, setShowCorporateLedger]       = useState(false);
   const [corporateLedgerCategory, setCorporateLedgerCategory] = useState<"account" | "solutions" | "loan">("account");
   const [showCorporateLoanApp, setShowCorporateLoanApp]     = useState(false);
-  const [showCorporateApi, setShowCorporateApi]             = useState(false);
-  const [showCorporateEvents, setShowCorporateEvents]       = useState(false);
   const [showCorporateCSR, setShowCorporateCSR]             = useState(false);
 
   // ── Operations / Admin ────────────────────────────────────────────────────
@@ -207,7 +195,6 @@ export default function App() {
   // ── Footer pages ──────────────────────────────────────────────────────────
   const [showAboutVINK, setShowAboutVINK]                     = useState(false);
   const [showCareers, setShowCareers]                       = useState(false);
-  const [showNews, setShowNews]                             = useState(false);
   const [showContactUs, setShowContactUs]                   = useState(false);
   const [showLegal, setShowLegal]                           = useState(false);
   const [legalTab, setLegalTab]                             = useState<string | undefined>(undefined);
@@ -225,7 +212,6 @@ export default function App() {
   const [showVinkBlog, setShowVinkBlog]                        = useState(false);
   const [show500App, setShow500App]                         = useState(false);
   const [showJobApp, setShowJobApp]                         = useState(false);
-  const [showNewsManagement, setShowNewsManagement]         = useState(false);
 
   // ── Login state ───────────────────────────────────────────────────────────
   const [isLoggedIn, setIsLoggedIn]                         = useState(false);
@@ -360,20 +346,16 @@ export default function App() {
 
   const CORP_PATH: Record<string, string> = {
     "Account": "/corporate/account", "Solutions & Credit Cards": "/corporate/solutions-credit-cards",
-    "Loan": "/corporate/loan", "API": "/corporate/api", "Events": "/corporate/events",
+    "Loan": "/corporate/loan",
     "Social Responsibility": "/corporate/social-responsibility",
   };
   const navigateCorporateItem = (item: string) => {
     if (CORP_PATH[item]) pushRoute(CORP_PATH[item]);
     setShowCorporateLedger(false);
-    setShowCorporateApi(false);
-    setShowCorporateEvents(false);
     setShowCorporateCSR(false);
     if (item === "Account")                  { mount("corpLedger"); setCorporateLedgerCategory("account");   setShowCorporateLedger(true); return; }
     if (item === "Solutions & Credit Cards")  { mount("corpLedger"); setCorporateLedgerCategory("solutions"); setShowCorporateLedger(true); return; }
     if (item === "Loan")                      { mount("corpLedger"); setCorporateLedgerCategory("loan");      setShowCorporateLedger(true); return; }
-    if (item === "API")                       { mount("corpApi");       setShowCorporateApi(true); return; }
-    if (item === "Events")                    { mount("corpEvents");    setShowCorporateEvents(true); return; }
     if (item === "Social Responsibility")     { mount("corpCSR");       setShowCorporateCSR(true); return; }
   };
 
@@ -381,8 +363,7 @@ export default function App() {
     "Start My Business": "/business/start-my-business", "Accounts": "/business/accounts",
     "Credit Cards": "/business/credit-cards", "Loans": "/business/loans",
     "Invest": "/business/invest", "Insure": "/business/insure",
-    "Manage My Business": "/business/manage-my-business", "International": "/business/international",
-    "Studio": "/business/studio", "News": "/business/news",
+    "Manage My Business": "/business/manage-my-business",
   };
   const navigateBusinessItem = (item: string) => {
     if (BIZ_PATH[item]) pushRoute(BIZ_PATH[item]);
@@ -390,9 +371,6 @@ export default function App() {
     setShowBusinessAccountSelector(false);
     setShowStartBusiness(false);
     setShowManageBusiness(false);
-    setShowBusinessInternational(false);
-    setShowBusinessStudio(false);
-    setShowBusinessNews(false);
     if (item === "Start My Business") { mount("startBusiness");    setShowStartBusiness(true); return; }
     if (item === "Accounts")          { mount("bizAccountSelector"); setShowBusinessAccountSelector(true); return; }
     if (item === "Credit Cards")      { mount("bizLedger"); setBusinessLedgerCategory("creditCard"); setShowBusinessLedger(true); return; }
@@ -400,9 +378,6 @@ export default function App() {
     if (item === "Invest")            { mount("bizLedger"); setBusinessLedgerCategory("invest"); setShowBusinessLedger(true); return; }
     if (item === "Insure")            { mount("bizLedger"); setBusinessLedgerCategory("insure"); setShowBusinessLedger(true); return; }
     if (item === "Manage My Business"){ mount("manageBusiness");   setShowManageBusiness(true); return; }
-    if (item === "International")     { mount("bizInternational"); setShowBusinessInternational(true); return; }
-    if (item === "Studio")            { mount("bizStudio");        setShowBusinessStudio(true); return; }
-    if (item === "News")              { mount("bizNews");          setShowBusinessNews(true); return; }
   };
 
   const pushRoute = (path: string) => {
@@ -417,10 +392,9 @@ export default function App() {
     "Start My Business": "/business/start-my-business", "Accounts": "/business/accounts",
     "Credit Cards": "/business/credit-cards", "Loans": "/business/loans",
     "Business:Invest": "/business/invest", "Business:Insure": "/business/insure",
-    "Manage My Business": "/business/manage-my-business", "International": "/business/international",
-    "Studio": "/business/studio", "News": "/business/news",
+    "Manage My Business": "/business/manage-my-business",
     "Corporate:Account": "/corporate/account", "Corporate:Solutions & Credit Cards": "/corporate/solutions-credit-cards",
-    "Corporate:Loan": "/corporate/loan", "Corporate:API": "/corporate/api", "Corporate:Events": "/corporate/events",
+    "Corporate:Loan": "/corporate/loan",
     "Corporate:Social Responsibility": "/corporate/social-responsibility",
     "Contact Us": "/contact-us",
   };
@@ -446,17 +420,12 @@ export default function App() {
       if (item === "Credit Cards")      { mount("bizLedger");          setBusinessLedgerCategory("creditCard"); setShowBusinessLedger(true); return; }
       if (item === "Loans")             { mount("bizLedger");          setBusinessLedgerCategory("loan"); setShowBusinessLedger(true); return; }
       if (item === "Manage My Business"){ mount("manageBusiness");     setShowManageBusiness(true); return; }
-      if (item === "International")     { mount("bizInternational");   setShowBusinessInternational(true); return; }
-      if (item === "Studio")            { mount("bizStudio");          setShowBusinessStudio(true); return; }
-      if (item === "News")              { mount("bizNews");            setShowBusinessNews(true); return; }
       // Corporate — Header.tsx's CORPORATE_SUB_NAV items are dispatched with a
       // "Corporate:" prefix (see handleNavClick's onClick for CORPORATE_SUB_NAV),
       // so matches must include that prefix and the exact sub-nav label.
       if (item === "Corporate:Account")                  { mount("corpLedger"); setCorporateLedgerCategory("account");   setShowCorporateLedger(true); return; }
       if (item === "Corporate:Solutions & Credit Cards")  { mount("corpLedger"); setCorporateLedgerCategory("solutions"); setShowCorporateLedger(true); return; }
       if (item === "Corporate:Loan")                      { mount("corpLedger"); setCorporateLedgerCategory("loan");      setShowCorporateLedger(true); return; }
-      if (item === "Corporate:API")                       { mount("corpApi");       setShowCorporateApi(true); return; }
-      if (item === "Corporate:Events")                    { mount("corpEvents");    setShowCorporateEvents(true); return; }
       if (item === "Corporate:Social Responsibility")     { mount("corpCSR");       setShowCorporateCSR(true); return; }
     });
   };
@@ -469,10 +438,9 @@ export default function App() {
     setShowRewardsApp(false); setShowSIMServiceApp(false); setShowAccountApp(false);
     setSelectorOpen(false);
     setShowStartBusiness(false); setShowBusinessAccountSelector(false); setShowBusinessAccounts(false);
-    setShowBusinessLedger(false); setShowManageBusiness(false); setShowBusinessInternational(false);
-    setShowBusinessStudio(false); setShowBusinessNews(false);
-    setShowCorporateLedger(false); setShowCorporateApi(false); setShowCorporateEvents(false); setShowCorporateCSR(false);
-    setShowContactUs(false); setShowAboutVINK(false); setShowCareers(false); setShowNews(false);
+    setShowBusinessLedger(false); setShowManageBusiness(false);
+    setShowCorporateLedger(false); setShowCorporateCSR(false);
+    setShowContactUs(false); setShowAboutVINK(false); setShowCareers(false);
     setShowSwitchToVINK(false); setShowSafetySecurity(false); setShowInvestorRelations(false);
     setShowTaxiAssociations(false); setShow500App(false);
   };
@@ -485,14 +453,14 @@ export default function App() {
      showLoan || showInvest || showInsure || showRewards || showInvestApp || showInsureApp || showRewardsApp ||
      showSIMServiceApp || showAccountApp) ? "Personal" :
     (showStartBusiness || showBusinessAccountSelector || showBusinessAccounts || showBusinessLedger ||
-     showBusinessLoanApp || showManageBusiness || showBusinessInternational || showBusinessStudio || showBusinessNews)
+     showBusinessLoanApp || showManageBusiness)
       ? "Business" :
-    (showCorporateLedger || showCorporateLoanApp || showCorporateApi || showCorporateEvents || showCorporateCSR ||
+    (showCorporateLedger || showCorporateLoanApp || showCorporateCSR ||
      showInvestorRelations) ? "Corporate" :
     null;
 
   const showPersistentNav =
-    activeSiteSection !== null || selectorOpen || showContactUs || showAboutVINK || showCareers || showNews ||
+    activeSiteSection !== null || selectorOpen || showContactUs || showAboutVINK || showCareers ||
     showSwitchToVINK || showSafetySecurity || showTaxiAssociations || show500App || showJobApp;
 
   const goToSection = (section: "Personal" | "Business" | "Corporate") => {
@@ -530,7 +498,7 @@ export default function App() {
       const map: Record<string, string> = {
         "start-my-business": "startBusiness", "accounts": "bizAccountSelector", "credit-cards": "bizLedger:creditCard",
         "loans": "bizLedger:loan", "invest": "bizLedger:invest", "insure": "bizLedger:insure",
-        "manage-my-business": "manageBusiness", "international": "bizInternational", "studio": "bizStudio", "news": "bizNews",
+        "manage-my-business": "manageBusiness",
       };
       const key = map[seg[1]];
       if (!key) return false;
@@ -538,26 +506,20 @@ export default function App() {
       else if (key === "startBusiness")      { mount("startBusiness"); setShowStartBusiness(true); }
       else if (key === "bizAccountSelector") { mount("bizAccountSelector"); setShowBusinessAccountSelector(true); }
       else if (key === "manageBusiness")     { mount("manageBusiness"); setShowManageBusiness(true); }
-      else if (key === "bizInternational")   { mount("bizInternational"); setShowBusinessInternational(true); }
-      else if (key === "bizStudio")          { mount("bizStudio"); setShowBusinessStudio(true); }
-      else if (key === "bizNews")            { mount("bizNews"); setShowBusinessNews(true); }
       return true;
     }
     if (seg[0] === "corporate" && seg[1]) {
       const map: Record<string, string> = {
         "account": "corpLedger:account", "solutions-credit-cards": "corpLedger:solutions", "loan": "corpLedger:loan",
-        "api": "corpApi", "events": "corpEvents", "social-responsibility": "corpCSR",
+        "social-responsibility": "corpCSR",
       };
       const key = map[seg[1]];
       if (!key) return false;
       if (key.startsWith("corpLedger:")) { mount("corpLedger"); setCorporateLedgerCategory(key.split(":")[1] as any); setShowCorporateLedger(true); }
-      else if (key === "corpApi")    { mount("corpApi"); setShowCorporateApi(true); }
-      else if (key === "corpEvents") { mount("corpEvents"); setShowCorporateEvents(true); }
       else if (key === "corpCSR")    { mount("corpCSR"); setShowCorporateCSR(true); }
       return true;
     }
     if (path === "/contact-us") { mount("contactUs"); setShowContactUs(true); return true; }
-    if (path === "/news") { mount("news"); setShowNews(true); return true; }
     if (path === "/management-panel") { mount("managementPanel"); setShowManagementPanel(true); return true; }
     return false;
   };
@@ -590,7 +552,6 @@ export default function App() {
       if (label === "About VINK")                                 open("aboutVINK",          () => setShowAboutVINK(true));
       if (label === "Investor Relations")                        open("investorRelations",  () => setShowInvestorRelations(true));
       if (label === "Careers")                                   open("careers",            () => setShowCareers(true));
-      if (label === "News")                                      { pushRoute("/news"); open("news",               () => setShowNews(true)); }
       if (label === "Contact Us")                                { setContactTab("connect"); open("contactUs", () => setShowContactUs(true)); }
       if (label === "Send your feedback")                        { setContactTab("feedback"); open("contactUs", () => setShowContactUs(true)); }
       if (label === "Switch to VINK")                             open("switchToVINK",        () => setShowSwitchToVINK(true));
@@ -645,12 +606,10 @@ export default function App() {
   // Dynamic <title>/meta description per section -- without this, every
   // route in this single-page app shares one static title/description
   // (set once in index.html), so Google would see identical metadata for
-  // /business, /news, and /corporate/events regardless of which one was
-  // actually visited. Each of these gets its own real, keyword-relevant
-  // metadata while open, restored to the site default when closed again.
+  // every section regardless of which one was actually visited. Each of
+  // these gets its own real, keyword-relevant metadata while open,
+  // restored to the site default when closed again.
   useEffect(() => { if (showStartBusiness)      return setPageMeta(PAGE_META.business.title,     PAGE_META.business.description); }, [showStartBusiness]);
-  useEffect(() => { if (showNews)               return setPageMeta(PAGE_META.news.title,         PAGE_META.news.description); }, [showNews]);
-  useEffect(() => { if (showCorporateEvents)    return setPageMeta(PAGE_META.events.title,        PAGE_META.events.description); }, [showCorporateEvents]);
 
   const handleSelectorSelect = (type: string, productId: string) => {
     setSelectorOpen(false);
@@ -732,8 +691,7 @@ export default function App() {
       {has("ownerDashboard")  && <Suspense fallback={null}><OwnerFleetDashboardViewer isOpen={showOwnerDashboard} onClose={() => setShowOwnerDashboard(false)} /></Suspense>}
       {has("taxiAssociationDashboard") && <Suspense fallback={null}><TaxiAssociationDashboardViewer isOpen={showTaxiAssociationDashboard} onClose={() => setShowTaxiAssociationDashboard(false)} /></Suspense>}
       {has("investorDashboard") && <Suspense fallback={null}><InvestorFleetDashboardViewer isOpen={showInvestorDashboard} onClose={() => setShowInvestorDashboard(false)} investorName={getSession()?.name} onOpenRevenueDashboard={() => { mount("revenueDash"); setShowRevenueDashboard(true); }} /></Suspense>}
-      {has("managementPanel") && <Suspense fallback={null}><ManagementPanelViewer  isOpen={showManagementPanel} onClose={() => { setShowManagementPanel(false); pushRoute("/"); }} adminName={getSession()?.name} adminRole={getSession()?.role === "superadmin" ? "Super Administrator" : getSession()?.role === "owner" ? "System Owner" : getSession()?.role} role={getSession()?.role} onOpenNewsManagement={() => { mount("newsManagement"); setShowNewsManagement(true); }} /></Suspense>}
-      {has("newsManagement")   && <Suspense fallback={null}><NewsManagementDashboard isOpen={showNewsManagement} onClose={() => setShowNewsManagement(false)} /></Suspense>}
+      {has("managementPanel") && <Suspense fallback={null}><ManagementPanelViewer  isOpen={showManagementPanel} onClose={() => { setShowManagementPanel(false); pushRoute("/"); }} adminName={getSession()?.name} adminRole={getSession()?.role === "superadmin" ? "Super Administrator" : getSession()?.role === "owner" ? "System Owner" : getSession()?.role} role={getSession()?.role} /></Suspense>}
       {has("vehicle")         && <Suspense fallback={null}><VehicleTrackingDashboard isOpen={showVehicle}       onClose={() => setShowVehicle(false)} /></Suspense>}
 
       {/* Personal products */}
@@ -764,15 +722,10 @@ export default function App() {
       {has("bizLedger") && <Suspense fallback={null}><BusinessProductLedgerViewer isOpen={showBusinessLedger} onClose={() => { setShowBusinessLedger(false); pushRoute("/"); }} initialCategory={businessLedgerCategory} onNavigate={(item) => navigateBusinessItem(item)} onApply={applyForProductCategory} /></Suspense>}
       {has("bizLoanApp")         && <Suspense fallback={null}><BusinessLoanApplicationViewer isOpen={showBusinessLoanApp}   onClose={() => setShowBusinessLoanApp(false)} /></Suspense>}
       {has("manageBusiness")     && <Suspense fallback={null}><ManageMyBusinessViewer      isOpen={showManageBusiness}      onClose={() => { setShowManageBusiness(false); pushRoute("/"); }} onNavigate={navigateBusinessItem} /></Suspense>}
-      {has("bizInternational")   && <Suspense fallback={null}><BusinessInternationalViewer isOpen={showBusinessInternational} onClose={() => { setShowBusinessInternational(false); pushRoute("/"); }} onNavigate={navigateBusinessItem} /></Suspense>}
-      {has("bizStudio")          && <Suspense fallback={null}><BusinessStudioViewer        isOpen={showBusinessStudio}      onClose={() => { setShowBusinessStudio(false); pushRoute("/"); }} onNavigate={navigateBusinessItem} /></Suspense>}
-      {has("bizNews")            && <Suspense fallback={null}><BusinessNewsViewer          isOpen={showBusinessNews}        onClose={() => { setShowBusinessNews(false); pushRoute("/"); }} onNavigate={navigateBusinessItem} /></Suspense>}
 
       {/* Corporate */}
       {has("corpLedger")         && <Suspense fallback={null}><CorporateProductLedgerViewer isOpen={showCorporateLedger} onClose={() => { setShowCorporateLedger(false); pushRoute("/"); }} initialCategory={corporateLedgerCategory} onNavigate={(item) => navigateCorporateItem(item)} onOpenApp={() => { mount("vinkCorporateBankingApp"); setShowVinkCorporateBankingApp(true); }} /></Suspense>}
       {has("corpLoanApp")        && <Suspense fallback={null}><CorporateLoanApplicationViewer isOpen={showCorporateLoanApp} onClose={() => setShowCorporateLoanApp(false)} /></Suspense>}
-      {has("corpApi")            && <Suspense fallback={null}><CorporateApiViewer          isOpen={showCorporateApi}        onClose={() => { setShowCorporateApi(false); pushRoute("/"); }} onNavigate={(item) => navigateCorporateItem(item)} /></Suspense>}
-      {has("corpEvents")         && <Suspense fallback={null}><CorporateEventsViewer       isOpen={showCorporateEvents}     onClose={() => { setShowCorporateEvents(false); pushRoute("/"); }} onNavigate={(item) => navigateCorporateItem(item)} /></Suspense>}
       {has("corpCSR")            && <Suspense fallback={null}><CorporateSocialResponsibilityViewer isOpen={showCorporateCSR} onClose={() => { setShowCorporateCSR(false); pushRoute("/"); }} onNavigate={(item) => navigateCorporateItem(item)} /></Suspense>}
 
       {/* Operations */}
@@ -809,7 +762,6 @@ export default function App() {
       {/* Footer pages */}
       {has("aboutVINK")           && <Suspense fallback={null}><AboutVINKViewer       isOpen={showAboutVINK}           onClose={() => setShowAboutVINK(false)} /></Suspense>}
       {has("careers")            && <Suspense fallback={null}><CareersViewer        isOpen={showCareers}            onClose={() => setShowCareers(false)} /></Suspense>}
-      {has("news")               && <Suspense fallback={null}><NewsViewer           isOpen={showNews}               onClose={() => setShowNews(false)} /></Suspense>}
       {has("contactUs")          && <Suspense fallback={null}><ContactUsViewer            isOpen={showContactUs}  onClose={() => { setShowContactUs(false); pushRoute("/"); }} initialTab={contactTab} /></Suspense>}
       {has("legal")              && <Suspense fallback={null}><LegalComplianceViewer      isOpen={showLegal}      onClose={() => setShowLegal(false)} initialTab={legalTab} /></Suspense>}
       {has("switchToVINK")        && <Suspense fallback={null}><SwitchToVINKViewer          isOpen={showSwitchToVINK} onClose={() => setShowSwitchToVINK(false)} /></Suspense>}

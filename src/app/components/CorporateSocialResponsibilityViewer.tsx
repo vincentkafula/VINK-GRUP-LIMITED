@@ -8,7 +8,7 @@ interface Props { isOpen: boolean; onClose: () => void; onNavigate: (item: strin
 const P = "#0B5C2E";
 const PD = "#0F3D24";
 
-const CORPORATE_SUB_NAV = ["Account", "Solutions & Credit Cards", "Loan", "API", "Events", "Social Responsibility"];
+const CORPORATE_SUB_NAV = ["Account", "Solutions & Credit Cards", "Loan", "Social Responsibility"];
 
 const PILLS = ["Urban Management", "Urban Management", "Social Development", "Communications"];
 

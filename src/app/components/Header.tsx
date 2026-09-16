@@ -17,8 +17,8 @@ interface HeaderProps {
 type NavItem = "Personal" | "Business" | "Corporate";
 
 const PERSONAL_SUB_NAV = ["Account", "Credit Card", "Loan", "Invest", "Insure", "Rewards"] as const;
-const BUSINESS_SUB_NAV   = ["Start My Business", "Accounts", "Credit Cards", "Loans", "Invest", "Insure", "Manage My Business", "International", "Studio", "News"] as const;
-const CORPORATE_SUB_NAV  = ["Account", "Solutions & Credit Cards", "Loan", "API", "Events", "Social Responsibility"] as const;
+const BUSINESS_SUB_NAV   = ["Start My Business", "Accounts", "Credit Cards", "Loans", "Invest", "Insure", "Manage My Business"] as const;
+const CORPORATE_SUB_NAV  = ["Account", "Solutions & Credit Cards", "Loan", "Social Responsibility"] as const;
 
 // The desktop staff app (see /desktop) loads this site with ?mode=staff so
 // it can skip straight to signing in instead of showing the full consumer

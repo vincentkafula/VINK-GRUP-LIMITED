@@ -14,9 +14,9 @@ const SUPER_ADMIN_ROLES = ["owner", "superadmin"] as const;
 const router: ReturnType<typeof Router> = Router();
 
 export const SECTIONS = [
-  "Bank Management", "Payment Management", "News Management",
+  "Bank Management", "Payment Management",
   "Mobile Network Management", "Vehicle Management", "Radio & TV Station Management",
-  "Event Management", "Company Registration Management", "Insurance Management",
+  "Company Registration Management", "Insurance Management",
   "Social Responsibility Management",
 ] as const;
 

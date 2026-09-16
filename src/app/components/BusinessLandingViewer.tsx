@@ -11,8 +11,7 @@ interface Props {
   onClose: () => void;
   /** Fires with the exact sub-nav label BUSINESS_SUB_NAV/handleSubNavClick expect
    *  ("Start My Business" | "Accounts" | "Credit Cards" | "Loans" |
-   *   "Business:Invest" | "Business:Insure" | "Manage My Business" |
-   *   "International" | "Studio" | "News") */
+   *   "Business:Invest" | "Business:Insure" | "Manage My Business") */
   onNavigate: (item: string) => void;
   onApplyClick: () => void;
   onSecurityClick: () => void;
@@ -35,9 +34,6 @@ const SUB_NAV = [
   { label: "Invest", item: "Business:Invest" },
   { label: "Insure", item: "Business:Insure" },
   { label: "Manage", item: "Manage My Business" },
-  { label: "International", item: "International" },
-  { label: "Studio", item: "Studio" },
-  { label: "News", item: "News" },
 ];
 
 const FEATURES = [

@@ -3,7 +3,7 @@ import { X } from "lucide-react";
 import { Footer } from "./Footer";
 
 type BizCategory = "creditCard" | "loan" | "insure" | "invest";
-type NavItem = "Start My Business" | "Accounts" | "Credit Cards" | "Loans" | "Invest" | "Insure" | "Manage My Business" | "International" | "Studio" | "News";
+type NavItem = "Start My Business" | "Accounts" | "Credit Cards" | "Loans" | "Invest" | "Insure" | "Manage My Business";
 
 interface Props {
   isOpen: boolean;
@@ -13,7 +13,7 @@ interface Props {
   onApply: (category: BizCategory) => void;
 }
 
-const SUB_NAV: NavItem[] = ["Start My Business", "Accounts", "Credit Cards", "Loans", "Invest", "Insure", "Manage My Business", "International", "Studio", "News"];
+const SUB_NAV: NavItem[] = ["Start My Business", "Accounts", "Credit Cards", "Loans", "Invest", "Insure", "Manage My Business"];
 const CATEGORY_FOR_NAV: Partial<Record<NavItem, BizCategory>> = { "Credit Cards": "creditCard", "Loans": "loan", "Insure": "insure", "Invest": "invest" };
 
 interface BizProduct { name: string; price: string; features: string[]; featured?: boolean; tagline?: string; description?: string }

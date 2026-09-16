@@ -8,7 +8,7 @@ const BRAND      = "#0B5C2E";
 const BRAND_DARK = "#0F3D24";
 const FEAT_BG    = "#0B5C2E";
 const TOP_NAV    = ["Personal", "Business", "Corporate"];
-const BIZ_SUBNAV = ["Start my business", "Accounts", "Credit cards", "Loans", "Invest", "Insure", "Manage my Business", "International", "Studio", "news", "Get Help"];
+const BIZ_SUBNAV = ["Start my business", "Accounts", "Credit cards", "Loans", "Invest", "Insure", "Manage my Business", "Get Help"];
 const ACTIVE_IDX = 5;
 
 const ROW1 = [

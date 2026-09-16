@@ -1,16 +1,16 @@
 import { useState, useEffect } from "react";
 import {
-  LayoutGrid, Landmark, CreditCard, Newspaper, Radio as RadioTower,
-  Car, Tv, Calendar, Building2, ShieldCheck, HeartHandshake, Users, Settings,
+  LayoutGrid, Landmark, CreditCard, Radio as RadioTower,
+  Car, Tv, Building2, ShieldCheck, HeartHandshake, Users, Settings,
   ClipboardList, Menu, Search, Bell, ChevronDown, Plus, ArrowRight, TrendingUp,
   AlertTriangle, Monitor, CheckCircle2, CalendarDays, FileCheck2, UserCog, Loader2,
   Check, X as XIcon, Lock, Moon,
 } from "lucide-react";
 import { toast } from "sonner";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
-import { rbacApi, jobsApi, newsAdminApi, getSession, getToken, type SectionApplication, type ManagerRecord, type AuditEntry, type JobApplication } from "../services/apiClient";
+import { rbacApi, jobsApi, getSession, getToken, type SectionApplication, type ManagerRecord, type AuditEntry, type JobApplication } from "../services/apiClient";
 
-interface Props { isOpen: boolean; onClose: () => void; adminName?: string; adminRole?: string; role?: string; onOpenNewsManagement?: () => void }
+interface Props { isOpen: boolean; onClose: () => void; adminName?: string; adminRole?: string; role?: string }
 
 const GREEN = "#1FAE58";
 const ORANGE = "#F4802F";
@@ -26,12 +26,10 @@ const PURPLE = "#6D5DFC";
 const MODULE_COLORS: Record<string, { bg: string; color: string }> = {
   "Bank Management":                   { bg: "#EEEBFF", color: "#6D5DFC" },
   "Payment Management":                { bg: "#E6F0FF", color: "#2563EB" },
-  "News Management":                   { bg: "#F3E8FF", color: "#9333EA" },
   "Mobile Network Management":         { bg: "#E0F2FE", color: "#0284C7" },
   "Vehicle Management":                { bg: "#FDECE0", color: "#F4802F" },
   "Radio & TV Management":             { bg: "#FEE2E2", color: "#DC2626" },
   "Radio & TV Station Management":     { bg: "#FEE2E2", color: "#DC2626" },
-  "Event Management":                  { bg: "#EEEBFF", color: "#6D5DFC" },
   "Company Registration":              { bg: "#CCFBF1", color: "#0D9488" },
   "Company Registration Management":   { bg: "#CCFBF1", color: "#0D9488" },
   "Insurance Management":              { bg: "#E9F7EF", color: "#059669" },
@@ -42,11 +40,9 @@ const MODULE_COLORS: Record<string, { bg: string; color: string }> = {
 const SIDEBAR_MODULES = [
   { label: "Bank", icon: <Landmark className="w-4 h-4" /> },
   { label: "Payment", icon: <CreditCard className="w-4 h-4" /> },
-  { label: "News", icon: <Newspaper className="w-4 h-4" /> },
   { label: "Mobile Network", icon: <RadioTower className="w-4 h-4" /> },
   { label: "Vehicle", icon: <Car className="w-4 h-4" /> },
   { label: "Radio & TV", icon: <Tv className="w-4 h-4" /> },
-  { label: "Event", icon: <Calendar className="w-4 h-4" /> },
   { label: "Company Registration", icon: <Building2 className="w-4 h-4" /> },
   { label: "Insurance", icon: <ShieldCheck className="w-4 h-4" /> },
   { label: "Social Responsibility", icon: <HeartHandshake className="w-4 h-4" /> },
@@ -60,11 +56,9 @@ const SIDEBAR_MODULES = [
 const SIDEBAR_TO_SECTION: Record<string, string> = {
   "Bank": "Bank Management",
   "Payment": "Payment Management",
-  "News": "News Management",
   "Mobile Network": "Mobile Network Management",
   "Vehicle": "Vehicle Management",
   "Radio & TV": "Radio & TV Station Management",
-  "Event": "Event Management",
   "Company Registration": "Company Registration Management",
   "Insurance": "Insurance Management",
   "Social Responsibility": "Social Responsibility Management",
@@ -87,11 +81,9 @@ interface ModuleTile { title: string; displayTitle: string; desc: string; icon: 
 const MODULE_TILES: ModuleTile[] = [
   { title: "Bank Management", displayTitle: "Bank", desc: "Manage bank accounts, branches, services and banking operations.", icon: <Landmark className="w-7 h-7" />, iconBg: MODULE_COLORS["Bank Management"].bg, iconColor: MODULE_COLORS["Bank Management"].color },
   { title: "Payment Management", displayTitle: "Payment", desc: "Manage payments, settlements, refunds and transaction rules.", icon: <CreditCard className="w-7 h-7" />, iconBg: MODULE_COLORS["Payment Management"].bg, iconColor: MODULE_COLORS["Payment Management"].color },
-  { title: "News Management", displayTitle: "News", desc: "Manage news articles, categories, authors and publishing.", icon: <Newspaper className="w-7 h-7" />, iconBg: MODULE_COLORS["News Management"].bg, iconColor: MODULE_COLORS["News Management"].color },
   { title: "Mobile Network Management", displayTitle: "Mobile Network", desc: "Manage mobile operators, packages, USSD, data and airtime services.", icon: <RadioTower className="w-7 h-7" />, iconBg: MODULE_COLORS["Mobile Network Management"].bg, iconColor: MODULE_COLORS["Mobile Network Management"].color },
   { title: "Vehicle Management", displayTitle: "Vehicle", desc: "Manage vehicles, fleets, tracking, inspections and documents.", icon: <Car className="w-7 h-7" />, iconBg: MODULE_COLORS["Vehicle Management"].bg, iconColor: MODULE_COLORS["Vehicle Management"].color },
   { title: "Radio & TV Station Management", displayTitle: "Radio & TV", desc: "Manage radio & TV stations, channels, programs and broadcasts.", icon: <Tv className="w-7 h-7" />, iconBg: MODULE_COLORS["Radio & TV Station Management"].bg, iconColor: MODULE_COLORS["Radio & TV Station Management"].color },
-  { title: "Event Management", displayTitle: "Event", desc: "Manage events, schedules, registrations and venues.", icon: <Calendar className="w-7 h-7" />, iconBg: MODULE_COLORS["Event Management"].bg, iconColor: MODULE_COLORS["Event Management"].color },
   { title: "Company Registration Management", displayTitle: "Company Registration", desc: "Manage company registrations, verifications and compliance.", icon: <Building2 className="w-7 h-7" />, iconBg: MODULE_COLORS["Company Registration Management"].bg, iconColor: MODULE_COLORS["Company Registration Management"].color },
   { title: "Insurance Management", displayTitle: "Insurance", desc: "Manage insurance products, policies, claims and providers.", icon: <ShieldCheck className="w-7 h-7" />, iconBg: MODULE_COLORS["Insurance Management"].bg, iconColor: MODULE_COLORS["Insurance Management"].color },
   { title: "Social Responsibility Management", displayTitle: "Social Responsibility", desc: "Manage CSR initiatives, donations, projects and community impact.", icon: <HeartHandshake className="w-7 h-7" />, iconBg: MODULE_COLORS["Social Responsibility Management"].bg, iconColor: MODULE_COLORS["Social Responsibility Management"].color },
@@ -122,7 +114,7 @@ function Sparkline({ data, color }: { data: number[]; color: string }) {
   );
 }
 
-export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User", adminRole = "Staff Member", role = "", onOpenNewsManagement }: Props) {
+export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User", adminRole = "Staff Member", role = "" }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeItem, setActiveItem] = useState("Dashboard");
   const [view, setView] = useState<View>("dashboard");
@@ -179,23 +171,6 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
 
   const openModule = (label: string) => {
     const section = SIDEBAR_TO_SECTION[label] ?? label; // sidebar labels are shortened, grid tile titles are already canonical
-
-    if (section === "News Management" && onOpenNewsManagement) {
-      // Someone hired into a specific newsroom role (Reporter, Editor,
-      // etc. via the job application flow) gets their own dashboard for
-      // doing that actual work. Someone with only generic News
-      // Management access (an owner reviewing candidates, or an older
-      // RBAC grant with no attached position) gets the reviewer workspace
-      // below instead -- checked live rather than assumed, since section
-      // access alone doesn't say which case this is.
-      newsAdminApi.me().then(r => {
-        if (r.success && r.data?.position) { onOpenNewsManagement(); return; }
-        setJobDept(section);
-        goView("jobApplications");
-        loadJobApps(section);
-      });
-      return;
-    }
 
     setJobDept(section);
     goView("jobApplications");
