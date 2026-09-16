@@ -15,7 +15,6 @@ const router: ReturnType<typeof Router> = Router();
 
 export const SECTIONS = [
   "Bank Management", "Payment Management",
-  "Mobile Network Management", "Vehicle Management", "Radio & TV Station Management",
   "Company Registration Management", "Insurance Management",
   "Social Responsibility Management",
 ] as const;

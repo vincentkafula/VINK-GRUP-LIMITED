@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import {
-  LayoutGrid, Landmark, CreditCard, Radio as RadioTower,
-  Car, Tv, Building2, ShieldCheck, HeartHandshake, Users, Settings,
+  LayoutGrid, Landmark, CreditCard,
+  Building2, ShieldCheck, HeartHandshake, Users, Settings,
   ClipboardList, Menu, Search, Bell, ChevronDown, Plus, ArrowRight, TrendingUp,
   AlertTriangle, Monitor, CheckCircle2, CalendarDays, FileCheck2, UserCog, Loader2,
   Check, X as XIcon, Lock, Moon,
@@ -26,10 +26,6 @@ const PURPLE = "#6D5DFC";
 const MODULE_COLORS: Record<string, { bg: string; color: string }> = {
   "Bank Management":                   { bg: "#EEEBFF", color: "#6D5DFC" },
   "Payment Management":                { bg: "#E6F0FF", color: "#2563EB" },
-  "Mobile Network Management":         { bg: "#E0F2FE", color: "#0284C7" },
-  "Vehicle Management":                { bg: "#FDECE0", color: "#F4802F" },
-  "Radio & TV Management":             { bg: "#FEE2E2", color: "#DC2626" },
-  "Radio & TV Station Management":     { bg: "#FEE2E2", color: "#DC2626" },
   "Company Registration":              { bg: "#CCFBF1", color: "#0D9488" },
   "Company Registration Management":   { bg: "#CCFBF1", color: "#0D9488" },
   "Insurance Management":              { bg: "#E9F7EF", color: "#059669" },
@@ -40,9 +36,6 @@ const MODULE_COLORS: Record<string, { bg: string; color: string }> = {
 const SIDEBAR_MODULES = [
   { label: "Bank", icon: <Landmark className="w-4 h-4" /> },
   { label: "Payment", icon: <CreditCard className="w-4 h-4" /> },
-  { label: "Mobile Network", icon: <RadioTower className="w-4 h-4" /> },
-  { label: "Vehicle", icon: <Car className="w-4 h-4" /> },
-  { label: "Radio & TV", icon: <Tv className="w-4 h-4" /> },
   { label: "Company Registration", icon: <Building2 className="w-4 h-4" /> },
   { label: "Insurance", icon: <ShieldCheck className="w-4 h-4" /> },
   { label: "Social Responsibility", icon: <HeartHandshake className="w-4 h-4" /> },
@@ -56,9 +49,6 @@ const SIDEBAR_MODULES = [
 const SIDEBAR_TO_SECTION: Record<string, string> = {
   "Bank": "Bank Management",
   "Payment": "Payment Management",
-  "Mobile Network": "Mobile Network Management",
-  "Vehicle": "Vehicle Management",
-  "Radio & TV": "Radio & TV Station Management",
   "Company Registration": "Company Registration Management",
   "Insurance": "Insurance Management",
   "Social Responsibility": "Social Responsibility Management",
@@ -81,9 +71,6 @@ interface ModuleTile { title: string; displayTitle: string; desc: string; icon: 
 const MODULE_TILES: ModuleTile[] = [
   { title: "Bank Management", displayTitle: "Bank", desc: "Manage bank accounts, branches, services and banking operations.", icon: <Landmark className="w-7 h-7" />, iconBg: MODULE_COLORS["Bank Management"].bg, iconColor: MODULE_COLORS["Bank Management"].color },
   { title: "Payment Management", displayTitle: "Payment", desc: "Manage payments, settlements, refunds and transaction rules.", icon: <CreditCard className="w-7 h-7" />, iconBg: MODULE_COLORS["Payment Management"].bg, iconColor: MODULE_COLORS["Payment Management"].color },
-  { title: "Mobile Network Management", displayTitle: "Mobile Network", desc: "Manage mobile operators, packages, USSD, data and airtime services.", icon: <RadioTower className="w-7 h-7" />, iconBg: MODULE_COLORS["Mobile Network Management"].bg, iconColor: MODULE_COLORS["Mobile Network Management"].color },
-  { title: "Vehicle Management", displayTitle: "Vehicle", desc: "Manage vehicles, fleets, tracking, inspections and documents.", icon: <Car className="w-7 h-7" />, iconBg: MODULE_COLORS["Vehicle Management"].bg, iconColor: MODULE_COLORS["Vehicle Management"].color },
-  { title: "Radio & TV Station Management", displayTitle: "Radio & TV", desc: "Manage radio & TV stations, channels, programs and broadcasts.", icon: <Tv className="w-7 h-7" />, iconBg: MODULE_COLORS["Radio & TV Station Management"].bg, iconColor: MODULE_COLORS["Radio & TV Station Management"].color },
   { title: "Company Registration Management", displayTitle: "Company Registration", desc: "Manage company registrations, verifications and compliance.", icon: <Building2 className="w-7 h-7" />, iconBg: MODULE_COLORS["Company Registration Management"].bg, iconColor: MODULE_COLORS["Company Registration Management"].color },
   { title: "Insurance Management", displayTitle: "Insurance", desc: "Manage insurance products, policies, claims and providers.", icon: <ShieldCheck className="w-7 h-7" />, iconBg: MODULE_COLORS["Insurance Management"].bg, iconColor: MODULE_COLORS["Insurance Management"].color },
   { title: "Social Responsibility Management", displayTitle: "Social Responsibility", desc: "Manage CSR initiatives, donations, projects and community impact.", icon: <HeartHandshake className="w-7 h-7" />, iconBg: MODULE_COLORS["Social Responsibility Management"].bg, iconColor: MODULE_COLORS["Social Responsibility Management"].color },

@@ -21,7 +21,6 @@ const Footer                       = lazy(() => import("./components/Footer").th
 // ─── Overlays ─────────────────────────────────────────────────────────────────
 const PostLoginHome               = lazy(() => import("./components/PostLoginHome").then(m => ({ default: m.PostLoginHome })));
 const UserProfileViewer           = lazy(() => import("./components/UserProfileViewer").then(m => ({ default: m.UserProfileViewer })));
-const MobileNetworkDashboard      = lazy(() => import("./components/MobileNetworkDashboard").then(m => ({ default: m.MobileNetworkDashboard })));
 const OwnersDashboard             = lazy(() => import("./components/dashboards/OwnersDashboard").then(m => ({ default: m.OwnersDashboard })));
 const InvestorsDashboard          = lazy(() => import("./components/dashboards/InvestorsDashboard").then(m => ({ default: m.InvestorsDashboard })));
 const MarshallDashboard           = lazy(() => import("./components/dashboards/MarshallDashboard").then(m => ({ default: m.MarshallDashboard })));
@@ -37,7 +36,6 @@ const RetailTillManagementViewer = lazy(() => import("./components/RetailTillMan
 const ControlCentreViewer = lazy(() => import("./components/ControlCentreViewer").then(m => ({ default: m.ControlCentreViewer })));
 const InvestorFleetDashboardViewer = lazy(() => import("./components/InvestorFleetDashboardViewer").then(m => ({ default: m.InvestorFleetDashboardViewer })));
 const ManagementPanelViewer       = lazy(() => import("./components/ManagementPanelViewer").then(m => ({ default: m.ManagementPanelViewer })));
-const VehicleTrackingDashboard    = lazy(() => import("./components/VehicleTrackingDashboard").then(m => ({ default: m.VehicleTrackingDashboard })));
 import { PersistentTopNav } from "./components/PersistentTopNav";
 const PersonalAccountViewer       = lazy(() => import("./components/PersonalAccountViewer").then(m => ({ default: m.PersonalAccountViewer })));
 const PersonalLandingViewer       = lazy(() => import("./components/PersonalLandingViewer").then(m => ({ default: m.PersonalLandingViewer })));
@@ -52,7 +50,6 @@ const InsureViewer                = lazy(() => import("./components/InsureViewer
 const RewardsViewer               = lazy(() => import("./components/RewardsViewer").then(m => ({ default: m.RewardsViewer })));
 const ServiceApplicationViewer    = lazy(() => import("./components/ServiceApplicationViewer").then(m => ({ default: m.ServiceApplicationViewer })));
 const VINKSIMApplicationViewer    = lazy(() => import("./components/VINKSIMApplicationViewer").then(m => ({ default: m.VINKSIMApplicationViewer })));
-const VehicleTrackingApplicationViewer = lazy(() => import("./components/VehicleTrackingApplicationViewer").then(m => ({ default: m.VehicleTrackingApplicationViewer })));
 const ProductSelectorViewer       = lazy(() => import("./components/ProductSelectorViewer").then(m => ({ default: m.ProductSelectorViewer })));
 const StartMyBusinessViewer       = lazy(() => import("./components/StartMyBusinessViewer").then(m => ({ default: m.StartMyBusinessViewer })));
 const BusinessProductLedgerViewer = lazy(() => import("./components/BusinessProductLedgerViewer").then(m => ({ default: m.BusinessProductLedgerViewer })));
@@ -74,7 +71,6 @@ const AFCManagementDashboard      = lazy(() => import("./components/AFCManagemen
 const AdminApplicationsViewer     = lazy(() => import("./components/AdminApplicationsViewer").then(m => ({ default: m.AdminApplicationsViewer })));
 const RevenueDashboard            = lazy(() => import("./components/RevenueDashboard").then(m => ({ default: m.RevenueDashboard })));
 const AFCApp                      = lazy(() => import("./components/apps/AFCApp").then(m => ({ default: m.AFCApp })));
-const VehicleTrackingApp          = lazy(() => import("./components/apps/VehicleTrackingApp").then(m => ({ default: m.VehicleTrackingApp })));
 const VinkBankingApp              = lazy(() => import("./components/apps/VinkBankingApp").then(m => ({ default: m.VinkBankingApp })));
 const VinkBusinessBankingApp      = lazy(() => import("./components/apps/VinkBusinessBankingApp").then(m => ({ default: m.VinkBusinessBankingApp })));
 const VinkCorporateBankingApp     = lazy(() => import("./components/apps/VinkCorporateBankingApp").then(m => ({ default: m.VinkCorporateBankingApp })));
@@ -111,7 +107,6 @@ export default function App() {
   // ── Overlay visibility states ──────────────────────────────────────────────
   const [showPostLogin, setShowPostLogin]                   = useState(false);
   const [showUserProfile, setShowUserProfile]                = useState(false);
-  const [showMobileNetwork, setShowMobileNetwork]           = useState(false);
   const [showOwners, setShowOwners]                         = useState(false);
   const [showInvestors, setShowInvestors]                   = useState(false);
   const [showMarshall, setShowMarshall]                     = useState(false);
@@ -127,13 +122,10 @@ export default function App() {
   const [showControlCentre, setShowControlCentre] = useState(false);
   const [showInvestorDashboard, setShowInvestorDashboard] = useState(false);
   const [showManagementPanel, setShowManagementPanel]       = useState(false);
-  const [showVehicle, setShowVehicle]                       = useState(false);
   const [showSIMApp, setShowSIMApp]                         = useState(false);
 
   // ── Super App Ecosystem ────────────────────────────────────────────────────
   const [showAFCApp, setShowAFCApp]                         = useState(false);
-  const [showVehicleTrackingApp, setShowVehicleTrackingApp] = useState(false);
-  const [showVehicleTrackingApplication, setShowVehicleTrackingApplication] = useState(false);
   const [showVinkBankingApp, setShowVinkBankingApp]         = useState(false);
   const [vinkBankingAppInitialScreen, setVinkBankingAppInitialScreen] = useState<"home" | "send" | "cards" | "history" | "rewards" | undefined>(undefined);
   const [showVinkBusinessBankingApp, setShowVinkBusinessBankingApp] = useState(false);
@@ -226,11 +218,11 @@ export default function App() {
   // ── Body scroll lock ──────────────────────────────────────────────────────
   const anyOverlayOpen = mounted.size > 0 && Array.from(mounted).some(k => {
     const stateMap: Record<string, boolean> = {
-      postLogin: showPostLogin, mobileNetwork: showMobileNetwork,
+      postLogin: showPostLogin,
       banking: showBanking,
       owners: showOwners, investors: showInvestors, marshall: showMarshall,
       merchant: showMerchant, authority: showAuthority, superAdmin: showSuperAdmin,
-      vehicle: showVehicle, appLauncher: showAppLauncher, afcApp: showAFCApp,
+      appLauncher: showAppLauncher, afcApp: showAFCApp,
     };
     return stateMap[k] ?? false;
   });
@@ -247,7 +239,6 @@ export default function App() {
       else if (id === "fooddelivery")      { mount("foodDelivery");     setShowFoodDelivery(true); }
       else if (id === "afc")               { mount("afcDashboard");     setShowAFCDashboard(true); }
       else if (id === "admin")             { mount("adminDashboard");   setShowAdminDashboard(true); }
-      else if (id === "mobile")            { mount("mobileNetwork");    setShowMobileNetwork(true); }
       else if (id === "globalsim")         { mount("globalSIM");        setShowGlobalSIM(true); }
       else if (id === "cardnetwork")       { mount("cardNetwork");      setShowCardNetwork(true); }
       else if (id === "owner")             { mount("owners");           setShowOwners(true); }
@@ -256,15 +247,12 @@ export default function App() {
       else if (id === "merchant")          { mount("merchant");         setShowMerchant(true); }
       else if (id === "authority")         { mount("authority");        setShowAuthority(true); }
       else if (id === "superadmin")        { mount("superAdmin");       setShowSuperAdmin(true); }
-      else if (id === "connect")           { mount("mobileNetwork");    setShowMobileNetwork(true); }
-      else if (id === "guardme")           { mount("vehicle");          setShowVehicle(true); }
       else if (id === "devices")           { mount("afcDashboard");     setShowAFCDashboard(true); }
       else if (id === "finance")           { mount("financialReports"); setShowFinancialReports(true); }
       else if (id === "business")          { mount("banking");          setShowBanking(true); }
       else if (id === "account")           { mount("postLogin");        setShowPostLogin(true); }
       else if (id === "managementPanel")   { mount("managementPanel");  setShowManagementPanel(true); pushRoute("/management-panel"); }
       else if (id === "adminBankingPanel") { mount("banking");          setShowBanking(true); }
-      else if (id === "vehicle")           { mount("vehicle");          setShowVehicle(true); }
       else if (id === "appLauncher")       { mount("appLauncher");      setShowAppLauncher(true); }
       else if (id === "afcApp")            { mount("afcApp");           setShowAFCApp(true); }
       else                                 { mount("postLogin");        setShowPostLogin(true); }
@@ -278,7 +266,6 @@ export default function App() {
         case "profile":      mount("userProfile");     setShowUserProfile(true);      break;
         // Transport & Devices
         case "device":       mount("afcApp");           setShowAFCApp(true);           break;
-        case "vehicle":      mount("vehicle");          setShowVehicle(true);          break;
         case "restaurant":   mount("foodDelivery");     setShowFoodDelivery(true);     break;
         // Banking & Payments
         case "account":      setVinkBankingAppInitialScreen(undefined); mount("vinkBankingApp"); setShowVinkBankingApp(true); break;
@@ -300,14 +287,10 @@ export default function App() {
         case "guardme":
         case "insurance":    mount("insure");           setShowInsure(true);           break;
         case "rewards":      mount("rewards");          setShowRewards(true);          break;
-        // Connectivity -- "Connect" and "VINK TV" previously opened
-        // MobileNetworkDashboard, a genuine backoffice NOC/operations
-        // tool (tower stats, subscriber KPIs, fraud summaries) meant
-        // for telecom staff, not customers -- confirmed by checking
-        // that dashboard's own real content before concluding this
-        // was a real leak, not assumed. No real consumer-facing
-        // feature exists for these tiles yet, so they stay on the
-        // consumer dashboard rather than open a staff tool.
+        // Connectivity -- "Connect", "Mobile", and "VINK TV" tiles have no
+        // consumer-facing destination (the backoffice mobile-network tool
+        // they used to point near was removed entirely), so they land on
+        // the consumer dashboard rather than dead-end.
         case "connect":
         case "mobile":
         case "vinktv":       mount("postLogin");        setShowPostLogin(true);        break;
@@ -542,7 +525,6 @@ export default function App() {
       setShowVinkMobileApp(false);
       if      (id === "banking")     { setVinkBankingAppInitialScreen(undefined); mount("vinkBankingApp");  setShowVinkBankingApp(true); }
       else if (id === "afc")         { mount("afcApp");          setShowAFCApp(true); }
-      else if (id === "tracking")    { mount("vehicleTrackingApplication"); setShowVehicleTrackingApplication(true); }
       else if (id === "food")        { mount("foodDelivery");    setShowFoodDelivery(true); }
     });
   };
@@ -676,7 +658,6 @@ export default function App() {
       {/* Post-login */}
       {has("postLogin")       && <Suspense fallback={null}><PostLoginHome          isOpen={showPostLogin}       onClose={() => setShowPostLogin(false)}    onNavigate={handleHomeNavigate} onDashboardSelect={handleDashboardSelect} /></Suspense>}
       {has("userProfile")     && <Suspense fallback={null}><UserProfileViewer      isOpen={showUserProfile}     onClose={() => setShowUserProfile(false)}  onSignOut={() => { setShowUserProfile(false); mount("postLogin"); setShowPostLogin(true); }} /></Suspense>}
-      {has("mobileNetwork")   && <Suspense fallback={null}><MobileNetworkDashboard isOpen={showMobileNetwork}   onClose={() => setShowMobileNetwork(false)} /></Suspense>}
       {has("owners")          && <Suspense fallback={null}><OwnersDashboard        isOpen={showOwners}          onClose={() => setShowOwners(false)} /></Suspense>}
       {has("investors")       && <Suspense fallback={null}><InvestorsDashboard     isOpen={showInvestors}       onClose={() => setShowInvestors(false)} /></Suspense>}
       {has("marshall")        && <Suspense fallback={null}><MarshallDashboard      isOpen={showMarshall}        onClose={() => setShowMarshall(false)} /></Suspense>}
@@ -692,7 +673,6 @@ export default function App() {
       {has("taxiAssociationDashboard") && <Suspense fallback={null}><TaxiAssociationDashboardViewer isOpen={showTaxiAssociationDashboard} onClose={() => setShowTaxiAssociationDashboard(false)} /></Suspense>}
       {has("investorDashboard") && <Suspense fallback={null}><InvestorFleetDashboardViewer isOpen={showInvestorDashboard} onClose={() => setShowInvestorDashboard(false)} investorName={getSession()?.name} onOpenRevenueDashboard={() => { mount("revenueDash"); setShowRevenueDashboard(true); }} /></Suspense>}
       {has("managementPanel") && <Suspense fallback={null}><ManagementPanelViewer  isOpen={showManagementPanel} onClose={() => { setShowManagementPanel(false); pushRoute("/"); }} adminName={getSession()?.name} adminRole={getSession()?.role === "superadmin" ? "Super Administrator" : getSession()?.role === "owner" ? "System Owner" : getSession()?.role} role={getSession()?.role} /></Suspense>}
-      {has("vehicle")         && <Suspense fallback={null}><VehicleTrackingDashboard isOpen={showVehicle}       onClose={() => setShowVehicle(false)} /></Suspense>}
 
       {/* Personal products */}
       {has("personalLanding") && <Suspense fallback={null}><PersonalLandingViewer isOpen={showPersonalLanding} onClose={() => { setShowPersonalLanding(false); pushRoute("/"); }} onNavigate={(item) => { setShowPersonalLanding(false); handleSubNavClick(item); }} onApplyClick={() => { setShowPersonalLanding(false); handleSubNavClick("Account"); }} onSecurityClick={() => { mount("safetySecurity"); setShowSafetySecurity(true); }} /></Suspense>}
@@ -742,8 +722,6 @@ export default function App() {
       {/* Mobile apps */}
       {has("afcApp")             && <Suspense fallback={null}><AFCApp                isOpen={showAFCApp}             onClose={() => setShowAFCApp(false)} /></Suspense>}
       {has("revenueDash")        && <Suspense fallback={null}><RevenueDashboard      isOpen={showRevenueDashboard}   onClose={() => setShowRevenueDashboard(false)} /></Suspense>}
-      {has("vehicleTrackingApp") && <Suspense fallback={null}><VehicleTrackingApp    isOpen={showVehicleTrackingApp} onClose={() => setShowVehicleTrackingApp(false)} /></Suspense>}
-      {has("vehicleTrackingApplication") && <Suspense fallback={null}><VehicleTrackingApplicationViewer isOpen={showVehicleTrackingApplication} onClose={() => setShowVehicleTrackingApplication(false)} /></Suspense>}
       {has("vinkBankingApp")     && <Suspense fallback={null}><VinkBankingApp        isOpen={showVinkBankingApp}     onClose={() => setShowVinkBankingApp(false)} onOpenManagementPanel={() => { mount("managementPanel"); setShowManagementPanel(true); pushRoute("/management-panel"); }} onOpenAdminPanel={() => { mount("banking"); setShowBanking(true); }} initialScreen={vinkBankingAppInitialScreen} /></Suspense>}
       {has("vinkBusinessBankingApp") && <Suspense fallback={null}><VinkBusinessBankingApp isOpen={showVinkBusinessBankingApp} onClose={() => setShowVinkBusinessBankingApp(false)} /></Suspense>}
       {has("vinkCorporateBankingApp") && <Suspense fallback={null}><VinkCorporateBankingApp isOpen={showVinkCorporateBankingApp} onClose={() => setShowVinkCorporateBankingApp(false)} /></Suspense>}
@@ -753,7 +731,6 @@ export default function App() {
           setShowAppLauncher(false);
           if (id === "afc")       { mount("afcApp");             setShowAFCApp(true); }
           if (id === "revenue")   { mount("revenueDash");        setShowRevenueDashboard(true); }
-          if (id === "tracking")  { mount("vehicleTrackingApp"); setShowVehicleTrackingApp(true); }
           if (id === "banking")   { setVinkBankingAppInitialScreen(undefined); mount("vinkBankingApp");     setShowVinkBankingApp(true); }
           if (id === "food")      { mount("foodDelivery");       setShowFoodDelivery(true); }
         });
