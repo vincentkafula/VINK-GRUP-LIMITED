@@ -611,6 +611,7 @@ export default function App() {
       {/* ── Homepage ────────────────────────────────────────────────────────── */}
       <ErrorBoundary>
         <Header
+          onHome={goHome}
           onDashboardSelect={(id) => {
             setIsLoggedIn(true);
             setUserRole(getSession()?.name ?? id);

@@ -6,6 +6,7 @@ import { NotificationCenter } from "./NotificationCenter";
 import vinkLogoLight from "../../imports/LOGO_FINAL.png";
 
 interface HeaderProps {
+  onHome?: () => void;
   onDashboardSelect?: (id: string) => void;
   onSubNavClick?: (item: string) => void;
   onOpenProfile?: () => void;
@@ -40,7 +41,7 @@ function isStaffMode() {
   return sessionStorage.getItem("vink_staff_mode") === "1";
 }
 
-export function Header({ onDashboardSelect, onSubNavClick, onOpenProfile, isLoggedIn = false, userName }: HeaderProps) {
+export function Header({ onHome, onDashboardSelect, onSubNavClick, onOpenProfile, isLoggedIn = false, userName }: HeaderProps) {
   const [isHelpModalOpen, setIsHelpModalOpen]   = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(isStaffMode());
   const [mobileOpen, setMobileOpen]             = useState(false);
@@ -96,7 +97,7 @@ export function Header({ onDashboardSelect, onSubNavClick, onOpenProfile, isLogg
 
             {/* Logo */}
             <div className="flex items-center gap-6">
-              <a href="#" className="flex-shrink-0" onClick={() => setActiveNav(null)}>
+              <a href="/" className="flex-shrink-0" onClick={(e) => { e.preventDefault(); setActiveNav(null); onHome?.(); }}>
                 {/* Light logo on white nav — 180px wide on desktop, 120px on mobile (brand guide: desktop navbar 160-200px) */}
                 <img
                   src={vinkLogoLight}
