@@ -5,7 +5,7 @@ import { mastercardRequest, isConfigured as mastercardConfigured } from "./maste
 import { emit } from "./wsBroadcast.js";
 
 /**
- * VinkPay -- VINK's own payment processing engine.
+ * VinkPay -- MANSHYA's own payment processing engine.
  *
  * Every call site in the app talks to this interface, never to a
  * processor's SDK directly. Swapping the underlying processor later means

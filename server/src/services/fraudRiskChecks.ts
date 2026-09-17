@@ -85,7 +85,7 @@ export async function checkApplicationRisk(applicationId: string, applicantUserI
 
   // Duplicate account: same phone or email on a DIFFERENT applicant's
   // application (different applicant_user_id, or both NULL user id but a
-  // different application id — an applicant without a VINK login yet is
+  // different application id — an applicant without a MANSHYA login yet is
   // still a distinct person from another applicant without one).
   if (phone) {
     const { rows } = await pool.query(

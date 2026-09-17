@@ -18,14 +18,14 @@ export function BranchLocatorViewer({ isOpen, onClose }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-gray-50">
       <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm">
-        <img src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
+        <img src={vinkLogo} alt="MANSHYA" className="h-9 w-auto object-contain" />
         <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500"><X className="w-5 h-5" /></button>
       </div>
 
       <div className="py-12 px-6 text-white" style={{ background: `linear-gradient(135deg,${P},#34A853)` }}>
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-black mb-2">Find a VINK Service Point</h1>
-          <p className="text-white/70 text-sm">VINK is a digital-first bank. Full banking services are available at our Head Office and through our national agent network.</p>
+          <h1 className="text-3xl font-black mb-2">Find a MANSHYA Service Point</h1>
+          <p className="text-white/70 text-sm">MANSHYA is a digital-first bank. Full banking services are available at our Head Office and through our national agent network.</p>
         </div>
       </div>
 
@@ -33,7 +33,7 @@ export function BranchLocatorViewer({ isOpen, onClose }: Props) {
 
         {/* Search */}
         <div className="bg-white rounded-2xl border border-gray-200 p-5">
-          <label className="text-xs font-bold uppercase tracking-wider text-gray-500 block mb-2">Find your nearest VINK card agent</label>
+          <label className="text-xs font-bold uppercase tracking-wider text-gray-500 block mb-2">Find your nearest MANSHYA card agent</label>
           <div className="flex gap-3">
             <div className="flex-1 flex items-center gap-2 border border-gray-200 rounded-xl px-4 py-2.5">
               <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
@@ -52,7 +52,7 @@ export function BranchLocatorViewer({ isOpen, onClose }: Props) {
               <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white flex-shrink-0"
                 style={{ background: P }}><MapPin className="w-6 h-6" /></div>
               <div className="flex-1">
-                <p className="font-black text-gray-900 text-lg">VINK Head Office</p>
+                <p className="font-black text-gray-900 text-lg">MANSHYA Head Office</p>
                 <p className="text-gray-600 text-sm mt-1">8 Rose Street, Cape Town CBD<br />State House Building, Cape Town, 8001</p>
                 <div className="flex flex-wrap gap-4 mt-4">
                   <div className="flex items-center gap-2">
@@ -95,7 +95,7 @@ export function BranchLocatorViewer({ isOpen, onClose }: Props) {
             ))}
           </div>
           <p className="text-xs text-gray-400 mt-4">
-            * Availability varies by store. Ask in-store for VINK card services.
+            * Availability varies by store. Ask in-store for MANSHYA card services.
           </p>
         </section>
       </div>

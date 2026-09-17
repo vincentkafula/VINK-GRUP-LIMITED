@@ -18,7 +18,7 @@ export function MarketIndicesViewer({ isOpen, onClose }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-white">
       <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm">
-        <img src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
+        <img src={vinkLogo} alt="MANSHYA" className="h-9 w-auto object-contain" />
         <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500"><X className="w-5 h-5" /></button>
       </div>
 
@@ -28,7 +28,7 @@ export function MarketIndicesViewer({ isOpen, onClose }: Props) {
             style={{ background: "rgba(245,166,35,.2)", color: GOLD }}>Investing</span>
           <h1 className="text-4xl font-black mb-3">Market Indices</h1>
           <p className="text-white/75 text-lg max-w-2xl leading-relaxed">
-            The benchmarks VINK's investment tools will track once wealth and investment features launch.
+            The benchmarks MANSHYA's investment tools will track once wealth and investment features launch.
           </p>
         </div>
       </div>
@@ -37,7 +37,7 @@ export function MarketIndicesViewer({ isOpen, onClose }: Props) {
 
         <section className="rounded-2xl p-5" style={{ background: "#FEF3C7", border: "1px solid #FDE68A" }}>
           <p className="text-sm font-semibold" style={{ color: "#92400E" }}>
-            VINK is not yet in full operation. Live index data and investment tools are confirmed in full at our June 2027 launch — the figures below are for context only.
+            MANSHYA is not yet in full operation. Live index data and investment tools are confirmed in full at our June 2027 launch — the figures below are for context only.
           </p>
         </section>
 
@@ -64,7 +64,7 @@ export function MarketIndicesViewer({ isOpen, onClose }: Props) {
         <section className="bg-gray-50 rounded-2xl p-6 border border-gray-200">
           <h2 className="text-lg font-black mb-3" style={{ color: P }}>Part of Wealth &amp; Investment Management</h2>
           <p className="text-gray-600 text-sm leading-relaxed">
-            Market indices are one part of VINK's broader wealth and investment offering, built for customers who want to grow savings beyond a standard account. See Wealth and Investment Management for the full picture of what's planned.
+            Market indices are one part of MANSHYA's broader wealth and investment offering, built for customers who want to grow savings beyond a standard account. See Wealth and Investment Management for the full picture of what's planned.
           </p>
         </section>
       </div>

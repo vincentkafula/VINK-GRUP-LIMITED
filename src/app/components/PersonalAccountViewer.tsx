@@ -287,7 +287,7 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate, onOpenBanki
                   Banking designed for<br />every South African.
                 </h1>
                 <p className="text-gray-500 text-base mt-5 max-w-md">
-                  Open an account in minutes and manage your money with the VINK app.
+                  Open an account in minutes and manage your money with the MANSHYA app.
                 </p>
               </>
             )}
@@ -306,7 +306,7 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate, onOpenBanki
           <div className="relative flex justify-center items-center h-64 sm:h-80">
             <div className="w-40 h-64 rounded-[28px] shadow-2xl p-3 relative" style={{ background: `linear-gradient(160deg,${GREEN},#0B5C2E)` }}>
               <div className="w-full h-full rounded-2xl bg-white/10 flex flex-col p-3">
-                <span className="text-white/60 text-[9px] font-bold tracking-widest">VINK</span>
+                <span className="text-white/60 text-[9px] font-bold tracking-widest">MANSHYA</span>
                 <p className="text-white text-lg font-black mt-2">R12,540.00</p>
                 <div className="flex gap-1.5 mt-4">
                   {["Send","Cards","Rewards"].map(l => (
@@ -346,7 +346,7 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate, onOpenBanki
             </span>
             <div>
               <p className="text-xl font-black text-gray-900">Ready to get started?</p>
-              <p className="text-gray-500 text-sm mt-1">Open your VINK account online in minutes and start banking your way.</p>
+              <p className="text-gray-500 text-sm mt-1">Open your MANSHYA account online in minutes and start banking your way.</p>
             </div>
           </div>
           <div className="flex flex-col items-center sm:items-end gap-2 shrink-0">

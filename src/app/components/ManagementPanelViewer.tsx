@@ -254,7 +254,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
       const data = r.data as { roleGranted?: boolean; accountCreated?: boolean } | undefined;
       if (data?.accountCreated) toast.success(`Approved — account created and ${jobDept} access granted.`);
       else if (data?.roleGranted) toast.success(`Approved — ${jobDept} access granted.`);
-      else toast.warning((r as unknown as { warning?: string }).warning ?? "Approved, but the applicant doesn't have a VINK account yet — access will need to be granted once they register.");
+      else toast.warning((r as unknown as { warning?: string }).warning ?? "Approved, but the applicant doesn't have a MANSHYA account yet — access will need to be granted once they register.");
     } else {
       toast.success(status === "rejected" ? "Application rejected." : status === "interview" ? "Moved to interview." : "Status updated.");
     }
@@ -341,7 +341,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
           <div className="px-5 pt-6 pb-5">
             <div className="flex items-baseline gap-0.5">
               <img src={vinkLogo} alt="" className="h-6 w-6 object-contain mr-1.5" />
-              <span className="font-black text-xl" style={{ color: GREEN }}>VINK</span>
+              <span className="font-black text-xl" style={{ color: GREEN }}>MANSHYA</span>
             </div>
             <p className="text-[10px] font-bold tracking-[0.16em] text-white/40 mt-1">MANAGEMENT PANEL</p>
           </div>
@@ -724,7 +724,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
         </div>
 
         <div className="mt-auto flex items-center justify-between px-6 sm:px-8 py-5 text-[11px] text-gray-400 border-t border-gray-100">
-          <span>© 2026 VINK Management Panel. All rights reserved.</span>
+          <span>© 2026 MANSHYA Management Panel. All rights reserved.</span>
           <div className="flex items-center gap-4">
             <span className="hover:text-gray-600 cursor-pointer">Privacy Policy</span>
             <span className="hover:text-gray-600 cursor-pointer">Terms of Use</span>
@@ -824,14 +824,14 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
 
                     {nextSteps.includes("offered") && !selectedJobApp.roleGranted && (
                       <div className="rounded-lg p-3 space-y-2" style={{ background: "#F0FDF4", border: "1px solid #BBF7D0" }}>
-                        <p className="text-xs font-bold text-gray-700">If approving: set their VINK login (only needed if they don't have an account yet)</p>
+                        <p className="text-xs font-bold text-gray-700">If approving: set their MANSHYA login (only needed if they don't have an account yet)</p>
                         <div className="grid grid-cols-2 gap-2">
                           <input value={newAccountUsername} onChange={e => setNewAccountUsername(e.target.value)}
                             placeholder="Username" className="px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none" />
                           <input value={newAccountPassword} onChange={e => setNewAccountPassword(e.target.value)} type="text"
                             placeholder="Password (min 8 characters)" className="px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none" />
                         </div>
-                        <p className="text-[11px] text-gray-500">Leave both blank if they already have a VINK account under this email — access is granted automatically either way.</p>
+                        <p className="text-[11px] text-gray-500">Leave both blank if they already have a MANSHYA account under this email — access is granted automatically either way.</p>
                       </div>
                     )}
 

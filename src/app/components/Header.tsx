@@ -87,7 +87,7 @@ export function Header({ onHome, onDashboardSelect, onSubNavClick, onOpenProfile
         {/* ── Launch status notice — visible on every page this header renders on ── */}
         <div className="text-white text-center px-4 py-2 text-[12.5px] sm:text-sm font-semibold leading-snug"
           style={{ background: "linear-gradient(90deg,#4C1D95,#7C3AED)" }}>
-          VINK is not yet in full operation — all information on this site is a preview.{" "}
+          MANSHYA is not yet in full operation — all information on this site is a preview.{" "}
           <span className="whitespace-nowrap">Full launch: June 2027.</span>
         </div>
 
@@ -101,7 +101,7 @@ export function Header({ onHome, onDashboardSelect, onSubNavClick, onOpenProfile
                 {/* Light logo on white nav — 180px wide on desktop, 120px on mobile (brand guide: desktop navbar 160-200px) */}
                 <img
                   src={vinkLogoLight}
-                  alt="VINK Group"
+                  alt="MANSHYA Group"
                   className="w-[120px] sm:w-[180px] h-auto object-contain"
                   loading="eager"
                 />

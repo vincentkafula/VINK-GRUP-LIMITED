@@ -418,7 +418,7 @@ function AssignOwnershipModal({ terminal, onClose, onSaved, token }: { terminal:
       <div className="bg-white rounded-2xl w-full max-w-md p-5" onClick={e => e.stopPropagation()}>
         <h3 className="text-[16px] font-black text-gray-900 mb-1">Assign ownership</h3>
         <p className="text-[12.5px] text-gray-400 mb-4 font-mono">{terminal.serial}</p>
-        <p className="text-[12px] text-gray-500 mb-4">Enter each party's VINK account ID (UUID). On every real tap: VINK keeps a flat R1.00 fee, of which 10% (R0.10) goes to the investor. The owner receives everything else. The driver's pay is a separate fixed amount agreed privately with the owner -- VINK's system doesn't calculate or touch it.</p>
+        <p className="text-[12px] text-gray-500 mb-4">Enter each party's MANSHYA account ID (UUID). On every real tap: MANSHYA keeps a flat R1.00 fee, of which 10% (R0.10) goes to the investor. The owner receives everything else. The driver's pay is a separate fixed amount agreed privately with the owner -- MANSHYA's system doesn't calculate or touch it.</p>
         <div className="space-y-3">
           <div>
             <label className="block text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">Investor account ID</label>

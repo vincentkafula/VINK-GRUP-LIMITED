@@ -51,7 +51,7 @@ router.post("/", requireAuth, requireRole("superadmin", "noc_engineer"), (req: R
     dataBalanceMB: req.body.dataBalanceMB ?? 5120,
     smsBalance: req.body.smsBalance ?? 100,
     voiceBalanceMin: req.body.voiceBalanceMin ?? 200,
-    homeNetwork: "ZA-VINK",
+    homeNetwork: "ZA-MANSHYA",
     currentCell: null,
     roaming: false,
     roamingNetwork: null,

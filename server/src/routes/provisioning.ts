@@ -108,7 +108,7 @@ router.post("/porting", requireAuth, requireRole("superadmin", "noc_engineer"), 
   if (existing) { res.status(409).json({ success: false, error: "Active porting request already exists for this number" }); return; }
   const req2: PortingRequest = {
     id: uuid(), msisdn, donorNetwork,
-    recipientNetwork: "ZA-VINK",
+    recipientNetwork: "ZA-MANSHYA",
     status: "pending",
     requestedAt: new Date().toISOString(),
     completedAt: null,

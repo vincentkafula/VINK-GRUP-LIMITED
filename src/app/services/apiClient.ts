@@ -1,4 +1,4 @@
-// ─── VINK Central API Client ───────────────────────────────────────────────────
+// ─── MANSHYA Central API Client ───────────────────────────────────────────────────
 // Single source of truth for all backend calls. Falls back to demo mode when
 // the server is unreachable.
 

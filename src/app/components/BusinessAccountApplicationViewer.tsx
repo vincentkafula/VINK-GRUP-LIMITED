@@ -544,7 +544,7 @@ function Step7({ onBack, onClose, initialAccountType, formData }: { onBack: () =
         <input type="checkbox" checked={agreeTerms} onChange={e => setAgreeTerms(e.target.checked)}
           className="mt-0.5 w-4 h-4 accent-emerald-600 flex-shrink-0" />
         <p className="text-xs text-gray-600 leading-relaxed">
-          I confirm that all information provided is accurate and complete. I authorise VINK to perform FICA verification, credit checks, and to open the selected business account on behalf of the registered entity. I have read and agree to the <span className="font-semibold" style={{ color: PURPLE }}>Terms and Conditions</span> and <span className="font-semibold" style={{ color: PURPLE }}>Privacy Policy</span>.
+          I confirm that all information provided is accurate and complete. I authorise MANSHYA to perform FICA verification, credit checks, and to open the selected business account on behalf of the registered entity. I have read and agree to the <span className="font-semibold" style={{ color: PURPLE }}>Terms and Conditions</span> and <span className="font-semibold" style={{ color: PURPLE }}>Privacy Policy</span>.
         </p>
       </label>
 
@@ -627,7 +627,7 @@ export function BusinessAccountApplicationViewer({ isOpen, onClose, initialAccou
         {/* Top bar */}
         <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm flex-shrink-0">
           <div className="flex items-center gap-3">
-            <img src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
+            <img src={vinkLogo} alt="MANSHYA" className="h-9 w-auto object-contain" />
             <span className="text-sm font-semibold text-gray-700 hidden sm:block">Business Account Application</span>
           </div>
           <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500">

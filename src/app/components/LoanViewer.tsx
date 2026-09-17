@@ -22,7 +22,7 @@ const ROW2 = [
       "New and used vehicles financed",
       "Finance up to 100%",
       "Balloon payment option available",
-      "Linked VINK vehicle insurance option",
+      "Linked MANSHYA vehicle insurance option",
       "Repayment terms 12–72 months",
     ],
   },

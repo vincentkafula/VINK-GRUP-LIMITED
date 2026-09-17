@@ -239,7 +239,7 @@ export function RetailTillManagementViewer({ isOpen, onClose }: Props) {
                       <span className="px-2 py-0.5 rounded-full text-[10.5px] font-bold capitalize" style={{ background: s.payment_method === "cash" ? "#F3F4F6" : "#EFF6FF", color: s.payment_method === "cash" ? "#6B7280" : "#2563EB" }}>{s.payment_method}</span>
                       <p className="text-[11px] text-gray-400 ml-auto">{new Date(s.created_at).toLocaleString()}</p>
                     </div>
-                    <p className="text-[11.5px] text-gray-400 ml-11">{s.items.map(i => `${i.quantity}x ${i.product_name}`).join(", ")} {s.vink_fee_amount > 0 && `· VINK fee R${s.vink_fee_amount.toFixed(2)}`}</p>
+                    <p className="text-[11.5px] text-gray-400 ml-11">{s.items.map(i => `${i.quantity}x ${i.product_name}`).join(", ")} {s.vink_fee_amount > 0 && `· MANSHYA fee R${s.vink_fee_amount.toFixed(2)}`}</p>
                   </div>
                 ))}
                 {transactions.map(t => (
@@ -247,7 +247,7 @@ export function RetailTillManagementViewer({ isOpen, onClose }: Props) {
                     <span className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 bg-blue-50 text-blue-700"><Receipt className="w-4 h-4" /></span>
                     <p className="text-[13.5px] font-bold text-gray-900">R{t.amount.toFixed(2)}</p>
                     <span className="px-2 py-0.5 rounded-full text-[10.5px] font-bold" style={{ background: "#EFF6FF", color: "#2563EB" }}>card</span>
-                    <p className="text-[11px] text-gray-400 ml-auto">VINK fee R{t.vink_fee_amount.toFixed(2)} · {new Date(t.received_at).toLocaleString()}</p>
+                    <p className="text-[11px] text-gray-400 ml-auto">MANSHYA fee R{t.vink_fee_amount.toFixed(2)} · {new Date(t.received_at).toLocaleString()}</p>
                   </div>
                 ))}
               </div>
@@ -297,7 +297,7 @@ function AddMerchantModal({ onClose, onSaved, token }: { onClose: () => void; on
     <div className="fixed inset-0 z-[130] flex items-center justify-center p-5" style={{ background: "rgba(10,14,35,.6)" }} onClick={onClose}>
       <div className="bg-white rounded-2xl w-full max-w-md p-5" onClick={e => e.stopPropagation()}>
         <h3 className="text-[16px] font-black text-gray-900 mb-1">Add merchant</h3>
-        <p className="text-[12.5px] text-gray-400 mb-4">Connects to the same real VINK banking account this owner already has -- not a separate account system.</p>
+        <p className="text-[12.5px] text-gray-400 mb-4">Connects to the same real MANSHYA banking account this owner already has -- not a separate account system.</p>
         <div className="space-y-3">
           <div>
             <label className="block text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">Owner account ID</label>

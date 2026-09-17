@@ -22,7 +22,7 @@ export function ExchangeRatesViewer({ isOpen, onClose }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-white">
       <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm">
-        <img src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
+        <img src={vinkLogo} alt="MANSHYA" className="h-9 w-auto object-contain" />
         <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500"><X className="w-5 h-5" /></button>
       </div>
 
@@ -32,7 +32,7 @@ export function ExchangeRatesViewer({ isOpen, onClose }: Props) {
             style={{ background: "rgba(245,166,35,.2)", color: GOLD }}>Cross-Border</span>
           <h1 className="text-4xl font-black mb-3">Exchange Rates</h1>
           <p className="text-white/75 text-lg max-w-2xl leading-relaxed">
-            VINK is built to work across the SADC region — here's where live rates will live once we launch.
+            MANSHYA is built to work across the SADC region — here's where live rates will live once we launch.
           </p>
         </div>
       </div>
@@ -41,14 +41,14 @@ export function ExchangeRatesViewer({ isOpen, onClose }: Props) {
 
         <section className="rounded-2xl p-5" style={{ background: "#FEF3C7", border: "1px solid #FDE68A" }}>
           <p className="text-sm font-semibold" style={{ color: "#92400E" }}>
-            VINK is not yet in full operation. Live, real-time exchange rates will be published here and inside the app once we launch in June 2027 — no rates are active for transacting today.
+            MANSHYA is not yet in full operation. Live, real-time exchange rates will be published here and inside the app once we launch in June 2027 — no rates are active for transacting today.
           </p>
         </section>
 
         <section>
           <h2 className="text-2xl font-black mb-6" style={{ color: P }}>SADC Currencies We'll Support</h2>
           <p className="text-gray-600 text-sm leading-relaxed mb-6">
-            VINK's cross-border coverage is built around the Southern African Development Community — the region our commuters, drivers, and business customers actually move through.
+            MANSHYA's cross-border coverage is built around the Southern African Development Community — the region our commuters, drivers, and business customers actually move through.
           </p>
           <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
             {SADC_CURRENCIES.map((c, i) => (
@@ -66,7 +66,7 @@ export function ExchangeRatesViewer({ isOpen, onClose }: Props) {
         <section className="bg-gray-50 rounded-2xl p-6 border border-gray-200">
           <h2 className="text-lg font-black mb-3" style={{ color: P }}>Why This Matters</h2>
           <p className="text-gray-600 text-sm leading-relaxed">
-            Traditional cross-border transfers in the region are slow and expensive, often eating a meaningful cut of the amount sent. VINK's ambition is to make moving money across these borders as simple as tapping your card at a taxi validator — transparent rates, no hidden margins, confirmed in full at launch.
+            Traditional cross-border transfers in the region are slow and expensive, often eating a meaningful cut of the amount sent. MANSHYA's ambition is to make moving money across these borders as simple as tapping your card at a taxi validator — transparent rates, no hidden margins, confirmed in full at launch.
           </p>
         </section>
       </div>

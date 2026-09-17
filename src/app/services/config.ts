@@ -14,7 +14,7 @@
  * 2. If unset and running on localhost, falls back to the local dev
  *    backend (http://localhost:3001).
  * 3. If unset and NOT on localhost — meaning VITE_API_URL genuinely
- *    wasn't configured for this deployment — falls back to VINK's known
+ *    wasn't configured for this deployment — falls back to MANSHYA's known
  *    production backend, so a misconfigured build still points somewhere
  *    real rather than failing outright. This should not be relied on
  *    long-term; set VITE_API_URL explicitly in the deployment's

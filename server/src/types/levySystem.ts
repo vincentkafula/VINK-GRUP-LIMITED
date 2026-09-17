@@ -1,11 +1,11 @@
-// ─── VINK AFC Revenue Distribution System ─────────────────────────────────────
+// ─── MANSHYA AFC Revenue Distribution System ─────────────────────────────────────
 //
 // Revenue flow per tap:
-// 1. Passenger pays fare + R0.50 (VINK tap fee)
-// 2. Driver earns fare - R0.50 (VINK tap fee)
-// 3. VINK earns R1.00 total (R0.50 from each side)
+// 1. Passenger pays fare + R0.50 (MANSHYA tap fee)
+// 2. Driver earns fare - R0.50 (MANSHYA tap fee)
+// 3. MANSHYA earns R1.00 total (R0.50 from each side)
 //    └─ R0.10 → device Investor (10% of R1.00)
-//    └─ R0.90 → VINK Platform
+//    └─ R0.90 → MANSHYA Platform
 // 4. At trip end: R20 trip levy deducted from driver
 //    └─ Association receives R20
 //    └─ Marshall receives (agreed %) of R20
@@ -26,7 +26,7 @@ export type LevyTxnType =
   | "tap_fee_passenger"  // R0.50 from passenger
   | "tap_fee_driver"     // R0.50 from driver
   | "investor_tap"       // R0.10 to investor per tap
-  | "vink_platform_tap"   // R0.90 to VINK
+  | "vink_platform_tap"   // R0.90 to MANSHYA
   | "trip_levy"          // R20 from driver → association
   | "marshall_share"     // % of levy → marshall
   | "device_rental"      // R250/month → investor
@@ -85,7 +85,7 @@ export interface AFCTap {
   // Deductions from driver
   driverTapFee: number;        // 0.50
   driverNet: number;           // fare - 0.50
-  // VINK earnings
+  // MANSHYA earnings
   vinkFee: number;              // 1.00 (sum of both fees)
   investorShare: number;       // 0.10 (10% of vinkFee)
   vinkPlatformShare: number;    // 0.90

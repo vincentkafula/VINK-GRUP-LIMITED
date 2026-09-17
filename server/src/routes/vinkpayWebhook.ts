@@ -8,7 +8,7 @@ const router: ReturnType<typeof Router> = Router();
  *
  * Receives payment-status callbacks from Visa or Mastercard. Deliberately
  * has NO requireAuth — the caller is the processor's server, not a logged-
- * in VINK user, so the only thing that can authenticate this request is
+ * in MANSHYA user, so the only thing that can authenticate this request is
  * the signature check inside handleWebhook(). Do not add requireAuth here;
  * it would reject every legitimate webhook delivery.
  *

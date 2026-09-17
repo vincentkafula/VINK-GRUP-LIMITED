@@ -57,7 +57,7 @@ function OnboardingScreen({ onSelect }: { onSelect: (tier: Tier) => void }) {
   return (
     <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F7F9F8" }}>
       <div className="px-5 pt-8 pb-5 text-center" style={{ background: INK }}>
-        <p className="text-xs font-bold tracking-widest" style={{ color: GOLD }}>VINK BUSINESS</p>
+        <p className="text-xs font-bold tracking-widest" style={{ color: GOLD }}>MANSHYA BUSINESS</p>
         <p className="text-white text-lg font-bold mt-2">One app that grows with your business</p>
         <p className="text-white/60 text-[11px] mt-1">Unlock more powerful tools as you upgrade — never switch apps.</p>
       </div>
@@ -132,7 +132,7 @@ function DashboardScreen({ tier }: { tier: Tier }) {
     <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F7F9F8" }}>
       <div className="flex items-center justify-between px-4 py-3 flex-shrink-0" style={{ background: INK }}>
         <div>
-          <p className="text-xs font-bold tracking-widest" style={{ color: GOLD }}>VINK BUSINESS</p>
+          <p className="text-xs font-bold tracking-widest" style={{ color: GOLD }}>MANSHYA BUSINESS</p>
           <p className="text-white/70 text-[10px]">{tier} Business Account</p>
         </div>
         <button className="relative">
@@ -407,7 +407,7 @@ function CardsScreen() {
         <p className="text-white/60 text-xs">Virtual Business Card</p>
         <p className="text-white text-base font-mono mt-3 tracking-wider">4521 •••• •••• 8890</p>
         <div className="flex items-center justify-between mt-4">
-          <span className="text-white/60 text-[10px]">VINK BUSINESS</span>
+          <span className="text-white/60 text-[10px]">MANSHYA BUSINESS</span>
           <span className="text-white text-xs font-bold italic">VISA</span>
         </div>
       </div>
@@ -522,7 +522,7 @@ export function VinkBusinessBankingApp({ isOpen, onClose }: { isOpen: boolean; o
   const showTabs = screen !== "onboarding" && !verifying;
 
   return (
-    <MobileAppOverlay onClose={onClose} appName="VINK Business" bgColor="#F7F9F8">
+    <MobileAppOverlay onClose={onClose} appName="MANSHYA Business" bgColor="#F7F9F8">
       <PhoneFrame statusBarColor={INK} statusBarTextLight>
         <div className="flex-1 overflow-hidden flex flex-col">
           {verifying ? (

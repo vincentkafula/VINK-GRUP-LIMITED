@@ -11,7 +11,7 @@ const randF = (min: number, max: number) => +(Math.random() * (max - min) + min)
 const ago   = (m: number) => new Date(Date.now() - m * 60_000).toISOString();
 const future = (d: number) => new Date(Date.now() + d * 86_400_000).toISOString().split("T")[0];
 const acctNo = (i: number) => `VNK${String(1000000 + i).padStart(8, "0")}`;
-const iban   = (i: number) => `ZA${String(21).padStart(2,"0")} VINK ${acctNo(i)} 0001`;
+const iban   = (i: number) => `ZA${String(21).padStart(2,"0")} MANSHYA ${acctNo(i)} 0001`;
 
 // ─── USERS ────────────────────────────────────────────────────────────────────
 const USERS_SEED: Partial<BankUser>[] = [
@@ -160,7 +160,7 @@ function seedTransactions() {
         currency: "ZAR", fxRate: null,
         description: isCredit ? (user.role === "driver" ? "Trip earnings" : "Account deposit") : `Payment at ${MERCHANTS[midx]}`,
         reference: `VNK${String(rand(1000000,9999999))}`,
-        counterpartyName: isCredit ? "VINK PLATFORM" : MERCHANTS[midx],
+        counterpartyName: isCredit ? "MANSHYA PLATFORM" : MERCHANTS[midx],
         counterpartyAccount: null,
         rail: isCredit ? "internal" : "visa_direct",
         status: "completed", cardId: isCredit ? null : (bankDb.cards.find(c => c.accountId === acct.id)?.id ?? null),

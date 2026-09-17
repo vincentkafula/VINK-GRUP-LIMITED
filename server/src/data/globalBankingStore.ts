@@ -33,7 +33,7 @@ export const nostroAccounts: NostroAccount[] = [
 // ─── Demo Unified Accounts ────────────────────────────────────────────────────
 export const unifiedAccounts: UnifiedAccount[] = [
   {
-    id: "acct-001", referenceNumber: "VINK-GBL-2024-00001",
+    id: "acct-001", referenceNumber: "MANSHYA-GBL-2024-00001",
     customerId: "cust-001", customerName: "Vincent Kafula", email: "vincent@vink.co.za", phone: "+27 21 007 0772",
     baseCurrency: "ZAR", kycStatus: "approved", amlFlag: "clear", tier: "corporate",
     createdAt: "2024-01-15T08:00:00Z", lastActivityAt: new Date().toISOString(),
@@ -42,7 +42,7 @@ export const unifiedAccounts: UnifiedAccount[] = [
     subAccountIds: [], popiaConcent: true, gdprConsent: true, fatfChecked: true,
   },
   {
-    id: "acct-002", referenceNumber: "VINK-GBL-2024-00247",
+    id: "acct-002", referenceNumber: "MANSHYA-GBL-2024-00247",
     customerId: "cust-002", customerName: "Nomsa Zulu", email: "nomsa@vink.co.za", phone: "+27 82 334 7821",
     baseCurrency: "ZAR", kycStatus: "approved", amlFlag: "clear", tier: "premium",
     createdAt: "2024-03-22T10:30:00Z", lastActivityAt: new Date().toISOString(),
@@ -51,7 +51,7 @@ export const unifiedAccounts: UnifiedAccount[] = [
     subAccountIds: [], popiaConcent: true, gdprConsent: false, fatfChecked: true,
   },
   {
-    id: "acct-003", referenceNumber: "VINK-GBL-2024-00891",
+    id: "acct-003", referenceNumber: "MANSHYA-GBL-2024-00891",
     customerId: "cust-003", customerName: "Thabo Dlamini", email: "thabo@vink.co.za", phone: "+260 977 881 234",
     baseCurrency: "ZMW", kycStatus: "pending", amlFlag: "clear", tier: "standard",
     createdAt: "2024-05-10T14:00:00Z", lastActivityAt: new Date().toISOString(),
@@ -65,7 +65,7 @@ export const unifiedAccounts: UnifiedAccount[] = [
 export const globalCards: GlobalCard[] = [
   { id: "card-001", accountId: "acct-001", customerId: "cust-001", type: "debit", network: "visa", pan: "4539 •••• •••• 4291", last4: "4291", expiry: "12/27", cvv: "***", nameOnCard: "VINCENT KAFULA", status: "active", binCountry: "ZA", currency: "ZAR", dailyLimit: 50000, monthlyLimit: 500000, spentToday: 4820, spentThisMonth: 87340, atmEnabled: true, onlineEnabled: true, internationalEnabled: true, contactlessEnabled: true, issuedAt: "2024-01-15T08:00:00Z", lastUsedAt: new Date(Date.now() - 3600000).toISOString() },
   { id: "card-002", accountId: "acct-001", customerId: "cust-001", type: "virtual", network: "mastercard", pan: "5411 •••• •••• 7782", last4: "7782", expiry: "06/26", cvv: "***", nameOnCard: "VINCENT KAFULA", status: "active", binCountry: "EU", currency: "EUR", dailyLimit: 10000, monthlyLimit: 50000, spentToday: 0, spentThisMonth: 2840, atmEnabled: false, onlineEnabled: true, internationalEnabled: true, contactlessEnabled: false, virtualCardToken: "vt_4f8a2b9c1d", issuedAt: "2024-01-15T08:00:00Z", lastUsedAt: new Date(Date.now() - 86400000).toISOString() },
-  { id: "card-003", accountId: "acct-001", customerId: "cust-001", type: "business", network: "visa", pan: "4111 •••• •••• 1003", last4: "1003", expiry: "09/28", cvv: "***", nameOnCard: "VINK MULTI SERVICES", status: "active", binCountry: "US", currency: "USD", dailyLimit: 100000, monthlyLimit: 1000000, spentToday: 15240, spentThisMonth: 248900, atmEnabled: true, onlineEnabled: true, internationalEnabled: true, contactlessEnabled: true, issuedAt: "2024-01-15T08:00:00Z", lastUsedAt: new Date(Date.now() - 7200000).toISOString() },
+  { id: "card-003", accountId: "acct-001", customerId: "cust-001", type: "business", network: "visa", pan: "4111 •••• •••• 1003", last4: "1003", expiry: "09/28", cvv: "***", nameOnCard: "MANSHYA MULTI SERVICES", status: "active", binCountry: "US", currency: "USD", dailyLimit: 100000, monthlyLimit: 1000000, spentToday: 15240, spentThisMonth: 248900, atmEnabled: true, onlineEnabled: true, internationalEnabled: true, contactlessEnabled: true, issuedAt: "2024-01-15T08:00:00Z", lastUsedAt: new Date(Date.now() - 7200000).toISOString() },
   { id: "card-004", accountId: "acct-001", customerId: "cust-001", type: "sub-account", network: "mastercard", pan: "5105 •••• •••• 5100", last4: "5100", expiry: "03/27", cvv: "***", nameOnCard: "SIPHO DLAMINI", status: "active", binCountry: "ZA", currency: "ZAR", dailyLimit: 5000, monthlyLimit: 25000, spentToday: 840, spentThisMonth: 8420, atmEnabled: true, onlineEnabled: true, internationalEnabled: false, contactlessEnabled: true, parentCardId: "card-001", subAccountLimit: 25000, issuedAt: "2024-02-01T08:00:00Z", lastUsedAt: new Date(Date.now() - 14400000).toISOString() },
   { id: "card-005", accountId: "acct-002", customerId: "cust-002", type: "debit", network: "mastercard", pan: "5412 •••• •••• 8834", last4: "8834", expiry: "11/26", cvv: "***", nameOnCard: "NOMSA ZULU", status: "active", binCountry: "ZA", currency: "ZAR", dailyLimit: 20000, monthlyLimit: 100000, spentToday: 1240, spentThisMonth: 18420, atmEnabled: true, onlineEnabled: true, internationalEnabled: true, contactlessEnabled: true, issuedAt: "2024-03-22T10:30:00Z", lastUsedAt: new Date(Date.now() - 3600000).toISOString() },
   { id: "card-006", accountId: "acct-002", customerId: "cust-002", type: "virtual", network: "visa", pan: "4024 •••• •••• 2291", last4: "2291", expiry: "06/27", cvv: "***", nameOnCard: "NOMSA ZULU", status: "frozen", binCountry: "CN", currency: "CNY", dailyLimit: 5000, monthlyLimit: 20000, spentToday: 0, spentThisMonth: 3420, atmEnabled: false, onlineEnabled: true, internationalEnabled: true, contactlessEnabled: false, issuedAt: "2024-04-01T08:00:00Z", lastUsedAt: null },
@@ -91,8 +91,8 @@ export const globalTransactions: GlobalTransaction[] = [
   mkTxn({ description: "Shell Garage N2", merchantName: "Shell", merchantCategory: "Fuel", merchantCountry: "ZA", localAmount: 1245.00, billedAmount: 1245.00, interchangeEarned: 12.45 }),
   mkTxn({ cardId: "card-002", description: "Amazon DE Order", merchantName: "Amazon", merchantCategory: "E-commerce", merchantCountry: "EU", localAmount: 89.99, localCurrency: "EUR", billedAmount: 1794.22, billedCurrency: "ZAR", fxRate: 19.93, fxFee: 44.86, interchangeEarned: 9.90, domesticRouting: true }),
   mkTxn({ cardId: "card-003", description: "AWS Cloud Services", merchantName: "Amazon Web Services", merchantCategory: "Technology", merchantCountry: "US", localAmount: 842.00, localCurrency: "USD", billedAmount: 842.00, billedCurrency: "USD", interchangeEarned: 15.16, domesticRouting: true }),
-  mkTxn({ channel: "p2p", direction: "credit", description: "P2P from VINK-GBL-2024-00247", localAmount: 5000, billedAmount: 5000, merchantName: "Nomsa Zulu", interchangeEarned: 0 }),
-  mkTxn({ channel: "deposit", direction: "credit", description: "EFT Deposit - Salary", localAmount: 85000, billedAmount: 85000, merchantName: "Vink Group (Pty) Ltd", interchangeEarned: 0 }),
+  mkTxn({ channel: "p2p", direction: "credit", description: "P2P from MANSHYA-GBL-2024-00247", localAmount: 5000, billedAmount: 5000, merchantName: "Nomsa Zulu", interchangeEarned: 0 }),
+  mkTxn({ channel: "deposit", direction: "credit", description: "EFT Deposit - Salary", localAmount: 85000, billedAmount: 85000, merchantName: "Manshya Group (Pty) Ltd", interchangeEarned: 0 }),
   mkTxn({ channel: "atm", description: "ATM Withdrawal Standard Bank CPT", merchantName: "Standard Bank ATM", merchantCountry: "ZA", localAmount: 2000, billedAmount: 2000, interchangeEarned: 2.00 }),
   mkTxn({ cardId: "card-002", description: "Revolut Top-up EUR", merchantName: "Revolut", merchantCategory: "Finance", merchantCountry: "EU", localAmount: 500, localCurrency: "EUR", billedAmount: 9965, billedCurrency: "ZAR", fxRate: 19.93, fxFee: 249.13, interchangeEarned: 7.00, domesticRouting: true }),
   mkTxn({ channel: "card_online", description: "Netflix Subscription", merchantName: "Netflix", merchantCategory: "Entertainment", merchantCountry: "US", localAmount: 15.49, localCurrency: "USD", billedAmount: 284.24, billedCurrency: "ZAR", fxRate: 18.35, fxFee: 14.21, interchangeEarned: 2.17, domesticRouting: false }),
@@ -110,9 +110,9 @@ export const fxConversions: FxConversion[] = [
 
 // ─── Deposits ────────────────────────────────────────────────────────────────
 export const depositRecords: DepositRecord[] = [
-  { id: uuid(), accountId: "acct-001", channel: "eft", amount: 85000, currency: "ZAR", reference: "VINK-GBL-2024-00001", senderName: "Vink Group", senderAccount: "000987654321", nostroAccountId: "na-za", status: "credited", creditedAmount: 85000, creditedCurrency: "ZAR", fxRate: null, createdAt: new Date(Date.now() - 7200000).toISOString(), creditedAt: new Date(Date.now() - 7180000).toISOString() },
-  { id: uuid(), accountId: "acct-001", channel: "sepa", amount: 2500, currency: "EUR", reference: "VINK-GBL-2024-00001", senderName: "EU Partner GmbH", senderAccount: "DE89370400440532013000", nostroAccountId: "na-eu", status: "credited", creditedAmount: 2500, creditedCurrency: "EUR", fxRate: null, createdAt: new Date(Date.now() - 86400000).toISOString(), creditedAt: new Date(Date.now() - 86300000).toISOString() },
-  { id: uuid(), accountId: "acct-003", channel: "mobile_money", amount: 5000, currency: "ZMW", reference: "VINK-GBL-2024-00891", senderName: "MTN Mobile Money", senderAccount: "+260977881234", nostroAccountId: "na-zm", status: "credited", creditedAmount: 5000, creditedCurrency: "ZMW", fxRate: null, createdAt: new Date(Date.now() - 3600000).toISOString(), creditedAt: new Date(Date.now() - 3590000).toISOString() },
+  { id: uuid(), accountId: "acct-001", channel: "eft", amount: 85000, currency: "ZAR", reference: "MANSHYA-GBL-2024-00001", senderName: "Manshya Group", senderAccount: "000987654321", nostroAccountId: "na-za", status: "credited", creditedAmount: 85000, creditedCurrency: "ZAR", fxRate: null, createdAt: new Date(Date.now() - 7200000).toISOString(), creditedAt: new Date(Date.now() - 7180000).toISOString() },
+  { id: uuid(), accountId: "acct-001", channel: "sepa", amount: 2500, currency: "EUR", reference: "MANSHYA-GBL-2024-00001", senderName: "EU Partner GmbH", senderAccount: "DE89370400440532013000", nostroAccountId: "na-eu", status: "credited", creditedAmount: 2500, creditedCurrency: "EUR", fxRate: null, createdAt: new Date(Date.now() - 86400000).toISOString(), creditedAt: new Date(Date.now() - 86300000).toISOString() },
+  { id: uuid(), accountId: "acct-003", channel: "mobile_money", amount: 5000, currency: "ZMW", reference: "MANSHYA-GBL-2024-00891", senderName: "MTN Mobile Money", senderAccount: "+260977881234", nostroAccountId: "na-zm", status: "credited", creditedAmount: 5000, creditedCurrency: "ZMW", fxRate: null, createdAt: new Date(Date.now() - 3600000).toISOString(), creditedAt: new Date(Date.now() - 3590000).toISOString() },
 ];
 
 // ─── KYC Records ─────────────────────────────────────────────────────────────
@@ -131,7 +131,7 @@ export const amlChecks: AmlCheck[] = [
 
 // ─── P2P Transfers ────────────────────────────────────────────────────────────
 export const p2pTransfers: P2PTransfer[] = [
-  { id: uuid(), senderAccountId: "acct-002", recipientReferenceNumber: "VINK-GBL-2024-00001", recipientName: "Vincent Kafula", amount: 5000, currency: "ZAR", note: "Reimbursement", status: "completed", createdAt: new Date(Date.now() - 86400000).toISOString(), completedAt: new Date(Date.now() - 86390000).toISOString() },
+  { id: uuid(), senderAccountId: "acct-002", recipientReferenceNumber: "MANSHYA-GBL-2024-00001", recipientName: "Vincent Kafula", amount: 5000, currency: "ZAR", note: "Reimbursement", status: "completed", createdAt: new Date(Date.now() - 86400000).toISOString(), completedAt: new Date(Date.now() - 86390000).toISOString() },
 ];
 
 // ─── KPI snapshot ─────────────────────────────────────────────────────────────

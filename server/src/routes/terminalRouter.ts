@@ -89,17 +89,17 @@ router.post("/tap", async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  // Multi-party revenue split -- corrected model (2026-08-18): VINK's
+  // Multi-party revenue split -- corrected model (2026-08-18): MANSHYA's
   // flat R1.00 fee (two named halves) comes off first. The driver's
   // pay is a fixed amount privately agreed with the owner and is NOT
-  // calculated here at all. The investor gets 10% of VINK's fee
+  // calculated here at all. The investor gets 10% of MANSHYA's fee
   // specifically (R0.10/tap), not 10% of the fare. The owner gets
   // everything else. See revenueSplitService.ts for the full
   // reasoning, including the feeExceedsFare edge case for a fare too
-  // small to cover VINK's fee.
+  // small to cover MANSHYA's fee.
   const split = calculateRevenueSplit(amount);
   if (split.feeExceedsFare) {
-    console.error(`[terminal] Tap from terminal ${serial}: fare ${amount} is below VINK's flat fee (${split.vinkFeeTotal}) -- owner/investor amounts are zero for this tap`);
+    console.error(`[terminal] Tap from terminal ${serial}: fare ${amount} is below MANSHYA's flat fee (${split.vinkFeeTotal}) -- owner/investor amounts are zero for this tap`);
   }
 
   const { rows } = await pool.query(

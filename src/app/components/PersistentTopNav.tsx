@@ -30,7 +30,7 @@ export function PersistentTopNav({ active, onSelect, onHome }: Props) {
           .fixed.inset-0 { top: ... }) can be calculated exactly. */}
       <div className="text-white text-center px-4 flex items-center justify-center text-[11.5px] sm:text-[13px] font-semibold leading-tight"
         style={{ height: 32, background: "linear-gradient(90deg,#4C1D95,#7C3AED)" }}>
-        VINK is not yet in full operation — all information on this site is a preview.{" "}
+        MANSHYA is not yet in full operation — all information on this site is a preview.{" "}
         <span className="hidden sm:inline whitespace-nowrap">&nbsp;Full launch: June 2027.</span>
       </div>
 
@@ -39,8 +39,8 @@ export function PersistentTopNav({ active, onSelect, onHome }: Props) {
         style={{ height: 56 }}
       >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center gap-3 sm:gap-4">
-        <button onClick={onHome} className="shrink-0 opacity-90 hover:opacity-100 transition-opacity" aria-label="VINK home">
-          <img src={vinkLogo} alt="VINK" className="h-7 w-auto object-contain" />
+        <button onClick={onHome} className="shrink-0 opacity-90 hover:opacity-100 transition-opacity" aria-label="MANSHYA home">
+          <img src={vinkLogo} alt="MANSHYA" className="h-7 w-auto object-contain" />
         </button>
 
         <span className="hidden sm:block w-px h-5 bg-black/10 shrink-0" />

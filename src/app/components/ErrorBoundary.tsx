@@ -47,7 +47,7 @@ export class ErrorBoundary extends Component<Props, State> {
           <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 bg-blue-50">
             <RefreshCw className="w-8 h-8 text-blue-500" />
           </div>
-          <h2 className="text-lg font-black text-gray-900 mb-2">VINK was just updated</h2>
+          <h2 className="text-lg font-black text-gray-900 mb-2">MANSHYA was just updated</h2>
           <p className="text-sm text-gray-500 mb-6 max-w-sm">
             This page loaded an older version. Reloading will bring you back to the latest one.
           </p>

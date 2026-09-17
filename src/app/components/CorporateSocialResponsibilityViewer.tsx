@@ -21,7 +21,7 @@ export function CorporateSocialResponsibilityViewer({ isOpen, onClose, onNavigat
 
       {/* ── Top bar ── */}
       <div className="sticky top-0 z-20 flex items-center justify-between px-4 py-3 bg-white border-b shadow-sm" style={{ borderColor: "#e8e8f0" }}>
-        <img src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
+        <img src={vinkLogo} alt="MANSHYA" className="h-9 w-auto object-contain" />
         <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-800">
           <X className="w-5 h-5" />
         </button>
@@ -103,10 +103,10 @@ export function CorporateSocialResponsibilityViewer({ isOpen, onClose, onNavigat
       {/* ── Article content ── */}
       <div className="max-w-3xl mx-auto px-6 pb-14 space-y-5" style={{ color: "#1e1e2e" }}>
         <p className="leading-relaxed text-[15px]" style={{ color: "#1e1e2e" }}>
-          The office of the chief executive officer drives the strategy behind the work of VINK Social Responsibility, and also oversees the day-to-day operations of its four departments. This office also drives VINK Social Responsibility's special projects and programmes, as well as research, and constantly seeks to develop and deliver new products and services to all stakeholders.
+          The office of the chief executive officer drives the strategy behind the work of MANSHYA Social Responsibility, and also oversees the day-to-day operations of its four departments. This office also drives MANSHYA Social Responsibility's special projects and programmes, as well as research, and constantly seeks to develop and deliver new products and services to all stakeholders.
         </p>
         <p className="leading-relaxed text-[15px]" style={{ color: "#1e1e2e" }}>
-          The current occupant of the CEO post, Siyasanga Mahlulo, has been with VINK Social Responsibility since its inception in 2018 and has led the organisation since 2021. She is aided in her daily duties by a personal assistant.
+          The current occupant of the CEO post, Siyasanga Mahlulo, has been with MANSHYA Social Responsibility since its inception in 2018 and has led the organisation since 2021. She is aided in her daily duties by a personal assistant.
         </p>
         <p className="leading-relaxed text-[15px]" style={{ color: "#1e1e2e" }}>
           Financial administration and human resources (HR) also fall under the CEO's office and are driven by a finance &amp; HR manager and a finance &amp; HR assistant.

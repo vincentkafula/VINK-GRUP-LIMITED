@@ -49,7 +49,7 @@ export function PreApprovalSection() {
           <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-3"
             style={{ background: "#EDE9FE", color: P }}>No Hard Inquiry</span>
           <h2 className="text-2xl sm:text-3xl font-black text-gray-900 mb-2">
-            Know exactly where you stand before you apply for any VINK card.
+            Know exactly where you stand before you apply for any MANSHYA card.
           </h2>
           <p className="text-gray-500 text-sm max-w-md mx-auto">
             It&apos;s completely free, takes under 60 seconds, and won&apos;t touch your credit score.
@@ -116,7 +116,7 @@ export function PreApprovalSection() {
               style={{ background: "#DCFCE7", color: "#16A34A" }}>Free — Always</span>
             <h3 className="font-bold text-gray-900 text-base mb-2">See Your Credit Score Instantly</h3>
             <p className="text-gray-500 text-sm leading-relaxed mb-5">
-              View your full credit profile at no cost. We show which VINK cards you&apos;re likely to qualify for and personalised tips to improve your score.
+              View your full credit profile at no cost. We show which MANSHYA cards you&apos;re likely to qualify for and personalised tips to improve your score.
             </p>
 
             {showForm ? (
@@ -176,7 +176,7 @@ export function PreApprovalSection() {
           <div className="rounded-2xl p-7 text-white relative overflow-hidden"
             style={{ background: "linear-gradient(135deg,#4C1D95,#7C3AED)" }}>
             <h3 className="font-bold text-white text-base mb-1">Three Steps to Your Card</h3>
-            <p className="text-white/70 text-sm mb-6">Getting started with VINK is simple, fast, and completely transparent.</p>
+            <p className="text-white/70 text-sm mb-6">Getting started with MANSHYA is simple, fast, and completely transparent.</p>
             <div className="space-y-4">
               {STEPS.map((step, i) => (
                 <div key={i} className="flex items-center gap-3">

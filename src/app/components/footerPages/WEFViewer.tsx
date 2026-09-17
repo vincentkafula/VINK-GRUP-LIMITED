@@ -8,7 +8,7 @@ const GOLD = "#F5A623";
 
 const TOPICS = [
   { icon: "📱", title: "Digital Financial Inclusion",     desc: "How digital payment infrastructure can reach informal transport workers who are excluded from traditional banking — using AFC devices, mobile wallets, and cashless taxi fares as the entry point." },
-  { icon: "🌍", title: "Cashless Payments in Africa",      desc: "VINK's perspective: the transition to cashless payments in Africa will not be led by traditional banks — it will be led by operators who understand the informal economy from the inside." },
+  { icon: "🌍", title: "Cashless Payments in Africa",      desc: "MANSHYA's perspective: the transition to cashless payments in Africa will not be led by traditional banks — it will be led by operators who understand the informal economy from the inside." },
   { icon: "📡", title: "MVNO and Fintech for the Unbanked", desc: "How MVNO agreements and fintech platforms can reach unbanked populations — starting with South Africa's 250,000-strong minibus taxi fleet as a distribution network." },
 ];
 
@@ -17,7 +17,7 @@ export function WEFViewer({ isOpen, onClose }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-white">
       <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm">
-        <img src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
+        <img src={vinkLogo} alt="MANSHYA" className="h-9 w-auto object-contain" />
         <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500"><X className="w-5 h-5" /></button>
       </div>
 
@@ -25,7 +25,7 @@ export function WEFViewer({ isOpen, onClose }: Props) {
         <div className="max-w-4xl mx-auto">
           <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4"
             style={{ background: "rgba(245,166,35,.2)", color: GOLD }}>Global Stage</span>
-          <h1 className="text-4xl font-black mb-3">VINK at the World Economic Forum</h1>
+          <h1 className="text-4xl font-black mb-3">MANSHYA at the World Economic Forum</h1>
           <p className="text-white/75 text-lg max-w-2xl leading-relaxed">
             Bringing South Africa&apos;s informal economy to the global conversation on financial inclusion and the future of payments.
           </p>
@@ -36,15 +36,15 @@ export function WEFViewer({ isOpen, onClose }: Props) {
 
         <section className="bg-gray-50 rounded-2xl p-6 border border-gray-200">
           <p className="text-gray-700 leading-relaxed mb-4">
-            VINK participated in WEF engagements focused on <strong>financial inclusion</strong> and the future of payments in emerging markets — consistent with VINK&apos;s core mission of bringing digital payment infrastructure to informal and underserved transport economies.
+            MANSHYA participated in WEF engagements focused on <strong>financial inclusion</strong> and the future of payments in emerging markets — consistent with MANSHYA&apos;s core mission of bringing digital payment infrastructure to informal and underserved transport economies.
           </p>
           <p className="text-gray-700 leading-relaxed">
-            VINK&apos;s perspective at WEF: that the transition to cashless payments in Africa will not be led by traditional banks — it will be led by operators who understand the informal economy from the inside. <strong>South Africa&apos;s 250,000-strong taxi fleet is not a problem to be managed. It is an infrastructure to be digitised.</strong>
+            MANSHYA&apos;s perspective at WEF: that the transition to cashless payments in Africa will not be led by traditional banks — it will be led by operators who understand the informal economy from the inside. <strong>South Africa&apos;s 250,000-strong taxi fleet is not a problem to be managed. It is an infrastructure to be digitised.</strong>
           </p>
         </section>
 
         <section>
-          <h2 className="text-2xl font-black mb-6" style={{ color: P }}>Topics VINK Contributed To</h2>
+          <h2 className="text-2xl font-black mb-6" style={{ color: P }}>Topics MANSHYA Contributed To</h2>
           <div className="space-y-4">
             {TOPICS.map((t, i) => (
               <div key={i} className="flex items-start gap-4 p-5 bg-white rounded-xl border border-gray-200 hover:shadow-md transition-shadow">
@@ -62,13 +62,13 @@ export function WEFViewer({ isOpen, onClose }: Props) {
           <blockquote className="text-white/90 text-base italic leading-relaxed mb-4">
             &quot;South Africa&apos;s taxi industry — the backbone of our economy — deserved a payment system built specifically for it. We have built that system.&quot;
           </blockquote>
-          <p className="text-white/60 text-sm font-semibold">— Vincent Kafula, Founder &amp; CEO, VINK Group (Pty) Ltd.</p>
+          <p className="text-white/60 text-sm font-semibold">— Vincent Kafula, Founder &amp; CEO, MANSHYA Group (Pty) Ltd.</p>
         </section>
 
         <section className="bg-white rounded-2xl border border-gray-200 p-6">
           <h2 className="text-lg font-black mb-3" style={{ color: P }}>Media &amp; Speaking Enquiries</h2>
           <p className="text-gray-600 text-sm leading-relaxed mb-4">
-            To request speaking notes, media documentation, or to enquire about VINK representation at future events:
+            To request speaking notes, media documentation, or to enquire about MANSHYA representation at future events:
           </p>
           <a href="mailto:media@vink.co.za" className="inline-flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90"
             style={{ background: P }}>

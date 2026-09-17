@@ -102,7 +102,7 @@ function AppDownloadCard() {
       {/* Trigger */}
       <button onClick={() => setOpen(o => !o)}
         style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", background: BRAND, border: "none", cursor: "pointer" }}>
-        <span style={{ color: "#fff", fontSize: 14, fontWeight: 700 }}>📲 VINK Apps -- Coming Soon</span>
+        <span style={{ color: "#fff", fontSize: 14, fontWeight: 700 }}>📲 MANSHYA Apps -- Coming Soon</span>
         <span style={{ color: "rgba(255,255,255,.7)", fontSize: 11, fontWeight: 600, padding: "2px 10px", borderRadius: 20, border: "1px solid rgba(255,255,255,.3)" }}>
           {open ? "Hide ▲" : "iOS & Android ▼"}
         </span>
@@ -143,7 +143,7 @@ export function PricingViewer({ isOpen, onClose, activeSubNav, heroTitle, heroSu
       <nav style={{ background: "#fff", borderBottom: "1px solid #E4DFFE", position: "sticky", top: 0, zIndex: 100 }}>
         {/* Top row */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 48px", height: 64, maxWidth: 1280, margin: "0 auto" }}>
-          <img src={vinkLogo} alt="VINK" style={{ height: 44, width: "auto", objectFit: "contain" }} />
+          <img src={vinkLogo} alt="MANSHYA" style={{ height: 44, width: "auto", objectFit: "contain" }} />
 
           <ul style={{ display: "flex", gap: 28, listStyle: "none", margin: 0, padding: 0 }} className="hidden md:flex">
             {["Personal", "Business", "Corporate"].map((item, i) => (

@@ -1,6 +1,6 @@
 /**
- * VINK Food Delivery System
- * Full-stack food ordering platform integrated with VINK Banking.
+ * MANSHYA Food Delivery System
+ * Full-stack food ordering platform integrated with MANSHYA Banking.
  * Roles: Customer | Restaurant | Driver | Admin
  * Order lifecycle: Pending → Accepted → Preparing → Ready → Picked Up → Delivered
  */
@@ -208,8 +208,8 @@ function CustomerApp({ onClose }: { onClose: () => void }) {
               <div className="rounded-2xl p-4 text-white flex items-center justify-between"
                 style={{ background: "linear-gradient(135deg,#1a1a1a,#333)" }}>
                 <div>
-                  <p className="font-black text-base">Pay with VINK</p>
-                  <p className="text-white/70 text-xs mt-0.5">Get R20 off your first order when you pay with your VINK card</p>
+                  <p className="font-black text-base">Pay with MANSHYA</p>
+                  <p className="text-white/70 text-xs mt-0.5">Get R20 off your first order when you pay with your MANSHYA card</p>
                 </div>
                 <span className="text-3xl">💳</span>
               </div>
@@ -366,7 +366,7 @@ function CustomerApp({ onClose }: { onClose: () => void }) {
                 {/* Payment */}
                 <div className="bg-white rounded-2xl border border-gray-100 p-4">
                   <p className="text-sm font-bold text-gray-900 mb-2">Payment method</p>
-                  {[{ icon: "💳", label: "VINK Card •••• 4291", sub: "Earn VinkPoints on this order" }, { icon: "💵", label: "Cash on Delivery", sub: "" }].map((p, i) => (
+                  {[{ icon: "💳", label: "MANSHYA Card •••• 4291", sub: "Earn ManshyaPoints on this order" }, { icon: "💵", label: "Cash on Delivery", sub: "" }].map((p, i) => (
                     <div key={i} className={`flex items-center gap-3 p-2.5 rounded-xl mb-1.5 ${i === 0 ? "border-2" : "border border-gray-100"}`}
                       style={{ borderColor: i === 0 ? ORANGE : undefined, background: i === 0 ? ORANGE + "05" : undefined }}>
                       <span className="text-xl">{p.icon}</span>
@@ -723,7 +723,7 @@ function AdminApp({ onClose }: { onClose: () => void }) {
   return (
     <div className="flex flex-col h-full bg-gray-50">
       <div className="px-4 py-3 flex items-center justify-between bg-white border-b border-gray-100 flex-shrink-0">
-        <div><p className="text-[10px] text-gray-500 font-semibold uppercase">Admin Dashboard</p><p className="text-base font-black text-gray-900">VINK Food Operations</p></div>
+        <div><p className="text-[10px] text-gray-500 font-semibold uppercase">Admin Dashboard</p><p className="text-base font-black text-gray-900">MANSHYA Food Operations</p></div>
         <button onClick={onClose} className="p-1.5 rounded-full bg-gray-100 text-gray-500"><X className="w-4 h-4" /></button>
       </div>
 
@@ -839,7 +839,7 @@ export function FoodDeliveryApp({ isOpen, onClose }: Props) {
       <div className="fixed inset-0 z-50 flex flex-col bg-gray-900">
         <div className="flex items-center justify-between px-5 py-4">
           <div>
-            <p className="text-xs text-white/50 uppercase tracking-widest font-bold">VINK Food Delivery</p>
+            <p className="text-xs text-white/50 uppercase tracking-widest font-bold">MANSHYA Food Delivery</p>
             <p className="text-xl font-black text-white mt-0.5">🍽️ Select your role</p>
           </div>
           <button onClick={onClose} className="p-2 rounded-full bg-white/10 text-white/50"><X className="w-5 h-5" /></button>

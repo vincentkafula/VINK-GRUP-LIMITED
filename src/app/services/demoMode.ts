@@ -136,12 +136,12 @@ const BANK_USERS = [
 ];
 
 const BANK_ACCOUNTS = [
-  { id: "acct-001", userId: "bu-001", accountNumber: "VNK10000000", iban: "ZA21 VINK 00000000 0001", sortCode: "30-00-01", type: "current",  currency: "ZAR", balance: 18_580.00, availableBalance: 17_980.00, pendingBalance: 600.00, status: "active",  interestRate: 2.5, overdraftLimit: 5000,  label: "Primary Account" },
-  { id: "acct-002", userId: "bu-001", accountNumber: "VNK10000100", iban: "ZA21 VINK 00000100 0001", sortCode: "30-00-01", type: "savings",  currency: "ZAR", balance: 6_000.00,  availableBalance: 6_000.00,  pendingBalance: 0,      status: "active",  interestRate: 8.0, overdraftLimit: 0,     label: "Savings Account" },
-  { id: "acct-003", userId: "bu-003", accountNumber: "VNK20000000", iban: "ZA21 VINK 20000000 0001", sortCode: "30-00-01", type: "wallet",   currency: "ZAR", balance: 12_340.00, availableBalance: 12_340.00, pendingBalance: 0,      status: "active",  interestRate: 2.5, overdraftLimit: 0,     label: "Earnings Wallet" },
-  { id: "acct-004", userId: "bu-005", accountNumber: "VNK30000000", iban: "ZA21 VINK 30000000 0001", sortCode: "30-00-01", type: "current",  currency: "ZAR", balance: 280_000.00,availableBalance: 278_500.00,pendingBalance: 1500.00,status: "active",  interestRate: 2.5, overdraftLimit: 50000, label: "Primary Account" },
-  { id: "acct-005", userId: "bu-005", accountNumber: "VNK30000100", iban: "ZA21 VINK 30000100 0001", sortCode: "30-00-01", type: "savings",  currency: "ZAR", balance: 200_000.00,availableBalance: 200_000.00,pendingBalance: 0,      status: "active",  interestRate: 8.0, overdraftLimit: 0,     label: "Investment Account" },
-  { id: "acct-006", userId: "bu-007", accountNumber: "VNK40000000", iban: "ZA21 VINK 40000000 0001", sortCode: "30-00-01", type: "business", currency: "ZAR", balance: 1_240_000, availableBalance: 1_230_000, pendingBalance: 10000,  status: "active",  interestRate: 2.5, overdraftLimit: 100000,label: "Business Account" },
+  { id: "acct-001", userId: "bu-001", accountNumber: "VNK10000000", iban: "ZA21 MANSHYA 00000000 0001", sortCode: "30-00-01", type: "current",  currency: "ZAR", balance: 18_580.00, availableBalance: 17_980.00, pendingBalance: 600.00, status: "active",  interestRate: 2.5, overdraftLimit: 5000,  label: "Primary Account" },
+  { id: "acct-002", userId: "bu-001", accountNumber: "VNK10000100", iban: "ZA21 MANSHYA 00000100 0001", sortCode: "30-00-01", type: "savings",  currency: "ZAR", balance: 6_000.00,  availableBalance: 6_000.00,  pendingBalance: 0,      status: "active",  interestRate: 8.0, overdraftLimit: 0,     label: "Savings Account" },
+  { id: "acct-003", userId: "bu-003", accountNumber: "VNK20000000", iban: "ZA21 MANSHYA 20000000 0001", sortCode: "30-00-01", type: "wallet",   currency: "ZAR", balance: 12_340.00, availableBalance: 12_340.00, pendingBalance: 0,      status: "active",  interestRate: 2.5, overdraftLimit: 0,     label: "Earnings Wallet" },
+  { id: "acct-004", userId: "bu-005", accountNumber: "VNK30000000", iban: "ZA21 MANSHYA 30000000 0001", sortCode: "30-00-01", type: "current",  currency: "ZAR", balance: 280_000.00,availableBalance: 278_500.00,pendingBalance: 1500.00,status: "active",  interestRate: 2.5, overdraftLimit: 50000, label: "Primary Account" },
+  { id: "acct-005", userId: "bu-005", accountNumber: "VNK30000100", iban: "ZA21 MANSHYA 30000100 0001", sortCode: "30-00-01", type: "savings",  currency: "ZAR", balance: 200_000.00,availableBalance: 200_000.00,pendingBalance: 0,      status: "active",  interestRate: 8.0, overdraftLimit: 0,     label: "Investment Account" },
+  { id: "acct-006", userId: "bu-007", accountNumber: "VNK40000000", iban: "ZA21 MANSHYA 40000000 0001", sortCode: "30-00-01", type: "business", currency: "ZAR", balance: 1_240_000, availableBalance: 1_230_000, pendingBalance: 10000,  status: "active",  interestRate: 2.5, overdraftLimit: 100000,label: "Business Account" },
 ];
 
 const BANK_CARDS = [
@@ -164,7 +164,7 @@ const BANK_TXNS_BASE = Array.from({ length: 25 }, (_, i) => ({
   currency: "ZAR", fxRate: null,
   description: i % 5 === 0 ? "Account deposit" : `Payment at ${TXN_MERCHANTS[i % 10]}`,
   reference: `VNK${rand(1000000, 9999999)}`,
-  counterpartyName: i % 5 === 0 ? "VINK PLATFORM" : TXN_MERCHANTS[i % 10],
+  counterpartyName: i % 5 === 0 ? "MANSHYA PLATFORM" : TXN_MERCHANTS[i % 10],
   counterpartyAccount: null,
   rail: i % 5 === 0 ? "internal" : "visa_direct",
   status: "completed", cardId: i % 5 === 0 ? null : "card-001",

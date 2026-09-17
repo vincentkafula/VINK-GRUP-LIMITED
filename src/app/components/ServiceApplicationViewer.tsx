@@ -34,47 +34,47 @@ const SERVICE_CONFIG: Record<ServiceType, {
   accountPrefix: string; accentColor: string;
 }> = {
   invest: {
-    tag:           "VINK Personal Banking · Investments",
+    tag:           "MANSHYA Personal Banking · Investments",
     title:         "Investment Account Application",
     subtitle:      "Open a Tax-Free Savings Account, Fixed Deposit, Unit Trust, Retirement Annuity or Money Market — verified in minutes.",
     gradient:      "linear-gradient(135deg,#0F4C81 0%,#1565C0 50%,#42A5F5 100%)",
     successTitle:  "Investment Account Opened!",
-    successBody:   "Your investment account is active. Access it via the VINK app or web portal.",
+    successBody:   "Your investment account is active. Access it via the MANSHYA app or web portal.",
     accountLabel:  "Investment account number",
-    accountPrefix: "VINK-INV",
+    accountPrefix: "MANSHYA-INV",
     accentColor:   "#1565C0",
   },
   rewards: {
-    tag:           "VINK Personal Banking · VinkPoints",
-    title:         "VinkPoints Rewards Enrolment",
-    subtitle:      "Enrol in VinkPoints to earn on every taxi ride, fuel purchase, grocery trip, and online spend.",
+    tag:           "MANSHYA Personal Banking · ManshyaPoints",
+    title:         "ManshyaPoints Rewards Enrolment",
+    subtitle:      "Enrol in ManshyaPoints to earn on every taxi ride, fuel purchase, grocery trip, and online spend.",
     gradient:      "linear-gradient(135deg,#FF9900 0%,#FFB84D 50%,#FFCC80 100%)",
-    successTitle:  "VinkPoints Account Created!",
-    successBody:   "You have been enrolled in VinkPoints. Your welcome bonus of 5,000 points (worth R50) has been credited.",
-    accountLabel:  "VinkPoints member number",
-    accountPrefix: "VINK-RWD",
+    successTitle:  "ManshyaPoints Account Created!",
+    successBody:   "You have been enrolled in ManshyaPoints. Your welcome bonus of 5,000 points (worth R50) has been credited.",
+    accountLabel:  "ManshyaPoints member number",
+    accountPrefix: "MANSHYA-RWD",
     accentColor:   "#FFB84D",
   },
   sim: {
-    tag:           "VINK MVNO · Cell C Network",
-    title:         "VINK SIM Card Application",
-    subtitle:      "Get your VINK SIM on the Cell C network — affordable data, calls, and SMS bundled with your VINK wallet.",
+    tag:           "MANSHYA MVNO · Cell C Network",
+    title:         "MANSHYA SIM Card Application",
+    subtitle:      "Get your MANSHYA SIM on the Cell C network — affordable data, calls, and SMS bundled with your MANSHYA wallet.",
     gradient:      "linear-gradient(135deg,#E65100 0%,#F57C00 50%,#FFB74D 100%)",
     successTitle:  "SIM Card Issued!",
-    successBody:   "Your VINK SIM card will be delivered to your address within 3–5 business days. Your number is active immediately.",
+    successBody:   "Your MANSHYA SIM card will be delivered to your address within 3–5 business days. Your number is active immediately.",
     accountLabel:  "MSISDN / mobile number",
-    accountPrefix: "VINK-SIM",
+    accountPrefix: "MANSHYA-SIM",
     accentColor:   "#F57C00",
   },
   account: {
-    tag:           "VINK Personal Banking · Accounts",
+    tag:           "MANSHYA Personal Banking · Accounts",
     title:         "Bank Account Application",
-    subtitle:      "Open your selected VINK account in minutes — FICA-verified and ready to use.",
+    subtitle:      "Open your selected MANSHYA account in minutes — FICA-verified and ready to use.",
     gradient:      "linear-gradient(135deg,#1A237E 0%,#128A43 55%,#34A853 100%)",
     successTitle:  "Account Opened!",
-    successBody:   "Your VINK bank account is active. Your VINK card will be delivered to your registered address within 5–7 business days.",
+    successBody:   "Your MANSHYA bank account is active. Your MANSHYA card will be delivered to your registered address within 5–7 business days.",
     accountLabel:  "Account number",
-    accountPrefix: "VINK-ACC",
+    accountPrefix: "MANSHYA-ACC",
     accentColor:   "#128A43",
   },
 };
@@ -142,7 +142,7 @@ function Step1Form({
               {REWARD_CARDS.map(p => <option key={p}>{p}</option>)}
             </select>
           </Field>
-          <Field label="Linked VINK card number (if existing)">
+          <Field label="Linked MANSHYA card number (if existing)">
             <input className={inputCls} placeholder="Leave blank to apply for new card" value={form.cardNumber} onChange={set("cardNumber")} />
           </Field>
           <Field label="Preferred redemption method">
@@ -207,7 +207,7 @@ const SERVICE_DOCS: Record<ServiceType, { key: string; label: string; required: 
   rewards: [
     { key: "id",      label: "Certified copy of SA ID or passport",          required: true },
     { key: "address", label: "Proof of residential address (≤3 months)",     required: true },
-    { key: "card",    label: "Photo of existing VINK card (if linking)",     required: false },
+    { key: "card",    label: "Photo of existing MANSHYA card (if linking)",     required: false },
   ],
   sim: [
     { key: "id",      label: "Certified copy of SA ID or passport (RICA)",   required: true },
@@ -400,7 +400,7 @@ export function ServiceApplicationViewer({ isOpen, onClose, serviceType }: Props
       {/* ── Top bar ── */}
       <div className="sticky top-0 z-20 bg-white border-b border-gray-100 shadow-sm">
         <div className="flex items-center justify-between px-5 py-3">
-          <img src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
+          <img src={vinkLogo} alt="MANSHYA" className="h-9 w-auto object-contain" />
           <div className="flex items-center gap-3">
             <span className="hidden sm:block text-xs text-gray-400 font-medium">Step {step} of {STEPS.length}</span>
             <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-800"><X className="w-5 h-5" /></button>
@@ -598,7 +598,7 @@ export function ServiceApplicationViewer({ isOpen, onClose, serviceType }: Props
               ))}
             </div>
             <div className="rounded-xl p-4 text-xs text-gray-600 leading-relaxed" style={{ background: cfg.accentColor + "08", border: `1px solid ${cfg.accentColor}20` }}>
-              By submitting I confirm all information is true and accurate. I authorise VINK to conduct credit bureau inquiries and verify my identity with SARS, CIPC, and Home Affairs.
+              By submitting I confirm all information is true and accurate. I authorise MANSHYA to conduct credit bureau inquiries and verify my identity with SARS, CIPC, and Home Affairs.
             </div>
             <label className="flex items-start gap-3 cursor-pointer">
               <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)} className="mt-0.5 w-4 h-4 rounded flex-shrink-0" />
@@ -654,7 +654,7 @@ export function ServiceApplicationViewer({ isOpen, onClose, serviceType }: Props
             <button onClick={onClose}
               className="w-full py-3.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 shadow-lg"
               style={{ background: `linear-gradient(135deg,${CP},#5FC97F)` }}>
-              Back to VINK
+              Back to MANSHYA
             </button>
           </div>
         )}

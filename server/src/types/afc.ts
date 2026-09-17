@@ -11,7 +11,7 @@ export interface AFCDevice {
   serialNumber: string;       // hardware serial
   driverId: string;           // registered driver
   driverName: string;
-  driverWalletRef: string;    // driver's Vink reference number (receives fare payments)
+  driverWalletRef: string;    // driver's Manshya reference number (receives fare payments)
   taxiRegistration: string;   // vehicle plate
   taxiMake: string;
   taxiCapacity: number;
@@ -65,7 +65,7 @@ export interface FareTap {
   routeId: string;
   routeName: string;
   fareAmount: number;
-  processingFee: number;       // R0.50 — VINK fee
+  processingFee: number;       // R0.50 — MANSHYA fee
   driverCredit: number;        // 85% of fare
   associationCredit: number;   // 5% of fare
   communityCredit: number;     // 5% → neighbourhood watch

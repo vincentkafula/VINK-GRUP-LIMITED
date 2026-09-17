@@ -1,5 +1,5 @@
 /**
- * VINK Banking Management Hub
+ * MANSHYA Banking Management Hub
  * Role-Based Access Control — 7 management levels
  * Global Director → Continental → Regional → Country → State → Branch Manager → Branch Representative
  */
@@ -304,7 +304,7 @@ function CustomersScreen({ user }: { user: MgmtUser }) {
   const customers = [
     { name: "Aisha Patel",     type: "Individual", kyc: "verified",  accounts: 2, balance: "R24,840",  since: "Jan 2023" },
     { name: "Thomas Khumalo",  type: "Individual", kyc: "verified",  accounts: 1, balance: "R8,200",   since: "Mar 2023" },
-    { name: "VINK Corp Ltd",   type: "Business",   kyc: "verified",  accounts: 3, balance: "R1.2M",    since: "Jun 2022" },
+    { name: "MANSHYA Corp Ltd",   type: "Business",   kyc: "verified",  accounts: 3, balance: "R1.2M",    since: "Jun 2022" },
     { name: "Mpho Sithole",    type: "Individual", kyc: "pending",   accounts: 1, balance: "R4,100",   since: "May 2024" },
     { name: "Green Tech (Pty)",type: "Business",   kyc: "pending",   accounts: 1, balance: "R280,000", since: "Apr 2024" },
     { name: "Johan van Wyk",   type: "Individual", kyc: "rejected",  accounts: 0, balance: "—",        since: "Jun 2024" },
@@ -601,7 +601,7 @@ function DashboardShell({ user, onLogout }: { user: MgmtUser; onLogout: () => vo
         <div className="flex items-center gap-3 px-4 py-4 border-b" style={{ borderColor: "#1E2A45" }}>
           <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-white font-black text-xs"
             style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>V</div>
-          {sidebarOpen && <p className="text-white font-black text-sm leading-tight">VINK<br /><span className="font-normal text-[10px] text-gray-400">Management Hub</span></p>}
+          {sidebarOpen && <p className="text-white font-black text-sm leading-tight">MANSHYA<br /><span className="font-normal text-[10px] text-gray-400">Management Hub</span></p>}
         </div>
 
         {/* Nav */}
@@ -704,7 +704,7 @@ export function ManagementHub({ isOpen, onClose }: Props) {
         style={{ background: DEEP, borderColor: "#1E2A45" }}>
         <div className="flex items-center gap-2">
           <Shield className="w-5 h-5" style={{ color: P }} />
-          <p className="text-white font-black text-sm">VINK Management Hub</p>
+          <p className="text-white font-black text-sm">MANSHYA Management Hub</p>
           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full ml-1" style={{ background: RED + "25", color: RED }}>
             🔒 SECURE
           </span>

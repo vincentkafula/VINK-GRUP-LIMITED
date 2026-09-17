@@ -1,4 +1,4 @@
-// ─── VINK Production Supabase Client ──────────────────────────────────────────
+// ─── MANSHYA Production Supabase Client ──────────────────────────────────────────
 // Centralised Supabase access. Import from here — never instantiate elsewhere.
 
 import { createClient, SupabaseClient, Session, User } from "@supabase/supabase-js";
@@ -157,9 +157,9 @@ export async function addSupportMessage(ticketId: string, message: string, sende
   });
 }
 
-// ─── VinkPoints Helpers ───────────────────────────────────────────────────────
+// ─── ManshyaPoints Helpers ───────────────────────────────────────────────────────
 
-export async function getVinkPoints(profileId: string) {
+export async function getManshyaPoints(profileId: string) {
   return supabase.from("vinkpoints").select("*").eq("profile_id", profileId).single();
 }
 

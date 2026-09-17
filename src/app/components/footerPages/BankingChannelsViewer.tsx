@@ -7,10 +7,10 @@ const P = "#0B5C2E";
 const GOLD = "#F5A623";
 
 const CHANNELS = [
-  { icon: <Smartphone className="w-6 h-6" />, title: "VINK App", desc: "The primary way to manage your account — check your balance, view transactions in real time, freeze your card, and apply for new products. Available on iOS and Android at launch." },
+  { icon: <Smartphone className="w-6 h-6" />, title: "MANSHYA App", desc: "The primary way to manage your account — check your balance, view transactions in real time, freeze your card, and apply for new products. Available on iOS and Android at launch." },
   { icon: <Globe className="w-6 h-6" />, title: "Online Banking", desc: "Full account management from any browser, for the moments you're at a desk rather than on your phone. Same real-time transaction view as the app." },
   { icon: <MessageSquare className="w-6 h-6" />, title: "USSD Banking", desc: "Check your balance and recent transactions from any phone, no data or smartphone required — built for the commuters and drivers who need banking to work everywhere, not just on the latest device." },
-  { icon: <CreditCard className="w-6 h-6" />, title: "Tap-and-Go (AFC Devices)", desc: "Your card works instantly at any VINK-enabled taxi validator or partner merchant terminal — no app needed for the transaction itself, just tap and go." },
+  { icon: <CreditCard className="w-6 h-6" />, title: "Tap-and-Go (AFC Devices)", desc: "Your card works instantly at any MANSHYA-enabled taxi validator or partner merchant terminal — no app needed for the transaction itself, just tap and go." },
 ];
 
 export function BankingChannelsViewer({ isOpen, onClose }: Props) {
@@ -18,7 +18,7 @@ export function BankingChannelsViewer({ isOpen, onClose }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-white">
       <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm">
-        <img src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
+        <img src={vinkLogo} alt="MANSHYA" className="h-9 w-auto object-contain" />
         <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500"><X className="w-5 h-5" /></button>
       </div>
 
@@ -28,7 +28,7 @@ export function BankingChannelsViewer({ isOpen, onClose }: Props) {
             style={{ background: "rgba(245,166,35,.2)", color: GOLD }}>Access Channels</span>
           <h1 className="text-4xl font-black mb-3">App, Online, and Other Ways to Bank</h1>
           <p className="text-white/75 text-lg max-w-2xl leading-relaxed">
-            VINK is built to work wherever you are — smartphone, desktop, or neither.
+            MANSHYA is built to work wherever you are — smartphone, desktop, or neither.
           </p>
         </div>
       </div>
@@ -37,7 +37,7 @@ export function BankingChannelsViewer({ isOpen, onClose }: Props) {
 
         <section className="rounded-2xl p-5" style={{ background: "#FEF3C7", border: "1px solid #FDE68A" }}>
           <p className="text-sm font-semibold" style={{ color: "#92400E" }}>
-            VINK is not yet in full operation. These channels go live when we launch in June 2027.
+            MANSHYA is not yet in full operation. These channels go live when we launch in June 2027.
           </p>
         </section>
 
@@ -58,7 +58,7 @@ export function BankingChannelsViewer({ isOpen, onClose }: Props) {
         <section className="bg-gray-50 rounded-2xl p-6 border border-gray-200">
           <h2 className="text-lg font-black mb-3" style={{ color: P }}>Why So Many Channels?</h2>
           <p className="text-gray-600 text-sm leading-relaxed">
-            South Africa's transport economy runs on every kind of device, from the latest smartphone to a basic feature phone. Banking that only works in an app leaves people out. VINK is designed so that no matter what device you're carrying, you can still check your balance, see your transactions, and know your money is where it should be.
+            South Africa's transport economy runs on every kind of device, from the latest smartphone to a basic feature phone. Banking that only works in an app leaves people out. MANSHYA is designed so that no matter what device you're carrying, you can still check your balance, see your transactions, and know your money is where it should be.
           </p>
         </section>
       </div>

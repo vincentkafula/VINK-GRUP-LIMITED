@@ -3,12 +3,12 @@ import { memo } from "react";
 interface Props { onOpenApps: () => void; }
 
 const APPS = [
-  { emoji: "🚌", name: "VINK AFC Terminal",  sub: "P18Q · Fare collection",         gradient: "linear-gradient(135deg,#0B5C2E,#5FC97F)", platform: "iOS · Android" },
-  { emoji: "📍", name: "VINK Fleet Tracker", sub: "Vehicle tracking",         gradient: "linear-gradient(135deg,#065F46,#10B981)", platform: "iOS · Android" },
-  { emoji: "💳", name: "VINK Banking",        sub: "Personal & business",      gradient: "linear-gradient(135deg,#0B5C2E,#5FC97F)", platform: "iOS · Android" },
-  { emoji: "🚗", name: "VINK Driver",         sub: "Earn · Drive · Get paid",  gradient: "linear-gradient(135deg,#0F172A,#14B8A6)", platform: "iOS · Android" },
-  { emoji: "🚕", name: "VINK Ride",           sub: "Book rides · Earn as driver", gradient: "linear-gradient(135deg,#BE185D,#EC4899)", platform: "iOS · Android" },
-  { emoji: "🍽️", name: "VINK Food",           sub: "Order food · Track delivery", gradient: "linear-gradient(135deg,#FF5722,#FF8A50)", platform: "iOS · Android" },
+  { emoji: "🚌", name: "MANSHYA AFC Terminal",  sub: "P18Q · Fare collection",         gradient: "linear-gradient(135deg,#0B5C2E,#5FC97F)", platform: "iOS · Android" },
+  { emoji: "📍", name: "MANSHYA Fleet Tracker", sub: "Vehicle tracking",         gradient: "linear-gradient(135deg,#065F46,#10B981)", platform: "iOS · Android" },
+  { emoji: "💳", name: "MANSHYA Banking",        sub: "Personal & business",      gradient: "linear-gradient(135deg,#0B5C2E,#5FC97F)", platform: "iOS · Android" },
+  { emoji: "🚗", name: "MANSHYA Driver",         sub: "Earn · Drive · Get paid",  gradient: "linear-gradient(135deg,#0F172A,#14B8A6)", platform: "iOS · Android" },
+  { emoji: "🚕", name: "MANSHYA Ride",           sub: "Book rides · Earn as driver", gradient: "linear-gradient(135deg,#BE185D,#EC4899)", platform: "iOS · Android" },
+  { emoji: "🍽️", name: "MANSHYA Food",           sub: "Order food · Track delivery", gradient: "linear-gradient(135deg,#FF5722,#FF8A50)", platform: "iOS · Android" },
 ];
 
 export const AppShowcaseSection = memo(function AppShowcaseSection({ onOpenApps }: Props) {
@@ -22,13 +22,13 @@ export const AppShowcaseSection = memo(function AppShowcaseSection({ onOpenApps 
         <div className="text-center mb-10">
           <span className="inline-block text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full mb-4"
             style={{ background: "rgba(245,166,35,.15)", color: "#F5A623" }}>
-            VINK Super App Ecosystem
+            MANSHYA Super App Ecosystem
           </span>
           <h2 className="text-2xl sm:text-3xl font-black text-white mb-3">
             5 Apps. One System.<br className="sm:hidden" /> Built for Southern Africa.
           </h2>
           <p className="text-white/50 text-sm max-w-lg mx-auto leading-relaxed">
-            Each app operates independently, downloads separately, and connects to the same VINK backend — powering taxis, drivers, passengers, businesses, and fleet operators.
+            Each app operates independently, downloads separately, and connects to the same MANSHYA backend — powering taxis, drivers, passengers, businesses, and fleet operators.
           </p>
         </div>
 

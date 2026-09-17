@@ -22,9 +22,9 @@ const STEPS = [
 ];
 
 const CARD_TYPES = [
-  { id: "standard", name: "VINK Standard Card", limit: "R5,000 – R25,000", fee: "R0/month", color: "linear-gradient(135deg,#128A43,#5FC97F)" },
-  { id: "gold",     name: "VINK Gold Card",     limit: "R25,000 – R150,000", fee: "R85/month", color: "linear-gradient(135deg,#B8860B,#DAA520)" },
-  { id: "platinum", name: "VINK Platinum Card", limit: "R150,000 – R500,000", fee: "R265/month", color: "linear-gradient(135deg,#374151,#6B7280)" },
+  { id: "standard", name: "MANSHYA Standard Card", limit: "R5,000 – R25,000", fee: "R0/month", color: "linear-gradient(135deg,#128A43,#5FC97F)" },
+  { id: "gold",     name: "MANSHYA Gold Card",     limit: "R25,000 – R150,000", fee: "R85/month", color: "linear-gradient(135deg,#B8860B,#DAA520)" },
+  { id: "platinum", name: "MANSHYA Platinum Card", limit: "R150,000 – R500,000", fee: "R265/month", color: "linear-gradient(135deg,#374151,#6B7280)" },
 ];
 
 const DOC_SLOTS = [
@@ -253,7 +253,7 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
       {/* ── Top bar ── */}
       <div className="sticky top-0 z-20 bg-white border-b border-gray-100 shadow-sm">
         <div className="flex items-center justify-between px-5 py-3">
-          <img src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
+          <img src={vinkLogo} alt="MANSHYA" className="h-9 w-auto object-contain" />
           <div className="flex items-center gap-3">
             <span className="hidden sm:block text-xs text-gray-400 font-medium">Step {step} of {STEPS.length}</span>
             <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-800"><X className="w-5 h-5" /></button>
@@ -267,7 +267,7 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
 
       {/* ── Hero ── */}
       <AppHero
-        tag="VINK Personal Banking · FICA · POCA Compliant"
+        tag="MANSHYA Personal Banking · FICA · POCA Compliant"
         title="New Credit Card Application"
         subtitle="Choose your card, verify your identity, and get approved in minutes."
         gradient="linear-gradient(135deg,#1a0533 0%,#0B5C2E 50%,#5FC97F 100%)"
@@ -553,7 +553,7 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
               )}
             </div>
             <p className="text-xs text-gray-400">
-              Additional directors can be verified by contacting your VINK relationship manager after card activation.
+              Additional directors can be verified by contacting your MANSHYA relationship manager after card activation.
             </p>
           </FormCard>
         )}
@@ -563,7 +563,7 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
           <div className="space-y-5">
             <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm space-y-3">
               <p className="text-xs text-gray-500 leading-relaxed">
-                By submitting I confirm all information is true and accurate. I authorise VINK to conduct credit bureau inquiries and verify my identity with SARS, CIPC, and Home Affairs.
+                By submitting I confirm all information is true and accurate. I authorise MANSHYA to conduct credit bureau inquiries and verify my identity with SARS, CIPC, and Home Affairs.
               </p>
               <button
                 disabled={submitting}
@@ -604,7 +604,7 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
               </div>
               <div>
                 <h2 className="text-2xl font-black text-gray-900">Account Created!</h2>
-                <p className="text-gray-500 text-sm mt-1">Your VINK credit card has been approved and issued.</p>
+                <p className="text-gray-500 text-sm mt-1">Your MANSHYA credit card has been approved and issued.</p>
               </div>
 
               {/* Virtual card preview */}
@@ -615,7 +615,7 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
                 <div className="relative z-10">
                   <div className="flex justify-between items-start mb-8">
                     <div>
-                      <p className="text-[9px] tracking-widest opacity-60 uppercase">VINK</p>
+                      <p className="text-[9px] tracking-widest opacity-60 uppercase">MANSHYA</p>
                       <p className="text-sm font-bold">{CARD_TYPES.find(c => c.id === selectedCard)?.name}</p>
                     </div>
                     <div className="w-9 h-6 rounded bg-yellow-400/70" />
@@ -624,7 +624,7 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
                   <div className="flex justify-between items-end">
                     <div>
                       <p className="text-[8px] opacity-55 uppercase">Card Holder</p>
-                      <p className="text-xs font-medium">{form.firstName || "VINK"} {form.lastName || "Cardholder"}</p>
+                      <p className="text-xs font-medium">{form.firstName || "MANSHYA"} {form.lastName || "Cardholder"}</p>
                     </div>
                     <p className="text-base font-black italic">VISA</p>
                   </div>
@@ -641,7 +641,7 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
                 { label: "Credit limit",      value: CARD_TYPES.find(c => c.id === selectedCard)?.limit ?? "" },
                 { label: "Card expiry",       value: `${new Date().getMonth() + 1 < 10 ? "0" : ""}${new Date().getMonth() + 1}/${new Date().getFullYear() + 3 - 2000}` },
                 { label: "Account status",    value: "Active — card being printed" },
-                { label: "Reference number",  value: `VINK-CC-${new Date().getFullYear()}-${Math.floor(Math.random() * 90000 + 10000)}` },
+                { label: "Reference number",  value: `MANSHYA-CC-${new Date().getFullYear()}-${Math.floor(Math.random() * 90000 + 10000)}` },
               ].map((item, i) => (
                 <div key={i} className="flex justify-between py-2 border-b border-gray-100 last:border-0">
                   <span className="text-xs text-gray-500 font-medium">{item.label}</span>
@@ -652,14 +652,14 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
 
             <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm text-sm text-gray-600 leading-relaxed">
               <p>📦 Your physical card will be delivered to <strong>{form.address || "your registered address"}</strong> within <strong>5–7 business days</strong>.</p>
-              <p className="mt-2">📱 Your virtual card is available immediately in the <strong>VINK app</strong> for online and tap-to-pay transactions.</p>
+              <p className="mt-2">📱 Your virtual card is available immediately in the <strong>MANSHYA app</strong> for online and tap-to-pay transactions.</p>
               <p className="mt-2 text-xs text-gray-400">A welcome email has been sent to {form.email || "your registered email"}.</p>
             </div>
 
             <button onClick={onClose}
               className="w-full py-3.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 shadow-lg"
               style={{ background: `linear-gradient(135deg,${CP},#5FC97F)` }}>
-              Back to VINK Banking
+              Back to MANSHYA Banking
             </button>
           </div>
         )}

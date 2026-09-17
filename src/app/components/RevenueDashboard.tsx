@@ -1,10 +1,10 @@
 /**
- * VINK AFC Revenue Distribution Dashboard
+ * MANSHYA AFC Revenue Distribution Dashboard
  *
  * Shows the complete revenue flow:
  *   Passenger → Fare + R0.50 fee
  *   Driver    → Fare - R0.50 fee - R20/trip levy
- *   VINK       → R1.00/tap → keeps R0.90, sends R0.10 to device investor
+ *   MANSHYA       → R1.00/tap → keeps R0.90, sends R0.10 to device investor
  *   Association → R20/trip levy → splits with marshall per agreed %
  *   Investor  → R0.10/tap + R250/month device rental
  *   Marshall  → % of R20 levy per trip
@@ -190,7 +190,7 @@ export function RevenueDashboard({ isOpen, onClose }: Props) {
             {[
               { label: "Passenger tap fee", value: "R0.50" },
               { label: "Driver tap fee",    value: "R0.50" },
-              { label: "VINK total/tap",     value: "R1.00" },
+              { label: "MANSHYA total/tap",     value: "R1.00" },
               { label: "Investor share",    value: "10%" },
               { label: "Trip levy",         value: "R20.00" },
               { label: "Device rental",     value: "R250/mo" },
@@ -219,7 +219,7 @@ export function RevenueDashboard({ isOpen, onClose }: Props) {
                     {[
                       { label: "Passenger", pays: "R14.50", note: "R14 fare\n+ R0.50 fee", color: "#EC4899", arrow: true },
                       { label: "Driver",    pays: "R13.50", note: "Receives R14\n- R0.50 fee\n- R20/trip levy", color: "#14B8A6", arrow: true },
-                      { label: "VINK Platform", pays: "R0.90/tap", note: "Keeps 90%\nof R1.00 fee", color: P, arrow: true },
+                      { label: "MANSHYA Platform", pays: "R0.90/tap", note: "Keeps 90%\nof R1.00 fee", color: P, arrow: true },
                       { label: "Investor",  pays: "R0.10/tap\n+R250/mo", note: "10% of R1.00\n+ monthly rental", color: "#F59E0B", arrow: false },
                     ].map((n, i) => (
                       <div key={i} className="flex items-center gap-2 flex-1">
@@ -263,7 +263,7 @@ export function RevenueDashboard({ isOpen, onClose }: Props) {
                   {[
                     { label: "Total Taps Today",         value: String((snapshot.totalTapsToday as number) ?? 0),               color: P },
                     { label: "Total Fare Today",         value: fmtM((snapshot.totalFareToday as number) ?? 0),                  color: "#14B8A6" },
-                    { label: "VINK Earnings Today",       value: fmtM((snapshot.totalVinkEarningsToday as number) ?? 0),           color: "#F59E0B" },
+                    { label: "MANSHYA Earnings Today",       value: fmtM((snapshot.totalVinkEarningsToday as number) ?? 0),           color: "#F59E0B" },
                     { label: "Investor Earnings Today",  value: fmtM((snapshot.totalInvestorEarningsToday as number) ?? 0),      color: "#EC4899" },
                     { label: "Levies Collected",         value: fmtM((snapshot.totalLeviesCollectedToday as number) ?? 0),       color: "#3B82F6" },
                     { label: "Marshall Payments",        value: fmtM((snapshot.totalMarshallPaymentsToday as number) ?? 0),      color: "#10B981" },
@@ -347,8 +347,8 @@ export function RevenueDashboard({ isOpen, onClose }: Props) {
                     {[
                       { party: "Passenger pays",  amount: simResult.passenger.pays,                      note: `R${simFare} fare + R${simResult.passenger.fee} tap fee`,          color: "#EC4899", arrow: "←" },
                       { party: "Driver receives",  amount: simResult.driver.receives,                     note: `R${simFare} fare − R${simResult.driver.fee} tap fee`,             color: "#14B8A6", arrow: "→" },
-                      { party: "VINK earns (keeps)", amount: simResult.vink.keeps,                          note: `R${simResult.vink.earns} total fee − R${simResult.investor.tapShare} investor`, color: P, arrow: "→" },
-                      { party: "Investor earns/tap", amount: simResult.investor.tapShare,                 note: `${FEES.INVESTOR_SHARE_PCT}% of R${FEES.VINK_FEE_TOTAL} VINK fee`,  color: "#F59E0B", arrow: "→" },
+                      { party: "MANSHYA earns (keeps)", amount: simResult.vink.keeps,                          note: `R${simResult.vink.earns} total fee − R${simResult.investor.tapShare} investor`, color: P, arrow: "→" },
+                      { party: "Investor earns/tap", amount: simResult.investor.tapShare,                 note: `${FEES.INVESTOR_SHARE_PCT}% of R${FEES.VINK_FEE_TOTAL} MANSHYA fee`,  color: "#F59E0B", arrow: "→" },
                       { party: "Association (levy)", amount: simResult.association.receives,              note: `R${FEES.TRIP_LEVY} levy − ${simResult.marshall.percentage}% marshall = R${simResult.marshall.receives}`, color: "#3B82F6", arrow: "→" },
                       { party: "Marshall (levy %)", amount: simResult.marshall.receives,                  note: `${simResult.marshall.percentage}% of R${FEES.TRIP_LEVY} trip levy`, color: "#10B981", arrow: "→" },
                     ].map((row, i) => (
@@ -380,7 +380,7 @@ export function RevenueDashboard({ isOpen, onClose }: Props) {
                     {simHistory.map((h, i) => (
                       <div key={i} className="flex justify-between py-1.5 border-b border-gray-50 last:border-0 text-sm">
                         <span className="text-gray-500">{h.ts}</span>
-                        <span className="font-semibold text-gray-800">R{h.fare} fare → {fmt(h.fare * 0.5 / 0.5 * FEES.VINK_FEE_TOTAL)} VINK earning</span>
+                        <span className="font-semibold text-gray-800">R{h.fare} fare → {fmt(h.fare * 0.5 / 0.5 * FEES.VINK_FEE_TOTAL)} MANSHYA earning</span>
                       </div>
                     ))}
                   </div>
@@ -430,7 +430,7 @@ export function RevenueDashboard({ isOpen, onClose }: Props) {
             <div className="space-y-4 max-w-4xl">
               <h1 className="text-xl font-black text-gray-900">AFC Devices & Investor Ownership</h1>
               <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-sm text-emerald-800">
-                <strong>Investor model:</strong> Investors purchase AFC devices and rent them to taxi owners at <strong>R250/month</strong>. Each tap on their device earns them <strong>R0.10</strong> (10% of the R1.00 VINK fee). A device doing 200 taps/day earns the investor R20/day in tap revenue + R250/month rental = ~R850/month per device.
+                <strong>Investor model:</strong> Investors purchase AFC devices and rent them to taxi owners at <strong>R250/month</strong>. Each tap on their device earns them <strong>R0.10</strong> (10% of the R1.00 MANSHYA fee). A device doing 200 taps/day earns the investor R20/day in tap revenue + R250/month rental = ~R850/month per device.
               </div>
               <div className="space-y-4">
                 {devices.map((dev, i) => (

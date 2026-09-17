@@ -177,7 +177,7 @@ export function VINKSIMApplicationViewer({ isOpen, onClose }: Props) {
       {/* Top bar */}
       <div className="sticky top-0 z-20 bg-white border-b border-gray-100 shadow-sm">
         <div className="flex items-center justify-between px-5 py-3">
-          <img src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
+          <img src={vinkLogo} alt="MANSHYA" className="h-9 w-auto object-contain" />
           <div className="flex items-center gap-3">
             <span className="hidden sm:block text-xs text-gray-400 font-medium">Step {step} of {STEPS.length}</span>
             <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500"><X className="w-5 h-5" /></button>
@@ -190,8 +190,8 @@ export function VINKSIMApplicationViewer({ isOpen, onClose }: Props) {
       </div>
 
       <AppHero
-        tag="VINK MVNO · Cell C Network · ICASA Licensed"
-        title="Get Your VINK SIM Card"
+        tag="MANSHYA MVNO · Cell C Network · ICASA Licensed"
+        title="Get Your MANSHYA SIM Card"
         subtitle="Stay connected on South Africa's fastest network. Choose your plan, verify your identity, and get your SIM activated in minutes."
         gradient="linear-gradient(135deg,#1a0533 0%,#0B5C2E 45%,#128A43 100%)"
       />
@@ -362,7 +362,7 @@ export function VINKSIMApplicationViewer({ isOpen, onClose }: Props) {
               </div>
               <label className="flex items-center gap-3 cursor-pointer">
                 <input type="checkbox" checked={wantToPort} onChange={e => setWantToPort(e.target.checked)} className="w-4 h-4 rounded accent-emerald-700" />
-                <span className="text-sm text-gray-700 font-medium">I want to port my existing number to VINK</span>
+                <span className="text-sm text-gray-700 font-medium">I want to port my existing number to MANSHYA</span>
               </label>
               {wantToPort && (
                 <div className="mt-3">
@@ -397,7 +397,7 @@ export function VINKSIMApplicationViewer({ isOpen, onClose }: Props) {
               ))}
             </div>
             <p className="text-xs text-gray-500 leading-relaxed mt-2">
-              By activating your VINK SIM you confirm that all information provided is accurate and that you consent to RICA registration, VINK&apos;s Privacy Policy, and the Cell C network Terms of Service.
+              By activating your MANSHYA SIM you confirm that all information provided is accurate and that you consent to RICA registration, MANSHYA&apos;s Privacy Policy, and the Cell C network Terms of Service.
             </p>
             <button
               onClick={async () => {
@@ -406,7 +406,7 @@ export function VINKSIMApplicationViewer({ isOpen, onClose }: Props) {
               }}
               className="w-full py-4 rounded-xl text-base font-black text-white transition-all hover:opacity-90 shadow-lg mt-2"
               style={{ background: `linear-gradient(135deg,${CP},#5FC97F)`, boxShadow: `0 6px 24px ${CP}35` }}>
-              Activate My VINK SIM →
+              Activate My MANSHYA SIM →
             </button>
           </FormCard>
         )}
@@ -420,7 +420,7 @@ export function VINKSIMApplicationViewer({ isOpen, onClose }: Props) {
               </div>
               <div>
                 <h2 className="text-2xl font-black text-gray-900">SIM Activated!</h2>
-                <p className="text-gray-500 text-sm mt-1">Your VINK SIM has been registered and activated on the Cell C network.</p>
+                <p className="text-gray-500 text-sm mt-1">Your MANSHYA SIM has been registered and activated on the Cell C network.</p>
               </div>
               <div className="grid sm:grid-cols-2 gap-3">
                 <div className="rounded-xl p-4" style={{ background: "#F3F0FB" }}>
@@ -438,7 +438,7 @@ export function VINKSIMApplicationViewer({ isOpen, onClose }: Props) {
               </div>
             </div>
             <button onClick={onClose} className="w-full py-3.5 rounded-xl text-sm font-bold text-white shadow-lg" style={{ background: `linear-gradient(135deg,${CP},#5FC97F)` }}>
-              Back to VINK
+              Back to MANSHYA
             </button>
           </div>
         )}

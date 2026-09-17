@@ -1,4 +1,4 @@
-// ─── VINK Financial Reporting System ──────────────────────────────────────────
+// ─── MANSHYA Financial Reporting System ──────────────────────────────────────────
 
 export type PaymentMethod = "card" | "cash" | "wallet";
 export type PaymentModel  = "salary" | "target";

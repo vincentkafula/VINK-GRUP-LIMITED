@@ -1,5 +1,5 @@
 /**
- * VINK Super App Launcher
+ * MANSHYA Super App Launcher
  * Shows all apps as an app-store-style grid, browsable in-site. Real
  * download/install isn't live yet -- shows "Coming Soon" everywhere a
  * store download used to be simulated. Each app can still be launched
@@ -18,7 +18,7 @@ interface Props {
 const APPS = [
   {
     id: "afc",
-    name: "VINK AFC Terminal",
+    name: "MANSHYA AFC Terminal",
     subtitle: "P18Q · Automatic Fare Collection",
     description: "Runs on the P18Q — a 7-inch Android 12 transit validator with ISO 14443 Type A/B NFC, EMV Contactless L1 (Visa Paywave · Mastercard Paypass), 1D/2D QR decoding, face recognition, 4G LTE, GPS, and 4 SAM slots. Processes fares in under 3 seconds offline. IP65 · IK08 · CE · RoHS certified.",
     platform: ["iOS", "Android"],
@@ -42,7 +42,7 @@ const APPS = [
   },
   {
     id: "tracking",
-    name: "VINK Fleet Tracker",
+    name: "MANSHYA Fleet Tracker",
     subtitle: "Vehicle Tracking & Monitoring",
     description: "Monitor your entire fleet in real time from any device. Live GPS, geofencing, driver behaviour scoring, speed alerts, and automated border-crossing notifications across the SADC region.",
     platform: ["iOS", "Android"],
@@ -59,9 +59,9 @@ const APPS = [
   },
   {
     id: "banking",
-    name: "VINK Banking",
+    name: "MANSHYA Banking",
     subtitle: "Personal & Business Banking",
-    description: "Your full VINK bank account in your pocket. Send money, manage cards, earn VinkPoints, pay utility bills, and access all your financial products — available 24/7 on iOS and Android.",
+    description: "Your full MANSHYA bank account in your pocket. Send money, manage cards, earn ManshyaPoints, pay utility bills, and access all your financial products — available 24/7 on iOS and Android.",
     platform: ["iOS", "Android"],
     category: "Banking & Finance",
     version: "v5.1.3",
@@ -72,13 +72,13 @@ const APPS = [
     emoji: "💳",
     badge: "Most Downloaded",
     badgeColor: "#EF4444",
-    features: ["Instant money transfers", "Card management & virtual cards", "VinkPoints rewards", "Bill payments & airtime", "Investment account access"],
+    features: ["Instant money transfers", "Card management & virtual cards", "ManshyaPoints rewards", "Bill payments & airtime", "Investment account access"],
   },
   {
     id: "revenue",
-    name: "VINK Revenue Dashboard",
+    name: "MANSHYA Revenue Dashboard",
     subtitle: "AFC Revenue Distribution & Investor Portal",
-    description: "The backend operations dashboard for managing fare revenue splits. Track per-tap earnings across Passenger, Driver, VINK Platform, Investor, Association, and Marshall accounts in real time. Simulate taps, set levy agreements, and view investor portfolios.",
+    description: "The backend operations dashboard for managing fare revenue splits. Track per-tap earnings across Passenger, Driver, MANSHYA Platform, Investor, Association, and Marshall accounts in real time. Simulate taps, set levy agreements, and view investor portfolios.",
     platform: ["Web"],
     category: "Operations · Finance",
     version: "v1.0.0",
@@ -90,8 +90,8 @@ const APPS = [
     badge: "Operations",
     badgeColor: "#0B5C2E",
     features: [
-      "Per-tap revenue split (Passenger R0.50 · Driver R0.50 · VINK R1.00)",
-      "10% of VINK fee → device investor (R0.10/tap)",
+      "Per-tap revenue split (Passenger R0.50 · Driver R0.50 · MANSHYA R1.00)",
+      "10% of MANSHYA fee → device investor (R0.10/tap)",
       "R20 trip levy → Association + Marshall per agreed %",
       "R250/month device rental → Investor",
       "Tap simulator with full audit trail",
@@ -195,11 +195,11 @@ export function AppLauncher({ isOpen, onClose, onLaunchApp }: Props) {
           <div className="rounded-2xl p-4 space-y-3" style={{ background: "#ffffff08" }}>
             <p className="text-white/50 text-xs uppercase tracking-wide font-bold">System Information</p>
             {[
-              { label: "Developer", value: "VINK Group (Pty) Ltd." },
-              { label: "Backend API", value: "VINK Central API v2 · Cape Town" },
+              { label: "Developer", value: "MANSHYA Group (Pty) Ltd." },
+              { label: "Backend API", value: "MANSHYA Central API v2 · Cape Town" },
               { label: "Real-time", value: "WebSocket · sub-100ms latency" },
               { label: "Security", value: "256-bit AES · JWT Auth · FICA Compliant" },
-              { label: "Data", value: "VINK MVNO · Cell C 4G/LTE" },
+              { label: "Data", value: "MANSHYA MVNO · Cell C 4G/LTE" },
             ].map((item, i) => (
               <div key={i} className="flex justify-between">
                 <span className="text-white/40 text-xs">{item.label}</span>
@@ -219,9 +219,9 @@ export function AppLauncher({ isOpen, onClose, onLaunchApp }: Props) {
       <div className="sticky top-0 z-10 px-5 py-4 border-b border-white/10 flex items-center justify-between"
         style={{ background: "#0A0A14" }}>
         <div className="flex items-center gap-3">
-          <img src={vinkLogo} alt="VINK" className="h-8 w-auto object-contain" style={{ filter: "brightness(0) invert(1)" }} />
+          <img src={vinkLogo} alt="MANSHYA" className="h-8 w-auto object-contain" style={{ filter: "brightness(0) invert(1)" }} />
           <div>
-            <p className="text-sm font-black text-white">VINK App Ecosystem</p>
+            <p className="text-sm font-black text-white">MANSHYA App Ecosystem</p>
             <p className="text-[10px] text-white/50">5 connected apps · 1 backend system</p>
           </div>
         </div>
@@ -241,7 +241,7 @@ export function AppLauncher({ isOpen, onClose, onLaunchApp }: Props) {
             5 Apps. One System.<br />Built for South Africa.
           </h1>
           <p className="text-white/60 text-sm leading-relaxed">
-            Each app operates independently, downloads separately, and connects to the same VINK backend — powering taxis, drivers, passengers, businesses, and fleet operators across South Africa.
+            Each app operates independently, downloads separately, and connects to the same MANSHYA backend — powering taxis, drivers, passengers, businesses, and fleet operators across South Africa.
           </p>
           <div className="flex gap-3 mt-4">
             {APPS.map(app => (
@@ -259,7 +259,7 @@ export function AppLauncher({ isOpen, onClose, onLaunchApp }: Props) {
         <div className="rounded-xl p-3 flex items-start gap-3" style={{ background: "#F5A62315", border: "1px solid #F5A62330" }}>
           <span className="text-lg flex-shrink-0">🔗</span>
           <p className="text-white/70 text-xs leading-relaxed">
-            All 5 apps share a single Express/WebSocket backend. Users download each app separately from the App Store or Play Store. Authentication, wallets, and real-time events are unified across all apps via the VINK Central API.
+            All 5 apps share a single Express/WebSocket backend. Users download each app separately from the App Store or Play Store. Authentication, wallets, and real-time events are unified across all apps via the MANSHYA Central API.
           </p>
         </div>
       </div>

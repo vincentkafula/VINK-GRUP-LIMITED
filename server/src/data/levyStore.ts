@@ -10,8 +10,8 @@ const now = () => new Date().toISOString();
 export const FEES = {
   PASSENGER_TAP_FEE: 0.50,    // R0.50 charged to passenger per tap
   DRIVER_TAP_FEE:    0.50,    // R0.50 charged to driver per tap
-  VINK_FEE_TOTAL:     1.00,    // R1.00 total VINK earnings per tap
-  INVESTOR_SHARE_PCT: 10,     // 10% of VINK fee → device investor = R0.10
+  VINK_FEE_TOTAL:     1.00,    // R1.00 total MANSHYA earnings per tap
+  INVESTOR_SHARE_PCT: 10,     // 10% of MANSHYA fee → device investor = R0.10
   TRIP_LEVY:         20.00,   // R20 per trip deducted from driver → association
   DEVICE_MONTHLY_RENTAL: 250.00, // R250/month rental device owner → investor
 };
@@ -27,8 +27,8 @@ const mkAccount = (
 });
 
 export const levyAccounts: LevyAccount[] = [
-  // VINK Platform
-  { ...mkAccount("vink_platform", "vink", "VINK Platform Account", 284_750), id: "la-vink" },
+  // MANSHYA Platform
+  { ...mkAccount("vink_platform", "vink", "MANSHYA Platform Account", 284_750), id: "la-vink" },
   // Investors
   { ...mkAccount("investor", "inv-001", "Themba Nkosi (Investor)", 42_850), id: "la-inv001" },
   { ...mkAccount("investor", "inv-002", "Priya Investments CC", 28_400), id: "la-inv002" },
@@ -146,9 +146,9 @@ export function processAFCTap(params: {
   // Create transaction audit trail
   const txns: LevyTransaction[] = [
     { id: uuid(), fromAccountId: passengerAccount.id, toAccountId: driverAccount.id, amount: params.fareAmount, type: "tap_fare", referenceId: tapId, description: `Fare payment — ${params.routeName}`, timestamp: ts, balanceAfter: driverAccount.balance },
-    { id: uuid(), fromAccountId: passengerAccount.id, toAccountId: vinkAccount.id, amount: passengerFee, type: "tap_fee_passenger", referenceId: tapId, description: `VINK tap fee (passenger side)`, timestamp: ts, balanceAfter: vinkAccount.balance },
-    { id: uuid(), fromAccountId: driverAccount.id, toAccountId: vinkAccount.id, amount: driverFee, type: "tap_fee_driver", referenceId: tapId, description: `VINK tap fee (driver side)`, timestamp: ts, balanceAfter: vinkAccount.balance },
-    { id: uuid(), fromAccountId: vinkAccount.id, toAccountId: investorAccount.id, amount: investorShare, type: "investor_tap", referenceId: tapId, description: `Investor share (10% of VINK fee) — device ${device.serialNumber}`, timestamp: ts, balanceAfter: investorAccount.balance },
+    { id: uuid(), fromAccountId: passengerAccount.id, toAccountId: vinkAccount.id, amount: passengerFee, type: "tap_fee_passenger", referenceId: tapId, description: `MANSHYA tap fee (passenger side)`, timestamp: ts, balanceAfter: vinkAccount.balance },
+    { id: uuid(), fromAccountId: driverAccount.id, toAccountId: vinkAccount.id, amount: driverFee, type: "tap_fee_driver", referenceId: tapId, description: `MANSHYA tap fee (driver side)`, timestamp: ts, balanceAfter: vinkAccount.balance },
+    { id: uuid(), fromAccountId: vinkAccount.id, toAccountId: investorAccount.id, amount: investorShare, type: "investor_tap", referenceId: tapId, description: `Investor share (10% of MANSHYA fee) — device ${device.serialNumber}`, timestamp: ts, balanceAfter: investorAccount.balance },
   ];
 
   afcTaps.push(tap);

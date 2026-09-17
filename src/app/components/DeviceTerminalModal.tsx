@@ -74,7 +74,7 @@ export function DeviceTerminalModal({ device, onClose }: { device: DeviceTermina
             ))}
           </div>
 
-          <p className="text-[11px] text-gray-400 mt-5 leading-relaxed">Every VINK AFC terminal on the network runs identical hardware — this device's specs are shared across all VINK dashboards, so drivers, owners, investors and associations always see the same certified equipment.</p>
+          <p className="text-[11px] text-gray-400 mt-5 leading-relaxed">Every MANSHYA AFC terminal on the network runs identical hardware — this device's specs are shared across all MANSHYA dashboards, so drivers, owners, investors and associations always see the same certified equipment.</p>
         </div>
       </div>
     </div>

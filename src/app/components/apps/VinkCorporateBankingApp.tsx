@@ -47,7 +47,7 @@ function OnboardingScreen({ onSelect }: { onSelect: (tier: Tier) => void }) {
   return (
     <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F5F3FA" }}>
       <div className="px-5 pt-8 pb-5 text-center" style={{ background: INK }}>
-        <p className="text-xs font-bold tracking-widest" style={{ color: GOLD }}>VINK CORPORATE</p>
+        <p className="text-xs font-bold tracking-widest" style={{ color: GOLD }}>MANSHYA CORPORATE</p>
         <p className="text-white text-lg font-bold mt-2">One platform. Total financial control.</p>
         <p className="text-white/60 text-[11px] mt-1">Choose your corporate account tier to continue.</p>
       </div>
@@ -135,7 +135,7 @@ function DashboardScreen({ tier }: { tier: Tier }) {
       <div className="px-4 py-3 flex-shrink-0" style={{ background: INK }}>
         <div className="flex items-center justify-between mb-2.5">
           <div>
-            <p className="text-xs font-bold tracking-widest" style={{ color: GOLD }}>VINK CORPORATE</p>
+            <p className="text-xs font-bold tracking-widest" style={{ color: GOLD }}>MANSHYA CORPORATE</p>
             <p className="text-white/60 text-[10px]">{tier} Corporate Account</p>
           </div>
           <Bell className="w-5 h-5 text-white/80" />
@@ -483,7 +483,7 @@ export function VinkCorporateBankingApp({ isOpen, onClose }: { isOpen: boolean; 
   const showTabs = screen !== "onboarding" && !verifying;
 
   return (
-    <MobileAppOverlay onClose={onClose} appName="VINK Corporate" bgColor="#F5F3FA">
+    <MobileAppOverlay onClose={onClose} appName="MANSHYA Corporate" bgColor="#F5F3FA">
       <PhoneFrame statusBarColor={INK} statusBarTextLight>
         <div className="flex-1 overflow-hidden flex flex-col">
           {verifying ? (

@@ -45,7 +45,7 @@ export function isNativeTerminalAvailable(): boolean {
 
 export async function startCardListener(): Promise<{ started: boolean; error?: string }> {
   if (!isNativeTerminalAvailable()) {
-    return { started: false, error: "Not running inside the native Android app -- tap-to-pay requires the installed VINK app on a P18Q device." };
+    return { started: false, error: "Not running inside the native Android app -- tap-to-pay requires the installed MANSHYA app on a P18Q device." };
   }
   return P18QTerminal.startCardListener();
 }

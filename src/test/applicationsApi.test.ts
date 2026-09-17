@@ -14,7 +14,7 @@ describe("applicationsApi.submit", () => {
     mockFetch.mockResolvedValue({
       json: async () => ({
         success: true,
-        data: { referenceNumber: "VINK-CC-2024-123456", id: "abc", status: "pending" },
+        data: { referenceNumber: "MANSHYA-CC-2024-123456", id: "abc", status: "pending" },
       }),
     });
 
@@ -25,7 +25,7 @@ describe("applicationsApi.submit", () => {
     });
 
     expect(result.success).toBe(true);
-    expect((result.data as { referenceNumber: string }).referenceNumber).toBe("VINK-CC-2024-123456");
+    expect((result.data as { referenceNumber: string }).referenceNumber).toBe("MANSHYA-CC-2024-123456");
   });
 
   it("returns network error gracefully", async () => {

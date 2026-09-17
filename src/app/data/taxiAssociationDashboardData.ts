@@ -7,7 +7,7 @@
    Owners, Drivers, Routes, Map, Balance Sheet, Income Statement, Cash
    Flow, Tax, Tax association fee), in South African Rand and using a
    real South African taxi association naming convention, consistent
-   with VINK's own established taxi-industry focus elsewhere on this
+   with MANSHYA's own established taxi-industry focus elsewhere on this
    site. Replace with a real fetch() once this is wired to live data.
    ========================================================= */
 

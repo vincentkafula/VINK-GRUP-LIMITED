@@ -22,13 +22,13 @@ const COLS = [
   {
     title: "Who We Are",
     links: [
-      "About VINK",
+      "About MANSHYA",
       "Investor Relations",
       "Social Responsibility",
       "News",
       "Sponsorship",
       "Careers",
-      "VINK at the World Economic Forum",
+      "MANSHYA at the World Economic Forum",
       "Job Application",
     ],
   },
@@ -39,7 +39,7 @@ const COLS = [
       "Business Banking",
       "Wealth and Investment Management",
       "Corporate and Investment Banking",
-      "VINK blog",
+      "MANSHYA blog",
     ],
   },
   {
@@ -55,7 +55,7 @@ const COLS = [
     title: "Support",
     links: [
       "Contact Us",
-      "Switch to VINK",
+      "Switch to MANSHYA",
       "Business debit order switching",
       "Send your feedback",
     ],
@@ -150,7 +150,7 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
         {/* Top strip: logo + social */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 20, marginBottom: 48, paddingBottom: 32, borderBottom: "1px solid rgba(255,255,255,0.12)" }}>
           {/* Dark logo on dark footer — 140px wide (brand guide: footer 120-160px) */}
-          <img src={vinkLogoDark} alt="VINK" style={{ width: 140, height: "auto", objectFit: "contain" }} />
+          <img src={vinkLogoDark} alt="MANSHYA" style={{ width: 140, height: "auto", objectFit: "contain" }} />
 
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10 }}>
             <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", margin: 0 }}>
@@ -291,7 +291,7 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
           {/* Copyright */}
           <div style={{ paddingBottom: 16, textAlign: "center" }}>
             <p style={{ color: "rgba(255,255,255,0.28)", fontSize: 12, margin: "0 0 6px" }}>
-              © Copyright. VINK-GRUP-LIMITED. All Rights Reserved.
+              © Copyright. MANSHYA-GRUP-LIMITED. All Rights Reserved.
             </p>
             <p style={{ color: "rgba(255,255,255,0.28)", fontSize: 12, margin: 0, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "0 10px" }}>
               <span>United States – EIN: 37-2148609</span>

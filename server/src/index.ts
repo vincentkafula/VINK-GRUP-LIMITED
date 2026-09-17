@@ -236,7 +236,7 @@ app.post("/api/admin/migrate", requireAuth, requireRole("owner", "superadmin"), 
 // API index
 app.get("/api", (_req, res) => {
   res.json({
-    name: "Vink MVNO Backend API",
+    name: "Manshya MVNO Backend API",
     version: "1.0.0",
     endpoints: [
       "POST   /api/auth/login",
@@ -330,7 +330,7 @@ wss.on("connection", (ws, req) => {
   ws.send(JSON.stringify({
     event: "connected",
     timestamp: new Date().toISOString(),
-    data: { message: "Connected to Vink MVNO live feed", clientCount: clients.size },
+    data: { message: "Connected to Manshya MVNO live feed", clientCount: clients.size },
   }));
 
   ws.on("message", raw => {
@@ -371,7 +371,7 @@ async function boot() {
 
   server.listen(PORT, () => {
     console.log("");
-    console.log("  \x1b[35m▲ Vink Backend\x1b[0m  v1.1.0");
+    console.log("  \x1b[35m▲ Manshya Backend\x1b[0m  v1.1.0");
     console.log(`  \x1b[2mHTTP\x1b[0m   → http://localhost:${PORT}`);
     console.log(`  \x1b[2mAPI\x1b[0m    → http://localhost:${PORT}/api`);
     console.log(`  \x1b[2mWS\x1b[0m     → ws://localhost:${PORT}/ws`);

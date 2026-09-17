@@ -1,5 +1,5 @@
 /**
- * VINK Mobile App — Main Home Screen
+ * MANSHYA Mobile App — Main Home Screen
  * Matches the attached design exactly.
  * Every tile directly opens the corresponding built dashboard/viewer.
  */
@@ -26,7 +26,7 @@ const TILES = [
   { id: "device",       label: "Device",        bg: "#D1FAE5", fg: "#059669", icon: DeviceIcon },
   { id: "guardme",      label: "Guard Me",      bg: "#FEE2E2", fg: "#DC2626", icon: ShieldIcon },
   { id: "insurance",    label: "Insurance",     bg: "#DBEAFE", fg: "#2563EB", icon: InsureIcon },
-  { id: "vinktv",        label: "VINK TV",        bg: "#D1FAE5", fg: "#059669", icon: TVIcon },
+  { id: "vinktv",        label: "MANSHYA TV",        bg: "#D1FAE5", fg: "#059669", icon: TVIcon },
   { id: "cardlesscash", label: "Cardless Cash", bg: "#EDE9FE", fg: "#FF9900", icon: CashIcon },
   { id: "elections",    label: "Elections",     bg: "#FEF3C7", fg: "#D97706", icon: ElectionIcon },
   { id: "scantopay",    label: "Scan to Pay",   bg: "#FEE2E2", fg: "#DC2626", icon: ScanIcon },

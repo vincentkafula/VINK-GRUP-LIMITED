@@ -73,7 +73,7 @@ export const db = {
     dataBalanceMB: rand(0, 20480),
     smsBalance: rand(0, 500),
     voiceBalanceMin: rand(0, 2000),
-    homeNetwork: "ZA-VINK",
+    homeNetwork: "ZA-MANSHYA",
     currentCell: `TOWER-${String(rand(1, 120)).padStart(4, "0")}`,
     roaming: i % 15 === 0,
     roamingNetwork: i % 15 === 0 ? ["UK-O2", "US-TMOB", "DE-DT", "FR-ORAN"][i % 4] : null,
@@ -225,7 +225,7 @@ export const db = {
     id: uuid(),
     msisdn: msisdn(i + 1200000),
     donorNetwork: ["MTN-ZA", "VODACOM-ZA", "CELL-C-ZA", "TELKOM-ZA"][i % 4],
-    recipientNetwork: "ZA-VINK",
+    recipientNetwork: "ZA-MANSHYA",
     status: (["completed", "in_progress", "pending", "rejected"][i % 4]) as PortingRequest["status"],
     requestedAt: ago(rand(60, 4320)),
     completedAt: i % 4 === 0 ? ago(rand(0, 120)) : null,
@@ -271,7 +271,7 @@ export const db = {
 
   // Carrier routes
   carrierRoutes: [
-    { id: uuid(), destination: "ZA", carrier: "On-Net ZA-VINK", routeType: "on-net" as const, status: "online" as const, asr: 72.4, acd: 185, pdd: 280, ratePerMin: 0.00, currency: "ZAR" },
+    { id: uuid(), destination: "ZA", carrier: "On-Net ZA-MANSHYA", routeType: "on-net" as const, status: "online" as const, asr: 72.4, acd: 185, pdd: 280, ratePerMin: 0.00, currency: "ZAR" },
     { id: uuid(), destination: "GB", carrier: "BICS International", routeType: "international" as const, status: "online" as const, asr: 68.1, acd: 210, pdd: 320, ratePerMin: 0.85, currency: "ZAR" },
     { id: uuid(), destination: "US", carrier: "LUMEN Technologies", routeType: "international" as const, status: "online" as const, asr: 71.2, acd: 195, pdd: 340, ratePerMin: 0.92, currency: "ZAR" },
     { id: uuid(), destination: "CN", carrier: "China Telecom Global", routeType: "international" as const, status: "warning" as const, asr: 41.0, acd: 90, pdd: 580, ratePerMin: 1.20, currency: "ZAR" },

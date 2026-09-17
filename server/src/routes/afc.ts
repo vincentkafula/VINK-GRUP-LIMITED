@@ -94,7 +94,7 @@ router.post("/tap", (req: Request, res: Response): void => {
     data: tap,
     message: approved
       ? `Payment approved in ${tap.processingMs}ms. Driver credited R${driverCut}. ${device.wifiEnabled ? "WiFi session granted." : ""}`
-      : `Payment ${result.replace("_"," ")}. Please ask passenger to top up their Vink card.`,
+      : `Payment ${result.replace("_"," ")}. Please ask passenger to top up their Manshya card.`,
   });
 });
 

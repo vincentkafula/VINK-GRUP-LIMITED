@@ -4,9 +4,9 @@ import * as open5gs from "../services/open5gsClient.js";
 import * as genieAcs from "../services/genieAcsClient.js";
 
 /**
- * Real integration endpoints connecting VINK's own admin panel to a
+ * Real integration endpoints connecting MANSHYA's own admin panel to a
  * running Open5GS core network and a running GenieACS ACS instance --
- * genuinely separate systems VINK doesn't run itself, reached over
+ * genuinely separate systems MANSHYA doesn't run itself, reached over
  * real MongoDB and real HTTP respectively (see each service's own
  * comment for what's verified vs. what couldn't be tested live in
  * this environment).

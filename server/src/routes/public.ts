@@ -30,11 +30,11 @@ router.post("/newsletter", (req: Request, res: Response): void => {
   }
   const exists = subscribers.find(s => s.email === email);
   if (exists) {
-    res.json({ success: true, data: { message: "You are already subscribed to VINK updates." } });
+    res.json({ success: true, data: { message: "You are already subscribed to MANSHYA updates." } });
     return;
   }
   subscribers.push({ id: uuid(), email, createdAt: new Date().toISOString() });
-  res.status(201).json({ success: true, data: { message: "You have been subscribed. Welcome to VINK!" } });
+  res.status(201).json({ success: true, data: { message: "You have been subscribed. Welcome to MANSHYA!" } });
 });
 
 // ─── POST /api/public/apply ───────────────────────────────────────────────────
@@ -44,7 +44,7 @@ router.post("/apply", (req: Request, res: Response): void => {
     res.status(400).json({ success: false, error: "product, name, email and phone are required" });
     return;
   }
-  const refNo = `VINK-${new Date().getFullYear()}-${String(applications.length + 1001).padStart(5, "0")}`;
+  const refNo = `MANSHYA-${new Date().getFullYear()}-${String(applications.length + 1001).padStart(5, "0")}`;
   const record = { id: uuid(), product, tier: tier ?? "Standard", name, email, phone, idNumber: idNumber ?? "", income: income ?? "", employmentStatus: employmentStatus ?? "", message: message ?? "", createdAt: new Date().toISOString(), status: "pending_review" };
   applications.push(record);
   res.status(201).json({ success: true, data: { id: record.id, referenceNumber: refNo, message: `Your application for ${product} has been received. Reference: ${refNo}. We will contact you within 1 business day.` } });
@@ -64,8 +64,8 @@ router.post("/register", (req: Request, res: Response): void => {
   }
   const record = { id: uuid(), firstName, lastName, email, phone, idNumber, dateOfBirth: dateOfBirth ?? "", accountType: accountType ?? "personal", createdAt: new Date().toISOString(), status: "pending_fica" };
   registrations.push(record);
-  const accNo = `VINK${String(Math.floor(Math.random() * 9000000000) + 1000000000)}`;
-  res.status(201).json({ success: true, data: { id: record.id, accountNumber: accNo, message: `Welcome to VINK, ${firstName}! Your account has been created. Please complete FICA verification to activate it.` } });
+  const accNo = `MANSHYA${String(Math.floor(Math.random() * 9000000000) + 1000000000)}`;
+  res.status(201).json({ success: true, data: { id: record.id, accountNumber: accNo, message: `Welcome to MANSHYA, ${firstName}! Your account has been created. Please complete FICA verification to activate it.` } });
 });
 
 // ─── POST /api/public/credit-check ────────────────────────────────────────────
@@ -82,11 +82,11 @@ router.post("/credit-check", (req: Request, res: Response): void => {
   const eligible = [
     { product: "Clear Access Account",     approved: true,  reason: "Meets all criteria" },
     { product: "Everyday Checking Account",approved: true,  reason: "Meets all criteria" },
-    { product: "Vink Commuter Card",       approved: true,  reason: "Meets all criteria" },
+    { product: "Manshya Commuter Card",       approved: true,  reason: "Meets all criteria" },
     { product: "Personal Loan R1,000–R50K",approved: score >= 550, reason: score >= 550 ? "Pre-qualified" : "Score too low" },
     { product: "Vehicle Loan",             approved: score >= 620, reason: score >= 620 ? "Pre-qualified" : "Minimum score 620 required" },
     { product: "Grain Credit Card",        approved: score >= 680, reason: score >= 680 ? "Pre-qualified" : "Minimum score 680 required" },
-    { product: "Vink Gold Card",           approved: score >= 750, reason: score >= 750 ? "Pre-qualified" : "Minimum score 750 required" },
+    { product: "Manshya Gold Card",           approved: score >= 750, reason: score >= 750 ? "Pre-qualified" : "Minimum score 750 required" },
   ];
   res.json({ success: true, data: { score, rating, eligible, tips: ["Pay all accounts on time every month", "Keep credit utilisation below 30%", "Avoid multiple credit applications in a short period", "Check your credit report annually for errors"] } });
 });
@@ -94,11 +94,11 @@ router.post("/credit-check", (req: Request, res: Response): void => {
 // ─── GET /api/public/branches ─────────────────────────────────────────────────
 router.get("/branches", (_req: Request, res: Response): void => {
   res.json({ success: true, data: [
-    { id: "1", name: "VINK Head Office", address: "8 Rose Street, Cape Town CBD, State House Building", province: "Western Cape", lat: -33.9249, lng: 18.4241, phone: "+27210070772", hours: "Mon–Fri 08:00–17:00", services: ["Account opening", "FICA verification", "Card collection", "Device enquiries", "Business consultations"] },
-    { id: "2", name: "VINK Cape Town Agent (Pick n Pay Gardens)", address: "Adderley St, Cape Town", province: "Western Cape", lat: -33.9214, lng: 18.4175, phone: null, hours: "Store trading hours", services: ["Card recharge", "Cash withdrawals"] },
-    { id: "3", name: "VINK Agent (Shoprite Bellville)", address: "Durban Rd, Bellville", province: "Western Cape", lat: -33.9000, lng: 18.6310, phone: null, hours: "Store trading hours", services: ["Card recharge", "Cash withdrawals"] },
-    { id: "4", name: "VINK Agent (Spar Mitchell's Plain)", address: "Lentegeur, Mitchell's Plain", province: "Western Cape", lat: -34.0479, lng: 18.6228, phone: null, hours: "Store trading hours", services: ["Card recharge", "Airtime top-up"] },
-    { id: "5", name: "VINK Agent (Checkers Khayelitsha)", address: "Mew Way, Khayelitsha", province: "Western Cape", lat: -34.0359, lng: 18.6822, phone: null, hours: "Store trading hours", services: ["Card recharge", "Cash withdrawals"] },
+    { id: "1", name: "MANSHYA Head Office", address: "8 Rose Street, Cape Town CBD, State House Building", province: "Western Cape", lat: -33.9249, lng: 18.4241, phone: "+27210070772", hours: "Mon–Fri 08:00–17:00", services: ["Account opening", "FICA verification", "Card collection", "Device enquiries", "Business consultations"] },
+    { id: "2", name: "MANSHYA Cape Town Agent (Pick n Pay Gardens)", address: "Adderley St, Cape Town", province: "Western Cape", lat: -33.9214, lng: 18.4175, phone: null, hours: "Store trading hours", services: ["Card recharge", "Cash withdrawals"] },
+    { id: "3", name: "MANSHYA Agent (Shoprite Bellville)", address: "Durban Rd, Bellville", province: "Western Cape", lat: -33.9000, lng: 18.6310, phone: null, hours: "Store trading hours", services: ["Card recharge", "Cash withdrawals"] },
+    { id: "4", name: "MANSHYA Agent (Spar Mitchell's Plain)", address: "Lentegeur, Mitchell's Plain", province: "Western Cape", lat: -34.0479, lng: 18.6228, phone: null, hours: "Store trading hours", services: ["Card recharge", "Airtime top-up"] },
+    { id: "5", name: "MANSHYA Agent (Checkers Khayelitsha)", address: "Mew Way, Khayelitsha", province: "Western Cape", lat: -34.0359, lng: 18.6822, phone: null, hours: "Store trading hours", services: ["Card recharge", "Cash withdrawals"] },
   ]});
 });
 

@@ -1,5 +1,5 @@
 /**
- * Retail POS revenue split -- confirmed model (2026-08-18): VINK takes
+ * Retail POS revenue split -- confirmed model (2026-08-18): MANSHYA takes
  * 2.5% of every transaction, the merchant gets the rest. Genuinely
  * different calculation from revenueSplitService.ts's flat-R1.00 taxi
  * model, not a copy of it -- a percentage fee can never exceed the

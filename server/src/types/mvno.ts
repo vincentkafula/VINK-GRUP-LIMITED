@@ -45,7 +45,7 @@ export interface Subscriber {
   dataBalanceMB: number;
   smsBalance: number;
   voiceBalanceMin: number;
-  homeNetwork: string;     // e.g. "ZA-VINK"
+  homeNetwork: string;     // e.g. "ZA-MANSHYA"
   currentCell: string | null; // cell tower ID currently served
   roaming: boolean;
   roamingNetwork: string | null;

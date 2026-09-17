@@ -44,7 +44,7 @@ if ("serviceWorker" in navigator && import.meta.env.PROD) {
 }
 
 // The Management Panel installs as its own desktop app, distinct from the
-// main VINK Bank consumer app — same origin, but its own name/icon/
+// main MANSHYA Bank consumer app — same origin, but its own name/icon/
 // start_url via a separate manifest. Swapping the <link rel="manifest">
 // href based on the current path is what lets "Install app" pick up the
 // right one when an admin installs while on /management-panel.

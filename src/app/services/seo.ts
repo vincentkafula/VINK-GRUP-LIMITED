@@ -14,8 +14,8 @@
  * doesn't leave the homepage permanently showing a sub-page's title.
  */
 
-const DEFAULT_TITLE = "VINK Bank";
-const DEFAULT_DESCRIPTION = "VINK — South Africa's first transport-native digital bank. AFC payments, banking, ride-hailing, fleet tracking and MVNO in one platform.";
+const DEFAULT_TITLE = "MANSHYA Bank";
+const DEFAULT_DESCRIPTION = "MANSHYA — South Africa's first transport-native digital bank. AFC payments, banking, ride-hailing, fleet tracking and MVNO in one platform.";
 
 export function setPageMeta(title: string, description: string): () => void {
   const prevTitle = document.title;
@@ -33,15 +33,15 @@ export function setPageMeta(title: string, description: string): () => void {
 
 export const PAGE_META = {
   business: {
-    title: "Business Banking for South African Entrepreneurs | VINK",
+    title: "Business Banking for South African Entrepreneurs | MANSHYA",
     description: "Open a business bank account built for taxi associations, fleet owners, fuel stations, and small businesses across South Africa. No monthly fees, fast settlements, employee cards, and cross-border payments at local rates.",
   },
   news: {
-    title: "VINK News — World, Africa, Business & Technology Headlines",
-    description: "Stay informed with VINK News: World, Africa, Business, Technology, Sport, Entertainment and Opinion coverage, updated regularly.",
+    title: "MANSHYA News — World, Africa, Business & Technology Headlines",
+    description: "Stay informed with MANSHYA News: World, Africa, Business, Technology, Sport, Entertainment and Opinion coverage, updated regularly.",
   },
   events: {
-    title: "VINK Events — Concerts, Comedy & Show Tickets",
-    description: "Book tickets for concerts, comedy shows, Afrikaans entertainment and more through VINK Events, with vouchers and exclusive offers.",
+    title: "MANSHYA Events — Concerts, Comedy & Show Tickets",
+    description: "Book tickets for concerts, comedy shows, Afrikaans entertainment and more through MANSHYA Events, with vouchers and exclusive offers.",
   },
 };

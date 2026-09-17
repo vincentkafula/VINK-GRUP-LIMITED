@@ -251,7 +251,7 @@ function Step1({ onNext, updateForm }: { onNext: () => void; updateForm: (d: Rec
       </div>
       <div>
         <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-3">Set Your Banking App Login</p>
-        <p className="text-xs text-gray-500 mb-3">You'll use your email address and this password to log into the VINK Banking App once your application is submitted.</p>
+        <p className="text-xs text-gray-500 mb-3">You'll use your email address and this password to log into the MANSHYA Banking App once your application is submitted.</p>
         <div className="grid sm:grid-cols-2 gap-4">
           <InputField label="Password" value={password} onChange={setPassword} type="password" placeholder="At least 8 characters" required />
           <InputField label="Confirm password" value={confirmPassword} onChange={setConfirmPassword} type="password" placeholder="Re-enter your password" required />
@@ -306,7 +306,7 @@ function Step2({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () 
         <SelectField label="Politically Exposed Person (PEP)?" value={pep} onChange={setPep} options={["No","Yes"]} />
       </div>
       <div className="rounded-xl p-4 text-xs leading-relaxed" style={{ background: "#EFF6FF", color: "#1D4ED8" }}>
-        <strong>Why do we ask this?</strong> VINK is required by the Financial Intelligence Centre Act (FICA) to verify your source of funds and confirm your PEP status. All information is kept strictly confidential.
+        <strong>Why do we ask this?</strong> MANSHYA is required by the Financial Intelligence Centre Act (FICA) to verify your source of funds and confirm your PEP status. All information is kept strictly confidential.
       </div>
       <NavButtons onBack={onBack} onNext={handleNext} nextLabel="Next: Verify" nextDisabled={!isValid} />
     </div>
@@ -587,9 +587,9 @@ function Step6({ onNext, onBack, submitting }: { onNext: (data: Record<string, s
 
   const SERVICE_LIST = [
     { key: "internetBanking", label: "Internet Banking",        sub: "Manage your account online" },
-    { key: "mobileApp",       label: "VINK Mobile App",          sub: "Transact via smartphone" },
+    { key: "mobileApp",       label: "MANSHYA Mobile App",          sub: "Transact via smartphone" },
     { key: "smsAlerts",       label: "SMS Transaction Alerts",   sub: "Instant notifications for each transaction" },
-    { key: "debitCard",       label: "VINK Debit Card",          sub: "Tap-and-go payments everywhere" },
+    { key: "debitCard",       label: "MANSHYA Debit Card",          sub: "Tap-and-go payments everywhere" },
     { key: "overdraft",       label: "Overdraft Facility",       sub: "Subject to credit assessment" },
     { key: "emailStatement",  label: "Monthly Email Statement",  sub: "PDF statement delivered to your inbox" },
   ];
@@ -629,7 +629,7 @@ function Step6({ onNext, onBack, submitting }: { onNext: (data: Record<string, s
         <input type="checkbox" checked={consent} onChange={e => setConsent(e.target.checked)}
           className="mt-0.5 w-4 h-4 flex-shrink-0" style={{ accentColor: BLUE }} />
         <p className="text-xs text-gray-600 leading-relaxed">
-          I consent to VINK processing my personal information in accordance with the POPIA Privacy Policy and acknowledge the VINK Terms &amp; Conditions for the selected account and services.
+          I consent to MANSHYA processing my personal information in accordance with the POPIA Privacy Policy and acknowledge the MANSHYA Terms &amp; Conditions for the selected account and services.
         </p>
       </label>
 
@@ -686,9 +686,9 @@ function Step7({ onClose, onGoToDashboard, referenceNumber, accountNumber, login
         <div className="border rounded-xl p-5 bg-white" style={{ borderColor: "#10B981" }}>
           <div className="flex items-center gap-2 mb-3">
             <CheckCircle className="w-4 h-4 text-green-500" />
-            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">YOUR VINK BANKING APP LOGIN</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">YOUR MANSHYA BANKING APP LOGIN</p>
           </div>
-          <p className="text-xs text-gray-600 leading-relaxed mb-3">You can log into the VINK Banking App right now with the email and password you set in Section 1.</p>
+          <p className="text-xs text-gray-600 leading-relaxed mb-3">You can log into the MANSHYA Banking App right now with the email and password you set in Section 1.</p>
           <div className="rounded-lg p-3" style={{ background: "#F0FDF4" }}>
             <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">Username / Email</p>
             <p className="text-sm font-bold text-gray-900">{loginUsername}</p>
@@ -702,7 +702,7 @@ function Step7({ onClose, onGoToDashboard, referenceNumber, accountNumber, login
           </div>
           <p className="text-xs text-gray-600 leading-relaxed">
             {loginError || "Your application was submitted, but we couldn't set up your banking app login automatically."}
-            {" "}If you already have a VINK account, log in with your existing details. Otherwise, contact our support team and quote your reference number above.
+            {" "}If you already have a MANSHYA account, log in with your existing details. Otherwise, contact our support team and quote your reference number above.
           </p>
         </div>
       )}
@@ -731,14 +731,14 @@ function Step7({ onClose, onGoToDashboard, referenceNumber, accountNumber, login
 
       {/* Contact */}
       <div className="border border-gray-200 rounded-xl p-5 bg-white">
-        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-4">VINK BANK CONTACT</p>
+        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-4">MANSHYA BANK CONTACT</p>
         <div className="grid sm:grid-cols-2 gap-3 text-xs text-gray-700">
           <div>
             <p className="text-gray-400 mb-0.5">Website</p>
             <a href="#" className="font-semibold" style={{ color: BLUE }}>www.vinkbank.co.za</a>
           </div>
           <div>
-            <p className="text-gray-400 mb-0.5">VINK Call Centre</p>
+            <p className="text-gray-400 mb-0.5">MANSHYA Call Centre</p>
             <a href="tel:+27210070772" className="font-semibold text-gray-800">+27 (0)21 007 0772</a>
           </div>
           <div>
@@ -887,7 +887,7 @@ export function PersonalAccountApplicationViewer({ isOpen, onClose, onGoToDashbo
       {/* Top bar */}
       <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm flex-shrink-0">
         <div className="flex items-center gap-3">
-          <img src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
+          <img src={vinkLogo} alt="MANSHYA" className="h-9 w-auto object-contain" />
           <span className="text-sm font-semibold text-gray-700 hidden sm:block">Personal Account Application</span>
         </div>
         <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500">

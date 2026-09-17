@@ -286,7 +286,7 @@ export default function App() {
         case "guardme":
         case "insurance":    mount("postLogin");        setShowPostLogin(true);        break;
         case "rewards":      mount("rewards");          setShowRewards(true);          break;
-        // Connectivity -- "Connect", "Mobile", and "VINK TV" tiles have no
+        // Connectivity -- "Connect", "Mobile", and "MANSHYA TV" tiles have no
         // consumer-facing destination (the backoffice mobile-network tool
         // they used to point near was removed entirely), so they land on
         // the consumer dashboard rather than dead-end.
@@ -526,12 +526,12 @@ export default function App() {
 
   const handleFooterLink = (label: string) => {
     startTransition(() => {
-      if (label === "About VINK")                                 open("aboutVINK",          () => setShowAboutVINK(true));
+      if (label === "About MANSHYA")                                 open("aboutVINK",          () => setShowAboutVINK(true));
       if (label === "Investor Relations")                        open("investorRelations",  () => setShowInvestorRelations(true));
       if (label === "Careers")                                   open("careers",            () => setShowCareers(true));
       if (label === "Contact Us")                                { setContactTab("connect"); open("contactUs", () => setShowContactUs(true)); }
       if (label === "Send your feedback")                        { setContactTab("feedback"); open("contactUs", () => setShowContactUs(true)); }
-      if (label === "Switch to VINK")                             open("switchToVINK",        () => setShowSwitchToVINK(true));
+      if (label === "Switch to MANSHYA")                             open("switchToVINK",        () => setShowSwitchToVINK(true));
       if (label === "Business debit order switching")            open("switchToVINK",        () => setShowSwitchToVINK(true));
       if (label === "Job Application")                            open("jobapp",             () => setShowJobApp(true));
       if (label === "Get Help & Information")                    { setContactTab("connect"); open("contactUs", () => setShowContactUs(true)); }
@@ -552,14 +552,14 @@ export default function App() {
       if (label === "Social Responsibility")                     { mount("corpCSR"); setShowCorporateCSR(true); }
       if (label === "Find the Branch")                           { mount("branchLocator"); setShowBranchLocator(true); }
       if (label === "Sponsorship")                               { mount("sponsorship"); setShowSponsorship(true); }
-      if (label === "VINK at the World Economic Forum")          { mount("wef"); setShowWEF(true); }
+      if (label === "MANSHYA at the World Economic Forum")          { mount("wef"); setShowWEF(true); }
       if (label === "Banking rates and fees")                    { mount("bankingFees"); setShowBankingFees(true); }
       if (label === "Guide to help you bank")                    { mount("bankingGuide"); setShowBankingGuide(true); }
       if (label === "App, Online and other banking")             { mount("bankingChannels"); setShowBankingChannels(true); }
       if (label === "Exchange rates")                            { mount("exchangeRates"); setShowExchangeRates(true); }
       if (label === "Latest Offers")                             { mount("latestOffers"); setShowLatestOffers(true); }
       if (label === "Market Indices")                            { mount("marketIndices"); setShowMarketIndices(true); }
-      if (label === "VINK blog")                                 { mount("vinkBlog"); setShowVinkBlog(true); }
+      if (label === "MANSHYA blog")                                 { mount("vinkBlog"); setShowVinkBlog(true); }
     });
   };
 

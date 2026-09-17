@@ -37,7 +37,7 @@ const MENU_ROWS = [
     { id: "device",   label: "Device",      icon: <Smartphone className="w-6 h-6" />,      gradient: "from-[#64748B] to-[#334155]", glow: "#64748B" },
   ],
   [
-    { id: "vinktv",    label: "VINK TV",      icon: <Tv className="w-6 h-6" />,              gradient: "from-[#FF9900] to-[#0B5C2E]", glow: "#FF9900" },
+    { id: "vinktv",    label: "MANSHYA TV",      icon: <Tv className="w-6 h-6" />,              gradient: "from-[#FF9900] to-[#0B5C2E]", glow: "#FF9900" },
     { id: "cardless", label: "Cardless Cash",icon: <Banknote className="w-6 h-6" />,       gradient: "from-[#D97706] to-[#92400E]", glow: "#D97706" },
     { id: "elections",label: "Elections",   icon: <Vote className="w-6 h-6" />,            gradient: "from-[#0891B2] to-[#164E63]", glow: "#0891B2" },
   ],
@@ -232,7 +232,7 @@ export function PostLoginHome({ isOpen, onClose, onNavigate }: PostLoginHomeProp
                 </div>
                 <p className="text-white/50 text-[10px] mt-0.5">{accountLast4 ? `Account ending ••${accountLast4}` : "No linked account yet"}</p>
               </div>
-              <img src={vinkLogo} alt="VINK" className="w-[160px] h-auto object-contain opacity-90" />
+              <img src={vinkLogo} alt="MANSHYA" className="w-[160px] h-auto object-contain opacity-90" />
             </div>
 
             {/* Make Payment button */}

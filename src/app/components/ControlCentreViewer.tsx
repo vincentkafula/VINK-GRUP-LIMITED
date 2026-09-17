@@ -3,7 +3,7 @@ import { X, LayoutGrid, ShieldAlert, RefreshCw, Smartphone, Store, ShoppingCart,
 import { getBankToken } from "../services/bankingApi";
 
 /**
- * Single-pane-of-glass overview across every device fleet in the VINK
+ * Single-pane-of-glass overview across every device fleet in the MANSHYA
  * ecosystem -- taxi AFC terminals (za.co.vink.terminal), retail card
  * machines (za.co.vink.retailpos), and till devices (za.co.vink.till).
  * All three are genuinely separate Google Play Console listings (own

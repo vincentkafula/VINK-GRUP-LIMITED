@@ -85,7 +85,7 @@ function seedTransactions(devices: Device[]): Txn[] {
 const INVESTOR_CAPITAL = 150000;
 const RETAINED_EARNINGS_OPENING = 45000;
 
-// ─── Same VINK AFC revenue model as RevenueDashboard.tsx (the backend-
+// ─── Same MANSHYA AFC revenue model as RevenueDashboard.tsx (the backend-
 // connected "AFC Revenue Distribution & Investor Portal") -- matched
 // exactly so both dashboards report consistent numbers for the same
 // investor, rather than two different, disconnected revenue models. ───
@@ -526,7 +526,7 @@ export function InvestorFleetDashboardViewer({ isOpen, onClose, investorName = "
                   <div className="space-y-3">
                     {[
                       { n: "1. Monthly device rental", s: `Every device you own pays a guaranteed ${R(DEVICE_MONTHLY_RENTAL)}/month, whether or not it's tapped.`, icon: Smartphone, bg: "#efeafd", c: PURPLE },
-                      { n: `2. +${R2(INVESTOR_TAP_SHARE)} per tap`, s: `Each time a driver turns on the device for a fare, you earn ${R2(INVESTOR_TAP_SHARE)} — your 10% share of VINK's flat R1.00 transaction fee — on top of the monthly rental.`, icon: Zap, bg: "#e4f8ee", c: GREEN },
+                      { n: `2. +${R2(INVESTOR_TAP_SHARE)} per tap`, s: `Each time a driver turns on the device for a fare, you earn ${R2(INVESTOR_TAP_SHARE)} — your 10% share of MANSHYA's flat R1.00 transaction fee — on top of the monthly rental.`, icon: Zap, bg: "#e4f8ee", c: GREEN },
                       { n: `3. Income accumulates across devices`, s: `Own more devices and both the rental base and the tap-fee income stack together into one portfolio total — currently ${R(f.grossRevenue)}.`, icon: DollarSign, bg: "#e6edff", c: BLUE },
                     ].map(x => <div key={x.n} className="flex items-start gap-3"><span className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: x.bg, color: x.c }}><x.icon className="w-4 h-4" /></span><div><p className="text-[12.8px] font-bold">{x.n}</p><p className="text-[11.5px] text-gray-400 mt-0.5 leading-relaxed">{x.s}</p></div></div>)}
                   </div>
@@ -771,7 +771,7 @@ export function InvestorFleetDashboardViewer({ isOpen, onClose, investorName = "
                 <div className="bg-white rounded-2xl border border-gray-100 p-5">
                   <p className="text-[15px] font-bold mb-3.5">Portfolio assumptions</p>
                   <div className="space-y-3">
-                    <div><label className="block text-xs font-bold text-gray-600 mb-1.5">Transaction fee per device</label><input className="w-full px-3 py-2 rounded-lg border border-gray-200 text-[13px] bg-gray-50" value={`${R2(INVESTOR_TAP_SHARE)} per tap (10% of VINK's R1.00 fee)`} readOnly /></div>
+                    <div><label className="block text-xs font-bold text-gray-600 mb-1.5">Transaction fee per device</label><input className="w-full px-3 py-2 rounded-lg border border-gray-200 text-[13px] bg-gray-50" value={`${R2(INVESTOR_TAP_SHARE)} per tap (10% of MANSHYA's R1.00 fee)`} readOnly /></div>
                     <div><label className="block text-xs font-bold text-gray-600 mb-1.5">Device cost basis</label><input className="w-full px-3 py-2 rounded-lg border border-gray-200 text-[13px] bg-gray-50" value="Set per device on creation" readOnly /></div>
                     <div><label className="block text-xs font-bold text-gray-600 mb-1.5">Reset demo data</label>
                       <button onClick={() => { setDevices(seedDevices()); setContracts(seedContracts()); setTransactions(seedTransactions(seedDevices())); setTaxRate(18); setTaxRateInput("18"); toast.success("Sample data restored"); }}

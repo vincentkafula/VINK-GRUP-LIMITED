@@ -244,7 +244,7 @@ router.patch("/applications/:ref/status", requireAuth, requireRole(...REVIEWER_R
 // approval and an RBAC section grant are now the same real permission,
 // not two separate concepts that happen to look similar.
 //
-// The applicant may not have a VINK account yet at the time they submit
+// The applicant may not have a MANSHYA account yet at the time they submit
 // a job application (submission doesn't require login). Approval looks
 // up a user by the application's email at approval time — if no account
 // exists yet, the application still moves to 'offered' (so the reviewer
@@ -323,7 +323,7 @@ router.post("/applications/:ref/approve", requireAuth, requireRole(...REVIEWER_R
     res.json({
       success: true,
       data: { referenceNumber: app.reference_number, status: "offered", roleGranted, accountCreated: createdAccount },
-      ...(roleGranted ? {} : { warning: `No VINK account found for ${app.applicant_email} yet — approved, but ${app.department} access hasn't been granted. Provide a username and password to create their account now, or grant it manually via Users & Roles once they register with this email.` }),
+      ...(roleGranted ? {} : { warning: `No MANSHYA account found for ${app.applicant_email} yet — approved, but ${app.department} access hasn't been granted. Provide a username and password to create their account now, or grant it manually via Users & Roles once they register with this email.` }),
     });
   } catch (err) {
     await client.query("ROLLBACK");

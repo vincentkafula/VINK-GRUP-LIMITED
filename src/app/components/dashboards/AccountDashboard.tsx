@@ -28,8 +28,8 @@ const TRANSACTIONS = [
 
 const BALANCE_CHART = [28400, 32100, 29800, 34500, 31200, 38900, 36400, 42100, 39800, 45200, 48400, 52800];
 const CARDS = [
-  { type: "VINK Business Visa", last4: "4521", limit: 50000, used: 18240, expiry: "09/28", color: "from-[#34A853] to-[#128A43]" },
-  { type: "VINK Platinum MC", last4: "8834", limit: 100000, used: 34820, expiry: "03/27", color: "from-[#5FC97F] to-[#14532D]" },
+  { type: "MANSHYA Business Visa", last4: "4521", limit: 50000, used: 18240, expiry: "09/28", color: "from-[#34A853] to-[#128A43]" },
+  { type: "MANSHYA Platinum MC", last4: "8834", limit: 100000, used: 34820, expiry: "03/27", color: "from-[#5FC97F] to-[#14532D]" },
 ];
 
 const fmt = (n: number) => `R${Math.abs(n).toLocaleString()}`;
@@ -43,7 +43,7 @@ export function AccountDashboard({ isOpen, onClose }: { isOpen: boolean; onClose
       title="Account Dashboard" subtitle="Finance — Account Management"
       accentColor="#10B981" gradient="from-emerald-600 to-teal-500"
       navItems={NAV} activeNav={nav} onNavChange={setNav}
-      onClose={onClose} userName="VINK Finance Admin"
+      onClose={onClose} userName="MANSHYA Finance Admin"
     >
       <div className="p-5 space-y-5">
         <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-3">
@@ -94,7 +94,7 @@ export function AccountDashboard({ isOpen, onClose }: { isOpen: boolean; onClose
                   <div key={i} className="rounded-xl p-4 text-white overflow-hidden relative"
                     style={{ background: `linear-gradient(135deg, ${c.color.replace("from-", "").replace(" to-", ", ")})` }}>
                     <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
-                    <p className="text-[9px] opacity-70 uppercase tracking-wider">VINK</p>
+                    <p className="text-[9px] opacity-70 uppercase tracking-wider">MANSHYA</p>
                     <p className="text-xs font-semibold mt-0.5">{c.type}</p>
                     <p className="text-xs font-mono mt-3 opacity-80">•••• •••• •••• {c.last4}</p>
                     <div className="flex justify-between items-end mt-2">

@@ -7,7 +7,7 @@ import heroValidator from "../../imports/HeroValidator.png";
 const SLIDES = [
   {
     image:   heroCardPhone,
-    eyebrow: "VINK Card — Now in Your Pocket",
+    eyebrow: "MANSHYA Card — Now in Your Pocket",
     headline: <>All the benefits of Card,<br /><span className="relative inline-block"><span className="relative z-10">on your phone.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#F5A623" }} /></span></>,
     body: "Manage, track and enjoy exclusive benefits anytime, anywhere.",
     ctas: [
@@ -22,7 +22,7 @@ const SLIDES = [
   },
   {
     image:   heroGlobalSim,
-    eyebrow: "VINK MVNO — Global Connectivity",
+    eyebrow: "MANSHYA MVNO — Global Connectivity",
     headline: <>All the benefits of SIM,<br /><span className="relative inline-block"><span className="relative z-10">on your phone.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#F5A623" }} /></span></>,
     body: "Stay connected anywhere in the world with reliable data, clear calls and seamless connectivity.",
     ctas: [
@@ -37,7 +37,7 @@ const SLIDES = [
   },
   {
     image:   heroValidator,
-    eyebrow: "VINK AFC — Today's Market Multi-ticketing Validator",
+    eyebrow: "MANSHYA AFC — Today's Market Multi-ticketing Validator",
     headline: <>Multi-ticketing<br /><span className="relative inline-block"><span className="relative z-10">validator.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#F5A623" }} /></span></>,
     body: "Smarter, faster and cashless payments for a seamless travel experience — multi-channel, integrated in one system.",
     ctas: [
@@ -79,7 +79,7 @@ export function HeroSection() {
     <section className="text-white overflow-hidden relative"
       style={{ background: "linear-gradient(160deg,#120a2e 0%,#2a0f5c 40%,#4C2A85 72%,#6B3FA0 100%)" }}>
       {/* Signature motif — concentric "tap" rings, evoking the NFC contactless
-          gesture that's central to how VINK actually works. Deliberately
+          gesture that's central to how MANSHYA actually works. Deliberately
           restrained: one quiet element per section rather than scattered
           decoration, positioned so it reads as ambient texture, not a focal
           point competing with the headline or product image. */}

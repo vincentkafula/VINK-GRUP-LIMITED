@@ -49,7 +49,7 @@ export function startSimulator(broadcast: BroadcastFn): () => void {
       dataBalanceMB: rand(1024, 10240),
       smsBalance: rand(50, 200),
       voiceBalanceMin: rand(100, 500),
-      homeNetwork: "ZA-VINK",
+      homeNetwork: "ZA-MANSHYA",
       currentCell: `TOWER-${String(rand(1, 120)).padStart(4, "0")}`,
       roaming: false,
       roamingNetwork: null,

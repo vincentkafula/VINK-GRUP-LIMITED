@@ -216,7 +216,7 @@ router.post("/admin/articles", requireAuth, requireNewsAccess, async (req: Reque
   const status = wantsSchedule ? "scheduled" : canPublishDirectly ? "published" : "pending_review";
 
   const { rows: userRows } = await pool!.query(`SELECT name FROM users WHERE id = $1`, [req.user!.userId]);
-  const authorName = userRows[0]?.name ?? "VINK Newsroom";
+  const authorName = userRows[0]?.name ?? "MANSHYA Newsroom";
 
   const { rows } = await pool!.query(
     `INSERT INTO news_articles (id, slug, title, subtitle, category, author, summary, body, tags, emoji, read_minutes, featured, breaking, status, created_by_user_id, created_by_name, meta_description, scheduled_at)

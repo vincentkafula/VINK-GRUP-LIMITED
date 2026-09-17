@@ -14,12 +14,12 @@ const VALUES = [
 ];
 
 const MILESTONES = [
-  { year: "2018", text: "VINK incorporated (Reg: 2018/079316/07); AFC payment system developed." },
+  { year: "2018", text: "MANSHYA incorporated (Reg: 2018/079316/07); AFC payment system developed." },
   { year: "2019", text: "Website launched; first taxi association partnerships established." },
   { year: "2020", text: "Driver Wallet, Smart Pay Card, and Marshall Wallet products launched." },
-  { year: "2021", text: "VINK MVNO agreement with Cell C; Nedbank API integration completed." },
+  { year: "2021", text: "MANSHYA MVNO agreement with Cell C; Nedbank API integration completed." },
   { year: "2022", text: "Business plan submitted for R4.5 billion funding round." },
-  { year: "Now",  text: "Expansion to gyms, fuel stations, and VINK Online Store underway." },
+  { year: "Now",  text: "Expansion to gyms, fuel stations, and MANSHYA Online Store underway." },
 ];
 
 const P = "#0B5C2E";
@@ -31,7 +31,7 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
     <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-white">
       {/* Top bar */}
       <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm">
-        <img src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
+        <img src={vinkLogo} alt="MANSHYA" className="h-9 w-auto object-contain" />
         <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500"><X className="w-5 h-5" /></button>
       </div>
 
@@ -46,7 +46,7 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
             Est. Cape Town, 2018
           </span>
           <h1 className="text-4xl md:text-5xl font-black leading-tight mb-4">
-            About VINK Multi<br />Services (Pty) Ltd.
+            About MANSHYA Multi<br />Services (Pty) Ltd.
           </h1>
           <p className="text-white/80 text-lg max-w-2xl leading-relaxed">
             South Africa&apos;s first transport-native digital bank — built by a Cape Town native, for the 15 million South Africans who board a minibus taxi every morning.
@@ -69,13 +69,13 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
           <h2 className="text-2xl font-black mb-4" style={{ color: P }}>Our Founding Story</h2>
           <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
             <p className="text-gray-700 leading-relaxed mb-4">
-              VINK Group (Pty) Ltd. was founded in 2018 in Cape Town by <strong>Vincent Kafula</strong> — a Cape Town native with deep roots in the public transport industry. Vincent saw a gap that no bank or fintech had filled: a payment system fast enough for the taxi industry, where 15 million South Africans board a minibus every single morning. He built one.
+              MANSHYA Group (Pty) Ltd. was founded in 2018 in Cape Town by <strong>Vincent Kafula</strong> — a Cape Town native with deep roots in the public transport industry. Vincent saw a gap that no bank or fintech had filled: a payment system fast enough for the taxi industry, where 15 million South Africans board a minibus every single morning. He built one.
             </p>
             <p className="text-gray-700 leading-relaxed mb-4">
-              From a single idea in the Cape Town CBD to a fully developed AFC payment platform, VINK was born from the belief that financial tools should serve everyone — not just those with traditional banking histories.
+              From a single idea in the Cape Town CBD to a fully developed AFC payment platform, MANSHYA was born from the belief that financial tools should serve everyone — not just those with traditional banking histories.
             </p>
             <p className="text-gray-600 leading-relaxed">
-              VINK charges just R0.50 per taxi transaction — the lowest processing fee in the industry. That revenue is shared across the ecosystem that makes the transaction possible: the financing bank, the driver&apos;s taxi association, neighbourhood watch initiatives in the area served, and a portion retained to seed a future VINK community bank built specifically for taxi drivers.
+              MANSHYA charges just R0.50 per taxi transaction — the lowest processing fee in the industry. That revenue is shared across the ecosystem that makes the transaction possible: the financing bank, the driver&apos;s taxi association, neighbourhood watch initiatives in the area served, and a portion retained to seed a future MANSHYA community bank built specifically for taxi drivers.
             </p>
           </div>
         </section>
@@ -118,7 +118,7 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
         <section className="rounded-2xl p-6" style={{ background: "#F3F0FB" }}>
           <h2 className="text-lg font-black mb-3" style={{ color: P }}>BBBEE &amp; Ownership</h2>
           <p className="text-gray-700 text-sm leading-relaxed">
-            VINK is a <strong>100% black-owned business</strong>. The founder, Vincent Kafula, holds 80% of the shares. The remaining shares are held by South African co-shareholders and beneficiaries — including a 10% stake held in trust for a minor beneficiary, reflecting the founder&apos;s commitment to generational wealth building.
+            MANSHYA is a <strong>100% black-owned business</strong>. The founder, Vincent Kafula, holds 80% of the shares. The remaining shares are held by South African co-shareholders and beneficiaries — including a 10% stake held in trust for a minor beneficiary, reflecting the founder&apos;s commitment to generational wealth building.
           </p>
         </section>
 

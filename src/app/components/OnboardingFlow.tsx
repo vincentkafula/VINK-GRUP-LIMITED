@@ -26,7 +26,7 @@ const PRODUCTS = [
   { id: "everyday", label: "Everyday Account", desc: "Zero-fee transactional account with free debit card", icon: "💳", popular: true },
   { id: "savings", label: "Savings Account", desc: "Earn 6.5% p.a. interest on your savings", icon: "🏦", popular: false },
   { id: "invest", label: "Investment Account", desc: "Unit trusts, fixed deposits, and tax-free savings", icon: "📈", popular: false },
-  { id: "sim", label: "VINK SIM Card", desc: "One SIM for South Africa and 80+ countries", icon: "📱", popular: false },
+  { id: "sim", label: "MANSHYA SIM Card", desc: "One SIM for South Africa and 80+ countries", icon: "📱", popular: false },
 ];
 
 export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
@@ -70,7 +70,7 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
 
         {/* Top bar */}
         <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: step === 1 ? "1px solid rgba(255,255,255,0.15)" : "1px solid #F3F4F6" }}>
-          <img src={vinkLogo} alt="VINK" className="h-8 w-auto" style={{ filter: step === 1 ? "brightness(0) invert(1)" : "none" }} />
+          <img src={vinkLogo} alt="MANSHYA" className="h-8 w-auto" style={{ filter: step === 1 ? "brightness(0) invert(1)" : "none" }} />
           <div className="flex items-center gap-3">
             <span className="text-sm font-medium" style={{ color: step === 1 ? "rgba(255,255,255,0.7)" : "#9CA3AF" }}>
               Step {step} of {STEPS.length}
@@ -109,7 +109,7 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
             <div className="text-center space-y-5">
               <div className="text-6xl">👋</div>
               <div>
-                <h1 className="text-2xl font-black text-white">Welcome to VINK Banking</h1>
+                <h1 className="text-2xl font-black text-white">Welcome to MANSHYA Banking</h1>
                 <p className="text-white/70 mt-2 text-sm leading-relaxed">
                   South Africa's most complete financial super-app. Let's set up your account in under 3 minutes.
                 </p>
@@ -179,7 +179,7 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
               </div>
               <div className="space-y-3">
                 {[
-                  { key: "terms", label: "I agree to the VINK Terms & Conditions and Privacy Policy", state: acceptedTerms, set: setAcceptedTerms },
+                  { key: "terms", label: "I agree to the MANSHYA Terms & Conditions and Privacy Policy", state: acceptedTerms, set: setAcceptedTerms },
                   { key: "popia", label: "I consent to my personal information being processed in accordance with POPIA", state: acceptedPopia, set: setAcceptedPopia },
                 ].map(item => (
                   <label key={item.key} className="flex items-start gap-3 cursor-pointer">
@@ -241,7 +241,7 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
               <div>
                 <div className="flex items-center justify-center gap-2 mb-1">
                   <Smartphone className="w-5 h-5" style={{ color: P }} />
-                  <h2 className="text-lg font-black text-gray-900">The VINK App Is Coming Soon</h2>
+                  <h2 className="text-lg font-black text-gray-900">The MANSHYA App Is Coming Soon</h2>
                 </div>
                 <p className="text-sm text-gray-500">Your account is already fully set up on web. We'll let you know the moment the app is ready.</p>
               </div>
@@ -268,7 +268,7 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
               <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mx-auto" style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>🎉</div>
               <div>
                 <h2 className="text-xl font-black text-gray-900">You're all set, {firstName || "welcome"}!</h2>
-                <p className="text-sm text-gray-500 mt-2">Your VINK account is being set up. You'll receive an email with your account details shortly.</p>
+                <p className="text-sm text-gray-500 mt-2">Your MANSHYA account is being set up. You'll receive an email with your account details shortly.</p>
               </div>
               <div className="grid grid-cols-2 gap-3 text-left">
                 {[
@@ -286,7 +286,7 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
               <div className="p-4 rounded-2xl" style={{ background: `${GOLD}12`, border: `1px solid ${GOLD}33` }}>
                 <div className="flex items-center gap-2">
                   <Star className="w-4 h-4" style={{ color: GOLD }} />
-                  <p className="text-sm font-semibold text-gray-800">Welcome bonus: <span style={{ color: GOLD }}>500 VinkPoints</span> added to your account!</p>
+                  <p className="text-sm font-semibold text-gray-800">Welcome bonus: <span style={{ color: GOLD }}>500 ManshyaPoints</span> added to your account!</p>
                 </div>
               </div>
             </div>

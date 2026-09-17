@@ -170,7 +170,7 @@ router.get("/sales", requireAuth, requireRole(...REVIEWER_ROLES), async (req: Re
 
 /**
  * POST /api/till/sale
- * Device-authenticated. Confirmed model: cash sales carry zero VINK
+ * Device-authenticated. Confirmed model: cash sales carry zero MANSHYA
  * fee (the full amount is the merchant's), card sales use the exact
  * same 2.5% calculateRetailSplit already proven for retail POS, reused
  * here rather than reimplemented. Wrapped in a real transaction since

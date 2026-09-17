@@ -3,7 +3,7 @@ import { PricingViewer } from "./PricingViewer";
 const ROW1 = [
   { name: "Student Card",               price: "R0",   features: ["Credit limit R1,000–R5,000", "No annual fee", "Credit-builder reporting to all 4 bureaux", "Free online statements", "0.5% cashback on study and grocery spend"] },
   { name: "Secure Card",                price: "R0",   features: ["Secured by a deposit you choose", "No annual fee", "Upgrade to unsecured after 12 months of on-time payments", "Reports to all credit bureaux", "Free replacement card"] },
-  { name: "Co-Branded Card (VINK × PnP)", price: "R85", features: ["Earn 1 Smart Shopper point per R5 spent at Pick n Pay", "0.5% cashback everywhere else", "R0 transaction fees at PnP tills", "Exclusive monthly bonus offers"] },
+  { name: "Co-Branded Card (MANSHYA × PnP)", price: "R85", features: ["Earn 1 Smart Shopper point per R5 spent at Pick n Pay", "0.5% cashback everywhere else", "R0 transaction fees at PnP tills", "Exclusive monthly bonus offers"] },
 ];
 
 const ROW2 = [
@@ -34,7 +34,7 @@ const ROW2 = [
       "3% cashback on international spend",
       "Personal concierge 24/7",
       "Global medical emergency evacuation",
-      "Earn up to 120,000 VinkPoints annually",
+      "Earn up to 120,000 ManshyaPoints annually",
       "Virtual card for online security",
     ],
   },
@@ -49,7 +49,7 @@ export function CreditCardViewer({ isOpen, onClose }: Props) {
       onClose={onClose}
       activeSubNav="Credit Card"
       heroTitle="Credit That Works as Hard as You Do"
-      heroSub="Build credit, earn rewards, or travel in style — find the VINK credit card made for your life stage."
+      heroSub="Build credit, earn rewards, or travel in style — find the MANSHYA credit card made for your life stage."
       row1={ROW1}
       row2={ROW2}
     />

@@ -16,7 +16,7 @@ export const FinancialInstitutionsSection = memo(function FinancialInstitutionsS
         <div className="text-center mb-10">
           <p className="text-xs font-bold uppercase tracking-[0.14em] text-gray-400 mb-1">Trusted Partners</p>
           <h2 className="text-lg sm:text-xl font-bold text-gray-800">
-            Find a VINK card through your preferred financial institution or partner network.
+            Find a MANSHYA card through your preferred financial institution or partner network.
           </h2>
         </div>
         <div className="flex flex-wrap items-center justify-center gap-10 md:gap-14">
@@ -27,7 +27,7 @@ export const FinancialInstitutionsSection = memo(function FinancialInstitutionsS
           ))}
         </div>
         <p className="text-center text-xs text-gray-400 mt-8">
-          VINK partners with leading banks, telcos, and financial institutions across Southern Africa to deliver seamless payment experiences for commuters, drivers, and businesses.
+          MANSHYA partners with leading banks, telcos, and financial institutions across Southern Africa to deliver seamless payment experiences for commuters, drivers, and businesses.
         </p>
       </div>
     </section>

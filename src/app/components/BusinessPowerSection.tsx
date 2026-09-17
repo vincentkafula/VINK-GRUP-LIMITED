@@ -34,7 +34,7 @@ export const BusinessPowerSection = memo(function BusinessPowerSection() {
                 rather than blending into the surrounding paragraphs */}
             <div className="max-w-md mx-auto lg:mx-0 mb-5 pl-4 border-l-2" style={{ borderColor: "#F5C842" }}>
               <p className="text-white/60 text-xs leading-snug mb-1.5">
-                Once you qualify for a VINK card, every transaction — even cross-border transfers — is charged at local rates.
+                Once you qualify for a MANSHYA card, every transaction — even cross-border transfers — is charged at local rates.
               </p>
               <p className="text-white text-lg sm:text-xl leading-snug" style={{ fontFamily: "'Fraunces', serif", fontWeight: 500 }}>
                 No international fees. No hidden markups.{" "}
@@ -43,7 +43,7 @@ export const BusinessPowerSection = memo(function BusinessPowerSection() {
             </div>
 
             <p className="text-white/60 text-[13.5px] leading-relaxed mb-3 max-w-md mx-auto lg:mx-0">
-              VINK has eliminated these fees in its initial markets, with more countries coming soon:
+              MANSHYA has eliminated these fees in its initial markets, with more countries coming soon:
             </p>
 
             {/* Country badges — makes "4 markets" concrete rather than an abstract stat */}
@@ -57,7 +57,7 @@ export const BusinessPowerSection = memo(function BusinessPowerSection() {
             </div>
 
             <p className="text-white/50 text-[13px] leading-relaxed mb-8 max-w-md mx-auto lg:mx-0">
-              We're not a traditional bank — VINK is a cloud-based banking platform issuing Visa and Mastercard-powered cards, built for how people and businesses actually move money today.
+              We're not a traditional bank — MANSHYA is a cloud-based banking platform issuing Visa and Mastercard-powered cards, built for how people and businesses actually move money today.
             </p>
 
             <div className="flex flex-wrap justify-center lg:justify-start gap-3">

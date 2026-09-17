@@ -46,7 +46,7 @@ const FEATURES = [
 
 const SLIDES = [
   { eyebrow: "Built for the road",       heading: "Banking for the operators\nwho keep SA moving",  body: "Taxi associations, fleet owners, and fuel stations — a business account built around how you actually move money.", cta: "Start my business" },
-  { eyebrow: "No international fees",    heading: "Send and spend\nat local rates, anywhere",       body: "Once you qualify for a VINK card, cross-border transfers are charged like any local payment. No markups.", cta: "See international banking" },
+  { eyebrow: "No international fees",    heading: "Send and spend\nat local rates, anywhere",       body: "Once you qualify for a MANSHYA card, cross-border transfers are charged like any local payment. No markups.", cta: "See international banking" },
   { eyebrow: "One account, many cards",  heading: "Give your whole team\ntheir own card",           body: "Issue cards to employees, track every rand per cardholder, and stay in control from a single dashboard.", cta: "Explore business accounts" },
 ];
 
@@ -186,7 +186,7 @@ export function BusinessLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
         <div className="text-center mb-12">
           <span className="inline-block text-[11px] font-semibold tracking-[0.16em] uppercase mb-3" style={{ color: GOLD }}>
-            Why choose VINK Business
+            Why choose MANSHYA Business
           </span>
           <h2 className="text-[26px] sm:text-[32px] font-medium tracking-tight" style={{ color: INK, fontFamily: "'Fraunces', serif" }}>
             Built for How Your Business Moves

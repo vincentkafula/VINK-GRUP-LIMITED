@@ -84,7 +84,7 @@ export const FeaturesSection = memo(function FeaturesSection({ onExploreAll }: {
 
             <div className="relative mt-8 max-w-sm">
               <div className="absolute -inset-6 rounded-full opacity-40" style={{ background: `radial-gradient(circle,${GOLD}33,transparent 70%)` }} />
-              <img src={vinkGoldFeatureCard} alt="VINK Visa Signature card" onClick={() => setShowCardViewer(true)}
+              <img src={vinkGoldFeatureCard} alt="MANSHYA Visa Signature card" onClick={() => setShowCardViewer(true)}
                 className="relative w-full rounded-2xl shadow-2xl cursor-pointer transition-transform duration-300 hover:scale-[1.02]" draggable={false} />
 
               <div className="absolute -top-4 right-2 bg-white rounded-xl shadow-lg px-3 py-2 flex items-center gap-1.5">
@@ -129,7 +129,7 @@ export const FeaturesSection = memo(function FeaturesSection({ onExploreAll }: {
         )}
       </div>
 
-      <Card3DViewer isOpen={showCardViewer} onClose={() => setShowCardViewer(false)} image={vinkGoldFeatureCard} name="VINK Visa Signature" />
+      <Card3DViewer isOpen={showCardViewer} onClose={() => setShowCardViewer(false)} image={vinkGoldFeatureCard} name="MANSHYA Visa Signature" />
     </section>
   );
 });

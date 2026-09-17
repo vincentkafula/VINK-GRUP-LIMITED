@@ -1,6 +1,6 @@
 const OFFERS = [
   {
-    name: "VINK Everyday Cashback", issuer: "VINK Standard",
+    name: "MANSHYA Everyday Cashback", issuer: "MANSHYA Standard",
     grad: "linear-gradient(135deg,#1A3A6E 0%,#128A43 60%,#5FC97F 100%)",
     badge: "Best Value", badgeColor: "#10B981",
     highlight: "3% cashback at supermarkets and spaza shops",
@@ -8,18 +8,18 @@ const OFFERS = [
     net: "visa",
   },
   {
-    name: "VINK Rewards Gold", issuer: "VINK Premier",
+    name: "MANSHYA Rewards Gold", issuer: "MANSHYA Premier",
     grad: "linear-gradient(135deg,#7A5C2A 0%,#C4922A 60%,#E6B85A 100%)",
     badge: "Top Pick", badgeColor: "#F59E0B",
-    highlight: "Earn 2 VinkPoints per R10 on all spend",
+    highlight: "Earn 2 ManshyaPoints per R10 on all spend",
     detail: "Redeem points for taxi fares, gym sessions, or airtime",
     net: "amex",
   },
   {
-    name: "VINK Commuter Unlimited", issuer: "VINK Commuter",
+    name: "MANSHYA Commuter Unlimited", issuer: "MANSHYA Commuter",
     grad: "linear-gradient(135deg,#1B4D1B 0%,#2E7D32 60%,#4CAF50 100%)",
     badge: "No Limits", badgeColor: "#3B82F6",
-    highlight: "Unlimited tap-and-go rides on any VINK-enabled taxi",
+    highlight: "Unlimited tap-and-go rides on any MANSHYA-enabled taxi",
     detail: "Free card replacement · No minimum balance required",
     net: "mc",
   },
@@ -51,7 +51,7 @@ export const FeaturedOffersSection = memo(function FeaturedOffersSection({ onCom
                 <div className="relative z-10 p-5 flex flex-col justify-between h-full text-white">
                   <div className="flex justify-between items-start mt-5">
                     <div>
-                      <p className="text-[9px] tracking-widest opacity-60 uppercase font-semibold">VINK BANK</p>
+                      <p className="text-[9px] tracking-widest opacity-60 uppercase font-semibold">MANSHYA BANK</p>
                       <p className="text-base font-bold mt-0.5">{o.name}</p>
                     </div>
                     <div className="w-9 h-6 rounded bg-yellow-400/60 border border-yellow-300/40"/>
@@ -80,7 +80,7 @@ export const FeaturedOffersSection = memo(function FeaturedOffersSection({ onCom
           ))}
         </div>
         <p className="text-center text-[11px] text-gray-400 mt-6">
-          Subject to credit approval and FICA verification. Terms and conditions apply. VINK is an authorised Financial Services Provider.
+          Subject to credit approval and FICA verification. Terms and conditions apply. MANSHYA is an authorised Financial Services Provider.
         </p>
       </div>
     </section>

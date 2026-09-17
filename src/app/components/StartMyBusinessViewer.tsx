@@ -196,7 +196,7 @@ export function StartMyBusinessViewer({ isOpen, onClose, onNavigate }: Props) {
 
       <div className="pav-hero">
         <h1>Your business journey starts here</h1>
-        <p>VINK helps South African entrepreneurs register, fund and operate businesses — locally and across six key global markets.</p>
+        <p>MANSHYA helps South African entrepreneurs register, fund and operate businesses — locally and across six key global markets.</p>
         <div style={{ marginTop: 20 }}>
           <button className="pav-btn pav-btn-primary" style={{ width: "auto", padding: "10px 32px" }} onClick={() => setApplyCountry("South Africa")}>Help me decide</button>
         </div>

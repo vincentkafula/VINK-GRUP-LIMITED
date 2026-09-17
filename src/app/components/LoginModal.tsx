@@ -80,7 +80,7 @@ function FormField({
 // ─── Main Component ─────────────────────────────────────────────────────────
 // Visual layer only, redesigned to match a reference split-panel login
 // (promo panel + card, labeled icon inputs, remember-username, banner-style
-// error) with VINK's own brand colors and staff-portal copy in place of the
+// error) with MANSHYA's own brand colors and staff-portal copy in place of the
 // reference's generic bank-template branding. handleSubmit below is
 // UNCHANGED from the previous version -- same authApi.login call, same
 // demo-mode retry/fallback, same role-based dashboard routing (including
@@ -197,7 +197,7 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
       >
         {/* ── Top bar ── */}
         <div className="flex items-center justify-between px-6 py-4 flex-shrink-0" style={{ borderBottom: "1px solid #e8e0d3" }}>
-          <img src={vinkLogo} alt="VINK" className="h-8 w-auto object-contain" />
+          <img src={vinkLogo} alt="MANSHYA" className="h-8 w-auto object-contain" />
           <div className="flex items-center gap-3">
             <button className="hidden sm:flex items-center gap-1.5 text-[13px] rounded-full px-3.5 py-2 border border-[#e8e0d3] text-[#6b5d5f] hover:border-[#0F3D24] hover:text-[#0F3D24] transition-colors">
               <HelpCircle className="w-3.5 h-3.5" /> Need help signing in?
@@ -225,7 +225,7 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
             <div className="relative z-10 max-w-[420px]">
               <p className="text-[#FFB84D] text-[12px] font-semibold tracking-[2.5px] uppercase mb-4">Staff portal</p>
               <h1 className="text-white text-[32px] sm:text-[38px] leading-[1.15] font-bold mb-5">
-                Welcome back to the tools that keep <span className="text-[#FFB84D]">VINK running</span>
+                Welcome back to the tools that keep <span className="text-[#FFB84D]">MANSHYA running</span>
               </h1>
               <p className="text-[#e7d9cd] text-[15px] leading-[1.7] mb-8">
                 Staff-only access to Banking, Payments, Mobile Network,
@@ -313,7 +313,7 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
 
               <div className="flex items-start gap-2 text-[11.5px] text-[#6b5d5f] leading-[1.5]">
                 <ShieldAlert className="w-3.5 h-3.5 shrink-0 mt-0.5 text-[#FF9900]" />
-                Never share your login details. VINK will never ask for your password by phone or email.
+                Never share your login details. MANSHYA will never ask for your password by phone or email.
               </div>
             </div>
           </div>
@@ -325,7 +325,7 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
           style={{ background: "#0F3D24", borderTop: "1px solid rgba(255,255,255,0.08)" }}
         >
           <p className="text-white/40 text-[11px] text-center sm:text-left">
-            © VINK Group. Registered financial services provider.
+            © MANSHYA Group. Registered financial services provider.
           </p>
           <div className="flex items-center gap-4 text-white/40 text-[11px]">
             <button className="hover:text-white/70 transition-colors">Terms of use</button>

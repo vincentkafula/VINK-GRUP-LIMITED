@@ -519,10 +519,10 @@ function PowerView({ deviceOn, setDeviceOn }: { deviceOn: boolean; setDeviceOn: 
               <p className="text-sm font-semibold text-slate-800">Tap-to-pay card reader: {readerReady ? "Ready" : "Not yet integrated"}</p>
               <p className="text-xs text-slate-500 mt-1 leading-relaxed">
                 {!nativeAvailable
-                  ? "You're viewing this in a browser. Tap-to-pay only works inside the installed VINK Android app on a P18Q device."
+                  ? "You're viewing this in a browser. Tap-to-pay only works inside the installed MANSHYA Android app on a P18Q device."
                   : readerReady
                   ? "The device's certified EMV card reader is connected and ready to accept taps."
-                  : "This device is running the VINK app, but the certified EMV card-reader integration hasn't been added yet — taps aren't accepted until that's wired up on the hardware side."}
+                  : "This device is running the MANSHYA app, but the certified EMV card-reader integration hasn't been added yet — taps aren't accepted until that's wired up on the hardware side."}
               </p>
             </div>
           </div>
