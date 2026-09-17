@@ -23,17 +23,17 @@ const REASONS = [
   {
     title: "Leader",
     icon: "🏆",
-    text: "MANSHYA is positioned to become a category leader in diversified financial services across Southern Africa, targeting core return metrics and market penetration that outperform existing peers.",
+    text: "Vink is positioned to become a category leader in diversified financial services across Southern Africa, targeting core return metrics and market penetration that outperform existing peers.",
   },
   {
     title: "Disciplined",
     icon: "📈",
-    text: "MANSHYA's business plan is built on disciplined capital allocation and a diversified revenue base — banking, insurance, telecommunications and e-mobility — designed to cushion cyclical headwinds once operational.",
+    text: "Vink's business plan is built on disciplined capital allocation and a diversified revenue base — banking, insurance, telecommunications and e-mobility — designed to cushion cyclical headwinds once operational.",
   },
   {
     title: "High growth potential",
     icon: "🚀",
-    text: "MANSHYA targets rapid adoption from launch, driven by accelerated digital uptake among underbanked commuters, cost efficiency built into the platform from day one, and a clear roadmap for strategic partnerships.",
+    text: "MANSHYA Bank targets rapid adoption from launch, driven by accelerated digital uptake among underbanked commuters, cost efficiency built into the platform from day one, and a clear roadmap for strategic partnerships.",
   },
 ];
 
@@ -126,7 +126,7 @@ const RESPONSIBILITIES = [
   {
     title: "Strategic Direction",
     icon: "🎯",
-    text: "The Board is responsible for setting the strategic direction of MANSHYA, approving major decisions and ensuring these are aligned with the long-term interests of shareholders and all stakeholders.",
+    text: "The Board is responsible for setting the strategic direction of Vink, approving major decisions and ensuring these are aligned with the long-term interests of shareholders and all stakeholders.",
   },
   {
     title: "Financial Oversight",
@@ -146,7 +146,7 @@ const RESPONSIBILITIES = [
   {
     title: "Stakeholder Engagement",
     icon: "🤝",
-    text: "The Board promotes open and transparent communication with shareholders, regulators, employees, customers and communities in which MANSHYA operates.",
+    text: "The Board promotes open and transparent communication with shareholders, regulators, employees, customers and communities in which Vink operates.",
   },
   {
     title: "Risk Management",
@@ -247,7 +247,7 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
         {/* ── Company info ── */}
         <div className="grid md:grid-cols-2 gap-6">
           <div>
-            <SectionHeading>MANSHYA MULTI SERVICES (PTY) LTD</SectionHeading>
+            <SectionHeading>VINK MULTI SERVICES (PTY) LTD</SectionHeading>
             <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-3">
               <p className="text-sm text-gray-700 leading-relaxed">
                 Vink Multi Services (Pty) Ltd is a professional diversified financial services company. Our commitment to financial excellence drives innovative solutions for banking, insurance, telecommunications and e-mobility services across Southern Africa.
@@ -282,9 +282,9 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
         {/* ── 3 Reasons ── */}
         <div>
           <h2 className="text-xl font-black text-center mb-2" style={{ color: PD }}>
-            3 Reasons to Consider Investing in MANSHYA MULTI SERVICES PTY LTD
+            3 Reasons to Consider Investing in VINK MULTI SERVICES PTY LTD
           </h2>
-          <p className="text-center text-sm text-gray-500 mb-6">Why sophisticated investors choose MANSHYA</p>
+          <p className="text-center text-sm text-gray-500 mb-6">Why sophisticated investors choose Vink</p>
           <div className="grid sm:grid-cols-3 gap-5">
             {REASONS.map((r) => (
               <div key={r.title} className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow">
@@ -391,7 +391,7 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
           <div className="bg-white rounded-xl border border-gray-200 p-5 mb-5 text-sm text-gray-700 leading-relaxed">
             <div className="flex items-center gap-2 mb-2">
               <BarChart3 className="w-4 h-4 flex-shrink-0" style={{ color: P }} />
-              <span className="font-bold text-gray-900">MANSHYA is committed to the highest standards of corporate governance.</span>
+              <span className="font-bold text-gray-900">Vink is committed to the highest standards of corporate governance.</span>
             </div>
             The Board of Directors is responsible for the overall governance of the company, including setting strategic direction, overseeing management, and ensuring accountability to stakeholders.
           </div>
