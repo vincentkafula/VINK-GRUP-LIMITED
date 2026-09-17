@@ -95,7 +95,10 @@ export function LegalComplianceViewer({ isOpen, onClose, initialTab }: Props) {
             <div className="bg-white rounded-2xl border border-gray-200 p-6 space-y-4 text-sm text-gray-700 leading-relaxed">
               <p><strong>Company Name:</strong> Vink Group (Pty) Ltd.</p>
               <p><strong>Trading As:</strong> MANSHYA</p>
-              <p><strong>Registration Number:</strong> 2018/079316/07</p>
+              <p><strong>Company Registration Number:</strong> 2018/079316/07</p>
+              <p><strong>MANSHYA Enterprise Number:</strong> 2026/719501/07</p>
+              <p><strong>MANSHYA Tax Number:</strong> 9475452232</p>
+              <p><strong>MANSHYA Reference Number:</strong> 9465919196</p>
               <p><strong>Registered Address:</strong> 8 Rose Street, Cape Town CBD, State House Building, Cape Town, 8001</p>
               <p><strong>BBBEE Status:</strong> 100% Black-Owned Enterprise</p>
               <p><strong>Anti-Money Laundering:</strong> MANSHYA applies a zero-tolerance policy to money laundering and terrorist financing. All suspicious transactions are reported to the Financial Intelligence Centre (FIC) as required by FICA.</p>
