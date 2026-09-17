@@ -430,7 +430,7 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
 
             <FormCard stepN={undefined} title="Declaration" subtitle="Please read and confirm before submitting">
               <p className="text-xs text-gray-600 leading-relaxed">
-                I, the undersigned, declare that I am duly authorised by the applicant company to submit this application. I confirm that all information provided is true, complete, and accurate to the best of my knowledge and belief. I authorise MANSHYA Group (Pty) Ltd to conduct credit bureau inquiries, verify all stated information with relevant institutions (including SARS, CIPC, and credit bureaux), and to share application information with co-lending partners where applicable.
+                I, the undersigned, declare that I am duly authorised by the applicant company to submit this application. I confirm that all information provided is true, complete, and accurate to the best of my knowledge and belief. I authorise Vink Group (Pty) Ltd to conduct credit bureau inquiries, verify all stated information with relevant institutions (including SARS, CIPC, and credit bureaux), and to share application information with co-lending partners where applicable.
               </p>
               <p className="text-xs text-gray-600 leading-relaxed">
                 I understand that submission of this form does not constitute an offer of credit, and that any credit facility is subject to MANSHYA's full credit assessment process, internal credit committee approval, and applicable regulatory requirements.

@@ -101,7 +101,7 @@ export function Header({ onHome, onDashboardSelect, onSubNavClick, onOpenProfile
                 {/* Light logo on white nav — 180px wide on desktop, 120px on mobile (brand guide: desktop navbar 160-200px) */}
                 <img
                   src={vinkLogoLight}
-                  alt="MANSHYA Group"
+                  alt="MANSHYA"
                   className="w-[120px] sm:w-[180px] h-auto object-contain"
                   loading="eager"
                 />

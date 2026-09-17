@@ -250,7 +250,7 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
             <SectionHeading>MANSHYA MULTI SERVICES (PTY) LTD</SectionHeading>
             <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-3">
               <p className="text-sm text-gray-700 leading-relaxed">
-                MANSHYA Multi Services (Pty) Ltd is a professional diversified financial services company. Our commitment to financial excellence drives innovative solutions for banking, insurance, telecommunications and e-mobility services across Southern Africa.
+                Vink Multi Services (Pty) Ltd is a professional diversified financial services company. Our commitment to financial excellence drives innovative solutions for banking, insurance, telecommunications and e-mobility services across Southern Africa.
               </p>
               <div className="border-t pt-3 space-y-2 text-sm">
                 <div className="flex justify-between"><span className="text-gray-500">Status</span><span className="font-semibold text-gray-800">Pre-launch — full operation June 2027</span></div>

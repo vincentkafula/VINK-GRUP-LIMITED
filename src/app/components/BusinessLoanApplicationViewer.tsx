@@ -388,7 +388,7 @@ export function BusinessLoanApplicationViewer({ isOpen, onClose }: Props) {
 
                 <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm space-y-3">
                   <p className="text-xs text-gray-500 leading-relaxed">
-                    By submitting this application I confirm that all information provided is true and accurate. I authorise MANSHYA Group (Pty) Ltd to conduct a credit bureau inquiry and verify my information. I have read and agree to the <span className="font-semibold" style={{ color: CP }}>Loan Terms and Conditions</span> and <span className="font-semibold" style={{ color: CP }}>Privacy Policy</span>.
+                    By submitting this application I confirm that all information provided is true and accurate. I authorise Vink Group (Pty) Ltd to conduct a credit bureau inquiry and verify my information. I have read and agree to the <span className="font-semibold" style={{ color: CP }}>Loan Terms and Conditions</span> and <span className="font-semibold" style={{ color: CP }}>Privacy Policy</span>.
                   </p>
                   <label className="flex items-start gap-3 cursor-pointer">
                     <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)}

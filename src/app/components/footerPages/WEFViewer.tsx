@@ -62,7 +62,7 @@ export function WEFViewer({ isOpen, onClose }: Props) {
           <blockquote className="text-white/90 text-base italic leading-relaxed mb-4">
             &quot;South Africa&apos;s taxi industry — the backbone of our economy — deserved a payment system built specifically for it. We have built that system.&quot;
           </blockquote>
-          <p className="text-white/60 text-sm font-semibold">— Vincent Kafula, Founder &amp; CEO, MANSHYA Group (Pty) Ltd.</p>
+          <p className="text-white/60 text-sm font-semibold">— Vincent Kafula, Founder &amp; CEO, Vink Group (Pty) Ltd.</p>
         </section>
 
         <section className="bg-white rounded-2xl border border-gray-200 p-6">

@@ -195,7 +195,7 @@ export function AppLauncher({ isOpen, onClose, onLaunchApp }: Props) {
           <div className="rounded-2xl p-4 space-y-3" style={{ background: "#ffffff08" }}>
             <p className="text-white/50 text-xs uppercase tracking-wide font-bold">System Information</p>
             {[
-              { label: "Developer", value: "MANSHYA Group (Pty) Ltd." },
+              { label: "Developer", value: "Vink Group (Pty) Ltd." },
               { label: "Backend API", value: "MANSHYA Central API v2 · Cape Town" },
               { label: "Real-time", value: "WebSocket · sub-100ms latency" },
               { label: "Security", value: "256-bit AES · JWT Auth · FICA Compliant" },

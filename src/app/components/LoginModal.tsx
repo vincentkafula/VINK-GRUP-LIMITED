@@ -325,7 +325,7 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
           style={{ background: "#0F3D24", borderTop: "1px solid rgba(255,255,255,0.08)" }}
         >
           <p className="text-white/40 text-[11px] text-center sm:text-left">
-            © MANSHYA Group. Registered financial services provider.
+            © Vink Group. Registered financial services provider.
           </p>
           <div className="flex items-center gap-4 text-white/40 text-[11px]">
             <button className="hover:text-white/70 transition-colors">Terms of use</button>

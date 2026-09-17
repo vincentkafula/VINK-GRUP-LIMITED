@@ -29,7 +29,7 @@ export function LegalComplianceViewer({ isOpen, onClose, initialTab }: Props) {
       <div className="py-12 px-6 text-white" style={{ background: `linear-gradient(135deg,${P},#0B2E1C)` }}>
         <div className="max-w-4xl mx-auto">
           <h1 className="text-3xl font-black mb-2">Legal &amp; Compliance</h1>
-          <p className="text-white/70 text-sm">MANSHYA Group (Pty) Ltd. · Reg: 2018/079316/07</p>
+          <p className="text-white/70 text-sm">MANSHYA — a division of Vink Group (Pty) Ltd. · Reg: 2018/079316/07</p>
           <p className="text-white/50 text-xs mt-2">⚠️ Legal sections require review by a qualified South African attorney before final publication.</p>
         </div>
       </div>
@@ -83,7 +83,7 @@ export function LegalComplianceViewer({ isOpen, onClose, initialTab }: Props) {
                 <li><strong>Protection of Personal Information Act (POPIA), 2013</strong></li>
                 <li><strong>Electronic Communications and Transactions Act (ECTA), 2002</strong></li>
               </ul>
-              <p>MANSHYA is registered with the <strong>Companies and Intellectual Property Commission (CIPC)</strong> under registration number <strong>2018/079316/07</strong>.</p>
+              <p>Vink Group (Pty) Ltd. is registered with the <strong>Companies and Intellectual Property Commission (CIPC)</strong> under registration number <strong>2018/079316/07</strong>.</p>
               <p>FSP and NCRCP registration numbers will be published upon completion of the licensing process. Regulatory enquiries: <a href="mailto:compliance@vink.co.za" className="font-semibold" style={{ color: P }}>compliance@vink.co.za</a>.</p>
             </div>
           </div>
@@ -93,7 +93,8 @@ export function LegalComplianceViewer({ isOpen, onClose, initialTab }: Props) {
           <div className="space-y-6">
             <h2 className="text-2xl font-black" style={{ color: P }}>Legal &amp; Compliance</h2>
             <div className="bg-white rounded-2xl border border-gray-200 p-6 space-y-4 text-sm text-gray-700 leading-relaxed">
-              <p><strong>Company Name:</strong> MANSHYA Group (Pty) Ltd.</p>
+              <p><strong>Company Name:</strong> Vink Group (Pty) Ltd.</p>
+              <p><strong>Trading As:</strong> MANSHYA</p>
               <p><strong>Registration Number:</strong> 2018/079316/07</p>
               <p><strong>Registered Address:</strong> 8 Rose Street, Cape Town CBD, State House Building, Cape Town, 8001</p>
               <p><strong>BBBEE Status:</strong> 100% Black-Owned Enterprise</p>

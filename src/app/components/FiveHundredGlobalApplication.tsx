@@ -135,8 +135,8 @@ function Tip({ children }: { children: React.ReactNode }) {
 /* ─── Main component ──────────────────────────────────────── */
 export function FiveHundredGlobalApplication({ isOpen, onClose }: Props) {
   /* ── Company basics ── */
-  const [companyName,    setCompanyName]    = useState("MANSHYA (Pty) Ltd");
-  const [tradingName,    setTradingName]    = useState("MANSHYA / Manshya");
+  const [companyName,    setCompanyName]    = useState("Vink (Pty) Ltd");
+  const [tradingName,    setTradingName]    = useState("MANSHYA");
   const [website,        setWebsite]        = useState("https://vink.co.za");
   const [founded,        setFounded]        = useState("2020");
   const [hq,             setHq]             = useState("Cape Town, Western Cape, South Africa");

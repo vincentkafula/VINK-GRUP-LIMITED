@@ -21,7 +21,7 @@ export const P18Q_SPEC = {
   processingTime: "Under 3 seconds offline",
   certifications: "IP65 · IK08 · CE · RoHS",
   operatingRange: "-20°C to 60°C · DC 9–40V",
-  developer: "MANSHYA Group (Pty) Ltd.",
+  developer: "Vink Group (Pty) Ltd.",
   backendApi: "MANSHYA Central API v2 · Cape Town",
   realtime: "WebSocket · sub-100ms latency",
   security: "256-bit AES · JWT Auth · FICA Compliant",

@@ -285,13 +285,13 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
             ))}
             <span style={{ color: "rgba(255,255,255,0.2)", fontSize: 12, padding: "0 12px" }}>|</span>
             <span style={{ color: "rgba(255,255,255,0.38)", fontSize: 12, whiteSpace: "nowrap", padding: "0 4px" }}>
-              Authorised Financial Services Provider and a registered credit provider (NCRCP)
+              MANSHYA — a division of Vink Group (Pty) Ltd. Authorised Financial Services Provider and a registered credit provider (NCRCP registration pending). Reg. No. 2018/079316/07.
             </span>
           </div>
           {/* Copyright */}
           <div style={{ paddingBottom: 16, textAlign: "center" }}>
             <p style={{ color: "rgba(255,255,255,0.28)", fontSize: 12, margin: "0 0 6px" }}>
-              © Copyright. MANSHYA-GRUP-LIMITED. All Rights Reserved.
+              © Copyright. Vink-Grup-Limited. All Rights Reserved.
             </p>
             <p style={{ color: "rgba(255,255,255,0.28)", fontSize: 12, margin: 0, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "0 10px" }}>
               <span>United States – EIN: 37-2148609</span>
