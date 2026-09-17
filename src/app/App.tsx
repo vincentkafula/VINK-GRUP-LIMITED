@@ -14,7 +14,6 @@ const FeaturesSection              = lazy(() => import("./components/FeaturesSec
 const ProtectionSection            = lazy(() => import("./components/ProtectionSection").then(m => ({ default: m.ProtectionSection })));
 const CreditCardsSection           = lazy(() => import("./components/CreditCardsSection").then(m => ({ default: m.CreditCardsSection })));
 const BusinessPowerSection         = lazy(() => import("./components/BusinessPowerSection").then(m => ({ default: m.BusinessPowerSection })));
-const FinancialInstitutionsSection = lazy(() => import("./components/FinancialInstitutionsSection").then(m => ({ default: m.FinancialInstitutionsSection })));
 const AppShowcaseSection           = lazy(() => import("./components/AppShowcaseSection").then(m => ({ default: m.AppShowcaseSection })));
 const Footer                       = lazy(() => import("./components/Footer").then(m => ({ default: m.Footer })));
 
@@ -634,7 +633,6 @@ export default function App() {
       <LazySection><Suspense fallback={null}><ProtectionSection /></Suspense></LazySection>
       <LazySection><Suspense fallback={null}><CreditCardsSection onApply={() => openSelector("creditCard")} /></Suspense></LazySection>
       <LazySection><Suspense fallback={null}><BusinessPowerSection onSubNavClick={handleSubNavClick} /></Suspense></LazySection>
-      <LazySection><Suspense fallback={null}><FinancialInstitutionsSection /></Suspense></LazySection>
       {/* AppShowcaseSection and the App Launcher are admin-only now --
           see BankingDashboard's "App Preview" sidebar button. Not
           reachable from the public site at all: none of the apps are
