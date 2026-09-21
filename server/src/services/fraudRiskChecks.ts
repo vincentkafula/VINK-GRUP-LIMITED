@@ -11,9 +11,9 @@ import { pool, hasDb } from "../db/pool.js";
  * submitting two applications, for instance) would otherwise be caught
  * as false positives if this auto-blocked.
  *
- * Same interface-boundary discipline as vinkPay.ts and
- * kycVerification.ts: each check is a small, independent function
- * against the database, callable from wherever the relevant submission
+ * Same interface-boundary discipline as kycVerification.ts: each check
+ * is a small, independent function against the database, callable from
+ * wherever the relevant submission
  * happens (applicationsRouter.ts, the payment-submission path), so a
  * future move to a real scoring model doesn't require touching every
  * call site -- only what happens inside these functions.
@@ -140,28 +140,4 @@ export async function checkPaymentVelocity(orderId: string, userId: string): Pro
   }
 }
 
-/**
- * Call once a transaction has a card_fingerprint (from the processor's
- * own response — never the raw card number). Flags when the same card
- * has been used to pay for orders under more than one distinct user
- * account, which is a legitimate signal (shared family card is common
- * and not inherently fraudulent) but worth a reviewer's attention rather
- * than silent acceptance.
- */
-export async function checkDuplicateCard(orderId: string, userId: string, cardFingerprint: string): Promise<void> {
-  if (!hasDb || !pool) return;
-  const { rows } = await pool.query(
-    `SELECT DISTINCT o.user_id, o.id AS order_id
-     FROM vinkpay_transactions t
-     JOIN mkt_orders o ON o.id = t.order_id
-     WHERE t.card_fingerprint = $1 AND o.user_id != $2`,
-    [cardFingerprint, userId]
-  );
-  if (rows.length) {
-    await createFlagIfNotOpen(
-      "duplicate_card", "info", "order", orderId,
-      rows.map((r) => r.order_id),
-      `This card has also been used on ${rows.length} order(s) under ${new Set(rows.map((r) => r.user_id)).size} other account(s).`
-    );
-  }
-}
+

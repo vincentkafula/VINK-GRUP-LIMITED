@@ -8,25 +8,9 @@ import rateLimit from "express-rate-limit";
 import { requestLogger } from "./middleware/logger.js";
 import authRouter from "./routes/auth.js";
 import authRouterDb from "./routes/authRouterDb.js";
-import kpisRouter from "./routes/kpis.js";
-import subscribersRouter from "./routes/subscribers.js";
-import networkRouter from "./routes/network.js";
-import billingRouter from "./routes/billing.js";
-import fraudRouter from "./routes/fraud.js";
 import fraudRiskRouter from "./routes/fraudRiskRouter.js";
 import terminalRouter from "./routes/terminalRouter.js";
 import routeRouter from "./routes/routeRouter.js";
-import retailRouter from "./routes/retailRouter.js";
-import tillRouter from "./routes/tillRouter.js";
-import coreNetworkRouter from "./routes/coreNetworkRouter.js";
-import ricaRouter from "./routes/ricaRouter.js";
-import cpeProvisioningRouter from "./routes/cpeProvisioningRouter.js";
-import restaurantRouter from "./routes/restaurantRouter.js";
-import provisioningRouter from "./routes/provisioning.js";
-import supportRouter from "./routes/support.js";
-import interconnectsRouter from "./routes/interconnects.js";
-import alertsRouter from "./routes/alerts.js";
-import vehiclesRouter from "./routes/vehicles.js";
 import bankAccountsRouter from "./routes/bankAccounts.js";
 import bankCardsRouter from "./routes/bankCards.js";
 import bankPaymentsRouter from "./routes/bankPayments.js";
@@ -34,16 +18,11 @@ import bankTreasuryRouter from "./routes/bankTreasury.js";
 import bankComplianceRouter from "./routes/bankCompliance.js";
 import bankUsersRouter from "./routes/bankUsers.js";
 import geoCurrencyRouter from "./routes/geoCurrency.js";
-import newsRouter, { startScheduledPublishJob } from "./routes/news.js";
 import rbacRouter from "./routes/rbac.js";
 import { setBroadcaster } from "./services/wsBroadcast.js";
-import vinkpayWebhookRouter from "./routes/vinkpayWebhook.js";
-import { startReconciliationJob } from "./services/vinkPay.js";
-import kycRouter from "./routes/kycRouter.js";
 import applicationsRouter from "./routes/applicationsRouter.js";
 import otpRouter from "./routes/otpRouter.js";
 import jobsRouter from "./routes/jobsRouter.js";
-import { startKycReconciliationJob } from "./services/kycVerification.js";
 import mastercardRouter from "./routes/mastercard.js";
 import visaRouter from "./routes/visa.js";
 import publicRouter from "./routes/public.js";
@@ -51,13 +30,9 @@ import globalBankingRouter from "./routes/globalBanking.js";
 import financialReportsRouter from "./routes/financialReports.js";
 import levySystemRouter from "./routes/levySystem.js";
 import afcRouter from "./routes/afc.js";
-import { startSimulator } from "./services/simulator.js";
-import { startVehicleSimulator } from "./services/vehicleSimulator.js";
 import { hasDb, pool } from "./db/pool.js";
 import { migrateAndSeed } from "./db/migrate.js";
 import { requireAuth, requireRole } from "./middleware/auth.js";
-import type { WsEvent } from "./types/mvno.js";
-import type { VehicleWsMessage } from "./types/vehicles.js";
 
 const PORT = Number(process.env.PORT) || 3001;
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS ?? "http://localhost:5173,http://localhost:4173")
@@ -85,22 +60,6 @@ app.set("trust proxy", 1); // trust exactly one hop (Railway's edge) for correct
 
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(cors({ origin: (origin, cb) => cb(null, isAllowedOrigin(origin)), credentials: true }));
-
-// The VinkPay webhook needs the exact raw request bytes to verify the
-// signature — re-serializing an already-parsed JSON body can produce a
-// different byte sequence than what was actually signed, which would make
-// signature verification unreliable. Mounted before the global JSON parser
-// below, with its own parser that stashes the raw buffer via `verify`.
-app.use("/api/vinkpay/webhook", express.json({
-  limit: "1mb",
-  verify: (req, _res, buf) => { (req as express.Request & { rawBody?: Buffer }).rawBody = buf; },
-}));
-app.use("/api/vinkpay/webhook", vinkpayWebhookRouter);
-
-app.use("/api/kyc/webhook", express.json({
-  limit: "1mb",
-  verify: (req, _res, buf) => { (req as express.Request & { rawBody?: Buffer }).rawBody = buf; },
-}));
 
 app.use(express.json({ limit: "1mb" }));
 app.use(requestLogger);
@@ -130,25 +89,9 @@ app.use("/api/auth/change-password", authLimiter);
 
 // ─── Routes ──────────────────────────────────────────────────────────────────
 app.use("/api/auth",          hasDb ? authRouterDb : authRouter);
-app.use("/api/kpis",          kpisRouter);
-app.use("/api/subscribers",   subscribersRouter);
-app.use("/api/network",       networkRouter);
-app.use("/api/billing",       billingRouter);
-app.use("/api/fraud",         fraudRouter);
 app.use("/api/fraud-risk",    fraudRiskRouter);
 app.use("/api/terminal",      terminalRouter);
 app.use("/api/routes",        routeRouter);
-app.use("/api/retail",        retailRouter);
-app.use("/api/till",          tillRouter);
-app.use("/api/network",       coreNetworkRouter);
-app.use("/api/rica",          ricaRouter);
-app.use("/api/provisioning",  cpeProvisioningRouter);
-app.use("/api/restaurant",    restaurantRouter);
-app.use("/api/provisioning",  provisioningRouter);
-app.use("/api/support",       supportRouter);
-app.use("/api/interconnects", interconnectsRouter);
-app.use("/api/alerts",        alertsRouter);
-app.use("/api/vehicles",      vehiclesRouter);
 app.use("/api/bank/accounts",      bankAccountsRouter);
 app.use("/api/bank/cards",         bankCardsRouter);
 app.use("/api/bank/payments",      bankPaymentsRouter);
@@ -157,11 +100,9 @@ app.use("/api/bank/compliance",    bankComplianceRouter);
 app.use("/api/bank/users",         bankUsersRouter);
 app.use("/api/geo",                geoCurrencyRouter);
 app.use("/api/currency",           geoCurrencyRouter);
-app.use("/api/news",               newsRouter);
 app.use("/api/rbac",               rbacRouter);
 app.use("/api/mastercard",         mastercardRouter);
 app.use("/api/visa",               visaRouter);
-app.use("/api/kyc",                kycRouter);
 app.use("/api/applications",       applicationsRouter);
 app.use("/api/otp",                otpRouter);
 app.use("/api/jobs",               jobsRouter);
@@ -333,13 +274,13 @@ const server = http.createServer(app);
 const wss = new WebSocketServer({ server, path: "/ws" });
 const clients = new Set<WebSocket>();
 
-function broadcast(event: WsEvent | VehicleWsMessage): void {
+function broadcast(event: { event: string; timestamp: string; data: unknown }): void {
   const payload = JSON.stringify(event);
   clients.forEach(ws => {
     if (ws.readyState === WebSocket.OPEN) ws.send(payload);
   });
 }
-setBroadcaster(broadcast as (event: { event: string; timestamp: string; data: unknown }) => void);
+setBroadcaster(broadcast);
 
 wss.on("connection", (ws, req) => {
   const ip = req.socket.remoteAddress ?? "unknown";
@@ -370,11 +311,6 @@ wss.on("connection", (ws, req) => {
 });
 
 // ─── Start Simulators ────────────────────────────────────────────────────────
-const stopSimulator        = startSimulator(broadcast);
-const stopVehicleSimulator = startVehicleSimulator(broadcast);
-const stopReconciliation   = startReconciliationJob();
-const stopKycReconciliation = startKycReconciliationJob();
-const stopScheduledPublish = startScheduledPublishJob();
 
 // ─── Boot ────────────────────────────────────────────────────────────────────
 async function boot() {
@@ -398,13 +334,11 @@ async function boot() {
     console.log(`  \x1b[2mHealth\x1b[0m → http://localhost:${PORT}/health`);
     console.log(`  \x1b[2mDB\x1b[0m     → ${hasDb ? "Postgres connected" : "in-memory (no DATABASE_URL)"}`);
     console.log("");
-    console.log("  \x1b[32m●\x1b[0m MVNO simulator running");
-    console.log("  \x1b[32m●\x1b[0m Vehicle tracking simulator running (50 vehicles)");
     console.log("");
   });
 }
 
 boot();
 
-process.on("SIGTERM", () => { stopSimulator(); stopVehicleSimulator(); server.close(() => process.exit(0)); });
-process.on("SIGINT",  () => { stopSimulator(); stopVehicleSimulator(); server.close(() => process.exit(0)); });
+process.on("SIGTERM", () => { server.close(() => process.exit(0)); });
+process.on("SIGINT",  () => { server.close(() => process.exit(0)); });

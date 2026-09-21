@@ -3,7 +3,7 @@ import path from "path";
 import bcrypt from "bcryptjs";
 import { pool, hasDb } from "./pool.js";
 import { NEWS_ARTICLES } from "../data/newsData.js";
-import { db as mvnoDb } from "../data/store.js";
+import { adminUsers } from "../data/adminUsers.js";
 
 /**
  * Creates the schema (if missing) and seeds it with the same demo data the
@@ -31,7 +31,7 @@ export async function migrateAndSeed(): Promise<void> {
   try {
     await client.query("BEGIN");
 
-    for (const u of mvnoDb.users) {
+    for (const u of adminUsers) {
       await client.query(
         `INSERT INTO users (id, username, password_hash, role, name, email, last_login, created_at)
          VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT (username) DO NOTHING`,

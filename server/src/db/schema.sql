@@ -25,78 +25,6 @@ CREATE TABLE IF NOT EXISTS users (
   created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- ── Marketplace ──────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS mkt_categories (
-  id            TEXT PRIMARY KEY,
-  name          TEXT NOT NULL,
-  slug          TEXT UNIQUE NOT NULL,
-  icon          TEXT,
-  parent_id     TEXT REFERENCES mkt_categories(id),
-  featured      BOOLEAN NOT NULL DEFAULT false
-);
-
-CREATE TABLE IF NOT EXISTS mkt_sellers (
-  id              TEXT PRIMARY KEY,
-  user_id         TEXT,
-  store_name      TEXT NOT NULL,
-  store_slug      TEXT UNIQUE NOT NULL,
-  description     TEXT,
-  logo_url        TEXT,
-  banner_url      TEXT,
-  email           TEXT,
-  phone           TEXT,
-  country         TEXT DEFAULT 'ZA',
-  status          TEXT NOT NULL DEFAULT 'active',
-  kyc_verified    BOOLEAN NOT NULL DEFAULT false,
-  tax_id          TEXT,
-  total_sales     INTEGER NOT NULL DEFAULT 0,
-  total_revenue   NUMERIC(14,2) NOT NULL DEFAULT 0,
-  avg_rating      NUMERIC(2,1) NOT NULL DEFAULT 0,
-  review_count    INTEGER NOT NULL DEFAULT 0,
-  commission_pct  NUMERIC(4,1) NOT NULL DEFAULT 8,
-  joined_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
-  -- Structured data from the seller application wizard (steps 1-8: seller
-  -- type, personal info, KYC identity fields, address, business info, tax
-  -- info). Document *uploads* referenced in the wizard are NOT stored here
-  -- or anywhere else — this demo doesn't have a secure document storage /
-  -- licensed KYC pipeline, so only the structured text fields persist.
-  application_data JSONB NOT NULL DEFAULT '{}'
-);
-ALTER TABLE mkt_sellers ADD COLUMN IF NOT EXISTS application_data JSONB NOT NULL DEFAULT '{}';
-
--- ─── Seller KYC verification (provider-agnostic result ledger) ─────────────
--- Deliberately stores ONLY the verification outcome, never document
--- content or a pointer to a locally-stored copy of one. document_types_
--- submitted records WHICH kinds of documents were sent (e.g. 'id_front',
--- 'selfie') for audit purposes — not the documents themselves. This is the
--- POPIA-relevant design decision: raw ID/selfie/proof-of-address images
--- pass through this backend in memory only (see kycRouter.ts, multer
--- memory storage) on their way to whichever licensed provider is
--- configured, and are never written to this database or disk. If a future
--- provider explicitly requires VINK to retain a copy, that needs its own
--- deliberate, encrypted-at-rest column added at that point — not assumed
--- or built defensively now for a requirement that may not exist.
-CREATE TABLE IF NOT EXISTS seller_kyc_verifications (
-  id                        TEXT PRIMARY KEY,
-  seller_id                 TEXT NOT NULL REFERENCES mkt_sellers(id) ON DELETE CASCADE,
-  provider                  TEXT,                          -- null until a real provider is configured
-  provider_ref              TEXT,                           -- the provider's own verification/job ID
-  status                    TEXT NOT NULL DEFAULT 'not_submitted', -- not_submitted | submitted | verified | rejected
-  document_types_submitted  TEXT[] NOT NULL DEFAULT '{}',
-  rejection_reason          TEXT,
-  submitted_at              TIMESTAMPTZ,
-  verified_at               TIMESTAMPTZ,
-  webhook_received_at       TIMESTAMPTZ,                    -- idempotency marker, same pattern as vinkpay_transactions
-  created_at                TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at                TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-CREATE INDEX IF NOT EXISTS idx_kyc_seller ON seller_kyc_verifications(seller_id);
-CREATE UNIQUE INDEX IF NOT EXISTS idx_kyc_provider_ref ON seller_kyc_verifications(provider, provider_ref) WHERE provider_ref IS NOT NULL;
--- Same CREATE TABLE IF NOT EXISTS no-op issue as vinkpay_transactions below
--- (this table's own comment already notes they share the same pattern) --
--- explicit ALTER needed for this to actually land on a database where this
--- table already existed before webhook_received_at was added.
-ALTER TABLE seller_kyc_verifications ADD COLUMN IF NOT EXISTS webhook_received_at TIMESTAMPTZ;
 
 -- ─── Account/Loan Applications (Personal, Business, Corporate) ─────────────
 -- Shared schema across all three tiers, matching the confirmed design:
@@ -152,7 +80,7 @@ CREATE TABLE IF NOT EXISTS application_status_history (
 CREATE INDEX IF NOT EXISTS idx_app_history_application ON application_status_history(application_id);
 
 -- ─── Job Applications ───────────────────────────────────────────────────────
--- Unlike seller_kyc_verifications, documents here ARE meant to be retained
+-- Unlike ID/compliance documents, documents here ARE meant to be retained
 -- — HR needs to actually read the CV/certificates later, there's no
 -- regulatory reason to avoid storage the way there is for ID documents.
 -- Core fields are real columns for filtering/search; the full structured
@@ -204,144 +132,6 @@ CREATE TABLE IF NOT EXISTS job_application_status_history (
 CREATE INDEX IF NOT EXISTS idx_job_app_history ON job_application_status_history(job_application_id);
 
 
-CREATE TABLE IF NOT EXISTS mkt_products (
-  id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  seller_id           TEXT NOT NULL REFERENCES mkt_sellers(id),
-  category_id         TEXT NOT NULL REFERENCES mkt_categories(id),
-  name                TEXT NOT NULL,
-  slug                TEXT UNIQUE NOT NULL,
-  short_description   TEXT,
-  description         TEXT,
-  price               NUMERIC(12,2) NOT NULL,
-  compare_at_price    NUMERIC(12,2),
-  currency            TEXT NOT NULL DEFAULT 'ZAR',
-  images              JSONB NOT NULL DEFAULT '[]',
-  emoji               TEXT,
-  status              TEXT NOT NULL DEFAULT 'active', -- active | pending_review | inactive
-  stock               INTEGER NOT NULL DEFAULT 0,
-  sku                 TEXT,
-  brand               TEXT,
-  tags                JSONB NOT NULL DEFAULT '[]',
-  attributes          JSONB NOT NULL DEFAULT '{}',
-  variants            JSONB NOT NULL DEFAULT '[]',
-  avg_rating          NUMERIC(2,1) NOT NULL DEFAULT 0,
-  review_count        INTEGER NOT NULL DEFAULT 0,
-  total_sold          INTEGER NOT NULL DEFAULT 0,
-  is_featured         BOOLEAN NOT NULL DEFAULT false,
-  is_flash_deal       BOOLEAN NOT NULL DEFAULT false,
-  flash_deal_ends_at  TIMESTAMPTZ,
-  created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at          TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-CREATE INDEX IF NOT EXISTS idx_mkt_products_category ON mkt_products(category_id);
-CREATE INDEX IF NOT EXISTS idx_mkt_products_seller   ON mkt_products(seller_id);
-CREATE INDEX IF NOT EXISTS idx_mkt_products_status    ON mkt_products(status);
-
-CREATE TABLE IF NOT EXISTS mkt_coupons (
-  code               TEXT PRIMARY KEY,
-  type               TEXT NOT NULL, -- percentage | fixed_amount | free_shipping
-  value              NUMERIC(10,2) NOT NULL DEFAULT 0,
-  min_order_amount   NUMERIC(10,2) NOT NULL DEFAULT 0,
-  max_discount_amount NUMERIC(10,2),
-  active             BOOLEAN NOT NULL DEFAULT true
-);
-
-CREATE TABLE IF NOT EXISTS mkt_carts (
-  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id          TEXT UNIQUE NOT NULL,
-  items            JSONB NOT NULL DEFAULT '[]',
-  coupon_code      TEXT REFERENCES mkt_coupons(code),
-  coupon_discount  NUMERIC(10,2) NOT NULL DEFAULT 0,
-  subtotal         NUMERIC(12,2) NOT NULL DEFAULT 0,
-  shipping         NUMERIC(10,2) NOT NULL DEFAULT 0,
-  tax              NUMERIC(10,2) NOT NULL DEFAULT 0,
-  total            NUMERIC(12,2) NOT NULL DEFAULT 0,
-  created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at       TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
-CREATE TABLE IF NOT EXISTS mkt_orders (
-  id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  order_number        TEXT UNIQUE NOT NULL,
-  user_id             TEXT NOT NULL,
-  customer_name       TEXT,
-  customer_email      TEXT,
-  items               JSONB NOT NULL DEFAULT '[]',
-  subtotal            NUMERIC(12,2) NOT NULL DEFAULT 0,
-  shipping_cost       NUMERIC(10,2) NOT NULL DEFAULT 0,
-  tax_amount          NUMERIC(10,2) NOT NULL DEFAULT 0,
-  discount_amount     NUMERIC(10,2) NOT NULL DEFAULT 0,
-  total_amount        NUMERIC(12,2) NOT NULL DEFAULT 0,
-  currency            TEXT NOT NULL DEFAULT 'ZAR',
-  status              TEXT NOT NULL DEFAULT 'pending',
-  payment_status      TEXT NOT NULL DEFAULT 'pending',
-  payment_method      TEXT,
-  shipping_address    JSONB,
-  shipping_status     TEXT NOT NULL DEFAULT 'not_shipped',
-  tracking_number     TEXT,
-  carrier             TEXT,
-  estimated_delivery  TIMESTAMPTZ,
-  coupon_code         TEXT,
-  notes               TEXT,
-  placed_at           TIMESTAMPTZ NOT NULL DEFAULT now(),
-  confirmed_at        TIMESTAMPTZ,
-  shipped_at          TIMESTAMPTZ,
-  delivered_at        TIMESTAMPTZ,
-  cancelled_at        TIMESTAMPTZ
-);
-CREATE INDEX IF NOT EXISTS idx_mkt_orders_user   ON mkt_orders(user_id);
-CREATE INDEX IF NOT EXISTS idx_mkt_orders_status ON mkt_orders(status);
-
--- The table above may already exist on a live database from before VinkPay
--- existed, with payment_status defaulting to 'paid' — CREATE TABLE IF NOT
--- EXISTS is a no-op against an existing table, so that unsafe default needs
--- fixing explicitly. Safe to run on every boot: ALTER COLUMN SET DEFAULT is
--- idempotent, and this only changes the default for future inserts — it
--- deliberately does not touch the payment_status of orders already placed.
---
--- Explicit state machine (replaces the earlier 'pending'/'paid'/'failed'):
--- pending_payment -> payment_confirmed | payment_failed. payment_confirmed
--- is only ever set by the verified webhook handler or the reconciliation
--- job calling verifyTransaction — never by the order-submission endpoint.
-ALTER TABLE mkt_orders ALTER COLUMN payment_status SET DEFAULT 'pending_payment';
-
--- ─── VinkPay: processor-agnostic payment ledger ─────────────────────────────
--- Every attempt VinkPay makes to charge an order, regardless of which
--- underlying processor (Visa, Mastercard, or a future one) actually handled
--- it. This is the real audit trail — mkt_orders.payment_status reflects the
--- current state, this table records every attempt that led there.
-CREATE TABLE IF NOT EXISTS vinkpay_transactions (
-  id              TEXT PRIMARY KEY,
-  order_id        UUID NOT NULL REFERENCES mkt_orders(id) ON DELETE CASCADE,
-  order_number    TEXT NOT NULL,
-  processor       TEXT NOT NULL,          -- 'visa' | 'mastercard'
-  payment_method  TEXT NOT NULL,          -- 'card' | 'bank_transfer'
-  amount          NUMERIC(12,2) NOT NULL,
-  currency        TEXT NOT NULL DEFAULT 'ZAR',
-  status          TEXT NOT NULL,          -- 'submitted' | 'confirmed' | 'failed'
-  processor_ref   TEXT,                   -- the processor's own transaction/reference ID — VinkPay's stable internal id is `id` above, which stays constant across a future processor migration even though processor_ref would not
-  error_message   TEXT,
-  webhook_received_at TIMESTAMPTZ,        -- set only once, by the first webhook delivery — the idempotency marker
-  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-CREATE INDEX IF NOT EXISTS idx_vinkpay_order ON vinkpay_transactions(order_id);
-CREATE INDEX IF NOT EXISTS idx_vinkpay_status ON vinkpay_transactions(status);
--- Same issue as job_applications above: CREATE TABLE IF NOT EXISTS is a
--- no-op against a table that already existed in production before this
--- column was added to the definition -- webhook_received_at needs its own
--- explicit ALTER to actually land on an already-deployed database, not
--- just a freshly-created one. This is the real cause of the production
--- error "column t.webhook_received_at does not exist" in the
--- reconciliation job (vinkPay.ts) once this table already existed live.
-ALTER TABLE vinkpay_transactions ADD COLUMN IF NOT EXISTS webhook_received_at TIMESTAMPTZ;
--- One processor_ref should only ever correspond to one VinkPay transaction
--- row — this constraint is the actual backstop for webhook idempotency,
--- not just the application-level check before it. NULLs (a submission that
--- never got a processor_ref back at all) are allowed to repeat, since
--- Postgres treats NULLs as distinct in a unique index.
-CREATE UNIQUE INDEX IF NOT EXISTS idx_vinkpay_processor_ref ON vinkpay_transactions(processor, processor_ref) WHERE processor_ref IS NOT NULL;
-
 -- ─── RBAC: Section Manager application/approval workflow ───────────────────
 CREATE TABLE IF NOT EXISTS section_applications (
   id              TEXT PRIMARY KEY,
@@ -378,95 +168,25 @@ CREATE TABLE IF NOT EXISTS audit_log (
 );
 CREATE INDEX IF NOT EXISTS idx_audit_created ON audit_log(created_at DESC);
 
-CREATE TABLE IF NOT EXISTS news_articles (
-  id              TEXT PRIMARY KEY,
-  slug            TEXT UNIQUE NOT NULL,
-  title           TEXT NOT NULL,
-  subtitle        TEXT,
-  category        TEXT NOT NULL,
-  author          TEXT NOT NULL,
-  summary         TEXT NOT NULL,
-  body            TEXT NOT NULL,
-  tags            JSONB NOT NULL DEFAULT '[]',
-  hero_gradient   TEXT NOT NULL DEFAULT 'linear-gradient(135deg,#0B5C2E,#128A43)',
-  emoji           TEXT NOT NULL DEFAULT '📰',
-  read_minutes    INTEGER NOT NULL DEFAULT 4,
-  featured        BOOLEAN NOT NULL DEFAULT false,
-  breaking        BOOLEAN NOT NULL DEFAULT false,
-  views           INTEGER NOT NULL DEFAULT 0,
-  published_at    TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-CREATE INDEX IF NOT EXISTS idx_news_category ON news_articles(category);
-CREATE INDEX IF NOT EXISTS idx_news_published ON news_articles(published_at DESC);
 -- Editorial workflow: content-creator roles (Reporter, Section Editor, etc.)
 -- submit pending_review, only editorial leadership (General Manager,
 -- Editor-in-Chief, Managing Editor) can move something to published.
 -- Existing seeded articles all default to 'published' so the public
 -- news viewer's existing behavior (which only ever queries published
 -- content) doesn't change for anything already in the table.
-ALTER TABLE news_articles ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'published';
-ALTER TABLE news_articles ADD COLUMN IF NOT EXISTS created_by_user_id UUID;
-ALTER TABLE news_articles ADD COLUMN IF NOT EXISTS created_by_name TEXT;
-ALTER TABLE news_articles ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT now();
-CREATE INDEX IF NOT EXISTS idx_news_status ON news_articles(status);
 
 -- Hero image: stored the same way job application documents are (base64
 -- in the row, no object storage configured yet) -- reasonable at current
 -- volume, real object storage (S3/GCS/Cloudinary) is the natural next
 -- step if this needs to scale to a lot of large images.
-ALTER TABLE news_articles ADD COLUMN IF NOT EXISTS hero_image_data TEXT;
-ALTER TABLE news_articles ADD COLUMN IF NOT EXISTS hero_image_mime_type TEXT;
 
 -- Scheduling: 'scheduled' joins the existing status values. A background
 -- job (see startScheduledPublishJob in news.ts) flips scheduled articles
 -- to 'published' once scheduled_at arrives.
-ALTER TABLE news_articles ADD COLUMN IF NOT EXISTS scheduled_at TIMESTAMPTZ;
-CREATE INDEX IF NOT EXISTS idx_news_scheduled ON news_articles(scheduled_at) WHERE status = 'scheduled';
 
 -- SEO / discovery metadata, and tracking whether views should be counted
 -- (kept simple -- a real analytics pipeline is out of scope here).
-ALTER TABLE news_articles ADD COLUMN IF NOT EXISTS meta_description TEXT;
 
-CREATE TABLE IF NOT EXISTS mkt_reviews (
-  id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  product_id          UUID NOT NULL REFERENCES mkt_products(id) ON DELETE CASCADE,
-  user_id             TEXT NOT NULL,
-  order_id            TEXT,
-  rating              SMALLINT NOT NULL CHECK (rating BETWEEN 1 AND 5),
-  title               TEXT,
-  body                TEXT,
-  verified_purchase   BOOLEAN NOT NULL DEFAULT false,
-  status              TEXT NOT NULL DEFAULT 'approved',
-  helpful             INTEGER NOT NULL DEFAULT 0,
-  images              JSONB NOT NULL DEFAULT '[]',
-  reviewer_name       TEXT DEFAULT 'Verified Buyer',
-  created_at          TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-CREATE INDEX IF NOT EXISTS idx_mkt_reviews_product ON mkt_reviews(product_id);
-
-CREATE TABLE IF NOT EXISTS mkt_wishlist_items (
-  user_id      TEXT NOT NULL,
-  product_id   UUID NOT NULL REFERENCES mkt_products(id) ON DELETE CASCADE,
-  added_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
-  PRIMARY KEY (user_id, product_id)
-);
-
-CREATE TABLE IF NOT EXISTS mkt_addresses (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id       TEXT NOT NULL,
-  label         TEXT DEFAULT 'Home',
-  first_name    TEXT,
-  last_name     TEXT,
-  line1         TEXT,
-  line2         TEXT,
-  city          TEXT,
-  state         TEXT,
-  postal_code   TEXT,
-  country       TEXT DEFAULT 'ZA',
-  phone         TEXT,
-  is_default    BOOLEAN NOT NULL DEFAULT false
-);
-CREATE INDEX IF NOT EXISTS idx_mkt_addresses_user ON mkt_addresses(user_id);
 
 -- ─── Fraud & Risk Basics (M1 5.1.4) ─────────────────────────────────────────
 -- Rule-based, flag-only -- never auto-blocks. Every flag lands in front of a
@@ -500,15 +220,13 @@ CREATE INDEX IF NOT EXISTS idx_fraud_flags_type ON fraud_flags(type);
 -- itself. NULL until a processor response actually supplies one; duplicate
 -- detection simply skips transactions where this is NULL rather than
 -- treating NULL as a match.
-ALTER TABLE vinkpay_transactions ADD COLUMN IF NOT EXISTS card_fingerprint TEXT;
-CREATE INDEX IF NOT EXISTS idx_vinkpay_card_fingerprint ON vinkpay_transactions(card_fingerprint) WHERE card_fingerprint IS NOT NULL;
 
 -- ─── AFC Terminal Registration & Tap Ingestion ──────────────────────────────
 -- A "terminal" is a physical device (P18Q bus validator or equivalent)
 -- authorized to submit tap events. Deliberately NOT authenticated with a
 -- user JWT -- the caller is a device, not a logged-in person, so it gets
--- its own credential (api_key_hash), same reasoning as vinkpayWebhook.ts
--- not using requireAuth for processor callbacks. api_key itself is never
+-- its own credential (api_key_hash), the same reasoning any processor
+-- webhook callback uses instead of requireAuth. api_key itself is never
 -- stored -- only its hash, same as password_hash on users -- issued once
 -- at registration time and shown to the operator exactly once.
 CREATE TABLE IF NOT EXISTS terminals (
@@ -569,7 +287,6 @@ CREATE TABLE IF NOT EXISTS terminal_taps (
   cardholder_verification TEXT,            -- 'contactless_no_cvm' | 'pin' | 'signature' -- whatever the kernel reports
   emv_cryptogram_ref  TEXT,                -- opaque token/reference only -- never the raw AC
   status              TEXT NOT NULL DEFAULT 'received' CHECK (status IN ('received','processing','confirmed','declined')),
-  vinkpay_transaction_id TEXT REFERENCES vinkpay_transactions(id), -- set once this tap is submitted into the existing VinkPay settlement flow
   error_message       TEXT,
   -- Multi-party revenue split (2026-08-18, corrected same day after
   -- an initial wrong version used percentage splits for all three
@@ -692,6 +409,29 @@ CREATE TABLE IF NOT EXISTS idempotency_keys (
 -- driver pay is deliberately never tracked in this system (see
 -- terminal_taps' own comment above). Fines needed their own ledger to
 -- have any real balance to deduct from at all.
+
+-- The path itself -- an ordered sequence of lat/lng points. sequence
+-- determines the order the points are joined into a path; the
+-- geofence tolerance is checked against distance to the nearest
+-- segment of this path, not just to the individual points.
+
+-- One row per GPS position report from a device. Deliberately
+-- separate from terminal_taps -- a position report and a card tap are
+-- different event types from the same physical device, same reasoning
+-- terminal_taps' own comment gives for keeping a tap event and a
+-- payment submission as two different things.
+
+-- One row per confirmed off-route violation -- fine_amount is stored
+-- at the moment of the violation (currently always R50, but stored
+-- explicitly rather than recalculated later, same discipline as
+-- terminal_taps' own persisted revenue split) so a future change to
+-- the fine amount doesn't retroactively change historical records.
+-- The corresponding driver_ledger entry (if the fine was successfully
+-- posted) is found via driver_ledger.reference_id = route_violations.id
+-- -- no back-reference column needed here, which also avoids a
+-- circular foreign key between these two tables.
+
+-- A genuinely new concept: regular per-tap driver pay is deliberately
 CREATE TABLE IF NOT EXISTS vehicle_routes (
   id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   terminal_id       UUID NOT NULL REFERENCES terminals(id),
@@ -750,7 +490,6 @@ CREATE TABLE IF NOT EXISTS route_violations (
 );
 CREATE INDEX IF NOT EXISTS idx_route_violations_terminal ON route_violations(terminal_id);
 
--- A genuinely new concept: regular per-tap driver pay is deliberately
 -- never tracked anywhere in this system (it's a private, fixed
 -- arrangement with the owner -- see terminal_taps' own comment), but
 -- fines need an actual account to deduct from, so this ledger exists
@@ -873,78 +612,19 @@ ALTER TABLE app_releases ADD COLUMN IF NOT EXISTS product TEXT NOT NULL DEFAULT 
 -- banking system the taxi model does, the same way: merchant.owner_id
 -- references the same real users(id) table used everywhere else in
 -- this schema, not a separate parallel account system.
-CREATE TABLE IF NOT EXISTS retail_merchants (
-  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  owner_id        UUID NOT NULL REFERENCES users(id), -- the real VINK banking-system account this merchant settles to
-  business_name   TEXT NOT NULL,
-  registered_at   TIMESTAMPTZ NOT NULL DEFAULT now()
-);
 
-CREATE TABLE IF NOT EXISTS retail_terminals (
-  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  serial            TEXT UNIQUE NOT NULL,
-  model             TEXT NOT NULL DEFAULT 'Retail POS',
-  api_key_hash      TEXT NOT NULL,
-  status            TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active','inactive','revoked')),
-  merchant_id       UUID REFERENCES retail_merchants(id), -- nullable, same reasoning terminals.investor_id etc. use: a device can be registered before it's assigned
-  app_version       TEXT,
-  battery_pct       INTEGER,
-  last_heartbeat_at TIMESTAMPTZ,
-  last_seen_at      TIMESTAMPTZ,
-  registered_by     TEXT,
-  registered_at     TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-CREATE INDEX IF NOT EXISTS idx_retail_terminals_status ON retail_terminals(status);
-CREATE INDEX IF NOT EXISTS idx_retail_terminals_merchant ON retail_terminals(merchant_id);
 
 -- Percentage-based fee, unlike terminal_taps' flat R1.00 -- vink_fee_amount
 -- and merchant_settlement are both stored explicitly at the moment of
 -- the transaction (not just the rate), same discipline terminal_taps'
 -- own comment explains: a later change to VINK_FEE_PCT shouldn't
 -- retroactively change historical records.
-CREATE TABLE IF NOT EXISTS retail_transactions (
-  id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  terminal_id           UUID NOT NULL REFERENCES retail_terminals(id),
-  masked_pan            TEXT,
-  scheme                TEXT,
-  amount                NUMERIC(12,2) NOT NULL,
-  currency              TEXT NOT NULL DEFAULT 'ZAR',
-  cardholder_verification TEXT,
-  emv_cryptogram_ref    TEXT,
-  status                TEXT NOT NULL DEFAULT 'received' CHECK (status IN ('received','processing','confirmed','declined')),
-  vink_fee_pct          NUMERIC(5,2) NOT NULL,
-  vink_fee_amount       NUMERIC(10,2) NOT NULL,
-  merchant_settlement   NUMERIC(10,2) NOT NULL,
-  received_at           TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-CREATE INDEX IF NOT EXISTS idx_retail_transactions_terminal ON retail_transactions(terminal_id);
 
 -- MDM history for retail terminals, mirroring device_status_reports /
 -- device_faults exactly -- deliberately separate tables rather than
 -- reusing the taxi ones directly, since retail_terminals and terminals
 -- are different tables with different FKs.
-CREATE TABLE IF NOT EXISTS retail_device_status_reports (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  terminal_id   UUID NOT NULL REFERENCES retail_terminals(id),
-  app_version   TEXT,
-  battery_pct   INTEGER,
-  reported_at   TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-CREATE INDEX IF NOT EXISTS idx_retail_device_status_reports_terminal ON retail_device_status_reports(terminal_id, reported_at DESC);
 
-CREATE TABLE IF NOT EXISTS retail_device_faults (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  terminal_id   UUID NOT NULL REFERENCES retail_terminals(id),
-  fault_code    TEXT NOT NULL,
-  message       TEXT,
-  severity      TEXT NOT NULL DEFAULT 'warning' CHECK (severity IN ('info','warning','critical')),
-  resolved      BOOLEAN NOT NULL DEFAULT false,
-  resolved_at   TIMESTAMPTZ,
-  resolved_by   TEXT,
-  reported_at   TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-CREATE INDEX IF NOT EXISTS idx_retail_device_faults_terminal ON retail_device_faults(terminal_id, reported_at DESC);
-CREATE INDEX IF NOT EXISTS idx_retail_device_faults_unresolved ON retail_device_faults(resolved) WHERE resolved = false;
 
 -- ── Till/POS System: Products, Sales, Line Items ──────────────────────────────
 -- A genuinely separate, broader system from retail_terminals above
@@ -957,99 +637,21 @@ CREATE INDEX IF NOT EXISTS idx_retail_device_faults_unresolved ON retail_device_
 -- real banking system the same way every other role in this schema
 -- does: merchant_id references retail_merchants, which already
 -- references the real users(id) banking account.
-CREATE TABLE IF NOT EXISTS till_terminals (
-  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  serial            TEXT UNIQUE NOT NULL,
-  model             TEXT NOT NULL DEFAULT 'Till Device',
-  api_key_hash      TEXT NOT NULL,
-  status            TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active','inactive','revoked')),
-  merchant_id       UUID REFERENCES retail_merchants(id),
-  app_version       TEXT,
-  battery_pct       INTEGER,
-  last_heartbeat_at TIMESTAMPTZ,
-  last_seen_at      TIMESTAMPTZ,
-  registered_by     TEXT,
-  registered_at     TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-CREATE INDEX IF NOT EXISTS idx_till_terminals_status ON till_terminals(status);
-CREATE INDEX IF NOT EXISTS idx_till_terminals_merchant ON till_terminals(merchant_id);
 
-CREATE TABLE IF NOT EXISTS products (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  merchant_id   UUID NOT NULL REFERENCES retail_merchants(id),
-  name          TEXT NOT NULL,
-  sku           TEXT,
-  price         NUMERIC(10,2) NOT NULL,
-  stock_qty     INTEGER, -- nullable: some merchants may not track stock at all, not every product needs inventory counting
-  active        BOOLEAN NOT NULL DEFAULT true,
-  created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-CREATE INDEX IF NOT EXISTS idx_products_merchant ON products(merchant_id, active);
 
 -- vink_fee_amount and merchant_settlement are 0/full-amount for cash,
 -- and the real 2.5%-derived split for card -- stored explicitly either
 -- way at the moment of the sale, same discipline every other
 -- transaction table in this schema already uses (a later fee-policy
 -- change shouldn't retroactively alter historical records).
-CREATE TABLE IF NOT EXISTS sales (
-  id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  terminal_id           UUID NOT NULL REFERENCES till_terminals(id),
-  merchant_id           UUID NOT NULL REFERENCES retail_merchants(id),
-  subtotal              NUMERIC(12,2) NOT NULL,
-  tax_amount            NUMERIC(10,2) NOT NULL DEFAULT 0,
-  total                 NUMERIC(12,2) NOT NULL,
-  payment_method        TEXT NOT NULL CHECK (payment_method IN ('cash','card')),
-  masked_pan            TEXT, -- only set for payment_method = 'card'
-  scheme                TEXT,
-  cardholder_verification TEXT,
-  emv_cryptogram_ref    TEXT,
-  vink_fee_pct          NUMERIC(5,2) NOT NULL DEFAULT 0,
-  vink_fee_amount        NUMERIC(10,2) NOT NULL DEFAULT 0,
-  merchant_settlement   NUMERIC(12,2) NOT NULL,
-  status                TEXT NOT NULL DEFAULT 'completed' CHECK (status IN ('completed','voided')),
-  created_at            TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-CREATE INDEX IF NOT EXISTS idx_sales_terminal ON sales(terminal_id);
-CREATE INDEX IF NOT EXISTS idx_sales_merchant ON sales(merchant_id, created_at DESC);
 
-CREATE TABLE IF NOT EXISTS sale_items (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  sale_id       UUID NOT NULL REFERENCES sales(id) ON DELETE CASCADE,
-  product_id    UUID REFERENCES products(id), -- nullable: a line item could be a manual/one-off entry not tied to the catalog
-  product_name  TEXT NOT NULL, -- captured at time of sale, so a later product rename/deletion doesn't alter historical receipts
-  quantity      INTEGER NOT NULL,
-  unit_price    NUMERIC(10,2) NOT NULL,
-  line_total    NUMERIC(12,2) NOT NULL
-);
-CREATE INDEX IF NOT EXISTS idx_sale_items_sale ON sale_items(sale_id);
 
 -- MDM history for till terminals, mirroring retail_device_status_reports
 -- / retail_device_faults exactly, same reasoning: a status heartbeat
 -- and a fault report are different event types, kept as their own
 -- tables per device fleet rather than one shared table across three
 -- different terminal types with different FKs.
-CREATE TABLE IF NOT EXISTS till_device_status_reports (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  terminal_id   UUID NOT NULL REFERENCES till_terminals(id),
-  app_version   TEXT,
-  battery_pct   INTEGER,
-  reported_at   TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-CREATE INDEX IF NOT EXISTS idx_till_device_status_reports_terminal ON till_device_status_reports(terminal_id, reported_at DESC);
 
-CREATE TABLE IF NOT EXISTS till_device_faults (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  terminal_id   UUID NOT NULL REFERENCES till_terminals(id),
-  fault_code    TEXT NOT NULL,
-  message       TEXT,
-  severity      TEXT NOT NULL DEFAULT 'warning' CHECK (severity IN ('info','warning','critical')),
-  resolved      BOOLEAN NOT NULL DEFAULT false,
-  resolved_at   TIMESTAMPTZ,
-  resolved_by   TEXT,
-  reported_at   TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-CREATE INDEX IF NOT EXISTS idx_till_device_faults_terminal ON till_device_faults(terminal_id, reported_at DESC);
-CREATE INDEX IF NOT EXISTS idx_till_device_faults_unresolved ON till_device_faults(resolved) WHERE resolved = false;
 
 -- ── RICA (SIM Registration) Compliance ────────────────────────────────────────
 -- South Africa's mandatory SIM registration law (RICA Act 70 of 2002,
@@ -1062,24 +664,6 @@ CREATE INDEX IF NOT EXISTS idx_till_device_faults_unresolved ON till_device_faul
 -- afterthought. subscriber_ref links to the existing (currently
 -- in-memory mock) subscriber record by IMSI/MSISDN rather than a
 -- foreign key, since that store isn't in this database.
-CREATE TABLE IF NOT EXISTS rica_registrations (
-  id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  subscriber_ref        TEXT NOT NULL, -- IMSI or MSISDN of the SIM being registered
-  id_type               TEXT NOT NULL CHECK (id_type IN ('smart_id','green_id_book','passport','refugee_document')),
-  id_number             TEXT NOT NULL,
-  full_name             TEXT NOT NULL,
-  date_of_birth         DATE, -- auto-extracted from the ID number for smart_id/green_id_book (SA IDs encode this); entered manually for passport/refugee_document, which don't
-  proof_of_address_type TEXT NOT NULL CHECK (proof_of_address_type IN ('utility_bill','bank_statement','lease_agreement','affidavit')),
-  proof_of_address_date DATE NOT NULL, -- must be within 3 months of registration -- enforced at the application layer, not just documented here
-  document_refs         JSONB, -- references/URLs to the uploaded ID and proof-of-address scans -- this table stores metadata, not the files themselves
-  verification_status   TEXT NOT NULL DEFAULT 'pending' CHECK (verification_status IN ('pending','verified','rejected')),
-  verification_notes    TEXT,
-  verified_at           TIMESTAMPTZ,
-  verified_by           TEXT,
-  created_at            TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-CREATE INDEX IF NOT EXISTS idx_rica_registrations_subscriber ON rica_registrations(subscriber_ref);
-CREATE INDEX IF NOT EXISTS idx_rica_registrations_status ON rica_registrations(verification_status);
 
 -- ── CPE Device Provisioning ────────────────────────────────────────────────
 -- The real end-to-end router provisioning flow described in the
@@ -1094,20 +678,6 @@ CREATE INDEX IF NOT EXISTS idx_rica_registrations_status ON rica_registrations(v
 -- physical device has actually contacted a real ACS for the first
 -- time (GenieACS assigns that ID itself, from the device's own
 -- TR-069 Inform) -- this table can't invent that value in advance.
-CREATE TABLE IF NOT EXISTS cpe_devices (
-  id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  serial_number         TEXT UNIQUE NOT NULL, -- pre-registered at manufacture/flash time, before the device ships
-  model                 TEXT,
-  genieacs_device_id    TEXT, -- populated once the real device's first TR-069 Inform reaches GenieACS
-  rica_registration_id  UUID REFERENCES rica_registrations(id), -- set once a customer claims this device -- claiming requires an already-VERIFIED registration, enforced at the application layer
-  subscriber_imsi       TEXT, -- set once the corresponding Open5GS subscriber exists for this device's SIM
-  status                TEXT NOT NULL DEFAULT 'manufactured' CHECK (status IN ('manufactured','shipped','claimed','provisioned','active','deactivated')),
-  claimed_at            TIMESTAMPTZ,
-  provisioned_at        TIMESTAMPTZ,
-  created_at            TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-CREATE INDEX IF NOT EXISTS idx_cpe_devices_status ON cpe_devices(status);
-CREATE INDEX IF NOT EXISTS idx_cpe_devices_rica ON cpe_devices(rica_registration_id);
 
 -- ── Restaurant Ordering -- connects to the till, not a parallel system ───────
 -- Confirmed requirement: a restaurant must connect to the till, not
@@ -1119,13 +689,6 @@ CREATE INDEX IF NOT EXISTS idx_cpe_devices_rica ON cpe_devices(rica_registration
 -- specific addition is order lifecycle (a kitchen needs to track
 -- received -> preparing -> ready -> served before payment happens,
 -- which a simple till sale doesn't need) and physical tables.
-CREATE TABLE IF NOT EXISTS restaurant_tables (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  merchant_id   UUID NOT NULL REFERENCES retail_merchants(id),
-  table_number  TEXT NOT NULL,
-  active        BOOLEAN NOT NULL DEFAULT true,
-  UNIQUE (merchant_id, table_number)
-);
 
 -- An order precedes payment (the real restaurant pattern -- order
 -- first, kitchen prepares, pay at the end), unlike till checkout where
@@ -1133,33 +696,10 @@ CREATE TABLE IF NOT EXISTS restaurant_tables (
 -- once the order is actually paid via the till's existing POST
 -- /api/till/sale flow -- this table doesn't duplicate payment logic,
 -- it hands off to the till's own proven code for that.
-CREATE TABLE IF NOT EXISTS restaurant_orders (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  terminal_id   UUID NOT NULL REFERENCES till_terminals(id),
-  merchant_id   UUID NOT NULL REFERENCES retail_merchants(id),
-  table_id      UUID REFERENCES restaurant_tables(id),
-  status        TEXT NOT NULL DEFAULT 'received' CHECK (status IN ('received','preparing','ready','served','paid','cancelled')),
-  sale_id       UUID REFERENCES sales(id), -- set once the till has actually processed payment for this order
-  notes         TEXT,
-  created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-CREATE INDEX IF NOT EXISTS idx_restaurant_orders_merchant ON restaurant_orders(merchant_id, status);
-CREATE INDEX IF NOT EXISTS idx_restaurant_orders_status ON restaurant_orders(status);
 
 -- References products directly -- this IS the till connection. A menu
 -- item is a till product, full stop, not a separate concept with its
 -- own table.
-CREATE TABLE IF NOT EXISTS restaurant_order_items (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  order_id      UUID NOT NULL REFERENCES restaurant_orders(id) ON DELETE CASCADE,
-  product_id    UUID REFERENCES products(id),
-  product_name  TEXT NOT NULL, -- captured at order time, same reasoning sale_items' own comment gives: a later menu change shouldn't alter historical orders
-  quantity      INTEGER NOT NULL,
-  unit_price    NUMERIC(10,2) NOT NULL,
-  notes         TEXT -- per-item special requests ("no onions"), common in real restaurant ordering, not needed at the till's own simpler checkout level
-);
-CREATE INDEX IF NOT EXISTS idx_restaurant_order_items_order ON restaurant_order_items(order_id);
 
 -- ── Ride-Hailing (migrated from a separate Supabase backend) ─────────────────
 -- The full real API surface RideHailingSystem.tsx actually calls,
@@ -1170,65 +710,5 @@ CREATE INDEX IF NOT EXISTS idx_restaurant_order_items_order ON restaurant_order_
 -- with no real auth integration for this feature yet, same reasoning
 -- terminals.assigned_driver stayed TEXT before a real driver identity
 -- system existed for that flow.
-CREATE TABLE IF NOT EXISTS ride_trips (
-  id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  passenger_id          TEXT NOT NULL,
-  passenger_name        TEXT,
-  passenger_phone       TEXT,
-  driver_id             TEXT,
-  driver_name           TEXT,
-  driver_plate          TEXT,
-  driver_lat            NUMERIC(9,6),
-  driver_lng            NUMERIC(9,6),
-  vehicle_type          TEXT,
-  pickup_address        TEXT NOT NULL,
-  pickup_lat            NUMERIC(9,6) NOT NULL,
-  pickup_lng            NUMERIC(9,6) NOT NULL,
-  destination_address   TEXT NOT NULL,
-  destination_lat       NUMERIC(9,6) NOT NULL,
-  destination_lng       NUMERIC(9,6) NOT NULL,
-  payment_method        TEXT,
-  promo_code            TEXT,
-  medical_note          TEXT,
-  status                TEXT NOT NULL DEFAULT 'requested' CHECK (status IN ('requested','assigned','driver_enroute','arrived','in_progress','completed','cancelled')),
-  cancel_reason         TEXT,
-  estimated_fare        NUMERIC(10,2),
-  final_fare            NUMERIC(10,2),
-  rating                INTEGER CHECK (rating BETWEEN 1 AND 5),
-  review                TEXT,
-  created_at            TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at            TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-CREATE INDEX IF NOT EXISTS idx_ride_trips_passenger ON ride_trips(passenger_id, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_ride_trips_driver ON ride_trips(driver_id, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_ride_trips_status ON ride_trips(status);
 
-CREATE TABLE IF NOT EXISTS ride_messages (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  trip_id       UUID NOT NULL REFERENCES ride_trips(id) ON DELETE CASCADE,
-  sender_id     TEXT NOT NULL,
-  sender_role   TEXT NOT NULL,
-  sender_name   TEXT,
-  text          TEXT NOT NULL,
-  created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-CREATE INDEX IF NOT EXISTS idx_ride_messages_trip ON ride_messages(trip_id, created_at ASC);
-
-CREATE TABLE IF NOT EXISTS ride_calls (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  trip_id       UUID NOT NULL REFERENCES ride_trips(id) ON DELETE CASCADE,
-  caller_id     TEXT NOT NULL,
-  caller_role   TEXT NOT NULL,
-  receiver_id   TEXT,
-  created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-CREATE INDEX IF NOT EXISTS idx_ride_calls_trip ON ride_calls(trip_id);
-
-CREATE TABLE IF NOT EXISTS ride_promo_codes (
-  code            TEXT PRIMARY KEY,
-  discount_pct    NUMERIC(5,2),
-  discount_amount NUMERIC(10,2),
-  active          BOOLEAN NOT NULL DEFAULT true,
-  expires_at      TIMESTAMPTZ
-);
 

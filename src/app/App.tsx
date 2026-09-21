@@ -232,10 +232,8 @@ export default function App() {
       if      (id === "vinkapp")           { mount("vinkMobileApp");    setShowVinkMobileApp(true); }
       else if (id === "globalbanking")     { mount("globalBanking");    setShowGlobalBanking(true); }
       else if (id === "financialreports")  { mount("financialReports"); setShowFinancialReports(true); }
-      else if (id === "fooddelivery")      { mount("foodDelivery");     setShowFoodDelivery(true); }
       else if (id === "afc")               { mount("afcDashboard");     setShowAFCDashboard(true); }
       else if (id === "admin")             { mount("adminDashboard");   setShowAdminDashboard(true); }
-      else if (id === "globalsim")         { mount("globalSIM");        setShowGlobalSIM(true); }
       else if (id === "cardnetwork")       { mount("cardNetwork");      setShowCardNetwork(true); }
       else if (id === "owner")             { mount("owners");           setShowOwners(true); }
       else if (id === "investor")          { mount("investors");        setShowInvestors(true); }

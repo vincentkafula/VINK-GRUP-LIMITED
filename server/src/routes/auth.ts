@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
-import { db } from "../data/store.js";
+import { adminUsers } from "../data/adminUsers.js";
 import { JWT_SECRET, JWT_EXPIRES, requireAuth } from "../middleware/auth.js";
 
 const router: ReturnType<typeof Router> = Router();
@@ -13,7 +13,7 @@ router.post("/login", async (req: Request, res: Response): Promise<void> => {
     res.status(400).json({ success: false, error: "username and password required" });
     return;
   }
-  const user = db.users.find(u => u.username === username);
+  const user = adminUsers.find(u => u.username === username);
   if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
     res.status(401).json({ success: false, error: "Invalid credentials" });
     return;
@@ -33,7 +33,7 @@ router.post("/login", async (req: Request, res: Response): Promise<void> => {
 
 // GET /api/auth/me
 router.get("/me", requireAuth, (req: Request, res: Response): void => {
-  const user = db.users.find(u => u.id === req.user!.userId);
+  const user = adminUsers.find(u => u.id === req.user!.userId);
   if (!user) { res.status(404).json({ success: false, error: "User not found" }); return; }
   res.json({ success: true, data: { id: user.id, username: user.username, name: user.name, email: user.email, role: user.role, lastLogin: user.lastLogin } });
 });

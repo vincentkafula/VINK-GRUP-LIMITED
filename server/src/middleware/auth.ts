@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import type { AuthPayload } from "../types/mvno.js";
+import type { AuthPayload } from "../types/auth.js";
 
 export const JWT_SECRET = process.env.JWT_SECRET ?? "vink-mvno-dev-secret-change-in-prod";
 export const JWT_EXPIRES = "8h";
