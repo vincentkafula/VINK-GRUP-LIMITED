@@ -601,6 +601,7 @@ CREATE INDEX IF NOT EXISTS idx_app_releases_active ON app_releases(active, creat
 -- update-check behavior is unchanged by this addition.
 ALTER TABLE app_releases ADD COLUMN IF NOT EXISTS product TEXT NOT NULL DEFAULT 'taxi_terminal';
 
+
 -- ── Retail POS: Merchants, Terminals, Transactions, MDM ──────────────────────
 -- A genuinely separate system from the taxi AFC terminals above --
 -- different hardware (vendor unconfirmed as of this writing, no real
@@ -612,46 +613,78 @@ ALTER TABLE app_releases ADD COLUMN IF NOT EXISTS product TEXT NOT NULL DEFAULT 
 -- banking system the taxi model does, the same way: merchant.owner_id
 -- references the same real users(id) table used everywhere else in
 -- this schema, not a separate parallel account system.
+CREATE TABLE IF NOT EXISTS retail_merchants (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id        UUID NOT NULL REFERENCES users(id), -- the real VINK banking-system account this merchant settles to
+  business_name   TEXT NOT NULL,
+  registered_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
 
+CREATE TABLE IF NOT EXISTS retail_terminals (
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  serial            TEXT UNIQUE NOT NULL,
+  model             TEXT NOT NULL DEFAULT 'Retail POS',
+  api_key_hash      TEXT NOT NULL,
+  status            TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active','inactive','revoked')),
+  merchant_id       UUID REFERENCES retail_merchants(id), -- nullable, same reasoning terminals.investor_id etc. use: a device can be registered before it's assigned
+  app_version       TEXT,
+  battery_pct       INTEGER,
+  last_heartbeat_at TIMESTAMPTZ,
+  last_seen_at      TIMESTAMPTZ,
+  registered_by     TEXT,
+  registered_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_retail_terminals_status ON retail_terminals(status);
+CREATE INDEX IF NOT EXISTS idx_retail_terminals_merchant ON retail_terminals(merchant_id);
 
 -- Percentage-based fee, unlike terminal_taps' flat R1.00 -- vink_fee_amount
 -- and merchant_settlement are both stored explicitly at the moment of
 -- the transaction (not just the rate), same discipline terminal_taps'
 -- own comment explains: a later change to VINK_FEE_PCT shouldn't
 -- retroactively change historical records.
+CREATE TABLE IF NOT EXISTS retail_transactions (
+  id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  terminal_id           UUID NOT NULL REFERENCES retail_terminals(id),
+  masked_pan            TEXT,
+  scheme                TEXT,
+  amount                NUMERIC(12,2) NOT NULL,
+  currency              TEXT NOT NULL DEFAULT 'ZAR',
+  cardholder_verification TEXT,
+  emv_cryptogram_ref    TEXT,
+  status                TEXT NOT NULL DEFAULT 'received' CHECK (status IN ('received','processing','confirmed','declined')),
+  vink_fee_pct          NUMERIC(5,2) NOT NULL,
+  vink_fee_amount       NUMERIC(10,2) NOT NULL,
+  merchant_settlement   NUMERIC(10,2) NOT NULL,
+  received_at           TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_retail_transactions_terminal ON retail_transactions(terminal_id);
 
 -- MDM history for retail terminals, mirroring device_status_reports /
 -- device_faults exactly -- deliberately separate tables rather than
 -- reusing the taxi ones directly, since retail_terminals and terminals
 -- are different tables with different FKs.
+CREATE TABLE IF NOT EXISTS retail_device_status_reports (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  terminal_id   UUID NOT NULL REFERENCES retail_terminals(id),
+  app_version   TEXT,
+  battery_pct   INTEGER,
+  reported_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_retail_device_status_reports_terminal ON retail_device_status_reports(terminal_id, reported_at DESC);
 
-
--- ── Till/POS System: Products, Sales, Line Items ──────────────────────────────
--- A genuinely separate, broader system from retail_terminals above
--- (which is card-payment-acceptance only) -- a till handles the full
--- checkout flow: a product catalog, a sale that can contain multiple
--- items, and a payment that's either cash (no VINK fee, the full
--- amount is the merchant's) or card (2.5% VINK fee, same
--- retailRevenueSplitService.ts calculation already proven for retail
--- POS, reused here rather than reimplemented). Connects to the same
--- real banking system the same way every other role in this schema
--- does: merchant_id references retail_merchants, which already
--- references the real users(id) banking account.
-
-
--- vink_fee_amount and merchant_settlement are 0/full-amount for cash,
--- and the real 2.5%-derived split for card -- stored explicitly either
--- way at the moment of the sale, same discipline every other
--- transaction table in this schema already uses (a later fee-policy
--- change shouldn't retroactively alter historical records).
-
-
--- MDM history for till terminals, mirroring retail_device_status_reports
--- / retail_device_faults exactly, same reasoning: a status heartbeat
--- and a fault report are different event types, kept as their own
--- tables per device fleet rather than one shared table across three
--- different terminal types with different FKs.
-
+CREATE TABLE IF NOT EXISTS retail_device_faults (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  terminal_id   UUID NOT NULL REFERENCES retail_terminals(id),
+  fault_code    TEXT NOT NULL,
+  message       TEXT,
+  severity      TEXT NOT NULL DEFAULT 'warning' CHECK (severity IN ('info','warning','critical')),
+  resolved      BOOLEAN NOT NULL DEFAULT false,
+  resolved_at   TIMESTAMPTZ,
+  resolved_by   TEXT,
+  reported_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_retail_device_faults_terminal ON retail_device_faults(terminal_id, reported_at DESC);
+CREATE INDEX IF NOT EXISTS idx_retail_device_faults_unresolved ON retail_device_faults(resolved) WHERE resolved = false;
 
 -- ── RICA (SIM Registration) Compliance ────────────────────────────────────────
 -- South Africa's mandatory SIM registration law (RICA Act 70 of 2002,
