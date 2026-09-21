@@ -603,6 +603,82 @@ CREATE INDEX IF NOT EXISTS idx_terminal_taps_status ON terminal_taps(status);
 ALTER TABLE terminal_taps ADD COLUMN IF NOT EXISTS idempotency_key TEXT;
 CREATE UNIQUE INDEX IF NOT EXISTS idx_terminal_taps_idempotency ON terminal_taps(terminal_id, idempotency_key) WHERE idempotency_key IS NOT NULL;
 
+-- ── Ledger (Phase 3, Stage 1 of plans/architecture/03-migration-plan.md) ─────
+-- Design: plans/architecture/01-ledger-design.md. This is the additive
+-- stage only -- these tables exist and are unit-tested in isolation via
+-- ledgerService.ts, but nothing in the running app reads from or writes
+-- to them yet. bankAccounts.ts/bankCards.ts still serve all live traffic
+-- from the in-memory store, unchanged. Zero behavior change from adding
+-- this migration.
+--
+-- Money is integer minor units (BIGINT cents), never a float or a
+-- NUMERIC with implied decimal handling in application code -- this is
+-- the fix for the Phase 0 finding that the in-memory store computes
+-- balances as floating-point Rand amounts.
+
+CREATE TABLE IF NOT EXISTS accounts (
+  id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id             UUID NOT NULL REFERENCES users(id),
+  account_number      TEXT NOT NULL UNIQUE,
+  iban                TEXT UNIQUE,
+  account_type        TEXT NOT NULL CHECK (account_type IN ('current','savings','business','wallet','treasury')),
+  currency            TEXT NOT NULL CHECK (currency IN ('ZAR','USD','EUR','GBP','NGN','KES')),
+  status              TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active','frozen','closed','pending_kyc')),
+  created_at          TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_accounts_user ON accounts(user_id);
+
+CREATE TABLE IF NOT EXISTS ledger_transactions (
+  id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  idempotency_key     TEXT NOT NULL,
+  transaction_type    TEXT NOT NULL CHECK (transaction_type IN ('p2p_transfer','card_payment','afc_settlement','fee','refund','adjustment')),
+  status              TEXT NOT NULL DEFAULT 'posted' CHECK (status IN ('posted','reversed')),
+  initiated_by        UUID REFERENCES users(id),
+  reference           TEXT,
+  created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
+  posted_at           TIMESTAMPTZ
+);
+-- Idempotency-Key is a required header on every ledger-writing endpoint
+-- (per 04-openapi-ledger.yaml) -- globally unique, unlike terminal_taps'
+-- per-terminal scoping, since a transaction isn't tied to one device.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_ledger_transactions_idempotency ON ledger_transactions(idempotency_key);
+
+CREATE TABLE IF NOT EXISTS ledger_entries (
+  id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  transaction_id      UUID NOT NULL REFERENCES ledger_transactions(id),
+  account_id          UUID NOT NULL REFERENCES accounts(id),
+  amount_cents        BIGINT NOT NULL CHECK (amount_cents != 0), -- positive = credit, negative = debit; never zero, a no-op entry is a bug
+  currency            TEXT NOT NULL CHECK (currency IN ('ZAR','USD','EUR','GBP','NGN','KES')),
+  sequence_no         BIGINT NOT NULL, -- monotonic per account, assigned by the Ledger Service, used for cached-balance replay
+  created_at          TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_ledger_entries_account ON ledger_entries(account_id, sequence_no);
+CREATE INDEX IF NOT EXISTS idx_ledger_entries_transaction ON ledger_entries(transaction_id);
+-- Enforces "ledger_entries has exactly one writer" (02-c4-diagrams.md) at
+-- the database level, not just as an application convention -- belt and
+-- suspenders alongside ledgerService.ts being the only module that ever
+-- runs an INSERT here. See ledgerAppUser below for the REVOKE that makes
+-- this a hard guarantee once the app connects as a role other than the
+-- Postgres superuser (documented, not yet wired into deploy -- see
+-- ledgerService.ts's own header comment).
+-- REVOKE UPDATE, DELETE ON ledger_entries FROM <app_role>;
+
+CREATE TABLE IF NOT EXISTS account_balances (
+  account_id          UUID PRIMARY KEY REFERENCES accounts(id),
+  balance_cents        BIGINT NOT NULL DEFAULT 0,
+  available_cents      BIGINT NOT NULL DEFAULT 0,
+  pending_cents         BIGINT NOT NULL DEFAULT 0,
+  last_entry_at        TIMESTAMPTZ,
+  last_entry_seq        BIGINT NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS idempotency_keys (
+  key                  TEXT PRIMARY KEY,
+  scope                TEXT NOT NULL, -- e.g. 'p2p_transfer' -- namespaces keys so two different endpoints can't collide on a coincidentally-reused client-generated value
+  resulted_in_transaction_id UUID REFERENCES ledger_transactions(id),
+  created_at           TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 -- ── GPS Route Assignment, Geofence Violations, Driver Fine Ledger ────────────
 -- Confirmed model (2026-08-18): an association defines a route as an
 -- ordered set of waypoints (a path, not a single circular zone -- this

@@ -28,8 +28,22 @@ jobs:
       - run: npm run test
 
   backend:
-    name: Backend (typecheck)
+    name: Backend (typecheck, test)
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: manshya
+          POSTGRES_PASSWORD: ci_test_password
+          POSTGRES_DB: manshya_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U manshya -d manshya_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -41,6 +55,12 @@ jobs:
         run: npm ci
       - working-directory: server
         run: npm run lint
+      - name: Run tests (including Postgres-backed integration tests)
+        working-directory: server
+        run: npm run test
+        env:
+          DATABASE_URL: postgresql://manshya:ci_test_password@localhost:5432/manshya_test
+          JWT_SECRET: ci-test-only-not-a-real-secret
 
   dependency-audit:
     name: Dependency vulnerability scan
