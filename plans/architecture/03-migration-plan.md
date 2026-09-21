@@ -86,6 +86,42 @@ retires the old one.
   real Postgres persistence and isn't part of the gap this migration
   addresses.
 
+## Addendum: a real complication found while attempting the AFC connection
+
+Stage 3 (see `03-migration-plan.md`) describes extending
+`terminalRouter.ts`'s `/tap` handler to also post into the general
+ledger, connecting AFC revenue to personal/business banking. Attempting
+this surfaced something this document didn't originally account for:
+**`terminals.owner_id`/`investor_id`/`driver_id` reference the real
+Postgres `users` table, but every `accounts` row created by the ledger
+shadow-write (`ledgerShadowWrite.ts`) is owned by a placeholder user
+bridged from `bankDb` (the in-memory banking store) — a completely
+separate population with no relationship to the real `users.id` values
+terminal ownership actually points at.**
+
+Concretely: to credit an owner or investor for a settled tap, the
+Ledger Service needs an `accounts` row keyed to their real `users.id`.
+No such account exists yet, and nothing in this codebase currently
+creates one — `ensureLedgerAccount`'s bridging logic was built for
+`bankDb` accounts specifically, not for arbitrary real `users.id`
+values that have never had a bank account at all.
+
+This isn't a blocker on the ledger design itself — `ledger_entries`
+doesn't care which identity system an account belongs to — but it is
+a genuine open question that needs its own answer before the AFC
+connection can be built:
+
+- Does every terminal owner/investor get a ledger account created for
+  them automatically (analogous to the backfill job, but for real
+  `users.id` rather than `bankDb` accounts)?
+- Or does this wait for the identity bridging between `bankDb` and the
+  real `users` table to be resolved properly first (noted as
+  explicitly out of scope in `ledgerShadowWrite.ts`'s own comments)?
+
+Flagging this here rather than deciding it inside an implementation
+PR, since it's a real design choice with its own tradeoffs, not a
+detail to improvise past.
+
 ## Rollback
 
 Each stage is independently revertible without data loss, because the
