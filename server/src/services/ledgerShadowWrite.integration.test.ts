@@ -123,4 +123,15 @@ describe.skipIf(!hasDatabase)("ledgerShadowWrite (integration, requires DATABASE
 
     testAccount.balance = originalBalance; // restore for any later test in this file
   });
+
+  it("findLedgerAccountId returns null for an account that's never been shadow-written to (read cutover's fallback case)", async () => {
+    const neverWrittenAccountNumber = `VNK-NEVERWRITTEN-${Date.now()}-${Math.random()}`;
+    const result = await shadow.findLedgerAccountId(neverWrittenAccountNumber);
+    expect(result).toBeNull();
+  });
+
+  it("findLedgerAccountId finds the real ledger account once shadow-written (read cutover's normal case)", async () => {
+    const id = await shadow.findLedgerAccountId(testAccount.accountNumber);
+    expect(id).not.toBeNull();
+  });
 });

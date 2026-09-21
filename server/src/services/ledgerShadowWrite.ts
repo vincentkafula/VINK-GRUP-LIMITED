@@ -109,6 +109,18 @@ async function ensureLedgerUser(bankUserId: string, email: string, displayName: 
 
 const accountIdCache = new Map<string, string>();
 
+/** Read-only lookup by account number -- unlike ensureLedgerAccount,
+ *  never creates anything. Used by the Stage 3 read cutover in
+ *  bankAccounts.ts: if an account has never been shadow-written to (or
+ *  backfilled), there's genuinely no ledger data for it yet, and the
+ *  caller should fall back to the in-memory balance rather than get a
+ *  freshly-created, misleadingly-zero ledger account. */
+export async function findLedgerAccountId(accountNumber: string): Promise<string | null> {
+  if (!hasDb || !pool) return null;
+  const { rows } = await pool.query(`SELECT id FROM accounts WHERE account_number = $1`, [accountNumber]);
+  return rows.length > 0 ? rows[0].id : null;
+}
+
 /** Lazily creates (or finds) the ledger `accounts` row corresponding to
  *  an in-memory BankAccount, keyed by account_number so repeated calls
  *  for the same account are idempotent. */
