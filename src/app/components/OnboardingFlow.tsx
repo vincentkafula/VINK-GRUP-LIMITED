@@ -26,7 +26,6 @@ const PRODUCTS = [
   { id: "everyday", label: "Everyday Account", desc: "Zero-fee transactional account with free debit card", icon: "💳", popular: true },
   { id: "savings", label: "Savings Account", desc: "Earn 6.5% p.a. interest on your savings", icon: "🏦", popular: false },
   { id: "invest", label: "Investment Account", desc: "Unit trusts, fixed deposits, and tax-free savings", icon: "📈", popular: false },
-  { id: "sim", label: "MANSHYA SIM Card", desc: "One SIM for South Africa and 80+ countries", icon: "📱", popular: false },
 ];
 
 export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {

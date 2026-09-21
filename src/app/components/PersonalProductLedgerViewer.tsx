@@ -6,9 +6,9 @@ import { Footer } from "./Footer";
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  initialCategory: Exclude<ProductCategory, "account" | "sim">;
+  initialCategory: Exclude<ProductCategory, "account">;
   onNavigateToAccount: () => void;
-  onApply: (category: Exclude<ProductCategory, "account" | "sim">) => void;
+  onApply: (category: Exclude<ProductCategory, "account">) => void;
 }
 
 // "Account" is handled by its own dedicated page (PersonalAccountViewer) with
@@ -29,7 +29,6 @@ const PAGE_COPY: Record<ProductCategory, { heading: string; scaleNote: string; d
   loan:       { heading: "All personal loans",       scaleNote: "Application / admin fee shown on a shared scale, R0 → R415",   detailsCta: "See loan details", heroEyebrow: "Loans", heroTitle: "Loans that move\nas fast as you do.", heroSubtitle: "Quick approvals and clear terms — borrow with confidence, on your timeline." },
   invest:     { heading: "All investment products",  scaleNote: "Entry cost or rate varies by product type",                    detailsCta: "See investment details", heroEyebrow: "Invest", heroTitle: "Grow your wealth\nwith confidence.", heroSubtitle: "Investment products for every goal, from your first fund to long-term wealth." },
   rewards:    { heading: "All rewards cards",        scaleNote: "Monthly card fee shown on a shared scale, R0 → R415",          detailsCta: "See card details", heroEyebrow: "Rewards", heroTitle: "Get more out of\neveryday banking.", heroSubtitle: "Earn on every swipe and unlock offers built around how you already spend." },
-  sim: { heading: "", scaleNote: "", detailsCta: "", heroEyebrow: "", heroTitle: "", heroSubtitle: "" },
 };
 
 function parsePrice(price: string): number | null {
@@ -108,7 +107,7 @@ export function PersonalProductLedgerViewer({ isOpen, onClose, initialCategory, 
         return parsed.length ? Math.max(...parsed) : null;
       })()
     : null;
-  const handleApply = () => { onClose(); onApply(category as Exclude<ProductCategory, "account" | "sim">); };
+  const handleApply = () => { onClose(); onApply(category as Exclude<ProductCategory, "account">); };
 
   return (
     <div className="pav-root fixed inset-0 z-50 overflow-y-auto">

@@ -29,9 +29,9 @@ interface FleetSummary {
 
 const API_BASE = import.meta.env.VITE_API_URL || "https://vink-grup-limited-production.up.railway.app";
 
-interface Props { isOpen: boolean; onClose: () => void; onOpenTerminalManagement?: () => void; onOpenRetailTillManagement?: () => void }
+interface Props { isOpen: boolean; onClose: () => void; onOpenTerminalManagement?: () => void }
 
-export function ControlCentreViewer({ isOpen, onClose, onOpenTerminalManagement, onOpenRetailTillManagement }: Props) {
+export function ControlCentreViewer({ isOpen, onClose, onOpenTerminalManagement }: Props) {
   const [fleets, setFleets] = useState<FleetSummary[]>([]);
   const [recentActivity, setRecentActivity] = useState<{ label: string; icon: any; color: string; count: number }[]>([]);
   const [loading, setLoading] = useState(false);
@@ -161,11 +161,6 @@ export function ControlCentreViewer({ isOpen, onClose, onOpenTerminalManagement,
             {onOpenTerminalManagement && (
               <button onClick={onOpenTerminalManagement} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-[12.5px] font-bold text-gray-700 hover:bg-gray-50">
                 Manage taxi terminals →
-              </button>
-            )}
-            {onOpenRetailTillManagement && (
-              <button onClick={onOpenRetailTillManagement} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-[12.5px] font-bold text-gray-700 hover:bg-gray-50">
-                Manage retail &amp; till →
               </button>
             )}
           </div>

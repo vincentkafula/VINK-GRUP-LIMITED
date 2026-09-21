@@ -22,16 +22,12 @@ const PostLoginHome               = lazy(() => import("./components/PostLoginHom
 const UserProfileViewer           = lazy(() => import("./components/UserProfileViewer").then(m => ({ default: m.UserProfileViewer })));
 const OwnersDashboard             = lazy(() => import("./components/dashboards/OwnersDashboard").then(m => ({ default: m.OwnersDashboard })));
 const InvestorsDashboard          = lazy(() => import("./components/dashboards/InvestorsDashboard").then(m => ({ default: m.InvestorsDashboard })));
-const MarshallDashboard           = lazy(() => import("./components/dashboards/MarshallDashboard").then(m => ({ default: m.MarshallDashboard })));
-const MerchantDashboard           = lazy(() => import("./components/dashboards/MerchantDashboard").then(m => ({ default: m.MerchantDashboard })));
-const AuthorityDashboard          = lazy(() => import("./components/dashboards/AuthorityDashboard").then(m => ({ default: m.AuthorityDashboard })));
 const SuperAdminDashboard         = lazy(() => import("./components/dashboards/SuperAdminDashboard").then(m => ({ default: m.SuperAdminDashboard })));
 const BankingDashboard            = lazy(() => import("./components/BankingDashboard").then(m => ({ default: m.BankingDashboard })));
 const DriveDashboardViewer        = lazy(() => import("./components/DriveDashboardViewer").then(m => ({ default: m.DriveDashboardViewer })));
 const OwnerFleetDashboardViewer   = lazy(() => import("./components/OwnerFleetDashboardViewer").then(m => ({ default: m.OwnerFleetDashboardViewer })));
 const TaxiAssociationDashboardViewer = lazy(() => import("./components/TaxiAssociationDashboardViewer").then(m => ({ default: m.TaxiAssociationDashboardViewer })));
 const TerminalManagementViewer = lazy(() => import("./components/TerminalManagementViewer").then(m => ({ default: m.TerminalManagementViewer })));
-const RetailTillManagementViewer = lazy(() => import("./components/RetailTillManagementViewer").then(m => ({ default: m.RetailTillManagementViewer })));
 const ControlCentreViewer = lazy(() => import("./components/ControlCentreViewer").then(m => ({ default: m.ControlCentreViewer })));
 const InvestorFleetDashboardViewer = lazy(() => import("./components/InvestorFleetDashboardViewer").then(m => ({ default: m.InvestorFleetDashboardViewer })));
 const ManagementPanelViewer       = lazy(() => import("./components/ManagementPanelViewer").then(m => ({ default: m.ManagementPanelViewer })));
@@ -47,7 +43,6 @@ const LoanViewer                  = lazy(() => import("./components/LoanViewer")
 const InvestViewer                = lazy(() => import("./components/InvestViewer").then(m => ({ default: m.InvestViewer })));
 const RewardsViewer               = lazy(() => import("./components/RewardsViewer").then(m => ({ default: m.RewardsViewer })));
 const ServiceApplicationViewer    = lazy(() => import("./components/ServiceApplicationViewer").then(m => ({ default: m.ServiceApplicationViewer })));
-const VINKSIMApplicationViewer    = lazy(() => import("./components/VINKSIMApplicationViewer").then(m => ({ default: m.VINKSIMApplicationViewer })));
 const ProductSelectorViewer       = lazy(() => import("./components/ProductSelectorViewer").then(m => ({ default: m.ProductSelectorViewer })));
 const StartMyBusinessViewer       = lazy(() => import("./components/StartMyBusinessViewer").then(m => ({ default: m.StartMyBusinessViewer })));
 const BusinessProductLedgerViewer = lazy(() => import("./components/BusinessProductLedgerViewer").then(m => ({ default: m.BusinessProductLedgerViewer })));
@@ -61,9 +56,7 @@ const CorporateSocialResponsibilityViewer = lazy(() => import("./components/Corp
 const InvestorRelationsViewer     = lazy(() => import("./components/InvestorRelationsViewer").then(m => ({ default: m.InvestorRelationsViewer })));
 const GlobalBankingDashboard      = lazy(() => import("./components/GlobalBankingDashboard").then(m => ({ default: m.GlobalBankingDashboard })));
 const FinancialReportsViewer      = lazy(() => import("./components/FinancialReportsViewer").then(m => ({ default: m.FinancialReportsViewer })));
-const FoodDeliveryApp             = lazy(() => import("./components/FoodDeliveryApp").then(m => ({ default: m.FoodDeliveryApp })));
 const AdminDashboard              = lazy(() => import("./components/AdminDashboard").then(m => ({ default: m.AdminDashboard })));
-const GlobalSIMDashboard          = lazy(() => import("./components/GlobalSIMDashboard").then(m => ({ default: m.GlobalSIMDashboard })));
 const CardNetworkDashboard        = lazy(() => import("./components/CardNetworkDashboard").then(m => ({ default: m.CardNetworkDashboard })));
 const AFCManagementDashboard      = lazy(() => import("./components/AFCManagementDashboard").then(m => ({ default: m.AFCManagementDashboard })));
 const AdminApplicationsViewer     = lazy(() => import("./components/AdminApplicationsViewer").then(m => ({ default: m.AdminApplicationsViewer })));
@@ -107,16 +100,12 @@ export default function App() {
   const [showUserProfile, setShowUserProfile]                = useState(false);
   const [showOwners, setShowOwners]                         = useState(false);
   const [showInvestors, setShowInvestors]                   = useState(false);
-  const [showMarshall, setShowMarshall]                     = useState(false);
-  const [showMerchant, setShowMerchant]                     = useState(false);
-  const [showAuthority, setShowAuthority]                   = useState(false);
   const [showSuperAdmin, setShowSuperAdmin]                 = useState(false);
   const [showBanking, setShowBanking]                       = useState(false);
   const [showDriveDashboard, setShowDriveDashboard]          = useState(false);
   const [showOwnerDashboard, setShowOwnerDashboard]          = useState(false);
   const [showTaxiAssociationDashboard, setShowTaxiAssociationDashboard] = useState(false);
   const [showTerminalManagement, setShowTerminalManagement] = useState(false);
-  const [showRetailTillManagement, setShowRetailTillManagement] = useState(false);
   const [showControlCentre, setShowControlCentre] = useState(false);
   const [showInvestorDashboard, setShowInvestorDashboard] = useState(false);
   const [showManagementPanel, setShowManagementPanel]       = useState(false);
@@ -146,12 +135,11 @@ export default function App() {
   const [showRewards, setShowRewards]                       = useState(false);
   const [showInvestApp, setShowInvestApp]                   = useState(false);
   const [showRewardsApp, setShowRewardsApp]                 = useState(false);
-  const [showSIMServiceApp, setShowSIMServiceApp]           = useState(false);
   const [showAccountApp, setShowAccountApp]                 = useState(false);
 
   // ── Product selector ───────────────────────────────────────────────────────
   const [selectorOpen, setSelectorOpen]                     = useState(false);
-  const [selectorCategory, setSelectorCategory]             = useState<"account"|"creditCard"|"loan"|"invest"|"rewards"|"sim"|null>(null);
+  const [selectorCategory, setSelectorCategory]             = useState<"account"|"creditCard"|"loan"|"invest"|"rewards"|null>(null);
 
   // ── Business ──────────────────────────────────────────────────────────────
   const [showStartBusiness, setShowStartBusiness]           = useState(false);
@@ -172,11 +160,9 @@ export default function App() {
   // ── Operations / Admin ────────────────────────────────────────────────────
   const [showGlobalBanking, setShowGlobalBanking]           = useState(false);
   const [showFinancialReports, setShowFinancialReports]     = useState(false);
-  const [showFoodDelivery, setShowFoodDelivery]             = useState(false);
   const [showAdminDashboard, setShowAdminDashboard]         = useState(false);
   const [showAFCDashboard, setShowAFCDashboard]             = useState(false);
   const [showAdminApps, setShowAdminApps]                   = useState(false);
-  const [showGlobalSIM, setShowGlobalSIM]                   = useState(false);
   const [showCardNetwork, setShowCardNetwork]               = useState(false);
   const [showInvestorRelations, setShowInvestorRelations]   = useState(false);
 
@@ -216,8 +202,8 @@ export default function App() {
     const stateMap: Record<string, boolean> = {
       postLogin: showPostLogin,
       banking: showBanking,
-      owners: showOwners, investors: showInvestors, marshall: showMarshall,
-      merchant: showMerchant, authority: showAuthority, superAdmin: showSuperAdmin,
+      owners: showOwners, investors: showInvestors,
+      superAdmin: showSuperAdmin,
       appLauncher: showAppLauncher, afcApp: showAFCApp,
     };
     return stateMap[k] ?? false;
@@ -237,9 +223,6 @@ export default function App() {
       else if (id === "cardnetwork")       { mount("cardNetwork");      setShowCardNetwork(true); }
       else if (id === "owner")             { mount("owners");           setShowOwners(true); }
       else if (id === "investor")          { mount("investors");        setShowInvestors(true); }
-      else if (id === "marshall")          { mount("marshall");         setShowMarshall(true); }
-      else if (id === "merchant")          { mount("merchant");         setShowMerchant(true); }
-      else if (id === "authority")         { mount("authority");        setShowAuthority(true); }
       else if (id === "superadmin")        { mount("superAdmin");       setShowSuperAdmin(true); }
       else if (id === "devices")           { mount("afcDashboard");     setShowAFCDashboard(true); }
       else if (id === "finance")           { mount("financialReports"); setShowFinancialReports(true); }
@@ -260,7 +243,6 @@ export default function App() {
         case "profile":      mount("userProfile");     setShowUserProfile(true);      break;
         // Transport & Devices
         case "device":       mount("afcApp");           setShowAFCApp(true);           break;
-        case "restaurant":   mount("foodDelivery");     setShowFoodDelivery(true);     break;
         // Banking & Payments
         case "account":      setVinkBankingAppInitialScreen(undefined); mount("vinkBankingApp"); setShowVinkBankingApp(true); break;
         case "managementPanel": mount("managementPanel"); setShowManagementPanel(true); pushRoute("/management-panel"); break;
@@ -388,7 +370,6 @@ export default function App() {
       if (item === "Loan")              { mount("personalAccount"); mount("personalLedger"); setLedgerCategory("loan"); setShowPersonalLedger(true); return; }
       if (item === "Invest")            { mount("personalAccount"); mount("personalLedger"); setLedgerCategory("invest"); setShowPersonalLedger(true); return; }
       if (item === "Rewards")           { mount("personalAccount"); mount("personalLedger"); setLedgerCategory("rewards"); setShowPersonalLedger(true); return; }
-      if (item === "SIM")               return openSelector("sim");
       // Business — Header.tsx's BUSINESS_SUB_NAV sends these exact bare labels
       if (item === "Start My Business") { mount("startBusiness");      setShowStartBusiness(true); return; }
       if (item === "Accounts")          { mount("bizAccountSelector"); setShowBusinessAccountSelector(true); return; }
@@ -410,7 +391,7 @@ export default function App() {
     setShowPersonalAccount(false); setShowPersonalLedger(false);
     setShowCreditCard(false); setShowCreditCardApp(false); setShowLoan(false); setShowInvest(false);
     setShowRewards(false); setShowInvestApp(false);
-    setShowRewardsApp(false); setShowSIMServiceApp(false); setShowAccountApp(false);
+    setShowRewardsApp(false); setShowAccountApp(false);
     setSelectorOpen(false);
     setShowStartBusiness(false); setShowBusinessAccountSelector(false); setShowBusinessAccounts(false);
     setShowBusinessLedger(false); setShowManageBusiness(false);
@@ -426,7 +407,7 @@ export default function App() {
   const activeSiteSection: "Personal" | "Business" | "Corporate" | null =
     (showPersonalLanding || showPersonalAccount || showPersonalLedger || showCreditCard || showCreditCardApp ||
      showLoan || showInvest || showRewards || showInvestApp || showRewardsApp ||
-     showSIMServiceApp || showAccountApp) ? "Personal" :
+     showAccountApp) ? "Personal" :
     (showStartBusiness || showBusinessAccountSelector || showBusinessAccounts || showBusinessLedger ||
      showBusinessLoanApp || showManageBusiness)
       ? "Business" :
@@ -517,7 +498,6 @@ export default function App() {
       setShowVinkMobileApp(false);
       if      (id === "banking")     { setVinkBankingAppInitialScreen(undefined); mount("vinkBankingApp");  setShowVinkBankingApp(true); }
       else if (id === "afc")         { mount("afcApp");          setShowAFCApp(true); }
-      else if (id === "food")        { mount("foodDelivery");    setShowFoodDelivery(true); }
     });
   };
 
@@ -590,7 +570,6 @@ export default function App() {
     startTransition(() => {
       if (type === "invest")     { mount("investApp");      setShowInvestApp(true); }
       else if (type === "rewards"){ mount("rewardsApp");    setShowRewardsApp(true); }
-      else if (type === "sim")   { mount("simApp");         setShowSIMServiceApp(true); }
       else if (type === "account"){ mount("accountApp");    setShowAccountApp(true); }
       else if (type === "creditCard") { mount("creditCardApp"); setShowCreditCardApp(true); }
       else if (type === "loan")  { mount("bizLoanApp");     setShowBusinessLoanApp(true); }
@@ -651,14 +630,10 @@ export default function App() {
       {has("userProfile")     && <Suspense fallback={null}><UserProfileViewer      isOpen={showUserProfile}     onClose={() => setShowUserProfile(false)}  onSignOut={() => { setShowUserProfile(false); mount("postLogin"); setShowPostLogin(true); }} /></Suspense>}
       {has("owners")          && <Suspense fallback={null}><OwnersDashboard        isOpen={showOwners}          onClose={() => setShowOwners(false)} /></Suspense>}
       {has("investors")       && <Suspense fallback={null}><InvestorsDashboard     isOpen={showInvestors}       onClose={() => setShowInvestors(false)} /></Suspense>}
-      {has("marshall")        && <Suspense fallback={null}><MarshallDashboard      isOpen={showMarshall}        onClose={() => setShowMarshall(false)} /></Suspense>}
-      {has("merchant")        && <Suspense fallback={null}><MerchantDashboard      isOpen={showMerchant}        onClose={() => setShowMerchant(false)} /></Suspense>}
-      {has("authority")       && <Suspense fallback={null}><AuthorityDashboard     isOpen={showAuthority}       onClose={() => setShowAuthority(false)} /></Suspense>}
       {has("superAdmin")      && <Suspense fallback={null}><SuperAdminDashboard    isOpen={showSuperAdmin}      onClose={() => setShowSuperAdmin(false)} /></Suspense>}
-      {has("banking")         && <Suspense fallback={null}><BankingDashboard       isOpen={showBanking}         onClose={() => setShowBanking(false)} onOpenDriveDashboard={() => { mount("driveDashboard"); setShowDriveDashboard(true); }} onOpenOwnerDashboard={() => { mount("ownerDashboard"); setShowOwnerDashboard(true); }} onOpenTaxiAssociationDashboard={() => { mount("taxiAssociationDashboard"); setShowTaxiAssociationDashboard(true); }} onOpenInvestorDashboard={() => { mount("investorDashboard"); setShowInvestorDashboard(true); }} onOpenTerminalManagement={() => { mount("terminalManagement"); setShowTerminalManagement(true); }} onOpenRetailTillManagement={() => { mount("retailTillManagement"); setShowRetailTillManagement(true); }} onOpenControlCentre={() => { mount("controlCentre"); setShowControlCentre(true); }} onOpenAppLauncher={() => { mount("appLauncher"); setShowAppLauncher(true); }} /></Suspense>}
-      {has("controlCentre") && <Suspense fallback={null}><ControlCentreViewer isOpen={showControlCentre} onClose={() => setShowControlCentre(false)} onOpenTerminalManagement={() => { mount("terminalManagement"); setShowControlCentre(false); setShowTerminalManagement(true); }} onOpenRetailTillManagement={() => { mount("retailTillManagement"); setShowControlCentre(false); setShowRetailTillManagement(true); }} /></Suspense>}
+      {has("banking")         && <Suspense fallback={null}><BankingDashboard       isOpen={showBanking}         onClose={() => setShowBanking(false)} onOpenDriveDashboard={() => { mount("driveDashboard"); setShowDriveDashboard(true); }} onOpenOwnerDashboard={() => { mount("ownerDashboard"); setShowOwnerDashboard(true); }} onOpenTaxiAssociationDashboard={() => { mount("taxiAssociationDashboard"); setShowTaxiAssociationDashboard(true); }} onOpenInvestorDashboard={() => { mount("investorDashboard"); setShowInvestorDashboard(true); }} onOpenTerminalManagement={() => { mount("terminalManagement"); setShowTerminalManagement(true); }} onOpenControlCentre={() => { mount("controlCentre"); setShowControlCentre(true); }} onOpenAppLauncher={() => { mount("appLauncher"); setShowAppLauncher(true); }} /></Suspense>}
+      {has("controlCentre") && <Suspense fallback={null}><ControlCentreViewer isOpen={showControlCentre} onClose={() => setShowControlCentre(false)} onOpenTerminalManagement={() => { mount("terminalManagement"); setShowControlCentre(false); setShowTerminalManagement(true); }} /></Suspense>}
       {has("terminalManagement") && <Suspense fallback={null}><TerminalManagementViewer isOpen={showTerminalManagement} onClose={() => setShowTerminalManagement(false)} /></Suspense>}
-      {has("retailTillManagement") && <Suspense fallback={null}><RetailTillManagementViewer isOpen={showRetailTillManagement} onClose={() => setShowRetailTillManagement(false)} /></Suspense>}
       {has("driveDashboard")  && <Suspense fallback={null}><DriveDashboardViewer   isOpen={showDriveDashboard}  onClose={() => setShowDriveDashboard(false)} driverName={getSession()?.name} /></Suspense>}
       {has("ownerDashboard")  && <Suspense fallback={null}><OwnerFleetDashboardViewer isOpen={showOwnerDashboard} onClose={() => setShowOwnerDashboard(false)} /></Suspense>}
       {has("taxiAssociationDashboard") && <Suspense fallback={null}><TaxiAssociationDashboardViewer isOpen={showTaxiAssociationDashboard} onClose={() => setShowTaxiAssociationDashboard(false)} /></Suspense>}
@@ -678,7 +653,6 @@ export default function App() {
       {has("rewards")         && <Suspense fallback={null}><RewardsViewer          isOpen={showRewards}         onClose={() => setShowRewards(false)} /></Suspense>}
       {has("investApp")       && <Suspense fallback={null}><ServiceApplicationViewer serviceType="invest"   isOpen={showInvestApp}     onClose={() => setShowInvestApp(false)} /></Suspense>}
       {has("rewardsApp")      && <Suspense fallback={null}><ServiceApplicationViewer serviceType="rewards"  isOpen={showRewardsApp}    onClose={() => setShowRewardsApp(false)} /></Suspense>}
-      {has("simApp")          && <Suspense fallback={null}><VINKSIMApplicationViewer isOpen={showSIMServiceApp} onClose={() => setShowSIMServiceApp(false)} /></Suspense>}
       {has("accountApp")      && <Suspense fallback={null}><ServiceApplicationViewer serviceType="account"  isOpen={showAccountApp}    onClose={() => setShowAccountApp(false)} /></Suspense>}
 
       {/* Product selector */}
@@ -700,11 +674,9 @@ export default function App() {
       {/* Operations */}
       {has("globalBanking")      && <Suspense fallback={null}><GlobalBankingDashboard      isOpen={showGlobalBanking}       onClose={() => setShowGlobalBanking(false)} /></Suspense>}
       {has("financialReports")   && <Suspense fallback={null}><FinancialReportsViewer      isOpen={showFinancialReports}    onClose={() => setShowFinancialReports(false)} /></Suspense>}
-      {has("foodDelivery")       && <Suspense fallback={null}><FoodDeliveryApp             isOpen={showFoodDelivery}        onClose={() => setShowFoodDelivery(false)} /></Suspense>}
       {has("adminDashboard")     && <Suspense fallback={null}><AdminDashboard             isOpen={showAdminDashboard}      onClose={() => setShowAdminDashboard(false)} /></Suspense>}
       {has("afcDashboard")       && <Suspense fallback={null}><AFCManagementDashboard     isOpen={showAFCDashboard}        onClose={() => setShowAFCDashboard(false)} /></Suspense>}
       {has("adminApps")          && <Suspense fallback={null}><AdminApplicationsViewer    isOpen={showAdminApps}           onClose={() => setShowAdminApps(false)} /></Suspense>}
-      {has("globalSIM")          && <Suspense fallback={null}><GlobalSIMDashboard         isOpen={showGlobalSIM}           onClose={() => setShowGlobalSIM(false)} /></Suspense>}
       {has("cardNetwork")        && <Suspense fallback={null}><CardNetworkDashboard       isOpen={showCardNetwork}         onClose={() => setShowCardNetwork(false)} /></Suspense>}
       {has("investorRelations")  && <Suspense fallback={null}><InvestorRelationsViewer    isOpen={showInvestorRelations}   onClose={() => setShowInvestorRelations(false)} /></Suspense>}
 
@@ -721,7 +693,6 @@ export default function App() {
           if (id === "afc")       { mount("afcApp");             setShowAFCApp(true); }
           if (id === "revenue")   { mount("revenueDash");        setShowRevenueDashboard(true); }
           if (id === "banking")   { setVinkBankingAppInitialScreen(undefined); mount("vinkBankingApp");     setShowVinkBankingApp(true); }
-          if (id === "food")      { mount("foodDelivery");       setShowFoodDelivery(true); }
         });
       }} /></Suspense>}
 

@@ -1,6 +1,6 @@
 /**
  * Universal 7-step application form for:
- *   invest | rewards | sim
+ *   invest | rewards | account
  *
  * Steps 2–6 (OTP, fingerprint, selfie, documents, director) are shared.
  * Steps 1 and 7 adapt to each service type.
@@ -23,7 +23,7 @@ import { InlineError } from "./ErrorBoundary";
 import { Footer } from "./Footer";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-type ServiceType = "invest" | "rewards" | "sim" | "account";
+type ServiceType = "invest" | "rewards" | "account";
 
 interface Props { isOpen: boolean; onClose: () => void; serviceType: ServiceType; }
 
@@ -55,17 +55,6 @@ const SERVICE_CONFIG: Record<ServiceType, {
     accountPrefix: "MANSHYA-RWD",
     accentColor:   "#FFB84D",
   },
-  sim: {
-    tag:           "MANSHYA MVNO · Cell C Network",
-    title:         "MANSHYA SIM Card Application",
-    subtitle:      "Get your MANSHYA SIM on the Cell C network — affordable data, calls, and SMS bundled with your MANSHYA wallet.",
-    gradient:      "linear-gradient(135deg,#E65100 0%,#F57C00 50%,#FFB74D 100%)",
-    successTitle:  "SIM Card Issued!",
-    successBody:   "Your MANSHYA SIM card will be delivered to your address within 3–5 business days. Your number is active immediately.",
-    accountLabel:  "MSISDN / mobile number",
-    accountPrefix: "MANSHYA-SIM",
-    accentColor:   "#F57C00",
-  },
   account: {
     tag:           "MANSHYA Personal Banking · Accounts",
     title:         "Bank Account Application",
@@ -93,11 +82,6 @@ const INVEST_PRODUCTS = [
   "Fixed Deposit (12 months)", "Fixed Deposit (24 months)",
   "Unit Trust — Money Market", "Unit Trust — Balanced Fund", "Unit Trust — Equity Fund",
   "Retirement Annuity", "Endowment Policy", "Money Market Account",
-];
-const SIM_PLANS = [
-  "Pay-as-you-go (no monthly fee)", "Starter 1GB — R49/month",
-  "Essential 3GB — R99/month", "Plus 10GB — R199/month",
-  "Unlimited Calls & 5GB — R299/month",
 ];
 const REWARD_CARDS = [
   "Balance Transfer Card", "Cash Back Card", "Fuel Rewards Card",
@@ -153,25 +137,6 @@ function Step1Form({
           </Field>
         </>
       )}
-      {type === "sim" && (
-        <>
-          <Field label="Select SIM plan" required full>
-            <select className={selectCls} value={form.plan} onChange={set("plan")}>
-              <option value="">Choose plan…</option>
-              {SIM_PLANS.map(p => <option key={p}>{p}</option>)}
-            </select>
-          </Field>
-          <Field label="Number preference" required>
-            <select className={selectCls} value={form.numPref} onChange={set("numPref")}>
-              <option value="any">Any available number</option>
-              <option value="port">Port my existing number</option>
-            </select>
-          </Field>
-          <Field label="Existing number to port (if applicable)">
-            <input className={inputCls} placeholder="+27 ... (only if porting)" value={form.portNumber} onChange={set("portNumber")} />
-          </Field>
-        </>
-      )}
       {type === "account" && (
         <>
           <Field label="Selected account type" required full>
@@ -208,11 +173,6 @@ const SERVICE_DOCS: Record<ServiceType, { key: string; label: string; required: 
     { key: "id",      label: "Certified copy of SA ID or passport",          required: true },
     { key: "address", label: "Proof of residential address (≤3 months)",     required: true },
     { key: "card",    label: "Photo of existing MANSHYA card (if linking)",     required: false },
-  ],
-  sim: [
-    { key: "id",      label: "Certified copy of SA ID or passport (RICA)",   required: true },
-    { key: "address", label: "Proof of residential address (RICA required)", required: true },
-    { key: "port",    label: "Port authorisation form (if porting number)",  required: false },
   ],
   account: [
     { key: "id",      label: "Certified copy of SA ID or Smart Card",        required: true },

@@ -10,7 +10,7 @@ import vinkLogo from "../../imports/LOGO_FINAL.png";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type ProductCategory =
-  | "invest" | "rewards" | "loan" | "creditCard" | "sim" | "account";
+  | "invest" | "rewards" | "loan" | "creditCard" | "account";
 
 export interface Product {
   id: string;
@@ -67,13 +67,6 @@ export const CATEGORY_CONFIG: Record<ProductCategory, {
     gradient: "linear-gradient(135deg,#0B5C2E 0%,#128A43 55%,#5FC97F 100%)",
     accentColor: "#128A43",
   },
-  sim: {
-    title: "Choose Your MANSHYA SIM Plan",
-    subtitle: "Stay connected on the Cell C network — affordable data, calls, and SMS bundled with your MANSHYA wallet.",
-    tag: "MANSHYA MVNO · Cell C Network",
-    gradient: "linear-gradient(135deg,#E65100 0%,#F57C00 55%,#FFB74D 100%)",
-    accentColor: "#F57C00",
-  },
   account: {
     title: "Choose Your Bank Account",
     subtitle: "From your first account to private banking — find the account that works for your life stage.",
@@ -125,13 +118,6 @@ export const PRODUCTS: Record<ProductCategory, Product[]> = {
     { id: "investment-cc", name: "Elevate Card", tagline: "A card built for upwardly mobile professionals, combining everyday value with premium lifestyle perks.", price: "R170", priceLabel: "/month", emoji: "📈", gradient: "linear-gradient(135deg,#F3E5F5,#EAF7EE)", features: ["1% of every purchase to a linked unit trust", "Quarterly investment statements", "Linked to Allan Gray or Coronation", "Travel insurance included"] },
     { id: "grain-cc", name: "Apex Card", tagline: "A premium card offering elevated rewards, travel benefits, and exclusive access for high-value spenders.", price: "R265", priceLabel: "/month", emoji: "🏆", gradient: "linear-gradient(135deg,#0B5C2E,#FF9900)", featured: true, badge: "Premium Choice", badgeColor: "#F5A623", features: ["Airport lounge access — 1,000+ lounges", "2% cashback on travel · 1% everywhere", "Credit limit up to R500,000", "Dedicated concierge service", "Medical emergency cover"] },
     { id: "animal-cc", name: "Vertex Card", tagline: "Our top-tier personal credit card, delivering elite rewards, concierge-level service, and premium lifestyle privileges.", price: "R415", priceLabel: "/month", emoji: "🦁", gradient: "linear-gradient(135deg,#1A1A1A,#4A4A4A)", features: ["R1,000,000 credit limit", "3% cashback on international spend", "Personal concierge 24/7", "Global medical emergency evacuation", "Earn up to 120,000 ManshyaPoints/year"] },
-  ],
-  sim: [
-    { id: "payg", name: "Pay-As-You-Go", tagline: "No commitment — pay only for what you use", price: "R0", priceLabel: "/month", emoji: "📱", gradient: "linear-gradient(135deg,#E8F5E9,#C8E6C9)", badge: "No Contract", badgeColor: "#10B981", features: ["No monthly fee", "Data from R0.50/MB", "Calls from R0.80/min", "SMS from R0.20 each"] },
-    { id: "starter-1gb", name: "Starter 1GB", tagline: "Perfect for light data users", price: "R49", priceLabel: "/month", emoji: "🌱", gradient: "linear-gradient(135deg,#E3F2FD,#BBDEFB)", features: ["1GB data included", "50 free SMS", "Free MANSHYA app data", "Rollover unused data (30 days)"] },
-    { id: "essential-3gb", name: "Essential 3GB", tagline: "Stay connected every day", price: "R99", priceLabel: "/month", emoji: "📶", gradient: "linear-gradient(135deg,#FFF8E1,#FFF3CD)", features: ["3GB data included", "100 free SMS", "Free MANSHYA app data", "Free Wi-Fi on MANSHYA taxis"] },
-    { id: "plus-10gb", name: "Plus 10GB", tagline: "Serious data for busy lifestyles", price: "R199", priceLabel: "/month", emoji: "🚀", gradient: "linear-gradient(135deg,#F3E5F5,#EAF7EE)", featured: true, badge: "Best Value", badgeColor: "#F5A623", features: ["10GB data included", "200 free SMS", "100 free minutes", "Free MANSHYA app data", "Free Wi-Fi on MANSHYA taxis"] },
-    { id: "unlimited", name: "Unlimited Calls & 5GB", tagline: "Talk as much as you want", price: "R299", priceLabel: "/month", emoji: "📞", gradient: "linear-gradient(135deg,#E65100,#F57C00)", features: ["Unlimited calls to all SA networks", "5GB data included", "200 free SMS", "Free MANSHYA app data", "HD voice quality on Cell C network"] },
   ],
 };
 
