@@ -1,6 +1,9 @@
 import { Router, Request, Response } from "express";
 import { bankDb, getBankingKpi } from "../data/bankingStore.js";
-import { requireAuth } from "../middleware/auth.js";
+import { requireAuth, requireRole } from "../middleware/auth.js";
+import { backfillLedgerFromInMemoryStore, reconcileBalances } from "../services/ledgerShadowWrite.js";
+
+const LEDGER_ADMIN_ROLES = ["owner", "superadmin", "treasury"] as const;
 
 const router: ReturnType<typeof Router> = Router();
 
@@ -43,6 +46,40 @@ router.get("/portfolios", requireAuth, (_req: Request, res: Response): void => {
     return { ...p, userName: user ? `${user.firstName} ${user.lastName}` : "Unknown" };
   });
   res.json({ success: true, data });
+});
+
+// POST /api/bank/treasury/ledger/backfill
+// One-time (idempotent, safe to re-run) seed of the ledger from the
+// current in-memory banking store -- Stage 2 of
+// plans/architecture/03-migration-plan.md. Gated to the roles who'd
+// actually run this in a real rollout, not requireAuth alone, since
+// this writes real rows and shouldn't be a button any staff member can
+// press by accident.
+router.post("/ledger/backfill", requireAuth, requireRole(...LEDGER_ADMIN_ROLES), async (_req: Request, res: Response): Promise<void> => {
+  try {
+    const result = await backfillLedgerFromInMemoryStore();
+    res.json({ success: true, data: result });
+  } catch (err) {
+    console.error("[bankTreasury] Ledger backfill failed:", err);
+    res.status(500).json({ success: false, error: "Backfill failed — check server logs" });
+  }
+});
+
+// GET /api/bank/treasury/ledger/reconcile
+// Compares the in-memory balance (still authoritative through Stage 3)
+// against the ledger's own recomputed balance for every account that's
+// been shadow-written to. A non-empty mismatches array means the
+// shadow-write logic has a bug and cutover (Stage 3) must not proceed
+// until it's fixed -- this is the safety net the migration plan calls
+// for, made pressable rather than theoretical.
+router.get("/ledger/reconcile", requireAuth, requireRole(...LEDGER_ADMIN_ROLES), async (_req: Request, res: Response): Promise<void> => {
+  try {
+    const result = await reconcileBalances();
+    res.json({ success: true, data: result });
+  } catch (err) {
+    console.error("[bankTreasury] Reconciliation check failed:", err);
+    res.status(500).json({ success: false, error: "Reconciliation check failed — check server logs" });
+  }
 });
 
 export default router;

@@ -3,6 +3,7 @@ import { v4 as uuid } from "uuid";
 import { bankDb } from "../data/bankingStore.js";
 import { requireAuth } from "../middleware/auth.js";
 import type { Payment, BankTxn } from "../types/banking.js";
+import { shadowWriteTransfer, shadowWriteInstantPayout } from "../services/ledgerShadowWrite.js";
 
 const router: ReturnType<typeof Router> = Router();
 
@@ -66,6 +67,20 @@ router.post("/", requireAuth, (req: Request, res: Response): void => {
   }
 
   res.status(201).json({ success: true, data: payment });
+
+  // Shadow write (Phase 3 Stage 2) -- fire after the response so it can
+  // never add latency to the actual product behavior, which is still
+  // entirely the code above this line. Errors are caught inside
+  // shadowWriteTransfer itself and only logged; nothing here can affect
+  // the request that already completed.
+  void shadowWriteTransfer({
+    fromAccount: fromAcct,
+    toAccount: toAcct ?? null,
+    amount,
+    fee,
+    currency: (currency ?? "ZAR") as Payment["currency"],
+    reference: payment.reference,
+  });
 });
 
 // POST /api/bank/payments/instant-payout  — driver instant payout
@@ -79,6 +94,10 @@ router.post("/instant-payout", requireAuth, (req: Request, res: Response): void 
   acct.balance += amount;
   acct.availableBalance += amount;
   res.json({ success: true, data: payout, message: `R${amount.toFixed(2)} instant payout processed` });
+
+  // Shadow write (Phase 3 Stage 2) -- see the note on the transfer
+  // endpoint above for why this runs after the response, not before.
+  void shadowWriteInstantPayout({ account: acct, amount, reference: payout.id });
 });
 
 export default router;
