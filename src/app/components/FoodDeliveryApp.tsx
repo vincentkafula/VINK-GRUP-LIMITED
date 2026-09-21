@@ -237,7 +237,7 @@ function CustomerApp({ onClose }: { onClose: () => void }) {
                     {rest.image}
                     {rest.promo && <span className="absolute top-2 left-2 text-[10px] font-black text-white px-2 py-0.5 rounded-full" style={{ background: ORANGE }}>{rest.promo}</span>}
                     {!rest.open && <div className="absolute inset-0 bg-black/40 flex items-center justify-center"><span className="text-white font-black text-sm">Closed</span></div>}
-                    <button onClick={e => { e.stopPropagation(); setWishlist(w => { const n=new Set(w); n.has(rest.id)?n.delete(rest.id):n.add(rest.id); return n; }); }}
+                    <button onClick={e => { e.stopPropagation(); setWishlist(w => { const n=new Set(w); if (n.has(rest.id)) n.delete(rest.id); else n.add(rest.id); return n; }); }}
                       className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white flex items-center justify-center">
                       <Heart className="w-3.5 h-3.5" style={{ color: wishlist.has(rest.id) ? "#EF4444" : "#9CA3AF", fill: wishlist.has(rest.id) ? "#EF4444" : "none" }} />
                     </button>

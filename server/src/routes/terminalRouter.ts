@@ -64,10 +64,28 @@ router.post("/tap", async (req: Request, res: Response): Promise<void> => {
 
   const serial = req.header("x-terminal-serial");
   const apiKey = req.header("x-terminal-api-key");
+  const idempotencyKey = req.header("idempotency-key") || null;
   const auth = await authenticateTerminal(serial ?? "", apiKey ?? "");
   if (!auth.authenticated) {
     res.status(401).json({ success: false, error: auth.error ?? "Terminal authentication failed" });
     return;
+  }
+
+  // Idempotency check -- a retried tap (client didn't get a response the
+  // first time, so it resends the same key) must return the original
+  // result, not process the charge again. Checked before touching the
+  // card-data/amount validation below, since a replay should short-
+  // circuit as early as possible.
+  if (idempotencyKey) {
+    const existing = await pool.query(
+      `SELECT id, received_at, status FROM terminal_taps WHERE terminal_id = $1 AND idempotency_key = $2`,
+      [auth.terminalId, idempotencyKey]
+    );
+    if (existing.rows.length > 0) {
+      const tap = existing.rows[0];
+      res.status(200).json({ success: true, data: { id: tap.id, receivedAt: tap.received_at, status: tap.status, replayed: true } });
+      return;
+    }
   }
 
   const { maskedPan, scheme, amount, currency, cardholderVerification, emvCryptogramRef } = req.body as {
@@ -102,12 +120,32 @@ router.post("/tap", async (req: Request, res: Response): Promise<void> => {
     console.error(`[terminal] Tap from terminal ${serial}: fare ${amount} is below MANSHYA's flat fee (${split.vinkFeeTotal}) -- owner/investor amounts are zero for this tap`);
   }
 
-  const { rows } = await pool.query(
-    `INSERT INTO terminal_taps (terminal_id, masked_pan, scheme, amount, currency, cardholder_verification, emv_cryptogram_ref, vink_fee_device, vink_fee_card, owner_settlement, investor_share)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id, received_at`,
-    [auth.terminalId, maskedPan ?? null, scheme ?? null, amount, currency ?? "ZAR", cardholderVerification ?? null, emvCryptogramRef ?? null,
-     split.vinkFeeDevice, split.vinkFeeCard, split.ownerSettlement, split.investorShare]
-  );
+  let rows;
+  try {
+    ({ rows } = await pool.query(
+      `INSERT INTO terminal_taps (terminal_id, masked_pan, scheme, amount, currency, cardholder_verification, emv_cryptogram_ref, vink_fee_device, vink_fee_card, owner_settlement, investor_share, idempotency_key)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING id, received_at`,
+      [auth.terminalId, maskedPan ?? null, scheme ?? null, amount, currency ?? "ZAR", cardholderVerification ?? null, emvCryptogramRef ?? null,
+       split.vinkFeeDevice, split.vinkFeeCard, split.ownerSettlement, split.investorShare, idempotencyKey]
+    ));
+  } catch (e) {
+    // Unique-violation (23505) on the idempotency index means a
+    // concurrent retry won the race and inserted first -- fetch and
+    // return that row instead of failing the request or double-charging.
+    const pgErr = e as { code?: string };
+    if (pgErr.code === "23505" && idempotencyKey) {
+      const existing = await pool.query(
+        `SELECT id, received_at, status FROM terminal_taps WHERE terminal_id = $1 AND idempotency_key = $2`,
+        [auth.terminalId, idempotencyKey]
+      );
+      if (existing.rows.length > 0) {
+        const tap = existing.rows[0];
+        res.status(200).json({ success: true, data: { id: tap.id, receivedAt: tap.received_at, status: tap.status, replayed: true } });
+        return;
+      }
+    }
+    throw e;
+  }
 
   const tap = rows[0];
   emit("terminal.tap_received", { tapId: tap.id, terminalId: auth.terminalId, amount, currency: currency ?? "ZAR", split });

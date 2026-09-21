@@ -595,6 +595,14 @@ CREATE TABLE IF NOT EXISTS terminal_taps (
 CREATE INDEX IF NOT EXISTS idx_terminal_taps_terminal ON terminal_taps(terminal_id);
 CREATE INDEX IF NOT EXISTS idx_terminal_taps_status ON terminal_taps(status);
 
+-- Idempotency: the physical card reader generates one key per tap event
+-- (client-side, once) and resends the same key on any retry (network
+-- timeout, no response received, etc.). Unique per terminal rather than
+-- globally -- two different terminals independently generating the same
+-- key is not a real collision, only a retry from the same device is.
+ALTER TABLE terminal_taps ADD COLUMN IF NOT EXISTS idempotency_key TEXT;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_terminal_taps_idempotency ON terminal_taps(terminal_id, idempotency_key) WHERE idempotency_key IS NOT NULL;
+
 -- ── GPS Route Assignment, Geofence Violations, Driver Fine Ledger ────────────
 -- Confirmed model (2026-08-18): an association defines a route as an
 -- ordered set of waypoints (a path, not a single circular zone -- this

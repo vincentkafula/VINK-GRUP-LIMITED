@@ -1,0 +1,75 @@
+# Local development stack: Postgres + backend API + frontend.
+#
+# Usage:
+#   cp .env.example .env            # frontend build-time vars (VITE_API_URL is set below automatically)
+#   cp server/.env.example server/.env   # fill in JWT_SECRET at minimum
+#   docker compose up --build
+#
+# Frontend:  http://localhost:8080
+# Backend:   http://localhost:3001  (health check: http://localhost:3001/health)
+# Postgres:  localhost:5432 (user/pass/db: manshya / manshya_dev_password / manshya)
+#
+# This is a local dev/eval stack, not a production deployment target —
+# production runs on Railway (see railway.json / server/railway.json).
+# The one meaningful difference: JWT_SECRET below is a placeholder for
+# local-only use. Never reuse it anywhere real; generate a fresh one
+# with `openssl rand -hex 64` before deploying anywhere reachable.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: manshya
+      POSTGRES_PASSWORD: manshya_dev_password
+      POSTGRES_DB: manshya
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U manshya -d manshya"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      # Schema + demo data are created automatically on first boot
+      # (see server/src/db/migrate.ts) — no separate migration step.
+      DATABASE_URL: postgresql://manshya:manshya_dev_password@postgres:5432/manshya
+      # Local-only placeholder — see the file header note above.
+      JWT_SECRET: ${JWT_SECRET:-local-dev-only-do-not-use-in-production-generate-with-openssl-rand-hex-64}
+      ALLOWED_ORIGINS: http://localhost:8080,http://localhost:5173
+    ports:
+      - "3001:3001"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:3001
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "8080:8080"
+
+volumes:
+  postgres_data:

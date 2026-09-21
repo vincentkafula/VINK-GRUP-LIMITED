@@ -25,8 +25,13 @@ describe("ErrorBoundary", () => {
   it("resets after clicking try again", () => {
     const spy = vi.spyOn(console, "error").mockImplementation(() => {});
     const { rerender } = render(<ErrorBoundary><Bomb shouldThrow={true} /></ErrorBoundary>);
-    fireEvent.click(screen.getByText("Try again"));
+    // The underlying content must actually stop throwing before "Try
+    // again" can help -- clicking retry while the same throwing child
+    // is still there would just re-crash immediately. This mirrors how
+    // it works for real: whatever caused the error gets fixed first,
+    // then the user retries to see the fix take effect.
     rerender(<ErrorBoundary><Bomb shouldThrow={false} /></ErrorBoundary>);
+    fireEvent.click(screen.getByText("Try again"));
     expect(screen.getByText("All good")).toBeInTheDocument();
     spy.mockRestore();
   });

@@ -14,6 +14,7 @@ interface PostLoginHomeProps {
   isOpen: boolean;
   onClose: () => void;
   onNavigate?: (id: string) => void;
+  onDashboardSelect?: (id: string) => void;
 }
 
 // ─── Menu rows exactly as specified ──────────────────────────────────────────

@@ -110,7 +110,7 @@ function CardVisual({ card, active }: { card: typeof CARDS[0]; active: boolean }
   );
 }
 
-export function CreditCardsSection() {
+export function CreditCardsSection({ onApply }: { onApply?: () => void }) {
   const [active, setActive] = useState(0);
   const [viewerCard, setViewerCard] = useState<typeof CARDS[0] | null>(null);
 
@@ -141,7 +141,7 @@ export function CreditCardsSection() {
       </div>
 
       {viewerCard && "image" in viewerCard && (
-        <Card3DViewer isOpen onClose={() => setViewerCard(null)} image={viewerCard.image} name={viewerCard.name} />
+        <Card3DViewer isOpen onClose={() => setViewerCard(null)} image={viewerCard.image} name={viewerCard.name} onApply={onApply} />
       )}
     </section>
   );

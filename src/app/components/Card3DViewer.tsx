@@ -6,6 +6,7 @@ interface Props {
   onClose: () => void;
   image: string;
   name: string;
+  onApply?: () => void;
 }
 
 /**
@@ -17,7 +18,7 @@ interface Props {
  * light" interaction used for premium card reveals elsewhere (Apple Card,
  * most banking apps' own card art).
  */
-export function Card3DViewer({ isOpen, onClose, image, name }: Props) {
+export function Card3DViewer({ isOpen, onClose, image, name, onApply }: Props) {
   const [rotate, setRotate] = useState({ x: 0, y: 0 });
   const [glow, setGlow] = useState({ x: 50, y: 50 });
   const cardRef = useRef<HTMLDivElement>(null);
@@ -83,6 +84,13 @@ export function Card3DViewer({ isOpen, onClose, image, name }: Props) {
 
       <div className="mt-8 flex flex-col items-center gap-3">
         <p className="text-white/70 text-sm font-medium">{name}</p>
+        {onApply && (
+          <button onClick={() => { onClose(); onApply(); }}
+            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold text-white transition-transform hover:scale-[1.03]"
+            style={{ background: "linear-gradient(135deg,#0B5C2E,#128A43)" }}>
+            Apply for this card
+          </button>
+        )}
         <button onClick={reset}
           className="inline-flex items-center gap-2 text-xs font-semibold text-white/60 hover:text-white transition-colors">
           <RotateCcw className="w-3.5 h-3.5" /> Reset view

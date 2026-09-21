@@ -152,7 +152,7 @@ function AFCSimulator() {
   const [result, setResult] = useState<"approved" | "declined" | null>(null);
   const [totalMs, setTotalMs] = useState(0);
   const [selectedPath, setSelectedPath] = useState<EMVPath>("offline");
-  const timerRef = useRef<NodeJS.Timeout>();
+  const timerRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   const runSimulation = () => {
     const pathConfig = EMV_PATHS[selectedPath];

@@ -52,7 +52,7 @@ const SLIDES = [
   },
 ];
 
-export function HeroSection() {
+export function HeroSection({ onApplyClick }: { onApplyClick?: () => void }) {
   const [current, setCurrent] = useState(0);
   const [fading, setFading] = useState(false);
 
@@ -120,6 +120,7 @@ export function HeroSection() {
             <div className="flex flex-wrap justify-center md:justify-start gap-3 mb-7">
               {slide.ctas.map((cta, i) => (
                 <button key={i}
+                  onClick={onApplyClick}
                   className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl text-sm font-bold text-white transition-all duration-300 ease-out hover:scale-[1.03] hover:-translate-y-0.5 active:scale-95 shadow-lg"
                   style={{ ...(cta.style as React.CSSProperties), letterSpacing: "0.01em" }}>
                   {cta.label}

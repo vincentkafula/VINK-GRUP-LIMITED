@@ -409,7 +409,7 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
             <FormCard stepN={7} title="Application summary" subtitle="Review before submitting">
               <div className="grid sm:grid-cols-2 gap-3">
                 {[
-                  { label: "Contact person",    value: `${contact.firstName} ${contact.lastName}` || "—" },
+                  { label: "Contact person",    value: [contact.firstName, contact.lastName].filter(Boolean).join(" ") || "—" },
                   { label: "Designation",       value: contact.designation || "—" },
                   { label: "Company",           value: company.name || "—" },
                   { label: "CIPC number",       value: company.cipc || "—" },

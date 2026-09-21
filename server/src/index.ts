@@ -105,8 +105,28 @@ app.use("/api/kyc/webhook", express.json({
 app.use(express.json({ limit: "1mb" }));
 app.use(requestLogger);
 
-// Rate limiting — 300 req/min per IP
+// Rate limiting — 300 req/min per IP, general baseline for the whole API
 app.use("/api", rateLimit({ windowMs: 60_000, max: 300, standardHeaders: true, legacyHeaders: false }));
+
+// Auth-specific rate limiting — the general limit above is 100x too
+// permissive to slow down credential-guessing (300 login attempts/min
+// is no protection at all). 10 attempts per 15 minutes per IP is tight
+// enough to make brute-forcing impractical while still allowing a
+// legitimate user who mistypes their password a few times to recover
+// without waiting long. Counts successful requests too (not just
+// failures) deliberately -- an attacker who succeeds on attempt 3
+// still consumed 3 of the 10, so the window can't be gamed by mixing
+// in occasional valid logins.
+const authLimiter = rateLimit({
+  windowMs: 15 * 60_000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: "Too many attempts. Please wait 15 minutes and try again." },
+});
+app.use("/api/auth/login", authLimiter);
+app.use("/api/auth/register", authLimiter);
+app.use("/api/auth/change-password", authLimiter);
 
 // ─── Routes ──────────────────────────────────────────────────────────────────
 app.use("/api/auth",          hasDb ? authRouterDb : authRouter);

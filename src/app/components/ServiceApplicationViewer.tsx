@@ -584,7 +584,7 @@ export function ServiceApplicationViewer({ isOpen, onClose, serviceType }: Props
             {/* Summary */}
             <div className="grid sm:grid-cols-2 gap-3">
               {[
-                { label: "Full name",   value: `${form.firstName} ${form.lastName}` || "—" },
+                { label: "Full name",   value: [form.firstName, form.lastName].filter(Boolean).join(" ") || "—" },
                 { label: "ID number",   value: form.idNumber || "—" },
                 { label: "Mobile",      value: form.phone || "—" },
                 { label: "Email",       value: form.email || "—" },

@@ -151,6 +151,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
   }, [isOpen, isOwner]);
 
   const [jobLoadError, setJobLoadError] = useState<string | null>(null);
+  const [openingDoc, setOpeningDoc] = useState<string | null>(null);
 
   // Listen for the global session-expired signal (dispatched by
   // apiClient.ts when any authenticated request comes back 401) rather
@@ -204,8 +205,6 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
       toast.error(r.error ?? "Could not load this application.");
     });
   };
-
-  const [openingDoc, setOpeningDoc] = useState<string | null>(null);
 
   const openDocument = async (ref: string, type: string) => {
     // The previous plain <a href> pointed directly at an auth-protected

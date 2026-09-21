@@ -239,7 +239,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
   ]);
   const [avgMs, setAvgMs] = useState(405);
   const [time, setTime] = useState(new Date().toLocaleTimeString("en-ZA", { hour: "2-digit", minute: "2-digit" }));
-  const stageTimerRef = useRef<NodeJS.Timeout>();
+  const stageTimerRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -342,7 +342,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
             )}
           </div>
           <div className="flex items-center gap-2">
-            <Navigation className="w-3 h-3 text-emerald-400" title="GPS active" />
+            <span title="GPS active"><Navigation className="w-3 h-3 text-emerald-400" /></span>
             <Bluetooth className="w-3 h-3 text-emerald-400" />
             {networkOnline ? <Wifi className="w-3.5 h-3.5 text-green-400" /> : <WifiOff className="w-3.5 h-3.5 text-red-400" />}
             <span className="text-[9px] font-bold" style={{ color: networkOnline ? "#10B981" : "#9CA3AF" }}>LTE</span>
@@ -965,7 +965,7 @@ function AssociationsScreen({ P, GOLD }: { P: string; GOLD: string }) {
               </button>
               {/* Association rows */}
               {isOpen && (
-                <div className="border-t divide-y" style={{ borderColor: "#2D2A5040", divideColor: "#2D2A5040" }}>
+                <div className="border-t divide-y" style={{ borderColor: "#2D2A5040" }}>
                   {list.map((a, i) => {
                     const lc = LEVEL_COLORS[a.level as AssociationLevel];
                     return (

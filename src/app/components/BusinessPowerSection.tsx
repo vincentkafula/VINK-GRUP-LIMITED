@@ -9,7 +9,7 @@ const STATS = [
 
 import { memo } from "react";
 
-export const BusinessPowerSection = memo(function BusinessPowerSection() {
+export const BusinessPowerSection = memo(function BusinessPowerSection({ onSubNavClick }: { onSubNavClick?: (item: string) => void }) {
   return (
     <section className="py-10 sm:py-16 relative overflow-hidden" style={{ background: "#2E1065" }}>
       <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full opacity-5 pointer-events-none"
@@ -61,11 +61,11 @@ export const BusinessPowerSection = memo(function BusinessPowerSection() {
             </p>
 
             <div className="flex flex-wrap justify-center lg:justify-start gap-3">
-              <button className="px-8 py-3.5 rounded-xl text-sm font-bold text-white transition-all duration-300 ease-out hover:scale-[1.03] hover:-translate-y-0.5"
+              <button onClick={() => onSubNavClick?.("Start My Business")} className="px-8 py-3.5 rounded-xl text-sm font-bold text-white transition-all duration-300 ease-out hover:scale-[1.03] hover:-translate-y-0.5"
                 style={{ background: "linear-gradient(135deg,#4C1D95,#7C3AED)", boxShadow: "0 10px 28px -6px rgba(124,58,237,.5)", letterSpacing: "0.01em" }}>
                 See How It Works
               </button>
-              <button className="px-8 py-3.5 rounded-xl text-sm font-semibold transition-all hover:bg-white/10"
+              <button onClick={() => onSubNavClick?.("BusinessHome")} className="px-8 py-3.5 rounded-xl text-sm font-semibold transition-all hover:bg-white/10"
                 style={{ border: "1px solid rgba(255,255,255,.2)", color: "rgba(255,255,255,.8)" }}>
                 Learn More
               </button>

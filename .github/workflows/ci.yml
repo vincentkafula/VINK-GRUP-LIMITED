@@ -1,0 +1,79 @@
+name: CI
+
+# Runs on every push and PR to main. Scope deliberately matches what's
+# actually enforceable right now: lint + typecheck + existing tests +
+# dependency/secret scanning. Does NOT include a full SAST tool (e.g.
+# CodeQL) yet — that's a reasonable Phase 1 follow-up once this baseline
+# is green and stable, not bundled in here to keep this PR reviewable.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  frontend:
+    name: Frontend (lint, typecheck, test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test
+
+  backend:
+    name: Backend (typecheck)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      - working-directory: server
+        run: npm ci
+      - working-directory: server
+        run: npm run lint
+
+  dependency-audit:
+    name: Dependency vulnerability scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      # npm audit exits non-zero on findings at or above the given level.
+      # high (not critical) as the bar -- critical-only misses too much
+      # for a payments codebase; moderate-and-below is noisy enough
+      # across a dependency tree this size to train people to ignore it.
+      # continue-on-error: this reports findings without blocking merges
+      # yet, since triaging the existing dependency tree's current
+      # findings is separate work from adding the check itself. Flip to
+      # blocking once that triage is done.
+      - name: Audit frontend dependencies
+        run: npm audit --audit-level=high
+        continue-on-error: true
+      - name: Audit backend dependencies
+        working-directory: server
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+  secret-scan:
+    name: Secret scanning
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

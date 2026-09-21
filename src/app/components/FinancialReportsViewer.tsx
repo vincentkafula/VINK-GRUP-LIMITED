@@ -210,10 +210,10 @@ export function FinancialReportsViewer({ isOpen, onClose }: Props) {
 
                 {/* Earnings */}
                 <SectionHeader>Earnings</SectionHeader>
-                <StatRow label="Fare revenue — card payments" value={fmt(ps?.faresTotalCard ?? Number(sm?.cardTotal) ?? 0)} />
-                <StatRow label="Fare revenue — cash payments" value={fmt(ps?.faresTotalCash ?? Number(sm?.cashTotal) ?? 0)} />
+                <StatRow label="Fare revenue — card payments" value={fmt(ps?.faresTotalCard ?? Number(sm?.cardTotal ?? 0))} />
+                <StatRow label="Fare revenue — cash payments" value={fmt(ps?.faresTotalCash ?? Number(sm?.cashTotal ?? 0))} />
                 {(ps?.bonusAmount ?? 0) > 0 && <StatRow label="Bonus" value={fmt(+(ps?.bonusAmount ?? 0))} />}
-                <StatRow label="Total Gross Earnings" value={fmt(ps?.totalGross ?? Number(sm?.totalFares) ?? 0)} bold border color={GREEN} />
+                <StatRow label="Total Gross Earnings" value={fmt(ps?.totalGross ?? Number(sm?.totalFares ?? 0))} bold border color={GREEN} />
                 {ps?.paymentModel === "target" && ps?.targetAmount && (
                   <div className={`mt-2 p-3 rounded-xl text-xs font-semibold flex items-center gap-2 ${ps.targetAchieved ? "bg-green-50 text-green-700 border border-green-200" : "bg-amber-50 text-amber-700 border border-amber-200"}`}>
                     {ps.targetAchieved ? <CheckCircle className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}

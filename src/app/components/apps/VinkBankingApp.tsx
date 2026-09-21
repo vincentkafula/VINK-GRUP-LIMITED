@@ -462,7 +462,7 @@ function SendScreen() {
     const r = await globalBankingApi.p2pTransfer("acc-001", recipient.trim(), Number(amount), "ZAR", note || undefined);
     setLoading(false);
     if (r.success) {
-      setSuccess({ ref: r.data?.id ?? "TXN-" + Date.now(), amount });
+      setSuccess({ ref: (r.data as { id?: string } | undefined)?.id ?? "TXN-" + Date.now(), amount });
     } else {
       setError(r.error ?? "Transfer failed. Please try again.");
     }

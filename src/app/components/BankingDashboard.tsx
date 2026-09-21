@@ -900,7 +900,7 @@ function FraudPanel() {
                   {a.blocked && <Badge label="Blocked" color="#EF4444"/>}
                 </div>
                 <p className="text-xs text-gray-500">Rule: <span className="font-semibold text-gray-700">{String(a.ruleTriggered).replace(/_/g," ")}</span></p>
-                {u && <p className="text-xs text-gray-400 mt-0.5">User: {u.firstName} {u.lastName} · {u.email}</p>}
+                {u && <p className="text-xs text-gray-400 mt-0.5">User: {String(u.firstName)} {String(u.lastName)} · {String(u.email)}</p>}
                 <p className="text-[11px] text-gray-300 mt-0.5">{ago(a.createdAt as string)} ago</p>
               </div>
               {!a.resolved && (

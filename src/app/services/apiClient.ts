@@ -12,7 +12,7 @@ export function getToken(): string | null  { return localStorage.getItem(TOKEN_K
 export function setToken(t: string)        { localStorage.setItem(TOKEN_KEY, t); }
 export function clearToken()               { localStorage.removeItem(TOKEN_KEY); }
 export function isDemoMode(): boolean      { return localStorage.getItem(DEMO_KEY) === "1"; }
-export function setDemoMode(on: boolean)   { on ? localStorage.setItem(DEMO_KEY, "1") : localStorage.removeItem(DEMO_KEY); }
+export function setDemoMode(on: boolean)   { if (on) localStorage.setItem(DEMO_KEY, "1"); else localStorage.removeItem(DEMO_KEY); }
 
 // ─── Logged-in user (stored after login) ─────────────────────────────────────
 const SESSION_KEY = "vink_session";

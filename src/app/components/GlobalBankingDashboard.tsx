@@ -220,7 +220,7 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
     if (r.success) {
       const cr = await globalBankingApi.listCards();
       if (cr.success) setLiveData(d => ({ ...d, cards: cr.data as Record<string, unknown>[] }));
-      setFrozenCards(prev => { const s = new Set(prev); s.has(cardId) ? s.delete(cardId) : s.add(cardId); return s; });
+      setFrozenCards(prev => { const s = new Set(prev); if (s.has(cardId)) s.delete(cardId); else s.add(cardId); return s; });
     }
   };
 
@@ -677,7 +677,7 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
                         </div>
                         <div className="flex gap-2">
                           <button
-                            onClick={() => setFrozenCards(prev => { const s = new Set(prev); s.has(card.id) ? s.delete(card.id) : s.add(card.id); return s; })}
+                            onClick={() => setFrozenCards(prev => { const s = new Set(prev); if (s.has(card.id)) s.delete(card.id); else s.add(card.id); return s; })}
                             className="flex-1 py-2 rounded-xl text-xs font-bold transition-all"
                             style={{ background: frozen ? "#10B98120" : "#EF444420", color: frozen ? "#10B981" : "#EF4444", border: `1px solid ${frozen ? "#10B98140" : "#EF444440"}` }}>
                             {frozen ? "Unfreeze" : "Freeze"}

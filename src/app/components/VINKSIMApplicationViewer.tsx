@@ -381,7 +381,7 @@ export function VINKSIMApplicationViewer({ isOpen, onClose }: Props) {
           <FormCard stepN={7} title="Review &amp; confirm your SIM application" subtitle="Double-check your details before activation">
             <div className="grid sm:grid-cols-2 gap-3">
               {[
-                { label: "Full name",   value: `${form.firstName} ${form.lastName}` || "—" },
+                { label: "Full name",   value: [form.firstName, form.lastName].filter(Boolean).join(" ") || "—" },
                 { label: "ID number",   value: form.idNumber || "—" },
                 { label: "Mobile",      value: form.phone || "—" },
                 { label: "Email",       value: form.email || "—" },
