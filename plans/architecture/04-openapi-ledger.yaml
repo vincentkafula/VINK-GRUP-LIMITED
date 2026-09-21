@@ -1,0 +1,255 @@
+openapi: 3.1.0
+info:
+  title: MANSHYA Ledger API
+  version: 0.1.0-draft
+  description: >
+    Phase 2 design contract for the NEW ledger/accounts endpoints described
+    in 01-ledger-design.md and 03-migration-plan.md. This does not document
+    the existing 42-route API surface (marketplace, AFC, KYC, RBAC, etc.) —
+    those are stable and unchanged by this work. Scope is deliberately
+    narrow: the money-moving surface that Phase 3 implements against this
+    contract.
+
+servers:
+  - url: /api
+
+security:
+  - bearerAuth: []
+
+paths:
+  /accounts:
+    get:
+      summary: List the authenticated user's accounts
+      operationId: listAccounts
+      tags: [Accounts]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, const: true }
+                  data:
+                    type: array
+                    items: { $ref: "#/components/schemas/Account" }
+
+  /accounts/{accountId}/balance:
+    get:
+      summary: Current balance for one account (reads account_balances, the cached derived value)
+      operationId: getAccountBalance
+      tags: [Accounts]
+      parameters:
+        - $ref: "#/components/parameters/AccountId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, const: true }
+                  data: { $ref: "#/components/schemas/Balance" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /accounts/{accountId}/entries:
+    get:
+      summary: Ledger entries for one account — the real transaction history (append-only, never edited)
+      operationId: listLedgerEntries
+      tags: [Ledger]
+      parameters:
+        - $ref: "#/components/parameters/AccountId"
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+        - name: before
+          in: query
+          description: Cursor — sequence_no to page backward from
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, const: true }
+                  data:
+                    type: array
+                    items: { $ref: "#/components/schemas/LedgerEntry" }
+
+  /transfers/p2p:
+    post:
+      summary: Person-to-person transfer between two accounts
+      operationId: createP2pTransfer
+      tags: [Ledger]
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [fromAccountId, toAccountReference, amountCents, currency]
+              properties:
+                fromAccountId: { type: string, format: uuid }
+                toAccountReference:
+                  type: string
+                  description: Recipient's account number or reference — never a raw account UUID from client input
+                amountCents: { type: integer, minimum: 1, description: "Integer minor units. Never a float." }
+                currency: { $ref: "#/components/schemas/Currency" }
+                note: { type: string, maxLength: 140 }
+      responses:
+        "201":
+          description: Transfer posted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, const: true }
+                  data: { $ref: "#/components/schemas/LedgerTransaction" }
+        "200":
+          description: Idempotent replay — same Idempotency-Key as a previous request, original result returned unchanged
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, const: true }
+                  data:
+                    allOf:
+                      - { $ref: "#/components/schemas/LedgerTransaction" }
+                      - type: object
+                        properties:
+                          replayed: { type: boolean, const: true }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "402":
+          description: Insufficient funds
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "409":
+          description: Idempotency key reused with a different request body — same key, different amount/accounts is a client bug, not a valid replay
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  /transfers/{transactionId}:
+    get:
+      summary: Look up a ledger transaction by id (its own id, or any idempotency-key-resolved id)
+      operationId: getLedgerTransaction
+      tags: [Ledger]
+      parameters:
+        - name: transactionId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, const: true }
+                  data: { $ref: "#/components/schemas/LedgerTransaction" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    AccountId:
+      name: accountId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: >
+        Client-generated (UUID recommended), unique per attempted operation,
+        resent unchanged on retry. Required on every money-moving endpoint —
+        not optional, unlike the current terminal_taps implementation where
+        its absence is tolerated. See 01-ledger-design.md's idempotency_keys
+        table.
+      schema: { type: string }
+
+  responses:
+    BadRequest:
+      description: Validation failed
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    NotFound:
+      description: Not found, or not owned by the authenticated user (same response either way — existence isn't leaked to non-owners)
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  schemas:
+    Currency:
+      type: string
+      enum: [ZAR, USD, EUR, GBP, NGN, KES]
+
+    ErrorResponse:
+      type: object
+      properties:
+        success: { type: boolean, const: false }
+        error: { type: string }
+
+    Account:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        accountNumber: { type: string }
+        iban: { type: string }
+        accountType: { type: string, enum: [current, savings, business, wallet, treasury] }
+        currency: { $ref: "#/components/schemas/Currency" }
+        status: { type: string, enum: [active, frozen, closed, pending_kyc] }
+        createdAt: { type: string, format: date-time }
+
+    Balance:
+      type: object
+      properties:
+        accountId: { type: string, format: uuid }
+        balanceCents: { type: integer, description: "Derived from SUM(ledger_entries.amount_cents); this field is the cached account_balances value, not a separately-editable one" }
+        availableCents: { type: integer }
+        pendingCents: { type: integer }
+        currency: { $ref: "#/components/schemas/Currency" }
+        asOfSequence: { type: integer, description: "The ledger_entries.sequence_no this balance was last updated through — for detecting staleness" }
+
+    LedgerEntry:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        transactionId: { type: string, format: uuid }
+        accountId: { type: string, format: uuid }
+        amountCents: { type: integer, description: "Positive = credit, negative = debit. Never zero." }
+        currency: { $ref: "#/components/schemas/Currency" }
+        sequenceNo: { type: integer }
+        createdAt: { type: string, format: date-time }
+
+    LedgerTransaction:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        transactionType: { type: string, enum: [p2p_transfer, card_payment, afc_settlement, fee, refund] }
+        status: { type: string, enum: [posted, reversed] }
+        reference: { type: string }
+        entries:
+          type: array
+          items: { $ref: "#/components/schemas/LedgerEntry" }
+          description: "Always >= 2 entries, always sums to 0 per currency — the double-entry invariant, visible directly in the response."
+        createdAt: { type: string, format: date-time }
