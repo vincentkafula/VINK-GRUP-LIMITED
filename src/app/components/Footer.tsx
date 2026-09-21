@@ -290,9 +290,6 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
           </div>
           {/* Copyright */}
           <div style={{ paddingBottom: 16, textAlign: "center" }}>
-            <p style={{ color: "rgba(255,255,255,0.28)", fontSize: 12, margin: "0 0 6px" }}>
-              © Copyright. Vink-Grup-Limited. All Rights Reserved.
-            </p>
             <p style={{ color: "rgba(255,255,255,0.28)", fontSize: 12, margin: 0, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "0 10px" }}>
               <span>United States – EIN: 37-2148609</span>
               <span style={{ color: "rgba(255,255,255,0.15)" }}>|</span>
