@@ -116,9 +116,9 @@ export function ManshyaDashboard({ isOpen, onClose, onSignOut }: Props) {
   };
 
   const firstName = (session?.name || me?.name || "").split(/\s+/)[0] || "there";
-  // The Banking ("manshya finance") tab is intentionally not offered on the customer dashboard.
+  // The Banking tab is kept, but without the "manshya finance" product name.
   const tabs: [Mode, string, string, string][] = [
-    ["online", "Online payments", "cart", "manshya pay"], ["pos", "In-person payments", "dev", "manshya tap"],
+    ["online", "Online payments", "cart", "manshya pay"], ["pos", "In-person payments", "dev", "manshya tap"], ["bank", "Banking", "bank", "My banking"],
   ];
 
   return (
