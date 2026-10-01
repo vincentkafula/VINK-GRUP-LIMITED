@@ -60,4 +60,18 @@ export const adminUsers: AdminUser[] = [
     lastLogin: ago(120),
     createdAt: ago(4380),
   },
+  // Same dev customer account that db/migrate.ts seeds into Postgres
+  // (seedDefaultCustomer, see DEV_CREDENTIALS.md) -- present here too so the
+  // customer experience (including the Manshya dashboard) can be signed into
+  // when running without DATABASE_URL.
+  {
+    id: uuid(),
+    username: "customer1",
+    passwordHash: bcrypt.hashSync("Customer@2026", 10),
+    role: "customer" as const,
+    name: "Demo Customer",
+    email: "customer@vink.co.za",
+    lastLogin: null,
+    createdAt: ago(4380),
+  },
 ];

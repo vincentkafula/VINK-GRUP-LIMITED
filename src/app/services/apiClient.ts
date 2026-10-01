@@ -157,25 +157,34 @@ export function startHealthRecoveryWatch() {
 }
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
+/**
+ * The auth endpoints answer { success, token, user } with token and user at the top
+ * level, while this client was written to read them from `data`. Accept both and always
+ * hand callers the `data: { token, user }` shape, so a successful sign-in really stores
+ * the token and session (and callers can read the signed-in user's role).
+ */
+export function normalizeAuthResponse(r: ApiResponse<{ token: string; user: object }>): ApiResponse<{ token: string; user: object }> {
+  if (!r.success) return r;
+  const flat = r as unknown as { token?: string; user?: object };
+  const token = r.data?.token ?? flat.token;
+  const user = r.data?.user ?? flat.user;
+  return token && user ? { ...r, data: { token, user } } : r;
+}
+
+function storeAuth(r: ApiResponse<{ token: string; user: object }>) {
+  if (r.success && r.data) {
+    setToken(r.data.token);
+    setSession(r.data.user);
+    setDemoMode(false);
+  }
+  return r;
+}
+
 export const authApi = {
-  login: async (username: string, password: string) => {
-    const r = await api.post<{ token: string; user: object }>("/api/auth/login", { username, password });
-    if (r.success && r.data) {
-      setToken((r.data as { token: string }).token);
-      setSession((r.data as { user: object }).user);
-      setDemoMode(false);
-    }
-    return r;
-  },
-  register: async (body: { username: string; password: string; name: string; email: string; role?: "customer" | "seller" }) => {
-    const r = await api.post<{ token: string; user: object }>("/api/auth/register", body);
-    if (r.success && r.data) {
-      setToken((r.data as { token: string }).token);
-      setSession((r.data as { user: object }).user);
-      setDemoMode(false);
-    }
-    return r;
-  },
+  login: async (username: string, password: string) =>
+    storeAuth(normalizeAuthResponse(await api.post<{ token: string; user: object }>("/api/auth/login", { username, password }))),
+  register: async (body: { username: string; password: string; name: string; email: string; role?: "customer" | "seller" }) =>
+    storeAuth(normalizeAuthResponse(await api.post<{ token: string; user: object }>("/api/auth/register", body))),
   me: () => api.get("/api/auth/me", true),
   logout: async () => {
     await api.post("/api/auth/logout", {}, true);

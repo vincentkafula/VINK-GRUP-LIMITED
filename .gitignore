@@ -6,3 +6,7 @@ dist/
 .DS_Store
 coverage/
 desktop/release/
+
+# Manshya local SQLite database and uploads
+server/data/
+*.db

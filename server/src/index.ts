@@ -31,6 +31,7 @@ import globalBankingRouter from "./routes/globalBanking.js";
 import financialReportsRouter from "./routes/financialReports.js";
 import levySystemRouter from "./routes/levySystem.js";
 import afcRouter from "./routes/afc.js";
+import { createManshyaModule } from "./manshya/mount.js";
 import { hasDb, pool } from "./db/pool.js";
 import { migrateAndSeed } from "./db/migrate.js";
 import { requireAuth, requireRole } from "./middleware/auth.js";
@@ -62,11 +63,20 @@ app.set("trust proxy", 1); // trust exactly one hop (Railway's edge) for correct
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(cors({ origin: (origin, cb) => cb(null, isAllowedOrigin(origin)), credentials: true }));
 
+// Rate limiting — 300 req/min per IP, general baseline for the whole API
+app.use("/api", rateLimit({ windowMs: 60_000, max: 300, standardHeaders: true, legacyHeaders: false }));
+
+// Manshya payments & banking. Mounted BEFORE the global JSON parser on purpose: its
+// gateway webhooks need the raw request body to verify signatures, and its document
+// upload route accepts larger bodies than the 1mb default below. The module applies
+// its own body limits. Access is by login: customers get the dashboard API, staff the
+// back office (see manshya/access.ts).
+const manshya = createManshyaModule();
+app.use("/api/manshya", manshya.router);
+
 app.use(express.json({ limit: "1mb" }));
 app.use(requestLogger);
 
-// Rate limiting — 300 req/min per IP, general baseline for the whole API
-app.use("/api", rateLimit({ windowMs: 60_000, max: 300, standardHeaders: true, legacyHeaders: false }));
 
 // Auth-specific rate limiting — the general limit above is 100x too
 // permissive to slow down credential-guessing (300 login attempts/min
@@ -228,6 +238,7 @@ app.get("/api", (_req, res) => {
       "/api/financial/*         — financial reports",
       "/api/levy/*              — AFC trip levy, driver/owner/investor/marshall revenue split",
       "/api/afc/*               — AFC device fleet management",
+      "/api/manshya/*           — Manshya payments & banking (customer accounts); /api/manshya/admin/* is the staff back office",
       "WS     ws://localhost:3001/ws  (events: terminal.tap_received, terminal.fault_reported, route.violation, retail.transaction_received, retail.fault_reported)",
     ],
   });
@@ -315,5 +326,6 @@ async function boot() {
 
 boot();
 
-process.on("SIGTERM", () => { server.close(() => process.exit(0)); });
-process.on("SIGINT",  () => { server.close(() => process.exit(0)); });
+const shutdown = () => { server.close(() => { try { manshya.db.close(); } catch { /* already closed */ } process.exit(0); }); };
+process.on("SIGTERM", shutdown);
+process.on("SIGINT",  shutdown);

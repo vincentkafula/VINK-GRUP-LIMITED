@@ -54,6 +54,13 @@ export function Header({ onHome, onDashboardSelect, onSubNavClick, onOpenProfile
     if (isStaffMode() && !isLoggedIn) setIsLoginModalOpen(true);
   }, [isLoggedIn]);
 
+  // Other screens (e.g. the Manshya dashboard's "sign in required" card) can ask for the sign-in modal.
+  useEffect(() => {
+    const open = () => setIsLoginModalOpen(true);
+    window.addEventListener("vink:open-login", open);
+    return () => window.removeEventListener("vink:open-login", open);
+  }, []);
+
   const handleNavClick = (item: NavItem) => {
     if (item === "Personal") {
       setActiveNav(prev => (prev === "Personal" ? null : "Personal"));

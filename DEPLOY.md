@@ -42,6 +42,16 @@ SUPABASE_SERVICE_KEY=<your service role key>
 
 5. Railway auto-detects Node.js. Build: `npm install && npm run build`. Start: `npm start`.
 6. Note the backend URL: `https://vink-backend-XXXX.up.railway.app`
+7. **Manshya payments & banking** (`/api/manshya`) keeps its data in a SQLite file. Add a **Volume** to the
+   service and point the module at it, or the data is lost on every deploy:
+
+```env
+MANSHYA_DB_PATH=/data/manshya.db   # the volume's mount path (uploaded KYC documents are stored beside it)
+MANSHYA_MODE=test                  # leave on "test" until licensed gateway/bank-rail adapters are plugged in
+```
+
+   With `MANSHYA_MODE` unset or `test` every card gateway and bank rail is a sandbox mock: no real money moves.
+   See `server/src/manshya/README.md` before going live.
 
 ---
 
@@ -94,3 +104,5 @@ npm install && npm run dev
 
 Frontend: http://localhost:5173
 Backend:  http://localhost:3001
+
+Sign in with the seeded customer account (see `DEV_CREDENTIALS.md`) to open the Manshya dashboard at `/manshya`.

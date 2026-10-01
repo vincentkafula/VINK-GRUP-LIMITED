@@ -154,7 +154,10 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
         const sections = await rbacApi.mySections();
         if (sections.success && (sections.data?.length ?? 0) > 0) isManagement = true;
       }
-      onSelectDashboard?.(isManagement ? "managementPanel" : "account");
+      // Customer accounts go to their Manshya payments & banking dashboard; management
+      // accounts go to the Management Panel. The Manshya API only accepts customer
+      // accounts, so this routing is a convenience, not the access control.
+      onSelectDashboard?.(isManagement ? "managementPanel" : role === "customer" ? "manshya" : "account");
       return;
     }
 
@@ -223,13 +226,13 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
             <div className="absolute -right-10 -top-28 w-[260px] h-[260px] rounded-full" style={{ border: "1px solid rgba(255,153,0,0.15)" }} />
 
             <div className="relative z-10 max-w-[420px]">
-              <p className="text-[#FFB84D] text-[12px] font-semibold tracking-[2.5px] uppercase mb-4">Staff portal</p>
+              <p className="text-[#FFB84D] text-[12px] font-semibold tracking-[2.5px] uppercase mb-4">Sign in</p>
               <h1 className="text-white text-[32px] sm:text-[38px] leading-[1.15] font-bold mb-5">
                 Welcome back to the tools that keep <span className="text-[#FFB84D]">MANSHYA running</span>
               </h1>
               <p className="text-[#e7d9cd] text-[15px] leading-[1.7] mb-8">
-                Staff-only access to Banking, Payments, Mobile Network,
-                Vehicle Management and every other section your role covers.
+                Customers get their Manshya payments and banking dashboard.
+                Staff get the Management Panel and every section their role covers.
               </p>
               <div className="flex gap-8 flex-wrap">
                 {STATS.map((s) => (
@@ -247,7 +250,8 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
             <div className="w-full max-w-[380px]">
               <h2 className="text-[#5c1420] text-[24px] font-bold mb-1.5">Sign in</h2>
               <p className="text-[13.5px] text-[#6b5d5f] mb-6">
-                Enter your staff credentials to access the Management Panel.
+                Enter your username and password. Customers go to their Manshya
+                dashboard, staff go to the Management Panel.
               </p>
 
               {error && (
@@ -296,19 +300,19 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
                   }}
                 >
                   {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                  {loading ? "Signing in…" : "Sign in to Management Panel"}
+                  {loading ? "Signing in…" : "Sign in"}
                 </button>
               </form>
 
               <div className="flex items-center gap-3 my-5 text-[11px] uppercase tracking-wide text-[#6b5d5f]">
                 <span className="flex-1 h-px" style={{ background: "#e8e0d3" }} />
-                <span>Staff access only</span>
+                <span>Customers and staff</span>
                 <span className="flex-1 h-px" style={{ background: "#e8e0d3" }} />
               </div>
 
               <p className="text-center text-[13px] text-[#6b5d5f] mb-5">
-                Don't have an account yet? Ask your administrator to create one from
-                the Management Panel's Staff section.
+                Staff accounts are created by an administrator from the Management
+                Panel's Staff section.
               </p>
 
               <div className="flex items-start gap-2 text-[11.5px] text-[#6b5d5f] leading-[1.5]">

@@ -85,6 +85,9 @@ const VinkBlogViewer               = lazy(() => import("./components/footerPages
 const FiveHundredGlobalApplication = lazy(() => import("./components/FiveHundredGlobalApplication").then(m => ({ default: m.FiveHundredGlobalApplication })));
 const JobApplicationViewer = lazy(() => import("./components/JobApplicationViewer").then(m => ({ default: m.JobApplicationViewer })));
 const TaxiAssociationsViewer       = lazy(() => import("./components/TaxiAssociationsViewer").then(m => ({ default: m.TaxiAssociationsViewer })));
+const ManshyaDashboard            = lazy(() => import("./components/manshya/ManshyaDashboard").then(m => ({ default: m.ManshyaDashboard })));
+const ManshyaAdmin                = lazy(() => import("./components/manshya/ManshyaAdmin").then(m => ({ default: m.ManshyaAdmin })));
+const ManshyaPay                  = lazy(() => import("./components/manshya/ManshyaPay").then(m => ({ default: m.ManshyaPay })));
 const ManagementHub                = lazy(() => import("./components/ManagementHub").then(m => ({ default: m.ManagementHub })));
 
 export default function App() {
@@ -193,6 +196,10 @@ export default function App() {
   const [showTaxiAssociations, setShowTaxiAssociations]     = useState(false);
   const [userRole, setUserRole]                             = useState<string>("personal");
   const [showLogin, setShowLogin]                           = useState(false);
+  // Manshya payments & banking: dashboard (customers), back office (staff), hosted checkout (public)
+  const [showManshya, setShowManshya]                        = useState(false);
+  const [showManshyaAdmin, setShowManshyaAdmin]              = useState(false);
+  const [showManshyaPay, setShowManshyaPay]                  = useState(false);
 
   // ── Health check ──────────────────────────────────────────────────────────
   useEffect(() => { checkHealth().catch(() => {}); startHealthRecoveryWatch(); }, []);
@@ -229,6 +236,8 @@ export default function App() {
       else if (id === "business")          { mount("banking");          setShowBanking(true); }
       else if (id === "account")           { mount("postLogin");        setShowPostLogin(true); }
       else if (id === "managementPanel")   { mount("managementPanel");  setShowManagementPanel(true); pushRoute("/management-panel"); }
+      else if (id === "manshya")           { mount("manshya");          setShowManshya(true); pushRoute("/manshya"); }
+      else if (id === "manshyaAdmin")      { mount("manshyaAdmin");     setShowManshyaAdmin(true); pushRoute("/manshya-admin"); }
       else if (id === "adminBankingPanel") { mount("banking");          setShowBanking(true); }
       else if (id === "appLauncher")       { mount("appLauncher");      setShowAppLauncher(true); }
       else if (id === "afcApp")            { mount("afcApp");           setShowAFCApp(true); }
@@ -399,6 +408,7 @@ export default function App() {
     setShowContactUs(false); setShowAboutVINK(false); setShowCareers(false);
     setShowSwitchToVINK(false); setShowSafetySecurity(false); setShowInvestorRelations(false);
     setShowTaxiAssociations(false); setShow500App(false);
+    setShowManshya(false); setShowManshyaAdmin(false); setShowManshyaPay(false);
   };
 
   // ── Persistent top nav (Personal/Business/Corporate) ─────────
@@ -477,6 +487,11 @@ export default function App() {
     }
     if (path === "/contact-us") { mount("contactUs"); setShowContactUs(true); return true; }
     if (path === "/management-panel") { mount("managementPanel"); setShowManagementPanel(true); return true; }
+    // Manshya: dashboard is customer-only (it shows a sign-in prompt to anyone else), back office is staff-only,
+    // /pay is the public hosted checkout for payment links.
+    if (path === "/manshya")       { mount("manshya");      setShowManshya(true);      return true; }
+    if (path === "/manshya-admin") { mount("manshyaAdmin"); setShowManshyaAdmin(true); return true; }
+    if (path === "/pay")           { mount("manshyaPay");   setShowManshyaPay(true);   return true; }
     return false;
   };
 
@@ -638,6 +653,9 @@ export default function App() {
       {has("ownerDashboard")  && <Suspense fallback={null}><OwnerFleetDashboardViewer isOpen={showOwnerDashboard} onClose={() => setShowOwnerDashboard(false)} /></Suspense>}
       {has("taxiAssociationDashboard") && <Suspense fallback={null}><TaxiAssociationDashboardViewer isOpen={showTaxiAssociationDashboard} onClose={() => setShowTaxiAssociationDashboard(false)} /></Suspense>}
       {has("investorDashboard") && <Suspense fallback={null}><InvestorFleetDashboardViewer isOpen={showInvestorDashboard} onClose={() => setShowInvestorDashboard(false)} investorName={getSession()?.name} onOpenRevenueDashboard={() => { mount("revenueDash"); setShowRevenueDashboard(true); }} /></Suspense>}
+      {has("manshya")         && <Suspense fallback={null}><ManshyaDashboard      isOpen={showManshya}         onClose={() => { setShowManshya(false); pushRoute("/"); }} onSignOut={() => { setIsLoggedIn(false); setUserRole("personal"); window.dispatchEvent(new Event("vink:open-login")); }} /></Suspense>}
+      {has("manshyaAdmin")    && <Suspense fallback={null}><ManshyaAdmin          isOpen={showManshyaAdmin}    onClose={() => { setShowManshyaAdmin(false); pushRoute("/"); }} /></Suspense>}
+      {has("manshyaPay")      && <Suspense fallback={null}><ManshyaPay            isOpen={showManshyaPay}      onClose={() => { setShowManshyaPay(false); window.history.replaceState({}, "", "/"); }} /></Suspense>}
       {has("managementPanel") && <Suspense fallback={null}><ManagementPanelViewer  isOpen={showManagementPanel} onClose={() => { setShowManagementPanel(false); pushRoute("/"); }} adminName={getSession()?.name} adminRole={getSession()?.role === "superadmin" ? "Super Administrator" : getSession()?.role === "owner" ? "System Owner" : getSession()?.role} role={getSession()?.role} /></Suspense>}
 
       {/* Personal products */}

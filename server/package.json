@@ -10,11 +10,13 @@
     "start": "node dist/index.js",
     "lint": "tsc --noEmit",
     "test": "vitest run",
+    "test:manshya": "node --test \"src/manshya/tests/*.test.js\"",
     "test:watch": "vitest"
   },
   "dependencies": {
     "@types/multer": "^2.2.0",
     "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^13.0.3",
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "express-rate-limit": "^7.1.5",
@@ -23,8 +25,10 @@
     "jose": "^6.2.8",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
+    "pdfkit": "^0.20.2",
     "multer": "^2.2.0",
     "pg": "^8.22.0",
+    "qrcode": "^1.5.4",
     "uuid": "^9.0.1",
     "world-cities-json": "^1.0.1",
     "ws": "^8.16.0"
