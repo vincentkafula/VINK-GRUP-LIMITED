@@ -15,6 +15,9 @@ interface LoginModalProps {
 
 const REMEMBER_KEY = "vink_remember_username";
 
+// Seeded demo customer (db/migrate.ts seedDefaultCustomer, DEV_CREDENTIALS.md).
+const DEFAULT_CUSTOMER = { username: "customer1", password: "Customer@2026" };
+
 // ─── Stat strip (mirrors the reference design's promo-stats row) ──────────
 const STATS: { value: string; label: string }[] = [
   { value: "256-bit", label: "Encryption" },
@@ -87,8 +90,11 @@ function FormField({
 // the admin-vs-superadmin distinction and the section-permission check for
 // customer-role Section Managers) -- none of that logic was touched.
 export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalProps) {
-  const [userNumber, setUserNumber] = useState("");
-  const [password, setPassword] = useState("");
+  // The sign-in form opens with the demo customer account filled in (owner's request), so a
+  // click on "Sign in" lands on the customer's Manshya dashboard. A remembered username still wins.
+  // To remove: set both back to "".
+  const [userNumber, setUserNumber] = useState(DEFAULT_CUSTOMER.username);
+  const [password, setPassword] = useState(DEFAULT_CUSTOMER.password);
   const [pwHidden, setPwHidden] = useState(true);
   const [remember, setRemember] = useState(false);
   const [loading, setLoading] = useState(false);
