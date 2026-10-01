@@ -1,82 +1,52 @@
-# Developer Login Credentials
+# Developer sign-in accounts
 
-These are the default seeded accounts for local development and QA. They
-are **not shown anywhere in the product UI** — no autofill button, no hint
-text on the login screen, nothing a site visitor could discover by clicking
-around. This file is the only place they're documented, and it's meant for
-developers working on the codebase, not end users.
+**There are no passwords in this repository any more.** Earlier versions of this file and of
+`server/src/data/adminUsers.ts` listed fixed passwords. Because the repository is public, those
+passwords are compromised: **every account that ever used them must have its password changed**
+(see "Rotating a password"), and they must never be reused.
 
-All accounts are created automatically the first time the database seeds
-(see `server/src/db/migrate.ts`). Signing in with any of them through the
-normal login form on the site routes correctly based on role — this isn't
-a special "dev mode" bypass, it's exercising the real login → role check →
-dashboard flow with known credentials.
+## How seeded accounts get a password
 
-## Owner account (new, separate dashboard — pending)
+The accounts below are created automatically the first time the database is seeded. Each password
+comes from an environment variable, never from source code:
 
-| Field    | Value              |
-|----------|--------------------|
-| Username | `superadmin`       |
-| Password | `Wakuca97950@`     |
-| Role     | `owner`            |
+| Account (username) | Role | Variable |
+|---|---|---|
+| `admin` | `superadmin` (Management Panel) | `SEED_PASSWORD_ADMIN` |
+| `superadmin` | `owner` | `SEED_PASSWORD_OWNER` |
+| `noc1` | `noc_engineer` | `SEED_PASSWORD_NOC1` |
+| `billing1` | `billing_admin` | `SEED_PASSWORD_BILLING1` |
+| `customer1` | `customer` (Manshya dashboard) | `SEED_PASSWORD_CUSTOMER1` |
 
-Currently routes to the same Management Panel as the admin account below,
-as a placeholder — a distinct dashboard for this role is planned once the
-reference design is provided, at which point only this account's routing
-will change.
+- Value must be at least 12 characters.
+- **Local development:** if a variable is unset, the account gets a random password that is printed to
+  the server console once when it starts. Put your own in `server/.env` (git-ignored) to keep it stable.
+- **Production:** if a variable is unset, that account is **not created** (never one with a guessable password).
+  A brand-new production database therefore needs these set once for the first sign-in; remove them afterwards.
+- Existing databases are never changed by seeding: passwords already stored stay as they are.
+- To pre-fill the local sign-in form, put `VITE_DEV_LOGIN_USER` and `VITE_DEV_LOGIN_PASSWORD` in a git-ignored
+  `.env.local`. This only works in `vite dev`, never in a production build.
 
-## Admin account (existing Management Panel)
+## Rotating a password
 
-Routes to the **Management Panel** (matching `vink-dashboard(1).html`)
-after sign-in. This is the account that was previously named `superadmin`
-— renamed to `admin` to free up the `superadmin` username for the owner
-account above. Same password as before.
+```bash
+cd server
+DATABASE_URL='postgres://...' NEW_PASSWORD='a-long-random-passphrase' npm run set-password -- admin
+```
 
-| Field    | Value           |
-|----------|-----------------|
-| Username | `admin`         |
-| Password | `Admin@1234`    |
-| Role     | `superadmin`    |
+The password is read from the environment (not the command line) and stored as a bcrypt hash. Do this for
+`admin`, `superadmin`, `noc1`, `billing1` and `customer1` on every deployed database. Changing a password
+now sticks: boot-time seeding no longer resets it.
 
-Two additional management-role accounts also exist (`noc1` / `Noc@5678`,
-`billing1` / `Bill@9012`) — see `server/src/data/store.ts`.
+## Adding or changing a default account
 
-## Customer account
+- Accounts: `server/src/data/adminUsers.ts` (used for in-memory sign-in and for first-time seeding).
+- Default customer: `server/src/db/migrate.ts`, `seedDefaultCustomer()`.
+- The `admin`/`superadmin` rename in `seedAccountRestructure()` is a one-time migration matched by email.
 
-Routes to the **personal banking dashboard** after sign-in.
-
-| Field    | Value               |
-|----------|---------------------|
-| Username | `customer1`         |
-| Password | `Customer@2026`     |
-| Role     | `customer`          |
-| Name     | Demo Customer       |
-
-## Changing these
-
-To change a password, role, or add another default account, edit:
-
-- **Management/owner accounts** — `server/src/data/store.ts` (the
-  `db.users` array). Passwords are bcrypt-hashed at seed time via
-  `bcrypt.hashSync(...)`; edit the plaintext string there, not the hash.
-- **Default customer account** — `server/src/db/migrate.ts`, in
-  `seedDefaultCustomer()`.
-- **The admin/superadmin rename** — `server/src/db/migrate.ts`, in
-  `seedAccountRestructure()`. This is a one-time migration matched by
-  email address (stable across the rename), not username — safe to leave
-  in place indefinitely; it no-ops once the rename has happened.
-
-**Important pattern to know if you add more seeded data here**: this
-database has already been seeded with products since early in this
-project, and `migrateAndSeed()` has an early-return path that skips the
-main seed block entirely once that's true. Anything added only inside
-that main block will silently never run against the real, already-seeded
-database — it'll work in a fresh local test DB and then quietly do nothing
-in production. This has actually happened twice already (once for news
-content, once for the customer account) before being caught and fixed.
-Any new seed logic needs an explicit call from both the early-return
-branch and the fresh-seed branch, the way `seedNews()`,
-`seedDefaultCustomer()`, and `seedAccountRestructure()` all do.
+**Pattern to know:** this database was seeded long ago, and `migrateAndSeed()` returns early once users
+exist. Any new seed logic needs a call from both the early-return branch and the fresh-seed branch, the way
+`seedNews()`, `seedDefaultCustomer()` and `seedAccountRestructure()` do.
 
 ## Mastercard Open Banking integration (sandbox)
 
@@ -161,8 +131,6 @@ You confirmed you don't have an account with Smile Identity, Onfido, or any othe
 
 ## Before any real production launch
 
-Delete or rotate every credential in this file. These exist purely so a
-developer can sign in and see the management, owner, and customer
-experiences without registering a fresh account every time — they should
-never reach a real, publicly accessible deployment with real user data.
-
+- Set `JWT_SECRET` to a random value (the server refuses to start in production without one).
+- Do not set the `SEED_PASSWORD_*` variables in production unless you are creating the first accounts; remove them afterwards.
+- Make sure every account has a strong, unique password (`npm run set-password`, below).

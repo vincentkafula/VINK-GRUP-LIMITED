@@ -1,77 +1,52 @@
 import bcrypt from "bcryptjs";
 import { v4 as uuid } from "uuid";
 import type { AdminUser } from "../types/auth.js";
+import { seedPassword, BCRYPT_ROUNDS } from "../config/secrets.js";
 
 // Staff/admin login accounts for the Management Panel — used by both
 // the in-memory auth fallback (routes/auth.ts, when no DATABASE_URL is
 // set) and to seed the real `users` table on first boot (db/migrate.ts).
 //
-// Extracted from the old data/store.ts (deleted as part of removing
-// everything MVNO-specific) since this part of that file was never
-// MVNO data at all — it's the actual staff accounts for the whole
-// platform, banking admin included.
-//
-// SECURITY NOTE: these passwords are also committed in plaintext in
-// DEV_CREDENTIALS.md at the repo root — a known, flagged issue (see
-// plans/architecture/05-threat-model.md's Information Disclosure
-// section) still pending explicit go-ahead to rotate. Not touched here
-// — this file preserves the exact same seed behavior as before, moving
-// it, not changing it.
+// Passwords are NOT in this file. Each account's password comes from the
+// SEED_PASSWORD_<NAME> environment variable (ADMIN, OWNER, NOC1, BILLING1,
+// CUSTOMER1). When unset: in production the account is simply not created,
+// elsewhere it gets a random password printed to the console once. See
+// config/secrets.ts and DEV_CREDENTIALS.md. (Earlier versions of this file
+// committed fixed passwords; anyone who could read the repo knew them, so
+// every account that ever used them must have its password changed --
+// `npm run set-password` in server/.)
 const ago = (minutes: number) => new Date(Date.now() - minutes * 60_000).toISOString();
 
+const account = (
+  seed: string,
+  username: string,
+  role: AdminUser["role"],
+  name: string,
+  email: string,
+  lastLoginMinutesAgo: number | null,
+  createdMinutesAgo: number,
+): AdminUser | null => {
+  const password = seedPassword(seed);
+  if (!password) return null;
+  return {
+    id: uuid(),
+    username,
+    passwordHash: bcrypt.hashSync(password, BCRYPT_ROUNDS),
+    role,
+    name,
+    email,
+    lastLogin: lastLoginMinutesAgo === null ? null : ago(lastLoginMinutesAgo),
+    createdAt: ago(createdMinutesAgo),
+  };
+};
+
 export const adminUsers: AdminUser[] = [
-  {
-    id: uuid(),
-    username: "admin",
-    passwordHash: bcrypt.hashSync("Wakuca97950@", 10),
-    role: "superadmin" as const,
-    name: "Super Administrator",
-    email: "admin@vink.co.za",
-    lastLogin: ago(30),
-    createdAt: ago(43800),
-  },
-  {
-    id: uuid(),
-    username: "superadmin",
-    passwordHash: bcrypt.hashSync("Wakuca97950@", 10),
-    role: "owner" as const,
-    name: "System Owner",
-    email: "owner@vink.co.za",
-    lastLogin: ago(2),
-    createdAt: ago(43800),
-  },
-  {
-    id: uuid(),
-    username: "noc1",
-    passwordHash: bcrypt.hashSync("Noc@5678", 10),
-    role: "noc_engineer" as const,
-    name: "NOC Engineer 1",
-    email: "noc1@vink.co.za",
-    lastLogin: ago(10),
-    createdAt: ago(8760),
-  },
-  {
-    id: uuid(),
-    username: "billing1",
-    passwordHash: bcrypt.hashSync("Bill@9012", 10),
-    role: "billing_admin" as const,
-    name: "Billing Admin",
-    email: "billing@vink.co.za",
-    lastLogin: ago(120),
-    createdAt: ago(4380),
-  },
-  // Same dev customer account that db/migrate.ts seeds into Postgres
-  // (seedDefaultCustomer, see DEV_CREDENTIALS.md) -- present here too so the
-  // customer experience (including the Manshya dashboard) can be signed into
-  // when running without DATABASE_URL.
-  {
-    id: uuid(),
-    username: "customer1",
-    passwordHash: bcrypt.hashSync("Customer@2026", 10),
-    role: "customer" as const,
-    name: "Demo Customer",
-    email: "customer@vink.co.za",
-    lastLogin: null,
-    createdAt: ago(4380),
-  },
-];
+  account("ADMIN", "admin", "superadmin", "Super Administrator", "admin@vink.co.za", 30, 43800),
+  account("OWNER", "superadmin", "owner", "System Owner", "owner@vink.co.za", 2, 43800),
+  account("NOC1", "noc1", "noc_engineer", "NOC Engineer 1", "noc1@vink.co.za", 10, 8760),
+  account("BILLING1", "billing1", "billing_admin", "Billing Admin", "billing@vink.co.za", 120, 4380),
+  // Same dev customer account that db/migrate.ts seeds into Postgres (seedDefaultCustomer) --
+  // present here too so the customer experience (including the Manshya dashboard) can be
+  // signed into when running without DATABASE_URL.
+  account("CUSTOMER1", "customer1", "customer", "Demo Customer", "customer@vink.co.za", null, 4380),
+].filter((u): u is AdminUser => u !== null);

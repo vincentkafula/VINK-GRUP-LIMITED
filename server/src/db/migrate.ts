@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { pool, hasDb } from "./pool.js";
 import { NEWS_ARTICLES } from "../data/newsData.js";
 import { adminUsers } from "../data/adminUsers.js";
+import { seedPassword, BCRYPT_ROUNDS } from "../config/secrets.js";
 
 /**
  * Creates the schema (if missing) and seeds it with the same demo data the
@@ -70,12 +71,15 @@ export async function migrateAndSeed(): Promise<void> {
 // to run.
 async function seedDefaultCustomer(existingClient?: import("pg").PoolClient): Promise<void> {
   if (!hasDb || !pool) return;
+  // No SEED_PASSWORD_CUSTOMER1 in production = no demo account (never one with a guessable password).
+  const password = seedPassword("CUSTOMER1");
+  if (!password) return;
   const client = existingClient ?? pool;
   await client.query(
     `INSERT INTO users (username, password_hash, role, name, email)
      VALUES ('customer1', $1, 'customer', 'Demo Customer', 'customer@vink.co.za')
      ON CONFLICT (username) DO NOTHING`,
-    [bcrypt.hashSync("Customer@2026", 10)]
+    [bcrypt.hashSync(password, BCRYPT_ROUNDS)]
   );
 }
 
@@ -103,24 +107,16 @@ async function seedAccountRestructure(): Promise<void> {
   await pool.query(
     `UPDATE users SET username = 'admin' WHERE username = 'superadmin' AND email = 'admin@vink.co.za'`
   );
-  // The admin account's password was previously "Admin@1234" (see
-  // DEV_CREDENTIALS.md's git history) -- now explicitly set to match
-  // "superadmin"'s password, per the requirement that both management
-  // accounts share one password and only the username determines which
-  // dashboard a login routes to (admin -> BankingDashboard, superadmin ->
-  // Management Panel; see LoginModal.tsx). Set unconditionally (not
-  // ON CONFLICT DO NOTHING) since this needs to actually change the
-  // password on a database that already seeded this row with the old one,
-  // not just skip if the account already exists.
-  await pool.query(
-    `UPDATE users SET password_hash = $1 WHERE username = 'admin' AND email = 'admin@vink.co.za'`,
-    [bcrypt.hashSync("Wakuca97950@", 10)]
-  );
+  // NOTE: this used to also reset the admin password to a fixed value on EVERY boot, which
+  // would have silently undone any password change made in the database. It no longer
+  // touches passwords: change them with `npm run set-password` and they stay changed.
+  const ownerPassword = seedPassword("OWNER");
+  if (!ownerPassword) return;   // production without SEED_PASSWORD_OWNER: don't create it with a guessable password
   await pool.query(
     `INSERT INTO users (username, password_hash, role, name, email)
      VALUES ('superadmin', $1, 'owner', 'System Owner', 'owner@vink.co.za')
      ON CONFLICT (username) DO NOTHING`,
-    [bcrypt.hashSync("Wakuca97950@", 10)]
+    [bcrypt.hashSync(ownerPassword, BCRYPT_ROUNDS)]
   );
 }
 

@@ -59,16 +59,16 @@ describe("manshya HTTP access", () => {
   it("a customer gets their own merchant account; staff do not", async () => {
     const res = await get("/me", token("customer", "cust-1"));
     expect(res.status).toBe(200);
-    expect(await res.json()).toMatchObject({ id: "cust-1", role: "owner" });
+    expect((await res.json()) as object).toMatchObject({ id: "cust-1", role: "owner" });
 
     const staff = await get("/balance", token("owner"));
     expect(staff.status).toBe(403);
-    expect((await staff.json()).error.code).toBe("customer_only");
+    expect(((await staff.json()) as { error: { code: string } }).error.code).toBe("customer_only");
   });
 
   it("customers are kept apart from each other and from the back office", async () => {
-    const a = await (await get("/bank/accounts", token("customer", "cust-a"))).json();
-    const b = await (await get("/bank/accounts", token("customer", "cust-b"))).json();
+    const a = (await (await get("/bank/accounts", token("customer", "cust-a"))).json()) as { data: { id: string }[] };
+    const b = (await (await get("/bank/accounts", token("customer", "cust-b"))).json()) as { data: { id: string }[] };
     expect(a.data[0].id).not.toBe(b.data[0].id);
 
     expect((await get("/admin/overview", token("customer"))).status).toBe(403);

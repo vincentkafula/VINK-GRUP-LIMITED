@@ -15,8 +15,12 @@ interface LoginModalProps {
 
 const REMEMBER_KEY = "vink_remember_username";
 
-// Seeded demo customer (db/migrate.ts seedDefaultCustomer, DEV_CREDENTIALS.md).
-const DEFAULT_CUSTOMER = { username: "customer1", password: "Customer@2026" };
+// Local development convenience only: set VITE_DEV_LOGIN_USER / VITE_DEV_LOGIN_PASSWORD in a git-ignored
+// .env.local to open the form pre-filled. Never baked into production builds (guarded by import.meta.env.DEV)
+// and no credentials live in source.
+const DEFAULT_CUSTOMER = import.meta.env.DEV
+  ? { username: import.meta.env.VITE_DEV_LOGIN_USER ?? "", password: import.meta.env.VITE_DEV_LOGIN_PASSWORD ?? "" }
+  : { username: "", password: "" };
 
 // ─── Stat strip (mirrors the reference design's promo-stats row) ──────────
 const STATS: { value: string; label: string }[] = [
@@ -90,9 +94,7 @@ function FormField({
 // the admin-vs-superadmin distinction and the section-permission check for
 // customer-role Section Managers) -- none of that logic was touched.
 export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalProps) {
-  // The sign-in form opens with the demo customer account filled in (owner's request), so a
-  // click on "Sign in" lands on the customer's Manshya dashboard. A remembered username still wins.
-  // To remove: set both back to "".
+  // Pre-filled only in local development (see DEFAULT_CUSTOMER). A remembered username still wins.
   const [userNumber, setUserNumber] = useState(DEFAULT_CUSTOMER.username);
   const [password, setPassword] = useState(DEFAULT_CUSTOMER.password);
   const [pwHidden, setPwHidden] = useState(true);

@@ -11,13 +11,9 @@ pnpm build      # compile TypeScript → dist/
 pnpm start      # run compiled build
 ```
 
-## Default Credentials
+## Sign-in accounts
 
-| Username     | Password      | Role            |
-|--------------|---------------|-----------------|
-| superadmin   | Admin@1234    | Super Admin     |
-| noc1         | Noc@5678      | NOC Engineer    |
-| billing1     | Bill@9012     | Billing Admin   |
+No passwords are stored in the repository. Seeded accounts take their password from `SEED_PASSWORD_<NAME>` environment variables (or get a random one in local development). See `DEV_CREDENTIALS.md` and `npm run set-password`.
 
 ## Endpoints
 

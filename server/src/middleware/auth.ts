@@ -1,8 +1,10 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import type { AuthPayload } from "../types/auth.js";
+import { resolveJwtSecret } from "../config/secrets.js";
 
-export const JWT_SECRET = process.env.JWT_SECRET ?? "vink-mvno-dev-secret-change-in-prod";
+// Required in production (the server will not start without it); see config/secrets.ts.
+export const JWT_SECRET = resolveJwtSecret();
 export const JWT_EXPIRES = "8h";
 
 declare global {

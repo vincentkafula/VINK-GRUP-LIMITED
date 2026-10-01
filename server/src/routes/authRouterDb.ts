@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { pool } from "../db/pool.js";
 import { JWT_SECRET, JWT_EXPIRES, requireAuth } from "../middleware/auth.js";
+import { BCRYPT_ROUNDS } from "../config/secrets.js";
 
 const router: ReturnType<typeof Router> = Router();
 
@@ -47,7 +48,7 @@ router.post("/register", async (req: Request, res: Response): Promise<void> => {
   // whitespace (easy to introduce via copy-paste) would otherwise create
   // a stored password that doesn't match what anyone would naturally
   // type back in to log in.
-  const passwordHash = await bcrypt.hash(password.trim(), 10);
+  const passwordHash = await bcrypt.hash(password.trim(), BCRYPT_ROUNDS);
   const { rows } = await pool!.query(
     `INSERT INTO users (username, password_hash, role, name, email) VALUES ($1,$2,$3,$4,$5) RETURNING *`,
     [username, passwordHash, accountRole, name, email]
@@ -81,7 +82,7 @@ router.post("/change-password", requireAuth, async (req: Request, res: Response)
     res.status(401).json({ success: false, error: "Current password is incorrect" });
     return;
   }
-  const newHash = await bcrypt.hash(newPassword, 10);
+  const newHash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
   await pool!.query(`UPDATE users SET password_hash = $1 WHERE id = $2`, [newHash, user.id]);
   res.json({ success: true, message: "Password updated" });
 });

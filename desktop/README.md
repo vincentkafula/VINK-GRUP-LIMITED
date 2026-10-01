@@ -67,7 +67,7 @@ Output lands in `desktop/release/`.
 
 The app opens on the normal VINK Bank homepage, same as the website —
 click **Sign In** and log in with a staff account (see
-`DEV_CREDENTIALS.md`, e.g. `admin` / `Admin@1234`). Staff roles route
+`DEV_CREDENTIALS.md` for how the accounts and their passwords are set up). Staff roles route
 into the Management Panel automatically after login, exactly like on
 vink.co.za. Your session is remembered between launches (Electron
 persists `localStorage` to disk the same way a browser does), so this is
