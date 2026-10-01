@@ -38,7 +38,7 @@ const DEFAULTS = {
   payoutApprovalThreshold: 5000000,   // payouts above R50,000 requested by a finance user wait for an admin
   chargebackFee: 15000,               // R150 per lost dispute
   fraud: { largeAmount: 5000000, velocity: 5, declineSpike: 5, windowMinutes: 10 },
-  bankName: 'Manshya Bank', branchCode: '000001', swift: 'MNSHZAJJ',
+  bankName: 'Manshya Finance', branchCode: '000001', swift: 'MNSHZAJJ',
   payshapLimit: 300000,               // R3,000 per instant payment (set to your rail's limit)
   cash: { maxAmount: 300000, expiresHours: 72 },
   fx: { rates: { USD: 18.2, EUR: 19.8, GBP: 23.1 }, markupPct: 0.015, fee: 15000, maxPerPayment: 100000000 },

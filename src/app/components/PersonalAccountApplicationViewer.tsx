@@ -731,7 +731,7 @@ function Step7({ onClose, onGoToDashboard, referenceNumber, accountNumber, login
 
       {/* Contact */}
       <div className="border border-gray-200 rounded-xl p-5 bg-white">
-        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-4">MANSHYA BANK CONTACT</p>
+        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-4">MANSHYA FINANCE CONTACT</p>
         <div className="grid sm:grid-cols-2 gap-3 text-xs text-gray-700">
           <div>
             <p className="text-gray-400 mb-0.5">Website</p>

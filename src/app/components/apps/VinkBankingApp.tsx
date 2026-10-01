@@ -106,7 +106,7 @@ function OnboardingScreen({ onSelect }: { onSelect: (tier: Tier) => void }) {
   return (
     <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F8F7FF" }}>
       <div className="px-5 pt-8 pb-5 text-center" style={{ background: PURPLE }}>
-        <p className="text-xs font-bold tracking-widest" style={{ color: GOLD }}>MANSHYA BANK</p>
+        <p className="text-xs font-bold tracking-widest" style={{ color: GOLD }}>MANSHYA FINANCE</p>
         <p className="text-white text-lg font-bold mt-2">Which account do you want?</p>
         <p className="text-white/60 text-[11px] mt-1">Every tier keeps everything from the one before it.</p>
       </div>
@@ -871,7 +871,7 @@ export function VinkBankingApp({ isOpen, onClose, onOpenManagementPanel, onOpenA
   const showTabs = authUser !== null && screen !== "onboarding" && !verifying;
 
   return (
-    <MobileAppOverlay onClose={onClose} appName="MANSHYA Bank" bgColor="#F8F7FF">
+    <MobileAppOverlay onClose={onClose} appName="MANSHYA Finance" bgColor="#F8F7FF">
       <PhoneFrame statusBarColor={PURPLE} statusBarTextLight>
         <div className="flex-1 overflow-hidden flex flex-col">
           {!checkedSession ? (

@@ -482,7 +482,7 @@ export function ContactUsViewer({ isOpen, onClose, initialTab }: Props) {
             <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#EDE9FE", color: P }}><Building2 className="w-5 h-5" /></div>
             <div>
               <p className="text-[11px] font-bold uppercase tracking-wide text-gray-400 mb-1">Head Office</p>
-              <p className="font-black text-gray-900 text-sm">MANSHYA Bank Limited</p>
+              <p className="font-black text-gray-900 text-sm">MANSHYA Finance Limited</p>
               <p className="text-xs text-gray-500 mt-0.5">State House Building, 8 Rose Street, Cape Town, South Africa</p>
               <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2">
                 <a href="mailto:info@vink.co.za" className="text-xs font-semibold no-underline" style={{ color: P }}>info@vink.co.za</a>

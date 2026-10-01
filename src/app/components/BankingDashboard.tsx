@@ -118,7 +118,7 @@ function VisualCard({ card, compact = false }: { card: R; compact?: boolean }) {
       <div className={`relative z-10 ${compact ? "p-3" : "p-5"} h-full flex flex-col justify-between`}>
         <div className="flex justify-between items-start">
           <div>
-            <p className="text-[9px] tracking-widest opacity-60 uppercase">MANSHYA BANK</p>
+            <p className="text-[9px] tracking-widest opacity-60 uppercase">MANSHYA FINANCE</p>
             <p className={`font-bold mt-0.5 ${compact ? "text-xs" : "text-sm"}`}>{cap(card.tier as string)} {cap(card.type as string)}</p>
           </div>
           <div className="flex flex-col items-end gap-1">
@@ -1214,7 +1214,7 @@ export function BankingDashboard({ isOpen, onClose, onOpenDriveDashboard, onOpen
                 <div>
                   <div className="flex items-center gap-2 mb-0.5">
                     <Building2 className="w-5 h-5" style={{ color: accentColor }}/>
-                    <span className="text-white font-black text-base">MANSHYA BANK</span>
+                    <span className="text-white font-black text-base">MANSHYA FINANCE</span>
                   </div>
                   <p className="text-[10px]" style={{ color: "#8884AA" }}>Manager Panel</p>
                 </div>

@@ -14,7 +14,7 @@
  * doesn't leave the homepage permanently showing a sub-page's title.
  */
 
-const DEFAULT_TITLE = "MANSHYA Bank";
+const DEFAULT_TITLE = "MANSHYA Finance";
 const DEFAULT_DESCRIPTION = "MANSHYA — South Africa's first transport-native digital bank. AFC payments, banking, ride-hailing, fleet tracking and MVNO in one platform.";
 
 export function setPageMeta(title: string, description: string): () => void {

@@ -61,7 +61,7 @@ const APPS = [
     id: "banking",
     name: "MANSHYA Banking",
     subtitle: "Personal & Business Banking",
-    description: "Your full MANSHYA bank account in your pocket. Send money, manage cards, earn ManshyaPoints, pay utility bills, and access all your financial products — available 24/7 on iOS and Android.",
+    description: "Your full MANSHYA finance account in your pocket. Send money, manage cards, earn ManshyaPoints, pay utility bills, and access all your financial products — available 24/7 on iOS and Android.",
     platform: ["iOS", "Android"],
     category: "Banking & Finance",
     version: "v5.1.3",

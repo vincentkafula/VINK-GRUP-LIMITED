@@ -117,7 +117,7 @@ export function ManshyaDashboard({ isOpen, onClose, onSignOut }: Props) {
 
   const firstName = (session?.name || me?.name || "").split(/\s+/)[0] || "there";
   const tabs: [Mode, string, string, string][] = [
-    ["online", "Online payments", "cart", "manshya pay"], ["pos", "In-person payments", "dev", "manshya tap"], ["bank", "Banking", "bank", "manshya bank"],
+    ["online", "Online payments", "cart", "manshya pay"], ["pos", "In-person payments", "dev", "manshya tap"], ["bank", "Banking", "bank", "manshya finance"],
   ];
 
   return (

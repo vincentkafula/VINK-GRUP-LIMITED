@@ -33,7 +33,7 @@ const REASONS = [
   {
     title: "High growth potential",
     icon: "🚀",
-    text: "MANSHYA Bank targets rapid adoption from launch, driven by accelerated digital uptake among underbanked commuters, cost efficiency built into the platform from day one, and a clear roadmap for strategic partnerships.",
+    text: "MANSHYA Finance targets rapid adoption from launch, driven by accelerated digital uptake among underbanked commuters, cost efficiency built into the platform from day one, and a clear roadmap for strategic partnerships.",
   },
 ];
 
@@ -209,7 +209,7 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
       {/* ── Hero banner ── */}
       <div className="px-6 py-8" style={{ background: `linear-gradient(135deg,${PD} 0%,${P} 60%,#34A853 100%)` }}>
         <div className="max-w-5xl mx-auto">
-          <p className="text-white/60 text-xs uppercase tracking-widest mb-1">MANSHYA Bank · Corporate</p>
+          <p className="text-white/60 text-xs uppercase tracking-widest mb-1">MANSHYA Finance · Corporate</p>
           <h1 className="text-3xl md:text-4xl font-black text-white mb-1">Investor Relations</h1>
           <p className="text-white/70 text-sm mb-6">Business Plan &amp; Projections</p>
           <p className="text-white/80 text-sm max-w-2xl leading-relaxed mb-6">

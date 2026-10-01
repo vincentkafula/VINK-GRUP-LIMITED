@@ -61,7 +61,7 @@ const SERVICE_CONFIG: Record<ServiceType, {
     subtitle:      "Open your selected MANSHYA account in minutes — FICA-verified and ready to use.",
     gradient:      "linear-gradient(135deg,#1A237E 0%,#128A43 55%,#34A853 100%)",
     successTitle:  "Account Opened!",
-    successBody:   "Your MANSHYA bank account is active. Your MANSHYA card will be delivered to your registered address within 5–7 business days.",
+    successBody:   "Your MANSHYA finance account is active. Your MANSHYA card will be delivered to your registered address within 5–7 business days.",
     accountLabel:  "Account number",
     accountPrefix: "MANSHYA-ACC",
     accentColor:   "#128A43",

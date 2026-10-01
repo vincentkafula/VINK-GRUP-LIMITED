@@ -1,5 +1,5 @@
 /**
- * MANSHYA Bank — Admin Applications Dashboard
+ * MANSHYA Finance — Admin Applications Dashboard
  * Reviewer UI for Personal/Business/Corporate account applications, backed
  * by the real applications table (server/src/routes/applicationsRouter.ts).
  */
@@ -257,7 +257,7 @@ export function AdminApplicationsViewer({ isOpen, onClose }: Props) {
             <img src={vinkLogo} alt="MANSHYA" className="h-9 w-auto object-contain" />
             <div className="border-l border-gray-200 pl-3 hidden sm:block">
               <p className="text-sm font-black text-gray-800">Applications Dashboard</p>
-              <p className="text-[11px] text-gray-400">MANSHYA Bank · Admin · Personal / Business / Corporate accounts</p>
+              <p className="text-[11px] text-gray-400">MANSHYA Finance · Admin · Personal / Business / Corporate accounts</p>
             </div>
           </div>
           <div className="flex items-center gap-2">

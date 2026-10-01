@@ -51,7 +51,7 @@ export const FeaturedOffersSection = memo(function FeaturedOffersSection({ onCom
                 <div className="relative z-10 p-5 flex flex-col justify-between h-full text-white">
                   <div className="flex justify-between items-start mt-5">
                     <div>
-                      <p className="text-[9px] tracking-widest opacity-60 uppercase font-semibold">MANSHYA BANK</p>
+                      <p className="text-[9px] tracking-widest opacity-60 uppercase font-semibold">MANSHYA FINANCE</p>
                       <p className="text-base font-bold mt-0.5">{o.name}</p>
                     </div>
                     <div className="w-9 h-6 rounded bg-yellow-400/60 border border-yellow-300/40"/>
