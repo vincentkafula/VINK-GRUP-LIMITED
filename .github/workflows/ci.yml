@@ -48,7 +48,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # better-sqlite3 (Manshya) needs Node 22 or newer; on Node 20 it crashes when loaded.
+          node-version: 22
           cache: npm
           cache-dependency-path: server/package-lock.json
       - working-directory: server
