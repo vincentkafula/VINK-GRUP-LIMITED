@@ -16,6 +16,8 @@ export type IssuingProviderName = "mock" | "paymentology";
 export type AcquiringProviderName = "mock";
 /** Looks after existing cards. visa_dps = Visa DPS Card and Account Services, SANDBOX ONLY (live cards go through the BIN sponsor, Paymentology). */
 export type CardServicingProviderName = "mock" | "visa_dps";
+/** Checks a card is valid. visa_pav = Visa Payment Account Validation, SANDBOX ONLY. */
+export type AccountValidationProviderName = "mock" | "visa_pav";
 
 export const LIVE_ENABLE_PHRASE = "I_UNDERSTAND_THIS_MOVES_REAL_MONEY";
 
@@ -30,6 +32,9 @@ export interface PaymentsConfig {
   issuingProvider: IssuingProviderName;
   acquiringProvider: AcquiringProviderName;
   cardServicingProvider: CardServicingProviderName;
+  accountValidationProvider: AccountValidationProviderName;
+  /** Visa PAV settings (acquirer details are required by the API), only when accountValidationProvider is visa_pav. */
+  visaPav: { baseUrl: string; apiKey: string; sharedSecret: string; acquiringBin: string; acquirerCountryCode: string; acceptorName: string; acceptorIdCode: string; terminalId: string } | null;
   /** Visa sandbox settings, only when cardServicingProvider is visa_dps. */
   visaDps: { baseUrl: string; apiKey: string; sharedSecret: string; programType: "debit" | "prepaid" } | null;
   /** Credentials for the selected real provider, taken from the SANDBOX_ or LIVE_ variable set matching `mode`. Null for "mock". */
@@ -39,6 +44,7 @@ export interface PaymentsConfig {
 const ISSUERS: IssuingProviderName[] = ["mock", "paymentology"];
 const ACQUIRERS: AcquiringProviderName[] = ["mock"];
 const SERVICERS: CardServicingProviderName[] = ["mock", "visa_dps"];
+const VALIDATORS: AccountValidationProviderName[] = ["mock", "visa_pav"];
 
 function credsFor(prefix: string, env: NodeJS.ProcessEnv): ProviderCredentials | null {
   const baseUrl = env[`${prefix}_BASE_URL`]?.trim(), apiKey = env[`${prefix}_API_KEY`]?.trim(), webhookSecret = env[`${prefix}_WEBHOOK_SECRET`]?.trim();
@@ -64,6 +70,14 @@ export function resolvePaymentsConfig(env: NodeJS.ProcessEnv = process.env): Pay
     ? { baseUrl: env.SANDBOX_VISA_BASE_URL?.trim() || "https://sandbox.api.visa.com", apiKey: visaKey, sharedSecret: visaSecret, programType: programType as "debit" | "prepaid" }
     : null;
 
+  const validation = (env.ACCOUNT_VALIDATION_PROVIDER ?? "mock").trim().toLowerCase() as AccountValidationProviderName;
+  if (!VALIDATORS.includes(validation)) throw new Error(`ACCOUNT_VALIDATION_PROVIDER must be one of ${VALIDATORS.join(", ")}, got "${validation}".`);
+  const bin = env.SANDBOX_VISA_ACQUIRING_BIN?.trim(), country = env.SANDBOX_VISA_ACQUIRER_COUNTRY?.trim(), idCode = env.SANDBOX_VISA_ACCEPTOR_ID_CODE?.trim();
+  const visaPav = validation === "visa_pav" && visaKey && visaSecret && bin && country && idCode
+    ? { baseUrl: env.SANDBOX_VISA_BASE_URL?.trim() || "https://sandbox.api.visa.com", apiKey: visaKey, sharedSecret: visaSecret, acquiringBin: bin, acquirerCountryCode: country,
+        acceptorName: env.SANDBOX_VISA_ACCEPTOR_NAME?.trim() || "MANSHYA", acceptorIdCode: idCode, terminalId: env.SANDBOX_VISA_TERMINAL_ID?.trim() || "00000001" }
+    : null;
+
   // Credentials are looked up by mode: SANDBOX_PAYMENTOLOGY_* in sandbox, LIVE_PAYMENTOLOGY_* in live. Never the other set.
   const paymentology = issuing === "paymentology" ? credsFor(`${mode === "live" ? "LIVE" : "SANDBOX"}_PAYMENTOLOGY`, env) : null;
 
@@ -73,7 +87,10 @@ export function resolvePaymentsConfig(env: NodeJS.ProcessEnv = process.env): Pay
   }
   if (servicing === "visa_dps" && !visaDps) problems.push("CARD_SERVICING_PROVIDER=visa_dps needs SANDBOX_VISA_API_KEY and SANDBOX_VISA_SHARED_SECRET.");
 
+  if (validation === "visa_pav" && !visaPav) problems.push("ACCOUNT_VALIDATION_PROVIDER=visa_pav needs SANDBOX_VISA_API_KEY, SANDBOX_VISA_SHARED_SECRET, SANDBOX_VISA_ACQUIRING_BIN, SANDBOX_VISA_ACQUIRER_COUNTRY (3-digit ISO numeric) and SANDBOX_VISA_ACCEPTOR_ID_CODE.");
+
   if (mode === "live") {
+    if (validation !== "mock") problems.push("Live mode cannot use the Visa PAV sandbox provider (it needs an acquiring BIN from an acquirer; none is set up).");
     problems.push("Live mode has no card-servicing provider yet: visa_dps is sandbox-only and live cards go through the BIN sponsor (Paymentology), whose servicing adapter is not built.");
     if (env.NODE_ENV !== "production") problems.push("Live mode needs NODE_ENV=production.");
     if (env.PAYMENTS_LIVE_ENABLED !== LIVE_ENABLE_PHRASE) problems.push(`Live mode needs PAYMENTS_LIVE_ENABLED=${LIVE_ENABLE_PHRASE}.`);
@@ -86,7 +103,7 @@ export function resolvePaymentsConfig(env: NodeJS.ProcessEnv = process.env): Pay
   if (problems.length) {
     throw new Error(`Payments configuration refused:\n  - ${problems.join("\n  - ")}`);
   }
-  return { mode, issuingProvider: issuing, acquiringProvider: acquiring, cardServicingProvider: servicing, visaDps, paymentology };
+  return { mode, issuingProvider: issuing, acquiringProvider: acquiring, cardServicingProvider: servicing, visaDps, accountValidationProvider: validation, visaPav, paymentology };
 }
 
 /** Manshya core calls its sandbox "test" (it prefixes API keys mk_test_ / mk_live_). */

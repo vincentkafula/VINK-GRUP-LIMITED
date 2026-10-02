@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { resolvePaymentsConfig, type PaymentsConfig } from "./config.js";
-import { getCardServicingProvider } from "./providers/registry.js";
+import { getCardServicingProvider, getAccountValidationProvider } from "./providers/registry.js";
 import { redactPan } from "./providers/visaDps.js";
 import { GENERIC_TEST_CARDS, MOCK_SCENARIOS } from "./sandbox/testData.js";
 import type { ServicedCardStatus } from "./providers/types.js";
@@ -16,6 +16,7 @@ import type { ServicedCardStatus } from "./providers/types.js";
 export function createPaymentsSandboxRouter(cfg: PaymentsConfig = resolvePaymentsConfig()): Router {
   const router = Router();
   const servicing = getCardServicingProvider(cfg);
+  const validator = getAccountValidationProvider(cfg);
 
   router.use((_req, res, next) => {
     if (cfg.mode !== "sandbox") { res.status(404).json({ success: false, error: "Endpoint not found" }); return; }
@@ -33,7 +34,7 @@ export function createPaymentsSandboxRouter(cfg: PaymentsConfig = resolvePayment
     res.json({
       success: true,
       data: {
-        mode: cfg.mode, cardServicingProvider: cfg.cardServicingProvider, issuingProvider: cfg.issuingProvider,
+        mode: cfg.mode, cardServicingProvider: cfg.cardServicingProvider, accountValidationProvider: cfg.accountValidationProvider, issuingProvider: cfg.issuingProvider,
         testCards: GENERIC_TEST_CARDS.map(({ label, brand, scenario }) => ({ label, brand, scenario })), scenarios: MOCK_SCENARIOS,
       },
     });
@@ -45,6 +46,19 @@ export function createPaymentsSandboxRouter(cfg: PaymentsConfig = resolvePayment
     try {
       const { cardId } = await servicing.registerCard({ primaryAccountNumber: pan });
       res.status(201).json({ success: true, data: { cardId, last4: pan.slice(-4) } });
+    } catch (e) { fail(res, e); }
+  });
+
+  // Validate a card (sandbox test numbers only). The card number and CVV2 are forwarded and never stored or logged; the response has the verdict only.
+  router.post("/validate", async (req: Request, res: Response) => {
+    const b = req.body ?? {};
+    const pan = String(b.primaryAccountNumber ?? "").replace(/[ -]/g, "");
+    if (!/^[0-9]{13,19}$/.test(pan)) { res.status(400).json({ success: false, error: "primaryAccountNumber must be 13 to 19 digits" }); return; }
+    if (!/^[0-9]{4}-(0[1-9]|1[0-2])$/.test(String(b.expiry ?? ""))) { res.status(400).json({ success: false, error: "expiry must be YYYY-MM" }); return; }
+    if (b.cvv2 !== undefined && !/^[0-9]{3,4}$/.test(String(b.cvv2))) { res.status(400).json({ success: false, error: "cvv2 must be 3 or 4 digits" }); return; }
+    try {
+      const r = await validator.validate({ primaryAccountNumber: pan, expiry: String(b.expiry), cvv2: b.cvv2 === undefined ? undefined : String(b.cvv2), postalCode: b.postalCode ? String(b.postalCode) : undefined, street: b.street ? String(b.street) : undefined });
+      res.json({ success: true, data: { ...r, last4: pan.slice(-4) } });
     } catch (e) { fail(res, e); }
   });
 

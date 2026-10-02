@@ -67,6 +67,35 @@ export interface CardServicingProvider {
   getCardDetails(cardId: string): Promise<ServicedCardDetails>;
 }
 
+/* ───────── Account validation: is this card real and in good standing? (e.g. Visa Payment Account Validation) ───────── */
+
+export interface AccountValidationRequest {
+  /** PCI-scoped. Server-to-server only, never stored or logged. Prefer a provider token reference where the provider supports one. */
+  primaryAccountNumber: string;
+  /** YYYY-MM */
+  expiry: string;
+  /** Security code. Never stored or logged; sending it through our servers puts them in PCI scope (see docs/payments/PROVIDERS.md). */
+  cvv2?: string;
+  postalCode?: string;
+  street?: string;
+}
+
+export interface AccountValidationResult {
+  valid: boolean;
+  /** The provider's own result code (Visa: actionCode). */
+  actionCode: string;
+  /** Provider reference for the check. */
+  reference?: string;
+  /** Per-check outcomes, as the provider's raw codes. Present only if that check was requested. */
+  cvv2Result?: string;
+  addressResult?: string;
+}
+
+export interface AccountValidationProvider {
+  readonly name: string;
+  validate(input: AccountValidationRequest): Promise<AccountValidationResult>;
+}
+
 /* ───────── Acquiring: taking card payments from customers (a PSP) ───────── */
 
 export type PaymentState = "pending" | "authorized" | "captured" | "settled" | "failed" | "reversed" | "refunded";

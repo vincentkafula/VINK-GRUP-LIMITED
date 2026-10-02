@@ -34,6 +34,18 @@ Not built, on purpose: PIN set/change (spec requires Message Level Encryption, a
 - Tests: offline tests check every request against the spec; `visaDps.sandbox.test.ts` hits the real sandbox only when credentials and `SANDBOX_VISA_TEST_PAN` are set.
 - `visa_dps` is rejected in live mode: live card servicing goes through Paymentology, whose servicing adapter is not built.
 
+## Visa Payment Account Validation (sandbox, built)
+One call, `POST /pav/v1/cardvalidation`: checks a card is valid before you try to charge it (a $0 authorisation, plus optional CVV2, address and name checks).
+
+- Code: `providers/visaPav.ts`; select with `ACCOUNT_VALIDATION_PROVIDER=visa_pav`. Staff sandbox route: `POST /api/payments/sandbox/validate`.
+- **It is an acquirer API.** The spec requires `acquiringBin` and `acquirerCountryCode`. We have no acquiring BIN (the planned BIN is an *issuing* BIN sponsored by Paymentology), so these come from configuration and are never invented, and production use needs an acquirer partner. It is rejected in live mode.
+- **It takes a card number and optionally a CVV2.** Passing those through our servers puts them in PCI scope. The spec also accepts `paymentCredentialReference` (a token reference) instead of a card number; prefer that for anything customer-facing. The sandbox route is staff-only and for test numbers only.
+- Assumptions to confirm (not in the exported file): `actionCode "00"` means approved (Visa's code table is on a separate page); expiry is sent as `YYYY-MM` because the spec's examples and length say so even though its text says yymm.
+- Not built: tokens/TAVV, age verification, name inquiry and identity verification (the spec says these need Message Level Encryption).
+
+## Visa B2B Virtual Account Payment Method (not built)
+The export has about 45 endpoints, in groups: buyer and buyer-template management, supplier management, virtual-account requisitions and payment controls, payment processing (`/vpa/v1/payment/ProcessPayments`, `GetPaymentDetails`, `CancelPayment`, `ResendPayment`), proxy pools, funding accounts, and `/pop/...` recipe and health-check calls. Every call needs a Visa-issued `buyerId` and `clientId` from onboarding as a buyer/program administrator (the examples use placeholders such as `B2BWS_1_1_9999`). Before building any of it we need to know the business use case (for example paying suppliers from the dashboard's business payouts) and to have those IDs. Until then it is deliberately left out.
+
 ## Paymentology (issuing)
 - Their API reference and sandbox are available only to onboarded clients, so the real request shapes, authentication,
   card-lifecycle calls, authorisation-webhook format and signature scheme are **not in this repository and were not guessed**.
