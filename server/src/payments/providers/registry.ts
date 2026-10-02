@@ -2,7 +2,8 @@ import type { PaymentsConfig } from "../config.js";
 import type { IssuingProvider, CardServicingProvider, AccountValidationProvider } from "./types.js";
 import { VisaPavValidation } from "./visaPav.js";
 import { MockAccountValidation } from "./mockAccountValidation.js";
-import { VisaDpsServicing, xPayAuthenticator } from "./visaDps.js";
+import { VisaDpsServicing } from "./visaDps.js";
+import { buildVisaAuth } from "./visaAuth.js";
 import { MockCardServicing } from "./mockCardServicing.js";
 import { MockIssuer } from "./mockIssuer.js";
 import { PaymentologyIssuer } from "./paymentologyIssuer.js";
@@ -19,7 +20,7 @@ export function getCardServicingProvider(cfg: PaymentsConfig): CardServicingProv
     case "mock": return new MockCardServicing();
     case "visa_dps": {
       const v = cfg.visaDps!;   // config validation guarantees credentials
-      return new VisaDpsServicing({ baseUrl: v.baseUrl, programType: v.programType, authenticate: xPayAuthenticator(v.apiKey, v.sharedSecret) });
+      return new VisaDpsServicing({ baseUrl: v.baseUrl, programType: v.programType, ...buildVisaAuth(v.auth) });
     }
   }
 }
@@ -30,7 +31,7 @@ export function getAccountValidationProvider(cfg: PaymentsConfig): AccountValida
     case "visa_pav": {
       const v = cfg.visaPav!;   // config validation guarantees credentials
       return new VisaPavValidation({
-        baseUrl: v.baseUrl, authenticate: xPayAuthenticator(v.apiKey, v.sharedSecret), acquiringBin: v.acquiringBin, acquirerCountryCode: v.acquirerCountryCode,
+        baseUrl: v.baseUrl, ...buildVisaAuth(v.auth), acquiringBin: v.acquiringBin, acquirerCountryCode: v.acquirerCountryCode,
         cardAcceptor: { name: v.acceptorName, idCode: v.acceptorIdCode, terminalId: v.terminalId },
       });
     }

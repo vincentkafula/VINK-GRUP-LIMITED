@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import type { AccountValidationProvider, AccountValidationRequest, AccountValidationResult } from "./types.js";
-import { VisaHttp, VisaApiError, type VisaAuthenticator } from "./visaHttp.js";
+import { VisaHttp, VisaApiError, type VisaAuthenticator, type VisaTls } from "./visaHttp.js";
 
 /**
  * Visa "Payment Account Validation" (sandbox): POST /pav/v1/cardvalidation (JSON), from the OpenAPI export.
@@ -20,6 +20,8 @@ import { VisaHttp, VisaApiError, type VisaAuthenticator } from "./visaHttp.js";
 export interface VisaPavOptions {
   baseUrl: string;
   authenticate: VisaAuthenticator;
+  /** Client certificate, for two-way SSL. */
+  tls?: VisaTls;
   acquiringBin: string;                 // 6 to 11 characters
   acquirerCountryCode: string;          // 3-digit ISO numeric, e.g. "710" South Africa, "840" USA
   cardAcceptor: { name: string; idCode: string; terminalId: string };
@@ -44,7 +46,7 @@ export class VisaPavValidation implements AccountValidationProvider {
   constructor(private readonly o: VisaPavOptions) {
     if (o.acquiringBin.length < 6 || o.acquiringBin.length > 11) throw new Error("acquiringBin must be 6 to 11 characters");
     if (!/^[0-9]{3}$/.test(o.acquirerCountryCode)) throw new Error("acquirerCountryCode must be a 3-digit ISO numeric code");
-    this.http = new VisaHttp({ baseUrl: o.baseUrl, authenticate: o.authenticate, fetchImpl: o.fetchImpl, label: "Visa PAV" });
+    this.http = new VisaHttp({ baseUrl: o.baseUrl, authenticate: o.authenticate, fetchImpl: o.fetchImpl, label: "Visa PAV", tls: o.tls });
   }
 
   async validate(input: AccountValidationRequest): Promise<AccountValidationResult> {

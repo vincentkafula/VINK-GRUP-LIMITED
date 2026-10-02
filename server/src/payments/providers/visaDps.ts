@@ -1,6 +1,6 @@
 import type { CardServicingProvider, ServicedCardDetails, ServicedCardStatus } from "./types.js";
 import { NotConfiguredError } from "./types.js";
-import { VisaHttp, VisaApiError, xPayAuthenticator, redactPan, type VisaAuthenticator } from "./visaHttp.js";
+import { VisaHttp, VisaApiError, xPayAuthenticator, redactPan, type VisaAuthenticator, type VisaTls } from "./visaHttp.js";
 
 /**
  * Visa "DPS Card and Account Services" (sandbox) client.
@@ -22,6 +22,8 @@ export interface VisaDpsOptions {
   /** "debit" cards use status codes like LK-LOCKED_BY_CARDHOLDER; "prepaid" use ACTIVE / SUSPENDED / LOST_CARD / STOLEN_CARD. */
   programType: "debit" | "prepaid";
   authenticate: VisaAuthenticator;
+  /** Client certificate, for two-way SSL. */
+  tls?: VisaTls;
   fetchImpl?: typeof fetch;
   timeoutMs?: number;
 }
@@ -39,7 +41,7 @@ export class VisaDpsServicing implements CardServicingProvider {
   readonly name = "visa_dps";
   private readonly http: VisaHttp;
   constructor(private readonly o: VisaDpsOptions) {
-    this.http = new VisaHttp({ baseUrl: o.baseUrl, authenticate: o.authenticate, fetchImpl: o.fetchImpl, timeoutMs: o.timeoutMs, label: "Visa DPS" });
+    this.http = new VisaHttp({ baseUrl: o.baseUrl, authenticate: o.authenticate, fetchImpl: o.fetchImpl, timeoutMs: o.timeoutMs, label: "Visa DPS", tls: o.tls });
   }
 
   private cardId(id: string): string {

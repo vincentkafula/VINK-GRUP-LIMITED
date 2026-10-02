@@ -15,6 +15,16 @@ need an acquiring PSP. Choose one (it changes which markets you can serve) befor
 - **Go-live:** Paymentology issues and processes the cards and **sponsors the BIN** (stated by the owner; the terms are not in this repository).
 - Consequence: the live card path is Paymentology's, not Visa's or Mastercard's directly, so behaviour tested against the scheme sandboxes can differ from live (API shapes, webhook formats, decline codes). Get Paymentology's sandbox and certification tests **before** launch; it is a go-live blocker in `GO_LIVE_CHECKLIST.md`.
 
+## Visa authentication: two schemes implemented
+Your portal project shows credentials for Two-Way SSL, X-Pay, OAuth and JWT, and the exported specs do not say which a product uses. Two are built; choose with `SANDBOX_VISA_AUTH`:
+
+| Scheme | Variables | Notes |
+|---|---|---|
+| `x_pay` (default) | `SANDBOX_VISA_API_KEY`, `SANDBOX_VISA_SHARED_SECRET` | The shared secret is shown once, when the credential is generated. |
+| `two_way_ssl` | `SANDBOX_VISA_API_KEY` (the Two-Way key, different from the X-Pay key), `SANDBOX_VISA_CLIENT_CERT`, `SANDBOX_VISA_CLIENT_KEY`, optional `SANDBOX_VISA_CA`, optional `SANDBOX_VISA_USER_ID` + `SANDBOX_VISA_PASSWORD` | The certificate is presented in the TLS handshake (verified in tests against a real local mutual-TLS server). The private key is yours: it must match the client certificate and must be unencrypted to load from a secret store. If the product also needs Basic auth, create an active user under the portal project's Users section. |
+
+If one scheme gets 401/403 from the sandbox, try the other; OAuth and JWT are not built.
+
 ## Visa DPS Card and Account Services (sandbox, built)
 Source: the OpenAPI export from the Visa Developer portal (`https://sandbox.api.visa.com`). The file itself is not committed (Visa terms; keep it in your own storage).
 

@@ -34,11 +34,41 @@ export interface PaymentsConfig {
   cardServicingProvider: CardServicingProviderName;
   accountValidationProvider: AccountValidationProviderName;
   /** Visa PAV settings (acquirer details are required by the API), only when accountValidationProvider is visa_pav. */
-  visaPav: { baseUrl: string; apiKey: string; sharedSecret: string; acquiringBin: string; acquirerCountryCode: string; acceptorName: string; acceptorIdCode: string; terminalId: string } | null;
+  visaPav: { baseUrl: string; auth: VisaAuthConfig; acquiringBin: string; acquirerCountryCode: string; acceptorName: string; acceptorIdCode: string; terminalId: string } | null;
   /** Visa sandbox settings, only when cardServicingProvider is visa_dps. */
-  visaDps: { baseUrl: string; apiKey: string; sharedSecret: string; programType: "debit" | "prepaid" } | null;
+  visaDps: { baseUrl: string; auth: VisaAuthConfig; programType: "debit" | "prepaid" } | null;
   /** Credentials for the selected real provider, taken from the SANDBOX_ or LIVE_ variable set matching `mode`. Null for "mock". */
   paymentology: ProviderCredentials | null;
+}
+
+/**
+ * How we authenticate to the Visa developer APIs. SANDBOX_VISA_AUTH = x_pay (default) or two_way_ssl.
+ * - x_pay:       SANDBOX_VISA_API_KEY + SANDBOX_VISA_SHARED_SECRET
+ * - two_way_ssl: SANDBOX_VISA_API_KEY + a client certificate and private key (PEM text, base64 of the PEM, or a file path),
+ *                optional SANDBOX_VISA_CA (PEM) and an optional active project user (SANDBOX_VISA_USER_ID / SANDBOX_VISA_PASSWORD) for Basic auth.
+ * Certificate material is only referenced here; it is read when the provider is built (providers/visaAuth.ts), never logged.
+ */
+export type VisaAuthConfig =
+  | { kind: "x_pay"; apiKey: string; sharedSecret: string }
+  | { kind: "two_way_ssl"; apiKey: string; cert: string; key: string; ca?: string; userId?: string; password?: string };
+
+function visaAuthFrom(env: NodeJS.ProcessEnv, problems: string[]): VisaAuthConfig | null {
+  const kind = (env.SANDBOX_VISA_AUTH ?? "x_pay").trim().toLowerCase();
+  const apiKey = env.SANDBOX_VISA_API_KEY?.trim();
+  if (kind === "x_pay") {
+    const sharedSecret = env.SANDBOX_VISA_SHARED_SECRET?.trim();
+    if (!apiKey || !sharedSecret) { problems.push("SANDBOX_VISA_AUTH=x_pay needs SANDBOX_VISA_API_KEY and SANDBOX_VISA_SHARED_SECRET."); return null; }
+    return { kind: "x_pay", apiKey, sharedSecret };
+  }
+  if (kind === "two_way_ssl") {
+    const cert = env.SANDBOX_VISA_CLIENT_CERT?.trim(), key = env.SANDBOX_VISA_CLIENT_KEY?.trim();
+    if (!apiKey || !cert || !key) { problems.push("SANDBOX_VISA_AUTH=two_way_ssl needs SANDBOX_VISA_API_KEY, SANDBOX_VISA_CLIENT_CERT and SANDBOX_VISA_CLIENT_KEY."); return null; }
+    const userId = env.SANDBOX_VISA_USER_ID?.trim(), password = env.SANDBOX_VISA_PASSWORD?.trim();
+    if (!!userId !== !!password) { problems.push("SANDBOX_VISA_USER_ID and SANDBOX_VISA_PASSWORD must be set together."); return null; }
+    return { kind: "two_way_ssl", apiKey, cert, key, ca: env.SANDBOX_VISA_CA?.trim() || undefined, userId, password };
+  }
+  problems.push(`SANDBOX_VISA_AUTH must be x_pay or two_way_ssl, got "${kind}".`);
+  return null;
 }
 
 const ISSUERS: IssuingProviderName[] = ["mock", "paymentology"];
@@ -65,16 +95,17 @@ export function resolvePaymentsConfig(env: NodeJS.ProcessEnv = process.env): Pay
   if (!SERVICERS.includes(servicing)) throw new Error(`CARD_SERVICING_PROVIDER must be one of ${SERVICERS.join(", ")}, got "${servicing}".`);
   const programType = (env.SANDBOX_VISA_PROGRAM_TYPE ?? "debit").trim().toLowerCase();
   if (programType !== "debit" && programType !== "prepaid") throw new Error('SANDBOX_VISA_PROGRAM_TYPE must be "debit" or "prepaid".');
-  const visaKey = env.SANDBOX_VISA_API_KEY?.trim(), visaSecret = env.SANDBOX_VISA_SHARED_SECRET?.trim();
-  const visaDps = servicing === "visa_dps" && visaKey && visaSecret
-    ? { baseUrl: env.SANDBOX_VISA_BASE_URL?.trim() || "https://sandbox.api.visa.com", apiKey: visaKey, sharedSecret: visaSecret, programType: programType as "debit" | "prepaid" }
+  const authProblems: string[] = [];
+  const visaAuth = servicing === "visa_dps" || env.ACCOUNT_VALIDATION_PROVIDER?.trim().toLowerCase() === "visa_pav" ? visaAuthFrom(env, authProblems) : null;
+  const visaDps = servicing === "visa_dps" && visaAuth
+    ? { baseUrl: env.SANDBOX_VISA_BASE_URL?.trim() || "https://sandbox.api.visa.com", auth: visaAuth, programType: programType as "debit" | "prepaid" }
     : null;
 
   const validation = (env.ACCOUNT_VALIDATION_PROVIDER ?? "mock").trim().toLowerCase() as AccountValidationProviderName;
   if (!VALIDATORS.includes(validation)) throw new Error(`ACCOUNT_VALIDATION_PROVIDER must be one of ${VALIDATORS.join(", ")}, got "${validation}".`);
   const bin = env.SANDBOX_VISA_ACQUIRING_BIN?.trim(), country = env.SANDBOX_VISA_ACQUIRER_COUNTRY?.trim(), idCode = env.SANDBOX_VISA_ACCEPTOR_ID_CODE?.trim();
-  const visaPav = validation === "visa_pav" && visaKey && visaSecret && bin && country && idCode
-    ? { baseUrl: env.SANDBOX_VISA_BASE_URL?.trim() || "https://sandbox.api.visa.com", apiKey: visaKey, sharedSecret: visaSecret, acquiringBin: bin, acquirerCountryCode: country,
+  const visaPav = validation === "visa_pav" && visaAuth && bin && country && idCode
+    ? { baseUrl: env.SANDBOX_VISA_BASE_URL?.trim() || "https://sandbox.api.visa.com", auth: visaAuth, acquiringBin: bin, acquirerCountryCode: country,
         acceptorName: env.SANDBOX_VISA_ACCEPTOR_NAME?.trim() || "MANSHYA", acceptorIdCode: idCode, terminalId: env.SANDBOX_VISA_TERMINAL_ID?.trim() || "00000001" }
     : null;
 
@@ -85,9 +116,9 @@ export function resolvePaymentsConfig(env: NodeJS.ProcessEnv = process.env): Pay
   if (issuing === "paymentology" && !paymentology) {
     problems.push(`ISSUING_PROVIDER=paymentology needs ${mode === "live" ? "LIVE" : "SANDBOX"}_PAYMENTOLOGY_BASE_URL, _API_KEY and _WEBHOOK_SECRET.`);
   }
-  if (servicing === "visa_dps" && !visaDps) problems.push("CARD_SERVICING_PROVIDER=visa_dps needs SANDBOX_VISA_API_KEY and SANDBOX_VISA_SHARED_SECRET.");
+  problems.push(...authProblems);
 
-  if (validation === "visa_pav" && !visaPav) problems.push("ACCOUNT_VALIDATION_PROVIDER=visa_pav needs SANDBOX_VISA_API_KEY, SANDBOX_VISA_SHARED_SECRET, SANDBOX_VISA_ACQUIRING_BIN, SANDBOX_VISA_ACQUIRER_COUNTRY (3-digit ISO numeric) and SANDBOX_VISA_ACCEPTOR_ID_CODE.");
+  if (validation === "visa_pav" && !visaPav) problems.push("ACCOUNT_VALIDATION_PROVIDER=visa_pav needs SANDBOX_VISA_ACQUIRING_BIN, SANDBOX_VISA_ACQUIRER_COUNTRY (3-digit ISO numeric) and SANDBOX_VISA_ACCEPTOR_ID_CODE.");
 
   if (mode === "live") {
     if (validation !== "mock") problems.push("Live mode cannot use the Visa PAV sandbox provider (it needs an acquiring BIN from an acquirer; none is set up).");
