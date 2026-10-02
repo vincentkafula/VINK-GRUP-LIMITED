@@ -39,7 +39,12 @@ export interface IssuingProvider {
   createCard(input: { customerRef: string; kind: "physical" | "virtual" }): Promise<IssuedCard>;
   setCardStatus(providerCardId: string, status: "active" | "frozen" | "blocked"): Promise<void>;
   /** Verify a webhook from the provider and return its parsed event. Throws on a bad signature or a replay. */
-  verifyWebhook(rawBody: Buffer, headers: Record<string, string | string[] | undefined>): ProviderEvent;
+  /**
+   * Verify a webhook from the provider and return its parsed event. Throws on a bad signature.
+   * By default a repeated event id also throws (replay). Pass { allowReplay: true } for requests the provider legitimately retries
+   * and that the caller makes idempotent itself (real-time authorisations).
+   */
+  verifyWebhook(rawBody: Buffer, headers: Record<string, string | string[] | undefined>, opts?: { allowReplay?: boolean }): ProviderEvent;
 }
 
 export interface ProviderEvent { id: string; type: string; createdAt: string; data: unknown }

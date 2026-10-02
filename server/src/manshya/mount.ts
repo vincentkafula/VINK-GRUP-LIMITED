@@ -77,5 +77,8 @@ export function createManshyaModule() {
   });
 
   mn.startScheduler();
-  return mn as { router: import("express").Router; db: { close(): void } };
+  return Object.assign(mn, { payments }) as {
+    router: import("express").Router; db: { close(): void }; payments: typeof payments;
+    cards: { authoriseFromProvider(a: { provider: string; authorisationId: string; providerCardId: string; amount: number; currency?: string; channel?: string; descriptor?: string }): { id: string | null; approved: boolean; reason: string | null; replayed: boolean } };
+  };
 }

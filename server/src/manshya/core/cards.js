@@ -84,5 +84,42 @@ module.exports = function buildCards({ db, ledger, config, rewards, notify }) {
     return { id, approved: !reason, reason };
   }
   const transactions = (m, cardId) => { if (cardId) card(m, cardId); return { data: all('SELECT id,card_id,amount,channel,status,reason,descriptor,created_at FROM card_transactions WHERE merchant_id=? AND (? IS NULL OR card_id=?) ORDER BY created_at DESC LIMIT 100', m.id, cardId || null, cardId || null) }; };
-  return { order, list, activate, update, block, wallet, authorize, transactions };
+  /* ---------- issuer-processor integration ---------- */
+
+  /** Remember which provider card id belongs to one of our cards. */
+  function linkProviderCard(m, cardId, provider, providerCardId) {
+    card(m, cardId);
+    text(provider, 'provider', { max: 40 }); text(providerCardId, 'providerCardId', { max: 80 });
+    try { run('UPDATE cards SET provider=?, provider_card_id=? WHERE id=?', provider, providerCardId, cardId); }
+    catch (e) { if (/UNIQUE/.test(e.message)) throw new ApiError(409, 'provider_card_in_use', 'That provider card is already linked'); throw e; }
+    return pub(get('SELECT * FROM cards WHERE id=?', cardId));
+  }
+
+  /**
+   * Decide one real-time authorisation from the issuer-processor. Processors retry, so this is IDEMPOTENT per
+   * (provider, authorisationId): a repeat returns the first decision and never spends the money twice.
+   * Anything we cannot decide safely is a decline (never a throw), because the processor needs an answer.
+   */
+  function authoriseFromProvider({ provider, authorisationId, providerCardId, amount, currency = 'ZAR', channel = 'chip', descriptor }) {
+    return tx(() => {
+      const prior = get('SELECT * FROM authorisations WHERE provider=? AND authorisation_id=?', provider, authorisationId);
+      if (prior) return { id: prior.card_tx_id, approved: !!prior.approved, reason: prior.reason, replayed: true };
+      const record = (cardTxId, approved, reason) => {
+        run('INSERT INTO authorisations(provider,authorisation_id,card_tx_id,approved,reason,amount,created_at) VALUES(?,?,?,?,?,?,?)', provider, authorisationId, cardTxId, approved ? 1 : 0, reason, Number.isInteger(amount) ? amount : null, now());
+        return { id: cardTxId, approved, reason, replayed: false };
+      };
+      const c = get('SELECT * FROM cards WHERE provider=? AND provider_card_id=?', provider, providerCardId);
+      if (!c) return record(null, false, 'unknown_card');
+      if (!Number.isInteger(amount) || amount < 1) return record(null, false, 'invalid_amount');
+      if (currency !== 'ZAR') return record(null, false, 'currency_not_supported');
+      const m = get('SELECT * FROM merchants WHERE id=?', c.merchant_id);
+      if (!m || m.status === 'suspended') return record(null, false, 'account_suspended');
+      const mapped = channel === 'atm' ? 'chip' : channel;
+      if (!['chip', 'tap', 'online', 'international'].includes(mapped)) return record(null, false, 'channel_not_supported');
+      const r = authorize(m, { cardId: c.id, amount, channel: mapped, descriptor: descriptor ? String(descriptor).slice(0, 60) : undefined });
+      return record(r.id, r.approved, r.reason);
+    });
+  }
+
+  return { order, list, activate, update, block, wallet, authorize, transactions, linkProviderCard, authoriseFromProvider };
 };

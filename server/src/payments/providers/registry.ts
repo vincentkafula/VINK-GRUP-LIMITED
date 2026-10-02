@@ -10,7 +10,8 @@ import { PaymentologyIssuer } from "./paymentologyIssuer.js";
 
 export function getIssuingProvider(cfg: PaymentsConfig): IssuingProvider {
   switch (cfg.issuingProvider) {
-    case "mock": return new MockIssuer();
+    // In production the mock issuer only accepts webhooks signed with a secret you set; the public default is for local development.
+    case "mock": return new MockIssuer(process.env.SANDBOX_ISSUER_WEBHOOK_SECRET || (process.env.NODE_ENV === "production" ? null : undefined));
     case "paymentology": return new PaymentologyIssuer(cfg.paymentology!);   // config validation guarantees credentials
   }
 }

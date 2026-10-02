@@ -1,15 +1,18 @@
 import crypto from "crypto";
+import { NotConfiguredError } from "./types.js";
 import type { IssuingProvider, IssuedCard, AuthorisationRequest, AuthorisationDecision, ProviderEvent } from "./types.js";
 import { ReplayGuard, verifySignedWebhook } from "./webhook.js";
 
 /** Sandbox issuing provider. Behaves like a real issuer-processor would from our side, with no network. */
+/** Public default for local development and tests only. A deployed server must set SANDBOX_ISSUER_WEBHOOK_SECRET (see registry). */
 export const MOCK_WEBHOOK_SECRET = "sandbox-mock-issuer-secret";
 
 export class MockIssuer implements IssuingProvider {
   readonly name = "mock";
   private cards = new Map<string, IssuedCard>();
   private guard = new ReplayGuard();
-  constructor(private secret = MOCK_WEBHOOK_SECRET) {}
+  /** secret null = no secret configured: webhooks are refused (501) rather than accepted with a publicly known key. */
+  constructor(private secret: string | null = MOCK_WEBHOOK_SECRET) {}
 
   async createCard({ kind }: { customerRef: string; kind: "physical" | "virtual" }): Promise<IssuedCard> {
     const now = new Date();
@@ -41,8 +44,9 @@ export class MockIssuer implements IssuingProvider {
     return { approved: true };
   }
 
-  verifyWebhook(rawBody: Buffer, headers: Record<string, string | string[] | undefined>): ProviderEvent {
+  verifyWebhook(rawBody: Buffer, headers: Record<string, string | string[] | undefined>, opts?: { allowReplay?: boolean }): ProviderEvent {
+    if (!this.secret) throw new NotConfiguredError("SANDBOX_ISSUER_WEBHOOK_SECRET is not set");
     const h = (k: string) => { const v = headers[k]; return Array.isArray(v) ? v[0] : v; };
-    return verifySignedWebhook({ secret: this.secret, rawBody, signature: h("x-signature"), timestamp: h("x-timestamp"), guard: this.guard });
+    return verifySignedWebhook({ secret: this.secret, rawBody, signature: h("x-signature"), timestamp: h("x-timestamp"), guard: opts?.allowReplay ? undefined : this.guard });
   }
 }

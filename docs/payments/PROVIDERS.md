@@ -10,6 +10,16 @@
 accept card payments from a shopper's checkout. The Manshya checkout page, payment links and card-machine sales still
 need an acquiring PSP. Choose one (it changes which markets you can serve) before building that adapter.
 
+## Card authorisations (built, provider-agnostic)
+Every issuer-processor asks us to approve or decline each purchase in real time. That is built once, independent of the processor:
+- `POST /api/payments/issuer/authorisation` (`server/src/payments/issuerRoutes.ts`): the selected provider adapter verifies the signature, the request is turned into our normalised event, and Manshya's card engine decides (card status, channel switches, daily/monthly limits, balance) and posts the ledger entry.
+- **Idempotent per authorisation id** (`cards.authoriseFromProvider`, table `authorisations`): processors retry, and a repeat returns the first answer without spending twice. Tested with many simultaneous copies of one request.
+- Anything undecidable (unknown card, bad amount, non-ZAR, suspended account, unsupported channel) is a **decline with a reason**, never a server error; the processor always gets an answer.
+- Provider cards are linked with `cards.linkProviderCard`; each provider card id can be linked once.
+- The accepted request shape is OUR normalised event, produced by the mock issuer in sandbox. **Paymentology's real format is unknown**; its adapter must translate it into this shape (see `PAYMENTOLOGY_QUESTIONS.md`). Until then it answers 501.
+- In production the mock issuer accepts webhooks only if `SANDBOX_ISSUER_WEBHOOK_SECRET` is set (otherwise 501): the built-in development secret is public.
+- Still to do before live: the general API rate limit (300/min per IP) will throttle a busy processor; give this route its own limit and allow-list the processor's IPs. Multi-server deployments rely on the table's primary key for idempotency, which is correct, but the SQLite database itself is single-server (see the go-live checklist).
+
 ## Plan of record
 - **Development and testing:** Visa and Mastercard developer sandboxes (credentials already on the Railway backend for Mastercard Open Banking; Visa variables not yet set).
 - **Go-live:** Paymentology issues and processes the cards and **sponsors the BIN** (stated by the owner; the terms are not in this repository).

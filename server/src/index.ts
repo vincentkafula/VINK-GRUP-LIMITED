@@ -33,6 +33,7 @@ import levySystemRouter from "./routes/levySystem.js";
 import afcRouter from "./routes/afc.js";
 import { createManshyaModule } from "./manshya/mount.js";
 import { createPaymentsSandboxRouter } from "./payments/sandboxRoutes.js";
+import { createIssuerRouter } from "./payments/issuerRoutes.js";
 import { hasDb, pool } from "./db/pool.js";
 import { migrateAndSeed } from "./db/migrate.js";
 import { requireAuth, requireRole } from "./middleware/auth.js";
@@ -74,6 +75,8 @@ app.use("/api", rateLimit({ windowMs: 60_000, max: 300, standardHeaders: true, l
 // back office (see manshya/access.ts).
 const manshya = createManshyaModule();
 app.use("/api/manshya", manshya.router);
+// Card issuer-processor real-time authorisations (raw body needed for the signature, so also before the JSON parser).
+app.use("/api/payments/issuer", createIssuerRouter(manshya.payments, manshya));
 
 
 app.use(express.json({ limit: "1mb" }));
@@ -241,6 +244,7 @@ app.get("/api", (_req, res) => {
       "/api/financial/*         — financial reports",
       "/api/levy/*              — AFC trip levy, driver/owner/investor/marshall revenue split",
       "/api/afc/*               — AFC device fleet management",
+      "/api/payments/issuer/*   — card issuer-processor real-time authorisation webhook",
       "/api/payments/sandbox/*  — staff-only sandbox card-servicing tools (404 in live mode)",
       "/api/manshya/*           — Manshya payments & banking (customer accounts); /api/manshya/admin/* is the staff back office",
       "WS     ws://localhost:3001/ws  (events: terminal.tap_received, terminal.fault_reported, route.violation, retail.transaction_received, retail.fault_reported)",

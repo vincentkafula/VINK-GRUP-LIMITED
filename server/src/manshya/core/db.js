@@ -171,7 +171,7 @@ CREATE TABLE IF NOT EXISTS claims(
 `;
 
 // Tables whose rows are tagged with the payments mode ('sandbox' | 'live') they were created in.
-const MODE_TABLES = ['journals', 'payments', 'payouts', 'transfers', 'card_transactions', 'bill_purchases', 'international_payments', 'inbound_credits', 'cash_vouchers'];
+const MODE_TABLES = ['authorisations', 'journals', 'payments', 'payouts', 'transfers', 'card_transactions', 'bill_purchases', 'international_payments', 'inbound_credits', 'cash_vouchers'];
 
 function openDb({ db, dbPath = ':memory:', mode = 'sandbox' } = {}) {
   const conn = db || new Database(dbPath);
@@ -210,6 +210,13 @@ function openDb({ db, dbPath = ':memory:', mode = 'sandbox' } = {}) {
   addCol('cards', 'daily_limit', 'INTEGER NOT NULL DEFAULT 500000');
   addCol('cards', 'replaced_by', 'TEXT');
   addCol('cards', 'blocked_reason', 'TEXT');
+  // Link to the card issuer-processor's own card id, and a record of every authorisation it asked us to decide (idempotency).
+  addCol('cards', 'provider', 'TEXT');
+  addCol('cards', 'provider_card_id', 'TEXT');
+  conn.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_cards_provider ON cards(provider, provider_card_id) WHERE provider_card_id IS NOT NULL;
+    CREATE TABLE IF NOT EXISTS authorisations(
+      provider TEXT NOT NULL, authorisation_id TEXT NOT NULL, card_tx_id TEXT, approved INTEGER NOT NULL, reason TEXT, amount INTEGER, created_at TEXT NOT NULL,
+      PRIMARY KEY(provider, authorisation_id));`);
   addCol('documents', 'storage_key', 'TEXT');
   addCol('admin_keys', 'role', "TEXT NOT NULL DEFAULT 'superadmin'");
   addCol('applications', 'identity_status', "TEXT NOT NULL DEFAULT 'unchecked'");

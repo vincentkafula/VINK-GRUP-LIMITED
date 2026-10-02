@@ -10,3 +10,12 @@ desktop/release/
 # Manshya local SQLite database and uploads
 server/data/
 *.db
+
+# Keys and certificates: never commit
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.crt
+*.csr
