@@ -15,6 +15,25 @@ need an acquiring PSP. Choose one (it changes which markets you can serve) befor
 - **Go-live:** Paymentology issues and processes the cards and **sponsors the BIN** (stated by the owner; the terms are not in this repository).
 - Consequence: the live card path is Paymentology's, not Visa's or Mastercard's directly, so behaviour tested against the scheme sandboxes can differ from live (API shapes, webhook formats, decline codes). Get Paymentology's sandbox and certification tests **before** launch; it is a go-live blocker in `GO_LIVE_CHECKLIST.md`.
 
+## Visa DPS Card and Account Services (sandbox, built)
+Source: the OpenAPI export from the Visa Developer portal (`https://sandbox.api.visa.com`). The file itself is not committed (Visa terms; keep it in your own storage).
+
+| We can do | Visa call |
+|---|---|
+| Register a card (get a card id) | `POST /dcas/cardservices/v2/cards` |
+| Read status | `GET /dcas/cardservices/v2/cards/{cardId}/cardstatus` (prepaid: `v1/cards/prepaid/{cardId}/cardstatus`) |
+| Freeze / unfreeze / block | `PUT /dcas/cardservices/v2/cards/{cardId}/cardstatus` with the spec's status codes (`LK-LOCKED_BY_CARDHOLDER`, `__-UNLOCK_BY_CARDHOLDER`, ... for debit; `ACTIVE`/`SUSPENDED`/`STOLEN_CARD` for prepaid) |
+| Card details (last4, accounts) | `GET /dcas/cardservices/v2/cards/{cardId}` |
+
+Not built, on purpose: PIN set/change (spec requires Message Level Encryption, and PINs should not touch our servers), activation with identity tokens (needs personal data such as birth date and ID numbers), CVV2 generation.
+
+- Code: `server/src/payments/providers/visaDps.ts`; select with `CARD_SERVICING_PROVIDER=visa_dps` plus `SANDBOX_VISA_API_KEY` / `SANDBOX_VISA_SHARED_SECRET`.
+- **Authentication is UNVERIFIED.** The exported spec has an empty security section. X-Pay (API key + shared secret) is used because the repo already has it. If the sandbox answers 401/403, check the portal's Authentication page; the scheme is a one-function swap (`authenticate`).
+- **Card numbers:** registering a card sends a PAN. It is forwarded and never stored or logged; error text has card-number-like digits masked. Use Visa's **sandbox test numbers only**, and never wire this to a customer-facing form.
+- Staff-only sandbox tools: `GET /api/payments/sandbox/status`, `POST /api/payments/sandbox/cards`, `GET|PUT /api/payments/sandbox/cards/:id[/status]` (404 in live mode).
+- Tests: offline tests check every request against the spec; `visaDps.sandbox.test.ts` hits the real sandbox only when credentials and `SANDBOX_VISA_TEST_PAN` are set.
+- `visa_dps` is rejected in live mode: live card servicing goes through Paymentology, whose servicing adapter is not built.
+
 ## Paymentology (issuing)
 - Their API reference and sandbox are available only to onboarded clients, so the real request shapes, authentication,
   card-lifecycle calls, authorisation-webhook format and signature scheme are **not in this repository and were not guessed**.

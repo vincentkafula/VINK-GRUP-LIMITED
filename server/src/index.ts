@@ -32,6 +32,7 @@ import financialReportsRouter from "./routes/financialReports.js";
 import levySystemRouter from "./routes/levySystem.js";
 import afcRouter from "./routes/afc.js";
 import { createManshyaModule } from "./manshya/mount.js";
+import { createPaymentsSandboxRouter } from "./payments/sandboxRoutes.js";
 import { hasDb, pool } from "./db/pool.js";
 import { migrateAndSeed } from "./db/migrate.js";
 import { requireAuth, requireRole } from "./middleware/auth.js";
@@ -73,6 +74,7 @@ app.use("/api", rateLimit({ windowMs: 60_000, max: 300, standardHeaders: true, l
 // back office (see manshya/access.ts).
 const manshya = createManshyaModule();
 app.use("/api/manshya", manshya.router);
+
 
 app.use(express.json({ limit: "1mb" }));
 app.use(requestLogger);
@@ -123,6 +125,7 @@ app.use("/api/global",             globalBankingRouter);
 app.use("/api/financial",          financialReportsRouter);
 app.use("/api/levy",              levySystemRouter);
 app.use("/api/afc",                afcRouter);
+app.use("/api/payments/sandbox",   createPaymentsSandboxRouter());
 
 // Health check
 let migrationFailed = false;
@@ -238,6 +241,7 @@ app.get("/api", (_req, res) => {
       "/api/financial/*         — financial reports",
       "/api/levy/*              — AFC trip levy, driver/owner/investor/marshall revenue split",
       "/api/afc/*               — AFC device fleet management",
+      "/api/payments/sandbox/*  — staff-only sandbox card-servicing tools (404 in live mode)",
       "/api/manshya/*           — Manshya payments & banking (customer accounts); /api/manshya/admin/* is the staff back office",
       "WS     ws://localhost:3001/ws  (events: terminal.tap_received, terminal.fault_reported, route.violation, retail.transaction_received, retail.fault_reported)",
     ],

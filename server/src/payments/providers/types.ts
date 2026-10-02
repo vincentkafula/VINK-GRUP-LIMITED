@@ -44,6 +44,29 @@ export interface IssuingProvider {
 
 export interface ProviderEvent { id: string; type: string; createdAt: string; data: unknown }
 
+/* ───────── Card servicing: looking after cards that already exist (e.g. Visa DPS Card and Account Services) ───────── */
+
+export type ServicedCardStatus = "active" | "frozen" | "blocked";
+
+export interface ServicedCardDetails {
+  cardId: string;
+  last4: string | null;
+  accounts: { accountId: string; accountNumberMasked: string | null; type: string | null }[];
+}
+
+/**
+ * Servicing is not issuing: the card already exists (made by the programme) and we register it to get a provider card id.
+ * registerCard takes a PAN. That is a PCI-scoped value, so it must only be called server-to-server, never stored, never logged,
+ * and never from a customer-facing form. Everything after registration uses the card id only.
+ */
+export interface CardServicingProvider {
+  readonly name: string;
+  registerCard(input: { primaryAccountNumber: string }): Promise<{ cardId: string }>;
+  getCardStatus(cardId: string): Promise<{ status: string; activationStatus?: string }>;
+  setCardStatus(cardId: string, status: ServicedCardStatus): Promise<void>;
+  getCardDetails(cardId: string): Promise<ServicedCardDetails>;
+}
+
 /* ───────── Acquiring: taking card payments from customers (a PSP) ───────── */
 
 export type PaymentState = "pending" | "authorized" | "captured" | "settled" | "failed" | "reversed" | "refunded";
