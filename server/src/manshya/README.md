@@ -29,7 +29,8 @@ npm test                                     # access rules and the rest of the 
 | Variable | Default | |
 |---|---|---|
 | `MANSHYA_DB_PATH` | `./data/manshya.db` | SQLite file (and `uploads/` beside it for KYC documents). Use `:memory:` for throwaway runs. On Railway put it on a Volume. |
-| `MANSHYA_MODE` | `test` | `live` only changes the API key prefix and hides sandbox tools; it does not connect any real provider. |
+| `PAYMENTS_MODE` | `sandbox` | `sandbox` or `live`. Live is refused at startup unless every condition in `payments/config.ts` holds (see `docs/payments/GO_LIVE_CHECKLIST.md`). Every journal and payment row records its mode, and a database file only opens in the mode it was created in. |
+| `ISSUING_PROVIDER` / `ACQUIRING_PROVIDER` | `mock` | See `docs/payments/PROVIDERS.md`. |
 
 The module is plain CommonJS under `core/` (`allowJs`); `mount.ts` wires it to the app's JWT login and `access.ts` holds the access rules.
 

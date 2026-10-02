@@ -47,10 +47,11 @@ SUPABASE_SERVICE_KEY=<your service role key>
 
 ```env
 MANSHYA_DB_PATH=/data/manshya.db   # the volume's mount path (uploaded KYC documents are stored beside it)
-MANSHYA_MODE=test                  # leave on "test" until licensed gateway/bank-rail adapters are plugged in
+PAYMENTS_MODE=sandbox              # default. "live" is refused at startup unless docs/payments/GO_LIVE_CHECKLIST.md is complete
 ```
 
-   With `MANSHYA_MODE` unset or `test` every card gateway and bank rail is a sandbox mock: no real money moves.
+   In sandbox mode (the default) every card gateway and bank rail is a mock and every screen shows a TEST MODE banner:
+   no real money moves. A database file is bound to the mode it was created in and will not open in the other.
    See `server/src/manshya/README.md` before going live.
 
 ---

@@ -3,6 +3,7 @@ import path from "path";
 import { hasDb, pool } from "../db/pool.js";
 import { adminUsers } from "../data/adminUsers.js";
 import { customerAccess, backOfficeAccess } from "./access.js";
+import { resolvePaymentsConfig, coreMode } from "../payments/config.js";
 
 // The payments/banking core is plain CommonJS (see core/). Typed loosely on purpose.
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -17,12 +18,17 @@ const { ApiError } = require("./core/util");
  * gets in: customer accounts reach the merchant/banking API (one merchant per customer,
  * created on first visit, keyed by the customer's user id); staff reach /admin.
  *
- * Money does not move for real: with MANSHYA_MODE unset (or "test") every gateway and
- * bank rail is the bundled mock. Plug licensed providers in via `gateways` / `rails`
- * before setting MANSHYA_MODE=live.
+ * Money does not move for real: PAYMENTS_MODE defaults to "sandbox", where every gateway and bank rail is the
+ * bundled mock. Live mode is refused at startup unless every condition in payments/config.ts is met, and a
+ * database file is bound to the one mode it was created in.
  */
 export function createManshyaModule() {
-  const dbPath = process.env.MANSHYA_DB_PATH ?? path.join(process.cwd(), "data", "manshya.db");
+  // Throws (so the server will not start) if PAYMENTS_MODE is invalid or live mode is not fully authorised.
+  const payments = resolvePaymentsConfig();
+  console.log(`[payments] mode=${payments.mode} issuing=${payments.issuingProvider} acquiring=${payments.acquiringProvider}`);
+
+  // Separate default files per mode; the database itself also refuses to be opened in the other mode.
+  const dbPath = process.env.MANSHYA_DB_PATH ?? path.join(process.cwd(), "data", payments.mode === "live" ? "manshya-live.db" : "manshya.db");
   fs.mkdirSync(path.dirname(path.resolve(dbPath)), { recursive: true });
 
   const known = new Set<string>();
@@ -39,7 +45,8 @@ export function createManshyaModule() {
 
   const mn = createManshya({
     dbPath,
-    config: { mode: process.env.MANSHYA_MODE === "live" ? "live" : "test" },
+    paymentsMode: payments.mode,
+    config: { mode: coreMode(payments.mode) },
 
     authenticate: async (req: { get(h: string): string | undefined }) => {
       const a = customerAccess(req.get("authorization"));

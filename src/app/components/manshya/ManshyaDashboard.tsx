@@ -6,6 +6,7 @@ import { useBodyScrollLock } from "../../hooks/useBodyScrollLock";
 import { api } from "./api";
 import { DialogHost, ToastHost, showList, toast } from "./dialogs";
 import { PageHost, type FilterStore } from "./PageHost";
+import { TestModeBanner } from "./TestModeBanner";
 import { HomeFor } from "./Home";
 import { Icon } from "./icons";
 import { NAV, SHARED, isGroup, type Mode, type NavEntry } from "./nav";
@@ -123,6 +124,7 @@ export function ManshyaDashboard({ isOpen, onClose, onSignOut }: Props) {
 
   return (
     <div className="mn" data-mode={mode} data-page={page === "home" ? undefined : page} data-theme={theme} role="dialog" aria-modal="true" aria-label="Manshya business dashboard">
+      <TestModeBanner />
       <div className="bar">
         <div className="logo">manshya<i>.</i></div>
         <div className="tabs" role="group" aria-label="Payment type">

@@ -6,6 +6,7 @@ import { useBodyScrollLock } from "../../hooks/useBodyScrollLock";
 import { api as rawApi, openBlob, MANSHYA_BASE } from "./api";
 import { ask, secret, toast, DialogHost, ToastHost } from "./dialogs";
 import { R, dt } from "./format";
+import { TestModeBanner } from "./TestModeBanner";
 
 /* Staff back office: applications, KYC, merchants, fraud, disputes, credit, claims, support, audit.
    Staff accounts only (owner / superadmin). The server enforces it; this screen just says so politely. */
@@ -70,6 +71,7 @@ export function ManshyaAdmin({ isOpen, onClose }: { isOpen: boolean; onClose: ()
 
   return (
     <div className="mka" role="dialog" aria-modal="true" aria-label="Manshya back office">
+      <TestModeBanner />
       <header>
         <b>manshya<i>.</i> back office</b>
         {allowed && <nav>{(Object.keys(TABS) as Tab[]).map((k) => <button key={k} className={tab === k ? "on" : ""} onClick={() => setTab(k)}>{TABS[k]}</button>)}</nav>}

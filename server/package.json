@@ -10,6 +10,7 @@
     "start": "node dist/index.js",
     "lint": "tsc --noEmit",
     "test": "vitest run",
+    "webhook:simulate": "tsx scripts/simulate-webhook.ts",
     "set-password": "tsx scripts/set-password.ts",
     "test:manshya": "node --test \"src/manshya/tests/*.test.js\"",
     "test:watch": "vitest"

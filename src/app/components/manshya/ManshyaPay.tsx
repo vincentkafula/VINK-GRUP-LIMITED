@@ -3,6 +3,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import "./manshya.css";
 import { publicApi } from "./api";
 import { R } from "./format";
+import { TestModeBanner } from "./TestModeBanner";
 
 /* Hosted checkout: /pay?r=TOKEN (payment request) or /pay?b=TOKEN (payment button).
    Public: the customer paying does not need an account. */
@@ -75,6 +76,7 @@ export function ManshyaPay({ isOpen, onClose }: { isOpen: boolean; onClose: () =
 
   return (
     <div className="mkp" role="dialog" aria-modal="true" aria-label="Pay securely">
+      <TestModeBanner />
       <main>
         <div className="logo">manshya<i>.</i></div>
         {phase.t === "loading" && <p>Loading...</p>}

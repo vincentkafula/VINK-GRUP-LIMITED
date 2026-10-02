@@ -7,6 +7,7 @@ import { setSession, setToken, clearSession } from "../../services/apiClient";
 const asUser = (role: string) => { setToken("test-token"); setSession({ id: "u1", username: role + "1", name: "Test " + role, email: "t@x.co", role }); };
 
 let calls: string[] = [];
+const dataCalls = () => calls.filter((c) => !c.endsWith("/health"));
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status });
 
 beforeEach(() => {
@@ -48,13 +49,13 @@ describe("ManshyaDashboard access", () => {
     render(<ManshyaDashboard isOpen onClose={() => {}} />);
     expect(screen.getByText("Customer sign-in required")).toBeInTheDocument();
     expect(screen.queryByText(/Welcome back/)).not.toBeInTheDocument();
-    expect(calls).toEqual([]);
+    expect(dataCalls()).toEqual([]);   // only the public /health call (TEST MODE banner) is allowed
   });
 
   it("signed-out visitors are turned away", () => {
     render(<ManshyaDashboard isOpen onClose={() => {}} />);
     expect(screen.getByText("Customer sign-in required")).toBeInTheDocument();
-    expect(calls).toEqual([]);
+    expect(dataCalls()).toEqual([]);   // only the public /health call (TEST MODE banner) is allowed
   });
 
   it("'Sign in' clears the session, closes, and reports sign-out", () => {
@@ -73,7 +74,7 @@ describe("ManshyaAdmin access", () => {
     asUser("customer");
     render(<ManshyaAdmin isOpen onClose={() => {}} />);
     expect(screen.getByText("Staff sign-in required")).toBeInTheDocument();
-    expect(calls).toEqual([]);
+    expect(dataCalls()).toEqual([]);   // only the public /health call (TEST MODE banner) is allowed
   });
 
   it("lets staff in", async () => {

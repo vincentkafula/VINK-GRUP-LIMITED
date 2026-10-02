@@ -68,6 +68,7 @@ const DEFAULTS = {
  *  options.authenticate(req)       async (req) => ({ merchantId }) | null. Plug in your existing auth.
  *                                  Default: `Authorization: Bearer mk_...` API keys.
  *  options.adminAuthenticate(req)  async (req) => ({ actor, role }) | null for /admin routes. Tried first; `mka_...` admin keys still work as a fallback.
+ *  options.paymentsMode              'sandbox' | 'live' (default derived from config.mode). Recorded on every money row; a database is bound to one mode.
  *  options.gateways                { name: adapter }  (see src/gateways.js for the contract)
  *  options.rails                   bank rail adapter ({ send })
  *  options.config                  overrides for DEFAULTS
@@ -78,7 +79,7 @@ function createManshya(options = {}) {
     fees: { ...DEFAULTS.fees, ...(options.config || {}).fees },
     bank: { ...DEFAULTS.bank, ...(options.config || {}).bank },
   };
-  const db = openDb(options);
+  const db = openDb({ ...options, mode: options.paymentsMode || (config.mode === 'live' ? 'live' : 'sandbox') });
   const ledger = buildLedger(db);
   const baseEmit = buildEmitter(db);
   const mailer = options.mailer || mockMailer();

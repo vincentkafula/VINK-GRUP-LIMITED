@@ -170,12 +170,23 @@ CREATE TABLE IF NOT EXISTS claims(
   status TEXT NOT NULL, paid INTEGER, reason TEXT, created_at TEXT NOT NULL, decided_at TEXT);
 `;
 
-function openDb({ db, dbPath = ':memory:' } = {}) {
+// Tables whose rows are tagged with the payments mode ('sandbox' | 'live') they were created in.
+const MODE_TABLES = ['journals', 'payments', 'payouts', 'transfers', 'card_transactions', 'bill_purchases', 'international_payments', 'inbound_credits', 'cash_vouchers'];
+
+function openDb({ db, dbPath = ':memory:', mode = 'sandbox' } = {}) {
   const conn = db || new Database(dbPath);
   conn.pragma('journal_mode = WAL');
   conn.pragma('foreign_keys = ON');
   conn.exec(SCHEMA);
   conn.exec(EXTRA);
+
+  // A database belongs to ONE mode for its whole life, so sandbox and live data can never mix. Opening it in the
+  // other mode is refused rather than quietly writing into it.
+  const bound = conn.prepare("SELECT value FROM kv WHERE key='payments_mode'").get();
+  if (bound && bound.value !== mode) {
+    throw new Error(`This Manshya database was created in ${bound.value} mode and cannot be opened in ${mode} mode. Use a separate database file for each mode.`);
+  }
+  if (!bound) conn.prepare("INSERT INTO kv(key,value) VALUES('payments_mode',?)").run(mode);
   const addCol = (t, c, def) => {
     if (!conn.prepare(`PRAGMA table_info(${t})`).all().some((r) => r.name === c)) conn.exec(`ALTER TABLE ${t} ADD COLUMN ${c} ${def}`);
   };
@@ -202,6 +213,14 @@ function openDb({ db, dbPath = ':memory:' } = {}) {
   addCol('documents', 'storage_key', 'TEXT');
   addCol('admin_keys', 'role', "TEXT NOT NULL DEFAULT 'superadmin'");
   addCol('applications', 'identity_status', "TEXT NOT NULL DEFAULT 'unchecked'");
+  // Tag every money record with the mode. A trigger fills the column on insert (so no insert statement can forget),
+  // and rows from before this existed are backfilled with the database's mode.
+  for (const t of MODE_TABLES) {
+    addCol(t, 'mode', 'TEXT');
+    conn.exec(`CREATE TRIGGER IF NOT EXISTS tag_mode_${t} AFTER INSERT ON ${t} WHEN NEW.mode IS NULL
+      BEGIN UPDATE ${t} SET mode = (SELECT value FROM kv WHERE key='payments_mode') WHERE rowid = NEW.rowid; END`);
+    conn.prepare(`UPDATE ${t} SET mode = ? WHERE mode IS NULL`).run(mode);
+  }
   return conn;
 }
 module.exports = { openDb };

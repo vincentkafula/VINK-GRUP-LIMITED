@@ -33,7 +33,7 @@ module.exports = function buildRouter({ db, services: s, gateways, config, authe
   const r = express.Router();
   const ipKey = (req) => 'ip:' + req.ip;
 
-  r.get('/health', (req, res) => res.json({ ok: true, mode: config.mode }));
+  r.get('/health', (req, res) => res.json({ ok: true, mode: config.mode, payments_mode: config.mode === 'live' ? 'live' : 'sandbox' }));
 
   /* ----- public routes (no merchant auth) ----- */
   // Gateway webhooks need the RAW body to verify the signature. Mount this router before any global

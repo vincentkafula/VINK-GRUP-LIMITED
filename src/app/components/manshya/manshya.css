@@ -285,3 +285,7 @@
 .mkp .bad{background:rgba(208,64,90,.14);color:var(--bad)}
 .mkp small{display:block;color:var(--mute);margin-top:14px;font-size:12px}
 .mkp{position:fixed;inset:0;overflow:auto;z-index:70}
+
+/* TEST MODE banner (sandbox only) */
+.testmode{background:#B42318;color:#fff;text-align:center;font:700 12px/1 system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;padding:8px 12px}
+.mkp .testmode{position:fixed;left:0;right:0;top:0}
