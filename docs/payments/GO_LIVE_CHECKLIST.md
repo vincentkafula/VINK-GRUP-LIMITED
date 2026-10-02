@@ -14,7 +14,9 @@ Tick every box, in order. A "No" on any legal/regulatory line means **do not go 
 - [ ] Terms, fee schedule, dispute and refund policy published.
 
 ## 2. Providers
-- [ ] **Issuing (cards we issue):** Paymentology contract signed, **production** KYB approved, programme/BIN approved by the scheme through them.
+- [ ] **Issuing (cards we issue):** Paymentology contract signed, **BIN sponsorship agreement** in writing (whose BIN, who is issuer of record, who carries scheme liability and chargebacks), **production** KYB approved, programme approved by the schemes through them.
+- [ ] Where customer money sits: confirm in writing which licensed bank/entity holds the funds behind the cards. A BIN sponsor does not by itself authorise you to hold customer funds.
+- [ ] Paymentology **sandbox** access and certification tests completed (the Visa/Mastercard developer sandboxes used in development do not replace this).
 - [ ] Paymentology adapter implemented against their documentation and passing `providers/contract.test.ts` plus their own certification tests (see `PROVIDERS.md`).
 - [ ] **Acquiring (taking card payments):** a PSP chosen, contract and KYB done, adapter built (none exists yet: `ACQUIRING_PROVIDER` has only `mock`, which live mode rejects).
 - [ ] 3-D Secure 2 working end to end in the provider's sandbox, then certified for production.

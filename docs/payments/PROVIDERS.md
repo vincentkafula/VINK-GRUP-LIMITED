@@ -10,6 +10,11 @@
 accept card payments from a shopper's checkout. The Manshya checkout page, payment links and card-machine sales still
 need an acquiring PSP. Choose one (it changes which markets you can serve) before building that adapter.
 
+## Plan of record
+- **Development and testing:** Visa and Mastercard developer sandboxes (credentials already on the Railway backend for Mastercard Open Banking; Visa variables not yet set).
+- **Go-live:** Paymentology issues and processes the cards and **sponsors the BIN** (stated by the owner; the terms are not in this repository).
+- Consequence: the live card path is Paymentology's, not Visa's or Mastercard's directly, so behaviour tested against the scheme sandboxes can differ from live (API shapes, webhook formats, decline codes). Get Paymentology's sandbox and certification tests **before** launch; it is a go-live blocker in `GO_LIVE_CHECKLIST.md`.
+
 ## Paymentology (issuing)
 - Their API reference and sandbox are available only to onboarded clients, so the real request shapes, authentication,
   card-lifecycle calls, authorisation-webhook format and signature scheme are **not in this repository and were not guessed**.
