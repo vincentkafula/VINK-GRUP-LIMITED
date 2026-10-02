@@ -11,7 +11,26 @@ import { adminUsers } from "../data/adminUsers.js";
  * show identical data. Safe to run on every boot — everything here is
  * idempotent (CREATE TABLE IF NOT EXISTS / ON CONFLICT DO NOTHING).
  */
+// Arbitrary constant: the key every instance uses for the migration advisory lock.
+const MIGRATION_LOCK_KEY = 727_274_001;
+
+/**
+ * Runs the migration under a Postgres advisory lock, so two processes starting at once (two server instances, or parallel
+ * test files) take turns instead of racing. Without it, CREATE EXTENSION / CREATE TABLE IF NOT EXISTS can still collide
+ * ("duplicate key ... pg_extension_name_index") when run concurrently.
+ */
 export async function migrateAndSeed(): Promise<void> {
+  if (!hasDb || !pool) return;
+  const lock = await pool.connect();
+  try {
+    await lock.query("SELECT pg_advisory_lock($1)", [MIGRATION_LOCK_KEY]);
+    await migrateAndSeedUnlocked();
+  } finally {
+    try { await lock.query("SELECT pg_advisory_unlock($1)", [MIGRATION_LOCK_KEY]); } finally { lock.release(); }
+  }
+}
+
+async function migrateAndSeedUnlocked(): Promise<void> {
   if (!hasDb || !pool) return;
 
   const schema = fs.readFileSync(path.join(__dirname, "schema.sql"), "utf8");
