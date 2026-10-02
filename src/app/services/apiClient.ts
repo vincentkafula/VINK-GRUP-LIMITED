@@ -3,14 +3,15 @@
 // the server is unreachable.
 
 import { API_BASE as BASE } from "./config";
+import { getToken, setAuth, clearAuth, getValidToken, refreshSession, isCookieSession, endSession, authFetch, bootstrapSession } from "./authSession";
 
-const TOKEN_KEY = "vink_jwt";
 const DEMO_KEY  = "vink_demo";
 
 // ─── Auth token management ────────────────────────────────────────────────────
-export function getToken(): string | null  { return localStorage.getItem(TOKEN_KEY); }
-export function setToken(t: string)        { localStorage.setItem(TOKEN_KEY, t); }
-export function clearToken()               { localStorage.removeItem(TOKEN_KEY); }
+// The token itself lives in authSession.ts (in memory in cookie mode, localStorage in legacy mode).
+export { getToken, authFetch, bootstrapSession, refreshSession };
+export function setToken(t: string)        { setAuth({ token: t, mode: "legacy" }); }
+export function clearToken()               { clearAuth(); }
 export function isDemoMode(): boolean      { return localStorage.getItem(DEMO_KEY) === "1"; }
 export function setDemoMode(on: boolean)   { if (on) localStorage.setItem(DEMO_KEY, "1"); else localStorage.removeItem(DEMO_KEY); }
 
@@ -21,7 +22,8 @@ export function getSession(): ApiUser | null {
   try { return JSON.parse(localStorage.getItem(SESSION_KEY) ?? "null"); } catch { return null; }
 }
 export function setSession(user: object) { localStorage.setItem(SESSION_KEY, JSON.stringify(user)); }
-export function clearSession()           { localStorage.removeItem(SESSION_KEY); clearToken(); }
+/** Signs out here AND revokes the session on the server (cookie mode), without making the caller wait for the network. */
+export function clearSession()           { localStorage.removeItem(SESSION_KEY); void endSession(); }
 
 // ─── Core fetch wrapper ───────────────────────────────────────────────────────
 interface ApiResponse<T = unknown> { success: boolean; data?: T; error?: string; meta?: object }
@@ -52,15 +54,22 @@ async function request<T>(
   try {
     const headers: Record<string, string> = { "Content-Type": "application/json" };
     let hadToken = false;
-    if (auth) {
-      const tok = getToken();
-      hadToken = Boolean(tok);
-      if (tok) headers["Authorization"] = `Bearer ${tok}`;
-    }
-    const res = await fetch(`${BASE}${path}`, {
-      method, headers, signal: controller.signal,
-      body: body ? JSON.stringify(body) : undefined,
-    });
+    const send = async () => {
+      if (auth) {
+        const tok = await getValidToken();      // renews a cookie-mode token first if it is about to expire
+        hadToken = Boolean(tok);
+        if (tok) headers["Authorization"] = `Bearer ${tok}`;
+      }
+      return fetch(`${BASE}${path}`, {
+        method, headers, signal: controller.signal,
+        // Only the auth endpoints exchange cookies (the refresh cookie is scoped to /api/auth).
+        credentials: path.startsWith("/api/auth/") ? "include" : "same-origin",
+        body: body ? JSON.stringify(body) : undefined,
+      });
+    };
+    let res = await send();
+    // Expired access token: renew once and repeat the request, instead of surfacing a spurious sign-out.
+    if (res.status === 401 && auth && isCookieSession() && (await refreshSession())) res = await send();
 
     // Try to parse JSON regardless of status
     let json: ApiResponse<T>;
@@ -173,7 +182,8 @@ export function normalizeAuthResponse(r: ApiResponse<{ token: string; user: obje
 
 function storeAuth(r: ApiResponse<{ token: string; user: object }>) {
   if (r.success && r.data) {
-    setToken(r.data.token);
+    const extra = r as unknown as { expiresIn?: number; csrfToken?: string; mode?: "cookie" | "legacy" };
+    setAuth({ token: r.data.token, expiresIn: extra.expiresIn, csrfToken: extra.csrfToken, mode: extra.mode });
     setSession(r.data.user);
     setDemoMode(false);
   }
@@ -186,10 +196,13 @@ export const authApi = {
   register: async (body: { username: string; password: string; name: string; email: string; role?: "customer" | "seller" }) =>
     storeAuth(normalizeAuthResponse(await api.post<{ token: string; user: object }>("/api/auth/register", body))),
   me: () => api.get("/api/auth/me", true),
-  logout: async () => {
-    await api.post("/api/auth/logout", {}, true);
-    clearSession();
-  },
+  /** Signs out for real: the server revokes this browser's refresh chain, then everything local is cleared. */
+  logout: async () => { await endSession(); },
+  /** Always succeeds from the user's point of view (the server never says whether the address has an account). */
+  forgotPassword: (email: string) => api.post<null>("/api/auth/forgot-password", { email }),
+  resetPassword: (token: string, password: string) => api.post<null>("/api/auth/reset-password", { token, password }),
+  verifyEmail: (token: string) => api.post<null>("/api/auth/verify-email", { token }),
+  resendVerification: () => api.post<null>("/api/auth/resend-verification", {}, true),
 };
 
 // ─── News API ───────────────────────────────────────────────────────────────

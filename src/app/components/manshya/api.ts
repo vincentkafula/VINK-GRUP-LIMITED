@@ -4,7 +4,7 @@
 // (customers for the dashboard, staff for the back office).
 
 import { API_BASE } from "../../services/config";
-import { getToken } from "../../services/apiClient";
+import { authFetch } from "../../services/authSession";
 
 export const MANSHYA_BASE = `${API_BASE}/api/manshya`;
 
@@ -19,11 +19,6 @@ export class ManshyaError extends Error {
 }
 
 const uid = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now());
-
-function authHeaders(): Record<string, string> {
-  const token = getToken();
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
 
 async function fail(res: Response): Promise<never> {
   const json = await res.json().catch(() => ({}));
@@ -42,16 +37,17 @@ export interface ApiOptions {
 
 /** Call a customer dashboard endpoint, e.g. api("/balance"). `base` lets the back office reuse this. */
 export async function api<T = any>(path: string, { method = "GET", body, idem }: ApiOptions = {}, base = MANSHYA_BASE): Promise<T> {
-  const headers: Record<string, string> = { "Content-Type": "application/json", ...authHeaders() };
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (idem) headers["Idempotency-Key"] = uid();
-  const res = await fetch(base + path, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
+  // authFetch adds the token, renewing it first if it is about to expire, and retries once after a 401.
+  const res = await authFetch(base + path, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
   if (!res.ok) await fail(res);
   return (await res.json().catch(() => ({}))) as T;
 }
 
 /** Fetch a file (PDF, CSV) with the sign-in token and hand it to the browser as a download. */
 export async function download(path: string, name: string, base = MANSHYA_BASE): Promise<void> {
-  const res = await fetch(base + path, { headers: authHeaders() });
+  const res = await authFetch(base + path);
   if (!res.ok) throw new ManshyaError("Download failed", res.status);
   const url = URL.createObjectURL(await res.blob());
   const a = document.createElement("a");
@@ -63,7 +59,7 @@ export async function download(path: string, name: string, base = MANSHYA_BASE):
 
 /** Open a protected file (e.g. a KYC document) in a new tab. */
 export async function openBlob(path: string, base = MANSHYA_BASE): Promise<void> {
-  const res = await fetch(base + path, { headers: authHeaders() });
+  const res = await authFetch(base + path);
   if (!res.ok) throw new ManshyaError("Could not open the file", res.status);
   window.open(URL.createObjectURL(await res.blob()));
 }

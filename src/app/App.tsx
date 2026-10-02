@@ -85,6 +85,7 @@ const VinkBlogViewer               = lazy(() => import("./components/footerPages
 const FiveHundredGlobalApplication = lazy(() => import("./components/FiveHundredGlobalApplication").then(m => ({ default: m.FiveHundredGlobalApplication })));
 const JobApplicationViewer = lazy(() => import("./components/JobApplicationViewer").then(m => ({ default: m.JobApplicationViewer })));
 const TaxiAssociationsViewer       = lazy(() => import("./components/TaxiAssociationsViewer").then(m => ({ default: m.TaxiAssociationsViewer })));
+const AuthLinkPage                 = lazy(() => import("./components/AuthLinkPage").then(m => ({ default: m.AuthLinkPage })));
 const ManshyaDashboard            = lazy(() => import("./components/manshya/ManshyaDashboard").then(m => ({ default: m.ManshyaDashboard })));
 const ManshyaAdmin                = lazy(() => import("./components/manshya/ManshyaAdmin").then(m => ({ default: m.ManshyaAdmin })));
 const ManshyaPay                  = lazy(() => import("./components/manshya/ManshyaPay").then(m => ({ default: m.ManshyaPay })));
@@ -197,6 +198,8 @@ export default function App() {
   const [userRole, setUserRole]                             = useState<string>("personal");
   const [showLogin, setShowLogin]                           = useState(false);
   // Manshya payments & banking: dashboard (customers), back office (staff), hosted checkout (public)
+  // Emailed links: /reset-password?token=... and /verify-email?token=...
+  const [authLink, setAuthLink]                               = useState<null | "reset" | "verify">(null);
   const [showManshya, setShowManshya]                        = useState(false);
   const [showManshyaAdmin, setShowManshyaAdmin]              = useState(false);
   const [showManshyaPay, setShowManshyaPay]                  = useState(false);
@@ -408,7 +411,7 @@ export default function App() {
     setShowContactUs(false); setShowAboutVINK(false); setShowCareers(false);
     setShowSwitchToVINK(false); setShowSafetySecurity(false); setShowInvestorRelations(false);
     setShowTaxiAssociations(false); setShow500App(false);
-    setShowManshya(false); setShowManshyaAdmin(false); setShowManshyaPay(false);
+    setShowManshya(false); setShowManshyaAdmin(false); setShowManshyaPay(false); setAuthLink(null);
   };
 
   // ── Persistent top nav (Personal/Business/Corporate) ─────────
@@ -489,6 +492,8 @@ export default function App() {
     if (path === "/management-panel") { mount("managementPanel"); setShowManagementPanel(true); return true; }
     // Manshya: dashboard is customer-only (it shows a sign-in prompt to anyone else), back office is staff-only,
     // /pay is the public hosted checkout for payment links.
+    if (path === "/reset-password") { mount("authLink"); setAuthLink("reset");  return true; }
+    if (path === "/verify-email")   { mount("authLink"); setAuthLink("verify"); return true; }
     if (path === "/manshya")       { mount("manshya");      setShowManshya(true);      return true; }
     if (path === "/manshya-admin") { mount("manshyaAdmin"); setShowManshyaAdmin(true); return true; }
     if (path === "/pay")           { mount("manshyaPay");   setShowManshyaPay(true);   return true; }
@@ -653,6 +658,7 @@ export default function App() {
       {has("ownerDashboard")  && <Suspense fallback={null}><OwnerFleetDashboardViewer isOpen={showOwnerDashboard} onClose={() => setShowOwnerDashboard(false)} /></Suspense>}
       {has("taxiAssociationDashboard") && <Suspense fallback={null}><TaxiAssociationDashboardViewer isOpen={showTaxiAssociationDashboard} onClose={() => setShowTaxiAssociationDashboard(false)} /></Suspense>}
       {has("investorDashboard") && <Suspense fallback={null}><InvestorFleetDashboardViewer isOpen={showInvestorDashboard} onClose={() => setShowInvestorDashboard(false)} investorName={getSession()?.name} onOpenRevenueDashboard={() => { mount("revenueDash"); setShowRevenueDashboard(true); }} /></Suspense>}
+      {has("authLink")        && authLink && <Suspense fallback={null}><AuthLinkPage kind={authLink} isOpen onClose={() => { setAuthLink(null); window.history.replaceState({}, "", "/"); }} /></Suspense>}
       {has("manshya")         && <Suspense fallback={null}><ManshyaDashboard      isOpen={showManshya}         onClose={() => { setShowManshya(false); pushRoute("/"); }} onSignOut={() => { setIsLoggedIn(false); setUserRole("personal"); window.dispatchEvent(new Event("vink:open-login")); }} /></Suspense>}
       {has("manshyaAdmin")    && <Suspense fallback={null}><ManshyaAdmin          isOpen={showManshyaAdmin}    onClose={() => { setShowManshyaAdmin(false); pushRoute("/"); }} /></Suspense>}
       {has("manshyaPay")      && <Suspense fallback={null}><ManshyaPay            isOpen={showManshyaPay}      onClose={() => { setShowManshyaPay(false); window.history.replaceState({}, "", "/"); }} /></Suspense>}

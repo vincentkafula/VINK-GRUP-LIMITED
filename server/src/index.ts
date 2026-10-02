@@ -6,8 +6,10 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 
 import { requestLogger } from "./middleware/logger.js";
-import authRouter from "./routes/auth.js";
-import authRouterDb from "./routes/authRouterDb.js";
+import { createDbAuthRouter, createMemoryAuthRouter } from "./auth/instance.js";
+import { createOriginPolicy } from "./auth/origins.js";
+import { LiveHub, type VerifiedToken } from "./services/liveHub.js";
+import jwt from "jsonwebtoken";
 import fraudRiskRouter from "./routes/fraudRiskRouter.js";
 import terminalRouter from "./routes/terminalRouter.js";
 import retailRouter from "./routes/retailRouter.js";
@@ -36,27 +38,13 @@ import { createPaymentsSandboxRouter } from "./payments/sandboxRoutes.js";
 import { createIssuerRouter } from "./payments/issuerRoutes.js";
 import { hasDb, pool } from "./db/pool.js";
 import { migrateAndSeed } from "./db/migrate.js";
-import { requireAuth, requireRole } from "./middleware/auth.js";
+import { requireAuth, requireRole, JWT_SECRET } from "./middleware/auth.js";
 
 const PORT = Number(process.env.PORT) || 3001;
-const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS ?? "http://localhost:5173,http://localhost:4173")
-  .split(",").map((o: string) => o.trim());
 
-// The production custom domain, hardcoded as a fallback rather than relying
-// solely on ALLOWED_ORIGINS being set correctly in Railway's environment —
-// a misconfigured or missing env var there would otherwise silently break
-// every request from the real production site with no obvious error beyond
-// a generic CORS failure in the browser console.
-const PRODUCTION_DOMAINS = ["https://www.vink.co.za", "https://vink.co.za"];
-
-const isAllowedOrigin = (origin: string | undefined): boolean => {
-  if (!origin) return true;
-  if (ALLOWED_ORIGINS.includes(origin)) return true;
-  if (PRODUCTION_DOMAINS.includes(origin)) return true;
-  // Allow all Railway subdomains in production
-  if (process.env.NODE_ENV === "production" && origin.endsWith(".up.railway.app")) return true;
-  return false;
-};
+// Which browser origins may call the API. Explicit allow-list only (the production sites, ALLOWED_ORIGINS, FRONTEND_URL); the old
+// "any *.up.railway.app" rule is gone. See auth/origins.ts.
+const isAllowedOrigin = createOriginPolicy();
 
 // ─── Express App ─────────────────────────────────────────────────────────────
 const app = express();
@@ -102,9 +90,13 @@ const authLimiter = rateLimit({
 app.use("/api/auth/login", authLimiter);
 app.use("/api/auth/register", authLimiter);
 app.use("/api/auth/change-password", authLimiter);
+// Emailed-link and token endpoints: tight enough to stop guessing and email flooding, loose enough for normal use.
+app.use(["/api/auth/forgot-password", "/api/auth/reset-password", "/api/auth/verify-email", "/api/auth/resend-verification"],
+  rateLimit({ windowMs: 15 * 60_000, max: 10, standardHeaders: true, legacyHeaders: false, message: { success: false, error: "Too many attempts. Please wait 15 minutes and try again." } }));
+app.use("/api/auth/refresh", rateLimit({ windowMs: 15 * 60_000, max: 100, standardHeaders: true, legacyHeaders: false }));
 
 // ─── Routes ──────────────────────────────────────────────────────────────────
-app.use("/api/auth",          hasDb ? authRouterDb : authRouter);
+app.use("/api/auth",          (hasDb ? createDbAuthRouter() : createMemoryAuthRouter()).router);
 app.use("/api/fraud-risk",    fraudRiskRouter);
 app.use("/api/terminal",      terminalRouter);
 app.use("/api/retail",        retailRouter);
@@ -265,44 +257,13 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
 const server = http.createServer(app);
 
 // ─── WebSocket Server ─────────────────────────────────────────────────────────
-const wss = new WebSocketServer({ server, path: "/ws" });
-const clients = new Set<WebSocket>();
-
-function broadcast(event: { event: string; timestamp: string; data: unknown }): void {
-  const payload = JSON.stringify(event);
-  clients.forEach(ws => {
-    if (ws.readyState === WebSocket.OPEN) ws.send(payload);
-  });
-}
-setBroadcaster(broadcast);
-
-wss.on("connection", (ws, req) => {
-  const ip = req.socket.remoteAddress ?? "unknown";
-  console.log(`[WS] Client connected  (${ip})  total=${clients.size + 1}`);
-  clients.add(ws);
-
-  // Send welcome + current state
-  ws.send(JSON.stringify({
-    event: "connected",
-    timestamp: new Date().toISOString(),
-    data: { message: "Connected to Manshya MVNO live feed", clientCount: clients.size },
-  }));
-
-  ws.on("message", raw => {
-    try {
-      const msg = JSON.parse(raw.toString());
-      // Ping/pong keep-alive
-      if (msg.type === "ping") ws.send(JSON.stringify({ type: "pong", timestamp: new Date().toISOString() }));
-    } catch { /* ignore */ }
-  });
-
-  ws.on("close", () => {
-    clients.delete(ws);
-    console.log(`[WS] Client disconnected  total=${clients.size}`);
-  });
-
-  ws.on("error", err => console.error("[WS] Socket error:", err.message));
-});
+// Maximum message size is small: clients only ever send an auth message or a ping.
+const wss = new WebSocketServer({ server, path: "/ws", maxPayload: 16 * 1024 });
+const hub = new LiveHub((token) => {
+  try { return jwt.verify(token, JWT_SECRET) as VerifiedToken; } catch { return null; }
+}, 5000, (m) => console.log(m));
+hub.attach(wss);
+setBroadcaster((event) => hub.broadcast(event));
 
 // ─── Start Simulators ────────────────────────────────────────────────────────
 

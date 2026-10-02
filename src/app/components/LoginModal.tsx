@@ -101,6 +101,9 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
   const [remember, setRemember] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // "forgot": asking for a reset link; "sent": told (always, whether or not the address has an account) that an email is on its way.
+  const [view, setView] = useState<"login" | "forgot" | "sent">("login");
+  const [forgotEmail, setForgotEmail] = useState("");
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -117,6 +120,17 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
   }, [isOpen]);
 
   if (!isOpen) return null;
+
+  const handleForgot = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const email = forgotEmail.trim();
+    if (!/^[^s@]+@[^s@]+.[^s@]{2,}$/.test(email)) { setError("Enter the email address on your account."); return; }
+    setLoading(true); setError(null);
+    const r = await authApi.forgotPassword(email);
+    setLoading(false);
+    if (r.success) setView("sent");
+    else setError(r.error ?? "We could not send the email. Please try again.");
+  };
 
   const canSubmit = userNumber.trim().length > 0 && password.trim().length > 0 && !loading;
 
@@ -256,10 +270,11 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
           {/* ── Right: login card ── */}
           <div className="flex items-center justify-center p-6 sm:p-10" style={{ background: "#fff" }}>
             <div className="w-full max-w-[380px]">
-              <h2 className="text-[#5c1420] text-[24px] font-bold mb-1.5">Sign in</h2>
+              <h2 className="text-[#5c1420] text-[24px] font-bold mb-1.5">{view === "login" ? "Sign in" : "Reset your password"}</h2>
               <p className="text-[13.5px] text-[#6b5d5f] mb-6">
-                Enter your username and password. Customers go to their Manshya
-                dashboard, staff go to the Management Panel.
+                {view === "login"
+                  ? "Enter your username and password. Customers go to their Manshya dashboard, staff go to the Management Panel."
+                  : "Enter the email address on your account and we will send you a link to choose a new password."}
               </p>
 
               {error && (
@@ -269,6 +284,21 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
                 </div>
               )}
 
+              {view === "sent" ? (
+                <div role="status" className="rounded-lg px-4 py-4 text-[13.5px]" style={{ background: "#eef6f0", border: "1px solid #cfe3d5", color: "#0F3D24" }}>
+                  If that address has an account, we have emailed a link to reset the password. It works for one hour. Check your spam folder too.
+                  <button type="button" onClick={() => { setView("login"); setError(null); }} className="block mt-3 font-semibold underline">Back to sign in</button>
+                </div>
+              ) : view === "forgot" ? (
+                <form onSubmit={handleForgot} noValidate>
+                  <FormField id="vink-forgot-email" icon={<Hash className="w-4 h-4" />} label="Email address" value={forgotEmail} onChange={setForgotEmail} type="email" autoFocus />
+                  <button type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-bold text-[14.5px] disabled:opacity-60" style={{ background: "linear-gradient(135deg,#0F3D24,#0B2E1C)", color: "#fdf3e7" }}>
+                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                    {loading ? "Sending…" : "Email me a reset link"}
+                  </button>
+                  <button type="button" onClick={() => { setView("login"); setError(null); }} className="block mx-auto mt-4 text-[13px] text-[#0F3D24] font-semibold hover:underline">Back to sign in</button>
+                </form>
+              ) : (
               <form onSubmit={handleSubmit} noValidate>
                 <FormField id="vink-username" icon={<Hash className="w-4 h-4" />} label="Username" value={userNumber} onChange={setUserNumber} autoFocus />
                 <FormField
@@ -292,7 +322,7 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
                     />
                     Remember username
                   </label>
-                  <button type="button" className="text-[#0F3D24] font-semibold hover:underline">
+                  <button type="button" onClick={() => { setView("forgot"); setError(null); }} className="text-[#0F3D24] font-semibold hover:underline">
                     Forgot password?
                   </button>
                 </div>
@@ -311,6 +341,7 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
                   {loading ? "Signing in…" : "Sign in"}
                 </button>
               </form>
+              )}
 
               <div className="flex items-center gap-3 my-5 text-[11px] uppercase tracking-wide text-[#6b5d5f]">
                 <span className="flex-1 h-px" style={{ background: "#e8e0d3" }} />
