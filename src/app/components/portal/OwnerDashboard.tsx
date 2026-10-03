@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { Home, Car, Users, BarChart3, FileText, Bell, Link2, Wallet } from "lucide-react";
+import { Home, Car, Users, BarChart3, FileText, Bell, Link2, Wallet, MapPin, Scale } from "lucide-react";
 import { DashboardShell, SectionPanel, StatCard, TableCard, Badge } from "../dashboards/DashboardShell";
 import { portalClient, useLoad, Status, Empty, ActionButton, outcome, inputCls, rand, day, type Load } from "./ui";
 import { LinksPanel } from "./LinksPanel";
+import { OwnerTrend, OwnerMap, OwnerFinancials } from "./OwnerExtras";
+import { ScreenBoundary } from "./widgets";
 
 const COLOR = "#8B5CF6";
 const call = portalClient("owner");
@@ -19,20 +21,25 @@ export function OwnerDashboard({ userName, onClose }: { userName?: string; onClo
   const unread = notes.state === "ready" ? notes.data.unread : 0;
   const items = [
     { icon: <Home className="w-4 h-4" />, label: "Overview" }, { icon: <Car className="w-4 h-4" />, label: "Vehicles" },
-    { icon: <Users className="w-4 h-4" />, label: "Drivers" }, { icon: <BarChart3 className="w-4 h-4" />, label: "Reports" },
+    { icon: <Users className="w-4 h-4" />, label: "Drivers" }, { icon: <MapPin className="w-4 h-4" />, label: "Routes & map" },
+    { icon: <BarChart3 className="w-4 h-4" />, label: "Reports" }, { icon: <Scale className="w-4 h-4" />, label: "Financials" },
     { icon: <FileText className="w-4 h-4" />, label: "Documents" }, { icon: <Bell className="w-4 h-4" />, label: "Notifications", badge: unread || undefined },
     { icon: <Link2 className="w-4 h-4" />, label: "Requests & links" },
   ];
   return (
     <DashboardShell title="Owner Dashboard" subtitle="Vehicles, drivers and earnings" accentColor={COLOR} gradient={`from-[${COLOR}]`} navItems={items} activeNav={nav} onNavChange={setNav} onClose={onClose} userName={userName} alertCount={unread || undefined}>
       <div className="p-4 md:p-6 space-y-4 max-w-5xl">
-        {nav === "Overview" && <Overview />}
-        {nav === "Vehicles" && <Vehicles />}
-        {nav === "Drivers" && <Drivers />}
-        {nav === "Reports" && <Reports />}
-        {nav === "Documents" && <Documents onChanged={reloadNotes} />}
-        {nav === "Notifications" && <Notifications notes={notes} reload={reloadNotes} />}
-        {nav === "Requests & links" && <LinksPanel call={call} color={COLOR} />}
+        <ScreenBoundary resetKey={nav}>
+          {nav === "Overview" && <><Overview /><OwnerTrend /></>}
+          {nav === "Vehicles" && <Vehicles />}
+          {nav === "Drivers" && <Drivers />}
+          {nav === "Routes & map" && <OwnerMap />}
+          {nav === "Reports" && <Reports />}
+          {nav === "Financials" && <OwnerFinancials />}
+          {nav === "Documents" && <Documents onChanged={reloadNotes} />}
+          {nav === "Notifications" && <Notifications notes={notes} reload={reloadNotes} />}
+          {nav === "Requests & links" && <LinksPanel call={call} color={COLOR} />}
+        </ScreenBoundary>
       </div>
     </DashboardShell>
   );

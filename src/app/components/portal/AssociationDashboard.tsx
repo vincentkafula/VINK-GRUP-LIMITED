@@ -1,7 +1,9 @@
 import { useState } from "react";
-import { Home, Users, CheckCircle2, MapPin, Route as RouteIcon, Coins } from "lucide-react";
+import { Home, Users, CheckCircle2, MapPin, Route as RouteIcon, Coins, Car, Map as MapIcon, Landmark, FileText, UserCog, UserCheck } from "lucide-react";
 import { DashboardShell, SectionPanel, StatCard, TableCard, Badge } from "../dashboards/DashboardShell";
 import { portalClient, useLoad, Status, Empty, ActionButton, outcome, inputCls, rand, day, when } from "./ui";
+import { MembersList, VehiclesList, RoutesManager, AssociationMap, DeparturesTrend, FinesLedger, AssociationStatements } from "./AssociationExtras";
+import { ScreenBoundary } from "./widgets";
 
 const COLOR = "#EF4444";
 const call = portalClient("association");
@@ -18,19 +20,30 @@ export function AssociationDashboard({ userName, onClose }: { userName?: string;
   const [reqs, reloadReqs] = useLoad<{ requests: { id: string; name: string; email: string; role: string; at: string }[] }>(() => call("/requests"));
   const pending = reqs.state === "ready" ? reqs.data.requests.length : 0;
   const items = [
-    { icon: <Home className="w-4 h-4" />, label: "Overview" }, { icon: <Users className="w-4 h-4" />, label: "Members" },
+    { icon: <Home className="w-4 h-4" />, label: "Overview" },
+    { icon: <Users className="w-4 h-4" />, label: "Owners" }, { icon: <UserCog className="w-4 h-4" />, label: "Drivers" }, { icon: <UserCheck className="w-4 h-4" />, label: "Marshals" },
+    { icon: <Car className="w-4 h-4" />, label: "Vehicles" },
     { icon: <CheckCircle2 className="w-4 h-4" />, label: "Approvals", badge: pending || undefined }, { icon: <MapPin className="w-4 h-4" />, label: "Ranks" },
-    { icon: <RouteIcon className="w-4 h-4" />, label: "Routes" }, { icon: <Coins className="w-4 h-4" />, label: "Levies" },
+    { icon: <RouteIcon className="w-4 h-4" />, label: "Routes" }, { icon: <MapIcon className="w-4 h-4" />, label: "Map" },
+    { icon: <Coins className="w-4 h-4" />, label: "Levies" }, { icon: <Landmark className="w-4 h-4" />, label: "Fines ledger" }, { icon: <FileText className="w-4 h-4" />, label: "Statements" },
   ];
   return (
     <DashboardShell title="Association" subtitle="Members, ranks, routes and levies" accentColor={COLOR} gradient={`from-[${COLOR}]`} navItems={items} activeNav={nav} onNavChange={setNav} onClose={onClose} userName={userName} alertCount={pending || undefined}>
       <div className="p-4 md:p-6 space-y-4 max-w-5xl">
-        {nav === "Overview" && <Overview />}
-        {nav === "Members" && <Members onChanged={reloadReqs} />}
-        {nav === "Approvals" && <Approvals reqs={reqs} reload={reloadReqs} />}
-        {nav === "Ranks" && <Ranks />}
-        {nav === "Routes" && <Routes />}
-        {nav === "Levies" && <Levies />}
+        <ScreenBoundary resetKey={nav}>
+          {nav === "Overview" && <><Overview /><DeparturesTrend /></>}
+          {nav === "Owners" && <><MembersList role="vehicle_owner" onChanged={reloadReqs} /><Invite onChanged={reloadReqs} /></>}
+          {nav === "Drivers" && <><MembersList role="driver" onChanged={reloadReqs} /><Invite onChanged={reloadReqs} /></>}
+          {nav === "Marshals" && <><MembersList role="marshal" onChanged={reloadReqs} /><Invite onChanged={reloadReqs} /></>}
+          {nav === "Vehicles" && <VehiclesList />}
+          {nav === "Approvals" && <Approvals reqs={reqs} reload={reloadReqs} />}
+          {nav === "Ranks" && <Ranks />}
+          {nav === "Routes" && <RoutesManager />}
+          {nav === "Map" && <AssociationMap />}
+          {nav === "Levies" && <Levies />}
+          {nav === "Fines ledger" && <FinesLedger />}
+          {nav === "Statements" && <AssociationStatements />}
+        </ScreenBoundary>
       </div>
     </DashboardShell>
   );
@@ -54,29 +67,6 @@ function Overview() {
         <SectionPanel title="Levies"><div className="p-4 text-sm text-white">Outstanding {rand(x.levies.outstanding)} across {x.levies.open} open levies · collected {rand(x.levies.paid)}.</div></SectionPanel>
       </>
     )}</Status>
-  );
-}
-
-function Members({ onChanged }: { onChanged: () => void }) {
-  const [l, reload] = useLoad<{ members: Member[] }>(() => call("/members"));
-  const [email, setEmail] = useState("");
-  return (
-    <>
-      <Status load={l}>{({ members }) => members.length === 0 ? (
-        <SectionPanel title="Members"><div className="p-4"><Empty>No members yet. Invite owners, drivers and marshals by email below.</Empty></div></SectionPanel>
-      ) : (
-        <TableCard title="Members" color={COLOR} columns={["Name", "Email", "Role", "Status", ""]}
-          rows={members.map((m) => [m.name, m.email, ROLE[m.role] ?? m.role, <Badge key="s" text={m.status === "pending" ? "invited" : m.status} color={m.status === "active" ? "#10B981" : "#F59E0B"} />,
-            <ActionButton key="r" small label="Remove" color="#6B7280" onRun={async () => { const r = await call(`/members/${m.id}/remove`, { method: "POST", body: {} }); reload(); onChanged(); return "error" in r ? { error: r.error } : undefined; }} />])} />
-      )}</Status>
-      <SectionPanel title="Invite a member">
-        <div className="p-4 flex flex-wrap gap-2 items-center">
-          <input className={inputCls + " max-w-xs"} placeholder="Their account email" value={email} onChange={(e) => setEmail(e.target.value)} />
-          <ActionButton label="Send invitation" color={COLOR} onRun={async () => { const r = await call<{ message?: string }>("/members", { method: "POST", body: { email } }); if (!("error" in r)) { setEmail(""); reload(); onChanged(); } return outcome(r); }} />
-          <p className="basis-full text-[11px] text-white/40">The person has to accept the invitation. It works for vehicle owner, driver and marshal accounts.</p>
-        </div>
-      </SectionPanel>
-    </>
   );
 }
 
@@ -138,17 +128,6 @@ function Ranks() {
   );
 }
 
-function Routes() {
-  const [l] = useLoad<{ routes: { id: string; name: string; active: boolean; toleranceMeters: number; waypoints: number }[] }>(() => call("/routes"));
-  return (
-    <Status load={l}>{({ routes }) => routes.length === 0 ? (
-      <SectionPanel title="Routes"><div className="p-4"><Empty>No routes are recorded for your association yet. Routes are set up with your fare terminals.</Empty></div></SectionPanel>
-    ) : (
-      <TableCard title="Routes" color={COLOR} columns={["Route", "Points", "Allowed off the path", "Status"]} rows={routes.map((r) => [r.name, r.waypoints, `${r.toleranceMeters} m`, <Badge key="s" text={r.active ? "active" : "inactive"} color={r.active ? "#10B981" : "#6B7280"} />])} />
-    )}</Status>
-  );
-}
-
 function Levies() {
   const [l, reload] = useLoad<{ levies: Levy[] }>(() => call("/levies"));
   const [members] = useLoad<{ members: Member[] }>(() => call("/members"));
@@ -177,5 +156,19 @@ function Levies() {
         </div>
       </SectionPanel>
     </>
+  );
+}
+
+/** Invite a member by email. The person has to accept the invitation. Works for vehicle owner, driver and marshal accounts. */
+function Invite({ onChanged }: { onChanged: () => void }) {
+  const [email, setEmail] = useState("");
+  return (
+    <SectionPanel title="Invite a member">
+      <div className="p-4 flex flex-wrap gap-2 items-center">
+        <input className={inputCls + " max-w-xs"} placeholder="Their account email" value={email} onChange={(e) => setEmail(e.target.value)} />
+        <ActionButton label="Send invitation" color={COLOR} onRun={async () => { const r = await call<{ message?: string }>("/members", { method: "POST", body: { email } }); if (!("error" in r)) { setEmail(""); onChanged(); } return outcome(r); }} />
+        <p className="basis-full text-[11px] text-white/40">The person has to accept the invitation. It works for vehicle owner, driver and marshal accounts.</p>
+      </div>
+    </SectionPanel>
   );
 }

@@ -1,5 +1,5 @@
 import { Router, json } from "express";
-import { h, uid, isUuid, iso, fail, findUserByEmail, isUniqueViolation, type Db } from "./common.js";
+import { h, uid, isUuid, iso, fail, findUserByEmail, isUniqueViolation, audit, type Db } from "./common.js";
 
 /**
  * Two-sided links between people, shared by the owner, driver and marshal dashboards:
@@ -87,6 +87,7 @@ export function createLinkRouter(db: Db, myRole: MemberRole): Router {
       n = (await db.query(`UPDATE owner_drivers SET status = $3, responded_at = now() WHERE id = $1 AND owner_id = $2 AND status = 'pending' AND requested_by = 'driver' RETURNING id`, [id, me, to])).rows.length;
     else { fail(res, 404, "Request not found"); return; }
     if (!n) { fail(res, 404, "Request not found or already answered"); return; }
+    await audit(db, req, to === "active" ? "link.accept" : "link.decline", `${kind}:${id}`);
     res.json({ success: true, status: to });
   }));
 
@@ -97,6 +98,7 @@ export function createLinkRouter(db: Db, myRole: MemberRole): Router {
     if (kind === "membership") n = (await db.query(`UPDATE memberships SET status = 'removed', responded_at = now() WHERE id = $1 AND member_id = $2 AND status IN ('active','pending') RETURNING id`, [id, me])).rows.length;
     else if (kind === "owner-driver" && myRole === "driver") n = (await db.query(`UPDATE owner_drivers SET status = 'removed', responded_at = now() WHERE id = $1 AND driver_id = $2 AND status IN ('active','pending') RETURNING id`, [id, me])).rows.length;
     if (!n) { fail(res, 404, "Link not found"); return; }
+    await audit(db, req, "link.leave", `${kind}:${id}`);
     res.json({ success: true });
   }));
 

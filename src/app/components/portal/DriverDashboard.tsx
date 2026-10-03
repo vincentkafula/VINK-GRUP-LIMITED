@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { User, Car, Route as RouteIcon, Wallet, Bell, Loader2, TriangleAlert, Link2 } from "lucide-react";
+import { User, Car, Route as RouteIcon, Wallet, Bell, Loader2, TriangleAlert, Link2, FileText } from "lucide-react";
 import { portalClient } from "./ui";
 import { LinksPanel } from "./LinksPanel";
+import { PowerPanel, DriverTrips, DriverTrend, DriverStatements } from "./DriverExtras";
+import { ScreenBoundary } from "./widgets";
 import { DashboardShell, StatCard, SectionPanel, TableCard, Badge } from "../dashboards/DashboardShell";
 import {
   driverApi, rand, when,
@@ -14,6 +16,7 @@ const NAV_BASE = [
   { icon: <Car className="w-4 h-4" />, label: "Vehicle & licence" },
   { icon: <RouteIcon className="w-4 h-4" />, label: "Route & trips" },
   { icon: <Wallet className="w-4 h-4" />, label: "Earnings" },
+  { icon: <FileText className="w-4 h-4" />, label: "Statements" },
   { icon: <Bell className="w-4 h-4" />, label: "Notifications" },
   { icon: <Link2 className="w-4 h-4" />, label: "Requests & links" },
 ];
@@ -55,12 +58,15 @@ export function DriverDashboard({ userName, onClose }: { userName?: string; onCl
     <DashboardShell title="Driver's Dashboard" subtitle="Trips, earnings and vehicle" accentColor={COLOR} gradient={`from-[${COLOR}]`}
       navItems={navItems} activeNav={nav} onNavChange={setNav} onClose={onClose} userName={userName} alertCount={unread || undefined}>
       <div className="p-4 md:p-6 space-y-4 max-w-5xl">
-        {nav === "Profile" && <ProfileScreen onChanged={reloadNotes} />}
-        {nav === "Vehicle & licence" && <VehicleScreen />}
-        {nav === "Route & trips" && <TripsScreen />}
-        {nav === "Earnings" && <EarningsScreen />}
-        {nav === "Notifications" && <NotificationsScreen notes={notes} reload={reloadNotes} />}
-        {nav === "Requests & links" && <LinksPanel call={linkCall} color={COLOR} canAskOwner />}
+        <ScreenBoundary resetKey={nav}>
+          {nav === "Profile" && <ProfileScreen onChanged={reloadNotes} />}
+          {nav === "Vehicle & licence" && <VehicleScreen />}
+          {nav === "Route & trips" && <TripsScreen />}
+          {nav === "Earnings" && <EarningsScreen />}
+          {nav === "Statements" && <DriverStatements />}
+          {nav === "Notifications" && <NotificationsScreen notes={notes} reload={reloadNotes} />}
+          {nav === "Requests & links" && <LinksPanel call={linkCall} color={COLOR} canAskOwner />}
+        </ScreenBoundary>
       </div>
     </DashboardShell>
   );
@@ -119,7 +125,7 @@ function ProfileForm({ user, profile, onSaved }: { user: { name: string; email: 
 
 /* ───────── Vehicle & licence ───────── */
 function VehicleScreen() {
-  const [load] = useLoad(driverApi.vehicles, true);
+  const [load, reload] = useLoad(driverApi.vehicles, true);
   return (
     <Status load={load}>{({ vehicles }) => vehicles.length === 0 ? (
       <SectionPanel title="Your vehicle"><div className="p-4"><Empty>No vehicle is linked to your account yet. Your owner or association links it to you.</Empty></div></SectionPanel>
@@ -129,8 +135,9 @@ function VehicleScreen() {
           <Field label="Registration" value={v.registration} /><Field label="Make & model" value={[v.make, v.model].filter(Boolean).join(" ")} />
           <Field label="Year" value={v.year} /><Field label="Colour" value={v.colour} />
           <Field label="Seats" value={v.seats} /><Field label="Licence disc expires" value={v.discExpiry} />
-          <Field label="Fare terminal" value={v.terminalSerial} /><Field label="Terminal status" value={<Badge text={v.terminalStatus} color={v.terminalStatus === "active" ? "#10B981" : "#F59E0B"} />} />
+          <Field label="Fare terminal" value={v.terminalSerial} /><Field label="Terminal status" value={v.terminalStatus ? <Badge text={v.terminalStatus} color={v.terminalStatus === "active" ? "#10B981" : "#F59E0B"} /> : null} />
         </div>
+        {v.terminalId && <PowerPanel terminalId={v.terminalId} status={v.terminalStatus} onChanged={reload} />}
       </SectionPanel>
     ))}</>}</Status>
   );
@@ -139,7 +146,6 @@ function VehicleScreen() {
 /* ───────── Route & trips ───────── */
 function TripsScreen() {
   const [routes] = useLoad(driverApi.routes, true);
-  const [trips] = useLoad(driverApi.trips, true);
   return (
     <>
       <Status load={routes}>{({ routes: rs }) => (
@@ -153,12 +159,7 @@ function TripsScreen() {
           </div>
         </SectionPanel>
       )}</Status>
-      <Status load={trips}>{({ trips: ts }) => ts.length === 0 ? (
-        <SectionPanel title="Fares on your vehicle"><div className="p-4"><Empty>No fares yet.</Empty></div></SectionPanel>
-      ) : (
-        <TableCard title="Fares on your vehicle" color={COLOR} columns={["When", "Amount", "Card", "Status"]}
-          rows={ts.map((t: DriverTrip) => [when(t.at), rand(t.amount), t.scheme ?? "–", <Badge key={t.id} text={t.status} color={t.status === "confirmed" ? "#10B981" : t.status === "declined" ? "#EF4444" : "#F59E0B"} />])} />
-      )}</Status>
+      <DriverTrips />
     </>
   );
 }
@@ -174,6 +175,7 @@ function EarningsScreen() {
           <StatCard label="This week" value={rand(e.faresCollected.week.total)} sub={`${e.faresCollected.week.count} fares`} icon={<Wallet className="w-4 h-4" />} color="#3B82F6" />
           <StatCard label="This month" value={rand(e.faresCollected.month.total)} sub={`${e.faresCollected.month.count} fares`} icon={<Wallet className="w-4 h-4" />} color="#10B981" />
         </div>
+        <DriverTrend />
         <p className="text-[11px] text-white/40">These are the fares collected on your vehicle. Your own pay is agreed privately with your owner and is not shown here.</p>
         <SectionPanel title={`Fines · balance ${rand(e.fineBalance)}`}>
           <div className="p-4">{e.fines.length === 0 ? <Empty>No fines. Keep to your route.</Empty> : (

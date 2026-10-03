@@ -27,14 +27,15 @@ export type Call = ReturnType<typeof portalClient>;
 export type Load<T> = { state: "loading" } | { state: "error"; error: string } | { state: "ready"; data: T };
 
 /** Loads one endpoint and exposes a reload. Each screen owns its data, so a failure in one never blanks the others. */
-export function useLoad<T>(fetcher: () => Promise<{ data: T } | { error: string }>): [Load<T>, () => void] {
+export function useLoad<T>(fetcher: () => Promise<{ data: T } | { error: string }>, deps: unknown[] = []): [Load<T>, () => void] {
   const [v, setV] = useState<Load<T>>({ state: "loading" });
   const [n, setN] = useState(0);
   useEffect(() => {
     let live = true;
+    // Stale-while-revalidate: keep showing the previous result while a filter change or refresh is loading, so lists do not flash.
     fetcher().then((r) => { if (live) setV("data" in r ? { state: "ready", data: r.data } : { state: "error", error: r.error }); });
     return () => { live = false; };
-  }, [n]);          // eslint-disable-line react-hooks/exhaustive-deps
+  }, [n, ...deps]);          // eslint-disable-line react-hooks/exhaustive-deps
   return [v, () => setN((x) => x + 1)];
 }
 
