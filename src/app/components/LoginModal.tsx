@@ -1,3 +1,4 @@
+import { portalPathForRole } from "./portal/portalDefs";
 import { useState, useRef, useEffect } from "react";
 import {
   X, Lock, Hash, TriangleAlert, HelpCircle, Loader2, ShieldAlert,
@@ -164,6 +165,9 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
       // "superadmin" (role "owner") -- both are management accounts, but
       // they go to two different dashboards, so username decides which one
       // specifically, not role alone.
+      // The five transport account types each have their own dashboard (the server enforces who may open it).
+      const portalPath = portalPathForRole(role);
+      if (portalPath) { onSelectDashboard?.("portal:" + portalPath.split("/")[2]); return; }
       if (username === "admin") {
         onSelectDashboard?.("adminBankingPanel");
         return;

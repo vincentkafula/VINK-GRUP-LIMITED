@@ -776,3 +776,16 @@ CREATE TABLE IF NOT EXISTS email_tokens (
   created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_email_tokens_user ON email_tokens(user_id, purpose);
+
+-- Incoming email received through Resend (see inbound/router.ts). resend_id makes repeated webhook deliveries harmless.
+CREATE TABLE IF NOT EXISTS inbound_emails (
+  id          UUID PRIMARY KEY,
+  resend_id   TEXT NOT NULL UNIQUE,
+  from_addr   TEXT NOT NULL,
+  to_addrs    TEXT[] NOT NULL DEFAULT '{}',
+  subject     TEXT NOT NULL DEFAULT '',
+  text_body   TEXT,
+  html_body   TEXT,
+  received_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_inbound_emails_received ON inbound_emails(received_at DESC);

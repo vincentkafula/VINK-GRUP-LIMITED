@@ -45,7 +45,7 @@ export function createAuthRouter({ store, sessions, flows, cfg, isAllowedOrigin 
   router.post("/login", h(async (req, res) => {
     const username = str(req.body?.username, 120), password = str(req.body?.password, 200);
     if (!username || !password) return fail(res, 400, "username and password required");
-    const user = await store.findUserByUsername(username);
+    const user = (await store.findUserByUsername(username)) ?? (username.includes("@") ? await store.findUserByEmail(username) : null);
     dummyHash ??= bcrypt.hashSync("not-a-real-password", BCRYPT_ROUNDS);
     const ok = await bcrypt.compare(password.trim(), user?.passwordHash ?? dummyHash);
     if (!user || !ok) return fail(res, 401, "Invalid credentials");
@@ -61,8 +61,9 @@ export function createAuthRouter({ store, sessions, flows, cfg, isAllowedOrigin 
     const problem = passwordProblem(password, { username, email });
     if (problem) return fail(res, 400, problem, "weak_password");
     if (await store.usernameOrEmailTaken(username, email)) return fail(res, 409, "An account with that username or email already exists");
-    // Self-service accounts are customers; "seller" is the only other role that was ever offered here.
-    const role = req.body.role === "seller" ? "seller" : "customer";
+    // Self-service accounts are customers or personal (passenger) accounts, or "seller". Driver, marshal, vehicle owner and association
+    // accounts are never self-service: they are granted by an association or by staff.
+    const role = req.body.role === "seller" ? "seller" : req.body.role === "personal" ? "personal" : "customer";
     const user = await store.createUser({ username, passwordHash: await bcrypt.hash(password.trim(), BCRYPT_ROUNDS), role, name: name.trim(), email: email.trim(), emailVerified: false });
     await flows.sendVerification(user);
     respond(res, 201, await sessions.start(user, meta(req)), user);

@@ -39,6 +39,9 @@ import { createIssuerRouter } from "./payments/issuerRoutes.js";
 import { hasDb, pool } from "./db/pool.js";
 import { migrateAndSeed } from "./db/migrate.js";
 import { requireAuth, requireRole, JWT_SECRET } from "./middleware/auth.js";
+import { createPortalRouter } from "./routes/portal.js";
+import { createInboundRouter } from "./inbound/router.js";
+import { PgInboundStore, MemoryInboundStore } from "./inbound/store.js";
 
 const PORT = Number(process.env.PORT) || 3001;
 
@@ -66,6 +69,14 @@ app.use("/api/manshya", manshya.router);
 // Card issuer-processor real-time authorisations (raw body needed for the signature, so also before the JSON parser).
 app.use("/api/payments/issuer", createIssuerRouter(manshya.payments, manshya));
 
+
+// Incoming email from Resend (raw body for the signature check, so also before the JSON parser). Staff-only list endpoints.
+app.use("/api/inbound", createInboundRouter({
+  store: pool ? new PgInboundStore(pool) : new MemoryInboundStore(),
+  webhookSecret: process.env.RESEND_WEBHOOK_SECRET?.trim() || undefined,
+  apiKey: process.env.RESEND_API_KEY?.trim() || undefined,
+  guard: [requireAuth, requireRole("owner", "superadmin")],
+}));
 
 app.use(express.json({ limit: "1mb" }));
 app.use(requestLogger);
@@ -96,6 +107,7 @@ app.use(["/api/auth/forgot-password", "/api/auth/reset-password", "/api/auth/ver
 app.use("/api/auth/refresh", rateLimit({ windowMs: 15 * 60_000, max: 100, standardHeaders: true, legacyHeaders: false }));
 
 // ─── Routes ──────────────────────────────────────────────────────────────────
+app.use("/api/portal",        createPortalRouter());
 app.use("/api/auth",          (hasDb ? createDbAuthRouter() : createMemoryAuthRouter()).router);
 app.use("/api/fraud-risk",    fraudRiskRouter);
 app.use("/api/terminal",      terminalRouter);
