@@ -5,6 +5,7 @@ import { pool, hasDb } from "./pool.js";
 import { NEWS_ARTICLES } from "../data/newsData.js";
 import { adminUsers } from "../data/adminUsers.js";
 import { seedPassword, BCRYPT_ROUNDS } from "../config/secrets.js";
+import { seedRoleAccounts } from "../auth/seedRoleAccounts.js";
 
 /**
  * Creates the schema (if missing) and seeds it with the same demo data the
@@ -43,6 +44,7 @@ async function migrateAndSeedUnlocked(): Promise<void> {
     await seedNews();
     await seedDefaultCustomer();
     await seedAccountRestructure();
+    await seedRoleAccounts(pool);
     return;
   }
 
@@ -63,6 +65,7 @@ async function migrateAndSeedUnlocked(): Promise<void> {
 
     await client.query("COMMIT");
     console.log("[db] Seed complete.");
+    await seedRoleAccounts(pool);
   } catch (err) {
     await client.query("ROLLBACK");
     console.error("[db] Seed failed, rolled back:", err);

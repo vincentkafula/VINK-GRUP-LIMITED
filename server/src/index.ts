@@ -39,6 +39,7 @@ import { createIssuerRouter } from "./payments/issuerRoutes.js";
 import { hasDb, pool } from "./db/pool.js";
 import { migrateAndSeed } from "./db/migrate.js";
 import { requireAuth, requireRole, JWT_SECRET } from "./middleware/auth.js";
+import { createPortalRouter } from "./routes/portal.js";
 import { createInboundRouter } from "./inbound/router.js";
 import { PgInboundStore, MemoryInboundStore } from "./inbound/store.js";
 
@@ -106,6 +107,7 @@ app.use(["/api/auth/forgot-password", "/api/auth/reset-password", "/api/auth/ver
 app.use("/api/auth/refresh", rateLimit({ windowMs: 15 * 60_000, max: 100, standardHeaders: true, legacyHeaders: false }));
 
 // ─── Routes ──────────────────────────────────────────────────────────────────
+app.use("/api/portal",        createPortalRouter());
 app.use("/api/auth",          (hasDb ? createDbAuthRouter() : createMemoryAuthRouter()).router);
 app.use("/api/fraud-risk",    fraudRiskRouter);
 app.use("/api/terminal",      terminalRouter);

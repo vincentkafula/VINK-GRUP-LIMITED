@@ -8,6 +8,9 @@ import { AuthFlows } from "./flows.js";
 import { createEmailSender } from "./email.js";
 import { createAuthRouter } from "./router.js";
 import { createOriginPolicy } from "./origins.js";
+import { readSeedAccounts } from "./seedRoleAccounts.js";
+import bcrypt from "bcryptjs";
+import { BCRYPT_ROUNDS } from "../config/secrets.js";
 
 /** The real, Postgres-backed auth router, built from the environment. Throws at start-up if the auth settings are invalid. */
 export function createDbAuthRouter(): { router: Router; cfg: AuthConfig } {
@@ -29,6 +32,11 @@ export function createMemoryAuthRouter(): { router: Router; cfg: AuthConfig } {
   const cfg = resolveAuthConfig();
   const store = new MemoryAuthStore();
   for (const u of adminUsers) store.users.set(u.id, { id: u.id, username: u.username, passwordHash: u.passwordHash, role: u.role, name: u.name, email: u.email, emailVerified: true, lastLogin: null });
+  // Role test accounts (SEED_<ROLE>_EMAIL / _PASSWORD) so every dashboard can be tried without a database.
+  for (const a of readSeedAccounts()) {
+    const id = crypto.randomUUID();
+    store.users.set(id, { id, username: a.email, passwordHash: bcrypt.hashSync(a.password, BCRYPT_ROUNDS), role: a.role, name: a.role, email: a.email, emailVerified: true, lastLogin: null });
+  }
   const sessions = new SessionService(store, cfg);
   const mail = createEmailSender();
   console.log(`[auth] in-memory accounts. mode=${cfg.refreshCookies ? "cookie" : "legacy"} email=${mail.name}`);
