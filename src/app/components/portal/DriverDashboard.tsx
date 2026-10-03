@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { User, Car, Route as RouteIcon, Wallet, Bell, Loader2, TriangleAlert } from "lucide-react";
+import { User, Car, Route as RouteIcon, Wallet, Bell, Loader2, TriangleAlert, Link2 } from "lucide-react";
+import { portalClient } from "./ui";
+import { LinksPanel } from "./LinksPanel";
 import { DashboardShell, StatCard, SectionPanel, TableCard, Badge } from "../dashboards/DashboardShell";
 import {
   driverApi, rand, when,
@@ -13,7 +15,9 @@ const NAV_BASE = [
   { icon: <RouteIcon className="w-4 h-4" />, label: "Route & trips" },
   { icon: <Wallet className="w-4 h-4" />, label: "Earnings" },
   { icon: <Bell className="w-4 h-4" />, label: "Notifications" },
+  { icon: <Link2 className="w-4 h-4" />, label: "Requests & links" },
 ];
+const linkCall = portalClient("driver");
 
 type Load<T> = { state: "loading" } | { state: "error"; error: string } | { state: "ready"; data: T };
 
@@ -56,6 +60,7 @@ export function DriverDashboard({ userName, onClose }: { userName?: string; onCl
         {nav === "Route & trips" && <TripsScreen />}
         {nav === "Earnings" && <EarningsScreen />}
         {nav === "Notifications" && <NotificationsScreen notes={notes} reload={reloadNotes} />}
+        {nav === "Requests & links" && <LinksPanel call={linkCall} color={COLOR} canAskOwner />}
       </div>
     </DashboardShell>
   );

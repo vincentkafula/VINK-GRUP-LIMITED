@@ -16,6 +16,8 @@ import { when } from "./format";
 
 /** The Manshya dashboards are for customer accounts only (the server enforces this too). */
 export const CUSTOMER_ROLE = "customer";
+/** Passenger ("personal") accounts use the same payments and banking dashboard. The server enforces this too (manshya/access.ts). */
+const DASHBOARD_ROLES = [CUSTOMER_ROLE, "personal"];
 
 interface Props {
   isOpen: boolean;
@@ -37,7 +39,7 @@ export function ManshyaDashboard({ isOpen, onClose, onSignOut }: Props) {
   const [unread, setUnread] = useState(0);
   const filters = useRef<FilterStore>({});
 
-  const isCustomer = session?.role === CUSTOMER_ROLE;
+  const isCustomer = DASHBOARD_ROLES.includes(session?.role ?? "");
   const allowed = isOpen && isCustomer && !authProblem;
 
   const onAuthError = useCallback((e: Error & { status?: number; code?: string }) => {

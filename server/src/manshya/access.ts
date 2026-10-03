@@ -12,6 +12,8 @@ import type { AuthPayload } from "../types/auth.js";
  *   (owner or superadmin), never customers.
  */
 export const CUSTOMER_ROLE = "customer";
+/** Passenger ("personal") accounts use the same payments and banking dashboard as customers. */
+export const CUSTOMER_ROLES: string[] = [CUSTOMER_ROLE, "personal"];
 export const BACK_OFFICE_ROLES = ["owner", "superadmin"];
 
 export type Access =
@@ -34,7 +36,7 @@ function readToken(authorization: string | undefined): AuthPayload | "no_token" 
 export function customerAccess(authorization: string | undefined): Access {
   const p = readToken(authorization);
   if (typeof p === "string") return { ok: false, reason: p };
-  return p.role === CUSTOMER_ROLE ? { ok: true, user: p } : { ok: false, reason: "wrong_role", user: p };
+  return CUSTOMER_ROLES.includes(p.role) ? { ok: true, user: p } : { ok: false, reason: "wrong_role", user: p };
 }
 
 export function backOfficeAccess(authorization: string | undefined): Access {

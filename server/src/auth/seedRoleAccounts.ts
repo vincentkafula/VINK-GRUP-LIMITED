@@ -16,10 +16,10 @@ type SeedRole = (typeof SEEDED_ROLES)[number];
  * Idempotent: runs on every start, creates a missing account, and only re-hashes when the configured password changed.
  */
 const ENV_PREFIX: Record<SeedRole, string> = {
-  personal: "PERSONAL", driver: "DRIVER", marshal: "MARSHAL", vehicle_owner: "OWNER", association: "ASSOCIATION", customer: "CUSTOMER",
+  personal: "PERSONAL", driver: "DRIVER", marshal: "MARSHAL", vehicle_owner: "OWNER", association: "ASSOCIATION", investor: "INVESTOR", customer: "CUSTOMER",
 };
 const LABEL: Record<SeedRole, string> = {
-  personal: "Test Passenger", driver: "Test Driver", marshal: "Test Marshal", vehicle_owner: "Test Vehicle Owner", association: "Test Association", customer: "Test Customer",
+  personal: "Test Passenger", driver: "Test Driver", marshal: "Test Marshal", vehicle_owner: "Test Vehicle Owner", association: "Test Association", investor: "Test Investor", customer: "Test Customer",
 };
 
 export interface SeedAccount { role: SeedRole; email: string; password: string }

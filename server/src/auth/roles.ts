@@ -4,7 +4,7 @@
  *
  * NOTE: "owner" already means the PLATFORM's top authority in this system, so the vehicle owner is "vehicle_owner".
  */
-export const ACCOUNT_ROLES = ["personal", "driver", "marshal", "vehicle_owner", "association"] as const;
+export const ACCOUNT_ROLES = ["personal", "driver", "marshal", "vehicle_owner", "association", "investor"] as const;
 export type AccountRole = (typeof ACCOUNT_ROLES)[number];
 
 export const isAccountRole = (r: unknown): r is AccountRole => typeof r === "string" && (ACCOUNT_ROLES as readonly string[]).includes(r);
@@ -19,4 +19,5 @@ export const DASHBOARD_PATH: Record<AccountRole, string> = {
   marshal: "/portal/marshal",
   vehicle_owner: "/portal/owner",
   association: "/portal/association",
+  investor: "/portal/investor",
 };

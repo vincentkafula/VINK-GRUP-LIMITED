@@ -1,23 +1,29 @@
 import { Router, type Request, type Response, type RequestHandler } from "express";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { pool } from "../db/pool.js";
+import { DASHBOARD_PATH, isAccountRole, type AccountRole } from "../auth/roles.js";
 import { createDriverRouter, type Db } from "../portal/driverRoutes.js";
-import { ACCOUNT_ROLES, DASHBOARD_PATH, isAccountRole, type AccountRole } from "../auth/roles.js";
+import { createOwnerRouter } from "../portal/ownerRoutes.js";
+import { createMarshalRouter } from "../portal/marshalRoutes.js";
+import { createAssociationRouter } from "../portal/associationRoutes.js";
+import { createInvestorRouter } from "../portal/investorRoutes.js";
+import { createPersonalRouter } from "../portal/personalRoutes.js";
+import { createLinkRouter } from "../portal/linkRoutes.js";
 
 /**
  * Role portals. Every account type has its own prefix and ONLY that role may call it, checked on the server from the signed
- * token (hiding a link in the UI is never the protection). The data endpoints for each dashboard are added under these prefixes
- * as each dashboard is built.
+ * token (hiding a link in the UI is never the protection).
  *
- *   GET /api/portal/me            any of the five account types: who am I, and where is my dashboard
- *   GET /api/portal/personal      personal accounts only
- *   GET /api/portal/driver        drivers only
- *   GET /api/portal/marshal       marshals only
- *   GET /api/portal/owner         vehicle owners only
- *   GET /api/portal/association   associations only
+ *   GET /api/portal/me            any account type: who am I, and where is my dashboard
+ *   /api/portal/personal          personal (passenger) accounts only
+ *   /api/portal/driver            drivers only
+ *   /api/portal/marshal           marshals only
+ *   /api/portal/owner             vehicle owners only
+ *   /api/portal/association       associations only
+ *   /api/portal/investor          investors only
  */
 const PREFIX: Record<AccountRole, string> = {
-  personal: "personal", driver: "driver", marshal: "marshal", vehicle_owner: "owner", association: "association",
+  personal: "personal", driver: "driver", marshal: "marshal", vehicle_owner: "owner", association: "association", investor: "investor",
 };
 
 /** Without a database (local development with no DATABASE_URL) the data endpoints cannot work. */
@@ -33,14 +39,19 @@ export function createPortalRouter(db: Db | null = pool): Router {
     res.json({ success: true, user: { id: req.user!.userId, username: req.user!.username, role }, dashboard: DASHBOARD_PATH[role] });
   });
 
-  // Driver's Dashboard data (drivers only).
-  router.use("/driver", requireRole("driver" as never), db ? createDriverRouter(db) : unavailable);
+  // Each portal: the role guard first, then its data endpoints (or 503 when there is no database).
+  const mount = (role: AccountRole, make: (d: Db) => Router, links?: (d: Db) => Router) => {
+    const sub = Router();
+    if (!db) sub.use(unavailable);
+    else { if (links) sub.use(links(db)); sub.use(make(db)); }
+    router.use(`/${PREFIX[role]}`, requireRole(role as never), sub);
+  };
+  mount("driver", createDriverRouter, (d) => createLinkRouter(d, "driver"));
+  mount("vehicle_owner", createOwnerRouter, (d) => createLinkRouter(d, "vehicle_owner"));
+  mount("marshal", createMarshalRouter, (d) => createLinkRouter(d, "marshal"));
+  mount("association", createAssociationRouter);
+  mount("investor", createInvestorRouter);
+  mount("personal", createPersonalRouter);
 
-  for (const role of ACCOUNT_ROLES) {
-    if (role === "driver") continue;                       // served by the driver router above
-    router.get(`/${PREFIX[role]}`, requireRole(role as never), (req: Request, res: Response) => {
-      res.json({ success: true, role, user: { id: req.user!.userId, username: req.user!.username } });
-    });
-  }
   return router;
 }

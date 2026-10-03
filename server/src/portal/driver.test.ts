@@ -13,7 +13,7 @@ function freshDb(): Db {
   const mem = newDb();
   mem.public.none(`
     CREATE TABLE users (id UUID PRIMARY KEY, username TEXT, name TEXT, email TEXT, role TEXT);
-    CREATE TABLE vehicles (id UUID PRIMARY KEY, owner_id UUID, registration TEXT UNIQUE NOT NULL, make TEXT, model TEXT, year INTEGER, colour TEXT, seats INTEGER, disc_expiry DATE, created_at TIMESTAMPTZ DEFAULT now());
+    CREATE TABLE vehicles (id UUID PRIMARY KEY, owner_id UUID, registration TEXT UNIQUE NOT NULL, make TEXT, model TEXT, year INTEGER, colour TEXT, seats INTEGER, disc_expiry DATE, driver_id UUID, created_at TIMESTAMPTZ DEFAULT now());
     CREATE TABLE terminals (id UUID PRIMARY KEY, serial TEXT UNIQUE NOT NULL, api_key_hash TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'active', assigned_driver TEXT, registered_by TEXT, last_seen_at TIMESTAMPTZ, registered_at TIMESTAMPTZ NOT NULL DEFAULT now(), driver_id UUID, vehicle_id UUID);
     CREATE TABLE vehicle_routes (id UUID PRIMARY KEY, terminal_id UUID NOT NULL, name TEXT NOT NULL, tolerance_meters NUMERIC(8,2) NOT NULL DEFAULT 200, active BOOLEAN NOT NULL DEFAULT true, created_at TIMESTAMPTZ NOT NULL DEFAULT now());
     CREATE TABLE route_waypoints (id UUID PRIMARY KEY, route_id UUID NOT NULL, sequence INTEGER NOT NULL, lat NUMERIC(9,6) NOT NULL, lng NUMERIC(9,6) NOT NULL);
@@ -108,6 +108,19 @@ describe("driver API (real queries on in-memory Postgres)", () => {
     expect((await get("/routes")).routes[0]).toMatchObject({ name: "Soweto - CBD", waypoints: 1 });
     as = D2;
     expect((await get("/routes")).routes).toEqual([]);
+  });
+
+  it("a vehicle the owner put me on shows up (with its fares) even when the terminal is registered to someone else", async () => {
+    await db.query(`INSERT INTO vehicles (id, registration, disc_expiry, driver_id) VALUES ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2', 'ZZ 99 ZZ GP', '2027-01-01', $1)`, [D2]);
+    await db.query(`INSERT INTO terminals (id, serial, api_key_hash, driver_id, vehicle_id) VALUES ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa3', 'T-3', 'x', NULL, 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2')`);
+    await db.query(`INSERT INTO terminal_taps (id, terminal_id, amount, status, received_at) VALUES ('cccccccc-cccc-cccc-cccc-000000000099', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa3', 77, 'confirmed', '2026-10-07T09:00:00Z')`);
+    as = D2;
+    expect((await get("/vehicle")).vehicles.map((v: any) => v.registration).filter(Boolean).sort()).toEqual(["ZZ 99 ZZ GP"]);
+    expect((await get("/trips")).trips.map((x: any) => x.amount).sort()).toEqual([500, 77]);
+    expect((await get("/earnings")).faresCollected.today.total).toBe(577);
+    // and a vehicle with no terminal at all is still listed
+    await db.query(`INSERT INTO vehicles (id, registration, driver_id) VALUES ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb4', 'NO TERMINAL', $1)`, [D2]);
+    expect((await get("/vehicle")).vehicles.map((v: any) => v.registration).filter(Boolean).sort()).toEqual(["NO TERMINAL", "ZZ 99 ZZ GP"]);
   });
 
   it("trips: mine only, newest first, and never include card details", async () => {
