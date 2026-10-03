@@ -943,3 +943,11 @@ CREATE INDEX IF NOT EXISTS idx_support_user ON support_requests(user_id, created
 
 -- A vehicle can be in only one waiting line at a time (the application also checks; this closes the race between two marshals).
 CREATE UNIQUE INDEX IF NOT EXISTS idx_rank_queue_one_active_per_vehicle ON rank_queue(vehicle_id) WHERE left_at IS NULL;
+
+-- The per-tap revenue split columns were added inside the CREATE TABLE terminal_taps statement after the table already existed in
+-- production, so CREATE TABLE IF NOT EXISTS never added them there ("column does not exist"). Added here as idempotent ALTERs,
+-- the same fix the terminals ownership columns got above.
+ALTER TABLE terminal_taps ADD COLUMN IF NOT EXISTS vink_fee_device NUMERIC(10,2);
+ALTER TABLE terminal_taps ADD COLUMN IF NOT EXISTS vink_fee_card   NUMERIC(10,2);
+ALTER TABLE terminal_taps ADD COLUMN IF NOT EXISTS owner_settlement NUMERIC(10,2);
+ALTER TABLE terminal_taps ADD COLUMN IF NOT EXISTS investor_share   NUMERIC(10,2);
