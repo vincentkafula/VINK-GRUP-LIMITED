@@ -33,6 +33,11 @@ describe("role test accounts", () => {
     expect(a[0].email).toBe("p@x.test");
   });
 
+  it("also seeds the banking customer login (role customer)", () => {
+    const a = readSeedAccounts(env({ SEED_CUSTOMER_EMAIL: "c@x.test", SEED_CUSTOMER_PASSWORD: "customer-password-1" }), quiet);
+    expect(a).toEqual([{ role: "customer", email: "c@x.test", password: "customer-password-1" }]);
+  });
+
   it("is off in production unless SEED_ENABLED=true", () => {
     expect(seedEnabled(env({ NODE_ENV: "production" }))).toBe(false);
     expect(readSeedAccounts(env({ NODE_ENV: "production", ...ALL }), quiet)).toEqual([]);

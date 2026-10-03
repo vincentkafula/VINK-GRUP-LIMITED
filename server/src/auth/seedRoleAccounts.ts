@@ -1,6 +1,10 @@
 import bcrypt from "bcryptjs";
 import { BCRYPT_ROUNDS } from "../config/secrets.js";
-import { ACCOUNT_ROLES, type AccountRole } from "./roles.js";
+import { ACCOUNT_ROLES } from "./roles.js";
+
+/** The five transport account types plus the Manshya banking customer (SEED_CUSTOMER_EMAIL / SEED_CUSTOMER_PASSWORD). */
+const SEEDED_ROLES = [...ACCOUNT_ROLES, "customer"] as const;
+type SeedRole = (typeof SEEDED_ROLES)[number];
 
 /**
  * Test accounts, one per account type, read ONLY from environment variables (Railway: service -> Variables):
@@ -11,14 +15,14 @@ import { ACCOUNT_ROLES, type AccountRole } from "./roles.js";
  * before going live and the test accounts are no longer created or refreshed. Passwords are never logged or committed.
  * Idempotent: runs on every start, creates a missing account, and only re-hashes when the configured password changed.
  */
-const ENV_PREFIX: Record<AccountRole, string> = {
-  personal: "PERSONAL", driver: "DRIVER", marshal: "MARSHAL", vehicle_owner: "OWNER", association: "ASSOCIATION",
+const ENV_PREFIX: Record<SeedRole, string> = {
+  personal: "PERSONAL", driver: "DRIVER", marshal: "MARSHAL", vehicle_owner: "OWNER", association: "ASSOCIATION", customer: "CUSTOMER",
 };
-const LABEL: Record<AccountRole, string> = {
-  personal: "Test Passenger", driver: "Test Driver", marshal: "Test Marshal", vehicle_owner: "Test Vehicle Owner", association: "Test Association",
+const LABEL: Record<SeedRole, string> = {
+  personal: "Test Passenger", driver: "Test Driver", marshal: "Test Marshal", vehicle_owner: "Test Vehicle Owner", association: "Test Association", customer: "Test Customer",
 };
 
-export interface SeedAccount { role: AccountRole; email: string; password: string }
+export interface SeedAccount { role: SeedRole; email: string; password: string }
 
 export function seedEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
   return env.NODE_ENV !== "production" || env.SEED_ENABLED === "true";
@@ -28,7 +32,7 @@ export function seedEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
 export function readSeedAccounts(env: NodeJS.ProcessEnv = process.env, warn: (m: string) => void = console.warn): SeedAccount[] {
   if (!seedEnabled(env)) return [];
   const out: SeedAccount[] = [];
-  for (const role of ACCOUNT_ROLES) {
+  for (const role of SEEDED_ROLES) {
     const p = ENV_PREFIX[role];
     const email = env[`SEED_${p}_EMAIL`]?.trim().toLowerCase(), password = env[`SEED_${p}_PASSWORD`];
     if (!email && !password) continue;
