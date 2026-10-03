@@ -4,6 +4,7 @@ import "./styles/index.css";
 import "./styles/fonts.css";
 import App from "./app/App";
 import { initCurrency } from "./app/services/currencyStore";
+import { bootstrapSession } from "./app/services/authSession";
 
 // After every deployment, this build's chunk files (like
 // PersonalLandingViewer-xxxxx.js) get replaced with new ones under new
@@ -53,8 +54,11 @@ if (window.location.pathname === "/management-panel") {
   if (manifestLink) manifestLink.setAttribute("href", "/manifest-admin.json");
 }
 
-createRoot(root).render(
+// Restore a cookie-mode session (a silent refresh) BEFORE the first render, so screens that check for a token on load (the Management
+// Panel, dashboards) see it. Capped at 4 seconds: a slow or unreachable server must never leave a blank page.
+const start = () => createRoot(root).render(
   <StrictMode>
     <App />
   </StrictMode>
 );
+Promise.race([bootstrapSession().catch(() => {}), new Promise<void>((r) => setTimeout(r, 4000))]).then(start, start);

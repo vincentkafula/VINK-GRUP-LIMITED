@@ -18,6 +18,7 @@
  */
 import { API_BASE_WS } from "./config";
 import { isDemoMode } from "./demoMode";
+import { getToken, refreshSession, sendSocketAuth, SOCKET_AUTH_CLOSE } from "./authSession";
 
 export type LiveEventHandler = (event: string, data: unknown) => void;
 export type ConnectionStatusHandler = (connected: boolean) => void;
@@ -40,8 +41,11 @@ export function connectLiveSocket(onEvent: LiveEventHandler, onStatusChange?: Co
 
   function connect() {
     if (dead) return;
+    // The live feed is for signed-in users: with no token there is nothing to connect to (and nothing to retry forever).
+    if (!getToken()) { onStatusChange?.(false); return; }
     ws = new WebSocket(API_BASE_WS);
     ws.onopen = () => {
+      sendSocketAuth(ws!);
       onStatusChange?.(true);
       ping = setInterval(() => ws?.readyState === 1 && ws.send(JSON.stringify({ type: "ping" })), 25_000);
     };
@@ -51,7 +55,13 @@ export function connectLiveSocket(onEvent: LiveEventHandler, onStatusChange?: Co
         if (m.event) onEvent(m.event, m.data);
       } catch { /* ignore malformed frames */ }
     };
-    ws.onclose = () => { clearInterval(ping); onStatusChange?.(false); if (!dead) setTimeout(connect, 3000); };
+    ws.onclose = (ev) => {
+      clearInterval(ping); onStatusChange?.(false);
+      if (dead) return;
+      // 4401 = the server rejected or expired our token: renew it first, then reconnect.
+      if (ev.code === SOCKET_AUTH_CLOSE) { void refreshSession().then(() => { if (!dead) setTimeout(connect, 500); }); return; }
+      setTimeout(connect, 3000);
+    };
     ws.onerror = () => { /* handled by onclose */ };
   }
 

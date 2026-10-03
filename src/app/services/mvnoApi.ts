@@ -152,6 +152,8 @@ export const alertsApi = {
 // ─── WebSocket (no-op in demo mode) ─────────────────────────────────────────
 export type WsHandler = (event: string, data: unknown) => void;
 
+import { getToken as getSessionToken, refreshSession as renewSession, sendSocketAuth, SOCKET_AUTH_CLOSE } from "./authSession";
+
 export function connectLiveFeed(onEvent: WsHandler, onStatusChange?: (connected: boolean) => void): () => void {
   if (isDemoMode()) {
     onStatusChange?.(false);
@@ -167,10 +169,16 @@ export function connectLiveFeed(onEvent: WsHandler, onStatusChange?: (connected:
   let ping: ReturnType<typeof setInterval>;
   function connect() {
     if (dead) return;
+    if (!getSessionToken()) { onStatusChange?.(false); return; }   // signed-in users only
     ws = new WebSocket(WS_URL);
-    ws.onopen  = () => { onStatusChange?.(true); ping = setInterval(() => ws?.readyState === 1 && ws.send(JSON.stringify({ type: "ping" })), 25_000); };
+    ws.onopen  = () => { sendSocketAuth(ws!); onStatusChange?.(true); ping = setInterval(() => ws?.readyState === 1 && ws.send(JSON.stringify({ type: "ping" })), 25_000); };
     ws.onmessage = e => { try { const m = JSON.parse(e.data as string); if (m.event) onEvent(m.event, m.data); } catch { /* ignore */ } };
-    ws.onclose = () => { clearInterval(ping); onStatusChange?.(false); if (!dead) setTimeout(connect, 3000); };
+    ws.onclose = (ev) => {
+      clearInterval(ping); onStatusChange?.(false);
+      if (dead) return;
+      if (ev.code === SOCKET_AUTH_CLOSE) { void renewSession().then(() => { if (!dead) setTimeout(connect, 500); }); return; }
+      setTimeout(connect, 3000);
+    };
     ws.onerror = () => { /* handled by onclose */ };
   }
   connect();

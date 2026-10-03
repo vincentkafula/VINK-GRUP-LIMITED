@@ -744,4 +744,35 @@ CREATE INDEX IF NOT EXISTS idx_retail_device_faults_unresolved ON retail_device_
 -- terminals.assigned_driver stayed TEXT before a real driver identity
 -- system existed for that flow.
 
+-- ─── Authentication: refresh tokens, emailed tokens, verified email ───────────────────────────
+-- Existing users are treated as already verified; only accounts created after this migration start unverified.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN NOT NULL DEFAULT true;
 
+-- Rotating refresh tokens. Only a hash is stored. A "family" is the chain of tokens issued from one sign-in, so presenting an
+-- old (already-rotated) token can revoke the whole chain.
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+  id          UUID PRIMARY KEY,
+  user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  family_id   UUID NOT NULL,
+  token_hash  TEXT NOT NULL UNIQUE,
+  expires_at  TIMESTAMPTZ NOT NULL,
+  revoked_at  TIMESTAMPTZ,
+  replaced_by UUID,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  user_agent  TEXT,
+  ip          TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_family ON refresh_tokens(family_id);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user ON refresh_tokens(user_id);
+
+-- Single-use emailed tokens (verify address, reset password). Only a hash is stored.
+CREATE TABLE IF NOT EXISTS email_tokens (
+  id          UUID PRIMARY KEY,
+  user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  purpose     TEXT NOT NULL CHECK (purpose IN ('verify','reset')),
+  token_hash  TEXT NOT NULL UNIQUE,
+  expires_at  TIMESTAMPTZ NOT NULL,
+  used_at     TIMESTAMPTZ,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_email_tokens_user ON email_tokens(user_id, purpose);
