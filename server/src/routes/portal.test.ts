@@ -9,7 +9,7 @@ import { ACCOUNT_ROLES } from "../auth/roles.js";
 
 let server: Server, url = "";
 const token = (role: string) => jwt.sign({ userId: "u-" + role, username: role, role }, JWT_SECRET, { expiresIn: "5m" });
-const PATH: Record<string, string> = { personal: "personal", driver: "driver", marshal: "marshal", vehicle_owner: "owner", association: "association" };
+const PATH: Record<string, string> = { personal: "personal", driver: "driver", marshal: "marshal", vehicle_owner: "owner", association: "association", investor: "investor" };
 const get = (p: string, t?: string) => fetch(`${url}/api/portal/${p}`, { headers: t ? { Authorization: `Bearer ${t}` } : {} });
 
 beforeAll(async () => {
@@ -50,7 +50,7 @@ describe("role portals", () => {
   it("the driver's data endpoints are for drivers only", async () => {
     for (const p of ["driver/profile", "driver/vehicle", "driver/trips", "driver/earnings", "driver/notifications"]) {
       expect((await get(p)).status, p).toBe(401);
-      for (const r of ["personal", "marshal", "vehicle_owner", "association", "customer", "owner", "superadmin"]) expect((await get(p, token(r))).status, `${r} -> ${p}`).toBe(403);
+      for (const r of ["personal", "marshal", "vehicle_owner", "association", "investor", "customer", "owner", "superadmin"]) expect((await get(p, token(r))).status, `${r} -> ${p}`).toBe(403);
       expect((await get(p, token("driver"))).status, `driver -> ${p}`).toBe(200);
     }
   });

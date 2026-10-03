@@ -8,9 +8,10 @@ import { customerAccess, backOfficeAccess } from "./access.js";
 const token = (role: string, userId = "u-" + role) => "Bearer " + jwt.sign({ userId, username: role + "1", role }, JWT_SECRET, { expiresIn: "1h" });
 
 describe("manshya access rules", () => {
-  it("lets only customers into the dashboard", () => {
+  it("lets only customers and personal (passenger) accounts into the dashboard", () => {
     expect(customerAccess(token("customer")).ok).toBe(true);
-    for (const role of ["owner", "superadmin", "noc_engineer", "billing_admin", "seller"]) {
+    expect(customerAccess(token("personal")).ok).toBe(true);
+    for (const role of ["owner", "superadmin", "noc_engineer", "billing_admin", "seller", "driver", "marshal", "vehicle_owner", "association", "investor"]) {
       const a = customerAccess(token(role));
       expect(a.ok).toBe(false);
       expect(!a.ok && a.reason).toBe("wrong_role");

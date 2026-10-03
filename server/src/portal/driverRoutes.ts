@@ -117,11 +117,15 @@ export function createDriverRouter(db: Db, now: () => Date = () => new Date()): 
     const r = await db.query(
       `SELECT t.id AS terminal_id, t.serial, t.status, t.last_seen_at, v.registration, v.make, v.model, v.year, v.colour, v.seats, v.disc_expiry
          FROM terminals t LEFT JOIN vehicles v ON v.id = t.vehicle_id
-        WHERE t.driver_id = $1 AND t.status <> 'revoked' ORDER BY t.registered_at DESC`, [uid(req)]);
+        WHERE (t.driver_id = $1 OR v.driver_id = $1) AND t.status <> 'revoked' ORDER BY t.registered_at DESC`, [uid(req)]);
+    // A vehicle the owner put me on may have no fare terminal yet: it still belongs on this screen.
+    const bare = (await db.query(`SELECT id, registration, make, model, year, colour, seats, disc_expiry FROM vehicles WHERE driver_id = $1`, [uid(req)])).rows
+      .filter((v) => !r.rows.some((x) => x.registration === v.registration))
+      .map((v) => ({ terminal_id: null, serial: null, status: null, last_seen_at: null, registration: v.registration, make: v.make, model: v.model, year: v.year, colour: v.colour, seats: v.seats, disc_expiry: v.disc_expiry }));
     res.json({
       success: true,
-      vehicles: r.rows.map((x) => ({
-        terminalId: x.terminal_id, terminalSerial: x.serial, terminalStatus: x.status, lastSeenAt: iso(x.last_seen_at),
+      vehicles: [...r.rows, ...bare].map((x) => ({
+        terminalId: x.terminal_id ?? null, terminalSerial: x.serial ?? null, terminalStatus: x.status ?? null, lastSeenAt: iso(x.last_seen_at),
         registration: x.registration ?? null, make: x.make ?? null, model: x.model ?? null, year: x.year ?? null, colour: x.colour ?? null,
         seats: x.seats ?? null, discExpiry: dateOnly(x.disc_expiry),
       })),
@@ -132,8 +136,9 @@ export function createDriverRouter(db: Db, now: () => Date = () => new Date()): 
     const r = await db.query(
       `SELECT r.id, r.name, r.active, r.tolerance_meters, t.serial, COUNT(w.id) AS waypoints
          FROM vehicle_routes r JOIN terminals t ON t.id = r.terminal_id
+         LEFT JOIN vehicles v ON v.id = t.vehicle_id
          LEFT JOIN route_waypoints w ON w.route_id = r.id
-        WHERE t.driver_id = $1
+        WHERE (t.driver_id = $1 OR v.driver_id = $1)
         GROUP BY r.id, r.name, r.active, r.tolerance_meters, r.created_at, t.serial
         ORDER BY r.created_at DESC`, [uid(req)]);
     res.json({ success: true, routes: r.rows.map((x) => ({ id: x.id, name: x.name, active: x.active, toleranceMeters: num(x.tolerance_meters), terminalSerial: x.serial, waypoints: num(x.waypoints) })) });
@@ -143,8 +148,8 @@ export function createDriverRouter(db: Db, now: () => Date = () => new Date()): 
     const limit = Math.min(Math.max(Number(req.query.limit) || 50, 1), 200);
     const r = await db.query(
       `SELECT k.id, k.amount, k.currency, k.scheme, k.status, k.received_at, t.serial
-         FROM terminal_taps k JOIN terminals t ON t.id = k.terminal_id
-        WHERE t.driver_id = $1 ORDER BY k.received_at DESC LIMIT $2`, [uid(req), limit]);
+         FROM terminal_taps k JOIN terminals t ON t.id = k.terminal_id LEFT JOIN vehicles v ON v.id = t.vehicle_id
+        WHERE (t.driver_id = $1 OR v.driver_id = $1) ORDER BY k.received_at DESC LIMIT $2`, [uid(req), limit]);
     // Card details are never sent to the dashboard: only what the driver needs (when, how much, whether it went through).
     res.json({ success: true, trips: r.rows.map((x) => ({ id: x.id, at: iso(x.received_at), amount: num(x.amount), currency: x.currency, scheme: x.scheme ?? null, status: x.status, terminalSerial: x.serial })) });
   }));
@@ -154,8 +159,8 @@ export function createDriverRouter(db: Db, now: () => Date = () => new Date()): 
     const sum = async (from: Date) => {
       const r = (await db.query(
         `SELECT COUNT(*) AS n, COALESCE(SUM(k.amount), 0) AS total
-           FROM terminal_taps k JOIN terminals t ON t.id = k.terminal_id
-          WHERE t.driver_id = $1 AND k.status = 'confirmed' AND k.received_at >= $2`, [uid(req), from])).rows[0];
+           FROM terminal_taps k JOIN terminals t ON t.id = k.terminal_id LEFT JOIN vehicles v ON v.id = t.vehicle_id
+          WHERE (t.driver_id = $1 OR v.driver_id = $1) AND k.status = 'confirmed' AND k.received_at >= $2`, [uid(req), from])).rows[0];
       return { count: num(r?.n), total: num(r?.total) };
     };
     const [today, week, month] = [await sum(p.day), await sum(p.week), await sum(p.month)];
@@ -176,7 +181,7 @@ export function createDriverRouter(db: Db, now: () => Date = () => new Date()): 
   router.get("/notifications", h(async (req, res) => {
     const when = now();
     const prof = (await db.query(`SELECT licence_expiry, pdp_expiry FROM driver_profiles WHERE user_id = $1`, [uid(req)])).rows[0];
-    const veh = (await db.query(`SELECT v.registration, v.disc_expiry FROM terminals t JOIN vehicles v ON v.id = t.vehicle_id WHERE t.driver_id = $1 AND t.status <> 'revoked'`, [uid(req)])).rows;
+    const veh = [...new Map((await db.query(`SELECT DISTINCT v.registration, v.disc_expiry FROM vehicles v LEFT JOIN terminals t ON t.vehicle_id = v.id WHERE (t.driver_id = $1 AND t.status <> 'revoked') OR v.driver_id = $1`, [uid(req)])).rows.map((v) => [v.registration, v])).values()];
     const items: { key: string; kind: string; title: string; body: string; at: string }[] = [];
 
     for (const r of expiryReminders([

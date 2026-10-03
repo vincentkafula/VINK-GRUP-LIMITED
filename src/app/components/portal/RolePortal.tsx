@@ -3,7 +3,13 @@ import { Home, Loader2, ShieldAlert } from "lucide-react";
 import { DashboardShell, SectionPanel } from "../dashboards/DashboardShell";
 import { getSession, authFetch } from "../../services/apiClient";
 import { API_BASE } from "../../services/config";
+import { lazy, Suspense } from "react";
 import { DriverDashboard } from "./DriverDashboard";
+import { OwnerDashboard } from "./OwnerDashboard";
+import { MarshalDashboard } from "./MarshalDashboard";
+import { AssociationDashboard } from "./AssociationDashboard";
+import { InvestorDashboard } from "./InvestorDashboard";
+const PersonalDashboard = lazy(() => import("./PersonalDashboard").then((m) => ({ default: m.PersonalDashboard })));   // pulls in the payments dashboard only when needed
 import { PORTALS, portalPathForRole, type PortalKey } from "./portalDefs";
 
 /**
@@ -51,7 +57,13 @@ export function RolePortal({ portal, isOpen, onClose }: { portal: PortalKey; isO
     );
   }
 
-  if (portal === "driver") return <DriverDashboard userName={session?.name} onClose={onClose} />;
+  const name = session?.name;
+  if (portal === "driver") return <DriverDashboard userName={name} onClose={onClose} />;
+  if (portal === "owner") return <OwnerDashboard userName={name} onClose={onClose} />;
+  if (portal === "marshal") return <MarshalDashboard userName={name} onClose={onClose} />;
+  if (portal === "association") return <AssociationDashboard userName={name} onClose={onClose} />;
+  if (portal === "investor") return <InvestorDashboard userName={name} onClose={onClose} />;
+  if (portal === "personal") return <Suspense fallback={null}><PersonalDashboard userName={name} onClose={onClose} /></Suspense>;
 
   return (
     <DashboardShell

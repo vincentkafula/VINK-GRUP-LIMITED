@@ -827,3 +827,119 @@ CREATE TABLE IF NOT EXISTS notification_reads (
   read_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
   PRIMARY KEY (user_id, key)
 );
+
+-- ─── Transport accounts, part 2: links, ranks, queues, departures, levies, documents, personal profile, support ──────────────
+-- Who belongs to which association. Either side can start it (requested_by); it only becomes 'active' when the OTHER side agrees.
+CREATE TABLE IF NOT EXISTS memberships (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  association_id  UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  member_id       UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  member_role     TEXT NOT NULL CHECK (member_role IN ('vehicle_owner','driver','marshal')),
+  status          TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','active','declined','removed')),
+  requested_by    TEXT NOT NULL CHECK (requested_by IN ('association','member')),
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  responded_at    TIMESTAMPTZ,
+  UNIQUE (association_id, member_id)
+);
+CREATE INDEX IF NOT EXISTS idx_memberships_member ON memberships(member_id, status);
+
+-- Which drivers work for which owner. Same two-sided agreement.
+CREATE TABLE IF NOT EXISTS owner_drivers (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id      UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  driver_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  status        TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','active','declined','removed')),
+  requested_by  TEXT NOT NULL CHECK (requested_by IN ('owner','driver')),
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  responded_at  TIMESTAMPTZ,
+  UNIQUE (owner_id, driver_id)
+);
+CREATE INDEX IF NOT EXISTS idx_owner_drivers_driver ON owner_drivers(driver_id, status);
+
+-- The driver an owner has put on a vehicle (the driver also has to be one of the owner's active drivers).
+ALTER TABLE vehicles ADD COLUMN IF NOT EXISTS driver_id UUID REFERENCES users(id);
+
+CREATE TABLE IF NOT EXISTS ranks (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  association_id  UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  name            TEXT NOT NULL,
+  location        TEXT,
+  active          BOOLEAN NOT NULL DEFAULT true,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (association_id, name)
+);
+-- A marshal works at one or more ranks, assigned by the association.
+CREATE TABLE IF NOT EXISTS rank_marshals (
+  rank_id     UUID NOT NULL REFERENCES ranks(id) ON DELETE CASCADE,
+  marshal_id  UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  PRIMARY KEY (rank_id, marshal_id)
+);
+-- The waiting line at a rank. A vehicle joins; it leaves by departing (logged in departures) or by being removed.
+CREATE TABLE IF NOT EXISTS rank_queue (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  rank_id     UUID NOT NULL REFERENCES ranks(id) ON DELETE CASCADE,
+  vehicle_id  UUID NOT NULL REFERENCES vehicles(id),
+  joined_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  left_at     TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS idx_rank_queue_rank ON rank_queue(rank_id, left_at, joined_at);
+CREATE TABLE IF NOT EXISTS departures (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  rank_id      UUID NOT NULL REFERENCES ranks(id) ON DELETE CASCADE,
+  vehicle_id   UUID NOT NULL REFERENCES vehicles(id),
+  driver_id    UUID REFERENCES users(id),
+  marshal_id   UUID NOT NULL REFERENCES users(id),
+  passengers   INTEGER,
+  note         TEXT,
+  departed_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_departures_rank ON departures(rank_id, departed_at DESC);
+
+-- Levies are whatever the association decides to charge: the title, amount and due date are typed in by them (no defaults here).
+CREATE TABLE IF NOT EXISTS levies (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  association_id  UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  member_id       UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  title           TEXT NOT NULL,
+  amount          NUMERIC(12,2) NOT NULL CHECK (amount > 0),
+  due_date        DATE,
+  paid_at         TIMESTAMPTZ,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_levies_assoc ON levies(association_id, paid_at);
+CREATE INDEX IF NOT EXISTS idx_levies_member ON levies(member_id);
+
+-- Compliance documents kept by an owner: the details and expiry date only (no file is stored).
+CREATE TABLE IF NOT EXISTS compliance_documents (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  vehicle_id  UUID REFERENCES vehicles(id) ON DELETE SET NULL,
+  kind        TEXT NOT NULL,
+  reference   TEXT,
+  expires_on  DATE,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_compliance_owner ON compliance_documents(owner_id);
+
+CREATE TABLE IF NOT EXISTS personal_profiles (
+  user_id                  UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  phone                    TEXT,
+  home_area                TEXT,
+  favourite_route          TEXT,
+  emergency_contact_name   TEXT,
+  emergency_contact_phone  TEXT,
+  updated_at               TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS support_requests (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  subject     TEXT NOT NULL,
+  message     TEXT NOT NULL,
+  status      TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open','closed')),
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_support_user ON support_requests(user_id, created_at DESC);
+
+-- A vehicle can be in only one waiting line at a time (the application also checks; this closes the race between two marshals).
+CREATE UNIQUE INDEX IF NOT EXISTS idx_rank_queue_one_active_per_vehicle ON rank_queue(vehicle_id) WHERE left_at IS NULL;

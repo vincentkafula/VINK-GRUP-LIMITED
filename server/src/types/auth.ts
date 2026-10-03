@@ -8,7 +8,7 @@ export interface AdminUser {
   username: string;
   passwordHash: string;
   role: "superadmin" | "owner" | "noc_engineer" | "billing_admin" | "support_agent" | "readonly" | "customer"
-    | "personal" | "driver" | "marshal" | "vehicle_owner" | "association";
+    | "personal" | "driver" | "marshal" | "vehicle_owner" | "association" | "investor";
   name: string;
   email: string;
   lastLogin: string | null;
