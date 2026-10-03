@@ -6,6 +6,7 @@ import { NEWS_ARTICLES } from "../data/newsData.js";
 import { adminUsers } from "../data/adminUsers.js";
 import { seedPassword, BCRYPT_ROUNDS } from "../config/secrets.js";
 import { seedRoleAccounts } from "../auth/seedRoleAccounts.js";
+import { seedDriverDemo } from "../portal/driverDemoSeed.js";
 
 /**
  * Creates the schema (if missing) and seeds it with the same demo data the
@@ -32,6 +33,13 @@ export async function migrateAndSeed(): Promise<void> {
   }
 }
 
+/** Optional test logins and demo data (see auth/seedRoleAccounts.ts). A failure here is logged and never stops the server starting. */
+async function seedTestData(): Promise<void> {
+  if (!pool) return;
+  try { await seedRoleAccounts(pool); await seedDriverDemo(pool); }
+  catch (err) { console.error("[seed] test accounts/demo data failed (server continues):", err instanceof Error ? err.message : err); }
+}
+
 async function migrateAndSeedUnlocked(): Promise<void> {
   if (!hasDb || !pool) return;
 
@@ -44,7 +52,7 @@ async function migrateAndSeedUnlocked(): Promise<void> {
     await seedNews();
     await seedDefaultCustomer();
     await seedAccountRestructure();
-    await seedRoleAccounts(pool);
+    await seedTestData();
     return;
   }
 
@@ -65,7 +73,7 @@ async function migrateAndSeedUnlocked(): Promise<void> {
 
     await client.query("COMMIT");
     console.log("[db] Seed complete.");
-    await seedRoleAccounts(pool);
+    await seedTestData();
   } catch (err) {
     await client.query("ROLLBACK");
     console.error("[db] Seed failed, rolled back:", err);

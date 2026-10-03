@@ -789,3 +789,41 @@ CREATE TABLE IF NOT EXISTS inbound_emails (
   received_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_inbound_emails_received ON inbound_emails(received_at DESC);
+
+-- ─── Transport accounts: vehicles, driver profiles, notification read-state ───────────────────────────────────────────────
+-- A vehicle belongs to an owner (users.id with role vehicle_owner). A terminal is fitted to one vehicle; the driver reaches the
+-- vehicle through terminals.driver_id -> terminals.vehicle_id.
+CREATE TABLE IF NOT EXISTS vehicles (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id      UUID REFERENCES users(id),
+  registration  TEXT UNIQUE NOT NULL,
+  make          TEXT,
+  model         TEXT,
+  year          INTEGER,
+  colour        TEXT,
+  seats         INTEGER,
+  disc_expiry   DATE,                      -- licence disc expiry; drives a reminder on the driver's dashboard
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_vehicles_owner ON vehicles(owner_id);
+ALTER TABLE terminals ADD COLUMN IF NOT EXISTS vehicle_id UUID REFERENCES vehicles(id);
+
+-- What a driver tells us about themselves (entered by the driver; not verified by this system).
+CREATE TABLE IF NOT EXISTS driver_profiles (
+  user_id         UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  phone           TEXT,
+  licence_number  TEXT,
+  licence_code    TEXT,
+  licence_expiry  DATE,
+  pdp_number      TEXT,                    -- professional driving permit
+  pdp_expiry      DATE,
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Notifications are derived from real events when read (new fines, expiring documents); only "has this one been read" is stored.
+CREATE TABLE IF NOT EXISTS notification_reads (
+  user_id   UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  key       TEXT NOT NULL,
+  read_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (user_id, key)
+);

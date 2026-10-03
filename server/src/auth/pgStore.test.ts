@@ -12,7 +12,8 @@ import { resolveAuthConfig } from "./config.js";
  * final word, but this catches wrong column names, bad parameters and broken atomic updates immediately.
  */
 const schema = fs.readFileSync(path.join(__dirname, "../db/schema.sql"), "utf8");
-const authSql = schema.slice(schema.indexOf("-- ─── Authentication: refresh tokens"));
+const authStart = schema.indexOf("-- ─── Authentication: refresh tokens");
+const authSql = schema.slice(authStart, schema.indexOf("-- ─── Transport accounts", authStart));   // the auth section only
 
 function freshPool() {
   const db = newDb();

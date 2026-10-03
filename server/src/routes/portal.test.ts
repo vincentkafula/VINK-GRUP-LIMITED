@@ -13,7 +13,7 @@ const PATH: Record<string, string> = { personal: "personal", driver: "driver", m
 const get = (p: string, t?: string) => fetch(`${url}/api/portal/${p}`, { headers: t ? { Authorization: `Bearer ${t}` } : {} });
 
 beforeAll(async () => {
-  const app = express(); app.use("/api/portal", createPortalRouter());
+  const app = express(); app.use("/api/portal", createPortalRouter({ query: async () => ({ rows: [] }) }));
   await new Promise<void>((ok) => { server = app.listen(0, "127.0.0.1", ok); });
   url = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
 });
@@ -45,6 +45,14 @@ describe("role portals", () => {
   it("a forged or expired token is refused", async () => {
     expect((await get("driver", jwt.sign({ userId: "x", username: "x", role: "driver" }, "wrong-secret"))).status).toBe(401);
     expect((await get("driver", jwt.sign({ userId: "x", username: "x", role: "driver" }, JWT_SECRET, { expiresIn: -10 }))).status).toBe(401);
+  });
+
+  it("the driver's data endpoints are for drivers only", async () => {
+    for (const p of ["driver/profile", "driver/vehicle", "driver/trips", "driver/earnings", "driver/notifications"]) {
+      expect((await get(p)).status, p).toBe(401);
+      for (const r of ["personal", "marshal", "vehicle_owner", "association", "customer", "owner", "superadmin"]) expect((await get(p, token(r))).status, `${r} -> ${p}`).toBe(403);
+      expect((await get(p, token("driver"))).status, `driver -> ${p}`).toBe(200);
+    }
   });
 
   it("/me tells each role where its dashboard is", async () => {
