@@ -1,5 +1,5 @@
-import { Router, json } from "express";
-import { h, uid, num, iso, isUuid, optText, fail, isUniqueViolation, type Db } from "./common.js";
+import { Router, json, type Request } from "express";
+import { h, uid, num, iso, isUuid, optText, fail, isUniqueViolation, audit, bucketDays, pageParams, rangeParams, saDay, sendCsv, type Db } from "./common.js";
 import { saPeriods } from "./driverRoutes.js";
 
 /**
@@ -90,18 +90,26 @@ export function createMarshalRouter(db: Db, now: () => Date = () => new Date()):
       if (!Number.isInteger(n) || n < 0 || n > 200) { fail(res, 400, "Passengers must be a whole number from 0 to 200"); return; }
       passengers = n;
     }
-    let queueId = b.queueId;
-    if (queueId === undefined || queueId === null) {
-      const first = (await db.query(`SELECT id FROM rank_queue WHERE rank_id = $1 AND left_at IS NULL ORDER BY joined_at, id LIMIT 1`, [rank.id])).rows[0];
-      if (!first) { fail(res, 409, "Nobody is waiting at this rank"); return; }
-      queueId = first.id;
-    } else if (!isUuid(queueId)) { fail(res, 400, "Invalid queue entry"); return; }
-    // Taking the place in the line is the atomic step: only one request can win it, so a double click logs one departure.
-    const took = (await db.query(`UPDATE rank_queue SET left_at = now() WHERE id = $1 AND rank_id = $2 AND left_at IS NULL RETURNING vehicle_id`, [queueId, rank.id])).rows[0];
-    if (!took) { fail(res, 409, "That vehicle has already left the queue"); return; }
+    const named = b.queueId;
+    if (named !== undefined && named !== null && !isUuid(named)) { fail(res, 400, "Invalid queue entry"); return; }
+    // Taking the place in the line is the atomic step (an UPDATE that only succeeds while left_at is still empty), so two requests
+    // can never log the same vehicle. A request for "the first in line" that loses the race simply takes the next one.
+    let took: Record<string, unknown> | undefined;
+    for (let attempt = 0; attempt < 5 && !took; attempt++) {
+      let target = named as string | null | undefined;
+      if (target === undefined || target === null) {
+        const first = (await db.query(`SELECT id FROM rank_queue WHERE rank_id = $1 AND left_at IS NULL ORDER BY joined_at, id LIMIT 1`, [rank.id])).rows[0];
+        if (!first) { fail(res, 409, "Nobody is waiting at this rank"); return; }
+        target = String(first.id);
+      }
+      took = (await db.query(`UPDATE rank_queue SET left_at = now() WHERE id = $1 AND rank_id = $2 AND left_at IS NULL RETURNING vehicle_id`, [target, rank.id])).rows[0];
+      if (!took && named) break;                       // a specific vehicle was asked for and someone else got it first
+    }
+    if (!took) { fail(res, 409, named ? "That vehicle has already left the queue" : "Nobody is waiting at this rank"); return; }
     const veh = (await db.query(`SELECT driver_id FROM vehicles WHERE id = $1`, [took.vehicle_id])).rows[0];
     const r = await db.query(`INSERT INTO departures (rank_id, vehicle_id, driver_id, marshal_id, passengers, note) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id`,
       [rank.id, took.vehicle_id, veh?.driver_id ?? null, me, passengers, note]);
+    await audit(db, req, "marshal.depart", String(rank.id), { vehicleId: took.vehicle_id, passengers });
     res.status(201).json({ success: true, id: r.rows[0].id });
   }));
 
@@ -114,29 +122,72 @@ export function createMarshalRouter(db: Db, now: () => Date = () => new Date()):
     res.json({ success: true });
   }));
 
-  router.get("/ranks/:id/departures", h(async (req, res) => {
+  /** Departures from one of my ranks. ?from=&to=&limit=&offset= ; /departures.csv downloads the same selection. */
+  async function departureQuery(req: Request, csv: boolean) {
     const rank = await myRank(req.params.id, uid(req));
-    if (!rank) { fail(res, 404, "Rank not found"); return; }
-    const limit = Math.min(Math.max(Number(req.query.limit) || 50, 1), 200);
-    const r = (await db.query(
-      `SELECT d.id, d.departed_at, d.passengers, d.note, v.registration, u.name AS driver
-         FROM departures d JOIN vehicles v ON v.id = d.vehicle_id LEFT JOIN users u ON u.id = d.driver_id
-        WHERE d.rank_id = $1 ORDER BY d.departed_at DESC LIMIT $2`, [rank.id, limit])).rows;
-    res.json({ success: true, departures: r.map((x) => ({ id: x.id, at: iso(x.departed_at), registration: x.registration, driver: x.driver ?? null, passengers: x.passengers ?? null, note: x.note ?? null })) });
+    if (!rank) return { notFound: true as const };
+    const range = rangeParams(req, now(), 30);
+    if ("error" in range) return range;
+    const total = num((await db.query(`SELECT COUNT(*) AS n FROM departures WHERE rank_id = $1 AND departed_at >= $2 AND departed_at < $3`, [rank.id, range.from, range.toExclusive])).rows[0]?.n);
+    const { limit, offset } = csv ? { limit: 5000, offset: 0 } : pageParams(req, 25, 100);
+    const rows = (await db.query(
+      `SELECT d.id, d.departed_at, d.passengers, d.note, v.registration, u.name AS driver FROM departures d JOIN vehicles v ON v.id = d.vehicle_id LEFT JOIN users u ON u.id = d.driver_id
+        WHERE d.rank_id = $1 AND d.departed_at >= $2 AND d.departed_at < $3 ORDER BY d.departed_at DESC LIMIT $4 OFFSET $5`, [rank.id, range.from, range.toExclusive, limit, offset])).rows;
+    return { rank, rows, total, limit, offset };
+  }
+  router.get("/ranks/:id/departures", h(async (req, res) => {
+    const r = await departureQuery(req, false);
+    if ("notFound" in r) { fail(res, 404, "Rank not found"); return; }
+    if ("error" in r) { fail(res, 400, r.error); return; }
+    res.json({ success: true, total: r.total, limit: r.limit, offset: r.offset, departures: r.rows.map((x) => ({ id: x.id, at: iso(x.departed_at), registration: x.registration, driver: x.driver ?? null, passengers: x.passengers ?? null, note: x.note ?? null })) });
+  }));
+  router.get("/ranks/:id/departures.csv", h(async (req, res) => {
+    const r = await departureQuery(req, true);
+    if ("notFound" in r) { fail(res, 404, "Rank not found"); return; }
+    if ("error" in r) { fail(res, 400, r.error); return; }
+    await audit(db, req, "marshal.export.departures", String(r.rank.id), { rows: r.rows.length });
+    sendCsv(res, `departures-${saDay(now())}.csv`, ["When (UTC)", "Vehicle", "Driver", "Passengers", "Note"], r.rows.map((x) => [iso(x.departed_at), x.registration, x.driver ?? "", x.passengers ?? "", x.note ?? ""]));
   }));
 
-  router.get("/reports", h(async (req, res) => {
+  /** Departures per day at one rank (default last 14 days), zero-filled, for the trend chart. */
+  router.get("/ranks/:id/trend", h(async (req, res) => {
+    const rank = await myRank(req.params.id, uid(req));
+    if (!rank) { fail(res, 404, "Rank not found"); return; }
+    const range = rangeParams(req, now(), 14);
+    if ("error" in range) { fail(res, 400, range.error); return; }
+    const rows = (await db.query(`SELECT departed_at, passengers FROM departures WHERE rank_id = $1 AND departed_at >= $2 AND departed_at < $3 LIMIT 50000`, [rank.id, range.from, range.toExclusive])).rows;
+    const dep = bucketDays(rows.map((x) => ({ at: x.departed_at, value: 1 })), range.from, range.toExclusive);
+    const pax = bucketDays(rows.map((x) => ({ at: x.departed_at, value: num(x.passengers) })), range.from, range.toExclusive);
+    res.json({ success: true, days: dep.map((d, i) => ({ day: d.day, departures: d.count, passengers: pax[i].value })) });
+  }));
+
+  /** Today / this week / this month per rank (unchanged), and ?from=&to= for a custom period; /reports.csv downloads it. */
+  async function report(req: Request) {
     const p = saPeriods(now());
     const ranks = (await db.query(`SELECT r.id, r.name FROM ranks r JOIN rank_marshals m ON m.rank_id = r.id WHERE m.marshal_id = $1 ORDER BY r.name`, [uid(req)])).rows;
+    const custom = req.query.from !== undefined || req.query.to !== undefined ? rangeParams(req, now(), 30) : null;
+    if (custom && "error" in custom) return custom;
     const out = [];
     for (const r of ranks) {
-      const per = async (from: Date) => {
-        const x = (await db.query(`SELECT COUNT(*) AS n, COALESCE(SUM(passengers), 0) AS pax FROM departures WHERE rank_id = $1 AND departed_at >= $2`, [r.id, from])).rows[0];
+      const per = async (from: Date, to?: Date) => {
+        const x = (await db.query(`SELECT COUNT(*) AS n, COALESCE(SUM(passengers), 0) AS pax FROM departures WHERE rank_id = $1 AND departed_at >= $2${to ? " AND departed_at < $3" : ""}`, to ? [r.id, from, to] : [r.id, from])).rows[0];
         return { departures: num(x?.n), passengers: num(x?.pax) };
       };
-      out.push({ rankId: r.id, rank: r.name, today: await per(p.day), week: await per(p.week), month: await per(p.month) });
+      out.push({ rankId: r.id, rank: r.name, today: await per(p.day), week: await per(p.week), month: await per(p.month), ...(custom ? { period: await per(custom.from, custom.toExclusive) } : {}) });
     }
-    res.json({ success: true, ranks: out });
+    return { ranks: out, custom };
+  }
+  router.get("/reports", h(async (req, res) => {
+    const r = await report(req);
+    if ("error" in r) { fail(res, 400, r.error); return; }
+    res.json({ success: true, ranks: r.ranks, ...(r.custom ? { from: r.custom.fromDay, to: r.custom.toDay } : {}) });
+  }));
+  router.get("/reports.csv", h(async (req, res) => {
+    const r = await report(req);
+    if ("error" in r) { fail(res, 400, r.error); return; }
+    await audit(db, req, "marshal.export.report", null, {});
+    sendCsv(res, `rank-report-${saDay(now())}.csv`, ["Rank", "Period", "Departures", "Passengers recorded"],
+      r.ranks.flatMap((k: any) => [[k.rank, "Today", k.today.departures, k.today.passengers], [k.rank, "This week", k.week.departures, k.week.passengers], [k.rank, "This month", k.month.departures, k.month.passengers], ...(k.period ? [[k.rank, `${r.custom!.fromDay} to ${r.custom!.toDay}`, k.period.departures, k.period.passengers]] : [])]));
   }));
 
   return router;

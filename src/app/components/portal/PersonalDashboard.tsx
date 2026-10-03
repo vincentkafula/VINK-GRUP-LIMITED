@@ -2,6 +2,7 @@ import { lazy, Suspense, useState } from "react";
 import { User, CreditCard, MapPin, LifeBuoy } from "lucide-react";
 import { DashboardShell, SectionPanel, Badge } from "../dashboards/DashboardShell";
 import { portalClient, useLoad, Status, Empty, Field, ActionButton, inputCls, when } from "./ui";
+import { ScreenBoundary } from "./widgets";
 
 // The payments and banking dashboard is the same one customers use (online payments, in-person payments, banking, receipts).
 const ManshyaDashboard = lazy(() => import("../manshya/ManshyaDashboard").then((m) => ({ default: m.ManshyaDashboard })));
@@ -24,10 +25,12 @@ export function PersonalDashboard({ userName, onClose }: { userName?: string; on
     <>
       <DashboardShell title="My Account" subtitle="Profile, payments and support" accentColor={COLOR} gradient={`from-[${COLOR}]`} navItems={NAV} activeNav={nav} onNavChange={setNav} onClose={onClose} userName={userName}>
         <div className="p-4 md:p-6 space-y-4 max-w-4xl">
+          <ScreenBoundary resetKey={nav}>
           {nav === "Profile" && <ProfileScreen />}
           {nav === "Trips" && <SectionPanel title="Trip and booking history"><div className="p-4"><Empty>Your trips will appear here once they can be linked to your account. Nothing is recorded yet. Your payments are under Payments &amp; banking.</Empty></div></SectionPanel>}
           {nav === "Support" && <SupportScreen />}
           {nav === "Payments & banking" && <SectionPanel title="Payments & banking"><div className="p-4"><Empty>Opening your payments and banking dashboard…</Empty></div></SectionPanel>}
+          </ScreenBoundary>
         </div>
       </DashboardShell>
       {nav === "Payments & banking" && (

@@ -1,7 +1,8 @@
-import { Router, json } from "express";
-import { h, uid, num, iso, dateOnly, isUuid, text, optText, validDate, fail, findUserByEmail, readKeys, markKeys, isUniqueViolation, type Db } from "./common.js";
+import { Router, json, type Request } from "express";
+import { h, uid, num, iso, dateOnly, isUuid, text, optText, validDate, fail, findUserByEmail, readKeys, markKeys, isUniqueViolation, audit, bucketDays, rangeParams, saDay, sendCsv, type Db } from "./common.js";
 import { saPeriods, expiryReminders } from "./driverRoutes.js";
 import { requestLink } from "./linkRoutes.js";
+import { loadMap } from "./mapData.js";
 
 /**
  * The Owner Dashboard API, mounted at /api/portal/owner (vehicle owners only). An owner sees and changes only their own records.
@@ -79,6 +80,7 @@ export function createOwnerRouter(db: Db, now: () => Date = () => new Date()): R
     }
     const r = await db.query(`UPDATE vehicles SET driver_id = $3 WHERE id = $1 AND owner_id = $2 RETURNING id`, [req.params.id, me, driverId]);
     if (!r.rows.length) { fail(res, 404, "Vehicle not found"); return; }
+    await audit(db, req, "owner.vehicle.driver", req.params.id, { driverId });
     res.json({ success: true });
   }));
 
@@ -104,6 +106,7 @@ export function createOwnerRouter(db: Db, now: () => Date = () => new Date()): R
     const r = await db.query(`UPDATE owner_drivers SET status = 'removed', responded_at = now() WHERE id = $1 AND owner_id = $2 AND status IN ('active','pending') RETURNING driver_id`, [req.params.id, uid(req)]);
     if (!r.rows.length) { fail(res, 404, "Driver link not found"); return; }
     await db.query(`UPDATE vehicles SET driver_id = NULL WHERE owner_id = $1 AND driver_id = $2`, [uid(req), r.rows[0].driver_id]);   // a removed driver comes off the vehicles
+    await audit(db, req, "owner.driver.remove", req.params.id);
     res.json({ success: true });
   }));
 
@@ -134,6 +137,72 @@ export function createOwnerRouter(db: Db, now: () => Date = () => new Date()): R
          FROM route_violations rv JOIN terminals t ON t.id = rv.terminal_id LEFT JOIN vehicles v ON v.id = t.vehicle_id
         WHERE ${OWNED} AND rv.created_at >= $2`, [uid(req), p.month])).rows[0];
     res.json({ success: true, currency: "ZAR", month: { vehicles: perVehicle.rows.map((x) => ({ registration: x.registration, fares: num(x.fares), ownerShare: num(x.share), count: num(x.n) })), fines: { count: num(fines?.n), total: num(fines?.total) } } });
+  }));
+
+  /* ───── routes and map: the routes recorded for my vehicles' terminals, and where each vehicle last reported from ───── */
+  router.get("/map", h(async (req, res) => {
+    res.json({ success: true, ...(await loadMap(db, OWNED, OWNED, [uid(req)])) });
+  }));
+
+  /** Confirmed fares and my share per day (default last 14 days), zero-filled, for the trend chart. */
+  router.get("/trend", h(async (req, res) => {
+    const range = rangeParams(req, now(), 14);
+    if ("error" in range) { fail(res, 400, range.error); return; }
+    const rows = (await db.query(
+      `SELECT k.amount, k.owner_settlement, k.received_at FROM terminal_taps k JOIN terminals t ON t.id = k.terminal_id LEFT JOIN vehicles v ON v.id = t.vehicle_id
+        WHERE ${OWNED} AND k.status = 'confirmed' AND k.received_at >= $2 AND k.received_at < $3 LIMIT 50000`, [uid(req), range.from, range.toExclusive])).rows;
+    res.json({
+      success: true, currency: "ZAR",
+      days: bucketDays(rows.map((x) => ({ at: x.received_at, value: num(x.amount) })), range.from, range.toExclusive),
+      share: bucketDays(rows.map((x) => ({ at: x.received_at, value: num(x.owner_settlement) })), range.from, range.toExclusive).map((d) => d.value),
+    });
+  }));
+
+  /**
+   * A summary of the money recorded for my vehicles over a period (default: this month so far): fares collected, what the split left for
+   * the owner, the platform's fees, the investor's share, route fines, and the levies associations charged me. Every figure is read from
+   * recorded transactions; it is not an audited financial statement and not tax advice.
+   */
+  async function statement(req: Request) {
+    const range = rangeParams(req, now(), 31, saDay(now()).slice(0, 8) + "01");
+    if ("error" in range) return range;
+    const taps = (await db.query(
+      `SELECT k.amount, k.owner_settlement, k.vink_fee_device, k.vink_fee_card, k.investor_share, k.received_at FROM terminal_taps k JOIN terminals t ON t.id = k.terminal_id LEFT JOIN vehicles v ON v.id = t.vehicle_id
+        WHERE ${OWNED} AND k.status = 'confirmed' AND k.received_at >= $2 AND k.received_at < $3 ORDER BY k.received_at LIMIT 50000`, [uid(req), range.from, range.toExclusive])).rows;
+    const round = (n: number) => Math.round(n * 100) / 100;
+    const sum = (f: (x: Record<string, unknown>) => number) => round(taps.reduce((a, x) => a + f(x), 0));
+    const fares = bucketDays(taps.map((x) => ({ at: x.received_at, value: num(x.amount) })), range.from, range.toExclusive);
+    const share = bucketDays(taps.map((x) => ({ at: x.received_at, value: num(x.owner_settlement) })), range.from, range.toExclusive);
+    const days = fares.map((d, i) => ({ day: d.day, fares: d.count, collected: d.value, ownerShare: share[i].value })).filter((d) => d.fares > 0);
+    const fines = (await db.query(
+      `SELECT COUNT(*) AS n, COALESCE(SUM(rv.fine_amount), 0) AS total FROM route_violations rv JOIN terminals t ON t.id = rv.terminal_id LEFT JOIN vehicles v ON v.id = t.vehicle_id
+        WHERE ${OWNED} AND rv.created_at >= $2 AND rv.created_at < $3`, [uid(req), range.from, range.toExclusive])).rows[0];
+    const levies = (await db.query(
+      `SELECT COALESCE(SUM(amount), 0) AS charged, COALESCE(SUM(CASE WHEN paid_at IS NULL THEN 0 ELSE amount END), 0) AS paid
+         FROM levies WHERE member_id = $1 AND created_at >= $2 AND created_at < $3`, [uid(req), range.from, range.toExclusive])).rows[0];
+    return {
+      range, days,
+      totals: {
+        fares: taps.length, collected: sum((x) => num(x.amount)), ownerShare: sum((x) => num(x.owner_settlement)),
+        platformFees: sum((x) => num(x.vink_fee_device) + num(x.vink_fee_card)), investorShare: sum((x) => num(x.investor_share)),
+        fines: { count: num(fines?.n), total: round(num(fines?.total)) }, levies: { charged: round(num(levies?.charged)), paid: round(num(levies?.paid)) },
+      },
+    };
+  }
+  router.get("/statements", h(async (req, res) => {
+    const st = await statement(req);
+    if ("error" in st) { fail(res, 400, st.error); return; }
+    res.json({ success: true, currency: "ZAR", from: st.range.fromDay, to: st.range.toDay, days: st.days, totals: st.totals });
+  }));
+  router.get("/statements.csv", h(async (req, res) => {
+    const st = await statement(req);
+    if ("error" in st) { fail(res, 400, st.error); return; }
+    await audit(db, req, "owner.export.statement", null, { from: st.range.fromDay, to: st.range.toDay });
+    const t = st.totals;
+    sendCsv(res, `owner-summary-${st.range.fromDay}-to-${st.range.toDay}.csv`, ["Date", "Fares", "Fares collected (ZAR)", "Owner share (ZAR)"],
+      [...st.days.map((d) => [d.day, d.fares, d.collected, d.ownerShare]),
+        ["TOTAL", t.fares, t.collected, t.ownerShare], ["Platform fees", "", "", t.platformFees], ["Investor share", "", "", t.investorShare],
+        ["Route fines", t.fines.count, "", t.fines.total], ["Levies charged", "", "", t.levies.charged], ["Levies paid", "", "", t.levies.paid]]);
   }));
 
   /* ───── compliance documents ───── */

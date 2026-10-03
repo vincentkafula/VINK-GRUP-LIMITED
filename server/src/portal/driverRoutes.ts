@@ -1,4 +1,5 @@
 import { Router, json, type Request, type Response, type RequestHandler } from "express";
+import { audit, bucketDays, pageParams, rangeParams, saDay, sendCsv, isUuid, fail } from "./common.js";
 
 /**
  * The Driver's Dashboard API, mounted at /api/portal/driver (driver accounts only; the guard is applied where this is mounted).
@@ -144,14 +145,86 @@ export function createDriverRouter(db: Db, now: () => Date = () => new Date()): 
     res.json({ success: true, routes: r.rows.map((x) => ({ id: x.id, name: x.name, active: x.active, toleranceMeters: num(x.tolerance_meters), terminalSerial: x.serial, waypoints: num(x.waypoints) })) });
   }));
 
+  /** The fares on my vehicle(s). Card details are never included: only when, how much, and whether it went through. */
+  const MINE = "FROM terminal_taps k JOIN terminals t ON t.id = k.terminal_id LEFT JOIN vehicles v ON v.id = t.vehicle_id WHERE (t.driver_id = $1 OR v.driver_id = $1)";
+
+  /** ?status=&from=&to= (South African days) plus paging; the .csv route reuses it with a larger page. */
+  async function tripQuery(req: Request, csv: boolean) {
+    const range = rangeParams(req, now(), 30);
+    if ("error" in range) return range;
+    const status = typeof req.query.status === "string" && ["confirmed", "declined", "received", "processing"].includes(req.query.status) ? req.query.status : null;
+    const args: unknown[] = [uid(req), range.from, range.toExclusive];
+    let where = `${MINE} AND k.received_at >= $2 AND k.received_at < $3`;
+    if (status) { args.push(status); where += ` AND k.status = $${args.length}`; }
+    const total = num((await db.query(`SELECT COUNT(*) AS n ${where}`, args)).rows[0]?.n);
+    const { limit, offset } = csv ? { limit: 5000, offset: 0 } : pageParams(req, 25, 100);
+    const rows = (await db.query(
+      `SELECT k.id, k.amount, k.currency, k.scheme, k.status, k.received_at, t.serial ${where} ORDER BY k.received_at DESC LIMIT $${args.length + 1} OFFSET $${args.length + 2}`,
+      [...args, limit, offset])).rows;
+    return { rows, total, limit, offset };
+  }
   router.get("/trips", h(async (req, res) => {
-    const limit = Math.min(Math.max(Number(req.query.limit) || 50, 1), 200);
-    const r = await db.query(
-      `SELECT k.id, k.amount, k.currency, k.scheme, k.status, k.received_at, t.serial
-         FROM terminal_taps k JOIN terminals t ON t.id = k.terminal_id LEFT JOIN vehicles v ON v.id = t.vehicle_id
-        WHERE (t.driver_id = $1 OR v.driver_id = $1) ORDER BY k.received_at DESC LIMIT $2`, [uid(req), limit]);
-    // Card details are never sent to the dashboard: only what the driver needs (when, how much, whether it went through).
-    res.json({ success: true, trips: r.rows.map((x) => ({ id: x.id, at: iso(x.received_at), amount: num(x.amount), currency: x.currency, scheme: x.scheme ?? null, status: x.status, terminalSerial: x.serial })) });
+    const r = await tripQuery(req, false);
+    if ("error" in r) { fail(res, 400, r.error); return; }
+    res.json({ success: true, total: r.total, limit: r.limit, offset: r.offset, trips: r.rows.map((x) => ({ id: x.id, at: iso(x.received_at), amount: num(x.amount), currency: x.currency, scheme: x.scheme ?? null, status: x.status, terminalSerial: x.serial })) });
+  }));
+  router.get("/trips.csv", h(async (req, res) => {
+    const r = await tripQuery(req, true);
+    if ("error" in r) { fail(res, 400, r.error); return; }
+    await audit(db, req, "driver.export.trips", null, { rows: r.rows.length });
+    sendCsv(res, `fares-${saDay(now())}.csv`, ["When (UTC)", "Amount", "Currency", "Card scheme", "Status", "Terminal"],
+      r.rows.map((x) => [iso(x.received_at), num(x.amount), x.currency, x.scheme ?? "", x.status, x.serial]));
+  }));
+
+  /** Confirmed fares per day (default last 14 days), zero-filled, for the trend chart. */
+  router.get("/trend", h(async (req, res) => {
+    const range = rangeParams(req, now(), 14);
+    if ("error" in range) { fail(res, 400, range.error); return; }
+    const rows = (await db.query(`SELECT k.amount, k.received_at ${MINE} AND k.status = 'confirmed' AND k.received_at >= $2 AND k.received_at < $3 LIMIT 50000`, [uid(req), range.from, range.toExclusive])).rows;
+    res.json({ success: true, currency: "ZAR", days: bucketDays(rows.map((x) => ({ at: x.received_at, value: num(x.amount) })), range.from, range.toExclusive) });
+  }));
+
+  /** A statement of what was recorded for a period (default: this month so far): fares per day and fines. It is a summary, not a payslip. */
+  async function statement(req: Request) {
+    const range = rangeParams(req, now(), 31, saDay(now()).slice(0, 8) + "01");
+    if ("error" in range) return range;
+    const taps = (await db.query(`SELECT k.amount, k.received_at ${MINE} AND k.status = 'confirmed' AND k.received_at >= $2 AND k.received_at < $3 ORDER BY k.received_at LIMIT 50000`, [uid(req), range.from, range.toExclusive])).rows;
+    const days = bucketDays(taps.map((x) => ({ at: x.received_at, value: num(x.amount) })), range.from, range.toExclusive).filter((d) => d.count > 0);
+    const fines = (await db.query(`SELECT id, amount, description, created_at FROM driver_ledger WHERE driver_id = $1 AND created_at >= $2 AND created_at < $3 ORDER BY created_at`, [uid(req), range.from, range.toExclusive])).rows
+      .map((f) => ({ id: f.id, at: iso(f.created_at), amount: num(f.amount), description: f.description ?? null }));
+    const round = (n: number) => Math.round(n * 100) / 100;
+    return { range, days, fares: { count: taps.length, total: round(days.reduce((a, d) => a + d.value, 0)) }, fines, finesTotal: round(fines.reduce((a, f) => a + f.amount, 0)) };
+  }
+  router.get("/statements", h(async (req, res) => {
+    const st = await statement(req);
+    if ("error" in st) { fail(res, 400, st.error); return; }
+    res.json({ success: true, currency: "ZAR", from: st.range.fromDay, to: st.range.toDay, days: st.days, fares: st.fares, fines: st.fines, finesTotal: st.finesTotal });
+  }));
+  router.get("/statements.csv", h(async (req, res) => {
+    const st = await statement(req);
+    if ("error" in st) { fail(res, 400, st.error); return; }
+    await audit(db, req, "driver.export.statement", null, { from: st.range.fromDay, to: st.range.toDay });
+    sendCsv(res, `statement-${st.range.fromDay}-to-${st.range.toDay}.csv`, ["Date", "Type", "Detail", "Amount (ZAR)"],
+      [...st.days.map((d) => [d.day, "Fares collected", `${d.count} fares`, d.value]), ...st.fines.map((f) => [f.at?.slice(0, 10), "Fine", f.description ?? "Off-route fine", f.amount])]);
+  }));
+
+  /**
+   * The device power switch from the original dashboard: turn my fare terminal on or off. An inactive terminal is refused by the tap
+   * endpoint (services/terminalAuth.ts), so this really stops it taking fares. A terminal the platform revoked stays revoked.
+   */
+  router.post("/terminal/power", json({ limit: "5kb" }), h(async (req, res) => {
+    const terminalId = req.body?.terminalId, on = req.body?.on;
+    if (!isUuid(terminalId) || typeof on !== "boolean") { fail(res, 400, "A terminal and on (true or false) are required"); return; }
+    const mine = (await db.query(
+      `SELECT t.id, t.serial, t.status FROM terminals t LEFT JOIN vehicles v ON v.id = t.vehicle_id WHERE t.id = $1 AND (t.driver_id = $2 OR v.driver_id = $2)`, [terminalId, uid(req)])).rows[0];
+    if (!mine) { fail(res, 404, "Terminal not found"); return; }
+    if (mine.status === "revoked") { fail(res, 403, "This terminal was disabled by the platform. Please contact support."); return; }
+    const to = on ? "active" : "inactive";
+    if (mine.status !== to) {
+      await db.query(`UPDATE terminals SET status = $2 WHERE id = $1 AND status <> 'revoked'`, [mine.id, to]);
+      await audit(db, req, on ? "driver.terminal.on" : "driver.terminal.off", String(mine.serial));
+    }
+    res.json({ success: true, status: to });
   }));
 
   router.get("/earnings", h(async (req, res) => {

@@ -27,6 +27,9 @@ export function allPortalsDb(): Db {
     CREATE TABLE levies (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), association_id UUID NOT NULL, member_id UUID NOT NULL, title TEXT NOT NULL, amount NUMERIC(12,2) NOT NULL, due_date DATE, paid_at TIMESTAMPTZ, created_at TIMESTAMPTZ NOT NULL DEFAULT now());
     CREATE TABLE compliance_documents (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), owner_id UUID NOT NULL, vehicle_id UUID, kind TEXT NOT NULL, reference TEXT, expires_on DATE, created_at TIMESTAMPTZ NOT NULL DEFAULT now());
     CREATE TABLE personal_profiles (user_id UUID PRIMARY KEY, phone TEXT, home_area TEXT, favourite_route TEXT, emergency_contact_name TEXT, emergency_contact_phone TEXT, updated_at TIMESTAMPTZ DEFAULT now());
+    CREATE TABLE audit_log (id TEXT PRIMARY KEY, actor_id UUID, actor_name TEXT NOT NULL, action TEXT NOT NULL, target TEXT, details TEXT, created_at TIMESTAMPTZ NOT NULL DEFAULT now());
+    CREATE TABLE association_ledger (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), association_id UUID NOT NULL, amount NUMERIC(10,2) NOT NULL, balance_after NUMERIC(10,2) NOT NULL, description TEXT, created_at TIMESTAMPTZ NOT NULL DEFAULT now());
+    CREATE TABLE device_faults (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), terminal_id UUID NOT NULL, fault_code TEXT NOT NULL, resolved BOOLEAN NOT NULL DEFAULT false, reported_at TIMESTAMPTZ NOT NULL DEFAULT now());
     CREATE TABLE support_requests (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), user_id UUID NOT NULL, subject TEXT NOT NULL, message TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'open', created_at TIMESTAMPTZ NOT NULL DEFAULT now());
   `);
   const { Pool } = mem.adapters.createPg();

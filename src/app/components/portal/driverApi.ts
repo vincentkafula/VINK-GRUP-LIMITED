@@ -2,7 +2,7 @@ import { authFetch } from "../../services/apiClient";
 import { API_BASE } from "../../services/config";
 
 export interface DriverProfile { phone: string | null; licenceNumber: string | null; licenceCode: string | null; licenceExpiry: string | null; pdpNumber: string | null; pdpExpiry: string | null }
-export interface DriverVehicle { terminalId: string; terminalSerial: string; terminalStatus: string; lastSeenAt: string | null; registration: string | null; make: string | null; model: string | null; year: number | null; colour: string | null; seats: number | null; discExpiry: string | null }
+export interface DriverVehicle { terminalId: string | null; terminalSerial: string | null; terminalStatus: string | null; lastSeenAt: string | null; registration: string | null; make: string | null; model: string | null; year: number | null; colour: string | null; seats: number | null; discExpiry: string | null }
 export interface DriverRoute { id: string; name: string; active: boolean; toleranceMeters: number; terminalSerial: string; waypoints: number }
 export interface DriverTrip { id: string; at: string; amount: number; currency: string; scheme: string | null; status: string; terminalSerial: string }
 export interface Period { count: number; total: number }

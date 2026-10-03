@@ -3,6 +3,7 @@ import { ListOrdered, History, BarChart3, Link2 } from "lucide-react";
 import { DashboardShell, SectionPanel, StatCard, TableCard } from "../dashboards/DashboardShell";
 import { portalClient, useLoad, Status, Empty, Field, ActionButton, inputCls, when, type Load } from "./ui";
 import { LinksPanel } from "./LinksPanel";
+import { CsvButton, Pager, RangeBar, ScreenBoundary, TrendChart, rangeQuery, saToday, saShift, monthStart, useAutoRefresh, type Range } from "./widgets";
 
 const COLOR = "#3B82F6";
 const call = portalClient("marshal");
@@ -28,11 +29,13 @@ export function MarshalDashboard({ userName, onClose }: { userName?: string; onC
   return (
     <DashboardShell title="Marshal Dashboard" subtitle="Rank queue and departures" accentColor={COLOR} gradient={`from-[${COLOR}]`} navItems={NAV} activeNav={nav} onNavChange={setNav} onClose={onClose} userName={userName}>
       <div className="p-4 md:p-6 space-y-4 max-w-5xl">
-        {(nav === "Ranks & queue" || nav === "Departures") && <RankPicker ranks={ranks} picked={picked?.id} onPick={setRankId} />}
-        {nav === "Ranks & queue" && picked && <QueueScreen key={picked.id} rank={picked} onChanged={reloadRanks} />}
-        {nav === "Departures" && picked && <DeparturesScreen key={picked.id} rank={picked} />}
-        {nav === "Reports" && <ReportsScreen />}
-        {nav === "Requests & links" && <LinksPanel call={call} color={COLOR} />}
+        <ScreenBoundary resetKey={nav}>
+          {(nav === "Ranks & queue" || nav === "Departures") && <RankPicker ranks={ranks} picked={picked?.id} onPick={setRankId} />}
+          {nav === "Ranks & queue" && picked && <QueueScreen key={picked.id} rank={picked} onChanged={reloadRanks} />}
+          {nav === "Departures" && picked && <DeparturesScreen key={picked.id} rank={picked} />}
+          {nav === "Reports" && <ReportsScreen />}
+          {nav === "Requests & links" && <LinksPanel call={call} color={COLOR} />}
+        </ScreenBoundary>
       </div>
     </DashboardShell>
   );
@@ -57,6 +60,7 @@ function QueueScreen({ rank, onChanged }: { rank: Rank; onChanged: () => void })
   const [veh, reloadV] = useLoad<{ vehicles: RankVehicle[] }>(() => call(`/ranks/${rank.id}/vehicles`));
   const [pax, setPax] = useState(""); const [note, setNote] = useState("");
   const refresh = () => { reloadQ(); reloadV(); onChanged(); };
+  useAutoRefresh(() => { reloadQ(); reloadV(); }, 15_000);          // another marshal may have changed the line
 
   return (
     <>
@@ -98,30 +102,51 @@ function QueueScreen({ rank, onChanged }: { rank: Rank; onChanged: () => void })
 }
 
 function DeparturesScreen({ rank }: { rank: Rank }) {
-  const [d] = useLoad<{ departures: Departure[] }>(() => call(`/ranks/${rank.id}/departures`));
+  const today = saToday();
+  const [range, setRange] = useState<Range>({ from: saShift(today, -6), to: today });
+  const [offset, setOffset] = useState(0);
+  const LIMIT = 15;
+  const q = rangeQuery(range);
+  const [d] = useLoad<{ total: number; departures: Departure[] }>(() => call(`/ranks/${rank.id}/departures?${q}&limit=${LIMIT}&offset=${offset}`), [q, offset]);
+  const [t] = useLoad<{ days: { day: string; departures: number }[] }>(() => call(`/ranks/${rank.id}/trend?` + rangeQuery({ from: saShift(saToday(), -13), to: saToday() })));
   return (
-    <Status load={d}>{({ departures }) => departures.length === 0 ? (
-      <SectionPanel title="Departures"><div className="p-4"><Empty>No departures logged yet.</Empty></div></SectionPanel>
-    ) : (
-      <TableCard title={`Departures from ${rank.name}`} color={COLOR} columns={["When", "Vehicle", "Driver", "Passengers", "Note"]}
-        rows={departures.map((x) => [when(x.at), x.registration, x.driver ?? "–", x.passengers ?? "–", x.note ?? ""])} />
-    )}</Status>
+    <>
+      <Status load={t}>{({ days }) => <TrendChart days={days.map((x) => ({ day: x.day, value: x.departures }))} color={COLOR} label={`Departures from ${rank.name}, last 14 days`} money={false} />}</Status>
+      <SectionPanel title={`Departures from ${rank.name}`} action={<CsvButton segment="marshal" path={`/ranks/${rank.id}/departures.csv?${q}`} color={COLOR} />}>
+        <div className="p-4 space-y-3">
+          <RangeBar value={range} onChange={(r) => { setRange(r); setOffset(0); }} color={COLOR} />
+          <Status load={d}>{({ total, departures }) => departures.length === 0 ? <Empty>No departures in this period.</Empty> : (
+            <>
+              <TableCard title={`${total} departure${total === 1 ? "" : "s"}`} color={COLOR} columns={["When", "Vehicle", "Driver", "Passengers", "Note"]}
+                rows={departures.map((x) => [when(x.at), x.registration, x.driver ?? "–", x.passengers ?? "–", x.note ?? ""])} />
+              <Pager total={total} limit={LIMIT} offset={offset} onChange={setOffset} />
+            </>)}</Status>
+        </div>
+      </SectionPanel>
+    </>
   );
 }
 
 function ReportsScreen() {
-  const [r] = useLoad<{ ranks: { rankId: string; rank: string; today: Per; week: Per; month: Per }[] }>(() => call("/reports"));
+  const [range, setRange] = useState<Range>({ from: monthStart(), to: saToday() });
+  const q = rangeQuery(range);
+  const [r] = useLoad<{ ranks: { rankId: string; rank: string; today: Per; week: Per; month: Per; period?: Per }[] }>(() => call(`/reports?${q}`), [q]);
   return (
-    <Status load={r}>{({ ranks }) => ranks.length === 0 ? <SectionPanel title="Reports"><div className="p-4"><Empty>No ranks yet.</Empty></div></SectionPanel> : (
-      <>{ranks.map((x) => (
-        <SectionPanel key={x.rankId} title={x.rank}>
-          <div className="p-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {([["Today", x.today], ["This week", x.week], ["This month", x.month]] as const).map(([label, p]) => (
-              <StatCard key={label} label={label} value={`${p.departures} departures`} sub={`${p.passengers} passengers recorded`} icon={<ListOrdered className="w-4 h-4" />} color={COLOR} />))}
-          </div>
-        </SectionPanel>))}
-        <Field label="Note" value="Passenger numbers are only what was entered when each departure was logged." />
-      </>
-    )}</Status>
+    <SectionPanel title="Reports" action={<CsvButton segment="marshal" path={`/reports.csv?${q}`} color={COLOR} />}>
+      <div className="p-4 space-y-4">
+        <RangeBar value={range} onChange={setRange} color={COLOR} />
+        <Status load={r}>{({ ranks }) => ranks.length === 0 ? <Empty>No ranks yet.</Empty> : (
+          <>{ranks.map((x) => (
+            <div key={x.rankId} className="space-y-2">
+              <h3 className="text-sm font-bold text-white">{x.rank}</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {([["Today", x.today], ["This week", x.week], ["This month", x.month], [`${range.from} to ${range.to}`, x.period]] as const).filter(([, p]) => p).map(([label, p]) => (
+                  <StatCard key={label} label={label} value={`${p!.departures} departures`} sub={`${p!.passengers} passengers recorded`} icon={<ListOrdered className="w-4 h-4" />} color={COLOR} />))}
+              </div>
+            </div>))}
+            <Field label="Note" value="Passenger numbers are only what was entered when each departure was logged." />
+          </>)}</Status>
+      </div>
+    </SectionPanel>
   );
 }

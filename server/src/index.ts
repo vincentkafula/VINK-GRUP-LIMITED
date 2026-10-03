@@ -107,6 +107,8 @@ app.use(["/api/auth/forgot-password", "/api/auth/reset-password", "/api/auth/ver
 app.use("/api/auth/refresh", rateLimit({ windowMs: 15 * 60_000, max: 100, standardHeaders: true, legacyHeaders: false }));
 
 // ─── Routes ──────────────────────────────────────────────────────────────────
+// Writes through the role dashboards are throttled per client (reads are not): 120 changes a minute is far above real use.
+app.use("/api/portal", rateLimit({ windowMs: 60_000, max: 120, standardHeaders: true, legacyHeaders: false, skip: (req) => req.method === "GET" }));
 app.use("/api/portal",        createPortalRouter());
 app.use("/api/auth",          (hasDb ? createDbAuthRouter() : createMemoryAuthRouter()).router);
 app.use("/api/fraud-risk",    fraudRiskRouter);
