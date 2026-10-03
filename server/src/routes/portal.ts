@@ -1,5 +1,7 @@
-import { Router, type Request, type Response } from "express";
+import { Router, type Request, type Response, type RequestHandler } from "express";
 import { requireAuth, requireRole } from "../middleware/auth.js";
+import { pool } from "../db/pool.js";
+import { createDriverRouter, type Db } from "../portal/driverRoutes.js";
 import { ACCOUNT_ROLES, DASHBOARD_PATH, isAccountRole, type AccountRole } from "../auth/roles.js";
 
 /**
@@ -18,7 +20,10 @@ const PREFIX: Record<AccountRole, string> = {
   personal: "personal", driver: "driver", marshal: "marshal", vehicle_owner: "owner", association: "association",
 };
 
-export function createPortalRouter(): Router {
+/** Without a database (local development with no DATABASE_URL) the data endpoints cannot work. */
+const unavailable: RequestHandler = (_req, res) => { res.status(503).json({ success: false, error: "The database is not configured" }); };
+
+export function createPortalRouter(db: Db | null = pool): Router {
   const router = Router();
   router.use(requireAuth);
 
@@ -28,7 +33,11 @@ export function createPortalRouter(): Router {
     res.json({ success: true, user: { id: req.user!.userId, username: req.user!.username, role }, dashboard: DASHBOARD_PATH[role] });
   });
 
+  // Driver's Dashboard data (drivers only).
+  router.use("/driver", requireRole("driver" as never), db ? createDriverRouter(db) : unavailable);
+
   for (const role of ACCOUNT_ROLES) {
+    if (role === "driver") continue;                       // served by the driver router above
     router.get(`/${PREFIX[role]}`, requireRole(role as never), (req: Request, res: Response) => {
       res.json({ success: true, role, user: { id: req.user!.userId, username: req.user!.username } });
     });

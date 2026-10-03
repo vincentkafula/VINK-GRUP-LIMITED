@@ -3,6 +3,7 @@ import { Home, Loader2, ShieldAlert } from "lucide-react";
 import { DashboardShell, SectionPanel } from "../dashboards/DashboardShell";
 import { getSession, authFetch } from "../../services/apiClient";
 import { API_BASE } from "../../services/config";
+import { DriverDashboard } from "./DriverDashboard";
 import { PORTALS, portalPathForRole, type PortalKey } from "./portalDefs";
 
 /**
@@ -49,6 +50,8 @@ export function RolePortal({ portal, isOpen, onClose }: { portal: PortalKey; isO
       </div>
     );
   }
+
+  if (portal === "driver") return <DriverDashboard userName={session?.name} onClose={onClose} />;
 
   return (
     <DashboardShell
