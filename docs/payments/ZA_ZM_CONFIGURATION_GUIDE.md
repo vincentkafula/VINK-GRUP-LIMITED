@@ -1,12 +1,12 @@
 # Configuration guide: transport payments and banking platform (South Africa and Zambia)
 
-Version 1.0 · prepared for the platform owner · **technical guidance, not legal advice** (every item marked ⚖ needs a lawyer or the regulator to confirm)
+Version 1.1 · updated with your confirmed decisions · prepared for the platform owner · **technical guidance, not legal advice** (every item marked ⚖ needs a lawyer or the regulator to confirm)
 
 ---
 
 # 0. One-page summary
 
-**What this is.** A step-by-step specification for configuring the platform that already exists so that it runs one shared codebase with **separate configuration per country**: South Africa (ZAR, Bank Zero, SARB/PASA) and Zambia (ZMW, partner bank to be confirmed, Bank of Zambia).
+**What this is.** A step-by-step specification for configuring the platform that already exists so that it runs one shared codebase with **separate configuration per country**: South Africa (ZAR, Bank Zero, SARB/PASA) and Zambia (ZMW, Absa Bank Zambia, Bank of Zambia).
 
 **What the platform already has** (checked in the code): a double-entry ledger with idempotency and balance floors; virtual account numbers; fee, payout, reserve and limit settings; card controls (freeze, tap/online/international switches, limits); a sandbox/live switch that refuses to go live without sign-off; Visa sandbox adapters and a Paymentology issuer placeholder; AFC terminals with fare splits; encrypted fields, audit log and role-based dashboards.
 
@@ -23,13 +23,25 @@ Version 1.0 · prepared for the platform owner · **technical guidance, not lega
 | 5 | AFC no-PIN limit | SA: below R40 (your rule). Zambia: start at **ZMW 50 per tap and ZMW 150 per card per day**, raise only after scheme and Bank of Zambia confirmation ⚖ |
 | 6 | Configuration model | One `country_profile` per country (JSON, versioned, approval-gated). Nothing financial is hard-coded |
 | 7 | Reconciliation | Three-way (ledger ↔ bank ↔ card processor), real-time matching plus a daily close, with exception queues and a hard stop if control totals break |
-| 8 | Cross-border | **Do not launch** ZAR↔ZMW transfers in version 1. Each country is a closed ledger; add the corridor later through an authorised dealer / licensed provider ⚖ |
-| 9 | Driver pay | The platform does not calculate driver pay today (it is a private arrangement with the owner). If "automatic payouts" must include drivers, the owner must enter the rule; the platform only executes it |
+| 8 | Cross-border (needed at launch) | Treat it as a separate, gated regulated corridor: ZAR ⇄ ZMW through an **authorised dealer service** (Absa, which operates in both countries) or regional bank settlement, Full-KYC customers only, low limits, quote-locked FX, and **written confirmation from counsel, the dealer and both regulators before go-live**. Section 10.2 |
+| 9 | Driver and marshal pay (now automatic) | The platform **executes** association-set amounts. "16 taps" and "R20 per vehicle" can be read several ways, so I have not configured them: choose in section 5.5. The old rule that driver pay is private must be formally replaced |
 | 10 | Data | Separate databases (or schemas) per country; no personal data leaves the country without a legal basis ⚖ |
+
+
+### Decisions you have confirmed (v1.1) and what they change
+
+| Decision | Effect on the design |
+|---|---|
+| Zambian bank: **Absa Bank Zambia** | Section 7.2 is now specific; Absa also operates in South Africa, which can help the cross-border corridor (and creates a concentration risk, see section 13) |
+| **Drivers and marshals are paid automatically**, as well as owners, associations and investors | The platform now **executes** driver and marshal pay. Today it deliberately does not calculate driver pay (a private arrangement with the owner). That rule must be replaced formally (section 5.5) |
+| **Cross-border transfers are needed at launch** (ZA and ZM) | This is now the largest regulatory item in the project. Section 10.2 is rewritten as a launch design; both countries' regulators and an authorised dealer must confirm **before** go-live |
+| Legal counsel in both countries (names to follow) | Every ⚖ item has an owner; the counsel question list is in Appendix D.5 |
+| Risk reserve **R40 (ZA) and K40 (ZM)** | Needs your confirmation: as written it supports almost no instant credit (section 8.6) |
+| Payout amounts: driver "based on 16 taps"; marshal **R20 per vehicle**; amounts set by the association (Zambia in kwacha) | Ambiguous; I show the readings and the configuration for each (section 5.5). Please choose |
 
 **Biggest risks:** licensing of the pooled account; crediting before settlement; no-PIN taps and offline transit liability; reconciliation breaks; the cross-border corridor. Section 13 lists them with who must confirm each.
 
-**What I need from you:** the answers in Appendix D (tech facts I assumed, partner bank details, volumes, who is your regulatory counsel).
+**What I need from you:** five confirmations (Appendix D.3: the risk-reserve figure, the meaning of "16 taps" and "R20 per vehicle", funding of those payouts, and the cross-border limits), plus the bank and lawyer information in Appendix D.4 and D.5, the commercial inputs in D.6 and the names in D.7.
 
 ---
 
@@ -44,7 +56,7 @@ You asked me to fill in missing build details and to say what I assumed. From th
 | Card processor / issuer | Provider adapters: mock issuer, Visa DPS and PAV (sandbox only), Paymentology (BIN sponsor / issuer-processor, API not yet integrated) | yes |
 | Hosting | Railway (Dockerfile builds), Postgres with a volume, one volume for the Manshya database, custom domain `api.vink.co.za`, Resend for email | yes |
 | Banking partner SA | Bank Zero, fee schedule not yet agreed | open |
-| Banking partner ZM | not chosen | open |
+| Banking partner ZM | **Absa Bank Zambia** (confirmed) | capabilities and fees open |
 | Volumes | unknown; sized for pilot (thousands of taps a day), not national scale | open |
 
 Every number in the examples below is **illustrative** and marked as such. The fee, limit and rate values are inputs you will set after negotiating with the banks; the guide gives you the structure and sensible starting points.
@@ -78,7 +90,7 @@ Create one record per country. It is the only place these values live; code read
 |---|---|---|---|---|---|
 | Identity | `country_code`, `currency`, `currency_minor_units` | ZA, ZAR, 2 | ZM, ZMW, 2 | you | ready |
 | Identity | `timezone`, `business_day_cutoff` | Africa/Johannesburg (UTC+2), 17:00 | Africa/Lusaka (UTC+2), 17:00 | you + bank | confirm cut-offs |
-| Partner | `partner_bank`, `bank_account_ref`, `swift/bic`, `branch_code` | Bank Zero, to confirm | to be confirmed | contract | open |
+| Partner | `partner_bank`, `bank_account_ref`, `swift/bic`, `branch_code` | Bank Zero, to confirm | **Absa Bank Zambia**, to confirm | contract | open |
 | Partner | `bank_integration` (API, webhooks, file, credentials ref) | per Bank Zero API | per partner bank | bank | open |
 | Partner | `card_sponsor` / `processor` | Bank Zero or sponsor bank + Paymentology | sponsor bank + Paymentology (or local processor) | contract | open |
 | Regulator | `regulator`, `licence_ref`, `reporting_calendar` | SARB / PASA, FIC | Bank of Zambia, FIC | counsel | ⚖ |
@@ -91,7 +103,7 @@ Create one record per country. It is the only place these values live; code read
 | KYC | `kyc_tiers`, accepted ID documents, business documents, sanctions lists | ID / passport; CIPC for business | NRC / passport; PACRA for business | counsel | ⚖ |
 | KYC | business registration number format | `YYYY/NNNNNN/NN` (CIPC) | PACRA format to confirm | counsel | open |
 | Cards | `products`, `bin_ranges`, `3ds`, `pin_rules`, `offline_auth` | section 6 | section 6 | processor | open |
-| Cross-border | `corridors_enabled` | none in v1 | none in v1 | counsel | ⚖ |
+| Cross-border | `corridors_enabled` | ZA→ZM, gated until section 10.2.7 is complete | ZM→ZA, gated | counsel + dealer + regulators | ⚖ launch blocker |
 | Data | `data_residency`, `retention_years`, `dpo_contact` | POPIA | Data Protection Act | counsel | ⚖ |
 | Operations | `reconciliation_times`, `exception_sla`, `on_call` | section 9 | section 9 | ops | open |
 | Switch | `mode` sandbox / live, `live_approved_by`, `approved_at` | per country, independent | per country, independent | you | keep |
@@ -249,7 +261,7 @@ Transaction type · user type (passenger, driver, owner, investor, association, 
       "settle": { "mode": "daily", "cutoff": "17:00", "min_payout": 5000, "currency": "ZAR" } },
     { "id": "owner_to_driver", "trigger": { "event": "owner.payout.executed" },
       "split": [ { "party": "driver", "basis": "fixed_amount_set_by_owner", "per": "week" } ],
-      "note": "driver pay is the owner's private agreement; the platform only executes the amount the owner sets" }
+      "note": "superseded by the association-set driver rule in section 5.5" }
   ]
 }
 ```
@@ -261,9 +273,9 @@ Transaction type · user type (passenger, driver, owner, investor, association, 
 | Platform fee | fee schedule | at tap, swept daily | company |
 | Investor | % of the platform fee (today 10%) | daily or weekly | investor agreement |
 | Association | levies and fines credited | monthly (levies), per event (fines) | association's own levy rules |
-| Marshal | fixed fee per departure or per shift, set by the association | weekly | association |
+| Marshal | association-set amount, **R20 per vehicle** in South Africa (kwacha amount in Zambia): reading to confirm in 5.5 | weekly | association |
 | Vehicle owner | remainder after fees and splits | daily | system |
-| Driver | fixed amount the owner sets (not calculated by the platform) | weekly | owner |
+| Driver | association-set amount **based on 16 taps**: reading to confirm in 5.5 | daily | association |
 
 ## 5.3 Scheduling
 Daily run after the bank cut-off and **after the day's reconciliation closes**; weekly run on a fixed day; a payout below `min_payout` rolls over. Every run has a **run id** and is idempotent: re-running the same run id never pays twice.
@@ -280,6 +292,50 @@ Daily run after the bank cut-off and **after the day's reconciliation closes**; 
 | Refund / reversal after payout | create a negative entry against the party's next payout; if no next payout, open a recovery item (section 8) |
 
 All amounts in a run are written to `sys:payout_clearing` first and move to the party's bank only after the bank confirms.
+
+
+## 5.5 Driver and marshal payouts (your rules as stated, and what I need you to confirm)
+
+**Recorded:** the taxi association sets the amounts. Driver pay is "based on 16 taps". The marshal is paid R20 per vehicle; in Zambia the association sets the kwacha amount.
+
+**Why I am asking:** each phrase can mean different amounts of money, so I have configured nothing yet. The platform supports all of these readings through one rule format; you choose.
+
+| Rule | Reading A | Reading B | Reading C |
+|---|---|---|---|
+| Driver "based on 16 taps" | a **fixed amount** (set by the association) is paid each time the vehicle completes **16 confirmed taps** (one "trip") | the driver is paid the **fare value of 16 taps** per day (a daily wage), the rest goes to the owner | the first 16 taps of the day cover the owner's costs, and the driver's share starts from tap 17 |
+| Marshal "R20 per vehicle" | R20 for each **departure the marshal logs** at the rank (this data already exists: the `departures` table) | R20 for each **vehicle served at the rank per day**, however many departures | R20 per vehicle **registered** with the rank per month |
+
+**Where the money comes from (decide):** the safe default is the **vehicle owner's remainder** for driver pay (the owner receives what is left after fees, so driver pay is taken from it) and the **association** for marshal pay (from its levies and fines credited). This needs the owner's and the association's **written consent to automatic deduction** ⚖ and must never make a balance negative. If the association or the owner has too little money on a payout day, the payout waits (it is not paid from anyone else's money).
+
+### Configuration (works for every reading; set `unit` and `amount_type` after you choose)
+
+```json
+{
+  "payout_rules": [
+    { "id": "driver_tap_pay", "party": "driver", "set_by": "association",
+      "trigger": { "event": "afc_tap.confirmed", "group_by": "vehicle" },
+      "unit": { "type": "every_n_taps", "n": 16 },
+      "amount_type": "fixed",            // or "fare_value_of_unit" for Reading B
+      "amount": null,                    // set by the association, in the country's currency
+      "funded_from": "owner.remainder", "daily_cap": null,
+      "dedupe": "tap_id", "settle": { "mode": "daily", "cutoff": "17:00" } },
+    { "id": "marshal_per_vehicle", "party": "marshal", "set_by": "association",
+      "trigger": { "event": "marshal.departure.logged" },
+      "unit": { "type": "per_event" },
+      "amount_type": "fixed",
+      "amount": { "ZA": 2000, "ZM": null },   // R20.00 = 2000 cents; Zambia amount set by the association
+      "funded_from": "association.balance", "daily_cap_per_marshal": null,
+      "dedupe": "departure_id", "settle": { "mode": "weekly", "day": "friday" } }
+  ]
+}
+```
+
+### Controls these rules need
+* **Association sets the amounts** in its dashboard; every change is dual-approved (maker-checker), versioned, effective-dated, and each payout records the rule version it used.
+* **Idempotent per source event:** one tap or one departure can never be paid twice (`dedupe`). A marshal's departure that is later deleted or corrected reverses its payout.
+* **Anti-fraud:** departures logged without matching taps, or taps counted twice, go to a review queue; caps per marshal per day; the same vehicle cannot be logged twice within a few minutes.
+* **Visibility:** each driver and marshal sees a statement of what was earned and paid (their dashboard already shows records; a payout statement is added). The statement is a summary, not a payslip.
+* **Employment and tax** ⚖: paying drivers and marshals by rule may create wage, withholding and record-keeping duties. Your tax adviser must say whether they are employees, contractors or fare-sharers in each country.
 
 ---
 
@@ -337,8 +393,23 @@ International transactions off by default; ATM and POS enabled by country; merch
 ## 7.1 South Africa: Bank Zero ⚖
 Things to obtain in writing before any build: whether Bank Zero offers a **partner / BaaS programme**, the API specification (account creation, sub-accounts or virtual accounts, payment initiation, statement and webhook events), sandbox access, whether it will **sponsor a BIN**, the real-time payment rails supported (EFT, PayShap), settlement times, fees (the schedule you will negotiate), and who is the accountable institution under FICA for the customers.
 
-## 7.2 Zambia: partner bank (to be confirmed)
-Equivalent questions, plus: connection to the national payment systems, availability of an **API** (many Zambian banks offer file-based or limited APIs), mobile-money interoperability (MTN/Airtel are how most people move money), and Bank of Zambia approval requirements for the arrangement ⚖. Until a bank is chosen, build against an **adapter interface** (section 7.5) with a mock, so nothing depends on the choice.
+
+## 7.2 Zambia: Absa Bank Zambia (confirmed partner) ⚖
+
+**What to obtain from Absa Zambia in writing before building** (the full request list is Appendix D.4):
+
+| Topic | What I need to know |
+|---|---|
+| Account structure | Will Absa hold the Transactional Account under its licence with **sub-accounts or virtual accounts** per customer, or only a single pooled account? |
+| API | Is there an API (or host-to-host / file) for account creation, payment initiation, balance, statements and **real-time deposit notifications**? Is there a sandbox? |
+| Rails | Which domestic rails (real-time gross settlement, retail switch, mobile-money interoperability) and what are their cut-offs, limits and costs? |
+| Cards | Can Absa Zambia **sponsor a BIN** (Mastercard and Visa) or must another sponsor be used with Paymentology? |
+| Cross-border | Can Absa Zambia and Absa South Africa run the **ZMW⇄ZAR corridor** (dealer service), and through which channel (the bank's own network or the SADC regional settlement system)? |
+| Regulator | Which approvals does Absa need from the Bank of Zambia for this arrangement, and what will Absa give us as written proof? |
+| KYC | Who is responsible for customer verification: Absa, the platform on Absa's behalf, or both? |
+| Fees | Account, per-payment, card, FX and cross-border fees (these feed the fee engine in section 4). |
+
+**Note:** Absa is on both sides of the corridor (Zambia and South Africa) while Bank Zero holds the South African pool. That is convenient for settlement but means two different banks must cooperate on one transfer; agree the settlement path with all three parties before any build.
 
 ## 7.3 Deposit confirmation message (canonical form the platform accepts)
 
@@ -406,6 +477,20 @@ Velocity (number and value of deposits in 10 minutes, 24 hours); first deposit f
 4. Every reversal is reported in the daily exceptions list and the monthly risk report.
 5. **Sizing the reserve:** `reserve ≥ (expected provisional exposure) × (observed failure rate) × safety factor`. Start with a fixed amount and review monthly; keep it in its own bank account.
 
+
+## 8.6 The risk reserve you stated (R40 and K40): please confirm
+
+The platform will **enforce** `maximum provisional exposure ≤ reserve × reserve_ratio` (default ratio 3). Here is what the figures support:
+
+| Reserve in the country's own account | Maximum unsettled instant credit it supports (ratio 3) | What this means |
+|---|---|---|
+| **R40 / K40** (as you wrote) | **R120 / K120** | Less than one deposit in the smallest tier (R500). Instant credit of anything not already confirmed in real time would be effectively **off**. |
+| R4,000 / K4,000 | R12,000 / K12,000 | A handful of small provisional deposits |
+| R40,000 / K40,000 | R120,000 / K120,000 | A realistic pilot for the Basic and Standard tiers in section 8.2 |
+| R400,000 / K400,000 | R1.2 million / K1.2 million | A scale in which the Full tier can be used |
+
+**I think R40 may be a slip** (it is also your tap limit, R40). If you meant R40,000 and K40,000, say so. Until you confirm, the configuration I recommend is: instant credit **only** for payments the paying bank has confirmed in real time (irrevocable push payments); **no** provisional credit for unsettled EFT, card top-ups or cash; and the reserve figure stored per country so the exposure rule cannot be bypassed. The reserve must be a separate bank account and must not be spent on operating costs.
+
 ---
 
 # 9. Reconciliation setup
@@ -453,16 +538,74 @@ If the daily difference is not zero (or explained by items in a queue within an 
 | Cooling-off | 24 h before a new beneficiary receives more than the Basic limit | same |
 | Failure | rejected: funds return; unknown: query by idempotency key | same |
 
-## 10.2 Between the two countries (ZAR ↔ ZMW)
-**Recommendation: not in version 1.** It brings exchange control, authorised-dealer requirements, FX risk and reporting in both countries ⚖. Keep two closed ledgers. If you add it later:
 
-| Item | Setting |
+## 10.2 Between South Africa and Zambia (ZAR ⇄ ZMW): launch design ⚖
+
+You have confirmed this is needed at launch. It is possible, but it is a **regulated activity in both countries**, so it is a separate, gated workstream: nothing is switched on until the dealer and both regulators have confirmed in writing.
+
+### 10.2.1 How the money moves (options)
+
+| Model | How it works | Pros | Cons | My view |
+|---|---|---|---|---|
+| **A. Authorised-dealer service from the partner banks (recommended)** | The customer sends from the SA ledger; the platform instructs a licensed bank dealer (Absa, since it operates in both countries) to convert ZAR and pay ZMW into the Zambian pool; the platform **never converts currency itself** | the bank carries exchange-control reporting and FX; lowest legal burden on you | depends on Absa offering it to a customer like you; the Bank Zero leg needs a separate settlement path | start here |
+| B. Regional bank-to-bank settlement (SADC regional payment system) | participant banks settle cross-border payments in the region, in ZAR | regulated, built for the region | access is through participant banks, not directly; cut-offs and scheme rules | ask Absa whether they offer it as a service |
+| C. Your own FX / money-transfer licence | you hold the permissions | full control | a long licensing process in both countries | not for launch |
+
+### 10.2.2 Ledger and settlement
+* The two countries stay **closed ledgers**. A transfer is two linked transactions: in the sender's country debit the customer and credit `sys:corridor_out_clearing:<CC>`; in the receiver's country debit `sys:corridor_in_clearing:<CC>` and credit the customer. Each side's clearing account is settled through the dealer and **reconciled separately** (section 9).
+* **Pre-funding or net settlement** (agree with the dealer): either each country's corridor account is topped up in advance, or the dealer nets both directions daily. Pre-funding is safer; net settlement ties up less cash. Set `corridor.settlement` per country.
+* The platform holds **no FX position** in Model A: the dealer's quote is passed through. If you ever pre-fund in the other currency, add `sys:fx_position` with a hard exposure limit.
+
+### 10.2.3 Corridor configuration
+
+```json
+{
+  "corridors": [
+    { "id": "ZA-ZM", "from": "ZA", "to": "ZM", "enabled": false, "model": "authorised_dealer",
+      "dealer": { "name": "Absa", "adapter": "fx/absa", "quote_ttl_seconds": 60 },
+      "kyc_tier_required": "full", "business_tier_allowed": true,
+      "limits": { "per_transaction": 500000, "per_day": 1000000, "per_month": 3000000, "currency": "ZAR" },
+      "fx": { "rate_source": "dealer_quote", "margin_pct": 0.01, "fee_flat": 5000, "show_both_legs": true },
+      "purpose_codes_required": true, "source_of_funds_above": 1000000,
+      "screening": ["sanctions_sender", "sanctions_beneficiary"], "cutoff": "15:00", "weekend": "queue",
+      "reporting": ["dealer_balance_of_payments", "fic_threshold", "bank_of_zambia_if_required"],
+      "settlement": { "mode": "net_daily", "cover_account": "sys:corridor_cover:ZA" } },
+    { "id": "ZM-ZA", "from": "ZM", "to": "ZA", "enabled": false, "model": "authorised_dealer",
+      "limits": { "per_transaction": null, "per_day": null, "per_month": null, "currency": "ZMW" } }
+  ]
+}
+```
+(Amounts in minor units; limits above are illustrative starting values, R5,000 per transfer, R10,000 per day, R30,000 per month, to be aligned with the exchange-control rules ⚖.)
+
+### 10.2.4 Customer flow and FX
+1. Customer must be **Full KYC** (section 11.2); passengers on the Basic tier cannot use the corridor.
+2. They enter amount, beneficiary (validated), and **purpose of payment**.
+3. The platform requests a **dealer quote valid for 60 seconds**: rate, the margin, the fee, the amount received in ZMW. Both currencies and every charge are shown before confirmation.
+4. On confirm, the ledger debits the customer and the fee **once**, the instruction goes to the dealer with an idempotency key, and the status is shown as *sent → converted → delivered*.
+5. Quote expired → a new quote is required; the rate is never "honoured later".
+
+### 10.2.5 Compliance for the corridor ⚖
+* **South Africa:** cross-border payments are controlled through the South African Reserve Bank's exchange-control framework and carried out by authorised dealers, who also do the balance-of-payments reporting; individuals and businesses have allowances and supporting-document rules. Counsel and the dealer must say what applies to your customers and to the platform as originator.
+* **Zambia:** confirm with the Bank of Zambia and Absa what applies to incoming and outgoing transfers and reporting.
+* **Both:** sanctions screening of sender and beneficiary on every transfer; enhanced due diligence above a threshold; the sender and beneficiary information must travel with the payment (the "travel rule"); suspicious and threshold reporting to the Financial Intelligence Centre in each country; records for the legal retention period.
+* **Not allowed:** structuring (many small transfers to avoid limits): add a rule that aggregates per sender and per beneficiary over 24 hours and 30 days.
+
+### 10.2.6 Failure and reversal
+| Situation | Handling |
 |---|---|
-| Provider | an authorised dealer bank or licensed money-transfer operator (not the pooled account itself) |
-| Currency conversion | quote with a short expiry (60 seconds, as the platform's FX quote does today), rate source and margin configured per corridor, both legs shown to the customer before confirmation |
-| Limits | per transaction, per month, per customer, set from the exchange-control rules ⚖ |
-| Compliance | purpose-of-payment code, sanctions screening on both ends, enhanced due diligence above a threshold, the "travel rule" information with the payment, regulatory reporting in both countries |
-| Accounting | an FX position account; settle net via the dealer daily; reconcile both pooled accounts separately |
+| Rejected before conversion (sanctions, invalid beneficiary) | reverse the customer debit in full, including the fee |
+| Failed after conversion | the dealer returns the money at **its** rate; policy decides who bears any difference (recommend: the platform bears the difference up to a cap, shown in the terms) ⚖ |
+| Unknown result | query the dealer by idempotency key; never resend blindly |
+| Weekend or cut-off miss | status "queued", with an estimated delivery time shown |
+| Beneficiary account closed or returned | funds return to the sender's ledger, notice sent |
+
+### 10.2.7 What you must obtain before launch (all in writing)
+1. A **legal opinion in both countries** that the corridor structure is permitted for your platform and customers ⚖.
+2. A **contract with the authorised dealer** (Absa or another) covering FX quotes, settlement, reporting, and the sender-originator model.
+3. Written position from the **South African Reserve Bank** (through the dealer or counsel) and the **Bank of Zambia**.
+4. Agreement of the **settlement path** between Bank Zero, Absa South Africa and Absa Zambia.
+5. Limits and purpose codes approved by compliance in both countries.
+6. A tested **reconciliation** of corridor clearing accounts in both countries (section 9).
 
 ---
 
@@ -528,6 +671,15 @@ Encrypted transport everywhere; field-level encryption for sensitive values (in 
 | 18 | Manual withdrawal attempt by an admin | impossible; logged | no UI/API path, bank also refuses |
 | 19 | Fee schedule change | needs two approvers; old transactions keep old fee | version recorded |
 | 20 | Country isolation | a ZAR action cannot touch ZMW data | separate stores |
+| 21 | Cross-border ZAR→ZMW, success | quote shown, confirmed, delivered; both clearing accounts settle | ledgers, dealer confirmation |
+| 22 | Cross-border with expired quote | new quote required; nothing sent | no stale rate honoured |
+| 23 | Cross-border above limit / Basic-tier customer | declined with reason | limits, tier check |
+| 24 | Cross-border sanctions hit (sender or beneficiary) | blocked; compliance case opened; funds not moved | screening log |
+| 25 | Cross-border failed after conversion | refund at the dealer's rate; cap policy applied | difference recorded |
+| 26 | Cross-border reconciliation, both sides | each country's clearing account matches its dealer statement | reconciliation report |
+| 27 | Driver payout from taps (your chosen reading) | paid once per qualifying taps; owner's remainder reduced | dedupe, ledger |
+| 28 | Marshal payout per vehicle departure | R20 (ZM: the association's amount) per logged departure, once | dedupe, weekly run |
+| 29 | Payout when the funding balance is too low | payout waits, nobody else's money used | queue, notification |
 
 ## 12.2 UAT steps
 Prepare test partners (bank sandbox, processor sandbox) → seed test customers across all tiers and roles → run the matrix with business owners → compliance walkthrough (KYC, reports, audit trail) → security test (penetration test report, secrets review) → disaster-recovery exercise (restore from backup, bank outage drill) → sign-off sheet.
@@ -550,6 +702,9 @@ Prepare test partners (bank sandbox, processor sandbox) → seed test customers 
 | ☐ | Pilot: limited customers and terminals, low limits, daily review for 4 weeks |
 | ☐ | Go-live approval recorded (the platform's `PAYMENTS_LIVE_APPROVED_BY` mechanism, per country) |
 | ☐ | Rollback plan: switch the country back to sandbox / pause outflows, communicate |
+| ☐ | **Cross-border:** written legal opinion in both countries, dealer contract, regulator positions, and settlement path agreed ⚖ (nothing goes live without these) |
+| ☐ | **Absa Zambia:** account structure, API access, card sponsorship answer, and Bank of Zambia confirmation received in writing |
+| ☐ | **Payout rules:** association amounts entered, owner and association deduction consents signed, reading of "16 taps" and "per vehicle" recorded |
 
 ---
 
@@ -565,13 +720,18 @@ Prepare test partners (bank sandbox, processor sandbox) → seed test customers 
 | 6 | **Interest on the pool** | undecided ownership | you, counsel |
 | 7 | **No-PIN taps and offline transit** | scheme rules, liability for offline shortfalls, and country limits; the SA "below R40" and the Zambian value need scheme/processor confirmation | scheme / processor, Bank of Zambia ⚖ |
 | 8 | **Bank Zero capabilities** (BaaS, BIN sponsorship, virtual accounts, API) unknown to me | the whole design assumes them; if missing, a different structure is needed | Bank Zero |
-| 9 | **Zambian bank, rails and API** undecided | cannot size integration work | you |
-| 10 | **Cross-border ZAR↔ZMW** | exchange control and licensing in both countries | counsel, authorised dealer ⚖ |
-| 11 | **"Automatic payouts" to drivers and marshals** | current rule: the platform does not calculate driver pay; employment, tax and withholding obligations may apply | you, counsel, tax adviser |
+| 9 | **Absa Zambia capabilities and rails** (virtual accounts, card sponsorship, API, cross-border) unconfirmed | the design assumes them; the answers decide the structure | Absa Zambia (request list in D.4) |
+| 10 | **Cross-border ZAR↔ZMW** is now a launch requirement | exchange control and licensing in both countries; see item 17 | counsel in both countries, authorised dealer ⚖ |
+| 11 | **Automatic payouts to drivers and marshals** (confirmed) | the platform now executes wage-like payments; see items 19 and 20 | you, counsel, tax adviser |
 | 12 | **One platform, two countries, shared data** | data-protection and possibly licensing rules differ; separate legal entities may be needed | counsel ⚖ |
 | 13 | **System of record** | the SQLite ledger suits a pilot; a national-scale pooled ledger should be on Postgres with replication; choose before building the pool mirror | you, engineering |
 | 14 | **Schema gap** | Postgres `accounts` does not accept ZMW; the ledger's fee, limit and bank details are hard-coded | engineering (small, scheduled) |
 | 15 | **Customer disclosure** | balances are not bank deposits unless the bank says so; deposit-insurance status must be stated correctly | counsel ⚖ |
+| 16 | **Risk reserve stated as R40 / K40** | supports almost no instant credit; if it is a typo the sizing changes completely | you (section 8.6) |
+| 17 | **Cross-border is a launch requirement** | highest regulatory exposure: exchange control in South Africa, Bank of Zambia rules, authorised-dealer dependency, FX, sanctions | counsel in both countries, Absa, SARB / Bank of Zambia ⚖ |
+| 18 | **One bank group on both sides** (Absa) with a different South African pool bank (Bank Zero) | settlement across three institutions; concentration if Absa stops the service | the banks |
+| 19 | **Automatic driver and marshal pay replaces the "driver pay is private" rule** | the platform now executes wages-like payments; deduction consent, tax and employment status | counsel, tax adviser ⚖ |
+| 20 | **"16 taps" and "R20 per vehicle" are ambiguous** | wrong reading = wrong money paid out | you (section 5.5) |
 
 ---
 
@@ -581,7 +741,7 @@ Prepare test partners (bank sandbox, processor sandbox) → seed test customers 
 {
   "country": "ZM", "version": 3, "status": "draft", "effective_from": null,
   "currency": { "code": "ZMW", "minor_units": 2 },
-  "partner": { "bank": "TBC", "account_ref": null, "integration": "adapter:bank/ZM-partner", "sandbox_ref": null },
+  "partner": { "bank": "Absa Bank Zambia", "account_ref": null, "integration": "adapter:bank/ZM-partner", "sandbox_ref": null },
   "regulator": { "name": "Bank of Zambia", "licence_ref": null, "fic": "Financial Intelligence Centre" },
   "kyc": { "tiers": ["basic", "standard", "full", "business"], "id_documents": ["NRC", "passport"], "business_registry": "PACRA" },
   "limits": {
@@ -593,7 +753,7 @@ Prepare test partners (bank sandbox, processor sandbox) → seed test customers 
   "fees": { "schedule_id": "ZM-2026-01" },
   "payouts": { "cutoff": "17:00", "min_payout": 5000, "retry": [60, 300, 1800, 7200] },
   "cards": { "products": ["virtual_debit", "physical_debit"], "schemes": ["mastercard", "visa"], "international": false },
-  "cross_border": { "corridors": [] },
+  "cross_border": { "corridors": ["ZM-ZA"], "enabled": false, "note": "gated, see section 10.2.7" },
   "data": { "residency": "ZM", "retention_years": 5 },
   "mode": "sandbox", "live_approved_by": null
 }
@@ -606,15 +766,91 @@ Prepare test partners (bank sandbox, processor sandbox) → seed test customers 
 # Appendix C. Audit events to record (minimum)
 Configuration change (before/after, approvers) · fee or limit change · whitelist change · key rotation · break-glass use · every outbound bank instruction and its result · every manual queue resolution · KYC decision · limit override · reconciliation close · reversal · negative-balance write-off · export of customer data.
 
-# Appendix D. What I need from you
+# Appendix D. Decisions, recommendation, and what I need from you
 
-1. **System of record:** is the Manshya (SQLite) ledger the one to build on, or should the pooled account be built on the Postgres ledger?
-2. **Bank Zero:** have they confirmed BaaS / virtual accounts, BIN sponsorship, the API and sandbox, and the rails you can use?
-3. **Zambia:** which bank, which rails, and any early conversation with the Bank of Zambia?
-4. **Licensing position:** do you already have a legal opinion on who may hold the pooled funds in each country, and who your counsel is?
-5. **Volumes:** expected customers, taps per day and average fare in each country for the first year.
-6. **Fee ambitions:** target margin per tap and the lowest fee you want for low-income users.
-7. **Instant credit:** how much risk reserve can you fund?
-8. **Drivers and marshals:** should automatic payouts include them, and who sets their amounts?
-9. **Cross-border:** is ZAR↔ZMW transfer needed at launch, or can it wait?
-10. **Names:** compliance officer, trustee (if any), and the two people who will act as approvers.
+## D.1 Decisions recorded
+| Item | Decision |
+|---|---|
+| Zambian bank | Absa Bank Zambia |
+| Automatic payouts | owners, associations, investors **and drivers and marshals** |
+| Cross-border transfers | needed at launch, South Africa and Zambia |
+| Legal counsel | one firm in each country (names to be added) |
+| Risk reserve | stated as R40 / K40: **to confirm** (section 8.6) |
+| Payout amounts | association sets them; driver "based on 16 taps", marshal R20 per vehicle: **to confirm** (section 5.5) |
+
+## D.2 Ledger choice: my recommendation (Postgres as the system of record)
+
+You left this open, so here is a recommendation and the reasons.
+
+**Build the pooled account, virtual accounts and country ledgers on the Postgres ledger, and keep the Manshya (SQLite) core as the product layer on top of it** (with a nightly mirror and reconciliation while you migrate).
+
+| Reason | Detail |
+|---|---|
+| Scale and concurrency | the Manshya database is one SQLite file on one volume with a single writer; a pooled account serving taps from many terminals in two countries needs row-level locking and parallel writers |
+| Resilience | Postgres supports replication, point-in-time recovery and tested restores; a single SQLite file on one volume is a single point of failure for money |
+| Data residency | separate databases or schemas per country are straightforward in Postgres (section 11.3) |
+| Reconciliation and reporting | the three-way reconciliation, exception queues and regulator reports are SQL workloads; they need joins, indexes and long retention |
+| Guard rails already designed | the repository already has a Postgres ledger design with a single writer service, idempotency keys, cached balances and a `REVOKE` plan so nothing else can write entries |
+| Fewer moving parts later | one ledger is easier to audit than two |
+
+**Cost and risk:** the Manshya core's features (cards, banking, payouts, statements) are built on SQLite today, so migration is real work; and the Postgres ledger's older shadow-write tests were not fully green when I last ran them, so it must be hardened first. **Suggested order:** (1) harden the Postgres ledger and add the pool mirror and `ZMW`; (2) move **new** flows (deposits, AFC, payouts, corridor) to it; (3) keep Manshya running with a mirror and daily reconciliation; (4) migrate Manshya's own ledger behind the same interface, then retire SQLite for money.
+
+## D.3 Please confirm these five things now
+1. **Risk reserve:** is it **R40 and K40**, or **R40,000 and K40,000** (or another figure)?
+2. **Driver pay:** which reading of "based on 16 taps" (A, B or C in section 5.5), what is paid (a fixed amount or the fare value), and is it per vehicle per day or per trip?
+3. **Marshal pay:** is R20 paid per **departure the marshal logs**, per vehicle served per day, or something else? Who funds it: the association or the owner?
+4. **Funding:** may driver pay be deducted from the owner's remainder, and marshal pay from the association's balance (with written consent)?
+5. **Cross-border limits:** are my illustrative limits (R5,000 per transfer, R10,000 per day, R30,000 per month for Full-KYC customers) acceptable as a starting point?
+
+## D.4 Information I need from the banks (what you must obtain, in writing)
+
+**Bank Zero (South Africa): please obtain**
+| ☐ | Item |
+|---|---|
+| ☐ | Does Bank Zero offer a partner / banking-as-a-service programme? Under whose licence are customer balances held? |
+| ☐ | **Virtual accounts or sub-accounts** per customer: yes or no, how created, how many, cost |
+| ☐ | **BIN sponsorship**: can Bank Zero sponsor Mastercard and Visa BINs? If not, which sponsor do they accept? |
+| ☐ | **API**: specification, authentication, sandbox access, real-time **deposit notifications** (webhook or polling) |
+| ☐ | Supported **payment rails** (EFT, instant payments) with cut-offs, limits and costs |
+| ☐ | Who is the **accountable institution** for FICA verification of customers |
+| ☐ | Mandate options: **no human transacting signatories**, beneficiary whitelist, bank-side caps, dual approval |
+| ☐ | Cross-border: do they offer it, or is another bank needed for that leg? |
+| ☐ | Full **fee schedule** to enter into the fee engine |
+
+**Absa Bank Zambia: please obtain** (same list as above, plus)
+| ☐ | Domestic **rails** and **mobile-money interoperability**, cut-offs, limits |
+| ☐ | **Virtual-account** support and card **sponsorship** answer |
+| ☐ | **Cross-border** service with Absa South Africa (and whether through a regional settlement scheme) |
+| ☐ | Bank of Zambia approvals they need for this arrangement, and whether **early contact** with the Bank of Zambia has been made (you left this blank; if there has been none, I recommend a request this month) |
+
+## D.5 Questions for your lawyers (one firm in each country)
+1. Who may hold and ledger customers' pooled funds in this country (the bank under its licence, a licensed e-money issuer, or the platform with a trust account)? What licence or registration does the platform need?
+2. Is the "no unilateral manual withdrawal" structure (API-only mandate, whitelist, dual control, trustee) acceptable to the regulator and the bank?
+3. Is instant credit of bank-confirmed payments before settlement permitted, and does it count as credit provision?
+4. Customer-facing disclosures: are balances deposits, is any deposit protection available, and what must the terms say?
+5. KYC and AML: which tiers and limits are permitted; who is accountable; reporting duties and deadlines.
+6. Data protection: processing, storage and any cross-border transfer of personal data between the two countries.
+7. Cross-border: permitted structure, allowances and documentary requirements, reporting, and whether the platform needs its own permission as originator.
+8. Paying drivers and marshals by rule: employment or contractor status, withholding and tax, consent for automatic deduction.
+9. Contractual terms: liability for offline no-PIN taps, chargebacks, and fraud between the platform, banks and processor.
+
+## D.6 Commercial inputs (please fill in)
+| Input | South Africa | Zambia |
+|---|---|---|
+| Expected customers in year 1 | | |
+| Taps per day (pilot / month 6 / month 12) | | |
+| Average fare | | |
+| Target margin per tap | | |
+| Lowest fee you want low-income users to pay | | |
+| Risk reserve you can fund | (confirm, see D.3) | (confirm, see D.3) |
+| Cross-border transfers expected per month and average size | | |
+
+## D.7 Governance (please fill in)
+| Role | Name |
+|---|---|
+| Compliance officer | |
+| Approver 1 (maker-checker) | |
+| Approver 2 (maker-checker) | |
+| Trustee or independent overseer (if used) | |
+| Legal counsel, South Africa | |
+| Legal counsel, Zambia | |
