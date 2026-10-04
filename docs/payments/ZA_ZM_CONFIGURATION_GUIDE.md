@@ -1,6 +1,6 @@
 # Configuration guide: transport payments and banking platform (South Africa and Zambia)
 
-Version 1.1 · updated with your confirmed decisions · prepared for the platform owner · **technical guidance, not legal advice** (every item marked ⚖ needs a lawyer or the regulator to confirm)
+Version 1.2 · updated with your confirmed decisions and payout rules · prepared for the platform owner · **technical guidance, not legal advice** (every item marked ⚖ needs a lawyer or the regulator to confirm)
 
 ---
 
@@ -24,7 +24,7 @@ Version 1.1 · updated with your confirmed decisions · prepared for the platfor
 | 6 | Configuration model | One `country_profile` per country (JSON, versioned, approval-gated). Nothing financial is hard-coded |
 | 7 | Reconciliation | Three-way (ledger ↔ bank ↔ card processor), real-time matching plus a daily close, with exception queues and a hard stop if control totals break |
 | 8 | Cross-border (needed at launch) | Treat it as a separate, gated regulated corridor: ZAR ⇄ ZMW through an **authorised dealer service** (Absa, which operates in both countries) or regional bank settlement, Full-KYC customers only, low limits, quote-locked FX, and **written confirmation from counsel, the dealer and both regulators before go-live**. Section 10.2 |
-| 9 | Driver and marshal pay (now automatic) | The platform **executes** association-set amounts. "16 taps" and "R20 per vehicle" can be read several ways, so I have not configured them: choose in section 5.5. The old rule that driver pay is private must be formally replaced |
+| 9 | Trips, marshal fee and driver pay (confirmed rules) | Trip = 16 taps. The **driver pays the marshal R20 / K20 per completed trip**. Driver-owner pay is one of: weekly cash basis (driver pays owner), monthly salary (owner pays driver), per-trip amount (owner pays driver). Tap money must settle to the driver under cash basis and to the owner otherwise. Section 5.5 |
 | 10 | Data | Separate databases (or schemas) per country; no personal data leaves the country without a legal basis ⚖ |
 
 
@@ -37,11 +37,11 @@ Version 1.1 · updated with your confirmed decisions · prepared for the platfor
 | **Cross-border transfers are needed at launch** (ZA and ZM) | This is now the largest regulatory item in the project. Section 10.2 is rewritten as a launch design; both countries' regulators and an authorised dealer must confirm **before** go-live |
 | Legal counsel in both countries (names to follow) | Every ⚖ item has an owner; the counsel question list is in Appendix D.5 |
 | Risk reserve **R40 (ZA) and K40 (ZM)** | Needs your confirmation: as written it supports almost no instant credit (section 8.6) |
-| Payout amounts: driver "based on 16 taps"; marshal **R20 per vehicle**; amounts set by the association (Zambia in kwacha) | Ambiguous; I show the readings and the configuration for each (section 5.5). Please choose |
+| Payout rules | **Trip = 16 taps and the driver completing the trip.** The driver pays the marshal **R20 / K20 per trip**. The driver-owner agreement is **weekly cash basis (driver pays owner), monthly salary (owner pays driver), or a per-trip amount (owner pays driver)**. See section 5.5 |
 
 **Biggest risks:** licensing of the pooled account; crediting before settlement; no-PIN taps and offline transit liability; reconciliation breaks; the cross-border corridor. Section 13 lists them with who must confirm each.
 
-**What I need from you:** five confirmations (Appendix D.3: the risk-reserve figure, the meaning of "16 taps" and "R20 per vehicle", funding of those payouts, and the cross-border limits), plus the bank and lawyer information in Appendix D.4 and D.5, the commercial inputs in D.6 and the names in D.7.
+**What I need from you:** seven short confirmations (Appendix D.3: the risk-reserve figure, whether the marshal keeps the R20 / K20, how a trip completes, the per-trip "split" reading, cash-basis shortfalls, who bears the marshal fee under salary and per-trip agreements, and the cross-border limits), plus the bank and lawyer information in Appendix D.4 and D.5, the commercial inputs in D.6 and the names in D.7.
 
 ---
 
@@ -261,7 +261,7 @@ Transaction type · user type (passenger, driver, owner, investor, association, 
       "settle": { "mode": "daily", "cutoff": "17:00", "min_payout": 5000, "currency": "ZAR" } },
     { "id": "owner_to_driver", "trigger": { "event": "owner.payout.executed" },
       "split": [ { "party": "driver", "basis": "fixed_amount_set_by_owner", "per": "week" } ],
-      "note": "superseded by the association-set driver rule in section 5.5" }
+      "note": "replaced by the driver-owner agreements in section 5.5" }
   ]
 }
 ```
@@ -273,9 +273,9 @@ Transaction type · user type (passenger, driver, owner, investor, association, 
 | Platform fee | fee schedule | at tap, swept daily | company |
 | Investor | % of the platform fee (today 10%) | daily or weekly | investor agreement |
 | Association | levies and fines credited | monthly (levies), per event (fines) | association's own levy rules |
-| Marshal | association-set amount, **R20 per vehicle** in South Africa (kwacha amount in Zambia): reading to confirm in 5.5 | weekly | association |
+| Marshal | **R20 (South Africa) / K20 (Zambia) per completed trip, paid by the driver**; amount set by the association | per trip, settled daily | association |
 | Vehicle owner | remainder after fees and splits | daily | system |
-| Driver | association-set amount **based on 16 taps**: reading to confirm in 5.5 | daily | association |
+| Driver | agreement with the owner: **weekly cash basis** (driver pays owner), **monthly salary** or **per-trip amount** (owner pays driver) | weekly / monthly / per trip | owner and driver |
 
 ## 5.3 Scheduling
 Daily run after the bank cut-off and **after the day's reconciliation closes**; weekly run on a fixed day; a payout below `min_payout` rolls over. Every run has a **run id** and is idempotent: re-running the same run id never pays twice.
@@ -294,48 +294,82 @@ Daily run after the bank cut-off and **after the day's reconciliation closes**; 
 All amounts in a run are written to `sys:payout_clearing` first and move to the party's bank only after the bank confirms.
 
 
-## 5.5 Driver and marshal payouts (your rules as stated, and what I need you to confirm)
+## 5.5 Trips, the marshal fee, and the driver-owner agreement (your confirmed rules)
 
-**Recorded:** the taxi association sets the amounts. Driver pay is "based on 16 taps". The marshal is paid R20 per vehicle; in Zambia the association sets the kwacha amount.
+### What you told me
+* A **trip** is **16 taps** (a full vehicle load) and the driver **completing the trip**.
+* On every completed trip, the **driver pays the marshal R20 (South Africa) or K20 (Zambia)**. The marshal represents the taxi association. The association sets the amount.
+* **Driver pay is an agreement between the owner and the driver**, in one of three forms:
 
-**Why I am asking:** each phrase can mean different amounts of money, so I have configured nothing yet. The platform supports all of these readings through one rule format; you choose.
-
-| Rule | Reading A | Reading B | Reading C |
+| Agreement | Who pays whom | Amount | When |
 |---|---|---|---|
-| Driver "based on 16 taps" | a **fixed amount** (set by the association) is paid each time the vehicle completes **16 confirmed taps** (one "trip") | the driver is paid the **fare value of 16 taps** per day (a daily wage), the rest goes to the owner | the first 16 taps of the day cover the owner's costs, and the driver's share starts from tap 17 |
-| Marshal "R20 per vehicle" | R20 for each **departure the marshal logs** at the rank (this data already exists: the `departures` table) | R20 for each **vehicle served at the rank per day**, however many departures | R20 per vehicle **registered** with the rank per month |
+| **A. Cash basis** | the **driver pays the owner** | an agreed amount per week; the driver keeps the rest of the fares | weekly |
+| **B. Monthly salary** | the **owner pays the driver** | an agreed monthly salary | monthly |
+| **C. Per-trip amount** ("slip amount per trip": I read this as *split* amount per trip) | the **owner pays the driver** | an agreed amount per completed trip | per trip (settled daily) |
 
-**Where the money comes from (decide):** the safe default is the **vehicle owner's remainder** for driver pay (the owner receives what is left after fees, so driver pay is taken from it) and the **association** for marshal pay (from its levies and fines credited). This needs the owner's and the association's **written consent to automatic deduction** ⚖ and must never make a balance negative. If the association or the owner has too little money on a payout day, the payout waits (it is not paid from anyone else's money).
+### What this changes in the platform
+Today every tap's money goes to the **owner** (after the platform fee). With these agreements the destination depends on the agreement, so the tap settlement and the new rules must be configurable per vehicle and driver:
 
-### Configuration (works for every reading; set `unit` and `amount_type` after you choose)
+| Item | Today | Required |
+|---|---|---|
+| Where tap money settles | always the owner's balance | **driver's** balance under A (cash basis), **owner's** balance under B and C |
+| Trip | not tracked as a unit | a **trip counter** per vehicle: every 16 confirmed taps is one trip |
+| Marshal fee | not modelled | a **charge to the driver** of R20 / K20 per completed trip, **paid to the marshal** |
+| Driver-owner agreement | not recorded | an agreement per driver and owner (mode, amount, start date), **accepted by the driver** |
+| Weekly / monthly / per-trip transfers | not available | scheduled, rule-based transfers between the two ledger balances |
+
+### How the money moves (illustrative figures: fare R15 per tap, 16 taps, platform fee R1.00 per tap, marshal fee R20)
+
+| Step | **A. Cash basis** | **B. Monthly salary** | **C. Per-trip amount (example R80)** |
+|---|---|---|---|
+| 16 taps of R15 = R240 | settles to the **driver** after the platform fee (R240 − R16 = **R224**) | settles to the **owner** (R224) | settles to the **owner** (R224) |
+| Trip completed | marshal fee **R20 from the driver** to the marshal (driver keeps R204) | marshal fee R20 charged to the **driver** and recovered from the next salary payment | owner pays the driver R80; **R20 of it goes to the marshal**; driver nets R60; owner keeps R144 |
+| End of week | driver pays the owner the **agreed weekly amount** (example R2,500); the driver keeps the rest | nothing | nothing |
+| End of month | nothing | owner pays the **agreed salary** (example R6,000), less any marshal fees accrued | nothing |
+| Platform fee | R1.00 per tap in every case (unchanged) | | |
+
+### Configuration
 
 ```json
 {
-  "payout_rules": [
-    { "id": "driver_tap_pay", "party": "driver", "set_by": "association",
-      "trigger": { "event": "afc_tap.confirmed", "group_by": "vehicle" },
-      "unit": { "type": "every_n_taps", "n": 16 },
-      "amount_type": "fixed",            // or "fare_value_of_unit" for Reading B
-      "amount": null,                    // set by the association, in the country's currency
-      "funded_from": "owner.remainder", "daily_cap": null,
-      "dedupe": "tap_id", "settle": { "mode": "daily", "cutoff": "17:00" } },
-    { "id": "marshal_per_vehicle", "party": "marshal", "set_by": "association",
-      "trigger": { "event": "marshal.departure.logged" },
-      "unit": { "type": "per_event" },
-      "amount_type": "fixed",
-      "amount": { "ZA": 2000, "ZM": null },   // R20.00 = 2000 cents; Zambia amount set by the association
-      "funded_from": "association.balance", "daily_cap_per_marshal": null,
-      "dedupe": "departure_id", "settle": { "mode": "weekly", "day": "friday" } }
+  "trip": { "taps_per_trip": 16, "completion": "taps_reached", "partial_trip": "carry_over", "count_only": "confirmed_taps" },
+  "marshal_fee": {
+    "payer": "driver", "payee": "marshal", "trigger": "trip.completed",
+    "amount": { "ZA": 2000, "ZM": 2000 },            // R20.00 and K20.00, in minor units
+    "set_by": "association", "link_to_marshal_by": "departure_logged_for_this_trip",
+    "no_marshal_logged": "accrue_to_association", "cap_per_driver_per_day": null,
+    "dedupe": "trip_id", "settle": { "mode": "daily", "cutoff": "17:00" }
+  },
+  "driver_agreements": [
+    { "id": "agr_cash", "mode": "cash_basis_weekly",
+      "driver": "driver_id", "owner": "owner_id", "payer": "driver", "payee": "owner",
+      "amount": null, "day": "friday", "tap_settlement_to": "driver",
+      "shortfall": "carry_as_arrears", "arrears_cap": null, "owner_may_waive": true },
+    { "id": "agr_salary", "mode": "monthly_salary",
+      "payer": "owner", "payee": "driver", "amount": null, "pay_day": 25,
+      "tap_settlement_to": "owner", "shortfall": "wait_and_retry", "retry_days": 3,
+      "pro_rata_first_last_month": true, "recover_marshal_fees_from_salary": true },
+    { "id": "agr_trip", "mode": "per_trip_amount",
+      "payer": "owner", "payee": "driver", "amount": null, "tap_settlement_to": "owner",
+      "marshal_fee_taken_from_this_amount": true, "shortfall": "wait_and_retry",
+      "settle": { "mode": "daily", "cutoff": "17:00" } }
   ]
 }
 ```
+`amount: null` means the owner and driver set it in the agreement (it is **not** an association or platform decision). The marshal fee is the only amount the association sets.
 
 ### Controls these rules need
-* **Association sets the amounts** in its dashboard; every change is dual-approved (maker-checker), versioned, effective-dated, and each payout records the rule version it used.
-* **Idempotent per source event:** one tap or one departure can never be paid twice (`dedupe`). A marshal's departure that is later deleted or corrected reverses its payout.
-* **Anti-fraud:** departures logged without matching taps, or taps counted twice, go to a review queue; caps per marshal per day; the same vehicle cannot be logged twice within a few minutes.
-* **Visibility:** each driver and marshal sees a statement of what was earned and paid (their dashboard already shows records; a payout statement is added). The statement is a summary, not a payslip.
-* **Employment and tax** ⚖: paying drivers and marshals by rule may create wage, withholding and record-keeping duties. Your tax adviser must say whether they are employees, contractors or fare-sharers in each country.
+* **Agreement lifecycle:** the **owner proposes** the agreement in the owner dashboard (mode, amount, start date, end date); the **driver accepts** (the same two-sided link the platform already uses). Only an accepted agreement can move money. Changes take effect from a stated date and keep history; a driver can have **one active agreement per owner**, and the platform refuses overlapping ones.
+* **Written consent for automatic deductions ⚖:** the acceptance screen records consent to the weekly, monthly or per-trip transfers and to the marshal fee, with the text shown, the time and the account.
+* **Trip counting:** only **confirmed** taps count; a tap later reversed or refunded removes its place, and a trip already paid is **adjusted on the next settlement** (never edited in place). Each trip has an id; the marshal fee and the per-trip amount are idempotent on that id, so one trip is never paid twice.
+* **Fewer than 16 taps:** a partial trip **carries over** to the next one by default (no pro-rata). It never pays a fee on its own. You can switch to pay-pro-rata later; it is one setting.
+* **Marshal link:** the marshal is the one who logged the departure for that trip (the departures data already exists). If none was logged, the fee accrues to the association's unassigned account and a review item is opened, so a missing log never silently costs the driver nothing or the marshal everything.
+* **Never negative:** a balance can't go below zero because of these rules. If the driver can't cover the marshal fee or the weekly amount, or the owner can't cover a salary or per-trip amount, the item **waits** (or becomes arrears, under A) and both sides are notified. Arrears are shown to the owner and the driver, are collected from the next taps, and the owner can waive them.
+* **Cash basis (A):** the driver holds the fares, so the platform pays the weekly amount **before** the driver can withdraw the week's takings only if the owner's agreement says so; the default is that the weekly amount is taken on its day and, if not covered, goes to arrears.
+* **Salary (B):** if the driver starts or leaves mid-month the salary is pro-rated; if the owner's balance is short on payday the platform retries daily for three days, then marks it unpaid and notifies both; part payment only if the owner has switched it on.
+* **Disputes:** either side can open a dispute on a payment; disputed amounts are held and handled in the exceptions queue (section 9).
+* **Statements:** the driver, owner and marshal each see a **statement** of what they paid and received (a summary of recorded money, not a payslip).
+* **Employment and tax ⚖:** a monthly salary is employment pay. In South Africa and Zambia that can bring payroll duties (tax deduction, unemployment/pension contributions, payslips) for the **owner**; the platform executes the payment and gives statements but does not run payroll. Cash-basis and per-trip arrangements may be treated differently. Your tax adviser in each country should confirm.
 
 ---
 
@@ -677,9 +711,14 @@ Encrypted transport everywhere; field-level encryption for sensitive values (in 
 | 24 | Cross-border sanctions hit (sender or beneficiary) | blocked; compliance case opened; funds not moved | screening log |
 | 25 | Cross-border failed after conversion | refund at the dealer's rate; cap policy applied | difference recorded |
 | 26 | Cross-border reconciliation, both sides | each country's clearing account matches its dealer statement | reconciliation report |
-| 27 | Driver payout from taps (your chosen reading) | paid once per qualifying taps; owner's remainder reduced | dedupe, ledger |
-| 28 | Marshal payout per vehicle departure | R20 (ZM: the association's amount) per logged departure, once | dedupe, weekly run |
-| 29 | Payout when the funding balance is too low | payout waits, nobody else's money used | queue, notification |
+| 27 | Trip of 16 confirmed taps | one trip recorded; marshal fee charged once to the driver and paid to the marshal who logged the departure | trip id, dedupe |
+| 28 | Fewer than 16 taps, then more | taps carry over; no fee until the 16th | counter |
+| 29 | Cash basis week | taps settled to the driver; weekly amount paid to the owner; shortfall becomes arrears; never negative | arrears ledger |
+| 30 | Monthly salary, including mid-month start | pro-rated; paid on pay day; short balance retries 3 days then unpaid and notifies | pay run |
+| 31 | Per-trip amount | owner pays per trip; R20 / K20 goes to the marshal; the driver nets the rest | splits sum to the amount |
+| 32 | Tap refunded after the trip was paid | adjustment on the next settlement | no in-place edit |
+| 33 | No marshal logged the departure | fee accrues to the association account; review item opened | exceptions queue |
+| 34 | Agreement not yet accepted by the driver | no automatic transfers happen | agreement status |
 
 ## 12.2 UAT steps
 Prepare test partners (bank sandbox, processor sandbox) → seed test customers across all tiers and roles → run the matrix with business owners → compliance walkthrough (KYC, reports, audit trail) → security test (penetration test report, secrets review) → disaster-recovery exercise (restore from backup, bank outage drill) → sign-off sheet.
@@ -704,7 +743,7 @@ Prepare test partners (bank sandbox, processor sandbox) → seed test customers 
 | ☐ | Rollback plan: switch the country back to sandbox / pause outflows, communicate |
 | ☐ | **Cross-border:** written legal opinion in both countries, dealer contract, regulator positions, and settlement path agreed ⚖ (nothing goes live without these) |
 | ☐ | **Absa Zambia:** account structure, API access, card sponsorship answer, and Bank of Zambia confirmation received in writing |
-| ☐ | **Payout rules:** association amounts entered, owner and association deduction consents signed, reading of "16 taps" and "per vehicle" recorded |
+| ☐ | **Payout rules:** driver-owner agreements entered and accepted, the association's marshal fee (R20 / K20) set, deduction consents recorded, and the partial-trip, shortfall and trip-completion settings confirmed |
 
 ---
 
@@ -730,8 +769,8 @@ Prepare test partners (bank sandbox, processor sandbox) → seed test customers 
 | 16 | **Risk reserve stated as R40 / K40** | supports almost no instant credit; if it is a typo the sizing changes completely | you (section 8.6) |
 | 17 | **Cross-border is a launch requirement** | highest regulatory exposure: exchange control in South Africa, Bank of Zambia rules, authorised-dealer dependency, FX, sanctions | counsel in both countries, Absa, SARB / Bank of Zambia ⚖ |
 | 18 | **One bank group on both sides** (Absa) with a different South African pool bank (Bank Zero) | settlement across three institutions; concentration if Absa stops the service | the banks |
-| 19 | **Automatic driver and marshal pay replaces the "driver pay is private" rule** | the platform now executes wages-like payments; deduction consent, tax and employment status | counsel, tax adviser ⚖ |
-| 20 | **"16 taps" and "R20 per vehicle" are ambiguous** | wrong reading = wrong money paid out | you (section 5.5) |
+| 19 | **Automatic driver pay and marshal fee** make the platform execute wage-like payments | deduction consent, payroll duties for owners paying a salary, tax and employment status | counsel and tax adviser in each country ⚖ |
+| 20 | **Tap money now settles to the driver under cash basis** | changes the existing split (today everything goes to the owner); owners must understand and accept that fares sit with the driver until the weekly transfer | you, counsel |
 
 ---
 
@@ -776,7 +815,7 @@ Configuration change (before/after, approvers) · fee or limit change · whiteli
 | Cross-border transfers | needed at launch, South Africa and Zambia |
 | Legal counsel | one firm in each country (names to be added) |
 | Risk reserve | stated as R40 / K40: **to confirm** (section 8.6) |
-| Payout amounts | association sets them; driver "based on 16 taps", marshal R20 per vehicle: **to confirm** (section 5.5) |
+| Payout rules | **Trip = 16 taps and the driver completing it; driver pays the marshal R20 / K20 per trip; driver-owner agreement is weekly cash basis, monthly salary, or per-trip amount.** Confirmed in this revision (section 5.5) |
 
 ## D.2 Ledger choice: my recommendation (Postgres as the system of record)
 
@@ -795,12 +834,14 @@ You left this open, so here is a recommendation and the reasons.
 
 **Cost and risk:** the Manshya core's features (cards, banking, payouts, statements) are built on SQLite today, so migration is real work; and the Postgres ledger's older shadow-write tests were not fully green when I last ran them, so it must be hardened first. **Suggested order:** (1) harden the Postgres ledger and add the pool mirror and `ZMW`; (2) move **new** flows (deposits, AFC, payouts, corridor) to it; (3) keep Manshya running with a mirror and daily reconciliation; (4) migrate Manshya's own ledger behind the same interface, then retire SQLite for money.
 
-## D.3 Please confirm these five things now
-1. **Risk reserve:** is it **R40 and K40**, or **R40,000 and K40,000** (or another figure)?
-2. **Driver pay:** which reading of "based on 16 taps" (A, B or C in section 5.5), what is paid (a fixed amount or the fare value), and is it per vehicle per day or per trip?
-3. **Marshal pay:** is R20 paid per **departure the marshal logs**, per vehicle served per day, or something else? Who funds it: the association or the owner?
-4. **Funding:** may driver pay be deducted from the owner's remainder, and marshal pay from the association's balance (with written consent)?
-5. **Cross-border limits:** are my illustrative limits (R5,000 per transfer, R10,000 per day, R30,000 per month for Full-KYC customers) acceptable as a starting point?
+## D.3 Please confirm these (fewer now)
+1. **Risk reserve:** is it **R40 and K40**, or **R40,000 and K40,000** (or another figure)? (Section 8.6.)
+2. **Marshal fee:** does the **marshal keep** the R20 / K20, or is it the **association's income** collected through the marshal? I have configured it as paid to the marshal; one setting changes it.
+3. **Trip completion:** I recommend a trip completes **automatically at the 16th confirmed tap**. Do you also want the driver to be able to **end a trip early** (fewer than 16 taps), and if so should it pay, or carry the taps over? (I default to carry-over.)
+4. **"Slip amount per trip":** I read it as a **split amount per trip** paid by the owner to the driver. Is that right?
+5. **Cash basis shortfall:** if the driver's balance can't cover the weekly amount on its day, I default to **arrears collected from the next taps** (owner can waive). Is that what you want?
+6. **Marshal fee under salary and per-trip agreements:** I default to charging it to the **driver** (recovered from the salary, or taken from the per-trip amount). Correct?
+7. **Cross-border limits:** are my illustrative limits (R5,000 per transfer, R10,000 per day, R30,000 per month for Full-KYC customers) acceptable as a starting point?
 
 ## D.4 Information I need from the banks (what you must obtain, in writing)
 
