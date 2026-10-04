@@ -2,7 +2,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createRoot, type Root } from "react-dom/client";
 import { act } from "react";
-import { VirtualAccountsPanel, PaymentsPanel, DriverAgreements, OwnerAgreements, MarshalFeeSetting, money } from "./MoneyPanels";
+import { CrossBorderPanel, VirtualAccountsPanel, PaymentsPanel, DriverAgreements, OwnerAgreements, MarshalFeeSetting, money } from "./MoneyPanels";
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 let root: Root, host: HTMLElement, calls: { url: string; init?: RequestInit }[];
@@ -87,5 +87,29 @@ describe("VirtualAccountsPanel", () => {
     expect(host.textContent).toContain("VKR123456785"); expect(host.textContent).toContain("account 1234567890"); expect(host.textContent).toContain("ZMW wallet");
     await act(async () => { btn("Get my reference")!.click(); }); await settle();
     expect(JSON.parse(String(calls.find((c) => c.init?.method === "POST")!.init!.body))).toEqual({ currency: "ZAR", pool: "in_person" });
+  });
+});
+
+describe("CrossBorderPanel", () => {
+  const Q = { id: "x1", corridor: "ZA-ZM", sendCents: 100000, sendCurrency: "ZAR", feeCents: 5000, rate: 1.485, receiveCents: 141075, receiveCurrency: "ZMW", recipient: "Zee", expiresAt: "2026-10-05T10:01:00Z", status: "quoted" };
+  it("is hidden when no route is open", async () => {
+    mockApi(() => ({ body: { success: true, corridors: [], transfers: [] } }));
+    await render(<CrossBorderPanel segment="driver" color="#f00" />);
+    expect(host.textContent).toBe("");
+  });
+  it("quotes first, shows what the recipient gets, and only sends after confirm", async () => {
+    mockApi((url, init) => {
+      if (url.endsWith("/quote")) return { body: { success: true, quote: Q } };
+      if (url.endsWith("/confirm")) return { body: { success: true, transfer: { ...Q, status: "completed" } } };
+      return { body: { success: true, corridors: [{ id: "ZA-ZM", from: "ZA", to: "ZM", fromCurrency: "ZAR", toCurrency: "ZMW" }], transfers: [] } };
+    });
+    await render(<CrossBorderPanel segment="driver" color="#f00" />);
+    await act(async () => { const i = document.querySelector("input[type=email]") as HTMLInputElement; Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(i, "zee@x.test"); i.dispatchEvent(new Event("input", { bubbles: true })); });
+    await act(async () => { const i = document.querySelector("input[inputmode=decimal]") as HTMLInputElement; Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(i, "1000"); i.dispatchEvent(new Event("input", { bubbles: true })); });
+    await act(async () => { btn("Get a quote")!.click(); }); await settle();
+    expect(JSON.parse(String(calls.find((c) => c.url.endsWith("/quote"))!.init!.body))).toEqual({ recipientEmail: "zee@x.test", amountCents: 100000, corridorId: "ZA-ZM" });
+    expect(host.textContent).toContain("Zee receives"); expect(calls.some((c) => c.url.endsWith("/confirm"))).toBe(false);
+    await act(async () => { btn("Confirm and send")!.click(); }); await settle();
+    expect(calls.some((c) => c.url.endsWith("/x1/confirm"))).toBe(true);
   });
 });

@@ -9,7 +9,13 @@ import { createMoneyRouter, type MoneyRole } from "./moneyRoutes.js";
 const id = (n: number) => `00000000-0000-0000-0000-${String(n).padStart(12, "0")}`;
 const U = { owner: id(3), driver: id(5), other: id(6), assoc: id(1) };
 
-const deps = { channels: () => ({ in_person: { accountNumber: "1234567890", holder: "Vink Pool", bank: "Test Bank", type: "Business" as const } }), wallets: (u: string) => (u === U.driver ? [{ currency: "ZMW", balanceCents: 1500 }] : []) };
+const xbStub = {
+  openCorridors: async () => [{ id: "ZA-ZM", from: "ZA", to: "ZM", fromCurrency: "ZAR", toCurrency: "ZMW" }],
+  history: async () => [],
+  quote: async (_u: string, q: { amountCents: number }) => (q.amountCents > 1000 ? ({ ok: true, value: { id: "00000000-0000-0000-0000-0000000000aa", corridor: "ZA-ZM", sendCents: q.amountCents, sendCurrency: "ZAR", feeCents: 5, rate: 1.5, receiveCents: 1, receiveCurrency: "ZMW", recipient: "Zee", expiresAt: "2026-10-05T10:01:00Z", status: "quoted" } }) : ({ ok: false, status: 409, error: "This route is not open." })),
+  confirm: async () => ({ ok: true, value: { id: "x", corridor: "ZA-ZM", sendCents: 2000, sendCurrency: "ZAR", feeCents: 5, rate: 1.5, receiveCents: 1, receiveCurrency: "ZMW", recipient: "Zee", expiresAt: "2026-10-05T10:01:00Z", status: "completed" } }),
+} as never;
+const deps = { crossBorder: xbStub, channels: () => ({ in_person: { accountNumber: "1234567890", holder: "Vink Pool", bank: "Test Bank", type: "Business" as const } }), wallets: (u: string) => (u === U.driver ? [{ currency: "ZMW", balanceCents: 1500 }] : []) };
 
 describe("agreements and payments API", () => {
   let server: Server, url = "", db: Db, as = U.owner, role: MoneyRole = "vehicle_owner";
@@ -95,5 +101,15 @@ describe("agreements and payments API", () => {
   it("shows kwacha wallet balances", async () => {
     as = U.driver; role = "driver";
     expect((await call("/driver/wallet")).body.wallets).toEqual([{ currency: "ZMW", balanceCents: 1500 }]);
+  });
+
+  it("cross-border: lists open routes, quotes, and confirms only a valid quote id", async () => {
+    as = U.driver; role = "driver";
+    expect((await call("/driver/cross-border")).body.corridors).toHaveLength(1);
+    expect((await call("/driver/cross-border/quote", "POST", { recipientEmail: "zee@x.test", corridorId: "ZA-ZM", amountCents: 12.5 })).status).toBe(400);
+    expect((await call("/driver/cross-border/quote", "POST", { recipientEmail: "zee@x.test", corridorId: "ZA-ZM", amountCents: 500 })).status).toBe(409);
+    const q = await call("/driver/cross-border/quote", "POST", { recipientEmail: "zee@x.test", corridorId: "ZA-ZM", amountCents: 2000 }); expect(q.status).toBe(201);
+    expect((await call("/driver/cross-border/not-a-uuid/confirm", "POST")).status).toBe(400);
+    expect((await call(`/driver/cross-border/${q.body.quote.id}/confirm`, "POST")).body.transfer.status).toBe("completed");
   });
 });

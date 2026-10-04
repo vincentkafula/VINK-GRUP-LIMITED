@@ -4,7 +4,7 @@ import type { Db } from "../portal/driverRoutes.js";
 import { manshyaBankCore } from "../portal/bankLinks.js";
 import { createMoneyEngine, manshyaLedgerPort, bankLedgerAccount, walletLedgerAccount, type Engine, type LedgerPort } from "./moneyEngine.js";
 import { DEFAULT_ZA, DEFAULT_ZM } from "../config/countryConfig.js";
-import { ensureVirtualAccount, newReference, referenceLooksValid, recordPoolCredit, settleCredit, type PoolDeps } from "./poolService.js";
+import { ensureVirtualAccount, newReference, referenceLooksValid, recordPoolCredit, settleCredit, markCleared, markBounced, fundReserve, reserveAccount, type PoolDeps } from "./poolService.js";
 import { reconcile } from "./reconciliation.js";
 import { createLimitGuard } from "../config/limitGuard.js";
 
@@ -119,5 +119,59 @@ describe("limit guard for payments out of the Banking module", () => {
     await expect(pay(100_000)).rejects.toMatchObject({ code: "limit_exceeded" });
     m.config.limitGuard = guard(false);
     await expect(pay(100_000)).resolves.toBeTruthy();
+  });
+});
+
+describe("instant credit from the reserve", () => {
+  const on = (reserveCents = 100_000) => { cfg.instantCredit = { ...DEFAULT_ZA.instantCredit, enabled: true, reserveCents }; };
+  const pend = async (n: string, amount: number, user = U.driver) => {
+    const va = await ensureVirtualAccount(db, user, "ZAR", "in_person");
+    return recordPoolCredit(deps, { bankRef: n, reference: va.reference, amountCents: amount, currency: "ZAR", by: null, pending: true });
+  };
+  beforeEach(() => { cfg.instantCredit = { ...DEFAULT_ZA.instantCredit }; });
+
+  it("a payment the bank has not cleared waits when instant credit is off", async () => {
+    const r = await pend("IC-1", 10_000);
+    expect(r).toMatchObject({ status: "awaiting_clearing", reason: expect.stringMatching(/switched off/) });
+    expect(ledger.balance(bankLedgerAccount(acct[U.driver]))).toBe(0);
+    expect(await markCleared(deps, r.creditId, null)).toMatchObject({ status: "credited", userId: U.driver });          // credited the normal way once it clears
+    expect(ledger.balance(bankLedgerAccount(acct[U.driver]))).toBe(10_000);
+  });
+  it("is credited at once from the reserve when allowed, and the reserve is repaid when the bank clears it", async () => {
+    on(); await fundReserve(deps, { ref: "RES-1", currency: "ZAR", amountCents: 200_000 });
+    const r = await pend("IC-2", 40_000);
+    expect(r).toMatchObject({ status: "credited", instant: true });
+    expect(ledger.balance(bankLedgerAccount(acct[U.driver]))).toBe(40_000); expect(ledger.balance(reserveAccount("ZAR"))).toBe(160_000);
+    await markCleared(deps, r.creditId, null);
+    expect(ledger.balance(reserveAccount("ZAR"))).toBe(200_000); expect(ledger.balance(bankLedgerAccount(acct[U.driver]))).toBe(40_000);
+    expect(await markCleared(deps, r.creditId, null)).toMatchObject({ status: "duplicate" });                           // clearing twice changes nothing
+    expect(ledger.balance(reserveAccount("ZAR"))).toBe(200_000);
+    expect((await reconcile(db, ledger)).ok).toBe(true);
+  });
+  it("respects the reserve minimum, the per-deposit limit and the outstanding ratio, and never goes below the reserve it holds", async () => {
+    on(100_000);
+    expect(await pend("IC-3", 10_000)).toMatchObject({ status: "awaiting_clearing", reason: expect.stringMatching(/reserve is below its minimum/) });
+    await fundReserve(deps, { ref: "RES-2", currency: "ZAR", amountCents: 100_000 });
+    expect(await pend("IC-4", 400_000)).toMatchObject({ status: "awaiting_clearing", reason: expect.stringMatching(/above the instant-credit limit/) });     cfg.instantCredit = { ...DEFAULT_ZA.instantCredit, enabled: true, reserveCents: 50_000, reserveRatioMax: 0.3, perDepositCents: { basic: 1e9, standard: 1e9, full: 1e9 } };
+    expect(await pend("IC-5", 20_000)).toMatchObject({ status: "credited" });
+    expect(await pend("IC-6", 20_000)).toMatchObject({ status: "awaiting_clearing", reason: expect.stringMatching(/Too much instant credit/) });
+  });
+  it("when the bank returns it: taken back into the reserve if still there, flagged if the customer already spent it", async () => {
+    on(); await fundReserve(deps, { ref: "RES-3", currency: "ZAR", amountCents: 500_000 });
+    const a = await pend("IC-7", 30_000);
+    expect(await markBounced(deps, a.creditId)).toMatchObject({ status: "reversed" });
+    expect(ledger.balance(bankLedgerAccount(acct[U.driver]))).toBe(0); expect(ledger.balance(reserveAccount("ZAR"))).toBe(500_000);
+    const b = await pend("IC-8", 30_000);
+    const m = mod as unknown as { db: { transaction<T>(f: () => T): { immediate(): T } }; ledger: { post(k: string, l: unknown[], o: unknown): string } };
+    m.db.transaction(() => m.ledger.post("spend", [{ account: bankLedgerAccount(acct[U.driver]), merchant: U.driver, kind: "bank", amount: -25_000 }, { account: "sys:external_out", kind: "system", amount: 25_000 }], {})).immediate();
+    expect(await markBounced(deps, b.creditId)).toMatchObject({ status: "needs_review", reason: expect.stringMatching(/already spent/) });
+    expect((await db.query(`SELECT clearing, status FROM pool_credits WHERE id = $1`, [b.creditId])).rows[0]).toMatchObject({ status: "credited", clearing: "pending" });      // still on the books for staff to resolve
+    await expect(markBounced(deps, (await recordPoolCredit(deps, { bankRef: "IC-9", reference: (await ensureVirtualAccount(db, U.driver, "ZAR", "online")).reference, amountCents: 100, currency: "ZAR", by: null })).creditId)).rejects.toThrow(/already cleared/);
+  });
+  it("funding the reserve happens once per reference", async () => {
+    expect(await fundReserve(deps, { ref: "RES-9", currency: "ZAR", amountCents: 1_000 })).toBe("funded");
+    expect(await fundReserve(deps, { ref: "RES-9", currency: "ZAR", amountCents: 1_000 })).toBe("duplicate");
+    expect(ledger.balance(reserveAccount("ZAR"))).toBe(1_000);
+    await expect(fundReserve(deps, { ref: "RES-10", currency: "USD", amountCents: 1 })).rejects.toThrow();
   });
 });

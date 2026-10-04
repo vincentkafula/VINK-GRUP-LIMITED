@@ -203,3 +203,46 @@ export function VirtualAccountsPanel({ segment, color }: { segment: Role; color:
     </SectionPanel>
   );
 }
+
+interface XbQuote { id: string; corridor: string; sendCents: number; sendCurrency: string; feeCents: number; rate: number; receiveCents: number; receiveCurrency: string; recipient: string; expiresAt: string; status: string }
+
+/** Send money between South Africa and Zambia: get a quote (nothing moves), then confirm it before it expires. Hidden when no route is open and there is no history. */
+export function CrossBorderPanel({ segment, color }: { segment: Role; color: string }) {
+  const call = portalClient(segment);
+  const [load, reload] = useLoad<{ corridors: { id: string; from: string; to: string; fromCurrency: string; toCurrency: string }[]; transfers: (XbQuote & { direction: "sent" | "received" })[] }>(() => call("/money/cross-border"));
+  const [email, setEmail] = useState(""); const [amount, setAmount] = useState(""); const [corridor, setCorridor] = useState("");
+  const [quote, setQuote] = useState<XbQuote | null>(null);
+  if (load.state !== "ready") return null;
+  const { corridors, transfers } = load.data;
+  if (corridors.length === 0 && transfers.length === 0) return null;
+  const chosen = corridor || corridors[0]?.id || "";
+  const route = corridors.find((c) => c.id === chosen);
+  return (
+    <SectionPanel title="Send money across the border">
+      <div className="p-4 space-y-3">
+        {corridors.length > 0 && !quote && (
+          <div className="grid sm:grid-cols-3 gap-3">
+            <label className="block"><span className="text-[11px] text-white/60">Route</span><select className={inputCls + " mt-1"} value={chosen} onChange={(e) => setCorridor(e.target.value)}>{corridors.map((c) => <option key={c.id} value={c.id}>{c.fromCurrency} to {c.toCurrency}</option>)}</select></label>
+            <label className="block"><span className="text-[11px] text-white/60">Recipient's email</span><input className={inputCls + " mt-1"} type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></label>
+            <label className="block"><span className="text-[11px] text-white/60">You send ({route?.fromCurrency})</span><input className={inputCls + " mt-1"} inputMode="decimal" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)} /></label>
+            <div className="sm:col-span-3"><ActionButton label="Get a quote" color={color} onRun={async () => {
+              const amountCents = Math.round(Number(amount) * 100);
+              if (!email.includes("@")) return { error: "Enter the recipient's email" };
+              if (!Number.isFinite(amountCents) || amountCents <= 0) return { error: "Enter an amount like 500.00" };
+              const r = await call<{ quote: XbQuote }>("/money/cross-border/quote", { method: "POST", body: { recipientEmail: email.trim(), amountCents, corridorId: chosen } });
+              if ("error" in r) return { error: r.error }; setQuote(r.data.quote);
+            }} /></div>
+          </div>)}
+        {quote && (
+          <div className="rounded-lg p-3 space-y-2" style={{ background: "#0D0B1E", border: "1px solid #2D2A50" }}>
+            <p className="text-sm text-white">{quote.recipient} receives <b>{money(quote.receiveCents, quote.receiveCurrency)}</b></p>
+            <p className="text-xs text-white/60">You pay {money(quote.sendCents, quote.sendCurrency)} including a fee of {money(quote.feeCents, quote.sendCurrency)} · rate {quote.rate.toFixed(4)} · this quote is valid until {when(quote.expiresAt)}</p>
+            <div className="flex gap-2">
+              <ActionButton label="Confirm and send" color={color} onRun={async () => { const r = await call(`/money/cross-border/${quote.id}/confirm`, { method: "POST" }); if ("error" in r) return { error: r.error }; setQuote(null); setAmount(""); reload(); return { message: "Sent" }; }} />
+              <button type="button" className="text-xs underline text-white/70" onClick={() => setQuote(null)}>Cancel</button></div>
+          </div>)}
+        {transfers.length > 0 && <TableCard title="Cross-border transfers" color={color} columns={["When", "", "With", "Amount"]} rows={transfers.map((t) => [when(t.expiresAt), t.direction === "sent" ? "Sent" : "Received", t.recipient, t.direction === "sent" ? `−${money(t.sendCents, t.sendCurrency)}` : `+${money(t.receiveCents, t.receiveCurrency)}`])} />}
+      </div>
+    </SectionPanel>
+  );
+}

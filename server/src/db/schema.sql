@@ -1118,10 +1118,40 @@ CREATE TABLE IF NOT EXISTS pool_credits (
   user_id       UUID REFERENCES users(id) ON DELETE SET NULL,
   amount_cents  BIGINT NOT NULL CHECK (amount_cents > 0),
   currency      TEXT NOT NULL CHECK (currency IN ('ZAR','ZMW')),
-  status        TEXT NOT NULL CHECK (status IN ('credited','unmatched')),
+  status        TEXT NOT NULL CHECK (status IN ('credited','unmatched','awaiting_clearing','reversed')),
+  clearing      TEXT NOT NULL DEFAULT 'cleared' CHECK (clearing IN ('cleared','pending','bounced')),   -- 'pending': the bank reported the payment but it has not cleared yet
+  instant       BOOLEAN NOT NULL DEFAULT false,                                                         -- credited before it cleared, from the instant-credit reserve
   reason        TEXT,
   recorded_by   UUID REFERENCES users(id) ON DELETE SET NULL,
   received_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
   credited_at   TIMESTAMPTZ
 );
 CREATE INDEX IF NOT EXISTS idx_pool_credits_status ON pool_credits(status, received_at DESC);
+
+-- ─── Cross-border transfers (ZA <-> ZM) ─────────────────────────────────────────────────────────────────────────────────
+-- A transfer is quoted at a rate staff have set (there is no FX feed), then confirmed within the quote's short life. Posting is two journals (one per
+-- currency) with fixed references, so confirming again after a failure completes it instead of repeating it.
+CREATE TABLE IF NOT EXISTS fx_rates (
+  pair      TEXT PRIMARY KEY,                         -- e.g. ZAR-ZMW: how many ZMW for one ZAR
+  rate      NUMERIC(18,8) NOT NULL CHECK (rate > 0),
+  set_by    UUID REFERENCES users(id) ON DELETE SET NULL,
+  set_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS cross_border_transfers (
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  sender_id        UUID NOT NULL REFERENCES users(id),
+  recipient_id     UUID NOT NULL REFERENCES users(id),
+  corridor         TEXT NOT NULL,
+  send_cents       BIGINT NOT NULL CHECK (send_cents > 0),
+  send_currency    TEXT NOT NULL,
+  fee_cents        BIGINT NOT NULL CHECK (fee_cents >= 0),
+  rate             NUMERIC(18,8) NOT NULL,
+  receive_cents    BIGINT NOT NULL CHECK (receive_cents >= 0),
+  receive_currency TEXT NOT NULL,
+  status           TEXT NOT NULL DEFAULT 'quoted' CHECK (status IN ('quoted','posting','completed','expired','failed')),
+  reason           TEXT,
+  quote_expires_at TIMESTAMPTZ NOT NULL,
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+  completed_at     TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS idx_xb_sender ON cross_border_transfers(sender_id, created_at DESC);

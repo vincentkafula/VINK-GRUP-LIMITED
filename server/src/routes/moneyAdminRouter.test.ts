@@ -9,6 +9,7 @@ import { createMoneyEngine, manshyaLedgerPort, bankLedgerAccount, type LedgerPor
 import { ensureVirtualAccount } from "../services/poolService.js";
 import { createMoneyAdminRouter } from "./moneyAdminRouter.js";
 import { DEFAULT_ZA, DEFAULT_ZM } from "../config/countryConfig.js";
+import { createCrossBorder } from "../services/crossBorderService.js";
 
 const id = (n: number) => `00000000-0000-0000-0000-${String(n).padStart(12, "0")}`;
 const ADMIN = id(90), USER = id(5);
@@ -28,7 +29,7 @@ describe("admin money API", () => {
     const engine = createMoneyEngine({ db, ledger, reader });
     const app = express();
     app.use((req, _r, next) => { req.user = { userId: ADMIN, username: "admin", role: "superadmin" }; next(); });
-    app.use("/admin", createMoneyAdminRouter({ db, ledger, reader, engine, channels: () => ({ in_person: { accountNumber: "1234567890" } }) }));
+    app.use("/admin", createMoneyAdminRouter({ db, ledger, reader, engine, channels: () => ({ in_person: { accountNumber: "1234567890" } }), crossBorder: createCrossBorder({ db, ledger, engine, reader }) }));
     await new Promise<void>((ok) => { server = app.listen(0, "127.0.0.1", ok); });
     url = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
   });
@@ -64,5 +65,26 @@ describe("admin money API", () => {
     expect((await call("/pool/credits", "POST", { bankRef: "BANK-4", reference: "x", amountCents: 1.5, currency: "ZAR" })).status).toBe(400);
     expect((await call("/pool/credits", "POST", { reference: "x" })).status).toBe(400);
     expect((await call("/check", "POST", { country: "ZA", kind: "limit", channel: "atm", amountCents: -5 })).status).toBe(400);
+  });
+
+  it("staff set exchange rates, and bad rates are refused", async () => {
+    expect((await call("/fx", "PUT", { from: "ZAR", to: "ZMW", rate: 1.52 })).status).toBe(200);
+    expect((await call("/fx")).body.rates).toEqual([expect.objectContaining({ pair: "ZAR-ZMW", rate: 1.52 })]);
+    expect((await call("/fx", "PUT", { from: "ZAR", to: "ZMW", rate: -1 })).status).toBe(400);
+    expect((await call("/fx", "PUT", { from: "ZAR", to: "USD", rate: 1 })).status).toBe(400);
+  });
+
+  it("clear and return a pending payment, and fund the reserve once", async () => {
+    const va = await ensureVirtualAccount(db, USER, "ZAR", "in_person");
+    const p = (await call("/pool/credits", "POST", { bankRef: "BANK-5005", reference: va.reference, amountCents: 3000, currency: "ZAR", pending: true })).body;
+    expect(p.status).toBe("awaiting_clearing");                                                  // instant credit is off in the default profile
+    expect((await call("/pool")).body.pending[0]).toMatchObject({ bankRef: "BANK-5005", status: "awaiting_clearing" });
+    expect((await call(`/pool/credits/${p.creditId}/clear`, "POST")).body).toMatchObject({ status: "credited" });
+    expect(ledger.balance(bankLedgerAccount(acct))).toBe(3000);
+    expect((await call(`/pool/credits/${p.creditId}/bounce`, "POST")).status).toBe(409);        // it has already cleared
+    expect((await call("/reserve/fund", "POST", { ref: "RES-A1", currency: "ZAR", amountCents: 100000 })).status).toBe(201);
+    expect((await call("/reserve/fund", "POST", { ref: "RES-A1", currency: "ZAR", amountCents: 100000 })).status).toBe(200);
+    expect((await call("/pool")).body.reserve).toEqual([{ currency: "ZAR", balanceCents: 100000, outstandingCents: 0 }, { currency: "ZMW", balanceCents: 0, outstandingCents: 0 }]);
+    expect((await call("/reserve/fund", "POST", { ref: "RES-A2", currency: "ZAR", amountCents: -5 })).status).toBe(400);
   });
 });

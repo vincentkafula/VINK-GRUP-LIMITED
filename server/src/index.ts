@@ -44,6 +44,7 @@ import { createBankAdminRouter, manshyaBankCore, seedBankLinks, readChannelAccou
 import { syncManshyaFees } from "./config/manshyaFeeSync.js";
 import { createMoneyEngine, manshyaLedgerPort, walletLedgerAccount } from "./services/moneyEngine.js";
 import { createLimitGuard } from "./config/limitGuard.js";
+import { createCrossBorder } from "./services/crossBorderService.js";
 import type { CountryConfig } from "./config/countryConfig.js";
 import { createMoneyAdminRouter } from "./routes/moneyAdminRouter.js";
 import { createFieldCrypto } from "./portal/fieldCrypto.js";
@@ -126,12 +127,13 @@ const moneyLedger = manshyaLedgerPort(manshya as never);
 const moneyEngine = pool ? createMoneyEngine({ db: pool, ledger: moneyLedger, reader: configReader }) : null;
 let zaProfile: CountryConfig | null = null;
 (manshya.config as unknown as { limitGuard: unknown }).limitGuard = createLimitGuard(() => zaProfile);
+const crossBorder = moneyEngine && pool ? createCrossBorder({ db: pool, ledger: moneyLedger, engine: moneyEngine, reader: configReader }) : undefined;
 const channelAccounts = () => readChannelAccounts(process.env, () => {});
 app.use("/api/portal",        createPortalRouter(pool, bankDeps, {
-  channels: channelAccounts,
+  channels: channelAccounts, crossBorder,
   wallets: (userId) => { const b = moneyLedger.balance(walletLedgerAccount("ZMW", userId)); return b ? [{ currency: "ZMW", balanceCents: b }] : []; },
 }));
-if (pool) app.use("/api/admin/money", requireAuth, requireRole("owner", "superadmin"), createMoneyAdminRouter({ db: pool, ledger: moneyLedger, reader: configReader, engine: moneyEngine ?? undefined, channels: channelAccounts }));
+if (pool) app.use("/api/admin/money", requireAuth, requireRole("owner", "superadmin"), createMoneyAdminRouter({ db: pool, ledger: moneyLedger, reader: configReader, engine: moneyEngine ?? undefined, channels: channelAccounts, crossBorder }));
 if (pool) app.use("/api/admin/config", requireAuth, requireRole("owner", "superadmin"), createConfigAdminRouter({ db: pool, reader: configReader, onActivate: (country, cfg) => { if (country === "ZA") { zaProfile = cfg; console.log("[config] Manshya fees synced:", syncManshyaFees(manshya.config as never, cfg).join(", ") || "no change"); } } }));
 if (pool) app.use("/api/admin/bank-links", requireAuth, requireRole("owner", "superadmin"), createBankAdminRouter({ db: pool, ...bankDeps }));
 app.use("/api/auth",          (hasDb ? createDbAuthRouter() : createMemoryAuthRouter()).router);

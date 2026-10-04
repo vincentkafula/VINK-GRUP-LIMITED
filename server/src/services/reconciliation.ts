@@ -30,6 +30,9 @@ export async function reconcile(db: Db, ledger: LedgerPort, now: Date = new Date
   const unmatched = n((await one(`SELECT COUNT(*) AS c FROM pool_credits WHERE status = 'unmatched'`)).c);
   if (unmatched) issues.push({ severity: "attention", code: "bank_credits_unmatched", message: "Bank credits could not be matched to an account. Match them on the money page.", count: unmatched });
 
+  const stuckXb = n((await one(`SELECT COUNT(*) AS c FROM cross_border_transfers WHERE status = 'posting' AND created_at < $1`, [new Date(now.getTime() - 5 * 60_000)])).c);
+  if (stuckXb) issues.push({ severity: "problem", code: "cross_border_half_posted", message: "Cross-border transfers are stuck half-posted. Ask the sender to confirm again, or an engineer to finish them.", count: stuckXb });
+
   const unsettled = n((await one(`SELECT COUNT(*) AS c FROM terminal_taps WHERE status = 'confirmed' AND settled_at IS NULL`)).c);
   const blocked = (await db.query(`SELECT reason, COUNT(*) AS c FROM tap_settlements WHERE status = 'blocked' GROUP BY reason`)).rows;
   for (const b of blocked) issues.push({ severity: "attention", code: "tap_blocked", message: `Taps are waiting because ${b.reason}.`, count: n(b.c) });
