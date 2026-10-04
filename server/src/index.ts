@@ -41,7 +41,9 @@ import { migrateAndSeed } from "./db/migrate.js";
 import { requireAuth, requireRole, JWT_SECRET } from "./middleware/auth.js";
 import { createPortalRouter } from "./routes/portal.js";
 import { createBankAdminRouter, manshyaBankCore, seedBankLinks } from "./portal/bankLinks.js";
+import { syncManshyaFees } from "./config/manshyaFeeSync.js";
 import { createMoneyEngine, manshyaLedgerPort } from "./services/moneyEngine.js";
+import { createMoneyAdminRouter } from "./routes/moneyAdminRouter.js";
 import { createFieldCrypto } from "./portal/fieldCrypto.js";
 import { createConfigAdminRouter, createConfigReader } from "./config/configService.js";
 import { createInboundRouter } from "./inbound/router.js";
@@ -116,9 +118,11 @@ app.use("/api/portal", rateLimit({ windowMs: 60_000, max: 120, standardHeaders: 
 // Bank accounts for the dashboards: the Banking module (Manshya) is the single source of truth for numbers, balances and transactions.
 const bankDeps = { core: manshyaBankCore(manshya), crypto: createFieldCrypto(process.env, JWT_SECRET) };
 app.use("/api/portal",        createPortalRouter(pool, bankDeps));
+const moneyLedger = manshyaLedgerPort(manshya as never);
+if (pool) app.use("/api/admin/money", requireAuth, requireRole("owner", "superadmin"), createMoneyAdminRouter({ db: pool, ledger: moneyLedger, reader: createConfigReader(pool) }));
 // Country configuration (staff only; changes are maker-checker approved). `configReader` serves the active profile to the rest of the platform.
 export const configReader = createConfigReader(pool);
-if (pool) app.use("/api/admin/config", requireAuth, requireRole("owner", "superadmin"), createConfigAdminRouter({ db: pool, reader: configReader }));
+if (pool) app.use("/api/admin/config", requireAuth, requireRole("owner", "superadmin"), createConfigAdminRouter({ db: pool, reader: configReader, onActivate: (country, cfg) => { if (country === "ZA") console.log("[config] Manshya fees synced:", syncManshyaFees(manshya.config as never, cfg).join(", ") || "no change"); } }));
 if (pool) app.use("/api/admin/bank-links", requireAuth, requireRole("owner", "superadmin"), createBankAdminRouter({ db: pool, ...bankDeps }));
 app.use("/api/auth",          (hasDb ? createDbAuthRouter() : createMemoryAuthRouter()).router);
 app.use("/api/fraud-risk",    fraudRiskRouter);
@@ -297,9 +301,10 @@ async function boot() {
     try {
       await migrateAndSeed();
       if (pool) await seedBankLinks({ db: pool, ...bankDeps }).catch((e) => console.error("[seed] bank links failed (server continues):", e instanceof Error ? e.message : e));
+      if (pool) await configReader.active("ZA").then((a) => syncManshyaFees(manshya.config as never, a.config)).catch((e) => console.error("[config] fee sync failed:", e instanceof Error ? e.message : e));
       if (pool && process.env.MONEY_ENGINE !== "off") {
         // Settles confirmed taps, closes trips, creates the marshal fee / agreement payments and pays what is due. Safe to repeat: every posting is idempotent.
-        const engine = createMoneyEngine({ db: pool, ledger: manshyaLedgerPort(manshya as never), reader: configReader });
+        const engine = createMoneyEngine({ db: pool, ledger: moneyLedger, reader: configReader });
         let running = false;
         setInterval(() => {
           if (running) return; running = true;

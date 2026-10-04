@@ -87,6 +87,7 @@ const FiveHundredGlobalApplication = lazy(() => import("./components/FiveHundred
 const JobApplicationViewer = lazy(() => import("./components/JobApplicationViewer").then(m => ({ default: m.JobApplicationViewer })));
 const TaxiAssociationsViewer       = lazy(() => import("./components/TaxiAssociationsViewer").then(m => ({ default: m.TaxiAssociationsViewer })));
 const RolePortal                   = lazy(() => import("./components/portal/RolePortal").then(m => ({ default: m.RolePortal })));
+const AdminConfig                   = lazy(() => import("./components/portal/AdminConfig").then(m => ({ default: m.AdminConfig })));
 const AdminBankLinks                = lazy(() => import("./components/portal/AdminBankLinks").then(m => ({ default: m.AdminBankLinks })));
 const AuthLinkPage                 = lazy(() => import("./components/AuthLinkPage").then(m => ({ default: m.AuthLinkPage })));
 const ManshyaDashboard            = lazy(() => import("./components/manshya/ManshyaDashboard").then(m => ({ default: m.ManshyaDashboard })));
@@ -205,6 +206,7 @@ export default function App() {
   const [authLink, setAuthLink]                               = useState<null | "reset" | "verify">(null);
   const [portal, setPortal]                                  = useState<null | PortalKey>(null);
   const [adminBank, setAdminBank]                             = useState(false);
+  const [adminConfig, setAdminConfig]                         = useState(false);
   const [showManshya, setShowManshya]                        = useState(false);
   const [showManshyaAdmin, setShowManshyaAdmin]              = useState(false);
   const [showManshyaPay, setShowManshyaPay]                  = useState(false);
@@ -500,6 +502,7 @@ export default function App() {
     // /pay is the public hosted checkout for payment links.
     // Role dashboards: /portal/personal | driver | marshal | owner | association. The server decides who may open each one.
     // Staff only (the server enforces it): every dashboard user's bank account, and review of Business accounts.
+    if (path === "/admin/config") { mount("adminConfig"); setAdminConfig(true); return true; }
     if (path === "/admin/bank-links") { mount("adminBank"); setAdminBank(true); return true; }
     if (seg[0] === "portal" && seg[1] && seg[1] in PORTALS) { mount("portal"); setPortal(seg[1] as PortalKey); return true; }
     if (path === "/reset-password") { mount("authLink"); setAuthLink("reset");  return true; }
@@ -668,6 +671,7 @@ export default function App() {
       {has("ownerDashboard")  && <Suspense fallback={null}><OwnerFleetDashboardViewer isOpen={showOwnerDashboard} onClose={() => setShowOwnerDashboard(false)} /></Suspense>}
       {has("taxiAssociationDashboard") && <Suspense fallback={null}><TaxiAssociationDashboardViewer isOpen={showTaxiAssociationDashboard} onClose={() => setShowTaxiAssociationDashboard(false)} /></Suspense>}
       {has("investorDashboard") && <Suspense fallback={null}><InvestorFleetDashboardViewer isOpen={showInvestorDashboard} onClose={() => setShowInvestorDashboard(false)} investorName={getSession()?.name} onOpenRevenueDashboard={() => { mount("revenueDash"); setShowRevenueDashboard(true); }} /></Suspense>}
+      {has("adminConfig")     && adminConfig && <Suspense fallback={null}><AdminConfig isOpen onClose={() => { setAdminConfig(false); pushRoute("/"); }} /></Suspense>}
       {has("adminBank")       && adminBank && <Suspense fallback={null}><AdminBankLinks isOpen onClose={() => { setAdminBank(false); pushRoute("/"); }} /></Suspense>}
       {has("portal")          && portal && <Suspense fallback={null}><RolePortal portal={portal} isOpen onClose={() => { setPortal(null); pushRoute("/"); }} /></Suspense>}
       {has("authLink")        && authLink && <Suspense fallback={null}><AuthLinkPage kind={authLink} isOpen onClose={() => { setAuthLink(null); window.history.replaceState({}, "", "/"); }} /></Suspense>}

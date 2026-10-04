@@ -1,5 +1,6 @@
 import { Router, json } from "express";
 import { h, uid, num, iso, isUuid, fail, pageParams, audit, type Db } from "../portal/common.js";
+import { computeFee, splitAfcFare } from "./feeEngine.js";
 import { COUNTRIES, DEFAULT_ZA, DEFAULT_ZM, diffConfig, validateConfig, type CountryCode, type CountryConfig } from "./countryConfig.js";
 
 /**
@@ -53,7 +54,7 @@ export function createConfigReader(db: Db | null, ttlMs = 15_000, now: () => num
 export type ConfigReader = ReturnType<typeof createConfigReader>;
 
 /* ───────────────────────── staff API ───────────────────────── */
-export interface AdminDeps { db: Db; reader?: ConfigReader; approvalsRequired?: number }
+export interface AdminDeps { db: Db; reader?: ConfigReader; approvalsRequired?: number; onActivate?: (country: CountryCode, config: CountryConfig) => void }
 
 export function createConfigAdminRouter(d: AdminDeps): Router {
   const router = Router();
@@ -171,8 +172,23 @@ export function createConfigAdminRouter(d: AdminDeps): Router {
     try { await d.db.query(`UPDATE country_profiles SET status = 'active', activated_at = now(), activated_by = $2 WHERE id = $1 AND status = 'approved'`, [p.id, uid(req)]); }
     catch (e) { if (before) await d.db.query(`UPDATE country_profiles SET status = 'active' WHERE id = $1`, [before.id]); throw e; }   // never leave a country without an active profile
     d.reader?.invalidate();
+    try { d.onActivate?.(p.country, p.config); } catch (e) { console.error("[config] onActivate failed:", e instanceof Error ? e.message : e); }
     await audit(d.db, req, "config.activate", p.id, { country: p.country, version: p.version, replaced: before?.version ?? null, changed: before ? diffConfig(before.config, p.config).map((x) => x.path).slice(0, 80) : [] });
     res.json({ success: true, status: "active" });
+  }));
+
+  /** What would this fee rule set charge? Used by the admin screen before a draft is submitted. Nothing is stored. */
+  router.post("/simulate", body, h(async (req, res) => {
+    const b = (req.body ?? {}) as Record<string, any>;
+    const cfg = b.config ?? (country(b.country) ? (await activeOf(country(b.country)!))?.config : null);
+    if (!cfg) { fail(res, 400, "Give a country or a config"); return; }
+    const problems = validateConfig(cfg);
+    if (problems.length) { res.status(400).json({ success: false, error: "The config is not valid", errors: problems }); return; }
+    const amountCents = Number(b.amountCents);
+    if (!Number.isInteger(amountCents) || amountCents < 0 || amountCents > 100_000_000_000) { fail(res, 400, "amountCents must be a whole number of cents"); return; }
+    const out: Record<string, unknown> = { fee: computeFee(cfg.fees.rules, { txn: String(b.txn ?? ""), amountCents, payerType: b.payerType, payeeType: b.payeeType, rail: b.rail, tier: b.tier }) };
+    if (b.txn === "afc_tap") out.afcSplit = splitAfcFare(cfg.afc, amountCents);
+    res.json({ success: true, ...out });
   }));
 
   router.get("/audit", h(async (req, res) => {

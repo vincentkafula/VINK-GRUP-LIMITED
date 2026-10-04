@@ -4,7 +4,9 @@ import { allPortalsDb } from "../portal/testDb.js";
 import type { Db } from "../portal/driverRoutes.js";
 import { manshyaBankCore } from "../portal/bankLinks.js";
 import { createMoneyEngine, manshyaLedgerPort, bankLedgerAccount, SYS_FEES, SYS_CLEARING, type Engine, type LedgerPort } from "./moneyEngine.js";
-import { DEFAULT_ZA } from "../config/countryConfig.js";
+import { DEFAULT_ZA, DEFAULT_ZM } from "../config/countryConfig.js";
+import { reconcile } from "./reconciliation.js";
+import { checkTierLimit, decideInstantCredit, quoteCorridor } from "../config/riskRules.js";
 
 const id = (n: number) => `00000000-0000-0000-0000-${String(n).padStart(12, "0")}`;
 const U = { owner: id(3), driver: id(5), marshal: id(7), investor: id(8), assoc: id(1) };
@@ -193,5 +195,65 @@ describe("driver-owner agreements", () => {
   it("proposed or ended agreements do nothing", async () => {
     await db.query(`INSERT INTO driver_agreements (owner_id, driver_id, mode, amount_cents, pay_day, start_date, status) VALUES ($1,$2,'monthly_salary',300000,25,'2026-09-01','proposed')`, [U.owner, U.driver]);
     expect((await engine.runSchedules(new Date("2026-10-25T10:00:00Z"))).created).toBe(0);
+  });
+});
+
+describe("reconciliation", () => {
+  it("is clean when every settled tap has its posting, and lists what is waiting", async () => {
+    await taps(2); await engine.settleTaps();
+    await db.query(`UPDATE bank_account_links SET status = 'pending_review' WHERE user_id = $1`, [U.owner]);
+    await taps(1, { at: new Date("2026-10-05T11:00:00Z") }); await engine.settleTaps();
+    const r = await reconcile(db, ledger, new Date("2026-10-06T12:00:00Z"));
+    expect(r.ok).toBe(true); expect(r.figures).toMatchObject({ settledTaps: 2, unsettledConfirmedTaps: 1 });
+    expect(r.issues).toEqual([expect.objectContaining({ code: "tap_blocked", count: 1 })]);
+  });
+  it("flags a tap marked settled that has no ledger posting", async () => {
+    await taps(1);
+    await db.query(`INSERT INTO tap_settlements (tap_id, status, settled_at) SELECT id, 'settled', now() FROM terminal_taps`);
+    const r = await reconcile(db, ledger);
+    expect(r.ok).toBe(false); expect(r.issues[0]).toMatchObject({ code: "settled_without_posting", severity: "problem", count: 1 });
+  });
+  it("flags payments that have waited more than a day and trips needing review", async () => {
+    await taps(16);
+    await engine.runCycle(new Date("2026-10-05T12:00:00Z"));
+    const r = await reconcile(db, ledger, new Date("2026-10-08T12:00:00Z"));
+    expect(r.issues.map((i) => i.code).sort()).toEqual(["payments_overdue", "trips_need_review"]);
+    expect(r.figures.waitingCents).toBe(2000);
+  });
+});
+
+describe("limits, instant credit and cross-border rules", () => {
+  const za = DEFAULT_ZA;
+  it("KYC tier limits: daily in and out, balance, and the card channels", () => {
+    const t = za.limits.tiers.basic;
+    expect(checkTierLimit(za, "basic", { channel: "transfer_in", amountCents: 100, usedTodayCents: 0, balanceCents: 0 })).toEqual({ ok: true });
+    expect(checkTierLimit(za, "basic", { channel: "transfer_in", amountCents: 100, usedTodayCents: t.dailyInCents, balanceCents: 0 })).toMatchObject({ ok: false, code: "daily_in_limit" });
+    expect(checkTierLimit(za, "basic", { channel: "transfer_in", amountCents: 100, usedTodayCents: 0, balanceCents: t.balanceCents })).toMatchObject({ ok: false, code: "balance_limit" });
+    expect(checkTierLimit(za, "basic", { channel: "transfer_out", amountCents: t.dailyOutCents + 1, usedTodayCents: 0, balanceCents: 0 })).toMatchObject({ ok: false, code: "daily_transfer_out_limit" });
+    expect(checkTierLimit(za, "basic", { channel: "atm", amountCents: za.limits.atmDailyCents.basic, usedTodayCents: 0, balanceCents: 0 })).toEqual({ ok: true });
+    expect(checkTierLimit(za, "basic", { channel: "atm", amountCents: 1, usedTodayCents: za.limits.atmDailyCents.basic, balanceCents: 0 })).toMatchObject({ ok: false });
+    expect(checkTierLimit(za, "business", { channel: "pos", amountCents: 100, usedTodayCents: 0, balanceCents: 0 })).toEqual({ ok: true });
+    expect(checkTierLimit(za, "basic", { channel: "pos", amountCents: 0, usedTodayCents: 0, balanceCents: 0 })).toMatchObject({ code: "bad_amount" });
+  });
+  it("instant credit is off by default, and when on needs the reserve and respects the ratio", () => {
+    expect(decideInstantCredit(za, { tier: "basic", depositCents: 100, reserveBalanceCents: 1e9, outstandingCents: 0 })).toMatchObject({ ok: false, code: "instant_credit_disabled" });
+    const on = { ...za, instantCredit: { ...za.instantCredit, enabled: true, reserveCents: 1_000_000 } };
+    expect(decideInstantCredit(on, { tier: "basic", depositCents: 40_000, reserveBalanceCents: 1_000_000, outstandingCents: 0 })).toEqual({ ok: true, approvedCents: 40_000 });
+    expect(decideInstantCredit(on, { tier: "basic", depositCents: 60_000, reserveBalanceCents: 1_000_000, outstandingCents: 0 })).toMatchObject({ code: "above_deposit_limit" });
+    expect(decideInstantCredit(on, { tier: "full", depositCents: 100, reserveBalanceCents: 999_999, outstandingCents: 0 })).toMatchObject({ code: "reserve_below_minimum" });
+    expect(decideInstantCredit(on, { tier: "full", depositCents: 100, reserveBalanceCents: 1_000_000, outstandingCents: 3_000_000 })).toMatchObject({ code: "reserve_ratio_exceeded" });
+  });
+  it("cross-border: closed by default; when open, limits, fee, margin and a short-lived quote", () => {
+    const q = { corridorId: "ZA-ZM", amountCents: 100_000, midRate: 1.5, usedDayCents: 0, usedMonthCents: 0, now: new Date("2026-10-05T10:00:00Z") };
+    expect(quoteCorridor(za, q)).toMatchObject({ ok: false, code: "corridor_closed" });
+    const open = { ...za, corridors: za.corridors.map((c) => ({ ...c, enabled: true })) };
+    const ok = quoteCorridor(open, q);
+    expect(ok).toMatchObject({ ok: true, feeCents: 5000, receiveCents: Math.floor(95_000 * 1.5 * 0.99), expiresAt: "2026-10-05T10:01:00.000Z" });
+    expect(quoteCorridor(open, { ...q, amountCents: 600_000 })).toMatchObject({ code: "above_transaction_limit" });
+    expect(quoteCorridor(open, { ...q, usedDayCents: 950_000 })).toMatchObject({ code: "above_daily_limit" });
+    expect(quoteCorridor(open, { ...q, usedMonthCents: 2_950_000 })).toMatchObject({ code: "above_monthly_limit" });
+    expect(quoteCorridor(open, { ...q, midRate: 0 })).toMatchObject({ code: "bad_rate" });
+    expect(quoteCorridor(open, { ...q, corridorId: "ZM-ZA" })).toMatchObject({ code: "corridor_closed" });
+    expect(DEFAULT_ZM.corridors[0].id).toBe("ZM-ZA");
   });
 });

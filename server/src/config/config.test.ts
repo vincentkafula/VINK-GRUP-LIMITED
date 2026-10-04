@@ -111,6 +111,28 @@ describe("country configuration lifecycle (maker-checker)", () => {
     const d = await call("POST", `/${country}/drafts`, { config: base }); expect(d.status).toBe(201); return d.body.id as string;
   };
 
+  it("simulates a fee without storing anything", async () => {
+    const r = await call("POST", "/simulate", { country: "ZA", txn: "card_online", amountCents: 10000 });
+    expect(r.body).toMatchObject({ success: true, fee: { feeCents: 390, ruleId: "online_card" } });
+    const afc = await call("POST", "/simulate", { country: "ZA", txn: "afc_tap", amountCents: 1500 });
+    expect(afc.body.afcSplit).toMatchObject({ feeCents: 100, investorCents: 10, remainderCents: 1400 });
+    const bad = clone(DEFAULT_ZA) as any; bad.afc.platformFee.flatCents = -5;
+    expect((await call("POST", "/simulate", { config: bad, txn: "afc_tap", amountCents: 1500 })).status).toBe(400);
+    expect((await call("POST", "/simulate", { country: "ZA", txn: "x", amountCents: 1.5 })).status).toBe(400);
+  });
+
+  it("copies the fees Manshya can express into the Banking module when a profile is activated", async () => {
+    const seen: string[] = [];
+    const target = { fees: { online: { pct: 0.029, fixed: 100 }, pos: { pct: 0.025, fixed: 0 } }, payoutFee: 850 };
+    const { syncManshyaFees } = await import("./manshyaFeeSync.js");
+    const cfg = clone(DEFAULT_ZA) as any;
+    expect(syncManshyaFees(target, cfg)).toEqual([]);
+    cfg.fees.rules.find((r: any) => r.id === "payout").calc.amountCents = 900;
+    cfg.fees.rules.find((r: any) => r.id === "pos_card").calc.pct = 0.03;
+    seen.push(...syncManshyaFees(target, cfg));
+    expect(seen).toEqual(["fees.pos", "payoutFee"]); expect(target.payoutFee).toBe(900); expect(target.fees.pos.pct).toBe(0.03);
+  });
+
   it("starts with South Africa active (baseline) and Zambia as a draft", async () => {
     const o = (await call("GET", "/")).body;
     expect(o.approvalsRequired).toBe(2);
