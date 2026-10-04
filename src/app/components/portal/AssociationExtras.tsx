@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Coins } from "lucide-react";
 import { SectionPanel, StatCard, TableCard, Badge } from "../dashboards/DashboardShell";
 import { portalClient, useLoad, Status, Empty, ActionButton, inputCls, rand, day, when } from "./ui";
-import { CsvButton, Pager, RangeBar, RouteMap, TrendChart, rangeQuery, saToday, saShift, monthStart, type MapPosition, type MapRoute, type Range } from "./widgets";
+import { MapView } from "./MapView";
+import { CsvButton, Pager, RangeBar, TrendChart, useAutoRefresh, rangeQuery, saToday, saShift, monthStart, type MapPosition, type MapRoute, type Range } from "./widgets";
 
 const COLOR = "#EF4444";
 const call = portalClient("association");
@@ -78,10 +79,19 @@ export function parseWaypoints(input: string): { points: { lat: number; lng: num
   return { points };
 }
 
+/** The valid points typed so far (bad lines are skipped), so the map can preview a route while it is being drawn. */
+export function draftPoints(input: string): { lat: number; lng: number }[] {
+  return input.split(/\r?\n/).flatMap((l) => {
+    const p = parseWaypoints(l + "\n" + l);              // reuse the strict single-line parser (a line repeated satisfies the 2-point minimum)
+    return "points" in p ? [p.points[0]] : [];
+  });
+}
+
 /** Routes: create against a member vehicle's fare terminal, switch on or off, adjust the allowed distance, and see violations. */
 export function RoutesManager() {
   const [routes, reload] = useLoad<{ routes: Route[] }>(() => call("/routes"));
   const [terminals] = useLoad<{ terminals: { id: string; serial: string; registration: string }[] }>(() => call("/terminals"));
+  const [mapData] = useLoad<{ routes: MapRoute[]; positions: MapPosition[] }>(() => call("/map"));
   const [f, setF] = useState({ terminalId: "", name: "", tolerance: "200", points: "" });
   const [open, setOpen] = useState<string | null>(null);
   const create = async () => {
@@ -116,6 +126,13 @@ export function RoutesManager() {
           <input className={inputCls} placeholder="Route name" maxLength={80} value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
           <input className={inputCls} placeholder="Allowed metres off the path" inputMode="numeric" value={f.tolerance} onChange={(e) => setF({ ...f, tolerance: e.target.value })} />
           <textarea className={inputCls + " sm:col-span-3 font-mono"} rows={5} placeholder={"One point per line, in order: latitude, longitude\n-26.2678, 27.8585\n-26.2041, 28.0473"} value={f.points} onChange={(e) => setF({ ...f, points: e.target.value })} />
+          <div className="sm:col-span-3 space-y-2">
+            <p className="text-xs text-white/60">Click on the map to add points in order, or type them above. Existing routes are shown for reference.</p>
+            {mapData.state === "ready" && <MapView routes={mapData.data.routes} positions={mapData.data.positions} color={COLOR} draft={draftPoints(f.points)} height={380}
+              onPick={(lat, lng) => setF((p) => ({ ...p, points: (p.points.trim() ? p.points.replace(/\s+$/, "") + "\n" : "") + lat + ", " + lng }))} />}
+            <div className="flex gap-3 text-xs"><button type="button" className="underline text-white/70" onClick={() => setF((p) => ({ ...p, points: p.points.replace(/\s+$/, "").split("\n").slice(0, -1).join("\n") }))}>Undo last point</button>
+              <button type="button" className="underline text-white/70" onClick={() => setF((p) => ({ ...p, points: "" }))}>Clear points</button></div>
+          </div>
           <div className="sm:col-span-3"><ActionButton label="Create route" color={COLOR} onRun={create} /></div>
           <p className="sm:col-span-3 text-[11px] text-white/40">The path is checked against vehicle positions; going further than the allowed distance records a violation and a fine under the platform's existing rules.</p>
         </div>
@@ -131,8 +148,9 @@ function ViolationList({ routeId }: { routeId: string }) {
 }
 
 export function AssociationMap() {
-  const [load] = useLoad<{ routes: MapRoute[]; positions: MapPosition[] }>(() => call("/map"));
-  return <Status load={load}>{({ routes, positions }) => <RouteMap routes={routes} positions={positions} color={COLOR} />}</Status>;
+  const [load, reload] = useLoad<{ routes: MapRoute[]; positions: MapPosition[] }>(() => call("/map"));
+  useAutoRefresh(reload, 30_000);                       // vehicle positions stay current without touching the map view
+  return <Status load={load}>{({ routes, positions }) => <MapView routes={routes} positions={positions} color={COLOR} />}</Status>;
 }
 
 export function DeparturesTrend() {

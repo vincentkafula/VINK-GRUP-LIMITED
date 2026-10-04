@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Wallet } from "lucide-react";
 import { SectionPanel, StatCard, TableCard } from "../dashboards/DashboardShell";
 import { portalClient, useLoad, Status, Empty, rand, day } from "./ui";
-import { CsvButton, RangeBar, RouteMap, TrendChart, rangeQuery, saToday, saShift, monthStart, type MapPosition, type MapRoute, type Range } from "./widgets";
+import { MapView } from "./MapView";
+import { CsvButton, RangeBar, TrendChart, useAutoRefresh, rangeQuery, saToday, saShift, monthStart, type MapPosition, type MapRoute, type Range } from "./widgets";
 
 const COLOR = "#8B5CF6";
 const call = portalClient("owner");
@@ -15,8 +16,9 @@ export function OwnerTrend() {
 
 /** The original "Routes & Map": the routes recorded for my vehicles and where each vehicle last reported from. */
 export function OwnerMap() {
-  const [load] = useLoad<{ routes: MapRoute[]; positions: MapPosition[] }>(() => call("/map"));
-  return <Status load={load}>{({ routes, positions }) => <RouteMap routes={routes} positions={positions} color={COLOR} />}</Status>;
+  const [load, reload] = useLoad<{ routes: MapRoute[]; positions: MapPosition[] }>(() => call("/map"));
+  useAutoRefresh(reload, 30_000);                       // vehicle positions stay current without touching the map view
+  return <Status load={load}>{({ routes, positions }) => <MapView routes={routes} positions={positions} color={COLOR} />}</Status>;
 }
 
 interface Statement {
