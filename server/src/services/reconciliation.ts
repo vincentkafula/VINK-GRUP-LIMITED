@@ -1,5 +1,5 @@
 import type { Db } from "../portal/driverRoutes.js";
-import { SYS_FEES, type LedgerPort } from "./moneyEngine.js";
+import { SYS_FEES, systemAccounts, type LedgerPort } from "./moneyEngine.js";
 
 /**
  * Checks that the platform's records and the Banking ledger agree, and lists what needs a person. Read-only: it never moves money or "fixes" anything.
@@ -18,10 +18,17 @@ export async function reconcile(db: Db, ledger: LedgerPort, now: Date = new Date
   const issues: Issue[] = [];
   const one = async (sql: string, p: unknown[] = []) => (await db.query(sql, p)).rows[0] as Record<string, unknown>;
 
-  const settled = (await db.query(`SELECT tap_id FROM tap_settlements WHERE status = 'settled' ORDER BY settled_at DESC LIMIT $1`, [sample])).rows;
+  const settled = (await db.query(`SELECT s.tap_id, t.currency FROM tap_settlements s JOIN terminal_taps t ON t.id = s.tap_id WHERE s.status = 'settled' ORDER BY s.settled_at DESC LIMIT $1`, [sample])).rows;
   // The platform fee line exists on every settled tap's journal (even when the investor part is zero it carries the rest of the fee), except a fare of zero.
-  const missing = settled.filter((r) => ledger.moved(`tap:${r.tap_id}`, SYS_FEES) === null).length;
+  const missing = settled.filter((r) => ledger.moved(`tap:${r.tap_id}`, systemAccounts(String(r.currency ?? "ZAR")).fees) === null).length;
   if (missing) issues.push({ severity: "problem", code: "settled_without_posting", message: "Some taps are marked settled but have no ledger posting. Do not re-run anything: ask an engineer to look.", count: missing });
+
+  // every credited bank line has its ledger posting, and lines nobody could be credited for wait for a person
+  const credited = (await db.query(`SELECT bank_ref, currency FROM pool_credits WHERE status = 'credited' ORDER BY credited_at DESC LIMIT $1`, [sample])).rows;
+  const lost = credited.filter((r) => ledger.moved(`pool:${r.bank_ref}`, systemAccounts(String(r.currency)).externalIn) === null).length;
+  if (lost) issues.push({ severity: "problem", code: "credit_without_posting", message: "Some bank credits are marked credited but have no ledger posting. Ask an engineer to look.", count: lost });
+  const unmatched = n((await one(`SELECT COUNT(*) AS c FROM pool_credits WHERE status = 'unmatched'`)).c);
+  if (unmatched) issues.push({ severity: "attention", code: "bank_credits_unmatched", message: "Bank credits could not be matched to an account. Match them on the money page.", count: unmatched });
 
   const unsettled = n((await one(`SELECT COUNT(*) AS c FROM terminal_taps WHERE status = 'confirmed' AND settled_at IS NULL`)).c);
   const blocked = (await db.query(`SELECT reason, COUNT(*) AS c FROM tap_settlements WHERE status = 'blocked' GROUP BY reason`)).rows;
@@ -39,7 +46,7 @@ export async function reconcile(db: Db, ledger: LedgerPort, now: Date = new Date
     settledTaps: n((await one(`SELECT COUNT(*) AS c FROM tap_settlements WHERE status = 'settled'`)).c), unsettledConfirmedTaps: unsettled,
     trips: n((await one(`SELECT COUNT(*) AS c FROM trips`)).c), paidItems: n((await one(`SELECT COUNT(*) AS c FROM payment_items WHERE status = 'paid'`)).c),
     waitingCents: await sum("waiting"), arrearsCents: await sum("arrears"), pendingCents: await sum("pending"),
-    platformFeesCents: ledger.balance(SYS_FEES),
+    platformFeesCents: ledger.balance(SYS_FEES), bankCreditsCredited: credited.length, bankCreditsUnmatched: unmatched,
   };
   return { ok: !issues.some((i) => i.severity === "problem"), checkedAt: now.toISOString(), figures, issues };
 }

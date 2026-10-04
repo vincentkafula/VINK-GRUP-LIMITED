@@ -1096,3 +1096,32 @@ CREATE TABLE IF NOT EXISTS association_settings (
   marshal_fee_cents  BIGINT CHECK (marshal_fee_cents >= 0),
   updated_at         TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- ─── Virtual accounts: one payment reference per user, currency and pool ────────────────────────────────────────────────
+-- Customers pay into a pooled bank account (the "in-person" or "online" channel account) quoting their own reference. A bank credit that quotes the
+-- reference is matched to the user and credited to their platform account exactly once (bank_ref is the idempotency key). Anything that does not match
+-- is kept as 'unmatched' for staff to resolve; nothing is guessed.
+CREATE TABLE IF NOT EXISTS virtual_accounts (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  currency    TEXT NOT NULL CHECK (currency IN ('ZAR','ZMW')),
+  pool        TEXT NOT NULL CHECK (pool IN ('in_person','online')),
+  reference   TEXT NOT NULL UNIQUE,
+  status      TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active','closed')),
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (user_id, currency, pool)
+);
+CREATE TABLE IF NOT EXISTS pool_credits (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  bank_ref      TEXT NOT NULL UNIQUE,
+  reference     TEXT NOT NULL,
+  user_id       UUID REFERENCES users(id) ON DELETE SET NULL,
+  amount_cents  BIGINT NOT NULL CHECK (amount_cents > 0),
+  currency      TEXT NOT NULL CHECK (currency IN ('ZAR','ZMW')),
+  status        TEXT NOT NULL CHECK (status IN ('credited','unmatched')),
+  reason        TEXT,
+  recorded_by   UUID REFERENCES users(id) ON DELETE SET NULL,
+  received_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  credited_at   TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS idx_pool_credits_status ON pool_credits(status, received_at DESC);

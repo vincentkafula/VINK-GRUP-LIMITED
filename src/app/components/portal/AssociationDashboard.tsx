@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Home, Users, CheckCircle2, MapPin, Route as RouteIcon, Coins, Car, Map as MapIcon, Landmark, FileText, UserCog, UserCheck, Building2 } from "lucide-react";
 import { Banknote } from "lucide-react";
-import { PaymentsPanel, TripsPanel, MarshalFeeSetting } from "./MoneyPanels";
+import { PaymentsPanel, TripsPanel, VirtualAccountsPanel, MarshalFeeSetting } from "./MoneyPanels";
 import { BankStrip, BankScreen } from "./BankAccount";
 import { DashboardShell, SectionPanel, StatCard, TableCard, Badge } from "../dashboards/DashboardShell";
 import { portalClient, useLoad, Status, Empty, ActionButton, outcome, inputCls, rand, day, when } from "./ui";
@@ -49,7 +49,7 @@ export function AssociationDashboard({ userName, onClose }: { userName?: string;
           {nav === "Levies" && <Levies />}
           {nav === "Fines ledger" && <FinesLedger />}
           {nav === "Statements" && <AssociationStatements />}
-          {nav === "Marshal fee & payments" && <><MarshalFeeSetting color={COLOR} /><PaymentsPanel segment="association" color={COLOR} /><TripsPanel segment="association" color={COLOR} /></>}
+          {nav === "Marshal fee & payments" && <><MarshalFeeSetting color={COLOR} /><VirtualAccountsPanel segment="association" color={COLOR} /><PaymentsPanel segment="association" color={COLOR} /><TripsPanel segment="association" color={COLOR} /></>}
           {nav === "Bank account" && <BankScreen segment="association" color={COLOR} />}
         </ScreenBoundary>
       </div>

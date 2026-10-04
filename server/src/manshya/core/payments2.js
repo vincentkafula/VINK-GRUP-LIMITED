@@ -25,6 +25,8 @@ module.exports = function buildPayments2({ db, ledger, core, rails, config, emit
     const lines = [{ account: A.bank(from.id), merchant: m.id, kind: 'bank', amount: -amount, floor: 0 }, { account: A.out, kind: 'system', amount }];
     tx(() => {
       if (externalToday(m.id) + amount > config.bank.dailyExternalLimit) throw new ApiError(409, 'limit_exceeded', 'This would exceed your daily limit for payments to other banks');
+      const refused = config.limitGuard && config.limitGuard({ merchantId: m.id, verified: !!get('SELECT verified FROM merchants WHERE id=?', m.id)?.verified, channel: 'transfer_out', amount, usedToday: externalToday(m.id) });
+      if (refused) throw new ApiError(409, 'limit_exceeded', refused);
       ledger.post('transfer', lines, { ref: id, memo: reference || `PayShap to ${shapId}` });
       run("INSERT INTO transfers(id,merchant_id,from_account,kind,to_ref,amount,reference,status,category,created_at) VALUES(?,?,?,'payshap',?,?,?,'processing','Instant payments',?)", id, m.id, from.id, shapId, amount, reference, now());
     });

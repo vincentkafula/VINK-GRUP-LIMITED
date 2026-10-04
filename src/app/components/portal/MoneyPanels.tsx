@@ -3,6 +3,7 @@ import { Wallet, Route as RouteIcon } from "lucide-react";
 import { SectionPanel, StatCard, TableCard, Badge } from "../dashboards/DashboardShell";
 import { portalClient, useLoad, Status, Empty, ActionButton, inputCls, when, day } from "./ui";
 import { Pager } from "./widgets";
+import { CopyButton } from "./BankAccount";
 
 /** Minor units on the wire (`...Cents`); shown as money. ZMW is shown as K. */
 export const money = (cents: number, currency = "ZAR") => `${currency === "ZMW" ? "K" : "R"} ${(cents / 100).toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -164,6 +165,40 @@ export function MarshalFeeSetting({ color }: { color: string }) {
               }} />
             </div>);
         }}</Status>
+      </div>
+    </SectionPanel>
+  );
+}
+
+interface VirtualAccountRow { currency: string; pool: "in_person" | "online"; poolLabel: string; reference: string; status: string; payInto: { accountNumber: string; holder: string; bank: string; type: string } | null }
+
+/**
+ * How money gets into my account: one payment reference for each currency and pool. Pay into the pooled bank account and quote the reference;
+ * the credit is matched to me when the bank reports it. Also shows my kwacha wallet balance, if I have one.
+ */
+export function VirtualAccountsPanel({ segment, color }: { segment: Role; color: string }) {
+  const call = portalClient(segment);
+  const [load, reload] = useLoad<{ accounts: VirtualAccountRow[] }>(() => call("/money/virtual-accounts"));
+  const [wallet] = useLoad<{ wallets: { currency: string; balanceCents: number }[] }>(() => call("/money/wallet"));
+  const [currency, setCurrency] = useState("ZAR"); const [pool, setPool] = useState("in_person");
+  return (
+    <SectionPanel title="Paying money in">
+      <div className="p-4 space-y-3">
+        <p className="text-xs text-white/60">Pay into the bank account shown and write your reference as the payment reference. We match it to your account when the bank reports the payment. Each reference is only yours.</p>
+        <Status load={wallet}>{({ wallets }) => wallets.length > 0 ? <div className="grid grid-cols-2 gap-3">{wallets.map((w) => <StatCard key={w.currency} label={`${w.currency} wallet`} value={money(w.balanceCents, w.currency)} icon={<Wallet className="w-4 h-4" />} color={color} />)}</div> : null}</Status>
+        <Status load={load}>{({ accounts }) => accounts.length === 0 ? <Empty>You have no payment reference yet. Create one below.</Empty> : (
+          <ul className="space-y-2">{accounts.map((a) => (
+            <li key={a.currency + a.pool} className="rounded-lg p-3" style={{ background: "#0D0B1E", border: "1px solid #2D2A50" }}>
+              <p className="text-[11px] text-white/50">{a.poolLabel} · {a.currency === "ZMW" ? "Kwacha" : "Rand"}</p>
+              <div className="flex flex-wrap items-center gap-3"><p className="font-mono text-lg font-bold tracking-wider text-white">{a.reference}</p>
+                <CopyButton value={a.reference} label="reference" color={color} /></div>
+              {a.payInto ? <p className="text-xs text-white/60 mt-1">Pay into {a.payInto.holder} · {a.payInto.bank} · account {a.payInto.accountNumber}</p> : <p className="text-xs text-amber-300 mt-1">The bank account to pay into has not been set up yet.</p>}
+            </li>))}</ul>)}</Status>
+        <div className="flex flex-wrap items-end gap-3">
+          <label className="block"><span className="text-[11px] text-white/60">Currency</span><select className={inputCls + " mt-1 !w-auto"} value={currency} onChange={(e) => setCurrency(e.target.value)}><option value="ZAR">Rand (R)</option><option value="ZMW">Kwacha (K)</option></select></label>
+          <label className="block"><span className="text-[11px] text-white/60">Pool</span><select className={inputCls + " mt-1 !w-auto"} value={pool} onChange={(e) => setPool(e.target.value)}><option value="in_person">In-Person Payment</option><option value="online">Online Payment</option></select></label>
+          <ActionButton label="Get my reference" color={color} onRun={async () => { const r = await call("/money/virtual-accounts", { method: "POST", body: { currency, pool } }); if ("error" in r) return { error: r.error }; reload(); return { message: "Ready" }; }} />
+        </div>
       </div>
     </SectionPanel>
   );

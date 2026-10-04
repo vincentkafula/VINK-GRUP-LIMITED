@@ -2,7 +2,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createRoot, type Root } from "react-dom/client";
 import { act } from "react";
-import { PaymentsPanel, DriverAgreements, OwnerAgreements, MarshalFeeSetting, money } from "./MoneyPanels";
+import { VirtualAccountsPanel, PaymentsPanel, DriverAgreements, OwnerAgreements, MarshalFeeSetting, money } from "./MoneyPanels";
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 let root: Root, host: HTMLElement, calls: { url: string; init?: RequestInit }[];
@@ -73,5 +73,19 @@ describe("MarshalFeeSetting", () => {
     expect((document.querySelector("input") as HTMLInputElement).value).toBe("25.00");
     await act(async () => { btn("Save")!.click(); }); await settle();
     expect(JSON.parse(String(calls.find((c) => c.init?.method === "PUT")!.init!.body))).toEqual({ marshalFeeCents: 2500 });
+  });
+});
+
+describe("VirtualAccountsPanel", () => {
+  it("shows my reference with where to pay, my kwacha wallet, and creates a reference on request", async () => {
+    mockApi((url, init) => {
+      if (url.includes("/wallet")) return { body: { success: true, wallets: [{ currency: "ZMW", balanceCents: 150000 }] } };
+      if (init?.method === "POST") return { body: { success: true, reference: "VKR123456789" } };
+      return { body: { success: true, accounts: [{ currency: "ZAR", pool: "in_person", poolLabel: "In-Person Payment", reference: "VKR123456785", status: "active", payInto: { accountNumber: "1234567890", holder: "Vink Pool", bank: "Test Bank", type: "Business" } }] } };
+    });
+    await render(<VirtualAccountsPanel segment="driver" color="#f00" />);
+    expect(host.textContent).toContain("VKR123456785"); expect(host.textContent).toContain("account 1234567890"); expect(host.textContent).toContain("ZMW wallet");
+    await act(async () => { btn("Get my reference")!.click(); }); await settle();
+    expect(JSON.parse(String(calls.find((c) => c.init?.method === "POST")!.init!.body))).toEqual({ currency: "ZAR", pool: "in_person" });
   });
 });

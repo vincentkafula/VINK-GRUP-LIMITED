@@ -58,6 +58,7 @@ function Body({ country, setCountry, tick, refresh, meId }: { country: "ZA" | "Z
               return <Country key={country + tick} country={country} active={c?.active ?? null} inProgress={c?.inProgress ?? null} approvalsRequired={o.approvalsRequired} meId={meId} onChange={refresh} />;
             }}</Status>
             <Reconciliation />
+            <PoolPanel />
             <RulesTester country={country} />
             <Audit key={tick} />
           </>
@@ -74,7 +75,7 @@ function Country({ country, active, inProgress, approvalsRequired, meId, onChang
 
   return (
     <div className="grid lg:grid-cols-[1fr_320px] gap-4">
-      <div className="space-y-4">
+      <div className="space-y-4 min-w-0">
         {!shown ? (
           <Empty>No version exists yet. <ActionButton small label="Start a draft" color={COLOR} onRun={async () => { const r = await configApi(`/${country}/drafts`, { method: "POST", body: {} }); if (!("error" in r)) onChange(); return fail(r); }} /></Empty>
         ) : (
@@ -233,5 +234,45 @@ function Audit() {
   return (
     <section className="space-y-2"><h2 className="text-sm font-bold text-white">Recent configuration activity</h2>
       <Status load={load}>{({ entries }) => entries.length === 0 ? <Empty>Nothing yet.</Empty> : <ul className="text-xs text-white/70 space-y-1">{entries.map((e, i) => <li key={i}>{when(e.at)} · <b className="text-white">{e.actor}</b> · {e.action.replace("config.", "").replace(".", " ")}</li>)}</ul>}</Status></section>
+  );
+}
+
+/** The pooled bank accounts: what the bank has credited, and the lines nobody could be credited for. Staff record a bank line here (or match a held one). */
+function PoolPanel() {
+  const [load, reload] = useLoad<{ channels: Record<string, { accountNumber?: string; holder?: string; bank?: string } | undefined>; virtualAccounts: { pool: string; currency: string; count: number }[]; credits: { currency: string; status: string; count: number; totalCents: number }[]; unmatched: { id: string; bankRef: string; reference: string; amountCents: number; currency: string; reason: string | null }[] }>(() => moneyApi("/pool") as never);
+  const [f, setF] = useState({ bankRef: "", reference: "", amount: "", currency: "ZAR" });
+  const [fix, setFix] = useState<Record<string, string>>({});
+  const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setF((p) => ({ ...p, [k]: e.target.value }));
+  return (
+    <section className="rounded-xl p-4 space-y-3" style={{ background: "#1A1738", border: "1px solid #2D2A50" }}>
+      <h2 className="text-sm font-bold text-white">Pooled bank accounts and virtual accounts</h2>
+      <Status load={load}>{(d) => (
+        <>
+          <p className="text-[11px] text-white/50">{(["in_person", "online"] as const).map((p) => `${p === "in_person" ? "In-Person" : "Online"}: ${d.channels[p]?.accountNumber ? `${d.channels[p]!.holder ?? ""} ${d.channels[p]!.accountNumber}` : "not set up"}`).join(" · ")}</p>
+          <p className="text-xs text-white/70">{d.virtualAccounts.length === 0 ? "No virtual accounts yet." : d.virtualAccounts.map((v) => `${v.count} ${v.currency} ${v.pool === "in_person" ? "in-person" : "online"}`).join(" · ")}</p>
+          <p className="text-xs text-white/70">{d.credits.length === 0 ? "No bank credits recorded." : d.credits.map((c) => `${c.count} ${c.status} ${c.currency} (${(c.totalCents / 100).toFixed(2)})`).join(" · ")}</p>
+          {d.unmatched.length > 0 && (
+            <ul className="space-y-2">{d.unmatched.map((u) => (
+              <li key={u.id} className="rounded-lg p-3 text-xs space-y-1" style={{ background: "#0D0B1E", border: "1px solid #2D2A50" }}>
+                <p className="text-white">{u.currency} {(u.amountCents / 100).toFixed(2)} · bank ref {u.bankRef} · typed reference <span className="font-mono">{u.reference || "(none)"}</span></p>
+                <p className="text-amber-300">{u.reason}</p>
+                <div className="flex flex-wrap items-center gap-2"><input className={inputCls + " !w-52"} placeholder="Correct reference, e.g. VKR123456789" value={fix[u.id] ?? ""} onChange={(e) => setFix((p) => ({ ...p, [u.id]: e.target.value }))} />
+                  <ActionButton small label="Match" color={COLOR} onRun={async () => { const r = await moneyApi(`/pool/credits/${u.id}/match`, { method: "POST", body: { reference: fix[u.id] ?? "" } }); if ("error" in r) return { error: r.error }; reload(); return r.data.status === "credited" ? { message: "Credited" } : { error: r.data.reason ?? "Still not matched" }; }} /></div>
+              </li>))}</ul>)}
+        </>)}</Status>
+      <div className="flex flex-wrap items-end gap-3">
+        <label className="block"><span className="text-[11px] text-white/60">Bank reference</span><input className={inputCls + " mt-1 !w-40"} value={f.bankRef} onChange={set("bankRef")} /></label>
+        <label className="block"><span className="text-[11px] text-white/60">Customer reference</span><input className={inputCls + " mt-1 !w-44"} placeholder="VKR…" value={f.reference} onChange={set("reference")} /></label>
+        <label className="block"><span className="text-[11px] text-white/60">Amount</span><input className={inputCls + " mt-1 !w-28"} inputMode="decimal" value={f.amount} onChange={set("amount")} /></label>
+        <label className="block"><span className="text-[11px] text-white/60">Currency</span><select className={inputCls + " mt-1 !w-auto"} value={f.currency} onChange={set("currency")}><option>ZAR</option><option>ZMW</option></select></label>
+        <ActionButton label="Record bank credit" color={COLOR} onRun={async () => {
+          const amountCents = Math.round(Number(f.amount) * 100);
+          if (!Number.isFinite(amountCents) || amountCents <= 0) return { error: "Enter an amount like 250.00" };
+          const r = await moneyApi("/pool/credits", { method: "POST", body: { bankRef: f.bankRef.trim(), reference: f.reference, amountCents, currency: f.currency } });
+          if ("error" in r) return { error: r.error }; reload();
+          return r.data.status === "credited" ? { message: "Credited" } : r.data.status === "duplicate" ? { message: "Already recorded; nothing changed" } : { error: `Held for matching: ${r.data.reason}` };
+        }} />
+      </div>
+    </section>
   );
 }

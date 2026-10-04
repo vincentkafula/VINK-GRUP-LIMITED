@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Home, Car, Users, BarChart3, FileText, Bell, Link2, Wallet, MapPin, Scale, Landmark } from "lucide-react";
 import { Banknote } from "lucide-react";
-import { PaymentsPanel, TripsPanel, OwnerAgreements } from "./MoneyPanels";
+import { PaymentsPanel, TripsPanel, VirtualAccountsPanel, OwnerAgreements } from "./MoneyPanels";
 import { BankStrip, BankScreen } from "./BankAccount";
 import { DashboardShell, SectionPanel, StatCard, TableCard, Badge } from "../dashboards/DashboardShell";
 import { portalClient, useLoad, Status, Empty, ActionButton, outcome, inputCls, rand, day, type Load } from "./ui";
@@ -42,7 +42,7 @@ export function OwnerDashboard({ userName, onClose }: { userName?: string; onClo
           {nav === "Reports" && <Reports />}
           {nav === "Financials" && <OwnerFinancials />}
           {nav === "Driver pay" && <OwnerAgreements color={COLOR} />}
-          {nav === "Payments & trips" && <><PaymentsPanel segment="owner" color={COLOR} /><TripsPanel segment="owner" color={COLOR} /></>}
+          {nav === "Payments & trips" && <><VirtualAccountsPanel segment="owner" color={COLOR} /><PaymentsPanel segment="owner" color={COLOR} /><TripsPanel segment="owner" color={COLOR} /></>}
           {nav === "Documents" && <Documents onChanged={reloadNotes} />}
           {nav === "Notifications" && <Notifications notes={notes} reload={reloadNotes} />}
           {nav === "Requests & links" && <LinksPanel call={call} color={COLOR} />}

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ListOrdered, History, BarChart3, Link2, Landmark } from "lucide-react";
 import { Banknote } from "lucide-react";
-import { PaymentsPanel, TripsPanel } from "./MoneyPanels";
+import { PaymentsPanel, TripsPanel, VirtualAccountsPanel } from "./MoneyPanels";
 import { BankStrip, BankScreen } from "./BankAccount";
 import { DashboardShell, SectionPanel, StatCard, TableCard } from "../dashboards/DashboardShell";
 import { portalClient, useLoad, Status, Empty, Field, ActionButton, inputCls, when, type Load } from "./ui";
@@ -39,7 +39,7 @@ export function MarshalDashboard({ userName, onClose }: { userName?: string; onC
           {nav === "Ranks & queue" && picked && <QueueScreen key={picked.id} rank={picked} onChanged={reloadRanks} />}
           {nav === "Departures" && picked && <DeparturesScreen key={picked.id} rank={picked} />}
           {nav === "Reports" && <ReportsScreen />}
-          {nav === "Payments & trips" && <><PaymentsPanel segment="marshal" color={COLOR} /><TripsPanel segment="marshal" color={COLOR} /></>}
+          {nav === "Payments & trips" && <><VirtualAccountsPanel segment="marshal" color={COLOR} /><PaymentsPanel segment="marshal" color={COLOR} /><TripsPanel segment="marshal" color={COLOR} /></>}
           {nav === "Requests & links" && <LinksPanel call={call} color={COLOR} />}
           {nav === "Bank account" && <BankScreen segment="marshal" color={COLOR} />}
         </ScreenBoundary>
