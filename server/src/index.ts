@@ -41,6 +41,7 @@ import { migrateAndSeed } from "./db/migrate.js";
 import { requireAuth, requireRole, JWT_SECRET } from "./middleware/auth.js";
 import { createPortalRouter } from "./routes/portal.js";
 import { createBankAdminRouter, manshyaBankCore, seedBankLinks } from "./portal/bankLinks.js";
+import { createMoneyEngine, manshyaLedgerPort } from "./services/moneyEngine.js";
 import { createFieldCrypto } from "./portal/fieldCrypto.js";
 import { createConfigAdminRouter, createConfigReader } from "./config/configService.js";
 import { createInboundRouter } from "./inbound/router.js";
@@ -296,6 +297,15 @@ async function boot() {
     try {
       await migrateAndSeed();
       if (pool) await seedBankLinks({ db: pool, ...bankDeps }).catch((e) => console.error("[seed] bank links failed (server continues):", e instanceof Error ? e.message : e));
+      if (pool && process.env.MONEY_ENGINE !== "off") {
+        // Settles confirmed taps, closes trips, creates the marshal fee / agreement payments and pays what is due. Safe to repeat: every posting is idempotent.
+        const engine = createMoneyEngine({ db: pool, ledger: manshyaLedgerPort(manshya as never), reader: configReader });
+        let running = false;
+        setInterval(() => {
+          if (running) return; running = true;
+          engine.runCycle().catch((e) => console.error("[money] cycle failed:", e instanceof Error ? e.message : e)).finally(() => { running = false; });
+        }, 30_000).unref();
+      }
     } catch (err) {
       migrationFailed = true;
       console.error("[db] Migration failed — server will still start, but /api/auth will error until this is fixed:", err);
