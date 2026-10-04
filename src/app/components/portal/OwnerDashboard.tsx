@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Home, Car, Users, BarChart3, FileText, Bell, Link2, Wallet, MapPin, Scale } from "lucide-react";
+import { Home, Car, Users, BarChart3, FileText, Bell, Link2, Wallet, MapPin, Scale, Landmark } from "lucide-react";
+import { BankStrip, BankScreen } from "./BankAccount";
 import { DashboardShell, SectionPanel, StatCard, TableCard, Badge } from "../dashboards/DashboardShell";
 import { portalClient, useLoad, Status, Empty, ActionButton, outcome, inputCls, rand, day, type Load } from "./ui";
 import { LinksPanel } from "./LinksPanel";
@@ -24,11 +25,12 @@ export function OwnerDashboard({ userName, onClose }: { userName?: string; onClo
     { icon: <Users className="w-4 h-4" />, label: "Drivers" }, { icon: <MapPin className="w-4 h-4" />, label: "Routes & map" },
     { icon: <BarChart3 className="w-4 h-4" />, label: "Reports" }, { icon: <Scale className="w-4 h-4" />, label: "Financials" },
     { icon: <FileText className="w-4 h-4" />, label: "Documents" }, { icon: <Bell className="w-4 h-4" />, label: "Notifications", badge: unread || undefined },
-    { icon: <Link2 className="w-4 h-4" />, label: "Requests & links" },
+    { icon: <Link2 className="w-4 h-4" />, label: "Requests & links" }, { icon: <Landmark className="w-4 h-4" />, label: "Bank account" },
   ];
   return (
     <DashboardShell title="Owner Dashboard" subtitle="Vehicles, drivers and earnings" accentColor={COLOR} gradient={`from-[${COLOR}]`} navItems={items} activeNav={nav} onNavChange={setNav} onClose={onClose} userName={userName} alertCount={unread || undefined}>
       <div className="p-4 md:p-6 space-y-4 max-w-5xl">
+        <BankStrip segment="owner" color={COLOR} onOpen={() => setNav("Bank account")} />
         <ScreenBoundary resetKey={nav}>
           {nav === "Overview" && <><Overview /><OwnerTrend /></>}
           {nav === "Vehicles" && <Vehicles />}
@@ -39,6 +41,7 @@ export function OwnerDashboard({ userName, onClose }: { userName?: string; onClo
           {nav === "Documents" && <Documents onChanged={reloadNotes} />}
           {nav === "Notifications" && <Notifications notes={notes} reload={reloadNotes} />}
           {nav === "Requests & links" && <LinksPanel call={call} color={COLOR} />}
+          {nav === "Bank account" && <BankScreen segment="owner" color={COLOR} />}
         </ScreenBoundary>
       </div>
     </DashboardShell>

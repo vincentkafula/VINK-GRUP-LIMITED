@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { TrendingUp, RadioTower, ListOrdered, FileText } from "lucide-react";
+import { TrendingUp, RadioTower, ListOrdered, FileText, Landmark } from "lucide-react";
+import { BankStrip, BankScreen } from "./BankAccount";
 import { DashboardShell, SectionPanel, StatCard, TableCard, Badge } from "../dashboards/DashboardShell";
 import { portalClient, useLoad, Status, Empty, rand, when } from "./ui";
 import { CsvButton, Pager, RangeBar, ScreenBoundary, TrendChart, rangeQuery, saToday, saShift, monthStart, type Range } from "./widgets";
@@ -8,7 +9,7 @@ const COLOR = "#14B8A6";
 const call = portalClient("investor");
 const NAV = [
   { icon: <TrendingUp className="w-4 h-4" />, label: "Income" }, { icon: <RadioTower className="w-4 h-4" />, label: "Devices" },
-  { icon: <ListOrdered className="w-4 h-4" />, label: "Trips & taps" }, { icon: <FileText className="w-4 h-4" />, label: "Statements" },
+  { icon: <ListOrdered className="w-4 h-4" />, label: "Trips & taps" }, { icon: <FileText className="w-4 h-4" />, label: "Statements" }, { icon: <Landmark className="w-4 h-4" />, label: "Bank account" },
 ];
 
 interface Period { fares: number; income: number }
@@ -21,11 +22,13 @@ export function InvestorDashboard({ userName, onClose }: { userName?: string; on
   return (
     <DashboardShell title="Investor Dashboard" subtitle="Devices and per-fare income" accentColor={COLOR} gradient={`from-[${COLOR}]`} navItems={NAV} activeNav={nav} onNavChange={setNav} onClose={onClose} userName={userName}>
       <div className="p-4 md:p-6 space-y-4 max-w-5xl">
+        <BankStrip segment="investor" color={COLOR} onOpen={() => setNav("Bank account")} />
         <ScreenBoundary resetKey={nav}>
           {nav === "Income" && <IncomeScreen />}
           {nav === "Devices" && <DevicesScreen />}
           {nav === "Trips & taps" && <TapsScreen />}
           {nav === "Statements" && <StatementsScreen />}
+          {nav === "Bank account" && <BankScreen segment="investor" color={COLOR} />}
         </ScreenBoundary>
       </div>
     </DashboardShell>

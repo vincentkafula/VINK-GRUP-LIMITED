@@ -9,6 +9,8 @@ import { createAssociationRouter } from "../portal/associationRoutes.js";
 import { createInvestorRouter } from "../portal/investorRoutes.js";
 import { createPersonalRouter } from "../portal/personalRoutes.js";
 import { createLinkRouter } from "../portal/linkRoutes.js";
+import { createBankRouter, type Deps as BankDeps } from "../portal/bankLinks.js";
+import type { BankRole } from "../portal/bankRules.js";
 
 /**
  * Role portals. Every account type has its own prefix and ONLY that role may call it, checked on the server from the signed
@@ -29,7 +31,8 @@ const PREFIX: Record<AccountRole, string> = {
 /** Without a database (local development with no DATABASE_URL) the data endpoints cannot work. */
 const unavailable: RequestHandler = (_req, res) => { res.status(503).json({ success: false, error: "The database is not configured" }); };
 
-export function createPortalRouter(db: Db | null = pool): Router {
+/** `bank` is the Banking-module connection; without it the /bank endpoints answer 503 (the rest of each dashboard still works). */
+export function createPortalRouter(db: Db | null = pool, bank: Omit<BankDeps, "db"> | null = null): Router {
   const router = Router();
   router.use(requireAuth);
 
@@ -43,7 +46,11 @@ export function createPortalRouter(db: Db | null = pool): Router {
   const mount = (role: AccountRole, make: (d: Db) => Router, links?: (d: Db) => Router) => {
     const sub = Router();
     if (!db) sub.use(unavailable);
-    else { if (links) sub.use(links(db)); sub.use(make(db)); }
+    else {
+      if (links) sub.use(links(db));
+      if (role !== "personal") sub.use("/bank", bank ? createBankRouter({ ...bank, db }, role as BankRole) : unavailable);   // the five business roles; passengers use the Manshya dashboard directly
+      sub.use(make(db));
+    }
     router.use(`/${PREFIX[role]}`, requireRole(role as never), sub);
   };
   mount("driver", createDriverRouter, (d) => createLinkRouter(d, "driver"));

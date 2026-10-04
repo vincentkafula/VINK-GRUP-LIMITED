@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { ListOrdered, History, BarChart3, Link2 } from "lucide-react";
+import { ListOrdered, History, BarChart3, Link2, Landmark } from "lucide-react";
+import { BankStrip, BankScreen } from "./BankAccount";
 import { DashboardShell, SectionPanel, StatCard, TableCard } from "../dashboards/DashboardShell";
 import { portalClient, useLoad, Status, Empty, Field, ActionButton, inputCls, when, type Load } from "./ui";
 import { LinksPanel } from "./LinksPanel";
@@ -10,7 +11,7 @@ const call = portalClient("marshal");
 const NAV = [
   { icon: <ListOrdered className="w-4 h-4" />, label: "Ranks & queue" },
   { icon: <History className="w-4 h-4" />, label: "Departures" },
-  { icon: <BarChart3 className="w-4 h-4" />, label: "Reports" },
+  { icon: <BarChart3 className="w-4 h-4" />, label: "Reports" }, { icon: <Landmark className="w-4 h-4" />, label: "Bank account" },
   { icon: <Link2 className="w-4 h-4" />, label: "Requests & links" },
 ];
 
@@ -29,12 +30,14 @@ export function MarshalDashboard({ userName, onClose }: { userName?: string; onC
   return (
     <DashboardShell title="Marshal Dashboard" subtitle="Rank queue and departures" accentColor={COLOR} gradient={`from-[${COLOR}]`} navItems={NAV} activeNav={nav} onNavChange={setNav} onClose={onClose} userName={userName}>
       <div className="p-4 md:p-6 space-y-4 max-w-5xl">
+        <BankStrip segment="marshal" color={COLOR} onOpen={() => setNav("Bank account")} />
         <ScreenBoundary resetKey={nav}>
           {(nav === "Ranks & queue" || nav === "Departures") && <RankPicker ranks={ranks} picked={picked?.id} onPick={setRankId} />}
           {nav === "Ranks & queue" && picked && <QueueScreen key={picked.id} rank={picked} onChanged={reloadRanks} />}
           {nav === "Departures" && picked && <DeparturesScreen key={picked.id} rank={picked} />}
           {nav === "Reports" && <ReportsScreen />}
           {nav === "Requests & links" && <LinksPanel call={call} color={COLOR} />}
+          {nav === "Bank account" && <BankScreen segment="marshal" color={COLOR} />}
         </ScreenBoundary>
       </div>
     </DashboardShell>

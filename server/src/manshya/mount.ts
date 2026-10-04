@@ -78,7 +78,10 @@ export function createManshyaModule() {
 
   mn.startScheduler();
   return Object.assign(mn, { payments }) as {
-    router: import("express").Router; db: { close(): void }; payments: typeof payments;
+    router: import("express").Router; db: { close(): void; prepare(sql: string): { get(...a: unknown[]): unknown } }; payments: typeof payments;
+    services: { createMerchant(name: string, o: { id: string }): unknown; listAccounts(m: { id: string }): { id: string; name: string; number: string; kind: string; balance: number }[]; statement(m: { id: string }, accountId: string, q: { limit: number }): { data: { date: string; kind: string; memo: string | null; amount: number; balance: number }[] } };
+    banking: { renameAccount(m: { id: string }, id: string, name: string): unknown };
+    config: { bankName: string; branchCode: string };
     cards: { authoriseFromProvider(a: { provider: string; authorisationId: string; providerCardId: string; amount: number; currency?: string; channel?: string; descriptor?: string }): { id: string | null; approved: boolean; reason: string | null; replayed: boolean } };
   };
 }
