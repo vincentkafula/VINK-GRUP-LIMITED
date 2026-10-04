@@ -7,6 +7,7 @@ import { adminUsers } from "../data/adminUsers.js";
 import { seedPassword, BCRYPT_ROUNDS } from "../config/secrets.js";
 import { seedRoleAccounts } from "../auth/seedRoleAccounts.js";
 import { seedDriverDemo } from "../portal/driverDemoSeed.js";
+import { ensureBaselineProfiles } from "../config/configService.js";
 import { seedLinkedDemo } from "../portal/linkedDemoSeed.js";
 
 /**
@@ -53,6 +54,7 @@ async function migrateAndSeedUnlocked(): Promise<void> {
     await seedNews();
     await seedDefaultCustomer();
     await seedAccountRestructure();
+    await ensureBaselineProfiles(pool);
     await seedTestData();
     return;
   }
@@ -74,6 +76,7 @@ async function migrateAndSeedUnlocked(): Promise<void> {
 
     await client.query("COMMIT");
     console.log("[db] Seed complete.");
+    await ensureBaselineProfiles(pool);
     await seedTestData();
   } catch (err) {
     await client.query("ROLLBACK");

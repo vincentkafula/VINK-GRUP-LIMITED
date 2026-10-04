@@ -1,0 +1,58 @@
+// @vitest-environment jsdom
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { createRoot, type Root } from "react-dom/client";
+import { act } from "react";
+import { AdminConfig } from "./AdminConfig";
+
+(globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+let root: Root, host: HTMLElement, calls: { url: string; init?: RequestInit }[];
+const CONFIG = { mode: "sandbox", currency: { code: "ZAR" }, marshalFee: { amountCents: 2000 }, trip: { tapsPerTrip: 16 }, afc: { noPinBelowCents: 4000 } };
+function mockApi(profile: Record<string, unknown>, approvals: unknown[] = []) {
+  calls = [];
+  vi.stubGlobal("fetch", vi.fn(async (url: string, init?: RequestInit) => {
+    calls.push({ url: String(url), init });
+    const u = String(url);
+    let body: unknown = { success: true };
+    if (u.endsWith("/api/admin/config/") || u.endsWith("/api/admin/config")) body = { success: true, approvalsRequired: 2, countries: [{ country: "ZA", active: { id: "p1", version: 1, mode: "sandbox" }, inProgress: { id: "p2", version: 2, status: profile.status }, versions: 2 }, { country: "ZM", active: null, inProgress: null, versions: 0 }] };
+    else if (u.includes("/profiles/")) body = { success: true, profile: { id: "p2", version: 2, createdBy: "me", note: null, config: CONFIG, ...profile }, approvals, approvalsRequired: 2, changesFromActive: [{ path: "marshalFee.amountCents", before: 2000, after: 2500 }] };
+    else if (u.includes("/versions")) body = { success: true, versions: [{ id: "p2", version: 2, status: profile.status, note: null, activatedAt: null }, { id: "p1", version: 1, status: "active", note: null, activatedAt: "2026-10-01T00:00:00Z" }] };
+    else if (u.includes("/api/admin/money/reconciliation")) body = { success: true, ok: true, checkedAt: "2026-10-05T10:00:00Z", figures: { settledTaps: 3, unsettledConfirmedTaps: 0, trips: 0, paidItems: 0, waitingCents: 0, arrearsCents: 0 }, issues: [] };
+    else if (u.includes("/validate")) body = { success: true, errors: [] };
+    else if (u.includes("/audit")) body = { success: true, entries: [] };
+    return new Response(JSON.stringify(body), { status: 200 });
+  }));
+}
+beforeEach(() => { localStorage.clear(); localStorage.setItem("vink_session", JSON.stringify({ id: "me", name: "Maker", role: "superadmin" })); host = document.createElement("div"); document.body.appendChild(host); root = createRoot(host); });
+afterEach(() => { act(() => root.unmount()); host.remove(); vi.unstubAllGlobals(); });
+const settle = () => act(async () => { await new Promise((r) => setTimeout(r, 450)); });
+const render = async () => { await act(async () => { root.render(<AdminConfig isOpen onClose={() => {}} />); }); await settle(); };
+const btn = (t: string) => [...document.querySelectorAll("button")].find((b) => b.textContent?.includes(t)) as HTMLButtonElement | undefined;
+
+describe("AdminConfig", () => {
+  it("is for staff: without a staff session it says so and calls nothing", async () => {
+    localStorage.clear(); mockApi({ status: "draft" });
+    await render();
+    expect(host.textContent).toContain("for administrators"); expect(calls).toHaveLength(0);
+  });
+  it("shows the draft, what changes against the live version, and offers save and submit to its creator", async () => {
+    mockApi({ status: "draft" });
+    await render();
+    expect(host.textContent).toContain("Records and ledger agree"); expect(host.textContent).toContain("Version 2"); expect(host.textContent).toContain("marshalFee.amountCents"); expect(host.textContent).toContain("The configuration is valid");
+    expect(btn("Save draft")).toBeTruthy(); expect(btn("Submit for approval")).toBeTruthy(); expect(btn("Approve")).toBeUndefined();
+  });
+  it("the creator cannot approve their own change; the screen says why", async () => {
+    mockApi({ status: "pending_approval" });
+    await render();
+    expect(btn("Approve")).toBeUndefined(); expect(host.textContent).toContain("you cannot approve it");
+  });
+  it("another administrator sees Approve and Reject on a pending change", async () => {
+    mockApi({ status: "pending_approval", createdBy: "someone-else" });
+    await render();
+    expect(btn("Approve")).toBeTruthy(); expect(btn("Reject")).toBeTruthy();
+  });
+  it("going live needs the confirmation phrase", async () => {
+    mockApi({ status: "approved", config: { ...CONFIG, mode: "live" } });
+    await render();
+    expect(host.textContent).toContain("LIVE MODE"); expect(document.querySelector("input[placeholder*='I_UNDERSTAND_THIS_MOVES_REAL_MONEY']")).toBeTruthy(); expect(btn("Activate (LIVE)")).toBeTruthy();
+  });
+});

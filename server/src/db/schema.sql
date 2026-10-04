@@ -970,3 +970,129 @@ CREATE TABLE IF NOT EXISTS bank_account_links (
   updated_at               TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_bank_links_status ON bank_account_links(status);
+
+-- ─── Country configuration (South Africa, Zambia): versioned, approval-gated profiles ──────────────────────────────────────
+-- One profile per country and version. Everything that differs between countries (currency, limits, fees, payouts, partner, corridors)
+-- lives in the JSON config; code reads the ACTIVE profile and hard-codes nothing. A draft is edited by its creator, submitted, approved by
+-- N DIFFERENT staff (never the creator), then activated; the previous active version is retired and kept for history.
+CREATE TABLE IF NOT EXISTS country_profiles (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  country_code  TEXT NOT NULL CHECK (country_code IN ('ZA','ZM')),
+  version       INTEGER NOT NULL,
+  status        TEXT NOT NULL CHECK (status IN ('draft','pending_approval','approved','active','retired','rejected')),
+  config        JSONB NOT NULL,
+  note          TEXT,
+  created_by    UUID REFERENCES users(id) ON DELETE SET NULL,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  submitted_at  TIMESTAMPTZ,
+  activated_at  TIMESTAMPTZ,
+  activated_by  UUID REFERENCES users(id) ON DELETE SET NULL,
+  UNIQUE (country_code, version)
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_country_profiles_one_active ON country_profiles(country_code) WHERE status = 'active';
+CREATE TABLE IF NOT EXISTS config_approvals (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  profile_id   UUID NOT NULL REFERENCES country_profiles(id) ON DELETE CASCADE,
+  approver_id  UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  decision     TEXT NOT NULL CHECK (decision IN ('approve','reject')),
+  note         TEXT,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (profile_id, approver_id)
+);
+
+-- Zambia's currency joins the ledger tables (the original CHECK did not allow ZMW). Idempotent: dropped and re-added with the longer list.
+ALTER TABLE accounts DROP CONSTRAINT IF EXISTS accounts_currency_check;
+ALTER TABLE accounts ADD CONSTRAINT accounts_currency_check CHECK (currency IN ('ZAR','USD','EUR','GBP','NGN','KES','ZMW'));
+ALTER TABLE ledger_entries DROP CONSTRAINT IF EXISTS ledger_entries_currency_check;
+ALTER TABLE ledger_entries ADD CONSTRAINT ledger_entries_currency_check CHECK (currency IN ('ZAR','USD','EUR','GBP','NGN','KES','ZMW'));
+
+-- ─── Money engine: trips, settlement of taps, driver-owner agreements, payment items ──────────────────────────────────────
+-- (see docs/payments/ZA_ZM_CONFIGURATION_GUIDE.md section 5.5). All amounts are integers in minor units.
+ALTER TABLE terminal_taps ADD COLUMN IF NOT EXISTS trip_id UUID;
+ALTER TABLE terminal_taps ADD COLUMN IF NOT EXISTS settled_at TIMESTAMPTZ;
+
+-- One row per tap that has been settled into balances (or is blocked and will be retried). The ledger posting itself is idempotent on 'tap:<id>'.
+CREATE TABLE IF NOT EXISTS tap_settlements (
+  tap_id        UUID PRIMARY KEY REFERENCES terminal_taps(id) ON DELETE CASCADE,
+  status        TEXT NOT NULL CHECK (status IN ('settled','blocked')),
+  reason        TEXT,
+  destination   UUID REFERENCES users(id) ON DELETE SET NULL,
+  updated_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  settled_at    TIMESTAMPTZ
+);
+
+-- The private agreement between an owner and a driver. The owner proposes; the driver accepts (and consents to the automatic transfers).
+CREATE TABLE IF NOT EXISTS driver_agreements (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id        UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  driver_id       UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  mode            TEXT NOT NULL CHECK (mode IN ('cash_basis_weekly','monthly_salary','per_trip_amount')),
+  amount_cents    BIGINT NOT NULL CHECK (amount_cents > 0),
+  currency        TEXT NOT NULL DEFAULT 'ZAR',
+  pay_day         SMALLINT,                      -- weekly: 1 (Monday) to 7 (Sunday); monthly: 1 to 28; per trip: not used
+  start_date      DATE NOT NULL,
+  end_date        DATE,
+  status          TEXT NOT NULL DEFAULT 'proposed' CHECK (status IN ('proposed','active','declined','ended','cancelled')),
+  proposed_by     UUID REFERENCES users(id) ON DELETE SET NULL,
+  accepted_at     TIMESTAMPTZ,
+  consent_version TEXT,
+  consent_text    TEXT,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_agreements_one_open ON driver_agreements(owner_id, driver_id) WHERE status IN ('proposed','active');
+CREATE INDEX IF NOT EXISTS idx_agreements_driver ON driver_agreements(driver_id, status);
+
+-- A trip is N confirmed taps (16) on one vehicle's terminal.
+CREATE TABLE IF NOT EXISTS trips (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  terminal_id    UUID NOT NULL REFERENCES terminals(id),
+  trip_no        BIGINT NOT NULL,
+  vehicle_id     UUID,
+  driver_id      UUID,
+  owner_id       UUID,
+  marshal_id     UUID,
+  departure_id   UUID,
+  taps           INTEGER NOT NULL,
+  fare_cents     BIGINT NOT NULL,
+  currency       TEXT NOT NULL DEFAULT 'ZAR',
+  first_tap_at   TIMESTAMPTZ NOT NULL,
+  completed_at   TIMESTAMPTZ NOT NULL,
+  needs_review   TEXT,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (terminal_id, trip_no)
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_trips_departure ON trips(departure_id) WHERE departure_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_trips_driver ON trips(driver_id, completed_at DESC);
+
+-- Every transfer between two users that the rules create (marshal fee, per-trip pay, weekly cash-basis amount, monthly salary).
+-- 'ref' makes each one happen exactly once: it is also the idempotency reference of the ledger posting.
+CREATE TABLE IF NOT EXISTS payment_items (
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  kind             TEXT NOT NULL CHECK (kind IN ('marshal_fee','per_trip_pay','weekly_cash_payment','monthly_salary')),
+  payer_id         UUID NOT NULL REFERENCES users(id),
+  payee_id         UUID NOT NULL REFERENCES users(id),
+  amount_cents     BIGINT NOT NULL CHECK (amount_cents > 0),
+  remaining_cents  BIGINT NOT NULL CHECK (remaining_cents >= 0),
+  currency         TEXT NOT NULL DEFAULT 'ZAR',
+  status           TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','waiting','arrears','paid','failed','waived','needs_review')),
+  ref              TEXT NOT NULL UNIQUE,
+  trip_id          UUID,
+  agreement_id     UUID,
+  due_at           TIMESTAMPTZ NOT NULL DEFAULT now(),
+  attempts         INTEGER NOT NULL DEFAULT 0,
+  next_attempt_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  last_error       TEXT,
+  note             TEXT,
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+  paid_at          TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS idx_payment_items_open ON payment_items(status, next_attempt_at);
+CREATE INDEX IF NOT EXISTS idx_payment_items_payer ON payment_items(payer_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_payment_items_payee ON payment_items(payee_id, created_at DESC);
+
+-- What the association sets itself (the marshal fee per completed trip). Missing row = the country profile's default.
+CREATE TABLE IF NOT EXISTS association_settings (
+  association_id     UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  marshal_fee_cents  BIGINT CHECK (marshal_fee_cents >= 0),
+  updated_at         TIMESTAMPTZ NOT NULL DEFAULT now()
+);

@@ -11,6 +11,7 @@ import { createPersonalRouter } from "../portal/personalRoutes.js";
 import { createLinkRouter } from "../portal/linkRoutes.js";
 import { createBankRouter, type Deps as BankDeps } from "../portal/bankLinks.js";
 import type { BankRole } from "../portal/bankRules.js";
+import { createMoneyRouter, type MoneyRole } from "../portal/moneyRoutes.js";
 
 /**
  * Role portals. Every account type has its own prefix and ONLY that role may call it, checked on the server from the signed
@@ -49,6 +50,7 @@ export function createPortalRouter(db: Db | null = pool, bank: Omit<BankDeps, "d
     else {
       if (links) sub.use(links(db));
       if (role !== "personal") sub.use("/bank", bank ? createBankRouter({ ...bank, db }, role as BankRole) : unavailable);   // the five business roles; passengers use the Manshya dashboard directly
+      if (role === "driver" || role === "vehicle_owner" || role === "marshal" || role === "association") sub.use("/money", createMoneyRouter(db, role as MoneyRole));
       sub.use(make(db));
     }
     router.use(`/${PREFIX[role]}`, requireRole(role as never), sub);
