@@ -970,3 +970,38 @@ CREATE TABLE IF NOT EXISTS bank_account_links (
   updated_at               TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_bank_links_status ON bank_account_links(status);
+
+-- ─── Country configuration (South Africa, Zambia): versioned, approval-gated profiles ──────────────────────────────────────
+-- One profile per country and version. Everything that differs between countries (currency, limits, fees, payouts, partner, corridors)
+-- lives in the JSON config; code reads the ACTIVE profile and hard-codes nothing. A draft is edited by its creator, submitted, approved by
+-- N DIFFERENT staff (never the creator), then activated; the previous active version is retired and kept for history.
+CREATE TABLE IF NOT EXISTS country_profiles (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  country_code  TEXT NOT NULL CHECK (country_code IN ('ZA','ZM')),
+  version       INTEGER NOT NULL,
+  status        TEXT NOT NULL CHECK (status IN ('draft','pending_approval','approved','active','retired','rejected')),
+  config        JSONB NOT NULL,
+  note          TEXT,
+  created_by    UUID REFERENCES users(id) ON DELETE SET NULL,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  submitted_at  TIMESTAMPTZ,
+  activated_at  TIMESTAMPTZ,
+  activated_by  UUID REFERENCES users(id) ON DELETE SET NULL,
+  UNIQUE (country_code, version)
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_country_profiles_one_active ON country_profiles(country_code) WHERE status = 'active';
+CREATE TABLE IF NOT EXISTS config_approvals (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  profile_id   UUID NOT NULL REFERENCES country_profiles(id) ON DELETE CASCADE,
+  approver_id  UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  decision     TEXT NOT NULL CHECK (decision IN ('approve','reject')),
+  note         TEXT,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (profile_id, approver_id)
+);
+
+-- Zambia's currency joins the ledger tables (the original CHECK did not allow ZMW). Idempotent: dropped and re-added with the longer list.
+ALTER TABLE accounts DROP CONSTRAINT IF EXISTS accounts_currency_check;
+ALTER TABLE accounts ADD CONSTRAINT accounts_currency_check CHECK (currency IN ('ZAR','USD','EUR','GBP','NGN','KES','ZMW'));
+ALTER TABLE ledger_entries DROP CONSTRAINT IF EXISTS ledger_entries_currency_check;
+ALTER TABLE ledger_entries ADD CONSTRAINT ledger_entries_currency_check CHECK (currency IN ('ZAR','USD','EUR','GBP','NGN','KES','ZMW'));

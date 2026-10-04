@@ -42,6 +42,7 @@ import { requireAuth, requireRole, JWT_SECRET } from "./middleware/auth.js";
 import { createPortalRouter } from "./routes/portal.js";
 import { createBankAdminRouter, manshyaBankCore, seedBankLinks } from "./portal/bankLinks.js";
 import { createFieldCrypto } from "./portal/fieldCrypto.js";
+import { createConfigAdminRouter, createConfigReader } from "./config/configService.js";
 import { createInboundRouter } from "./inbound/router.js";
 import { PgInboundStore, MemoryInboundStore } from "./inbound/store.js";
 
@@ -114,6 +115,9 @@ app.use("/api/portal", rateLimit({ windowMs: 60_000, max: 120, standardHeaders: 
 // Bank accounts for the dashboards: the Banking module (Manshya) is the single source of truth for numbers, balances and transactions.
 const bankDeps = { core: manshyaBankCore(manshya), crypto: createFieldCrypto(process.env, JWT_SECRET) };
 app.use("/api/portal",        createPortalRouter(pool, bankDeps));
+// Country configuration (staff only; changes are maker-checker approved). `configReader` serves the active profile to the rest of the platform.
+export const configReader = createConfigReader(pool);
+if (pool) app.use("/api/admin/config", requireAuth, requireRole("owner", "superadmin"), createConfigAdminRouter({ db: pool, reader: configReader }));
 if (pool) app.use("/api/admin/bank-links", requireAuth, requireRole("owner", "superadmin"), createBankAdminRouter({ db: pool, ...bankDeps }));
 app.use("/api/auth",          (hasDb ? createDbAuthRouter() : createMemoryAuthRouter()).router);
 app.use("/api/fraud-risk",    fraudRiskRouter);

@@ -2,12 +2,16 @@ import { Router, Request, Response } from "express";
 import { pool, hasDb } from "../db/pool.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { registerTerminal, authenticateTerminal } from "../services/terminalAuth.js";
-import { calculateRevenueSplit } from "../services/revenueSplitService.js";
+import { evaluateTap } from "../services/tapPolicy.js";
+import { createConfigReader } from "../config/configService.js";
 import { checkOffRoute } from "../services/routeGeofenceService.js";
 import { containsUnmaskedPan } from "../services/panValidation.js";
 import { emit } from "../services/wsBroadcast.js";
 
 const router: ReturnType<typeof Router> = Router();
+
+/** The active country profile (fees, no-PIN limits, sandbox confirmation) is read through a short cache so a tap does not query for it every time. */
+export const tapConfigReader = createConfigReader(pool);
 
 // Confirmed fixed amount (2026-08-18) -- R50 per off-route violation.
 const ROUTE_VIOLATION_FINE_AMOUNT = 50;
@@ -115,18 +119,22 @@ router.post("/tap", async (req: Request, res: Response): Promise<void> => {
   // everything else. See revenueSplitService.ts for the full
   // reasoning, including the feeExceedsFare edge case for a fare too
   // small to cover MANSHYA's fee.
-  const split = calculateRevenueSplit(amount);
+  // The country profile decides the fee split, the no-PIN rule and (in sandbox only) automatic confirmation. See services/tapPolicy.ts.
+  const decision = await evaluateTap(pool, tapConfigReader, {
+    terminalId: auth.terminalId ?? "", maskedPan: maskedPan ?? null, scheme: scheme ?? null, amount, currency: currency ?? "ZAR", cardholderVerification: cardholderVerification ?? null,
+  });
+  const split = decision.split;
   if (split.feeExceedsFare) {
-    console.error(`[terminal] Tap from terminal ${serial}: fare ${amount} is below MANSHYA's flat fee (${split.vinkFeeTotal}) -- owner/investor amounts are zero for this tap`);
+    console.error(`[terminal] Tap from terminal ${serial}: fare ${amount} is below the platform's flat fee (${split.vinkFeeTotal}) -- owner/investor amounts are zero for this tap`);
   }
 
   let rows;
   try {
     ({ rows } = await pool.query(
-      `INSERT INTO terminal_taps (terminal_id, masked_pan, scheme, amount, currency, cardholder_verification, emv_cryptogram_ref, vink_fee_device, vink_fee_card, owner_settlement, investor_share, idempotency_key)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING id, received_at`,
+      `INSERT INTO terminal_taps (terminal_id, masked_pan, scheme, amount, currency, cardholder_verification, emv_cryptogram_ref, vink_fee_device, vink_fee_card, owner_settlement, investor_share, idempotency_key, status, error_message)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING id, received_at`,
       [auth.terminalId, maskedPan ?? null, scheme ?? null, amount, currency ?? "ZAR", cardholderVerification ?? null, emvCryptogramRef ?? null,
-       split.vinkFeeDevice, split.vinkFeeCard, split.ownerSettlement, split.investorShare, idempotencyKey]
+       split.vinkFeeDevice, split.vinkFeeCard, split.ownerSettlement, split.investorShare, idempotencyKey, decision.status, decision.decline?.code ?? null]
     ));
   } catch (e) {
     // Unique-violation (23505) on the idempotency index means a
@@ -145,6 +153,12 @@ router.post("/tap", async (req: Request, res: Response): Promise<void> => {
       }
     }
     throw e;
+  }
+
+  // A tap the rules refuse is recorded (so it can be audited) and answered with the reason: the terminal then asks the cardholder for a PIN.
+  if (decision.decline) {
+    res.status(402).json({ success: false, error: decision.decline.message, code: decision.decline.code, data: { tapId: rows[0].id, status: "declined" } });
+    return;
   }
 
   const tap = rows[0];

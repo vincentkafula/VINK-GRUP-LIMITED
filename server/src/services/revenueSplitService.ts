@@ -68,12 +68,19 @@ export interface RevenueSplit {
 
 const round2 = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
 
-export function calculateRevenueSplit(fareAmount: number): RevenueSplit {
+/** The fee settings of a country profile (see config/countryConfig.ts). Optional: without it the original South African constants apply. */
+export interface SplitSettings { platformFee: { deviceShareCents: number; cardShareCents: number; flatCents: number }; investorPctOfFee: number }
+
+export function calculateRevenueSplit(fareAmount: number, settings?: SplitSettings): RevenueSplit {
+  const FEE_DEVICE = settings ? settings.platformFee.deviceShareCents / 100 : VINK_FEE_DEVICE;
+  const FEE_CARD = settings ? settings.platformFee.cardShareCents / 100 : VINK_FEE_CARD;
+  const FEE_TOTAL = round2(FEE_DEVICE + FEE_CARD);
+  const INVESTOR_PCT = settings ? settings.investorPctOfFee : INVESTOR_SHARE_OF_VINK_FEE_PCT;
   if (typeof fareAmount !== "number" || !isFinite(fareAmount) || fareAmount < 0) {
     throw new Error(`calculateRevenueSplit: fareAmount must be a non-negative finite number, got ${fareAmount}`);
   }
 
-  const feeExceedsFare = fareAmount < VINK_FEE_TOTAL;
+  const feeExceedsFare = fareAmount < FEE_TOTAL;
 
   // When the fare can't even cover MANSHYA's flat fee, don't produce a
   // negative owner settlement -- clamp MANSHYA's own take to what's
@@ -83,7 +90,7 @@ export function calculateRevenueSplit(fareAmount: number): RevenueSplit {
   // see clearly via feeExceedsFare, not one this function should
   // silently paper over with negative numbers.
   if (feeExceedsFare) {
-    const vinkFeeDevice = round2(fareAmount * (VINK_FEE_DEVICE / VINK_FEE_TOTAL));
+    const vinkFeeDevice = round2(fareAmount * (FEE_DEVICE / FEE_TOTAL));
     const vinkFeeCard = round2(fareAmount - vinkFeeDevice);
     return {
       fareAmount: round2(fareAmount),
@@ -96,7 +103,7 @@ export function calculateRevenueSplit(fareAmount: number): RevenueSplit {
     };
   }
 
-  const investorShare = round2(VINK_FEE_TOTAL * INVESTOR_SHARE_OF_VINK_FEE_PCT);
+  const investorShare = round2(FEE_TOTAL * INVESTOR_PCT);
   // Owner loses only MANSHYA's flat fee -- never fee-plus-investor-share.
   // The investor's R0.10 is carved out from WITHIN MANSHYA's own R1.00
   // fee (MANSHYA nets R0.90 after paying it), not an additional deduction
@@ -106,13 +113,13 @@ export function calculateRevenueSplit(fareAmount: number): RevenueSplit {
   // shipped, verified against Vincent's own wording ("10% of
   // transaction fee of vink system" -- of MANSHYA's fee, not of the fare
   // on top of MANSHYA's fee).
-  const ownerSettlement = round2(fareAmount - VINK_FEE_TOTAL);
+  const ownerSettlement = round2(fareAmount - FEE_TOTAL);
 
   return {
     fareAmount: round2(fareAmount),
-    vinkFeeDevice: VINK_FEE_DEVICE,
-    vinkFeeCard: VINK_FEE_CARD,
-    vinkFeeTotal: VINK_FEE_TOTAL,
+    vinkFeeDevice: FEE_DEVICE,
+    vinkFeeCard: FEE_CARD,
+    vinkFeeTotal: FEE_TOTAL,
     investorShare,
     ownerSettlement,
     feeExceedsFare: false,
