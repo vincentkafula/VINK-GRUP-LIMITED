@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Home, Users, CheckCircle2, MapPin, Route as RouteIcon, Coins, Car, Map as MapIcon, Landmark, FileText, UserCog, UserCheck } from "lucide-react";
+import { Home, Users, CheckCircle2, MapPin, Route as RouteIcon, Coins, Car, Map as MapIcon, Landmark, FileText, UserCog, UserCheck, Building2 } from "lucide-react";
+import { BankStrip, BankScreen } from "./BankAccount";
 import { DashboardShell, SectionPanel, StatCard, TableCard, Badge } from "../dashboards/DashboardShell";
 import { portalClient, useLoad, Status, Empty, ActionButton, outcome, inputCls, rand, day, when } from "./ui";
 import { MembersList, VehiclesList, RoutesManager, AssociationMap, DeparturesTrend, FinesLedger, AssociationStatements } from "./AssociationExtras";
@@ -26,10 +27,12 @@ export function AssociationDashboard({ userName, onClose }: { userName?: string;
     { icon: <CheckCircle2 className="w-4 h-4" />, label: "Approvals", badge: pending || undefined }, { icon: <MapPin className="w-4 h-4" />, label: "Ranks" },
     { icon: <RouteIcon className="w-4 h-4" />, label: "Routes" }, { icon: <MapIcon className="w-4 h-4" />, label: "Map" },
     { icon: <Coins className="w-4 h-4" />, label: "Levies" }, { icon: <Landmark className="w-4 h-4" />, label: "Fines ledger" }, { icon: <FileText className="w-4 h-4" />, label: "Statements" },
+    { icon: <Building2 className="w-4 h-4" />, label: "Bank account" },
   ];
   return (
     <DashboardShell title="Association" subtitle="Members, ranks, routes and levies" accentColor={COLOR} gradient={`from-[${COLOR}]`} navItems={items} activeNav={nav} onNavChange={setNav} onClose={onClose} userName={userName} alertCount={pending || undefined}>
       <div className="p-4 md:p-6 space-y-4 max-w-5xl">
+        <BankStrip segment="association" color={COLOR} onOpen={() => setNav("Bank account")} />
         <ScreenBoundary resetKey={nav}>
           {nav === "Overview" && <><Overview /><DeparturesTrend /></>}
           {nav === "Owners" && <><MembersList role="vehicle_owner" onChanged={reloadReqs} /><Invite onChanged={reloadReqs} /></>}
@@ -43,6 +46,7 @@ export function AssociationDashboard({ userName, onClose }: { userName?: string;
           {nav === "Levies" && <Levies />}
           {nav === "Fines ledger" && <FinesLedger />}
           {nav === "Statements" && <AssociationStatements />}
+          {nav === "Bank account" && <BankScreen segment="association" color={COLOR} />}
         </ScreenBoundary>
       </div>
     </DashboardShell>

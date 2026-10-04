@@ -951,3 +951,22 @@ ALTER TABLE terminal_taps ADD COLUMN IF NOT EXISTS vink_fee_device NUMERIC(10,2)
 ALTER TABLE terminal_taps ADD COLUMN IF NOT EXISTS vink_fee_card   NUMERIC(10,2);
 ALTER TABLE terminal_taps ADD COLUMN IF NOT EXISTS owner_settlement NUMERIC(10,2);
 ALTER TABLE terminal_taps ADD COLUMN IF NOT EXISTS investor_share   NUMERIC(10,2);
+
+-- ─── Bank account links: each dashboard user is linked to a bank account held in the Banking module (Manshya) ───────────────
+-- Only the LINK lives here. The account number, balance and transactions are always read live from the Banking module, so there is a single
+-- source of truth. Business details are encrypted by the application (AES-256-GCM, see portal/fieldCrypto.ts) before they are stored.
+CREATE TABLE IF NOT EXISTS bank_account_links (
+  id                       UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id                  UUID NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,   -- one linked account per user
+  manshya_account_id       TEXT NOT NULL UNIQUE,                                           -- an account can belong to only one user
+  holder_type              TEXT NOT NULL CHECK (holder_type IN ('personal','business')),
+  business_name_enc        TEXT,
+  registration_number_enc  TEXT,
+  status                   TEXT NOT NULL DEFAULT 'verified' CHECK (status IN ('verified','pending_review','rejected')),
+  reviewed_by              UUID REFERENCES users(id) ON DELETE SET NULL,
+  reviewed_at              TIMESTAMPTZ,
+  review_note              TEXT,
+  created_at               TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at               TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_bank_links_status ON bank_account_links(status);

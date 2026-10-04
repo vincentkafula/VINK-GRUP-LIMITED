@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { User, Car, Route as RouteIcon, Wallet, Bell, Loader2, TriangleAlert, Link2, FileText } from "lucide-react";
+import { User, Car, Route as RouteIcon, Wallet, Bell, Loader2, TriangleAlert, Link2, FileText, Landmark } from "lucide-react";
+import { BankStrip, BankScreen } from "./BankAccount";
 import { portalClient } from "./ui";
 import { LinksPanel } from "./LinksPanel";
 import { PowerPanel, DriverTrips, DriverTrend, DriverStatements } from "./DriverExtras";
@@ -16,7 +17,7 @@ const NAV_BASE = [
   { icon: <Car className="w-4 h-4" />, label: "Vehicle & licence" },
   { icon: <RouteIcon className="w-4 h-4" />, label: "Route & trips" },
   { icon: <Wallet className="w-4 h-4" />, label: "Earnings" },
-  { icon: <FileText className="w-4 h-4" />, label: "Statements" },
+  { icon: <FileText className="w-4 h-4" />, label: "Statements" }, { icon: <Landmark className="w-4 h-4" />, label: "Bank account" },
   { icon: <Bell className="w-4 h-4" />, label: "Notifications" },
   { icon: <Link2 className="w-4 h-4" />, label: "Requests & links" },
 ];
@@ -58,6 +59,7 @@ export function DriverDashboard({ userName, onClose }: { userName?: string; onCl
     <DashboardShell title="Driver's Dashboard" subtitle="Trips, earnings and vehicle" accentColor={COLOR} gradient={`from-[${COLOR}]`}
       navItems={navItems} activeNav={nav} onNavChange={setNav} onClose={onClose} userName={userName} alertCount={unread || undefined}>
       <div className="p-4 md:p-6 space-y-4 max-w-5xl">
+        <BankStrip segment="driver" color={COLOR} onOpen={() => setNav("Bank account")} />
         <ScreenBoundary resetKey={nav}>
           {nav === "Profile" && <ProfileScreen onChanged={reloadNotes} />}
           {nav === "Vehicle & licence" && <VehicleScreen />}
@@ -66,6 +68,7 @@ export function DriverDashboard({ userName, onClose }: { userName?: string; onCl
           {nav === "Statements" && <DriverStatements />}
           {nav === "Notifications" && <NotificationsScreen notes={notes} reload={reloadNotes} />}
           {nav === "Requests & links" && <LinksPanel call={linkCall} color={COLOR} canAskOwner />}
+          {nav === "Bank account" && <BankScreen segment="driver" color={COLOR} />}
         </ScreenBoundary>
       </div>
     </DashboardShell>

@@ -40,6 +40,8 @@ import { hasDb, pool } from "./db/pool.js";
 import { migrateAndSeed } from "./db/migrate.js";
 import { requireAuth, requireRole, JWT_SECRET } from "./middleware/auth.js";
 import { createPortalRouter } from "./routes/portal.js";
+import { createBankAdminRouter, manshyaBankCore, seedBankLinks } from "./portal/bankLinks.js";
+import { createFieldCrypto } from "./portal/fieldCrypto.js";
 import { createInboundRouter } from "./inbound/router.js";
 import { PgInboundStore, MemoryInboundStore } from "./inbound/store.js";
 
@@ -109,7 +111,10 @@ app.use("/api/auth/refresh", rateLimit({ windowMs: 15 * 60_000, max: 100, standa
 // ─── Routes ──────────────────────────────────────────────────────────────────
 // Writes through the role dashboards are throttled per client (reads are not): 120 changes a minute is far above real use.
 app.use("/api/portal", rateLimit({ windowMs: 60_000, max: 120, standardHeaders: true, legacyHeaders: false, skip: (req) => req.method === "GET" }));
-app.use("/api/portal",        createPortalRouter());
+// Bank accounts for the dashboards: the Banking module (Manshya) is the single source of truth for numbers, balances and transactions.
+const bankDeps = { core: manshyaBankCore(manshya), crypto: createFieldCrypto(process.env, JWT_SECRET) };
+app.use("/api/portal",        createPortalRouter(pool, bankDeps));
+if (pool) app.use("/api/admin/bank-links", requireAuth, requireRole("owner", "superadmin"), createBankAdminRouter({ db: pool, ...bankDeps }));
 app.use("/api/auth",          (hasDb ? createDbAuthRouter() : createMemoryAuthRouter()).router);
 app.use("/api/fraud-risk",    fraudRiskRouter);
 app.use("/api/terminal",      terminalRouter);
@@ -286,6 +291,7 @@ async function boot() {
   if (hasDb) {
     try {
       await migrateAndSeed();
+      if (pool) await seedBankLinks({ db: pool, ...bankDeps }).catch((e) => console.error("[seed] bank links failed (server continues):", e instanceof Error ? e.message : e));
     } catch (err) {
       migrationFailed = true;
       console.error("[db] Migration failed — server will still start, but /api/auth will error until this is fixed:", err);
