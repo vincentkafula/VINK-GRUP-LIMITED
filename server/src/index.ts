@@ -45,6 +45,7 @@ import { syncManshyaFees } from "./config/manshyaFeeSync.js";
 import { createMoneyEngine, manshyaLedgerPort, walletLedgerAccount } from "./services/moneyEngine.js";
 import { createLimitGuard } from "./config/limitGuard.js";
 import { createCrossBorder } from "./services/crossBorderService.js";
+import { createBankFeedRouter } from "./routes/bankFeed.js";
 import type { CountryConfig } from "./config/countryConfig.js";
 import { createMoneyAdminRouter } from "./routes/moneyAdminRouter.js";
 import { createFieldCrypto } from "./portal/fieldCrypto.js";
@@ -87,6 +88,10 @@ app.use("/api/inbound", createInboundRouter({
   guard: [requireAuth, requireRole("owner", "superadmin")],
 }));
 
+// The bank's signed feed of credits to the pooled accounts: raw body for the signature, so also before the JSON parser. Wired up below once the money engine exists.
+const bankFeed: { router?: express.Router } = {};
+app.use("/api/webhooks/bank-credits", (req, res, next) => (bankFeed.router ? bankFeed.router(req, res, next) : next()));
+
 app.use(express.json({ limit: "1mb" }));
 app.use(requestLogger);
 
@@ -128,6 +133,7 @@ const moneyEngine = pool ? createMoneyEngine({ db: pool, ledger: moneyLedger, re
 let zaProfile: CountryConfig | null = null;
 (manshya.config as unknown as { limitGuard: unknown }).limitGuard = createLimitGuard(() => zaProfile);
 const crossBorder = moneyEngine && pool ? createCrossBorder({ db: pool, ledger: moneyLedger, engine: moneyEngine, reader: configReader }) : undefined;
+if (moneyEngine) bankFeed.router = createBankFeedRouter({ deps: { db: pool!, ledger: moneyLedger, engine: moneyEngine, reader: configReader }, secret: process.env.BANK_WEBHOOK_SECRET?.trim() || undefined });
 const channelAccounts = () => readChannelAccounts(process.env, () => {});
 app.use("/api/portal",        createPortalRouter(pool, bankDeps, {
   channels: channelAccounts, crossBorder,

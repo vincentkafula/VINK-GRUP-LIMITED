@@ -175,3 +175,38 @@ describe("instant credit from the reserve", () => {
     await expect(fundReserve(deps, { ref: "RES-10", currency: "USD", amountCents: 1 })).rejects.toThrow();
   });
 });
+
+describe("card and cash-machine limits from the profile", () => {
+  const guardOn = () => createLimitGuard(() => ({ ...DEFAULT_ZA, limits: { ...DEFAULT_ZA.limits, enforce: true } }));
+  type Cards = { order(m: { id: string }, b: unknown): { id: string }; activate(m: { id: string }, id: string): unknown; update(m: { id: string }, id: string, b: unknown): unknown; authorize(m: { id: string }, b: unknown): { approved: boolean; reason: string | null } };
+  let cards: Cards, m: { id: string }, cardId: string;
+  beforeEach(() => {
+    const x = mod as unknown as { cards: Cards; services: { listAccounts(m: { id: string }): { id: string }[] }; db: { transaction<T>(f: () => T): { immediate(): T } }; ledger: { post(k: string, l: unknown[], o: unknown): string } };
+    cards = x.cards; m = { id: U.driver };
+    const from = x.services.listAccounts(m)[0].id;
+    x.db.transaction(() => x.ledger.post("test", [{ account: "sys:external_in", kind: "system", amount: -5_000_000 }, { account: bankLedgerAccount(from), merchant: U.driver, kind: "bank", amount: 5_000_000 }], {})).immediate();
+    cardId = cards.order(m, { accountId: from, dailyLimit: 5_000_000, limit: 50_000_000 }).id; cards.activate(m, cardId);
+    cards.update(m, cardId, { tap: true, online: true, intl: true });
+  });
+  const pay = (channel: string, amount: number) => cards.authorize(m, { cardId, amount, channel });
+
+  it("does nothing unless the profile switches enforcement on", () => { expect(pay("online", 900_000)).toMatchObject({ approved: true }); });
+  it("declines above the daily limit for the channel at the customer's level, counting what was already spent", () => {
+    (mod as unknown as { config: { limitGuard?: unknown } }).config.limitGuard = guardOn();
+    const l = DEFAULT_ZA.limits;
+    expect(pay("tap", l.posDailyCents.basic - 50_000)).toMatchObject({ approved: true });
+    expect(pay("chip", 100_000)).toMatchObject({ approved: false, reason: "tier_limit" });
+    expect(pay("chip", 50_000)).toMatchObject({ approved: true });                                    // exactly to the limit
+    expect(pay("online", l.onlineDailyCents.basic + 1)).toMatchObject({ approved: false, reason: "tier_limit" });
+    expect(pay("online", l.onlineDailyCents.basic)).toMatchObject({ approved: true });
+    expect(pay("online", 1)).toMatchObject({ approved: false, reason: "tier_limit" });
+    expect(pay("atm", l.atmDailyCents.basic + 1)).toMatchObject({ approved: false, reason: "tier_limit" });
+    expect(pay("atm", l.atmDailyCents.basic)).toMatchObject({ approved: true });
+  });
+  it("a verified customer has the higher limits", () => {
+    (mod as unknown as { config: { limitGuard?: unknown } }).config.limitGuard = guardOn();
+    (mod as unknown as { db: { prepare(s: string): { run(...a: unknown[]): unknown } } }).db.prepare("UPDATE merchants SET verified = 1 WHERE id = ?").run(U.driver);
+    expect(pay("online", DEFAULT_ZA.limits.onlineDailyCents.basic + 1)).toMatchObject({ approved: true });
+    expect(pay("online", DEFAULT_ZA.limits.onlineDailyCents.standard)).toMatchObject({ approved: false, reason: "tier_limit" });
+  });
+});

@@ -9,7 +9,7 @@ import type { CountryConfig, KycTier } from "./countryConfig.js";
  * Banking-module customers are "verified" or not; that maps to the standard and basic levels (there is no stronger identity check in that module yet).
  * The hook is synchronous (the Banking module runs it inside a database transaction), so it reads a cached copy of the profile.
  */
-export interface GuardInput { merchantId: string; verified: boolean; channel: "transfer_out"; amount: number; usedToday: number }
+export interface GuardInput { merchantId: string; verified: boolean; channel: "transfer_out" | "atm" | "pos" | "online"; amount: number; usedToday: number }
 export function createLimitGuard(getConfig: () => CountryConfig | null): (g: GuardInput) => string | null {
   return (g) => {
     const cfg = getConfig();
