@@ -46,7 +46,7 @@ const RAW_SLIDES = [
   {
     image:   heroValidator,
     cropped: [] as Side[],
-    wide: true,                                   // a complete designed picture (Today's Market): shown whole, in a larger frame
+    wide: true,                                   // a wide, complete cut-out (validator + the five channels): shown whole, in a larger frame
     eyebrow: "VINK AFC — Today's Market Multi-ticketing Validator",
     headline: <>Multi-ticketing<br /><span className="relative inline-block"><span className="relative z-10">validator.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#C9A84C" }} /></span></>,
     body: "Smarter, faster and cashless payments for a seamless travel experience — multi-channel, integrated in one system.",
@@ -164,8 +164,8 @@ export function HeroSection({ onApplyClick }: { onApplyClick?: () => void }) {
             <img
               key={current}
               src={slide.image}
-              alt={slide.wide ? "Today's Market: the multi-ticketing validator combines NFC card payment, QR-code, balance inquiry, segmented charge and GPS location in one system; shown with a commuter tapping a VINK card on a bus validator, and the EMVCo and Mastercard PayPass marks." : slide.eyebrow}
-              className={"relative z-10 w-full object-contain " + (slide.wide ? "max-w-3xl rounded-3xl shadow-2xl" : "max-w-sm sm:max-w-md md:max-w-lg max-h-[60vh]")}
+              alt={slide.wide ? "The VINK multi-ticketing validator reading a tapped card, with its five channels: NFC card payment, QR-code, balance inquiry, segmented charge and GPS location." : slide.eyebrow}
+              className={"relative z-10 w-full object-contain " + (slide.wide ? "max-w-3xl" : "max-w-sm sm:max-w-md md:max-w-lg max-h-[60vh]")}
               draggable={false}
               style={{
                 transition: "opacity 0.4s ease", opacity: fading ? 0 : 1,
