@@ -1096,3 +1096,66 @@ CREATE TABLE IF NOT EXISTS association_settings (
   marshal_fee_cents  BIGINT CHECK (marshal_fee_cents >= 0),
   updated_at         TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- ─── Virtual accounts: one payment reference per user, currency and pool ────────────────────────────────────────────────
+-- Customers pay into a pooled bank account (the "in-person" or "online" channel account) quoting their own reference. A bank credit that quotes the
+-- reference is matched to the user and credited to their platform account exactly once (bank_ref is the idempotency key). Anything that does not match
+-- is kept as 'unmatched' for staff to resolve; nothing is guessed.
+CREATE TABLE IF NOT EXISTS virtual_accounts (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  currency    TEXT NOT NULL CHECK (currency IN ('ZAR','ZMW')),
+  pool        TEXT NOT NULL CHECK (pool IN ('in_person','online')),
+  reference   TEXT NOT NULL UNIQUE,
+  status      TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active','closed')),
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (user_id, currency, pool)
+);
+CREATE TABLE IF NOT EXISTS pool_credits (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  bank_ref      TEXT NOT NULL UNIQUE,
+  reference     TEXT NOT NULL,
+  user_id       UUID REFERENCES users(id) ON DELETE SET NULL,
+  amount_cents  BIGINT NOT NULL CHECK (amount_cents > 0),
+  currency      TEXT NOT NULL CHECK (currency IN ('ZAR','ZMW')),
+  status        TEXT NOT NULL CHECK (status IN ('credited','unmatched','awaiting_clearing','reversed')),
+  clearing      TEXT NOT NULL DEFAULT 'cleared' CHECK (clearing IN ('cleared','pending','bounced')),   -- 'pending': the bank reported the payment but it has not cleared yet
+  instant       BOOLEAN NOT NULL DEFAULT false,                                                         -- credited before it cleared, from the instant-credit reserve
+  reason        TEXT,
+  recorded_by   UUID REFERENCES users(id) ON DELETE SET NULL,
+  received_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  credited_at   TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS idx_pool_credits_status ON pool_credits(status, received_at DESC);
+
+-- ─── Cross-border transfers (ZA <-> ZM) ─────────────────────────────────────────────────────────────────────────────────
+-- A transfer is quoted at a rate staff have set (there is no FX feed), then confirmed within the quote's short life. Posting is two journals (one per
+-- currency) with fixed references, so confirming again after a failure completes it instead of repeating it.
+CREATE TABLE IF NOT EXISTS fx_rates (
+  pair      TEXT PRIMARY KEY,                         -- e.g. ZAR-ZMW: how many ZMW for one ZAR
+  rate      NUMERIC(18,8) NOT NULL CHECK (rate > 0),
+  set_by    UUID REFERENCES users(id) ON DELETE SET NULL,
+  set_at    TIMESTAMPTZ NOT NULL DEFAULT now(),         -- when the rate was stored here
+  source    TEXT NOT NULL DEFAULT 'manual',               -- 'manual' or the provider's name
+  source_at TIMESTAMPTZ,                                  -- the provider's own timestamp for the rate
+  auto      BOOLEAN NOT NULL DEFAULT false                -- true: fetched automatically
+);
+CREATE TABLE IF NOT EXISTS cross_border_transfers (
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  sender_id        UUID NOT NULL REFERENCES users(id),
+  recipient_id     UUID NOT NULL REFERENCES users(id),
+  corridor         TEXT NOT NULL,
+  send_cents       BIGINT NOT NULL CHECK (send_cents > 0),
+  send_currency    TEXT NOT NULL,
+  fee_cents        BIGINT NOT NULL CHECK (fee_cents >= 0),
+  rate             NUMERIC(18,8) NOT NULL,
+  receive_cents    BIGINT NOT NULL CHECK (receive_cents >= 0),
+  receive_currency TEXT NOT NULL,
+  rate_source      TEXT,
+  status           TEXT NOT NULL DEFAULT 'quoted' CHECK (status IN ('quoted','posting','completed','expired','failed')),
+  reason           TEXT,
+  quote_expires_at TIMESTAMPTZ NOT NULL,
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+  completed_at     TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS idx_xb_sender ON cross_border_transfers(sender_id, created_at DESC);

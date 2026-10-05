@@ -409,6 +409,8 @@ module.exports = function buildServices({ db, ledger, gateways, rails, config, e
       if (ben) {
         const today = get(`SELECT COALESCE(SUM(amount),0) s FROM transfers WHERE merchant_id=? AND kind='beneficiary' AND status!='failed' AND substr(created_at,1,10)=?`, m.id, now().slice(0, 10)).s;
         if (today + amount > config.bank.dailyExternalLimit) throw new ApiError(409, 'limit_exceeded', 'This would exceed your daily limit for payments to other banks');
+        const refused = config.limitGuard && config.limitGuard({ merchantId: m.id, verified: !!get('SELECT verified FROM merchants WHERE id=?', m.id)?.verified, channel: 'transfer_out', amount, usedToday: today });
+        if (refused) throw new ApiError(409, 'limit_exceeded', refused);
       }
       ledger.post('transfer', lines, { ref: id, memo: reference || (ben ? `To ${ben.name}` : 'Transfer') });
       run('INSERT INTO transfers(id,merchant_id,from_account,kind,to_ref,amount,reference,status,category,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)',

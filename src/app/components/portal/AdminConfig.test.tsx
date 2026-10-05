@@ -16,6 +16,8 @@ function mockApi(profile: Record<string, unknown>, approvals: unknown[] = []) {
     if (u.endsWith("/api/admin/config/") || u.endsWith("/api/admin/config")) body = { success: true, approvalsRequired: 2, countries: [{ country: "ZA", active: { id: "p1", version: 1, mode: "sandbox" }, inProgress: { id: "p2", version: 2, status: profile.status }, versions: 2 }, { country: "ZM", active: null, inProgress: null, versions: 0 }] };
     else if (u.includes("/profiles/")) body = { success: true, profile: { id: "p2", version: 2, createdBy: "me", note: null, config: CONFIG, ...profile }, approvals, approvalsRequired: 2, changesFromActive: [{ path: "marshalFee.amountCents", before: 2000, after: 2500 }] };
     else if (u.includes("/versions")) body = { success: true, versions: [{ id: "p2", version: 2, status: profile.status, note: null, activatedAt: null }, { id: "p1", version: 1, status: "active", note: null, activatedAt: "2026-10-01T00:00:00Z" }] };
+    else if (u.includes("/api/admin/money/fx")) body = { success: true, rates: [{ pair: "ZAR-ZMW", rate: 1.5, setAt: new Date().toISOString(), source: "exchangerate-api.com", sourceAt: new Date().toISOString(), auto: true }] };
+    else if (u.includes("/api/admin/money/pool")) body = { success: true, channels: { in_person: { accountNumber: "1234567890", holder: "Vink Pool" } }, virtualAccounts: [{ pool: "in_person", currency: "ZAR", count: 2 }], credits: [], reserve: [{ currency: "ZAR", balanceCents: 500000, outstandingCents: 0 }], pending: [{ id: "p9", bankRef: "B9", reference: "VKR1", amountCents: 7000, currency: "ZAR", status: "credited", instant: true }], unmatched: [{ id: "c1", bankRef: "B1", reference: "VKR000", amountCents: 900, currency: "ZAR", reason: "No account has this reference." }] };
     else if (u.includes("/api/admin/money/reconciliation")) body = { success: true, ok: true, checkedAt: "2026-10-05T10:00:00Z", figures: { settledTaps: 3, unsettledConfirmedTaps: 0, trips: 0, paidItems: 0, waitingCents: 0, arrearsCents: 0 }, issues: [] };
     else if (u.includes("/validate")) body = { success: true, errors: [] };
     else if (u.includes("/audit")) body = { success: true, entries: [] };
@@ -37,7 +39,7 @@ describe("AdminConfig", () => {
   it("shows the draft, what changes against the live version, and offers save and submit to its creator", async () => {
     mockApi({ status: "draft" });
     await render();
-    expect(host.textContent).toContain("Records and ledger agree"); expect(host.textContent).toContain("Version 2"); expect(host.textContent).toContain("marshalFee.amountCents"); expect(host.textContent).toContain("The configuration is valid");
+    expect(host.textContent).toContain("Records and ledger agree"); expect(host.textContent).toContain("No account has this reference."); expect(host.textContent).toContain("2 ZAR in-person"); expect(host.textContent).toContain("Instant-credit reserve: ZAR 5000.00"); expect(host.textContent).toContain("credited early from the reserve"); expect(host.textContent).toContain("ZAR-ZMW: 1.5"); expect(host.textContent).toContain("automatic from exchangerate-api.com"); expect(btn("Refresh automatically now")).toBeTruthy(); expect(host.textContent).toContain("Version 2"); expect(host.textContent).toContain("marshalFee.amountCents"); expect(host.textContent).toContain("The configuration is valid");
     expect(btn("Save draft")).toBeTruthy(); expect(btn("Submit for approval")).toBeTruthy(); expect(btn("Approve")).toBeUndefined();
   });
   it("the creator cannot approve their own change; the screen says why", async () => {

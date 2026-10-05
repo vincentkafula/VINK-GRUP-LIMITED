@@ -40,9 +40,14 @@ import { hasDb, pool } from "./db/pool.js";
 import { migrateAndSeed } from "./db/migrate.js";
 import { requireAuth, requireRole, JWT_SECRET } from "./middleware/auth.js";
 import { createPortalRouter } from "./routes/portal.js";
-import { createBankAdminRouter, manshyaBankCore, seedBankLinks } from "./portal/bankLinks.js";
+import { createBankAdminRouter, manshyaBankCore, seedBankLinks, readChannelAccounts } from "./portal/bankLinks.js";
 import { syncManshyaFees } from "./config/manshyaFeeSync.js";
-import { createMoneyEngine, manshyaLedgerPort } from "./services/moneyEngine.js";
+import { createMoneyEngine, manshyaLedgerPort, walletLedgerAccount } from "./services/moneyEngine.js";
+import { createLimitGuard } from "./config/limitGuard.js";
+import { createCrossBorder } from "./services/crossBorderService.js";
+import { createBankFeedRouter } from "./routes/bankFeed.js";
+import { refreshRates } from "./services/fxRates.js";
+import type { CountryConfig } from "./config/countryConfig.js";
 import { createMoneyAdminRouter } from "./routes/moneyAdminRouter.js";
 import { createFieldCrypto } from "./portal/fieldCrypto.js";
 import { createConfigAdminRouter, createConfigReader } from "./config/configService.js";
@@ -84,6 +89,10 @@ app.use("/api/inbound", createInboundRouter({
   guard: [requireAuth, requireRole("owner", "superadmin")],
 }));
 
+// The bank's signed feed of credits to the pooled accounts: raw body for the signature, so also before the JSON parser. Wired up below once the money engine exists.
+const bankFeed: { router?: express.Router } = {};
+app.use("/api/webhooks/bank-credits", (req, res, next) => (bankFeed.router ? bankFeed.router(req, res, next) : next()));
+
 app.use(express.json({ limit: "1mb" }));
 app.use(requestLogger);
 
@@ -117,12 +126,22 @@ app.use("/api/auth/refresh", rateLimit({ windowMs: 15 * 60_000, max: 100, standa
 app.use("/api/portal", rateLimit({ windowMs: 60_000, max: 120, standardHeaders: true, legacyHeaders: false, skip: (req) => req.method === "GET" }));
 // Bank accounts for the dashboards: the Banking module (Manshya) is the single source of truth for numbers, balances and transactions.
 const bankDeps = { core: manshyaBankCore(manshya), crypto: createFieldCrypto(process.env, JWT_SECRET) };
-app.use("/api/portal",        createPortalRouter(pool, bankDeps));
-const moneyLedger = manshyaLedgerPort(manshya as never);
-if (pool) app.use("/api/admin/money", requireAuth, requireRole("owner", "superadmin"), createMoneyAdminRouter({ db: pool, ledger: moneyLedger, reader: createConfigReader(pool) }));
-// Country configuration (staff only; changes are maker-checker approved). `configReader` serves the active profile to the rest of the platform.
+// Country configuration (staff only; changes are maker-checked). `configReader` serves the active profile to the rest of the platform.
 export const configReader = createConfigReader(pool);
-if (pool) app.use("/api/admin/config", requireAuth, requireRole("owner", "superadmin"), createConfigAdminRouter({ db: pool, reader: configReader, onActivate: (country, cfg) => { if (country === "ZA") console.log("[config] Manshya fees synced:", syncManshyaFees(manshya.config as never, cfg).join(", ") || "no change"); } }));
+// The money engine and the pooled-account tools share one ledger port. The Banking module asks the limit guard before it sends money out, using a cached copy of the active ZA profile.
+const moneyLedger = manshyaLedgerPort(manshya as never);
+const moneyEngine = pool ? createMoneyEngine({ db: pool, ledger: moneyLedger, reader: configReader }) : null;
+let zaProfile: CountryConfig | null = null;
+(manshya.config as unknown as { limitGuard: unknown }).limitGuard = createLimitGuard(() => zaProfile);
+const crossBorder = moneyEngine && pool ? createCrossBorder({ db: pool, ledger: moneyLedger, engine: moneyEngine, reader: configReader }) : undefined;
+if (moneyEngine) bankFeed.router = createBankFeedRouter({ deps: { db: pool!, ledger: moneyLedger, engine: moneyEngine, reader: configReader }, secret: process.env.BANK_WEBHOOK_SECRET?.trim() || undefined });
+const channelAccounts = () => readChannelAccounts(process.env, () => {});
+app.use("/api/portal",        createPortalRouter(pool, bankDeps, {
+  channels: channelAccounts, crossBorder,
+  wallets: (userId) => { const b = moneyLedger.balance(walletLedgerAccount("ZMW", userId)); return b ? [{ currency: "ZMW", balanceCents: b }] : []; },
+}));
+if (pool) app.use("/api/admin/money", requireAuth, requireRole("owner", "superadmin"), createMoneyAdminRouter({ db: pool, ledger: moneyLedger, reader: configReader, engine: moneyEngine ?? undefined, channels: channelAccounts, crossBorder }));
+if (pool) app.use("/api/admin/config", requireAuth, requireRole("owner", "superadmin"), createConfigAdminRouter({ db: pool, reader: configReader, onActivate: (country, cfg) => { if (country === "ZA") { zaProfile = cfg; console.log("[config] Manshya fees synced:", syncManshyaFees(manshya.config as never, cfg).join(", ") || "no change"); } } }));
 if (pool) app.use("/api/admin/bank-links", requireAuth, requireRole("owner", "superadmin"), createBankAdminRouter({ db: pool, ...bankDeps }));
 app.use("/api/auth",          (hasDb ? createDbAuthRouter() : createMemoryAuthRouter()).router);
 app.use("/api/fraud-risk",    fraudRiskRouter);
@@ -301,13 +320,25 @@ async function boot() {
     try {
       await migrateAndSeed();
       if (pool) await seedBankLinks({ db: pool, ...bankDeps }).catch((e) => console.error("[seed] bank links failed (server continues):", e instanceof Error ? e.message : e));
-      if (pool) await configReader.active("ZA").then((a) => syncManshyaFees(manshya.config as never, a.config)).catch((e) => console.error("[config] fee sync failed:", e instanceof Error ? e.message : e));
+      if (pool) await configReader.active("ZA").then((a) => { zaProfile = a.config; return syncManshyaFees(manshya.config as never, a.config); }).catch((e) => console.error("[config] fee sync failed:", e instanceof Error ? e.message : e));
+      if (pool && process.env.FX_AUTO !== "off") {
+        // Exchange rates for cross-border quotes: fetched every hour while a route is open (and once at start). See services/fxRates.ts for the sources and safety rules.
+        const refresh = async () => {
+          const open = (await Promise.all((["ZA", "ZM"] as const).map((c) => configReader.active(c)))).some((a) => a.config.corridors.some((k) => k.enabled));
+          if (!open) return;
+          const results = await refreshRates(pool!, { pairs: ["ZAR-ZMW", "ZMW-ZAR"] });
+          for (const r of results) if (r.status !== "updated") console.warn(`[fx] ${r.pair}: ${r.status}${r.reason ? " - " + r.reason : ""}`);
+        };
+        void refresh().catch((e) => console.error("[fx] refresh failed:", e instanceof Error ? e.message : e));
+        setInterval(() => { refresh().catch((e) => console.error("[fx] refresh failed:", e instanceof Error ? e.message : e)); }, 3600_000).unref();
+      }
       if (pool && process.env.MONEY_ENGINE !== "off") {
         // Settles confirmed taps, closes trips, creates the marshal fee / agreement payments and pays what is due. Safe to repeat: every posting is idempotent.
-        const engine = createMoneyEngine({ db: pool, ledger: moneyLedger, reader: configReader });
+        const engine = moneyEngine!;
         let running = false;
         setInterval(() => {
           if (running) return; running = true;
+          configReader.active("ZA").then((a) => { zaProfile = a.config; }).catch(() => {});
           engine.runCycle().catch((e) => console.error("[money] cycle failed:", e instanceof Error ? e.message : e)).finally(() => { running = false; });
         }, 30_000).unref();
       }

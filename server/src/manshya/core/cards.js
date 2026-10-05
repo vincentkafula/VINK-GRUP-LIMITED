@@ -64,7 +64,7 @@ module.exports = function buildCards({ db, ledger, config, rewards, notify }) {
   }
   // The card controls take real effect here: status, tap, online and international switches and both limits.
   function authorize(m, b = {}) {
-    const c = card(m, b.cardId), amount = num(b.amount, 'amount', { min: 1, max: 1e10 }), channel = oneOf(b.channel || 'chip', 'channel', ['chip', 'tap', 'online', 'international']);
+    const c = card(m, b.cardId), amount = num(b.amount, 'amount', { min: 1, max: 1e10 }), channel = oneOf(b.channel || 'chip', 'channel', ['chip', 'tap', 'online', 'international', 'atm']);
     const day = now().slice(0, 10), month = now().slice(0, 7), sum = (p) => get("SELECT COALESCE(SUM(amount),0) s FROM card_transactions WHERE card_id=? AND status='approved' AND substr(created_at,1,?)=?", c.id, p.length, p).s;
     let reason = null;
     if (c.status !== 'active') reason = `card_${c.status}`;
@@ -73,6 +73,13 @@ module.exports = function buildCards({ db, ledger, config, rewards, notify }) {
     else if (channel === 'international' && !c.intl) reason = 'international_disabled';
     else if (sum(day) + amount > c.daily_limit) reason = 'daily_limit';
     else if (sum(month) + amount > c.spend_limit) reason = 'monthly_limit';
+    else if (config.limitGuard) {
+      // The country profile's daily limits for the customer's verification level (only when the profile switches enforcement on).
+      const group = channel === 'atm' ? ['atm'] : channel === 'online' || channel === 'international' ? ['online', 'international'] : ['chip', 'tap'];
+      const used = get(`SELECT COALESCE(SUM(amount),0) s FROM card_transactions WHERE merchant_id=? AND status='approved' AND substr(created_at,1,10)=? AND channel IN (${group.map(() => '?').join(',')})`, m.id, day, ...group).s;
+      const refused = config.limitGuard({ merchantId: m.id, verified: !!get('SELECT verified FROM merchants WHERE id=?', m.id)?.verified, channel: channel === 'atm' ? 'atm' : group[0] === 'online' ? 'online' : 'pos', amount, usedToday: used });
+      if (refused) reason = 'tier_limit';
+    }
     const id = rid('ctx'), descriptor = text(b.descriptor, 'descriptor', { optional: true, max: 60 });
     if (!reason) {
       try {
@@ -114,8 +121,8 @@ module.exports = function buildCards({ db, ledger, config, rewards, notify }) {
       if (currency !== 'ZAR') return record(null, false, 'currency_not_supported');
       const m = get('SELECT * FROM merchants WHERE id=?', c.merchant_id);
       if (!m || m.status === 'suspended') return record(null, false, 'account_suspended');
-      const mapped = channel === 'atm' ? 'chip' : channel;
-      if (!['chip', 'tap', 'online', 'international'].includes(mapped)) return record(null, false, 'channel_not_supported');
+      const mapped = channel;
+      if (!['chip', 'tap', 'online', 'international', 'atm'].includes(mapped)) return record(null, false, 'channel_not_supported');
       const r = authorize(m, { cardId: c.id, amount, channel: mapped, descriptor: descriptor ? String(descriptor).slice(0, 60) : undefined });
       return record(r.id, r.approved, r.reason);
     });

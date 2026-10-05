@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { allPortalsDb } from "../portal/testDb.js";
 import type { Db } from "../portal/driverRoutes.js";
 import { manshyaBankCore } from "../portal/bankLinks.js";
-import { createMoneyEngine, manshyaLedgerPort, bankLedgerAccount, SYS_FEES, SYS_CLEARING, type Engine, type LedgerPort } from "./moneyEngine.js";
+import { createMoneyEngine, manshyaLedgerPort, bankLedgerAccount, walletLedgerAccount, systemAccounts, SYS_FEES, SYS_CLEARING, type Engine, type LedgerPort } from "./moneyEngine.js";
 import { DEFAULT_ZA, DEFAULT_ZM } from "../config/countryConfig.js";
 import { reconcile } from "./reconciliation.js";
 import { checkTierLimit, decideInstantCredit, quoteCorridor } from "../config/riskRules.js";
@@ -23,10 +23,10 @@ function fund(user: string, cents: number) {
   const m = mod as unknown as { db: { transaction<T>(f: () => T): { immediate(): T } }; ledger: { post(k: string, l: unknown[], o: unknown): string } };
   m.db.transaction(() => m.ledger.post("test_fund", [{ account: "sys:external_in", kind: "system", amount: -cents }, { account: bankLedgerAccount(acct[user]), merchant: user, kind: "bank", amount: cents }], { ref: randomUUID() })).immediate();
 }
-async function taps(n: number, o: { amount?: number; at?: Date; status?: string } = {}) {
+async function taps(n: number, o: { amount?: number; at?: Date; status?: string; currency?: string } = {}) {
   const base = (o.at ?? new Date("2026-10-05T08:00:00Z")).getTime();
-  for (let i = 0; i < n; i++) await db.query(`INSERT INTO terminal_taps (terminal_id, amount, currency, status, vink_fee_device, vink_fee_card, investor_share, owner_settlement, received_at) VALUES ($1,$2,'ZAR',$3,0.5,0.5,0.1,$4,$5)`,
-    [T, o.amount ?? 15, o.status ?? "confirmed", (o.amount ?? 15) - 1, new Date(base + i * 60_000)]);
+  for (let i = 0; i < n; i++) await db.query(`INSERT INTO terminal_taps (terminal_id, amount, currency, status, vink_fee_device, vink_fee_card, investor_share, owner_settlement, received_at) VALUES ($1,$2,$6,$3,0.5,0.5,0.1,$4,$5)`,
+    [T, o.amount ?? 15, o.status ?? "confirmed", (o.amount ?? 15) - 1, new Date(base + i * 60_000), o.currency ?? "ZAR"]);
 }
 
 beforeEach(async () => {
@@ -255,5 +255,27 @@ describe("limits, instant credit and cross-border rules", () => {
     expect(quoteCorridor(open, { ...q, midRate: 0 })).toMatchObject({ code: "bad_rate" });
     expect(quoteCorridor(open, { ...q, corridorId: "ZM-ZA" })).toMatchObject({ code: "corridor_closed" });
     expect(DEFAULT_ZM.corridors[0].id).toBe("ZM-ZA");
+  });
+});
+
+describe("kwacha is kept apart from rand", () => {
+  const wal = (u: string) => ledger.balance(walletLedgerAccount("ZMW", u));
+  it("settles kwacha taps into kwacha wallets and kwacha system accounts; rand balances do not move", async () => {
+    await taps(4, { currency: "ZMW" });
+    await engine.settleTaps();
+    expect(wal(U.owner)).toBe(4 * 1400); expect(wal(U.investor)).toBe(40);
+    expect(ledger.balance(systemAccounts("ZMW").fees)).toBe(4 * 90); expect(ledger.balance(systemAccounts("ZMW").clearing)).toBe(-4 * 1500);
+    expect(bal(U.owner)).toBe(0); expect(ledger.balance(SYS_FEES)).toBe(0); expect(ledger.balance(SYS_CLEARING)).toBe(0);
+  });
+  it("the marshal fee for a kwacha trip is paid from the driver's kwacha wallet, never from rand", async () => {
+    fund(U.driver, 50_000);                                                         // rand only
+    await taps(16, { currency: "ZMW" });
+    await engine.runCycle(new Date("2026-10-05T12:00:00Z"));
+    expect((await q(`SELECT currency, status FROM payment_items WHERE kind = 'marshal_fee'`))[0]).toMatchObject({ currency: "ZMW", status: "waiting" });
+    expect(bal(U.driver)).toBe(50_000);                                             // untouched
+  });
+  it("reconciliation checks the right currency's fee account", async () => {
+    await taps(2, { currency: "ZMW" }); await engine.settleTaps();
+    expect((await reconcile(db, ledger)).ok).toBe(true);
   });
 });

@@ -32,6 +32,12 @@ export interface LedgerPort {
 }
 export const SYS_CLEARING = "sys:clearing", SYS_FEES = "sys:fees";
 export const bankLedgerAccount = (manshyaAccountId: string) => `bank:${manshyaAccountId}`;
+/**
+ * Currencies never mix. Rand lives in the users' Banking accounts and the normal system accounts. Any other currency (kwacha) has its OWN ledger accounts:
+ * a wallet per user and its own clearing and fee accounts. Every journal touches one currency only, so each currency balances on its own.
+ */
+export const walletLedgerAccount = (currency: string, userId: string) => `wallet:${currency}:${userId}`;
+export const systemAccounts = (currency: string) => (currency === "ZAR" ? { clearing: SYS_CLEARING, fees: SYS_FEES, externalIn: "sys:external_in" } : { clearing: `sys:${currency.toLowerCase()}:clearing`, fees: `sys:${currency.toLowerCase()}:fees`, externalIn: `sys:${currency.toLowerCase()}:external_in` });
 
 interface ManshyaLedgerHandle {
   db: { transaction<T>(fn: () => T): { immediate(): T }; prepare(sql: string): { get(...a: unknown[]): unknown } };
@@ -73,7 +79,7 @@ export interface Engine {
   processItems(now?: Date, limit?: number): Promise<{ paid: number; waiting: number; arrears: number }>;
   runCycle(now?: Date): Promise<Record<string, number>>;
   /** The linked, verified account of a user, or null. */
-  partyOf(userId: string | null | undefined): Promise<Party | null>;
+  partyOf(userId: string | null | undefined, currency?: string): Promise<Party | null>;
 }
 
 export function createMoneyEngine(deps: { db: Db; ledger: LedgerPort; reader: ConfigReader; now?: () => Date }): Engine {
@@ -81,10 +87,11 @@ export function createMoneyEngine(deps: { db: Db; ledger: LedgerPort; reader: Co
   const db = deps.db as unknown as Loose;
   const clock = deps.now ?? (() => new Date());
 
-  async function partyOf(userId: string | null | undefined): Promise<Party | null> {
+  async function partyOf(userId: string | null | undefined, currency = "ZAR"): Promise<Party | null> {
     if (!userId) return null;
     const r = (await db.query(`SELECT manshya_account_id FROM bank_account_links WHERE user_id = $1 AND status = 'verified'`, [userId])).rows[0];
-    return r ? { userId, account: bankLedgerAccount(r.manshya_account_id) } : null;
+    if (!r) return null;                                                          // a verified linked account is the proof of identity for every currency
+    return { userId, account: currency === "ZAR" ? bankLedgerAccount(r.manshya_account_id) : walletLedgerAccount(currency, userId) };
   }
   const cfgFor = async (currency: string): Promise<CountryConfig> => (await reader.active(countryForCurrency(currency))).config;
 
@@ -109,8 +116,9 @@ export function createMoneyEngine(deps: { db: Db; ledger: LedgerPort; reader: Co
       const agr = await activeAgreement(t.owner_id, t.driver_id, on);
       // who keeps the remainder: the driver on cash basis (they pay the owner weekly); otherwise the owner (salary and per-trip agreements, or none); the driver when there is no owner
       const destUser = agr?.mode === "cash_basis_weekly" ? t.driver_id : (t.owner_id ?? t.driver_id);
-      const dest = await partyOf(destUser);
-      const investor = investorCut > 0 ? await partyOf(t.investor_id) : null;
+      const cur = String(t.currency ?? "ZAR"), sys = systemAccounts(cur);
+      const dest = await partyOf(destUser, cur);
+      const investor = investorCut > 0 ? await partyOf(t.investor_id, cur) : null;
       const why = !destUser ? "the terminal has no owner or driver" : !dest ? "the recipient has no verified linked account" : (investorCut > 0 && t.investor_id && !investor) ? "the investor has no verified linked account" : null;
       if (why) {
         await db.query(`INSERT INTO tap_settlements (tap_id, status, reason, destination) VALUES ($1,'blocked',$2,$3)
@@ -118,7 +126,7 @@ export function createMoneyEngine(deps: { db: Db; ledger: LedgerPort; reader: Co
         blocked++; continue;
       }
       if (!investor) investorCut = 0;                                    // no investor on the terminal: the platform keeps that part of its fee
-      const lines: Line[] = [{ account: SYS_CLEARING, kind: "system", amount: -fare }, { account: SYS_FEES, kind: "system", amount: fee - investorCut }];
+      const lines: Line[] = [{ account: sys.clearing, kind: "system", amount: -fare }, { account: sys.fees, kind: "system", amount: fee - investorCut }];
       if (investor) lines.push({ account: investor.account, merchant: investor.userId, kind: "bank", amount: investorCut });
       if (remainder > 0) lines.push({ account: dest!.account, merchant: dest!.userId, kind: "bank", amount: remainder });
       const live = lines.filter((l) => l.amount !== 0);
@@ -246,7 +254,7 @@ export function createMoneyEngine(deps: { db: Db; ledger: LedgerPort; reader: Co
     for (const it of items) {
       const cfg = await cfgFor(it.currency);
       const steps = cfg.payouts.retryMinutes, retry = new Date(now.getTime() + steps[Math.min(Number(it.attempts), steps.length - 1)] * 60_000);      // back-off: 1, 5, 30, 120 minutes, then every 120
-      const payer = await partyOf(it.payer_id), payee = await partyOf(it.payee_id);
+      const payer = await partyOf(it.payer_id, it.currency), payee = await partyOf(it.payee_id, it.currency);
       const wait = async (status: "waiting" | "arrears", msg: string) => {
         await db.query(`UPDATE payment_items SET status = $2, last_error = $3, attempts = attempts + 1, next_attempt_at = $4 WHERE id = $1 AND status IN ('pending','waiting','arrears')`, [it.id, status, msg, retry]);
         status === "waiting" ? waiting++ : arrears++;
@@ -271,8 +279,9 @@ export function createMoneyEngine(deps: { db: Db; ledger: LedgerPort; reader: Co
     return { paid, waiting, arrears };
   }
 
-  async function runCycle(now: Date = clock()) {
-    const s = await settleTaps(), t = await closeTrips(), sc = await runSchedules(now), p = await processItems(now);
+  async function runCycle(at?: Date) {
+    const now = at ?? clock();
+    const s = await settleTaps(), t = await closeTrips(), sc = await runSchedules(now), p = await processItems(at ?? clock());      // items created a moment ago by this very cycle are due too
     return { settled: s.settled, blocked: s.blocked, trips: t.trips, scheduled: sc.created, paid: p.paid, waiting: p.waiting, arrears: p.arrears };
   }
   return { settleTaps, closeTrips, runSchedules, processItems, runCycle, partyOf };

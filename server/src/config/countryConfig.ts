@@ -51,6 +51,8 @@ export interface CountryConfig {
     atmDailyCents: Record<"basic" | "standard" | "full", number>;
     posDailyCents: Record<"basic" | "standard" | "full", number>;
     onlineDailyCents: Record<"basic" | "standard" | "full", number>;
+    /** When true the platform refuses payments above these limits. Off keeps today's behaviour (the Banking module's own flat limits only). */
+    enforce?: boolean;
   };
   fees: { scheduleId: string; rules: FeeRule[] };
   instantCredit: { enabled: boolean; reserveCents: number; reserveRatioMax: number; perDepositCents: Record<"basic" | "standard" | "full", number> };
@@ -154,6 +156,7 @@ export function validateConfig(input: unknown, country?: CountryCode): string[] 
   else {
     for (const t of KYC_TIERS) { const x = lim.tiers[t]; need(isObj(x) && isInt(x.balanceCents) && isInt(x.dailyInCents) && isInt(x.dailyOutCents), `limits.tiers.${t} needs balanceCents, dailyInCents and dailyOutCents.`); }
     for (const k of ["atmDailyCents", "posDailyCents", "onlineDailyCents"] as const) for (const t of ["basic", "standard", "full"]) need(isObj(lim[k]) && isInt(lim[k][t]), `limits.${k}.${t} must be a whole number of cents.`);
+    need(lim.enforce === undefined || typeof lim.enforce === "boolean", "limits.enforce must be true or false.");
     // A higher tier must never be more restricted than a lower one.
     const order = ["basic", "standard", "full"] as const;
     for (let i = 1; i < order.length; i++) { const a = lim.tiers?.[order[i - 1]], b = lim.tiers?.[order[i]]; if (isObj(a) && isObj(b)) need(b.balanceCents >= a.balanceCents && b.dailyOutCents >= a.dailyOutCents, `limits.tiers.${order[i]} must allow at least as much as ${order[i - 1]}.`); }

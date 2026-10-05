@@ -58,6 +58,8 @@ function Body({ country, setCountry, tick, refresh, meId }: { country: "ZA" | "Z
               return <Country key={country + tick} country={country} active={c?.active ?? null} inProgress={c?.inProgress ?? null} approvalsRequired={o.approvalsRequired} meId={meId} onChange={refresh} />;
             }}</Status>
             <Reconciliation />
+            <PoolPanel />
+            <FxPanel />
             <RulesTester country={country} />
             <Audit key={tick} />
           </>
@@ -74,7 +76,7 @@ function Country({ country, active, inProgress, approvalsRequired, meId, onChang
 
   return (
     <div className="grid lg:grid-cols-[1fr_320px] gap-4">
-      <div className="space-y-4">
+      <div className="space-y-4 min-w-0">
         {!shown ? (
           <Empty>No version exists yet. <ActionButton small label="Start a draft" color={COLOR} onRun={async () => { const r = await configApi(`/${country}/drafts`, { method: "POST", body: {} }); if (!("error" in r)) onChange(); return fail(r); }} /></Empty>
         ) : (
@@ -233,5 +235,78 @@ function Audit() {
   return (
     <section className="space-y-2"><h2 className="text-sm font-bold text-white">Recent configuration activity</h2>
       <Status load={load}>{({ entries }) => entries.length === 0 ? <Empty>Nothing yet.</Empty> : <ul className="text-xs text-white/70 space-y-1">{entries.map((e, i) => <li key={i}>{when(e.at)} · <b className="text-white">{e.actor}</b> · {e.action.replace("config.", "").replace(".", " ")}</li>)}</ul>}</Status></section>
+  );
+}
+
+/** The pooled bank accounts: what the bank has credited, and the lines nobody could be credited for. Staff record a bank line here (or match a held one). */
+function PoolPanel() {
+  const [load, reload] = useLoad<{ channels: Record<string, { accountNumber?: string; holder?: string; bank?: string } | undefined>; virtualAccounts: { pool: string; currency: string; count: number }[]; credits: { currency: string; status: string; count: number; totalCents: number }[]; unmatched: { id: string; bankRef: string; reference: string; amountCents: number; currency: string; reason: string | null }[]; pending: { id: string; bankRef: string; reference: string; amountCents: number; currency: string; status: string; instant: boolean }[]; reserve: { currency: string; balanceCents: number; outstandingCents: number }[] }>(() => moneyApi("/pool") as never);
+  const [f, setF] = useState({ bankRef: "", reference: "", amount: "", currency: "ZAR", pending: false });
+  const [res, setRes] = useState({ ref: "", amount: "", currency: "ZAR" });
+  const [fix, setFix] = useState<Record<string, string>>({});
+  const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setF((p) => ({ ...p, [k]: e.target.value }));
+  return (
+    <section className="rounded-xl p-4 space-y-3" style={{ background: "#1A1738", border: "1px solid #2D2A50" }}>
+      <h2 className="text-sm font-bold text-white">Pooled bank accounts and virtual accounts</h2>
+      <Status load={load}>{(d) => (
+        <>
+          <p className="text-[11px] text-white/50">{(["in_person", "online"] as const).map((p) => `${p === "in_person" ? "In-Person" : "Online"}: ${d.channels[p]?.accountNumber ? `${d.channels[p]!.holder ?? ""} ${d.channels[p]!.accountNumber}` : "not set up"}`).join(" · ")}</p>
+          <p className="text-xs text-white/70">{d.virtualAccounts.length === 0 ? "No virtual accounts yet." : d.virtualAccounts.map((v) => `${v.count} ${v.currency} ${v.pool === "in_person" ? "in-person" : "online"}`).join(" · ")}</p>
+          <p className="text-xs text-white/70">{d.credits.length === 0 ? "No bank credits recorded." : d.credits.map((c) => `${c.count} ${c.status} ${c.currency} (${(c.totalCents / 100).toFixed(2)})`).join(" · ")}</p>
+          <p className="text-xs text-white/70">Instant-credit reserve: {d.reserve.map((r) => `${r.currency} ${(r.balanceCents / 100).toFixed(2)} (${(r.outstandingCents / 100).toFixed(2)} fronted, not yet cleared)`).join(" · ")}</p>
+          {d.pending.length > 0 && (
+            <ul className="space-y-2">{d.pending.map((u) => (
+              <li key={u.id} className="rounded-lg p-3 text-xs flex flex-wrap items-center gap-3" style={{ background: "#0D0B1E", border: "1px solid #2D2A50" }}>
+                <span className="text-white">{u.currency} {(u.amountCents / 100).toFixed(2)} · {u.bankRef} · <span className="text-white/60">{u.instant ? "credited early from the reserve" : "waiting for the bank to clear it"}</span></span>
+                <ActionButton small label="Bank cleared it" color="#10B981" onRun={async () => { const r = await moneyApi(`/pool/credits/${u.id}/clear`, { method: "POST" }); if ("error" in r) return { error: r.error }; reload(); }} />
+                <ActionButton small label="Bank returned it" color="#EF4444" onRun={async () => { const r = await moneyApi(`/pool/credits/${u.id}/bounce`, { method: "POST" }); if ("error" in r) return { error: r.error }; reload(); return r.data.status === "needs_review" ? { error: r.data.reason } : { message: "Returned" }; }} /></li>))}</ul>)}
+          {d.unmatched.length > 0 && (
+            <ul className="space-y-2">{d.unmatched.map((u) => (
+              <li key={u.id} className="rounded-lg p-3 text-xs space-y-1" style={{ background: "#0D0B1E", border: "1px solid #2D2A50" }}>
+                <p className="text-white">{u.currency} {(u.amountCents / 100).toFixed(2)} · bank ref {u.bankRef} · typed reference <span className="font-mono">{u.reference || "(none)"}</span></p>
+                <p className="text-amber-300">{u.reason}</p>
+                <div className="flex flex-wrap items-center gap-2"><input className={inputCls + " !w-52"} placeholder="Correct reference, e.g. VKR123456789" value={fix[u.id] ?? ""} onChange={(e) => setFix((p) => ({ ...p, [u.id]: e.target.value }))} />
+                  <ActionButton small label="Match" color={COLOR} onRun={async () => { const r = await moneyApi(`/pool/credits/${u.id}/match`, { method: "POST", body: { reference: fix[u.id] ?? "" } }); if ("error" in r) return { error: r.error }; reload(); return r.data.status === "credited" ? { message: "Credited" } : { error: r.data.reason ?? "Still not matched" }; }} /></div>
+              </li>))}</ul>)}
+        </>)}</Status>
+      <div className="flex flex-wrap items-end gap-3">
+        <label className="block"><span className="text-[11px] text-white/60">Bank reference</span><input className={inputCls + " mt-1 !w-40"} value={f.bankRef} onChange={set("bankRef")} /></label>
+        <label className="block"><span className="text-[11px] text-white/60">Customer reference</span><input className={inputCls + " mt-1 !w-44"} placeholder="VKR…" value={f.reference} onChange={set("reference")} /></label>
+        <label className="block"><span className="text-[11px] text-white/60">Amount</span><input className={inputCls + " mt-1 !w-28"} inputMode="decimal" value={f.amount} onChange={set("amount")} /></label>
+        <label className="block"><span className="text-[11px] text-white/60">Currency</span><select className={inputCls + " mt-1 !w-auto"} value={f.currency} onChange={set("currency")}><option>ZAR</option><option>ZMW</option></select></label>
+        <label className="flex items-center gap-2 text-xs text-white/70 pb-2"><input type="checkbox" checked={f.pending} onChange={(e) => setF((p) => ({ ...p, pending: e.target.checked }))} />Not cleared yet</label>
+        <ActionButton label="Record bank credit" color={COLOR} onRun={async () => {
+          const amountCents = Math.round(Number(f.amount) * 100);
+          if (!Number.isFinite(amountCents) || amountCents <= 0) return { error: "Enter an amount like 250.00" };
+          const r = await moneyApi("/pool/credits", { method: "POST", body: { bankRef: f.bankRef.trim(), reference: f.reference, amountCents, currency: f.currency, pending: f.pending } });
+          if ("error" in r) return { error: r.error }; reload();
+          return r.data.status === "credited" ? { message: r.data.instant ? "Credited early from the reserve" : "Credited" } : r.data.status === "duplicate" ? { message: "Already recorded; nothing changed" } : r.data.status === "awaiting_clearing" ? { message: `Waiting for the bank to clear it: ${r.data.reason}` } : { error: `Held for matching: ${r.data.reason}` };
+        }} />
+      </div>
+      <div className="flex flex-wrap items-end gap-3">
+        <label className="block"><span className="text-[11px] text-white/60">Fund the reserve: bank reference</span><input className={inputCls + " mt-1 !w-40"} value={res.ref} onChange={(e) => setRes((p) => ({ ...p, ref: e.target.value }))} /></label>
+        <label className="block"><span className="text-[11px] text-white/60">Amount</span><input className={inputCls + " mt-1 !w-28"} inputMode="decimal" value={res.amount} onChange={(e) => setRes((p) => ({ ...p, amount: e.target.value }))} /></label>
+        <label className="block"><span className="text-[11px] text-white/60">Currency</span><select className={inputCls + " mt-1 !w-auto"} value={res.currency} onChange={(e) => setRes((p) => ({ ...p, currency: e.target.value }))}><option>ZAR</option><option>ZMW</option></select></label>
+        <ActionButton label="Add to reserve" color="#F59E0B" onRun={async () => { const cents = Math.round(Number(res.amount) * 100); if (!Number.isFinite(cents) || cents <= 0) return { error: "Enter an amount like 5000.00" }; const r = await moneyApi("/reserve/fund", { method: "POST", body: { ref: res.ref.trim(), currency: res.currency, amountCents: cents } }); if ("error" in r) return { error: r.error }; reload(); return { message: r.data.result === "funded" ? "Added" : "Already recorded; nothing changed" }; }} />
+      </div>
+    </section>
+  );
+}
+
+/** Exchange rates for cross-border quotes. Fetched automatically every hour while a route is open (two free sources, cross-checked); a rate set by hand is kept for 24 hours. */
+function FxPanel() {
+  const [load, reload] = useLoad<{ rates: { pair: string; rate: number; setAt: string; source: string; sourceAt: string | null; auto: boolean }[] }>(() => moneyApi("/fx") as never);
+  const [pair, setPair] = useState("ZAR-ZMW"); const [rate, setRate] = useState("");
+  return (
+    <section className="rounded-xl p-4 space-y-3" style={{ background: "#1A1738", border: "1px solid #2D2A50" }}>
+      <h2 className="text-sm font-bold text-white">Exchange rates <span className="font-normal text-white/50">· fetched automatically; a rate you set by hand is kept for 24 hours</span></h2>
+      <Status load={load}>{({ rates }) => rates.length === 0 ? <Empty>No rates set.</Empty> : <ul className="text-xs text-white/70 space-y-0.5">{rates.map((r) => <li key={r.pair}>{r.pair}: {r.rate} <span className="text-white/40">· {r.auto ? `automatic from ${r.source}${r.sourceAt ? `, source data ${when(r.sourceAt)}` : ""}` : "set by hand"} · stored {when(r.setAt)}{Date.now() - new Date(r.setAt).getTime() > (r.auto ? 3 : 1) * 3600_000 ? " · TOO OLD FOR QUOTES" : ""}</span></li>)}</ul>}</Status>
+      <div className="flex flex-wrap items-end gap-3">
+        <label className="block"><span className="text-[11px] text-white/60">Pair (how many of the second for one of the first)</span><select className={inputCls + " mt-1 !w-auto"} value={pair} onChange={(e) => setPair(e.target.value)}><option>ZAR-ZMW</option><option>ZMW-ZAR</option></select></label>
+        <label className="block"><span className="text-[11px] text-white/60">Rate</span><input className={inputCls + " mt-1 !w-28"} inputMode="decimal" value={rate} onChange={(e) => setRate(e.target.value)} /></label>
+        <ActionButton label="Refresh automatically now" color={COLOR} onRun={async () => { const r = await moneyApi("/fx/refresh", { method: "POST" }); if ("error" in r) return { error: r.error }; reload(); const bad = (r.data.results as { pair: string; status: string; reason?: string }[]).filter((x) => x.status !== "updated"); return bad.length ? { error: bad.map((x) => `${x.pair}: ${x.reason ?? x.status}`).join(" ") } : { message: "Rates updated" }; }} />
+        <ActionButton label="Set rate by hand" color="#F59E0B" onRun={async () => { const n = Number(rate); if (!(n > 0)) return { error: "Enter a rate above zero" }; const [from, to] = pair.split("-"); const r = await moneyApi("/fx", { method: "PUT", body: { from, to, rate: n } }); if ("error" in r) return { error: r.error }; setRate(""); reload(); return { message: "Saved" }; }} />
+      </div>
+    </section>
   );
 }

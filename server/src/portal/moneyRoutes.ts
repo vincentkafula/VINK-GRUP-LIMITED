@@ -1,5 +1,8 @@
 import { Router, json } from "express";
 import { h, uid, num, iso, dateOnly, isUuid, validDate, fail, isUniqueViolation, audit, pageParams, type Db } from "./common.js";
+import { ensureVirtualAccount, POOLS, POOL_LABEL, type Pool } from "../services/poolService.js";
+import type { ChannelAccount } from "./bankLinks.js";
+import type { CrossBorder } from "../services/crossBorderService.js";
 
 /**
  * Driver-owner agreements, the marshal fee and the payments the rules create. Mounted at /api/portal/<role>/money for the four roles that use it.
@@ -30,9 +33,57 @@ const present = (r: Record<string, unknown>) => ({
   status: r.status, proposedBy: r.proposed_by, acceptedAt: iso(r.accepted_at), createdAt: iso(r.created_at), consentText: r.consent_text ?? null,
 });
 
-export function createMoneyRouter(db: Db, role: MoneyRole): Router {
+export interface MoneyDeps {
+  /** The pooled bank accounts customers pay into (from PAYMENT_CHANNEL_ACCOUNTS). */
+  channels?: () => Partial<Record<Pool, ChannelAccount>>;
+  /** Balances in currencies other than rand (kwacha wallets). Rand is shown with the bank account. */
+  wallets?: (userId: string) => { currency: string; balanceCents: number }[];
+  /** Sending money between South Africa and Zambia. */
+  crossBorder?: CrossBorder;
+}
+
+export function createMoneyRouter(db: Db, role: MoneyRole, deps: MoneyDeps = {}): Router {
   const router = Router();
   router.use(json({ limit: "20kb" }));
+
+  /* virtual accounts: my payment reference for each currency and pool, and where to pay */
+  router.get("/virtual-accounts", h(async (req, res) => {
+    const rows = (await db.query(`SELECT currency, pool, reference, status FROM virtual_accounts WHERE user_id = $1 ORDER BY currency, pool`, [uid(req)])).rows;
+    const channels = deps.channels?.() ?? {};
+    res.json({ success: true, accounts: rows.map((r) => ({ currency: r.currency, pool: r.pool, poolLabel: POOL_LABEL[r.pool as Pool], reference: r.reference, status: r.status, payInto: channels[r.pool as Pool] ?? null })) });
+  }));
+  router.post("/virtual-accounts", h(async (req, res) => {
+    const b = (req.body ?? {}) as Record<string, unknown>;
+    if (b.currency !== "ZAR" && b.currency !== "ZMW") return fail(res, 400, "Choose rand (ZAR) or kwacha (ZMW)");
+    if (!POOLS.includes(b.pool as Pool)) return fail(res, 400, "Choose In-Person or Online");
+    const linked = (await db.query(`SELECT 1 AS x FROM bank_account_links WHERE user_id = $1 AND status = 'verified'`, [uid(req)])).rows.length;
+    if (!linked) return fail(res, 409, "Link a bank account first. Payments are credited to your verified account.");
+    const va = await ensureVirtualAccount(db, uid(req), b.currency as string, b.pool as Pool);
+    await audit(db, req, "virtual_account.ensure", null, { currency: va.currency, pool: va.pool });
+    res.status(201).json({ success: true, reference: va.reference });
+  }));
+  /* cross-border: quote, then confirm within the quote's short life */
+  router.get("/cross-border", h(async (req, res) => {
+    if (!deps.crossBorder) { res.json({ success: true, corridors: [], transfers: [] }); return; }
+    res.json({ success: true, corridors: await deps.crossBorder.openCorridors(), transfers: await deps.crossBorder.history(uid(req)) });
+  }));
+  router.post("/cross-border/quote", h(async (req, res) => {
+    const b = (req.body ?? {}) as Record<string, unknown>;
+    if (!deps.crossBorder) return fail(res, 503, "Cross-border transfers are not available");
+    if (typeof b.recipientEmail !== "string" || typeof b.corridorId !== "string" || !Number.isInteger(b.amountCents)) return fail(res, 400, "Give the recipient's email, the route and the amount in whole cents");
+    const r = await deps.crossBorder.quote(uid(req), { recipientEmail: b.recipientEmail, corridorId: b.corridorId, amountCents: b.amountCents as number });
+    if (!r.ok) return fail(res, r.status, r.error);
+    res.status(201).json({ success: true, quote: r.value });
+  }));
+  router.post("/cross-border/:id/confirm", h(async (req, res) => {
+    if (!deps.crossBorder) return fail(res, 503, "Cross-border transfers are not available");
+    if (!isUuid(req.params.id)) return fail(res, 400, "Invalid quote");
+    const r = await deps.crossBorder.confirm(uid(req), req.params.id as string);
+    if (!r.ok) return fail(res, r.status, r.error);
+    await audit(db, req, "cross_border.confirm", req.params.id as string, { corridor: r.value.corridor, sendCents: r.value.sendCents, sendCurrency: r.value.sendCurrency });
+    res.json({ success: true, transfer: r.value });
+  }));
+  router.get("/wallet", h(async (req, res) => { res.json({ success: true, wallets: deps.wallets?.(uid(req)) ?? [] }); }));
 
   /* agreements */
   if (role === "vehicle_owner" || role === "driver") {

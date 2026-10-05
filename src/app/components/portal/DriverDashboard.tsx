@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { User, Car, Route as RouteIcon, Wallet, Bell, Loader2, TriangleAlert, Link2, FileText, Landmark } from "lucide-react";
 import { Banknote } from "lucide-react";
-import { PaymentsPanel, TripsPanel, DriverAgreements } from "./MoneyPanels";
+import { PaymentsPanel, TripsPanel, CrossBorderPanel, VirtualAccountsPanel, DriverAgreements } from "./MoneyPanels";
 import { BankStrip, BankScreen } from "./BankAccount";
 import { portalClient } from "./ui";
 import { LinksPanel } from "./LinksPanel";
@@ -70,7 +70,7 @@ export function DriverDashboard({ userName, onClose }: { userName?: string; onCl
           {nav === "Earnings" && <EarningsScreen />}
           {nav === "Statements" && <DriverStatements />}
           {nav === "Pay agreement" && <DriverAgreements color={COLOR} />}
-          {nav === "Payments & trips" && <><PaymentsPanel segment="driver" color={COLOR} /><TripsPanel segment="driver" color={COLOR} /></>}
+          {nav === "Payments & trips" && <><VirtualAccountsPanel segment="driver" color={COLOR} /><CrossBorderPanel segment="driver" color={COLOR} /><PaymentsPanel segment="driver" color={COLOR} /><TripsPanel segment="driver" color={COLOR} /></>}
           {nav === "Notifications" && <NotificationsScreen notes={notes} reload={reloadNotes} />}
           {nav === "Requests & links" && <LinksPanel call={linkCall} color={COLOR} canAskOwner />}
           {nav === "Bank account" && <BankScreen segment="driver" color={COLOR} />}
