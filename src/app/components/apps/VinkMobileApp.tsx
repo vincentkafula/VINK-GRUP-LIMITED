@@ -128,7 +128,7 @@ export function VinkMobileApp({ isOpen, onClose, onNavigate }: Props) {
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-xs text-gray-400 font-medium">Hello,</p>
+                <p className="text-xs text-gray-500 font-medium">Hello,</p>
                 <p className="text-xl font-black text-gray-900">Vincent Kafula</p>
               </div>
               <button className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center" onClick={() => onNavigate("contactus")}>
