@@ -4,10 +4,16 @@ import heroCardPhone from "../../imports/HeroCardPhone.webp";
 import heroGlobalSim from "../../imports/HeroGlobalSim.webp";
 import heroValidator from "../../imports/HeroValidator.webp";
 
+type Side = "left" | "right" | "bottom";
+const FADE_DIR: Record<Side, string> = { left: "to right", right: "to left", bottom: "to top" };
+/** Fade only the sides where the artwork is cut off by its own frame, so the cut dissolves into the hero. The rest of the picture stays whole and sharp. */
+const edgeMask = (sides: Side[]) => (sides.length ? sides.map((d) => `linear-gradient(${FADE_DIR[d]}, transparent 0%, #000 14%)`).join(", ") : undefined);
+
 // ─── Per-slide content ────────────────────────────────────────────────────────
 const RAW_SLIDES = [
   {
     image:   heroCardPhone,
+    cropped: ["left", "bottom"] as Side[],       // sides where the artwork itself runs off its frame
     eyebrow: "VINK Card — Now in Your Pocket",
     headline: <>All the benefits of Card,<br /><span className="relative inline-block"><span className="relative z-10">on your phone.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#C9A84C" }} /></span></>,
     body: "Manage, track and enjoy exclusive benefits anytime, anywhere.",
@@ -23,6 +29,7 @@ const RAW_SLIDES = [
   },
   {
     image:   heroGlobalSim,
+    cropped: [] as Side[],
     eyebrow: "VINK MVNO — Global Connectivity",
     headline: <>All the benefits of SIM,<br /><span className="relative inline-block"><span className="relative z-10">on your phone.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#C9A84C" }} /></span></>,
     body: "Stay connected anywhere in the world with reliable data, clear calls and seamless connectivity.",
@@ -38,6 +45,7 @@ const RAW_SLIDES = [
   },
   {
     image:   heroValidator,
+    cropped: ["right", "bottom"] as Side[],
     eyebrow: "VINK AFC — Today's Market Multi-ticketing Validator",
     headline: <>Multi-ticketing<br /><span className="relative inline-block"><span className="relative z-10">validator.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#C9A84C" }} /></span></>,
     body: "Smarter, faster and cashless payments for a seamless travel experience — multi-channel, integrated in one system.",
@@ -160,6 +168,10 @@ export function HeroSection({ onApplyClick }: { onApplyClick?: () => void }) {
               draggable={false}
               style={{
                 transition: "opacity 0.4s ease", opacity: fading ? 0 : 1,
+                maskImage: edgeMask(slide.cropped),
+                WebkitMaskImage: edgeMask(slide.cropped),
+                maskComposite: "intersect",
+                WebkitMaskComposite: "source-in",
               }}
             />
 
