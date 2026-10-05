@@ -2,6 +2,7 @@ import { useState } from "react";
 import { X } from "lucide-react";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { Footer } from "./Footer";
+import { TABS, type Block } from "./socialResponsibilityContent";
 
 interface Props { isOpen: boolean; onClose: () => void; onNavigate: (item: string) => void; }
 
@@ -10,7 +11,63 @@ const PD = "#2E0B10";
 
 const CORPORATE_SUB_NAV = ["Account", "Solutions & Credit Cards", "Loan", "Social Responsibility"];
 
-const PILLS = ["Urban Management", "Safety & Security Department", "Social Development", "Communications"];
+const contact = (label: string) => window.dispatchEvent(new CustomEvent("vink:footer-link", { detail: { label: "Contact Us" , cta: label } }));
+
+function renderBlock(b: Block, i: number, onClose: () => void) {
+  const fg = { color: "var(--vk-fg)" };
+  switch (b.t) {
+    case "lead": return <p key={i} className="text-lg font-semibold" style={{ color: "var(--vk-crimson-text)" }}>{b.text}</p>;
+    case "p": return <p key={i} className="leading-relaxed text-[15px]" style={fg}>{b.text}</p>;
+    case "note": return <p key={i} className="text-sm italic rounded-lg px-4 py-2.5 bg-surface-2" style={{ color: "var(--vk-fg-muted)" }}>{b.text}</p>;
+    case "h": return <h3 key={i} className="text-lg font-bold pt-3" style={fg}>{b.text}</h3>;
+    case "list": return (
+      <ul key={i} className="space-y-2 pl-1">
+        {b.items.map((it) => (
+          <li key={it} className="flex gap-3 leading-relaxed text-[15px]" style={fg}>
+            <span aria-hidden className="mt-2 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: P }} />
+            <span>{it}</span>
+          </li>
+        ))}
+      </ul>
+    );
+    case "pairs": return (
+      <ul key={i} className="space-y-2">
+        {b.items.map((it) => (
+          <li key={it.label} className="leading-relaxed text-[15px]" style={fg}>
+            <span className="font-semibold">{it.label}:</span> {it.value}
+          </li>
+        ))}
+      </ul>
+    );
+    case "table": return (
+      <div key={i} className="overflow-x-auto rounded-xl border" style={{ borderColor: "var(--vk-line)" }}>
+        <table className="w-full text-sm text-left">
+          <thead style={{ background: P, color: "#fff" }}>
+            <tr>{b.head.map((h) => <th key={h} className="px-4 py-2.5 font-semibold">{h}</th>)}</tr>
+          </thead>
+          <tbody>
+            {b.rows.map((r) => (
+              <tr key={r[0]} className="border-t" style={{ borderColor: "var(--vk-line)", color: "var(--vk-fg)" }}>
+                {r.map((c, j) => <td key={j} className={"px-4 py-2.5 " + (j === 0 ? "font-semibold" : "")}>{c}</td>)}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+    case "cta": return (
+      <div key={i} className="flex flex-wrap gap-3 pt-1">
+        {b.actions.map((a, j) => (
+          <button key={a} type="button" onClick={() => { onClose(); contact(a); }}
+            className="rounded-full px-6 py-2.5 text-sm font-semibold transition-opacity hover:opacity-90"
+            style={j === 0 ? { background: P, color: "#fff" } : { border: `2px solid ${P}`, color: "var(--vk-crimson-text)" }}>
+            {a}
+          </button>
+        ))}
+      </div>
+    );
+  }
+}
 
 export function CorporateSocialResponsibilityViewer({ isOpen, onClose, onNavigate }: Props) {
   const [activePill, setActivePill] = useState(0);
@@ -58,7 +115,7 @@ export function CorporateSocialResponsibilityViewer({ isOpen, onClose, onNavigat
 
       {/* ── Pill category nav ── */}
       <div className="flex flex-wrap gap-3 justify-center px-6 py-6">
-        {PILLS.map((label, i) => (
+        {TABS.map(({ label }, i) => (
           <button key={i} onClick={() => setActivePill(i)}
             className="rounded-full px-6 py-2 text-sm font-medium transition-all border-2"
             style={{
@@ -101,22 +158,9 @@ export function CorporateSocialResponsibilityViewer({ isOpen, onClose, onNavigat
       </div>
 
       {/* ── Article content ── */}
-      <div className="max-w-3xl mx-auto px-6 pb-14 space-y-5" style={{ color: "var(--vk-fg)" }}>
-        <p className="leading-relaxed text-[15px]" style={{ color: "var(--vk-fg)" }}>
-          The office of the chief executive officer drives the strategy behind the work of VINK Social Responsibility, and also oversees the day-to-day operations of its four departments. This office also drives VINK Social Responsibility's special projects and programmes, as well as research, and constantly seeks to develop and deliver new products and services to all stakeholders.
-        </p>
-        <p className="leading-relaxed text-[15px]" style={{ color: "var(--vk-fg)" }}>
-          The current occupant of the CEO post, Siyasanga Mahlulo, has been with VINK Social Responsibility since its inception in 2018 and has led the organisation since 2021. She is aided in her daily duties by a personal assistant.
-        </p>
-        <p className="leading-relaxed text-[15px]" style={{ color: "var(--vk-fg)" }}>
-          Financial administration and human resources (HR) also fall under the CEO's office and are driven by a finance &amp; HR manager and a finance &amp; HR assistant.
-        </p>
-        <p className="text-[15px]">
-          Meet the team in the{" "}
-          <a href="#" className="font-semibold hover:underline" style={{ color: "var(--vk-crimson-text)" }}>
-            Administration: Office of the CEO
-          </a>
-        </p>
+      <div className="max-w-3xl mx-auto w-full px-6 pb-14 space-y-5" style={{ color: "var(--vk-fg)" }}>
+        <h2 className="text-2xl font-bold" style={{ color: "var(--vk-crimson-text)" }}>{TABS[activePill].title}</h2>
+        {TABS[activePill].blocks.map((b, i) => renderBlock(b, i, onClose))}
       </div>
 
       <Footer />
