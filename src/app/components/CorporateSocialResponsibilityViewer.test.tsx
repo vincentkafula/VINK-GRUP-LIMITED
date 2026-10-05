@@ -8,7 +8,7 @@ describe("Social Responsibility page", () => {
     for (const l of ["About", "Cities We Serve", "Office of the CEO", "Safety & Security Department", "Urban Management", "Social Development", "Communications", "Get Involved"]) {
       expect(screen.getByRole("button", { name: l })).toBeTruthy();
     }
-    expect(screen.getByText("About VINK Social Development")).toBeTruthy();
+    expect(screen.getByText("About Social Development")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Cities We Serve" }));
     expect(screen.getByText("Public safety partners by city")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Safety & Security Department" }));
