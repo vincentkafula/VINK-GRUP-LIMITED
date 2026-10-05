@@ -4,7 +4,7 @@ import heroCardPhone from "../../imports/HeroCardPhone.webp";
 import heroGlobalSim from "../../imports/HeroGlobalSim.webp";
 import heroValidator from "../../imports/HeroValidator.webp";
 
-const FEATHER = "linear-gradient(to right, transparent 0%, #000 22%, #000 78%, transparent 100%), linear-gradient(to bottom, transparent 0%, #000 22%, #000 78%, transparent 100%)";
+const FEATHER = "linear-gradient(to right, transparent 0%, #000 7%, #000 93%, transparent 100%), linear-gradient(to bottom, transparent 0%, #000 7%, #000 93%, transparent 100%)";
 
 // ─── Per-slide content ────────────────────────────────────────────────────────
 const RAW_SLIDES = [
@@ -162,8 +162,8 @@ export function HeroSection({ onApplyClick }: { onApplyClick?: () => void }) {
               draggable={false}
               style={{
                 transition: "opacity 0.4s ease", opacity: fading ? 0 : 1,
-                // The slide art has its own scene background (no alpha channel), so its edges are feathered into the hero:
-                // a fade on all four sides, multiplied together (mask-composite: intersect). Even on every edge, unlike a radial fade that eats the corners.
+                // The slide art is a transparent cut-out (background removed). This light fade on all four sides only softens the places where the art meets the
+                // edge of its frame; the two gradients are multiplied together (mask-composite: intersect).
                 maskImage: FEATHER,
                 WebkitMaskImage: FEATHER,
                 maskComposite: "intersect",
