@@ -3,6 +3,7 @@ import { Pause, Play } from "lucide-react";
 import heroCardPhone from "../../imports/HeroCardPhone.webp";
 import heroGlobalSim from "../../imports/HeroGlobalSim.webp";
 import heroValidator from "../../imports/HeroValidator.webp";
+import { TodaysMarketStrip } from "./TodaysMarketStrip";
 
 type Side = "left" | "right" | "bottom";
 const FADE_DIR: Record<Side, string> = { left: "to right", right: "to left", bottom: "to top" };
@@ -46,6 +47,7 @@ const RAW_SLIDES = [
   {
     image:   heroValidator,
     cropped: ["left", "right", "bottom"] as Side[],
+    strip: true,                                  // the Today's Market band shows under the hero on this slide
     eyebrow: "VINK AFC — Today's Market Multi-ticketing Validator",
     headline: <>Multi-ticketing<br /><span className="relative inline-block"><span className="relative z-10">validator.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#C9A84C" }} /></span></>,
     body: "Smarter, faster and cashless payments for a seamless travel experience — multi-channel, integrated in one system.",
@@ -202,6 +204,7 @@ export function HeroSection({ onApplyClick }: { onApplyClick?: () => void }) {
         </div>
       </div>
 
+      <TodaysMarketStrip open={!!slide.strip} />
     </section>
   );
 }
