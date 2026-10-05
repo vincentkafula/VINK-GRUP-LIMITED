@@ -45,7 +45,7 @@ const RAW_SLIDES = [
   },
   {
     image:   heroValidator,
-    cropped: ["right", "bottom"] as Side[],
+    cropped: ["left", "right", "bottom"] as Side[],
     eyebrow: "VINK AFC — Today's Market Multi-ticketing Validator",
     headline: <>Multi-ticketing<br /><span className="relative inline-block"><span className="relative z-10">validator.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#C9A84C" }} /></span></>,
     body: "Smarter, faster and cashless payments for a seamless travel experience — multi-channel, integrated in one system.",
