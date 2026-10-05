@@ -189,6 +189,7 @@ function AccountDetailModal({ acct, onClose, onApply }: { acct: Account; onClose
 export function PersonalAccountViewer({ isOpen, onClose, onNavigate, onOpenBankingApp }: Props) {
   const currency = useCurrency(); // subscribes this tree to live currency/rate updates
   const [showApplication, setShowApplication] = useState(false);
+  const [chosenAccount, setChosenAccount] = useState<string | undefined>();
   const [detailAccount, setDetailAccount] = useState<Account | null>(null);
   const [authUser, setAuthUser] = useState<{ id: string; name: string; email: string } | null>(null);
 
@@ -198,7 +199,7 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate, onOpenBanki
   }, [isOpen]);
 
   if (!isOpen) return null;
-  const openApply = () => setShowApplication(true);
+  const openApply = (name?: string) => { setChosenAccount(name); setShowApplication(true); };
   const handleSignOut = () => { clearSession(); setAuthUser(null); };
 
   return (
@@ -254,7 +255,7 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate, onOpenBanki
               </div>
             </div>
           ) : (
-            <button onClick={openApply} className="px-3.5 py-1.5 rounded-full text-[13px] font-semibold text-white shrink-0" style={{ background: GREEN }}>
+            <button onClick={() => openApply()} className="px-3.5 py-1.5 rounded-full text-[13px] font-semibold text-white shrink-0" style={{ background: GREEN }}>
               Open an Account
             </button>
           )}
@@ -333,7 +334,7 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate, onOpenBanki
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {ACCOUNTS.map((acct) => <AccountCard key={acct.id} acct={acct} onApply={openApply} onDetails={setDetailAccount} />)}
+          {ACCOUNTS.map((acct) => <AccountCard key={acct.id} acct={acct} onApply={(name) => openApply(name)} onDetails={setDetailAccount} />)}
         </div>
       </section>
 
@@ -365,12 +366,13 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate, onOpenBanki
         <AccountDetailModal
           acct={detailAccount}
           onClose={() => setDetailAccount(null)}
-          onApply={() => { setDetailAccount(null); openApply(); }}
+          onApply={(name) => { setDetailAccount(null); openApply(name); }}
         />
       )}
 
       <PersonalAccountApplicationViewer
         isOpen={showApplication}
+        initialAccountType={chosenAccount}
         onClose={() => setShowApplication(false)}
         onGoToDashboard={onOpenBankingApp ? () => { setShowApplication(false); onOpenBankingApp(); } : undefined}
       />
