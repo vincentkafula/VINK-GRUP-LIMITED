@@ -1097,6 +1097,19 @@ CREATE TABLE IF NOT EXISTS association_settings (
   updated_at         TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- ─── Pooled bank accounts customers pay into (set by staff on the admin page; the bank accounts already exist) ───────────────
+CREATE TABLE IF NOT EXISTS pooled_accounts (
+  pool            TEXT NOT NULL CHECK (pool IN ('in_person','online')),
+  currency        TEXT NOT NULL CHECK (currency IN ('ZAR','ZMW')),
+  account_number  TEXT NOT NULL,
+  holder          TEXT NOT NULL,
+  bank            TEXT NOT NULL,
+  account_type    TEXT NOT NULL CHECK (account_type IN ('Personal','Business')),
+  updated_by      UUID REFERENCES users(id) ON DELETE SET NULL,
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (pool, currency)
+);
+
 -- ─── Virtual accounts: one payment reference per user, currency and pool ────────────────────────────────────────────────
 -- Customers pay into a pooled bank account (the "in-person" or "online" channel account) quoting their own reference. A bank credit that quotes the
 -- reference is matched to the user and credited to their platform account exactly once (bank_ref is the idempotency key). Anything that does not match

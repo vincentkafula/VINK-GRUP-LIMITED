@@ -59,6 +59,8 @@ function Body({ country, setCountry, tick, refresh, meId }: { country: "ZA" | "Z
             }}</Status>
             <Reconciliation />
             <PoolPanel />
+            <PooledAccountsPanel />
+            <StatementImportPanel />
             <FxPanel />
             <RulesTester country={country} />
             <Audit key={tick} />
@@ -80,7 +82,7 @@ function Country({ country, active, inProgress, approvalsRequired, meId, onChang
         {!shown ? (
           <Empty>No version exists yet. <ActionButton small label="Start a draft" color={COLOR} onRun={async () => { const r = await configApi(`/${country}/drafts`, { method: "POST", body: {} }); if (!("error" in r)) onChange(); return fail(r); }} /></Empty>
         ) : (
-          <Status load={load}>{(d) => <Editor key={d.profile.id + d.profile.status} d={d} hasActive={!!active} approvalsRequired={approvalsRequired} meId={meId} onChange={onChange} country={country} />}</Status>)}
+          <><Status load={load}>{(d) => <Editor key={d.profile.id + d.profile.status} d={d} hasActive={!!active} approvalsRequired={approvalsRequired} meId={meId} onChange={onChange} country={country} />}</Status><ReadinessPanel profileId={shown.id} /></>)}
         {shown && !inProgress && (
           <p className="text-sm text-white/70">This is the live version. To change anything, start a new draft: <ActionButton small label="Start a draft from this version" color={COLOR} onRun={async () => { const r = await configApi(`/${country}/drafts`, { method: "POST", body: {} }); if (!("error" in r)) onChange(); return fail(r); }} /></p>)}
         <Simulator country={country} />
@@ -307,6 +309,86 @@ function FxPanel() {
         <ActionButton label="Refresh automatically now" color={COLOR} onRun={async () => { const r = await moneyApi("/fx/refresh", { method: "POST" }); if ("error" in r) return { error: r.error }; reload(); const bad = (r.data.results as { pair: string; status: string; reason?: string }[]).filter((x) => x.status !== "updated"); return bad.length ? { error: bad.map((x) => `${x.pair}: ${x.reason ?? x.status}`).join(" ") } : { message: "Rates updated" }; }} />
         <ActionButton label="Set rate by hand" color="#F59E0B" onRun={async () => { const n = Number(rate); if (!(n > 0)) return { error: "Enter a rate above zero" }; const [from, to] = pair.split("-"); const r = await moneyApi("/fx", { method: "PUT", body: { from, to, rate: n } }); if ("error" in r) return { error: r.error }; setRate(""); reload(); return { message: "Saved" }; }} />
       </div>
+    </section>
+  );
+}
+
+/** The go-live checklist for the version being shown: what is filled in, and what still blocks going live. */
+function ReadinessPanel({ profileId }: { profileId: string }) {
+  const [load] = useLoad<{ readiness: { mode: string; ready: boolean; blockers: number; items: { id: string; label: string; ok: boolean; blocking: boolean; hint: string }[] } }>(() => configApi(`/profiles/${profileId}/readiness`) as never, [profileId]);
+  return (
+    <section className="rounded-xl p-4 space-y-2" style={{ background: "#1A1738", border: "1px solid #2D2A50" }}>
+      <h2 className="text-sm font-bold text-white">Ready to go live?</h2>
+      <Status load={load}>{({ readiness: r }) => (
+        <>
+          <p role="status" className={`text-sm ${r.ready ? "text-emerald-300" : "text-amber-300"}`}>{r.ready ? "Everything needed for live is filled in." : `${r.blockers} thing${r.blockers === 1 ? "" : "s"} still to fill in before this can go live. Sandbox works without them.`}</p>
+          <ul className="text-xs space-y-1">{r.items.map((i) => (
+            <li key={i.id} className={i.ok ? "text-emerald-300" : i.blocking ? "text-amber-300" : "text-white/60"}>{i.ok ? "✔" : i.blocking ? "○" : "·"} {i.label}{!i.ok && <span className="text-white/50"> — {i.hint}</span>}</li>))}</ul>
+        </>)}</Status>
+    </section>
+  );
+}
+
+/** The pooled bank accounts customers pay into. They already exist at the bank; this only records their details (set later, no redeploy). */
+function PooledAccountsPanel() {
+  const [load, reload] = useLoad<{ accounts: { pool: string; currency: string; accountNumber: string; holder: string; bank: string; type: string }[] }>(() => moneyApi("/pooled-accounts") as never);
+  const [f, setF] = useState({ pool: "in_person", currency: "ZAR", accountNumber: "", holder: "", bank: "", type: "Business" });
+  const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setF((p) => ({ ...p, [k]: e.target.value }));
+  return (
+    <section className="rounded-xl p-4 space-y-3" style={{ background: "#1A1738", border: "1px solid #2D2A50" }}>
+      <h2 className="text-sm font-bold text-white">Pooled bank accounts <span className="font-normal text-white/50">· where customers pay in; the accounts already exist at the bank</span></h2>
+      <Status load={load}>{({ accounts }) => accounts.length === 0 ? <Empty>None set here yet. Rand can also come from the PAYMENT_CHANNEL_ACCOUNTS setting.</Empty> : (
+        <ul className="space-y-1.5">{accounts.map((a) => (
+          <li key={a.pool + a.currency} className="flex flex-wrap items-center gap-3 text-xs text-white/80"><span className="text-white">{a.pool === "in_person" ? "In-Person" : "Online"} · {a.currency}</span><span>{a.holder} · {a.bank} · {a.type} · account {a.accountNumber}</span>
+            <ActionButton small label="Remove" color="#EF4444" onRun={async () => { const r = await moneyApi(`/pooled-accounts/${a.pool}/${a.currency}`, { method: "DELETE" }); if ("error" in r) return { error: r.error }; reload(); }} /></li>))}</ul>)}</Status>
+      <div className="flex flex-wrap items-end gap-3">
+        <label className="block"><span className="text-[11px] text-white/60">Pool</span><select className={inputCls + " mt-1 !w-auto"} value={f.pool} onChange={set("pool")}><option value="in_person">In-Person</option><option value="online">Online</option></select></label>
+        <label className="block"><span className="text-[11px] text-white/60">Currency</span><select className={inputCls + " mt-1 !w-auto"} value={f.currency} onChange={set("currency")}><option>ZAR</option><option>ZMW</option></select></label>
+        <label className="block"><span className="text-[11px] text-white/60">Account number</span><input className={inputCls + " mt-1 !w-44"} inputMode="numeric" value={f.accountNumber} onChange={set("accountNumber")} /></label>
+        <label className="block"><span className="text-[11px] text-white/60">Account holder</span><input className={inputCls + " mt-1 !w-44"} value={f.holder} onChange={set("holder")} /></label>
+        <label className="block"><span className="text-[11px] text-white/60">Bank</span><input className={inputCls + " mt-1 !w-40"} value={f.bank} onChange={set("bank")} /></label>
+        <label className="block"><span className="text-[11px] text-white/60">Type</span><select className={inputCls + " mt-1 !w-auto"} value={f.type} onChange={set("type")}><option>Business</option><option>Personal</option></select></label>
+        <ActionButton label="Save account" color={COLOR} onRun={async () => { const r = await moneyApi("/pooled-accounts", { method: "PUT", body: f }); if ("error" in r) return { error: r.error }; setF((p) => ({ ...p, accountNumber: "" })); reload(); return { message: "Saved" }; }} />
+      </div>
+    </section>
+  );
+}
+
+const csvHeaders = (text: string): string[] => {
+  const first = text.split(/\r?\n/, 1)[0] ?? "";
+  const delim = (first.match(/;/g)?.length ?? 0) > (first.match(/,/g)?.length ?? 0) ? ";" : ",";
+  return first.split(delim).map((h) => h.replace(/^"|"$/g, "").trim()).filter(Boolean);
+};
+
+/** Import a bank statement (CSV) from any bank. Say which column is which, check the file, then import. Importing the same file twice changes nothing. */
+function StatementImportPanel() {
+  const [csv, setCsv] = useState(""); const [name, setName] = useState("");
+  const [map, setMap] = useState({ bankRef: "", reference: "", amount: "", currency: "", direction: "" });
+  const [cur, setCur] = useState("ZAR");
+  const [report, setReport] = useState<string | null>(null);
+  const headers = csvHeaders(csv);
+  const body = (dryRun: boolean) => ({ csv, dryRun, defaultCurrency: cur, mapping: { bankRef: map.bankRef, reference: map.reference, amount: map.amount, currency: map.currency || undefined, direction: map.direction || undefined } });
+  const pick = (k: keyof typeof map, label: string, required: boolean) => (
+    <label className="block"><span className="text-[11px] text-white/60">{label}{required ? "" : " (optional)"}</span>
+      <select className={inputCls + " mt-1 !w-auto"} value={map[k]} onChange={(e) => setMap((p) => ({ ...p, [k]: e.target.value }))}><option value="">{required ? "Choose…" : "None"}</option>{headers.map((h) => <option key={h}>{h}</option>)}</select></label>);
+  return (
+    <section className="rounded-xl p-4 space-y-3" style={{ background: "#1A1738", border: "1px solid #2D2A50" }}>
+      <h2 className="text-sm font-bold text-white">Import a bank statement <span className="font-normal text-white/50">· any bank, as a CSV file; only credits are used</span></h2>
+      <div className="flex flex-wrap items-center gap-3">
+        <input type="file" accept=".csv,text/csv,text/plain" aria-label="Statement file" className="text-xs text-white/70" onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; if (f.size > 1_000_000) { setReport("The file is too large (limit 1 MB). Split it into smaller files."); return; } setName(f.name); setReport(null); setMap({ bankRef: "", reference: "", amount: "", currency: "", direction: "" }); setCsv(await f.text()); }} />
+        {name && <span className="text-xs text-white/50">{name}</span>}
+        <label className="block"><span className="text-[11px] text-white/60">Currency of the file</span><select className={inputCls + " mt-1 !w-auto"} value={cur} onChange={(e) => setCur(e.target.value)}><option>ZAR</option><option>ZMW</option></select></label>
+      </div>
+      {headers.length > 0 && (
+        <div className="flex flex-wrap items-end gap-3">
+          {pick("bankRef", "Bank reference column", true)}{pick("reference", "Column with the customer reference", true)}{pick("amount", "Amount column", true)}{pick("direction", "Debit/credit column", false)}{pick("currency", "Currency column", false)}
+        </div>)}
+      {csv && (
+        <div className="flex flex-wrap items-center gap-3">
+          <ActionButton label="Check the file" color={COLOR} onRun={async () => { setReport(null); const r = await moneyApi("/pool/import", { method: "POST", body: body(true) }); if ("error" in r) return { error: r.error }; const d = r.data; setReport(`${d.credits} credit${d.credits === 1 ? "" : "s"} found, ${d.skippedDebits} debit${d.skippedDebits === 1 ? "" : "s"} skipped${d.problems.length ? `. Problems: ${d.problems.map((p: { row: number; error: string }) => `row ${p.row}: ${p.error}`).join("; ")}` : ". No problems."}`); }} />
+          <ActionButton label="Import credits" color="#10B981" onRun={async () => { setReport(null); const r = await moneyApi("/pool/import", { method: "POST", body: body(false) }); if ("error" in r) return { error: r.error }; const d = r.data; setReport(`${d.credited} credited, ${d.duplicate} already recorded, ${d.unmatched + d.awaiting_clearing} held for matching${d.failedCount ? `, ${d.failedCount} rows could not be read` : ""}.`); }} />
+        </div>)}
+      {report && <p role="status" className="text-sm text-emerald-300">{report}</p>}
     </section>
   );
 }

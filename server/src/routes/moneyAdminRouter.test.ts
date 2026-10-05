@@ -11,6 +11,7 @@ import { createMoneyAdminRouter } from "./moneyAdminRouter.js";
 import { DEFAULT_ZA, DEFAULT_ZM } from "../config/countryConfig.js";
 import { createCrossBorder } from "../services/crossBorderService.js";
 import type { FetchFn } from "../services/fxRates.js";
+import { createPooledStore } from "../portal/pooledAccounts.js";
 
 const id = (n: number) => `00000000-0000-0000-0000-${String(n).padStart(12, "0")}`;
 const ADMIN = id(90), USER = id(5);
@@ -35,7 +36,7 @@ describe("admin money API", () => {
     const engine = createMoneyEngine({ db, ledger, reader });
     const app = express();
     app.use((req, _r, next) => { req.user = { userId: ADMIN, username: "admin", role: "superadmin" }; next(); });
-    app.use("/admin", createMoneyAdminRouter({ db, ledger, reader, engine, channels: () => ({ in_person: { accountNumber: "1234567890" } }), crossBorder: createCrossBorder({ db, ledger, engine, reader }), fx: { fetchFn: fakeNet } }));
+    app.use("/admin", createMoneyAdminRouter({ db, ledger, reader, engine, channels: () => ({ in_person: { accountNumber: "1234567890" } }), crossBorder: createCrossBorder({ db, ledger, engine, reader }), fx: { fetchFn: fakeNet }, pooled: createPooledStore(db, {} as NodeJS.ProcessEnv) }));
     await new Promise<void>((ok) => { server = app.listen(0, "127.0.0.1", ok); });
     url = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
   });
@@ -80,6 +81,31 @@ describe("admin money API", () => {
     await call("/fx", "PUT", { from: "ZAR", to: "ZMW", rate: 1.3 });
     expect((await call("/fx/refresh", "POST")).body.results[0]).toMatchObject({ pair: "ZAR-ZMW", status: "kept_manual" });
     expect((await call("/fx")).body.rates[0]).toMatchObject({ rate: 1.3, auto: false, source: "manual" });
+  });
+
+  it("staff set, list and remove the pooled accounts (kwacha apart from rand)", async () => {
+    const acc = { pool: "online", currency: "ZMW", accountNumber: "9876 5432 10", holder: "Vink Zambia", bank: "Absa Bank Zambia", type: "Business" };
+    expect((await call("/pooled-accounts", "PUT", acc)).status).toBe(200);
+    expect((await call("/pooled-accounts")).body.accounts).toEqual([expect.objectContaining({ pool: "online", currency: "ZMW", accountNumber: "9876543210" })]);
+    expect((await call("/pooled-accounts", "PUT", { ...acc, accountNumber: "12" })).status).toBe(400);
+    expect((await call("/pooled-accounts/online/ZMW", "DELETE")).status).toBe(200);
+    expect((await call("/pooled-accounts/online/ZMW", "DELETE")).status).toBe(404);
+  });
+
+  it("imports a bank statement from any bank: checks first, credits once, and the same file again changes nothing", async () => {
+    const va = await ensureVirtualAccount(db, USER, "ZAR", "in_person");
+    const csv = `Posted,Reference,Details,Value,Type\n2026-10-03,STM-0001,${va.reference} lunch,"1,250.00",Credit\n2026-10-03,STM-0002,bank fee,-10.00,Debit\n2026-10-03,STM-0003,VKR000000000,75.00,Credit\n`;
+    const body = { csv, defaultCurrency: "ZAR", mapping: { bankRef: "Reference", reference: "Details", amount: "Value", direction: "Type" } };
+    expect((await call("/pool/import", "POST", { ...body, dryRun: true })).body).toMatchObject({ dryRun: true, credits: 2, skippedDebits: 1 });
+    expect(ledger.balance(bankLedgerAccount(acct))).toBe(0);                                                      // a check moves nothing
+    const first = (await call("/pool/import", "POST", body)).body;
+    expect(first).toMatchObject({ lines: 2, credited: 1, unmatched: 1, duplicate: 0, skippedDebits: 1, failedCount: 0 });
+    expect(ledger.balance(bankLedgerAccount(acct))).toBe(125_000);
+    const again = (await call("/pool/import", "POST", body)).body;
+    expect(again).toMatchObject({ credited: 0, duplicate: 1, unmatched: 1 });
+    expect(ledger.balance(bankLedgerAccount(acct))).toBe(125_000);
+    expect((await call("/pool/import", "POST", { ...body, mapping: { ...body.mapping, amount: "Nope" } })).status).toBe(400);
+    expect((await call("/pool/import", "POST", { defaultCurrency: "ZAR" })).status).toBe(400);
   });
 
   it("staff set exchange rates, and bad rates are refused", async () => {

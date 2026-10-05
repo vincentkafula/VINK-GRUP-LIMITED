@@ -133,6 +133,23 @@ describe("country configuration lifecycle (maker-checker)", () => {
     expect(seen).toEqual(["fees.pos", "payoutFee"]); expect(target.payoutFee).toBe(900); expect(target.fees.pos.pct).toBe(0.03);
   });
 
+  it("a live version cannot be activated while the go-live checklist has blockers", async () => {
+    const blocked = createConfigAdminRouter({ db, reader, approvalsRequired: 1, readiness: async (cfg) => ({ country: cfg.country, mode: cfg.mode, ready: false, blockers: 1, items: [{ id: "licence", label: "Licence reference", ok: false, blocking: true, hint: "" }] }) });
+    const app2 = express(); app2.use(express.json()); app2.use((req, _r, next) => { req.user = { userId: as, username: "u", role: "superadmin" }; next(); }); app2.use("/a", blocked);
+    const s2: Server = await new Promise((ok) => { const x = app2.listen(0, "127.0.0.1", () => ok(x)); });
+    try {
+      const u2 = `http://127.0.0.1:${(s2.address() as AddressInfo).port}/a`;
+      const live = clone(DEFAULT_ZA) as any; live.mode = "live"; live.afc.sandboxAutoConfirm = false;
+      const d = await (await fetch(u2 + "/ZA/drafts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ config: live }) })).json() as any;
+      await fetch(u2 + `/profiles/${d.id}/submit`, { method: "POST" });
+      who(STAFF.a1); await fetch(u2 + `/profiles/${d.id}/decision`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ approve: true }) });
+      const r = await fetch(u2 + `/profiles/${d.id}/activate`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ confirm: "I_UNDERSTAND_THIS_MOVES_REAL_MONEY" }) });
+      expect(r.status).toBe(409); expect((await r.json() as any).error).toMatch(/not ready to go live: Licence reference/);
+      expect((await reader.active("ZA")).config.mode).toBe("sandbox");
+      expect(((await (await fetch(u2 + `/profiles/${d.id}/readiness`)).json()) as any).readiness).toMatchObject({ ready: false, blockers: 1 });
+    } finally { await new Promise<void>((ok) => s2.close(() => ok())); }
+  });
+
   it("starts with South Africa active (baseline) and Zambia as a draft", async () => {
     const o = (await call("GET", "/")).body;
     expect(o.approvalsRequired).toBe(2);

@@ -4,7 +4,7 @@ import type { Db } from "../portal/driverRoutes.js";
 import { manshyaBankCore } from "../portal/bankLinks.js";
 import { createMoneyEngine, manshyaLedgerPort, bankLedgerAccount, walletLedgerAccount, type Engine, type LedgerPort } from "./moneyEngine.js";
 import { DEFAULT_ZA, DEFAULT_ZM } from "../config/countryConfig.js";
-import { ensureVirtualAccount, newReference, referenceLooksValid, recordPoolCredit, settleCredit, markCleared, markBounced, fundReserve, reserveAccount, type PoolDeps } from "./poolService.js";
+import { ensureVirtualAccount, extractReference, newReference, referenceLooksValid, recordPoolCredit, settleCredit, markCleared, markBounced, fundReserve, reserveAccount, type PoolDeps } from "./poolService.js";
 import { reconcile } from "./reconciliation.js";
 import { createLimitGuard } from "../config/limitGuard.js";
 
@@ -208,5 +208,17 @@ describe("card and cash-machine limits from the profile", () => {
     (mod as unknown as { db: { prepare(s: string): { run(...a: unknown[]): unknown } } }).db.prepare("UPDATE merchants SET verified = 1 WHERE id = ?").run(U.driver);
     expect(pay("online", DEFAULT_ZA.limits.onlineDailyCents.basic + 1)).toMatchObject({ approved: true });
     expect(pay("online", DEFAULT_ZA.limits.onlineDailyCents.standard)).toMatchObject({ approved: false, reason: "tier_limit" });
+  });
+});
+
+describe("finding the reference in a bank's free text", () => {
+  it("pulls a valid reference out of a narrative, even with spaces or dashes in it, and ignores one with a wrong check digit", () => {
+    const r = newReference("ZAR");
+    expect(extractReference(`FNB APP PAYMENT FROM ${r} THANKS`)).toBe(r);
+    expect(extractReference(`${r.slice(0, 5)} ${r.slice(5, 9)}-${r.slice(9)}`)).toBe(r);
+    expect(extractReference(r.toLowerCase())).toBe(r);
+    const bad = r.slice(0, -1) + String((Number(r.slice(-1)) + 1) % 10);
+    expect(extractReference(`PAY ${bad}`)).toBeNull(); expect(extractReference("no reference here")).toBeNull();
+    expect(extractReference(`${bad} then ${r}`)).toBe(r);
   });
 });

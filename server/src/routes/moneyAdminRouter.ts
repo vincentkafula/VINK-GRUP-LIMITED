@@ -6,6 +6,8 @@ import { checkTierLimit, decideInstantCredit, quoteCorridor, type LimitChannel }
 import { reconcile } from "../services/reconciliation.js";
 import type { Engine, LedgerPort } from "../services/moneyEngine.js";
 import type { CrossBorder } from "../services/crossBorderService.js";
+import { readStatement, type Mapping } from "../services/statementImport.js";
+import { validatePooled, type PooledStore, type Pool as PooledPool, type PoolCurrency } from "../portal/pooledAccounts.js";
 import { refreshRates, type FetchFn, type Provider } from "../services/fxRates.js";
 import { recordPoolCredit, settleCredit, markCleared, markBounced, fundReserve, reserveAccount, referenceLooksValid, normaliseReference } from "../services/poolService.js";
 import { uid, isUuid } from "../portal/common.js";
@@ -19,7 +21,7 @@ import { uid, isUuid } from "../portal/common.js";
 const CHANNELS: LimitChannel[] = ["transfer_in", "transfer_out", "atm", "pos", "online"];
 const wholeCents = (v: unknown) => (Number.isInteger(v) && (v as number) >= 0 && (v as number) <= 100_000_000_000 ? (v as number) : null);
 
-export function createMoneyAdminRouter(d: { db: Db; ledger: LedgerPort; reader: ConfigReader; engine?: Pick<Engine, "partyOf">; channels?: () => Record<string, unknown>; crossBorder?: CrossBorder; fx?: { fetchFn?: FetchFn; providers?: Provider[] } }): Router {
+export function createMoneyAdminRouter(d: { db: Db; ledger: LedgerPort; reader: ConfigReader; engine?: Pick<Engine, "partyOf">; channels?: () => Record<string, unknown>; pooled?: PooledStore; crossBorder?: CrossBorder; fx?: { fetchFn?: FetchFn; providers?: Provider[] } }): Router {
   const router = Router();
   const poolDeps = () => { if (!d.engine) throw new Error("The money engine is not available"); return { db: d.db, ledger: d.ledger, engine: d.engine, reader: d.reader }; };
 
@@ -41,6 +43,47 @@ export function createMoneyAdminRouter(d: { db: Db; ledger: LedgerPort; reader: 
     if (!r.ok) return fail(res, r.status, r.error);
     await audit(d.db, req, "money.fx", `${b.from}-${b.to}`, { rate: Number(b.rate) });
     res.json({ success: true });
+  }));
+
+  /** The pooled bank accounts customers pay into (details of accounts that already exist). Staff set them here; no redeploy needed. */
+  router.get("/pooled-accounts", h(async (_req, res) => { res.json({ success: true, accounts: d.pooled?.list() ?? [] }); }));
+  router.put("/pooled-accounts", json({ limit: "5kb" }), h(async (req, res) => {
+    if (!d.pooled) return fail(res, 503, "Not available");
+    const v = validatePooled((req.body ?? {}) as Record<string, unknown>);
+    if (!v.ok) return fail(res, 400, v.error);
+    await d.pooled.set(v.value, uid(req));
+    await audit(d.db, req, "pooled.set", `${v.value.pool}/${v.value.currency}`, { bank: v.value.bank, account: "…" + v.value.accountNumber.slice(-4) });
+    res.json({ success: true });
+  }));
+  router.delete("/pooled-accounts/:pool/:currency", h(async (req, res) => {
+    if (!d.pooled) return fail(res, 503, "Not available");
+    const removed = await d.pooled.remove(req.params.pool as PooledPool, req.params.currency as PoolCurrency);
+    if (!removed) return fail(res, 404, "No such account");
+    await audit(d.db, req, "pooled.remove", `${req.params.pool}/${req.params.currency}`, {});
+    res.json({ success: true });
+  }));
+
+  /**
+   * Import a bank statement (CSV) from any bank: staff say which column is which. Only credits are used. Every line is recorded exactly once on the bank's
+   * own reference, so importing the same file again (or an overlapping one) changes nothing. With dryRun the file is only checked.
+   */
+  router.post("/pool/import", json({ limit: "1500kb" }), h(async (req, res) => {
+    const b = (req.body ?? {}) as Record<string, unknown>;
+    if (typeof b.csv !== "string") return fail(res, 400, "Send the statement as text in csv");
+    const cur = b.defaultCurrency === "ZMW" ? "ZMW" : "ZAR";
+    const m = (b.mapping ?? {}) as Partial<Mapping>;
+    const parsed = readStatement(b.csv, { bankRef: String(m.bankRef ?? ""), reference: String(m.reference ?? ""), amount: String(m.amount ?? ""), currency: m.currency ? String(m.currency) : undefined, direction: m.direction ? String(m.direction) : undefined }, cur);
+    if ("error" in parsed) return fail(res, 400, parsed.error);
+    if (b.dryRun === true) { res.json({ success: true, dryRun: true, headers: parsed.headers, credits: parsed.lines.length, skippedDebits: parsed.skipped, problems: parsed.problems.slice(0, 20), preview: parsed.lines.slice(0, 5) }); return; }
+    const tally = { credited: 0, duplicate: 0, unmatched: 0, awaiting_clearing: 0, other: 0 }; const failed: { row: number; error: string }[] = [...parsed.problems];
+    for (const l of parsed.lines) {
+      try {
+        const r = await recordPoolCredit(poolDeps(), { bankRef: l.bankRef, reference: l.reference, amountCents: l.amountCents, currency: l.currency, by: uid(req) });
+        if (r.status in tally) tally[r.status as keyof typeof tally]++; else tally.other++;
+      } catch (e) { failed.push({ row: l.row, error: e instanceof Error ? e.message : "failed" }); }
+    }
+    await audit(d.db, req, "pool.import", null, { lines: parsed.lines.length, ...tally, failed: failed.length });
+    res.json({ success: true, dryRun: false, lines: parsed.lines.length, skippedDebits: parsed.skipped, ...tally, failed: failed.slice(0, 20), failedCount: failed.length });
   }));
 
   /** The pooled bank accounts: virtual-account counts, credits, and the bank lines nobody could be credited for. */

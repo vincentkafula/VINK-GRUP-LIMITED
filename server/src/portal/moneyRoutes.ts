@@ -35,7 +35,7 @@ const present = (r: Record<string, unknown>) => ({
 
 export interface MoneyDeps {
   /** The pooled bank accounts customers pay into (from PAYMENT_CHANNEL_ACCOUNTS). */
-  channels?: () => Partial<Record<Pool, ChannelAccount>>;
+  channels?: (currency: string) => Partial<Record<Pool, ChannelAccount>>;
   /** Balances in currencies other than rand (kwacha wallets). Rand is shown with the bank account. */
   wallets?: (userId: string) => { currency: string; balanceCents: number }[];
   /** Sending money between South Africa and Zambia. */
@@ -49,8 +49,7 @@ export function createMoneyRouter(db: Db, role: MoneyRole, deps: MoneyDeps = {})
   /* virtual accounts: my payment reference for each currency and pool, and where to pay */
   router.get("/virtual-accounts", h(async (req, res) => {
     const rows = (await db.query(`SELECT currency, pool, reference, status FROM virtual_accounts WHERE user_id = $1 ORDER BY currency, pool`, [uid(req)])).rows;
-    const channels = deps.channels?.() ?? {};
-    res.json({ success: true, accounts: rows.map((r) => ({ currency: r.currency, pool: r.pool, poolLabel: POOL_LABEL[r.pool as Pool], reference: r.reference, status: r.status, payInto: channels[r.pool as Pool] ?? null })) });
+    res.json({ success: true, accounts: rows.map((r) => ({ currency: r.currency, pool: r.pool, poolLabel: POOL_LABEL[r.pool as Pool], reference: r.reference, status: r.status, payInto: deps.channels?.(String(r.currency))?.[r.pool as Pool] ?? null })) });
   }));
   router.post("/virtual-accounts", h(async (req, res) => {
     const b = (req.body ?? {}) as Record<string, unknown>;

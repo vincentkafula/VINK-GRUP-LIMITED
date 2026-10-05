@@ -1,6 +1,7 @@
 import { Router, json } from "express";
 import { h, uid, num, iso, isUuid, fail, pageParams, audit, type Db } from "../portal/common.js";
 import { computeFee, splitAfcFare } from "./feeEngine.js";
+import type { Readiness } from "./readiness.js";
 import { COUNTRIES, DEFAULT_ZA, DEFAULT_ZM, diffConfig, validateConfig, type CountryCode, type CountryConfig } from "./countryConfig.js";
 
 /**
@@ -54,7 +55,7 @@ export function createConfigReader(db: Db | null, ttlMs = 15_000, now: () => num
 export type ConfigReader = ReturnType<typeof createConfigReader>;
 
 /* ───────────────────────── staff API ───────────────────────── */
-export interface AdminDeps { db: Db; reader?: ConfigReader; approvalsRequired?: number; onActivate?: (country: CountryCode, config: CountryConfig) => void }
+export interface AdminDeps { db: Db; reader?: ConfigReader; approvalsRequired?: number; readiness?: (cfg: CountryConfig) => Promise<Readiness>; onActivate?: (country: CountryCode, config: CountryConfig) => void }
 
 export function createConfigAdminRouter(d: AdminDeps): Router {
   const router = Router();
@@ -95,6 +96,15 @@ export function createConfigAdminRouter(d: AdminDeps): Router {
       .map((a) => ({ approver: a.name, decision: a.decision, note: a.note ?? null, at: iso(a.created_at) }));
     const act = p.status === "active" ? null : await activeOf(p.country);
     res.json({ success: true, profile: p, approvals, approvalsRequired: required, changesFromActive: act ? diffConfig(act.config, p.config) : [] });
+  }));
+
+  /** The go-live checklist for a version: what is filled in and what still blocks it. */
+  router.get("/profiles/:id/readiness", h(async (req, res) => {
+    if (!isUuid(req.params.id)) { fail(res, 400, "Invalid id"); return; }
+    const p = await get(req.params.id);
+    if (!p) { fail(res, 404, "Profile not found"); return; }
+    if (!d.readiness) { fail(res, 503, "The checklist is not available"); return; }
+    res.json({ success: true, readiness: await d.readiness(p.config) });
   }));
 
   /** Validate without saving (used by the editor while typing). */
@@ -167,6 +177,10 @@ export function createConfigAdminRouter(d: AdminDeps): Router {
     if (!p) { fail(res, 404, "Profile not found"); return; }
     if (p.status !== "approved") { fail(res, 409, "Only an approved version can be activated."); return; }
     if (p.config.mode === "live" && req.body?.confirm !== "I_UNDERSTAND_THIS_MOVES_REAL_MONEY") { fail(res, 400, "Going live needs the confirmation phrase I_UNDERSTAND_THIS_MOVES_REAL_MONEY."); return; }
+    if (p.config.mode === "live" && d.readiness) {
+      const r = await d.readiness(p.config);
+      if (!r.ready) { res.status(409).json({ success: false, error: `This country is not ready to go live: ${r.items.filter((i) => i.blocking && !i.ok).map((i) => i.label).join("; ")}.`, readiness: r }); return; }
+    }
     const before = await activeOf(p.country);
     await d.db.query(`UPDATE country_profiles SET status = 'retired' WHERE country_code = $1 AND status = 'active'`, [p.country]);
     try { await d.db.query(`UPDATE country_profiles SET status = 'active', activated_at = now(), activated_by = $2 WHERE id = $1 AND status = 'approved'`, [p.id, uid(req)]); }
