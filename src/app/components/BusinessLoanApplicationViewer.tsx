@@ -79,7 +79,7 @@ export function BusinessLoanApplicationViewer({ isOpen, onClose }: Props) {
       {/* ── Top bar ── */}
       <div className="sticky top-0 z-20 bg-white border-b border-gray-100 shadow-sm">
         <div className="flex items-center justify-between px-5 py-3">
-          <img src={vinkLogo} alt="MANSHYA" className="h-9 w-auto object-contain" />
+          <img src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
           <div className="flex items-center gap-3">
             <span className="hidden sm:block text-xs text-gray-400 font-medium">Step {step} of {STEPS.length}</span>
             <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-800"><X className="w-5 h-5" /></button>
@@ -93,7 +93,7 @@ export function BusinessLoanApplicationViewer({ isOpen, onClose }: Props) {
 
       {/* ── Hero ── */}
       <AppHero
-        tag="MANSHYA Business Banking · NCRCP Licensed"
+        tag="VINK Business Banking · NCRCP Licensed"
         title="Small Business Loan Application"
         subtitle="Fast, transparent funding for South African businesses. Complete all 7 steps to receive your decision."
         gradient={`linear-gradient(135deg,${CP} 0%,#0B2E1C 50%,#34A853 100%)`}
@@ -357,7 +357,7 @@ export function BusinessLoanApplicationViewer({ isOpen, onClose }: Props) {
               </Field>
             </div>
 
-            <p className="text-xs text-gray-400">Add more directors by contacting your MANSHYA relationship manager after submission.</p>
+            <p className="text-xs text-gray-400">Add more directors by contacting your VINK relationship manager after submission.</p>
           </FormCard>
         )}
 
@@ -433,12 +433,12 @@ export function BusinessLoanApplicationViewer({ isOpen, onClose }: Props) {
                 </div>
                 <h2 className="text-2xl font-black text-gray-900">Application Submitted!</h2>
                 <p className="text-gray-600 text-sm leading-relaxed max-w-md mx-auto">
-                  Your business loan application has been received. A MANSHYA credit officer will review your application and contact you at <strong>{form.contactNumber}</strong> within <strong>2 business days</strong>.
+                  Your business loan application has been received. A VINK credit officer will review your application and contact you at <strong>{form.contactNumber}</strong> within <strong>2 business days</strong>.
                 </p>
                 <div className="rounded-xl p-4 mt-2" style={{ background: "#F3F0FB" }}>
                   <p className="text-xs text-gray-500 mb-1">Application reference number</p>
                   <p className="font-black text-lg" style={{ color: CP }}>
-                    MANSHYA-BL-{new Date().getFullYear()}-{Math.floor(Math.random() * 90000 + 10000)}
+                    VINK-BL-{new Date().getFullYear()}-{Math.floor(Math.random() * 90000 + 10000)}
                   </p>
                 </div>
                 <p className="text-xs text-gray-400">
@@ -447,7 +447,7 @@ export function BusinessLoanApplicationViewer({ isOpen, onClose }: Props) {
                 <button onClick={onClose}
                   className="mt-4 px-8 py-3 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90"
                   style={{ background: CP }}>
-                  Back to MANSHYA
+                  Back to VINK
                 </button>
               </div>
             )}

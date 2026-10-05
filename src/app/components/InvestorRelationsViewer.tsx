@@ -33,7 +33,7 @@ const REASONS = [
   {
     title: "High growth potential",
     icon: "🚀",
-    text: "MANSHYA Finance targets rapid adoption from launch, driven by accelerated digital uptake among underbanked commuters, cost efficiency built into the platform from day one, and a clear roadmap for strategic partnerships.",
+    text: "VINK Finance targets rapid adoption from launch, driven by accelerated digital uptake among underbanked commuters, cost efficiency built into the platform from day one, and a clear roadmap for strategic partnerships.",
   },
 ];
 
@@ -194,7 +194,7 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
       {/* ── Top bar ── */}
       <div className="sticky top-0 z-20 flex items-center justify-between px-4 py-3 bg-white border-b shadow-sm" style={{ borderColor: "#e0e0e0" }}>
         <div className="flex items-center gap-3">
-          <img src={vinkLogo} alt="MANSHYA" className="h-9 w-auto object-contain" />
+          <img src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
           <div className="hidden sm:flex items-center gap-6 text-sm ml-4">
             {["Personal", "Business", "Corporate"].map(n => (
               <span key={n} className="text-gray-500 hover:text-gray-800 cursor-pointer transition-colors">{n}</span>
@@ -209,11 +209,11 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
       {/* ── Hero banner ── */}
       <div className="px-6 py-8" style={{ background: `linear-gradient(135deg,${PD} 0%,${P} 60%,#34A853 100%)` }}>
         <div className="max-w-5xl mx-auto">
-          <p className="text-white/60 text-xs uppercase tracking-widest mb-1">MANSHYA Finance · Corporate</p>
+          <p className="text-white/60 text-xs uppercase tracking-widest mb-1">VINK Finance · Corporate</p>
           <h1 className="text-3xl md:text-4xl font-black text-white mb-1">Investor Relations</h1>
           <p className="text-white/70 text-sm mb-6">Business Plan &amp; Projections</p>
           <p className="text-white/80 text-sm max-w-2xl leading-relaxed mb-6">
-            MANSHYA is building South Africa's first transport-native digital bank, with a national rollout plan for 250,000+ AFC devices across the minibus taxi network. Registered under CIPC number 2018/079316/07, MANSHYA is building the financial infrastructure that 15 million daily commuters deserve.
+            VINK is building South Africa's first transport-native digital bank, with a national rollout plan for 250,000+ AFC devices across the minibus taxi network. Registered under CIPC number 2018/079316/07, VINK is building the financial infrastructure that 15 million daily commuters deserve.
           </p>
 
           {/* KPI cards */}
@@ -327,7 +327,7 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
           <SectionHeading>Investor News</SectionHeading>
           {INVESTOR_NEWS.length === 0 ? (
             <div className="bg-white rounded-xl border border-gray-200 p-6 text-center">
-              <p className="text-sm text-gray-500">MANSHYA is not yet in full operation. Investor news and quarterly updates will be published here as we approach our June 2027 launch.</p>
+              <p className="text-sm text-gray-500">VINK is not yet in full operation. Investor news and quarterly updates will be published here as we approach our June 2027 launch.</p>
             </div>
           ) : (
           <div className="space-y-2">

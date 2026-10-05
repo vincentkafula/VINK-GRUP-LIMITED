@@ -11,7 +11,7 @@ const ROW2 = [
     name: "Retail Rewards", price: "R170",
     features: [
       "Earn double ManshyaPoints at Pick n Pay, Shoprite, Checkers, and Spar",
-      "Redeem in-store or on the MANSHYA app",
+      "Redeem in-store or on the VINK app",
       "Selected independent retailers included",
     ],
   },

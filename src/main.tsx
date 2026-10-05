@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import "./styles/index.css";
 import "./styles/fonts.css";
 import App from "./app/App";
+import { ThemeProvider } from "./app/components/ds";
 import { initCurrency } from "./app/services/currencyStore";
 import { bootstrapSession } from "./app/services/authSession";
 
@@ -45,7 +46,7 @@ if ("serviceWorker" in navigator && import.meta.env.PROD) {
 }
 
 // The Management Panel installs as its own desktop app, distinct from the
-// main MANSHYA Finance consumer app — same origin, but its own name/icon/
+// main VINK consumer app — same origin, but its own name/icon/
 // start_url via a separate manifest. Swapping the <link rel="manifest">
 // href based on the current path is what lets "Install app" pick up the
 // right one when an admin installs while on /management-panel.
@@ -58,7 +59,9 @@ if (window.location.pathname === "/management-panel") {
 // Panel, dashboards) see it. Capped at 4 seconds: a slow or unreachable server must never leave a blank page.
 const start = () => createRoot(root).render(
   <StrictMode>
-    <App />
+    <ThemeProvider>
+      <App />
+    </ThemeProvider>
   </StrictMode>
 );
 Promise.race([bootstrapSession().catch(() => {}), new Promise<void>((r) => setTimeout(r, 4000))]).then(start, start);

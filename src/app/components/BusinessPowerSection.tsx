@@ -11,17 +11,17 @@ import { memo } from "react";
 
 export const BusinessPowerSection = memo(function BusinessPowerSection({ onSubNavClick }: { onSubNavClick?: (item: string) => void }) {
   return (
-    <section className="py-10 sm:py-16 relative overflow-hidden" style={{ background: "#2E1065" }}>
+    <section className="py-10 sm:py-16 relative overflow-hidden" style={{ background: "linear-gradient(160deg,#0c0e14 0%,#1a0d12 55%,#2e0b10 100%)" }}>
       <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full opacity-5 pointer-events-none"
-        style={{ background: "radial-gradient(circle,#7C3AED,transparent)", transform: "translate(30%,-20%)" }} />
+        style={{ background: "radial-gradient(circle,#8b0000,transparent)", transform: "translate(30%,-20%)" }} />
       <div className="absolute bottom-0 left-0 w-72 h-72 rounded-full opacity-5 pointer-events-none"
-        style={{ background: "radial-gradient(circle,#F5C842,transparent)", transform: "translate(-30%,30%)" }} />
+        style={{ background: "radial-gradient(circle,#e0c068,transparent)", transform: "translate(-30%,30%)" }} />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
           <div className="text-center lg:text-left">
             <span className="inline-block text-xs font-bold uppercase tracking-[0.14em] px-3 py-1.5 rounded-full mb-5"
-              style={{ background: "rgba(245,200,66,.15)", color: "#F5C842" }}>Global Payments</span>
+              style={{ background: "rgba(224,192,104,.15)", color: "#e0c068" }}>Global Payments</span>
             <h2 className="text-4xl sm:text-5xl leading-[1.1] text-white mb-6" style={{ fontFamily: "'Fraunces', serif", fontWeight: 600, letterSpacing: "-0.01em" }}>
               Cross-border payments shouldn't cost a fortune.
             </h2>
@@ -32,18 +32,18 @@ export const BusinessPowerSection = memo(function BusinessPowerSection({ onSubNa
 
             {/* Pull quote — the core value proposition, given its own visual weight
                 rather than blending into the surrounding paragraphs */}
-            <div className="max-w-md mx-auto lg:mx-0 mb-5 pl-4 border-l-2" style={{ borderColor: "#F5C842" }}>
-              <p className="text-white/60 text-xs leading-snug mb-1.5">
-                Once you qualify for a MANSHYA card, every transaction — even cross-border transfers — is charged at local rates.
+            <div className="max-w-md mx-auto lg:mx-0 mb-5 pl-4 border-l-2" style={{ borderColor: "#e0c068" }}>
+              <p className="text-white/75 text-xs leading-snug mb-1.5">
+                Once you qualify for a VINK card, every transaction — even cross-border transfers — is charged at local rates.
               </p>
               <p className="text-white text-lg sm:text-xl leading-snug" style={{ fontFamily: "'Fraunces', serif", fontWeight: 500 }}>
                 No international fees. No hidden markups.{" "}
-                <span style={{ color: "#F5C842" }}>Just local pricing</span>, wherever you send or spend.
+                <span style={{ color: "#e0c068" }}>Just local pricing</span>, wherever you send or spend.
               </p>
             </div>
 
-            <p className="text-white/60 text-[13.5px] leading-relaxed mb-3 max-w-md mx-auto lg:mx-0">
-              MANSHYA has eliminated these fees in its initial markets, with more countries coming soon:
+            <p className="text-white/75 text-[13.5px] leading-relaxed mb-3 max-w-md mx-auto lg:mx-0">
+              VINK has eliminated these fees in its initial markets, with more countries coming soon:
             </p>
 
             {/* Country badges — makes "4 markets" concrete rather than an abstract stat */}
@@ -56,13 +56,13 @@ export const BusinessPowerSection = memo(function BusinessPowerSection({ onSubNa
               ))}
             </div>
 
-            <p className="text-white/50 text-[13px] leading-relaxed mb-8 max-w-md mx-auto lg:mx-0">
-              We're not a traditional bank — MANSHYA is a cloud-based banking platform issuing Visa and Mastercard-powered cards, built for how people and businesses actually move money today.
+            <p className="text-white/75 text-[13px] leading-relaxed mb-8 max-w-md mx-auto lg:mx-0">
+              We're not a traditional bank — VINK is a cloud-based banking platform issuing Visa and Mastercard-powered cards, built for how people and businesses actually move money today.
             </p>
 
             <div className="flex flex-wrap justify-center lg:justify-start gap-3">
               <button onClick={() => onSubNavClick?.("Start My Business")} className="px-8 py-3.5 rounded-xl text-sm font-bold text-white transition-all duration-300 ease-out hover:scale-[1.03] hover:-translate-y-0.5"
-                style={{ background: "linear-gradient(135deg,#4C1D95,#7C3AED)", boxShadow: "0 10px 28px -6px rgba(124,58,237,.5)", letterSpacing: "0.01em" }}>
+                style={{ background: "var(--vk-brand)", color: "var(--vk-brand-fg)", boxShadow: "0 10px 28px -6px rgba(0,0,0,.3)", letterSpacing: "0.01em" }}>
                 See How It Works
               </button>
               <button onClick={() => onSubNavClick?.("BusinessHome")} className="px-8 py-3.5 rounded-xl text-sm font-semibold transition-all hover:bg-white/10"
@@ -75,13 +75,13 @@ export const BusinessPowerSection = memo(function BusinessPowerSection({ onSubNa
             {STATS.map((s, i) => (
               <div key={i} className="rounded-2xl p-5 text-center flex flex-col items-center gap-3.5 hover:-translate-y-1 transition-all duration-300"
                 style={{ background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.1)", boxShadow: "0 8px 24px -10px rgba(0,0,0,.4)" }}>
-                <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ background: "rgba(245,200,66,.1)" }}>
+                <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ background: "rgba(224,192,104,.1)" }}>
                   <div className="opacity-90">{s.icon}</div>
                 </div>
                 <div>
                   <p className="text-[26px] leading-none mb-1.5 text-white" style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 700 }}>{s.value}</p>
                   <p className="text-[13px] font-semibold text-white/80 leading-tight">{s.label}</p>
-                  <p className="text-[10.5px] text-white/45 mt-1 leading-snug">{s.sub}</p>
+                  <p className="text-xs text-white/70 mt-1 leading-snug">{s.sub}</p>
                 </div>
               </div>
             ))}

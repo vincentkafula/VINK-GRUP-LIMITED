@@ -9,15 +9,15 @@ const call = portalClient("driver");
 
 /** The original dashboard's "Turn on or off": switches this terminal. While it is off the terminal refuses fares. */
 export function PowerPanel({ terminalId, status, onChanged }: { terminalId: string; status: string | null; onChanged: () => void }) {
-  if (status === "revoked") return <p className="text-xs text-red-300">This terminal was disabled by the platform. Please contact support.</p>;
+  if (status === "revoked") return <p className="text-xs text-bad">This terminal was disabled by the platform. Please contact support.</p>;
   const on = status === "active";
   return (
     <div className="flex flex-wrap items-center gap-3 px-4 pb-4">
       <Power className="w-4 h-4" style={{ color: on ? "#10B981" : "#9CA3AF" }} />
-      <span className="text-sm text-white">Fare terminal is <b>{on ? "ON" : "OFF"}</b></span>
+      <span className="text-sm text-fg">Fare terminal is <b>{on ? "ON" : "OFF"}</b></span>
       <ActionButton small label={on ? "Turn off" : "Turn on"} busyLabel="Switching…" color={on ? "#6B7280" : COLOR}
         onRun={async () => { const r = await call(`/terminal/power`, { method: "POST", body: { terminalId, on: !on } }); onChanged(); return "error" in r ? { error: r.error } : undefined; }} />
-      <span className="text-[11px] text-white/40">{on ? "It is taking fares." : "While it is off, it will not take fares."}</span>
+      <span className="text-[11px] text-fg-subtle">{on ? "It is taking fares." : "While it is off, it will not take fares."}</span>
     </div>
   );
 }
@@ -39,8 +39,8 @@ export function DriverTrips() {
       <div className="p-4 space-y-3">
         <div className="flex flex-wrap items-end gap-4">
           <RangeBar value={range} onChange={(r) => { setRange(r); setOffset(0); }} color={COLOR} />
-          <label className="block"><span className="text-[11px] text-white/60">Status</span>
-            <select className="mt-1 block rounded-lg px-3 py-2 text-sm bg-[#0D0B1E] border border-[#2D2A50] text-white" value={status} onChange={(e) => { setStatus(e.target.value); setOffset(0); }}>
+          <label className="block"><span className="text-[11px] text-fg-muted">Status</span>
+            <select className="mt-1 block rounded-lg px-3 py-2 text-sm bg-bg border border-line text-fg" value={status} onChange={(e) => { setStatus(e.target.value); setOffset(0); }}>
               <option value="">All</option><option value="confirmed">Confirmed</option><option value="declined">Declined</option></select></label>
         </div>
         <Status load={load}>{({ total, trips }) => trips.length === 0 ? <Empty>No fares in this period.</Empty> : (
@@ -80,7 +80,7 @@ export function DriverStatements() {
             {s.days.length === 0 ? <Empty>No fares were collected in this period.</Empty> : (
               <TableCard title="Fares per day" color={COLOR} columns={["Date", "Fares", "Collected"]} rows={s.days.map((d) => [d.day, d.count, rand(d.value)])} />)}
             {s.fines.length > 0 && <TableCard title="Fines" color="#EF4444" columns={["Date", "Detail", "Amount"]} rows={s.fines.map((f) => [when(f.at), f.description ?? "Off-route fine", rand(f.amount)])} />}
-            <p className="text-[11px] text-white/40">This is a summary of what was recorded for your vehicle. Your own pay is agreed privately with your owner and is not calculated or shown here.</p>
+            <p className="text-[11px] text-fg-subtle">This is a summary of what was recorded for your vehicle. Your own pay is agreed privately with your owner and is not calculated or shown here.</p>
           </>)}</Status>
       </div>
     </SectionPanel>

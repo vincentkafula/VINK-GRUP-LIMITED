@@ -19,7 +19,7 @@ const MILESTONES = [
   { year: "2020", text: "Driver Wallet, Smart Pay Card, and Marshall Wallet products launched." },
   { year: "2021", text: "Vink MVNO agreement with Cell C; Nedbank API integration completed." },
   { year: "2022", text: "Business plan submitted for R4.5 billion funding round." },
-  { year: "Now",  text: "Expansion to gyms, fuel stations, and MANSHYA Online Store underway." },
+  { year: "Now",  text: "Expansion to gyms, fuel stations, and VINK Online Store underway." },
 ];
 
 const P = "#0B5C2E";
@@ -31,7 +31,7 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
     <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-white">
       {/* Top bar */}
       <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm">
-        <img src={vinkLogo} alt="MANSHYA" className="h-9 w-auto object-contain" />
+        <img src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
         <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500"><X className="w-5 h-5" /></button>
       </div>
 
@@ -75,7 +75,7 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
               From a single idea in the Cape Town CBD to a fully developed AFC payment platform, Vink was born from the belief that financial tools should serve everyone — not just those with traditional banking histories.
             </p>
             <p className="text-gray-600 leading-relaxed">
-              MANSHYA charges just R0.50 per taxi transaction — the lowest processing fee in the industry. That revenue is shared across the ecosystem that makes the transaction possible: the financing bank, the driver&apos;s taxi association, neighbourhood watch initiatives in the area served, and a portion retained to seed a future MANSHYA community bank built specifically for taxi drivers.
+              VINK charges just R0.50 per taxi transaction — the lowest processing fee in the industry. That revenue is shared across the ecosystem that makes the transaction possible: the financing bank, the driver&apos;s taxi association, neighbourhood watch initiatives in the area served, and a portion retained to seed a future VINK community bank built specifically for taxi drivers.
             </p>
           </div>
         </section>

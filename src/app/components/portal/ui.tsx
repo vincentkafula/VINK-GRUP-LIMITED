@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Loader2, TriangleAlert } from "lucide-react";
+import { TriangleAlert } from "lucide-react";
+import { SkeletonList } from "../ds";
 import { authFetch } from "../../services/apiClient";
 import { API_BASE } from "../../services/config";
 
@@ -40,16 +41,16 @@ export function useLoad<T>(fetcher: () => Promise<{ data: T } | { error: string 
 }
 
 export function Status<T>({ load, children }: { load: Load<T>; children: (d: T) => React.ReactNode }) {
-  if (load.state === "loading") return <p className="flex items-center gap-2 text-sm text-white/60"><Loader2 className="w-4 h-4 animate-spin" /> Loading…</p>;
-  if (load.state === "error") return <p role="alert" className="flex items-center gap-2 text-sm text-red-300"><TriangleAlert className="w-4 h-4" />{load.error}</p>;
+  if (load.state === "loading") return <SkeletonList rows={2} />;
+  if (load.state === "error") return <p role="alert" className="flex items-center gap-2 text-sm text-bad"><TriangleAlert className="w-4 h-4" />{load.error}</p>;
   return <>{children(load.data)}</>;
 }
 
-export const Empty = ({ children }: { children: React.ReactNode }) => <p className="text-sm text-white/50">{children}</p>;
+export const Empty = ({ children }: { children: React.ReactNode }) => <p className="text-sm text-fg-muted">{children}</p>;
 export const Field = ({ label, value }: { label: string; value: React.ReactNode }) => (
-  <div><p className="text-[10px] uppercase tracking-wide text-white/40">{label}</p><p className="text-sm text-white">{value || <span className="text-white/30">Not set</span>}</p></div>
+  <div><p className="text-[10px] uppercase tracking-wide text-fg-subtle">{label}</p><p className="text-sm text-fg">{value || <span className="text-fg-subtle">Not set</span>}</p></div>
 );
-export const inputCls = "w-full rounded-lg px-3 py-2 text-sm bg-[#0D0B1E] border border-[#2D2A50] text-white placeholder-white/30";
+export const inputCls = "w-full rounded-lg px-3 py-2 text-sm bg-bg border border-line text-fg placeholder:text-fg-subtle";
 
 export const rand = (n: number) => "R " + n.toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 export const when = (iso: string) => new Date(iso).toLocaleString("en-ZA", { timeZone: "Africa/Johannesburg", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
@@ -74,7 +75,7 @@ export function ActionButton({ label, busyLabel, color, onRun, small, className 
       <button type="button" disabled={busy} onClick={run} className={`${small ? "px-2.5 py-1 text-xs" : "px-4 py-2 text-sm"} rounded-lg font-bold disabled:opacity-60 ${className ?? ""}`} style={{ background: color, color: "#101010" }}>
         {busy ? (busyLabel ?? "Working…") : label}
       </button>
-      {msg && <span role={msg.ok ? "status" : "alert"} className={`text-xs ${msg.ok ? "text-emerald-300" : "text-red-300"}`}>{msg.text}</span>}
+      {msg && <span role={msg.ok ? "status" : "alert"} className={`text-xs ${msg.ok ? "text-ok" : "text-bad"}`}>{msg.text}</span>}
     </span>
   );
 }

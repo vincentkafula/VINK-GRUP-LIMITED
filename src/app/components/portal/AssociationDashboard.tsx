@@ -68,11 +68,11 @@ function Overview() {
           <StatCard label="Marshals" value={String(x.members.marshals)} icon={<Users className="w-4 h-4" />} color="#3B82F6" />
           <StatCard label="Member vehicles" value={String(x.members.vehicles)} icon={<Users className="w-4 h-4" />} color="#8B5CF6" />
         </div>
-        {x.pendingRequests > 0 && <p className="text-sm text-amber-300">{x.pendingRequests} request{x.pendingRequests === 1 ? "" : "s"} to join {x.pendingRequests === 1 ? "is" : "are"} waiting under Approvals.</p>}
+        {x.pendingRequests > 0 && <p className="text-sm text-warn">{x.pendingRequests} request{x.pendingRequests === 1 ? "" : "s"} to join {x.pendingRequests === 1 ? "is" : "are"} waiting under Approvals.</p>}
         {x.ranks.length === 0 ? <SectionPanel title="Departures"><div className="p-4"><Empty>No ranks yet.</Empty></div></SectionPanel> : (
           <TableCard title="Departures by rank" color={COLOR} columns={["Rank", "Today", "This week", "This month"]}
             rows={x.ranks.map((k) => [k.rank, `${k.today.departures} (${k.today.passengers} pax)`, `${k.week.departures} (${k.week.passengers} pax)`, `${k.month.departures} (${k.month.passengers} pax)`])} />)}
-        <SectionPanel title="Levies"><div className="p-4 text-sm text-white">Outstanding {rand(x.levies.outstanding)} across {x.levies.open} open levies · collected {rand(x.levies.paid)}.</div></SectionPanel>
+        <SectionPanel title="Levies"><div className="p-4 text-sm text-fg">Outstanding {rand(x.levies.outstanding)} across {x.levies.open} open levies · collected {rand(x.levies.paid)}.</div></SectionPanel>
       </>
     )}</Status>
   );
@@ -84,8 +84,8 @@ function Approvals({ reqs, reload }: { reqs: ReturnType<typeof useLoad<{ request
       <SectionPanel title="People asking to join">
         <div className="p-4">{requests.length === 0 ? <Empty>No requests are waiting.</Empty> : (
           <ul className="space-y-3">{requests.map((r) => (
-            <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 text-sm text-white">
-              <span>{r.name} <span className="text-white/40">({ROLE[r.role] ?? r.role}) · {r.email} · {when(r.at)}</span></span>
+            <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 text-sm text-fg">
+              <span>{r.name} <span className="text-fg-subtle">({ROLE[r.role] ?? r.role}) · {r.email} · {when(r.at)}</span></span>
               <span className="flex gap-2">
                 <ActionButton small label="Approve" color={COLOR} onRun={async () => { const x = await call(`/members/${r.id}/respond`, { method: "POST", body: { accept: true } }); reload(); return "error" in x ? { error: x.error } : undefined; }} />
                 <ActionButton small label="Decline" color="#6B7280" onRun={async () => { const x = await call(`/members/${r.id}/respond`, { method: "POST", body: { accept: false } }); reload(); return "error" in x ? { error: x.error } : undefined; }} />
@@ -109,19 +109,19 @@ function Ranks() {
       ) : (
         <>{ranks.map((r) => (
           <SectionPanel key={r.id} title={`${r.name}${r.location ? ` · ${r.location}` : ""}`}>
-            <div className="p-4 space-y-3 text-sm text-white">
+            <div className="p-4 space-y-3 text-sm text-fg">
               <p>{r.waiting} vehicle{r.waiting === 1 ? "" : "s"} waiting {r.active ? "" : <Badge text="inactive" color="#6B7280" />}</p>
               <div className="flex flex-wrap gap-2 items-center">
-                <span className="text-white/50">Marshals:</span>
-                {r.marshals.length === 0 && <span className="text-white/40">none assigned</span>}
+                <span className="text-fg-muted">Marshals:</span>
+                {r.marshals.length === 0 && <span className="text-fg-subtle">none assigned</span>}
                 {r.marshals.map((m) => (
-                  <span key={m.id} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs" style={{ background: "#2D2A50" }}>{m.name}
-                    <button aria-label={`Remove ${m.name}`} className="text-white/60 hover:text-white" onClick={async () => { await call(`/ranks/${r.id}/marshals/${m.id}/remove`, { method: "POST", body: {} }); reload(); }}>×</button></span>))}
+                  <span key={m.id} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs" style={{ background: "var(--vk-line)" }}>{m.name}
+                    <button aria-label={`Remove ${m.name}`} className="text-fg-muted hover:text-fg" onClick={async () => { await call(`/ranks/${r.id}/marshals/${m.id}/remove`, { method: "POST", body: {} }); reload(); }}>×</button></span>))}
                 <select aria-label={`Add a marshal to ${r.name}`} className={inputCls + " !w-auto !py-1"} value="" onChange={async (e) => { if (e.target.value) { await call(`/ranks/${r.id}/marshals`, { method: "POST", body: { marshalId: e.target.value } }); reload(); } }}>
                   <option value="">Add a marshal…</option>{marshals.filter((m) => !r.marshals.some((x) => x.id === m.userId)).map((m) => <option key={m.userId} value={m.userId}>{m.name}</option>)}
                 </select>
               </div>
-              <button className="text-xs underline text-white/60" onClick={async () => { await call(`/ranks/${r.id}`, { method: "PUT", body: { name: r.name, location: r.location ?? "", active: !r.active } }); reload(); }}>{r.active ? "Mark inactive" : "Mark active"}</button>
+              <button className="text-xs underline text-fg-muted" onClick={async () => { await call(`/ranks/${r.id}`, { method: "PUT", body: { name: r.name, location: r.location ?? "", active: !r.active } }); reload(); }}>{r.active ? "Mark inactive" : "Mark active"}</button>
             </div>
           </SectionPanel>))}</>
       )}</Status>
@@ -160,7 +160,7 @@ function Levies() {
           <input className={inputCls} placeholder="Amount (R)" inputMode="decimal" value={f.amount} onChange={(e) => setF({ ...f, amount: e.target.value })} />
           <input className={inputCls} type="date" aria-label="Due date" value={f.dueDate} onChange={(e) => setF({ ...f, dueDate: e.target.value })} />
           <div className="sm:col-span-4"><ActionButton label="Create levy" color={COLOR} onRun={async () => { const r = await call("/levies", { method: "POST", body: { ...f, amount: Number(f.amount) } }); if (!("error" in r)) { setF({ memberId: "", title: "", amount: "", dueDate: "" }); reload(); } return "error" in r ? { error: r.error } : { message: "Created." }; }} /></div>
-          <p className="sm:col-span-4 text-[11px] text-white/40">This records what you are owed and whether it has been paid. Online collection of levies is not part of this screen.</p>
+          <p className="sm:col-span-4 text-[11px] text-fg-subtle">This records what you are owed and whether it has been paid. Online collection of levies is not part of this screen.</p>
         </div>
       </SectionPanel>
     </>
@@ -175,7 +175,7 @@ function Invite({ onChanged }: { onChanged: () => void }) {
       <div className="p-4 flex flex-wrap gap-2 items-center">
         <input className={inputCls + " max-w-xs"} placeholder="Their account email" value={email} onChange={(e) => setEmail(e.target.value)} />
         <ActionButton label="Send invitation" color={COLOR} onRun={async () => { const r = await call<{ message?: string }>("/members", { method: "POST", body: { email } }); if (!("error" in r)) { setEmail(""); onChanged(); } return outcome(r); }} />
-        <p className="basis-full text-[11px] text-white/40">The person has to accept the invitation. It works for vehicle owner, driver and marshal accounts.</p>
+        <p className="basis-full text-[11px] text-fg-subtle">The person has to accept the invitation. It works for vehicle owner, driver and marshal accounts.</p>
       </div>
     </SectionPanel>
   );

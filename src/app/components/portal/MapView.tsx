@@ -77,16 +77,16 @@ function GoogleMapCanvas({ routes, positions, color, draft, onPick, height, onFa
   useEffect(() => { (mapRef.current?.map as { setMapTypeId(t: string): void } | undefined)?.setMapTypeId(type); }, [type, ready]);
 
   return (
-    <div className="rounded-xl overflow-hidden" style={{ background: "#1A1738", border: "1px solid #2D2A50" }}>
+    <div className="rounded-xl overflow-hidden" style={{ background: "var(--vk-surface)", border: "1px solid var(--vk-line)" }}>
       <div className="relative">
-        <div ref={box} role="application" aria-label={`Map showing ${routes.length} routes and ${positions.length} vehicle positions`} style={{ height, background: "#0D0B1E" }} />
-        {!ready && <div className="absolute inset-0 grid place-items-center text-sm text-white/60"><span className="flex items-center gap-2"><MapPin className="w-4 h-4 animate-pulse" /> Loading Google Maps…</span></div>}
+        <div ref={box} role="application" aria-label={`Map showing ${routes.length} routes and ${positions.length} vehicle positions`} style={{ height, background: "var(--vk-bg)" }} />
+        {!ready && <div className="absolute inset-0 grid place-items-center text-sm text-fg-muted"><span className="flex items-center gap-2"><MapPin className="w-4 h-4 animate-pulse" /> Loading Google Maps…</span></div>}
         <div className="absolute top-3 left-3 flex rounded-lg overflow-hidden text-xs font-semibold shadow" role="group" aria-label="Map type">
           {([["hybrid", "Satellite"], ["roadmap", "Map"]] as const).map(([v, label]) => (
             <button key={v} type="button" aria-pressed={type === v} onClick={() => setType(v)} className="px-3 py-1.5" style={{ background: type === v ? "#fff" : "rgba(17,17,17,.75)", color: type === v ? "#111" : "#fff" }}>{label}</button>))}
         </div>
       </div>
-      <ul className="p-3 grid gap-1.5 sm:grid-cols-2 text-xs text-white/70">
+      <ul className="p-3 grid gap-1.5 sm:grid-cols-2 text-xs text-fg">
         {routes.map((r, i) => <li key={r.id} className="flex items-center gap-2"><span className="inline-block w-3 h-1 rounded" style={{ background: ROUTE_COLORS[i % ROUTE_COLORS.length] }} />{r.name}{r.registration ? ` · ${r.registration}` : ""}{r.active ? "" : " (inactive)"}</li>)}
         {positions.map((p) => <li key={p.terminalSerial} className="flex items-center gap-2"><span className="inline-block w-3 h-3 rounded-full" style={{ background: color }} />{p.registration ?? p.terminalSerial}{p.at ? ` · last seen ${new Date(p.at).toLocaleString("en-ZA", { timeZone: "Africa/Johannesburg", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}` : ""}</li>)}
       </ul>

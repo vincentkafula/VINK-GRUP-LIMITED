@@ -54,7 +54,7 @@ function ProfileForm({ user, profile, onSaved }: { user: { name: string; email: 
       <SectionPanel title="Saved details">
         <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
           {([["Phone number", "phone"], ["Home area", "home_area"], ["Favourite route", "favourite_route"], ["Emergency contact name", "emergency_contact_name"], ["Emergency contact phone", "emergency_contact_phone"]] as const).map(([label, k]) => (
-            <label key={k} className="block"><span className="text-[11px] text-white/60">{label}</span><input className={inputCls + " mt-1"} value={f[k]} onChange={set(k)} /></label>))}
+            <label key={k} className="block"><span className="text-[11px] text-fg-muted">{label}</span><input className={inputCls + " mt-1"} value={f[k]} onChange={set(k)} /></label>))}
           <div className="sm:col-span-2"><ActionButton label="Save details" color={COLOR} onRun={async () => { const r = await call("/profile", { method: "PUT", body: f }); if (!("error" in r)) onSaved(); return "error" in r ? { error: r.error } : { message: "Saved." }; }} /></div>
         </div>
       </SectionPanel>
@@ -76,7 +76,7 @@ function SupportScreen() {
       </SectionPanel>
       <Status load={l}>{({ requests }) => requests.length === 0 ? null : (
         <SectionPanel title="Your requests"><ul className="p-4 space-y-3">{requests.map((r) => (
-          <li key={r.id} className="text-sm text-white"><div className="flex items-center gap-2"><b>{r.subject}</b><Badge text={r.status} color={r.status === "open" ? "#F59E0B" : "#10B981"} /><span className="text-xs text-white/40">{when(r.at)}</span></div><p className="text-xs text-white/60 mt-1 whitespace-pre-wrap">{r.message}</p></li>))}</ul></SectionPanel>
+          <li key={r.id} className="text-sm text-fg"><div className="flex items-center gap-2"><b>{r.subject}</b><Badge text={r.status} color={r.status === "open" ? "#F59E0B" : "#10B981"} /><span className="text-xs text-fg-subtle">{when(r.at)}</span></div><p className="text-xs text-fg-muted mt-1 whitespace-pre-wrap">{r.message}</p></li>))}</ul></SectionPanel>
       )}</Status>
     </>
   );

@@ -36,11 +36,11 @@ function ConfigPage({ onClose, staff, meId }: { onClose: () => void; staff: bool
   const refresh = () => setTick((t) => t + 1);
 
   return (
-    <div className="fixed inset-0 z-[80] overflow-y-auto" style={{ background: "#0D0B1E" }} role="dialog" aria-modal="true" aria-label="Country configuration">
+    <div className="fixed inset-0 z-[80] overflow-y-auto" style={{ background: "var(--vk-bg)" }} role="dialog" aria-modal="true" aria-label="Country configuration">
       <div className="max-w-6xl mx-auto p-4 sm:p-6 space-y-4">
-        <div className="flex items-center justify-between"><h1 className="text-xl font-bold text-white flex items-center gap-2"><SlidersHorizontal className="w-5 h-5" style={{ color: COLOR }} />Country configuration</h1>
-          <button type="button" aria-label="Close" onClick={onClose} className="p-2 text-white/60"><X className="w-5 h-5" /></button></div>
-        {!staff ? <p role="alert" className="text-sm text-red-300">This page is for administrators. Please sign in with a staff account.</p> : (
+        <div className="flex items-center justify-between"><h1 className="text-xl font-bold text-fg flex items-center gap-2"><SlidersHorizontal className="w-5 h-5" style={{ color: `color-mix(in srgb, ${COLOR} 62%, var(--vk-fg))` }} />Country configuration</h1>
+          <button type="button" aria-label="Close" onClick={onClose} className="p-2 text-fg-muted"><X className="w-5 h-5" /></button></div>
+        {!staff ? <p role="alert" className="text-sm text-bad">This page is for administrators. Please sign in with a staff account.</p> : (
           <Body country={country} setCountry={setCountry} tick={tick} refresh={refresh} meId={meId} />)}
       </div>
     </div>
@@ -52,7 +52,7 @@ function Body({ country, setCountry, tick, refresh, meId }: { country: "ZA" | "Z
   return (
           <>
             <div className="flex gap-2" role="tablist">{(["ZA", "ZM"] as const).map((c) => (
-              <button key={c} role="tab" aria-selected={country === c} onClick={() => setCountry(c)} className="px-4 py-2 rounded-lg text-sm font-bold" style={{ background: country === c ? COLOR : "#1A1738", color: country === c ? "#101010" : "#cbd5e1", border: "1px solid #2D2A50" }}>{c === "ZA" ? "South Africa" : "Zambia"}</button>))}</div>
+              <button key={c} role="tab" aria-selected={country === c} onClick={() => setCountry(c)} className="px-4 py-2 rounded-lg text-sm font-bold" style={{ background: country === c ? COLOR : "var(--vk-surface)", color: country === c ? "#101010" : "#cbd5e1", border: "1px solid var(--vk-line)" }}>{c === "ZA" ? "South Africa" : "Zambia"}</button>))}</div>
             <Status load={overview}>{(o) => {
               const c = o.countries.find((x) => x.country === country);
               return <Country key={country + tick} country={country} active={c?.active ?? null} inProgress={c?.inProgress ?? null} approvalsRequired={o.approvalsRequired} meId={meId} onChange={refresh} />;
@@ -84,13 +84,13 @@ function Country({ country, active, inProgress, approvalsRequired, meId, onChang
         ) : (
           <><Status load={load}>{(d) => <Editor key={d.profile.id + d.profile.status} d={d} hasActive={!!active} approvalsRequired={approvalsRequired} meId={meId} onChange={onChange} country={country} />}</Status><ReadinessPanel profileId={shown.id} /></>)}
         {shown && !inProgress && (
-          <p className="text-sm text-white/70">This is the live version. To change anything, start a new draft: <ActionButton small label="Start a draft from this version" color={COLOR} onRun={async () => { const r = await configApi(`/${country}/drafts`, { method: "POST", body: {} }); if (!("error" in r)) onChange(); return fail(r); }} /></p>)}
+          <p className="text-sm text-fg">This is the live version. To change anything, start a new draft: <ActionButton small label="Start a draft from this version" color={COLOR} onRun={async () => { const r = await configApi(`/${country}/drafts`, { method: "POST", body: {} }); if (!("error" in r)) onChange(); return fail(r); }} /></p>)}
         <Simulator country={country} />
       </div>
-      <aside className="space-y-2"><h2 className="text-sm font-bold text-white">Versions</h2>
+      <aside className="space-y-2"><h2 className="text-sm font-bold text-fg">Versions</h2>
         <Status load={versions}>{({ versions: v }) => <ul className="space-y-1.5">{v.map((x) => (
-          <li key={x.id} className="rounded-lg px-3 py-2 text-xs flex items-center justify-between" style={{ background: "#1A1738", border: "1px solid #2D2A50" }}>
-            <span className="text-white">v{x.version}{x.note ? <span className="text-white/50"> · {x.note}</span> : null}</span><Badge text={x.status.replace("_", " ")} color={STATUS_COLOR[x.status]} /></li>))}</ul>}</Status></aside>
+          <li key={x.id} className="rounded-lg px-3 py-2 text-xs flex items-center justify-between" style={{ background: "var(--vk-surface)", border: "1px solid var(--vk-line)" }}>
+            <span className="text-fg">v{x.version}{x.note ? <span className="text-fg-muted"> · {x.note}</span> : null}</span><Badge text={x.status.replace("_", " ")} color={STATUS_COLOR[x.status]} /></li>))}</ul>}</Status></aside>
     </div>
   );
 }
@@ -115,22 +115,22 @@ function Editor({ d, hasActive, approvalsRequired, meId, onChange, country }: { 
   const live = p.config.mode === "live";
   const money = p.config.currency?.code ?? "ZAR";
   return (
-    <section className="rounded-xl p-4 space-y-4" style={{ background: "#1A1738", border: "1px solid #2D2A50" }}>
-      <div className="flex flex-wrap items-center gap-3"><h2 className="text-white font-bold">Version {p.version}</h2><Badge text={p.status.replace("_", " ")} color={STATUS_COLOR[p.status]} /><Badge text={live ? "LIVE MODE" : "sandbox"} color={live ? "#EF4444" : "#94A3B8"} />
-        <span className="text-xs text-white/50">Marshal fee {cents(p.config.marshalFee?.amountCents ?? 0, money)} · {p.config.trip?.tapsPerTrip} taps per trip · no PIN below {cents(p.config.afc?.noPinBelowCents ?? 0, money)}</span></div>
+    <section className="rounded-xl p-4 space-y-4" style={{ background: "var(--vk-surface)", border: "1px solid var(--vk-line)" }}>
+      <div className="flex flex-wrap items-center gap-3"><h2 className="text-fg font-bold">Version {p.version}</h2><Badge text={p.status.replace("_", " ")} color={STATUS_COLOR[p.status]} /><Badge text={live ? "LIVE MODE" : "sandbox"} color={live ? "#EF4444" : "#94A3B8"} />
+        <span className="text-xs text-fg-muted">Marshal fee {cents(p.config.marshalFee?.amountCents ?? 0, money)} · {p.config.trip?.tapsPerTrip} taps per trip · no PIN below {cents(p.config.afc?.noPinBelowCents ?? 0, money)}</span></div>
 
-      {editable ? <p className="text-xs text-white/60">Amounts are whole minor units (cents). Edit the JSON below; it is checked as you type.</p> : <p className="text-xs text-white/60">{p.status === "draft" ? "Only the person who created this draft can edit it." : "This version is frozen: what is approved is exactly what gets activated."}</p>}
+      {editable ? <p className="text-xs text-fg-muted">Amounts are whole minor units (cents). Edit the JSON below; it is checked as you type.</p> : <p className="text-xs text-fg-muted">{p.status === "draft" ? "Only the person who created this draft can edit it." : "This version is frozen: what is approved is exactly what gets activated."}</p>}
       <textarea aria-label="Configuration JSON" spellCheck={false} readOnly={!editable} value={text} onChange={(e) => setText(e.target.value)} rows={18} className={inputCls + " font-mono text-xs leading-5"} />
-      {problems.length > 0 ? <ul role="alert" className="text-xs text-red-300 list-disc pl-5 space-y-0.5">{problems.slice(0, 12).map((x, i) => <li key={i}>{x}</li>)}</ul> : parsed.ok && <p className="text-xs text-emerald-300" role="status">The configuration is valid.</p>}
+      {problems.length > 0 ? <ul role="alert" className="text-xs text-bad list-disc pl-5 space-y-0.5">{problems.slice(0, 12).map((x, i) => <li key={i}>{x}</li>)}</ul> : parsed.ok && <p className="text-xs text-ok" role="status">The configuration is valid.</p>}
 
       {p.status !== "active" && hasActive && (
-        <div><h3 className="text-sm font-bold text-white mb-1">What changes compared with the live version</h3>
+        <div><h3 className="text-sm font-bold text-fg mb-1">What changes compared with the live version</h3>
           {d.changesFromActive.length === 0 ? <Empty>No differences.</Empty> : (
-            <table className="w-full text-xs"><thead className="text-white/40 text-left"><tr><th className="py-1">Setting</th><th>Now</th><th>Proposed</th></tr></thead>
-              <tbody>{d.changesFromActive.map((c) => <tr key={c.path} className="border-t border-[#2D2A50] text-white/80 align-top"><td className="py-1 pr-2 font-mono">{c.path}</td><td className="pr-2 break-all">{JSON.stringify(c.before) ?? "–"}</td><td className="break-all">{JSON.stringify(c.after) ?? "–"}</td></tr>)}</tbody></table>)}
+            <table className="w-full text-xs"><thead className="text-fg-subtle text-left"><tr><th className="py-1">Setting</th><th>Now</th><th>Proposed</th></tr></thead>
+              <tbody>{d.changesFromActive.map((c) => <tr key={c.path} className="border-t border-line text-fg align-top"><td className="py-1 pr-2 font-mono">{c.path}</td><td className="pr-2 break-all">{JSON.stringify(c.before) ?? "–"}</td><td className="break-all">{JSON.stringify(c.after) ?? "–"}</td></tr>)}</tbody></table>)}
         </div>)}
 
-      {d.approvals.length > 0 && <ul className="text-xs text-white/70 space-y-0.5">{d.approvals.map((a, i) => <li key={i}>{a.decision === "approve" ? "✔" : "✖"} {a.approver}{a.note ? ` — ${a.note}` : ""} <span className="text-white/40">· {when(a.at)}</span></li>)}</ul>}
+      {d.approvals.length > 0 && <ul className="text-xs text-fg space-y-0.5">{d.approvals.map((a, i) => <li key={i}>{a.decision === "approve" ? "✔" : "✖"} {a.approver}{a.note ? ` — ${a.note}` : ""} <span className="text-fg-subtle">· {when(a.at)}</span></li>)}</ul>}
 
       <div className="flex flex-wrap items-center gap-3">
         {editable && <>
@@ -138,7 +138,7 @@ function Editor({ d, hasActive, approvalsRequired, meId, onChange, country }: { 
           <ActionButton label="Submit for approval" color="#F59E0B" onRun={async () => { if (dirty) return { error: "Save the draft first" }; const r = await configApi(`/profiles/${p.id}/submit`, { method: "POST" }); if (!("error" in r)) onChange(); return fail(r); }} />
         </>}
         {p.status === "pending_approval" && (p.createdBy === meId
-          ? <p className="text-xs text-amber-300">Waiting for {approvalsRequired} approval{approvalsRequired === 1 ? "" : "s"} from other administrators. You created this change, so you cannot approve it.</p>
+          ? <p className="text-xs text-warn">Waiting for {approvalsRequired} approval{approvalsRequired === 1 ? "" : "s"} from other administrators. You created this change, so you cannot approve it.</p>
           : !myDecision && <>
             <ActionButton label="Approve" color="#10B981" onRun={async () => { const r = await configApi(`/profiles/${p.id}/decision`, { method: "POST", body: { approve: true } }); if (!("error" in r)) onChange(); return fail(r); }} />
             <input className={inputCls + " !w-56"} placeholder="Reason (needed to reject)" value={note} onChange={(e) => setNote(e.target.value)} />
@@ -164,16 +164,16 @@ function Simulator({ country }: { country: string }) {
     setOut({ ok: true, text: `Fee ${(f.feeCents / 100).toFixed(2)} (${f.ruleId ?? "no rule"}: ${f.calculation})` + (s ? ` · platform ${(s.feeCents / 100).toFixed(2)}, investor ${(s.investorCents / 100).toFixed(2)}, owner side ${(s.remainderCents / 100).toFixed(2)}` : "") });
   };
   return (
-    <section className="rounded-xl p-4 space-y-3" style={{ background: "#1A1738", border: "1px solid #2D2A50" }}>
-      <h2 className="text-sm font-bold text-white">Fee simulator <span className="font-normal text-white/50">· uses the live version of this country</span></h2>
+    <section className="rounded-xl p-4 space-y-3" style={{ background: "var(--vk-surface)", border: "1px solid var(--vk-line)" }}>
+      <h2 className="text-sm font-bold text-fg">Fee simulator <span className="font-normal text-fg-muted">· uses the live version of this country</span></h2>
       <div className="flex flex-wrap items-end gap-3">
-        <label className="block"><span className="text-[11px] text-white/60">Transaction</span><select className={inputCls + " mt-1 !w-auto"} value={txn} onChange={(e) => setTxn(e.target.value)}>{["afc_tap", "card_pos", "card_online", "atm", "transfer_out", "payout", "deposit"].map((t) => <option key={t}>{t}</option>)}</select></label>
-        <label className="block"><span className="text-[11px] text-white/60">Amount</span><input className={inputCls + " mt-1 !w-32"} inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} /></label>
-        <label className="block"><span className="text-[11px] text-white/60">Payer type</span><select className={inputCls + " mt-1 !w-auto"} value={payerType} onChange={(e) => setPayerType(e.target.value)}><option value="">any</option>{["driver", "marshal", "association", "vehicle_owner", "investor", "personal"].map((t) => <option key={t}>{t}</option>)}</select></label>
-        <label className="block"><span className="text-[11px] text-white/60">KYC tier</span><select className={inputCls + " mt-1 !w-auto"} value={tier} onChange={(e) => setTier(e.target.value)}><option value="">any</option>{["basic", "standard", "full", "business"].map((t) => <option key={t}>{t}</option>)}</select></label>
+        <label className="block"><span className="text-[11px] text-fg-muted">Transaction</span><select className={inputCls + " mt-1 !w-auto"} value={txn} onChange={(e) => setTxn(e.target.value)}>{["afc_tap", "card_pos", "card_online", "atm", "transfer_out", "payout", "deposit"].map((t) => <option key={t}>{t}</option>)}</select></label>
+        <label className="block"><span className="text-[11px] text-fg-muted">Amount</span><input className={inputCls + " mt-1 !w-32"} inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} /></label>
+        <label className="block"><span className="text-[11px] text-fg-muted">Payer type</span><select className={inputCls + " mt-1 !w-auto"} value={payerType} onChange={(e) => setPayerType(e.target.value)}><option value="">any</option>{["driver", "marshal", "association", "vehicle_owner", "investor", "personal"].map((t) => <option key={t}>{t}</option>)}</select></label>
+        <label className="block"><span className="text-[11px] text-fg-muted">KYC tier</span><select className={inputCls + " mt-1 !w-auto"} value={tier} onChange={(e) => setTier(e.target.value)}><option value="">any</option>{["basic", "standard", "full", "business"].map((t) => <option key={t}>{t}</option>)}</select></label>
         <ActionButton label="Calculate" color={COLOR} onRun={run} />
       </div>
-      {out && <p role="status" className="text-sm text-emerald-300">{out.text}</p>}
+      {out && <p role="status" className="text-sm text-ok">{out.text}</p>}
     </section>
   );
 }
@@ -190,13 +190,13 @@ async function moneyApi(path: string, init?: { method?: string; body?: unknown }
 function Reconciliation() {
   const [load, reload] = useLoad<{ ok: boolean; checkedAt: string; figures: Record<string, number>; issues: { severity: string; code: string; message: string; count: number }[] }>(() => moneyApi("/reconciliation") as never);
   return (
-    <section className="rounded-xl p-4 space-y-2" style={{ background: "#1A1738", border: "1px solid #2D2A50" }}>
-      <div className="flex items-center justify-between"><h2 className="text-sm font-bold text-white">Reconciliation</h2><ActionButton small label="Check again" color={COLOR} onRun={async () => { reload(); }} /></div>
+    <section className="rounded-xl p-4 space-y-2" style={{ background: "var(--vk-surface)", border: "1px solid var(--vk-line)" }}>
+      <div className="flex items-center justify-between"><h2 className="text-sm font-bold text-fg">Reconciliation</h2><ActionButton small label="Check again" color={COLOR} onRun={async () => { reload(); }} /></div>
       <Status load={load}>{(r) => (
         <>
-          <p role="status" className={`text-sm ${r.ok ? "text-emerald-300" : "text-red-300"}`}>{r.ok ? "Records and ledger agree." : "Something does not agree and needs an engineer."} <span className="text-white/40">Checked {when(r.checkedAt)}</span></p>
+          <p role="status" className={`text-sm ${r.ok ? "text-ok" : "text-bad"}`}>{r.ok ? "Records and ledger agree." : "Something does not agree and needs an engineer."} <span className="text-fg-subtle">Checked {when(r.checkedAt)}</span></p>
           {r.issues.length > 0 && <ul className="text-xs space-y-1">{r.issues.map((i) => <li key={i.code + i.message} className={i.severity === "problem" ? "text-red-300" : "text-amber-300"}>{i.count} · {i.message}</li>)}</ul>}
-          <p className="text-[11px] text-white/50">{r.figures.settledTaps} taps settled · {r.figures.unsettledConfirmedTaps} waiting · {r.figures.trips} trips · {r.figures.paidItems} payments made · {(r.figures.waitingCents / 100).toFixed(2)} waiting for funds · {(r.figures.arrearsCents / 100).toFixed(2)} in arrears</p>
+          <p className="text-[11px] text-fg-muted">{r.figures.settledTaps} taps settled · {r.figures.unsettledConfirmedTaps} waiting · {r.figures.trips} trips · {r.figures.paidItems} payments made · {(r.figures.waitingCents / 100).toFixed(2)} waiting for funds · {(r.figures.arrearsCents / 100).toFixed(2)} in arrears</p>
         </>)}</Status>
     </section>
   );
@@ -216,18 +216,18 @@ function RulesTester({ country }: { country: string }) {
     setOut(v.ok ? "Allowed" + (v.receiveCents !== undefined ? ` · they receive ${(v.receiveCents / 100).toFixed(2)} after a ${(v.feeCents / 100).toFixed(2)} fee, quote valid to ${when(v.expiresAt)}` : "") : `Refused (${v.code}): ${v.message}`);
   };
   return (
-    <section className="rounded-xl p-4 space-y-3" style={{ background: "#1A1738", border: "1px solid #2D2A50" }}>
-      <h2 className="text-sm font-bold text-white">Limits tester <span className="font-normal text-white/50">· uses the live version of this country</span></h2>
+    <section className="rounded-xl p-4 space-y-3" style={{ background: "var(--vk-surface)", border: "1px solid var(--vk-line)" }}>
+      <h2 className="text-sm font-bold text-fg">Limits tester <span className="font-normal text-fg-muted">· uses the live version of this country</span></h2>
       <div className="flex flex-wrap items-end gap-3">
-        <label className="block"><span className="text-[11px] text-white/60">Rule</span><select className={inputCls + " mt-1 !w-auto"} value={kind} onChange={(e) => setKind(e.target.value)}><option value="limit">KYC limit</option><option value="instant_credit">Instant credit</option><option value="corridor">Cross-border quote</option></select></label>
-        <label className="block"><span className="text-[11px] text-white/60">Account level</span><select className={inputCls + " mt-1 !w-auto"} value={tier} onChange={(e) => setTier(e.target.value)}>{["basic", "standard", "full", "business"].map((t) => <option key={t}>{t}</option>)}</select></label>
-        {kind === "limit" && <label className="block"><span className="text-[11px] text-white/60">Channel</span><select className={inputCls + " mt-1 !w-auto"} value={channel} onChange={(e) => setChannel(e.target.value)}>{["transfer_in", "transfer_out", "atm", "pos", "online"].map((t) => <option key={t}>{t}</option>)}</select></label>}
-        {kind === "corridor" && <><label className="block"><span className="text-[11px] text-white/60">Route</span><input className={inputCls + " mt-1 !w-28"} value={corridorId} onChange={(e) => setCorridor(e.target.value)} /></label>
-          <label className="block"><span className="text-[11px] text-white/60">Mid rate</span><input className={inputCls + " mt-1 !w-24"} inputMode="decimal" value={rate} onChange={(e) => setRate(e.target.value)} /></label></>}
-        <label className="block"><span className="text-[11px] text-white/60">Amount</span><input className={inputCls + " mt-1 !w-32"} inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} /></label>
+        <label className="block"><span className="text-[11px] text-fg-muted">Rule</span><select className={inputCls + " mt-1 !w-auto"} value={kind} onChange={(e) => setKind(e.target.value)}><option value="limit">KYC limit</option><option value="instant_credit">Instant credit</option><option value="corridor">Cross-border quote</option></select></label>
+        <label className="block"><span className="text-[11px] text-fg-muted">Account level</span><select className={inputCls + " mt-1 !w-auto"} value={tier} onChange={(e) => setTier(e.target.value)}>{["basic", "standard", "full", "business"].map((t) => <option key={t}>{t}</option>)}</select></label>
+        {kind === "limit" && <label className="block"><span className="text-[11px] text-fg-muted">Channel</span><select className={inputCls + " mt-1 !w-auto"} value={channel} onChange={(e) => setChannel(e.target.value)}>{["transfer_in", "transfer_out", "atm", "pos", "online"].map((t) => <option key={t}>{t}</option>)}</select></label>}
+        {kind === "corridor" && <><label className="block"><span className="text-[11px] text-fg-muted">Route</span><input className={inputCls + " mt-1 !w-28"} value={corridorId} onChange={(e) => setCorridor(e.target.value)} /></label>
+          <label className="block"><span className="text-[11px] text-fg-muted">Mid rate</span><input className={inputCls + " mt-1 !w-24"} inputMode="decimal" value={rate} onChange={(e) => setRate(e.target.value)} /></label></>}
+        <label className="block"><span className="text-[11px] text-fg-muted">Amount</span><input className={inputCls + " mt-1 !w-32"} inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} /></label>
         <ActionButton label="Check" color={COLOR} onRun={run} />
       </div>
-      {out && <p role="status" className="text-sm text-emerald-300">{out}</p>}
+      {out && <p role="status" className="text-sm text-ok">{out}</p>}
     </section>
   );
 }
@@ -235,8 +235,8 @@ function RulesTester({ country }: { country: string }) {
 function Audit() {
   const [load] = useLoad<{ entries: { actor: string; action: string; target: string | null; at: string }[] }>(() => configApi("/audit?limit=15") as never);
   return (
-    <section className="space-y-2"><h2 className="text-sm font-bold text-white">Recent configuration activity</h2>
-      <Status load={load}>{({ entries }) => entries.length === 0 ? <Empty>Nothing yet.</Empty> : <ul className="text-xs text-white/70 space-y-1">{entries.map((e, i) => <li key={i}>{when(e.at)} · <b className="text-white">{e.actor}</b> · {e.action.replace("config.", "").replace(".", " ")}</li>)}</ul>}</Status></section>
+    <section className="space-y-2"><h2 className="text-sm font-bold text-fg">Recent configuration activity</h2>
+      <Status load={load}>{({ entries }) => entries.length === 0 ? <Empty>Nothing yet.</Empty> : <ul className="text-xs text-fg space-y-1">{entries.map((e, i) => <li key={i}>{when(e.at)} · <b className="text-fg">{e.actor}</b> · {e.action.replace("config.", "").replace(".", " ")}</li>)}</ul>}</Status></section>
   );
 }
 
@@ -248,35 +248,35 @@ function PoolPanel() {
   const [fix, setFix] = useState<Record<string, string>>({});
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setF((p) => ({ ...p, [k]: e.target.value }));
   return (
-    <section className="rounded-xl p-4 space-y-3" style={{ background: "#1A1738", border: "1px solid #2D2A50" }}>
-      <h2 className="text-sm font-bold text-white">Pooled bank accounts and virtual accounts</h2>
+    <section className="rounded-xl p-4 space-y-3" style={{ background: "var(--vk-surface)", border: "1px solid var(--vk-line)" }}>
+      <h2 className="text-sm font-bold text-fg">Pooled bank accounts and virtual accounts</h2>
       <Status load={load}>{(d) => (
         <>
-          <p className="text-[11px] text-white/50">{(["in_person", "online"] as const).map((p) => `${p === "in_person" ? "In-Person" : "Online"}: ${d.channels[p]?.accountNumber ? `${d.channels[p]!.holder ?? ""} ${d.channels[p]!.accountNumber}` : "not set up"}`).join(" · ")}</p>
-          <p className="text-xs text-white/70">{d.virtualAccounts.length === 0 ? "No virtual accounts yet." : d.virtualAccounts.map((v) => `${v.count} ${v.currency} ${v.pool === "in_person" ? "in-person" : "online"}`).join(" · ")}</p>
-          <p className="text-xs text-white/70">{d.credits.length === 0 ? "No bank credits recorded." : d.credits.map((c) => `${c.count} ${c.status} ${c.currency} (${(c.totalCents / 100).toFixed(2)})`).join(" · ")}</p>
-          <p className="text-xs text-white/70">Instant-credit reserve: {d.reserve.map((r) => `${r.currency} ${(r.balanceCents / 100).toFixed(2)} (${(r.outstandingCents / 100).toFixed(2)} fronted, not yet cleared)`).join(" · ")}</p>
+          <p className="text-[11px] text-fg-muted">{(["in_person", "online"] as const).map((p) => `${p === "in_person" ? "In-Person" : "Online"}: ${d.channels[p]?.accountNumber ? `${d.channels[p]!.holder ?? ""} ${d.channels[p]!.accountNumber}` : "not set up"}`).join(" · ")}</p>
+          <p className="text-xs text-fg">{d.virtualAccounts.length === 0 ? "No virtual accounts yet." : d.virtualAccounts.map((v) => `${v.count} ${v.currency} ${v.pool === "in_person" ? "in-person" : "online"}`).join(" · ")}</p>
+          <p className="text-xs text-fg">{d.credits.length === 0 ? "No bank credits recorded." : d.credits.map((c) => `${c.count} ${c.status} ${c.currency} (${(c.totalCents / 100).toFixed(2)})`).join(" · ")}</p>
+          <p className="text-xs text-fg">Instant-credit reserve: {d.reserve.map((r) => `${r.currency} ${(r.balanceCents / 100).toFixed(2)} (${(r.outstandingCents / 100).toFixed(2)} fronted, not yet cleared)`).join(" · ")}</p>
           {d.pending.length > 0 && (
             <ul className="space-y-2">{d.pending.map((u) => (
-              <li key={u.id} className="rounded-lg p-3 text-xs flex flex-wrap items-center gap-3" style={{ background: "#0D0B1E", border: "1px solid #2D2A50" }}>
-                <span className="text-white">{u.currency} {(u.amountCents / 100).toFixed(2)} · {u.bankRef} · <span className="text-white/60">{u.instant ? "credited early from the reserve" : "waiting for the bank to clear it"}</span></span>
+              <li key={u.id} className="rounded-lg p-3 text-xs flex flex-wrap items-center gap-3" style={{ background: "var(--vk-bg)", border: "1px solid var(--vk-line)" }}>
+                <span className="text-fg">{u.currency} {(u.amountCents / 100).toFixed(2)} · {u.bankRef} · <span className="text-fg-muted">{u.instant ? "credited early from the reserve" : "waiting for the bank to clear it"}</span></span>
                 <ActionButton small label="Bank cleared it" color="#10B981" onRun={async () => { const r = await moneyApi(`/pool/credits/${u.id}/clear`, { method: "POST" }); if ("error" in r) return { error: r.error }; reload(); }} />
                 <ActionButton small label="Bank returned it" color="#EF4444" onRun={async () => { const r = await moneyApi(`/pool/credits/${u.id}/bounce`, { method: "POST" }); if ("error" in r) return { error: r.error }; reload(); return r.data.status === "needs_review" ? { error: r.data.reason } : { message: "Returned" }; }} /></li>))}</ul>)}
           {d.unmatched.length > 0 && (
             <ul className="space-y-2">{d.unmatched.map((u) => (
-              <li key={u.id} className="rounded-lg p-3 text-xs space-y-1" style={{ background: "#0D0B1E", border: "1px solid #2D2A50" }}>
-                <p className="text-white">{u.currency} {(u.amountCents / 100).toFixed(2)} · bank ref {u.bankRef} · typed reference <span className="font-mono">{u.reference || "(none)"}</span></p>
-                <p className="text-amber-300">{u.reason}</p>
+              <li key={u.id} className="rounded-lg p-3 text-xs space-y-1" style={{ background: "var(--vk-bg)", border: "1px solid var(--vk-line)" }}>
+                <p className="text-fg">{u.currency} {(u.amountCents / 100).toFixed(2)} · bank ref {u.bankRef} · typed reference <span className="font-mono">{u.reference || "(none)"}</span></p>
+                <p className="text-warn">{u.reason}</p>
                 <div className="flex flex-wrap items-center gap-2"><input className={inputCls + " !w-52"} placeholder="Correct reference, e.g. VKR123456789" value={fix[u.id] ?? ""} onChange={(e) => setFix((p) => ({ ...p, [u.id]: e.target.value }))} />
                   <ActionButton small label="Match" color={COLOR} onRun={async () => { const r = await moneyApi(`/pool/credits/${u.id}/match`, { method: "POST", body: { reference: fix[u.id] ?? "" } }); if ("error" in r) return { error: r.error }; reload(); return r.data.status === "credited" ? { message: "Credited" } : { error: r.data.reason ?? "Still not matched" }; }} /></div>
               </li>))}</ul>)}
         </>)}</Status>
       <div className="flex flex-wrap items-end gap-3">
-        <label className="block"><span className="text-[11px] text-white/60">Bank reference</span><input className={inputCls + " mt-1 !w-40"} value={f.bankRef} onChange={set("bankRef")} /></label>
-        <label className="block"><span className="text-[11px] text-white/60">Customer reference</span><input className={inputCls + " mt-1 !w-44"} placeholder="VKR…" value={f.reference} onChange={set("reference")} /></label>
-        <label className="block"><span className="text-[11px] text-white/60">Amount</span><input className={inputCls + " mt-1 !w-28"} inputMode="decimal" value={f.amount} onChange={set("amount")} /></label>
-        <label className="block"><span className="text-[11px] text-white/60">Currency</span><select className={inputCls + " mt-1 !w-auto"} value={f.currency} onChange={set("currency")}><option>ZAR</option><option>ZMW</option></select></label>
-        <label className="flex items-center gap-2 text-xs text-white/70 pb-2"><input type="checkbox" checked={f.pending} onChange={(e) => setF((p) => ({ ...p, pending: e.target.checked }))} />Not cleared yet</label>
+        <label className="block"><span className="text-[11px] text-fg-muted">Bank reference</span><input className={inputCls + " mt-1 !w-40"} value={f.bankRef} onChange={set("bankRef")} /></label>
+        <label className="block"><span className="text-[11px] text-fg-muted">Customer reference</span><input className={inputCls + " mt-1 !w-44"} placeholder="VKR…" value={f.reference} onChange={set("reference")} /></label>
+        <label className="block"><span className="text-[11px] text-fg-muted">Amount</span><input className={inputCls + " mt-1 !w-28"} inputMode="decimal" value={f.amount} onChange={set("amount")} /></label>
+        <label className="block"><span className="text-[11px] text-fg-muted">Currency</span><select className={inputCls + " mt-1 !w-auto"} value={f.currency} onChange={set("currency")}><option>ZAR</option><option>ZMW</option></select></label>
+        <label className="flex items-center gap-2 text-xs text-fg pb-2"><input type="checkbox" checked={f.pending} onChange={(e) => setF((p) => ({ ...p, pending: e.target.checked }))} />Not cleared yet</label>
         <ActionButton label="Record bank credit" color={COLOR} onRun={async () => {
           const amountCents = Math.round(Number(f.amount) * 100);
           if (!Number.isFinite(amountCents) || amountCents <= 0) return { error: "Enter an amount like 250.00" };
@@ -286,9 +286,9 @@ function PoolPanel() {
         }} />
       </div>
       <div className="flex flex-wrap items-end gap-3">
-        <label className="block"><span className="text-[11px] text-white/60">Fund the reserve: bank reference</span><input className={inputCls + " mt-1 !w-40"} value={res.ref} onChange={(e) => setRes((p) => ({ ...p, ref: e.target.value }))} /></label>
-        <label className="block"><span className="text-[11px] text-white/60">Amount</span><input className={inputCls + " mt-1 !w-28"} inputMode="decimal" value={res.amount} onChange={(e) => setRes((p) => ({ ...p, amount: e.target.value }))} /></label>
-        <label className="block"><span className="text-[11px] text-white/60">Currency</span><select className={inputCls + " mt-1 !w-auto"} value={res.currency} onChange={(e) => setRes((p) => ({ ...p, currency: e.target.value }))}><option>ZAR</option><option>ZMW</option></select></label>
+        <label className="block"><span className="text-[11px] text-fg-muted">Fund the reserve: bank reference</span><input className={inputCls + " mt-1 !w-40"} value={res.ref} onChange={(e) => setRes((p) => ({ ...p, ref: e.target.value }))} /></label>
+        <label className="block"><span className="text-[11px] text-fg-muted">Amount</span><input className={inputCls + " mt-1 !w-28"} inputMode="decimal" value={res.amount} onChange={(e) => setRes((p) => ({ ...p, amount: e.target.value }))} /></label>
+        <label className="block"><span className="text-[11px] text-fg-muted">Currency</span><select className={inputCls + " mt-1 !w-auto"} value={res.currency} onChange={(e) => setRes((p) => ({ ...p, currency: e.target.value }))}><option>ZAR</option><option>ZMW</option></select></label>
         <ActionButton label="Add to reserve" color="#F59E0B" onRun={async () => { const cents = Math.round(Number(res.amount) * 100); if (!Number.isFinite(cents) || cents <= 0) return { error: "Enter an amount like 5000.00" }; const r = await moneyApi("/reserve/fund", { method: "POST", body: { ref: res.ref.trim(), currency: res.currency, amountCents: cents } }); if ("error" in r) return { error: r.error }; reload(); return { message: r.data.result === "funded" ? "Added" : "Already recorded; nothing changed" }; }} />
       </div>
     </section>
@@ -300,12 +300,12 @@ function FxPanel() {
   const [load, reload] = useLoad<{ rates: { pair: string; rate: number; setAt: string; source: string; sourceAt: string | null; auto: boolean }[] }>(() => moneyApi("/fx") as never);
   const [pair, setPair] = useState("ZAR-ZMW"); const [rate, setRate] = useState("");
   return (
-    <section className="rounded-xl p-4 space-y-3" style={{ background: "#1A1738", border: "1px solid #2D2A50" }}>
-      <h2 className="text-sm font-bold text-white">Exchange rates <span className="font-normal text-white/50">· fetched automatically; a rate you set by hand is kept for 24 hours</span></h2>
-      <Status load={load}>{({ rates }) => rates.length === 0 ? <Empty>No rates set.</Empty> : <ul className="text-xs text-white/70 space-y-0.5">{rates.map((r) => <li key={r.pair}>{r.pair}: {r.rate} <span className="text-white/40">· {r.auto ? `automatic from ${r.source}${r.sourceAt ? `, source data ${when(r.sourceAt)}` : ""}` : "set by hand"} · stored {when(r.setAt)}{Date.now() - new Date(r.setAt).getTime() > (r.auto ? 3 : 1) * 3600_000 ? " · TOO OLD FOR QUOTES" : ""}</span></li>)}</ul>}</Status>
+    <section className="rounded-xl p-4 space-y-3" style={{ background: "var(--vk-surface)", border: "1px solid var(--vk-line)" }}>
+      <h2 className="text-sm font-bold text-fg">Exchange rates <span className="font-normal text-fg-muted">· fetched automatically; a rate you set by hand is kept for 24 hours</span></h2>
+      <Status load={load}>{({ rates }) => rates.length === 0 ? <Empty>No rates set.</Empty> : <ul className="text-xs text-fg space-y-0.5">{rates.map((r) => <li key={r.pair}>{r.pair}: {r.rate} <span className="text-fg-subtle">· {r.auto ? `automatic from ${r.source}${r.sourceAt ? `, source data ${when(r.sourceAt)}` : ""}` : "set by hand"} · stored {when(r.setAt)}{Date.now() - new Date(r.setAt).getTime() > (r.auto ? 3 : 1) * 3600_000 ? " · TOO OLD FOR QUOTES" : ""}</span></li>)}</ul>}</Status>
       <div className="flex flex-wrap items-end gap-3">
-        <label className="block"><span className="text-[11px] text-white/60">Pair (how many of the second for one of the first)</span><select className={inputCls + " mt-1 !w-auto"} value={pair} onChange={(e) => setPair(e.target.value)}><option>ZAR-ZMW</option><option>ZMW-ZAR</option></select></label>
-        <label className="block"><span className="text-[11px] text-white/60">Rate</span><input className={inputCls + " mt-1 !w-28"} inputMode="decimal" value={rate} onChange={(e) => setRate(e.target.value)} /></label>
+        <label className="block"><span className="text-[11px] text-fg-muted">Pair (how many of the second for one of the first)</span><select className={inputCls + " mt-1 !w-auto"} value={pair} onChange={(e) => setPair(e.target.value)}><option>ZAR-ZMW</option><option>ZMW-ZAR</option></select></label>
+        <label className="block"><span className="text-[11px] text-fg-muted">Rate</span><input className={inputCls + " mt-1 !w-28"} inputMode="decimal" value={rate} onChange={(e) => setRate(e.target.value)} /></label>
         <ActionButton label="Refresh automatically now" color={COLOR} onRun={async () => { const r = await moneyApi("/fx/refresh", { method: "POST" }); if ("error" in r) return { error: r.error }; reload(); const bad = (r.data.results as { pair: string; status: string; reason?: string }[]).filter((x) => x.status !== "updated"); return bad.length ? { error: bad.map((x) => `${x.pair}: ${x.reason ?? x.status}`).join(" ") } : { message: "Rates updated" }; }} />
         <ActionButton label="Set rate by hand" color="#F59E0B" onRun={async () => { const n = Number(rate); if (!(n > 0)) return { error: "Enter a rate above zero" }; const [from, to] = pair.split("-"); const r = await moneyApi("/fx", { method: "PUT", body: { from, to, rate: n } }); if ("error" in r) return { error: r.error }; setRate(""); reload(); return { message: "Saved" }; }} />
       </div>
@@ -317,13 +317,13 @@ function FxPanel() {
 function ReadinessPanel({ profileId }: { profileId: string }) {
   const [load] = useLoad<{ readiness: { mode: string; ready: boolean; blockers: number; items: { id: string; label: string; ok: boolean; blocking: boolean; hint: string }[] } }>(() => configApi(`/profiles/${profileId}/readiness`) as never, [profileId]);
   return (
-    <section className="rounded-xl p-4 space-y-2" style={{ background: "#1A1738", border: "1px solid #2D2A50" }}>
-      <h2 className="text-sm font-bold text-white">Ready to go live?</h2>
+    <section className="rounded-xl p-4 space-y-2" style={{ background: "var(--vk-surface)", border: "1px solid var(--vk-line)" }}>
+      <h2 className="text-sm font-bold text-fg">Ready to go live?</h2>
       <Status load={load}>{({ readiness: r }) => (
         <>
-          <p role="status" className={`text-sm ${r.ready ? "text-emerald-300" : "text-amber-300"}`}>{r.ready ? "Everything needed for live is filled in." : `${r.blockers} thing${r.blockers === 1 ? "" : "s"} still to fill in before this can go live. Sandbox works without them.`}</p>
+          <p role="status" className={`text-sm ${r.ready ? "text-ok" : "text-warn"}`}>{r.ready ? "Everything needed for live is filled in." : `${r.blockers} thing${r.blockers === 1 ? "" : "s"} still to fill in before this can go live. Sandbox works without them.`}</p>
           <ul className="text-xs space-y-1">{r.items.map((i) => (
-            <li key={i.id} className={i.ok ? "text-emerald-300" : i.blocking ? "text-amber-300" : "text-white/60"}>{i.ok ? "✔" : i.blocking ? "○" : "·"} {i.label}{!i.ok && <span className="text-white/50"> — {i.hint}</span>}</li>))}</ul>
+            <li key={i.id} className={i.ok ? "text-emerald-300" : i.blocking ? "text-amber-300" : "text-white/60"}>{i.ok ? "✔" : i.blocking ? "○" : "·"} {i.label}{!i.ok && <span className="text-fg-muted"> — {i.hint}</span>}</li>))}</ul>
         </>)}</Status>
     </section>
   );
@@ -335,19 +335,19 @@ function PooledAccountsPanel() {
   const [f, setF] = useState({ pool: "in_person", currency: "ZAR", accountNumber: "", holder: "", bank: "", type: "Business" });
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setF((p) => ({ ...p, [k]: e.target.value }));
   return (
-    <section className="rounded-xl p-4 space-y-3" style={{ background: "#1A1738", border: "1px solid #2D2A50" }}>
-      <h2 className="text-sm font-bold text-white">Pooled bank accounts <span className="font-normal text-white/50">· where customers pay in; the accounts already exist at the bank</span></h2>
+    <section className="rounded-xl p-4 space-y-3" style={{ background: "var(--vk-surface)", border: "1px solid var(--vk-line)" }}>
+      <h2 className="text-sm font-bold text-fg">Pooled bank accounts <span className="font-normal text-fg-muted">· where customers pay in; the accounts already exist at the bank</span></h2>
       <Status load={load}>{({ accounts }) => accounts.length === 0 ? <Empty>None set here yet. Rand can also come from the PAYMENT_CHANNEL_ACCOUNTS setting.</Empty> : (
         <ul className="space-y-1.5">{accounts.map((a) => (
-          <li key={a.pool + a.currency} className="flex flex-wrap items-center gap-3 text-xs text-white/80"><span className="text-white">{a.pool === "in_person" ? "In-Person" : "Online"} · {a.currency}</span><span>{a.holder} · {a.bank} · {a.type} · account {a.accountNumber}</span>
+          <li key={a.pool + a.currency} className="flex flex-wrap items-center gap-3 text-xs text-fg"><span className="text-fg">{a.pool === "in_person" ? "In-Person" : "Online"} · {a.currency}</span><span>{a.holder} · {a.bank} · {a.type} · account {a.accountNumber}</span>
             <ActionButton small label="Remove" color="#EF4444" onRun={async () => { const r = await moneyApi(`/pooled-accounts/${a.pool}/${a.currency}`, { method: "DELETE" }); if ("error" in r) return { error: r.error }; reload(); }} /></li>))}</ul>)}</Status>
       <div className="flex flex-wrap items-end gap-3">
-        <label className="block"><span className="text-[11px] text-white/60">Pool</span><select className={inputCls + " mt-1 !w-auto"} value={f.pool} onChange={set("pool")}><option value="in_person">In-Person</option><option value="online">Online</option></select></label>
-        <label className="block"><span className="text-[11px] text-white/60">Currency</span><select className={inputCls + " mt-1 !w-auto"} value={f.currency} onChange={set("currency")}><option>ZAR</option><option>ZMW</option></select></label>
-        <label className="block"><span className="text-[11px] text-white/60">Account number</span><input className={inputCls + " mt-1 !w-44"} inputMode="numeric" value={f.accountNumber} onChange={set("accountNumber")} /></label>
-        <label className="block"><span className="text-[11px] text-white/60">Account holder</span><input className={inputCls + " mt-1 !w-44"} value={f.holder} onChange={set("holder")} /></label>
-        <label className="block"><span className="text-[11px] text-white/60">Bank</span><input className={inputCls + " mt-1 !w-40"} value={f.bank} onChange={set("bank")} /></label>
-        <label className="block"><span className="text-[11px] text-white/60">Type</span><select className={inputCls + " mt-1 !w-auto"} value={f.type} onChange={set("type")}><option>Business</option><option>Personal</option></select></label>
+        <label className="block"><span className="text-[11px] text-fg-muted">Pool</span><select className={inputCls + " mt-1 !w-auto"} value={f.pool} onChange={set("pool")}><option value="in_person">In-Person</option><option value="online">Online</option></select></label>
+        <label className="block"><span className="text-[11px] text-fg-muted">Currency</span><select className={inputCls + " mt-1 !w-auto"} value={f.currency} onChange={set("currency")}><option>ZAR</option><option>ZMW</option></select></label>
+        <label className="block"><span className="text-[11px] text-fg-muted">Account number</span><input className={inputCls + " mt-1 !w-44"} inputMode="numeric" value={f.accountNumber} onChange={set("accountNumber")} /></label>
+        <label className="block"><span className="text-[11px] text-fg-muted">Account holder</span><input className={inputCls + " mt-1 !w-44"} value={f.holder} onChange={set("holder")} /></label>
+        <label className="block"><span className="text-[11px] text-fg-muted">Bank</span><input className={inputCls + " mt-1 !w-40"} value={f.bank} onChange={set("bank")} /></label>
+        <label className="block"><span className="text-[11px] text-fg-muted">Type</span><select className={inputCls + " mt-1 !w-auto"} value={f.type} onChange={set("type")}><option>Business</option><option>Personal</option></select></label>
         <ActionButton label="Save account" color={COLOR} onRun={async () => { const r = await moneyApi("/pooled-accounts", { method: "PUT", body: f }); if ("error" in r) return { error: r.error }; setF((p) => ({ ...p, accountNumber: "" })); reload(); return { message: "Saved" }; }} />
       </div>
     </section>
@@ -369,15 +369,15 @@ function StatementImportPanel() {
   const headers = csvHeaders(csv);
   const body = (dryRun: boolean) => ({ csv, dryRun, defaultCurrency: cur, mapping: { bankRef: map.bankRef, reference: map.reference, amount: map.amount, currency: map.currency || undefined, direction: map.direction || undefined } });
   const pick = (k: keyof typeof map, label: string, required: boolean) => (
-    <label className="block"><span className="text-[11px] text-white/60">{label}{required ? "" : " (optional)"}</span>
+    <label className="block"><span className="text-[11px] text-fg-muted">{label}{required ? "" : " (optional)"}</span>
       <select className={inputCls + " mt-1 !w-auto"} value={map[k]} onChange={(e) => setMap((p) => ({ ...p, [k]: e.target.value }))}><option value="">{required ? "Choose…" : "None"}</option>{headers.map((h) => <option key={h}>{h}</option>)}</select></label>);
   return (
-    <section className="rounded-xl p-4 space-y-3" style={{ background: "#1A1738", border: "1px solid #2D2A50" }}>
-      <h2 className="text-sm font-bold text-white">Import a bank statement <span className="font-normal text-white/50">· any bank, as a CSV file; only credits are used</span></h2>
+    <section className="rounded-xl p-4 space-y-3" style={{ background: "var(--vk-surface)", border: "1px solid var(--vk-line)" }}>
+      <h2 className="text-sm font-bold text-fg">Import a bank statement <span className="font-normal text-fg-muted">· any bank, as a CSV file; only credits are used</span></h2>
       <div className="flex flex-wrap items-center gap-3">
-        <input type="file" accept=".csv,text/csv,text/plain" aria-label="Statement file" className="text-xs text-white/70" onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; if (f.size > 1_000_000) { setReport("The file is too large (limit 1 MB). Split it into smaller files."); return; } setName(f.name); setReport(null); setMap({ bankRef: "", reference: "", amount: "", currency: "", direction: "" }); setCsv(await f.text()); }} />
-        {name && <span className="text-xs text-white/50">{name}</span>}
-        <label className="block"><span className="text-[11px] text-white/60">Currency of the file</span><select className={inputCls + " mt-1 !w-auto"} value={cur} onChange={(e) => setCur(e.target.value)}><option>ZAR</option><option>ZMW</option></select></label>
+        <input type="file" accept=".csv,text/csv,text/plain" aria-label="Statement file" className="text-xs text-fg" onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; if (f.size > 1_000_000) { setReport("The file is too large (limit 1 MB). Split it into smaller files."); return; } setName(f.name); setReport(null); setMap({ bankRef: "", reference: "", amount: "", currency: "", direction: "" }); setCsv(await f.text()); }} />
+        {name && <span className="text-xs text-fg-muted">{name}</span>}
+        <label className="block"><span className="text-[11px] text-fg-muted">Currency of the file</span><select className={inputCls + " mt-1 !w-auto"} value={cur} onChange={(e) => setCur(e.target.value)}><option>ZAR</option><option>ZMW</option></select></label>
       </div>
       {headers.length > 0 && (
         <div className="flex flex-wrap items-end gap-3">
@@ -388,7 +388,7 @@ function StatementImportPanel() {
           <ActionButton label="Check the file" color={COLOR} onRun={async () => { setReport(null); const r = await moneyApi("/pool/import", { method: "POST", body: body(true) }); if ("error" in r) return { error: r.error }; const d = r.data; setReport(`${d.credits} credit${d.credits === 1 ? "" : "s"} found, ${d.skippedDebits} debit${d.skippedDebits === 1 ? "" : "s"} skipped${d.problems.length ? `. Problems: ${d.problems.map((p: { row: number; error: string }) => `row ${p.row}: ${p.error}`).join("; ")}` : ". No problems."}`); }} />
           <ActionButton label="Import credits" color="#10B981" onRun={async () => { setReport(null); const r = await moneyApi("/pool/import", { method: "POST", body: body(false) }); if ("error" in r) return { error: r.error }; const d = r.data; setReport(`${d.credited} credited, ${d.duplicate} already recorded, ${d.unmatched + d.awaiting_clearing} held for matching${d.failedCount ? `, ${d.failedCount} rows could not be read` : ""}.`); }} />
         </div>)}
-      {report && <p role="status" className="text-sm text-emerald-300">{report}</p>}
+      {report && <p role="status" className="text-sm text-ok">{report}</p>}
     </section>
   );
 }

@@ -24,9 +24,9 @@ const KYC_STEPS = [
 
 const SECURITY_EVENTS = [
   { action: "Sign in", device: "Chrome · MacBook Pro", location: "Cape Town, ZA", time: "2 minutes ago", current: true },
-  { action: "Sign in", device: "MANSHYA Banking App · iPhone 15", location: "Cape Town, ZA", time: "3 hours ago", current: false },
+  { action: "Sign in", device: "VINK Banking App · iPhone 15", location: "Cape Town, ZA", time: "3 hours ago", current: false },
   { action: "Password changed", device: "Chrome · Windows PC", location: "Johannesburg, ZA", time: "5 days ago", current: false },
-  { action: "Card freeze (Virtual card ••4291)", device: "MANSHYA Banking App · Samsung S24", location: "Cape Town, ZA", time: "12 days ago", current: false },
+  { action: "Card freeze (Virtual card ••4291)", device: "VINK Banking App · Samsung S24", location: "Cape Town, ZA", time: "12 days ago", current: false },
 ];
 
 const NOTIF_PREFS = [
@@ -63,7 +63,7 @@ export function UserProfileViewer({ isOpen, onClose, onSignOut }: Props) {
     tier: "Premium",
     kycStatus: "partial",
     memberSince: "March 2024",
-    referralCode: "MANSHYA-VKAFULA8",
+    referralCode: "VINK-VKAFULA8",
     vinkPoints: 14820,
     accountNo: "VINK012847291",
   });
@@ -169,7 +169,7 @@ export function UserProfileViewer({ isOpen, onClose, onSignOut }: Props) {
         {/* Top bar */}
         <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-100 shadow-sm">
           <div className="flex items-center gap-3">
-            <img src={vinkLogo} alt="MANSHYA" className="h-8 w-auto" />
+            <img src={vinkLogo} alt="VINK" className="h-8 w-auto" />
             <span className="text-gray-400">/</span>
             <span className="font-semibold text-gray-800">{tabs.find(t => t.id === tab)?.label}</span>
           </div>
@@ -240,7 +240,7 @@ export function UserProfileViewer({ isOpen, onClose, onSignOut }: Props) {
                   <label className="text-xs font-semibold text-gray-500 block mb-1">Primary Account Number</label>
                   <div className="flex items-center gap-2">
                     <span className="font-mono text-sm text-gray-800">
-                      {showAccountNo ? profile.accountNo : "MANSHYA••••••••••"}
+                      {showAccountNo ? profile.accountNo : "VINK••••••••••"}
                     </span>
                     <button onClick={() => setShowAccountNo(v => !v)} className="text-gray-400 hover:text-gray-600 ml-auto">
                       {showAccountNo ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}

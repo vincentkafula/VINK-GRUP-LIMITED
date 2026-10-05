@@ -47,7 +47,7 @@ function IncomeScreen() {
               <StatCard key={label} label={`${label}: your income`} value={rand(p.income)} sub={`${p.fares} confirmed fares`} icon={<TrendingUp className="w-4 h-4" />} color={COLOR} />))}
           </div>
           <Status load={trend}>{({ days }) => <TrendChart days={days} color={COLOR} label="Your income, last 14 days" />}</Status>
-          <p className="text-[11px] text-white/40">{NOTE}</p>
+          <p className="text-[11px] text-fg-subtle">{NOTE}</p>
           {x.perTerminal.length > 0 && <TableCard title="This month, per device" color={COLOR} columns={["Device", "Fares", "Your income"]} rows={x.perTerminal.map((t) => [t.serial, t.fares, rand(t.income)])} />}
           {x.recent.length === 0 ? <SectionPanel title="Latest fares"><div className="p-4"><Empty>No confirmed fares on your devices yet.</Empty></div></SectionPanel> : (
             <TableCard title="Latest fares" color={COLOR} columns={["When", "Device", "Fare", "Your income"]} rows={x.recent.map((t) => [when(t.at), t.terminal, rand(t.fare), rand(t.income)])} />)}
@@ -83,8 +83,8 @@ function TapsScreen() {
       <div className="p-4 space-y-3">
         <div className="flex flex-wrap items-end gap-4">
           <RangeBar value={range} onChange={(r) => { setRange(r); setOffset(0); }} color={COLOR} />
-          <label className="block"><span className="text-[11px] text-white/60">Status</span>
-            <select className="mt-1 block rounded-lg px-3 py-2 text-sm bg-[#0D0B1E] border border-[#2D2A50] text-white" value={status} onChange={(e) => { setStatus(e.target.value); setOffset(0); }}>
+          <label className="block"><span className="text-[11px] text-fg-muted">Status</span>
+            <select className="mt-1 block rounded-lg px-3 py-2 text-sm bg-bg border border-line text-fg" value={status} onChange={(e) => { setStatus(e.target.value); setOffset(0); }}>
               <option value="">All</option><option value="confirmed">Confirmed</option><option value="declined">Declined</option></select></label>
         </div>
         <Status load={l}>{({ total, taps }) => taps.length === 0 ? <Empty>No taps in this period.</Empty> : (
@@ -115,7 +115,7 @@ function StatementsScreen() {
             </div>
             {days.length === 0 ? <Empty>No income was recorded in this period.</Empty> : <TableCard title="Per day" color={COLOR} columns={["Date", "Fares", "Your income"]} rows={days.map((d) => [d.day, d.fares, rand(d.income)])} />}
             {perTerminal.length > 0 && <TableCard title="Per device" color={COLOR} columns={["Device", "Fares", "Your income"]} rows={perTerminal.map((t) => [t.serial, t.fares, rand(t.income)])} />}
-            <p className="text-[11px] text-white/40">{NOTE} This is a summary of recorded fares, not an audited financial statement, and not tax advice.</p>
+            <p className="text-[11px] text-fg-subtle">{NOTE} This is a summary of recorded fares, not an audited financial statement, and not tax advice.</p>
           </>)}</Status>
       </div>
     </SectionPanel>

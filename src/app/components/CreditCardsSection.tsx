@@ -7,7 +7,7 @@ import { Card3DViewer } from "./Card3DViewer";
 
 const CARDS = [
   {
-    name: "MANSHYA Commuter Card", sub: "Mastercard Standard",
+    name: "VINK Commuter Card", sub: "Mastercard Standard",
     grad: "linear-gradient(135deg,#34A853,#5B21B6)", net: "mc", last4: "4521", expiry: "09/28",
     tier: "Standard", benefit: "Tap to ride. Earn on every journey.",
     image: vinkBronzeCard,
@@ -15,12 +15,12 @@ const CARDS = [
       "R0 annual fee — always",
       "3-second tap-and-go fare payment on all taxi routes",
       "R0.50 cashback per taxi ride, redeemable after 30 days",
-      "Free Wi-Fi access on MANSHYA-enabled taxis",
+      "Free Wi-Fi access on VINK-enabled taxis",
       "Access to 2,100+ gym sessions at R20 per visit",
     ],
   },
   {
-    name: "MANSHYA Driver Card", sub: "Visa Premium",
+    name: "VINK Driver Card", sub: "Visa Premium",
     grad: "linear-gradient(135deg,#7C3AED,#065F46)", net: "visa", last4: "8834", expiry: "03/27",
     tier: "Premium", benefit: "Your earnings. Your card. Your control.",
     image: vinkBlueVisaCard,
@@ -33,7 +33,7 @@ const CARDS = [
     ],
   },
   {
-    name: "MANSHYA Gold", sub: "Visa Infinite Elite",
+    name: "VINK Gold", sub: "Visa Infinite Elite",
     grad: "linear-gradient(135deg,#D4A843,#B88A20)", net: "visa", last4: "2291", expiry: "12/26",
     tier: "Elite", benefit: "Premium rewards for every rand you spend.",
     image: vinkBlackVisaCard,
@@ -47,7 +47,7 @@ const CARDS = [
     ],
   },
   {
-    name: "MANSHYA Business Card", sub: "Mastercard World",
+    name: "VINK Business Card", sub: "Mastercard World",
     grad: "linear-gradient(135deg,#1E3A8A,#0F2A4A)", net: "mc", last4: "6178", expiry: "05/28",
     tier: "Business", benefit: "Built for the way your business moves.",
     image: vinkBlueMastercard,
@@ -64,12 +64,12 @@ const CARDS = [
 function CardVisual({ card, active }: { card: typeof CARDS[0]; active: boolean }) {
   const image = "image" in card ? card.image : undefined;
   return (
-    <div className="relative rounded-2xl text-white overflow-hidden flex-shrink-0 transition-all duration-500 ease-out cursor-pointer select-none"
+    <div className="relative rounded-2xl text-white overflow-hidden flex-shrink-0 transition-all duration-500 ease-out select-none"
       style={{
         width: "min(260px, 72vw)", height: 160, background: image ? "#1a1512" : card.grad,
         transform: active ? "translateY(-8px) scale(1.04)" : "scale(0.95)",
         opacity: active ? 1 : 0.72,
-        boxShadow: active ? "0 20px 44px -10px rgba(91,33,182,0.45)" : "0 4px 14px -4px rgba(91,33,182,0.18)",
+        boxShadow: active ? "0 20px 44px -10px rgba(0,0,0,0.45)" : "0 4px 14px -4px rgba(0,0,0,0.2)",
       }}>
       {image ? (
         <img src={image} alt={`${card.name} — physical card design`} className="w-full h-full object-cover" draggable={false} />
@@ -79,7 +79,7 @@ function CardVisual({ card, active }: { card: typeof CARDS[0]; active: boolean }
       <div className="relative z-10 p-5 flex flex-col justify-between h-full">
         <div className="flex justify-between items-start">
           <div>
-            <p className="text-[9px] tracking-widest opacity-60 uppercase">MANSHYA</p>
+            <p className="text-[9px] tracking-widest opacity-60 uppercase">VINK</p>
             <p className="text-sm font-semibold mt-0.5">{card.name}</p>
           </div>
           <div className="w-9 h-7 rounded-md border border-white/20"
@@ -115,27 +115,27 @@ export function CreditCardsSection({ onApply }: { onApply?: () => void }) {
   const [viewerCard, setViewerCard] = useState<typeof CARDS[0] | null>(null);
 
   return (
-    <section className="py-10 sm:py-14" style={{ background: "#F6F5FF" }}>
+    <section className="py-10 sm:py-14 bg-surface-2">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-10">
-          <span className="inline-block text-xs font-bold uppercase tracking-[0.14em] px-3 py-1 rounded-full mb-3"
-            style={{ background: "#EDE9FE", color: "#5B21B6" }}>Compare Cards</span>
-          <h2 className="text-2xl sm:text-3xl text-gray-900" style={{ fontFamily: "'Fraunces', serif", fontWeight: 600 }}>Choose Your Perfect MANSHYA Card</h2>
+          <span className="inline-block text-xs font-bold uppercase tracking-[0.14em] px-3 py-1 rounded-full mb-3 bg-gold/15 text-gold-text">Compare Cards</span>
+          <h2 className="font-display text-2xl sm:text-3xl text-fg font-semibold">Choose Your Perfect VINK Card</h2>
         </div>
 
         <div className="flex justify-center gap-4 sm:gap-6 flex-wrap mb-6">
           {CARDS.map((c, i) => (
-            <div key={i} onClick={() => { setActive(i); setViewerCard(c); }} className="flex flex-col items-center gap-2">
+            <button type="button" key={i} onClick={() => { setActive(i); setViewerCard(c); }} aria-label={`View the ${c.name}`} aria-pressed={active === i} className="flex flex-col items-center gap-2 rounded-2xl">
               <CardVisual card={c} active={active === i} />
-              <p className="text-[11px] text-gray-500 font-medium">{c.sub}</p>
-            </div>
+              <span className="text-xs text-fg-muted font-medium">{c.sub}</span>
+            </button>
           ))}
         </div>
 
         <div className="flex justify-center gap-2">
           {CARDS.map((_, i) => (
-            <button key={i} onClick={() => setActive(i)} className="h-2 rounded-full transition-all duration-300"
-              style={{ width: active === i ? 24 : 8, background: active === i ? "#5B21B6" : "#D1D5DB" }} />
+            <button key={i} type="button" onClick={() => setActive(i)} aria-label={`Select card ${i + 1} of ${CARDS.length}`} aria-pressed={active === i} className="flex h-8 items-center px-1">
+              <span className="block h-2 rounded-full transition-all duration-300" style={{ width: active === i ? 24 : 8, background: active === i ? "var(--vk-brand)" : "var(--vk-line-strong)" }} />
+            </button>
           ))}
         </div>
       </div>

@@ -62,10 +62,10 @@ export function BankStrip({ segment, color, onOpen }: { segment: string; color: 
   const { call, load } = useBank(segment);
   const [dialog, setDialog] = useState(false);
   return (
-    <div className="rounded-xl p-3 sm:p-4" style={{ background: "#1A1738", border: "1px solid #2D2A50" }} aria-label="Bank account">
+    <div className="rounded-xl p-3 sm:p-4" style={{ background: "var(--vk-surface)", border: "1px solid var(--vk-line)" }} aria-label="Bank account">
       <Status load={load}>{(b) => !b.link ? (
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3"><Landmark className="w-5 h-5 text-white/50" /><div><p className="text-sm font-semibold text-white">No bank account linked yet</p><p className="text-xs text-white/50">{b.rules.message}</p></div></div>
+          <div className="flex items-center gap-3"><Landmark className="w-5 h-5 text-fg-muted" /><div><p className="text-sm font-semibold text-fg">No bank account linked yet</p><p className="text-xs text-fg-muted">{b.rules.message}</p></div></div>
           <button type="button" onClick={() => setDialog(true)} className="inline-flex items-center gap-1.5 min-h-[40px] px-4 rounded-lg text-sm font-bold" style={{ background: color, color: "#101010" }}><Plus className="w-4 h-4" />Link account</button>
         </div>
       ) : b.link.accountMissing ? (
@@ -73,18 +73,18 @@ export function BankStrip({ segment, color, onOpen }: { segment: string; color: 
       ) : (
         <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
           <div className="min-w-0">
-            <p className="text-[10px] uppercase tracking-wide text-white/40">Account number</p>
+            <p className="text-[10px] uppercase tracking-wide text-fg-subtle">Account number</p>
             <div className="flex items-center gap-3">
-              <p className="font-mono text-xl sm:text-2xl font-bold tracking-wider text-white" data-testid="account-number">{spaced(b.link.accountNumber!)}</p>
+              <p className="font-mono text-xl sm:text-2xl font-bold tracking-wider text-fg" data-testid="account-number">{spaced(b.link.accountNumber!)}</p>
               <CopyButton value={b.link.accountNumber!} label="account number" color={color} />
             </div>
           </div>
-          <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-x-6 gap-y-2 text-sm text-white/90 min-w-0">
-            <div className="min-w-0"><p className="text-[10px] uppercase tracking-wide text-white/40">Account holder</p><p className="truncate">{b.link.holderName}</p></div>
-            <div><p className="text-[10px] uppercase tracking-wide text-white/40">Bank</p><p>{b.link.bankName}</p></div>
-            <div><p className="text-[10px] uppercase tracking-wide text-white/40">Type</p><p className="flex items-center gap-2">{b.link.accountType}<StatusBadge s={b.link.status} /></p></div>
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-x-6 gap-y-2 text-sm text-fg min-w-0">
+            <div className="min-w-0"><p className="text-[10px] uppercase tracking-wide text-fg-subtle">Account holder</p><p className="truncate">{b.link.holderName}</p></div>
+            <div><p className="text-[10px] uppercase tracking-wide text-fg-subtle">Bank</p><p>{b.link.bankName}</p></div>
+            <div><p className="text-[10px] uppercase tracking-wide text-fg-subtle">Type</p><p className="flex items-center gap-2">{b.link.accountType}<StatusBadge s={b.link.status} /></p></div>
           </div>
-          <button type="button" onClick={onOpen} className="ml-auto text-xs underline text-white/60 min-h-[40px]">Details</button>
+          <button type="button" onClick={onOpen} className="ml-auto text-xs underline text-fg-muted min-h-[40px]">Details</button>
         </div>
       )}</Status>
       {dialog && load.state === "ready" && <LinkDialog info={load.data} call={call} color={color} onClose={() => setDialog(false)} />}
@@ -116,17 +116,17 @@ export function LinkDialog({ info, call, color, onClose }: { info: BankInfo; cal
 
   return (
     <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center p-0 sm:p-4" style={{ background: "rgba(5,4,15,0.8)" }} role="dialog" aria-modal="true" aria-label={editing ? "Edit bank account details" : "Link a bank account"}>
-      <div className="w-full sm:max-w-md max-h-[92vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl p-5 sm:p-6" style={{ background: "#13103A", border: "1px solid #2D2A50" }}>
-        <div className="flex items-center justify-between mb-4"><h2 className="text-lg font-bold text-white">{editing ? "Edit account details" : "Link your bank account"}</h2>
-          <button type="button" aria-label="Close" onClick={onClose} className="p-2 -mr-2 text-white/60"><X className="w-5 h-5" /></button></div>
-        <p className="text-xs text-white/50 mb-4">Your account is held in our Banking module. {info.rules.message}</p>
+      <div className="w-full sm:max-w-md max-h-[92vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl p-5 sm:p-6" style={{ background: "var(--vk-surface)", border: "1px solid var(--vk-line)" }}>
+        <div className="flex items-center justify-between mb-4"><h2 className="text-lg font-bold text-fg">{editing ? "Edit account details" : "Link your bank account"}</h2>
+          <button type="button" aria-label="Close" onClick={onClose} className="p-2 -mr-2 text-fg-muted"><X className="w-5 h-5" /></button></div>
+        <p className="text-xs text-fg-muted mb-4">Your account is held in our Banking module. {info.rules.message}</p>
 
-        <fieldset className="mb-4"><legend className="text-[11px] text-white/60 mb-2">Account type</legend>
+        <fieldset className="mb-4"><legend className="text-[11px] text-fg-muted mb-2">Account type</legend>
           <div className="grid grid-cols-2 gap-2">
             {(["personal", "business"] as const).map((t) => {
               const ok = allowed.includes(t);
               return (
-                <label key={t} className={`rounded-lg px-3 py-3 text-sm border ${type === t ? "border-white" : "border-[#2D2A50]"} ${ok ? "cursor-pointer text-white" : "opacity-40 cursor-not-allowed text-white/70"}`}>
+                <label key={t} className={`rounded-lg px-3 py-3 text-sm border ${type === t ? "border-white" : "border-line"} ${ok ? "cursor-pointer text-fg" : "opacity-40 cursor-not-allowed text-fg"}`}>
                   <input ref={t === allowed[0] ? first : undefined} type="radio" name="holderType" className="mr-2" checked={type === t} disabled={!ok} onChange={() => setType(t)} />{t === "personal" ? "Personal" : "Business"}
                 </label>);
             })}
@@ -136,24 +136,24 @@ export function LinkDialog({ info, call, color, onClose }: { info: BankInfo; cal
 
         {type === "business" && (
           <div className="space-y-3 mb-4">
-            <label className="block"><span className="text-[11px] text-white/60">Registered business name</span>
+            <label className="block"><span className="text-[11px] text-fg-muted">Registered business name</span>
               <input className={inputCls + " mt-1"} value={name} maxLength={120} onChange={(e) => setName(e.target.value)} autoComplete="organization" aria-invalid={touched && !!problems.name} />
-              {touched && problems.name && <span role="alert" className="text-xs text-red-300">{problems.name}</span>}</label>
-            <label className="block"><span className="text-[11px] text-white/60">Registration number</span>
+              {touched && problems.name && <span role="alert" className="text-xs text-bad">{problems.name}</span>}</label>
+            <label className="block"><span className="text-[11px] text-fg-muted">Registration number</span>
               <input className={inputCls + " mt-1 font-mono"} value={reg} placeholder="2015/123456/07" inputMode="text" onChange={(e) => setReg(e.target.value)} aria-invalid={touched && !!problems.reg} />
-              {touched && problems.reg && <span role="alert" className="text-xs text-red-300">{problems.reg}</span>}</label>
-            <p className="text-[11px] text-white/40">An administrator checks Business details before the account shows as verified.</p>
+              {touched && problems.reg && <span role="alert" className="text-xs text-bad">{problems.reg}</span>}</label>
+            <p className="text-[11px] text-fg-subtle">An administrator checks Business details before the account shows as verified.</p>
           </div>
         )}
 
         {!editing && info.accounts.length > 1 && (
-          <label className="block mb-4"><span className="text-[11px] text-white/60">Which of your accounts?</span>
+          <label className="block mb-4"><span className="text-[11px] text-fg-muted">Which of your accounts?</span>
             <select className={inputCls + " mt-1"} value={accountId} onChange={(e) => setAccountId(e.target.value)}>{info.accounts.map((a) => <option key={a.id} value={a.id}>{a.name} · {a.number}</option>)}</select></label>
         )}
-        {!editing && info.accounts.length === 0 && <p className="text-xs text-white/50 mb-4">You don't have an account in the Banking module yet. Linking opens your first one.</p>}
+        {!editing && info.accounts.length === 0 && <p className="text-xs text-fg-muted mb-4">You don't have an account in the Banking module yet. Linking opens your first one.</p>}
 
         <div className="flex flex-wrap items-center gap-3"><ActionButton label={editing ? "Save changes" : "Link account"} busyLabel="Saving…" color={color} onRun={submit} />
-          <button type="button" onClick={onClose} className="text-sm text-white/60 underline min-h-[40px]">Cancel</button></div>
+          <button type="button" onClick={onClose} className="text-sm text-fg-muted underline min-h-[40px]">Cancel</button></div>
       </div>
     </div>
   );
@@ -166,14 +166,14 @@ export function ChannelCards({ channels, color }: { channels: ChannelCard[]; col
     <SectionPanel title="Payment channel accounts">
       <div className="p-4 grid gap-3 sm:grid-cols-2">
         {channels.map((c) => (
-          <div key={c.channel} className="rounded-lg p-3" style={{ background: "#0D0B1E", border: "1px solid #2D2A50" }}>
-            <p className="text-sm font-semibold text-white">{c.label}</p>
+          <div key={c.channel} className="rounded-lg p-3" style={{ background: "var(--vk-bg)", border: "1px solid var(--vk-line)" }}>
+            <p className="text-sm font-semibold text-fg">{c.label}</p>
             {c.configured ? (
               <>
-                <div className="mt-1 flex items-center gap-3 flex-wrap"><p className="font-mono text-lg font-bold tracking-wider text-white">{spaced(c.accountNumber!)}</p><CopyButton value={c.accountNumber!} label={`${c.label} account number`} color={color} /></div>
-                <p className="text-xs text-white/60 mt-1">{c.holder} · {c.bank} · {c.type} account</p>
+                <div className="mt-1 flex items-center gap-3 flex-wrap"><p className="font-mono text-lg font-bold tracking-wider text-fg">{spaced(c.accountNumber!)}</p><CopyButton value={c.accountNumber!} label={`${c.label} account number`} color={color} /></div>
+                <p className="text-xs text-fg-muted mt-1">{c.holder} · {c.bank} · {c.type} account</p>
               </>
-            ) : <p className="text-xs text-white/50 mt-1">The account number for this channel has not been set up for display yet. Ask an administrator.</p>}
+            ) : <p className="text-xs text-fg-muted mt-1">The account number for this channel has not been set up for display yet. Ask an administrator.</p>}
           </div>))}
       </div>
     </SectionPanel>
@@ -191,9 +191,9 @@ export function BankScreen({ segment, color }: { segment: string; color: string 
           {!b.link ? (
             <SectionPanel title="Bank account">
               <div className="p-6 text-center space-y-3">
-                <Landmark className="w-10 h-10 mx-auto text-white/30" />
-                <p className="text-white font-semibold">No bank account linked yet</p>
-                <p className="text-sm text-white/50 max-w-md mx-auto">Link an account from our Banking module so your balance, account details and transactions show here. {b.rules.message}</p>
+                <Landmark className="w-10 h-10 mx-auto text-fg-subtle" />
+                <p className="text-fg font-semibold">No bank account linked yet</p>
+                <p className="text-sm text-fg-muted max-w-md mx-auto">Link an account from our Banking module so your balance, account details and transactions show here. {b.rules.message}</p>
                 <button type="button" onClick={() => setDialog(true)} className="inline-flex items-center gap-1.5 min-h-[44px] px-5 rounded-lg text-sm font-bold" style={{ background: color, color: "#101010" }}><Plus className="w-4 h-4" />Link account</button>
               </div>
             </SectionPanel>
@@ -221,8 +221,8 @@ function LinkedAccount({ link, call, color, onEdit }: { link: BankLink; call: Re
           )}
           {link.accountMissing ? <p className="text-sm text-amber-200">This account could not be found in the Banking module. Remove the link and link it again.</p> : (
             <div>
-              <p className="text-[10px] uppercase tracking-wide text-white/40">Account number</p>
-              <div className="flex flex-wrap items-center gap-3"><p className="font-mono text-2xl sm:text-3xl font-bold tracking-wider text-white" data-testid="account-number-large">{spaced(link.accountNumber!)}</p><CopyButton value={link.accountNumber!} label="account number" color={color} /></div>
+              <p className="text-[10px] uppercase tracking-wide text-fg-subtle">Account number</p>
+              <div className="flex flex-wrap items-center gap-3"><p className="font-mono text-2xl sm:text-3xl font-bold tracking-wider text-fg" data-testid="account-number-large">{spaced(link.accountNumber!)}</p><CopyButton value={link.accountNumber!} label="account number" color={color} /></div>
             </div>)}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             <Field label="Account holder" value={link.holderName} /><Field label="Bank" value={link.bankName} />
@@ -232,7 +232,7 @@ function LinkedAccount({ link, call, color, onEdit }: { link: BankLink; call: Re
             <Field label="Balance" value={link.balance === null ? null : <b className="text-lg">{rand(link.balance)}</b>} />
           </div>
           <div className="flex flex-wrap gap-3">
-            <button type="button" onClick={onEdit} className="min-h-[40px] px-4 rounded-lg text-sm font-bold border border-[#2D2A50] text-white">Edit details</button>
+            <button type="button" onClick={onEdit} className="min-h-[40px] px-4 rounded-lg text-sm font-bold border border-line text-fg">Edit details</button>
             <ActionButton label="Remove link" busyLabel="Removing…" color="#6B7280" onRun={async () => { if (!window.confirm("Remove the link to this bank account? The account itself is not closed.")) return; const r = await call("/bank/link", { method: "DELETE" }); if ("error" in r) return { error: r.error }; announceChange(); }} />
           </div>
         </div>

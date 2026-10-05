@@ -34,36 +34,36 @@ const SERVICE_CONFIG: Record<ServiceType, {
   accountPrefix: string; accentColor: string;
 }> = {
   invest: {
-    tag:           "MANSHYA Personal Banking · Investments",
+    tag:           "VINK Personal Banking · Investments",
     title:         "Investment Account Application",
     subtitle:      "Open a Tax-Free Savings Account, Fixed Deposit, Unit Trust, Retirement Annuity or Money Market — verified in minutes.",
     gradient:      "linear-gradient(135deg,#0F4C81 0%,#1565C0 50%,#42A5F5 100%)",
     successTitle:  "Investment Account Opened!",
-    successBody:   "Your investment account is active. Access it via the MANSHYA app or web portal.",
+    successBody:   "Your investment account is active. Access it via the VINK app or web portal.",
     accountLabel:  "Investment account number",
-    accountPrefix: "MANSHYA-INV",
+    accountPrefix: "VINK-INV",
     accentColor:   "#1565C0",
   },
   rewards: {
-    tag:           "MANSHYA Personal Banking · ManshyaPoints",
+    tag:           "VINK Personal Banking · ManshyaPoints",
     title:         "ManshyaPoints Rewards Enrolment",
     subtitle:      "Enrol in ManshyaPoints to earn on every taxi ride, fuel purchase, grocery trip, and online spend.",
     gradient:      "linear-gradient(135deg,#FF9900 0%,#FFB84D 50%,#FFCC80 100%)",
     successTitle:  "ManshyaPoints Account Created!",
     successBody:   "You have been enrolled in ManshyaPoints. Your welcome bonus of 5,000 points (worth R50) has been credited.",
     accountLabel:  "ManshyaPoints member number",
-    accountPrefix: "MANSHYA-RWD",
+    accountPrefix: "VINK-RWD",
     accentColor:   "#FFB84D",
   },
   account: {
-    tag:           "MANSHYA Personal Banking · Accounts",
+    tag:           "VINK Personal Banking · Accounts",
     title:         "Bank Account Application",
-    subtitle:      "Open your selected MANSHYA account in minutes — FICA-verified and ready to use.",
+    subtitle:      "Open your selected VINK account in minutes — FICA-verified and ready to use.",
     gradient:      "linear-gradient(135deg,#1A237E 0%,#128A43 55%,#34A853 100%)",
     successTitle:  "Account Opened!",
-    successBody:   "Your MANSHYA finance account is active. Your MANSHYA card will be delivered to your registered address within 5–7 business days.",
+    successBody:   "Your VINK finance account is active. Your VINK card will be delivered to your registered address within 5–7 business days.",
     accountLabel:  "Account number",
-    accountPrefix: "MANSHYA-ACC",
+    accountPrefix: "VINK-ACC",
     accentColor:   "#128A43",
   },
 };
@@ -126,7 +126,7 @@ function Step1Form({
               {REWARD_CARDS.map(p => <option key={p}>{p}</option>)}
             </select>
           </Field>
-          <Field label="Linked MANSHYA card number (if existing)">
+          <Field label="Linked VINK card number (if existing)">
             <input className={inputCls} placeholder="Leave blank to apply for new card" value={form.cardNumber} onChange={set("cardNumber")} />
           </Field>
           <Field label="Preferred redemption method">
@@ -172,7 +172,7 @@ const SERVICE_DOCS: Record<ServiceType, { key: string; label: string; required: 
   rewards: [
     { key: "id",      label: "Certified copy of SA ID or passport",          required: true },
     { key: "address", label: "Proof of residential address (≤3 months)",     required: true },
-    { key: "card",    label: "Photo of existing MANSHYA card (if linking)",     required: false },
+    { key: "card",    label: "Photo of existing VINK card (if linking)",     required: false },
   ],
   account: [
     { key: "id",      label: "Certified copy of SA ID or Smart Card",        required: true },
@@ -360,7 +360,7 @@ export function ServiceApplicationViewer({ isOpen, onClose, serviceType }: Props
       {/* ── Top bar ── */}
       <div className="sticky top-0 z-20 bg-white border-b border-gray-100 shadow-sm">
         <div className="flex items-center justify-between px-5 py-3">
-          <img src={vinkLogo} alt="MANSHYA" className="h-9 w-auto object-contain" />
+          <img src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
           <div className="flex items-center gap-3">
             <span className="hidden sm:block text-xs text-gray-400 font-medium">Step {step} of {STEPS.length}</span>
             <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-800"><X className="w-5 h-5" /></button>
@@ -558,7 +558,7 @@ export function ServiceApplicationViewer({ isOpen, onClose, serviceType }: Props
               ))}
             </div>
             <div className="rounded-xl p-4 text-xs text-gray-600 leading-relaxed" style={{ background: cfg.accentColor + "08", border: `1px solid ${cfg.accentColor}20` }}>
-              By submitting I confirm all information is true and accurate. I authorise MANSHYA to conduct credit bureau inquiries and verify my identity with SARS, CIPC, and Home Affairs.
+              By submitting I confirm all information is true and accurate. I authorise VINK to conduct credit bureau inquiries and verify my identity with SARS, CIPC, and Home Affairs.
             </div>
             <label className="flex items-start gap-3 cursor-pointer">
               <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)} className="mt-0.5 w-4 h-4 rounded flex-shrink-0" />
@@ -614,7 +614,7 @@ export function ServiceApplicationViewer({ isOpen, onClose, serviceType }: Props
             <button onClick={onClose}
               className="w-full py-3.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 shadow-lg"
               style={{ background: `linear-gradient(135deg,${CP},#5FC97F)` }}>
-              Back to MANSHYA
+              Back to VINK
             </button>
           </div>
         )}
