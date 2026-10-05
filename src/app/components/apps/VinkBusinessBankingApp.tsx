@@ -86,7 +86,7 @@ function OnboardingScreen({ onSelect }: { onSelect: (tier: Tier) => void }) {
               </div>
               {active && (
                 <div className="mt-2.5 pt-2.5 border-t" style={{ borderColor: `${GREEN}22` }}>
-                  <p className="text-[9px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Best for</p>
+                  <p className="text-[9px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Best for</p>
                   <p className="text-[10.5px] text-gray-600 mb-2">{info.bestFor.join(" · ")}</p>
                   <p className="text-[10px]" style={{ color: GREEN }}><strong>Unlocks:</strong> {info.unlocks}</p>
                 </div>
@@ -187,7 +187,7 @@ function DashboardScreen({ tier }: { tier: Tier }) {
             <span className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${GREEN}11`, color: GREEN }}><Users className="w-4 h-4" /></span>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-semibold text-gray-800">12 employees on payroll</p>
-              <p className="text-[10px] text-gray-400">Next payroll run: 25 Aug · R84,200</p>
+              <p className="text-[10px] text-gray-500">Next payroll run: 25 Aug · R84,200</p>
             </div>
             <ChevronRight className="w-4 h-4 text-gray-300 shrink-0" />
           </div>
@@ -219,7 +219,7 @@ function DashboardScreen({ tier }: { tier: Tier }) {
           <div className="grid grid-cols-3 gap-2">
             {[["USD","R214,300"],["EUR","R88,150"],["GBP","R41,900"]].map(([cur, val]) => (
               <div key={cur} className="rounded-xl bg-white shadow-sm p-2.5 text-center">
-                <p className="text-[9px] text-gray-400">{cur} Wallet</p>
+                <p className="text-[9px] text-gray-500">{cur} Wallet</p>
                 <p className="text-[11px] font-bold text-gray-800 mt-0.5">{val}</p>
               </div>
             ))}
@@ -280,7 +280,7 @@ function DashboardScreen({ tier }: { tier: Tier }) {
               <div className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center text-base flex-shrink-0">{t.emoji}</div>
               <div className="flex-1 min-w-0">
                 <p className="text-gray-800 text-xs font-medium truncate">{t.name}</p>
-                <p className="text-gray-400 text-[10px]">{t.date}</p>
+                <p className="text-gray-500 text-[10px]">{t.date}</p>
               </div>
               <span className={`text-xs font-bold flex-shrink-0 ${t.amount > 0 ? "text-green-600" : "text-gray-700"}`}>
                 {t.amount > 0 ? "+" : ""}R{Math.abs(t.amount).toLocaleString()}
@@ -384,7 +384,7 @@ function InvoicesScreen() {
             <span className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${GREEN}11`, color: GREEN }}><Receipt className="w-4 h-4" /></span>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-semibold text-gray-800">{inv.num} — {inv.client}</p>
-              <p className="text-[10px] text-gray-400">R{inv.amount.toLocaleString()}</p>
+              <p className="text-[10px] text-gray-500">R{inv.amount.toLocaleString()}</p>
             </div>
             <span className="text-[9px] font-bold px-2 py-0.5 rounded-full" style={{ background: `${statusColor[inv.status]}18`, color: statusColor[inv.status] }}>{inv.status}</span>
           </div>
@@ -446,7 +446,7 @@ function MoreScreen({ tier }: { tier: Tier }) {
           <table className="text-[9px] border-collapse">
             <thead>
               <tr>
-                <th className="text-left px-2 py-1.5 text-gray-400 font-medium sticky left-0 bg-[#F7F9F8]"></th>
+                <th className="text-left px-2 py-1.5 text-gray-500 font-medium sticky left-0 bg-[#F7F9F8]"></th>
                 {TIER_ORDER.map(t => <th key={t} className="px-2 py-1.5 font-bold text-gray-700 whitespace-nowrap">{t}</th>)}
               </tr>
             </thead>
@@ -482,7 +482,7 @@ function MoreScreen({ tier }: { tier: Tier }) {
               <span className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: unlocked ? `${GREEN}11` : "#F3F4F6", color: unlocked ? GREEN : "#9CA3AF" }}>{m.icon}</span>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-semibold text-gray-800">{m.label}</p>
-                {!unlocked && <p className="text-[9px] text-gray-400">Unlocks at {TIER_ORDER[m.min - 1]} tier</p>}
+                {!unlocked && <p className="text-[9px] text-gray-500">Unlocks at {TIER_ORDER[m.min - 1]} tier</p>}
               </div>
               {unlocked ? <ChevronRight className="w-4 h-4 text-gray-300 shrink-0" /> : <Lock className="w-3.5 h-3.5 text-gray-300 shrink-0" />}
             </div>

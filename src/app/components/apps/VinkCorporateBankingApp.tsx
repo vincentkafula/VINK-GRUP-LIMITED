@@ -185,7 +185,7 @@ function DashboardScreen({ tier }: { tier: Tier }) {
             <span className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${PLUM}11`, color: PLUM }}><TrendingUp className="w-4 h-4" /></span>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-semibold text-gray-800">Daily liquidity: R61.0m</p>
-              <p className="text-[10px] text-gray-400">Bulk payroll run scheduled: 25 Aug — R1.9m, 84 employees</p>
+              <p className="text-[10px] text-gray-500">Bulk payroll run scheduled: 25 Aug — R1.9m, 84 employees</p>
             </div>
             <ChevronRight className="w-4 h-4 text-gray-300 shrink-0" />
           </div>
@@ -205,7 +205,7 @@ function DashboardScreen({ tier }: { tier: Tier }) {
                 </div>
               ))}
             </div>
-            <p className="text-[10px] text-gray-400 mt-2.5 pt-2.5 border-t border-gray-50">4 companies · 12 department budgets · ERP connected</p>
+            <p className="text-[10px] text-gray-500 mt-2.5 pt-2.5 border-t border-gray-50">4 companies · 12 department budgets · ERP connected</p>
           </div>
         </div>
       )}
@@ -217,7 +217,7 @@ function DashboardScreen({ tier }: { tier: Tier }) {
           <div className="grid grid-cols-4 gap-2">
             {[["USD","R38.2m"],["EUR","R19.4m"],["GBP","R8.7m"],["AED","R4.1m"]].map(([cur, val]) => (
               <div key={cur} className="rounded-xl bg-white shadow-sm p-2 text-center">
-                <p className="text-[8px] text-gray-400">{cur}</p>
+                <p className="text-[8px] text-gray-500">{cur}</p>
                 <p className="text-[9.5px] font-bold text-gray-800 mt-0.5">{val}</p>
               </div>
             ))}
@@ -280,7 +280,7 @@ function PaymentsScreen() {
         <div className="flex-1 flex flex-col items-center justify-center gap-3 px-8 text-center">
           <CheckCircle className="w-10 h-10" style={{ color: PLUM }} />
           <p className="text-sm font-bold text-gray-900">R{amount || "0"} sent to {recipient || "recipient"}</p>
-          <p className="text-[10px] text-gray-400">Routed through payment approval chain</p>
+          <p className="text-[10px] text-gray-500">Routed through payment approval chain</p>
           <button onClick={() => { setSent(false); setAmount(""); setRecipient(""); }} className="text-xs font-semibold" style={{ color: PLUM }}>Send another</button>
         </div>
       ) : (
@@ -319,14 +319,14 @@ function TreasuryScreen() {
       <div className="px-4 py-3 flex-shrink-0" style={{ background: INK }}><p className="text-white text-sm font-bold">Treasury</p></div>
       <div className="px-3 pt-4 space-y-3">
         <div className="rounded-2xl bg-white shadow-sm p-4">
-          <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Liquidity ratio</p>
+          <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Liquidity ratio</p>
           <p className="text-2xl font-bold text-gray-900">1.84×</p>
           <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden mt-2"><div className="h-full rounded-full" style={{ width: "72%", background: PLUM }} /></div>
         </div>
         <div className="grid grid-cols-2 gap-2.5">
           {[["Cash pool","R61.0m"],["Debt position","R22.4m"],["Investment portfolio","R118.5m"],["FX exposure","6 currencies"]].map(([label, val]) => (
             <div key={label} className="rounded-2xl bg-white shadow-sm p-3">
-              <p className="text-[9px] text-gray-400">{label}</p>
+              <p className="text-[9px] text-gray-500">{label}</p>
               <p className="text-sm font-bold text-gray-800 mt-1">{val}</p>
             </div>
           ))}
@@ -364,7 +364,7 @@ function ApprovalsScreen() {
                 <span className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${PLUM}11`, color: PLUM }}><ClipboardCheck className="w-4 h-4" /></span>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold text-gray-800">{a.desc}</p>
-                  <p className="text-[10px] text-gray-400">R{a.amount.toLocaleString()} · from {a.from}</p>
+                  <p className="text-[10px] text-gray-500">R{a.amount.toLocaleString()} · from {a.from}</p>
                 </div>
               </div>
               {approved.includes(i) ? (
@@ -407,7 +407,7 @@ function MoreScreen({ tier }: { tier: Tier }) {
           <table className="text-[9px] border-collapse">
             <thead>
               <tr>
-                <th className="text-left px-2 py-1.5 text-gray-400 font-medium sticky left-0 bg-[#F5F3FA]"></th>
+                <th className="text-left px-2 py-1.5 text-gray-500 font-medium sticky left-0 bg-[#F5F3FA]"></th>
                 {TIER_ORDER.map(t => <th key={t} className="px-2 py-1.5 font-bold text-gray-700 whitespace-nowrap">{t}</th>)}
               </tr>
             </thead>
@@ -443,7 +443,7 @@ function MoreScreen({ tier }: { tier: Tier }) {
               <span className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: unlocked ? `${PLUM}11` : "#F3F4F6", color: unlocked ? PLUM : "#9CA3AF" }}>{m.icon}</span>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-semibold text-gray-800">{m.label}</p>
-                {!unlocked && <p className="text-[9px] text-gray-400">Unlocks at {TIER_ORDER[m.min - 1]} tier</p>}
+                {!unlocked && <p className="text-[9px] text-gray-500">Unlocks at {TIER_ORDER[m.min - 1]} tier</p>}
               </div>
               {unlocked ? <ChevronRight className="w-4 h-4 text-gray-300 shrink-0" /> : <Lock className="w-3.5 h-3.5 text-gray-300 shrink-0" />}
             </div>

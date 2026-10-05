@@ -336,7 +336,7 @@ function HomeScreen({ tier, onSwitchTier, user }: { tier: Tier; onSwitchTier: ()
                 <div key={l} className="bg-white rounded-xl p-2 text-center">
                   <p className="text-base">{e}</p>
                   <p className="text-[9px] font-semibold text-gray-700 mt-0.5">{l}</p>
-                  <p className="text-[8px] text-gray-400">{v}</p>
+                  <p className="text-[8px] text-gray-500">{v}</p>
                 </div>
               ))}
             </div>
@@ -362,7 +362,7 @@ function HomeScreen({ tier, onSwitchTier, user }: { tier: Tier; onSwitchTier: ()
                   <span className="text-lg">{g.emoji}</span>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-semibold text-gray-800">{g.name}</p>
-                    <p className="text-[9px] text-gray-400">R{g.saved.toLocaleString()} of R{g.target.toLocaleString()}</p>
+                    <p className="text-[9px] text-gray-500">R{g.saved.toLocaleString()} of R{g.target.toLocaleString()}</p>
                   </div>
                   <span className="text-[10px] font-bold" style={{ color: PURPLE }}>{Math.round(g.saved / g.target * 100)}%</span>
                 </div>
@@ -414,7 +414,7 @@ function HomeScreen({ tier, onSwitchTier, user }: { tier: Tier; onSwitchTier: ()
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-gray-800 text-xs font-medium truncate">{t.name}</p>
-                <p className="text-gray-400 text-[10px]">{t.date}</p>
+                <p className="text-gray-500 text-[10px]">{t.date}</p>
               </div>
               <span className={`text-xs font-bold flex-shrink-0 ${t.amount > 0 ? "text-green-600" : "text-gray-700"}`}>
                 {t.amount > 0 ? "+" : ""}R{Math.abs(t.amount).toFixed(2)}
@@ -477,7 +477,7 @@ function SendScreen() {
         <div className="text-center">
           <p className="text-2xl font-black" style={{ color: PURPLE }}>R{Number(success.amount).toFixed(2)}</p>
           <p className="text-sm font-semibold text-gray-700 mt-1">Sent successfully!</p>
-          <p className="text-xs text-gray-400 mt-1 font-mono">{success.ref}</p>
+          <p className="text-xs text-gray-500 mt-1 font-mono">{success.ref}</p>
         </div>
         <button onClick={() => { setSuccess(null); setAmount(""); setRecipient(""); setNote(""); }}
           className="w-full max-w-xs py-3.5 rounded-2xl font-bold text-sm text-white"
@@ -505,13 +505,13 @@ function SendScreen() {
         </div>
         {/* Amount */}
         <div className="text-center py-4">
-          <p className="text-gray-400 text-xs mb-1">Amount (ZAR)</p>
+          <p className="text-gray-500 text-xs mb-1">Amount (ZAR)</p>
           <div className="flex items-center justify-center gap-1">
             <span className="text-2xl font-bold" style={{ color: PURPLE }}>R</span>
             <input type="number" value={amount} onChange={e => setAmount(e.target.value)} placeholder="0.00"
               className="text-4xl font-bold text-center bg-transparent outline-none w-36" style={{ color: PURPLE }} />
           </div>
-          <p className="text-gray-400 text-[10px] mt-1">Available: R12,847.50</p>
+          <p className="text-gray-500 text-[10px] mt-1">Available: R12,847.50</p>
         </div>
         {/* Note */}
         <div>
@@ -532,7 +532,7 @@ function SendScreen() {
               </button>
             ))}
           </div>
-          <p className="text-gray-400 text-[10px] mt-1 text-center">
+          <p className="text-gray-500 text-[10px] mt-1 text-center">
             {rail === "Instant" ? "Arrives within seconds · Fee: R2.50" : rail === "Standard" ? "Arrives same day · Free" : "3–5 business days · Fee: R45"}
           </p>
         </div>
@@ -658,7 +658,7 @@ function CardsScreen() {
           <div className="w-full h-2 rounded-full bg-gray-100 overflow-hidden">
             <div className="h-full rounded-full" style={{ width: "25.6%", background: `linear-gradient(90deg, ${PURPLE}, ${GOLD})` }} />
           </div>
-          <p className="text-gray-400 text-[10px] mt-1">R11,153 remaining this month</p>
+          <p className="text-gray-500 text-[10px] mt-1">R11,153 remaining this month</p>
         </div>
       </div>
     </div>
@@ -700,7 +700,7 @@ function HistoryScreen() {
               <div className="flex-1 min-w-0">
                 <p className="text-gray-800 text-xs font-medium truncate">{t.name}</p>
                 <div className="flex items-center gap-1.5">
-                  <p className="text-gray-400 text-[10px]">{t.date}</p>
+                  <p className="text-gray-500 text-[10px]">{t.date}</p>
                   <span className="text-[9px] px-1 py-0.5 rounded" style={{ background: `${PURPLE}11`, color: PURPLE }}>
                     {t.cat}
                   </span>
@@ -783,7 +783,7 @@ function RewardsScreen() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-gray-800 text-xs font-medium truncate">{r.event}</p>
-                  <p className="text-gray-400 text-[10px]">{r.date}</p>
+                  <p className="text-gray-500 text-[10px]">{r.date}</p>
                 </div>
                 <span className="text-xs font-bold text-green-600">{r.pts}</span>
               </div>
