@@ -4,8 +4,6 @@ import heroCardPhone from "../../imports/HeroCardPhone.webp";
 import heroGlobalSim from "../../imports/HeroGlobalSim.webp";
 import heroValidator from "../../imports/HeroValidator.webp";
 
-const FEATHER = "linear-gradient(to right, transparent 0%, #000 7%, #000 93%, transparent 100%), linear-gradient(to bottom, transparent 0%, #000 7%, #000 93%, transparent 100%)";
-
 // ─── Per-slide content ────────────────────────────────────────────────────────
 const RAW_SLIDES = [
   {
@@ -151,28 +149,23 @@ export function HeroSection({ onApplyClick }: { onApplyClick?: () => void }) {
           </div>
 
           {/* ── Image side ── */}
-          <div className="flex justify-center md:justify-end relative">
+          <div className="relative flex flex-col items-center md:items-end">
             <div className="absolute inset-0 rounded-full opacity-20 blur-3xl pointer-events-none"
               style={{ background: "radial-gradient(circle,#c9a84c,transparent)" }} />
             <img
               key={current}
               src={slide.image}
               alt={slide.eyebrow}
-              className="relative z-10 w-full max-w-sm sm:max-w-md md:max-w-lg object-contain"
+              className="relative z-10 w-full max-w-sm sm:max-w-md md:max-w-lg max-h-[60vh] object-contain"
               draggable={false}
               style={{
                 transition: "opacity 0.4s ease", opacity: fading ? 0 : 1,
-                // The slide art is a transparent cut-out (background removed). This light fade on all four sides only softens the places where the art meets the
-                // edge of its frame; the two gradients are multiplied together (mask-composite: intersect).
-                maskImage: FEATHER,
-                WebkitMaskImage: FEATHER,
-                maskComposite: "intersect",
-                WebkitMaskComposite: "source-in",
               }}
             />
 
             {/* Dot indicators */}
-            <div className="absolute bottom-0 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1 pb-1">
+            {/* Below the image, not over it, so the picture is never covered */}
+            <div className="relative z-20 mt-2 flex items-center gap-1 self-center">
               {SLIDES.map((_, i) => (
                 <button
                   key={i}
