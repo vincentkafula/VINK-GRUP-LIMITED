@@ -116,6 +116,24 @@ describe("confirm", () => {
   });
 });
 
+describe("automatic rates", () => {
+  const auto = (setAt: Date, sourceAt: Date) => db.query(`UPDATE fx_rates SET auto = true, source = 'exchangerate-api.com', set_at = $1, source_at = $2 WHERE pair = 'ZAR-ZMW'`, [setAt, sourceAt]);
+  it("an automatic rate is used while it was fetched within 3 hours and its source is under 36 hours old, and the quote names the source", async () => {
+    await auto(new Date(now.getTime() - 2.5 * 3600_000), new Date(now.getTime() - 20 * 3600_000));
+    const r = await ask(); expect(r.ok).toBe(true); if (r.ok) expect(r.value.rateSource).toBe("exchangerate-api.com");
+  });
+  it("is refused when it was fetched too long ago, or the source's own data is too old", async () => {
+    await auto(new Date(now.getTime() - 4 * 3600_000), new Date(now.getTime() - 5 * 3600_000));
+    expect(await ask()).toMatchObject({ ok: false, status: 503 });
+    await auto(new Date(now.getTime() - 3600_000), new Date(now.getTime() - 40 * 3600_000));
+    expect(await ask()).toMatchObject({ ok: false, status: 503 });
+  });
+  it("a rate set by hand still has to be under an hour old", async () => {
+    await db.query(`UPDATE fx_rates SET set_at = $1`, [new Date(now.getTime() - 90 * 60_000)]);
+    expect(await ask()).toMatchObject({ ok: false, status: 503 });
+  });
+});
+
 describe("rates", () => {
   it("rejects bad rates and unsupported pairs", async () => {
     expect(await xb.setRate("ZAR", "ZMW", 0, null)).toMatchObject({ ok: false }); expect(await xb.setRate("ZAR", "ZAR", 1, null)).toMatchObject({ ok: false }); expect(await xb.setRate("ZAR", "USD", 1, null)).toMatchObject({ ok: false });

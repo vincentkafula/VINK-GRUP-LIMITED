@@ -293,18 +293,19 @@ function PoolPanel() {
   );
 }
 
-/** Exchange rates for cross-border quotes. There is no rate feed: staff set them, and a rate older than an hour is not used for quotes. */
+/** Exchange rates for cross-border quotes. Fetched automatically every hour while a route is open (two free sources, cross-checked); a rate set by hand is kept for 24 hours. */
 function FxPanel() {
-  const [load, reload] = useLoad<{ rates: { pair: string; rate: number; setAt: string }[] }>(() => moneyApi("/fx") as never);
+  const [load, reload] = useLoad<{ rates: { pair: string; rate: number; setAt: string; source: string; sourceAt: string | null; auto: boolean }[] }>(() => moneyApi("/fx") as never);
   const [pair, setPair] = useState("ZAR-ZMW"); const [rate, setRate] = useState("");
   return (
     <section className="rounded-xl p-4 space-y-3" style={{ background: "#1A1738", border: "1px solid #2D2A50" }}>
-      <h2 className="text-sm font-bold text-white">Exchange rates <span className="font-normal text-white/50">· cross-border quotes use these; set them at least hourly</span></h2>
-      <Status load={load}>{({ rates }) => rates.length === 0 ? <Empty>No rates set.</Empty> : <ul className="text-xs text-white/70 space-y-0.5">{rates.map((r) => <li key={r.pair}>{r.pair}: {r.rate} <span className="text-white/40">· set {when(r.setAt)}{Date.now() - new Date(r.setAt).getTime() > 3600_000 ? " · STALE" : ""}</span></li>)}</ul>}</Status>
+      <h2 className="text-sm font-bold text-white">Exchange rates <span className="font-normal text-white/50">· fetched automatically; a rate you set by hand is kept for 24 hours</span></h2>
+      <Status load={load}>{({ rates }) => rates.length === 0 ? <Empty>No rates set.</Empty> : <ul className="text-xs text-white/70 space-y-0.5">{rates.map((r) => <li key={r.pair}>{r.pair}: {r.rate} <span className="text-white/40">· {r.auto ? `automatic from ${r.source}${r.sourceAt ? `, source data ${when(r.sourceAt)}` : ""}` : "set by hand"} · stored {when(r.setAt)}{Date.now() - new Date(r.setAt).getTime() > (r.auto ? 3 : 1) * 3600_000 ? " · TOO OLD FOR QUOTES" : ""}</span></li>)}</ul>}</Status>
       <div className="flex flex-wrap items-end gap-3">
         <label className="block"><span className="text-[11px] text-white/60">Pair (how many of the second for one of the first)</span><select className={inputCls + " mt-1 !w-auto"} value={pair} onChange={(e) => setPair(e.target.value)}><option>ZAR-ZMW</option><option>ZMW-ZAR</option></select></label>
         <label className="block"><span className="text-[11px] text-white/60">Rate</span><input className={inputCls + " mt-1 !w-28"} inputMode="decimal" value={rate} onChange={(e) => setRate(e.target.value)} /></label>
-        <ActionButton label="Set rate" color={COLOR} onRun={async () => { const n = Number(rate); if (!(n > 0)) return { error: "Enter a rate above zero" }; const [from, to] = pair.split("-"); const r = await moneyApi("/fx", { method: "PUT", body: { from, to, rate: n } }); if ("error" in r) return { error: r.error }; setRate(""); reload(); return { message: "Saved" }; }} />
+        <ActionButton label="Refresh automatically now" color={COLOR} onRun={async () => { const r = await moneyApi("/fx/refresh", { method: "POST" }); if ("error" in r) return { error: r.error }; reload(); const bad = (r.data.results as { pair: string; status: string; reason?: string }[]).filter((x) => x.status !== "updated"); return bad.length ? { error: bad.map((x) => `${x.pair}: ${x.reason ?? x.status}`).join(" ") } : { message: "Rates updated" }; }} />
+        <ActionButton label="Set rate by hand" color="#F59E0B" onRun={async () => { const n = Number(rate); if (!(n > 0)) return { error: "Enter a rate above zero" }; const [from, to] = pair.split("-"); const r = await moneyApi("/fx", { method: "PUT", body: { from, to, rate: n } }); if ("error" in r) return { error: r.error }; setRate(""); reload(); return { message: "Saved" }; }} />
       </div>
     </section>
   );

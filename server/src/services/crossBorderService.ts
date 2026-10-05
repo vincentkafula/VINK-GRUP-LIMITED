@@ -4,11 +4,12 @@ import { COUNTRIES, type CountryCode, type KycTier } from "../config/countryConf
 import { checkTierLimit, quoteCorridor } from "../config/riskRules.js";
 import type { Engine, LedgerPort } from "./moneyEngine.js";
 import { systemAccounts } from "./moneyEngine.js";
+import { AUTO_FETCHED_MAX_AGE_MS, AUTO_SOURCE_MAX_AGE_MS, MANUAL_MAX_AGE_MS } from "./fxRates.js";
 
 /**
  * Sending money between South Africa and Zambia.
  *
- *   quote    prices the transfer from the corridor's settings and the exchange rate staff have set (no feed exists, so a rate older than an hour is refused),
+ *   quote    prices the transfer from the corridor's settings and the exchange rate in use (fetched automatically, see fxRates.ts, or set by staff; a rate that is too old is refused),
  *            checks the corridor limits for this sender, and stores the quote. Nothing moves.
  *   confirm  within the quote's short life, posts the transfer as TWO journals, one per currency, each with a fixed reference:
  *              source currency:       sender  -send   |  platform fees  +fee   |  cross-border position  +(send - fee)
@@ -18,7 +19,6 @@ import { systemAccounts } from "./moneyEngine.js";
  *
  * A corridor is closed until a profile opens it. A sender can only confirm their own quote, and only once.
  */
-export const RATE_MAX_AGE_MS = 3600_000;
 const CURRENCY: Record<CountryCode, string> = { ZA: "ZAR", ZM: "ZMW" };
 const xbAccount = (currency: string) => `sys:${currency.toLowerCase()}:cross_border`;
 export const fxPairKey = (from: string, to: string) => `${from}-${to}`;
@@ -28,20 +28,22 @@ type Loose = { query(sql: string, params?: unknown[]): Promise<{ rows: any[]; ro
 export type XbResult<T> = { ok: true; value: T } | { ok: false; status: number; error: string };
 const bad = (status: number, error: string): XbResult<never> => ({ ok: false, status, error });
 
-export interface QuoteView { id: string; corridor: string; sendCents: number; sendCurrency: string; feeCents: number; rate: number; receiveCents: number; receiveCurrency: string; recipient: string; expiresAt: string; status: string }
+export interface QuoteView { rateSource: string | null; id: string; corridor: string; sendCents: number; sendCurrency: string; feeCents: number; rate: number; receiveCents: number; receiveCurrency: string; recipient: string; expiresAt: string; status: string }
 
 export function createCrossBorder(deps: { db: Db; ledger: LedgerPort; engine: Pick<Engine, "partyOf">; reader: ConfigReader; now?: () => Date }) {
   const db = deps.db as unknown as Loose, { ledger, engine, reader } = deps;
   const clock = deps.now ?? (() => new Date());
   const view = (r: Record<string, any>, recipient: string): QuoteView => ({   // eslint-disable-line @typescript-eslint/no-explicit-any
-    id: r.id, corridor: r.corridor, sendCents: Number(r.send_cents), sendCurrency: r.send_currency, feeCents: Number(r.fee_cents), rate: Number(r.rate), receiveCents: Number(r.receive_cents),
+    rateSource: r.rate_source ?? null, id: r.id, corridor: r.corridor, sendCents: Number(r.send_cents), sendCurrency: r.send_currency, feeCents: Number(r.fee_cents), rate: Number(r.rate), receiveCents: Number(r.receive_cents),
     receiveCurrency: r.receive_currency, recipient, expiresAt: new Date(r.quote_expires_at).toISOString(), status: r.status,
   });
 
   async function setRate(from: string, to: string, rate: number, by: string | null): Promise<XbResult<null>> {
     if (!(rate > 0) || !Number.isFinite(rate) || rate > 1e6) return bad(400, "The rate must be a number above zero");
     if (!["ZAR", "ZMW"].includes(from) || !["ZAR", "ZMW"].includes(to) || from === to) return bad(400, "Use ZAR and ZMW");
-    await db.query(`INSERT INTO fx_rates (pair, rate, set_by, set_at) VALUES ($1,$2,$3,$4) ON CONFLICT (pair) DO UPDATE SET rate = EXCLUDED.rate, set_by = EXCLUDED.set_by, set_at = EXCLUDED.set_at`, [fxPairKey(from, to), rate, by, clock()]);
+    const at = clock();
+    await db.query(`INSERT INTO fx_rates (pair, rate, set_by, set_at, source, source_at, auto) VALUES ($1,$2,$3,$4,'manual',$4,false)
+                    ON CONFLICT (pair) DO UPDATE SET rate = EXCLUDED.rate, set_by = EXCLUDED.set_by, set_at = EXCLUDED.set_at, source = 'manual', source_at = EXCLUDED.set_at, auto = false`, [fxPairKey(from, to), rate, by, at]);
     return { ok: true, value: null };
   }
 
@@ -69,14 +71,17 @@ export function createCrossBorder(deps: { db: Db; ledger: LedgerPort; engine: Pi
     if (recipient.id === senderId) return bad(400, "Choose someone else as the recipient.");
     if (!(await engine.partyOf(senderId, from))) return bad(409, "Link a bank account first. Transfers are paid from your verified account.");
     if (!(await engine.partyOf(recipient.id, to))) return bad(409, "The recipient has no verified account to receive money yet.");
-    const rate = (await db.query(`SELECT rate, set_at FROM fx_rates WHERE pair = $1`, [fxPairKey(from, to)])).rows[0];
-    if (!rate || now.getTime() - new Date(rate.set_at).getTime() > RATE_MAX_AGE_MS) return bad(503, "There is no current exchange rate. Please try again shortly.");
+    const rate = (await db.query(`SELECT rate, set_at, source, source_at, auto FROM fx_rates WHERE pair = $1`, [fxPairKey(from, to)])).rows[0];
+    const fresh = rate && (rate.auto
+      ? now.getTime() - new Date(rate.set_at).getTime() <= AUTO_FETCHED_MAX_AGE_MS && rate.source_at && now.getTime() - new Date(rate.source_at).getTime() <= AUTO_SOURCE_MAX_AGE_MS
+      : now.getTime() - new Date(rate.set_at).getTime() <= MANUAL_MAX_AGE_MS);
+    if (!fresh) return bad(503, "There is no current exchange rate. Please try again shortly.");
     const used = await usage(senderId, k.id, now);
     const v = quoteCorridor(cfg, { corridorId: k.id, amountCents: q.amountCents, midRate: Number(rate.rate), usedDayCents: used.day, usedMonthCents: used.month, now });
     if (!v.ok) return bad(v.code === "bad_amount" ? 400 : 409, v.message);
     const row = (await db.query(
-      `INSERT INTO cross_border_transfers (sender_id, recipient_id, corridor, send_cents, send_currency, fee_cents, rate, receive_cents, receive_currency, quote_expires_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`, [senderId, recipient.id, k.id, v.sendCents, from, v.feeCents, v.offeredRate, v.receiveCents, to, new Date(v.expiresAt)])).rows[0];
+      `INSERT INTO cross_border_transfers (sender_id, recipient_id, corridor, send_cents, send_currency, fee_cents, rate, receive_cents, receive_currency, rate_source, quote_expires_at)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *`, [senderId, recipient.id, k.id, v.sendCents, from, v.feeCents, v.offeredRate, v.receiveCents, to, rate.source, new Date(v.expiresAt)])).rows[0];
     return { ok: true, value: view(row, recipient.name) };
   }
 

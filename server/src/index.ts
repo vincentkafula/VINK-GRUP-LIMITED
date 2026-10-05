@@ -46,6 +46,7 @@ import { createMoneyEngine, manshyaLedgerPort, walletLedgerAccount } from "./ser
 import { createLimitGuard } from "./config/limitGuard.js";
 import { createCrossBorder } from "./services/crossBorderService.js";
 import { createBankFeedRouter } from "./routes/bankFeed.js";
+import { refreshRates } from "./services/fxRates.js";
 import type { CountryConfig } from "./config/countryConfig.js";
 import { createMoneyAdminRouter } from "./routes/moneyAdminRouter.js";
 import { createFieldCrypto } from "./portal/fieldCrypto.js";
@@ -320,6 +321,17 @@ async function boot() {
       await migrateAndSeed();
       if (pool) await seedBankLinks({ db: pool, ...bankDeps }).catch((e) => console.error("[seed] bank links failed (server continues):", e instanceof Error ? e.message : e));
       if (pool) await configReader.active("ZA").then((a) => { zaProfile = a.config; return syncManshyaFees(manshya.config as never, a.config); }).catch((e) => console.error("[config] fee sync failed:", e instanceof Error ? e.message : e));
+      if (pool && process.env.FX_AUTO !== "off") {
+        // Exchange rates for cross-border quotes: fetched every hour while a route is open (and once at start). See services/fxRates.ts for the sources and safety rules.
+        const refresh = async () => {
+          const open = (await Promise.all((["ZA", "ZM"] as const).map((c) => configReader.active(c)))).some((a) => a.config.corridors.some((k) => k.enabled));
+          if (!open) return;
+          const results = await refreshRates(pool!, { pairs: ["ZAR-ZMW", "ZMW-ZAR"] });
+          for (const r of results) if (r.status !== "updated") console.warn(`[fx] ${r.pair}: ${r.status}${r.reason ? " - " + r.reason : ""}`);
+        };
+        void refresh().catch((e) => console.error("[fx] refresh failed:", e instanceof Error ? e.message : e));
+        setInterval(() => { refresh().catch((e) => console.error("[fx] refresh failed:", e instanceof Error ? e.message : e)); }, 3600_000).unref();
+      }
       if (pool && process.env.MONEY_ENGINE !== "off") {
         // Settles confirmed taps, closes trips, creates the marshal fee / agreement payments and pays what is due. Safe to repeat: every posting is idempotent.
         const engine = moneyEngine!;

@@ -6,6 +6,7 @@ import { checkTierLimit, decideInstantCredit, quoteCorridor, type LimitChannel }
 import { reconcile } from "../services/reconciliation.js";
 import type { Engine, LedgerPort } from "../services/moneyEngine.js";
 import type { CrossBorder } from "../services/crossBorderService.js";
+import { refreshRates, type FetchFn, type Provider } from "../services/fxRates.js";
 import { recordPoolCredit, settleCredit, markCleared, markBounced, fundReserve, reserveAccount, referenceLooksValid, normaliseReference } from "../services/poolService.js";
 import { uid, isUuid } from "../portal/common.js";
 
@@ -18,14 +19,20 @@ import { uid, isUuid } from "../portal/common.js";
 const CHANNELS: LimitChannel[] = ["transfer_in", "transfer_out", "atm", "pos", "online"];
 const wholeCents = (v: unknown) => (Number.isInteger(v) && (v as number) >= 0 && (v as number) <= 100_000_000_000 ? (v as number) : null);
 
-export function createMoneyAdminRouter(d: { db: Db; ledger: LedgerPort; reader: ConfigReader; engine?: Pick<Engine, "partyOf">; channels?: () => Record<string, unknown>; crossBorder?: CrossBorder }): Router {
+export function createMoneyAdminRouter(d: { db: Db; ledger: LedgerPort; reader: ConfigReader; engine?: Pick<Engine, "partyOf">; channels?: () => Record<string, unknown>; crossBorder?: CrossBorder; fx?: { fetchFn?: FetchFn; providers?: Provider[] } }): Router {
   const router = Router();
   const poolDeps = () => { if (!d.engine) throw new Error("The money engine is not available"); return { db: d.db, ledger: d.ledger, engine: d.engine, reader: d.reader }; };
 
   /** Exchange rates for cross-border quotes (there is no feed: staff set them, and a rate older than an hour is not used). */
   router.get("/fx", h(async (_req, res) => {
-    const rows = (await d.db.query(`SELECT pair, rate, set_at FROM fx_rates ORDER BY pair`)).rows;
-    res.json({ success: true, rates: rows.map((r) => ({ pair: r.pair, rate: Number(r.rate), setAt: r.set_at })) });
+    const rows = (await d.db.query(`SELECT pair, rate, set_at, source, source_at, auto FROM fx_rates ORDER BY pair`)).rows;
+    res.json({ success: true, rates: rows.map((r) => ({ pair: r.pair, rate: Number(r.rate), setAt: r.set_at, source: r.source, sourceAt: r.source_at ?? null, auto: !!r.auto })) });
+  }));
+  /** Fetch the rates now (they are also fetched every hour while a route is open). A rate set by hand in the last 24 hours is kept. */
+  router.post("/fx/refresh", h(async (req, res) => {
+    const results = await refreshRates(d.db, { pairs: ["ZAR-ZMW", "ZMW-ZAR"], fetchFn: d.fx?.fetchFn, providers: d.fx?.providers });
+    await audit(d.db, req, "money.fx.refresh", null, { results: results.map((r) => `${r.pair}:${r.status}`) });
+    res.json({ success: true, results });
   }));
   router.put("/fx", json({ limit: "2kb" }), h(async (req, res) => {
     if (!d.crossBorder) return fail(res, 503, "Cross-border transfers are not available");

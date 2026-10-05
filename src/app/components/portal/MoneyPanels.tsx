@@ -204,7 +204,7 @@ export function VirtualAccountsPanel({ segment, color }: { segment: Role; color:
   );
 }
 
-interface XbQuote { id: string; corridor: string; sendCents: number; sendCurrency: string; feeCents: number; rate: number; receiveCents: number; receiveCurrency: string; recipient: string; expiresAt: string; status: string }
+interface XbQuote { rateSource?: string | null; id: string; corridor: string; sendCents: number; sendCurrency: string; feeCents: number; rate: number; receiveCents: number; receiveCurrency: string; recipient: string; expiresAt: string; status: string }
 
 /** Send money between South Africa and Zambia: get a quote (nothing moves), then confirm it before it expires. Hidden when no route is open and there is no history. */
 export function CrossBorderPanel({ segment, color }: { segment: Role; color: string }) {
@@ -236,7 +236,7 @@ export function CrossBorderPanel({ segment, color }: { segment: Role; color: str
         {quote && (
           <div className="rounded-lg p-3 space-y-2" style={{ background: "#0D0B1E", border: "1px solid #2D2A50" }}>
             <p className="text-sm text-white">{quote.recipient} receives <b>{money(quote.receiveCents, quote.receiveCurrency)}</b></p>
-            <p className="text-xs text-white/60">You pay {money(quote.sendCents, quote.sendCurrency)} including a fee of {money(quote.feeCents, quote.sendCurrency)} · rate {quote.rate.toFixed(4)} · this quote is valid until {when(quote.expiresAt)}</p>
+            <p className="text-xs text-white/60">You pay {money(quote.sendCents, quote.sendCurrency)} including a fee of {money(quote.feeCents, quote.sendCurrency)} · rate {quote.rate.toFixed(4)} · this quote is valid until {when(quote.expiresAt)}{quote.rateSource && quote.rateSource !== "manual" ? ` · exchange rate by ${quote.rateSource}` : ""}</p>
             <div className="flex gap-2">
               <ActionButton label="Confirm and send" color={color} onRun={async () => { const r = await call(`/money/cross-border/${quote.id}/confirm`, { method: "POST" }); if ("error" in r) return { error: r.error }; setQuote(null); setAmount(""); reload(); return { message: "Sent" }; }} />
               <button type="button" className="text-xs underline text-white/70" onClick={() => setQuote(null)}>Cancel</button></div>

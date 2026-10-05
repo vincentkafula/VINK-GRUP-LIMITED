@@ -1135,7 +1135,10 @@ CREATE TABLE IF NOT EXISTS fx_rates (
   pair      TEXT PRIMARY KEY,                         -- e.g. ZAR-ZMW: how many ZMW for one ZAR
   rate      NUMERIC(18,8) NOT NULL CHECK (rate > 0),
   set_by    UUID REFERENCES users(id) ON DELETE SET NULL,
-  set_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+  set_at    TIMESTAMPTZ NOT NULL DEFAULT now(),         -- when the rate was stored here
+  source    TEXT NOT NULL DEFAULT 'manual',               -- 'manual' or the provider's name
+  source_at TIMESTAMPTZ,                                  -- the provider's own timestamp for the rate
+  auto      BOOLEAN NOT NULL DEFAULT false                -- true: fetched automatically
 );
 CREATE TABLE IF NOT EXISTS cross_border_transfers (
   id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -1148,6 +1151,7 @@ CREATE TABLE IF NOT EXISTS cross_border_transfers (
   rate             NUMERIC(18,8) NOT NULL,
   receive_cents    BIGINT NOT NULL CHECK (receive_cents >= 0),
   receive_currency TEXT NOT NULL,
+  rate_source      TEXT,
   status           TEXT NOT NULL DEFAULT 'quoted' CHECK (status IN ('quoted','posting','completed','expired','failed')),
   reason           TEXT,
   quote_expires_at TIMESTAMPTZ NOT NULL,

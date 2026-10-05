@@ -10,10 +10,16 @@ import { ensureVirtualAccount } from "../services/poolService.js";
 import { createMoneyAdminRouter } from "./moneyAdminRouter.js";
 import { DEFAULT_ZA, DEFAULT_ZM } from "../config/countryConfig.js";
 import { createCrossBorder } from "../services/crossBorderService.js";
+import type { FetchFn } from "../services/fxRates.js";
 
 const id = (n: number) => `00000000-0000-0000-0000-${String(n).padStart(12, "0")}`;
 const ADMIN = id(90), USER = id(5);
 const reader = { active: async (c: string) => ({ version: 1, config: c === "ZM" ? DEFAULT_ZM : DEFAULT_ZA }), invalidate() {} } as never;
+
+const fakeNet: FetchFn = async (url) => {
+  const body = url.includes("open.er-api.com") ? { result: "success", time_last_update_unix: 1791158551, rates: { ZMW: 1.2, ZAR: 0.83 } } : url.includes("currencies/zar.json") ? { date: "2026-10-04", zar: { zmw: 1.19 } } : { date: "2026-10-04", zmw: { zar: 0.84 } };
+  return { ok: true, status: 200, json: async () => body };
+};
 
 describe("admin money API", () => {
   let server: Server, url = "", db: Db, ledger: LedgerPort, acct = "";
@@ -29,7 +35,7 @@ describe("admin money API", () => {
     const engine = createMoneyEngine({ db, ledger, reader });
     const app = express();
     app.use((req, _r, next) => { req.user = { userId: ADMIN, username: "admin", role: "superadmin" }; next(); });
-    app.use("/admin", createMoneyAdminRouter({ db, ledger, reader, engine, channels: () => ({ in_person: { accountNumber: "1234567890" } }), crossBorder: createCrossBorder({ db, ledger, engine, reader }) }));
+    app.use("/admin", createMoneyAdminRouter({ db, ledger, reader, engine, channels: () => ({ in_person: { accountNumber: "1234567890" } }), crossBorder: createCrossBorder({ db, ledger, engine, reader }), fx: { fetchFn: fakeNet } }));
     await new Promise<void>((ok) => { server = app.listen(0, "127.0.0.1", ok); });
     url = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
   });
@@ -65,6 +71,15 @@ describe("admin money API", () => {
     expect((await call("/pool/credits", "POST", { bankRef: "BANK-4", reference: "x", amountCents: 1.5, currency: "ZAR" })).status).toBe(400);
     expect((await call("/pool/credits", "POST", { reference: "x" })).status).toBe(400);
     expect((await call("/check", "POST", { country: "ZA", kind: "limit", channel: "atm", amountCents: -5 })).status).toBe(400);
+  });
+
+  it("refreshes the rates automatically on request, keeps a hand-set rate, and lists the source", async () => {
+    const r = (await call("/fx/refresh", "POST")).body;
+    expect(r.results.map((x: { status: string }) => x.status)).toEqual(["updated", "updated"]);
+    expect((await call("/fx")).body.rates).toEqual([expect.objectContaining({ pair: "ZAR-ZMW", rate: 1.2, auto: true, source: "exchangerate-api.com" }), expect.objectContaining({ pair: "ZMW-ZAR", auto: true })]);
+    await call("/fx", "PUT", { from: "ZAR", to: "ZMW", rate: 1.3 });
+    expect((await call("/fx/refresh", "POST")).body.results[0]).toMatchObject({ pair: "ZAR-ZMW", status: "kept_manual" });
+    expect((await call("/fx")).body.rates[0]).toMatchObject({ rate: 1.3, auto: false, source: "manual" });
   });
 
   it("staff set exchange rates, and bad rates are refused", async () => {

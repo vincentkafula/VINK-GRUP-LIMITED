@@ -10,6 +10,7 @@ What the platform does with money once a tap, a bank credit or an agreement exis
 | `MONEY_ENGINE` | `off` stops the 30-second cycle (settlement, trips, agreements, payments). |
 | `BANK_WEBHOOK_SECRET` | Switches on the bank's signed credit feed (`POST /api/webhooks/bank-credits`). Without it the endpoint answers 503. |
 | `PAYMENT_CHANNEL_ACCOUNTS` | The pooled bank accounts customers pay into (in-person, online). Shown to users; never created here. |
+| `FX_PROVIDER_KEY` / `FX_AUTO` | Optional ExchangeRate-API key; `FX_AUTO=off` stops the automatic rate fetching. |
 | `PAYMENTS_MODE` | `sandbox` confirms taps automatically (if the profile allows). Live taps wait for a real authorisation. |
 
 ## The country profile (`/admin/config`)
@@ -53,7 +54,11 @@ Off by default. When on, a payment the bank reports as not yet cleared is credit
 
 ## Cross-border (ZA to ZM and back)
 
-Closed by default. Staff set the exchange rate (there is no feed; a rate older than an hour is not used). A user gets a quote (fee, rate after margin, 60-second life), then confirms. Confirmation posts two journals, one per currency. If it stops between them the transfer stays "posting" and confirming again finishes it.
+Closed by default. Exchange rates are fetched automatically every hour while a route is open (and at start), from two free daily-reference sources: ExchangeRate-API open access (primary; no key, attribution shown on the quote) and currency-api by fawazahmed0 (cross-check). With `FX_PROVIDER_KEY` set, ExchangeRate-API's keyed endpoint is used instead. `FX_AUTO=off` turns the fetching off.
+
+Safety rules: if the two sources differ by more than 5%, nothing changes; a new rate more than 15% from the one in use is not applied automatically; a rate staff set by hand is kept for 24 hours; a quote refuses an automatic rate fetched over 3 hours ago or whose source data is over 36 hours old (a hand-set rate must be under an hour old). These are daily reference rates, not dealing rates, so keep the corridor margin wide enough to cover a day of movement. Staff can refresh or override on `/admin/config`.
+
+A user gets a quote (fee, rate after margin, 60-second life), then confirms. Confirmation posts two journals, one per currency. If it stops between them the transfer stays "posting" and confirming again finishes it.
 
 ## Reconciliation (`/admin/config`)
 
@@ -61,6 +66,5 @@ Read-only checks: every settled tap and credited bank line has its ledger postin
 
 ## Still manual
 
-- Exchange rates (no feed).
 - Bank statement lines, until the bank's feed is connected.
 - Zambia stays a draft until the Absa details exist.
