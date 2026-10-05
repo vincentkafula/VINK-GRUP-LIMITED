@@ -13,7 +13,7 @@ const edgeMask = (sides: Side[]) => (sides.length ? sides.map((d) => `linear-gra
 const RAW_SLIDES = [
   {
     image:   heroCardPhone,
-    cropped: ["left", "bottom"] as Side[],       // sides where the artwork itself runs off its frame
+    cropped: [] as Side[],     // sides where the artwork itself runs off its frame
     eyebrow: "VINK Card — Now in Your Pocket",
     headline: <>All the benefits of Card,<br /><span className="relative inline-block"><span className="relative z-10">on your phone.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#C9A84C" }} /></span></>,
     body: "Manage, track and enjoy exclusive benefits anytime, anywhere.",
