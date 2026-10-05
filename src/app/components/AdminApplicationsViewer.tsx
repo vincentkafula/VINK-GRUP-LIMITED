@@ -167,7 +167,7 @@ function ApplicationDetail({ app, onClose, onStatusUpdate }: {
                 return (
                   <button key={s} onClick={() => setNewStatus(s)}
                     className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold border-2 transition-all"
-                    style={{ borderColor: newStatus === s ? sc2.color : "var(--vk-line)", background: newStatus === s ? sc2.bg : "#FAFAFA", color: newStatus === s ? sc2.color : "#6B7280" }}>
+                    style={{ borderColor: newStatus === s ? sc2.color : "var(--vk-line)", background: newStatus === s ? sc2.bg : "color-mix(in srgb, #FAFAFA var(--vk-wash), var(--vk-surface))", color: newStatus === s ? sc2.color : "var(--vk-fg-muted)" }}>
                     {sc2.icon}{sc2.label}
                   </button>
                 );
@@ -182,7 +182,7 @@ function ApplicationDetail({ app, onClose, onStatusUpdate }: {
             />
             <button onClick={save} disabled={saving || !reason.trim() || newStatus === app.status}
               className="w-full py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-40"
-              style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
+              style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
               {saving ? "Saving…" : "Save Changes"}
             </button>
           </div>

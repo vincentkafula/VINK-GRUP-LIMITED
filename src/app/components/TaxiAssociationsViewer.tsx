@@ -81,7 +81,7 @@ export function TaxiAssociationsViewer({ isOpen, onClose }: Props) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col" style={{ background: "#F7F8FA" }}>
+    <div className="fixed inset-0 z-50 flex flex-col" style={{ background: "color-mix(in srgb, #F7F8FA var(--vk-wash), var(--vk-surface))" }}>
 
       {/* ── Top bar ────────────────────────────────────────────────────────── */}
       <div className="flex items-center gap-3 px-5 py-3.5 border-b bg-surface flex-shrink-0" style={{ borderColor: "var(--vk-line)" }}>
@@ -90,7 +90,7 @@ export function TaxiAssociationsViewer({ isOpen, onClose }: Props) {
           <Building2 className="w-4 h-4" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-black text-sm" style={{ color: NAVY }}>SA Taxi Associations</p>
+          <p className="font-black text-sm" style={{ color: "var(--vk-fg)" }}>SA Taxi Associations</p>
           <p className="text-xs text-fg-muted">VINK outreach reference · All 9 provinces + national</p>
         </div>
         {/* Stats */}
@@ -146,7 +146,7 @@ export function TaxiAssociationsViewer({ isOpen, onClose }: Props) {
           {(["table","cards","map"] as const).map(v => (
             <button key={v} onClick={() => setView(v)}
               className="px-3 py-2 text-xs font-semibold capitalize transition-colors"
-              style={{ background: view === v ? P : "#fff", color: view === v ? "#fff" : "#6B7280" }}>
+              style={{ background: view === v ? P : "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))", color: view === v ? "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" : "#6B7280" }}>
               {v}
             </button>
           ))}
@@ -184,7 +184,7 @@ export function TaxiAssociationsViewer({ isOpen, onClose }: Props) {
                   <div className="col-span-2 flex items-center gap-1.5">
                     <span className="text-base">{PROVINCE_EMOJIS[a.province] ?? "📍"}</span>
                     <div>
-                      <p className="text-xs font-semibold" style={{ color: PROVINCE_COLORS[a.province] ?? "#888" }}>{a.province}</p>
+                      <p className="text-xs font-semibold" style={{ color: PROVINCE_COLORS[a.province] ?? "var(--vk-fg-muted)" }}>{a.province}</p>
                     </div>
                   </div>
                   {/* Name */}
@@ -266,7 +266,7 @@ export function TaxiAssociationsViewer({ isOpen, onClose }: Props) {
                           {a.notes.includes("+27") && (
                             <a href={`tel:${a.notes.match(/\+27[\d\s]+/)?.[0]?.replace(/\s/g,"")}`}
                               className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all hover:opacity-90 mt-0.5"
-                              style={{ background: P, color: "#fff" }}>
+                              style={{ background: P, color: "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" }}>
                               <Phone className="w-3.5 h-3.5" />
                             </a>
                           )}
@@ -298,11 +298,11 @@ export function TaxiAssociationsViewer({ isOpen, onClose }: Props) {
                     <div className="flex items-start justify-between mb-2">
                       <span className="text-2xl">{PROVINCE_EMOJIS[province] ?? "📍"}</span>
                       <span className="text-xs font-black rounded-full w-6 h-6 flex items-center justify-center text-white flex-shrink-0"
-                        style={{ background: isActive ? color : "#9CA3AF" }}>
+                        style={{ background: isActive ? color : "var(--vk-fg-muted)" }}>
                         {shown.length}
                       </span>
                     </div>
-                    <p className="text-sm font-black leading-tight" style={{ color: isActive ? color : "#9CA3AF" }}>{province}</p>
+                    <p className="text-sm font-black leading-tight" style={{ color: isActive ? color : "var(--vk-fg-muted)" }}>{province}</p>
                     <p className="text-[10px] text-fg-subtle mt-1">
                       {all.filter(a => a.level !== "National").length} associations
                     </p>
@@ -337,7 +337,7 @@ export function TaxiAssociationsViewer({ isOpen, onClose }: Props) {
                 {TAXI_ASSOCIATIONS.filter(a => a.level === "National").map((a, i) => (
                   <div key={i} className="p-4 rounded-xl" style={{ background: "#128A4315", border: "1px solid #128A4330" }}>
                     <div className="flex items-start gap-2">
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "#8B0000", color: "#fff" }}>
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "#8B0000", color: "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" }}>
                         <Building2 className="w-4 h-4" />
                       </div>
                       <div>

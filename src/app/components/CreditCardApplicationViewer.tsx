@@ -22,7 +22,7 @@ const STEPS = [
 ];
 
 const CARD_TYPES = [
-  { id: "standard", name: "VINK Standard Card", limit: "R5,000 – R25,000", fee: "R0/month", color: "linear-gradient(135deg,#8B0000,#C9A84C)" },
+  { id: "standard", name: "VINK Standard Card", limit: "R5,000 – R25,000", fee: "R0/month", color: "linear-gradient(135deg,#8B0000,#9B1C1C)" },
   { id: "gold",     name: "VINK Gold Card",     limit: "R25,000 – R150,000", fee: "R85/month", color: "linear-gradient(135deg,#B8860B,#DAA520)" },
   { id: "platinum", name: "VINK Platinum Card", limit: "R150,000 – R500,000", fee: "R265/month", color: "linear-gradient(135deg,#374151,#6B7280)" },
 ];
@@ -270,7 +270,7 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
         tag="VINK Personal Banking · FICA · POCA Compliant"
         title="New Credit Card Application"
         subtitle="Choose your card, verify your identity, and get approved in minutes."
-        gradient="linear-gradient(135deg,#1A0D12 0%,#5C0A10 50%,#C9A84C 100%)"
+        gradient="linear-gradient(135deg,#1A0D12 0%,#5C0A10 50%,#9B1C1C 100%)"
       />
 
       {/* ── Step content ── */}
@@ -288,7 +288,7 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
                     key={c.id}
                     onClick={() => setSelectedCard(c.id)}
                     className="rounded-xl p-3 text-left transition-all border-2"
-                    style={{ borderColor: selectedCard === c.id ? CP : "var(--vk-line)", background: selectedCard === c.id ? CP + "08" : "#fff" }}
+                    style={{ borderColor: selectedCard === c.id ? CP : "var(--vk-line)", background: selectedCard === c.id ? CP + "08" : "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" }}
                   >
                     <div className="h-8 rounded-lg mb-2" style={{ background: c.color }} />
                     <p className="text-xs font-bold text-fg leading-tight">{c.name}</p>
@@ -587,7 +587,7 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
                   }
                 }}
                 className="w-full py-4 rounded-xl text-base font-black text-white transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed shadow-lg"
-                style={{ background: `linear-gradient(135deg,${CP},#C9A84C)` }}>
+                style={{ background: `linear-gradient(135deg,${CP},#9B1C1C)` }}>
                 {submitting ? "Submitting..." : "Submit Application"}
               </button>
               {submitError && <p className="text-red-600 text-sm text-center mt-2">{submitError}</p>}
@@ -599,7 +599,7 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
             {/* Animated success */}
             <div className="bg-surface rounded-2xl border border-green-200 p-8 shadow-sm text-center space-y-4">
               <div className="w-24 h-24 rounded-full flex items-center justify-center mx-auto"
-                style={{ background: "linear-gradient(135deg,#D1FAE5,#A7F3D0)" }}>
+                style={{ background: "linear-gradient(135deg,color-mix(in srgb, #D1FAE5 var(--vk-wash), var(--vk-surface)),color-mix(in srgb, #A7F3D0 var(--vk-wash), var(--vk-surface)))" }}>
                 <CheckCircle className="w-12 h-12 text-green-600" />
               </div>
               <div>
@@ -658,7 +658,7 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
 
             <button onClick={onClose}
               className="w-full py-3.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 shadow-lg"
-              style={{ background: `linear-gradient(135deg,${CP},#C9A84C)` }}>
+              style={{ background: `linear-gradient(135deg,${CP},#9B1C1C)` }}>
               Back to VINK Banking
             </button>
           </div>

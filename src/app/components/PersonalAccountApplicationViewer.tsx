@@ -32,13 +32,13 @@ function StepBar({ current }: { current: number }) {
         return (
           <div key={s.n}
             className="flex-1 min-w-[52px] flex flex-col items-center justify-center py-2.5 px-1 border-r border-line last:border-r-0"
-            style={{ background: active ? BLUE : done ? "#EFF6FF" : "#fff" }}>
+            style={{ background: active ? BLUE : done ? "color-mix(in srgb, #EFF6FF var(--vk-wash), var(--vk-surface))" : "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" }}>
             <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold mb-0.5"
-              style={{ background: active ? "#fff" : done ? BLUE : "var(--vk-line)", color: active ? BLUE : done ? "#fff" : "#9CA3AF" }}>
+              style={{ background: active ? "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" : done ? BLUE : "var(--vk-line)", color: active ? BLUE : done ? "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" : "#9CA3AF" }}>
               {done ? "✓" : s.n}
             </div>
             <p className="text-[9px] font-semibold leading-tight text-center"
-              style={{ color: active ? "#fff" : done ? BLUE : "#9CA3AF" }}>
+              style={{ color: active ? "#fff" : done ? BLUE : "var(--vk-fg-muted)" }}>
               {s.label}
             </p>
           </div>
@@ -463,7 +463,7 @@ function Step4({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () 
       <SectionHead title="Biometrics & Selfie" sub="Section 4 — Fingerprint and selfie confirmation required" />
 
       <div className="border-2 border-dashed rounded-2xl p-8 text-center transition-colors"
-        style={{ borderColor: fp ? "#10B981" : "var(--vk-line)", background: fp ? "#F0FDF4" : "#fff" }}>
+        style={{ borderColor: fp ? "#10B981" : "var(--vk-line)", background: fp ? "color-mix(in srgb, #F0FDF4 var(--vk-wash), var(--vk-surface))" : "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" }}>
         {!fp ? (
           <>
             <div className="text-5xl mb-3">👆</div>
@@ -485,7 +485,7 @@ function Step4({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () 
       </div>
 
       <div className="border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-colors"
-        style={{ borderColor: selfie ? "#10B981" : "var(--vk-line)", background: selfie ? "#F0FDF4" : "#fff" }}
+        style={{ borderColor: selfie ? "#10B981" : "var(--vk-line)", background: selfie ? "color-mix(in srgb, #F0FDF4 var(--vk-wash), var(--vk-surface))" : "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" }}
         onClick={() => !selfie && fileRef.current?.click()}>
         {!selfie ? (
           <>
@@ -551,7 +551,7 @@ function Step5({ onNext, onBack, updateForm, idType }: { onNext: () => void; onB
               <span className="text-sm font-medium text-fg">{d.label}</span>
             </div>
             <span className="text-xs px-3 py-1 rounded-full font-semibold ml-3 flex-shrink-0"
-              style={{ background: uploaded[d.key] ? "#DCFCE7" : "#EFF6FF", color: uploaded[d.key] ? "#059669" : BLUE }}>
+              style={{ background: uploaded[d.key] ? "color-mix(in srgb, #DCFCE7 var(--vk-wash), var(--vk-surface))" : "color-mix(in srgb, #EFF6FF var(--vk-wash), var(--vk-surface))", color: uploaded[d.key] ? "#059669" : BLUE }}>
               {uploaded[d.key] ? "Uploaded" : "Upload"}
             </span>
             <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png"
@@ -625,7 +625,7 @@ function Step6({ onNext, onBack, submitting }: { onNext: (data: Record<string, s
       </div>
 
       <label className="flex items-start gap-3 cursor-pointer p-4 rounded-xl border"
-        style={{ borderColor: consent ? BLUE : "var(--vk-line)", background: consent ? "#EFF6FF" : "#fff" }}>
+        style={{ borderColor: consent ? BLUE : "var(--vk-line)", background: consent ? "color-mix(in srgb, #EFF6FF var(--vk-wash), var(--vk-surface))" : "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" }}>
         <input type="checkbox" checked={consent} onChange={e => setConsent(e.target.checked)}
           className="mt-0.5 w-4 h-4 flex-shrink-0" style={{ accentColor: BLUE }} />
         <p className="text-xs text-fg-muted leading-relaxed">

@@ -35,14 +35,14 @@ function Field({
     width: "100%", fontSize: 14, color: NAVY, outline: "none",
     border: `1.5px solid ${focused ? P : over ? "#DC2626" : RULE}`,
     borderRadius: 10, padding: "10px 14px", resize: "vertical",
-    background: "#FAFAFA", fontFamily: "inherit", lineHeight: 1.6,
+    background: "color-mix(in srgb, #FAFAFA var(--vk-wash), var(--vk-surface))", fontFamily: "inherit", lineHeight: 1.6,
     transition: "border-color 0.15s",
   };
 
   return (
     <div style={{ marginBottom: 24 }}>
       <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 6 }}>
-        <label style={{ fontSize: 13, fontWeight: 700, color: NAVY }}>
+        <label style={{ fontSize: 13, fontWeight: 700, color: "var(--vk-fg)" }}>
           {label}{required && <span style={{ color: P, marginLeft: 3 }}>*</span>}
         </label>
         {hint && (
@@ -83,7 +83,7 @@ function Field({
               background: over ? "#DC2626" : pct! > 80 ? "#F59E0B" : "#10B981",
               transition: "width 0.2s, background 0.2s" }} />
           </div>
-          <span style={{ fontSize: 11, color: over ? "#DC2626" : "#9CA3AF", fontVariantNumeric: "tabular-nums" }}>
+          <span style={{ fontSize: 11, color: over ? "#DC2626" : "var(--vk-fg-muted)", fontVariantNumeric: "tabular-nums" }}>
             {value.length} / {maxLen}
           </span>
         </div>
@@ -105,11 +105,11 @@ function AppSection({
       borderRadius: 16, overflow: "hidden", background: "var(--vk-surface)" }}>
       <button onClick={() => setOpen(o => !o)}
         style={{ width: "100%", display: "flex", alignItems: "center", gap: 14, padding: "16px 20px",
-          background: open ? "#FAFAFA" : "#fff", border: "none", cursor: "pointer", textAlign: "left" }}>
+          background: open ? "color-mix(in srgb, #FAFAFA var(--vk-wash), var(--vk-surface))" : "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))", border: "none", cursor: "pointer", textAlign: "left" }}>
         <span style={{ fontSize: 11, fontWeight: 700, color: "var(--vk-fg-muted)",
           fontFamily: "monospace", minWidth: 24 }}>{num}</span>
         <div style={{ flex: 1 }}>
-          <p style={{ fontSize: 15, fontWeight: 800, color: NAVY, margin: 0 }}>{title}</p>
+          <p style={{ fontSize: 15, fontWeight: 800, color: "var(--vk-fg)", margin: 0 }}>{title}</p>
           {subtitle && <p style={{ fontSize: 12, color: "var(--vk-fg-muted)", margin: "2px 0 0" }}>{subtitle}</p>}
         </div>
         {complete && <CheckCircle className="w-5 h-5 flex-shrink-0" style={{ color: "#10B981" }} />}
@@ -125,9 +125,9 @@ function AppSection({
 function Tip({ children }: { children: React.ReactNode }) {
   return (
     <div style={{ display: "flex", gap: 10, padding: "10px 14px", borderRadius: 10, marginBottom: 18,
-      background: "#FFF7ED", border: "1px solid #FED7AA" }}>
+      background: "color-mix(in srgb, #FFF7ED var(--vk-wash), var(--vk-surface))", border: "1px solid color-mix(in srgb, #FED7AA var(--vk-wash), var(--vk-surface))" }}>
       <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: "#EA580C" }} />
-      <p style={{ fontSize: 12, color: "#9A3412", lineHeight: 1.6, margin: 0 }}>{children}</p>
+      <p style={{ fontSize: 12, color: "var(--vk-warn)", lineHeight: 1.6, margin: 0 }}>{children}</p>
     </div>
   );
 }
@@ -351,7 +351,7 @@ We are ready for 500 Global. The product is built. The partnership is signed. Th
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col overflow-hidden" style={{ background: "var(--vk-surface-2)" }}>
+    <div data-theme-light className="fixed inset-0 z-50 flex flex-col overflow-hidden" style={{ background: "var(--vk-surface-2)" }}>
 
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b flex-shrink-0"
@@ -367,7 +367,7 @@ We are ready for 500 Global. The product is built. The partnership is signed. Th
         <div className="flex items-center gap-3">
           <button onClick={allCopied}
             className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all hover:opacity-90"
-            style={{ background: P, color: "#fff" }}>
+            style={{ background: P, color: "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" }}>
             <Copy className="w-3.5 h-3.5" /> Copy All Fields
           </button>
           <button onClick={onClose} className="text-white/40 hover:text-white px-2 text-xl leading-none">×</button>
@@ -530,7 +530,7 @@ We are ready for 500 Global. The product is built. The partnership is signed. Th
           <div className="flex gap-3">
             <button onClick={allCopied}
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90"
-              style={{ background: P, color: "#fff" }}>
+              style={{ background: P, color: "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" }}>
               <Copy className="w-4 h-4" /> Copy All Answers
             </button>
             <a href="https://500.co/flagship" target="_blank" rel="noopener noreferrer"

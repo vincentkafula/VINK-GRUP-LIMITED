@@ -334,7 +334,7 @@ export function RevenueDashboard({ isOpen, onClose }: Props) {
 
                 <button onClick={runSimulator} disabled={simProcessing}
                   className="w-full py-4 rounded-2xl text-base font-black text-white transition-all hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-3 shadow-lg"
-                  style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
+                  style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
                   {simProcessing ? <><div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />Processing tap…</> : <><Zap className="w-5 h-5" />Simulate Tap &amp; Distribute Revenue</>}
                 </button>
               </div>
@@ -533,7 +533,7 @@ export function RevenueDashboard({ isOpen, onClose }: Props) {
                 </div>
                 <button onClick={saveAgreement} disabled={!agrAssoc || !agrMarshall || agrSaving}
                   className="w-full py-3 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-40 flex items-center justify-center gap-2"
-                  style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
+                  style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
                   {agrSaved ? <><CheckCircle className="w-4 h-4" />Agreement Saved!</> : agrSaving ? <><div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />Saving…</> : "Save Agreement"}
                 </button>
               </div>

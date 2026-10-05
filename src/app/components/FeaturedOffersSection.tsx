@@ -1,7 +1,7 @@
 const OFFERS = [
   {
     name: "VINK Everyday Cashback", issuer: "VINK Standard",
-    grad: "linear-gradient(135deg,#1A3A6E 0%,#8B0000 60%,#C9A84C 100%)",
+    grad: "linear-gradient(135deg,#1A3A6E 0%,#8B0000 60%,#9B1C1C 100%)",
     badge: "Best Value", badgeColor: "#10B981",
     highlight: "3% cashback at supermarkets and spaza shops",
     detail: "1.5% at fuel stations · 0.5% everywhere else",

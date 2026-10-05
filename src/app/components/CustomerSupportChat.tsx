@@ -127,7 +127,7 @@ export function CustomerSupportChat() {
       <button
         onClick={open}
         className="fixed bottom-6 right-6 z-[300] flex items-center gap-2 px-4 py-3 rounded-2xl shadow-2xl text-white font-semibold text-sm transition-all hover:scale-105"
-        style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}
+        style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}
       >
         <MessageCircle className="w-5 h-5" />
         Support
@@ -144,7 +144,7 @@ export function CustomerSupportChat() {
       style={{ width: 380, height: 580, background: "#0A0A14", border: "1px solid rgba(255,255,255,0.1)" }}
     >
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10" style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10" style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
         <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center text-lg">🎧</div>
         <div className="flex-1">
           <p className="text-white font-bold text-sm">VINK Support</p>
@@ -271,7 +271,7 @@ export function CustomerSupportChat() {
               onClick={() => sendMessage()}
               disabled={!input.trim()}
               className="p-2 rounded-xl transition-all flex-shrink-0"
-              style={{ background: input.trim() ? P : "rgba(255,255,255,0.05)", color: input.trim() ? "#fff" : "rgba(255,255,255,0.2)" }}
+              style={{ background: input.trim() ? P : "rgba(255,255,255,0.05)", color: input.trim() ? "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" : "rgba(255,255,255,0.2)" }}
             >
               <Send className="w-4 h-4" />
             </button>
@@ -349,7 +349,7 @@ export function CustomerSupportChat() {
                 onClick={() => ticketCategory && ticketSubject && ticketDescription ? setTicketSubmitted(true) : null}
                 disabled={!ticketCategory || !ticketSubject || !ticketDescription}
                 className="w-full py-3 rounded-xl text-sm font-bold text-white transition-all"
-                style={{ background: ticketCategory && ticketSubject && ticketDescription ? P : "rgba(255,255,255,0.1)", color: ticketCategory && ticketSubject && ticketDescription ? "#fff" : "rgba(255,255,255,0.3)" }}
+                style={{ background: ticketCategory && ticketSubject && ticketDescription ? P : "rgba(255,255,255,0.1)", color: ticketCategory && ticketSubject && ticketDescription ? "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" : "rgba(255,255,255,0.3)" }}
               >
                 Submit Ticket
               </button>

@@ -90,7 +90,7 @@ export function UserProfileViewer({ isOpen, onClose, onSignOut }: Props) {
         <div className="p-6 border-b border-white/10">
           <div className="flex items-start gap-3 mb-4">
             <div className="relative">
-              <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-black text-white shadow-xl" style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-black text-white shadow-xl" style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
                 {profile.firstName[0]}{profile.lastName[0]}
               </div>
               <button
@@ -265,7 +265,7 @@ export function UserProfileViewer({ isOpen, onClose, onSignOut }: Props) {
           {tab === "kyc" && (
             <div className="max-w-2xl space-y-6">
               {/* Progress */}
-              <div className="p-6 rounded-2xl" style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
+              <div className="p-6 rounded-2xl" style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <p className="text-white/70 text-sm">Verification Level</p>
@@ -284,7 +284,7 @@ export function UserProfileViewer({ isOpen, onClose, onSignOut }: Props) {
               <Section title="Verification Steps" icon={<Shield className="w-4 h-4" />}>
                 <div className="space-y-3">
                   {KYC_STEPS.map(step => (
-                    <div key={step.key} className="flex items-center gap-3 p-3 rounded-xl border transition-all" style={{ borderColor: step.done ? "#10B98122" : "#F59E0B22", background: step.done ? "#F0FDF4" : "#FFFBEB" }}>
+                    <div key={step.key} className="flex items-center gap-3 p-3 rounded-xl border transition-all" style={{ borderColor: step.done ? "#10B98122" : "#F59E0B22", background: step.done ? "color-mix(in srgb, #F0FDF4 var(--vk-wash), var(--vk-surface))" : "color-mix(in srgb, #FFFBEB var(--vk-wash), var(--vk-surface))" }}>
                       {step.done
                         ? <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
                         : <Clock className="w-5 h-5 text-amber-500 flex-shrink-0" />
@@ -404,7 +404,7 @@ export function UserProfileViewer({ isOpen, onClose, onSignOut }: Props) {
             <div className="max-w-2xl space-y-6">
               {[
                 { type: "Mastercard Debit", last4: "4291", expires: "09/28", status: "active", daily: 5000, monthly: 50000, spentToday: 850, spentMonth: 12480, color: "var(--vk-crimson-text)", online: true, international: false, contactless: true },
-                { type: "Virtual Card", last4: "7742", expires: "12/26", status: "active", daily: 2000, monthly: 20000, spentToday: 0, spentMonth: 3200, color: "#0F172A", online: true, international: true, contactless: false },
+                { type: "Virtual Card", last4: "7742", expires: "12/26", status: "active", daily: 2000, monthly: 20000, spentToday: 0, spentMonth: 3200, color: "var(--vk-fg)", online: true, international: true, contactless: false },
               ].map(card => (
                 <div key={card.last4} className="rounded-2xl overflow-hidden border border-line shadow-sm">
                   {/* Card visual */}
@@ -424,7 +424,7 @@ export function UserProfileViewer({ isOpen, onClose, onSignOut }: Props) {
                     </div>
                     <div className="flex gap-2 flex-wrap">
                       {[["Online payments", card.online], ["International", card.international], ["Contactless", card.contactless]].map(([label, val]) => (
-                        <span key={label as string} className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full" style={{ background: val ? "#F0FDF4" : "var(--vk-surface-2)", color: val ? "#16A34A" : "#9CA3AF", border: `1px solid ${val ? "#BBF7D0" : "var(--vk-line)"}` }}>
+                        <span key={label as string} className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full" style={{ background: val ? "color-mix(in srgb, #F0FDF4 var(--vk-wash), var(--vk-surface))" : "var(--vk-surface-2)", color: val ? "#16A34A" : "#9CA3AF", border: `1px solid ${val ? "color-mix(in srgb, #BBF7D0 var(--vk-wash), var(--vk-surface))" : "var(--vk-line)"}` }}>
                           {val ? <CheckCircle className="w-3 h-3" /> : <X className="w-3 h-3" />}
                           {label as string}
                         </span>
@@ -525,7 +525,7 @@ function Field({ label, value, edit = false, type = "text", icon, verified, onCh
           readOnly={!edit}
           onChange={e => onChange?.(e.target.value)}
           className="w-full px-3 py-2 rounded-xl border text-sm transition-all"
-          style={{ paddingLeft: icon ? "2rem" : undefined, borderColor: edit ? "#5C0A10" : "var(--vk-line)", background: edit ? "#fff" : "var(--vk-surface-2)", color: "var(--vk-fg)" }}
+          style={{ paddingLeft: icon ? "2rem" : undefined, borderColor: edit ? "#5C0A10" : "var(--vk-line)", background: edit ? "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" : "var(--vk-surface-2)", color: "var(--vk-fg)" }}
         />
         {verified && (
           <span className="absolute right-3 top-1/2 -translate-y-1/2">

@@ -252,7 +252,7 @@ function LocateTab() {
           {[["all", "All"], ["office", "Head Office"], ["agent", "Agents"]].map(([id, label]) => (
             <button key={id} onClick={() => setFilter(id as typeof filter)}
               className="px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex-1 sm:flex-none"
-              style={{ background: filter === id ? P : "var(--vk-surface-2)", color: filter === id ? "#fff" : "#6B7280" }}>{label}</button>
+              style={{ background: filter === id ? P : "var(--vk-surface-2)", color: filter === id ? "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" : "#6B7280" }}>{label}</button>
           ))}
         </div>
       </div>
@@ -412,7 +412,7 @@ function FeedbackTab() {
 
             <button onClick={handleSubmit} disabled={submitting}
               className="px-8 py-3 rounded-full text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-2"
-              style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
+              style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
               {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Sending...</> : "Send Message"}
             </button>
           </div>

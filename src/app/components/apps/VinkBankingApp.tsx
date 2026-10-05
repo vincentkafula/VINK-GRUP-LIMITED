@@ -293,10 +293,10 @@ function HomeScreen({ tier, onSwitchTier, user }: { tier: Tier; onSwitchTier: ()
         </div>
         <div className="w-56 shrink-0 rounded-2xl p-3.5" style={{ background: "#FFF1E6" }}>
           <div className="flex items-start justify-between">
-            <p className="text-[#7A3E00] text-[12.5px] font-bold leading-snug w-32">Pay taxi fares with one tap</p>
+            <p className="text-crimson-text text-[12.5px] font-bold leading-snug w-32">Pay taxi fares with one tap</p>
             <Smartphone className="w-6 h-6" style={{ color: "#8B0000" }} />
           </div>
-          <p className="text-[#7A3E00]/70 text-[9.5px] mt-1.5">Fast. Secure. Convenient.</p>
+          <p className="text-crimson-text/70 text-[9.5px] mt-1.5">Fast. Secure. Convenient.</p>
           <button className="mt-2.5 text-[10px] font-bold px-3 py-1.5 rounded-lg text-white" style={{ background: "#8B0000" }}>Learn More</button>
         </div>
       </div>

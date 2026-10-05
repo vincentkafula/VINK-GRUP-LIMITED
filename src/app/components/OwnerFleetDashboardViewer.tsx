@@ -97,7 +97,7 @@ export function OwnerFleetDashboardViewer({ isOpen, onClose }: Props) {
           {SIDEBAR_ITEMS.map(item => (
             <button key={item.id} onClick={() => setView(item.id)}
               className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-colors"
-              style={view === item.id ? { background: "#2563EB", color: "#fff" } : { color: "rgba(255,255,255,0.65)" }}>
+              style={view === item.id ? { background: "#2563EB", color: "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" } : { color: "rgba(255,255,255,0.65)" }}>
               {item.icon} {item.label}
             </button>
           ))}

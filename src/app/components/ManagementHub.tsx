@@ -600,7 +600,7 @@ function DashboardShell({ user, onLogout }: { user: MgmtUser; onLogout: () => vo
         {/* Logo */}
         <div className="flex items-center gap-3 px-4 py-4 border-b" style={{ borderColor: "#1E2A45" }}>
           <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-white font-black text-xs"
-            style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>V</div>
+            style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>V</div>
           {sidebarOpen && <p className="text-white font-black text-sm leading-tight">VINK<br /><span className="font-normal text-[10px] text-gray-400">Management Hub</span></p>}
         </div>
 

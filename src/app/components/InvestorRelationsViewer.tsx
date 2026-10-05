@@ -175,7 +175,7 @@ function Sparkline({ data }: { data: number[] }) {
 // ─── Section heading ──────────────────────────────────────────────────────────
 function SectionHeading({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="text-lg font-bold mb-5 pb-2 border-b-2" style={{ color: PD, borderColor: GOLD }}>
+    <h2 className="text-lg font-bold mb-5 pb-2 border-b-2" style={{ color: "var(--vk-fg)", borderColor: GOLD }}>
       {children}
     </h2>
   );
@@ -189,7 +189,7 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto" style={{ background: "#f7f7fb" }}>
+    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto" style={{ background: "color-mix(in srgb, #f7f7fb var(--vk-wash), var(--vk-surface))" }}>
 
       {/* ── Top bar ── */}
       <div className="sticky top-0 z-20 flex items-center justify-between px-4 py-3 bg-surface border-b shadow-sm" style={{ borderColor: "#e0e0e0" }}>
@@ -207,7 +207,7 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
       </div>
 
       {/* ── Hero banner ── */}
-      <div className="px-6 py-8" style={{ background: `linear-gradient(135deg,${PD} 0%,${P} 60%,#C9A84C 100%)` }}>
+      <div className="px-6 py-8" style={{ background: `linear-gradient(135deg,${PD} 0%,${P} 60%,#9B1C1C 100%)` }}>
         <div className="max-w-5xl mx-auto">
           <p className="text-white/60 text-xs uppercase tracking-widest mb-1">VINK Finance · Corporate</p>
           <h1 className="text-3xl md:text-4xl font-black text-white mb-1">Investor Relations</h1>
@@ -237,7 +237,7 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
             {SELLER_PILLS.map((p, i) => (
               <button key={p} onClick={() => setActivePill(i)}
                 className="rounded-full px-5 py-1.5 text-sm font-medium transition-all border"
-                style={{ background: activePill === i ? P : "#fff", color: activePill === i ? "#fff" : P, borderColor: P }}>
+                style={{ background: activePill === i ? P : "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))", color: activePill === i ? "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" : P, borderColor: P }}>
                 {p}
               </button>
             ))}
@@ -281,7 +281,7 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
 
         {/* ── 3 Reasons ── */}
         <div>
-          <h2 className="text-xl font-black text-center mb-2" style={{ color: PD }}>
+          <h2 className="text-xl font-black text-center mb-2" style={{ color: "var(--vk-fg)" }}>
             3 Reasons to Consider Investing in VINK MULTI SERVICES PTY LTD
           </h2>
           <p className="text-center text-sm text-fg-muted mb-6">Why sophisticated investors choose Vink</p>
@@ -289,7 +289,7 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
             {REASONS.map((r) => (
               <div key={r.title} className="bg-surface rounded-xl border border-line p-6 hover:shadow-md transition-shadow">
                 <div className="text-4xl mb-3">{r.icon}</div>
-                <h3 className="text-base font-bold mb-2" style={{ color: PD }}>{r.title}</h3>
+                <h3 className="text-base font-bold mb-2" style={{ color: "var(--vk-fg)" }}>{r.title}</h3>
                 <p className="text-sm text-fg-muted leading-relaxed">{r.text}</p>
               </div>
             ))}
@@ -303,7 +303,7 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
             <div className="flex flex-col md:flex-row gap-6 items-start">
               <div className="flex-shrink-0">
                 <div className="flex items-end gap-2 mb-1">
-                  <span className="text-4xl font-black" style={{ color: PD }}>2.60</span>
+                  <span className="text-4xl font-black" style={{ color: "var(--vk-fg)" }}>2.60</span>
                   <span className="text-sm font-bold text-green-600 mb-1">+1.96% ▲</span>
                 </div>
                 <p className="text-xs text-fg-muted mb-4">ZAR · JSE · 15 Sep 2022</p>
@@ -357,9 +357,9 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-line" style={{ background: "var(--vk-surface-2)" }}>
-                  <th className="text-left px-5 py-3 text-xs font-bold uppercase tracking-wide" style={{ color: PD }}>Document</th>
-                  <th className="text-left px-5 py-3 text-xs font-bold uppercase tracking-wide" style={{ color: PD }}>Size</th>
-                  <th className="text-left px-5 py-3 text-xs font-bold uppercase tracking-wide" style={{ color: PD }}>Date</th>
+                  <th className="text-left px-5 py-3 text-xs font-bold uppercase tracking-wide" style={{ color: "var(--vk-fg)" }}>Document</th>
+                  <th className="text-left px-5 py-3 text-xs font-bold uppercase tracking-wide" style={{ color: "var(--vk-fg)" }}>Size</th>
+                  <th className="text-left px-5 py-3 text-xs font-bold uppercase tracking-wide" style={{ color: "var(--vk-fg)" }}>Date</th>
                   <th className="px-5 py-3" />
                 </tr>
               </thead>
@@ -371,7 +371,7 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
                     <td className="px-5 py-3 text-fg-muted text-xs">{d.date}</td>
                     <td className="px-5 py-3 text-right">
                       <button className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors hover:opacity-90"
-                        style={{ background: P, color: "#fff" }}>
+                        style={{ background: P, color: "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" }}>
                         <Download className="w-3 h-3" />
                         Download
                       </button>
@@ -489,7 +489,7 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
               {RESPONSIBILITIES.map((r) => (
                 <div key={r.title} className="bg-surface rounded-xl border border-line p-5 hover:shadow-md transition-shadow">
                   <div className="text-3xl mb-3">{r.icon}</div>
-                  <h4 className="text-sm font-bold mb-2" style={{ color: PD }}>{r.title}</h4>
+                  <h4 className="text-sm font-bold mb-2" style={{ color: "var(--vk-fg)" }}>{r.title}</h4>
                   <p className="text-xs text-fg-muted leading-relaxed">{r.text}</p>
                 </div>
               ))}

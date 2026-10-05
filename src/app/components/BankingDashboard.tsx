@@ -101,7 +101,7 @@ function VisualCard({ card, compact = false }: { card: R; compact?: boolean }) {
   const [show, setShow] = useState(false);
   const isVisa = card.network === "visa";
   const gradients: Record<string, string> = {
-    standard:  "from-[#C9A84C] to-[#8B0000]",
+    standard:  "from-[#9B1C1C] to-[#8B0000]",
     premium:   "from-[#C4922A] to-[#8B6914]",
     platinum:  "from-[#1a1a2e] to-[#374151]",
     corporate: "from-[#065F46] to-[#064E3B]",
@@ -123,7 +123,7 @@ function VisualCard({ card, compact = false }: { card: R; compact?: boolean }) {
           </div>
           <div className="flex flex-col items-end gap-1">
             <div className="w-8 h-6 rounded border border-white/20"
-              style={{ background: "linear-gradient(135deg,#D4AF37 80%,#F5E07A)" }}/>
+              style={{ background: "linear-gradient(135deg,#D4AF37 80%,color-mix(in srgb, #F5E07A var(--vk-wash), var(--vk-surface)))" }}/>
             <div className={`w-2 h-2 rounded-full`} style={{ background: statusColor, boxShadow: `0 0 5px ${statusColor}` }}/>
           </div>
         </div>
@@ -193,7 +193,7 @@ function TxnRow({ t }: { t: R }) {
   return (
     <div className="flex items-center gap-3 py-3 border-b border-gray-50 last:border-0">
       <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0`}
-        style={{ background: isCredit ? "#ECFDF5" : "#FEF3F2" }}>
+        style={{ background: isCredit ? "color-mix(in srgb, #ECFDF5 var(--vk-wash), var(--vk-surface))" : "color-mix(in srgb, #FEF3F2 var(--vk-wash), var(--vk-surface))" }}>
         {isCredit
           ? <ArrowDownLeft className="w-4 h-4 text-emerald-600"/>
           : <ArrowUpRight className="w-4 h-4 text-red-500"/>}
@@ -631,8 +631,8 @@ function PaymentsPanel({ userId, accounts }: { userId: string; accounts: R[] }) 
                 {rails.map(r => (
                   <button type="button" key={r.id} onClick={() => setRail(r.id)}
                     className="p-2.5 rounded-xl text-left transition-all"
-                    style={{ background: rail === r.id ? "#EAF7EE" : "var(--vk-surface-2)", border: `1.5px solid ${rail === r.id ? "#8B0000" : "var(--vk-line)"}` }}>
-                    <p className="text-xs font-semibold" style={{ color: rail === r.id ? "#8B0000" : "#374151" }}>{r.label}</p>
+                    style={{ background: rail === r.id ? "color-mix(in srgb, #EAF7EE var(--vk-wash), var(--vk-surface))" : "var(--vk-surface-2)", border: `1.5px solid ${rail === r.id ? "#8B0000" : "var(--vk-line)"}` }}>
+                    <p className="text-xs font-semibold" style={{ color: rail === r.id ? "#8B0000" : "var(--vk-fg)" }}>{r.label}</p>
                     <p className="text-[10px] text-fg-subtle">{r.fee} · {r.eta}</p>
                   </button>
                 ))}
@@ -1216,7 +1216,7 @@ export function BankingDashboard({ isOpen, onClose, onOpenDriveDashboard, onOpen
                     <Building2 className="w-5 h-5" style={{ color: accentColor }}/>
                     <span className="text-white font-black text-base">VINK FINANCE</span>
                   </div>
-                  <p className="text-[10px]" style={{ color: "#8884AA" }}>Manager Panel</p>
+                  <p className="text-[10px]" style={{ color: "var(--vk-fg-muted)" }}>Manager Panel</p>
                 </div>
               )}
               <button onClick={() => setSidebarOpen(!sidebarOpen)} className="ml-auto p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/50 hover:text-white flex-shrink-0">
@@ -1227,7 +1227,7 @@ export function BankingDashboard({ isOpen, onClose, onOpenDriveDashboard, onOpen
             {/* Role selector */}
             {sidebarOpen && (
               <div className="px-3 py-3 border-b" style={{ borderColor: "#1E2843" }}>
-                <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: "#8884AA" }}>Account Type</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: "var(--vk-fg-muted)" }}>Account Type</p>
                 <div className="grid grid-cols-2 gap-1">
                   {(["passenger","driver","investor","owner","admin","compliance","treasury","executive","frontline"] as BankRole[]).map(r => (
                     <button key={r} onClick={() => (r === "driver" && onOpenDriveDashboard ? onOpenDriveDashboard() : r === "owner" && onOpenOwnerDashboard ? onOpenOwnerDashboard() : r === "investor" && onOpenInvestorDashboard ? onOpenInvestorDashboard() : r === "passenger" && onOpenPassengerDashboard ? onOpenPassengerDashboard() : handleRoleChange(r))}
@@ -1254,7 +1254,7 @@ export function BankingDashboard({ isOpen, onClose, onOpenDriveDashboard, onOpen
                 {onOpenTerminalManagement && (
                   <button onClick={onOpenTerminalManagement}
                     className="w-full mt-2 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-[10.5px] font-bold transition-all"
-                    style={{ background: "rgba(15,61,36,.12)", color: "#2E0B10", border: "1px solid rgba(15,61,36,.25)" }}>
+                    style={{ background: "rgba(15,61,36,.12)", color: "var(--vk-fg)", border: "1px solid rgba(15,61,36,.25)" }}>
                     Terminal Access Control
                   </button>
                 )}
@@ -1290,7 +1290,7 @@ export function BankingDashboard({ isOpen, onClose, onOpenDriveDashboard, onOpen
                   </div>
                   <div className="min-w-0">
                     <p className="text-xs font-semibold text-white truncate">{String(authUser.name ?? "Administrator")}</p>
-                    <p className="text-[10px] truncate" style={{ color: "#8884AA" }}>{String(authUser.username)}</p>
+                    <p className="text-[10px] truncate" style={{ color: "var(--vk-fg-muted)" }}>{String(authUser.username)}</p>
                   </div>
                 </div>
               </div>

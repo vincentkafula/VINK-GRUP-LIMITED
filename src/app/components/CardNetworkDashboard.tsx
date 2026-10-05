@@ -121,7 +121,7 @@ const NAV = [
 function NetworkBadge({ network }: { network: string }) {
   return network === "visa" ? (
     <span className="inline-flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded"
-      style={{ background: VISA_BLUE, color: "#fff" }}>VISA</span>
+      style={{ background: VISA_BLUE, color: "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" }}>VISA</span>
   ) : (
     <span className="inline-flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded" style={{ background: "var(--vk-surface-2)" }}>
       <span style={{ color: MC_RED }}>●</span><span style={{ color: MC_ORANGE }}>●</span>
@@ -224,7 +224,7 @@ function AFCSimulator() {
         <div className="p-5 flex flex-col items-center gap-4">
           {/* Card visual */}
           <div className="relative w-48 h-28 rounded-xl flex items-end p-3"
-            style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
+            style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
             <div className="absolute top-3 left-3 w-7 h-5 rounded bg-yellow-400/70" />
             <div className="absolute top-3 right-3">
               {currentStep >= 2 ? <NetworkBadge network="visa" /> : <span className="text-white/40 text-xs">VINK</span>}
@@ -255,7 +255,7 @@ function AFCSimulator() {
                 <div key={step.id} className="flex items-center gap-3 rounded-lg px-3 py-2 transition-all"
                   style={{ background: active ? pathConfig.color + "20" : done ? "#10B98110" : "transparent" }}>
                   <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-sm transition-all"
-                    style={{ background: done ? "#10B981" : active ? pathConfig.color : "#374151" }}>
+                    style={{ background: done ? "#10B981" : active ? pathConfig.color : "var(--vk-fg)" }}>
                     {done ? <CheckCircle className="w-3 h-3 text-white" /> : <span className="text-[10px] text-white font-bold">{step.id}</span>}
                   </div>
                   <div className="flex-1 min-w-0">

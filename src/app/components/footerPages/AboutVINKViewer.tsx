@@ -37,9 +37,9 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
 
       {/* Hero */}
       <div className="relative py-20 px-6 text-white overflow-hidden"
-        style={{ background: `linear-gradient(135deg,${P} 0%,#0C0E14 50%,#C9A84C 100%)` }}>
+        style={{ background: `linear-gradient(135deg,${P} 0%,#0C0E14 50%,#9B1C1C 100%)` }}>
         <div className="absolute inset-0 opacity-10 pointer-events-none"
-          style={{ background: "radial-gradient(circle at 70% 50%,#fff,transparent 60%)" }} />
+          style={{ background: "radial-gradient(circle at 70% 50%,color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface)),transparent 60%)" }} />
         <div className="max-w-4xl mx-auto relative z-10">
           <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4"
             style={{ background: "rgba(245,166,35,.2)", color: GOLD }}>
@@ -82,7 +82,7 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
 
         {/* Mission & Vision */}
         <section className="grid md:grid-cols-2 gap-6">
-          <div className="rounded-2xl p-6 text-white" style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
+          <div className="rounded-2xl p-6 text-white" style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
             <div className="text-3xl mb-3">🎯</div>
             <h3 className="text-lg font-black mb-3">Our Mission</h3>
             <p className="text-white/85 text-sm leading-relaxed">

@@ -75,7 +75,7 @@ export function PreApprovalSection() {
               <div className="space-y-2">
                 {result.eligible.map((e, i) => (
                   <div key={i} className="flex items-center gap-3 p-2.5 rounded-lg border"
-                    style={{ borderColor: e.approved ? "var(--vk-ok-bg)" : "var(--vk-bad-bg)", background: e.approved ? "#F0FDF4" : "#FFF5F5" }}>
+                    style={{ borderColor: e.approved ? "var(--vk-ok-bg)" : "var(--vk-bad-bg)", background: e.approved ? "color-mix(in srgb, #F0FDF4 var(--vk-wash), var(--vk-surface))" : "color-mix(in srgb, #FFF5F5 var(--vk-wash), var(--vk-surface))" }}>
                     <span style={{ color: e.approved ? "#10B981" : "#EF4444" }} className="text-base">{e.approved ? "✓" : "✗"}</span>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-semibold text-fg">{e.product}</p>
@@ -105,7 +105,7 @@ export function PreApprovalSection() {
             <div className="absolute top-0 right-0 w-32 h-32 rounded-full opacity-5 pointer-events-none"
               style={{ background: `radial-gradient(circle,${P},transparent)`, transform: "translate(30%,-30%)" }}/>
             <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform"
-              style={{ background: "linear-gradient(135deg,#F2EFE8,#E4DFD3)" }}>
+              style={{ background: "linear-gradient(135deg,color-mix(in srgb, #F2EFE8 var(--vk-wash), var(--vk-surface)),color-mix(in srgb, #E4DFD3 var(--vk-wash), var(--vk-surface)))" }}>
               <svg viewBox="0 0 40 40" className="w-7 h-7" fill="none">
                 <circle cx="20" cy="14" r="6" stroke={P} strokeWidth="2.2"/>
                 <path d="M8 36 C8 28 13 24 20 24 C27 24 32 28 32 36" stroke={P} strokeWidth="2.2" strokeLinecap="round"/>
@@ -113,7 +113,7 @@ export function PreApprovalSection() {
               </svg>
             </div>
             <span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded mb-3"
-              style={{ background: "#DCFCE7", color: "#16A34A" }}>Free — Always</span>
+              style={{ background: "color-mix(in srgb, #DCFCE7 var(--vk-wash), var(--vk-surface))", color: "#16A34A" }}>Free — Always</span>
             <h3 className="font-bold text-fg text-base mb-2">See Your Credit Score Instantly</h3>
             <p className="text-fg-muted text-sm leading-relaxed mb-5">
               View your full credit profile at no cost. We show which VINK cards you&apos;re likely to qualify for and personalised tips to improve your score.
@@ -149,7 +149,7 @@ export function PreApprovalSection() {
           {/* Card 2 — Pre-qualify */}
           <div className="bg-surface rounded-2xl border border-line p-7 hover:shadow-xl hover:-translate-y-1 transition-all group relative overflow-hidden">
             <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform"
-              style={{ background: "linear-gradient(135deg,#DBEAFE,#BFDBFE)" }}>
+              style={{ background: "linear-gradient(135deg,color-mix(in srgb, #DBEAFE var(--vk-wash), var(--vk-surface)),#BFDBFE)" }}>
               <svg viewBox="0 0 40 40" className="w-7 h-7" fill="none">
                 <rect x="7" y="10" width="26" height="20" rx="3" stroke="#3B82F6" strokeWidth="2.2"/>
                 <line x1="7" y1="17" x2="33" y2="17" stroke="#3B82F6" strokeWidth="2"/>

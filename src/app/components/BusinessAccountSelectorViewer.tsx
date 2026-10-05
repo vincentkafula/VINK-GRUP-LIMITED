@@ -93,25 +93,24 @@ export function BusinessAccountSelectorViewer({ isOpen, onClose, onNavigate, onA
   return (
     <div className="pav-root fixed inset-0 z-50 overflow-y-auto">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
-
+        
         .pav-root{
           --pav-ink:        #8B0000;
-          --pav-ink-soft:   #1F2937;
-          --pav-paper:      #FAFCFB;
-          --pav-paper-dim:  #F0F7F2;
-          --pav-gold:       #9B1C1C;
-          --pav-gold-dim:   #5C0A10;
+          --pav-ink-soft:   var(--vk-fg);
+          --pav-paper:      var(--vk-bg);
+          --pav-paper-dim:  var(--vk-surface-2);
+          --pav-gold:       #C9A84C;
+          --pav-gold-dim:   var(--vk-gold-text);
           --pav-plum:       #9B1C1C;
           --pav-text-on-ink: #EDE9FA;
-          --pav-text-muted-on-ink: #A7E8BD;
-          --pav-text-body:  #1F2937;
-          --pav-text-muted: #6B7280;
-          --pav-rule:       rgba(15,138,75,0.14);
+          --pav-text-muted-on-ink: #E8D9B0;
+          --pav-text-body:  var(--vk-fg);
+          --pav-text-muted: var(--vk-fg-muted);
+          --pav-rule:       var(--vk-line);
           --pav-rule-on-ink: rgba(237,233,250,0.18);
           background: var(--pav-paper);
           color: var(--pav-text-body);
-          font-family: 'IBM Plex Sans', sans-serif;
+          font-family: var(--font-sans), sans-serif;
           -webkit-font-smoothing: antialiased;
         }
         .pav-root :focus-visible{ outline:2px solid var(--pav-gold); outline-offset:3px; }
@@ -119,7 +118,7 @@ export function BusinessAccountSelectorViewer({ isOpen, onClose, onNavigate, onA
 
         .pav-close{
           position:fixed; top:20px; right:20px; z-index:60;
-          background:rgba(29,23,64,0.55); color:#EDE9FA;
+          background:rgba(29,23,64,0.55); color:color-mix(in srgb, #EDE9FA var(--vk-wash), var(--vk-surface));
           border:1px solid rgba(237,233,250,0.3); border-radius:999px;
           width:38px; height:38px; display:flex; align-items:center; justify-content:center;
           cursor:pointer; transition:background 0.15s ease;
@@ -132,7 +131,7 @@ export function BusinessAccountSelectorViewer({ isOpen, onClose, onNavigate, onA
           padding:0 32px; max-width:1160px; margin:0 auto; height:46px;
         }
         .pav-subnav-item{
-          font-family:'IBM Plex Mono', monospace; font-size:12.5px; white-space:nowrap;
+          font-family:var(--font-mono), monospace; font-size:12.5px; white-space:nowrap;
           padding:8px 16px; border-radius:2px; text-decoration:none; cursor:pointer;
           color:var(--pav-text-muted-on-ink); background:transparent; border:none;
           transition:color 0.15s ease, background 0.15s ease;
@@ -142,43 +141,43 @@ export function BusinessAccountSelectorViewer({ isOpen, onClose, onNavigate, onA
 
         .pav-ledger-head{ padding:32px 0 22px; }
         .pav-ledger-head h2{ font-family:'Fraunces', serif; font-weight:500; font-size:22px; margin:0; }
-        .pav-ledger-head p{ font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--pav-text-muted); margin:6px 0 0; }
+        .pav-ledger-head p{ font-family:var(--font-mono), monospace; font-size:12px; color:var(--pav-text-muted); margin:6px 0 0; }
 
         .pav-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:24px; margin-bottom:24px; }
         .pav-card{
-          background:#fff; border:1px solid var(--pav-rule); border-radius:2px;
+          background:var(--vk-surface); border:1px solid var(--pav-rule); border-radius:2px;
           padding:28px 26px; display:flex; flex-direction:column;
           transition:box-shadow 0.2s ease, transform 0.2s ease;
         }
         .pav-card:hover{ box-shadow:0 12px 32px rgba(29,23,64,0.1); transform:translateY(-2px); }
-        .pav-folio{ font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--pav-gold-dim); letter-spacing:0.04em; margin-bottom:14px; }
+        .pav-folio{ font-family:var(--font-mono), monospace; font-size:11px; color:var(--pav-gold-dim); letter-spacing:0.04em; margin-bottom:14px; }
         .pav-acct-name{ font-family:'Fraunces', serif; font-weight:500; font-size:20px; margin:0 0 10px; letter-spacing:-0.01em; }
         .pav-acct-desc{ font-size:13.5px; color:var(--pav-text-muted); line-height:1.6; margin:0 0 22px; flex:1; }
         .pav-btn{
-          display:inline-block; font-family:'IBM Plex Sans', sans-serif; font-size:13.5px; font-weight:600;
+          display:inline-block; font-family:var(--font-sans), sans-serif; font-size:13.5px; font-weight:600;
           padding:10px 20px; border-radius:2px; cursor:pointer;
           border:1px solid transparent; text-align:center; width:100%; transition:all 0.15s ease;
           background:var(--pav-ink); color:var(--pav-text-on-ink);
         }
         .pav-btn:hover{ background:var(--pav-plum); }
         .pav-cta-group{ display:flex; flex-direction:column; gap:9px; margin-top:auto; }
-        .pav-btn-secondary{ background:transparent; color:var(--pav-ink); border-color:var(--pav-rule); }
+        .pav-btn-secondary{ background:transparent; color:var(--vk-crimson-text); border-color:var(--pav-rule); }
         .pav-btn-secondary:hover{ background:var(--pav-paper-dim); border-color:var(--pav-gold-dim); }
 
-        .pav-foot{ background:var(--pav-ink); color:var(--pav-text-muted-on-ink); padding:34px 0; font-size:12px; line-height:1.7; font-family:'IBM Plex Mono', monospace; }
+        .pav-foot{ background:var(--pav-ink); color:var(--pav-text-muted-on-ink); padding:34px 0; font-size:12px; line-height:1.7; font-family:var(--font-mono), monospace; }
         .pav-foot .pav-wrap{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
         .pav-foot strong{ color:var(--pav-gold); font-weight:600; }
 
         /* ── Account detail modal ── */
         .pav-detail-backdrop{ position:fixed; inset:0; z-index:70; background:rgba(29,23,64,0.55); display:flex; align-items:center; justify-content:center; padding:20px; }
-        .pav-detail-card{ position:relative; background:#fff; max-width:540px; width:100%; max-height:88vh; overflow-y:auto; border-radius:4px; padding:40px 36px 32px; box-shadow:0 30px 80px rgba(29,23,64,0.35); }
-        .pav-detail-close{ position:absolute; top:16px; right:16px; width:32px; height:32px; border-radius:50%; background:var(--pav-paper); color:var(--pav-ink); border:1px solid var(--pav-rule); display:flex; align-items:center; justify-content:center; cursor:pointer; }
+        .pav-detail-card{ position:relative; background:var(--vk-surface); max-width:540px; width:100%; max-height:88vh; overflow-y:auto; border-radius:4px; padding:40px 36px 32px; box-shadow:0 30px 80px rgba(29,23,64,0.35); }
+        .pav-detail-close{ position:absolute; top:16px; right:16px; width:32px; height:32px; border-radius:50%; background:var(--pav-paper); color:var(--vk-crimson-text); border:1px solid var(--pav-rule); display:flex; align-items:center; justify-content:center; cursor:pointer; }
         .pav-detail-close:hover{ background:var(--pav-paper-dim); }
-        .pav-detail-folio{ font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--pav-gold-dim); letter-spacing:0.04em; margin-bottom:10px; }
+        .pav-detail-folio{ font-family:var(--font-mono), monospace; font-size:11px; color:var(--pav-gold-dim); letter-spacing:0.04em; margin-bottom:10px; }
         .pav-detail-name{ font-family:'Fraunces', serif; font-weight:500; font-size:26px; margin:0 0 8px; letter-spacing:-0.01em; }
         .pav-detail-tagline{ font-family:'Fraunces', serif; font-style:italic; font-size:15px; color:var(--pav-plum); margin:0 0 20px; }
         .pav-detail-desc{ font-size:13.5px; line-height:1.7; color:var(--pav-ink-soft); margin:0 0 26px; padding-bottom:26px; border-bottom:1px solid var(--pav-rule); }
-        .pav-detail-features-head{ font-size:13px; font-weight:600; color:var(--pav-ink); margin-bottom:12px; }
+        .pav-detail-features-head{ font-size:13px; font-weight:600; color:var(--vk-crimson-text); margin-bottom:12px; }
         .pav-detail-features{ list-style:none; margin:0 0 28px; padding:0; display:grid; grid-template-columns:1fr 1fr; gap:8px 16px; }
         .pav-detail-features li{ font-size:12.8px; color:var(--pav-ink-soft); line-height:1.5; padding-left:16px; position:relative; }
         .pav-detail-features li::before{ content:"✓"; position:absolute; left:0; color:var(--pav-gold-dim); font-weight:600; }
@@ -206,7 +205,7 @@ export function BusinessAccountSelectorViewer({ isOpen, onClose, onNavigate, onA
         </div>
       </nav>
 
-      <div className="relative overflow-hidden" style={{ background: "linear-gradient(160deg,#FAFCFB 0%,#F3F9F5 100%)" }}>
+      <div className="relative overflow-hidden" style={{ background: "linear-gradient(160deg,color-mix(in srgb, #FAFCFB var(--vk-wash), var(--vk-surface)) 0%,color-mix(in srgb, #F3F9F5 var(--vk-wash), var(--vk-surface)) 100%)" }}>
         <div className="absolute -left-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: "linear-gradient(180deg,#9B1C1C,#8B0000)", filter: "blur(60px)" }} />
         <div className="absolute -right-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: "linear-gradient(180deg,#8B0000,#9B1C1C)", filter: "blur(60px)" }} />
         <div className="relative max-w-6xl mx-auto px-8 py-14 sm:py-16">

@@ -513,7 +513,7 @@ function PowerView({ deviceOn, setDeviceOn }: { deviceOn: boolean; setDeviceOn: 
             <div><div className="text-slate-400 text-xs mb-1">Signal</div><div className="font-medium text-slate-800 flex items-center gap-1.5"><RadioTower size={14} className="text-emerald-500" /> Strong</div></div>
           </div>
 
-          <div className="mt-5 rounded-xl p-4 flex items-start gap-3" style={{ background: readerReady ? "#ECFDF5" : "#FFFBEB" }}>
+          <div className="mt-5 rounded-xl p-4 flex items-start gap-3" style={{ background: readerReady ? "color-mix(in srgb, #ECFDF5 var(--vk-wash), var(--vk-surface))" : "color-mix(in srgb, #FFFBEB var(--vk-wash), var(--vk-surface))" }}>
             <CircleAlert size={18} className="shrink-0 mt-0.5" style={{ color: readerReady ? "#059669" : "#D97706" }} />
             <div>
               <p className="text-sm font-semibold text-slate-800">Tap-to-pay card reader: {readerReady ? "Ready" : "Not yet integrated"}</p>
@@ -1154,7 +1154,7 @@ export function DriveDashboardViewer({ isOpen, onClose, driverName = "Driver" }:
   };
 
   return (
-    <div className="fixed inset-0 z-[110] min-h-screen bg-bg flex" style={{ fontFamily: "Inter, ui-sans-serif, system-ui" }}>
+    <div className="fixed inset-0 z-[110] min-h-screen bg-bg flex" style={{ fontFamily: "var(--font-sans)" }}>
       <GlobalStyles />
       <Sidebar view={view} setView={setView} mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} deviceOn={deviceOn} onClose={onClose} />
       <div className="flex-1 min-w-0 overflow-y-auto">

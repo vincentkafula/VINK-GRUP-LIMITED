@@ -60,7 +60,7 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 backdrop-blur-md p-4">
-      <div className="w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl" style={{ background: step === 1 ? `linear-gradient(135deg,${P},#C9A84C)` : "#fff" }}>
+      <div className="w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl" style={{ background: step === 1 ? `linear-gradient(135deg,${P},#9B1C1C)` : "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" }}>
 
         {/* Progress bar */}
         <div className="h-1" style={{ background: "rgba(0,0,0,0.1)" }}>
@@ -71,10 +71,10 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
         <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: step === 1 ? "1px solid rgba(255,255,255,0.15)" : "1px solid #F3F4F6" }}>
           <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-8 w-auto" style={{ filter: step === 1 ? "brightness(0) invert(1)" : "none" }} />
           <div className="flex items-center gap-3">
-            <span className="text-sm font-medium" style={{ color: step === 1 ? "rgba(255,255,255,0.7)" : "#9CA3AF" }}>
+            <span className="text-sm font-medium" style={{ color: step === 1 ? "rgba(255,255,255,0.7)" : "var(--vk-fg-muted)" }}>
               Step {step} of {STEPS.length}
             </span>
-            <button onClick={onClose} className="p-1.5 rounded-full" style={{ color: step === 1 ? "rgba(255,255,255,0.7)" : "#9CA3AF" }}>
+            <button onClick={onClose} className="p-1.5 rounded-full" style={{ color: step === 1 ? "rgba(255,255,255,0.7)" : "var(--vk-fg-muted)" }}>
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -185,7 +185,7 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
                     <button
                       onClick={() => item.set(!item.state)}
                       className="w-5 h-5 mt-0.5 rounded-md border-2 flex-shrink-0 flex items-center justify-center transition-all"
-                      style={{ borderColor: item.state ? P : "var(--vk-line)", background: item.state ? P : "#fff" }}
+                      style={{ borderColor: item.state ? P : "var(--vk-line)", background: item.state ? P : "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" }}
                     >
                       {item.state && <CheckCircle className="w-3.5 h-3.5 text-white" />}
                     </button>
@@ -214,7 +214,7 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
                     className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 text-left transition-all"
                     style={{
                       borderColor: selectedProducts.includes(prod.id) ? P : "var(--vk-line)",
-                      background: selectedProducts.includes(prod.id) ? `${P}08` : "#fff",
+                      background: selectedProducts.includes(prod.id) ? `${P}08` : "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))",
                     }}
                   >
                     <span className="text-2xl">{prod.icon}</span>
@@ -225,7 +225,7 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
                       </div>
                       <p className="text-xs text-fg-muted mt-0.5">{prod.desc}</p>
                     </div>
-                    <div className="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0" style={{ borderColor: selectedProducts.includes(prod.id) ? P : "var(--vk-line)", background: selectedProducts.includes(prod.id) ? P : "#fff" }}>
+                    <div className="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0" style={{ borderColor: selectedProducts.includes(prod.id) ? P : "var(--vk-line)", background: selectedProducts.includes(prod.id) ? P : "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" }}>
                       {selectedProducts.includes(prod.id) && <CheckCircle className="w-4 h-4 text-white" />}
                     </div>
                   </button>
@@ -264,7 +264,7 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
           {/* Step 6 — Done */}
           {step === 6 && (
             <div className="text-center space-y-5">
-              <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mx-auto" style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>🎉</div>
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mx-auto" style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>🎉</div>
               <div>
                 <h2 className="text-xl font-black text-fg">You're all set, {firstName || "welcome"}!</h2>
                 <p className="text-sm text-fg-muted mt-2">Your VINK account is being set up. You'll receive an email with your account details shortly.</p>
@@ -308,7 +308,7 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
             disabled={!canProceed()}
             className="flex-1 py-3 rounded-2xl text-sm font-bold text-white flex items-center justify-center gap-2 transition-all"
             style={{
-              background: !canProceed() ? "var(--vk-line)" : step === 1 ? "rgba(255,255,255,0.25)" : `linear-gradient(135deg,${P},#C9A84C)`,
+              background: !canProceed() ? "var(--vk-line)" : step === 1 ? "rgba(255,255,255,0.25)" : `linear-gradient(135deg,${P},#9B1C1C)`,
               color: !canProceed() ? "#9CA3AF" : "#fff",
               border: step === 1 ? "2px solid rgba(255,255,255,0.4)" : "none",
             }}

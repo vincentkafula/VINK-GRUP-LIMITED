@@ -47,7 +47,7 @@ function FormField({
   const [focused, setFocused] = useState(false);
   return (
     <div className="mb-[18px]">
-      <label htmlFor={id} className="block text-[12.5px] font-semibold text-[#241416] mb-[7px]">
+      <label htmlFor={id} className="block text-[12.5px] font-semibold text-fg mb-[7px]">
         {label}
       </label>
       <div
@@ -58,7 +58,7 @@ function FormField({
           background: "var(--vk-surface)",
         }}
       >
-        <span className="shrink-0 text-[#6b5d5f]">{icon}</span>
+        <span className="shrink-0 text-fg-muted">{icon}</span>
         <input
           id={id}
           autoFocus={autoFocus}
@@ -68,14 +68,14 @@ function FormField({
           onBlur={() => setFocused(false)}
           type={masked === undefined ? type : masked ? "password" : "text"}
           autoComplete={type === "password" ? "current-password" : "username"}
-          className="w-full bg-transparent outline-none py-3 px-2.5 text-[14.5px] text-[#241416]"
+          className="w-full bg-transparent outline-none py-3 px-2.5 text-[14.5px] text-fg"
         />
         {onToggleMask && (
           <button
             type="button"
             tabIndex={-1}
             onClick={onToggleMask}
-            className="shrink-0 text-[11px] font-bold tracking-wide text-[#6b5d5f] hover:text-[#2E0B10] px-1"
+            className="shrink-0 text-[11px] font-bold tracking-wide text-fg-muted hover:text-fg px-1"
           >
             {masked ? "SHOW" : "HIDE"}
           </button>
@@ -218,7 +218,7 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
           maxWidth: 1040,
           maxHeight: "96vh",
           borderRadius: 16,
-          background: "#f3ece0",
+          background: "color-mix(in srgb, #f3ece0 var(--vk-wash), var(--vk-surface))",
           border: "1px solid rgba(15,61,36,0.15)",
           boxShadow: "0 40px 100px rgba(0,0,0,0.6)",
         }}
@@ -228,7 +228,7 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
         <div className="flex items-center justify-between px-6 py-4 flex-shrink-0" style={{ borderBottom: "1px solid #e8e0d3" }}>
           <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-8 w-auto object-contain" />
           <div className="flex items-center gap-3">
-            <button className="hidden sm:flex items-center gap-1.5 text-[13px] rounded-full px-3.5 py-2 border border-[#e8e0d3] text-[#6b5d5f] hover:border-[#2E0B10] hover:text-[#2E0B10] transition-colors">
+            <button className="hidden sm:flex items-center gap-1.5 text-[13px] rounded-full px-3.5 py-2 border border-[#e8e0d3] text-fg-muted hover:border-[#2E0B10] hover:text-fg transition-colors">
               <HelpCircle className="w-3.5 h-3.5" /> Need help signing in?
             </button>
             <button
@@ -236,7 +236,7 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
               className="p-1.5 rounded-full hover:bg-black/5 transition-colors"
               aria-label="Close"
             >
-              <X className="w-4 h-4 text-[#241416]" />
+              <X className="w-4 h-4 text-fg" />
             </button>
           </div>
         </div>
@@ -274,22 +274,22 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
           {/* ── Right: login card ── */}
           <div className="flex items-center justify-center p-6 sm:p-10" style={{ background: "var(--vk-surface)" }}>
             <div className="w-full max-w-[380px]">
-              <h2 className="text-[#5c1420] text-[24px] font-bold mb-1.5">{view === "login" ? "Sign in" : "Reset your password"}</h2>
-              <p className="text-[13.5px] text-[#6b5d5f] mb-6">
+              <h2 className="text-crimson-text text-[24px] font-bold mb-1.5">{view === "login" ? "Sign in" : "Reset your password"}</h2>
+              <p className="text-[13.5px] text-fg-muted mb-6">
                 {view === "login"
                   ? "Enter your username and password. Customers go to their VINK dashboard, staff go to the Management Panel."
                   : "Enter the email address on your account and we will send you a link to choose a new password."}
               </p>
 
               {error && (
-                <div className="flex items-start gap-2 rounded-lg px-3 py-2.5 mb-4 text-[13px]" style={{ background: "#fdecea", border: "1px solid #f3c6c2", color: "#b3261e" }}>
+                <div className="flex items-start gap-2 rounded-lg px-3 py-2.5 mb-4 text-[13px]" style={{ background: "color-mix(in srgb, #fdecea var(--vk-wash), var(--vk-surface))", border: "1px solid #f3c6c2", color: "#b3261e" }}>
                   <TriangleAlert className="w-4 h-4 shrink-0 mt-0.5" />
                   <span>{error}</span>
                 </div>
               )}
 
               {view === "sent" ? (
-                <div role="status" className="rounded-lg px-4 py-4 text-[13.5px]" style={{ background: "#eef6f0", border: "1px solid #cfe3d5", color: "#2E0B10" }}>
+                <div role="status" className="rounded-lg px-4 py-4 text-[13.5px]" style={{ background: "color-mix(in srgb, #eef6f0 var(--vk-wash), var(--vk-surface))", border: "1px solid color-mix(in srgb, #cfe3d5 var(--vk-wash), var(--vk-surface))", color: "var(--vk-fg)" }}>
                   If that address has an account, we have emailed a link to reset the password. It works for one hour. Check your spam folder too.
                   <button type="button" onClick={() => { setView("login"); setError(null); }} className="block mt-3 font-semibold underline">Back to sign in</button>
                 </div>
@@ -300,7 +300,7 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
                     {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                     {loading ? "Sending…" : "Email me a reset link"}
                   </button>
-                  <button type="button" onClick={() => { setView("login"); setError(null); }} className="block mx-auto mt-4 text-[13px] text-[#2E0B10] font-semibold hover:underline">Back to sign in</button>
+                  <button type="button" onClick={() => { setView("login"); setError(null); }} className="block mx-auto mt-4 text-[13px] text-fg font-semibold hover:underline">Back to sign in</button>
                 </form>
               ) : (
               <form onSubmit={handleSubmit} noValidate>
@@ -316,7 +316,7 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
                 />
 
                 <div className="flex items-center justify-between mb-6 text-[13px]">
-                  <label className="flex items-center gap-1.5 text-[#6b5d5f] cursor-pointer">
+                  <label className="flex items-center gap-1.5 text-fg-muted cursor-pointer">
                     <input
                       type="checkbox"
                       checked={remember}
@@ -326,7 +326,7 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
                     />
                     Remember username
                   </label>
-                  <button type="button" onClick={() => { setView("forgot"); setError(null); }} className="text-[#2E0B10] font-semibold hover:underline">
+                  <button type="button" onClick={() => { setView("forgot"); setError(null); }} className="text-fg font-semibold hover:underline">
                     Forgot password?
                   </button>
                 </div>
@@ -347,18 +347,18 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
               </form>
               )}
 
-              <div className="flex items-center gap-3 my-5 text-[11px] uppercase tracking-wide text-[#6b5d5f]">
-                <span className="flex-1 h-px" style={{ background: "#e8e0d3" }} />
+              <div className="flex items-center gap-3 my-5 text-[11px] uppercase tracking-wide text-fg-muted">
+                <span className="flex-1 h-px" style={{ background: "color-mix(in srgb, #e8e0d3 var(--vk-wash), var(--vk-surface))" }} />
                 <span>Customers and staff</span>
-                <span className="flex-1 h-px" style={{ background: "#e8e0d3" }} />
+                <span className="flex-1 h-px" style={{ background: "color-mix(in srgb, #e8e0d3 var(--vk-wash), var(--vk-surface))" }} />
               </div>
 
-              <p className="text-center text-[13px] text-[#6b5d5f] mb-5">
+              <p className="text-center text-[13px] text-fg-muted mb-5">
                 Staff accounts are created by an administrator from the Management
                 Panel's Staff section.
               </p>
 
-              <div className="flex items-start gap-2 text-[11.5px] text-[#6b5d5f] leading-[1.5]">
+              <div className="flex items-start gap-2 text-[11.5px] text-fg-muted leading-[1.5]">
                 <ShieldAlert className="w-3.5 h-3.5 shrink-0 mt-0.5 text-[#C9A84C]" />
                 Never share your login details. VINK will never ask for your password by phone or email.
               </div>

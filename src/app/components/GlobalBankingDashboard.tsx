@@ -30,15 +30,15 @@ interface LiveData {
 
 // ─── Color palette ────────────────────────────────────────────────────────────
 const COLORS = {
-  ZAR: { bg: "#007A4D", light: "#E8F5E9", label: "South Africa" },
-  ZMW: { bg: "#006400", light: "#E8F5E9", label: "Zambia" },
-  EUR: { bg: "#003EA3", light: "#E3F2FD", label: "Europe" },
-  USD: { bg: "#1B4F72", light: "#EBF5FB", label: "USA" },
-  CNY: { bg: "#C0392B", light: "#FDEDEC", label: "China" },
+  ZAR: { bg: "#007A4D", light: "color-mix(in srgb, #E8F5E9 var(--vk-wash), var(--vk-surface))", label: "South Africa" },
+  ZMW: { bg: "#006400", light: "color-mix(in srgb, #E8F5E9 var(--vk-wash), var(--vk-surface))", label: "Zambia" },
+  EUR: { bg: "#003EA3", light: "color-mix(in srgb, #E3F2FD var(--vk-wash), var(--vk-surface))", label: "Europe" },
+  USD: { bg: "#1B4F72", light: "color-mix(in srgb, #EBF5FB var(--vk-wash), var(--vk-surface))", label: "USA" },
+  CNY: { bg: "#C0392B", light: "color-mix(in srgb, #FDEDEC var(--vk-wash), var(--vk-surface))", label: "China" },
 };
 
 const CARD_GRADIENTS: Record<string, string> = {
-  debit:        "linear-gradient(135deg,#5C0A10,#C9A84C)",
+  debit:        "linear-gradient(135deg,#5C0A10,#9B1C1C)",
   virtual:      "linear-gradient(135deg,#0F4C81,#2196F3)",
   business:     "linear-gradient(135deg,#1A1A1A,#4A4A4A)",
   "sub-account":"linear-gradient(135deg,#1B5E20,#4CAF50)",
@@ -297,7 +297,7 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
             <div className="space-y-6 max-w-5xl">
               {/* Unified account card */}
               <div className="rounded-2xl overflow-hidden shadow-xl"
-                style={{ background: `linear-gradient(135deg,${P} 0%,#0C0E14 40%,#C9A84C 80%,#C9A84C 100%)` }}>
+                style={{ background: `linear-gradient(135deg,${P} 0%,#0C0E14 40%,#9B1C1C 80%,#9B1C1C 100%)` }}>
                 <div className="relative overflow-hidden px-6 py-5">
                   <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-white/5 pointer-events-none" />
                   <div className="absolute -bottom-8 -left-8 w-36 h-36 rounded-full bg-white/5 pointer-events-none" />
@@ -593,7 +593,7 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
                   </button>
                   <button onClick={doConvert} disabled={fxConverting}
                     className="flex-1 py-4 rounded-2xl text-base font-black text-white transition-all hover:opacity-90 shadow-lg flex items-center justify-center gap-2 disabled:opacity-60"
-                    style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
+                    style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
                     {fxConverting ? <><div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />Converting…</> : `Convert ${fxFrom} → ${fxTo}`}
                   </button>
                 </div>
@@ -771,7 +771,7 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
                     </div>
                     <button onClick={doP2P} disabled={!p2pRef || !p2pAmt || p2pLoading}
                       className="w-full py-3 rounded-xl text-sm font-black text-white transition-all hover:opacity-90 shadow-md disabled:opacity-40 flex items-center justify-center gap-2"
-                      style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
+                      style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
                       {p2pLoading ? <><div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />Sending…</> : "Send Instantly"}
                     </button>
                   </>

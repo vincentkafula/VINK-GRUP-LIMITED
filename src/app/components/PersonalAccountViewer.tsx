@@ -217,7 +217,7 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate, onOpenBanki
                 onNavigate(map[item]);
               }}
               className="px-3.5 py-1.5 rounded-full text-[13px] font-semibold whitespace-nowrap transition-colors"
-              style={item === "Account" ? { background: "#E8F7EE", color: "var(--vk-crimson-text)" } : { color: "var(--vk-fg-muted)" }}
+              style={item === "Account" ? { background: "color-mix(in srgb, #E8F7EE var(--vk-wash), var(--vk-surface))", color: "var(--vk-crimson-text)" } : { color: "var(--vk-fg-muted)" }}
             >
               {item}
             </button>
@@ -235,7 +235,7 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate, onOpenBanki
                   key={c.countryCode}
                   onClick={() => setCountryManually(c.countryCode)}
                   className="w-full text-left px-3 py-1.5 text-sm hover:bg-surface-2 flex items-center justify-between"
-                  style={{ color: currency.country.countryCode === c.countryCode ? GREEN : "#111827", fontWeight: currency.country.countryCode === c.countryCode ? 700 : 400 }}
+                  style={{ color: currency.country.countryCode === c.countryCode ? GREEN : "var(--vk-fg)", fontWeight: currency.country.countryCode === c.countryCode ? 700 : 400 }}
                 >
                   <span>{c.country ?? c.countryCode}</span>
                   <span className="text-fg-muted text-xs">{c.code}</span>
@@ -265,7 +265,7 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate, onOpenBanki
       </nav>
 
       {/* Hero */}
-      <div className="relative overflow-hidden" style={{ background: "linear-gradient(160deg,#FAFCFB 0%,#F3F9F5 100%)" }}>
+      <div className="relative overflow-hidden" style={{ background: "linear-gradient(160deg,color-mix(in srgb, #FAFCFB var(--vk-wash), var(--vk-surface)) 0%,color-mix(in srgb, #F3F9F5 var(--vk-wash), var(--vk-surface)) 100%)" }}>
         <div className="absolute -left-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: `linear-gradient(180deg,${GREEN},${ORANGE})`, filter: "blur(60px)" }} />
         <div className="absolute -right-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: `linear-gradient(180deg,${ORANGE},${GREEN})`, filter: "blur(60px)" }} />
 
@@ -339,9 +339,9 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate, onOpenBanki
 
       {/* Bottom CTA */}
       <section className="max-w-6xl mx-auto px-6 pb-16">
-        <div className="relative overflow-hidden rounded-3xl px-8 py-10 flex flex-col sm:flex-row items-center justify-between gap-6" style={{ background: "linear-gradient(100deg,#F3F9F5,#FFF4EA)" }}>
+        <div className="relative overflow-hidden rounded-3xl px-8 py-10 flex flex-col sm:flex-row items-center justify-between gap-6" style={{ background: "linear-gradient(100deg,color-mix(in srgb, #F3F9F5 var(--vk-wash), var(--vk-surface)),color-mix(in srgb, #FFF4EA var(--vk-wash), var(--vk-surface)))" }}>
           <div className="flex items-center gap-4">
-            <span className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style={{ background: "#E8F7EE", color: "var(--vk-crimson-text)" }}>
+            <span className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style={{ background: "color-mix(in srgb, #E8F7EE var(--vk-wash), var(--vk-surface))", color: "var(--vk-crimson-text)" }}>
               <UserCheck className="w-6 h-6" />
             </span>
             <div>

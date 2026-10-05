@@ -12,9 +12,9 @@ export const GREEN = "#10B981";
 // ── Shared CSS class strings ──────────────────────────────────────────────────
 
 export const inputCls =
-  "w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none " +
+  "w-full border border-line rounded-xl px-4 py-3 text-sm outline-none " +
   "focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 transition-all " +
-  "bg-white placeholder-gray-400 text-gray-800 hover:border-gray-300";
+  "bg-surface placeholder-gray-400 text-fg hover:border-line-strong";
 
 export const selectCls = inputCls + " cursor-pointer";
 
@@ -54,7 +54,7 @@ export function StepTracker({ steps, current }: { steps: Step[]; current: number
                   className="w-9 h-9 rounded-full flex items-center justify-center font-black text-sm shadow-sm transition-all"
                   style={{
                     background: done   ? GREEN
-                              : active ? `linear-gradient(135deg,${P},#C9A84C)`
+                              : active ? `linear-gradient(135deg,${P},#9B1C1C)`
                               : "var(--vk-line)",
                     color:   done || active ? "#fff" : "#9CA3AF",
                     boxShadow: active ? `0 4px 14px ${P}40` : "none",
@@ -65,7 +65,7 @@ export function StepTracker({ steps, current }: { steps: Step[]; current: number
                 </div>
                 <span
                   className="text-[9px] text-center leading-tight font-semibold whitespace-pre-line"
-                  style={{ color: active ? P : done ? GREEN : "#9CA3AF" }}
+                  style={{ color: active ? P : done ? GREEN : "var(--vk-fg-muted)" }}
                 >
                   {s.label}
                 </span>
@@ -90,7 +90,7 @@ export function ProgressBar({ value }: { value: number }) {
     <div className="h-1.5 rounded-full bg-surface-2 overflow-hidden">
       <div
         className="h-full rounded-full transition-all duration-700"
-        style={{ width: `${value}%`, background: `linear-gradient(90deg,${P},#C9A84C)` }}
+        style={{ width: `${value}%`, background: `linear-gradient(90deg,${P},#9B1C1C)` }}
       />
     </div>
   );
@@ -114,7 +114,7 @@ export function FormCard({
       <div className="flex items-center gap-3 px-5 py-4"
         style={{ background: `linear-gradient(135deg,${stepColor ?? P}10,${stepColor ?? P}05)`, borderBottom: `1px solid ${stepColor ?? P}15` }}>
         <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 text-white font-black text-sm shadow-sm"
-          style={{ background: `linear-gradient(135deg,${stepColor ?? P},${stepColor ?? "#C9A84C"})` }}>
+          style={{ background: `linear-gradient(135deg,${stepColor ?? P},${stepColor ?? "#9B1C1C"})` }}>
           {icon ?? stepN}
         </div>
         <div>
@@ -140,7 +140,7 @@ export function DocSlot({
       className="flex items-center gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all hover:scale-[1.01]"
       style={{
         borderColor:  uploaded ? GREEN + "60" : "var(--vk-line)",
-        background:   uploaded ? GREEN + "06" : "#FAFAFA",
+        background:   uploaded ? GREEN + "06" : "color-mix(in srgb, #FAFAFA var(--vk-wash), var(--vk-surface))",
       }}
     >
       <div
@@ -156,7 +156,7 @@ export function DocSlot({
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-xs font-semibold text-fg leading-snug">{label}</p>
-        <p className="text-[10px] mt-0.5 font-medium" style={{ color: uploaded ? GREEN : required ? "#EF4444" : "#9CA3AF" }}>
+        <p className="text-[10px] mt-0.5 font-medium" style={{ color: uploaded ? GREEN : required ? "#EF4444" : "var(--vk-fg-muted)" }}>
           {uploaded ? "✓ Uploaded successfully" : required ? "Required" : "Optional"}
         </p>
       </div>
@@ -199,7 +199,7 @@ export function OtpInput({ value, onChange }: { value: string; onChange: (v: str
           className="w-11 h-12 text-center text-xl font-black rounded-xl border-2 outline-none transition-all"
           style={{
             borderColor: value[i] ? P : "var(--vk-line)",
-            background:  value[i] ? P + "08" : "#FAFAFA",
+            background:  value[i] ? P + "08" : "color-mix(in srgb, #FAFAFA var(--vk-wash), var(--vk-surface))",
             color: "var(--vk-crimson-text)",
           }}
         />
@@ -233,9 +233,9 @@ export function AppHero({
       style={{ background: gradient }}>
       {/* Decorative orbs */}
       <div className="absolute -top-16 -right-16 w-64 h-64 rounded-full opacity-10 pointer-events-none"
-        style={{ background: "radial-gradient(circle,#fff,transparent)" }} />
+        style={{ background: "radial-gradient(circle,color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface)),transparent)" }} />
       <div className="absolute -bottom-12 -left-12 w-48 h-48 rounded-full opacity-10 pointer-events-none"
-        style={{ background: "radial-gradient(circle,#C9A84C,transparent)" }} />
+        style={{ background: "radial-gradient(circle,#9B1C1C,transparent)" }} />
       <div className="max-w-2xl mx-auto relative z-10">
         <span className="inline-block text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full mb-3"
           style={{ background: "rgba(255,255,255,.15)", backdropFilter: "blur(8px)" }}>
@@ -270,7 +270,7 @@ export function NavButtons({
         <button onClick={onNext} disabled={disabled}
           className="inline-flex items-center gap-2 px-7 py-3 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
           style={{
-            background: disabled ? "#9CA3AF" : `linear-gradient(135deg,${P},#C9A84C)`,
+            background: disabled ? "#9CA3AF" : `linear-gradient(135deg,${P},#9B1C1C)`,
             boxShadow:  disabled ? "none" : `0 6px 20px ${P}35`,
           }}>
           {nextLabel}

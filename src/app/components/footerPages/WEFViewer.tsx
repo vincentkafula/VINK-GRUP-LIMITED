@@ -58,7 +58,7 @@ export function WEFViewer({ isOpen, onClose }: Props) {
           </div>
         </section>
 
-        <section className="rounded-2xl p-7 text-white" style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
+        <section className="rounded-2xl p-7 text-white" style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
           <blockquote className="text-white/90 text-base italic leading-relaxed mb-4">
             &quot;South Africa&apos;s taxi industry — the backbone of our economy — deserved a payment system built specifically for it. We have built that system.&quot;
           </blockquote>

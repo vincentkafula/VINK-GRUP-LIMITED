@@ -48,13 +48,13 @@ function StepBar({ current }: { current: number }) {
         const active  = s.n === current;
         return (
           <div key={s.n} className="flex-1 min-w-[64px] flex flex-col items-center justify-center py-2.5 px-1 relative border-r border-line last:border-r-0"
-            style={{ background: active ? PURPLE : done ? "#F0FDF4" : "#fff" }}>
+            style={{ background: active ? PURPLE : done ? "color-mix(in srgb, #F0FDF4 var(--vk-wash), var(--vk-surface))" : "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" }}>
             <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold mb-0.5"
-              style={{ background: active ? "#fff" : done ? GREEN : "var(--vk-line)", color: active ? PURPLE : done ? "#fff" : "#9CA3AF" }}>
+              style={{ background: active ? "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" : done ? GREEN : "var(--vk-line)", color: active ? PURPLE : done ? "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" : "#9CA3AF" }}>
               {done ? "✓" : s.n}
             </div>
             <p className="text-[9px] font-semibold leading-tight text-center"
-              style={{ color: active ? "#fff" : done ? GREEN : "#9CA3AF" }}>
+              style={{ color: active ? "#fff" : done ? GREEN : "var(--vk-fg-muted)" }}>
               {s.label}
             </p>
           </div>
@@ -264,7 +264,7 @@ function Step5({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () 
               <span className="text-sm font-medium text-fg">{d.label}</span>
             </div>
             <span className="text-xs px-3 py-1 rounded-full font-semibold"
-              style={{ background: uploaded[d.key] ? "#DCFCE7" : "var(--vk-surface-2)", color: uploaded[d.key] ? GREEN : PURPLE }}>
+              style={{ background: uploaded[d.key] ? "color-mix(in srgb, #DCFCE7 var(--vk-wash), var(--vk-surface))" : "var(--vk-surface-2)", color: uploaded[d.key] ? GREEN : PURPLE }}>
               {uploaded[d.key] ? "Uploaded" : "Upload"}
             </span>
             <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png"
@@ -330,7 +330,7 @@ function Step6({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () 
             </div>
             <div className="flex items-center gap-2">
               {dir.verified
-                ? <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={{ background: "#DCFCE7", color: GREEN }}>Verified</span>
+                ? <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={{ background: "color-mix(in srgb, #DCFCE7 var(--vk-wash), var(--vk-surface))", color: GREEN }}>Verified</span>
                 : <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-yellow-50 text-yellow-700">Pending</span>
               }
               {idx > 0 && (
@@ -619,7 +619,7 @@ export function BusinessAccountApplicationViewer({ isOpen, onClose, initialAccou
       {/* Inject field styles once */}
       <style>{`
         .field-label { display: block; font-size: 11px; font-weight: 600; color: #6B7280; margin-bottom: 4px; }
-        .field-input { width: 100%; border: 1px solid #E5E7EB; border-radius: 10px; padding: 9px 14px; font-size: 13px; outline: none; background: #fff; color: #111827; }
+        .field-input { width: 100%; border: 1px solid color-mix(in srgb, #E5E7EB var(--vk-wash), var(--vk-surface)); border-radius: 10px; padding: 9px 14px; font-size: 13px; outline: none; background: color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface)); color: #111827; }
         .field-input:focus { border-color: #5C0A10; }
       `}</style>
 

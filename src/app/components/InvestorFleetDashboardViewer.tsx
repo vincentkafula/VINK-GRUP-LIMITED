@@ -106,12 +106,12 @@ function Sparkline({ color = BLUE }: { color?: string }) {
   );
 }
 function Pill({ children, tone = "grey" }: { children: React.ReactNode; tone?: "green" | "orange" | "red" | "blue" | "purple" | "grey" }) {
-  const tones = { green: "bg-emerald-100 text-emerald-700", orange: "bg-orange-100 text-orange-700", red: "bg-red-100 text-red-700", blue: "bg-blue-100 text-blue-700", purple: "bg-violet-100 text-violet-700", grey: "bg-gray-100 text-gray-600" };
+  const tones = { green: "bg-emerald-100 text-emerald-700", orange: "bg-orange-100 text-orange-700", red: "bg-red-100 text-red-700", blue: "bg-blue-100 text-blue-700", purple: "bg-violet-100 text-violet-700", grey: "bg-surface-2 text-fg-muted" };
   return <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold ${tones[tone]}`}><span className="w-1.5 h-1.5 rounded-full bg-current" />{children}</span>;
 }
 function StatementRow({ kind, label, value }: { kind: "section" | "indent" | "subtotal" | "total"; label: string; value?: string }) {
   if (kind === "section") return <tr><td colSpan={2} className="pt-4 pb-1 text-[11px] font-black uppercase tracking-wider text-fg-subtle">{label}</td></tr>;
-  const cls = kind === "total" ? "border-t-2 border-gray-900 font-black" : kind === "subtotal" ? "border-t border-gray-200 font-bold" : "";
+  const cls = kind === "total" ? "border-t-2 border-gray-900 font-black" : kind === "subtotal" ? "border-t border-line font-bold" : "";
   return (
     <tr className={cls}>
       <td className={`py-2 ${kind === "indent" ? "pl-4 text-fg" : "text-fg"}`}>{label}</td>
@@ -245,7 +245,7 @@ export function InvestorFleetDashboardViewer({ isOpen, onClose, investorName = "
   const bsBalanced = Math.abs(f.totalAssets - (f.totalLiabilities + f.totalEquity)) < 1;
 
   return (
-    <div className="fixed inset-0 z-[110] flex bg-bg" style={{ fontFamily: "Inter,ui-sans-serif,system-ui" }}>
+    <div className="fixed inset-0 z-[110] flex bg-bg" style={{ fontFamily: "var(--font-sans)" }}>
       {/* Sidebar */}
       <aside className="w-64 shrink-0 flex flex-col p-4 overflow-y-auto" style={{ background: `linear-gradient(190deg,${NAVY_900},${NAVY_950})` }}>
         <div className="flex items-center gap-2.5 px-2 pb-4">
@@ -261,7 +261,7 @@ export function InvestorFleetDashboardViewer({ isOpen, onClose, investorName = "
                 className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-colors"
                 style={view === item.id ? { background: `linear-gradient(90deg,${BLUE},#4f7cf5)`, color: "#fff" } : { color: "#aeb4d6" }}>
                 <item.icon className="w-4 h-4 opacity-90" /> {item.label}
-                {item.id === "devices" && <span className="ml-auto text-[10.5px] px-1.5 py-0.5 rounded-full" style={{ background: view === item.id ? "rgba(255,255,255,.22)" : "#232c5e", color: view === item.id ? "#fff" : "#c6cbef" }}>{devices.length}</span>}
+                {item.id === "devices" && <span className="ml-auto text-[10.5px] px-1.5 py-0.5 rounded-full" style={{ background: view === item.id ? "rgba(255,255,255,.22)" : "#232c5e", color: view === item.id ? "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" : "#c6cbef" }}>{devices.length}</span>}
               </button>
             ))}
           </div>
@@ -289,7 +289,7 @@ export function InvestorFleetDashboardViewer({ isOpen, onClose, investorName = "
 
       {/* Main */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="flex items-center gap-3.5 px-7 py-4 border-b border-line bg-white/85 backdrop-blur">
+        <div className="flex items-center gap-3.5 px-7 py-4 border-b border-line bg-surface/85 backdrop-blur">
           <div className="flex-1 max-w-md relative">
             <Search className="w-4 h-4 text-fg-subtle absolute left-3 top-1/2 -translate-y-1/2" />
             <input placeholder="Search devices, drivers, contracts…" className="w-full pl-9 pr-14 py-2.5 rounded-xl border border-line text-[13.5px] outline-none focus:border-blue-600" />
@@ -319,10 +319,10 @@ export function InvestorFleetDashboardViewer({ isOpen, onClose, investorName = "
 
               <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-4.5 mb-5">
                 {[
-                  { label: "Gross Income", value: R(f.grossRevenue), bg: "#efeafd", color: PURPLE, icon: TrendingUp },
-                  { label: "Fixed Device Income", value: R(f.fixedIncomeTotal), bg: "#e4f8ee", color: GREEN, icon: Smartphone },
-                  { label: `Transaction Fees (${R2(INVESTOR_TAP_SHARE)}/tap)`, value: R(f.feeTotal), bg: "#fef0df", color: ORANGE, icon: Zap },
-                  { label: "Net Income (after tax)", value: R(f.netIncome), bg: "#e6edff", color: BLUE, icon: DollarSign },
+                  { label: "Gross Income", value: R(f.grossRevenue), bg: "color-mix(in srgb, #efeafd var(--vk-wash), var(--vk-surface))", color: PURPLE, icon: TrendingUp },
+                  { label: "Fixed Device Income", value: R(f.fixedIncomeTotal), bg: "color-mix(in srgb, #e4f8ee var(--vk-wash), var(--vk-surface))", color: GREEN, icon: Smartphone },
+                  { label: `Transaction Fees (${R2(INVESTOR_TAP_SHARE)}/tap)`, value: R(f.feeTotal), bg: "color-mix(in srgb, #fef0df var(--vk-wash), var(--vk-surface))", color: ORANGE, icon: Zap },
+                  { label: "Net Income (after tax)", value: R(f.netIncome), bg: "color-mix(in srgb, #e6edff var(--vk-wash), var(--vk-surface))", color: BLUE, icon: DollarSign },
                 ].map(s => (
                   <div key={s.label} className="bg-surface rounded-2xl border border-line p-5">
                     <div className="flex items-center gap-3"><span className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: s.bg, color: s.color }}><s.icon className="w-[21px] h-[21px]" /></span><div><p className="text-[12.5px] text-fg-muted font-semibold">{s.label}</p><p className="text-[21px] font-bold mt-0.5">{s.value}</p></div></div>
@@ -336,12 +336,12 @@ export function InvestorFleetDashboardViewer({ isOpen, onClose, investorName = "
                 <p className="text-[15px] font-bold mb-3.5">Quick actions</p>
                 <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
                   {[
-                    { label: "Add Device", icon: Plus, bg: "#e6edff", c: BLUE, onClick: () => setShowDeviceModal(true) },
-                    { label: "Simulate Tap", icon: Zap, bg: "#e4f8ee", c: GREEN, onClick: simulateTap },
-                    { label: "Preview Trips", icon: RouteIcon, bg: "#efeafd", c: PURPLE, onClick: () => setView("trips") },
-                    { label: "New Contract", icon: FileSignature, bg: "#fef0df", c: ORANGE, onClick: () => setShowContractModal(true) },
-                    { label: "Income Statement", icon: DollarSign, bg: "#e6edff", c: BLUE, onClick: () => setView("income-statement") },
-                    { label: "Association Fees", icon: Users, bg: "#e4f8ee", c: GREEN, onClick: () => setView("association") },
+                    { label: "Add Device", icon: Plus, bg: "color-mix(in srgb, #e6edff var(--vk-wash), var(--vk-surface))", c: BLUE, onClick: () => setShowDeviceModal(true) },
+                    { label: "Simulate Tap", icon: Zap, bg: "color-mix(in srgb, #e4f8ee var(--vk-wash), var(--vk-surface))", c: GREEN, onClick: simulateTap },
+                    { label: "Preview Trips", icon: RouteIcon, bg: "color-mix(in srgb, #efeafd var(--vk-wash), var(--vk-surface))", c: PURPLE, onClick: () => setView("trips") },
+                    { label: "New Contract", icon: FileSignature, bg: "color-mix(in srgb, #fef0df var(--vk-wash), var(--vk-surface))", c: ORANGE, onClick: () => setShowContractModal(true) },
+                    { label: "Income Statement", icon: DollarSign, bg: "color-mix(in srgb, #e6edff var(--vk-wash), var(--vk-surface))", c: BLUE, onClick: () => setView("income-statement") },
+                    { label: "Association Fees", icon: Users, bg: "color-mix(in srgb, #e4f8ee var(--vk-wash), var(--vk-surface))", c: GREEN, onClick: () => setView("association") },
                   ].map(qa => (
                     <button key={qa.label} onClick={qa.onClick} className="flex flex-col items-start gap-2.5 bg-surface border border-line rounded-2xl p-3.5 hover:shadow-md hover:-translate-y-0.5 transition-all">
                       <span className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: qa.bg, color: qa.c }}><qa.icon className="w-[18px] h-[18px]" /></span>
@@ -374,10 +374,10 @@ export function InvestorFleetDashboardViewer({ isOpen, onClose, investorName = "
                   <p className="text-[15px] font-bold mb-1">Recent activity</p><p className="text-xs text-fg-subtle mb-3">Latest fleet events</p>
                   <div className="space-y-3">
                     {[
-                      { t: `Trip tapped on ${transactions[0]?.device ?? "TAP-1005"}`, s: `${R2(transactions[0]?.amount ?? 0)} fare · ${transactions[0]?.driver ?? "—"}`, time: "2 min ago", icon: RouteIcon, bg: "#efeafd", c: PURPLE },
-                      { t: "Association fee marked paid", s: `Kabelo Seane · ${R(400)}`, time: "15 min ago", icon: Users, bg: "#e4f8ee", c: GREEN },
-                      { t: "Income statement generated", s: "Statement #INC-2456", time: "1 hour ago", icon: DollarSign, bg: "#e6edff", c: BLUE },
-                      { t: "Contract renewed", s: "Sipho Dlamini · fixed monthly", time: "3 hours ago", icon: FileSignature, bg: "#fef0df", c: ORANGE },
+                      { t: `Trip tapped on ${transactions[0]?.device ?? "TAP-1005"}`, s: `${R2(transactions[0]?.amount ?? 0)} fare · ${transactions[0]?.driver ?? "—"}`, time: "2 min ago", icon: RouteIcon, bg: "color-mix(in srgb, #efeafd var(--vk-wash), var(--vk-surface))", c: PURPLE },
+                      { t: "Association fee marked paid", s: `Kabelo Seane · ${R(400)}`, time: "15 min ago", icon: Users, bg: "color-mix(in srgb, #e4f8ee var(--vk-wash), var(--vk-surface))", c: GREEN },
+                      { t: "Income statement generated", s: "Statement #INC-2456", time: "1 hour ago", icon: DollarSign, bg: "color-mix(in srgb, #e6edff var(--vk-wash), var(--vk-surface))", c: BLUE },
+                      { t: "Contract renewed", s: "Sipho Dlamini · fixed monthly", time: "3 hours ago", icon: FileSignature, bg: "color-mix(in srgb, #fef0df var(--vk-wash), var(--vk-surface))", c: ORANGE },
                     ].map(a => (
                       <div key={a.t} className="flex items-start gap-3"><span className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: a.bg, color: a.c }}><a.icon className="w-4 h-4" /></span><div className="flex-1 min-w-0"><p className="text-[12.8px] font-bold truncate">{a.t}</p><p className="text-[11.5px] text-fg-subtle">{a.s}</p></div><span className="text-[11px] text-fg-subtle shrink-0">{a.time}</span></div>
                     ))}
@@ -396,10 +396,10 @@ export function InvestorFleetDashboardViewer({ isOpen, onClose, investorName = "
                   <p className="text-[15px] font-bold mb-3.5">Financial summary <span className="text-xs text-fg-subtle font-normal">Period to date</span></p>
                   <div className="space-y-3">
                     {[
-                      { l: "Total Assets", v: f.totalAssets, icon: Scale, bg: "#e6edff", c: BLUE },
-                      { l: "Total Liabilities", v: f.totalLiabilities, icon: Users, bg: "#fef0df", c: ORANGE },
-                      { l: "Net Income", v: f.netIncome, icon: TrendingUp, bg: "#e4f8ee", c: GREEN },
-                      { l: "Operating Cash Flow", v: f.cashFromOperating, icon: Wallet, bg: "#efeafd", c: PURPLE },
+                      { l: "Total Assets", v: f.totalAssets, icon: Scale, bg: "color-mix(in srgb, #e6edff var(--vk-wash), var(--vk-surface))", c: BLUE },
+                      { l: "Total Liabilities", v: f.totalLiabilities, icon: Users, bg: "color-mix(in srgb, #fef0df var(--vk-wash), var(--vk-surface))", c: ORANGE },
+                      { l: "Net Income", v: f.netIncome, icon: TrendingUp, bg: "color-mix(in srgb, #e4f8ee var(--vk-wash), var(--vk-surface))", c: GREEN },
+                      { l: "Operating Cash Flow", v: f.cashFromOperating, icon: Wallet, bg: "color-mix(in srgb, #efeafd var(--vk-wash), var(--vk-surface))", c: PURPLE },
                     ].map(x => (
                       <div key={x.l} className="flex items-center gap-3"><span className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: x.bg, color: x.c }}><x.icon className="w-4 h-4" /></span><div className="flex-1"><p className="text-[12.8px] font-bold">{x.l}</p><p className="text-[11.5px] text-fg-subtle">{R(x.v)}</p></div><span className="text-[11px] font-bold" style={{ color: GREEN }}>↑</span></div>
                     ))}
@@ -433,7 +433,7 @@ export function InvestorFleetDashboardViewer({ isOpen, onClose, investorName = "
                     return (
                       <div key={d.id} className="border border-line rounded-2xl p-4">
                         <div className="flex items-center justify-between"><div><p className="font-bold text-[14px]">{d.code}</p><p className="text-xs text-fg-subtle">{d.driver}</p></div>
-                          <button onClick={() => toggleDevice(d.id)} className="w-9.5 h-5.5 rounded-full relative transition-colors" style={{ width: 38, height: 22, background: d.status === "online" ? GREEN : "#e2e5f3" }}><span className="absolute top-0.5 rounded-full bg-surface transition-all" style={{ width: 18, height: 18, left: d.status === "online" ? 18 : 2 }} /></button>
+                          <button onClick={() => toggleDevice(d.id)} className="w-9.5 h-5.5 rounded-full relative transition-colors" style={{ width: 38, height: 22, background: d.status === "online" ? GREEN : "color-mix(in srgb, #e2e5f3 var(--vk-wash), var(--vk-surface))" }}><span className="absolute top-0.5 rounded-full bg-surface transition-all" style={{ width: 18, height: 18, left: d.status === "online" ? 18 : 2 }} /></button>
                         </div>
                         <div className="h-px bg-surface-2 my-3" />
                         <p className="text-[12.5px] text-fg-muted mb-2">{d.vehicle}</p>
@@ -525,9 +525,9 @@ export function InvestorFleetDashboardViewer({ isOpen, onClose, investorName = "
                   <p className="text-[15px] font-bold mb-3.5">How your income accumulates</p>
                   <div className="space-y-3">
                     {[
-                      { n: "1. Monthly device rental", s: `Every device you own pays a guaranteed ${R(DEVICE_MONTHLY_RENTAL)}/month, whether or not it's tapped.`, icon: Smartphone, bg: "#efeafd", c: PURPLE },
-                      { n: `2. +${R2(INVESTOR_TAP_SHARE)} per tap`, s: `Each time a driver turns on the device for a fare, you earn ${R2(INVESTOR_TAP_SHARE)} — your 10% share of VINK's flat R1.00 transaction fee — on top of the monthly rental.`, icon: Zap, bg: "#e4f8ee", c: GREEN },
-                      { n: `3. Income accumulates across devices`, s: `Own more devices and both the rental base and the tap-fee income stack together into one portfolio total — currently ${R(f.grossRevenue)}.`, icon: DollarSign, bg: "#e6edff", c: BLUE },
+                      { n: "1. Monthly device rental", s: `Every device you own pays a guaranteed ${R(DEVICE_MONTHLY_RENTAL)}/month, whether or not it's tapped.`, icon: Smartphone, bg: "color-mix(in srgb, #efeafd var(--vk-wash), var(--vk-surface))", c: PURPLE },
+                      { n: `2. +${R2(INVESTOR_TAP_SHARE)} per tap`, s: `Each time a driver turns on the device for a fare, you earn ${R2(INVESTOR_TAP_SHARE)} — your 10% share of VINK's flat R1.00 transaction fee — on top of the monthly rental.`, icon: Zap, bg: "color-mix(in srgb, #e4f8ee var(--vk-wash), var(--vk-surface))", c: GREEN },
+                      { n: `3. Income accumulates across devices`, s: `Own more devices and both the rental base and the tap-fee income stack together into one portfolio total — currently ${R(f.grossRevenue)}.`, icon: DollarSign, bg: "color-mix(in srgb, #e6edff var(--vk-wash), var(--vk-surface))", c: BLUE },
                     ].map(x => <div key={x.n} className="flex items-start gap-3"><span className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: x.bg, color: x.c }}><x.icon className="w-4 h-4" /></span><div><p className="text-[12.8px] font-bold">{x.n}</p><p className="text-[11.5px] text-fg-subtle mt-0.5 leading-relaxed">{x.s}</p></div></div>)}
                   </div>
                 </div>
@@ -835,8 +835,8 @@ function NewContractModal({ contractType, setContractType, onClose, onSubmit }: 
           <div>
             <label className="block text-xs font-bold text-fg-muted mb-1.5">Agreement type</label>
             <div className="flex bg-surface-2 rounded-lg p-1 gap-1">
-              <button onClick={() => setContractType("fixed")} className="flex-1 text-center py-2 rounded-md text-[12.5px] font-bold" style={contractType === "fixed" ? { background: "var(--vk-surface)", boxShadow: "0 3px 10px -4px rgba(15,21,48,.3)" } : { color: "#5b6280" }}>Fixed monthly</button>
-              <button onClick={() => setContractType("target")} className="flex-1 text-center py-2 rounded-md text-[12.5px] font-bold" style={contractType === "target" ? { background: "var(--vk-surface)", boxShadow: "0 3px 10px -4px rgba(15,21,48,.3)" } : { color: "#5b6280" }}>Target-based</button>
+              <button onClick={() => setContractType("fixed")} className="flex-1 text-center py-2 rounded-md text-[12.5px] font-bold" style={contractType === "fixed" ? { background: "var(--vk-surface)", boxShadow: "0 3px 10px -4px rgba(15,21,48,.3)" } : { color: "var(--vk-fg-muted)" }}>Fixed monthly</button>
+              <button onClick={() => setContractType("target")} className="flex-1 text-center py-2 rounded-md text-[12.5px] font-bold" style={contractType === "target" ? { background: "var(--vk-surface)", boxShadow: "0 3px 10px -4px rgba(15,21,48,.3)" } : { color: "var(--vk-fg-muted)" }}>Target-based</button>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2.5">

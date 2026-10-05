@@ -31,7 +31,7 @@ export function CorporateSocialResponsibilityViewer({ isOpen, onClose, onNavigat
       <div className="bg-surface border-b px-6 flex gap-6 overflow-x-auto text-sm" style={{ borderColor: "#e8e8f0" }}>
         {["Personal", "Business", "Corporate"].map((item) => (
           <span key={item} className="py-3 flex-shrink-0 font-medium"
-            style={{ color: item === "Corporate" ? P : "#5a5a72", borderBottom: item === "Corporate" ? `2px solid ${P}` : "2px solid transparent" }}>
+            style={{ color: item === "Corporate" ? P : "var(--vk-fg-muted)", borderBottom: item === "Corporate" ? `2px solid ${P}` : "2px solid transparent" }}>
             {item}
           </span>
         ))}
@@ -63,7 +63,7 @@ export function CorporateSocialResponsibilityViewer({ isOpen, onClose, onNavigat
             className="rounded-full px-6 py-2 text-sm font-medium transition-all border-2"
             style={{
               borderColor: P,
-              background: activePill === i ? P : "#fff",
+              background: activePill === i ? P : "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))",
               color: activePill === i ? "#fff" : P,
             }}>
             {label}
@@ -101,14 +101,14 @@ export function CorporateSocialResponsibilityViewer({ isOpen, onClose, onNavigat
       </div>
 
       {/* ── Article content ── */}
-      <div className="max-w-3xl mx-auto px-6 pb-14 space-y-5" style={{ color: "#1e1e2e" }}>
-        <p className="leading-relaxed text-[15px]" style={{ color: "#1e1e2e" }}>
+      <div className="max-w-3xl mx-auto px-6 pb-14 space-y-5" style={{ color: "var(--vk-fg)" }}>
+        <p className="leading-relaxed text-[15px]" style={{ color: "var(--vk-fg)" }}>
           The office of the chief executive officer drives the strategy behind the work of VINK Social Responsibility, and also oversees the day-to-day operations of its four departments. This office also drives VINK Social Responsibility's special projects and programmes, as well as research, and constantly seeks to develop and deliver new products and services to all stakeholders.
         </p>
-        <p className="leading-relaxed text-[15px]" style={{ color: "#1e1e2e" }}>
+        <p className="leading-relaxed text-[15px]" style={{ color: "var(--vk-fg)" }}>
           The current occupant of the CEO post, Siyasanga Mahlulo, has been with VINK Social Responsibility since its inception in 2018 and has led the organisation since 2021. She is aided in her daily duties by a personal assistant.
         </p>
-        <p className="leading-relaxed text-[15px]" style={{ color: "#1e1e2e" }}>
+        <p className="leading-relaxed text-[15px]" style={{ color: "var(--vk-fg)" }}>
           Financial administration and human resources (HR) also fall under the CEO's office and are driven by a finance &amp; HR manager and a finance &amp; HR assistant.
         </p>
         <p className="text-[15px]">

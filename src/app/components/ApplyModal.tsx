@@ -78,7 +78,7 @@ export function ApplyModal({ isOpen, onClose, product, tier, price }: Props) {
                 Apply for another
               </button>
               <button onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white"
-                style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
+                style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
                 Done
               </button>
             </div>
@@ -135,7 +135,7 @@ export function ApplyModal({ isOpen, onClose, product, tier, price }: Props) {
 
             <button onClick={handleSubmit} disabled={submitting}
               className="w-full py-3 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 disabled:opacity-60 transition-all hover:opacity-90"
-              style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
+              style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
               {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Submitting...</> : "Submit Application"}
             </button>
           </div>

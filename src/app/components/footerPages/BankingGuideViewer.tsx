@@ -42,8 +42,8 @@ export function BankingGuideViewer({ isOpen, onClose }: Props) {
 
       <div className="max-w-4xl mx-auto w-full px-5 py-10 space-y-10">
 
-        <section className="rounded-2xl p-5" style={{ background: "var(--vk-warn-bg)", border: "1px solid #FDE68A" }}>
-          <p className="text-sm font-semibold" style={{ color: "#92400E" }}>
+        <section className="rounded-2xl p-5" style={{ background: "var(--vk-warn-bg)", border: "1px solid color-mix(in srgb, #FDE68A var(--vk-wash), var(--vk-surface))" }}>
+          <p className="text-sm font-semibold" style={{ color: "var(--vk-warn)" }}>
             VINK is not yet in full operation. This guide describes how VINK will work once we launch in June 2027 — you're welcome to read through it now, but accounts and cards aren't active yet.
           </p>
         </section>

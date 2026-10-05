@@ -51,7 +51,7 @@ function StatRow({ label, value, indent = 0, bold = false, border = false, highl
     <div className={`flex justify-between items-center py-1.5 ${border ? "border-t border-line mt-1 pt-2" : ""} ${highlight ? "bg-emerald-50 px-2 rounded" : ""}`}
       style={{ paddingLeft: indent * 16 }}>
       <span className={`text-sm ${bold ? "font-black text-fg" : "text-fg-muted"}`}>{label}</span>
-      <span className={`text-sm ${bold ? "font-black" : "font-semibold"}`} style={{ color: color ?? (bold ? P : "#374151") }}>{value}</span>
+      <span className={`text-sm ${bold ? "font-black" : "font-semibold"}`} style={{ color: color ?? (bold ? P : "var(--vk-fg)") }}>{value}</span>
     </div>
   );
 }
@@ -155,7 +155,7 @@ export function FinancialReportsViewer({ isOpen, onClose }: Props) {
           {NAV.map(n => (
             <button key={n.id} onClick={() => setScreen(n.id as Screen)}
               className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold flex-shrink-0 transition-all"
-              style={{ background: screen === n.id ? P : "transparent", color: screen === n.id ? "#fff" : "#6B7280" }}>
+              style={{ background: screen === n.id ? P : "transparent", color: screen === n.id ? "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" : "#6B7280" }}>
               {n.icon}{n.label}
             </button>
           ))}
@@ -172,7 +172,7 @@ export function FinancialReportsViewer({ isOpen, onClose }: Props) {
             {/* Payslip document */}
             <div className="bg-surface rounded-2xl border border-line shadow-sm overflow-hidden print:shadow-none print:border-0">
               {/* Header band */}
-              <div className="px-8 py-5 text-white" style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
+              <div className="px-8 py-5 text-white" style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
                 <div className="flex justify-between items-start flex-wrap gap-4">
                   <div>
                     <p className="text-xs font-bold uppercase tracking-widest opacity-70 mb-1">PAYSLIP</p>
@@ -232,7 +232,7 @@ export function FinancialReportsViewer({ isOpen, onClose }: Props) {
                 <StatRow label="Total Deductions" value={fmt(ps?.totalDeductions ?? 4630)} bold border color={RED} />
 
                 {/* Net pay */}
-                <div className="mt-4 p-4 rounded-2xl text-white" style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
+                <div className="mt-4 p-4 rounded-2xl text-white" style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
                   <div className="flex justify-between items-center">
                     <div>
                       <p className="text-white/70 text-xs font-semibold uppercase tracking-wide">NET PAY</p>
@@ -498,7 +498,7 @@ export function FinancialReportsViewer({ isOpen, onClose }: Props) {
               </div>
               <button onClick={addJournalEntry} disabled={!newEntry.description || (!newEntry.debit && !newEntry.credit)}
                 className="mt-4 w-full py-3 rounded-xl text-sm font-black text-white transition-all hover:opacity-90 disabled:opacity-40 flex items-center justify-center gap-2"
-                style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
+                style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
                 {entryAdded ? <><CheckCircle className="w-4 h-4" />Entry Added!</> : <><Plus className="w-4 h-4" />Add to Journal</>}
               </button>
               <p className="text-[10px] text-fg-muted text-center mt-2">Card and cash fare entries are added automatically from the AFC app. Add fuel, maintenance, wages, and other items manually here.</p>

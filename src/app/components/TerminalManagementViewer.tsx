@@ -60,14 +60,14 @@ interface AppRelease {
 const API_BASE = import.meta.env.VITE_API_URL || "https://vink-grup-limited-production.up.railway.app";
 
 const STATUS_STYLE: Record<Terminal["status"], { bg: string; color: string; icon: any; label: string }> = {
-  active: { bg: "#E9F7EF", color: "#059669", icon: ShieldCheck, label: "Active" },
+  active: { bg: "color-mix(in srgb, #E9F7EF var(--vk-wash), var(--vk-surface))", color: "#059669", icon: ShieldCheck, label: "Active" },
   inactive: { bg: "var(--vk-surface-2)", color: "var(--vk-fg-muted)", icon: ShieldOff, label: "Inactive" },
   revoked: { bg: "var(--vk-bad-bg)", color: "#DC2626", icon: ShieldAlert, label: "Revoked" },
 };
 
 const FAULT_SEVERITY_STYLE: Record<DeviceFault["severity"], { background: string; color: string }> = {
   info: { background: "var(--vk-info-bg)", color: "#2563EB" },
-  warning: { background: "#FFF7ED", color: "#D97706" },
+  warning: { background: "color-mix(in srgb, #FFF7ED var(--vk-wash), var(--vk-surface))", color: "#D97706" },
   critical: { background: "var(--vk-bad-bg)", color: "#DC2626" },
 };
 
@@ -184,7 +184,7 @@ export function TerminalManagementViewer({ isOpen, onClose }: Props) {
           {([["terminals", "Terminals"], ["faults", "Fault Alarms"], ["releases", "App Releases"]] as const).map(([key, label]) => (
             <button key={key} onClick={() => setTab(key)}
               className="px-3.5 py-2 text-[12.5px] font-bold rounded-t-lg"
-              style={tab === key ? { color: "#2E0B10", borderBottom: "2px solid #2E0B10" } : { color: "var(--vk-fg-subtle)" }}>
+              style={tab === key ? { color: "var(--vk-fg)", borderBottom: "2px solid #2E0B10" } : { color: "var(--vk-fg-subtle)" }}>
               {label}
               {key === "faults" && faults.filter(f => !f.resolved).length > 0 && (
                 <span className="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] bg-red-100 text-red-600">{faults.filter(f => !f.resolved).length}</span>

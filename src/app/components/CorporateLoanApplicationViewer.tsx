@@ -137,7 +137,7 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
         tag="VINK Corporate Banking · Blended Finance Programme"
         title="Corporate Loan — Online Application"
         subtitle="Institutional-grade financing for growth, infrastructure, and working capital."
-        gradient={`linear-gradient(135deg,#0F172A 0%,${CP} 55%,#C9A84C 100%)`}
+        gradient={`linear-gradient(135deg,#0F172A 0%,${CP} 55%,#9B1C1C 100%)`}
       />
 
       <div className="max-w-2xl mx-auto w-full px-5 py-8 space-y-5">
@@ -155,7 +155,7 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
                 {ELIGIBILITY_CRITERIA.map(c => (
                   <label key={c.key}
                     className="flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition-all hover:bg-surface-2 select-none"
-                    style={{ borderColor: eligibility[c.key] ? GREEN + "60" : "var(--vk-line)", background: eligibility[c.key] ? GREEN + "08" : "#fff" }}>
+                    style={{ borderColor: eligibility[c.key] ? GREEN + "60" : "var(--vk-line)", background: eligibility[c.key] ? GREEN + "08" : "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" }}>
                     <div className={`w-4 h-4 rounded mt-0.5 flex-shrink-0 flex items-center justify-center border-2 transition-all ${eligibility[c.key] ? "border-green-500 bg-green-500" : "border-line-strong"}`}>
                       {eligibility[c.key] && <CheckCircle className="w-3 h-3 text-white" />}
                     </div>
@@ -169,7 +169,7 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
             </FormCard>
 
             <FormCard stepN={undefined} title="The following business types are excluded from this programme" subtitle="If your business falls into any category below, you are not eligible">
-              <div className="rounded-xl p-3 flex items-start gap-2" style={{ background: "#FFF7ED", border: "1px solid #FED7AA" }}>
+              <div className="rounded-xl p-3 flex items-start gap-2" style={{ background: "color-mix(in srgb, #FFF7ED var(--vk-wash), var(--vk-surface))", border: "1px solid color-mix(in srgb, #FED7AA var(--vk-wash), var(--vk-surface))" }}>
                 <AlertTriangle className="w-4 h-4 text-orange-500 flex-shrink-0 mt-0.5" />
                 <p className="text-orange-700 text-xs">If your business falls into any of the categories below, you are not eligible to apply.</p>
               </div>
@@ -194,7 +194,7 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
                 disabled={!allEligible}
                 onClick={() => { setEligibilityConfirmed(true); setStep(2); }}
                 className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:scale-105 shadow-md disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
-                style={{ background: allEligible ? `linear-gradient(135deg,${CP},#C9A84C)` : "#9CA3AF" }}>
+                style={{ background: allEligible ? `linear-gradient(135deg,${CP},#9B1C1C)` : "#9CA3AF" }}>
                 Confirm eligibility &amp; continue →
               </button>
             </div>
@@ -309,7 +309,7 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
                 {LOAN_PRODUCTS.map(p => (
                   <label key={p.id}
                     className="flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all hover:border-emerald-200 select-none"
-                    style={{ borderColor: selectedProduct === p.id ? CP : "var(--vk-line)", background: selectedProduct === p.id ? CP + "06" : "#fff" }}>
+                    style={{ borderColor: selectedProduct === p.id ? CP : "var(--vk-line)", background: selectedProduct === p.id ? CP + "06" : "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" }}>
                     <div className="w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all"
                       style={{ borderColor: selectedProduct === p.id ? CP : "var(--vk-line)" }}>
                       {selectedProduct === p.id && <div className="w-2 h-2 rounded-full" style={{ background: CP }} />}
@@ -465,7 +465,7 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
                   }
                 }}
                 className="w-full py-4 rounded-xl text-base font-black text-white transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed shadow-lg mt-2"
-                style={{ background: agreed && reqDocsCount >= totalReq ? `linear-gradient(135deg,${CP},#C9A84C)` : "#9CA3AF" }}>
+                style={{ background: agreed && reqDocsCount >= totalReq ? `linear-gradient(135deg,${CP},#9B1C1C)` : "#9CA3AF" }}>
                 {submitting ? "Submitting..." : reqDocsCount < totalReq
                   ? `Upload all required documents first (${reqDocsCount}/${totalReq})`
                   : "Submit Corporate Loan Application"}
@@ -479,7 +479,7 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
         {submitted && (
           <div className="space-y-5">
             <div className="bg-surface rounded-2xl border border-green-200 p-8 shadow-sm text-center space-y-4">
-              <div className="w-24 h-24 rounded-full flex items-center justify-center mx-auto" style={{ background: "linear-gradient(135deg,#D1FAE5,#A7F3D0)" }}>
+              <div className="w-24 h-24 rounded-full flex items-center justify-center mx-auto" style={{ background: "linear-gradient(135deg,color-mix(in srgb, #D1FAE5 var(--vk-wash), var(--vk-surface)),color-mix(in srgb, #A7F3D0 var(--vk-wash), var(--vk-surface)))" }}>
                 <CheckCircle className="w-12 h-12 text-green-600" />
               </div>
               <div>
@@ -517,7 +517,7 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
 
             <button onClick={onClose}
               className="w-full py-3.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 shadow-lg"
-              style={{ background: `linear-gradient(135deg,${CP},#C9A84C)` }}>
+              style={{ background: `linear-gradient(135deg,${CP},#9B1C1C)` }}>
               Back to VINK Corporate Banking
             </button>
           </div>

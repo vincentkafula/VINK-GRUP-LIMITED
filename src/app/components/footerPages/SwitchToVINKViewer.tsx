@@ -38,7 +38,7 @@ export function SwitchToVINKViewer({ isOpen, onClose }: Props) {
       </div>
 
       {/* Hero */}
-      <div className="py-20 px-6 text-white" style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
+      <div className="py-20 px-6 text-white" style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
         <div className="max-w-4xl mx-auto">
           <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4"
             style={{ background: "rgba(245,166,35,.2)", color: GOLD }}>Switch in 7–10 days</span>
@@ -116,12 +116,12 @@ export function SwitchToVINKViewer({ isOpen, onClose }: Props) {
         </section>
 
         {/* CTA */}
-        <section className="rounded-2xl p-8 text-center text-white" style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
+        <section className="rounded-2xl p-8 text-center text-white" style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
           <h3 className="text-2xl font-black mb-2">Ready to Switch?</h3>
           <p className="text-white/75 text-sm mb-6">Open your account online in under 10 minutes. No branch visit required.</p>
           <div className="flex flex-wrap justify-center gap-3">
             <button className="px-7 py-3 rounded-xl text-sm font-bold transition-all hover:opacity-90"
-              style={{ background: GOLD, color: "#222" }}>Open Account Online</button>
+              style={{ background: GOLD, color: "var(--vk-fg)" }}>Open Account Online</button>
             <button className="px-7 py-3 rounded-xl text-sm font-bold text-white border border-white/30 hover:bg-white/10 transition-all">
               Visit Our Head Office
             </button>

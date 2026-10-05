@@ -29,7 +29,7 @@ export function SponsorshipViewer({ isOpen, onClose }: Props) {
         <button onClick={onClose} className="p-2 rounded-full hover:bg-surface-2 transition-colors text-fg-muted"><X className="w-5 h-5" /></button>
       </div>
 
-      <div className="py-16 px-6 text-white" style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
+      <div className="py-16 px-6 text-white" style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
         <div className="max-w-4xl mx-auto">
           <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4"
             style={{ background: "rgba(245,166,35,.2)", color: GOLD }}>Community Investment</span>
@@ -85,12 +85,12 @@ export function SponsorshipViewer({ isOpen, onClose }: Props) {
           </div>
         </section>
 
-        <section className="rounded-2xl p-8 text-center text-white" style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
+        <section className="rounded-2xl p-8 text-center text-white" style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
           <h3 className="text-xl font-black mb-2">Ready to Apply?</h3>
           <p className="text-white/75 text-sm mb-4">Send your proposal to our sponsorship team.</p>
           <a href="mailto:sponsorships@vink.co.za"
             className="inline-block px-7 py-3 rounded-xl text-sm font-bold transition-all hover:opacity-90"
-            style={{ background: GOLD, color: "#222" }}>
+            style={{ background: GOLD, color: "var(--vk-fg)" }}>
             sponsorships@vink.co.za
           </a>
         </section>

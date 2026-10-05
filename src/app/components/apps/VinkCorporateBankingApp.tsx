@@ -230,9 +230,9 @@ function DashboardScreen({ tier }: { tier: Tier }) {
         <div className="px-3 pt-4">
           <p className="text-gray-500 text-[10px] font-semibold uppercase tracking-wider mb-2">Risk & Compliance</p>
           <div className="rounded-2xl p-3.5 flex items-center gap-3" style={{ background: "#FEF3C7" }}>
-            <AlertTriangle className="w-5 h-5 shrink-0" style={{ color: "#B45309" }} />
+            <AlertTriangle className="w-5 h-5 shrink-0" style={{ color: "var(--vk-warn)" }} />
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold" style={{ color: "#92400E" }}>1 AML alert requires review</p>
+              <p className="text-xs font-semibold" style={{ color: "var(--vk-warn)" }}>1 AML alert requires review</p>
               <p className="text-[10px] text-amber-700/80">Fraud centre · Risk dashboard · Audit trail all current</p>
             </div>
           </div>

@@ -42,6 +42,10 @@
   --vk-radius-lg: 16px;
   --vk-radius-xl: 24px;
 
+  --vk-wash: 100%;               /* how much of a light decorative colour shows: all of it on light, a faint tint on dark */
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Fraunces", ui-serif, Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   --vk-header-h: 56px;
   --vk-notice-h: 32px;
 
@@ -71,6 +75,7 @@
   --vk-bad: #ff7b84;     --vk-bad-bg: rgba(255, 123, 132, 0.12);
   --vk-info: #7aa8ff;    --vk-info-bg: rgba(122, 168, 255, 0.12);
 
+  --vk-wash: 13%;
   --vk-focus: #8fb4ff;
   --vk-overlay: rgba(0, 0, 0, 0.65);
 
@@ -171,18 +176,16 @@
  * so in dark mode any inline TEXT colour that is one of the brand crimsons is shown in the lightened one. Fills and borders are not touched
  * (the selectors match "color:" at the start of the style or after a semicolon, never "background-color:").
  */
-.dark [data-theme-aware] :is([style^="color: rgb(92, 10, 16)"], [style*="; color: rgb(92, 10, 16)"], [style^="color: rgb(139, 0, 0)"], [style*="; color: rgb(139, 0, 0)"],
+.dark :is([style^="color: rgb(92, 10, 16)"], [style*="; color: rgb(92, 10, 16)"], [style^="color: rgb(139, 0, 0)"], [style*="; color: rgb(139, 0, 0)"],
           [style^="color: rgb(155, 28, 28)"], [style*="; color: rgb(155, 28, 28)"], [style^="color: rgb(176, 64, 64)"], [style*="; color: rgb(176, 64, 64)"]) {
   color: var(--vk-crimson-text) !important;
 }
 
 /*
- * Screens that have been built on the tokens (the home page, the dashboards, the admin pages, the management panel) follow the theme and say so with
- * data-theme-aware. The older full-screen pages (application forms, product pages, legal and help pages) were designed on white, and many paint their own
- * light heroes and panels. They stay LIGHT whatever the theme, by resolving the tokens to their light values inside them, so they are never half dark.
- * Converting each of them to follow the theme is a page-by-page job; until a page is converted it simply does not carry data-theme-aware.
+ * Every full-screen page follows the theme. A page that cannot yet (it paints something the tokens cannot reach) opts out with data-theme-light, which resolves
+ * the tokens to their light values inside it, so it is never half dark.
  */
-.dark .fixed.inset-0:not([data-theme-aware]):not([data-state]):not([data-theme]):not([data-overlay-ignore]) {
+.dark .fixed.inset-0[data-theme-light]:not([data-state]):not([data-theme]):not([data-overlay-ignore]) {
   color-scheme: light;
   --vk-bg: #faf8f4; --vk-surface: #ffffff; --vk-surface-2: #f2efe8; --vk-line: #e4dfd3; --vk-line-strong: #cfc8b8;
   --vk-fg: #14161d; --vk-fg-muted: #5b6070; --vk-fg-subtle: #6b7080;

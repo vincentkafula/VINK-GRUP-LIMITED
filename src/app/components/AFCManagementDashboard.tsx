@@ -314,7 +314,7 @@ export function AFCManagementDashboard({ isOpen, onClose }: Props) {
           {screen === "overview" && (
             <div className="space-y-5 max-w-5xl">
               {/* Hero concept card */}
-              <div className="rounded-2xl overflow-hidden" style={{ background: `linear-gradient(135deg,${P} 0%,#0C0E14 50%,#C9A84C 100%)` }}>
+              <div className="rounded-2xl overflow-hidden" style={{ background: `linear-gradient(135deg,${P} 0%,#0C0E14 50%,#9B1C1C 100%)` }}>
                 <div className="p-5 relative overflow-hidden">
                   <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white/5 pointer-events-none" />
                   <p className="text-white/60 text-[9px] uppercase tracking-widest mb-2">How It Works</p>

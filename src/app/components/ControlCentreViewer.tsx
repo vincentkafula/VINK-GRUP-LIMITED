@@ -83,7 +83,7 @@ export function ControlCentreViewer({ isOpen, onClose, onOpenTerminalManagement 
       ]);
 
       setRecentActivity([
-        { label: "Taxi taps", icon: Receipt, color: "#2E0B10", count: (taps.data ?? []).length },
+        { label: "Taxi taps", icon: Receipt, color: "var(--vk-fg)", count: (taps.data ?? []).length },
         { label: "Retail transactions", icon: Receipt, color: "#1E3A8A", count: (transactions.data ?? []).length },
         { label: "Till sales", icon: Receipt, color: "#065F46", count: (sales.data ?? []).length },
       ]);

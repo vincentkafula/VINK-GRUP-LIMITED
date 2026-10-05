@@ -35,7 +35,7 @@ function Card({ card, onApply }: { card: PricingCard; onApply: (name: string, pr
   return (
     <div
       style={{
-        background: card.featured ? FEAT_BG : "#fff",
+        background: card.featured ? FEAT_BG : "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))",
         border: `1.5px solid ${card.featured ? FEAT_BG : "#E4DFFE"}`,
         borderRadius: 16, padding: "28px 26px",
         display: "flex", flexDirection: "column",
@@ -57,7 +57,7 @@ function Card({ card, onApply }: { card: PricingCard; onApply: (name: string, pr
         <span style={{ fontSize: 44, fontWeight: 800, color: card.featured ? "#fff" : BRAND, letterSpacing: -2, lineHeight: 1 }}>
           {card.price}
         </span>
-        <span style={{ fontSize: 14, color: card.featured ? "rgba(255,255,255,.75)" : "#8A82A6", fontWeight: 500 }}>
+        <span style={{ fontSize: 14, color: card.featured ? "rgba(255,255,255,.75)" : "var(--vk-fg-muted)", fontWeight: 500 }}>
           / Month
         </span>
       </div>
@@ -66,7 +66,7 @@ function Card({ card, onApply }: { card: PricingCard; onApply: (name: string, pr
       </p>
       <ul style={{ listStyle: "none", flex: 1, display: "flex", flexDirection: "column", gap: 9, marginBottom: 24 }}>
         {card.features.map((f, i) => (
-          <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: 9, fontSize: 13.5, color: card.featured ? "rgba(255,255,255,.9)" : "#4B4567", lineHeight: 1.45 }}>
+          <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: 9, fontSize: 13.5, color: card.featured ? "rgba(255,255,255,.9)" : "var(--vk-fg)", lineHeight: 1.45 }}>
             <span style={{ color: card.featured ? "#A7E8BD" : BRAND, fontSize: 15, flexShrink: 0, marginTop: 1 }}>✔</span>
             {f}
           </li>
@@ -75,14 +75,14 @@ function Card({ card, onApply }: { card: PricingCard; onApply: (name: string, pr
       <div style={{ display: "flex", gap: 10, marginTop: "auto" }}>
         <button
           onClick={() => onApply(card.name, card.price)}
-          style={{ flex: 1, background: card.featured ? "#fff" : BRAND, color: card.featured ? BRAND : "#fff", border: "none", padding: "11px 0", borderRadius: 8, fontSize: 13.5, fontWeight: 700, cursor: "pointer" }}
+          style={{ flex: 1, background: card.featured ? "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" : BRAND, color: card.featured ? BRAND : "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))", border: "none", padding: "11px 0", borderRadius: 8, fontSize: 13.5, fontWeight: 700, cursor: "pointer" }}
           onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.opacity = "0.88"; }}
           onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.opacity = "1"; }}
         >
           Apply Now
         </button>
         <button
-          style={{ flex: 1, background: "transparent", color: card.featured ? "#fff" : BRAND, border: `1.5px solid ${card.featured ? "rgba(255,255,255,.5)" : "#E4DFFE"}`, padding: "11px 0", borderRadius: 8, fontSize: 13.5, fontWeight: 600, cursor: "pointer" }}
+          style={{ flex: 1, background: "transparent", color: card.featured ? "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" : BRAND, border: `1.5px solid ${card.featured ? "rgba(255,255,255,.5)" : "color-mix(in srgb, #E4DFFE var(--vk-wash), var(--vk-surface))"}`, padding: "11px 0", borderRadius: 8, fontSize: 13.5, fontWeight: 600, cursor: "pointer" }}
           onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = card.featured ? "rgba(255,255,255,.12)" : "var(--vk-surface-2)"; }}
           onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
         >
@@ -137,10 +137,10 @@ export function PricingViewer({ isOpen, onClose, activeSubNav, heroTitle, heroSu
   const openApply = (name: string, price: string) => setApplyProduct({ name, price });
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto" style={{ background: "#F8F7FC", fontFamily: "'Inter', sans-serif" }}>
+    <div className="fixed inset-0 z-50 overflow-y-auto" style={{ background: "color-mix(in srgb, #F8F7FC var(--vk-wash), var(--vk-surface))", fontFamily: "var(--font-sans)" }}>
 
       {/* Sticky nav */}
-      <nav style={{ background: "var(--vk-surface)", borderBottom: "1px solid #E4DFFE", position: "sticky", top: 0, zIndex: 100 }}>
+      <nav style={{ background: "var(--vk-surface)", borderBottom: "1px solid color-mix(in srgb, #E4DFFE var(--vk-wash), var(--vk-surface))", position: "sticky", top: 0, zIndex: 100 }}>
         {/* Top row */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 48px", height: 64, maxWidth: 1280, margin: "0 auto" }}>
           <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" style={{ height: 44, width: "auto", objectFit: "contain" }} />
@@ -148,17 +148,17 @@ export function PricingViewer({ isOpen, onClose, activeSubNav, heroTitle, heroSu
           <ul style={{ display: "flex", gap: 28, listStyle: "none", margin: 0, padding: 0 }} className="hidden md:flex">
             {["Personal", "Business", "Corporate"].map((item, i) => (
               <li key={item}>
-                <a href="#" style={{ fontSize: 14, fontWeight: i === 0 ? 700 : 500, color: i === 0 ? BRAND : "#4B4567", textDecoration: "none" }}>{item}</a>
+                <a href="#" style={{ fontSize: 14, fontWeight: i === 0 ? 700 : 500, color: i === 0 ? BRAND : "var(--vk-fg)", textDecoration: "none" }}>{item}</a>
               </li>
             ))}
           </ul>
 
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <button style={{ background: BRAND, color: "#fff", border: "none", padding: "9px 22px", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
+            <button style={{ background: BRAND, color: "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))", border: "none", padding: "9px 22px", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
               🔒 Login
             </button>
             <button onClick={onClose}
-              style={{ background: "transparent", border: "1.5px solid #E4DFFE", borderRadius: 8, padding: "8px 10px", cursor: "pointer", display: "flex", alignItems: "center", color: "#4B4567" }}
+              style={{ background: "transparent", border: "1.5px solid color-mix(in srgb, #E4DFFE var(--vk-wash), var(--vk-surface))", borderRadius: 8, padding: "8px 10px", cursor: "pointer", display: "flex", alignItems: "center", color: "var(--vk-fg)" }}
               title="Close">
               <X className="w-4 h-4" />
             </button>
@@ -191,7 +191,7 @@ export function PricingViewer({ isOpen, onClose, activeSubNav, heroTitle, heroSu
         <h1 style={{ fontSize: "clamp(32px, 5vw, 52px)", fontWeight: 800, color: "var(--vk-crimson-text)", letterSpacing: -1.5, lineHeight: 1.1, margin: 0 }}>
           {heroTitle}
         </h1>
-        <p style={{ marginTop: 10, fontSize: 16, color: "#8A82A6", fontWeight: 500 }}>{heroSub}</p>
+        <p style={{ marginTop: 10, fontSize: 16, color: "var(--vk-fg-muted)", fontWeight: 500 }}>{heroSub}</p>
       </div>
 
       {/* Pricing */}

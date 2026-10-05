@@ -27,7 +27,7 @@ const MENU_ROWS = [
   ],
   [
     { id: "buy",      label: "Buy",         icon: <ShoppingCart className="w-6 h-6" />,    gradient: "from-[#EF4444] to-[#DC2626]", glow: "#EF4444" },
-    { id: "connect",  label: "Connect",     icon: <Wifi className="w-6 h-6" />,            gradient: "from-[#C9A84C] to-[#C9A84C]", glow: "#C9A84C" },
+    { id: "connect",  label: "Connect",     icon: <Wifi className="w-6 h-6" />,            gradient: "from-[#9B1C1C] to-[#9B1C1C]", glow: "#9B1C1C" },
   ],
   [
     { id: "payments", label: "Payments",    icon: <CreditCard className="w-6 h-6" />,      gradient: "from-[#0EA5E9] to-[#0284C7]", glow: "#0EA5E9" },
@@ -38,7 +38,7 @@ const MENU_ROWS = [
     { id: "device",   label: "Device",      icon: <Smartphone className="w-6 h-6" />,      gradient: "from-[#64748B] to-[#334155]", glow: "#64748B" },
   ],
   [
-    { id: "vinktv",    label: "VINK TV",      icon: <Tv className="w-6 h-6" />,              gradient: "from-[#C9A84C] to-[#5C0A10]", glow: "#C9A84C" },
+    { id: "vinktv",    label: "VINK TV",      icon: <Tv className="w-6 h-6" />,              gradient: "from-[#9B1C1C] to-[#5C0A10]", glow: "#9B1C1C" },
     { id: "cardless", label: "Cardless Cash",icon: <Banknote className="w-6 h-6" />,       gradient: "from-[#D97706] to-[#92400E]", glow: "#D97706" },
     { id: "elections",label: "Elections",   icon: <Vote className="w-6 h-6" />,            gradient: "from-[#0891B2] to-[#164E63]", glow: "#0891B2" },
   ],
@@ -167,7 +167,7 @@ export function PostLoginHome({ isOpen, onClose, onNavigate }: PostLoginHomeProp
             </svg>
             <div className="flex items-center">
               <div className="w-6 h-3 rounded-[3px] border border-white/50 relative overflow-hidden p-[1.5px]">
-                <div className="h-full rounded-[2px] bg-white/90" style={{ width: "78%" }} />
+                <div className="h-full rounded-[2px] bg-surface/90" style={{ width: "78%" }} />
               </div>
               <div className="w-[2px] h-[5px] bg-white/50 rounded-r-sm" />
             </div>
@@ -211,7 +211,7 @@ export function PostLoginHome({ isOpen, onClose, onNavigate }: PostLoginHomeProp
         <div className="mx-5 mb-4 flex-shrink-0">
           <div className="rounded-3xl p-5 relative overflow-hidden"
             style={{
-              background: "linear-gradient(135deg, #8B0000 0%, #C9A84C 45%, #9333EA 100%)",
+              background: "linear-gradient(135deg, #8B0000 0%, #9B1C1C 45%, #9333EA 100%)",
               boxShadow: "0 12px 40px rgba(107,94,215,0.55)",
             }}>
             {/* BG orbs */}
