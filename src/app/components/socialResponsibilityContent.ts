@@ -1,4 +1,4 @@
-// Content for the Social Responsibility page (source: VINK Social Development website content).
+// Content for the Social Responsibility page (source: Social Development website content).
 // Each tab is a list of blocks, rendered in order by CorporateSocialResponsibilityViewer.
 
 export type Block =
@@ -18,10 +18,10 @@ const ROLLOUT = "These services will be rolled out city by city as each programm
 export const TABS: Tab[] = [
   {
     label: "About",
-    title: "About VINK Social Development",
+    title: "About Social Development",
     blocks: [
       { t: "lead", text: "Cleaner, safer and more inclusive cities across South Africa and Zambia." },
-      { t: "p", text: "VINK Social Development is the social responsibility arm of VINK Multi Services. We exist to help our cities become cleaner, safer, more inclusive and more economically vibrant." },
+      { t: "p", text: "Social Development is the social responsibility arm of VINK Multi Services. We exist to help our cities become cleaner, safer, more inclusive and more economically vibrant." },
       { t: "p", text: "A dedicated portion of VINK’s profits is allocated to fund our programmes. A professional management team delivers them in partnership with local businesses, non-governmental organisations and non-profit organisations. We start in one precinct, prove the model, and then replicate it. We are preparing to bring it to seven cities across South Africa and Zambia: Cape Town, Johannesburg, Pretoria, Durban, Lusaka, Kitwe and Ndola." },
       { t: "h", text: "Our mission" },
       { t: "p", text: "To build safe, clean, welcoming and inclusive urban environments where businesses can thrive, residents feel secure and every person has the opportunity to rise." },
@@ -47,7 +47,7 @@ export const TABS: Tab[] = [
     label: "Cities We Serve",
     title: "Cities We Serve",
     blocks: [
-      { t: "p", text: "VINK Social Development is being built to serve seven cities across two countries. Each programme follows the same model, funded by VINK profits and delivered with local business, NGO and non-profit partners." },
+      { t: "p", text: "Social Development is being built to serve seven cities across two countries. Each programme follows the same model, funded by VINK profits and delivered with local business, NGO and non-profit partners." },
       { t: "note", text: "All cities are coming soon." },
       { t: "h", text: "South Africa" },
       { t: "pairs", items: [
@@ -82,7 +82,7 @@ export const TABS: Tab[] = [
     label: "Office of the CEO",
     title: "Administration: Office of the CEO",
     blocks: [
-      { t: "p", text: "The Office of the Chief Executive Officer sets the strategy behind everything VINK Social Development does. It oversees the day-to-day running of all four operational departments and makes sure each city programme meets the same standard of delivery, accountability and impact." },
+      { t: "p", text: "The Office of the Chief Executive Officer sets the strategy behind everything Social Development does. It oversees the day-to-day running of all four operational departments and makes sure each city programme meets the same standard of delivery, accountability and impact." },
       { t: "h", text: "What this office does" },
       { t: "list", items: [
         "Sets the long-term vision and strategy for every city we serve",
@@ -166,7 +166,7 @@ export const TABS: Tab[] = [
         "Harm-reduction support, guided by qualified professionals",
       ] },
       { t: "h", text: "Working with partners" },
-      { t: "p", text: "We cannot do this alone. In Cape Town, Johannesburg, Pretoria, Durban, Lusaka, Kitwe and Ndola, VINK Social Development will work with established NGOs and non-profit organisations that provide accommodation, family reunification, skills training, vocational programmes, work-based rehabilitation and faith-based support. We fund and coordinate these partnerships, and we invite new organisations that share our goals to work with us." },
+      { t: "p", text: "We cannot do this alone. In Cape Town, Johannesburg, Pretoria, Durban, Lusaka, Kitwe and Ndola, Social Development will work with established NGOs and non-profit organisations that provide accommodation, family reunification, skills training, vocational programmes, work-based rehabilitation and faith-based support. We fund and coordinate these partnerships, and we invite new organisations that share our goals to work with us." },
       { t: "h", text: "Give responsibly, show you care" },
       { t: "p", text: "Giving money directly on the street, though well meant, often does not lead to lasting change. We encourage the public to support the registered organisations that provide shelter, food, training and rehabilitation, or to volunteer and share information about these services. Details on how to donate to our partner organisations will be published for each city." },
       { t: "h", text: "Partner with us" },
@@ -178,7 +178,7 @@ export const TABS: Tab[] = [
     label: "Communications",
     title: "Communications",
     blocks: [
-      { t: "p", text: "The Communications department tells the story of VINK Social Development and builds the trust that makes our work possible. While the other departments work on the ground, Communications supports them all, keeping a clear, consistent and honest message across every city." },
+      { t: "p", text: "The Communications department tells the story of Social Development and builds the trust that makes our work possible. While the other departments work on the ground, Communications supports them all, keeping a clear, consistent and honest message across every city." },
       { t: "h", text: "What we do" },
       { t: "list", items: [
         "Keep stakeholders, residents, partners and the public informed about our work",
@@ -198,7 +198,7 @@ export const TABS: Tab[] = [
     label: "Get Involved",
     title: "Get Involved",
     blocks: [
-      { t: "p", text: "Safer, cleaner and more inclusive cities are built by many hands. There are several ways to be part of VINK Social Development as we prepare to launch." },
+      { t: "p", text: "Safer, cleaner and more inclusive cities are built by many hands. There are several ways to be part of Social Development as we prepare to launch." },
       { t: "h", text: "Businesses and property owners" },
       { t: "p", text: "Join our partner network, help shape the services in your precinct and be among the first to benefit when your city launches." },
       { t: "h", text: "NGOs and non-profit organisations" },
