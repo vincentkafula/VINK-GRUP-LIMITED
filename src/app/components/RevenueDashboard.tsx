@@ -18,7 +18,7 @@ import { api } from "../services/apiClient";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
-const P = "#0B5C2E";
+const P = "#5C0A10";
 const GOLD = "#F5A623";
 const fmt = (n: number) => `R${Number(n).toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const fmtM = (n: number) => n >= 1_000_000 ? `R${(n/1_000_000).toFixed(1)}M` : n >= 1000 ? `R${(n/1000).toFixed(1)}K` : fmt(n);
@@ -26,7 +26,7 @@ const fmtM = (n: number) => n >= 1_000_000 ? `R${(n/1_000_000).toFixed(1)}M` : n
 type Screen = "overview" | "tap_simulator" | "accounts" | "devices" | "agreements" | "transactions" | "investor";
 
 const ACCOUNT_COLORS: Record<string, string> = {
-  vink_platform: "#0B5C2E", investor: "#F59E0B", association: "#3B82F6",
+  vink_platform: "#5C0A10", investor: "#F59E0B", association: "#3B82F6",
   marshall: "#10B981", driver: "#14B8A6", passenger: "#EC4899", taxi_owner: "#6B7280",
 };
 
@@ -334,7 +334,7 @@ export function RevenueDashboard({ isOpen, onClose }: Props) {
 
                 <button onClick={runSimulator} disabled={simProcessing}
                   className="w-full py-4 rounded-2xl text-base font-black text-white transition-all hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-3 shadow-lg"
-                  style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
+                  style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
                   {simProcessing ? <><div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />Processing tap…</> : <><Zap className="w-5 h-5" />Simulate Tap &amp; Distribute Revenue</>}
                 </button>
               </div>
@@ -533,7 +533,7 @@ export function RevenueDashboard({ isOpen, onClose }: Props) {
                 </div>
                 <button onClick={saveAgreement} disabled={!agrAssoc || !agrMarshall || agrSaving}
                   className="w-full py-3 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-40 flex items-center justify-center gap-2"
-                  style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
+                  style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
                   {agrSaved ? <><CheckCircle className="w-4 h-4" />Agreement Saved!</> : agrSaving ? <><div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />Saving…</> : "Save Agreement"}
                 </button>
               </div>

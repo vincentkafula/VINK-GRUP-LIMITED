@@ -3,7 +3,7 @@ import vinkLogo from "../../../imports/LOGO_FINAL.png";
 import { Footer } from "../Footer";
 
 interface Props { isOpen: boolean; onClose: () => void; }
-const P = "#0B5C2E";
+const P = "#5C0A10";
 
 const AGENT_NETWORKS = [
   { name: "Pick n Pay",  icon: "🛒", cover: "Nationwide — all stores",      services: "Card recharge, replacement, cash withdrawals" },
@@ -18,11 +18,11 @@ export function BranchLocatorViewer({ isOpen, onClose }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-gray-50">
       <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm">
-        <img src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
+        <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
         <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500"><X className="w-5 h-5" /></button>
       </div>
 
-      <div className="py-12 px-6 text-white" style={{ background: `linear-gradient(135deg,${P},#34A853)` }}>
+      <div className="py-12 px-6 text-white" style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
         <div className="max-w-4xl mx-auto">
           <h1 className="text-3xl font-black mb-2">Find a VINK Service Point</h1>
           <p className="text-white/70 text-sm">VINK is a digital-first bank. Full banking services are available at our Head Office and through our national agent network.</p>
@@ -69,7 +69,7 @@ export function BranchLocatorViewer({ isOpen, onClose }: Props) {
                   <div className="flex flex-wrap gap-2">
                     {["Account opening", "FICA verification", "Card collection", "AFC device enquiries", "Business banking consultations"].map((s, i) => (
                       <span key={i} className="text-xs px-2.5 py-1 rounded-full"
-                        style={{ background: "#EDE9FE", color: P }}>{s}</span>
+                        style={{ background: "#F2EFE8", color: P }}>{s}</span>
                     ))}
                   </div>
                 </div>

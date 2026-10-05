@@ -4,9 +4,9 @@ import { Footer } from "./Footer";
 
 interface Props { isOpen: boolean; onClose: () => void }
 
-const BRAND      = "#0B5C2E";
-const BRAND_DARK = "#0F3D24";
-const FEAT_BG    = "#0B5C2E";
+const BRAND      = "#5C0A10";
+const BRAND_DARK = "#2E0B10";
+const FEAT_BG    = "#5C0A10";
 const TOP_NAV    = ["Personal", "Business", "Corporate"];
 const BIZ_SUBNAV = ["Start my business", "Accounts", "Credit cards", "Loans", "Invest", "Manage my Business", "Get Help"];
 const ACTIVE_IDX = 4;
@@ -46,7 +46,7 @@ function Card({ card }: { card: { name: string; price: string; featured?: boolea
           onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.opacity = "0.88"; }}
           onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.opacity = "1"; }}>Apply Now</button>
         <button style={{ flex: 1, background: "transparent", color: card.featured ? "#fff" : BRAND, border: `1.5px solid ${card.featured ? "#fff" : BRAND}`, borderRadius: 20, padding: "10px 0", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = card.featured ? "rgba(255,255,255,.1)" : "#f3f0fb"; }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = card.featured ? "rgba(255,255,255,.1)" : "#F2EFE8"; }}
           onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}>Tell me more</button>
       </div>
     </div>
@@ -61,7 +61,7 @@ export function InvestViewer({ isOpen, onClose }: Props) {
       {/* Top nav */}
       <nav style={{ background: "#fff", borderBottom: "1px solid #e8e8f0", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 32px", height: 56, position: "sticky", top: 0, zIndex: 100 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
-          <img src={vinkLogo} alt="VINK" style={{ height: 38, width: "auto", objectFit: "contain" }} />
+          <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" style={{ height: 38, width: "auto", objectFit: "contain" }} />
           <ul style={{ display: "flex", gap: 4, listStyle: "none", margin: 0, padding: 0 }} className="hidden md:flex">
             {TOP_NAV.map((item, i) => (
               <li key={item}><a href="#" style={{ textDecoration: "none", color: i === 1 ? BRAND : "#5a5a72", fontSize: 14, fontWeight: i === 1 ? 600 : 400, padding: "8px 12px", borderRadius: 4, display: "block" }}>{item}</a></li>

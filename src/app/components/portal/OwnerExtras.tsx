@@ -5,7 +5,7 @@ import { portalClient, useLoad, Status, Empty, rand, day } from "./ui";
 import { MapView } from "./MapView";
 import { CsvButton, RangeBar, TrendChart, useAutoRefresh, rangeQuery, saToday, saShift, monthStart, type MapPosition, type MapRoute, type Range } from "./widgets";
 
-const COLOR = "#8B5CF6";
+const COLOR = "#B04040";
 const call = portalClient("owner");
 
 /** Fares collected per day over the last two weeks. */

@@ -28,7 +28,7 @@ export function SignInElsewhere({ onClose, label = "This area" }: { onClose: () 
       </div>
       <button onClick={onClose}
         className="px-6 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90"
-        style={{ background: "linear-gradient(135deg,#1FAE58,#5FC97F)" }}>
+        style={{ background: "linear-gradient(135deg,#1FAE58,#C9A84C)" }}>
         Close
       </button>
     </div>

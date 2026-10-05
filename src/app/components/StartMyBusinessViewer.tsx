@@ -71,9 +71,9 @@ export function StartMyBusinessViewer({ isOpen, onClose, onNavigate }: Props) {
           --pav-ink-soft:   #1F2937;
           --pav-paper:      #FAFCFB;
           --pav-paper-dim:  #F0F7F2;
-          --pav-gold:       #0F8A4B;
-          --pav-gold-dim:   #0B5C2E;
-          --pav-plum:       #0F8A4B;
+          --pav-gold:       #9B1C1C;
+          --pav-gold-dim:   #5C0A10;
+          --pav-plum:       #9B1C1C;
           --pav-text-on-ink: #EDE9FA;
           --pav-text-muted-on-ink: #A7E8BD;
           --pav-text-body:  #1F2937;

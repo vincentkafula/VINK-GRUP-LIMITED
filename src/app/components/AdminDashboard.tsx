@@ -15,7 +15,7 @@ import vinkLogo from "../../imports/LOGO_FINAL.png";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
-const P = "#0B5C2E";
+const P = "#5C0A10";
 const GOLD = "#F5A623";
 
 // ─── Status config ────────────────────────────────────────────────────────────
@@ -25,7 +25,7 @@ const STATUS_CONFIG: Record<AppStatus, { label: string; color: string; bg: strin
   under_review:         { label: "Under Review",      color: "#3B82F6", bg: "#DBEAFE", icon: <Eye className="w-3.5 h-3.5" /> },
   approved:             { label: "Approved",          color: "#10B981", bg: "#D1FAE5", icon: <CheckCircle className="w-3.5 h-3.5" /> },
   declined:             { label: "Declined",          color: "#EF4444", bg: "#FEE2E2", icon: <XCircle className="w-3.5 h-3.5" /> },
-  more_info_requested:  { label: "More Info Needed",  color: "#34A853", bg: "#EDE9FE", icon: <AlertCircle className="w-3.5 h-3.5" /> },
+  more_info_requested:  { label: "More Info Needed",  color: "#34A853", bg: "#F2EFE8", icon: <AlertCircle className="w-3.5 h-3.5" /> },
 };
 
 // Narrowed to the 3 account tiers this system actually persists — see the
@@ -37,7 +37,7 @@ const TYPE_LABELS_TIER: Record<string, string> = {
 };
 
 const TYPE_COLORS_TIER: Record<string, string> = {
-  personal: "#128A43", business: "#1565C0", corporate: "#0B5C2E",
+  personal: "#8B0000", business: "#1565C0", corporate: "#5C0A10",
 };
 
 const REVIEWERS = ["Sarah Mokoena", "Thabo Dlamini", "Priya Naidoo", "James van Berg", "Lindiwe Khumalo"];
@@ -254,7 +254,7 @@ function AppDetailDrawer({ app, onClose, onAction }: {
               </button>
               <button onClick={() => setShowInfoForm(true)}
                 className="flex flex-col items-center gap-1.5 py-3 rounded-2xl text-xs font-black text-white transition-all hover:scale-[1.03] active:scale-[0.97]"
-                style={{ background: "linear-gradient(135deg,#34A853,#FF9900)" }}>
+                style={{ background: "linear-gradient(135deg,#C9A84C,#FF9900)" }}>
                 <MessageSquare className="w-5 h-5" />
                 More Info
               </button>
@@ -374,7 +374,7 @@ export function AdminDashboard({ isOpen, onClose }: Props) {
       {/* Top bar */}
       <div className="flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm flex-shrink-0 z-10">
         <div className="flex items-center gap-3">
-          <img src={vinkLogo} alt="VINK" className="h-8 w-auto object-contain" />
+          <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-8 w-auto object-contain" />
           <div className="border-l border-gray-200 pl-3">
             <p className="text-sm font-black text-gray-900 leading-none">Admin Dashboard</p>
             <p className="text-[10px] text-gray-400 mt-0.5">Application Review & Approval Centre</p>

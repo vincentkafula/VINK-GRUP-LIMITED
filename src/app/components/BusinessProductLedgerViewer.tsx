@@ -154,9 +154,9 @@ export function BusinessProductLedgerViewer({ isOpen, onClose, initialCategory, 
           --pav-ink-soft:   #1F2937;
           --pav-paper:      #FAFCFB;
           --pav-paper-dim:  #F0F7F2;
-          --pav-gold:       #0F8A4B;
-          --pav-gold-dim:   #0B5C2E;
-          --pav-plum:       #0F8A4B;
+          --pav-gold:       #9B1C1C;
+          --pav-gold-dim:   #5C0A10;
+          --pav-plum:       #9B1C1C;
           --pav-text-on-ink: #EDE9FA;
           --pav-text-muted-on-ink: #A7E8BD;
           --pav-text-body:  #1F2937;
@@ -298,8 +298,8 @@ export function BusinessProductLedgerViewer({ isOpen, onClose, initialCategory, 
       </nav>
 
       <div className="relative overflow-hidden" style={{ background: "linear-gradient(160deg,#FAFCFB 0%,#F3F9F5 100%)" }}>
-        <div className="absolute -left-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: "linear-gradient(180deg,#0F8A4B,#FF7A1A)", filter: "blur(60px)" }} />
-        <div className="absolute -right-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: "linear-gradient(180deg,#FF7A1A,#0F8A4B)", filter: "blur(60px)" }} />
+        <div className="absolute -left-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: "linear-gradient(180deg,#9B1C1C,#FF7A1A)", filter: "blur(60px)" }} />
+        <div className="absolute -right-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: "linear-gradient(180deg,#FF7A1A,#9B1C1C)", filter: "blur(60px)" }} />
         <div className="relative max-w-6xl mx-auto px-8 py-14 sm:py-16">
           <span className="inline-block text-[11px] font-bold tracking-[0.14em] uppercase mb-3" style={{ color: "#FF7A1A" }}>{copy.heroEyebrow}</span>
           <h1 className="text-3xl sm:text-4xl font-black leading-[1.1] text-gray-900 whitespace-pre-line">{copy.heroTitle}</h1>

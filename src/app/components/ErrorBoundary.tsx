@@ -53,7 +53,7 @@ export class ErrorBoundary extends Component<Props, State> {
           </p>
           <button onClick={() => window.location.reload()}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90"
-            style={{ background: "#5B21B6" }}>
+            style={{ background: "#8B0000" }}>
             <RefreshCw className="w-4 h-4" />Reload page
           </button>
         </div>
@@ -75,7 +75,7 @@ export class ErrorBoundary extends Component<Props, State> {
         </p>
         <button onClick={this.reset}
           className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90"
-          style={{ background: "#0B5C2E" }}>
+          style={{ background: "#5C0A10" }}>
           <RefreshCw className="w-4 h-4" />Try again
         </button>
       </div>

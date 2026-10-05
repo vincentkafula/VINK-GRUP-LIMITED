@@ -2,7 +2,7 @@ import { checkTierLimit } from "./riskRules.js";
 import type { CountryConfig, KycTier } from "./countryConfig.js";
 
 /**
- * The hook the Banking module (Manshya) calls before it sends money to another bank. It applies the ACTIVE South African profile's daily limit for the
+ * The hook the Banking module (VINK) calls before it sends money to another bank. It applies the ACTIVE South African profile's daily limit for the
  * customer's verification level, but only when the profile switches enforcement on (limits.enforce). Off, the Banking module's own flat limits are the
  * only limits, exactly as before. It answers with a sentence for the customer, or null when the payment may go ahead.
  *

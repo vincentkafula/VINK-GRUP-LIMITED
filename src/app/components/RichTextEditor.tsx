@@ -79,9 +79,9 @@ export function RichTextEditor({ value, onChange, placeholder }: Props) {
         .rich-text-editable:empty:before { content: attr(data-placeholder); color: #9CA3AF; }
         .rich-text-editable h2 { font-size: 1.25rem; font-weight: 700; margin: 0.75rem 0 0.4rem; }
         .rich-text-editable h3 { font-size: 1.05rem; font-weight: 700; margin: 0.6rem 0 0.3rem; }
-        .rich-text-editable blockquote { border-left: 3px solid #128A43; padding-left: 0.75rem; margin: 0.5rem 0; color: #4B5563; font-style: italic; }
+        .rich-text-editable blockquote { border-left: 3px solid #8B0000; padding-left: 0.75rem; margin: 0.5rem 0; color: #4B5563; font-style: italic; }
         .rich-text-editable ul, .rich-text-editable ol { padding-left: 1.5rem; margin: 0.4rem 0; }
-        .rich-text-editable a { color: #128A43; text-decoration: underline; }
+        .rich-text-editable a { color: #8B0000; text-decoration: underline; }
         .rich-text-editable p { margin: 0.4rem 0; }
       `}</style>
     </div>

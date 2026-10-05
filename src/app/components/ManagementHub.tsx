@@ -69,14 +69,14 @@ const ALL_NAV = [
 const NAVY   = "#0A0F1E";
 const DEEP   = "#111827";
 const SURF   = "#1E293B";
-const P      = "#0B5C2E";
+const P      = "#5C0A10";
 const GOLD   = "#F5A623";
 const GREEN  = "#10B981";
 const RED    = "#EF4444";
 const TEAL   = "#14B8A6";
 
 const ROLE_COLORS: Record<RoleId, string> = {
-  global_director:      "#128A43",
+  global_director:      "#8B0000",
   continental_director: "#34A853",
   regional_director:    "#3B82F6",
   country_director:     "#0891B2",
@@ -281,7 +281,7 @@ function UsersScreen() {
                 <p className="text-white text-sm font-semibold">{u.name}</p>
                 <p className="text-gray-500 text-xs">{u.email}</p>
               </div>
-              <Badge text={u.role} color="#128A43" />
+              <Badge text={u.role} color="#8B0000" />
               <Badge text={u.status} color={statusColor(u.status)} />
               <p className="text-gray-600 text-[10px] w-16 text-right flex-shrink-0">{u.last}</p>
               <div className="flex gap-1">
@@ -600,7 +600,7 @@ function DashboardShell({ user, onLogout }: { user: MgmtUser; onLogout: () => vo
         {/* Logo */}
         <div className="flex items-center gap-3 px-4 py-4 border-b" style={{ borderColor: "#1E2A45" }}>
           <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-white font-black text-xs"
-            style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>V</div>
+            style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>V</div>
           {sidebarOpen && <p className="text-white font-black text-sm leading-tight">VINK<br /><span className="font-normal text-[10px] text-gray-400">Management Hub</span></p>}
         </div>
 

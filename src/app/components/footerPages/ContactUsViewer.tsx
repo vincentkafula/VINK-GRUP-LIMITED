@@ -9,7 +9,7 @@ import { publicApi } from "../../services/apiClient";
 import { Footer } from "../Footer";
 
 interface Props { isOpen: boolean; onClose: () => void; initialTab?: TabId; }
-const P = "#0B5C2E";
+const P = "#5C0A10";
 const GOLD = "#F5A623";
 
 type TabId = "connect" | "locate" | "feedback";
@@ -145,7 +145,7 @@ function DirectoryGrid() {
             style={{ borderColor: isOpen ? (it.urgent ? "#FCA5A5" : "#A7E8BD") : "#E5E7EB", borderLeftWidth: 3, borderLeftColor: it.urgent ? "#EF4444" : P }}>
             <div className="flex items-center gap-3 px-4 py-3.5">
               <span className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                style={{ background: it.urgent ? "#FEE2E2" : "#EDE9FE", color: it.urgent ? "#DC2626" : P }}>{it.icon}</span>
+                style={{ background: it.urgent ? "#FEE2E2" : "#F2EFE8", color: it.urgent ? "#DC2626" : P }}>{it.icon}</span>
               <span className="font-bold text-gray-900 text-sm flex-1">{it.title}</span>
               {it.urgent && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-red-100 text-red-600 flex-shrink-0">24/7</span>}
               <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform flex-shrink-0 ${isOpen ? "rotate-180" : ""}`} />
@@ -198,7 +198,7 @@ function ConnectTab({ goTo }: { goTo: (t: TabId) => void }) {
             { icon: <AlertTriangle className="w-5 h-5" />, title: "Report Fraud", sub: "Lost cards, suspicious activity", cta: "Call hotline", href: "tel:+27614615035", urgent: true },
           ].map((c, i) => (
             <div key={i} className="group p-5 bg-white rounded-xl border border-gray-200 hover:border-emerald-200 hover:shadow-md transition-all flex flex-col">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style={{ background: c.urgent ? "#FEE2E2" : "#EDE9FE", color: c.urgent ? "#DC2626" : P }}>{c.icon}</div>
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style={{ background: c.urgent ? "#FEE2E2" : "#F2EFE8", color: c.urgent ? "#DC2626" : P }}>{c.icon}</div>
               <p className="font-bold text-gray-900 text-sm">{c.title}</p>
               <p className="text-xs text-gray-500 mt-0.5 flex-1">{c.sub}</p>
               {c.href
@@ -412,7 +412,7 @@ function FeedbackTab() {
 
             <button onClick={handleSubmit} disabled={submitting}
               className="px-8 py-3 rounded-full text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-2"
-              style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
+              style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
               {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Sending...</> : "Send Message"}
             </button>
           </div>
@@ -452,7 +452,7 @@ export function ContactUsViewer({ isOpen, onClose, initialTab }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-white">
       <div className="sticky top-0 z-30 flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm">
-        <img src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
+        <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
         <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500"><X className="w-5 h-5" /></button>
       </div>
 
@@ -479,7 +479,7 @@ export function ContactUsViewer({ isOpen, onClose, initialTab }: Props) {
       <div className="bg-gray-50 border-t border-gray-100 mt-4">
         <div className="max-w-4xl mx-auto w-full px-5 py-8 grid sm:grid-cols-2 gap-3">
           <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-start gap-4">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#EDE9FE", color: P }}><Building2 className="w-5 h-5" /></div>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#F2EFE8", color: P }}><Building2 className="w-5 h-5" /></div>
             <div>
               <p className="text-[11px] font-bold uppercase tracking-wide text-gray-400 mb-1">Head Office</p>
               <p className="font-black text-gray-900 text-sm">VINK Finance Limited</p>

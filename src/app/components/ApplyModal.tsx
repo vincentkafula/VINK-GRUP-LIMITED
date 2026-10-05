@@ -11,7 +11,7 @@ interface Props {
   price?: string;
 }
 
-const P = "#0B5C2E";
+const P = "#5C0A10";
 
 const EMPLOYMENT_OPTIONS = ["Employed (Full-time)", "Employed (Part-time)", "Self-employed", "Business owner", "Pensioner", "Student", "Unemployed"];
 
@@ -78,14 +78,14 @@ export function ApplyModal({ isOpen, onClose, product, tier, price }: Props) {
                 Apply for another
               </button>
               <button onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white"
-                style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
+                style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
                 Done
               </button>
             </div>
           </div>
         ) : (
           <div className="p-6 space-y-4">
-            <div className="rounded-xl p-3 text-sm" style={{ background: "#F3F0FB", color: P }}>
+            <div className="rounded-xl p-3 text-sm" style={{ background: "#F2EFE8", color: P }}>
               <strong>{product}</strong>{tier ? ` · ${tier}` : ""}{price ? ` · ${price}/month` : ""}
             </div>
 
@@ -135,7 +135,7 @@ export function ApplyModal({ isOpen, onClose, product, tier, price }: Props) {
 
             <button onClick={handleSubmit} disabled={submitting}
               className="w-full py-3 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 disabled:opacity-60 transition-all hover:opacity-90"
-              style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
+              style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
               {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Submitting...</> : "Submit Application"}
             </button>
           </div>

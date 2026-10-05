@@ -70,7 +70,7 @@ describe("bank account links (real Banking module + database)", () => {
     const empty = (await get("/bank/driver")).body;
     expect(empty.link).toBeNull(); expect(empty.rules).toMatchObject({ allowed: ["personal"], message: "Drivers must use a Personal account." }); expect(empty.accounts).toEqual([]);
     const l = (await call("POST", "/bank/driver/link", { holderType: "personal" })).body.link;
-    expect(l).toMatchObject({ holderName: "Dee Driver", bankName: "Manshya Finance", accountType: "Personal", status: "verified", currency: "ZAR", accountName: "Personal current", accountKind: "current", balance: 0 });
+    expect(l).toMatchObject({ holderName: "Dee Driver", bankName: "VINK Finance", accountType: "Personal", status: "verified", currency: "ZAR", accountName: "Personal current", accountKind: "current", balance: 0 });
     expect(l.accountNumber).toMatch(/^\d{10}$/);
     const inBank = mod.services.listAccounts({ id: U.driver });
     expect(inBank).toHaveLength(1); expect(inBank[0].number).toBe(l.accountNumber);                    // one source of truth: the very same account
@@ -174,7 +174,7 @@ describe("bank account links (real Banking module + database)", () => {
 
   /* ─────────── payment channels: shown as they are, nothing created ─────────── */
   it("shows the existing channel accounts on the relevant dashboards and creates no accounts", async () => {
-    channels = readChannelAccounts({ PAYMENT_CHANNEL_ACCOUNTS: JSON.stringify({ online: { accountNumber: "9000000001", holder: "Manshya Online", bank: "Manshya Finance", type: "Business" }, in_person: { accountNumber: "9000000002", holder: "Manshya In-Person", bank: "Manshya Finance", type: "Business" } }) } as unknown as NodeJS.ProcessEnv);
+    channels = readChannelAccounts({ PAYMENT_CHANNEL_ACCOUNTS: JSON.stringify({ online: { accountNumber: "9000000001", holder: "VINK Online", bank: "VINK Finance", type: "Business" }, in_person: { accountNumber: "9000000002", holder: "VINK In-Person", bank: "VINK Finance", type: "Business" } }) } as unknown as NodeJS.ProcessEnv);
     const before = merchants();
     who(U.assoc); expect((await get("/bank/association")).body.channels).toMatchObject([{ channel: "in_person", label: "In-Person Payment", configured: true, accountNumber: "9000000002" }, { channel: "online", label: "Online Payment", configured: true, accountNumber: "9000000001" }]);
     who(U.driver); expect((await get("/bank/driver")).body.channels.map((c: any) => c.channel)).toEqual(["in_person"]);

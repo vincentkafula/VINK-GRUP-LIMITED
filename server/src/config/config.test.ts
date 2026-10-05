@@ -121,7 +121,7 @@ describe("country configuration lifecycle (maker-checker)", () => {
     expect((await call("POST", "/simulate", { country: "ZA", txn: "x", amountCents: 1.5 })).status).toBe(400);
   });
 
-  it("copies the fees Manshya can express into the Banking module when a profile is activated", async () => {
+  it("copies the fees VINK can express into the Banking module when a profile is activated", async () => {
     const seen: string[] = [];
     const target = { fees: { online: { pct: 0.029, fixed: 100 }, pos: { pct: 0.025, fixed: 0 } }, payoutFee: 850 };
     const { syncManshyaFees } = await import("./manshyaFeeSync.js");

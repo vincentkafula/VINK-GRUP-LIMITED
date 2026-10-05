@@ -6,7 +6,7 @@ import { countryForCurrency, type CountryConfig } from "../config/countryConfig.
 
 /**
  * The money engine: turns confirmed taps into balances, taps into trips, trips into the marshal fee, and driver-owner agreements into
- * transfers. Every movement is an integer number of minor units, posted to the Banking module (Manshya) ledger under a reference that makes it
+ * transfers. Every movement is an integer number of minor units, posted to the Banking module (VINK) ledger under a reference that makes it
  * happen EXACTLY ONCE, however many times a cycle is re-run or a request is retried.
  *
  *   tap (confirmed)  ->  settlement   fare leaves the clearing account: the platform keeps its fee, the investor gets a share of that fee,
@@ -45,7 +45,7 @@ interface ManshyaLedgerHandle {
 }
 export const MONEY_KIND = "vink_money";
 
-/** Adapter over the real Manshya core. Idempotency is the journal reference, checked in the same transaction as the posting. */
+/** Adapter over the real VINK core. Idempotency is the journal reference, checked in the same transaction as the posting. */
 export function manshyaLedgerPort(mn: ManshyaLedgerHandle): LedgerPort {
   const exists = mn.db.prepare("SELECT 1 AS x FROM journals WHERE kind = ? AND ref = ?");
   const movedStmt = mn.db.prepare("SELECT COALESCE(SUM(e.amount), 0) AS s FROM entries e JOIN journals j ON j.id = e.journal_id WHERE j.kind = ? AND j.ref = ? AND e.account_id = ?");

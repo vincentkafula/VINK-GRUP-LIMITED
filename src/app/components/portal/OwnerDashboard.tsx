@@ -9,7 +9,7 @@ import { LinksPanel } from "./LinksPanel";
 import { OwnerTrend, OwnerMap, OwnerFinancials } from "./OwnerExtras";
 import { ScreenBoundary } from "./widgets";
 
-const COLOR = "#8B5CF6";
+const COLOR = "#B04040";
 const call = portalClient("owner");
 
 interface Vehicle { id: string; registration: string; make: string | null; model: string | null; year: number | null; colour: string | null; seats: number | null; discExpiry: string | null; driverId: string | null; driverName: string | null }

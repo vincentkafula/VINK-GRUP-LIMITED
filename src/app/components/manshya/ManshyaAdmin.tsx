@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any -- rows are untyped JSON from the Manshya API; fields are read directly as in the original dashboard */
+/* eslint-disable @typescript-eslint/no-explicit-any -- rows are untyped JSON from the VINK API; fields are read directly as in the original dashboard */
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import "./manshya.css";
 import { getSession } from "../../services/apiClient";
@@ -70,7 +70,7 @@ export function ManshyaAdmin({ isOpen, onClose }: { isOpen: boolean; onClose: ()
   if (!isOpen) return null;
 
   return (
-    <div className="mka" role="dialog" aria-modal="true" aria-label="Manshya back office">
+    <div className="mka" role="dialog" aria-modal="true" aria-label="VINK back office">
       <TestModeBanner />
       <header>
         <b>manshya<i>.</i> back office</b>

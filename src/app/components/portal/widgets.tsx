@@ -97,7 +97,7 @@ export function TrendChart({ days, color, label, money = true }: { days: { day: 
 
 export interface MapRoute { id: string; name: string; active: boolean; registration: string | null; terminalSerial: string; points: { lat: number; lng: number }[] }
 export interface MapPosition { terminalSerial: string; registration: string | null; lat: number; lng: number; at: string | null }
-const ROUTE_COLORS = ["#60A5FA", "#F59E0B", "#34D399", "#F472B6", "#A78BFA", "#F87171"];
+const ROUTE_COLORS = ["#60A5FA", "#F59E0B", "#34D399", "#F472B6", "#C9A84C", "#F87171"];
 
 /** Routes as lines and the last reported position of each vehicle as a dot, drawn to scale. There are no street tiles. */
 export function RouteMap({ routes, positions, color }: { routes: MapRoute[]; positions: MapPosition[]; color: string }) {

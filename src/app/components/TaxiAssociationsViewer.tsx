@@ -8,15 +8,15 @@ import { Footer } from "./Footer";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
-const P    = "#0B5C2E";
+const P    = "#5C0A10";
 const GOLD = "#F5A623";
 const NAVY = "#0A0F1E";
 
 const PROVINCE_COLORS: Record<string, string> = {
-  National:        "#128A43",
+  National:        "#8B0000",
   Gauteng:         "#3B82F6",
   "KwaZulu-Natal": "#0891B2",
-  "Western Cape":  "#0B5C2E",
+  "Western Cape":  "#5C0A10",
   "Eastern Cape":  "#059669",
   Limpopo:         "#DC2626",
   Mpumalanga:      "#EA580C",
@@ -337,7 +337,7 @@ export function TaxiAssociationsViewer({ isOpen, onClose }: Props) {
                 {TAXI_ASSOCIATIONS.filter(a => a.level === "National").map((a, i) => (
                   <div key={i} className="p-4 rounded-xl" style={{ background: "#128A4315", border: "1px solid #128A4330" }}>
                     <div className="flex items-start gap-2">
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "#128A43", color: "#fff" }}>
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "#8B0000", color: "#fff" }}>
                         <Building2 className="w-4 h-4" />
                       </div>
                       <div>

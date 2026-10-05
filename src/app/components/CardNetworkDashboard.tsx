@@ -12,7 +12,7 @@ import {
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
-const P = "#0B5C2E";
+const P = "#5C0A10";
 const VISA_BLUE = "#1A1F71";
 const MC_RED = "#EB001B";
 const MC_ORANGE = "#F79E1B";
@@ -190,7 +190,7 @@ function AFCSimulator() {
       <div className="flex items-center justify-between flex-wrap gap-2">
         <p className="text-sm font-black text-gray-800">AFC Payment Simulator — 3-Second Guarantee</p>
         {totalMs > 0 && (
-          <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ background: result === "approved" ? "#D1FAE5" : result === "declined" ? "#FEE2E2" : "#EDE9FE", color: result === "approved" ? "#059669" : result === "declined" ? "#DC2626" : P }}>
+          <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ background: result === "approved" ? "#D1FAE5" : result === "declined" ? "#FEE2E2" : "#F2EFE8", color: result === "approved" ? "#059669" : result === "declined" ? "#DC2626" : P }}>
             {totalMs}ms {totalMs < 500 ? "⚡" : totalMs < 1000 ? "✓" : totalMs < 3000 ? "⚠" : "❌"}
           </span>
         )}
@@ -201,7 +201,7 @@ function AFCSimulator() {
         {(Object.keys(EMV_PATHS) as EMVPath[]).map(path => (
           <button key={path} onClick={() => !running && setSelectedPath(path)}
             className="rounded-xl p-2.5 text-center transition-all border-2"
-            style={{ borderColor: selectedPath === path ? EMV_PATHS[path].color : "transparent", background: selectedPath === path ? EMV_PATHS[path].color + "12" : "#F8F7FF" }}>
+            style={{ borderColor: selectedPath === path ? EMV_PATHS[path].color : "transparent", background: selectedPath === path ? EMV_PATHS[path].color + "12" : "#FAF8F4" }}>
             <p className="text-[10px] font-black" style={{ color: EMV_PATHS[path].color }}>{EMV_PATHS[path].label.split(" ")[0]}</p>
             <p className="text-[9px] text-gray-500 mt-0.5">{EMV_PATHS[path].totalMs}</p>
           </button>
@@ -224,7 +224,7 @@ function AFCSimulator() {
         <div className="p-5 flex flex-col items-center gap-4">
           {/* Card visual */}
           <div className="relative w-48 h-28 rounded-xl flex items-end p-3"
-            style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
+            style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
             <div className="absolute top-3 left-3 w-7 h-5 rounded bg-yellow-400/70" />
             <div className="absolute top-3 right-3">
               {currentStep >= 2 ? <NetworkBadge network="visa" /> : <span className="text-white/40 text-xs">VINK</span>}
@@ -448,7 +448,7 @@ export function CardNetworkDashboard({ isOpen, onClose }: Props) {
               {/* Network membership cards */}
               <div className="grid sm:grid-cols-2 gap-5">
                 {/* Visa */}
-                <div className="rounded-2xl overflow-hidden text-white shadow-lg" style={{ background: `linear-gradient(135deg,${VISA_BLUE},#0F3D24)` }}>
+                <div className="rounded-2xl overflow-hidden text-white shadow-lg" style={{ background: `linear-gradient(135deg,${VISA_BLUE},#2E0B10)` }}>
                   <div className="p-5">
                     <div className="flex items-center justify-between mb-4">
                       <div className="bg-white rounded px-3 py-1 text-[14px] font-black italic" style={{ color: VISA_BLUE }}>VISA</div>
@@ -544,7 +544,7 @@ export function CardNetworkDashboard({ isOpen, onClose }: Props) {
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-gray-100" style={{ background: "#F8F7FF" }}>
+                      <tr className="border-b border-gray-100" style={{ background: "#FAF8F4" }}>
                         {["Network","BIN","Country","Currency","Card Type","Tier","Daily Limit","Routing","Interchange","Status"].map(h => (
                           <th key={h} className="text-left px-4 py-3 text-[10px] font-black uppercase tracking-wide text-gray-500">{h}</th>
                         ))}
@@ -597,7 +597,7 @@ export function CardNetworkDashboard({ isOpen, onClose }: Props) {
                     ["F025", "POS Condition", "00 — Normal"],
                     ["F037", "Retrieval Ref", "622114321500"],
                     ["F041", "Terminal ID",   "AFC00847"],
-                    ["F042", "Merchant ID",   "MANSHYAAFC0012347"],
+                    ["F042", "Merchant ID",   "VINKAFC0012347"],
                     ["F043", "Merchant Name", "VINK AFC ROUTE ZA"],
                     ["F049", "Currency Code", "710 — ZAR"],
                     ["F055", "EMV Data",      "5F2A... (ARQC cryptogram)"],
@@ -799,7 +799,7 @@ export function CardNetworkDashboard({ isOpen, onClose }: Props) {
                         </div>
                         <p className="text-[11px] text-gray-500 mt-0.5">{r.desc}</p>
                       </div>
-                      <span className="flex-shrink-0 text-[10px] font-bold px-2 py-1 rounded" style={{ background: "#EDE9FE", color: P }}>{r.action}</span>
+                      <span className="flex-shrink-0 text-[10px] font-bold px-2 py-1 rounded" style={{ background: "#F2EFE8", color: P }}>{r.action}</span>
                     </div>
                   ))}
                 </div>

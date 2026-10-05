@@ -7,7 +7,7 @@ import { ScreenBoundary } from "./widgets";
 // The payments and banking dashboard is the same one customers use (online payments, in-person payments, banking, receipts).
 const ManshyaDashboard = lazy(() => import("../manshya/ManshyaDashboard").then((m) => ({ default: m.ManshyaDashboard })));
 
-const COLOR = "#128A43";
+const COLOR = "#8B0000";
 const call = portalClient("personal");
 const NAV = [
   { icon: <User className="w-4 h-4" />, label: "Profile" },

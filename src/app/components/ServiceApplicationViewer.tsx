@@ -59,12 +59,12 @@ const SERVICE_CONFIG: Record<ServiceType, {
     tag:           "VINK Personal Banking · Accounts",
     title:         "Bank Account Application",
     subtitle:      "Open your selected VINK account in minutes — FICA-verified and ready to use.",
-    gradient:      "linear-gradient(135deg,#1A237E 0%,#128A43 55%,#34A853 100%)",
+    gradient:      "linear-gradient(135deg,#1A237E 0%,#8B0000 55%,#C9A84C 100%)",
     successTitle:  "Account Opened!",
     successBody:   "Your VINK finance account is active. Your VINK card will be delivered to your registered address within 5–7 business days.",
     accountLabel:  "Account number",
     accountPrefix: "VINK-ACC",
-    accentColor:   "#128A43",
+    accentColor:   "#8B0000",
   },
 };
 
@@ -203,7 +203,7 @@ function FingerprintScanner({ onDone, accentColor }: { onDone: () => void; accen
     <div className="flex flex-col items-center gap-5 py-4">
       <div
         className="relative w-36 h-36 rounded-3xl flex items-center justify-center cursor-pointer transition-all select-none"
-        style={{ background: done ? "#D1FAE5" : scanning ? accentColor + "15" : "#F3F0FB", border: `3px solid ${done ? GREEN : scanning ? accentColor : "#DDD6FE"}`, boxShadow: scanning ? `0 0 30px ${accentColor}30` : "none" }}
+        style={{ background: done ? "#D1FAE5" : scanning ? accentColor + "15" : "#F2EFE8", border: `3px solid ${done ? GREEN : scanning ? accentColor : "#E4DFD3"}`, boxShadow: scanning ? `0 0 30px ${accentColor}30` : "none" }}
         onClick={!scanning && !done ? () => { setAttempt(a => a + 1); startScan(); } : undefined}
       >
         <Fingerprint className="w-16 h-16 transition-colors" style={{ color: done ? GREEN : scanning ? accentColor : "#A7E8BD" }} />
@@ -355,12 +355,12 @@ export function ServiceApplicationViewer({ isOpen, onClose, serviceType }: Props
   const doneReqDocs = docs.filter(d => d.required && uploadedDocs[d.key]).length;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-[#F8F7FF]">
+    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-[#FAF8F4]">
 
       {/* ── Top bar ── */}
       <div className="sticky top-0 z-20 bg-white border-b border-gray-100 shadow-sm">
         <div className="flex items-center justify-between px-5 py-3">
-          <img src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
+          <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
           <div className="flex items-center gap-3">
             <span className="hidden sm:block text-xs text-gray-400 font-medium">Step {step} of {STEPS.length}</span>
             <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-800"><X className="w-5 h-5" /></button>
@@ -613,7 +613,7 @@ export function ServiceApplicationViewer({ isOpen, onClose, serviceType }: Props
             </div>
             <button onClick={onClose}
               className="w-full py-3.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 shadow-lg"
-              style={{ background: `linear-gradient(135deg,${CP},#5FC97F)` }}>
+              style={{ background: `linear-gradient(135deg,${CP},#C9A84C)` }}>
               Back to VINK
             </button>
           </div>

@@ -5,7 +5,7 @@ import path from "path";
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { createManshya } = require("./core");
 
-describe("sandbox/live separation in the Manshya database", () => {
+describe("sandbox/live separation in the VINK database", () => {
   it("tags every journal and payment with the mode it was created in", async () => {
     const mn = createManshya({ paymentsMode: "sandbox" });
     const m = mn.services.createMerchant("Tag Co");

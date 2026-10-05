@@ -7,7 +7,7 @@ import { authApi, getSession, clearSession, type ApiUser } from "../../services/
 type Screen = "onboarding" | "home" | "send" | "cards" | "history" | "rewards";
 type Tier = "Spark" | "Anchor" | "Momentum" | "Horizon" | "Summit" | "Legacy";
 
-const PURPLE = "#0B5C2E";
+const PURPLE = "#5C0A10";
 const GOLD = "#F5A623";
 
 const TIER_INFO: Record<Tier, { order: number; icon: React.ReactNode; tagline: string; unlocks: string; balanceLabel: string; cardGradient: string }> = {
@@ -16,7 +16,7 @@ const TIER_INFO: Record<Tier, { order: number; icon: React.ReactNode; tagline: s
   Momentum: { order: 3, icon: <TrendingUp className="w-5 h-5" />,   tagline: "Every payment earns you something back.",                    unlocks: "+ Cashback, loyalty points, merchant offers, challenges",           balanceLabel: "Available Balance", cardGradient: `linear-gradient(135deg, #FF9900, ${PURPLE})` },
   Horizon:  { order: 4, icon: <Mountain className="w-5 h-5" />,     tagline: "Built around reaching your savings goals faster.",          unlocks: "+ Goal-based savings, auto-save rules, AI coaching",                balanceLabel: "Available Balance", cardGradient: `linear-gradient(135deg, #0369A1, ${PURPLE})` },
   Summit:   { order: 5, icon: <Crown className="w-5 h-5" />,        tagline: "Premium banking with concierge-level service.",              unlocks: "+ Relationship manager, lounge access, multi-currency wallet",      balanceLabel: "Available Balance", cardGradient: `linear-gradient(135deg, #B45309, ${PURPLE})` },
-  Legacy:   { order: 6, icon: <Landmark className="w-5 h-5" />,     tagline: "Private banking and wealth management, for generations.",   unlocks: "+ Investments, net worth dashboard, estate planning",               balanceLabel: "Net Worth",         cardGradient: `linear-gradient(135deg, #1E1B4B, #0F3D24)` },
+  Legacy:   { order: 6, icon: <Landmark className="w-5 h-5" />,     tagline: "Private banking and wealth management, for generations.",   unlocks: "+ Investments, net worth dashboard, estate planning",               balanceLabel: "Net Worth",         cardGradient: `linear-gradient(135deg, #1E1B4B, #2E0B10)` },
 };
 const TIER_ORDER: Tier[] = ["Spark", "Anchor", "Momentum", "Horizon", "Summit", "Legacy"];
 
@@ -65,7 +65,7 @@ function LoginScreen({ onAuthenticated }: { onAuthenticated: (user: ApiUser) => 
   };
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F8F7FF" }}>
+    <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#FAF8F4" }}>
       <div className="flex-1 flex flex-col justify-center px-6">
         <div className="text-center mb-8">
           <p className="text-2xl font-black"><span style={{ color: PURPLE }}>VINK</span> <span style={{ color: GOLD }}>Bank</span></p>
@@ -104,7 +104,7 @@ function OnboardingScreen({ onSelect }: { onSelect: (tier: Tier) => void }) {
   const [picked, setPicked] = useState<Tier | null>(null);
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F8F7FF" }}>
+    <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#FAF8F4" }}>
       <div className="px-5 pt-8 pb-5 text-center" style={{ background: PURPLE }}>
         <p className="text-xs font-bold tracking-widest" style={{ color: GOLD }}>VINK FINANCE</p>
         <p className="text-white text-lg font-bold mt-2">Which account do you want?</p>
@@ -162,7 +162,7 @@ function OnboardingScreen({ onSelect }: { onSelect: (tier: Tier) => void }) {
 function VerifyingScreen({ tier, onDone }: { tier: Tier; onDone: () => void }) {
   useState(() => { const id = setTimeout(onDone, 1400); return () => clearTimeout(id); });
   return (
-    <div className="flex flex-col items-center justify-center h-full gap-4" style={{ background: "#F8F7FF" }}>
+    <div className="flex flex-col items-center justify-center h-full gap-4" style={{ background: "#FAF8F4" }}>
       <Loader2 className="w-8 h-8 animate-spin" style={{ color: PURPLE }} />
       <div className="text-center px-8">
         <p className="text-sm font-bold text-gray-900">Setting up your {tier} Account</p>
@@ -178,7 +178,7 @@ function HomeScreen({ tier, onSwitchTier, user }: { tier: Tier; onSwitchTier: ()
   const balance = tier === "Legacy" ? "R4,218,600.00" : "R20,700.00";
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F8F7FF" }}>
+    <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#FAF8F4" }}>
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 flex-shrink-0" style={{ background: PURPLE }}>
         <div>
@@ -236,7 +236,7 @@ function HomeScreen({ tier, onSwitchTier, user }: { tier: Tier; onSwitchTier: ()
         {unlockedFrom(3) && tier !== "Legacy" && (
           <div className="flex items-center justify-between mt-4">
             <div>
-              <p className="text-white/50 text-[9px]">MANSHYAPOINTS</p>
+              <p className="text-white/50 text-[9px]">VINKPOINTS</p>
               <p className="font-bold text-xs" style={{ color: GOLD }}>4,230 pts · R42.30</p>
             </div>
             <div className="px-3 py-1 rounded-full text-[10px] font-bold" style={{ background: GOLD, color: PURPLE }}>
@@ -389,7 +389,7 @@ function HomeScreen({ tier, onSwitchTier, user }: { tier: Tier; onSwitchTier: ()
               <span className="text-xs font-semibold text-gray-800">Portfolio performance</span>
               <span className="text-xs font-bold text-green-600">+8.4% YTD</span>
             </div>
-            {[["Stocks & ETFs","45%","#0B5C2E"],["Bonds & Treasury","25%","#B45309"],["Property","19%","#FF9900"],["Private Equity","11%","#0369A1"]].map(([label,pct,color]) => (
+            {[["Stocks & ETFs","45%","#5C0A10"],["Bonds & Treasury","25%","#B45309"],["Property","19%","#FF9900"],["Private Equity","11%","#0369A1"]].map(([label,pct,color]) => (
               <div key={label} className="flex items-center gap-2 mb-1.5 last:mb-0">
                 <span className="w-16 text-[9px] text-gray-500 shrink-0">{label}</span>
                 <div className="flex-1 h-2 rounded-full bg-gray-100 overflow-hidden"><div className="h-full rounded-full" style={{ width: pct as string, background: color as string }} /></div>
@@ -470,7 +470,7 @@ function SendScreen() {
 
   if (success) {
     return (
-      <div className="flex flex-col h-full items-center justify-center gap-5 px-6" style={{ background: "#F8F7FF" }}>
+      <div className="flex flex-col h-full items-center justify-center gap-5 px-6" style={{ background: "#FAF8F4" }}>
         <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ background: "#10B98122" }}>
           <CheckCircle className="w-10 h-10 text-green-500" />
         </div>
@@ -489,7 +489,7 @@ function SendScreen() {
   }
 
   return (
-    <div className="flex flex-col h-full" style={{ background: "#F8F7FF" }}>
+    <div className="flex flex-col h-full" style={{ background: "#FAF8F4" }}>
       <div className="px-4 py-3 flex-shrink-0" style={{ background: PURPLE }}>
         <p className="text-white font-bold text-base">Send Money</p>
         <p className="text-white/60 text-xs">Transfer to any VINK account</p>
@@ -571,7 +571,7 @@ function SendScreen() {
 function CardsScreen() {
   const [frozen, setFrozen] = useState(false);
   return (
-    <div className="flex flex-col h-full" style={{ background: "#F8F7FF" }}>
+    <div className="flex flex-col h-full" style={{ background: "#FAF8F4" }}>
       <div className="px-4 py-3 flex-shrink-0" style={{ background: PURPLE }}>
         <p className="text-white font-bold text-base">My Cards</p>
       </div>
@@ -673,7 +673,7 @@ function HistoryScreen() {
     : [];
 
   return (
-    <div className="flex flex-col h-full" style={{ background: "#F8F7FF" }}>
+    <div className="flex flex-col h-full" style={{ background: "#FAF8F4" }}>
       <div className="px-4 py-3 flex-shrink-0" style={{ background: PURPLE }}>
         <p className="text-white font-bold text-base">Transaction History</p>
       </div>
@@ -730,7 +730,7 @@ function RewardsScreen() {
   const progress = (4230 / 7500) * 100;
 
   return (
-    <div className="flex flex-col h-full" style={{ background: "#F8F7FF" }}>
+    <div className="flex flex-col h-full" style={{ background: "#FAF8F4" }}>
       <div className="px-4 py-3 flex-shrink-0" style={{ background: PURPLE }}>
         <p className="text-white font-bold text-base">ManshyaPoints</p>
       </div>
@@ -738,7 +738,7 @@ function RewardsScreen() {
         {/* Balance */}
         <div
           className="rounded-2xl p-5 text-center shadow-xl"
-          style={{ background: `linear-gradient(135deg, ${PURPLE}, #0F3D24)` }}
+          style={{ background: `linear-gradient(135deg, ${PURPLE}, #2E0B10)` }}
         >
           <p className="text-white/60 text-xs">Your Balance</p>
           <p className="text-5xl font-bold mt-1" style={{ color: GOLD }}>4,230</p>
@@ -871,7 +871,7 @@ export function VinkBankingApp({ isOpen, onClose, onOpenManagementPanel, onOpenA
   const showTabs = authUser !== null && screen !== "onboarding" && !verifying;
 
   return (
-    <MobileAppOverlay onClose={onClose} appName="VINK Finance" bgColor="#F8F7FF">
+    <MobileAppOverlay onClose={onClose} appName="VINK Finance" bgColor="#FAF8F4">
       <PhoneFrame statusBarColor={PURPLE} statusBarTextLight>
         <div className="flex-1 overflow-hidden flex flex-col">
           {!checkedSession ? (

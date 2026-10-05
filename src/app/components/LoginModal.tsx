@@ -53,7 +53,7 @@ function FormField({
       <div
         className="flex items-center rounded-lg px-3 transition-colors"
         style={{
-          border: `1.5px solid ${focused ? "#0F3D24" : "#e8e0d3"}`,
+          border: `1.5px solid ${focused ? "#2E0B10" : "#e8e0d3"}`,
           boxShadow: focused ? "0 0 0 3px rgba(15,61,36,0.10)" : "none",
           background: "#fff",
         }}
@@ -75,7 +75,7 @@ function FormField({
             type="button"
             tabIndex={-1}
             onClick={onToggleMask}
-            className="shrink-0 text-[11px] font-bold tracking-wide text-[#6b5d5f] hover:text-[#0F3D24] px-1"
+            className="shrink-0 text-[11px] font-bold tracking-wide text-[#6b5d5f] hover:text-[#2E0B10] px-1"
           >
             {masked ? "SHOW" : "HIDE"}
           </button>
@@ -180,8 +180,8 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
         const sections = await rbacApi.mySections();
         if (sections.success && (sections.data?.length ?? 0) > 0) isManagement = true;
       }
-      // Customer accounts go to their Manshya payments & banking dashboard; management
-      // accounts go to the Management Panel. The Manshya API only accepts customer
+      // Customer accounts go to their VINK payments & banking dashboard; management
+      // accounts go to the Management Panel. The VINK API only accepts customer
       // accounts, so this routing is a convenience, not the access control.
       onSelectDashboard?.(isManagement ? "managementPanel" : role === "customer" ? "manshya" : "account");
       return;
@@ -226,9 +226,9 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
       >
         {/* ── Top bar ── */}
         <div className="flex items-center justify-between px-6 py-4 flex-shrink-0" style={{ borderBottom: "1px solid #e8e0d3" }}>
-          <img src={vinkLogo} alt="VINK" className="h-8 w-auto object-contain" />
+          <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-8 w-auto object-contain" />
           <div className="flex items-center gap-3">
-            <button className="hidden sm:flex items-center gap-1.5 text-[13px] rounded-full px-3.5 py-2 border border-[#e8e0d3] text-[#6b5d5f] hover:border-[#0F3D24] hover:text-[#0F3D24] transition-colors">
+            <button className="hidden sm:flex items-center gap-1.5 text-[13px] rounded-full px-3.5 py-2 border border-[#e8e0d3] text-[#6b5d5f] hover:border-[#2E0B10] hover:text-[#2E0B10] transition-colors">
               <HelpCircle className="w-3.5 h-3.5" /> Need help signing in?
             </button>
             <button
@@ -246,7 +246,7 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
           {/* ── Left: promo panel ── */}
           <div
             className="relative overflow-hidden px-8 sm:px-12 py-10 flex flex-col justify-center"
-            style={{ background: "linear-gradient(160deg,#0F3D24 0%,#0B2E1C 55%,#081A10 100%)" }}
+            style={{ background: "linear-gradient(160deg,#2E0B10 0%,#0C0E14 55%,#081A10 100%)" }}
           >
             <div className="absolute -right-24 -bottom-24 w-[340px] h-[340px] rounded-full" style={{ border: "1px solid rgba(255,153,0,0.22)" }} />
             <div className="absolute -right-10 -top-28 w-[260px] h-[260px] rounded-full" style={{ border: "1px solid rgba(255,153,0,0.15)" }} />
@@ -257,7 +257,7 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
                 Welcome back to the tools that keep <span className="text-[#FFB84D]">VINK running</span>
               </h1>
               <p className="text-[#e7d9cd] text-[15px] leading-[1.7] mb-8">
-                Customers get their Manshya payments and banking dashboard.
+                Customers get their VINK payments and banking dashboard.
                 Staff get the Management Panel and every section their role covers.
               </p>
               <div className="flex gap-8 flex-wrap">
@@ -277,7 +277,7 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
               <h2 className="text-[#5c1420] text-[24px] font-bold mb-1.5">{view === "login" ? "Sign in" : "Reset your password"}</h2>
               <p className="text-[13.5px] text-[#6b5d5f] mb-6">
                 {view === "login"
-                  ? "Enter your username and password. Customers go to their Manshya dashboard, staff go to the Management Panel."
+                  ? "Enter your username and password. Customers go to their VINK dashboard, staff go to the Management Panel."
                   : "Enter the email address on your account and we will send you a link to choose a new password."}
               </p>
 
@@ -289,18 +289,18 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
               )}
 
               {view === "sent" ? (
-                <div role="status" className="rounded-lg px-4 py-4 text-[13.5px]" style={{ background: "#eef6f0", border: "1px solid #cfe3d5", color: "#0F3D24" }}>
+                <div role="status" className="rounded-lg px-4 py-4 text-[13.5px]" style={{ background: "#eef6f0", border: "1px solid #cfe3d5", color: "#2E0B10" }}>
                   If that address has an account, we have emailed a link to reset the password. It works for one hour. Check your spam folder too.
                   <button type="button" onClick={() => { setView("login"); setError(null); }} className="block mt-3 font-semibold underline">Back to sign in</button>
                 </div>
               ) : view === "forgot" ? (
                 <form onSubmit={handleForgot} noValidate>
                   <FormField id="vink-forgot-email" icon={<Hash className="w-4 h-4" />} label="Email address" value={forgotEmail} onChange={setForgotEmail} type="email" autoFocus />
-                  <button type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-bold text-[14.5px] disabled:opacity-60" style={{ background: "linear-gradient(135deg,#0F3D24,#0B2E1C)", color: "#fdf3e7" }}>
+                  <button type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-bold text-[14.5px] disabled:opacity-60" style={{ background: "linear-gradient(135deg,#2E0B10,#0C0E14)", color: "#fdf3e7" }}>
                     {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                     {loading ? "Sending…" : "Email me a reset link"}
                   </button>
-                  <button type="button" onClick={() => { setView("login"); setError(null); }} className="block mx-auto mt-4 text-[13px] text-[#0F3D24] font-semibold hover:underline">Back to sign in</button>
+                  <button type="button" onClick={() => { setView("login"); setError(null); }} className="block mx-auto mt-4 text-[13px] text-[#2E0B10] font-semibold hover:underline">Back to sign in</button>
                 </form>
               ) : (
               <form onSubmit={handleSubmit} noValidate>
@@ -322,11 +322,11 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
                       checked={remember}
                       onChange={(e) => setRemember(e.target.checked)}
                       className="w-3.5 h-3.5"
-                      style={{ accentColor: "#0F3D24" }}
+                      style={{ accentColor: "#2E0B10" }}
                     />
                     Remember username
                   </label>
-                  <button type="button" onClick={() => { setView("forgot"); setError(null); }} className="text-[#0F3D24] font-semibold hover:underline">
+                  <button type="button" onClick={() => { setView("forgot"); setError(null); }} className="text-[#2E0B10] font-semibold hover:underline">
                     Forgot password?
                   </button>
                 </div>
@@ -336,7 +336,7 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
                   disabled={!canSubmit}
                   className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-bold text-[14.5px] transition-opacity disabled:opacity-60"
                   style={{
-                    background: "linear-gradient(135deg,#0F3D24,#0B2E1C)",
+                    background: "linear-gradient(135deg,#2E0B10,#0C0E14)",
                     color: "#fdf3e7",
                     boxShadow: "0 10px 22px -10px rgba(15,61,36,0.6)",
                   }}
@@ -369,7 +369,7 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
         {/* ── Footer ── */}
         <div
           className="flex-shrink-0 px-6 py-3 flex flex-col sm:flex-row items-center justify-between gap-2"
-          style={{ background: "#0F3D24", borderTop: "1px solid rgba(255,255,255,0.08)" }}
+          style={{ background: "#2E0B10", borderTop: "1px solid rgba(255,255,255,0.08)" }}
         >
           <p className="text-white/40 text-[11px] text-center sm:text-left">
             © Vink Group. Registered financial services provider.

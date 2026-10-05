@@ -3,7 +3,7 @@
  * (POST https://api.resend.com/emails, Bearer API key). Behind an interface so tests and local development never send anything.
  *
  * Needs, in production: RESEND_API_KEY and EMAIL_FROM (an address on a domain you have verified in Resend, for example
- * "Manshya <no-reply@vink.co.za>"). Without them, production sends nothing and says so in the log; flows still behave the same
+ * "VINK <no-reply@vink.co.za>"). Without them, production sends nothing and says so in the log; flows still behave the same
  * from the user's point of view (they never learn whether an account exists).
  */
 

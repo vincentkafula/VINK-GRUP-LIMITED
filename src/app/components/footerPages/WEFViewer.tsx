@@ -3,7 +3,7 @@ import vinkLogo from "../../../imports/LOGO_FINAL.png";
 import { Footer } from "../Footer";
 
 interface Props { isOpen: boolean; onClose: () => void; }
-const P = "#0B5C2E";
+const P = "#5C0A10";
 const GOLD = "#F5A623";
 
 const TOPICS = [
@@ -17,7 +17,7 @@ export function WEFViewer({ isOpen, onClose }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-white">
       <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm">
-        <img src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
+        <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
         <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500"><X className="w-5 h-5" /></button>
       </div>
 
@@ -58,7 +58,7 @@ export function WEFViewer({ isOpen, onClose }: Props) {
           </div>
         </section>
 
-        <section className="rounded-2xl p-7 text-white" style={{ background: `linear-gradient(135deg,${P},#34A853)` }}>
+        <section className="rounded-2xl p-7 text-white" style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
           <blockquote className="text-white/90 text-base italic leading-relaxed mb-4">
             &quot;South Africa&apos;s taxi industry — the backbone of our economy — deserved a payment system built specifically for it. We have built that system.&quot;
           </blockquote>

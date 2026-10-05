@@ -952,7 +952,7 @@ ALTER TABLE terminal_taps ADD COLUMN IF NOT EXISTS vink_fee_card   NUMERIC(10,2)
 ALTER TABLE terminal_taps ADD COLUMN IF NOT EXISTS owner_settlement NUMERIC(10,2);
 ALTER TABLE terminal_taps ADD COLUMN IF NOT EXISTS investor_share   NUMERIC(10,2);
 
--- ─── Bank account links: each dashboard user is linked to a bank account held in the Banking module (Manshya) ───────────────
+-- ─── Bank account links: each dashboard user is linked to a bank account held in the Banking module (VINK) ───────────────
 -- Only the LINK lives here. The account number, balance and transactions are always read live from the Banking module, so there is a single
 -- source of truth. Business details are encrypted by the application (AES-256-GCM, see portal/fieldCrypto.ts) before they are stored.
 CREATE TABLE IF NOT EXISTS bank_account_links (

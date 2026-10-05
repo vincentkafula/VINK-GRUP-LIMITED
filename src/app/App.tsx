@@ -203,7 +203,7 @@ export default function App() {
   const [showTaxiAssociations, setShowTaxiAssociations]     = useState(false);
   const [userRole, setUserRole]                             = useState<string>("personal");
   const [showLogin, setShowLogin]                           = useState(false);
-  // Manshya payments & banking: dashboard (customers), back office (staff), hosted checkout (public)
+  // VINK payments & banking: dashboard (customers), back office (staff), hosted checkout (public)
   // Emailed links: /reset-password?token=... and /verify-email?token=...
   const [authLink, setAuthLink]                               = useState<null | "reset" | "verify">(null);
   const [portal, setPortal]                                  = useState<null | PortalKey>(null);
@@ -287,7 +287,7 @@ export default function App() {
         case "guardme":
         case "insurance":    mount("postLogin");        setShowPostLogin(true);        break;
         case "rewards":      mount("rewards");          setShowRewards(true);          break;
-        // Connectivity -- "Connect", "Mobile", and "MANSHYA TV" tiles have no
+        // Connectivity -- "Connect", "Mobile", and "VINK TV" tiles have no
         // consumer-facing destination (the backoffice mobile-network tool
         // they used to point near was removed entirely), so they land on
         // the consumer dashboard rather than dead-end.
@@ -500,7 +500,7 @@ export default function App() {
     }
     if (path === "/contact-us") { mount("contactUs"); setShowContactUs(true); return true; }
     if (path === "/management-panel") { mount("managementPanel"); setShowManagementPanel(true); return true; }
-    // Manshya: dashboard is customer-only (it shows a sign-in prompt to anyone else), back office is staff-only,
+    // VINK: dashboard is customer-only (it shows a sign-in prompt to anyone else), back office is staff-only,
     // /pay is the public hosted checkout for payment links.
     // Role dashboards: /portal/personal | driver | marshal | owner | association. The server decides who may open each one.
     // Staff only (the server enforces it): every dashboard user's bank account, and review of Business accounts.

@@ -27,7 +27,7 @@ const APPS = [
     size: "24.7 MB",
     rating: 4.8,
     reviews: "2,847",
-    gradient: "linear-gradient(135deg,#0B5C2E,#5FC97F)",
+    gradient: "linear-gradient(135deg,#5C0A10,#C9A84C)",
     emoji: "🚌",
     badge: "P18Q Hardware",
     badgeColor: "#F5A623",
@@ -68,7 +68,7 @@ const APPS = [
     size: "42.8 MB",
     rating: 4.9,
     reviews: "15,842",
-    gradient: "linear-gradient(135deg,#0B5C2E,#5FC97F)",
+    gradient: "linear-gradient(135deg,#5C0A10,#C9A84C)",
     emoji: "💳",
     badge: "Most Downloaded",
     badgeColor: "#EF4444",
@@ -85,10 +85,10 @@ const APPS = [
     size: "Internal",
     rating: 5.0,
     reviews: "Internal",
-    gradient: "linear-gradient(135deg,#0B5C2E,#F5A623)",
+    gradient: "linear-gradient(135deg,#5C0A10,#F5A623)",
     emoji: "💹",
     badge: "Operations",
-    badgeColor: "#0B5C2E",
+    badgeColor: "#5C0A10",
     features: [
       "Per-tap revenue split (Passenger R0.50 · Driver R0.50 · VINK R1.00)",
       "10% of VINK fee → device investor (R0.10/tap)",
@@ -110,7 +110,7 @@ export function AppLauncher({ isOpen, onClose, onLaunchApp }: Props) {
 
   if (!isOpen) return null;
 
-  const P = "#0B5C2E";
+  const P = "#5C0A10";
 
   if (selectedApp) {
     return (
@@ -154,7 +154,7 @@ export function AppLauncher({ isOpen, onClose, onLaunchApp }: Props) {
             <button
               onClick={() => { onLaunchApp(selectedApp.id); onClose(); }}
               className="flex-1 py-3 rounded-2xl text-sm font-black text-white transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg"
-              style={{ background: `linear-gradient(135deg,${P},#5FC97F)`, boxShadow: `0 6px 20px ${P}40` }}>
+              style={{ background: `linear-gradient(135deg,${P},#C9A84C)`, boxShadow: `0 6px 20px ${P}40` }}>
               Open App
             </button>
             <button disabled className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 cursor-default"
@@ -219,7 +219,7 @@ export function AppLauncher({ isOpen, onClose, onLaunchApp }: Props) {
       <div className="sticky top-0 z-10 px-5 py-4 border-b border-white/10 flex items-center justify-between"
         style={{ background: "#0A0A14" }}>
         <div className="flex items-center gap-3">
-          <img src={vinkLogo} alt="VINK" className="h-8 w-auto object-contain" style={{ filter: "brightness(0) invert(1)" }} />
+          <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-8 w-auto object-contain" style={{ filter: "brightness(0) invert(1)" }} />
           <div>
             <p className="text-sm font-black text-white">VINK App Ecosystem</p>
             <p className="text-[10px] text-white/50">5 connected apps · 1 backend system</p>
@@ -231,7 +231,7 @@ export function AppLauncher({ isOpen, onClose, onLaunchApp }: Props) {
       </div>
 
       {/* Hero banner */}
-      <div className="px-5 py-6" style={{ background: "linear-gradient(135deg,#1A0533 0%,#0B5C2E 50%,#128A43 100%)" }}>
+      <div className="px-5 py-6" style={{ background: "linear-gradient(135deg,#1A0D12 0%,#5C0A10 50%,#8B0000 100%)" }}>
         <div className="max-w-lg mx-auto">
           <div className="flex items-center gap-2 mb-3">
             <Smartphone className="w-4 h-4 text-yellow-400" />
@@ -311,7 +311,7 @@ export function AppLauncher({ isOpen, onClose, onLaunchApp }: Props) {
             <div className="flex items-center justify-between px-4 py-3 border-t border-white/5">
               <button onClick={() => { onLaunchApp(app.id); onClose(); }}
                 className="text-xs font-black px-4 py-2 rounded-xl text-white transition-all hover:scale-[1.03] active:scale-[0.97]"
-                style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
+                style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
                 Open App
               </button>
               <div className="flex items-center gap-3">

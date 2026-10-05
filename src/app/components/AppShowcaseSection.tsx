@@ -3,16 +3,16 @@ import { memo } from "react";
 interface Props { onOpenApps: () => void; }
 
 const APPS = [
-  { emoji: "🚌", name: "VINK AFC Terminal",  sub: "P18Q · Fare collection",         gradient: "linear-gradient(135deg,#0B5C2E,#5FC97F)", platform: "iOS · Android" },
+  { emoji: "🚌", name: "VINK AFC Terminal",  sub: "P18Q · Fare collection",         gradient: "linear-gradient(135deg,#5C0A10,#C9A84C)", platform: "iOS · Android" },
   { emoji: "📍", name: "VINK Fleet Tracker", sub: "Vehicle tracking",         gradient: "linear-gradient(135deg,#065F46,#10B981)", platform: "iOS · Android" },
-  { emoji: "💳", name: "VINK Banking",        sub: "Personal & business",      gradient: "linear-gradient(135deg,#0B5C2E,#5FC97F)", platform: "iOS · Android" },
+  { emoji: "💳", name: "VINK Banking",        sub: "Personal & business",      gradient: "linear-gradient(135deg,#5C0A10,#C9A84C)", platform: "iOS · Android" },
   { emoji: "🚗", name: "VINK Driver",         sub: "Earn · Drive · Get paid",  gradient: "linear-gradient(135deg,#0F172A,#14B8A6)", platform: "iOS · Android" },
   { emoji: "🚕", name: "VINK Ride",           sub: "Book rides · Earn as driver", gradient: "linear-gradient(135deg,#BE185D,#EC4899)", platform: "iOS · Android" },
   { emoji: "🍽️", name: "VINK Food",           sub: "Order food · Track delivery", gradient: "linear-gradient(135deg,#FF5722,#FF8A50)", platform: "iOS · Android" },
 ];
 
 export const AppShowcaseSection = memo(function AppShowcaseSection({ onOpenApps }: Props) {
-  const P = "#0B5C2E";
+  const P = "#5C0A10";
 
   return (
     <section className="py-16 sm:py-20" style={{ background: "#0A0A14" }}>
@@ -57,7 +57,7 @@ export const AppShowcaseSection = memo(function AppShowcaseSection({ onOpenApps 
           <button
             onClick={onOpenApps}
             className="inline-flex items-center gap-3 px-8 py-4 rounded-2xl text-white font-black text-base transition-all hover:scale-105 active:scale-95 shadow-xl"
-            style={{ background: `linear-gradient(135deg,${P},#5FC97F)`, boxShadow: `0 8px 32px ${P}50` }}
+            style={{ background: `linear-gradient(135deg,${P},#C9A84C)`, boxShadow: `0 8px 32px ${P}50` }}
           >
             <span className="text-2xl">📲</span>
             Browse All Apps

@@ -32,7 +32,7 @@ async function main() {
 
   const headers: Record<string, string> = { "content-type": "application/json" };
   if ((arg("scheme") ?? "gateway") === "gateway") {
-    // Manshya's mock gateway: HMAC-SHA256 of the raw body in x-mock-signature.
+    // VINK's mock gateway: HMAC-SHA256 of the raw body in x-mock-signature.
     const secret = process.env.SANDBOX_GATEWAY_WEBHOOK_SECRET ?? "dev-mock-secret";
     headers["x-mock-signature"] = crypto.createHmac("sha256", secret).update(raw).digest("hex");
   } else {

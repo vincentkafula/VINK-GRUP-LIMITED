@@ -19,7 +19,7 @@ import {
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
-const P = "#0B5C2E";
+const P = "#5C0A10";
 const GOLD = "#F5A623";
 
 // ─── Status config ────────────────────────────────────────────────────────────
@@ -28,7 +28,7 @@ const STATUS_CFG: Record<AppStatus, { label: string; color: string; bg: string; 
   under_review:         { label: "Under Review",     color: "#3B82F6", bg: "#DBEAFE", icon: <Eye className="w-3.5 h-3.5" /> },
   approved:             { label: "Approved",         color: "#10B981", bg: "#D1FAE5", icon: <CheckCircle className="w-3.5 h-3.5" /> },
   declined:             { label: "Declined",         color: "#EF4444", bg: "#FEE2E2", icon: <XCircle className="w-3.5 h-3.5" /> },
-  more_info_requested:  { label: "More Info Needed", color: "#34A853", bg: "#EDE9FE", icon: <AlertTriangle className="w-3.5 h-3.5" /> },
+  more_info_requested:  { label: "More Info Needed", color: "#34A853", bg: "#F2EFE8", icon: <AlertTriangle className="w-3.5 h-3.5" /> },
 };
 
 // ─── Tier config ──────────────────────────────────────────────────────────────
@@ -40,9 +40,9 @@ const STATUS_CFG: Record<AppStatus, { label: string; color: string; bg: string; 
 // account applications are real now. Extending this to the other product
 // types would need its own schema/router work, not just a UI relabel.
 const TYPE_CFG: Record<AppTier, { label: string; icon: React.ReactNode; color: string }> = {
-  personal:   { label: "Personal Account",   icon: <Building2 className="w-4 h-4" />, color: "#128A43" },
+  personal:   { label: "Personal Account",   icon: <Building2 className="w-4 h-4" />, color: "#8B0000" },
   business:   { label: "Business Account",   icon: <Briefcase className="w-4 h-4" />, color: "#1565C0" },
-  corporate:  { label: "Corporate Account",  icon: <Building2 className="w-4 h-4" />, color: "#0B5C2E" },
+  corporate:  { label: "Corporate Account",  icon: <Building2 className="w-4 h-4" />, color: "#5C0A10" },
 };
 
 const ALL_TYPES: AppTier[] = ["personal", "business", "corporate"];
@@ -182,7 +182,7 @@ function ApplicationDetail({ app, onClose, onStatusUpdate }: {
             />
             <button onClick={save} disabled={saving || !reason.trim() || newStatus === app.status}
               className="w-full py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-40"
-              style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
+              style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
               {saving ? "Saving…" : "Save Changes"}
             </button>
           </div>
@@ -249,12 +249,12 @@ export function AdminApplicationsViewer({ isOpen, onClose }: Props) {
   const statsByStatus = stats.byStatus as Record<string, number> ?? {};
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-[#F8F7FF]">
+    <div className="fixed inset-0 z-50 flex flex-col bg-[#FAF8F4]">
       {/* ── Top bar ── */}
       <div className="sticky top-0 z-20 bg-white border-b border-gray-100 shadow-sm">
         <div className="flex items-center justify-between px-5 py-3">
           <div className="flex items-center gap-3">
-            <img src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
+            <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
             <div className="border-l border-gray-200 pl-3 hidden sm:block">
               <p className="text-sm font-black text-gray-800">Applications Dashboard</p>
               <p className="text-[11px] text-gray-400">VINK Finance · Admin · Personal / Business / Corporate accounts</p>
@@ -381,7 +381,7 @@ export function AdminApplicationsViewer({ isOpen, onClose }: Props) {
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-gray-100" style={{ background: "#F8F7FF" }}>
+                      <tr className="border-b border-gray-100" style={{ background: "#FAF8F4" }}>
                         {["Reference", "Type", "Applicant", "Product", "Status", "Submitted", "Action"].map(h => (
                           <th key={h} className="text-left px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-gray-400 whitespace-nowrap">{h}</th>
                         ))}

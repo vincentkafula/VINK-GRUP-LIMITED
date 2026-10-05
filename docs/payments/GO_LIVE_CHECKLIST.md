@@ -7,7 +7,7 @@ Tick every box, in order. A "No" on any legal/regulatory line means **do not go 
 
 ## 1. Legal and regulatory (not code)
 - [ ] Licence/authorisation to hold customer funds and offer accounts in each market (e.g. South Africa: registration as a payment service provider / bank partnership under SARB/PASA rules; Zambia: Bank of Zambia authorisation). Get legal advice per country.
-- [ ] A sponsoring bank or licensed partner agreement is signed (Manshya itself does not hold a licence).
+- [ ] A sponsoring bank or licensed partner agreement is signed (VINK itself does not hold a licence).
 - [ ] FICA/KYC obligations for customers and merchants implemented with a real identity provider (the current identity check is a mock).
 - [ ] AML: sanctions/PEP screening and transaction monitoring in place; suspicious-transaction reporting process named.
 - [ ] POPIA (and GDPR if EU customers): lawful basis, privacy notice, retention and deletion policy, information officer registered.
@@ -37,7 +37,7 @@ Tick every box, in order. A "No" on any legal/regulatory line means **do not go 
 - [ ] CSP, HSTS and security headers verified in production.
 
 ## 5. Platform
-- [ ] Manshya data moved off SQLite to Postgres (or SQLite on a backed-up volume accepted explicitly as a limit), with automated backups and a tested restore.
+- [ ] VINK data moved off SQLite to Postgres (or SQLite on a backed-up volume accepted explicitly as a limit), with automated backups and a tested restore.
 - [ ] A separate **live** database. A database is bound to one mode and refuses to open in the other.
 - [ ] Live webhook endpoints registered with each provider (https, signature verified, replay protection on); live webhook secrets set.
 - [ ] Persistent webhook retry queue (current retries are in memory).

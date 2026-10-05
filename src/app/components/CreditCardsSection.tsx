@@ -1,14 +1,14 @@
 import { useState } from "react";
-import vinkBronzeCard from "../../imports/VinkBronzeCard.png";
-import vinkBlueVisaCard from "../../imports/VinkBlueVisaCard.png";
-import vinkBlackVisaCard from "../../imports/VinkBlackVisaCard.png";
-import vinkBlueMastercard from "../../imports/VinkBlueMastercard.png";
+import vinkBronzeCard from "../../imports/VinkBronzeCard.webp";
+import vinkBlueVisaCard from "../../imports/VinkBlueVisaCard.webp";
+import vinkBlackVisaCard from "../../imports/VinkBlackVisaCard.webp";
+import vinkBlueMastercard from "../../imports/VinkBlueMastercard.webp";
 import { Card3DViewer } from "./Card3DViewer";
 
 const CARDS = [
   {
     name: "VINK Commuter Card", sub: "Mastercard Standard",
-    grad: "linear-gradient(135deg,#34A853,#5B21B6)", net: "mc", last4: "4521", expiry: "09/28",
+    grad: "linear-gradient(135deg,#C9A84C,#8B0000)", net: "mc", last4: "4521", expiry: "09/28",
     tier: "Standard", benefit: "Tap to ride. Earn on every journey.",
     image: vinkBronzeCard,
     features: [
@@ -21,7 +21,7 @@ const CARDS = [
   },
   {
     name: "VINK Driver Card", sub: "Visa Premium",
-    grad: "linear-gradient(135deg,#7C3AED,#065F46)", net: "visa", last4: "8834", expiry: "03/27",
+    grad: "linear-gradient(135deg,#9B1C1C,#065F46)", net: "visa", last4: "8834", expiry: "03/27",
     tier: "Premium", benefit: "Your earnings. Your card. Your control.",
     image: vinkBlueVisaCard,
     features: [
@@ -72,7 +72,7 @@ function CardVisual({ card, active }: { card: typeof CARDS[0]; active: boolean }
         boxShadow: active ? "0 20px 44px -10px rgba(0,0,0,0.45)" : "0 4px 14px -4px rgba(0,0,0,0.2)",
       }}>
       {image ? (
-        <img src={image} alt={`${card.name} — physical card design`} className="w-full h-full object-cover" draggable={false} />
+        <img loading="lazy" decoding="async" src={image} alt={`${card.name} — physical card design`} className="w-full h-full object-cover" draggable={false} />
       ) : (
       <>
       <div className="absolute top-0 right-0 w-36 h-36 rounded-full bg-white/10 -mr-14 -mt-14" />

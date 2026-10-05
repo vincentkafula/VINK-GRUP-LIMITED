@@ -1134,4 +1134,4 @@ export const ROUTES: Route[] = [
 
 export const ZONES = ["Zone 1","Zone 2","Zone 3","Zone 4","Zone 5"];
 export const ZONE_FARES: Record<string,number> = { "Zone 1":8,"Zone 2":12,"Zone 3":18,"Zone 4":25,"Zone 5":35 };
-export const ZONE_COLORS: Record<string,string> = { "Zone 1":"#10B981","Zone 2":"#3B82F6","Zone 3":"#F59E0B","Zone 4":"#EF4444","Zone 5":"#8B5CF6" };
+export const ZONE_COLORS: Record<string,string> = { "Zone 1":"#10B981","Zone 2":"#3B82F6","Zone 3":"#F59E0B","Zone 4":"#EF4444","Zone 5":"#B04040" };

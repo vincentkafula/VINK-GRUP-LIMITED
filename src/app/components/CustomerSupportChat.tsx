@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { MessageCircle, X, Send, Paperclip, Phone, Video, ChevronDown, Bot, User, Clock, CheckCheck, AlertCircle, Star } from "lucide-react";
 
-const P = "#0B5C2E";
+const P = "#5C0A10";
 const GOLD = "#F5A623";
 
 type MessageRole = "user" | "agent" | "bot" | "system";
@@ -127,7 +127,7 @@ export function CustomerSupportChat() {
       <button
         onClick={open}
         className="fixed bottom-6 right-6 z-[300] flex items-center gap-2 px-4 py-3 rounded-2xl shadow-2xl text-white font-semibold text-sm transition-all hover:scale-105"
-        style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}
+        style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}
       >
         <MessageCircle className="w-5 h-5" />
         Support
@@ -144,7 +144,7 @@ export function CustomerSupportChat() {
       style={{ width: 380, height: 580, background: "#0A0A14", border: "1px solid rgba(255,255,255,0.1)" }}
     >
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10" style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10" style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
         <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center text-lg">🎧</div>
         <div className="flex-1">
           <p className="text-white font-bold text-sm">VINK Support</p>

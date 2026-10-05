@@ -3,7 +3,7 @@ import vinkLogo from "../../../imports/LOGO_FINAL.png";
 import { Footer } from "../Footer";
 
 interface Props { isOpen: boolean; onClose: () => void; }
-const P = "#0B5C2E";
+const P = "#5C0A10";
 const GOLD = "#F5A623";
 
 const REASONS = [
@@ -33,12 +33,12 @@ export function SwitchToVINKViewer({ isOpen, onClose }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-white">
       <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm">
-        <img src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
+        <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
         <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500"><X className="w-5 h-5" /></button>
       </div>
 
       {/* Hero */}
-      <div className="py-20 px-6 text-white" style={{ background: `linear-gradient(135deg,${P},#34A853)` }}>
+      <div className="py-20 px-6 text-white" style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
         <div className="max-w-4xl mx-auto">
           <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4"
             style={{ background: "rgba(245,166,35,.2)", color: GOLD }}>Switch in 7–10 days</span>
@@ -66,7 +66,7 @@ export function SwitchToVINKViewer({ isOpen, onClose }: Props) {
         </section>
 
         {/* What VINK makes easy */}
-        <section className="rounded-2xl p-6" style={{ background: "#F3F0FB" }}>
+        <section className="rounded-2xl p-6" style={{ background: "#F2EFE8" }}>
           <h2 className="text-xl font-black mb-4" style={{ color: P }}>What VINK Makes Easy</h2>
           <div className="space-y-3">
             {[
@@ -116,7 +116,7 @@ export function SwitchToVINKViewer({ isOpen, onClose }: Props) {
         </section>
 
         {/* CTA */}
-        <section className="rounded-2xl p-8 text-center text-white" style={{ background: `linear-gradient(135deg,${P},#34A853)` }}>
+        <section className="rounded-2xl p-8 text-center text-white" style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
           <h3 className="text-2xl font-black mb-2">Ready to Switch?</h3>
           <p className="text-white/75 text-sm mb-6">Open your account online in under 10 minutes. No branch visit required.</p>
           <div className="flex flex-wrap justify-center gap-3">

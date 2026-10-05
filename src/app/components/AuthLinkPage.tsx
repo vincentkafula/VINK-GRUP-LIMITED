@@ -70,7 +70,7 @@ export function AuthLinkPage({ kind, isOpen, onClose }: { kind: "reset" | "verif
               className="w-full rounded-lg border border-[#e8e0d3] px-3 py-2.5 text-[14.5px] mb-4" />
             {message && <p role="alert" className="flex items-start gap-2 text-[13px] mb-4" style={{ color: "#b3261e" }}><TriangleAlert className="w-4 h-4 shrink-0 mt-0.5" />{message}</p>}
             <button type="submit" disabled={busy} className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-bold text-[14.5px] disabled:opacity-60"
-              style={{ background: "linear-gradient(135deg,#0F3D24,#0B2E1C)", color: "#fdf3e7" }}>
+              style={{ background: "linear-gradient(135deg,#2E0B10,#0C0E14)", color: "#fdf3e7" }}>
               {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : null}{busy ? "Saving…" : "Save new password"}
             </button>
           </form>
@@ -78,8 +78,8 @@ export function AuthLinkPage({ kind, isOpen, onClose }: { kind: "reset" | "verif
 
         {state === "done" && (
           <>
-            <p className="flex items-start gap-2 text-[14px] text-[#0F3D24] mb-5"><CheckCircle2 className="w-5 h-5 shrink-0" />{message}</p>
-            <button onClick={goSignIn} className="w-full py-3 rounded-lg font-bold text-[14.5px]" style={{ background: "linear-gradient(135deg,#0F3D24,#0B2E1C)", color: "#fdf3e7" }}>Sign in</button>
+            <p className="flex items-start gap-2 text-[14px] text-[#2E0B10] mb-5"><CheckCircle2 className="w-5 h-5 shrink-0" />{message}</p>
+            <button onClick={goSignIn} className="w-full py-3 rounded-lg font-bold text-[14.5px]" style={{ background: "linear-gradient(135deg,#2E0B10,#0C0E14)", color: "#fdf3e7" }}>Sign in</button>
           </>
         )}
 

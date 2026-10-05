@@ -284,7 +284,7 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
             ))}
             <span style={{ color: "rgba(255,255,255,0.2)", fontSize: 12, padding: "0 12px" }}>|</span>
             <span style={{ color: "rgba(255,255,255,0.65)", fontSize: 12, padding: "0 4px", textAlign: "center" }}>
-              MANSHYA — a division of Vink Group (Pty) Ltd. Authorised Financial Services Provider and a registered credit provider (NCRCP registration pending). Enterprise No. 2026/719501/07. Vink Group Reg. No. 2018/079316/07.
+              VINK — a division of Vink Group (Pty) Ltd. Authorised Financial Services Provider and a registered credit provider (NCRCP registration pending). Enterprise No. 2026/719501/07. Vink Group Reg. No. 2018/079316/07.
             </span>
           </div>
           {/* Copyright */}

@@ -339,7 +339,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
         <div className="w-64 flex flex-col h-full">
           <div className="px-5 pt-6 pb-5">
             <div className="flex items-baseline gap-0.5">
-              <img src={vinkLogo} alt="" className="h-6 w-6 object-contain mr-1.5" />
+              <img loading="lazy" decoding="async" src={vinkLogo} alt="" className="h-6 w-6 object-contain mr-1.5" />
               <span className="font-black text-xl" style={{ color: GREEN }}>VINK</span>
             </div>
             <p className="text-[10px] font-bold tracking-[0.16em] text-white/40 mt-1">MANAGEMENT PANEL</p>

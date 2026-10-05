@@ -65,7 +65,7 @@ export function Header({ onHome, onDashboardSelect, onSubNavClick, onOpenProfile
     if (isStaffMode() && !isLoggedIn) setIsLoginModalOpen(true);
   }, [isLoggedIn]);
 
-  // Other screens (e.g. the Manshya dashboard's "sign in required" card) can ask for the sign-in modal.
+  // Other screens (e.g. the VINK dashboard's "sign in required" card) can ask for the sign-in modal.
   // The strip over inner pages has its own search button; it asks this header to open the one palette.
   useEffect(() => {
     const open = () => setPaletteOpen(true);

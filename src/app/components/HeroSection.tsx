@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { Pause, Play } from "lucide-react";
-import heroCardPhone from "../../imports/HeroCardPhone.png";
-import heroGlobalSim from "../../imports/HeroGlobalSim.png";
-import heroValidator from "../../imports/HeroValidator.png";
+import heroCardPhone from "../../imports/HeroCardPhone.webp";
+import heroGlobalSim from "../../imports/HeroGlobalSim.webp";
+import heroValidator from "../../imports/HeroValidator.webp";
 
 // ─── Per-slide content ────────────────────────────────────────────────────────
 const RAW_SLIDES = [
@@ -12,7 +12,7 @@ const RAW_SLIDES = [
     headline: <>All the benefits of Card,<br /><span className="relative inline-block"><span className="relative z-10">on your phone.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#F5A623" }} /></span></>,
     body: "Manage, track and enjoy exclusive benefits anytime, anywhere.",
     ctas: [
-      { label: "Start Now",  style: { background: "#7C3AED", boxShadow: "0 6px 20px rgba(124,58,237,.4)" } },
+      { label: "Start Now",  style: { background: "#9B1C1C", boxShadow: "0 6px 20px rgba(139,0,0,.4)" } },
       { label: "Learn more", style: { background: "rgba(255,255,255,.15)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,.25)" } },
     ],
     trust: [

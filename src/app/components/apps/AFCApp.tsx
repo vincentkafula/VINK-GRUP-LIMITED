@@ -313,7 +313,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
 
   if (!isOpen) return null;
 
-  const P = "#0B5C2E";
+  const P = "#5C0A10";
   const GOLD = "#F5A623";
   const stages = selectedRoute.baseFare < 500 && networkOnline ? OFFLINE_STAGES : ONLINE_STAGES;
   const isOfflinePath = selectedRoute.baseFare < 500 && networkOnline;
@@ -431,7 +431,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
                 {/* Big TAP button */}
                 <button onClick={() => setScreen("tap")}
                   className="w-full py-4 rounded-2xl font-black text-white text-base flex items-center justify-center gap-3 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-xl"
-                  style={{ background: `linear-gradient(135deg,${P},#5FC97F)`, boxShadow: `0 8px 32px ${P}50` }}>
+                  style={{ background: `linear-gradient(135deg,${P},#C9A84C)`, boxShadow: `0 8px 32px ${P}50` }}>
                   <span className="text-2xl">📱</span>
                   TAP TO COLLECT FARE
                 </button>
@@ -753,7 +753,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
                 {/* Spec groups */}
                 {[
                   {
-                    title: "Processor & Memory", icon: <Cpu className="w-3.5 h-3.5" />, color: "#128A43",
+                    title: "Processor & Memory", icon: <Cpu className="w-3.5 h-3.5" />, color: "#8B0000",
                     rows: [
                       ["OS",        P18Q_SPEC.processor.os],
                       ["CPU",       P18Q_SPEC.processor.cpu],

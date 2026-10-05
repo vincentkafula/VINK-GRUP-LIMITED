@@ -16,7 +16,7 @@ comes from an environment variable, never from source code:
 | `superadmin` | `owner` | `SEED_PASSWORD_OWNER` |
 | `noc1` | `noc_engineer` | `SEED_PASSWORD_NOC1` |
 | `billing1` | `billing_admin` | `SEED_PASSWORD_BILLING1` |
-| `customer1` | `customer` (Manshya dashboard) | `SEED_PASSWORD_CUSTOMER1` |
+| `customer1` | `customer` (VINK dashboard) | `SEED_PASSWORD_CUSTOMER1` |
 
 - Value must be at least 12 characters.
 - **Local development:** if a variable is unset, the account gets a random password that is printed to

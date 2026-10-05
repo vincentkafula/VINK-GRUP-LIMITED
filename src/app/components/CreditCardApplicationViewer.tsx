@@ -22,7 +22,7 @@ const STEPS = [
 ];
 
 const CARD_TYPES = [
-  { id: "standard", name: "VINK Standard Card", limit: "R5,000 – R25,000", fee: "R0/month", color: "linear-gradient(135deg,#128A43,#5FC97F)" },
+  { id: "standard", name: "VINK Standard Card", limit: "R5,000 – R25,000", fee: "R0/month", color: "linear-gradient(135deg,#8B0000,#C9A84C)" },
   { id: "gold",     name: "VINK Gold Card",     limit: "R25,000 – R150,000", fee: "R85/month", color: "linear-gradient(135deg,#B8860B,#DAA520)" },
   { id: "platinum", name: "VINK Platinum Card", limit: "R150,000 – R500,000", fee: "R265/month", color: "linear-gradient(135deg,#374151,#6B7280)" },
 ];
@@ -62,8 +62,8 @@ function FingerprintScanner({ onDone }: { onDone: () => void }) {
       <div
         className="relative w-36 h-36 rounded-3xl flex items-center justify-center cursor-pointer transition-all select-none"
         style={{
-          background: done ? "#D1FAE5" : scanning ? CP + "15" : "#F3F0FB",
-          border: `3px solid ${done ? GREEN : scanning ? CP : "#DDD6FE"}`,
+          background: done ? "#D1FAE5" : scanning ? CP + "15" : "#F2EFE8",
+          border: `3px solid ${done ? GREEN : scanning ? CP : "#E4DFD3"}`,
           boxShadow: scanning ? `0 0 30px ${CP}30` : "none",
         }}
         onClick={!scanning && !done ? () => { setAttempt(a => a + 1); startScan(); } : undefined}
@@ -248,12 +248,12 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
   const back = () => setStep(s => Math.max(s - 1, 1));
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-[#F8F7FF]">
+    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-[#FAF8F4]">
 
       {/* ── Top bar ── */}
       <div className="sticky top-0 z-20 bg-white border-b border-gray-100 shadow-sm">
         <div className="flex items-center justify-between px-5 py-3">
-          <img src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
+          <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
           <div className="flex items-center gap-3">
             <span className="hidden sm:block text-xs text-gray-400 font-medium">Step {step} of {STEPS.length}</span>
             <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-800"><X className="w-5 h-5" /></button>
@@ -270,7 +270,7 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
         tag="VINK Personal Banking · FICA · POCA Compliant"
         title="New Credit Card Application"
         subtitle="Choose your card, verify your identity, and get approved in minutes."
-        gradient="linear-gradient(135deg,#1a0533 0%,#0B5C2E 50%,#5FC97F 100%)"
+        gradient="linear-gradient(135deg,#1A0D12 0%,#5C0A10 50%,#C9A84C 100%)"
       />
 
       {/* ── Step content ── */}
@@ -587,7 +587,7 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
                   }
                 }}
                 className="w-full py-4 rounded-xl text-base font-black text-white transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed shadow-lg"
-                style={{ background: `linear-gradient(135deg,${CP},#5FC97F)` }}>
+                style={{ background: `linear-gradient(135deg,${CP},#C9A84C)` }}>
                 {submitting ? "Submitting..." : "Submit Application"}
               </button>
               {submitError && <p className="text-red-600 text-sm text-center mt-2">{submitError}</p>}
@@ -658,7 +658,7 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
 
             <button onClick={onClose}
               className="w-full py-3.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 shadow-lg"
-              style={{ background: `linear-gradient(135deg,${CP},#5FC97F)` }}>
+              style={{ background: `linear-gradient(135deg,${CP},#C9A84C)` }}>
               Back to VINK Banking
             </button>
           </div>

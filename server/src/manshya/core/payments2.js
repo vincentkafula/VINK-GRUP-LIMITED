@@ -45,7 +45,7 @@ module.exports = function buildPayments2({ db, ledger, core, rails, config, emit
   }
   function parseQr(payload) {
     const p = String(payload || '').split('|');
-    if (p.length !== 5 || p[0] !== 'MNSH1' || !safeEq(p[4], hmac(p.slice(0, 4).join('|')))) throw new ApiError(400, 'invalid_qr', 'This QR code is not valid. Only Manshya QR codes can be paid here.');
+    if (p.length !== 5 || p[0] !== 'MNSH1' || !safeEq(p[4], hmac(p.slice(0, 4).join('|')))) throw new ApiError(400, 'invalid_qr', 'This QR code is not valid. Only VINK QR codes can be paid here.');
     const to = get('SELECT * FROM bank_accounts WHERE number=?', p[1]);
     if (!to) throw notFound('account');
     return { number: p[1], amount: p[2] ? +p[2] : null, reference: p[3] || null, merchant: get('SELECT name FROM merchants WHERE id=?', to.merchant_id).name };

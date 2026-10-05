@@ -4,7 +4,7 @@ import { Footer } from "../Footer";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
-const P = "#0B5C2E";
+const P = "#5C0A10";
 const GOLD = "#F5A623";
 
 const BENEFITS = [
@@ -41,13 +41,13 @@ export function CareersViewer({ isOpen, onClose }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-white">
       <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm">
-        <img src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
+        <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
         <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500"><X className="w-5 h-5" /></button>
       </div>
 
       {/* Hero */}
       <div className="py-20 px-6 text-white relative overflow-hidden"
-        style={{ background: `linear-gradient(135deg,#1B1837 0%,${P} 60%,#34A853 100%)` }}>
+        style={{ background: `linear-gradient(135deg,#1B1837 0%,${P} 60%,#C9A84C 100%)` }}>
         <div className="max-w-4xl mx-auto relative z-10">
           <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4"
             style={{ background: "rgba(245,166,35,.2)", color: GOLD }}>Join the Team</span>

@@ -1,10 +1,10 @@
 # Questions for Paymentology (draft email)
 
-**Subject:** Manshya: onboarding, sandbox access and API documentation
+**Subject:** VINK: onboarding, sandbox access and API documentation
 
 Hello,
 
-We are building Manshya, a customer banking and payments app, and plan to use Paymentology as our card issuer-processor with
+We are building VINK, a customer banking and payments app, and plan to use Paymentology as our card issuer-processor with
 BIN sponsorship. To integrate, please send the items below (or tell us where to find them).
 
 **1. Access**

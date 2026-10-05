@@ -1,5 +1,5 @@
 import { memo } from "react";
-import protectionImage from "../../imports/image-1.png";
+import protectionImage from "../../imports/image-1.webp";
 import { Lock, Zap, ShieldCheck } from "lucide-react";
 
 

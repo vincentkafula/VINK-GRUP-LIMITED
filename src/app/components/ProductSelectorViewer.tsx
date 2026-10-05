@@ -64,15 +64,15 @@ export const CATEGORY_CONFIG: Record<ProductCategory, {
     title: "Choose Your VINK Card",
     subtitle: "From your first credit card to a premium Visa Infinite — pick the card that matches your lifestyle.",
     tag: "Personal Banking · Credit Cards",
-    gradient: "linear-gradient(135deg,#0B5C2E 0%,#128A43 55%,#5FC97F 100%)",
-    accentColor: "#128A43",
+    gradient: "linear-gradient(135deg,#5C0A10 0%,#8B0000 55%,#C9A84C 100%)",
+    accentColor: "#8B0000",
   },
   account: {
     title: "Choose Your Bank Account",
     subtitle: "From your first account to private banking — find the account that works for your life stage.",
     tag: "Personal Banking · Accounts",
-    gradient: "linear-gradient(135deg,#1A237E 0%,#0F3D24 55%,#34A853 100%)",
-    accentColor: "#128A43",
+    gradient: "linear-gradient(135deg,#1A237E 0%,#2E0B10 55%,#C9A84C 100%)",
+    accentColor: "#8B0000",
   },
 };
 
@@ -84,7 +84,7 @@ export const PRODUCTS: Record<ProductCategory, Product[]> = {
     { id: "everyday", name: "Anchor Account", tagline: "Designed for daily commuters and casual spenders", price: "R0", priceLabel: "/month", emoji: "🚌", gradient: "linear-gradient(135deg,#E8F5E9,#C8E6C9)", features: ["Free taxi fare payments via tap-and-go", "2 free ATM withdrawals/month", "Free airtime and electricity in-app", "Debit order support"] },
     { id: "prime", name: "Momentum Account", tagline: "For working adults who want more from their bank", price: "R85", priceLabel: "/month", emoji: "⭐", gradient: "linear-gradient(135deg,#FFF8E1,#FFF3CD)", features: ["5 free ATM withdrawals/month", "Earn 0.5% cashback on all spend", "Overdraft facility up to R5,000", "Dedicated phone support"] },
     { id: "premier", name: "Horizon Account", tagline: "For high-earners who need premium everyday banking", price: "R170", priceLabel: "/month", emoji: "💎", gradient: "linear-gradient(135deg,#F3E5F5,#EAF7EE)", features: ["10 free ATM withdrawals at any bank", "1% cashback on all spend", "R15,000 overdraft facility", "Travel notifications included"] },
-    { id: "grain", name: "Summit Account", tagline: "The flagship VINK account — full financial control", price: "R265", priceLabel: "/month", emoji: "🏆", gradient: "linear-gradient(135deg,#0B5C2E,#5FC97F)", featured: true, badge: "Most Popular", badgeColor: "#F5A623", features: ["Unlimited ATM withdrawals", "1.5% cashback on all spend", "R30,000 overdraft", "Dedicated relationship manager", "Investment sub-account", "International transfers to 60+ countries"] },
+    { id: "grain", name: "Summit Account", tagline: "The flagship VINK account — full financial control", price: "R265", priceLabel: "/month", emoji: "🏆", gradient: "linear-gradient(135deg,#5C0A10,#C9A84C)", featured: true, badge: "Most Popular", badgeColor: "#F5A623", features: ["Unlimited ATM withdrawals", "1.5% cashback on all spend", "R30,000 overdraft", "Dedicated relationship manager", "Investment sub-account", "International transfers to 60+ countries"] },
     { id: "animal", name: "Legacy Account", tagline: "For high-net-worth individuals", price: "R415", priceLabel: "/month", emoji: "🦁", gradient: "linear-gradient(135deg,#1A1A2E,#4A4A6A)", features: ["Unlimited transactions", "2% cashback on all spend", "Private banking concierge", "R100,000 overdraft", "Multi-currency wallet", "Will and estate planning guidance"] },
   ],
   invest: [
@@ -116,7 +116,7 @@ export const PRODUCTS: Record<ProductCategory, Product[]> = {
     { id: "secure", name: "Nova Card", tagline: "A rewards-driven card designed for people who want their everyday spending to work harder, with benefits on the purchases that matter most.", price: "R0", priceLabel: "/month", emoji: "🔐", gradient: "linear-gradient(135deg,#E8F5E9,#C8E6C9)", features: ["Secured by a deposit you choose", "Upgrade to unsecured after 12 months", "Reports to all credit bureaux", "Free replacement card"] },
     { id: "co-branded", name: "Orbit Card", tagline: "A travel-focused card offering benefits designed around flights, accommodation, and life on the move.", price: "R85", priceLabel: "/month", emoji: "🛒", gradient: "linear-gradient(135deg,#FFF8E1,#FFF3CD)", features: ["Earn 1 Smart Shopper point per R5 at PnP", "0.5% cashback everywhere else", "R0 transaction fees at PnP tills", "Exclusive monthly bonus offers"] },
     { id: "investment-cc", name: "Elevate Card", tagline: "A card built for upwardly mobile professionals, combining everyday value with premium lifestyle perks.", price: "R170", priceLabel: "/month", emoji: "📈", gradient: "linear-gradient(135deg,#F3E5F5,#EAF7EE)", features: ["1% of every purchase to a linked unit trust", "Quarterly investment statements", "Linked to Allan Gray or Coronation", "Travel insurance included"] },
-    { id: "grain-cc", name: "Apex Card", tagline: "A premium card offering elevated rewards, travel benefits, and exclusive access for high-value spenders.", price: "R265", priceLabel: "/month", emoji: "🏆", gradient: "linear-gradient(135deg,#0B5C2E,#FF9900)", featured: true, badge: "Premium Choice", badgeColor: "#F5A623", features: ["Airport lounge access — 1,000+ lounges", "2% cashback on travel · 1% everywhere", "Credit limit up to R500,000", "Dedicated concierge service", "Medical emergency cover"] },
+    { id: "grain-cc", name: "Apex Card", tagline: "A premium card offering elevated rewards, travel benefits, and exclusive access for high-value spenders.", price: "R265", priceLabel: "/month", emoji: "🏆", gradient: "linear-gradient(135deg,#5C0A10,#FF9900)", featured: true, badge: "Premium Choice", badgeColor: "#F5A623", features: ["Airport lounge access — 1,000+ lounges", "2% cashback on travel · 1% everywhere", "Credit limit up to R500,000", "Dedicated concierge service", "Medical emergency cover"] },
     { id: "animal-cc", name: "Vertex Card", tagline: "Our top-tier personal credit card, delivering elite rewards, concierge-level service, and premium lifestyle privileges.", price: "R415", priceLabel: "/month", emoji: "🦁", gradient: "linear-gradient(135deg,#1A1A1A,#4A4A4A)", features: ["R1,000,000 credit limit", "3% cashback on international spend", "Personal concierge 24/7", "Global medical emergency evacuation", "Earn up to 120,000 ManshyaPoints/year"] },
   ],
 };
@@ -198,12 +198,12 @@ export function ProductSelectorViewer({ isOpen, onClose, category, onSelect }: P
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-[#F8F7FF]">
+    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-[#FAF8F4]">
 
       {/* ── Top bar ── */}
       <div className="sticky top-0 z-20 bg-white border-b border-gray-100 shadow-sm flex items-center justify-between px-5 py-3">
         <div className="flex items-center gap-3">
-          <img src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
+          <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
           <div className="hidden sm:block border-l border-gray-200 pl-3">
             <p className="text-sm font-bold text-gray-800">Product Selection</p>
             <p className="text-[11px] text-gray-400">{cfg.tag}</p>

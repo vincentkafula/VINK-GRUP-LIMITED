@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- API responses are untyped JSON; callers read fields directly */
-// Manshya API client. Same backend and same JWT as the rest of the app: the signed-in
+// VINK API client. Same backend and same JWT as the rest of the app: the signed-in
 // user's token is sent as a Bearer header, and the server decides who gets in
 // (customers for the dashboard, staff for the back office).
 
@@ -23,7 +23,7 @@ const uid = () => (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.r
 async function fail(res: Response): Promise<never> {
   const json = await res.json().catch(() => ({}));
   const e = json?.error;
-  // Manshya errors are { error: { code, message } }; the app's own are { error: "text" }.
+  // VINK errors are { error: { code, message } }; the app's own are { error: "text" }.
   const message = typeof e === "string" ? e : e?.message ?? (res.status === 401 ? "Please sign in again." : "Request failed");
   throw new ManshyaError(message, res.status, typeof e === "object" ? e?.code : undefined);
 }

@@ -11,7 +11,7 @@ Who and what talks to this platform, at the coarsest level.
 
 ```mermaid
 C4Context
-    title MANSHYA (Vink Group) — System Context
+    title VINK (Vink Group) — System Context
 
     Person(passenger, "Passenger/Customer", "Personal banking customer, taxi commuter")
     Person(driver, "Driver", "Taxi driver using AFC device, has a Driver Wallet")
@@ -19,7 +19,7 @@ C4Context
     Person(investor, "Investor", "Holds a stake, receives revenue share")
     Person(staff, "Staff (admin/compliance/treasury)", "Internal operations via Management Panel")
 
-    System(platform, "MANSHYA Platform", "Digital banking + AFC payments for the minibus-taxi industry")
+    System(platform, "VINK Platform", "Digital banking + AFC payments for the minibus-taxi industry")
 
     System_Ext(visa, "Visa Developer Platform", "Card issuing/network — not yet configured, sandbox scaffolding only")
     System_Ext(mastercard, "Mastercard Open Banking", "Card issuing/network — not yet configured, sandbox scaffolding only")
@@ -44,7 +44,7 @@ C4Context
 
 ```mermaid
 C4Container
-    title MANSHYA Platform — Containers
+    title VINK Platform — Containers
 
     Person(user, "User", "Passenger, driver, owner, investor, or staff")
 

@@ -62,9 +62,9 @@ const ago    = (iso: string) => { const s = Math.floor((Date.now() - new Date(is
 const cap    = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 const ROLE_COLOR: Record<BankRole, string> = {
-  passenger: "#128A43", driver: "#3B82F6", investor: "#F59E0B",
+  passenger: "#8B0000", driver: "#3B82F6", investor: "#F59E0B",
   owner: "#10B981", admin: "#EF4444", compliance: "#34A853", treasury: "#06B6D4",
-  executive: "#7C3AED", frontline: "#F97316",
+  executive: "#9B1C1C", frontline: "#F97316",
 };
 const ROLE_NAV: Record<BankRole, NavSection[]> = {
   passenger: ["overview","accounts","cards","transactions","payments"],
@@ -101,7 +101,7 @@ function VisualCard({ card, compact = false }: { card: R; compact?: boolean }) {
   const [show, setShow] = useState(false);
   const isVisa = card.network === "visa";
   const gradients: Record<string, string> = {
-    standard:  "from-[#5FC97F] to-[#128A43]",
+    standard:  "from-[#C9A84C] to-[#8B0000]",
     premium:   "from-[#C4922A] to-[#8B6914]",
     platinum:  "from-[#1a1a2e] to-[#374151]",
     corporate: "from-[#065F46] to-[#064E3B]",
@@ -226,7 +226,7 @@ function KycRow({ k, onApprove, onReject }: { k: R; onApprove: () => void; onRej
       <td className="px-4 py-3">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
-            style={{ background: "#EDE9FE", color: "#128A43" }}>
+            style={{ background: "#F2EFE8", color: "#8B0000" }}>
             {u ? `${String(u.firstName)[0]}${String(u.lastName)[0]}` : "?"}
           </div>
           <div>
@@ -235,7 +235,7 @@ function KycRow({ k, onApprove, onReject }: { k: R; onApprove: () => void; onRej
           </div>
         </div>
       </td>
-      <td className="px-4 py-3"><Badge label={cap(String(u?.role ?? ""))} color="#128A43"/></td>
+      <td className="px-4 py-3"><Badge label={cap(String(u?.role ?? ""))} color="#8B0000"/></td>
       <td className="px-4 py-3 text-xs text-gray-600">{cap(String(k.documentType)).replace("_"," ")}</td>
       <td className="px-4 py-3">
         {k.faceMatchScore ? <span className="text-xs font-semibold text-gray-700">{String(k.faceMatchScore)}%</span> : <span className="text-xs text-gray-300">—</span>}
@@ -282,11 +282,11 @@ function OverviewPanel({ role, kpis, accounts, cards, txns, loading }: {
     categories[cat] = (categories[cat] ?? 0) + Number(t.amount);
   });
   const pieData = Object.entries(categories).slice(0, 5).map(([name, value]) => ({ name, value: +value.toFixed(0) }));
-  const PIE_COLORS = ["#128A43", "#10B981", "#F59E0B", "#EF4444", "#3B82F6"];
+  const PIE_COLORS = ["#8B0000", "#10B981", "#F59E0B", "#EF4444", "#3B82F6"];
 
   const roleStats = {
     passenger: [
-      { label: "Total Balance", value: fmtZAR(totalBalance), sub: "+2.4%", icon: <Wallet className="w-5 h-5"/>, color: "#128A43" },
+      { label: "Total Balance", value: fmtZAR(totalBalance), sub: "+2.4%", icon: <Wallet className="w-5 h-5"/>, color: "#8B0000" },
       { label: "Cards Active", value: String(cards.filter(c=>c.status==="active").length), icon: <CreditCard className="w-5 h-5"/>, color: "#10B981" },
       { label: "This Month Spent", value: fmtZAR(txns.filter(t=>t.type==="debit").reduce((s,t)=>s+Number(t.amount),0)), icon: <ArrowUpRight className="w-5 h-5"/>, color: "#F59E0B" },
       { label: "Transactions", value: String(txns.length), icon: <Activity className="w-5 h-5"/>, color: "#3B82F6" },
@@ -294,23 +294,23 @@ function OverviewPanel({ role, kpis, accounts, cards, txns, loading }: {
     driver: [
       { label: "Earnings Wallet", value: fmtZAR(totalBalance), sub: "+R" + (Math.floor(Math.random()*500+200)), icon: <Wallet className="w-5 h-5"/>, color: "#3B82F6" },
       { label: "Total Earned", value: fmtZAR(txns.filter(t=>t.type==="credit").reduce((s,t)=>s+Number(t.amount),0)), icon: <DollarSign className="w-5 h-5"/>, color: "#10B981" },
-      { label: "This Week Trips", value: String(Math.floor(txns.filter(t=>t.category==="earnings").length * 0.3 + 5)), icon: <Activity className="w-5 h-5"/>, color: "#128A43" },
+      { label: "This Week Trips", value: String(Math.floor(txns.filter(t=>t.category==="earnings").length * 0.3 + 5)), icon: <Activity className="w-5 h-5"/>, color: "#8B0000" },
       { label: "Driver Card", value: cards.length > 0 ? "Active" : "Not issued", icon: <CreditCard className="w-5 h-5"/>, color: "#F59E0B" },
     ],
     investor: [
       { label: "Portfolio Value", value: fmtZAR(totalBalance * 1.12), sub: "+12%", icon: <TrendingUp className="w-5 h-5"/>, color: "#F59E0B" },
-      { label: "Capital Deposited", value: fmtZAR(totalBalance), icon: <DollarSign className="w-5 h-5"/>, color: "#128A43" },
+      { label: "Capital Deposited", value: fmtZAR(totalBalance), icon: <DollarSign className="w-5 h-5"/>, color: "#8B0000" },
       { label: "Total Returns", value: fmtZAR(totalBalance * 0.12), sub: "+14.5%", icon: <BarChart3 className="w-5 h-5"/>, color: "#10B981" },
       { label: "Dividends Paid", value: fmtZAR(totalBalance * 0.04), icon: <Star className="w-5 h-5"/>, color: "#3B82F6" },
     ],
     owner: [
       { label: "Business Balance", value: fmtZAR(totalBalance), icon: <Building2 className="w-5 h-5"/>, color: "#10B981" },
-      { label: "Revenue Today", value: fmtZAR(kpis ? Number(kpis.revenueToday) : 0), sub: "+8%", icon: <TrendingUp className="w-5 h-5"/>, color: "#128A43" },
+      { label: "Revenue Today", value: fmtZAR(kpis ? Number(kpis.revenueToday) : 0), sub: "+8%", icon: <TrendingUp className="w-5 h-5"/>, color: "#8B0000" },
       { label: "Active Employees", value: "24", icon: <Users className="w-5 h-5"/>, color: "#F59E0B" },
       { label: "Pending Settlements", value: String(kpis ? Number(kpis.settlementsPending) : 0), icon: <Globe className="w-5 h-5"/>, color: "#3B82F6" },
     ],
     admin: [
-      { label: "Total Users", value: String(kpis ? Number(kpis.totalUsers) : 0), icon: <Users className="w-5 h-5"/>, color: "#128A43" },
+      { label: "Total Users", value: String(kpis ? Number(kpis.totalUsers) : 0), icon: <Users className="w-5 h-5"/>, color: "#8B0000" },
       { label: "Active Cards", value: String(kpis ? Number(kpis.activeCards) : 0), icon: <CreditCard className="w-5 h-5"/>, color: "#10B981" },
       { label: "Fraud Alerts", value: String(kpis ? Number(kpis.fraudAlertsActive) : 0), icon: <AlertTriangle className="w-5 h-5"/>, color: "#EF4444" },
       { label: "KYC Pending", value: String(kpis ? Number(kpis.kycPending) : 0), icon: <Shield className="w-5 h-5"/>, color: "#F59E0B" },
@@ -319,13 +319,13 @@ function OverviewPanel({ role, kpis, accounts, cards, txns, loading }: {
       { label: "KYC Pending", value: String(kpis ? Number(kpis.kycPending) : 0), icon: <Shield className="w-5 h-5"/>, color: "#34A853" },
       { label: "Active Fraud Alerts", value: String(kpis ? Number(kpis.fraudAlertsActive) : 0), icon: <AlertTriangle className="w-5 h-5"/>, color: "#EF4444" },
       { label: "AML Reviews", value: "3", icon: <Eye className="w-5 h-5"/>, color: "#F59E0B" },
-      { label: "SARs Filed", value: "0", icon: <FileText className="w-5 h-5"/>, color: "#128A43" },
+      { label: "SARs Filed", value: "0", icon: <FileText className="w-5 h-5"/>, color: "#8B0000" },
     ],
     treasury: [
       { label: "Treasury Balance", value: fmtZAR(kpis ? Number(kpis.treasuryBalance) : 0), icon: <Wallet className="w-5 h-5"/>, color: "#06B6D4" },
       { label: "Volume 24h", value: fmtZAR(kpis ? Number(kpis.totalVolume24h) : 0), sub: "+12%", icon: <Activity className="w-5 h-5"/>, color: "#10B981" },
       { label: "Settlements Pending", value: String(kpis ? Number(kpis.settlementsPending) : 0), icon: <Globe className="w-5 h-5"/>, color: "#F59E0B" },
-      { label: "Txns Today", value: fmtNum(kpis ? Number(kpis.txnCount24h) : 0), icon: <BarChart3 className="w-5 h-5"/>, color: "#128A43" },
+      { label: "Txns Today", value: fmtNum(kpis ? Number(kpis.txnCount24h) : 0), icon: <BarChart3 className="w-5 h-5"/>, color: "#8B0000" },
     ],
   };
 
@@ -440,7 +440,7 @@ function CardsPanel({ userId, cards, onRefresh }: { userId: string; cards: R[]; 
       <div className="flex items-center justify-between">
         <h2 className="text-base font-bold text-gray-900">My Cards ({userCards.length})</h2>
         <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white"
-          style={{ background: "#128A43" }}>
+          style={{ background: "#8B0000" }}>
           <Plus className="w-3.5 h-3.5"/> Request New Card
         </button>
       </div>
@@ -467,7 +467,7 @@ function CardsPanel({ userId, cards, onRefresh }: { userId: string; cards: R[]; 
                 {card.applePayEnrolled && <Badge label="Apple Pay" color="#374151"/>}
                 {card.googlePayEnrolled && <Badge label="Google Pay" color="#4285F4"/>}
                 {card.contactless && <Badge label="Contactless" color="#10B981"/>}
-                {card.internationalEnabled && <Badge label="International" color="#128A43"/>}
+                {card.internationalEnabled && <Badge label="International" color="#8B0000"/>}
               </div>
               <div className="flex gap-2">
                 {card.status === "active"
@@ -514,7 +514,7 @@ function TransactionsPanel({ txns }: { txns: R[] }) {
         {[
           { label: "Total In", value: fmtZAR(totalIn), color: "#10B981" },
           { label: "Total Out", value: fmtZAR(totalOut), color: "#EF4444" },
-          { label: "Net", value: fmtZAR(totalIn - totalOut), color: "#128A43" },
+          { label: "Net", value: fmtZAR(totalIn - totalOut), color: "#8B0000" },
         ].map((s, i) => (
           <div key={i} className="bg-white rounded-2xl p-4 border border-gray-100 text-center">
             <p className="text-xl font-black" style={{ color: s.color }}>{s.value}</p>
@@ -529,7 +529,7 @@ function TransactionsPanel({ txns }: { txns: R[] }) {
           {(["all","credit","debit"] as const).map(f => (
             <button key={f} onClick={() => setFilter(f)}
               className="px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-all"
-              style={{ background: filter === f ? "white" : "transparent", color: filter === f ? "#128A43" : "#9CA3AF", boxShadow: filter === f ? "0 1px 4px rgba(0,0,0,0.08)" : "none" }}>
+              style={{ background: filter === f ? "white" : "transparent", color: filter === f ? "#8B0000" : "#9CA3AF", boxShadow: filter === f ? "0 1px 4px rgba(0,0,0,0.08)" : "none" }}>
               {f}
             </button>
           ))}
@@ -595,7 +595,7 @@ function PaymentsPanel({ userId, accounts }: { userId: string; accounts: R[] }) 
         {(["send","history"] as const).map(t => (
           <button key={t} onClick={() => setTab(t)}
             className="px-5 py-2 rounded-lg text-sm font-semibold capitalize transition-all"
-            style={{ background: tab === t ? "white" : "transparent", color: tab === t ? "#128A43" : "#9CA3AF" }}>
+            style={{ background: tab === t ? "white" : "transparent", color: tab === t ? "#8B0000" : "#9CA3AF" }}>
             {t}
           </button>
         ))}
@@ -607,7 +607,7 @@ function PaymentsPanel({ userId, accounts }: { userId: string; accounts: R[] }) 
             <h3 className="text-sm font-bold text-gray-900">Send Money</h3>
             {fromAcct && (
               <div className="p-3 rounded-xl flex items-center gap-3" style={{ background: "#EAF7EE" }}>
-                <Wallet className="w-4 h-4" style={{ color: "#128A43" }}/>
+                <Wallet className="w-4 h-4" style={{ color: "#8B0000" }}/>
                 <div>
                   <p className="text-xs text-gray-500">From</p>
                   <p className="text-sm font-semibold text-gray-800">{String(fromAcct.label)} · {fmtZAR(fromAcct.balance as number)}</p>
@@ -631,8 +631,8 @@ function PaymentsPanel({ userId, accounts }: { userId: string; accounts: R[] }) 
                 {rails.map(r => (
                   <button type="button" key={r.id} onClick={() => setRail(r.id)}
                     className="p-2.5 rounded-xl text-left transition-all"
-                    style={{ background: rail === r.id ? "#EAF7EE" : "#F9FAFB", border: `1.5px solid ${rail === r.id ? "#128A43" : "#E5E7EB"}` }}>
-                    <p className="text-xs font-semibold" style={{ color: rail === r.id ? "#128A43" : "#374151" }}>{r.label}</p>
+                    style={{ background: rail === r.id ? "#EAF7EE" : "#F9FAFB", border: `1.5px solid ${rail === r.id ? "#8B0000" : "#E5E7EB"}` }}>
+                    <p className="text-xs font-semibold" style={{ color: rail === r.id ? "#8B0000" : "#374151" }}>{r.label}</p>
                     <p className="text-[10px] text-gray-400">{r.fee} · {r.eta}</p>
                   </button>
                 ))}
@@ -645,7 +645,7 @@ function PaymentsPanel({ userId, accounts }: { userId: string; accounts: R[] }) 
             )}
             <button type="submit" disabled={sending || !toIban || !amount}
               className="w-full py-3.5 rounded-xl text-white font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
-              style={{ background: "linear-gradient(135deg,#128A43,#7ED99A)" }}>
+              style={{ background: "linear-gradient(135deg,#8B0000,#7ED99A)" }}>
               {sending ? <Loader2 className="w-4 h-4 animate-spin"/> : <ArrowUpRight className="w-4 h-4"/>}
               Send Payment
             </button>
@@ -755,7 +755,7 @@ function TreasuryPanel() {
               <YAxis tick={{ fontSize: 11, fill: "#9CA3AF" }} axisLine={false} tickLine={false}/>
               <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }}/>
               <Bar dataKey="volume" fill="#06B6D4" radius={[4,4,0,0]} name="Volume"/>
-              <Bar dataKey="net" fill="#128A43" radius={[4,4,0,0]} name="Net"/>
+              <Bar dataKey="net" fill="#8B0000" radius={[4,4,0,0]} name="Net"/>
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -811,7 +811,7 @@ function KycPanel() {
           {["all","pending","in_review","approved","rejected"].map(f => (
             <button key={f} onClick={() => setFilter(f)}
               className="px-3 py-1.5 rounded-lg text-[11px] font-semibold capitalize transition-all"
-              style={{ background: filter === f ? "white" : "transparent", color: filter === f ? "#128A43" : "#9CA3AF" }}>
+              style={{ background: filter === f ? "white" : "transparent", color: filter === f ? "#8B0000" : "#9CA3AF" }}>
               {f.replace("_"," ")}
             </button>
           ))}
@@ -873,7 +873,7 @@ function FraudPanel() {
           {[["false","Active"],["true","Resolved"]].map(([v,l]) => (
             <button key={v} onClick={() => setFilter(v)}
               className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-              style={{ background: filter === v ? "white" : "transparent", color: filter === v ? "#128A43" : "#9CA3AF" }}>{l}</button>
+              style={{ background: filter === v ? "white" : "transparent", color: filter === v ? "#8B0000" : "#9CA3AF" }}>{l}</button>
           ))}
         </div>
       </div>
@@ -1161,7 +1161,7 @@ export function BankingDashboard({ isOpen, onClose, onOpenDriveDashboard, onOpen
           <h2 className="text-base font-bold text-gray-900">Investment Portfolio</h2>
           <div className="grid md:grid-cols-2 gap-4">
             {[
-              { label:"Capital Deposited",  val: fmtZAR(accounts.reduce((s,a)=>s+Number(a.balance),0)), color:"#128A43" },
+              { label:"Capital Deposited",  val: fmtZAR(accounts.reduce((s,a)=>s+Number(a.balance),0)), color:"#8B0000" },
               { label:"Current Value",      val: fmtZAR(accounts.reduce((s,a)=>s+Number(a.balance),0)*1.12), color:"#10B981" },
               { label:"Total Returns",      val: fmtZAR(accounts.reduce((s,a)=>s+Number(a.balance),0)*0.12), color:"#F59E0B" },
               { label:"Revenue Share",      val: "10% of platform revenue", color:"#3B82F6" },
@@ -1254,7 +1254,7 @@ export function BankingDashboard({ isOpen, onClose, onOpenDriveDashboard, onOpen
                 {onOpenTerminalManagement && (
                   <button onClick={onOpenTerminalManagement}
                     className="w-full mt-2 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-[10.5px] font-bold transition-all"
-                    style={{ background: "rgba(15,61,36,.12)", color: "#0F3D24", border: "1px solid rgba(15,61,36,.25)" }}>
+                    style={{ background: "rgba(15,61,36,.12)", color: "#2E0B10", border: "1px solid rgba(15,61,36,.25)" }}>
                     Terminal Access Control
                   </button>
                 )}

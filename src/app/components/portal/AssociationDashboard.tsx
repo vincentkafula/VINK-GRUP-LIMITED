@@ -66,7 +66,7 @@ function Overview() {
           <StatCard label="Vehicle owners" value={String(x.members.owners)} icon={<Users className="w-4 h-4" />} color={COLOR} />
           <StatCard label="Drivers" value={String(x.members.drivers)} icon={<Users className="w-4 h-4" />} color="#F59E0B" />
           <StatCard label="Marshals" value={String(x.members.marshals)} icon={<Users className="w-4 h-4" />} color="#3B82F6" />
-          <StatCard label="Member vehicles" value={String(x.members.vehicles)} icon={<Users className="w-4 h-4" />} color="#8B5CF6" />
+          <StatCard label="Member vehicles" value={String(x.members.vehicles)} icon={<Users className="w-4 h-4" />} color="#B04040" />
         </div>
         {x.pendingRequests > 0 && <p className="text-sm text-warn">{x.pendingRequests} request{x.pendingRequests === 1 ? "" : "s"} to join {x.pendingRequests === 1 ? "is" : "are"} waiting under Approvals.</p>}
         {x.ranks.length === 0 ? <SectionPanel title="Departures"><div className="p-4"><Empty>No ranks yet.</Empty></div></SectionPanel> : (

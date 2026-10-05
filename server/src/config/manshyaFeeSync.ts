@@ -1,9 +1,9 @@
 import type { CountryConfig } from "./countryConfig.js";
 
 /**
- * Keeps the Banking module's (Manshya) fee settings in line with the ACTIVE South African profile, so the fees a customer is charged are the
- * ones the profile says. Only what Manshya can express is copied: card-online and card-POS as "percentage + fixed", and the payout fee.
- * A rule that is missing, waived, or of another shape leaves Manshya's own value alone. Returns what was changed (for the log and the tests).
+ * Keeps the Banking module's (VINK) fee settings in line with the ACTIVE South African profile, so the fees a customer is charged are the
+ * ones the profile says. Only what VINK can express is copied: card-online and card-POS as "percentage + fixed", and the payout fee.
+ * A rule that is missing, waived, or of another shape leaves VINK's own value alone. Returns what was changed (for the log and the tests).
  */
 export interface ManshyaConfigHandle { fees: { online: { pct: number; fixed: number }; pos: { pct: number; fixed: number } }; payoutFee: number }
 
