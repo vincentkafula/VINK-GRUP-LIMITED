@@ -4,6 +4,8 @@ import heroCardPhone from "../../imports/HeroCardPhone.webp";
 import heroGlobalSim from "../../imports/HeroGlobalSim.webp";
 import heroValidator from "../../imports/HeroValidator.webp";
 
+const FEATHER = "linear-gradient(to right, transparent 0%, #000 22%, #000 78%, transparent 100%), linear-gradient(to bottom, transparent 0%, #000 22%, #000 78%, transparent 100%)";
+
 // ─── Per-slide content ────────────────────────────────────────────────────────
 const RAW_SLIDES = [
   {
@@ -156,12 +158,16 @@ export function HeroSection({ onApplyClick }: { onApplyClick?: () => void }) {
               key={current}
               src={slide.image}
               alt={slide.eyebrow}
-              className="relative z-10 w-full max-w-sm sm:max-w-md md:max-w-lg object-contain drop-shadow-2xl"
+              className="relative z-10 w-full max-w-sm sm:max-w-md md:max-w-lg object-contain"
               draggable={false}
               style={{
                 transition: "opacity 0.4s ease", opacity: fading ? 0 : 1,
-                maskImage: "radial-gradient(ellipse 68% 68% at 50% 50%, black 45%, transparent 92%)",
-                WebkitMaskImage: "radial-gradient(ellipse 68% 68% at 50% 50%, black 45%, transparent 92%)",
+                // The slide art has its own scene background (no alpha channel), so its edges are feathered into the hero:
+                // a fade on all four sides, multiplied together (mask-composite: intersect). Even on every edge, unlike a radial fade that eats the corners.
+                maskImage: FEATHER,
+                WebkitMaskImage: FEATHER,
+                maskComposite: "intersect",
+                WebkitMaskComposite: "source-in",
               }}
             />
 
