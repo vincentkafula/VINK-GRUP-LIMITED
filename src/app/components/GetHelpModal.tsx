@@ -1,6 +1,13 @@
 import { X, Search, Phone, Mail, MessageCircle, ChevronRight, MapPin } from "lucide-react";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 
+// Every link here goes to the Contact Us page: the product pages behind these labels are not separate screens.
+const goContact = (onClose: () => void) => (e: { preventDefault: () => void }) => {
+  e.preventDefault();
+  onClose();
+  window.dispatchEvent(new CustomEvent("vink:footer-link", { detail: { label: "Contact Us" } }));
+};
+
 interface GetHelpModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -87,7 +94,7 @@ export function GetHelpModal({ isOpen, onClose }: GetHelpModalProps) {
           <h2 className="text-white font-bold text-base mb-5">Contact Us</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {CONTACT_CHANNELS.map((c, i) => (
-              <button key={i}
+              <button key={i} type="button" onClick={goContact(onClose)}
                 className="flex flex-col items-center gap-2 p-4 rounded-2xl border text-center hover:border-white/30 transition-all group"
                 style={{ background: c.color + "12", borderColor: c.color + "40" }}>
                 <div className="p-2.5 rounded-xl" style={{ background: c.color + "22", color: c.color }}>
@@ -113,7 +120,7 @@ export function GetHelpModal({ isOpen, onClose }: GetHelpModalProps) {
                 <ul className="space-y-2">
                   {col.links.map((link) => (
                     <li key={link}>
-                      <a href="#" className="text-white/45 text-[11px] hover:text-white transition-colors flex items-center gap-1 group leading-relaxed">
+                      <a href="/contact-us" onClick={goContact(onClose)} className="text-white/45 text-[11px] hover:text-white transition-colors flex items-center gap-1 group leading-relaxed">
                         <ChevronRight className="w-2.5 h-2.5 opacity-0 group-hover:opacity-100 flex-shrink-0 transition-opacity" style={{ color: "var(--vk-crimson-text)" }} />
                         {link}
                       </a>
@@ -191,7 +198,7 @@ export function GetHelpModal({ isOpen, onClose }: GetHelpModalProps) {
             </div>
             <div className="flex flex-wrap gap-4">
               {LEGAL_LINKS.map((l) => (
-                <a key={l} href="#" className="text-white/35 text-[11px] hover:text-white/60 transition-colors">{l}</a>
+                <a key={l} href="/contact-us" onClick={goContact(onClose)} className="text-white/35 text-[11px] hover:text-white/60 transition-colors">{l}</a>
               ))}
             </div>
           </div>
