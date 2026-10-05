@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any -- rows are untyped JSON from the Manshya API; fields are read directly as in the original dashboard */
+/* eslint-disable @typescript-eslint/no-explicit-any -- rows are untyped JSON from the VINK API; fields are read directly as in the original dashboard */
 import { useEffect, useState, type FormEvent } from "react";
 import "./manshya.css";
 import { publicApi } from "./api";

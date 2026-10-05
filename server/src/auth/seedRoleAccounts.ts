@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import { BCRYPT_ROUNDS } from "../config/secrets.js";
 import { ACCOUNT_ROLES } from "./roles.js";
 
-/** The five transport account types plus the Manshya banking customer (SEED_CUSTOMER_EMAIL / SEED_CUSTOMER_PASSWORD). */
+/** The five transport account types plus the VINK banking customer (SEED_CUSTOMER_EMAIL / SEED_CUSTOMER_PASSWORD). */
 const SEEDED_ROLES = [...ACCOUNT_ROLES, "customer"] as const;
 type SeedRole = (typeof SEEDED_ROLES)[number];
 

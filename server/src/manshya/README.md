@@ -1,4 +1,4 @@
-# Manshya payments and banking (server module)
+# VINK payments and banking (server module)
 
 A pluggable payments and banking backend: online payments, in-person (card machine) payments and business banking share one double-entry ledger. It runs inside this Express server, mounted at `/api/manshya`, and is used by the React screens in `src/app/components/manshya/`.
 
@@ -94,8 +94,8 @@ Every movement is one journal whose lines sum to zero, so the ledger can never c
 
 - **Payment of R100:** clearing −100.00, merchant available +net, merchant retained +reserve, fees +fee. Online fee is 2.9% + R1, in-person 2.5%, and unverified merchants hold back 10% until verified.
 - **Refund:** reserves the money in the ledger first, then calls the gateway, and reverses the entry if the gateway refuses.
-- **Payout:** available minus the R8.50 fee goes to a Manshya account or an external beneficiary.
-- **Transfers:** between your accounts, to another Manshya account number, or to a saved beneficiary, with a daily limit for payments to other banks.
+- **Payout:** available minus the R8.50 fee goes to a VINK account or an external beneficiary.
+- **Transfers:** between your accounts, to another VINK account number, or to a saved beneficiary, with a daily limit for payments to other banks.
 - Overdrafts are blocked by a floor check inside the same database transaction (`BEGIN IMMEDIATE`).
 
 ## Gateway adapter
@@ -150,7 +150,7 @@ Everything on your requirements list is built, except the items below, which can
 | Card gateway, EFT, bank rails | Adapter contracts and working sandbox versions, signed webhooks, reconciliation against a settlement file |
 | Card issuing | Card lifecycle and an `authorize()` that enforces status, limits and switches. Your issuer processor calls it |
 | DebiCheck, PayShap, SWIFT | Sandbox flows with the rail adapter calls in place |
-| Other schemes' QR codes (SnapScan, Zapper, Capitec Pay) | Manshya QR codes both ways. Other schemes need those partners |
+| Other schemes' QR codes (SnapScan, Zapper, Capitec Pay) | VINK QR codes both ways. Other schemes need those partners |
 | Identity bureau and selfie matching | `identity` adapter and referral handling |
 | Credit bureau, underwriter, licensing authority, bill and prepaid provider | Adapters or rules with sandbox versions |
 

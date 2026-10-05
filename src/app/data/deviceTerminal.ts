@@ -22,10 +22,10 @@ export const P18Q_SPEC = {
   certifications: "IP65 · IK08 · CE · RoHS",
   operatingRange: "-20°C to 60°C · DC 9–40V",
   developer: "Vink Group (Pty) Ltd.",
-  backendApi: "MANSHYA Central API v2 · Cape Town",
+  backendApi: "VINK Central API v2 · Cape Town",
   realtime: "WebSocket · sub-100ms latency",
   security: "256-bit AES · JWT Auth · FICA Compliant",
-  dataNetwork: "MANSHYA MVNO · Cell C 4G/LTE",
+  dataNetwork: "VINK MVNO · Cell C 4G/LTE",
 };
 
 export interface DeviceTerminal {

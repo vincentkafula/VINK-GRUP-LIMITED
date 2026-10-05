@@ -19,10 +19,10 @@ const MILESTONES = [
   { year: "2020", text: "Driver Wallet, Smart Pay Card, and Marshall Wallet products launched." },
   { year: "2021", text: "Vink MVNO agreement with Cell C; Nedbank API integration completed." },
   { year: "2022", text: "Business plan submitted for R4.5 billion funding round." },
-  { year: "Now",  text: "Expansion to gyms, fuel stations, and MANSHYA Online Store underway." },
+  { year: "Now",  text: "Expansion to gyms, fuel stations, and VINK Online Store underway." },
 ];
 
-const P = "#0B5C2E";
+const P = "#5C0A10";
 const GOLD = "#F5A623";
 
 export function AboutVINKViewer({ isOpen, onClose }: Props) {
@@ -31,13 +31,13 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
     <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-white">
       {/* Top bar */}
       <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm">
-        <img src={vinkLogo} alt="MANSHYA" className="h-9 w-auto object-contain" />
+        <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
         <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500"><X className="w-5 h-5" /></button>
       </div>
 
       {/* Hero */}
       <div className="relative py-20 px-6 text-white overflow-hidden"
-        style={{ background: `linear-gradient(135deg,${P} 0%,#0B2E1C 50%,#34A853 100%)` }}>
+        style={{ background: `linear-gradient(135deg,${P} 0%,#0C0E14 50%,#C9A84C 100%)` }}>
         <div className="absolute inset-0 opacity-10 pointer-events-none"
           style={{ background: "radial-gradient(circle at 70% 50%,#fff,transparent 60%)" }} />
         <div className="max-w-4xl mx-auto relative z-10">
@@ -75,14 +75,14 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
               From a single idea in the Cape Town CBD to a fully developed AFC payment platform, Vink was born from the belief that financial tools should serve everyone — not just those with traditional banking histories.
             </p>
             <p className="text-gray-600 leading-relaxed">
-              MANSHYA charges just R0.50 per taxi transaction — the lowest processing fee in the industry. That revenue is shared across the ecosystem that makes the transaction possible: the financing bank, the driver&apos;s taxi association, neighbourhood watch initiatives in the area served, and a portion retained to seed a future MANSHYA community bank built specifically for taxi drivers.
+              VINK charges just R0.50 per taxi transaction — the lowest processing fee in the industry. That revenue is shared across the ecosystem that makes the transaction possible: the financing bank, the driver&apos;s taxi association, neighbourhood watch initiatives in the area served, and a portion retained to seed a future VINK community bank built specifically for taxi drivers.
             </p>
           </div>
         </section>
 
         {/* Mission & Vision */}
         <section className="grid md:grid-cols-2 gap-6">
-          <div className="rounded-2xl p-6 text-white" style={{ background: `linear-gradient(135deg,${P},#34A853)` }}>
+          <div className="rounded-2xl p-6 text-white" style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
             <div className="text-3xl mb-3">🎯</div>
             <h3 className="text-lg font-black mb-3">Our Mission</h3>
             <p className="text-white/85 text-sm leading-relaxed">
@@ -115,7 +115,7 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
         </section>
 
         {/* BBBEE */}
-        <section className="rounded-2xl p-6" style={{ background: "#F3F0FB" }}>
+        <section className="rounded-2xl p-6" style={{ background: "#F2EFE8" }}>
           <h2 className="text-lg font-black mb-3" style={{ color: P }}>BBBEE &amp; Ownership</h2>
           <p className="text-gray-700 text-sm leading-relaxed">
             Vink is a <strong>100% black-owned business</strong>. The founder, Vincent Kafula, holds 80% of the shares. The remaining shares are held by South African co-shareholders and beneficiaries — including a 10% stake held in trust for a minor beneficiary, reflecting the founder&apos;s commitment to generational wealth building.
@@ -131,7 +131,7 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
                 <div className="absolute -left-[29px] top-0.5 w-5 h-5 rounded-full border-2 border-white flex items-center justify-center text-white text-[9px] font-black"
                   style={{ background: P }}>•</div>
                 <span className="text-xs font-black uppercase tracking-wider px-2 py-0.5 rounded"
-                  style={{ background: "#EDE9FE", color: P }}>{m.year}</span>
+                  style={{ background: "#F2EFE8", color: P }}>{m.year}</span>
                 <p className="text-gray-700 text-sm mt-2 leading-relaxed">{m.text}</p>
               </div>
             ))}

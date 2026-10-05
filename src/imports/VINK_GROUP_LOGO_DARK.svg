@@ -1,6 +1,6 @@
 <svg width="800" height="500" viewBox="0 0 680 420" role="img" xmlns="http://www.w3.org/2000/svg">
-<title>Manshya Group Logo</title>
-<desc>An eagle with spread wings inside a gold ring, in dark crimson and gold, with MANSHYA GROUP text below</desc>
+<title>VINK Group Logo</title>
+<desc>An eagle with spread wings inside a gold ring, in dark crimson and gold, with VINK GROUP text below</desc>
 <defs>
   <style>
     .eagle-body { fill: #8B0000; }
@@ -72,8 +72,8 @@
 <!-- Divider -->
 <line x1="180" y1="340" x2="500" y2="340" class="divider"/>
 
-<!-- MANSHYA -->
-<text x="340" y="388" text-anchor="middle" class="word-vink">MANSHYA</text>
+<!-- VINK -->
+<text x="340" y="388" text-anchor="middle" class="word-vink">VINK</text>
 
 <!-- GROUP -->
 <text x="340" y="413" text-anchor="middle" class="word-group">GROUP</text>

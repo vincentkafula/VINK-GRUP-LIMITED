@@ -4,7 +4,7 @@ import { Footer } from "../Footer";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
-const P = "#0B5C2E";
+const P = "#5C0A10";
 const GOLD = "#F5A623";
 
 const BENEFITS = [
@@ -41,13 +41,13 @@ export function CareersViewer({ isOpen, onClose }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-white">
       <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm">
-        <img src={vinkLogo} alt="MANSHYA" className="h-9 w-auto object-contain" />
+        <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
         <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500"><X className="w-5 h-5" /></button>
       </div>
 
       {/* Hero */}
       <div className="py-20 px-6 text-white relative overflow-hidden"
-        style={{ background: `linear-gradient(135deg,#1B1837 0%,${P} 60%,#34A853 100%)` }}>
+        style={{ background: `linear-gradient(135deg,#1B1837 0%,${P} 60%,#C9A84C 100%)` }}>
         <div className="max-w-4xl mx-auto relative z-10">
           <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4"
             style={{ background: "rgba(245,166,35,.2)", color: GOLD }}>Join the Team</span>
@@ -55,7 +55,7 @@ export function CareersViewer({ isOpen, onClose }: Props) {
             Build the Future of<br />African Payments.
           </h1>
           <p className="text-white/80 text-lg max-w-2xl leading-relaxed">
-            At MANSHYA, you&apos;re not just building software — you&apos;re building the financial infrastructure for 15 million South Africans who take a taxi every day.
+            At VINK, you&apos;re not just building software — you&apos;re building the financial infrastructure for 15 million South Africans who take a taxi every day.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <span className="px-4 py-2 rounded-full text-sm font-semibold" style={{ background: "rgba(255,255,255,.15)" }}>
@@ -75,7 +75,7 @@ export function CareersViewer({ isOpen, onClose }: Props) {
 
         {/* Benefits */}
         <section>
-          <h2 className="text-2xl font-black mb-6" style={{ color: P }}>Why Work at MANSHYA?</h2>
+          <h2 className="text-2xl font-black mb-6" style={{ color: P }}>Why Work at VINK?</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {BENEFITS.map((b, i) => (
               <div key={i} className="flex items-start gap-3 p-4 rounded-xl border border-gray-200 hover:border-emerald-200 hover:bg-emerald-50 transition-all">
@@ -132,7 +132,7 @@ export function CareersViewer({ isOpen, onClose }: Props) {
         <section className="rounded-2xl p-6 text-white" style={{ background: `linear-gradient(135deg,#1B1837,${P})` }}>
           <h2 className="text-xl font-black mb-2">Graduate &amp; Internship Programme</h2>
           <p className="text-white/80 text-sm leading-relaxed mb-4">
-            MANSHYA offers a 12-month paid internship programme for recent graduates in Computer Science, Finance, Marketing, and Business Management. Applications open annually in January.
+            VINK offers a 12-month paid internship programme for recent graduates in Computer Science, Finance, Marketing, and Business Management. Applications open annually in January.
           </p>
           <a href="mailto:intern@vink.co.za" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-white transition-all hover:opacity-90"
             style={{ color: P }}>

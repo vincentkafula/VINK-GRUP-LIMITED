@@ -19,7 +19,7 @@ export function EmptyState({ icon, emoji, title, body, action }: Props) {
       {action && (
         <button onClick={action.onClick}
           className="mt-5 px-5 py-2.5 rounded-xl text-sm font-semibold text-white"
-          style={{ background: "#0B5C2E" }}>
+          style={{ background: "#5C0A10" }}>
           {action.label}
         </button>
       )}

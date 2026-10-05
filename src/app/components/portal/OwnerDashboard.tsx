@@ -9,7 +9,7 @@ import { LinksPanel } from "./LinksPanel";
 import { OwnerTrend, OwnerMap, OwnerFinancials } from "./OwnerExtras";
 import { ScreenBoundary } from "./widgets";
 
-const COLOR = "#8B5CF6";
+const COLOR = "#B04040";
 const call = portalClient("owner");
 
 interface Vehicle { id: string; registration: string; make: string | null; model: string | null; year: number | null; colour: string | null; seats: number | null; discExpiry: string | null; driverId: string | null; driverName: string | null }
@@ -62,7 +62,7 @@ function Overview() {
           {([["Today", x.today], ["This week", x.week], ["This month", x.month]] as const).map(([label, p]) => (
             <StatCard key={label} label={`${label}: fares collected`} value={rand(p.fares)} sub={`${p.count} fares · your share ${rand(p.ownerShare)}`} icon={<Wallet className="w-4 h-4" />} color={COLOR} />))}
         </div>
-        <p className="text-[11px] text-white/40">Fares are confirmed card taps on terminals fitted to your vehicles. "Your share" is what the platform's split leaves for the owner. What you pay your drivers is your own arrangement and is not recorded here.</p>
+        <p className="text-[11px] text-fg-subtle">Fares are confirmed card taps on terminals fitted to your vehicles. "Your share" is what the platform's split leaves for the owner. What you pay your drivers is your own arrangement and is not recorded here.</p>
       </>
     )}</Status>
   );
@@ -93,16 +93,16 @@ function Vehicles() {
             <select key="d" aria-label={`Driver for ${v.registration}`} className={inputCls + " !py-1"} value={v.driverId ?? ""} onChange={async (e) => { await call(`/vehicles/${v.id}/driver`, { method: "PUT", body: { driverId: e.target.value || null } }); reload(); }}>
               <option value="">No driver</option>{active.map((d) => <option key={d.driverId} value={d.driverId}>{d.name}</option>)}
             </select>,
-            <button key="e" className="text-xs underline text-white/70" onClick={() => { setEditing(v.id); setF({ registration: v.registration, make: v.make ?? "", model: v.model ?? "", year: v.year?.toString() ?? "", colour: v.colour ?? "", seats: v.seats?.toString() ?? "", disc_expiry: v.discExpiry ?? "" }); }}>Edit</button>,
+            <button key="e" className="text-xs underline text-fg" onClick={() => { setEditing(v.id); setF({ registration: v.registration, make: v.make ?? "", model: v.model ?? "", year: v.year?.toString() ?? "", colour: v.colour ?? "", seats: v.seats?.toString() ?? "", disc_expiry: v.discExpiry ?? "" }); }}>Edit</button>,
           ])} />
       )}</Status>
       <SectionPanel title={editing ? "Edit vehicle" : "Add a vehicle"}>
         <div className="p-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
           {([["Registration", "registration", "text"], ["Make", "make", "text"], ["Model", "model", "text"], ["Year", "year", "text"], ["Colour", "colour", "text"], ["Seats", "seats", "text"], ["Licence disc expiry", "disc_expiry", "date"]] as const).map(([label, k, type]) => (
-            <label key={k} className="block"><span className="text-[11px] text-white/60">{label}</span><input className={inputCls + " mt-1"} type={type} value={f[k]} onChange={set(k)} /></label>))}
+            <label key={k} className="block"><span className="text-[11px] text-fg-muted">{label}</span><input className={inputCls + " mt-1"} type={type} value={f[k]} onChange={set(k)} /></label>))}
           <div className="col-span-2 sm:col-span-4 flex gap-3 items-center">
             <ActionButton label={editing ? "Save changes" : "Add vehicle"} color={COLOR} onRun={save} />
-            {editing && <button className="text-sm text-white/60 underline" onClick={() => { setEditing(null); setF(EMPTY_V); }}>Cancel</button>}
+            {editing && <button className="text-sm text-fg-muted underline" onClick={() => { setEditing(null); setF(EMPTY_V); }}>Cancel</button>}
           </div>
         </div>
       </SectionPanel>
@@ -139,7 +139,7 @@ function Reports() {
       <>
         {month.vehicles.length === 0 ? <SectionPanel title="This month"><div className="p-4"><Empty>No vehicles yet.</Empty></div></SectionPanel> : (
           <TableCard title="This month, per vehicle" color={COLOR} columns={["Vehicle", "Fares", "Fares collected", "Your share"]} rows={month.vehicles.map((v) => [v.registration, v.count, rand(v.fares), rand(v.ownerShare)])} />)}
-        <SectionPanel title="Route fines this month"><div className="p-4 text-sm text-white">{month.fines.count} fine{month.fines.count === 1 ? "" : "s"}, {rand(month.fines.total)} in total across your vehicles.</div></SectionPanel>
+        <SectionPanel title="Route fines this month"><div className="p-4 text-sm text-fg">{month.fines.count} fine{month.fines.count === 1 ? "" : "s"}, {rand(month.fines.total)} in total across your vehicles.</div></SectionPanel>
       </>
     )}</Status>
   );
@@ -159,11 +159,11 @@ function Documents({ onChanged }: { onChanged: () => void }) {
       )}</Status>
       <SectionPanel title="Add a document">
         <div className="p-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <label className="block"><span className="text-[11px] text-white/60">Kind (for example Operating licence)</span><input className={inputCls + " mt-1"} value={f.kind} onChange={(e) => setF({ ...f, kind: e.target.value })} /></label>
-          <label className="block"><span className="text-[11px] text-white/60">Reference number</span><input className={inputCls + " mt-1"} value={f.reference} onChange={(e) => setF({ ...f, reference: e.target.value })} /></label>
-          <label className="block"><span className="text-[11px] text-white/60">Expiry date</span><input type="date" className={inputCls + " mt-1"} value={f.expires_on} onChange={(e) => setF({ ...f, expires_on: e.target.value })} /></label>
+          <label className="block"><span className="text-[11px] text-fg-muted">Kind (for example Operating licence)</span><input className={inputCls + " mt-1"} value={f.kind} onChange={(e) => setF({ ...f, kind: e.target.value })} /></label>
+          <label className="block"><span className="text-[11px] text-fg-muted">Reference number</span><input className={inputCls + " mt-1"} value={f.reference} onChange={(e) => setF({ ...f, reference: e.target.value })} /></label>
+          <label className="block"><span className="text-[11px] text-fg-muted">Expiry date</span><input type="date" className={inputCls + " mt-1"} value={f.expires_on} onChange={(e) => setF({ ...f, expires_on: e.target.value })} /></label>
           <div className="sm:col-span-3"><ActionButton label="Add document" color={COLOR} onRun={async () => { const r = await call("/documents", { method: "POST", body: f }); if (!("error" in r)) { setF({ kind: "", reference: "", expires_on: "" }); reload(); onChanged(); } return "error" in r ? { error: r.error } : { message: "Added." }; }} /></div>
-          <p className="sm:col-span-3 text-[11px] text-white/40">Only the details and the expiry date are kept here. No file is uploaded.</p>
+          <p className="sm:col-span-3 text-[11px] text-fg-subtle">Only the details and the expiry date are kept here. No file is uploaded.</p>
         </div>
       </SectionPanel>
     </>
@@ -173,11 +173,11 @@ function Documents({ onChanged }: { onChanged: () => void }) {
 function Notifications({ notes, reload }: { notes: Load<{ notifications: Note[]; unread: number }>; reload: () => void }) {
   return (
     <Status load={notes}>{({ notifications, unread }) => (
-      <SectionPanel title="Notifications" action={unread > 0 ? <button className="text-xs text-white/70 underline" onClick={async () => { await call("/notifications/read", { method: "POST", body: { keys: notifications.filter((n) => !n.read).map((n) => n.key) } }); reload(); }}>Mark all as read</button> : undefined}>
+      <SectionPanel title="Notifications" action={unread > 0 ? <button className="text-xs text-fg underline" onClick={async () => { await call("/notifications/read", { method: "POST", body: { keys: notifications.filter((n) => !n.read).map((n) => n.key) } }); reload(); }}>Mark all as read</button> : undefined}>
         <div className="p-4">{notifications.length === 0 ? <Empty>Nothing needs your attention. Reminders about expiring documents and licence discs appear here.</Empty> : (
           <ul className="space-y-3">{notifications.map((n) => (
             <li key={n.key} className="flex items-start gap-3"><span className="mt-1.5 w-2 h-2 rounded-full" style={{ background: n.read ? "#ffffff33" : COLOR }} />
-              <div><p className={`text-sm ${n.read ? "text-white/60" : "text-white font-semibold"}`}>{n.title}</p><p className="text-xs text-white/50">{n.body}</p></div></li>))}</ul>)}
+              <div><p className={`text-sm ${n.read ? "text-fg-muted" : "text-fg font-semibold"}`}>{n.title}</p><p className="text-xs text-fg-muted">{n.body}</p></div></li>))}</ul>)}
         </div>
       </SectionPanel>
     )}</Status>

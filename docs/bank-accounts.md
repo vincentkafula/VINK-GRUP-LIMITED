@@ -1,6 +1,6 @@
 # Bank accounts on the dashboards
 
-Every Driver, Marshal, Association, Investor and Owner dashboard is linked to ONE bank account held in the Banking module (Manshya).
+Every Driver, Marshal, Association, Investor and Owner dashboard is linked to ONE bank account held in the Banking module (VINK).
 The account number, balance and transactions are read live from the Banking module each time; the dashboard database stores only the link.
 
 ## Rules (enforced on the server at linking, editing and seeding; mirrored in the form)
@@ -29,7 +29,7 @@ Editing an approved Business account's details sends it back for review. A Perso
 ## Security
 * Transport: HTTPS everywhere (Railway edge, `api.vink.co.za`).
 * Storage: business name and registration number are encrypted by the application (AES-256-GCM, per-value nonce) with `DATA_ENCRYPTION_KEY`
-  before being written to Postgres; in production nothing sensitive is stored without the key. Postgres and the Manshya volume are Railway volumes.
+  before being written to Postgres; in production nothing sensitive is stored without the key. Postgres and the VINK volume are Railway volumes.
 * Audit: `bank.link.create`, `bank.link.update`, `bank.link.remove`, `bank.admin.list`, `bank.admin.approve`, `bank.admin.reject` in `audit_log`,
   with masked identifiers and (for updates) the before/after holder type and status.
 * The dashboards' write endpoints are rate limited.

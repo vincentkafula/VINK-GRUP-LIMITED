@@ -11,7 +11,7 @@ interface Props {
   price?: string;
 }
 
-const P = "#0B5C2E";
+const P = "#5C0A10";
 
 const EMPLOYMENT_OPTIONS = ["Employed (Full-time)", "Employed (Part-time)", "Self-employed", "Business owner", "Pensioner", "Student", "Unemployed"];
 
@@ -66,7 +66,7 @@ export function ApplyModal({ isOpen, onClose, product, tier, price }: Props) {
             <CheckCircle className="w-14 h-14 text-green-500 mx-auto mb-4" />
             <h3 className="text-xl font-black text-gray-900 mb-2">You&apos;re all set!</h3>
             <p className="text-gray-600 text-sm mb-4 leading-relaxed">
-              Your application for <strong>{product}</strong> has been received. A MANSHYA advisor will contact you at <strong>{form.email}</strong> within 1 business day.
+              Your application for <strong>{product}</strong> has been received. A VINK advisor will contact you at <strong>{form.email}</strong> within 1 business day.
             </p>
             <div className="bg-gray-50 rounded-xl p-4 mb-5">
               <p className="text-xs text-gray-500 mb-1">Reference Number</p>
@@ -78,14 +78,14 @@ export function ApplyModal({ isOpen, onClose, product, tier, price }: Props) {
                 Apply for another
               </button>
               <button onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white"
-                style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
+                style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
                 Done
               </button>
             </div>
           </div>
         ) : (
           <div className="p-6 space-y-4">
-            <div className="rounded-xl p-3 text-sm" style={{ background: "#F3F0FB", color: P }}>
+            <div className="rounded-xl p-3 text-sm" style={{ background: "#F2EFE8", color: P }}>
               <strong>{product}</strong>{tier ? ` · ${tier}` : ""}{price ? ` · ${price}/month` : ""}
             </div>
 
@@ -130,12 +130,12 @@ export function ApplyModal({ isOpen, onClose, product, tier, price }: Props) {
             </div>
 
             <p className="text-[10px] text-gray-400 leading-relaxed">
-              By submitting this application you consent to MANSHYA processing your personal information in accordance with POPIA. A soft credit inquiry may be performed.
+              By submitting this application you consent to VINK processing your personal information in accordance with POPIA. A soft credit inquiry may be performed.
             </p>
 
             <button onClick={handleSubmit} disabled={submitting}
               className="w-full py-3 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 disabled:opacity-60 transition-all hover:opacity-90"
-              style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
+              style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
               {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Submitting...</> : "Submit Application"}
             </button>
           </div>

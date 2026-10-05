@@ -21,24 +21,24 @@ interface PostLoginHomeProps {
 
 const MENU_ROWS = [
   [
-    { id: "login",    label: "Login",       icon: <LogIn className="w-6 h-6" />,           gradient: "from-[#128A43] to-[#9333EA]", glow: "#128A43" },
+    { id: "login",    label: "Login",       icon: <LogIn className="w-6 h-6" />,           gradient: "from-[#8B0000] to-[#9333EA]", glow: "#8B0000" },
     { id: "message",  label: "Message",     icon: <MessageSquare className="w-6 h-6" />,   gradient: "from-[#3B82F6] to-[#06B6D4]", glow: "#3B82F6" },
     { id: "contact",  label: "Contact Us",  icon: <Phone className="w-6 h-6" />,           gradient: "from-[#10B981] to-[#059669]", glow: "#10B981" },
   ],
   [
     { id: "buy",      label: "Buy",         icon: <ShoppingCart className="w-6 h-6" />,    gradient: "from-[#EF4444] to-[#DC2626]", glow: "#EF4444" },
-    { id: "connect",  label: "Connect",     icon: <Wifi className="w-6 h-6" />,            gradient: "from-[#34A853] to-[#FF9900]", glow: "#34A853" },
+    { id: "connect",  label: "Connect",     icon: <Wifi className="w-6 h-6" />,            gradient: "from-[#C9A84C] to-[#FF9900]", glow: "#C9A84C" },
   ],
   [
     { id: "payments", label: "Payments",    icon: <CreditCard className="w-6 h-6" />,      gradient: "from-[#0EA5E9] to-[#0284C7]", glow: "#0EA5E9" },
-    { id: "transfer", label: "Transfer",    icon: <ArrowLeftRight className="w-6 h-6" />,  gradient: "from-[#128A43] to-[#0B5C2E]", glow: "#128A43" },
+    { id: "transfer", label: "Transfer",    icon: <ArrowLeftRight className="w-6 h-6" />,  gradient: "from-[#8B0000] to-[#5C0A10]", glow: "#8B0000" },
     { id: "cards",    label: "Cards",       icon: <Layers className="w-6 h-6" />,          gradient: "from-[#EC4899] to-[#BE185D]", glow: "#EC4899" },
   ],
   [
     { id: "device",   label: "Device",      icon: <Smartphone className="w-6 h-6" />,      gradient: "from-[#64748B] to-[#334155]", glow: "#64748B" },
   ],
   [
-    { id: "vinktv",    label: "MANSHYA TV",      icon: <Tv className="w-6 h-6" />,              gradient: "from-[#FF9900] to-[#0B5C2E]", glow: "#FF9900" },
+    { id: "vinktv",    label: "VINK TV",      icon: <Tv className="w-6 h-6" />,              gradient: "from-[#FF9900] to-[#5C0A10]", glow: "#FF9900" },
     { id: "cardless", label: "Cardless Cash",icon: <Banknote className="w-6 h-6" />,       gradient: "from-[#D97706] to-[#92400E]", glow: "#D97706" },
     { id: "elections",label: "Elections",   icon: <Vote className="w-6 h-6" />,            gradient: "from-[#0891B2] to-[#164E63]", glow: "#0891B2" },
   ],
@@ -50,7 +50,7 @@ const MENU_ROWS = [
   [
     { id: "forex",    label: "Forex",       icon: <DollarSign className="w-6 h-6" />,      gradient: "from-[#CA8A04] to-[#78350F]", glow: "#CA8A04" },
     { id: "settings", label: "Setting",     icon: <Settings className="w-6 h-6" />,        gradient: "from-[#475569] to-[#1E293B]", glow: "#475569" },
-    { id: "qr",       label: "QR Code",     icon: <QrCode className="w-6 h-6" />,          gradient: "from-[#128A43] to-[#0F3D24]", glow: "#128A43" },
+    { id: "qr",       label: "QR Code",     icon: <QrCode className="w-6 h-6" />,          gradient: "from-[#8B0000] to-[#2E0B10]", glow: "#8B0000" },
   ],
 ];
 
@@ -184,7 +184,7 @@ export function PostLoginHome({ isOpen, onClose, onNavigate }: PostLoginHomeProp
           <div className="flex items-center gap-3">
             {/* Avatar */}
             <div className="w-11 h-11 rounded-full flex items-center justify-center text-white font-bold text-base flex-shrink-0"
-              style={{ background: "linear-gradient(135deg,#128A43,#9333EA)", boxShadow: "0 0 0 2px rgba(107,94,215,0.4)" }}>
+              style={{ background: "linear-gradient(135deg,#8B0000,#9333EA)", boxShadow: "0 0 0 2px rgba(107,94,215,0.4)" }}>
               {initials}
             </div>
             <div>
@@ -211,7 +211,7 @@ export function PostLoginHome({ isOpen, onClose, onNavigate }: PostLoginHomeProp
         <div className="mx-5 mb-4 flex-shrink-0">
           <div className="rounded-3xl p-5 relative overflow-hidden"
             style={{
-              background: "linear-gradient(135deg, #128A43 0%, #FF9900 45%, #9333EA 100%)",
+              background: "linear-gradient(135deg, #8B0000 0%, #FF9900 45%, #9333EA 100%)",
               boxShadow: "0 12px 40px rgba(107,94,215,0.55)",
             }}>
             {/* BG orbs */}
@@ -233,7 +233,7 @@ export function PostLoginHome({ isOpen, onClose, onNavigate }: PostLoginHomeProp
                 </div>
                 <p className="text-white/50 text-[10px] mt-0.5">{accountLast4 ? `Account ending ••${accountLast4}` : "No linked account yet"}</p>
               </div>
-              <img src={vinkLogo} alt="MANSHYA" className="w-[160px] h-auto object-contain opacity-90" />
+              <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="w-[160px] h-auto object-contain opacity-90" />
             </div>
 
             {/* Make Payment button */}
@@ -265,7 +265,7 @@ export function PostLoginHome({ isOpen, onClose, onNavigate }: PostLoginHomeProp
         {/* ── Section label ── */}
         <div className="px-5 mb-3 flex items-center justify-between flex-shrink-0">
           <p className="text-white/70 text-xs font-semibold uppercase tracking-widest">Services</p>
-          <button className="text-[#5FC97F] text-xs font-semibold">See All</button>
+          <button className="text-[#C9A84C] text-xs font-semibold">See All</button>
         </div>
 
         {/* ── Scrollable icon grid ── */}
@@ -304,7 +304,7 @@ export function PostLoginHome({ isOpen, onClose, onNavigate }: PostLoginHomeProp
                 onClick={() => setActiveTab(tab.key)}
                 className="flex flex-col items-center gap-1 px-3 py-1 rounded-xl transition-all"
                 style={{
-                  color: activeTab === tab.key ? "#5FC97F" : "rgba(255,255,255,0.32)",
+                  color: activeTab === tab.key ? "#C9A84C" : "rgba(255,255,255,0.32)",
                   background: activeTab === tab.key ? "rgba(107,94,215,0.22)" : "transparent",
                 }}
               >

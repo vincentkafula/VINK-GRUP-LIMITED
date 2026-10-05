@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any -- rows are untyped JSON from the Manshya API; fields are read directly as in the original dashboard */
+/* eslint-disable @typescript-eslint/no-explicit-any -- rows are untyped JSON from the VINK API; fields are read directly as in the original dashboard */
 import { useCallback, useEffect, useState } from "react";
 import { api } from "./api";
 import { ask, toast, showList } from "./dialogs";
@@ -161,7 +161,7 @@ export function PosHome() {
       </section>
       <section className="feats" data-view="pos">
         <div><span><Icon name="cash" /></span>From only 2.5% processing fee</div>
-        <div><span><Icon name="grid" /></span>Manage transactions centrally from your Manshya dashboard</div>
+        <div><span><Icon name="grid" /></span>Manage transactions centrally from your VINK dashboard</div>
         <div><span><Icon name="rec" /></span>Send instant digital receipts</div>
         <div><span><Icon name="tag" /></span>Increase revenue by selling airtime, data, vouchers and more</div>
       </section>

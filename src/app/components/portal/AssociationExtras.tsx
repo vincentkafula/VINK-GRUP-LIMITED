@@ -23,8 +23,8 @@ export function MembersList({ role, onChanged }: { role?: string; onChanged: () 
     <SectionPanel title={role ? `${ROLE[role]}s` : "Members"}>
       <div className="p-4 space-y-3">
         <div className="flex flex-wrap gap-3 items-end">
-          <label className="block"><span className="text-[11px] text-white/60">Search name or email</span><input className={inputCls + " mt-1 !w-64"} value={q} onChange={(e) => { setQ(e.target.value); setOffset(0); }} placeholder="Search…" /></label>
-          {!role && <label className="block"><span className="text-[11px] text-white/60">Role</span>
+          <label className="block"><span className="text-[11px] text-fg-muted">Search name or email</span><input className={inputCls + " mt-1 !w-64"} value={q} onChange={(e) => { setQ(e.target.value); setOffset(0); }} placeholder="Search…" /></label>
+          {!role && <label className="block"><span className="text-[11px] text-fg-muted">Role</span>
             <select className={inputCls + " mt-1 !w-auto"} value={kind} onChange={(e) => { setKind(e.target.value); setOffset(0); }}><option value="">All</option><option value="vehicle_owner">Vehicle owners</option><option value="driver">Drivers</option><option value="marshal">Marshals</option></select></label>}
         </div>
         <Status load={load}>{({ total, members }) => members.length === 0 ? <Empty>{q || kind ? "Nobody matches that search." : "No members yet. Invite people by email below."}</Empty> : (
@@ -48,7 +48,7 @@ export function VehiclesList() {
   return (
     <SectionPanel title="Member vehicles">
       <div className="p-4 space-y-3">
-        <label className="block"><span className="text-[11px] text-white/60">Search registration</span><input className={inputCls + " mt-1 !w-64"} value={q} onChange={(e) => { setQ(e.target.value); setOffset(0); }} placeholder="Search…" /></label>
+        <label className="block"><span className="text-[11px] text-fg-muted">Search registration</span><input className={inputCls + " mt-1 !w-64"} value={q} onChange={(e) => { setQ(e.target.value); setOffset(0); }} placeholder="Search…" /></label>
         <Status load={load}>{({ total, vehicles }) => vehicles.length === 0 ? <Empty>No member vehicles{q ? " match that search" : " yet"}.</Empty> : (
           <>
             <TableCard title={`${total} vehicle${total === 1 ? "" : "s"}`} color={COLOR} columns={["Registration", "Vehicle", "Seats", "Disc expires", "Owner", "Driver"]}
@@ -108,11 +108,11 @@ export function RoutesManager() {
       ) : (
         <>{rs.map((r) => (
           <SectionPanel key={r.id} title={`${r.name} · ${r.registration ?? r.terminalSerial}`}>
-            <div className="p-4 space-y-3 text-sm text-white">
+            <div className="p-4 space-y-3 text-sm text-fg">
               <p>{r.waypoints} points · {r.toleranceMeters} m allowed off the path <Badge text={r.active ? "active" : "inactive"} color={r.active ? "#10B981" : "#6B7280"} /></p>
               <div className="flex flex-wrap gap-2 items-center">
                 <ActionButton small label={r.active ? "Switch off" : "Switch on"} color="#6B7280" onRun={async () => { const x = await call(`/routes/${r.id}`, { method: "PUT", body: { name: r.name, active: !r.active, toleranceMeters: r.toleranceMeters } }); reload(); return "error" in x ? { error: x.error } : undefined; }} />
-                <button className="text-xs underline text-white/70" onClick={() => setOpen(open === r.id ? null : r.id)}>{open === r.id ? "Hide violations" : "Show violations"}</button>
+                <button className="text-xs underline text-fg" onClick={() => setOpen(open === r.id ? null : r.id)}>{open === r.id ? "Hide violations" : "Show violations"}</button>
               </div>
               {open === r.id && <ViolationList routeId={r.id} />}
             </div>
@@ -127,14 +127,14 @@ export function RoutesManager() {
           <input className={inputCls} placeholder="Allowed metres off the path" inputMode="numeric" value={f.tolerance} onChange={(e) => setF({ ...f, tolerance: e.target.value })} />
           <textarea className={inputCls + " sm:col-span-3 font-mono"} rows={5} placeholder={"One point per line, in order: latitude, longitude\n-26.2678, 27.8585\n-26.2041, 28.0473"} value={f.points} onChange={(e) => setF({ ...f, points: e.target.value })} />
           <div className="sm:col-span-3 space-y-2">
-            <p className="text-xs text-white/60">Click on the map to add points in order, or type them above. Existing routes are shown for reference.</p>
+            <p className="text-xs text-fg-muted">Click on the map to add points in order, or type them above. Existing routes are shown for reference.</p>
             {mapData.state === "ready" && <MapView routes={mapData.data.routes} positions={mapData.data.positions} color={COLOR} draft={draftPoints(f.points)} height={380}
               onPick={(lat, lng) => setF((p) => ({ ...p, points: (p.points.trim() ? p.points.replace(/\s+$/, "") + "\n" : "") + lat + ", " + lng }))} />}
-            <div className="flex gap-3 text-xs"><button type="button" className="underline text-white/70" onClick={() => setF((p) => ({ ...p, points: p.points.replace(/\s+$/, "").split("\n").slice(0, -1).join("\n") }))}>Undo last point</button>
-              <button type="button" className="underline text-white/70" onClick={() => setF((p) => ({ ...p, points: "" }))}>Clear points</button></div>
+            <div className="flex gap-3 text-xs"><button type="button" className="underline text-fg" onClick={() => setF((p) => ({ ...p, points: p.points.replace(/\s+$/, "").split("\n").slice(0, -1).join("\n") }))}>Undo last point</button>
+              <button type="button" className="underline text-fg" onClick={() => setF((p) => ({ ...p, points: "" }))}>Clear points</button></div>
           </div>
           <div className="sm:col-span-3"><ActionButton label="Create route" color={COLOR} onRun={create} /></div>
-          <p className="sm:col-span-3 text-[11px] text-white/40">The path is checked against vehicle positions; going further than the allowed distance records a violation and a fine under the platform's existing rules.</p>
+          <p className="sm:col-span-3 text-[11px] text-fg-subtle">The path is checked against vehicle positions; going further than the allowed distance records a violation and a fine under the platform's existing rules.</p>
         </div>
       </SectionPanel>
     </>
@@ -144,7 +144,7 @@ export function RoutesManager() {
 function ViolationList({ routeId }: { routeId: string }) {
   const [load] = useLoad<{ violations: Violation[] }>(() => call(`/routes/${routeId}/violations`));
   return <Status load={load}>{({ violations }) => violations.length === 0 ? <Empty>No violations on this route.</Empty> : (
-    <ul className="space-y-1 text-xs text-white/70">{violations.map((v) => <li key={v.id}>{when(v.at)} · {v.registration ?? "vehicle"} · {v.distanceMeters} m off the path · fine {rand(v.fine)}</li>)}</ul>)}</Status>;
+    <ul className="space-y-1 text-xs text-fg">{violations.map((v) => <li key={v.id}>{when(v.at)} · {v.registration ?? "vehicle"} · {v.distanceMeters} m off the path · fine {rand(v.fine)}</li>)}</ul>)}</Status>;
 }
 
 export function AssociationMap() {
@@ -200,7 +200,7 @@ export function AssociationStatements() {
             </div>
             {levies.length > 0 && <TableCard title="Levies created in this period" color={COLOR} columns={["Member", "Levy", "Amount", "Due", "Status"]} rows={levies.map((l) => [l.member, l.title, rand(l.amount), day(l.dueDate), <Badge key="s" text={l.paid ? "paid" : "unpaid"} color={l.paid ? "#10B981" : "#F59E0B"} />])} />}
             {fines.length > 0 && <TableCard title="Fines credited in this period" color="#F59E0B" columns={["When", "Detail", "Amount"]} rows={fines.map((f) => [when(f.at), f.description ?? "Off-route fine", rand(f.amount)])} />}
-            <p className="text-[11px] text-white/40">Figures are added up from recorded levies, fines and departures. This is a summary, not an audited financial statement, and not tax advice. Membership fees and tax filing are not calculated here.</p>
+            <p className="text-[11px] text-fg-subtle">Figures are added up from recorded levies, fines and departures. This is a summary, not an audited financial statement, and not tax advice. Membership fees and tax filing are not calculated here.</p>
           </>)}</Status>
       </div>
     </SectionPanel>

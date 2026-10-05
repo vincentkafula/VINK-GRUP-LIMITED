@@ -43,13 +43,13 @@ function useLoad<T>(fetcher: () => Promise<{ ok: true; data: T } | { ok: false; 
 }
 
 function Status<T>({ load, children }: { load: Load<T>; children: (d: T) => React.ReactNode }) {
-  if (load.state === "loading") return <p className="flex items-center gap-2 text-sm text-white/60"><Loader2 className="w-4 h-4 animate-spin" /> Loading…</p>;
-  if (load.state === "error") return <p role="alert" className="flex items-center gap-2 text-sm text-red-300"><TriangleAlert className="w-4 h-4" />{load.error}</p>;
+  if (load.state === "loading") return <p className="flex items-center gap-2 text-sm text-fg-muted"><Loader2 className="w-4 h-4 animate-spin" /> Loading…</p>;
+  if (load.state === "error") return <p role="alert" className="flex items-center gap-2 text-sm text-bad"><TriangleAlert className="w-4 h-4" />{load.error}</p>;
   return <>{children(load.data)}</>;
 }
-const Empty = ({ children }: { children: React.ReactNode }) => <p className="text-sm text-white/50">{children}</p>;
+const Empty = ({ children }: { children: React.ReactNode }) => <p className="text-sm text-fg-muted">{children}</p>;
 const Field = ({ label, value }: { label: string; value: React.ReactNode }) => (
-  <div><p className="text-[10px] uppercase tracking-wide text-white/40">{label}</p><p className="text-sm text-white">{value || <span className="text-white/30">Not set</span>}</p></div>
+  <div><p className="text-[10px] uppercase tracking-wide text-fg-subtle">{label}</p><p className="text-sm text-fg">{value || <span className="text-fg-subtle">Not set</span>}</p></div>
 );
 
 export function DriverDashboard({ userName, onClose }: { userName?: string; onClose: () => void }) {
@@ -103,7 +103,7 @@ function ProfileForm({ user, profile, onSaved }: { user: { name: string; email: 
     setMsg("data" in r ? { ok: true, text: "Saved." } : { ok: false, text: r.error });
     if ("data" in r) onSaved();
   };
-  const input = "w-full rounded-lg px-3 py-2 text-sm bg-[#0D0B1E] border border-[#2D2A50] text-white placeholder-white/30";
+  const input = "w-full rounded-lg px-3 py-2 text-sm bg-[var(--vk-bg)] border border-[var(--vk-line)] text-white placeholder-white/30";
   return (
     <>
       <SectionPanel title="Your details">
@@ -117,14 +117,14 @@ function ProfileForm({ user, profile, onSaved }: { user: { name: string; email: 
             ["Phone number", "phone", "text", "082 123 4567"], ["Driving licence number", "licence_number", "text", ""], ["Licence code", "licence_code", "text", "e.g. EC"],
             ["Licence expiry", "licence_expiry", "date", ""], ["Professional driving permit (PDP) number", "pdp_number", "text", ""], ["PDP expiry", "pdp_expiry", "date", ""],
           ] as const).map(([label, key, type, ph]) => (
-            <label key={key} className="block"><span className="text-[11px] text-white/60">{label}</span>
+            <label key={key} className="block"><span className="text-[11px] text-fg-muted">{label}</span>
               <input className={input + " mt-1"} type={type} placeholder={ph} value={f[key]} onChange={set(key)} /></label>
           ))}
           <div className="sm:col-span-2 flex items-center gap-3">
             <button disabled={busy} className="px-4 py-2 rounded-lg text-sm font-bold disabled:opacity-60" style={{ background: COLOR, color: "#1a1200" }}>{busy ? "Saving…" : "Save details"}</button>
-            {msg && <span role={msg.ok ? "status" : "alert"} className={`text-sm ${msg.ok ? "text-emerald-300" : "text-red-300"}`}>{msg.text}</span>}
+            {msg && <span role={msg.ok ? "status" : "alert"} className={`text-sm ${msg.ok ? "text-ok" : "text-bad"}`}>{msg.text}</span>}
           </div>
-          <p className="sm:col-span-2 text-[11px] text-white/40">These details are entered by you. They are used for expiry reminders and are not checked against any licensing authority.</p>
+          <p className="sm:col-span-2 text-[11px] text-fg-subtle">These details are entered by you. They are used for expiry reminders and are not checked against any licensing authority.</p>
         </form>
       </SectionPanel>
     </>
@@ -160,8 +160,8 @@ function TripsScreen() {
         <SectionPanel title="Your routes">
           <div className="p-4">{rs.length === 0 ? <Empty>No route is assigned to your vehicle yet.</Empty> : (
             <ul className="space-y-2">{rs.map((r: DriverRoute) => (
-              <li key={r.id} className="flex items-center justify-between text-sm text-white">
-                <span>{r.name} <span className="text-white/40">· {r.waypoints} points · {r.toleranceMeters} m allowed off the path</span></span>
+              <li key={r.id} className="flex items-center justify-between text-sm text-fg">
+                <span>{r.name} <span className="text-fg-subtle">· {r.waypoints} points · {r.toleranceMeters} m allowed off the path</span></span>
                 <Badge text={r.active ? "active" : "inactive"} color={r.active ? "#10B981" : "#6B7280"} />
               </li>))}</ul>)}
           </div>
@@ -184,13 +184,13 @@ function EarningsScreen() {
           <StatCard label="This month" value={rand(e.faresCollected.month.total)} sub={`${e.faresCollected.month.count} fares`} icon={<Wallet className="w-4 h-4" />} color="#10B981" />
         </div>
         <DriverTrend />
-        <p className="text-[11px] text-white/40">These are the fares collected on your vehicle. Your own pay is agreed privately with your owner and is not shown here.</p>
+        <p className="text-[11px] text-fg-subtle">These are the fares collected on your vehicle. Your own pay is agreed privately with your owner and is not shown here.</p>
         <SectionPanel title={`Fines · balance ${rand(e.fineBalance)}`}>
           <div className="p-4">{e.fines.length === 0 ? <Empty>No fines. Keep to your route.</Empty> : (
             <ul className="space-y-2">{e.fines.map((f) => (
-              <li key={f.id} className="flex items-center justify-between text-sm text-white">
-                <span>{f.description ?? "Off-route fine"}{f.route ? ` · ${f.route}` : ""}{f.distanceFromRouteMeters != null ? ` · ${f.distanceFromRouteMeters} m off the path` : ""}<span className="text-white/40"> · {when(f.at)}</span></span>
-                <span className="font-bold text-red-300">{rand(f.amount)}</span>
+              <li key={f.id} className="flex items-center justify-between text-sm text-fg">
+                <span>{f.description ?? "Off-route fine"}{f.route ? ` · ${f.route}` : ""}{f.distanceFromRouteMeters != null ? ` · ${f.distanceFromRouteMeters} m off the path` : ""}<span className="text-fg-subtle"> · {when(f.at)}</span></span>
+                <span className="font-bold text-bad">{rand(f.amount)}</span>
               </li>))}</ul>)}
           </div>
         </SectionPanel>
@@ -204,13 +204,13 @@ function NotificationsScreen({ notes, reload }: { notes: Load<{ notifications: D
   const markAll = useCallback(async (keys: string[]) => { if (keys.length) { await driverApi.markRead(keys); reload(); } }, [reload]);
   return (
     <Status load={notes}>{({ notifications, unread }) => (
-      <SectionPanel title="Notifications" action={unread > 0 ? <button className="text-xs text-white/70 underline" onClick={() => markAll(notifications.filter((n) => !n.read).map((n) => n.key))}>Mark all as read</button> : undefined}>
+      <SectionPanel title="Notifications" action={unread > 0 ? <button className="text-xs text-fg underline" onClick={() => markAll(notifications.filter((n) => !n.read).map((n) => n.key))}>Mark all as read</button> : undefined}>
         <div className="p-4">{notifications.length === 0 ? <Empty>Nothing new. Reminders about expiring documents and new fines appear here.</Empty> : (
           <ul className="space-y-3">{notifications.map((n) => (
             <li key={n.key} className="flex items-start gap-3">
               <span className={`mt-1.5 w-2 h-2 rounded-full ${n.read ? "bg-white/20" : ""}`} style={n.read ? undefined : { background: COLOR }} />
-              <div className="flex-1"><p className={`text-sm ${n.read ? "text-white/60" : "text-white font-semibold"}`}>{n.title}</p><p className="text-xs text-white/50">{n.body}</p></div>
-              {!n.read && <button className="text-[11px] text-white/60 underline" onClick={() => markAll([n.key])}>Mark read</button>}
+              <div className="flex-1"><p className={`text-sm ${n.read ? "text-fg-muted" : "text-fg font-semibold"}`}>{n.title}</p><p className="text-xs text-fg-muted">{n.body}</p></div>
+              {!n.read && <button className="text-[11px] text-fg-muted underline" onClick={() => markAll([n.key])}>Mark read</button>}
             </li>))}</ul>)}
         </div>
       </SectionPanel>

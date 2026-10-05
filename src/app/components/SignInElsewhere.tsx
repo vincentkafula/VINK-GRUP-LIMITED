@@ -23,12 +23,12 @@ export function SignInElsewhere({ onClose, label = "This area" }: { onClose: () 
       <div>
         <p className="text-base font-bold">Sign in required</p>
         <p className="text-sm mt-1 max-w-xs" style={{ color: "#8884AA" }}>
-          {label} uses the same one sign-in as the rest of MANSHYA. Use the <strong>Login</strong> button in the main menu, then come back here.
+          {label} uses the same one sign-in as the rest of VINK. Use the <strong>Login</strong> button in the main menu, then come back here.
         </p>
       </div>
       <button onClick={onClose}
         className="px-6 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90"
-        style={{ background: "linear-gradient(135deg,#1FAE58,#5FC97F)" }}>
+        style={{ background: "linear-gradient(135deg,#1FAE58,#C9A84C)" }}>
         Close
       </button>
     </div>

@@ -14,7 +14,7 @@ import { themeEvents } from "./pages/account";
 import { list, Row } from "./kit";
 import { when } from "./format";
 
-/** The Manshya dashboards are for customer accounts only (the server enforces this too). */
+/** The VINK dashboards are for customer accounts only (the server enforces this too). */
 export const CUSTOMER_ROLE = "customer";
 /** Passenger ("personal") accounts use the same payments and banking dashboard. The server enforces this too (manshya/access.ts). */
 const DASHBOARD_ROLES = [CUSTOMER_ROLE, "personal"];
@@ -84,9 +84,9 @@ export function ManshyaDashboard({ isOpen, onClose, onSignOut }: Props) {
   if (!allowed) {
     const message = authProblem === "expired"
       ? "Your session has expired. Please sign in again."
-      : "The Manshya dashboard is for customer accounts. Please sign in with a customer account to continue.";
+      : "The VINK dashboard is for customer accounts. Please sign in with a customer account to continue.";
     return (
-      <div className="mn" data-theme={theme} role="dialog" aria-modal="true" aria-label="Manshya sign-in required">
+      <div className="mn" data-theme={theme} role="dialog" aria-modal="true" aria-label="VINK sign-in required">
         <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", padding: 16 }}>
           <div className="card" style={{ maxWidth: 440 }}>
             <div className="logo" style={{ width: "auto", padding: 0, color: "var(--side)", marginBottom: 10 }}>manshya<i>.</i></div>
@@ -125,7 +125,7 @@ export function ManshyaDashboard({ isOpen, onClose, onSignOut }: Props) {
   ];
 
   return (
-    <div className="mn" data-mode={mode} data-page={page === "home" ? undefined : page} data-theme={theme} role="dialog" aria-modal="true" aria-label="Manshya business dashboard">
+    <div className="mn" data-mode={mode} data-page={page === "home" ? undefined : page} data-theme={theme} role="dialog" aria-modal="true" aria-label="VINK business dashboard">
       <TestModeBanner />
       <div className="bar">
         <div className="logo">manshya<i>.</i></div>

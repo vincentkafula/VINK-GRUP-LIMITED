@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any -- rows are untyped JSON from the Manshya API; fields are read directly as in the original dashboard */
+/* eslint-disable @typescript-eslint/no-explicit-any -- rows are untyped JSON from the VINK API; fields are read directly as in the original dashboard */
 import type { ReactNode } from "react";
 import { api, ask, toast, secret, showList, showDialog, download, R, dt, when, enc, accountOptions, table, tag, btn, cards, note, H2, RunBtn, list, type Page } from "../kit";
 import { publicApi } from "../api";
@@ -20,7 +20,7 @@ const flows = {
     toast(`Sent ${R(v.amount)}`);
   },
   qr: async () => {
-    const v = await ask("Scan or paste a Manshya QR code", [
+    const v = await ask("Scan or paste a VINK QR code", [
       { name: "payload", label: "QR code text" }, { name: "fromAccountId", label: "Pay from", type: "select", options: await accountOptions() },
     ], "Next");
     if (!v) return;
@@ -120,7 +120,7 @@ P["b/receive"] = async ({ F }) => {
             <div style={{ maxWidth: 200, background: "#fff", padding: 8, borderRadius: 12, marginTop: 6 }} aria-label={`QR code for account ${qr.account_number}`} dangerouslySetInnerHTML={{ __html: qr.svg }} />
           </div>
         </div>
-        {note("Anyone with a Manshya app can scan this code to pay you. The code cannot be edited without breaking it.")}
+        {note("Anyone with a VINK app can scan this code to pay you. The code cannot be edited without breaking it.")}
       </>
     ),
   };
@@ -433,7 +433,7 @@ const buyer = (title: string, sub: string, load: () => Promise<any>, render: (d:
   return { title, sub, content: render(d), on: handlers };
 };
 
-P["buyer/me"] = buyer("My buyer account", "Everything you have bought through Manshya, matched to your verified email.", () => api("/buyer/purchases"),
+P["buyer/me"] = buyer("My buyer account", "Everything you have bought through VINK, matched to your verified email.", () => api("/buyer/purchases"),
   (d) => table([
     { h: "Date", f: (r: any) => dt(r.created_at) }, { h: "Business", f: (r: any) => r.merchant }, { h: "For", f: (r: any) => r.reference || "—" },
     { h: "Status", f: (r: any) => tag(r.status) }, { h: "Amount", r: true, f: (r: any) => R(r.amount) },

@@ -3,7 +3,7 @@ import {
   X, ChevronRight, ChevronLeft, ArrowRight, Gift, Smartphone, Radio, Tag,
   Headphones, ShieldCheck, Wifi, Lock,
 } from "lucide-react";
-import siteHeroBg from "../../imports/assets/site-hero-bg.png";
+import siteHeroBg from "../../imports/assets/site-hero-bg.webp";
 import { Footer } from "./Footer";
 
 interface Props {
@@ -16,9 +16,9 @@ interface Props {
 }
 
 // ─── Design tokens ──────────────────────────────────────────────────────────
-const INK   = "#0B2E1C";
-const PLUM  = "#0B5C2E";
-const VIOLET = "#128A43";
+const INK   = "#0C0E14";
+const PLUM  = "#5C0A10";
+const VIOLET = "#8B0000";
 const GOLD  = "#C9A84C";
 
 const SUB_NAV = [
@@ -39,7 +39,7 @@ const FEATURES = [
 ];
 
 const SLIDES = [
-  { eyebrow: "MANSHYA Card, everywhere",  heading: "All the benefits of Card,\non your phone", body: "Personalise your results in a few simple steps and carry every card in one place.", cta: "Learn more" },
+  { eyebrow: "VINK Card, everywhere",  heading: "All the benefits of Card,\non your phone", body: "Personalise your results in a few simple steps and carry every card in one place.", cta: "Learn more" },
   { eyebrow: "Real-time visibility",   heading: "Track every rand,\nin real time",           body: "See spending the moment it happens, right in the app — no surprises at month end.", cta: "See how it works" },
   { eyebrow: "One tap, total control", heading: "Freeze your card\nin one tap",               body: "Lost it? Lock it instantly and keep shopping with a digital card while it's away.", cta: "Explore card controls" },
 ];
@@ -56,7 +56,7 @@ function CardGraphic() {
         className="absolute rounded-2xl shadow-2xl"
         style={{
           width: 244, height: 154, top: 66, left: 6, rotate: "-9deg",
-          background: "linear-gradient(150deg,#0B2E1C 0%,#0B2E1C 100%)",
+          background: "linear-gradient(150deg,#0C0E14 0%,#0C0E14 100%)",
           border: "1px solid rgba(255,255,255,0.08)",
         }}
       />
@@ -66,7 +66,7 @@ function CardGraphic() {
         className="absolute rounded-2xl shadow-2xl overflow-hidden"
         style={{
           width: 258, height: 164, top: 30, left: 24, rotate: "6deg",
-          background: "linear-gradient(155deg,#128A43 0%,#0F3D24 55%,#0B2E1C 100%)",
+          background: "linear-gradient(155deg,#8B0000 0%,#2E0B10 55%,#0C0E14 100%)",
           border: "1px solid rgba(255,255,255,0.12)",
         }}
       >
@@ -82,7 +82,7 @@ function CardGraphic() {
           <div>
             <p className="text-white/85 text-[13px] font-mono tracking-[0.18em]">•••• •••• •••• 4521</p>
             <div className="flex items-center justify-between mt-2">
-              <p className="text-white/55 text-[9px] tracking-wide uppercase">MANSHYA Personal</p>
+              <p className="text-white/55 text-[9px] tracking-wide uppercase">VINK Personal</p>
               <p className="text-white text-[13px] font-black italic tracking-tight">VISA</p>
             </div>
           </div>
@@ -183,7 +183,7 @@ export function PersonalLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
         className="relative overflow-hidden"
         style={{ background: `linear-gradient(120deg, #14532D 0%, ${VIOLET} 58%, ${PLUM} 100%)` }}
       >
-        <img src={siteHeroBg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-[0.14] mix-blend-luminosity" />
+        <img loading="lazy" decoding="async" src={siteHeroBg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-[0.14] mix-blend-luminosity" />
         <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: "radial-gradient(rgba(255,255,255,0.9) 1px, transparent 1px)", backgroundSize: "22px 22px" }} />
 
         <button
@@ -244,7 +244,7 @@ export function PersonalLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
         <div className="text-center mb-12">
           <span className="inline-block text-[11px] font-semibold tracking-[0.16em] uppercase mb-3" style={{ color: GOLD }}>
-            Why choose MANSHYA
+            Why choose VINK
           </span>
           <h2 className="text-[26px] sm:text-[32px] font-medium tracking-tight" style={{ color: INK, fontFamily: "'Fraunces', serif" }}>
             Card Features and Benefits

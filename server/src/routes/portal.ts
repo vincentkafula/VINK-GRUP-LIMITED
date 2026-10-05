@@ -49,7 +49,7 @@ export function createPortalRouter(db: Db | null = pool, bank: Omit<BankDeps, "d
     if (!db) sub.use(unavailable);
     else {
       if (links) sub.use(links(db));
-      if (role !== "personal") sub.use("/bank", bank ? createBankRouter({ ...bank, db }, role as BankRole) : unavailable);   // the five business roles; passengers use the Manshya dashboard directly
+      if (role !== "personal") sub.use("/bank", bank ? createBankRouter({ ...bank, db }, role as BankRole) : unavailable);   // the five business roles; passengers use the VINK dashboard directly
       if (role === "driver" || role === "vehicle_owner" || role === "marshal" || role === "association") sub.use("/money", createMoneyRouter(db, role as MoneyRole, money));
       sub.use(make(db));
     }

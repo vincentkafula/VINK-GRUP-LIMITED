@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { MessageCircle, X, Send, Paperclip, Phone, Video, ChevronDown, Bot, User, Clock, CheckCheck, AlertCircle, Star } from "lucide-react";
 
-const P = "#0B5C2E";
+const P = "#5C0A10";
 const GOLD = "#F5A623";
 
 type MessageRole = "user" | "agent" | "bot" | "system";
@@ -24,13 +24,13 @@ const INITIAL_MESSAGES: Message[] = [
   {
     id: "sys1",
     role: "system",
-    text: "🟢 MANSHYA Support is online — Average response time: under 2 minutes",
+    text: "🟢 VINK Support is online — Average response time: under 2 minutes",
     timestamp: new Date(),
   },
   {
     id: "bot1",
     role: "bot",
-    text: "Hi! I'm Viva, your MANSHYA virtual assistant. I can help you with:\n\n• Account balances & transactions\n• Card freezing & limits\n• Loan application status\n• Club Travel bookings\n• Branch & ATM locator\n\nWhat can I help you with today?",
+    text: "Hi! I'm Viva, your VINK virtual assistant. I can help you with:\n\n• Account balances & transactions\n• Card freezing & limits\n• Loan application status\n• Club Travel bookings\n• Branch & ATM locator\n\nWhat can I help you with today?",
     timestamp: new Date(),
   },
 ];
@@ -46,9 +46,9 @@ const QUICK_REPLIES: QuickReply[] = [
 const BOT_RESPONSES: Record<string, string> = {
   balance: "Your current balances:\n\n💳 Everyday Account: **R24,850.00**\n💰 Savings Account: **R87,340.00**\n🌍 USD Wallet: **$1,240.00**\n\nWould you like a full statement?",
   card_lost: "I'm sorry to hear that. I'll help you freeze your card immediately.\n\n🔒 Your Mastercard ending ••4291 has been **temporarily frozen**.\n\nA replacement card will be delivered within 3–5 business days. Should I also block the card permanently?",
-  loan_status: "Your active loan applications:\n\n📋 **MANSHYA-PL-2026-33847** — Personal Loan R50,000\nStatus: **Under Review** ✏️\nExpected decision: Within 24 hours\n\nWould you like me to escalate this to a specialist?",
-  travel: "Your Club Travel bookings:\n\n✈️ **CPT → JFK** — 15 Jul 2026\nRef: MANSHYA-CB-2026-48291\nStatus: **Confirmed** ✅\nSeats booked: 2\n\nDo you need help with your visa application?",
-  human: "Connecting you to a live agent now...\n\nCurrent queue: **2 people ahead of you**\nEstimated wait: **~3 minutes**\n\nWhile you wait, you can also reach us:\n📞 0800 MANSHYA HELP (0800 867 4357)\n📧 support@vink.co.za",
+  loan_status: "Your active loan applications:\n\n📋 **VINK-PL-2026-33847** — Personal Loan R50,000\nStatus: **Under Review** ✏️\nExpected decision: Within 24 hours\n\nWould you like me to escalate this to a specialist?",
+  travel: "Your Club Travel bookings:\n\n✈️ **CPT → JFK** — 15 Jul 2026\nRef: VINK-CB-2026-48291\nStatus: **Confirmed** ✅\nSeats booked: 2\n\nDo you need help with your visa application?",
+  human: "Connecting you to a live agent now...\n\nCurrent queue: **2 people ahead of you**\nEstimated wait: **~3 minutes**\n\nWhile you wait, you can also reach us:\n📞 0800 VINK HELP (0800 867 4357)\n📧 support@vink.co.za",
 };
 
 const CATEGORIES = [
@@ -127,7 +127,7 @@ export function CustomerSupportChat() {
       <button
         onClick={open}
         className="fixed bottom-6 right-6 z-[300] flex items-center gap-2 px-4 py-3 rounded-2xl shadow-2xl text-white font-semibold text-sm transition-all hover:scale-105"
-        style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}
+        style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}
       >
         <MessageCircle className="w-5 h-5" />
         Support
@@ -144,10 +144,10 @@ export function CustomerSupportChat() {
       style={{ width: 380, height: 580, background: "#0A0A14", border: "1px solid rgba(255,255,255,0.1)" }}
     >
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10" style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10" style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
         <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center text-lg">🎧</div>
         <div className="flex-1">
-          <p className="text-white font-bold text-sm">MANSHYA Support</p>
+          <p className="text-white font-bold text-sm">VINK Support</p>
           <div className="flex items-center gap-1">
             <span className="w-2 h-2 rounded-full bg-green-400" />
             <span className="text-white/70 text-xs">Online · ~2 min wait</span>
@@ -393,7 +393,7 @@ export function CustomerSupportChat() {
 
       {/* Footer */}
       <div className="px-4 py-2 border-t border-white/5 flex items-center justify-center gap-2">
-        <span className="text-[10px] text-white/25">Powered by MANSHYA AI · All conversations are recorded for quality</span>
+        <span className="text-[10px] text-white/25">Powered by VINK AI · All conversations are recorded for quality</span>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any -- rows are untyped JSON from the Manshya API; fields are read directly as in the original dashboard */
+/* eslint-disable @typescript-eslint/no-explicit-any -- rows are untyped JSON from the VINK API; fields are read directly as in the original dashboard */
 import { api, ask, toast, secret, R, dt, enc, accountOptions, table, tag, btn, cards, note, H2, Sw, form, collect, type Page } from "../kit";
 import { MANSHYA_BASE } from "../api";
 import { toggles, profilePage, checkoutLink } from "./shared";
@@ -211,7 +211,7 @@ P["a/security"] = async () => {
       <>
         {cards([["Your access level", me.role], ["Business verified", me.verified ? "Yes" : "Not yet"]])}
         {note("API keys are stored hashed, every change is recorded under User activity history, and gateway callbacks are signature-checked.")}
-        {note("You sign in with your customer account. Manshya receives the signed-in user and applies their role.")}
+        {note("You sign in with your customer account. VINK receives the signed-in user and applies their role.")}
       </>
     ),
   };

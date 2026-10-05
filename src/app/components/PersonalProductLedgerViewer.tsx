@@ -24,7 +24,7 @@ const SUB_NAV: { label: string; category: ProductCategory }[] = [
 ];
 
 const PAGE_COPY: Record<ProductCategory, { heading: string; scaleNote: string; detailsCta: string; heroEyebrow: string; heroTitle: string; heroSubtitle: string }> = {
-  account:    { heading: "All personal accounts",   scaleNote: "Monthly turnover ceiling shown on a shared scale, R5k → R500m", detailsCta: "See account details", heroEyebrow: "Personal Banking", heroTitle: "Banking designed for\nevery South African.", heroSubtitle: "Open an account in minutes and manage your money with the MANSHYA app." },
+  account:    { heading: "All personal accounts",   scaleNote: "Monthly turnover ceiling shown on a shared scale, R5k → R500m", detailsCta: "See account details", heroEyebrow: "Personal Banking", heroTitle: "Banking designed for\nevery South African.", heroSubtitle: "Open an account in minutes and manage your money with the VINK app." },
   creditCard: { heading: "All personal credit cards", scaleNote: "Monthly card fee shown on a shared scale, R0 → R415",          detailsCta: "See card details", heroEyebrow: "Credit Cards", heroTitle: "Credit cards built for\nhow you spend.", heroSubtitle: "From everyday essentials to premium rewards — find the card that fits your life." },
   loan:       { heading: "All personal loans",       scaleNote: "Application / admin fee shown on a shared scale, R0 → R415",   detailsCta: "See loan details", heroEyebrow: "Loans", heroTitle: "Loans that move\nas fast as you do.", heroSubtitle: "Quick approvals and clear terms — borrow with confidence, on your timeline." },
   invest:     { heading: "All investment products",  scaleNote: "Entry cost or rate varies by product type",                    detailsCta: "See investment details", heroEyebrow: "Invest", heroTitle: "Grow your wealth\nwith confidence.", heroSubtitle: "Investment products for every goal, from your first fund to long-term wealth." },
@@ -119,9 +119,9 @@ export function PersonalProductLedgerViewer({ isOpen, onClose, initialCategory, 
           --pav-ink-soft:   #1F2937;
           --pav-paper:      #FAFCFB;
           --pav-paper-dim:  #F0F7F2;
-          --pav-gold:       #0F8A4B;
-          --pav-gold-dim:   #0B5C2E;
-          --pav-plum:       #0F8A4B;
+          --pav-gold:       #9B1C1C;
+          --pav-gold-dim:   #5C0A10;
+          --pav-plum:       #9B1C1C;
           --pav-text-on-ink: #EDE9FA;
           --pav-text-muted-on-ink: #A7E8BD;
           --pav-text-body:  #1F2937;
@@ -245,8 +245,8 @@ export function PersonalProductLedgerViewer({ isOpen, onClose, initialCategory, 
       </nav>
 
       <div className="relative overflow-hidden" style={{ background: "linear-gradient(160deg,#FAFCFB 0%,#F3F9F5 100%)" }}>
-        <div className="absolute -left-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: "linear-gradient(180deg,#0F8A4B,#FF7A1A)", filter: "blur(60px)" }} />
-        <div className="absolute -right-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: "linear-gradient(180deg,#FF7A1A,#0F8A4B)", filter: "blur(60px)" }} />
+        <div className="absolute -left-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: "linear-gradient(180deg,#9B1C1C,#FF7A1A)", filter: "blur(60px)" }} />
+        <div className="absolute -right-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: "linear-gradient(180deg,#FF7A1A,#9B1C1C)", filter: "blur(60px)" }} />
         <div className="relative max-w-6xl mx-auto px-8 py-14 sm:py-16">
           <span className="inline-block text-[11px] font-bold tracking-[0.14em] uppercase mb-3" style={{ color: "#FF7A1A" }}>{copy.heroEyebrow}</span>
           <h1 className="text-3xl sm:text-4xl font-black leading-[1.1] text-gray-900 whitespace-pre-line">{copy.heroTitle}</h1>

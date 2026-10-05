@@ -1,6 +1,6 @@
 openapi: 3.1.0
 info:
-  title: MANSHYA Ledger API
+  title: VINK Ledger API
   version: 0.1.0-draft
   description: >
     Phase 2 design contract for the NEW ledger/accounts endpoints described

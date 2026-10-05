@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any -- rows are untyped JSON from the Manshya API; fields are read directly as in the original dashboard */
+/* eslint-disable @typescript-eslint/no-explicit-any -- rows are untyped JSON from the VINK API; fields are read directly as in the original dashboard */
 import { api, ask, toast, showList, R, dt, when, accountOptions, table, tag, btn, H2, Gap, list, type Page } from "../kit";
 import { pctOf } from "../format";
 

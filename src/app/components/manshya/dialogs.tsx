@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- answers are whatever the form fields produce (text, cents, files) */
 import { useEffect, useRef, useState, type ReactNode, type FormEvent } from "react";
 
-/* Dialogs and toasts for the Manshya screens. They are called from async handlers
+/* Dialogs and toasts for the VINK screens. They are called from async handlers
    ("ask for an amount, then call the API"), so they are exposed as plain functions backed
    by two host components (<DialogHost/>, <ToastHost/>) that the dashboard mounts once. */
 

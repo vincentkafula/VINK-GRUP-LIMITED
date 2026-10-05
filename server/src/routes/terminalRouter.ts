@@ -111,14 +111,14 @@ router.post("/tap", async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  // Multi-party revenue split -- corrected model (2026-08-18): MANSHYA's
+  // Multi-party revenue split -- corrected model (2026-08-18): VINK's
   // flat R1.00 fee (two named halves) comes off first. The driver's
   // pay is a fixed amount privately agreed with the owner and is NOT
-  // calculated here at all. The investor gets 10% of MANSHYA's fee
+  // calculated here at all. The investor gets 10% of VINK's fee
   // specifically (R0.10/tap), not 10% of the fare. The owner gets
   // everything else. See revenueSplitService.ts for the full
   // reasoning, including the feeExceedsFare edge case for a fare too
-  // small to cover MANSHYA's fee.
+  // small to cover VINK's fee.
   // The country profile decides the fee split, the no-PIN rule and (in sandbox only) automatic confirmation. See services/tapPolicy.ts.
   const decision = await evaluateTap(pool, tapConfigReader, {
     terminalId: auth.terminalId ?? "", maskedPan: maskedPan ?? null, scheme: scheme ?? null, amount, currency: currency ?? "ZAR", cardholderVerification: cardholderVerification ?? null,

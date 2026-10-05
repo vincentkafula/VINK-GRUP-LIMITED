@@ -7,7 +7,7 @@ import { h, uid, iso, text, optText, fail, type Db } from "./common.js";
  *   GET/PUT /profile          who I am + saved details (phone, home area, favourite route, emergency contact)
  *   GET/POST /support         my support requests; send a new one
  *
- * Online payments, payment history, receipts and banking are NOT here: a personal account uses the same Manshya payments and banking
+ * Online payments, payment history, receipts and banking are NOT here: a personal account uses the same VINK payments and banking
  * dashboard as a customer (see manshya/access.ts), opened from the "Payments & banking" tab. Trip history has no data source yet
  * (fare taps are not linked to a passenger), so the dashboard shows an empty state for it rather than inventing records.
  */

@@ -1,9 +1,9 @@
 import vinkLogoDark from "../../imports/LOGO_FINAL.png";
 
-const BG       = "#0B2E1C";
-const DARK_BAR = "#1A0F4A";
-const CARD_BG  = "#5B21B6";
-const LINK_HL  = "#00BFFF";
+const BG       = "#0c0e14";   // ink
+const DARK_BAR = "#07080c";
+const CARD_BG  = "#8b0000";   // crimson
+const LINK_HL  = "#c9a84c";   // gold
 
 const COLS = [
   {
@@ -22,13 +22,13 @@ const COLS = [
   {
     title: "Who We Are",
     links: [
-      "About MANSHYA",
+      "About VINK",
       "Investor Relations",
       "Social Responsibility",
       "News",
       "Sponsorship",
       "Careers",
-      "MANSHYA at the World Economic Forum",
+      "VINK at the World Economic Forum",
       "Job Application",
     ],
   },
@@ -39,7 +39,7 @@ const COLS = [
       "Business Banking",
       "Wealth and Investment Management",
       "Corporate and Investment Banking",
-      "MANSHYA blog",
+      "VINK blog",
     ],
   },
   {
@@ -55,7 +55,7 @@ const COLS = [
     title: "Support",
     links: [
       "Contact Us",
-      "Switch to MANSHYA",
+      "Switch to VINK",
       "Business debit order switching",
       "Send your feedback",
     ],
@@ -116,9 +116,7 @@ function LinkColumn({ title, links, onLinkClick }: { title: string; links: strin
             <a
               href="#"
               onClick={(e) => { e.preventDefault(); onLinkClick?.(l); }}
-              style={{ color: "rgba(255,255,255,0.68)", fontSize: 14, lineHeight: "20px", textDecoration: "none", display: "block" }}
-              onMouseEnter={(e) => { (e.target as HTMLAnchorElement).style.color = "#fff"; (e.target as HTMLAnchorElement).style.paddingLeft = "4px"; }}
-              onMouseLeave={(e) => { (e.target as HTMLAnchorElement).style.color = "rgba(255,255,255,0.68)"; (e.target as HTMLAnchorElement).style.paddingLeft = "0"; }}
+              className="block py-0.5 text-sm leading-5 text-white/75 no-underline transition-all hover:pl-1 hover:text-white"
             >
               {l}
             </a>
@@ -142,7 +140,7 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
     window.dispatchEvent(new CustomEvent("vink:footer-link", { detail: { label } }));
   });
   return (
-    <footer style={{ background: BG, fontFamily: "'Inter','Roboto',sans-serif" }}>
+    <footer style={{ background: BG }}>
 
       {/* ── SECTION 1: Main columns ─────────────────────────────────────────── */}
       <div style={{ maxWidth: 1080, margin: "0 auto", padding: "64px 40px 56px" }}>
@@ -150,10 +148,10 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
         {/* Top strip: logo + social */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 20, marginBottom: 48, paddingBottom: 32, borderBottom: "1px solid rgba(255,255,255,0.12)" }}>
           {/* Dark logo on dark footer — 140px wide (brand guide: footer 120-160px) */}
-          <img src={vinkLogoDark} alt="MANSHYA" style={{ width: 140, height: "auto", objectFit: "contain" }} />
+          <img src={vinkLogoDark} alt="VINK" loading="lazy" decoding="async" style={{ width: 112, height: "auto", objectFit: "contain" }} />
 
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10 }}>
-            <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", margin: 0 }}>
+            <p style={{ color: "rgba(255,255,255,0.65)", fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", margin: 0 }}>
               Follow Us
             </p>
             <div style={{ display: "flex", gap: 10 }}>
@@ -162,6 +160,7 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
                   key={s.label}
                   href="#"
                   title={s.label}
+                  aria-label={s.label}
                   style={{
                     width: 34, height: 34, borderRadius: "50%",
                     background: "rgba(255,255,255,0.12)",
@@ -236,7 +235,7 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
                 <path d="M14.7 5.42c.66-.8 1.11-1.92 .99-3.03-.95.04-2.11.63-2.8 1.43-.61.7-1.15 1.86-1 2.94 1.06.08 2.15-.53 2.81-1.34z"/>
               </svg>
               <div>
-                <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 9.5, lineHeight: 1, margin: 0, letterSpacing: "0.06em" }}>App Store</p>
+                <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 11, lineHeight: 1, margin: 0, letterSpacing: "0.06em" }}>App Store</p>
                 <p style={{ color: "#fff", fontSize: 15, fontWeight: 600, lineHeight: "20px", margin: "3px 0 0", letterSpacing: "-0.01em" }}>Coming Soon</p>
               </div>
             </div>
@@ -256,7 +255,7 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
                 <path d="M13.5 12L21 7.5V16.5L13.5 12Z"  fill="#4285F4" />
               </svg>
               <div>
-                <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 9.5, lineHeight: 1, margin: 0, letterSpacing: "0.06em" }}>Google Play</p>
+                <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 11, lineHeight: 1, margin: 0, letterSpacing: "0.06em" }}>Google Play</p>
                 <p style={{ color: "#fff", fontSize: 15, fontWeight: 600, lineHeight: "20px", margin: "3px 0 0", letterSpacing: "-0.01em" }}>Coming Soon</p>
               </div>
             </div>
@@ -272,9 +271,9 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
           <div style={{ height: 56, display: "flex", alignItems: "center", justifyContent: "center", flexWrap: "wrap", gap: "6px 0" }}>
             {["Terms Of Use", "Banking Regulations", "Privacy Statement", "Security Centre"].map((item, i, arr) => (
               <span key={item} style={{ display: "flex", alignItems: "center" }}>
-                <a href="#" onClick={(e) => { e.preventDefault(); handleLinkClick(item); }} style={{ color: "rgba(255,255,255,0.55)", fontSize: 12, fontWeight: 700, textDecoration: "none", padding: "0 12px", whiteSpace: "nowrap" }}
+                <a href="#" onClick={(e) => { e.preventDefault(); handleLinkClick(item); }} style={{ color: "rgba(255,255,255,0.7)", fontSize: 12, fontWeight: 700, textDecoration: "none", padding: "0 12px", whiteSpace: "nowrap" }}
                   onMouseEnter={(e) => { (e.target as HTMLAnchorElement).style.color = "#fff"; }}
-                  onMouseLeave={(e) => { (e.target as HTMLAnchorElement).style.color = "rgba(255,255,255,0.55)"; }}
+                  onMouseLeave={(e) => { (e.target as HTMLAnchorElement).style.color = "rgba(255,255,255,0.7)"; }}
                 >
                   {item}
                 </a>
@@ -284,17 +283,17 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
               </span>
             ))}
             <span style={{ color: "rgba(255,255,255,0.2)", fontSize: 12, padding: "0 12px" }}>|</span>
-            <span style={{ color: "rgba(255,255,255,0.38)", fontSize: 12, whiteSpace: "nowrap", padding: "0 4px" }}>
-              MANSHYA — a division of Vink Group (Pty) Ltd. Authorised Financial Services Provider and a registered credit provider (NCRCP registration pending). Enterprise No. 2026/719501/07. Vink Group Reg. No. 2018/079316/07.
+            <span style={{ color: "rgba(255,255,255,0.65)", fontSize: 12, padding: "0 4px", textAlign: "center" }}>
+              VINK — a division of Vink Group (Pty) Ltd. Authorised Financial Services Provider and a registered credit provider (NCRCP registration pending). Enterprise No. 2026/719501/07. Vink Group Reg. No. 2018/079316/07.
             </span>
           </div>
           {/* Copyright */}
           <div style={{ paddingBottom: 16, textAlign: "center" }}>
-            <p style={{ color: "rgba(255,255,255,0.28)", fontSize: 12, margin: 0, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "0 10px" }}>
+            <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 12, margin: 0, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "0 10px" }}>
               <span>United States – EIN: 37-2148609</span>
-              <span style={{ color: "rgba(255,255,255,0.15)" }}>|</span>
+              <span aria-hidden="true" style={{ color: "rgba(255,255,255,0.25)" }}>|</span>
               <span>South Africa – Registration No: 2018/079316/07</span>
-              <span style={{ color: "rgba(255,255,255,0.15)" }}>|</span>
+              <span aria-hidden="true" style={{ color: "rgba(255,255,255,0.25)" }}>|</span>
               <span>Zambia – Registration No: 120210020196</span>
             </p>
           </div>

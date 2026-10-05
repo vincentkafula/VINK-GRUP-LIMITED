@@ -46,7 +46,10 @@ import { createMoneyEngine, manshyaLedgerPort, walletLedgerAccount } from "./ser
 import { createLimitGuard } from "./config/limitGuard.js";
 import { createCrossBorder } from "./services/crossBorderService.js";
 import { createBankFeedRouter } from "./routes/bankFeed.js";
-import { refreshRates } from "./services/fxRates.js";
+import { refreshRates, ratesAreFresh } from "./services/fxRates.js";
+import { createPooledStore } from "./portal/pooledAccounts.js";
+import { checkReadiness } from "./config/readiness.js";
+import { reserveAccount } from "./services/poolService.js";
 import type { CountryConfig } from "./config/countryConfig.js";
 import { createMoneyAdminRouter } from "./routes/moneyAdminRouter.js";
 import { createFieldCrypto } from "./portal/fieldCrypto.js";
@@ -70,7 +73,7 @@ app.use(cors({ origin: (origin, cb) => cb(null, isAllowedOrigin(origin)), creden
 // Rate limiting — 300 req/min per IP, general baseline for the whole API
 app.use("/api", rateLimit({ windowMs: 60_000, max: 300, standardHeaders: true, legacyHeaders: false }));
 
-// Manshya payments & banking. Mounted BEFORE the global JSON parser on purpose: its
+// VINK payments & banking. Mounted BEFORE the global JSON parser on purpose: its
 // gateway webhooks need the raw request body to verify signatures, and its document
 // upload route accepts larger bodies than the 1mb default below. The module applies
 // its own body limits. Access is by login: customers get the dashboard API, staff the
@@ -124,8 +127,9 @@ app.use("/api/auth/refresh", rateLimit({ windowMs: 15 * 60_000, max: 100, standa
 // ─── Routes ──────────────────────────────────────────────────────────────────
 // Writes through the role dashboards are throttled per client (reads are not): 120 changes a minute is far above real use.
 app.use("/api/portal", rateLimit({ windowMs: 60_000, max: 120, standardHeaders: true, legacyHeaders: false, skip: (req) => req.method === "GET" }));
-// Bank accounts for the dashboards: the Banking module (Manshya) is the single source of truth for numbers, balances and transactions.
-const bankDeps = { core: manshyaBankCore(manshya), crypto: createFieldCrypto(process.env, JWT_SECRET) };
+// Bank accounts for the dashboards: the Banking module (VINK) is the single source of truth for numbers, balances and transactions.
+const pooled = createPooledStore(pool);
+const bankDeps = { core: manshyaBankCore(manshya), crypto: createFieldCrypto(process.env, JWT_SECRET), channels: () => pooled.forCurrency("ZAR") };
 // Country configuration (staff only; changes are maker-checked). `configReader` serves the active profile to the rest of the platform.
 export const configReader = createConfigReader(pool);
 // The money engine and the pooled-account tools share one ledger port. The Banking module asks the limit guard before it sends money out, using a cached copy of the active ZA profile.
@@ -135,13 +139,17 @@ let zaProfile: CountryConfig | null = null;
 (manshya.config as unknown as { limitGuard: unknown }).limitGuard = createLimitGuard(() => zaProfile);
 const crossBorder = moneyEngine && pool ? createCrossBorder({ db: pool, ledger: moneyLedger, engine: moneyEngine, reader: configReader }) : undefined;
 if (moneyEngine) bankFeed.router = createBankFeedRouter({ deps: { db: pool!, ledger: moneyLedger, engine: moneyEngine, reader: configReader }, secret: process.env.BANK_WEBHOOK_SECRET?.trim() || undefined });
-const channelAccounts = () => readChannelAccounts(process.env, () => {});
+const channelAccounts = () => pooled.forCurrency("ZAR");
 app.use("/api/portal",        createPortalRouter(pool, bankDeps, {
-  channels: channelAccounts, crossBorder,
+  channels: (currency) => pooled.forCurrency(currency), crossBorder,
   wallets: (userId) => { const b = moneyLedger.balance(walletLedgerAccount("ZMW", userId)); return b ? [{ currency: "ZMW", balanceCents: b }] : []; },
 }));
-if (pool) app.use("/api/admin/money", requireAuth, requireRole("owner", "superadmin"), createMoneyAdminRouter({ db: pool, ledger: moneyLedger, reader: configReader, engine: moneyEngine ?? undefined, channels: channelAccounts, crossBorder }));
-if (pool) app.use("/api/admin/config", requireAuth, requireRole("owner", "superadmin"), createConfigAdminRouter({ db: pool, reader: configReader, onActivate: (country, cfg) => { if (country === "ZA") { zaProfile = cfg; console.log("[config] Manshya fees synced:", syncManshyaFees(manshya.config as never, cfg).join(", ") || "no change"); } } }));
+if (pool) app.use("/api/admin/money", requireAuth, requireRole("owner", "superadmin"), createMoneyAdminRouter({ db: pool, ledger: moneyLedger, reader: configReader, engine: moneyEngine ?? undefined, channels: channelAccounts, pooled, crossBorder }));
+if (pool) app.use("/api/admin/config", requireAuth, requireRole("owner", "superadmin"), createConfigAdminRouter({ db: pool, reader: configReader, readiness: async (cfg) => {
+  const cur = cfg.currency.code, acc = pooled.forCurrency(cur);
+  const pairs = cfg.corridors.filter((k) => k.enabled).map((k) => `${k.from === "ZA" ? "ZAR" : "ZMW"}-${k.to === "ZA" ? "ZAR" : "ZMW"}`);
+  return checkReadiness(cfg, { pooledAccounts: { in_person: !!acc.in_person, online: !!acc.online }, bankFeedConfigured: !!process.env.BANK_WEBHOOK_SECRET?.trim(), ratesFresh: pairs.length === 0 || (await ratesAreFresh(pool!, pairs)), reserveCents: moneyLedger.balance(reserveAccount(cur)) });
+}, onActivate: (country, cfg) => { if (country === "ZA") { zaProfile = cfg; console.log("[config] VINK fees synced:", syncManshyaFees(manshya.config as never, cfg).join(", ") || "no change"); } } }));
 if (pool) app.use("/api/admin/bank-links", requireAuth, requireRole("owner", "superadmin"), createBankAdminRouter({ db: pool, ...bankDeps }));
 app.use("/api/auth",          (hasDb ? createDbAuthRouter() : createMemoryAuthRouter()).router);
 app.use("/api/fraud-risk",    fraudRiskRouter);
@@ -254,7 +262,7 @@ app.post("/api/admin/migrate", requireAuth, requireRole("owner", "superadmin"), 
 // API index
 app.get("/api", (_req, res) => {
   res.json({
-    name: "MANSHYA Banking & Payments API",
+    name: "VINK Banking & Payments API",
     version: "1.0.0",
     note: "Grouped by mount point, not every individual route — a fully expanded list drifted out of date before and stopped reflecting reality. Each prefix below covers multiple GET/POST/PATCH endpoints.",
     endpoints: [
@@ -285,7 +293,7 @@ app.get("/api", (_req, res) => {
       "/api/afc/*               — AFC device fleet management",
       "/api/payments/issuer/*   — card issuer-processor real-time authorisation webhook",
       "/api/payments/sandbox/*  — staff-only sandbox card-servicing tools (404 in live mode)",
-      "/api/manshya/*           — Manshya payments & banking (customer accounts); /api/manshya/admin/* is the staff back office",
+      "/api/manshya/*           — VINK payments & banking (customer accounts); /api/manshya/admin/* is the staff back office",
       "WS     ws://localhost:3001/ws  (events: terminal.tap_received, terminal.fault_reported, route.violation, retail.transaction_received, retail.fault_reported)",
     ],
   });
@@ -320,6 +328,7 @@ async function boot() {
     try {
       await migrateAndSeed();
       if (pool) await seedBankLinks({ db: pool, ...bankDeps }).catch((e) => console.error("[seed] bank links failed (server continues):", e instanceof Error ? e.message : e));
+      await pooled.refresh();
       if (pool) await configReader.active("ZA").then((a) => { zaProfile = a.config; return syncManshyaFees(manshya.config as never, a.config); }).catch((e) => console.error("[config] fee sync failed:", e instanceof Error ? e.message : e));
       if (pool && process.env.FX_AUTO !== "off") {
         // Exchange rates for cross-border quotes: fetched every hour while a route is open (and once at start). See services/fxRates.ts for the sources and safety rules.
@@ -352,7 +361,7 @@ async function boot() {
 
   server.listen(PORT, () => {
     console.log("");
-    console.log("  \x1b[35m▲ Manshya Backend\x1b[0m  v1.1.0");
+    console.log("  \x1b[35m▲ VINK Backend\x1b[0m  v1.1.0");
     console.log(`  \x1b[2mHTTP\x1b[0m   → http://localhost:${PORT}`);
     console.log(`  \x1b[2mAPI\x1b[0m    → http://localhost:${PORT}/api`);
     console.log(`  \x1b[2mWS\x1b[0m     → ws://localhost:${PORT}/ws`);

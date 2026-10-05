@@ -1,0 +1,164 @@
+/*
+ * VINK design tokens: ink, crimson and gold (from the eagle crest).
+ *
+ * One source for colour, type, radius and shadow. Light is the default; `.dark` on <html> switches the theme (see ThemeProvider).
+ * Every text colour below is checked to meet WCAG 2.2 AA (4.5:1) on the surfaces it is meant for.
+ *   light: text 17:1, muted 5.9:1, subtle 4.9:1 on the page; white on brand 10:1
+ *   dark:  text 15.7:1, muted 8:1, subtle 5.9:1 on a surface; ink on gold 8.4:1
+ * Components use the utilities (bg-surface, text-fg, text-fg-muted, border-line, bg-brand ...), not hex values.
+ */
+:root {
+  --vk-bg: #faf8f4;
+  --vk-surface: #ffffff;
+  --vk-surface-2: #f2efe8;
+  --vk-line: #e4dfd3;
+  --vk-line-strong: #cfc8b8;
+  --vk-fg: #14161d;
+  --vk-fg-muted: #5b6070;
+  --vk-fg-subtle: #6b7080;
+
+  --vk-brand: #8b0000;            /* crimson: primary actions, links */
+  --vk-brand-hover: #720000;
+  --vk-brand-fg: #ffffff;
+  --vk-gold: #c9a84c;             /* gold: highlights, focus accents */
+  --vk-gold-text: #8a6a12;        /* gold that is readable as text on light surfaces */
+  --vk-gold-fg: #14161d;
+
+  --vk-ok: #17784a;      --vk-ok-bg: #e6f4ec;
+  --vk-warn: #8f5b00;    --vk-warn-bg: #fbf1dc;
+  --vk-bad: #b3202f;     --vk-bad-bg: #fbe8ea;
+  --vk-info: #2457c5;    --vk-info-bg: #e8effc;
+
+  --vk-focus: #1d4ed8;
+  --vk-overlay: rgba(12, 14, 20, 0.55);
+
+  --vk-shadow-1: 0 1px 2px rgba(20, 22, 29, 0.06), 0 1px 1px rgba(20, 22, 29, 0.04);
+  --vk-shadow-2: 0 4px 12px -2px rgba(20, 22, 29, 0.10), 0 2px 4px -2px rgba(20, 22, 29, 0.06);
+  --vk-shadow-3: 0 18px 40px -12px rgba(20, 22, 29, 0.28);
+
+  --vk-radius-sm: 8px;
+  --vk-radius-md: 12px;
+  --vk-radius-lg: 16px;
+  --vk-radius-xl: 24px;
+
+  --vk-header-h: 56px;
+  --vk-notice-h: 32px;
+
+  color-scheme: light;
+}
+
+.dark {
+  --vk-bg: #0c0e14;
+  --vk-surface: #141824;
+  --vk-surface-2: #1b2030;
+  --vk-line: #2a3045;
+  --vk-line-strong: #3a4260;
+  --vk-fg: #f3f1ec;
+  --vk-fg-muted: #a9afbf;
+  --vk-fg-subtle: #8e95a8;
+
+  --vk-brand: #c9a84c;            /* in the dark, gold carries the primary action */
+  --vk-brand-hover: #d8b95e;
+  --vk-brand-fg: #0c0e14;
+  --vk-gold: #c9a84c;
+  --vk-gold-text: #c9a84c;
+  --vk-gold-fg: #0c0e14;
+
+  --vk-ok: #3dd598;      --vk-ok-bg: rgba(61, 213, 152, 0.12);
+  --vk-warn: #f5b544;    --vk-warn-bg: rgba(245, 181, 68, 0.12);
+  --vk-bad: #ff7b84;     --vk-bad-bg: rgba(255, 123, 132, 0.12);
+  --vk-info: #7aa8ff;    --vk-info-bg: rgba(122, 168, 255, 0.12);
+
+  --vk-focus: #8fb4ff;
+  --vk-overlay: rgba(0, 0, 0, 0.65);
+
+  --vk-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --vk-shadow-2: 0 6px 16px -4px rgba(0, 0, 0, 0.5);
+  --vk-shadow-3: 0 24px 48px -12px rgba(0, 0, 0, 0.7);
+
+  color-scheme: dark;
+}
+
+/* The existing shadcn variables follow the brand, so the components already built on them inherit it. */
+:root, .dark {
+  --background: var(--vk-bg);
+  --foreground: var(--vk-fg);
+  --card: var(--vk-surface);
+  --card-foreground: var(--vk-fg);
+  --popover: var(--vk-surface);
+  --popover-foreground: var(--vk-fg);
+  --primary: var(--vk-brand);
+  --primary-foreground: var(--vk-brand-fg);
+  --secondary: var(--vk-surface-2);
+  --secondary-foreground: var(--vk-fg);
+  --muted: var(--vk-surface-2);
+  --muted-foreground: var(--vk-fg-muted);
+  --accent: var(--vk-surface-2);
+  --accent-foreground: var(--vk-fg);
+  --destructive: var(--vk-bad);
+  --destructive-foreground: #ffffff;
+  --border: var(--vk-line);
+  --input: var(--vk-line-strong);
+  --input-background: var(--vk-surface);
+  --ring: var(--vk-focus);
+  --radius: 0.75rem;
+}
+
+@theme inline {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Fraunces", ui-serif, Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --color-bg: var(--vk-bg);
+  --color-surface: var(--vk-surface);
+  --color-surface-2: var(--vk-surface-2);
+  --color-line: var(--vk-line);
+  --color-line-strong: var(--vk-line-strong);
+  --color-fg: var(--vk-fg);
+  --color-fg-muted: var(--vk-fg-muted);
+  --color-fg-subtle: var(--vk-fg-subtle);
+  --color-brand: var(--vk-brand);
+  --color-brand-hover: var(--vk-brand-hover);
+  --color-brand-fg: var(--vk-brand-fg);
+  --color-gold: var(--vk-gold);
+  --color-gold-text: var(--vk-gold-text);
+  --color-gold-fg: var(--vk-gold-fg);
+  --color-ok: var(--vk-ok);     --color-ok-bg: var(--vk-ok-bg);
+  --color-warn: var(--vk-warn); --color-warn-bg: var(--vk-warn-bg);
+  --color-bad: var(--vk-bad);   --color-bad-bg: var(--vk-bad-bg);
+  --color-info: var(--vk-info); --color-info-bg: var(--vk-info-bg);
+  --color-focus: var(--vk-focus);
+
+  --shadow-card: var(--vk-shadow-1);
+  --shadow-raised: var(--vk-shadow-2);
+  --shadow-overlay: var(--vk-shadow-3);
+  --radius-vk-sm: var(--vk-radius-sm);
+  --radius-vk-md: var(--vk-radius-md);
+  --radius-vk-lg: var(--vk-radius-lg);
+  --radius-vk-xl: var(--vk-radius-xl);
+}
+
+@layer base {
+  html { font-family: var(--font-sans); -webkit-text-size-adjust: 100%; }
+  body { font-family: var(--font-sans); background-color: var(--vk-bg); color: var(--vk-fg); }
+
+  /* One visible focus ring for everything a keyboard can reach. Components may refine it, none may remove it without replacing it. */
+  :where(a, button, input, select, textarea, summary, [role="button"], [tabindex]):focus-visible {
+    outline: 2px solid var(--vk-focus);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  /* Motion is a courtesy: people who ask for less get none of it. */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+  }
+}
+
+/* Display type: used for page and section titles. */
+.font-display { font-family: var(--font-display); font-optical-sizing: auto; letter-spacing: -0.01em; }
+.tabular { font-variant-numeric: tabular-nums; }
+
+/* A link that lets keyboard users jump past the header. */
+.skip-link { position: fixed; left: 12px; top: -48px; z-index: 300; background: var(--vk-brand); color: var(--vk-brand-fg); padding: 10px 16px; border-radius: 10px; font-weight: 600; transition: top .15s; }
+.skip-link:focus { top: 12px; }

@@ -46,7 +46,7 @@ export const adminUsers: AdminUser[] = [
   account("NOC1", "noc1", "noc_engineer", "NOC Engineer 1", "noc1@vink.co.za", 10, 8760),
   account("BILLING1", "billing1", "billing_admin", "Billing Admin", "billing@vink.co.za", 120, 4380),
   // Same dev customer account that db/migrate.ts seeds into Postgres (seedDefaultCustomer) --
-  // present here too so the customer experience (including the Manshya dashboard) can be
+  // present here too so the customer experience (including the VINK dashboard) can be
   // signed into when running without DATABASE_URL.
   account("CUSTOMER1", "customer1", "customer", "Demo Customer", "customer@vink.co.za", null, 4380),
 ].filter((u): u is AdminUser => u !== null);

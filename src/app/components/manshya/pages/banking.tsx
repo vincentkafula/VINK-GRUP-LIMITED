@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any -- rows are untyped JSON from the Manshya API; fields are read directly as in the original dashboard */
+/* eslint-disable @typescript-eslint/no-explicit-any -- rows are untyped JSON from the VINK API; fields are read directly as in the original dashboard */
 import { api, ask, toast, showList, R, dt, when, accountOptions, benOptions, table, tag, btn, cards, note, H2, pct, list, type Page } from "../kit";
 import { monthName, shiftMonth, thisMonth } from "../format";
 import { addBeneficiary, statementDialog } from "./shared";
@@ -126,7 +126,7 @@ P["b/transfers"] = async () => {
     title: "Transfer history",
     content: table([
       { h: "Date", f: (r: any) => dt(r.created_at) },
-      { h: "Type", f: (r: any) => (r.kind === "beneficiary" ? "To another bank" : r.kind === "own" ? "Own accounts" : "To Manshya account") },
+      { h: "Type", f: (r: any) => (r.kind === "beneficiary" ? "To another bank" : r.kind === "own" ? "Own accounts" : "To VINK account") },
       { h: "Reference", f: (r: any) => r.reference || "—" }, { h: "Status", f: (r: any) => tag(r.status) }, { h: "Amount", r: true, f: (r: any) => R(r.amount) },
     ], d.data, "No transfers yet."),
   };

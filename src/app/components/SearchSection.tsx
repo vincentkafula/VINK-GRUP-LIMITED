@@ -1,37 +1,31 @@
 import { CreditCard } from "lucide-react";
+import { Button } from "./ds";
 
 const BADGES = ["Instant Approval", "Tap & Go Payments", "Earn on Every Ride"];
 
-export function SearchSection() {
+export function SearchSection({ onFindCard }: { onFindCard?: () => void }) {
   return (
-    <div className="border-b" style={{ background: "linear-gradient(90deg,#f8f7ff 0%,#ede9fe 50%,#f8f7ff 100%)", borderColor: "#e4e0f8" }}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex flex-col sm:flex-row items-center gap-4">
+    <section aria-label="Find a card" className="border-b border-line bg-surface-2">
+      <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
+          <div className="flex flex-col items-center gap-4 sm:flex-row">
             <div className="text-center sm:text-left">
-              <p className="text-sm font-semibold text-gray-800">
-                Find the card that fits <span style={{ color: "#5B21B6" }}>your journey.</span>
+              <p className="text-sm font-semibold text-fg">
+                Find the card that fits <span className="text-gold-text">your journey.</span>
               </p>
-              <p className="text-xs text-gray-500 mt-0.5">
+              <p className="mt-0.5 text-xs text-fg-muted">
                 Checking your options takes 60 seconds and won&apos;t affect your credit score.
               </p>
             </div>
-            <div className="hidden md:flex items-center gap-2">
-              {BADGES.map((b, i) => (
-                <span key={i} className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full"
-                  style={{ background: "#ede9fe", color: "#5B21B6" }}>
-                  {b}
-                </span>
+            <ul className="hidden items-center gap-2 md:flex">
+              {BADGES.map((b) => (
+                <li key={b} className="rounded-full bg-gold/15 px-2.5 py-1 text-xs font-semibold text-gold-text">{b}</li>
               ))}
-            </div>
+            </ul>
           </div>
-          <button className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold text-white transition-all duration-300 ease-out hover:scale-[1.03] hover:-translate-y-0.5 active:scale-95 flex-shrink-0"
-            style={{ background: "linear-gradient(135deg,#4C1D95,#7C3AED)", boxShadow: "0 4px 14px rgba(124,58,237,.35)" }}>
-            <CreditCard className="w-4 h-4" />
-            Find My Card
-          </button>
+          <Button onClick={onFindCard} className="shrink-0"><CreditCard aria-hidden="true" />Find My Card</Button>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

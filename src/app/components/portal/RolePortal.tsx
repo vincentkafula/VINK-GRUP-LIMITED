@@ -38,10 +38,10 @@ export function RolePortal({ portal, isOpen, onClose }: { portal: PortalKey; isO
   if (state !== "ok") {
     const own = portalPathForRole(session?.role);
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "#0D0B1E" }} role="dialog" aria-label={def.title}>
-        <div className="max-w-sm w-full rounded-2xl p-8 text-center" style={{ background: "#13103A", border: "1px solid #2D2A50" }}>
-          {state === "checking" ? <Loader2 className="w-6 h-6 animate-spin mx-auto text-white/70" /> : <ShieldAlert className="w-8 h-8 mx-auto text-amber-400" />}
-          <p className="mt-4 text-white font-semibold">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "var(--vk-bg)" }} role="dialog" aria-label={def.title}>
+        <div className="max-w-sm w-full rounded-2xl p-8 text-center" style={{ background: "var(--vk-surface)", border: "1px solid var(--vk-line)" }}>
+          {state === "checking" ? <Loader2 className="w-6 h-6 animate-spin mx-auto text-fg" /> : <ShieldAlert className="w-8 h-8 mx-auto text-warn" />}
+          <p className="mt-4 text-fg font-semibold">
             {state === "checking" && "Checking your access…"}
             {state === "signedOut" && "Please sign in to continue."}
             {state === "denied" && "This dashboard is for a different type of account."}
@@ -50,7 +50,7 @@ export function RolePortal({ portal, isOpen, onClose }: { portal: PortalKey; isO
           <div className="mt-6 flex flex-col gap-2">
             {state === "signedOut" && <button className="py-2.5 rounded-lg font-bold text-sm bg-white text-black" onClick={() => { onClose(); window.dispatchEvent(new Event("vink:open-login")); }}>Sign in</button>}
             {state === "denied" && own && <button className="py-2.5 rounded-lg font-bold text-sm bg-white text-black" onClick={() => { window.location.assign(own); }}>Go to my dashboard</button>}
-            <button className="py-2.5 rounded-lg text-sm text-white/70" onClick={onClose}>Back to the site</button>
+            <button className="py-2.5 rounded-lg text-sm text-fg" onClick={onClose}>Back to the site</button>
           </div>
         </div>
       </div>
@@ -72,7 +72,7 @@ export function RolePortal({ portal, isOpen, onClose }: { portal: PortalKey; isO
       onClose={onClose} userName={session?.name}
     >
       <SectionPanel title={`Welcome, ${session?.name ?? ""}`}>
-        <p className="text-sm text-white/70">You are signed in with a <b>{def.role.replace("_", " ")}</b> account. The features of this dashboard are being built step by step.</p>
+        <p className="text-sm text-fg">You are signed in with a <b>{def.role.replace("_", " ")}</b> account. The features of this dashboard are being built step by step.</p>
       </SectionPanel>
     </DashboardShell>
   );

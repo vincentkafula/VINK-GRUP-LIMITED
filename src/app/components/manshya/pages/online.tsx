@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any -- rows are untyped JSON from the Manshya API; fields are read directly as in the original dashboard */
+/* eslint-disable @typescript-eslint/no-explicit-any -- rows are untyped JSON from the VINK API; fields are read directly as in the original dashboard */
 import { Fragment } from "react";
 import { api, ask, toast, download, showList, R, dt, enc, destOptions, dest, table, tag, btn, cards, note, H2, Gap, type Page } from "../kit";
 import { payoutNow, addBeneficiary, requestsPage } from "./shared";
@@ -140,7 +140,7 @@ P["o/payacc"] = async () => {
     title: "Payout accounts", sub: "Where your payouts can go.", actions: [{ label: "Add bank account", p: true, fn: addBeneficiary }],
     content: (
       <>
-        <H2>Your Manshya accounts</H2>
+        <H2>Your VINK accounts</H2>
         {table([{ h: "Account", f: (r: any) => r.name }, { h: "Number", f: (r: any) => r.number }, { h: "Balance", r: true, f: (r: any) => R(r.balance) }], a.data)}
         <H2 top>Other banks</H2>
         {table([

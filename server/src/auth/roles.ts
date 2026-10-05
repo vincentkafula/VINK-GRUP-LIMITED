@@ -1,6 +1,6 @@
 /**
  * The five account types of the transport platform, kept separate from the staff roles
- * (superadmin, owner, noc_engineer, ...) and from "customer" (the Manshya banking dashboard).
+ * (superadmin, owner, noc_engineer, ...) and from "customer" (the VINK banking dashboard).
  *
  * NOTE: "owner" already means the PLATFORM's top authority in this system, so the vehicle owner is "vehicle_owner".
  */

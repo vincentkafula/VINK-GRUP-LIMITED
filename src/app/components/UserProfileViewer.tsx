@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { X, User, Shield, CreditCard, Bell, Settings, LogOut, Camera, CheckCircle, Clock, AlertTriangle, ChevronRight, Eye, EyeOff, Edit3, Phone, Mail, MapPin, Calendar, FileText, Star, Smartphone, Globe } from "lucide-react";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 
-const P = "#0B5C2E";
+const P = "#5C0A10";
 const GOLD = "#F5A623";
 
 interface Props {
@@ -24,9 +24,9 @@ const KYC_STEPS = [
 
 const SECURITY_EVENTS = [
   { action: "Sign in", device: "Chrome · MacBook Pro", location: "Cape Town, ZA", time: "2 minutes ago", current: true },
-  { action: "Sign in", device: "MANSHYA Banking App · iPhone 15", location: "Cape Town, ZA", time: "3 hours ago", current: false },
+  { action: "Sign in", device: "VINK Banking App · iPhone 15", location: "Cape Town, ZA", time: "3 hours ago", current: false },
   { action: "Password changed", device: "Chrome · Windows PC", location: "Johannesburg, ZA", time: "5 days ago", current: false },
-  { action: "Card freeze (Virtual card ••4291)", device: "MANSHYA Banking App · Samsung S24", location: "Cape Town, ZA", time: "12 days ago", current: false },
+  { action: "Card freeze (Virtual card ••4291)", device: "VINK Banking App · Samsung S24", location: "Cape Town, ZA", time: "12 days ago", current: false },
 ];
 
 const NOTIF_PREFS = [
@@ -63,7 +63,7 @@ export function UserProfileViewer({ isOpen, onClose, onSignOut }: Props) {
     tier: "Premium",
     kycStatus: "partial",
     memberSince: "March 2024",
-    referralCode: "MANSHYA-VKAFULA8",
+    referralCode: "VINK-VKAFULA8",
     vinkPoints: 14820,
     accountNo: "VINK012847291",
   });
@@ -90,7 +90,7 @@ export function UserProfileViewer({ isOpen, onClose, onSignOut }: Props) {
         <div className="p-6 border-b border-white/10">
           <div className="flex items-start gap-3 mb-4">
             <div className="relative">
-              <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-black text-white shadow-xl" style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-black text-white shadow-xl" style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
                 {profile.firstName[0]}{profile.lastName[0]}
               </div>
               <button
@@ -165,11 +165,11 @@ export function UserProfileViewer({ isOpen, onClose, onSignOut }: Props) {
       </div>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col overflow-hidden bg-[#F8F7FF]">
+      <div className="flex-1 flex flex-col overflow-hidden bg-[#FAF8F4]">
         {/* Top bar */}
         <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-100 shadow-sm">
           <div className="flex items-center gap-3">
-            <img src={vinkLogo} alt="MANSHYA" className="h-8 w-auto" />
+            <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-8 w-auto" />
             <span className="text-gray-400">/</span>
             <span className="font-semibold text-gray-800">{tabs.find(t => t.id === tab)?.label}</span>
           </div>
@@ -240,7 +240,7 @@ export function UserProfileViewer({ isOpen, onClose, onSignOut }: Props) {
                   <label className="text-xs font-semibold text-gray-500 block mb-1">Primary Account Number</label>
                   <div className="flex items-center gap-2">
                     <span className="font-mono text-sm text-gray-800">
-                      {showAccountNo ? profile.accountNo : "MANSHYA••••••••••"}
+                      {showAccountNo ? profile.accountNo : "VINK••••••••••"}
                     </span>
                     <button onClick={() => setShowAccountNo(v => !v)} className="text-gray-400 hover:text-gray-600 ml-auto">
                       {showAccountNo ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -265,7 +265,7 @@ export function UserProfileViewer({ isOpen, onClose, onSignOut }: Props) {
           {tab === "kyc" && (
             <div className="max-w-2xl space-y-6">
               {/* Progress */}
-              <div className="p-6 rounded-2xl" style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>
+              <div className="p-6 rounded-2xl" style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <p className="text-white/70 text-sm">Verification Level</p>
@@ -403,7 +403,7 @@ export function UserProfileViewer({ isOpen, onClose, onSignOut }: Props) {
           {tab === "cards" && (
             <div className="max-w-2xl space-y-6">
               {[
-                { type: "Mastercard Debit", last4: "4291", expires: "09/28", status: "active", daily: 5000, monthly: 50000, spentToday: 850, spentMonth: 12480, color: "#0B5C2E", online: true, international: false, contactless: true },
+                { type: "Mastercard Debit", last4: "4291", expires: "09/28", status: "active", daily: 5000, monthly: 50000, spentToday: 850, spentMonth: 12480, color: "#5C0A10", online: true, international: false, contactless: true },
                 { type: "Virtual Card", last4: "7742", expires: "12/26", status: "active", daily: 2000, monthly: 20000, spentToday: 0, spentMonth: 3200, color: "#0F172A", online: true, international: true, contactless: false },
               ].map(card => (
                 <div key={card.last4} className="rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
@@ -525,7 +525,7 @@ function Field({ label, value, edit = false, type = "text", icon, verified, onCh
           readOnly={!edit}
           onChange={e => onChange?.(e.target.value)}
           className="w-full px-3 py-2 rounded-xl border text-sm transition-all"
-          style={{ paddingLeft: icon ? "2rem" : undefined, borderColor: edit ? "#0B5C2E" : "#E5E7EB", background: edit ? "#fff" : "#F9FAFB", color: "#1F2937" }}
+          style={{ paddingLeft: icon ? "2rem" : undefined, borderColor: edit ? "#5C0A10" : "#E5E7EB", background: edit ? "#fff" : "#F9FAFB", color: "#1F2937" }}
         />
         {verified && (
           <span className="absolute right-3 top-1/2 -translate-y-1/2">

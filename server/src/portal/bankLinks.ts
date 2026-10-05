@@ -5,7 +5,7 @@ import { CryptoUnavailable, type FieldCrypto } from "./fieldCrypto.js";
 import { seedEnabled } from "../auth/seedRoleAccounts.js";
 
 /**
- * Bank accounts for the dashboards. Every dashboard user is linked to ONE account held in the Banking module (Manshya); this file never
+ * Bank accounts for the dashboards. Every dashboard user is linked to ONE account held in the Banking module (VINK); this file never
  * keeps a second copy of the account number, balance or transactions: it reads them from the Banking module each time.
  *
  *   GET    /bank                 my link (or none), the rules for my role, and the payment-channel accounts shown on my dashboard
@@ -18,7 +18,7 @@ import { seedEnabled } from "../auth/seedRoleAccounts.js";
  * router below. Every change is written to the audit log with only masked identifiers.
  */
 
-/* ───────────────────────── the Banking module (Manshya), seen through a small interface ───────────────────────── */
+/* ───────────────────────── the Banking module (VINK), seen through a small interface ───────────────────────── */
 export interface CoreAccount { id: string; name: string; number: string; kind: string; balanceCents: number }
 export interface CoreTransaction { at: string; kind: string; description: string; amountCents: number; balanceCents: number }
 export interface BankCore {
@@ -40,7 +40,7 @@ interface ManshyaHandle {
   config: { bankName: string; branchCode: string };
 }
 
-/** Adapter over the real Manshya core (the same instance the payments dashboards use). */
+/** Adapter over the real VINK core (the same instance the payments dashboards use). */
 export function manshyaBankCore(mn: ManshyaHandle): BankCore {
   return {
     bankName: mn.config.bankName, branchCode: mn.config.branchCode, currency: "ZAR",

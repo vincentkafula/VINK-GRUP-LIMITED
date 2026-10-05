@@ -72,7 +72,7 @@ export function Card3DViewer({ isOpen, onClose, image, name, onApply }: Props) {
             boxShadow: `${-rotate.y * 1.6}px ${rotate.x * 1.6 + 30}px 60px -12px rgba(0,0,0,0.55)`,
           }}
         >
-          <img src={image} alt={`${name} — physical card design`} className="w-full h-auto block" draggable={false} />
+          <img loading="lazy" decoding="async" src={image} alt={`${name} — physical card design`} className="w-full h-auto block" draggable={false} />
           {/* Glossy highlight that follows the cursor, giving the tilt a reflective, physical-metal feel */}
           <div className="absolute inset-0 pointer-events-none"
             style={{
@@ -87,7 +87,7 @@ export function Card3DViewer({ isOpen, onClose, image, name, onApply }: Props) {
         {onApply && (
           <button onClick={() => { onClose(); onApply(); }}
             className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold text-white transition-transform hover:scale-[1.03]"
-            style={{ background: "linear-gradient(135deg,#0B5C2E,#128A43)" }}>
+            style={{ background: "linear-gradient(135deg,#5C0A10,#8B0000)" }}>
             Apply for this card
           </button>
         )}

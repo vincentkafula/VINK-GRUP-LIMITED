@@ -35,6 +35,18 @@ export function referenceLooksValid(ref: string): boolean {
   return !!m && luhnDigit(m[2]) === m[3];
 }
 
+/**
+ * Banks put the customer's payment reference inside free text ("VKR12345678 5 thanks", "FNB APP PAYMENT FROM VKR123456785"). This finds a platform reference
+ * anywhere in the text (spaces and dashes inside it are tolerated) and only accepts one whose check digit is right. When there is none, the text is
+ * normalised as before and will be held for a person.
+ */
+export function extractReference(text: string): string | null {
+  const re = /VK[\s-]?[RK][\s-]?(?:\d[\s-]?){9}/gi;
+  for (const m of text.matchAll(re)) { const n = normaliseReference(m[0]); if (referenceLooksValid(n)) return n; }
+  return null;
+}
+const cleanReference = (text: string) => extractReference(text) ?? normaliseReference(text);
+
 export interface VirtualAccount { id: string; currency: string; pool: Pool; reference: string; status: string }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -70,7 +82,7 @@ export async function recordPoolCredit(d: PoolDeps, c: { bankRef: string; refere
   if (existing) return { status: existing.status === "credited" ? "duplicate" : existing.status === "awaiting_clearing" ? "awaiting_clearing" : "unmatched", creditId: existing.id, reason: existing.reason ?? undefined };
   let id: string;
   try {
-    id = (await db.query(`INSERT INTO pool_credits (bank_ref, reference, amount_cents, currency, status, clearing, recorded_by) VALUES ($1,$2,$3,$4,'unmatched',$5,$6) RETURNING id`, [c.bankRef, normaliseReference(c.reference), c.amountCents, c.currency, c.pending ? "pending" : "cleared", c.by])).rows[0].id;
+    id = (await db.query(`INSERT INTO pool_credits (bank_ref, reference, amount_cents, currency, status, clearing, recorded_by) VALUES ($1,$2,$3,$4,'unmatched',$5,$6) RETURNING id`, [c.bankRef, cleanReference(c.reference), c.amountCents, c.currency, c.pending ? "pending" : "cleared", c.by])).rows[0].id;
   } catch (e) { if (isUniqueViolation(e)) return recordPoolCredit(d, c); throw e; }          // a concurrent call recorded it: answer from that record
   return settleCredit(d, String(id), c.by);
 }

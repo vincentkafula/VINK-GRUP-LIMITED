@@ -26,15 +26,15 @@ const COLS = [
   },
   {
     title: "Company",
-    links: ["About MANSHYA", "Careers", "Press", "Blog", "Partner With Us", "Advertise", "Affiliate Program"],
+    links: ["About VINK", "Careers", "Press", "Blog", "Partner With Us", "Advertise", "Affiliate Program"],
   },
 ];
 
 const LEGAL_LINKS = ["Privacy Policy", "Terms of Use", "Advertiser Disclosure", "Site Map", "Accessibility", "Ad Choices"];
 
 const CONTACT_CHANNELS = [
-  { icon: <Phone className="w-5 h-5" />, label: "Call Us", value: "0800 MANSHYA (8465)", sub: "Mon–Fri 08:00–20:00 | Sat 09:00–14:00", color: "#128A43" },
-  { icon: <MessageCircle className="w-5 h-5" />, label: "Live Chat", value: "Chat on MANSHYA App", sub: "Available 24/7", color: "#10B981" },
+  { icon: <Phone className="w-5 h-5" />, label: "Call Us", value: "0800 VINK (8465)", sub: "Mon–Fri 08:00–20:00 | Sat 09:00–14:00", color: "#8B0000" },
+  { icon: <MessageCircle className="w-5 h-5" />, label: "Live Chat", value: "Chat on VINK App", sub: "Available 24/7", color: "#10B981" },
   { icon: <Mail className="w-5 h-5" />, label: "Email Support", value: "support@vink.co.za", sub: "Reply within 2 business hours", color: "#3B82F6" },
   { icon: <MapPin className="w-5 h-5" />, label: "Visit Us", value: "8 Rose Street, Cape Town CBD", sub: "By appointment", color: "#F59E0B" },
 ];
@@ -50,7 +50,7 @@ export function GetHelpModal({ isOpen, onClose }: GetHelpModalProps) {
       {/* ── Sticky top bar ── */}
       <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b" style={{ background: "#14112B", borderColor: "#2D2A4A" }}>
         <div className="flex items-center gap-3">
-          <img src={vinkLogo} alt="MANSHYA" className="w-[140px] h-auto object-contain" />
+          <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="w-[140px] h-auto object-contain" />
           <span className="text-white/60 text-sm">Get Help &amp; Information</span>
         </div>
         <button
@@ -63,7 +63,7 @@ export function GetHelpModal({ isOpen, onClose }: GetHelpModalProps) {
 
       <div className="flex-1">
         {/* ── Hero / Search ── */}
-        <div className="px-6 py-10 text-center border-b" style={{ background: "linear-gradient(135deg,#1E1B4B,#0B2E1C)", borderColor: "#2D2A4A" }}>
+        <div className="px-6 py-10 text-center border-b" style={{ background: "linear-gradient(135deg,#1E1B4B,#0C0E14)", borderColor: "#2D2A4A" }}>
           <h1 className="text-2xl md:text-3xl font-black text-white mb-2">How can we help you?</h1>
           <p className="text-white/55 text-sm mb-6">Search our knowledge base or browse topics below</p>
           <div className="flex items-center gap-3 max-w-xl mx-auto bg-white/10 rounded-2xl px-4 py-3 border border-white/15">
@@ -114,7 +114,7 @@ export function GetHelpModal({ isOpen, onClose }: GetHelpModalProps) {
                   {col.links.map((link) => (
                     <li key={link}>
                       <a href="#" className="text-white/45 text-[11px] hover:text-white transition-colors flex items-center gap-1 group leading-relaxed">
-                        <ChevronRight className="w-2.5 h-2.5 opacity-0 group-hover:opacity-100 flex-shrink-0 transition-opacity" style={{ color: "#128A43" }} />
+                        <ChevronRight className="w-2.5 h-2.5 opacity-0 group-hover:opacity-100 flex-shrink-0 transition-opacity" style={{ color: "#8B0000" }} />
                         {link}
                       </a>
                     </li>
@@ -130,8 +130,8 @@ export function GetHelpModal({ isOpen, onClose }: GetHelpModalProps) {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             {/* App badges */}
             <div>
-              <p className="text-white/45 text-[10px] uppercase tracking-wider mb-1">Take MANSHYA Everywhere</p>
-              <p className="text-white/60 text-xs mb-3">The MANSHYA app is coming soon -- instant payments, card management, rewards, and more.</p>
+              <p className="text-white/45 text-[10px] uppercase tracking-wider mb-1">Take VINK Everywhere</p>
+              <p className="text-white/60 text-xs mb-3">The VINK app is coming soon -- instant payments, card management, rewards, and more.</p>
               <div className="flex gap-3">
                 {/* Apple -- Coming Soon */}
                 <div className="flex items-center gap-3 bg-white/10 rounded-xl px-4 py-2.5 opacity-55">
@@ -186,8 +186,8 @@ export function GetHelpModal({ isOpen, onClose }: GetHelpModalProps) {
         <div className="px-6 py-6">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-4">
             <div className="flex items-center gap-2">
-              <img src={vinkLogo} alt="MANSHYA" className="w-[120px] h-auto object-contain opacity-60" />
-              <p className="text-white/35 text-[11px]">&copy; 2026 MANSHYA Financial Services, Inc. All rights reserved.</p>
+              <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="w-[120px] h-auto object-contain opacity-60" />
+              <p className="text-white/35 text-[11px]">&copy; 2026 VINK Financial Services, Inc. All rights reserved.</p>
             </div>
             <div className="flex flex-wrap gap-4">
               {LEGAL_LINKS.map((l) => (

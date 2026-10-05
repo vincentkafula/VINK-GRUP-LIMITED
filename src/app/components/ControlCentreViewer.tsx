@@ -3,7 +3,7 @@ import { X, LayoutGrid, ShieldAlert, RefreshCw, Smartphone, Store, ShoppingCart,
 import { getBankToken } from "../services/bankingApi";
 
 /**
- * Single-pane-of-glass overview across every device fleet in the MANSHYA
+ * Single-pane-of-glass overview across every device fleet in the VINK
  * ecosystem -- taxi AFC terminals (za.co.vink.terminal), retail card
  * machines (za.co.vink.retailpos), and till devices (za.co.vink.till).
  * All three are genuinely separate Google Play Console listings (own
@@ -77,13 +77,13 @@ export function ControlCentreViewer({ isOpen, onClose, onOpenTerminalManagement 
       if (firstError) setError(firstError.error ?? "Could not load one or more fleets");
 
       setFleets([
-        summarize("Taxi AFC Terminals", Smartphone, "#0F3D24", taxiTerminals.data ?? [], taxiFaults.data ?? []),
+        summarize("Taxi AFC Terminals", Smartphone, "#2E0B10", taxiTerminals.data ?? [], taxiFaults.data ?? []),
         summarize("Retail Card Machines", Store, "#1E3A8A", retailTerminals.data ?? [], retailFaults.data ?? []),
         summarize("Till Devices", ShoppingCart, "#065F46", tillTerminals.data ?? [], tillFaults.data ?? []),
       ]);
 
       setRecentActivity([
-        { label: "Taxi taps", icon: Receipt, color: "#0F3D24", count: (taps.data ?? []).length },
+        { label: "Taxi taps", icon: Receipt, color: "#2E0B10", count: (taps.data ?? []).length },
         { label: "Retail transactions", icon: Receipt, color: "#1E3A8A", count: (transactions.data ?? []).length },
         { label: "Till sales", icon: Receipt, color: "#065F46", count: (sales.data ?? []).length },
       ]);

@@ -23,8 +23,8 @@ export function LinksPanel({ call, color, canAskOwner }: { call: Call; color: st
           <SectionPanel title={`Requests waiting for you${incoming.length ? ` (${incoming.length})` : ""}`}>
             <div className="p-4">{incoming.length === 0 ? <Empty>No requests right now.</Empty> : (
               <ul className="space-y-3">{incoming.map((r) => (
-                <li key={r.kind + r.id} className="flex flex-wrap items-center justify-between gap-2 text-sm text-white">
-                  <span>{r.from} <span className="text-white/40">({ROLE_LABEL[r.role] ?? r.role}) · {r.fromEmail}</span></span>
+                <li key={r.kind + r.id} className="flex flex-wrap items-center justify-between gap-2 text-sm text-fg">
+                  <span>{r.from} <span className="text-fg-subtle">({ROLE_LABEL[r.role] ?? r.role}) · {r.fromEmail}</span></span>
                   <span className="flex gap-2">
                     <ActionButton small label="Accept" color={color} onRun={async () => { const x = await call(`/requests/${r.kind}/${r.id}/respond`, { method: "POST", body: { accept: true } }); reload(); return "error" in x ? { error: x.error } : undefined; }} />
                     <ActionButton small label="Decline" color="#6B7280" onRun={async () => { const x = await call(`/requests/${r.kind}/${r.id}/respond`, { method: "POST", body: { accept: false } }); reload(); return "error" in x ? { error: x.error } : undefined; }} />
@@ -35,8 +35,8 @@ export function LinksPanel({ call, color, canAskOwner }: { call: Call; color: st
           <SectionPanel title="Your links">
             <div className="p-4">{links.length === 0 ? <Empty>You are not linked to anyone yet.</Empty> : (
               <ul className="space-y-2">{links.map((l) => (
-                <li key={l.kind + l.id} className="flex flex-wrap items-center justify-between gap-2 text-sm text-white">
-                  <span>{l.with} <span className="text-white/40">({ROLE_LABEL[l.role] ?? l.role}) · {l.withEmail}</span> <Badge text={l.status === "pending" ? "waiting for them" : l.status} color={l.status === "active" ? "#10B981" : "#F59E0B"} /></span>
+                <li key={l.kind + l.id} className="flex flex-wrap items-center justify-between gap-2 text-sm text-fg">
+                  <span>{l.with} <span className="text-fg-subtle">({ROLE_LABEL[l.role] ?? l.role}) · {l.withEmail}</span> <Badge text={l.status === "pending" ? "waiting for them" : l.status} color={l.status === "active" ? "#10B981" : "#F59E0B"} /></span>
                   <ActionButton small label={l.status === "pending" ? "Cancel" : "Leave"} color="#6B7280" onRun={async () => { const x = await call(`/requests/${l.kind}/${l.id}/leave`, { method: "POST", body: {} }); reload(); return "error" in x ? { error: x.error } : undefined; }} />
                 </li>))}</ul>)}
             </div>
@@ -55,7 +55,7 @@ export function LinksPanel({ call, color, canAskOwner }: { call: Call; color: st
               <ActionButton label="Ask the owner" color={color} onRun={async () => { const x = await call<{ message?: string }>("/owners/request", { method: "POST", body: { email: owner } }); if (!("error" in x)) { setOwner(""); reload(); } return outcome(x); }} />
             </div>
           )}
-          <p className="text-[11px] text-white/40">They will see your request and have to accept it.</p>
+          <p className="text-[11px] text-fg-subtle">They will see your request and have to accept it.</p>
         </div>
       </SectionPanel>
     </>

@@ -3,20 +3,20 @@ import vinkLogo from "../../../imports/LOGO_FINAL.png";
 import { Footer } from "../Footer";
 
 interface Props { isOpen: boolean; onClose: () => void; }
-const P = "#0B5C2E";
+const P = "#5C0A10";
 const GOLD = "#F5A623";
 
 const FOCUS_AREAS = [
   { icon: "🚌", title: "Transport Safety",          desc: "Taxi industry road safety campaigns, CCTV deployment, and community crime prevention initiatives." },
   { icon: "🎓", title: "Youth Entrepreneurship",    desc: "Business skills workshops for young people in Western Cape townships — equipping the next generation of South African entrepreneurs." },
-  { icon: "🏘️", title: "Community Safety",          desc: "Neighbourhood watch and CCID community safety initiatives. 5% of every MANSHYA taxi transaction goes directly to neighbourhood watch in the area served." },
+  { icon: "🏘️", title: "Community Safety",          desc: "Neighbourhood watch and CCID community safety initiatives. 5% of every VINK taxi transaction goes directly to neighbourhood watch in the area served." },
   { icon: "⚽", title: "Grassroots Sport",           desc: "Football leagues, athletics, and martial arts at community level — supporting healthy, active communities." },
 ];
 
 const ELIGIBILITY = [
   "Non-profit organisations, community sport teams, school programmes, or community events",
   "Priority given to Western Cape applicants; national applications considered",
-  "Clear community benefit aligned with MANSHYA values required",
+  "Clear community benefit aligned with VINK values required",
   "Minimum request: R5,000 · Maximum: R500,000 per application",
 ];
 
@@ -25,17 +25,17 @@ export function SponsorshipViewer({ isOpen, onClose }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-white">
       <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm">
-        <img src={vinkLogo} alt="MANSHYA" className="h-9 w-auto object-contain" />
+        <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
         <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500"><X className="w-5 h-5" /></button>
       </div>
 
-      <div className="py-16 px-6 text-white" style={{ background: `linear-gradient(135deg,${P},#34A853)` }}>
+      <div className="py-16 px-6 text-white" style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
         <div className="max-w-4xl mx-auto">
           <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4"
             style={{ background: "rgba(245,166,35,.2)", color: GOLD }}>Community Investment</span>
           <h1 className="text-4xl font-black mb-3">Sponsorship &amp; Community Investment</h1>
           <p className="text-white/80 text-lg max-w-2xl leading-relaxed">
-            MANSHYA sponsors programmes that uplift the communities our customers live and work in — with a focus on transport safety, youth education, township economic development, and sport.
+            VINK sponsors programmes that uplift the communities our customers live and work in — with a focus on transport safety, youth education, township economic development, and sport.
           </p>
         </div>
       </div>
@@ -56,7 +56,7 @@ export function SponsorshipViewer({ isOpen, onClose }: Props) {
           </div>
         </section>
 
-        <section className="rounded-2xl p-6" style={{ background: "#F3F0FB" }}>
+        <section className="rounded-2xl p-6" style={{ background: "#F2EFE8" }}>
           <h2 className="text-xl font-black mb-4" style={{ color: P }}>Eligibility Criteria</h2>
           <ul className="space-y-3">
             {ELIGIBILITY.map((item, i) => (
@@ -81,11 +81,11 @@ export function SponsorshipViewer({ isOpen, onClose }: Props) {
               <li>Expected community reach and impact</li>
               <li>Proof of NPO or community organisation registration</li>
             </ul>
-            <p>MANSHYA reviews applications on a <strong>quarterly basis</strong>. Successful applicants will be contacted within 6 weeks of the review date.</p>
+            <p>VINK reviews applications on a <strong>quarterly basis</strong>. Successful applicants will be contacted within 6 weeks of the review date.</p>
           </div>
         </section>
 
-        <section className="rounded-2xl p-8 text-center text-white" style={{ background: `linear-gradient(135deg,${P},#34A853)` }}>
+        <section className="rounded-2xl p-8 text-center text-white" style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
           <h3 className="text-xl font-black mb-2">Ready to Apply?</h3>
           <p className="text-white/75 text-sm mb-4">Send your proposal to our sponsorship team.</p>
           <a href="mailto:sponsorships@vink.co.za"

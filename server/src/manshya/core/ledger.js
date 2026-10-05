@@ -6,7 +6,7 @@ const A = {
   ret: (m) => `m:${m}:retained`,
   bank: (id) => `bank:${id}`,
   clearing: 'sys:clearing',       // money received from / owed to payment gateways
-  fees: 'sys:fees',               // Manshya revenue
+  fees: 'sys:fees',               // VINK revenue
   out: 'sys:external_out',        // money sent to other banks
   in: 'sys:external_in',          // money received from other banks
 };

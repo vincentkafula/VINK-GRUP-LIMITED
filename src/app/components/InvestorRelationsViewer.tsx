@@ -5,8 +5,8 @@ import { Footer } from "./Footer";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
-const P  = "#0B5C2E";
-const PD = "#0B2E1C";
+const P  = "#5C0A10";
+const PD = "#0C0E14";
 const GOLD = "#F5A623";
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
@@ -33,7 +33,7 @@ const REASONS = [
   {
     title: "High growth potential",
     icon: "🚀",
-    text: "MANSHYA Finance targets rapid adoption from launch, driven by accelerated digital uptake among underbanked commuters, cost efficiency built into the platform from day one, and a clear roadmap for strategic partnerships.",
+    text: "VINK Finance targets rapid adoption from launch, driven by accelerated digital uptake among underbanked commuters, cost efficiency built into the platform from day one, and a clear roadmap for strategic partnerships.",
   },
 ];
 
@@ -56,7 +56,7 @@ const DOCS: { name: string; size: string; date: string }[] = [
 ];
 
 const BOARD_MEMBERS = [
-  { name: "Vincent Kafula",       role: "Founder & Chief Executive Officer",    initial: "VK", color: "#0B5C2E" },
+  { name: "Vincent Kafula",       role: "Founder & Chief Executive Officer",    initial: "VK", color: "#5C0A10" },
   { name: "Siyasanga Mahlulo",    role: "Chief Executive Officer (Operations)", initial: "SM", color: "#3B82F6" },
   { name: "Thabo Dlamini",        role: "Chief Financial Officer",              initial: "TD", color: "#10B981" },
   { name: "Priya Naidoo",         role: "Chief Operating Officer",              initial: "PN", color: "#34A853" },
@@ -69,7 +69,7 @@ const MINI_CHART = [1.44,1.62,1.55,1.80,2.10,1.95,2.30,2.45,2.20,2.50,2.38,2.60]
 // ─── Corporate Governance data ────────────────────────────────────────────────
 
 const MANAGEMENT_TEAM = [
-  { name: "Vincent Kafula",      title: "Founder & CEO",                       initial: "VK", color: "#0B5C2E", province: "Cape Town, Western Cape" },
+  { name: "Vincent Kafula",      title: "Founder & CEO",                       initial: "VK", color: "#5C0A10", province: "Cape Town, Western Cape" },
   { name: "Siyasanga Mahlulo",   title: "Chief Executive Officer (Operations)",initial: "SM", color: "#3B82F6", province: "Cape Town, Western Cape" },
   { name: "Thabo Dlamini",       title: "Chief Financial Officer",             initial: "TD", color: "#10B981", province: "Gauteng" },
   { name: "Priya Naidoo",        title: "Chief Operating Officer",             initial: "PN", color: "#34A853", province: "KwaZulu-Natal" },
@@ -194,7 +194,7 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
       {/* ── Top bar ── */}
       <div className="sticky top-0 z-20 flex items-center justify-between px-4 py-3 bg-white border-b shadow-sm" style={{ borderColor: "#e0e0e0" }}>
         <div className="flex items-center gap-3">
-          <img src={vinkLogo} alt="MANSHYA" className="h-9 w-auto object-contain" />
+          <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
           <div className="hidden sm:flex items-center gap-6 text-sm ml-4">
             {["Personal", "Business", "Corporate"].map(n => (
               <span key={n} className="text-gray-500 hover:text-gray-800 cursor-pointer transition-colors">{n}</span>
@@ -207,13 +207,13 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
       </div>
 
       {/* ── Hero banner ── */}
-      <div className="px-6 py-8" style={{ background: `linear-gradient(135deg,${PD} 0%,${P} 60%,#34A853 100%)` }}>
+      <div className="px-6 py-8" style={{ background: `linear-gradient(135deg,${PD} 0%,${P} 60%,#C9A84C 100%)` }}>
         <div className="max-w-5xl mx-auto">
-          <p className="text-white/60 text-xs uppercase tracking-widest mb-1">MANSHYA Finance · Corporate</p>
+          <p className="text-white/60 text-xs uppercase tracking-widest mb-1">VINK Finance · Corporate</p>
           <h1 className="text-3xl md:text-4xl font-black text-white mb-1">Investor Relations</h1>
           <p className="text-white/70 text-sm mb-6">Business Plan &amp; Projections</p>
           <p className="text-white/80 text-sm max-w-2xl leading-relaxed mb-6">
-            MANSHYA is building South Africa's first transport-native digital bank, with a national rollout plan for 250,000+ AFC devices across the minibus taxi network. Registered under CIPC number 2018/079316/07, MANSHYA is building the financial infrastructure that 15 million daily commuters deserve.
+            VINK is building South Africa's first transport-native digital bank, with a national rollout plan for 250,000+ AFC devices across the minibus taxi network. Registered under CIPC number 2018/079316/07, VINK is building the financial infrastructure that 15 million daily commuters deserve.
           </p>
 
           {/* KPI cards */}
@@ -327,7 +327,7 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
           <SectionHeading>Investor News</SectionHeading>
           {INVESTOR_NEWS.length === 0 ? (
             <div className="bg-white rounded-xl border border-gray-200 p-6 text-center">
-              <p className="text-sm text-gray-500">MANSHYA is not yet in full operation. Investor news and quarterly updates will be published here as we approach our June 2027 launch.</p>
+              <p className="text-sm text-gray-500">VINK is not yet in full operation. Investor news and quarterly updates will be published here as we approach our June 2027 launch.</p>
             </div>
           ) : (
           <div className="space-y-2">
@@ -356,7 +356,7 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
           <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-200" style={{ background: "#f3f0fb" }}>
+                <tr className="border-b border-gray-200" style={{ background: "#F2EFE8" }}>
                   <th className="text-left px-5 py-3 text-xs font-bold uppercase tracking-wide" style={{ color: PD }}>Document</th>
                   <th className="text-left px-5 py-3 text-xs font-bold uppercase tracking-wide" style={{ color: PD }}>Size</th>
                   <th className="text-left px-5 py-3 text-xs font-bold uppercase tracking-wide" style={{ color: PD }}>Date</th>

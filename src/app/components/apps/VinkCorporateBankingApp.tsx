@@ -12,7 +12,7 @@ type Tier = "Foundation" | "Apex" | "Vertex" | "Nexus" | "Dominion" | "Legacy";
 type Role = "CEO" | "CFO" | "Finance Manager";
 
 const INK = "#1D1740";
-const PLUM = "#128A43";
+const PLUM = "#8B0000";
 const GOLD = "#C6A15B";
 
 const TIER_INFO: Record<Tier, { order: number; icon: React.ReactNode; purpose: string; unlocks: string; gradient: string }> = {
@@ -21,7 +21,7 @@ const TIER_INFO: Record<Tier, { order: number; icon: React.ReactNode; purpose: s
   Vertex:     { order: 3, icon: <Users className="w-5 h-5" />,     purpose: "Manage multiple entities and automate governance.",        unlocks: "+ Multi-company management, approval workflows, ERP/API", gradient: `linear-gradient(135deg,#0369A1,${INK})` },
   Nexus:      { order: 4, icon: <Globe2 className="w-5 h-5" />,    purpose: "Expand globally with cross-border banking.",               unlocks: "+ Multi-currency, FX, SWIFT, trade finance",              gradient: `linear-gradient(135deg,#B45309,${INK})` },
   Dominion:   { order: 5, icon: <Shield className="w-5 h-5" />,    purpose: "Centralize enterprise treasury, risk and compliance.",     unlocks: "+ Enterprise treasury, fraud/AML center, unlimited cards", gradient: `linear-gradient(135deg,#065F46,${INK})` },
-  Legacy:     { order: 6, icon: <Landmark className="w-5 h-5" />,  purpose: "Institutional-grade banking and strategic advisory.",      unlocks: "+ Wealth management, family office, executive banking",   gradient: `linear-gradient(135deg,#0F3D24,#1E1B4B)` },
+  Legacy:     { order: 6, icon: <Landmark className="w-5 h-5" />,  purpose: "Institutional-grade banking and strategic advisory.",      unlocks: "+ Wealth management, family office, executive banking",   gradient: `linear-gradient(135deg,#2E0B10,#1E1B4B)` },
 };
 const TIER_ORDER: Tier[] = ["Foundation", "Apex", "Vertex", "Nexus", "Dominion", "Legacy"];
 const ROLES: Role[] = ["CEO", "CFO", "Finance Manager"];
@@ -47,7 +47,7 @@ function OnboardingScreen({ onSelect }: { onSelect: (tier: Tier) => void }) {
   return (
     <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F5F3FA" }}>
       <div className="px-5 pt-8 pb-5 text-center" style={{ background: INK }}>
-        <p className="text-xs font-bold tracking-widest" style={{ color: GOLD }}>MANSHYA CORPORATE</p>
+        <p className="text-xs font-bold tracking-widest" style={{ color: GOLD }}>VINK CORPORATE</p>
         <p className="text-white text-lg font-bold mt-2">One platform. Total financial control.</p>
         <p className="text-white/60 text-[11px] mt-1">Choose your corporate account tier to continue.</p>
       </div>
@@ -135,7 +135,7 @@ function DashboardScreen({ tier }: { tier: Tier }) {
       <div className="px-4 py-3 flex-shrink-0" style={{ background: INK }}>
         <div className="flex items-center justify-between mb-2.5">
           <div>
-            <p className="text-xs font-bold tracking-widest" style={{ color: GOLD }}>MANSHYA CORPORATE</p>
+            <p className="text-xs font-bold tracking-widest" style={{ color: GOLD }}>VINK CORPORATE</p>
             <p className="text-white/60 text-[10px]">{tier} Corporate Account</p>
           </div>
           <Bell className="w-5 h-5 text-white/80" />
@@ -483,7 +483,7 @@ export function VinkCorporateBankingApp({ isOpen, onClose }: { isOpen: boolean; 
   const showTabs = screen !== "onboarding" && !verifying;
 
   return (
-    <MobileAppOverlay onClose={onClose} appName="MANSHYA Corporate" bgColor="#F5F3FA">
+    <MobileAppOverlay onClose={onClose} appName="VINK Corporate" bgColor="#F5F3FA">
       <PhoneFrame statusBarColor={INK} statusBarTextLight>
         <div className="flex-1 overflow-hidden flex flex-col">
           {verifying ? (

@@ -106,7 +106,7 @@ export function resolvePaymentsConfig(env: NodeJS.ProcessEnv = process.env): Pay
   const bin = env.SANDBOX_VISA_ACQUIRING_BIN?.trim(), country = env.SANDBOX_VISA_ACQUIRER_COUNTRY?.trim(), idCode = env.SANDBOX_VISA_ACCEPTOR_ID_CODE?.trim();
   const visaPav = validation === "visa_pav" && visaAuth && bin && country && idCode
     ? { baseUrl: env.SANDBOX_VISA_BASE_URL?.trim() || "https://sandbox.api.visa.com", auth: visaAuth, acquiringBin: bin, acquirerCountryCode: country,
-        acceptorName: env.SANDBOX_VISA_ACCEPTOR_NAME?.trim() || "MANSHYA", acceptorIdCode: idCode, terminalId: env.SANDBOX_VISA_TERMINAL_ID?.trim() || "00000001" }
+        acceptorName: env.SANDBOX_VISA_ACCEPTOR_NAME?.trim() || "VINK", acceptorIdCode: idCode, terminalId: env.SANDBOX_VISA_TERMINAL_ID?.trim() || "00000001" }
     : null;
 
   // Credentials are looked up by mode: SANDBOX_PAYMENTOLOGY_* in sandbox, LIVE_PAYMENTOLOGY_* in live. Never the other set.
@@ -137,5 +137,5 @@ export function resolvePaymentsConfig(env: NodeJS.ProcessEnv = process.env): Pay
   return { mode, issuingProvider: issuing, acquiringProvider: acquiring, cardServicingProvider: servicing, visaDps, accountValidationProvider: validation, visaPav, paymentology };
 }
 
-/** Manshya core calls its sandbox "test" (it prefixes API keys mk_test_ / mk_live_). */
+/** VINK core calls its sandbox "test" (it prefixes API keys mk_test_ / mk_live_). */
 export const coreMode = (m: PaymentsMode): "test" | "live" => (m === "live" ? "live" : "test");

@@ -952,7 +952,7 @@ ALTER TABLE terminal_taps ADD COLUMN IF NOT EXISTS vink_fee_card   NUMERIC(10,2)
 ALTER TABLE terminal_taps ADD COLUMN IF NOT EXISTS owner_settlement NUMERIC(10,2);
 ALTER TABLE terminal_taps ADD COLUMN IF NOT EXISTS investor_share   NUMERIC(10,2);
 
--- ─── Bank account links: each dashboard user is linked to a bank account held in the Banking module (Manshya) ───────────────
+-- ─── Bank account links: each dashboard user is linked to a bank account held in the Banking module (VINK) ───────────────
 -- Only the LINK lives here. The account number, balance and transactions are always read live from the Banking module, so there is a single
 -- source of truth. Business details are encrypted by the application (AES-256-GCM, see portal/fieldCrypto.ts) before they are stored.
 CREATE TABLE IF NOT EXISTS bank_account_links (
@@ -1095,6 +1095,19 @@ CREATE TABLE IF NOT EXISTS association_settings (
   association_id     UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
   marshal_fee_cents  BIGINT CHECK (marshal_fee_cents >= 0),
   updated_at         TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- ─── Pooled bank accounts customers pay into (set by staff on the admin page; the bank accounts already exist) ───────────────
+CREATE TABLE IF NOT EXISTS pooled_accounts (
+  pool            TEXT NOT NULL CHECK (pool IN ('in_person','online')),
+  currency        TEXT NOT NULL CHECK (currency IN ('ZAR','ZMW')),
+  account_number  TEXT NOT NULL,
+  holder          TEXT NOT NULL,
+  bank            TEXT NOT NULL,
+  account_type    TEXT NOT NULL CHECK (account_type IN ('Personal','Business')),
+  updated_by      UUID REFERENCES users(id) ON DELETE SET NULL,
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (pool, currency)
 );
 
 -- ─── Virtual accounts: one payment reference per user, currency and pool ────────────────────────────────────────────────

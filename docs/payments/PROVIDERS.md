@@ -4,15 +4,15 @@
 | Job | What it means | Example providers | State here |
 |---|---|---|---|
 | **Issuing** | We issue Visa/Mastercard cards to our customers; the provider approves or declines each purchase by calling our server in real time. | **Paymentology** | Adapter contract + mock done; Paymentology adapter is a stub (see below) |
-| **Acquiring** | A customer pays *us* (or our merchants) by card on a website or terminal. | Peach Payments, Paystack, Flutterwave, Adyen, Stripe... | Contract + Manshya mock only. **No provider chosen yet.** |
+| **Acquiring** | A customer pays *us* (or our merchants) by card on a website or terminal. | Peach Payments, Paystack, Flutterwave, Adyen, Stripe... | Contract + VINK mock only. **No provider chosen yet.** |
 
 **Paymentology is an issuer-processor, not an acquirer.** It can power the cards a customer carries, but it does not
-accept card payments from a shopper's checkout. The Manshya checkout page, payment links and card-machine sales still
+accept card payments from a shopper's checkout. The VINK checkout page, payment links and card-machine sales still
 need an acquiring PSP. Choose one (it changes which markets you can serve) before building that adapter.
 
 ## Card authorisations (built, provider-agnostic)
 Every issuer-processor asks us to approve or decline each purchase in real time. That is built once, independent of the processor:
-- `POST /api/payments/issuer/authorisation` (`server/src/payments/issuerRoutes.ts`): the selected provider adapter verifies the signature, the request is turned into our normalised event, and Manshya's card engine decides (card status, channel switches, daily/monthly limits, balance) and posts the ledger entry.
+- `POST /api/payments/issuer/authorisation` (`server/src/payments/issuerRoutes.ts`): the selected provider adapter verifies the signature, the request is turned into our normalised event, and VINK's card engine decides (card status, channel switches, daily/monthly limits, balance) and posts the ledger entry.
 - **Idempotent per authorisation id** (`cards.authoriseFromProvider`, table `authorisations`): processors retry, and a repeat returns the first answer without spending twice. Tested with many simultaneous copies of one request.
 - Anything undecidable (unknown card, bad amount, non-ZAR, suspended account, unsupported channel) is a **decline with a reason**, never a server error; the processor always gets an answer.
 - Provider cards are linked with `cards.linkProviderCard`; each provider card id can be linked once.
@@ -74,7 +74,7 @@ The export has about 45 endpoints, in groups: buyer and buyer-template managemen
   1. Get sandbox credentials and the full documentation from Paymentology.
   2. Set `ISSUING_PROVIDER=paymentology` and the `SANDBOX_PAYMENTOLOGY_BASE_URL`, `_API_KEY`, `_WEBHOOK_SECRET` variables.
   3. Implement `createCard`, `setCardStatus` and `verifyWebhook` (and the authorisation handler that maps their real-time
-     decision request onto Manshya's `cards.authorize()`), using their signature scheme and `ReplayGuard`.
+     decision request onto VINK's `cards.authorize()`), using their signature scheme and `ReplayGuard`.
   4. Add their official test cards/scenarios to `server/src/payments/sandbox/testData.ts`, with a link to their docs.
   5. Add the adapter to `issuingContract(...)` in `providers/contract.test.ts` and run their certification tests.
 

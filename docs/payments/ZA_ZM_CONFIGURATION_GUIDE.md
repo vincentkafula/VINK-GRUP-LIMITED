@@ -52,9 +52,9 @@ You asked me to fill in missing build details and to say what I assumed. From th
 | Item | What I used | Confirm? |
 |---|---|---|
 | Tech stack | React 18 + Vite front end; Node 22, Express 4, TypeScript back end; PostgreSQL (platform data, users, terminals, taps, audit) | yes |
-| Ledger / core banking | "Manshya" core: double-entry ledger in SQLite (`journals`, `entries`, per-merchant `available` / `retained` / bank accounts, idempotency keys, balance floors). A Postgres ledger (`accounts`, `ledger_entries`, `account_balances`) is the planned migration target | **Which is the system of record going forward?** See Appendix D |
+| Ledger / core banking | "VINK" core: double-entry ledger in SQLite (`journals`, `entries`, per-merchant `available` / `retained` / bank accounts, idempotency keys, balance floors). A Postgres ledger (`accounts`, `ledger_entries`, `account_balances`) is the planned migration target | **Which is the system of record going forward?** See Appendix D |
 | Card processor / issuer | Provider adapters: mock issuer, Visa DPS and PAV (sandbox only), Paymentology (BIN sponsor / issuer-processor, API not yet integrated) | yes |
-| Hosting | Railway (Dockerfile builds), Postgres with a volume, one volume for the Manshya database, custom domain `api.vink.co.za`, Resend for email | yes |
+| Hosting | Railway (Dockerfile builds), Postgres with a volume, one volume for the VINK database, custom domain `api.vink.co.za`, Resend for email | yes |
 | Banking partner SA | Bank Zero, fee schedule not yet agreed | open |
 | Banking partner ZM | **Absa Bank Zambia** (confirmed) | capabilities and fees open |
 | Volumes | unknown; sized for pilot (thousands of taps a day), not national scale | open |
@@ -821,18 +821,18 @@ Configuration change (before/after, approvers) · fee or limit change · whiteli
 
 You left this open, so here is a recommendation and the reasons.
 
-**Build the pooled account, virtual accounts and country ledgers on the Postgres ledger, and keep the Manshya (SQLite) core as the product layer on top of it** (with a nightly mirror and reconciliation while you migrate).
+**Build the pooled account, virtual accounts and country ledgers on the Postgres ledger, and keep the VINK (SQLite) core as the product layer on top of it** (with a nightly mirror and reconciliation while you migrate).
 
 | Reason | Detail |
 |---|---|
-| Scale and concurrency | the Manshya database is one SQLite file on one volume with a single writer; a pooled account serving taps from many terminals in two countries needs row-level locking and parallel writers |
+| Scale and concurrency | the VINK database is one SQLite file on one volume with a single writer; a pooled account serving taps from many terminals in two countries needs row-level locking and parallel writers |
 | Resilience | Postgres supports replication, point-in-time recovery and tested restores; a single SQLite file on one volume is a single point of failure for money |
 | Data residency | separate databases or schemas per country are straightforward in Postgres (section 11.3) |
 | Reconciliation and reporting | the three-way reconciliation, exception queues and regulator reports are SQL workloads; they need joins, indexes and long retention |
 | Guard rails already designed | the repository already has a Postgres ledger design with a single writer service, idempotency keys, cached balances and a `REVOKE` plan so nothing else can write entries |
 | Fewer moving parts later | one ledger is easier to audit than two |
 
-**Cost and risk:** the Manshya core's features (cards, banking, payouts, statements) are built on SQLite today, so migration is real work; and the Postgres ledger's older shadow-write tests were not fully green when I last ran them, so it must be hardened first. **Suggested order:** (1) harden the Postgres ledger and add the pool mirror and `ZMW`; (2) move **new** flows (deposits, AFC, payouts, corridor) to it; (3) keep Manshya running with a mirror and daily reconciliation; (4) migrate Manshya's own ledger behind the same interface, then retire SQLite for money.
+**Cost and risk:** the VINK core's features (cards, banking, payouts, statements) are built on SQLite today, so migration is real work; and the Postgres ledger's older shadow-write tests were not fully green when I last ran them, so it must be hardened first. **Suggested order:** (1) harden the Postgres ledger and add the pool mirror and `ZMW`; (2) move **new** flows (deposits, AFC, payouts, corridor) to it; (3) keep VINK running with a mirror and daily reconciliation; (4) migrate VINK's own ledger behind the same interface, then retire SQLite for money.
 
 ## D.3 Please confirm these (fewer now)
 1. **Risk reserve:** is it **R40 and K40**, or **R40,000 and K40,000** (or another figure)? (Section 8.6.)

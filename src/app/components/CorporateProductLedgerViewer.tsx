@@ -85,17 +85,17 @@ const SECTIONS: Record<CorpCategory, Section[]> = {
   {
     label: "Entry Credit Card Plans",
     cards: [
-      { name: "MANSHYA TitanCredit", price: "R0", featured: false, tagline: "Large-scale corporate credit facilities for established enterprises.", overview: "MANSHYA TitanCredit provides large enterprises with substantial, flexible credit facilities designed to support major capital projects, expansion, and complex financing structures — backed by dedicated relationship management.", features: ["High-limit facilities structured for large corporate balance sheets", "Flexible drawdown and repayment structures", "Dedicated relationship and credit management team", "Facility structuring aligned to capital planning cycles"] },
-      { name: "MANSHYA ApexCapital", price: "R0", featured: false, tagline: "Strategic financing for corporations and multinational businesses.", overview: "MANSHYA ApexCapital delivers strategic financing solutions for corporations operating across multiple markets, supporting cross-border growth, acquisitions, and large-scale capital deployment.", features: ["Financing structured for multinational and cross-border operations", "Support for mergers, acquisitions, and strategic transactions", "Multi-currency facility options", "Advisory support from dedicated corporate finance specialists"], inheritsFrom: "TitanCredit" },
-      { name: "MANSHYA EnterprisePrime", price: "R85", featured: false, tagline: "Premium revolving corporate credit solutions.", overview: "MANSHYA EnterprisePrime offers premium revolving credit facilities that give corporations continuous access to capital for operational flexibility, without the need to renegotiate terms with every drawdown.", features: ["Revolving facility structure for ongoing capital access", "Competitive pricing for qualifying corporate clients", "Streamlined drawdown and repayment processes", "Facility limits that scale with corporate performance"], inheritsFrom: "ApexCapital" },
+      { name: "VINK TitanCredit", price: "R0", featured: false, tagline: "Large-scale corporate credit facilities for established enterprises.", overview: "VINK TitanCredit provides large enterprises with substantial, flexible credit facilities designed to support major capital projects, expansion, and complex financing structures — backed by dedicated relationship management.", features: ["High-limit facilities structured for large corporate balance sheets", "Flexible drawdown and repayment structures", "Dedicated relationship and credit management team", "Facility structuring aligned to capital planning cycles"] },
+      { name: "VINK ApexCapital", price: "R0", featured: false, tagline: "Strategic financing for corporations and multinational businesses.", overview: "VINK ApexCapital delivers strategic financing solutions for corporations operating across multiple markets, supporting cross-border growth, acquisitions, and large-scale capital deployment.", features: ["Financing structured for multinational and cross-border operations", "Support for mergers, acquisitions, and strategic transactions", "Multi-currency facility options", "Advisory support from dedicated corporate finance specialists"], inheritsFrom: "TitanCredit" },
+      { name: "VINK EnterprisePrime", price: "R85", featured: false, tagline: "Premium revolving corporate credit solutions.", overview: "VINK EnterprisePrime offers premium revolving credit facilities that give corporations continuous access to capital for operational flexibility, without the need to renegotiate terms with every drawdown.", features: ["Revolving facility structure for ongoing capital access", "Competitive pricing for qualifying corporate clients", "Streamlined drawdown and repayment processes", "Facility limits that scale with corporate performance"], inheritsFrom: "ApexCapital" },
     ],
   },
   {
     label: "Premium Credit Card Plans",
     cards: [
-      { name: "MANSHYA QuantumCredit", price: "R170", featured: false, tagline: "Intelligent financing for innovation, expansion, and acquisitions.", overview: "MANSHYA QuantumCredit is built for corporations pursuing innovation-led growth — offering intelligent, adaptable financing structures designed to support R&D, expansion, and acquisition strategies.", features: ["Financing structures tailored to innovation and growth strategies", "Support for acquisition and expansion-stage capital needs", "Data-driven credit structuring and portfolio insights", "Flexible terms aligned to strategic milestones"], inheritsFrom: "EnterprisePrime" },
-      { name: "MANSHYA NexusFinance", price: "R265", featured: true, tagline: "Integrated corporate funding and liquidity solutions.", overview: "MANSHYA NexusFinance brings together funding and liquidity management into a single integrated solution, helping corporations optimise capital structure while maintaining operational agility.", features: ["Integrated funding and liquidity management solutions", "Structured facilities aligned to treasury and cash flow needs", "Support for complex, multi-entity corporate structures", "Real-time visibility into facility usage and liquidity position"], inheritsFrom: "QuantumCredit" },
-      { name: "MANSHYA SovereignLine", price: "R415", featured: false, tagline: "Executive-level credit facilities for major corporations and institutions.", overview: "MANSHYA SovereignLine is our most exclusive corporate credit offering, providing executive-level facilities for major corporations, institutions, and sovereign-linked entities with the most demanding capital requirements.", features: ["Bespoke, executive-level facility structuring", "Designed for major corporations and institutional clients", "Highest available facility limits within the MANSHYA portfolio", "Direct access to senior corporate banking leadership"], inheritsFrom: "NexusFinance" },
+      { name: "VINK QuantumCredit", price: "R170", featured: false, tagline: "Intelligent financing for innovation, expansion, and acquisitions.", overview: "VINK QuantumCredit is built for corporations pursuing innovation-led growth — offering intelligent, adaptable financing structures designed to support R&D, expansion, and acquisition strategies.", features: ["Financing structures tailored to innovation and growth strategies", "Support for acquisition and expansion-stage capital needs", "Data-driven credit structuring and portfolio insights", "Flexible terms aligned to strategic milestones"], inheritsFrom: "EnterprisePrime" },
+      { name: "VINK NexusFinance", price: "R265", featured: true, tagline: "Integrated corporate funding and liquidity solutions.", overview: "VINK NexusFinance brings together funding and liquidity management into a single integrated solution, helping corporations optimise capital structure while maintaining operational agility.", features: ["Integrated funding and liquidity management solutions", "Structured facilities aligned to treasury and cash flow needs", "Support for complex, multi-entity corporate structures", "Real-time visibility into facility usage and liquidity position"], inheritsFrom: "QuantumCredit" },
+      { name: "VINK SovereignLine", price: "R415", featured: false, tagline: "Executive-level credit facilities for major corporations and institutions.", overview: "VINK SovereignLine is our most exclusive corporate credit offering, providing executive-level facilities for major corporations, institutions, and sovereign-linked entities with the most demanding capital requirements.", features: ["Bespoke, executive-level facility structuring", "Designed for major corporations and institutional clients", "Highest available facility limits within the VINK portfolio", "Direct access to senior corporate banking leadership"], inheritsFrom: "NexusFinance" },
     ],
   },
 ],
@@ -128,7 +128,7 @@ const SECTIONS: Record<CorpCategory, Section[]> = {
         price: "R170",
         features: [
           "Annual turnover: R0 to R500 million",
-          "Free MANSHYA Online Banking and NotifyMes",
+          "Free VINK Online Banking and NotifyMes",
           "Suitable for all business segments and sectors",
           "Shariah-compliant option available",
           "Free Online Banking and NotifyMes",
@@ -143,7 +143,7 @@ const SECTIONS: Record<CorpCategory, Section[]> = {
         features: [
           "Annual turnover: R0 to R500 million",
           "35 electronic transactions",
-          "10 cash deposits/withdrawals at any MANSHYA ATM (capped at R50,000 per month)",
+          "10 cash deposits/withdrawals at any VINK ATM (capped at R50,000 per month)",
           "Suitable for all business segments and sectors",
           "Free Online Banking and NotifyMes",
           "Limited to Sole Proprietors",
@@ -156,7 +156,7 @@ const SECTIONS: Record<CorpCategory, Section[]> = {
         features: [
           "Annual turnover: R0 to R500 million",
           "60 electronic transactions",
-          "15 cash deposits/withdrawals at any MANSHYA ATM (capped at R100,000 per month)",
+          "15 cash deposits/withdrawals at any VINK ATM (capped at R100,000 per month)",
           "Suitable for all business segments and sectors",
           "Free Online Banking and NotifyMes",
           "Suitable for all business segments and sectors",
@@ -173,7 +173,7 @@ const SECTIONS: Record<CorpCategory, Section[]> = {
         price: "R170",
         features: [
           "Annual turnover: R0 to R500 million",
-          "Free MANSHYA Online Banking and NotifyMes",
+          "Free VINK Online Banking and NotifyMes",
           "Suitable for all business segments and sectors",
           "Shariah-compliant option available",
         ],
@@ -184,7 +184,7 @@ const SECTIONS: Record<CorpCategory, Section[]> = {
         features: [
           "Annual turnover: R0 to R500 million",
           "35 electronic transactions",
-          "10 cash deposits/withdrawals at any MANSHYA ATM (capped at R50,000 per month)",
+          "10 cash deposits/withdrawals at any VINK ATM (capped at R50,000 per month)",
           "Suitable for all business segments and sectors",
         ],
       },
@@ -194,7 +194,7 @@ const SECTIONS: Record<CorpCategory, Section[]> = {
         features: [
           "Annual turnover: R0 to R500 million",
           "60 electronic transactions",
-          "15 cash deposits/withdrawals at any MANSHYA ATM (capped at R100,000 per month)",
+          "15 cash deposits/withdrawals at any VINK ATM (capped at R100,000 per month)",
           "Suitable for all business segments and sectors",
         ],
       },
@@ -319,9 +319,9 @@ export function CorporateProductLedgerViewer({ isOpen, onClose, initialCategory,
           --pav-ink-soft:   #1F2937;
           --pav-paper:      #FAFCFB;
           --pav-paper-dim:  #F0F7F2;
-          --pav-gold:       #0F8A4B;
-          --pav-gold-dim:   #0B5C2E;
-          --pav-plum:       #0F8A4B;
+          --pav-gold:       #9B1C1C;
+          --pav-gold-dim:   #5C0A10;
+          --pav-plum:       #9B1C1C;
           --pav-text-on-ink: #EDE9FA;
           --pav-text-muted-on-ink: #A7E8BD;
           --pav-text-body:  #1F2937;
@@ -454,8 +454,8 @@ export function CorporateProductLedgerViewer({ isOpen, onClose, initialCategory,
       </nav>
 
       <div className="relative overflow-hidden" style={{ background: "linear-gradient(160deg,#FAFCFB 0%,#F3F9F5 100%)" }}>
-        <div className="absolute -left-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: "linear-gradient(180deg,#0F8A4B,#FF7A1A)", filter: "blur(60px)" }} />
-        <div className="absolute -right-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: "linear-gradient(180deg,#FF7A1A,#0F8A4B)", filter: "blur(60px)" }} />
+        <div className="absolute -left-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: "linear-gradient(180deg,#9B1C1C,#FF7A1A)", filter: "blur(60px)" }} />
+        <div className="absolute -right-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: "linear-gradient(180deg,#FF7A1A,#9B1C1C)", filter: "blur(60px)" }} />
         <div className="relative max-w-6xl mx-auto px-8 py-14 sm:py-16">
           <span className="inline-block text-[11px] font-bold tracking-[0.14em] uppercase mb-3" style={{ color: "#FF7A1A" }}>{copy.heroEyebrow}</span>
           <h1 className="text-3xl sm:text-4xl font-black leading-[1.1] text-gray-900 whitespace-pre-line">{copy.heroTitle}</h1>

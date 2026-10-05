@@ -3,25 +3,35 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0F3D24" />
-    <meta name="description" content="MANSHYA — South Africa's first transport-native digital bank. AFC payments, banking, fleet tracking and financial services in one platform." />
+    <meta name="theme-color" content="#faf8f4" />
+    <!-- Apply the saved theme before the first paint, so a dark-theme visitor never sees a white flash. -->
+    <script>
+      (function () {
+        try {
+          var c = localStorage.getItem("vink-theme");
+          var dark = c === "dark" || ((c === null || c === "system") && window.matchMedia("(prefers-color-scheme: dark)").matches);
+          if (dark) { document.documentElement.classList.add("dark"); document.documentElement.style.colorScheme = "dark"; document.querySelector('meta[name="theme-color"]').setAttribute("content", "#0c0e14"); }
+        } catch (e) {}
+      })();
+    </script>
+    <meta name="description" content="VINK — a transport-native digital bank. AFC tap-to-pay, banking, fleet tracking and financial services in one platform for passengers, drivers, owners and investors." />
 
     <!-- Open Graph (Facebook, LinkedIn, and used by Google for rich previews) -->
-    <meta property="og:title" content="MANSHYA Finance" />
-    <meta property="og:description" content="South Africa's first transport-native digital bank. Built for 15 million daily taxi passengers." />
+    <meta property="og:title" content="VINK" />
+    <meta property="og:description" content="A transport-native digital bank, built for the people who ride, drive and own the taxis." />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:site_name" content="MANSHYA Finance" />
+    <meta property="og:site_name" content="VINK" />
 
     <!-- Twitter/X card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="MANSHYA Finance" />
-    <meta name="twitter:description" content="South Africa's first transport-native digital bank." />
+    <meta name="twitter:title" content="VINK" />
+    <meta name="twitter:description" content="A transport-native digital bank." />
     <meta name="twitter:image" content="/og-image.png" />
 
-    <title>MANSHYA Finance</title>
+    <title>VINK</title>
 
     <!-- Favicons — plain ICO/PNG only. An SVG wrapping an embedded raster
          <image> was tried first but Chromium-based browsers frequently fail
@@ -41,7 +51,7 @@
     {
       "@context": "https://schema.org",
       "@type": "Organization",
-      "name": "MANSHYA Finance",
+      "name": "VINK",
       "url": "https://www.vink.co.za",
       "logo": "https://www.vink.co.za/icons/icon-512x512.png",
       "sameAs": []

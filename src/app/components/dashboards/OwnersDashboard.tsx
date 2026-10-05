@@ -35,7 +35,7 @@ export function OwnersDashboard({ isOpen, onClose }: { isOpen: boolean; onClose:
   return (
     <DashboardShell
       title="Owner Dashboard" subtitle="Devices — Fleet Owner Account"
-      accentColor="#34A853" gradient="from-emerald-700 to-emerald-500"
+      accentColor="#C9A84C" gradient="from-emerald-700 to-emerald-500"
       navItems={NAV} activeNav={nav} onNavChange={setNav}
       onClose={onClose} userName="Victor Nkosi" alertCount={4}
     >
@@ -51,20 +51,20 @@ export function OwnersDashboard({ isOpen, onClose }: { isOpen: boolean; onClose:
 
         <div className="grid xl:grid-cols-3 gap-5">
           <div className="xl:col-span-2 space-y-4">
-            <div className="rounded-xl p-5" style={{ background: "#1A1738", border: "1px solid #2D2A50" }}>
+            <div className="rounded-xl p-5" style={{ background: "var(--vk-surface)", border: "1px solid var(--vk-line)" }}>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-bold text-white">Monthly Revenue Trend</h3>
+                <h3 className="text-sm font-bold text-fg">Monthly Revenue Trend</h3>
                 <Badge text="+12% MoM" color="#10B981" />
               </div>
               <Sparkline values={REVENUE} color="#34A853" />
-              <div className="flex justify-between text-[9px] mt-1" style={{ color: "#8884AA" }}>
+              <div className="flex justify-between text-[9px] mt-1" style={{ color: "var(--vk-fg-muted)" }}>
                 <span>Jan</span><span>Jun</span><span>Dec</span>
               </div>
               <div className="mt-3 grid grid-cols-3 gap-2">
                 {[{ label: "This Month", val: "R55,400", color: "#34A853" }, { label: "Last Month", val: "R49,400", color: "#6B7280" }, { label: "Annual", val: "R494,000", color: "#F59E0B" }].map((s, i) => (
                   <div key={i} className="text-center p-2.5 rounded-xl" style={{ background: "#252245" }}>
                     <p className="text-sm font-black" style={{ color: s.color }}>{s.val}</p>
-                    <p className="text-[9px] mt-0.5" style={{ color: "#8884AA" }}>{s.label}</p>
+                    <p className="text-[9px] mt-0.5" style={{ color: "var(--vk-fg-muted)" }}>{s.label}</p>
                   </div>
                 ))}
               </div>
@@ -100,10 +100,10 @@ export function OwnersDashboard({ isOpen, onClose }: { isOpen: boolean; onClose:
           <div className="space-y-4">
             <SectionPanel title="Maintenance Schedule">
               {MY_FLEET.map((v, i) => (
-                <div key={i} className="flex items-center justify-between py-2.5 border-b last:border-0" style={{ borderColor: "#2D2A5033" }}>
+                <div key={i} className="flex items-center justify-between py-2.5 border-b last:border-0" style={{ borderColor: "var(--vk-line)33" }}>
                   <div>
-                    <p className="text-[11px] font-semibold text-white">{v.plate}</p>
-                    <p className="text-[9px]" style={{ color: "#8884AA" }}>{v.make.split(" ")[0]} {v.make.split(" ")[1]}</p>
+                    <p className="text-[11px] font-semibold text-fg">{v.plate}</p>
+                    <p className="text-[9px]" style={{ color: "var(--vk-fg-muted)" }}>{v.make.split(" ")[0]} {v.make.split(" ")[1]}</p>
                   </div>
                   <div className="text-right">
                     <p className="text-[10px] font-bold" style={{ color: v.status === "maintenance" ? "#EF4444" : "#F59E0B" }}>{v.maintenance}</p>
@@ -127,9 +127,9 @@ export function OwnersDashboard({ isOpen, onClose }: { isOpen: boolean; onClose:
                 { msg: "WC 56-78 CD fuel below 20%", color: "#F59E0B" },
                 { msg: "Insurance renewal due Jun 30", color: "#3B82F6" },
               ].map((a, i) => (
-                <div key={i} className="flex items-start gap-2 py-1.5 border-b last:border-0" style={{ borderColor: "#2D2A5033" }}>
+                <div key={i} className="flex items-start gap-2 py-1.5 border-b last:border-0" style={{ borderColor: "var(--vk-line)33" }}>
                   <div className="w-1.5 h-1.5 rounded-full mt-1 flex-shrink-0" style={{ background: a.color }} />
-                  <p className="text-[10px] text-white/80">{a.msg}</p>
+                  <p className="text-[10px] text-fg">{a.msg}</p>
                 </div>
               ))}
             </SectionPanel>

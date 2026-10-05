@@ -90,7 +90,7 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
-  const [refNo, setRefNo] = useState(`MANSHYA-CL-${new Date().getFullYear()}-${Math.floor(Math.random() * 90000 + 10000)}`);
+  const [refNo, setRefNo] = useState(`VINK-CL-${new Date().getFullYear()}-${Math.floor(Math.random() * 90000 + 10000)}`);
 
   const [contact, setContact] = useState({ firstName: "", lastName: "", designation: "", phone: "+27 ", email: "", altPhone: "" });
   const [company, setCompany] = useState({ name: "", cipc: "", tradingAs: "", sector: "", founded: "", employees: "", annualTurnover: "", address: "", postalCode: "", website: "" });
@@ -115,12 +115,12 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
     setFunding(f => ({ ...f, [k]: e.target.value }));
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-[#F8F7FF]">
+    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-[#FAF8F4]">
 
       {/* ── Top bar ── */}
       <div className="sticky top-0 z-20 bg-white border-b border-gray-100 shadow-sm">
         <div className="flex items-center justify-between px-5 py-3">
-          <img src={vinkLogo} alt="MANSHYA" className="h-9 w-auto object-contain" />
+          <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
           <div className="flex items-center gap-3">
             <span className="hidden sm:block text-xs text-gray-400 font-medium">Step {step} of {STEPS.length}</span>
             <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-800"><X className="w-5 h-5" /></button>
@@ -134,10 +134,10 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
 
       {/* ── Hero ── */}
       <AppHero
-        tag="MANSHYA Corporate Banking · Blended Finance Programme"
+        tag="VINK Corporate Banking · Blended Finance Programme"
         title="Corporate Loan — Online Application"
         subtitle="Institutional-grade financing for growth, infrastructure, and working capital."
-        gradient={`linear-gradient(135deg,#0F172A 0%,${CP} 55%,#34A853 100%)`}
+        gradient={`linear-gradient(135deg,#0F172A 0%,${CP} 55%,#C9A84C 100%)`}
       />
 
       <div className="max-w-2xl mx-auto w-full px-5 py-8 space-y-5">
@@ -194,7 +194,7 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
                 disabled={!allEligible}
                 onClick={() => { setEligibilityConfirmed(true); setStep(2); }}
                 className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:scale-105 shadow-md disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
-                style={{ background: allEligible ? `linear-gradient(135deg,${CP},#5FC97F)` : "#9CA3AF" }}>
+                style={{ background: allEligible ? `linear-gradient(135deg,${CP},#C9A84C)` : "#9CA3AF" }}>
                 Confirm eligibility &amp; continue →
               </button>
             </div>
@@ -351,7 +351,7 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
               </div>
 
               {funding.amount && (
-                <div className="rounded-xl p-4 mt-2 grid grid-cols-3 gap-3" style={{ background: "#F3F0FB" }}>
+                <div className="rounded-xl p-4 mt-2 grid grid-cols-3 gap-3" style={{ background: "#F2EFE8" }}>
                   <div>
                     <p className="text-[10px] font-bold uppercase tracking-wide text-gray-500 mb-1">Loan amount</p>
                     <p className="text-lg font-black" style={{ color: CP }}>
@@ -433,7 +433,7 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
                 I, the undersigned, declare that I am duly authorised by the applicant company to submit this application. I confirm that all information provided is true, complete, and accurate to the best of my knowledge and belief. I authorise Vink Group (Pty) Ltd to conduct credit bureau inquiries, verify all stated information with relevant institutions (including SARS, CIPC, and credit bureaux), and to share application information with co-lending partners where applicable.
               </p>
               <p className="text-xs text-gray-600 leading-relaxed">
-                I understand that submission of this form does not constitute an offer of credit, and that any credit facility is subject to MANSHYA's full credit assessment process, internal credit committee approval, and applicable regulatory requirements.
+                I understand that submission of this form does not constitute an offer of credit, and that any credit facility is subject to VINK's full credit assessment process, internal credit committee approval, and applicable regulatory requirements.
               </p>
               <label className="flex items-start gap-3 cursor-pointer mt-2">
                 <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)}
@@ -465,7 +465,7 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
                   }
                 }}
                 className="w-full py-4 rounded-xl text-base font-black text-white transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed shadow-lg mt-2"
-                style={{ background: agreed && reqDocsCount >= totalReq ? `linear-gradient(135deg,${CP},#34A853)` : "#9CA3AF" }}>
+                style={{ background: agreed && reqDocsCount >= totalReq ? `linear-gradient(135deg,${CP},#C9A84C)` : "#9CA3AF" }}>
                 {submitting ? "Submitting..." : reqDocsCount < totalReq
                   ? `Upload all required documents first (${reqDocsCount}/${totalReq})`
                   : "Submit Corporate Loan Application"}
@@ -485,10 +485,10 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
               <div>
                 <h2 className="text-2xl font-black text-gray-900">Application Submitted</h2>
                 <p className="text-gray-500 text-sm mt-1 max-w-sm mx-auto">
-                  Your corporate loan application has been received and is under review by MANSHYA Credit.
+                  Your corporate loan application has been received and is under review by VINK Credit.
                 </p>
               </div>
-              <div className="rounded-xl p-4" style={{ background: "#F3F0FB" }}>
+              <div className="rounded-xl p-4" style={{ background: "#F2EFE8" }}>
                 <p className="text-xs text-gray-500 mb-1">Application reference number</p>
                 <p className="font-black text-xl" style={{ color: CP }}>{refNo}</p>
                 <p className="text-xs text-gray-400 mt-1">Keep this reference for all future correspondence</p>
@@ -498,9 +498,9 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
             <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm space-y-3">
               <h3 className="font-bold text-gray-800">What happens next?</h3>
               {[
-                { step: "1", title: "Initial screening",       desc: "MANSHYA Credit reviews your eligibility and completeness of documents (1–2 business days)" },
+                { step: "1", title: "Initial screening",       desc: "VINK Credit reviews your eligibility and completeness of documents (1–2 business days)" },
                 { step: "2", title: "Credit assessment",       desc: "Full credit bureau, CIPC, and SARS verification conducted (3–5 business days)" },
-                { step: "3", title: "Credit committee",        desc: "Your application is presented to the MANSHYA Credit Committee for approval (2–3 business days)" },
+                { step: "3", title: "Credit committee",        desc: "Your application is presented to the VINK Credit Committee for approval (2–3 business days)" },
                 { step: "4", title: "Offer letter issued",     desc: "If approved, an indicative term sheet and offer letter is emailed to " + (contact.email || "you") },
                 { step: "5", title: "Legal & disbursement",    desc: "Loan agreement signed, collateral registered, funds disbursed (5–10 business days)" },
               ].map((item, i) => (
@@ -517,8 +517,8 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
 
             <button onClick={onClose}
               className="w-full py-3.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 shadow-lg"
-              style={{ background: `linear-gradient(135deg,${CP},#5FC97F)` }}>
-              Back to MANSHYA Corporate Banking
+              style={{ background: `linear-gradient(135deg,${CP},#C9A84C)` }}>
+              Back to VINK Corporate Banking
             </button>
           </div>
         )}

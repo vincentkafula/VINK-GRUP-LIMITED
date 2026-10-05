@@ -3,7 +3,7 @@ import { JWT_SECRET } from "../middleware/auth.js";
 import type { AuthPayload } from "../types/auth.js";
 
 /**
- * Who may use the Manshya payments and banking module.
+ * Who may use the VINK payments and banking module.
  *
  * - The merchant/banking dashboard is for CUSTOMER accounts only. Staff
  *   roles (owner, superadmin, ...) have their own panels and are refused
@@ -23,7 +23,7 @@ export type Access =
 function readToken(authorization: string | undefined): AuthPayload | "no_token" | "bad_token" {
   if (!authorization?.startsWith("Bearer ")) return "no_token";
   const token = authorization.slice(7);
-  // Manshya API keys (mk_..., mka_...) are not JWTs; let the caller fall back to them.
+  // VINK API keys (mk_..., mka_...) are not JWTs; let the caller fall back to them.
   if (/^mk[a-z]?_/.test(token)) return "no_token";
   try {
     const payload = jwt.verify(token, JWT_SECRET) as AuthPayload;

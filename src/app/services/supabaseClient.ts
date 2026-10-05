@@ -1,4 +1,4 @@
-// ─── MANSHYA Production Supabase Client ──────────────────────────────────────────
+// ─── VINK Production Supabase Client ──────────────────────────────────────────
 // Centralised Supabase access. Import from here — never instantiate elsewhere.
 
 import { createClient, SupabaseClient, Session, User } from "@supabase/supabase-js";

@@ -10,8 +10,8 @@ import { MobileAppOverlay, PhoneFrame } from "./PhoneFrame";
 type Screen = "onboarding" | "dashboard" | "payments" | "invoices" | "cards" | "more";
 type Tier = "Launch" | "Forge" | "Catalyst" | "Pinnacle" | "Empire" | "Sovereign";
 
-const INK = "#0B2E1C";
-const GREEN = "#0B5C2E";
+const INK = "#0C0E14";
+const GREEN = "#5C0A10";
 const GOLD = "#F5A623";
 
 const TIER_INFO: Record<Tier, {
@@ -22,7 +22,7 @@ const TIER_INFO: Record<Tier, {
   Catalyst: { order: 3, icon: <Zap className="w-5 h-5" />,       tagline: "Accelerate Every Opportunity.",                      bestFor: ["Fast-growing companies", "E-commerce", "Logistics", "Agencies"],           unlocks: "+ Invoicing, AI cash flow, rewards, financing",              gradient: `linear-gradient(135deg,#FF9900,${GREEN})` },
   Pinnacle: { order: 4, icon: <Mountain className="w-5 h-5" />,  tagline: "Business at Its Highest Level.",                     bestFor: ["Established businesses", "Manufacturers", "Construction", "Import & export"], unlocks: "+ Treasury, multi-currency, business intelligence",       gradient: `linear-gradient(135deg,#0369A1,${GREEN})` },
   Empire:   { order: 5, icon: <Crown className="w-5 h-5" />,     tagline: "Powering Businesses Without Limits.",                bestFor: ["Large enterprises", "National companies", "Corporate groups"],             unlocks: "+ Branch management, corporate cards, approval workflows",  gradient: `linear-gradient(135deg,#B45309,${GREEN})` },
-  Sovereign:{ order: 6, icon: <Landmark className="w-5 h-5" />,  tagline: "Private Corporate Banking for Industry Leaders.",    bestFor: ["Multinationals", "Investment companies", "Family offices", "Holding companies"], unlocks: "+ Wealth, private banking, global treasury, family office", gradient: `linear-gradient(135deg,#1E1B4B,#0F3D24)` },
+  Sovereign:{ order: 6, icon: <Landmark className="w-5 h-5" />,  tagline: "Private Corporate Banking for Industry Leaders.",    bestFor: ["Multinationals", "Investment companies", "Family offices", "Holding companies"], unlocks: "+ Wealth, private banking, global treasury, family office", gradient: `linear-gradient(135deg,#1E1B4B,#2E0B10)` },
 };
 const TIER_ORDER: Tier[] = ["Launch", "Forge", "Catalyst", "Pinnacle", "Empire", "Sovereign"];
 
@@ -57,7 +57,7 @@ function OnboardingScreen({ onSelect }: { onSelect: (tier: Tier) => void }) {
   return (
     <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F7F9F8" }}>
       <div className="px-5 pt-8 pb-5 text-center" style={{ background: INK }}>
-        <p className="text-xs font-bold tracking-widest" style={{ color: GOLD }}>MANSHYA BUSINESS</p>
+        <p className="text-xs font-bold tracking-widest" style={{ color: GOLD }}>VINK BUSINESS</p>
         <p className="text-white text-lg font-bold mt-2">One app that grows with your business</p>
         <p className="text-white/60 text-[11px] mt-1">Unlock more powerful tools as you upgrade — never switch apps.</p>
       </div>
@@ -132,7 +132,7 @@ function DashboardScreen({ tier }: { tier: Tier }) {
     <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F7F9F8" }}>
       <div className="flex items-center justify-between px-4 py-3 flex-shrink-0" style={{ background: INK }}>
         <div>
-          <p className="text-xs font-bold tracking-widest" style={{ color: GOLD }}>MANSHYA BUSINESS</p>
+          <p className="text-xs font-bold tracking-widest" style={{ color: GOLD }}>VINK BUSINESS</p>
           <p className="text-white/70 text-[10px]">{tier} Business Account</p>
         </div>
         <button className="relative">
@@ -254,7 +254,7 @@ function DashboardScreen({ tier }: { tier: Tier }) {
               <span className="text-xs font-semibold text-gray-800">Investment portfolio</span>
               <span className="text-xs font-bold text-green-600">+9.1% YTD</span>
             </div>
-            {[["Money market funds","38%","#0B5C2E"],["Government securities","27%","#B45309"],["Bonds","20%","#FF9900"],["Private equity","15%","#0369A1"]].map(([label,pct,color]) => (
+            {[["Money market funds","38%","#5C0A10"],["Government securities","27%","#B45309"],["Bonds","20%","#FF9900"],["Private equity","15%","#0369A1"]].map(([label,pct,color]) => (
               <div key={label} className="flex items-center gap-2 mb-1.5 last:mb-0">
                 <span className="w-24 text-[9px] text-gray-500 shrink-0">{label}</span>
                 <div className="flex-1 h-2 rounded-full bg-gray-100 overflow-hidden"><div className="h-full rounded-full" style={{ width: pct as string, background: color as string }} /></div>
@@ -407,7 +407,7 @@ function CardsScreen() {
         <p className="text-white/60 text-xs">Virtual Business Card</p>
         <p className="text-white text-base font-mono mt-3 tracking-wider">4521 •••• •••• 8890</p>
         <div className="flex items-center justify-between mt-4">
-          <span className="text-white/60 text-[10px]">MANSHYA BUSINESS</span>
+          <span className="text-white/60 text-[10px]">VINK BUSINESS</span>
           <span className="text-white text-xs font-bold italic">VISA</span>
         </div>
       </div>
@@ -522,7 +522,7 @@ export function VinkBusinessBankingApp({ isOpen, onClose }: { isOpen: boolean; o
   const showTabs = screen !== "onboarding" && !verifying;
 
   return (
-    <MobileAppOverlay onClose={onClose} appName="MANSHYA Business" bgColor="#F7F9F8">
+    <MobileAppOverlay onClose={onClose} appName="VINK Business" bgColor="#F7F9F8">
       <PhoneFrame statusBarColor={INK} statusBarTextLight>
         <div className="flex-1 overflow-hidden flex flex-col">
           {verifying ? (

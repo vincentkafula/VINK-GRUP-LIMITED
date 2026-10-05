@@ -4,8 +4,8 @@
  */
 import { CheckCircle } from "lucide-react";
 
-export const P     = "#0B5C2E";
-export const PD    = "#0B2E1C";
+export const P     = "#5C0A10";
+export const PD    = "#0C0E14";
 export const GOLD  = "#F5A623";
 export const GREEN = "#10B981";
 
@@ -54,7 +54,7 @@ export function StepTracker({ steps, current }: { steps: Step[]; current: number
                   className="w-9 h-9 rounded-full flex items-center justify-center font-black text-sm shadow-sm transition-all"
                   style={{
                     background: done   ? GREEN
-                              : active ? `linear-gradient(135deg,${P},#5FC97F)`
+                              : active ? `linear-gradient(135deg,${P},#C9A84C)`
                               : "#E5E7EB",
                     color:   done || active ? "#fff" : "#9CA3AF",
                     boxShadow: active ? `0 4px 14px ${P}40` : "none",
@@ -90,7 +90,7 @@ export function ProgressBar({ value }: { value: number }) {
     <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden">
       <div
         className="h-full rounded-full transition-all duration-700"
-        style={{ width: `${value}%`, background: `linear-gradient(90deg,${P},#5FC97F)` }}
+        style={{ width: `${value}%`, background: `linear-gradient(90deg,${P},#C9A84C)` }}
       />
     </div>
   );
@@ -114,7 +114,7 @@ export function FormCard({
       <div className="flex items-center gap-3 px-5 py-4"
         style={{ background: `linear-gradient(135deg,${stepColor ?? P}10,${stepColor ?? P}05)`, borderBottom: `1px solid ${stepColor ?? P}15` }}>
         <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 text-white font-black text-sm shadow-sm"
-          style={{ background: `linear-gradient(135deg,${stepColor ?? P},${stepColor ?? "#5FC97F"})` }}>
+          style={{ background: `linear-gradient(135deg,${stepColor ?? P},${stepColor ?? "#C9A84C"})` }}>
           {icon ?? stepN}
         </div>
         <div>
@@ -270,7 +270,7 @@ export function NavButtons({
         <button onClick={onNext} disabled={disabled}
           className="inline-flex items-center gap-2 px-7 py-3 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
           style={{
-            background: disabled ? "#9CA3AF" : `linear-gradient(135deg,${P},#5FC97F)`,
+            background: disabled ? "#9CA3AF" : `linear-gradient(135deg,${P},#C9A84C)`,
             boxShadow:  disabled ? "none" : `0 6px 20px ${P}35`,
           }}>
           {nextLabel}

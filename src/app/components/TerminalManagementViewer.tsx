@@ -184,7 +184,7 @@ export function TerminalManagementViewer({ isOpen, onClose }: Props) {
           {([["terminals", "Terminals"], ["faults", "Fault Alarms"], ["releases", "App Releases"]] as const).map(([key, label]) => (
             <button key={key} onClick={() => setTab(key)}
               className="px-3.5 py-2 text-[12.5px] font-bold rounded-t-lg"
-              style={tab === key ? { color: "#0F3D24", borderBottom: "2px solid #0F3D24" } : { color: "#9CA3AF" }}>
+              style={tab === key ? { color: "#2E0B10", borderBottom: "2px solid #2E0B10" } : { color: "#9CA3AF" }}>
               {label}
               {key === "faults" && faults.filter(f => !f.resolved).length > 0 && (
                 <span className="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] bg-red-100 text-red-600">{faults.filter(f => !f.resolved).length}</span>
@@ -199,12 +199,12 @@ export function TerminalManagementViewer({ isOpen, onClose }: Props) {
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} /> Refresh
             </button>
             {tab === "terminals" && (
-              <button onClick={() => setShowRegister(true)} className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-white text-[13px] font-bold" style={{ background: "#0F3D24" }}>
+              <button onClick={() => setShowRegister(true)} className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-white text-[13px] font-bold" style={{ background: "#2E0B10" }}>
                 <Plus className="w-4 h-4" /> Register terminal
               </button>
             )}
             {tab === "releases" && (
-              <button onClick={() => setShowPublishRelease(true)} className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-white text-[13px] font-bold" style={{ background: "#0F3D24" }}>
+              <button onClick={() => setShowPublishRelease(true)} className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-white text-[13px] font-bold" style={{ background: "#2E0B10" }}>
                 <Plus className="w-4 h-4" /> Publish release
               </button>
             )}
@@ -345,7 +345,7 @@ function RegisterTerminalModal({ onClose, onRegistered, token }: { onClose: () =
             {error && <p className="text-[12px] text-red-600 mt-3">{error}</p>}
             <div className="flex gap-2.5 mt-5">
               <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-[13px] font-bold">Cancel</button>
-              <button onClick={handleRegister} disabled={!serial.trim()} className="flex-1 py-2.5 rounded-xl text-white text-[13px] font-bold disabled:opacity-40" style={{ background: "#0F3D24" }}>Register</button>
+              <button onClick={handleRegister} disabled={!serial.trim()} className="flex-1 py-2.5 rounded-xl text-white text-[13px] font-bold disabled:opacity-40" style={{ background: "#2E0B10" }}>Register</button>
             </div>
           </>
         ) : (
@@ -364,7 +364,7 @@ function RegisterTerminalModal({ onClose, onRegistered, token }: { onClose: () =
                 </div>
               </div>
             </div>
-            <button onClick={onRegistered} className="w-full mt-5 py-2.5 rounded-xl text-white text-[13px] font-bold" style={{ background: "#0F3D24" }}>Done</button>
+            <button onClick={onRegistered} className="w-full mt-5 py-2.5 rounded-xl text-white text-[13px] font-bold" style={{ background: "#2E0B10" }}>Done</button>
           </>
         )}
       </div>
@@ -418,7 +418,7 @@ function AssignOwnershipModal({ terminal, onClose, onSaved, token }: { terminal:
       <div className="bg-white rounded-2xl w-full max-w-md p-5" onClick={e => e.stopPropagation()}>
         <h3 className="text-[16px] font-black text-gray-900 mb-1">Assign ownership</h3>
         <p className="text-[12.5px] text-gray-400 mb-4 font-mono">{terminal.serial}</p>
-        <p className="text-[12px] text-gray-500 mb-4">Enter each party's MANSHYA account ID (UUID). On every real tap: MANSHYA keeps a flat R1.00 fee, of which 10% (R0.10) goes to the investor. The owner receives everything else. The driver's pay is a separate fixed amount agreed privately with the owner -- MANSHYA's system doesn't calculate or touch it.</p>
+        <p className="text-[12px] text-gray-500 mb-4">Enter each party's VINK account ID (UUID). On every real tap: VINK keeps a flat R1.00 fee, of which 10% (R0.10) goes to the investor. The owner receives everything else. The driver's pay is a separate fixed amount agreed privately with the owner -- VINK's system doesn't calculate or touch it.</p>
         <div className="space-y-3">
           <div>
             <label className="block text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">Investor account ID</label>
@@ -440,7 +440,7 @@ function AssignOwnershipModal({ terminal, onClose, onSaved, token }: { terminal:
         {error && <p className="text-[12px] text-red-600 mt-3">{error}</p>}
         <div className="flex gap-2.5 mt-5">
           <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-[13px] font-bold">Cancel</button>
-          <button onClick={handleSave} disabled={saving} className="flex-1 py-2.5 rounded-xl text-white text-[13px] font-bold disabled:opacity-50" style={{ background: "#0F3D24" }}>{saving ? "Saving..." : "Save"}</button>
+          <button onClick={handleSave} disabled={saving} className="flex-1 py-2.5 rounded-xl text-white text-[13px] font-bold disabled:opacity-50" style={{ background: "#2E0B10" }}>{saving ? "Saving..." : "Save"}</button>
         </div>
       </div>
     </div>
@@ -508,7 +508,7 @@ function PublishReleaseModal({ onClose, onPublished, token }: { onClose: () => v
         {error && <p className="text-[12px] text-red-600 mt-3">{error}</p>}
         <div className="flex gap-2.5 mt-5">
           <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-[13px] font-bold">Cancel</button>
-          <button onClick={handlePublish} disabled={saving || !version.trim() || !downloadUrl.trim()} className="flex-1 py-2.5 rounded-xl text-white text-[13px] font-bold disabled:opacity-50" style={{ background: "#0F3D24" }}>{saving ? "Publishing..." : "Publish"}</button>
+          <button onClick={handlePublish} disabled={saving || !version.trim() || !downloadUrl.trim()} className="flex-1 py-2.5 rounded-xl text-white text-[13px] font-bold disabled:opacity-50" style={{ background: "#2E0B10" }}>{saving ? "Publishing..." : "Publish"}</button>
         </div>
       </div>
     </div>

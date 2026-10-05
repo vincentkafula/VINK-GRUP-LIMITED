@@ -7,7 +7,7 @@ import { authApi, getSession, clearSession, type ApiUser } from "../../services/
 type Screen = "onboarding" | "home" | "send" | "cards" | "history" | "rewards";
 type Tier = "Spark" | "Anchor" | "Momentum" | "Horizon" | "Summit" | "Legacy";
 
-const PURPLE = "#0B5C2E";
+const PURPLE = "#5C0A10";
 const GOLD = "#F5A623";
 
 const TIER_INFO: Record<Tier, { order: number; icon: React.ReactNode; tagline: string; unlocks: string; balanceLabel: string; cardGradient: string }> = {
@@ -16,13 +16,13 @@ const TIER_INFO: Record<Tier, { order: number; icon: React.ReactNode; tagline: s
   Momentum: { order: 3, icon: <TrendingUp className="w-5 h-5" />,   tagline: "Every payment earns you something back.",                    unlocks: "+ Cashback, loyalty points, merchant offers, challenges",           balanceLabel: "Available Balance", cardGradient: `linear-gradient(135deg, #FF9900, ${PURPLE})` },
   Horizon:  { order: 4, icon: <Mountain className="w-5 h-5" />,     tagline: "Built around reaching your savings goals faster.",          unlocks: "+ Goal-based savings, auto-save rules, AI coaching",                balanceLabel: "Available Balance", cardGradient: `linear-gradient(135deg, #0369A1, ${PURPLE})` },
   Summit:   { order: 5, icon: <Crown className="w-5 h-5" />,        tagline: "Premium banking with concierge-level service.",              unlocks: "+ Relationship manager, lounge access, multi-currency wallet",      balanceLabel: "Available Balance", cardGradient: `linear-gradient(135deg, #B45309, ${PURPLE})` },
-  Legacy:   { order: 6, icon: <Landmark className="w-5 h-5" />,     tagline: "Private banking and wealth management, for generations.",   unlocks: "+ Investments, net worth dashboard, estate planning",               balanceLabel: "Net Worth",         cardGradient: `linear-gradient(135deg, #1E1B4B, #0F3D24)` },
+  Legacy:   { order: 6, icon: <Landmark className="w-5 h-5" />,     tagline: "Private banking and wealth management, for generations.",   unlocks: "+ Investments, net worth dashboard, estate planning",               balanceLabel: "Net Worth",         cardGradient: `linear-gradient(135deg, #1E1B4B, #2E0B10)` },
 };
 const TIER_ORDER: Tier[] = ["Spark", "Anchor", "Momentum", "Horizon", "Summit", "Legacy"];
 
 const TRANSACTIONS = [
   { emoji: "🛒", name: "Shoprite Claremont",       amount: -284.50,  date: "Today",    cat: "Grocery" },
-  { emoji: "💰", name: "Salary — MANSHYA Corp",         amount: 18500.00, date: "Today",    cat: "Income" },
+  { emoji: "💰", name: "Salary — VINK Corp",         amount: 18500.00, date: "Today",    cat: "Income" },
   { emoji: "⛽", name: "Shell Garage Observatory",  amount: -650.00,  date: "Yesterday",cat: "Fuel" },
   { emoji: "🏋️", name: "Planet Fitness",            amount: -299.00,  date: "18 Jun",   cat: "Health" },
   { emoji: "📺", name: "Netflix",                   amount: -199.00,  date: "17 Jun",   cat: "Entertainment" },
@@ -30,13 +30,13 @@ const TRANSACTIONS = [
   { emoji: "🍕", name: "Steers",                    amount: -89.00,   date: "15 Jun",   cat: "Food" },
   { emoji: "💳", name: "Refund — Takealot",         amount: 340.00,   date: "14 Jun",   cat: "Refund" },
   { emoji: "📱", name: "MTN Airtime",               amount: -50.00,   date: "14 Jun",   cat: "Airtime" },
-  { emoji: "🚕", name: "MANSHYA Taxi Fare",            amount: -68.00,   date: "13 Jun",   cat: "Transport" },
+  { emoji: "🚕", name: "VINK Taxi Fare",            amount: -68.00,   date: "13 Jun",   cat: "Transport" },
   { emoji: "🏢", name: "City of Cape Town — Rates", amount: -1440.00, date: "12 Jun",   cat: "Municipal" },
   { emoji: "☕", name: "Truth Coffee Roasting",     amount: -42.00,   date: "11 Jun",   cat: "Food" },
 ];
 
 const REWARDS_HISTORY = [
-  { event: "Taxi Fare — MANSHYA Ride",       pts: "+68",  date: "Today" },
+  { event: "Taxi Fare — VINK Ride",       pts: "+68",  date: "Today" },
   { event: "Shoprite Purchase",            pts: "+28",  date: "Today" },
   { event: "Monthly Salary Deposit",       pts: "+185", date: "Yesterday" },
   { event: "Shell Fuel Purchase",          pts: "+65",  date: "18 Jun" },
@@ -65,10 +65,10 @@ function LoginScreen({ onAuthenticated }: { onAuthenticated: (user: ApiUser) => 
   };
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F8F7FF" }}>
+    <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#FAF8F4" }}>
       <div className="flex-1 flex flex-col justify-center px-6">
         <div className="text-center mb-8">
-          <p className="text-2xl font-black"><span style={{ color: PURPLE }}>MANSHYA</span> <span style={{ color: GOLD }}>Bank</span></p>
+          <p className="text-2xl font-black"><span style={{ color: PURPLE }}>VINK</span> <span style={{ color: GOLD }}>Bank</span></p>
           <p className="text-gray-400 text-xs mt-1">Banking that moves with you.</p>
         </div>
 
@@ -95,7 +95,7 @@ function LoginScreen({ onAuthenticated }: { onAuthenticated: (user: ApiUser) => 
           {mode === "signin" ? "New here? Create an account" : "Already have an account? Sign in"}
         </button>
       </div>
-      <p className="text-center text-[10px] text-gray-300 pb-6">Same account works on vink.co.za and the MANSHYA app.</p>
+      <p className="text-center text-[10px] text-gray-300 pb-6">Same account works on vink.co.za and the VINK app.</p>
     </div>
   );
 }
@@ -104,9 +104,9 @@ function OnboardingScreen({ onSelect }: { onSelect: (tier: Tier) => void }) {
   const [picked, setPicked] = useState<Tier | null>(null);
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F8F7FF" }}>
+    <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#FAF8F4" }}>
       <div className="px-5 pt-8 pb-5 text-center" style={{ background: PURPLE }}>
-        <p className="text-xs font-bold tracking-widest" style={{ color: GOLD }}>MANSHYA FINANCE</p>
+        <p className="text-xs font-bold tracking-widest" style={{ color: GOLD }}>VINK FINANCE</p>
         <p className="text-white text-lg font-bold mt-2">Which account do you want?</p>
         <p className="text-white/60 text-[11px] mt-1">Every tier keeps everything from the one before it.</p>
       </div>
@@ -162,7 +162,7 @@ function OnboardingScreen({ onSelect }: { onSelect: (tier: Tier) => void }) {
 function VerifyingScreen({ tier, onDone }: { tier: Tier; onDone: () => void }) {
   useState(() => { const id = setTimeout(onDone, 1400); return () => clearTimeout(id); });
   return (
-    <div className="flex flex-col items-center justify-center h-full gap-4" style={{ background: "#F8F7FF" }}>
+    <div className="flex flex-col items-center justify-center h-full gap-4" style={{ background: "#FAF8F4" }}>
       <Loader2 className="w-8 h-8 animate-spin" style={{ color: PURPLE }} />
       <div className="text-center px-8">
         <p className="text-sm font-bold text-gray-900">Setting up your {tier} Account</p>
@@ -178,7 +178,7 @@ function HomeScreen({ tier, onSwitchTier, user }: { tier: Tier; onSwitchTier: ()
   const balance = tier === "Legacy" ? "R4,218,600.00" : "R20,700.00";
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F8F7FF" }}>
+    <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#FAF8F4" }}>
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 flex-shrink-0" style={{ background: PURPLE }}>
         <div>
@@ -211,7 +211,7 @@ function HomeScreen({ tier, onSwitchTier, user }: { tier: Tier; onSwitchTier: ()
       {/* Balance card */}
       <div className="mx-3 mt-2 rounded-2xl p-5 shadow-xl" style={{ background: info.cardGradient }}>
         <button onClick={onSwitchTier} className="flex items-center gap-1 text-white/60 text-xs hover:text-white/90 transition-colors">
-          MANSHYA {tier} Account <ChevronRight className="w-3 h-3" />
+          VINK {tier} Account <ChevronRight className="w-3 h-3" />
         </button>
         {tier === "Legacy" ? (
           <>
@@ -226,7 +226,7 @@ function HomeScreen({ tier, onSwitchTier, user }: { tier: Tier; onSwitchTier: ()
         ) : (
           <>
             <div className="flex items-center justify-between mt-1">
-              <p className="text-white text-[15px] font-bold tracking-tight">MANSHYA</p>
+              <p className="text-white text-[15px] font-bold tracking-tight">VINK</p>
               <ShieldCheck className="w-4 h-4 text-white/70" />
             </div>
             <p className="text-white/50 text-xs mt-3 font-mono">**** **** **** 8061</p>
@@ -236,7 +236,7 @@ function HomeScreen({ tier, onSwitchTier, user }: { tier: Tier; onSwitchTier: ()
         {unlockedFrom(3) && tier !== "Legacy" && (
           <div className="flex items-center justify-between mt-4">
             <div>
-              <p className="text-white/50 text-[9px]">MANSHYAPOINTS</p>
+              <p className="text-white/50 text-[9px]">VINKPOINTS</p>
               <p className="font-bold text-xs" style={{ color: GOLD }}>4,230 pts · R42.30</p>
             </div>
             <div className="px-3 py-1 rounded-full text-[10px] font-bold" style={{ background: GOLD, color: PURPLE }}>
@@ -285,7 +285,7 @@ function HomeScreen({ tier, onSwitchTier, user }: { tier: Tier; onSwitchTier: ()
       <div className="px-3 pt-4 flex gap-2.5 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
         <div className="w-56 shrink-0 rounded-2xl p-3.5" style={{ background: PURPLE }}>
           <div className="flex items-start justify-between">
-            <p className="text-white text-[12.5px] font-bold leading-snug w-32">Earn more with MANSHYA Rewards</p>
+            <p className="text-white text-[12.5px] font-bold leading-snug w-32">Earn more with VINK Rewards</p>
             <Gift className="w-6 h-6" style={{ color: GOLD }} />
           </div>
           <p className="text-white/60 text-[9.5px] mt-1.5">Spend, earn and redeem ManshyaPoints on every transaction.</p>
@@ -389,7 +389,7 @@ function HomeScreen({ tier, onSwitchTier, user }: { tier: Tier; onSwitchTier: ()
               <span className="text-xs font-semibold text-gray-800">Portfolio performance</span>
               <span className="text-xs font-bold text-green-600">+8.4% YTD</span>
             </div>
-            {[["Stocks & ETFs","45%","#0B5C2E"],["Bonds & Treasury","25%","#B45309"],["Property","19%","#FF9900"],["Private Equity","11%","#0369A1"]].map(([label,pct,color]) => (
+            {[["Stocks & ETFs","45%","#5C0A10"],["Bonds & Treasury","25%","#B45309"],["Property","19%","#FF9900"],["Private Equity","11%","#0369A1"]].map(([label,pct,color]) => (
               <div key={label} className="flex items-center gap-2 mb-1.5 last:mb-0">
                 <span className="w-16 text-[9px] text-gray-500 shrink-0">{label}</span>
                 <div className="flex-1 h-2 rounded-full bg-gray-100 overflow-hidden"><div className="h-full rounded-full" style={{ width: pct as string, background: color as string }} /></div>
@@ -428,7 +428,7 @@ function HomeScreen({ tier, onSwitchTier, user }: { tier: Tier; onSwitchTier: ()
       <div className="mx-3 mt-3 mb-4 rounded-2xl p-3 flex items-center gap-3" style={{ background: `${GOLD}22`, border: `1px solid ${GOLD}55` }}>
         <span className="text-2xl">🎁</span>
         <div>
-          <p className="text-xs font-bold" style={{ color: PURPLE }}>Free Wi-Fi on MANSHYA taxis!</p>
+          <p className="text-xs font-bold" style={{ color: PURPLE }}>Free Wi-Fi on VINK taxis!</p>
           <p className="text-gray-500 text-[10px]">Earn 2× ManshyaPoints on taxi rides this week</p>
         </div>
       </div>
@@ -437,9 +437,9 @@ function HomeScreen({ tier, onSwitchTier, user }: { tier: Tier; onSwitchTier: ()
 }
 
 const RECENT_RECIPIENTS = [
-  { initials: "SD", name: "Sipho D.",    ref: "MANSHYA-GBL-2024-00002" },
-  { initials: "LM", name: "Lindiwe M.", ref: "MANSHYA-GBL-2024-00003" },
-  { initials: "BZ", name: "Busisiwe Z.", ref: "MANSHYA-GBL-2024-00004" },
+  { initials: "SD", name: "Sipho D.",    ref: "VINK-GBL-2024-00002" },
+  { initials: "LM", name: "Lindiwe M.", ref: "VINK-GBL-2024-00003" },
+  { initials: "BZ", name: "Busisiwe Z.", ref: "VINK-GBL-2024-00004" },
 ];
 
 function SendScreen() {
@@ -470,7 +470,7 @@ function SendScreen() {
 
   if (success) {
     return (
-      <div className="flex flex-col h-full items-center justify-center gap-5 px-6" style={{ background: "#F8F7FF" }}>
+      <div className="flex flex-col h-full items-center justify-center gap-5 px-6" style={{ background: "#FAF8F4" }}>
         <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ background: "#10B98122" }}>
           <CheckCircle className="w-10 h-10 text-green-500" />
         </div>
@@ -489,17 +489,17 @@ function SendScreen() {
   }
 
   return (
-    <div className="flex flex-col h-full" style={{ background: "#F8F7FF" }}>
+    <div className="flex flex-col h-full" style={{ background: "#FAF8F4" }}>
       <div className="px-4 py-3 flex-shrink-0" style={{ background: PURPLE }}>
         <p className="text-white font-bold text-base">Send Money</p>
-        <p className="text-white/60 text-xs">Transfer to any MANSHYA account</p>
+        <p className="text-white/60 text-xs">Transfer to any VINK account</p>
       </div>
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
         {/* Recipient */}
         <div>
-          <label className="text-gray-500 text-xs font-semibold">To (MANSHYA Reference or Phone)</label>
+          <label className="text-gray-500 text-xs font-semibold">To (VINK Reference or Phone)</label>
           <input type="text" value={recipient} onChange={e => setRecipient(e.target.value)}
-            placeholder="MANSHYA-GBL-2024-XXXXX or 082 555 1234"
+            placeholder="VINK-GBL-2024-XXXXX or 082 555 1234"
             className="w-full mt-1.5 px-3 py-2.5 rounded-xl text-sm bg-white border text-gray-800 outline-none"
             style={{ borderColor: `${PURPLE}33` }} />
         </div>
@@ -571,7 +571,7 @@ function SendScreen() {
 function CardsScreen() {
   const [frozen, setFrozen] = useState(false);
   return (
-    <div className="flex flex-col h-full" style={{ background: "#F8F7FF" }}>
+    <div className="flex flex-col h-full" style={{ background: "#FAF8F4" }}>
       <div className="px-4 py-3 flex-shrink-0" style={{ background: PURPLE }}>
         <p className="text-white font-bold text-base">My Cards</p>
       </div>
@@ -580,7 +580,7 @@ function CardsScreen() {
         <div className="rounded-2xl p-5 shadow-xl" style={{ background: `linear-gradient(135deg, ${PURPLE}, #1E0A3C)` }}>
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-[10px] font-bold tracking-widest" style={{ color: GOLD }}>MANSHYA</p>
+              <p className="text-[10px] font-bold tracking-widest" style={{ color: GOLD }}>VINK</p>
               <p className="text-white/60 text-[9px] mt-0.5">Summit Account</p>
             </div>
             <div className="text-right">
@@ -616,7 +616,7 @@ function CardsScreen() {
         <div className="rounded-2xl p-5 shadow-lg" style={{ background: `linear-gradient(135deg, #F5A623, #E8830A)` }}>
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-[10px] font-bold tracking-widest text-white/80">MANSHYA VIRTUAL</p>
+              <p className="text-[10px] font-bold tracking-widest text-white/80">VINK VIRTUAL</p>
               <p className="text-white/60 text-[9px] mt-0.5">Online Purchases</p>
             </div>
             <span className="text-white text-[10px] font-bold border border-white/40 px-1.5 py-0.5 rounded-full">VIRTUAL</span>
@@ -673,7 +673,7 @@ function HistoryScreen() {
     : [];
 
   return (
-    <div className="flex flex-col h-full" style={{ background: "#F8F7FF" }}>
+    <div className="flex flex-col h-full" style={{ background: "#FAF8F4" }}>
       <div className="px-4 py-3 flex-shrink-0" style={{ background: PURPLE }}>
         <p className="text-white font-bold text-base">Transaction History</p>
       </div>
@@ -730,7 +730,7 @@ function RewardsScreen() {
   const progress = (4230 / 7500) * 100;
 
   return (
-    <div className="flex flex-col h-full" style={{ background: "#F8F7FF" }}>
+    <div className="flex flex-col h-full" style={{ background: "#FAF8F4" }}>
       <div className="px-4 py-3 flex-shrink-0" style={{ background: PURPLE }}>
         <p className="text-white font-bold text-base">ManshyaPoints</p>
       </div>
@@ -738,7 +738,7 @@ function RewardsScreen() {
         {/* Balance */}
         <div
           className="rounded-2xl p-5 text-center shadow-xl"
-          style={{ background: `linear-gradient(135deg, ${PURPLE}, #0F3D24)` }}
+          style={{ background: `linear-gradient(135deg, ${PURPLE}, #2E0B10)` }}
         >
           <p className="text-white/60 text-xs">Your Balance</p>
           <p className="text-5xl font-bold mt-1" style={{ color: GOLD }}>4,230</p>
@@ -871,7 +871,7 @@ export function VinkBankingApp({ isOpen, onClose, onOpenManagementPanel, onOpenA
   const showTabs = authUser !== null && screen !== "onboarding" && !verifying;
 
   return (
-    <MobileAppOverlay onClose={onClose} appName="MANSHYA Finance" bgColor="#F8F7FF">
+    <MobileAppOverlay onClose={onClose} appName="VINK Finance" bgColor="#FAF8F4">
       <PhoneFrame statusBarColor={PURPLE} statusBarTextLight>
         <div className="flex-1 overflow-hidden flex flex-col">
           {!checkedSession ? (

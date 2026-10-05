@@ -12,7 +12,7 @@ const { createManshya } = require("./core");
 const { ApiError } = require("./core/util");
 
 /**
- * Builds the Manshya module and returns its Express router, to be mounted at /api/manshya.
+ * Builds the VINK module and returns its Express router, to be mounted at /api/manshya.
  *
  * Sign-in is the app's own login (POST /api/auth/login -> JWT). This only decides who
  * gets in: customer accounts reach the merchant/banking API (one merchant per customer,
@@ -52,7 +52,7 @@ export function createManshyaModule() {
       const a = customerAccess(req.get("authorization"));
       if (!a.ok) {
         if (a.reason === "wrong_role") {
-          throw new ApiError(403, "customer_only", "The Manshya dashboard is for customer accounts. Sign in with a customer account.");
+          throw new ApiError(403, "customer_only", "The VINK dashboard is for customer accounts. Sign in with a customer account.");
         }
         return null;
       }

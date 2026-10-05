@@ -24,9 +24,9 @@ export interface PricingViewerProps {
 }
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
-const BRAND     = "#128A43";
-const BRAND_DARK = "#0F3D24";
-const FEAT_BG   = "#128A43";
+const BRAND     = "#8B0000";
+const BRAND_DARK = "#2E0B10";
+const FEAT_BG   = "#8B0000";
 
 const SUB_NAV_ITEMS = ["Account", "Credit Card", "Loan", "Invest", "Rewards"];
 
@@ -61,7 +61,7 @@ function Card({ card, onApply }: { card: PricingCard; onApply: (name: string, pr
           / Month
         </span>
       </div>
-      <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", color: card.featured ? "rgba(255,255,255,.8)" : "#5FC97F", marginBottom: 12 }}>
+      <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", color: card.featured ? "rgba(255,255,255,.8)" : "#C9A84C", marginBottom: 12 }}>
         What you get
       </p>
       <ul style={{ listStyle: "none", flex: 1, display: "flex", flexDirection: "column", gap: 9, marginBottom: 24 }}>
@@ -83,7 +83,7 @@ function Card({ card, onApply }: { card: PricingCard; onApply: (name: string, pr
         </button>
         <button
           style={{ flex: 1, background: "transparent", color: card.featured ? "#fff" : BRAND, border: `1.5px solid ${card.featured ? "rgba(255,255,255,.5)" : "#E4DFFE"}`, padding: "11px 0", borderRadius: 8, fontSize: 13.5, fontWeight: 600, cursor: "pointer" }}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = card.featured ? "rgba(255,255,255,.12)" : "#F5F3FF"; }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = card.featured ? "rgba(255,255,255,.12)" : "#FAF8F4"; }}
           onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
         >
           Tell me more
@@ -96,13 +96,13 @@ function Card({ card, onApply }: { card: PricingCard; onApply: (name: string, pr
 // ─── Main ─────────────────────────────────────────────────────────────────────
 function AppDownloadCard() {
   const [open, setOpen] = useState(false);
-  const BRAND = "#0B5C2E";
+  const BRAND = "#5C0A10";
   return (
     <div style={{ borderRadius: 14, overflow: "hidden", border: "1px solid rgba(255,255,255,.15)" }}>
       {/* Trigger */}
       <button onClick={() => setOpen(o => !o)}
         style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", background: BRAND, border: "none", cursor: "pointer" }}>
-        <span style={{ color: "#fff", fontSize: 14, fontWeight: 700 }}>📲 MANSHYA Apps -- Coming Soon</span>
+        <span style={{ color: "#fff", fontSize: 14, fontWeight: 700 }}>📲 VINK Apps -- Coming Soon</span>
         <span style={{ color: "rgba(255,255,255,.7)", fontSize: 11, fontWeight: 600, padding: "2px 10px", borderRadius: 20, border: "1px solid rgba(255,255,255,.3)" }}>
           {open ? "Hide ▲" : "iOS & Android ▼"}
         </span>
@@ -143,7 +143,7 @@ export function PricingViewer({ isOpen, onClose, activeSubNav, heroTitle, heroSu
       <nav style={{ background: "#fff", borderBottom: "1px solid #E4DFFE", position: "sticky", top: 0, zIndex: 100 }}>
         {/* Top row */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 48px", height: 64, maxWidth: 1280, margin: "0 auto" }}>
-          <img src={vinkLogo} alt="MANSHYA" style={{ height: 44, width: "auto", objectFit: "contain" }} />
+          <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" style={{ height: 44, width: "auto", objectFit: "contain" }} />
 
           <ul style={{ display: "flex", gap: 28, listStyle: "none", margin: 0, padding: 0 }} className="hidden md:flex">
             {["Personal", "Business", "Corporate"].map((item, i) => (

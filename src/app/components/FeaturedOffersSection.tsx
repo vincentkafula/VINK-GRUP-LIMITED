@@ -1,14 +1,14 @@
 const OFFERS = [
   {
-    name: "MANSHYA Everyday Cashback", issuer: "MANSHYA Standard",
-    grad: "linear-gradient(135deg,#1A3A6E 0%,#128A43 60%,#5FC97F 100%)",
+    name: "VINK Everyday Cashback", issuer: "VINK Standard",
+    grad: "linear-gradient(135deg,#1A3A6E 0%,#8B0000 60%,#C9A84C 100%)",
     badge: "Best Value", badgeColor: "#10B981",
     highlight: "3% cashback at supermarkets and spaza shops",
     detail: "1.5% at fuel stations · 0.5% everywhere else",
     net: "visa",
   },
   {
-    name: "MANSHYA Rewards Gold", issuer: "MANSHYA Premier",
+    name: "VINK Rewards Gold", issuer: "VINK Premier",
     grad: "linear-gradient(135deg,#7A5C2A 0%,#C4922A 60%,#E6B85A 100%)",
     badge: "Top Pick", badgeColor: "#F59E0B",
     highlight: "Earn 2 ManshyaPoints per R10 on all spend",
@@ -16,10 +16,10 @@ const OFFERS = [
     net: "amex",
   },
   {
-    name: "MANSHYA Commuter Unlimited", issuer: "MANSHYA Commuter",
+    name: "VINK Commuter Unlimited", issuer: "VINK Commuter",
     grad: "linear-gradient(135deg,#1B4D1B 0%,#2E7D32 60%,#4CAF50 100%)",
     badge: "No Limits", badgeColor: "#3B82F6",
-    highlight: "Unlimited tap-and-go rides on any MANSHYA-enabled taxi",
+    highlight: "Unlimited tap-and-go rides on any VINK-enabled taxi",
     detail: "Free card replacement · No minimum balance required",
     net: "mc",
   },
@@ -29,15 +29,15 @@ import { memo } from "react";
 
 export const FeaturedOffersSection = memo(function FeaturedOffersSection({ onCompareCards }: { onCompareCards?: () => void }) {
   return (
-    <section className="py-10 sm:py-14" style={{ background: "#F8F7FF" }}>
+    <section className="py-10 sm:py-14" style={{ background: "#FAF8F4" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-end justify-between mb-8 gap-4 flex-wrap">
           <div>
             <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-2"
-              style={{ background: "#EDE9FE", color: "#5B21B6" }}>Partner Offers</span>
+              style={{ background: "#F2EFE8", color: "#8B0000" }}>Partner Offers</span>
             <h2 className="text-2xl sm:text-3xl font-black text-gray-900">Featured Card Offers</h2>
           </div>
-          <button onClick={onCompareCards} className="text-sm font-semibold hover:underline flex-shrink-0 bg-transparent border-none cursor-pointer" style={{ color: "#5B21B6" }}>
+          <button onClick={onCompareCards} className="text-sm font-semibold hover:underline flex-shrink-0 bg-transparent border-none cursor-pointer" style={{ color: "#8B0000" }}>
             Compare all cards →
           </button>
         </div>
@@ -51,7 +51,7 @@ export const FeaturedOffersSection = memo(function FeaturedOffersSection({ onCom
                 <div className="relative z-10 p-5 flex flex-col justify-between h-full text-white">
                   <div className="flex justify-between items-start mt-5">
                     <div>
-                      <p className="text-[9px] tracking-widest opacity-60 uppercase font-semibold">MANSHYA FINANCE</p>
+                      <p className="text-[9px] tracking-widest opacity-60 uppercase font-semibold">VINK FINANCE</p>
                       <p className="text-base font-bold mt-0.5">{o.name}</p>
                     </div>
                     <div className="w-9 h-6 rounded bg-yellow-400/60 border border-yellow-300/40"/>
@@ -68,11 +68,11 @@ export const FeaturedOffersSection = memo(function FeaturedOffersSection({ onCom
               </div>
               <div className="p-5">
                 <span className="text-xs font-bold px-2.5 py-1 rounded-full block mb-2"
-                  style={{ background: "#EDE9FE", color: "#5B21B6" }}>{o.highlight}</span>
+                  style={{ background: "#F2EFE8", color: "#8B0000" }}>{o.highlight}</span>
                 <p className="text-gray-400 text-xs mb-1">{o.detail}</p>
                 <p className="text-gray-400 text-[11px] mb-4">{o.issuer}</p>
                 <button className="w-full py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 group-hover:scale-[1.02]"
-                  style={{ background: "linear-gradient(135deg,#4C1D95,#7C3AED)" }}>
+                  style={{ background: "linear-gradient(135deg,#5C0A10,#9B1C1C)" }}>
                   Apply Today
                 </button>
               </div>
@@ -80,7 +80,7 @@ export const FeaturedOffersSection = memo(function FeaturedOffersSection({ onCom
           ))}
         </div>
         <p className="text-center text-[11px] text-gray-400 mt-6">
-          Subject to credit approval and FICA verification. Terms and conditions apply. MANSHYA is an authorised Financial Services Provider.
+          Subject to credit approval and FICA verification. Terms and conditions apply. VINK is an authorised Financial Services Provider.
         </p>
       </div>
     </section>

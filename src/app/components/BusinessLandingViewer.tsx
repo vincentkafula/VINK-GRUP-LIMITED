@@ -3,7 +3,7 @@ import {
   X, ChevronRight, ChevronLeft, ArrowRight, Users, CreditCard, Globe2, Fuel,
   ShieldCheck, Headphones, Building2, TrendingUp,
 } from "lucide-react";
-import siteHeroBg from "../../imports/assets/site-hero-bg.png";
+import siteHeroBg from "../../imports/assets/site-hero-bg.webp";
 import { Footer } from "./Footer";
 
 interface Props {
@@ -21,9 +21,9 @@ interface Props {
 // this page type, rather than the newer purple palette used elsewhere on
 // the homepage. Keeps this consistent with the page it sits next to in the
 // nav, rather than introducing a third, mismatched style. ─────────────────
-const INK   = "#0B2E1C";
-const PLUM  = "#0B5C2E";
-const VIOLET = "#128A43";
+const INK   = "#0C0E14";
+const PLUM  = "#5C0A10";
+const VIOLET = "#8B0000";
 const GOLD  = "#C9A84C";
 
 const SUB_NAV = [
@@ -46,7 +46,7 @@ const FEATURES = [
 
 const SLIDES = [
   { eyebrow: "Built for the road",       heading: "Banking for the operators\nwho keep SA moving",  body: "Taxi associations, fleet owners, and fuel stations — a business account built around how you actually move money.", cta: "Start my business" },
-  { eyebrow: "No international fees",    heading: "Send and spend\nat local rates, anywhere",       body: "Once you qualify for a MANSHYA card, cross-border transfers are charged like any local payment. No markups.", cta: "See international banking" },
+  { eyebrow: "No international fees",    heading: "Send and spend\nat local rates, anywhere",       body: "Once you qualify for a VINK card, cross-border transfers are charged like any local payment. No markups.", cta: "See international banking" },
   { eyebrow: "One account, many cards",  heading: "Give your whole team\ntheir own card",           body: "Issue cards to employees, track every rand per cardholder, and stay in control from a single dashboard.", cta: "Explore business accounts" },
 ];
 
@@ -55,7 +55,7 @@ const SLIDES = [
 function BusinessGraphic() {
   return (
     <div className="relative w-[280px] sm:w-[320px]">
-      <div className="rounded-2xl p-5" style={{ background: "linear-gradient(155deg,#0F3D24,#0B2E1C)", border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 30px 60px -20px rgba(0,0,0,0.5)" }}>
+      <div className="rounded-2xl p-5" style={{ background: "linear-gradient(155deg,#2E0B10,#0C0E14)", border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 30px 60px -20px rgba(0,0,0,0.5)" }}>
         <div className="flex items-center justify-between mb-4">
           <span className="text-white/50 text-[10px] font-mono uppercase tracking-widest">Business Overview</span>
           <span className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: "rgba(201,168,76,0.18)" }}>
@@ -141,7 +141,7 @@ export function BusinessLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
 
       {/* ── Hero carousel ── */}
       <div className="relative overflow-hidden" style={{ background: `linear-gradient(120deg, #14532D 0%, ${VIOLET} 58%, ${PLUM} 100%)` }}>
-        <img src={siteHeroBg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-[0.14] mix-blend-luminosity" />
+        <img loading="lazy" decoding="async" src={siteHeroBg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-[0.14] mix-blend-luminosity" />
         <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: "radial-gradient(rgba(255,255,255,0.9) 1px, transparent 1px)", backgroundSize: "22px 22px" }} />
 
         <button onClick={prev} className="hidden sm:flex absolute left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 items-center justify-center transition-colors" aria-label="Previous">
@@ -186,7 +186,7 @@ export function BusinessLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
         <div className="text-center mb-12">
           <span className="inline-block text-[11px] font-semibold tracking-[0.16em] uppercase mb-3" style={{ color: GOLD }}>
-            Why choose MANSHYA Business
+            Why choose VINK Business
           </span>
           <h2 className="text-[26px] sm:text-[32px] font-medium tracking-tight" style={{ color: INK, fontFamily: "'Fraunces', serif" }}>
             Built for How Your Business Moves

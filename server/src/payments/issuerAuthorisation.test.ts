@@ -9,7 +9,7 @@ import { resolvePaymentsConfig } from "./config.js";
 import { signWebhook } from "./providers/webhook.js";
 import { MOCK_WEBHOOK_SECRET } from "./providers/mockIssuer.js";
 
-/* End to end: signed authorisation request -> issuer router -> Manshya card engine -> ledger. */
+/* End to end: signed authorisation request -> issuer router -> VINK card engine -> ledger. */
 
 let mn: any, server: Server, base = "", merchant: any, account: any, cardId = "";
 let n = 0;

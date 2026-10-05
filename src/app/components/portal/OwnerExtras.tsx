@@ -5,7 +5,7 @@ import { portalClient, useLoad, Status, Empty, rand, day } from "./ui";
 import { MapView } from "./MapView";
 import { CsvButton, RangeBar, TrendChart, useAutoRefresh, rangeQuery, saToday, saShift, monthStart, type MapPosition, type MapRoute, type Range } from "./widgets";
 
-const COLOR = "#8B5CF6";
+const COLOR = "#B04040";
 const call = portalClient("owner");
 
 /** Fares collected per day over the last two weeks. */
@@ -48,7 +48,7 @@ export function OwnerFinancials() {
             </div>
             {days.length === 0 ? <Empty>No fares were collected in this period.</Empty> : (
               <TableCard title="Per day" color={COLOR} columns={["Date", "Fares", "Collected", "Your share"]} rows={days.map((d) => [day(d.day), d.fares, rand(d.collected), rand(d.ownerShare)])} />)}
-            <p className="text-[11px] text-white/40">Every figure is added up from recorded fares, fines and levies. This is a summary, not an audited financial statement, and not tax advice. What you pay your drivers is your own arrangement and is not recorded here.</p>
+            <p className="text-[11px] text-fg-subtle">Every figure is added up from recorded fares, fines and levies. This is a summary, not an audited financial statement, and not tax advice. What you pay your drivers is your own arrangement and is not recorded here.</p>
           </>)}</Status>
       </div>
     </SectionPanel>

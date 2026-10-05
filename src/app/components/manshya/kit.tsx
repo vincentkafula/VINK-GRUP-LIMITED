@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any -- rows are untyped JSON from the Manshya API; fields are read directly as in the original dashboard */
+/* eslint-disable @typescript-eslint/no-explicit-any -- rows are untyped JSON from the VINK API; fields are read directly as in the original dashboard */
 import { createContext, useContext, type ReactNode } from "react";
 import { ask, toast, secret, showList, showDialog, type Field } from "./dialogs";
 import { api, download } from "./api";

@@ -55,6 +55,19 @@ export const currencyApi: Provider = {
 };
 export const defaultProviders = (key?: string): Provider[] => [key ? exchangeRateApiKeyed(key) : exchangeRateApiOpen, currencyApi];
 
+/** Are the rates for these pairs current enough for quotes? (Same rule the cross-border quote applies.) */
+export async function ratesAreFresh(database: Db, pairs: string[], now: Date = new Date()): Promise<boolean> {
+  const db = database as unknown as Loose;
+  for (const pair of pairs) {
+    const r = (await db.query(`SELECT set_at, source_at, auto FROM fx_rates WHERE pair = $1`, [pair])).rows[0];
+    if (!r) return false;
+    const age = now.getTime() - new Date(r.set_at).getTime();
+    const ok = r.auto ? age <= AUTO_FETCHED_MAX_AGE_MS && !!r.source_at && now.getTime() - new Date(r.source_at).getTime() <= AUTO_SOURCE_MAX_AGE_MS : age <= MANUAL_MAX_AGE_MS;
+    if (!ok) return false;
+  }
+  return true;
+}
+
 export type Outcome = { pair: string; status: "updated" | "kept_manual" | "rejected" | "failed"; reason?: string; rate?: number; source?: string };
 
 /** Asks the sources, applies the safety rules, and returns the reading to store (or why not). */

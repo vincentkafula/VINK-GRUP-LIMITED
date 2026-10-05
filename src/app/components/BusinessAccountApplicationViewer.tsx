@@ -6,7 +6,7 @@ import { applicationsApi } from "../services/applicationsApi";
 
 interface Props { isOpen: boolean; onClose: () => void; initialAccountType?: string; }
 
-const PURPLE = "#0B5C2E";
+const PURPLE = "#5C0A10";
 const GREEN  = "#10B981";
 
 // ─── Step definitions ─────────────────────────────────────────────────────────
@@ -264,7 +264,7 @@ function Step5({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () 
               <span className="text-sm font-medium text-gray-800">{d.label}</span>
             </div>
             <span className="text-xs px-3 py-1 rounded-full font-semibold"
-              style={{ background: uploaded[d.key] ? "#DCFCE7" : "#F3F0FB", color: uploaded[d.key] ? GREEN : PURPLE }}>
+              style={{ background: uploaded[d.key] ? "#DCFCE7" : "#F2EFE8", color: uploaded[d.key] ? GREEN : PURPLE }}>
               {uploaded[d.key] ? "Uploaded" : "Upload"}
             </span>
             <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png"
@@ -544,7 +544,7 @@ function Step7({ onBack, onClose, initialAccountType, formData }: { onBack: () =
         <input type="checkbox" checked={agreeTerms} onChange={e => setAgreeTerms(e.target.checked)}
           className="mt-0.5 w-4 h-4 accent-emerald-600 flex-shrink-0" />
         <p className="text-xs text-gray-600 leading-relaxed">
-          I confirm that all information provided is accurate and complete. I authorise MANSHYA to perform FICA verification, credit checks, and to open the selected business account on behalf of the registered entity. I have read and agree to the <span className="font-semibold" style={{ color: PURPLE }}>Terms and Conditions</span> and <span className="font-semibold" style={{ color: PURPLE }}>Privacy Policy</span>.
+          I confirm that all information provided is accurate and complete. I authorise VINK to perform FICA verification, credit checks, and to open the selected business account on behalf of the registered entity. I have read and agree to the <span className="font-semibold" style={{ color: PURPLE }}>Terms and Conditions</span> and <span className="font-semibold" style={{ color: PURPLE }}>Privacy Policy</span>.
         </p>
       </label>
 
@@ -620,14 +620,14 @@ export function BusinessAccountApplicationViewer({ isOpen, onClose, initialAccou
       <style>{`
         .field-label { display: block; font-size: 11px; font-weight: 600; color: #6B7280; margin-bottom: 4px; }
         .field-input { width: 100%; border: 1px solid #E5E7EB; border-radius: 10px; padding: 9px 14px; font-size: 13px; outline: none; background: #fff; color: #111827; }
-        .field-input:focus { border-color: #0B5C2E; }
+        .field-input:focus { border-color: #5C0A10; }
       `}</style>
 
       <div className="fixed inset-0 z-50 flex flex-col bg-gray-50">
         {/* Top bar */}
         <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm flex-shrink-0">
           <div className="flex items-center gap-3">
-            <img src={vinkLogo} alt="MANSHYA" className="h-9 w-auto object-contain" />
+            <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
             <span className="text-sm font-semibold text-gray-700 hidden sm:block">Business Account Application</span>
           </div>
           <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500">

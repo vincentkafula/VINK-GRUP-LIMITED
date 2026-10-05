@@ -2,7 +2,7 @@ import { useState } from "react";
 import { CheckCircle, ArrowRight, User, Shield, CreditCard, Smartphone, Star, X } from "lucide-react";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 
-const P = "#0B5C2E";
+const P = "#5C0A10";
 const GOLD = "#F5A623";
 
 interface Props {
@@ -60,7 +60,7 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 backdrop-blur-md p-4">
-      <div className="w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl" style={{ background: step === 1 ? `linear-gradient(135deg,${P},#5FC97F)` : "#fff" }}>
+      <div className="w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl" style={{ background: step === 1 ? `linear-gradient(135deg,${P},#C9A84C)` : "#fff" }}>
 
         {/* Progress bar */}
         <div className="h-1" style={{ background: "rgba(0,0,0,0.1)" }}>
@@ -69,7 +69,7 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
 
         {/* Top bar */}
         <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: step === 1 ? "1px solid rgba(255,255,255,0.15)" : "1px solid #F3F4F6" }}>
-          <img src={vinkLogo} alt="MANSHYA" className="h-8 w-auto" style={{ filter: step === 1 ? "brightness(0) invert(1)" : "none" }} />
+          <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-8 w-auto" style={{ filter: step === 1 ? "brightness(0) invert(1)" : "none" }} />
           <div className="flex items-center gap-3">
             <span className="text-sm font-medium" style={{ color: step === 1 ? "rgba(255,255,255,0.7)" : "#9CA3AF" }}>
               Step {step} of {STEPS.length}
@@ -108,7 +108,7 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
             <div className="text-center space-y-5">
               <div className="text-6xl">👋</div>
               <div>
-                <h1 className="text-2xl font-black text-white">Welcome to MANSHYA Banking</h1>
+                <h1 className="text-2xl font-black text-white">Welcome to VINK Banking</h1>
                 <p className="text-white/70 mt-2 text-sm leading-relaxed">
                   South Africa's most complete financial super-app. Let's set up your account in under 3 minutes.
                 </p>
@@ -178,7 +178,7 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
               </div>
               <div className="space-y-3">
                 {[
-                  { key: "terms", label: "I agree to the MANSHYA Terms & Conditions and Privacy Policy", state: acceptedTerms, set: setAcceptedTerms },
+                  { key: "terms", label: "I agree to the VINK Terms & Conditions and Privacy Policy", state: acceptedTerms, set: setAcceptedTerms },
                   { key: "popia", label: "I consent to my personal information being processed in accordance with POPIA", state: acceptedPopia, set: setAcceptedPopia },
                 ].map(item => (
                   <label key={item.key} className="flex items-start gap-3 cursor-pointer">
@@ -240,7 +240,7 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
               <div>
                 <div className="flex items-center justify-center gap-2 mb-1">
                   <Smartphone className="w-5 h-5" style={{ color: P }} />
-                  <h2 className="text-lg font-black text-gray-900">The MANSHYA App Is Coming Soon</h2>
+                  <h2 className="text-lg font-black text-gray-900">The VINK App Is Coming Soon</h2>
                 </div>
                 <p className="text-sm text-gray-500">Your account is already fully set up on web. We'll let you know the moment the app is ready.</p>
               </div>
@@ -264,10 +264,10 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
           {/* Step 6 — Done */}
           {step === 6 && (
             <div className="text-center space-y-5">
-              <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mx-auto" style={{ background: `linear-gradient(135deg,${P},#5FC97F)` }}>🎉</div>
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mx-auto" style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>🎉</div>
               <div>
                 <h2 className="text-xl font-black text-gray-900">You're all set, {firstName || "welcome"}!</h2>
-                <p className="text-sm text-gray-500 mt-2">Your MANSHYA account is being set up. You'll receive an email with your account details shortly.</p>
+                <p className="text-sm text-gray-500 mt-2">Your VINK account is being set up. You'll receive an email with your account details shortly.</p>
               </div>
               <div className="grid grid-cols-2 gap-3 text-left">
                 {[
@@ -308,7 +308,7 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
             disabled={!canProceed()}
             className="flex-1 py-3 rounded-2xl text-sm font-bold text-white flex items-center justify-center gap-2 transition-all"
             style={{
-              background: !canProceed() ? "#D1D5DB" : step === 1 ? "rgba(255,255,255,0.25)" : `linear-gradient(135deg,${P},#5FC97F)`,
+              background: !canProceed() ? "#D1D5DB" : step === 1 ? "rgba(255,255,255,0.25)" : `linear-gradient(135deg,${P},#C9A84C)`,
               color: !canProceed() ? "#9CA3AF" : "#fff",
               border: step === 1 ? "2px solid rgba(255,255,255,0.4)" : "none",
             }}

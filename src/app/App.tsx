@@ -1,6 +1,7 @@
 import { PORTALS, type PortalKey } from "./components/portal/portalDefs";
 import { useState, lazy, Suspense, startTransition, useEffect, useCallback } from "react";
 import { Toaster } from "sonner";
+import { useTheme } from "./components/ds";
 import { checkHealth, getSession, startHealthRecoveryWatch } from "./services/apiClient";
 import { setPageMeta, PAGE_META } from "./services/seo";
 import { Header } from "./components/Header";
@@ -96,6 +97,7 @@ const ManshyaPay                  = lazy(() => import("./components/manshya/Mans
 const ManagementHub                = lazy(() => import("./components/ManagementHub").then(m => ({ default: m.ManagementHub })));
 
 export default function App() {
+  const theme = useTheme();
   // ── Mounted set — overlays mount on first open, stay mounted ──────────────
   const [mounted, setMounted] = useState<Set<string>>(new Set());
   const mount = useCallback((key: string) => {
@@ -201,7 +203,7 @@ export default function App() {
   const [showTaxiAssociations, setShowTaxiAssociations]     = useState(false);
   const [userRole, setUserRole]                             = useState<string>("personal");
   const [showLogin, setShowLogin]                           = useState(false);
-  // Manshya payments & banking: dashboard (customers), back office (staff), hosted checkout (public)
+  // VINK payments & banking: dashboard (customers), back office (staff), hosted checkout (public)
   // Emailed links: /reset-password?token=... and /verify-email?token=...
   const [authLink, setAuthLink]                               = useState<null | "reset" | "verify">(null);
   const [portal, setPortal]                                  = useState<null | PortalKey>(null);
@@ -285,7 +287,7 @@ export default function App() {
         case "guardme":
         case "insurance":    mount("postLogin");        setShowPostLogin(true);        break;
         case "rewards":      mount("rewards");          setShowRewards(true);          break;
-        // Connectivity -- "Connect", "Mobile", and "MANSHYA TV" tiles have no
+        // Connectivity -- "Connect", "Mobile", and "VINK TV" tiles have no
         // consumer-facing destination (the backoffice mobile-network tool
         // they used to point near was removed entirely), so they land on
         // the consumer dashboard rather than dead-end.
@@ -498,7 +500,7 @@ export default function App() {
     }
     if (path === "/contact-us") { mount("contactUs"); setShowContactUs(true); return true; }
     if (path === "/management-panel") { mount("managementPanel"); setShowManagementPanel(true); return true; }
-    // Manshya: dashboard is customer-only (it shows a sign-in prompt to anyone else), back office is staff-only,
+    // VINK: dashboard is customer-only (it shows a sign-in prompt to anyone else), back office is staff-only,
     // /pay is the public hosted checkout for payment links.
     // Role dashboards: /portal/personal | driver | marshal | owner | association. The server decides who may open each one.
     // Staff only (the server enforces it): every dashboard user's bank account, and review of Business accounts.
@@ -536,12 +538,12 @@ export default function App() {
 
   const handleFooterLink = (label: string) => {
     startTransition(() => {
-      if (label === "About MANSHYA")                                 open("aboutVINK",          () => setShowAboutVINK(true));
+      if (label === "About VINK")                                 open("aboutVINK",          () => setShowAboutVINK(true));
       if (label === "Investor Relations")                        open("investorRelations",  () => setShowInvestorRelations(true));
       if (label === "Careers")                                   open("careers",            () => setShowCareers(true));
       if (label === "Contact Us")                                { setContactTab("connect"); open("contactUs", () => setShowContactUs(true)); }
       if (label === "Send your feedback")                        { setContactTab("feedback"); open("contactUs", () => setShowContactUs(true)); }
-      if (label === "Switch to MANSHYA")                             open("switchToVINK",        () => setShowSwitchToVINK(true));
+      if (label === "Switch to VINK")                             open("switchToVINK",        () => setShowSwitchToVINK(true));
       if (label === "Business debit order switching")            open("switchToVINK",        () => setShowSwitchToVINK(true));
       if (label === "Job Application")                            open("jobapp",             () => setShowJobApp(true));
       if (label === "Get Help & Information")                    { setContactTab("connect"); open("contactUs", () => setShowContactUs(true)); }
@@ -562,14 +564,14 @@ export default function App() {
       if (label === "Social Responsibility")                     { mount("corpCSR"); setShowCorporateCSR(true); }
       if (label === "Find the Branch")                           { mount("branchLocator"); setShowBranchLocator(true); }
       if (label === "Sponsorship")                               { mount("sponsorship"); setShowSponsorship(true); }
-      if (label === "MANSHYA at the World Economic Forum")          { mount("wef"); setShowWEF(true); }
+      if (label === "VINK at the World Economic Forum")          { mount("wef"); setShowWEF(true); }
       if (label === "Banking rates and fees")                    { mount("bankingFees"); setShowBankingFees(true); }
       if (label === "Guide to help you bank")                    { mount("bankingGuide"); setShowBankingGuide(true); }
       if (label === "App, Online and other banking")             { mount("bankingChannels"); setShowBankingChannels(true); }
       if (label === "Exchange rates")                            { mount("exchangeRates"); setShowExchangeRates(true); }
       if (label === "Latest Offers")                             { mount("latestOffers"); setShowLatestOffers(true); }
       if (label === "Market Indices")                            { mount("marketIndices"); setShowMarketIndices(true); }
-      if (label === "MANSHYA blog")                                 { mount("vinkBlog"); setShowVinkBlog(true); }
+      if (label === "VINK blog")                                 { mount("vinkBlog"); setShowVinkBlog(true); }
     });
   };
 
@@ -611,7 +613,7 @@ export default function App() {
 
   return (
     <div className={`min-h-screen bg-transparent${showPersistentNav ? " has-persistent-nav" : ""}`}>
-      <Toaster position="top-right" richColors closeButton duration={4000} />
+      <Toaster position="top-right" theme={theme.resolved} richColors closeButton duration={4000} />
 
       {showPersistentNav && (
         <PersistentTopNav active={activeSiteSection} onSelect={goToSection} onHome={goHome} />
@@ -633,11 +635,12 @@ export default function App() {
         />
       </ErrorBoundary>
 
+      <main id="main" tabIndex={-1} className="outline-none">
       <ErrorBoundary>
         <HeroSection onApplyClick={() => openSelector("account")} />
       </ErrorBoundary>
 
-      <SearchSection />
+      <SearchSection onFindCard={() => openSelector("creditCard")} />
 
       <LazySection><Suspense fallback={null}><FeaturesSection /></Suspense></LazySection>
       <LazySection><Suspense fallback={null}><ProtectionSection /></Suspense></LazySection>
@@ -650,6 +653,8 @@ export default function App() {
           Soon"), so a public-facing "browse and preview our apps"
           experience would be showing incomplete/simulated features to
           real visitors as if they were real. */}
+      </main>
+
       <LazySection>
         <Suspense fallback={null}>
           <Footer onLinkClick={handleFooterLink} />

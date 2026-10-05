@@ -1,5 +1,6 @@
-import { User, Briefcase, Building2, X } from "lucide-react";
-import vinkLogo from "../../imports/LOGO_FINAL.png";
+import { X, Search } from "lucide-react";
+import { LaunchNotice, BrandMark, AppLink, SECTIONS, navItemClass, NOTICE_H, BAR_H } from "./SiteChrome";
+import { ThemeToggle } from "./ds";
 
 export type SiteSection = "Personal" | "Business" | "Corporate" | null;
 
@@ -9,74 +10,38 @@ interface Props {
   onHome: () => void;
 }
 
-const ITEMS: { label: Exclude<SiteSection, null>; icon: React.ReactNode }[] = [
-  { label: "Personal",    icon: <User className="w-3.5 h-3.5" /> },
-  { label: "Business",    icon: <Briefcase className="w-3.5 h-3.5" /> },
-  { label: "Corporate",   icon: <Building2 className="w-3.5 h-3.5" /> },
-];
-
 /**
  * A slim nav strip that stays visible above every full-screen site page
  * (Personal / Business / Corporate and everything nested under
  * them), so switching sections never requires backing out to the homepage
  * first. Rendered once in App.tsx, above all overlays.
+ *
+ * Its height is a contract: notice + bar = 88px, and the rule in styles/theme.css
+ * (.has-persistent-nav .fixed.inset-0) offsets every full-screen page by exactly that.
+ * Search opens the same palette as the home header (it listens for "vink:open-search").
  */
 export function PersistentTopNav({ active, onSelect, onHome }: Props) {
   return (
-    <div className="fixed top-0 inset-x-0 z-[100]" style={{ height: 88 }}>
-      {/* Launch status notice — this nav renders on every non-homepage page,
-          so this is the banner most visitors actually see. Fixed height
-          (32px) so the CSS offset in theme.css (.has-persistent-nav
-          .fixed.inset-0 { top: ... }) can be calculated exactly. */}
-      <div className="text-white text-center px-4 flex items-center justify-center text-[11.5px] sm:text-[13px] font-semibold leading-tight"
-        style={{ height: 32, background: "linear-gradient(90deg,#4C1D95,#7C3AED)" }}>
-        MANSHYA is not yet in full operation — all information on this site is a preview.{" "}
-        <span className="hidden sm:inline whitespace-nowrap">&nbsp;Full launch: June 2027.</span>
-      </div>
+    <div className="fixed inset-x-0 top-0 z-[100]" style={{ height: NOTICE_H + BAR_H }}>
+      <LaunchNotice />
+      <div className="border-b border-line bg-surface/95 backdrop-blur-md" style={{ height: BAR_H }}>
+        <div className="mx-auto flex h-full max-w-7xl items-center gap-2 px-3 sm:gap-4 sm:px-6 lg:px-8">
+          <a href="/" aria-label="VINK home" onClick={(e) => { e.preventDefault(); onHome(); }} className="flex shrink-0 items-center"><BrandMark height={36} /></a>
+          <span className="hidden h-5 w-px shrink-0 bg-line sm:block" aria-hidden="true" />
 
-      <div
-        className="bg-white/95 backdrop-blur-md border-b border-black/[0.07] shadow-[0_1px_2px_rgba(21,10,51,0.04)]"
-        style={{ height: 56 }}
-      >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center gap-3 sm:gap-4">
-        <button onClick={onHome} className="shrink-0 opacity-90 hover:opacity-100 transition-opacity" aria-label="MANSHYA home">
-          <img src={vinkLogo} alt="MANSHYA" className="h-7 w-auto object-contain" />
-        </button>
+          <nav aria-label="Sections" className="flex items-center gap-1 overflow-x-auto scrollbar-none">
+            {SECTIONS.map(({ label, href }) => (
+              <AppLink key={label} href={href} current={active === label} onNavigate={() => onSelect(label)} className={navItemClass(active === label)}>{label}</AppLink>
+            ))}
+          </nav>
 
-        <span className="hidden sm:block w-px h-5 bg-black/10 shrink-0" />
-
-        <nav className="flex items-center gap-1 overflow-x-auto scrollbar-none">
-          {ITEMS.map(({ label, icon }) => {
-            const isActive = active === label;
-            return (
-              <button
-                key={label}
-                onClick={() => onSelect(label)}
-                className="relative whitespace-nowrap flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-semibold transition-all duration-150"
-                style={{
-                  color: isActive ? "#fff" : "#6B7280",
-                  background: isActive ? "linear-gradient(135deg,#5B21B6,#2E1065)" : "transparent",
-                  boxShadow: isActive ? "0 4px 14px -4px rgba(91,33,182,0.5)" : "none",
-                }}
-                onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = "#F6F5FF"; }}
-                onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
-              >
-                <span className={isActive ? "text-white" : "text-[#5B21B6]"}>{icon}</span>
-                <span className="hidden xs:inline sm:inline">{label}</span>
-              </button>
-            );
-          })}
-        </nav>
-
-        <div className="flex-1" />
-
-        <button
-          onClick={onHome}
-          className="hidden sm:flex items-center gap-1.5 pl-3 pr-2 py-1.5 rounded-full text-[12px] font-medium text-gray-400 hover:text-gray-700 hover:bg-gray-50 transition-colors shrink-0"
-        >
-          Close <X className="w-3.5 h-3.5" />
-        </button>
-      </div>
+          <div className="flex-1" />
+          <button type="button" onClick={() => window.dispatchEvent(new Event("vink:open-search"))} aria-label="Search pages and actions" className="inline-flex size-10 shrink-0 items-center justify-center rounded-full text-fg-muted hover:bg-surface-2 hover:text-fg"><Search className="size-[18px]" aria-hidden="true" /></button>
+          <ThemeToggle className="shrink-0" />
+          <button type="button" onClick={onHome} aria-label="Close and return to the home page" className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full px-3 text-sm font-medium text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg">
+            <span className="hidden sm:inline">Close</span><X className="size-4" aria-hidden="true" />
+          </button>
+        </div>
       </div>
     </div>
   );

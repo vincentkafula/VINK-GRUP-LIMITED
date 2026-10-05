@@ -60,27 +60,27 @@ export function InvestorsDashboard({ isOpen, onClose }: { isOpen: boolean; onClo
         <div className="grid xl:grid-cols-3 gap-5">
           <div className="xl:col-span-2 space-y-4">
             {/* Portfolio breakdown */}
-            <div className="rounded-xl p-5" style={{ background: "#1A1738", border: "1px solid #2D2A50" }}>
-              <h3 className="text-sm font-bold text-white mb-4">Portfolio Breakdown — {fmt(totalValue)}</h3>
+            <div className="rounded-xl p-5" style={{ background: "var(--vk-surface)", border: "1px solid var(--vk-line)" }}>
+              <h3 className="text-sm font-bold text-fg mb-4">Portfolio Breakdown — {fmt(totalValue)}</h3>
               {PORTFOLIO.map((p, i) => (
                 <div key={i} className="mb-4">
                   <div className="flex items-center justify-between mb-1.5">
                     <div className="flex items-center gap-2">
                       <div className="w-2.5 h-2.5 rounded-full" style={{ background: p.color }} />
-                      <span className="text-[11px] text-white font-medium">{p.name}</span>
+                      <span className="text-[11px] text-fg font-medium">{p.name}</span>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="text-[11px] font-bold text-white">{fmt(p.value)}</span>
-                      <div className={`flex items-center gap-0.5 text-[10px] font-bold ${p.change > 0 ? "text-emerald-400" : "text-red-400"}`}>
+                      <span className="text-[11px] font-bold text-fg">{fmt(p.value)}</span>
+                      <div className={`flex items-center gap-0.5 text-[10px] font-bold ${p.change > 0 ? "text-ok" : "text-bad"}`}>
                         {p.change > 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
                         {Math.abs(p.change)}%
                       </div>
                     </div>
                   </div>
-                  <div className="flex gap-1 h-2 rounded-full overflow-hidden" style={{ background: "#2D2A50" }}>
+                  <div className="flex gap-1 h-2 rounded-full overflow-hidden" style={{ background: "var(--vk-line)" }}>
                     <div className="h-full rounded-full transition-all" style={{ width: `${p.alloc}%`, background: p.color }} />
                   </div>
-                  <div className="flex justify-between text-[9px] mt-0.5" style={{ color: "#8884AA" }}>
+                  <div className="flex justify-between text-[9px] mt-0.5" style={{ color: "var(--vk-fg-muted)" }}>
                     <span>{p.alloc}% of portfolio</span>
                   </div>
                 </div>
@@ -88,32 +88,32 @@ export function InvestorsDashboard({ isOpen, onClose }: { isOpen: boolean; onClo
             </div>
 
             {/* Revenue chart */}
-            <div className="rounded-xl p-5" style={{ background: "#1A1738", border: "1px solid #2D2A50" }}>
+            <div className="rounded-xl p-5" style={{ background: "var(--vk-surface)", border: "1px solid var(--vk-line)" }}>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-bold text-white">Monthly Revenue</h3>
+                <h3 className="text-sm font-bold text-fg">Monthly Revenue</h3>
                 <Badge text="+16.2% YTD" color="#10B981" />
               </div>
               <Sparkline values={REVENUE_CHART.map(v => v / 10000)} color="#F59E0B" />
-              <div className="flex justify-between text-[9px] mt-1" style={{ color: "#8884AA" }}>
+              <div className="flex justify-between text-[9px] mt-1" style={{ color: "var(--vk-fg-muted)" }}>
                 <span>Jan 2024</span><span>Jun</span><span>Dec 2024</span>
               </div>
             </div>
 
             {/* Dividends table */}
-            <div className="rounded-xl overflow-hidden" style={{ background: "#1A1738", border: "1px solid #2D2A50" }}>
-              <div className="px-4 py-3 border-b" style={{ borderColor: "#2D2A50" }}>
-                <h3 className="text-sm font-bold text-white">Dividend History</h3>
+            <div className="rounded-xl overflow-hidden" style={{ background: "var(--vk-surface)", border: "1px solid var(--vk-line)" }}>
+              <div className="px-4 py-3 border-b" style={{ borderColor: "var(--vk-line)" }}>
+                <h3 className="text-sm font-bold text-fg">Dividend History</h3>
               </div>
-              <div className="divide-y" style={{ borderColor: "#2D2A5033" }}>
+              <div className="divide-y" style={{ borderColor: "var(--vk-line)33" }}>
                 {DIVIDENDS.map((d, i) => (
-                  <div key={i} className="px-4 py-3 flex items-center justify-between hover:bg-white/5 transition-colors">
+                  <div key={i} className="px-4 py-3 flex items-center justify-between hover:bg-surface-2 transition-colors">
                     <div>
-                      <p className="text-[11px] font-semibold text-white">{d.period}</p>
-                      <p className="text-[9px]" style={{ color: "#8884AA" }}>Paid {d.paid}</p>
+                      <p className="text-[11px] font-semibold text-fg">{d.period}</p>
+                      <p className="text-[9px]" style={{ color: "var(--vk-fg-muted)" }}>Paid {d.paid}</p>
                     </div>
                     <div className="text-center">
                       <p className="text-xs font-bold" style={{ color: "#F59E0B" }}>{d.amount}</p>
-                      <p className="text-[9px]" style={{ color: "#8884AA" }}>Yield {d.yield}</p>
+                      <p className="text-[9px]" style={{ color: "var(--vk-fg-muted)" }}>Yield {d.yield}</p>
                     </div>
                     <Badge text={d.status} color={d.status === "paid" ? "#10B981" : "#F59E0B"} />
                   </div>
@@ -125,17 +125,17 @@ export function InvestorsDashboard({ isOpen, onClose }: { isOpen: boolean; onClo
           <div className="space-y-4">
             <SectionPanel title="Return vs Benchmark">
               <Sparkline values={RETURN_CHART} color="#10B981" />
-              <div className="flex justify-between text-[9px] mt-1" style={{ color: "#8884AA" }}>
+              <div className="flex justify-between text-[9px] mt-1" style={{ color: "var(--vk-fg-muted)" }}>
                 <span>Jan</span><span>Jun</span><span>Dec</span>
               </div>
               <div className="mt-3 grid grid-cols-2 gap-2">
                 <div className="text-center p-2 rounded-lg" style={{ background: "#252245" }}>
                   <p className="text-base font-black" style={{ color: "#10B981" }}>16.2%</p>
-                  <p className="text-[9px]" style={{ color: "#8884AA" }}>Your Return</p>
+                  <p className="text-[9px]" style={{ color: "var(--vk-fg-muted)" }}>Your Return</p>
                 </div>
                 <div className="text-center p-2 rounded-lg" style={{ background: "#252245" }}>
                   <p className="text-base font-black" style={{ color: "#6B7280" }}>8.4%</p>
-                  <p className="text-[9px]" style={{ color: "#8884AA" }}>Benchmark</p>
+                  <p className="text-[9px]" style={{ color: "var(--vk-fg-muted)" }}>Benchmark</p>
                 </div>
               </div>
             </SectionPanel>
@@ -154,9 +154,9 @@ export function InvestorsDashboard({ isOpen, onClose }: { isOpen: boolean; onClo
                 { label: "Beta", value: "0.72" },
                 { label: "P/E Ratio", value: "14.8x" },
               ].map((m, i) => (
-                <div key={i} className="flex justify-between py-2 border-b last:border-0 text-[11px]" style={{ borderColor: "#2D2A5033" }}>
-                  <span style={{ color: "#8884AA" }}>{m.label}</span>
-                  <span className="font-bold text-white">{m.value}</span>
+                <div key={i} className="flex justify-between py-2 border-b last:border-0 text-[11px]" style={{ borderColor: "var(--vk-line)33" }}>
+                  <span style={{ color: "var(--vk-fg-muted)" }}>{m.label}</span>
+                  <span className="font-bold text-fg">{m.value}</span>
                 </div>
               ))}
             </SectionPanel>

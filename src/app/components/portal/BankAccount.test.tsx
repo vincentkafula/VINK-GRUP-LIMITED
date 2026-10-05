@@ -10,7 +10,7 @@ import { ACCOUNT_RULES as SERVER_RULES } from "../../../../server/src/portal/ban
 
 const LINK: BankLink = {
   id: "l1", status: "verified", reviewNote: null, updatedAt: "2026-10-03T10:00:00Z", holderName: "Oz Owner", accountType: "Personal", holderType: "personal", businessName: null, registrationNumber: null,
-  bankName: "Manshya Finance", branchCode: "000001", currency: "ZAR", accountMissing: false, accountNumber: "1234567890", accountName: "Personal current", accountKind: "current", accountId: "acc1", balance: 1500.5,
+  bankName: "VINK Finance", branchCode: "000001", currency: "ZAR", accountMissing: false, accountNumber: "1234567890", accountName: "Personal current", accountKind: "current", accountId: "acc1", balance: 1500.5,
 };
 const info = (role: BankRole, over: Partial<BankInfo> = {}): BankInfo => ({ role, rules: { allowed: SERVER_RULES[role].allowed, message: SERVER_RULES[role].message }, channels: [], link: null, accounts: [], ...over });
 
@@ -51,7 +51,7 @@ describe("BankStrip", () => {
     mockApi(() => ({ body: { success: true, ...info("vehicle_owner", { link: LINK }) } }));
     await render(<BankStrip segment="owner" color="#f00" onOpen={() => {}} />);
     expect(host.querySelector("[data-testid=account-number]")!.textContent).toBe("1234 5678 90");
-    for (const t of ["Oz Owner", "Manshya Finance", "Personal", "Verified"]) expect(host.textContent).toContain(t);
+    for (const t of ["Oz Owner", "VINK Finance", "Personal", "Verified"]) expect(host.textContent).toContain(t);
     await act(async () => { btn("Copy")!.click(); });
     expect(writeText).toHaveBeenCalledWith("1234567890");                       // the plain number, not the spaced one
     expect(host.textContent).toContain("Copied");
@@ -138,7 +138,7 @@ describe("BankScreen", () => {
   it("shows the full details, recent transactions, and the payment channel accounts (or a clear note when one isn't set up)", async () => {
     mockApi((url) => url.includes("/transactions")
       ? { body: { success: true, transactions: [{ at: "2026-10-03T10:00:00Z", type: "transfer", description: "Salary", amount: 1500, balance: 1500 }] } }
-      : { body: { success: true, ...info("vehicle_owner", { link: LINK, channels: [{ channel: "in_person", label: "In-Person Payment", configured: true, accountNumber: "9000000002", holder: "Manshya In-Person", bank: "Manshya Finance", type: "Business" }, { channel: "online", label: "Online Payment", configured: false }] }) } });
+      : { body: { success: true, ...info("vehicle_owner", { link: LINK, channels: [{ channel: "in_person", label: "In-Person Payment", configured: true, accountNumber: "9000000002", holder: "VINK In-Person", bank: "VINK Finance", type: "Business" }, { channel: "online", label: "Online Payment", configured: false }] }) } });
     await render(<BankScreen segment="owner" color="#f00" />);
     for (const t of ["1234 5678 90", "Personal current", "000001", "Salary", "In-Person Payment", "9000 0000 02", "Online Payment", "has not been set up for display yet"]) expect(host.textContent).toContain(t);
     expect(btn("Edit details")).toBeTruthy(); expect(btn("Remove link")).toBeTruthy();

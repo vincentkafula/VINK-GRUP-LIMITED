@@ -1,5 +1,5 @@
 /**
- * MANSHYA Finance — Applications API client
+ * VINK Finance — Applications API client
  *
  * Was pointed at an orphaned Supabase Edge Function URL from an earlier
  * prototype iteration that was never migrated when the rest of the

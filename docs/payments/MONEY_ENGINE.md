@@ -64,7 +64,17 @@ A user gets a quote (fee, rate after margin, 60-second life), then confirms. Con
 
 Read-only checks: every settled tap and credited bank line has its ledger posting; held taps and unmatched bank credits are listed; payments waiting over a day; trips needing review; cross-border transfers stuck half-posted.
 
+
+## Things you set later (no redeploy)
+
+Everything that depends on a bank, a licence or a number you do not have yet is set on `/admin/config`, so the build does not wait for it:
+
+- **Pooled bank accounts** (per pool and currency, rand and kwacha apart): details of accounts that already exist at the bank. Customers see them next to their reference.
+- **Bank statement import**: upload a CSV from any bank, say which column is which, check it, import it. Only credits are used, the customer reference is found inside the bank's free text, and the same file imported twice credits nothing twice. This is the way in until the bank can send credits automatically.
+- **Partner bank, account reference, regulator licence reference, fees, limits, contactless limits, corridors, instant credit**: all in the country profile (draft, approve, activate).
+- **Go-live checklist**: each version shows what is still missing for live (bank, reference, licence, pooled accounts, fee rules, rates for open routes, the reserve if instant credit is on). A version cannot be activated in live mode while a blocker is open; sandbox always works.
+
 ## Still manual
 
-- Bank statement lines, until the bank's feed is connected.
+- Bank statement lines (import a file, or connect the bank's feed when it can send them).
 - Zambia stays a draft until the Absa details exist.

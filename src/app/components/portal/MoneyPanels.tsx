@@ -30,15 +30,15 @@ export function PaymentsPanel({ segment, color }: { segment: Role; color: string
               <StatCard label="Waiting to be paid by me" value={money(d.owedByMeCents)} icon={<Wallet className="w-4 h-4" />} color="#F59E0B" />
               <StatCard label="Waiting to be paid to me" value={money(d.owedToMeCents)} icon={<Wallet className="w-4 h-4" />} color="#10B981" />
             </div>
-            <label className="block"><span className="text-[11px] text-white/60">Show</span>
+            <label className="block"><span className="text-[11px] text-fg-muted">Show</span>
               <select className={inputCls + " mt-1 !w-auto"} value={status} onChange={(e) => { setStatus(e.target.value); setOffset(0); }}><option value="">All</option><option value="pending">Pending</option><option value="waiting">Waiting for funds</option><option value="arrears">Arrears</option><option value="paid">Paid</option></select></label>
             {d.payments.length === 0 ? <Empty>No payments yet. They appear here when a trip completes or an agreement falls due.</Empty> : (
               <TableCard title="Payments" color={color} columns={["Due", "What", "With", "Amount", "Status"]} rows={d.payments.map((p) => [
                 day(p.dueAt),
-                <span key="k">{KIND[p.kind] ?? p.kind}{p.note ? <span className="block text-[11px] text-white/40">{p.note}</span> : null}</span>,
+                <span key="k">{KIND[p.kind] ?? p.kind}{p.note ? <span className="block text-[11px] text-fg-subtle">{p.note}</span> : null}</span>,
                 `${p.direction === "out" ? "To" : "From"} ${p.counterparty}`,
-                <span key="a">{p.direction === "out" ? "−" : "+"}{money(p.amountCents, p.currency)}{p.remainingCents > 0 && p.remainingCents < p.amountCents ? <span className="block text-[11px] text-amber-300">{money(p.remainingCents, p.currency)} still owed</span> : null}</span>,
-                <span key="s"><Badge text={p.status.replace("_", " ")} color={STATUS_COLOR[p.status]} />{p.problem ? <span className="block text-[11px] text-white/40">{p.problem}</span> : null}</span>,
+                <span key="a">{p.direction === "out" ? "−" : "+"}{money(p.amountCents, p.currency)}{p.remainingCents > 0 && p.remainingCents < p.amountCents ? <span className="block text-[11px] text-warn">{money(p.remainingCents, p.currency)} still owed</span> : null}</span>,
+                <span key="s"><Badge text={p.status.replace("_", " ")} color={STATUS_COLOR[p.status]} />{p.problem ? <span className="block text-[11px] text-fg-subtle">{p.problem}</span> : null}</span>,
               ])} />)}
             <Pager total={offset + d.payments.length + (d.payments.length === LIMIT ? 1 : 0)} limit={LIMIT} offset={offset} onChange={setOffset} />
           </>)}</Status>
@@ -88,11 +88,11 @@ export function OwnerAgreements({ color }: { color: string }) {
     <>
       <SectionPanel title="How your drivers are paid">
         <div className="p-4 space-y-3">
-          <p className="text-xs text-white/60">Cash basis: the driver keeps the fares and pays you an agreed amount each week. Monthly: you pay the driver a salary. Per trip: you pay the driver an agreed amount for every completed trip (16 taps). The driver has to accept before anything moves.</p>
+          <p className="text-xs text-fg-muted">Cash basis: the driver keeps the fares and pays you an agreed amount each week. Monthly: you pay the driver a salary. Per trip: you pay the driver an agreed amount for every completed trip (16 taps). The driver has to accept before anything moves.</p>
           <Status load={load}>{({ agreements }) => agreements.length === 0 ? <Empty>No agreements yet.</Empty> : (
             <ul className="space-y-2">{agreements.map((a) => (
-              <li key={a.id} className="rounded-lg p-3 flex flex-wrap items-center justify-between gap-2" style={{ background: "#0D0B1E", border: "1px solid #2D2A50" }}>
-                <div className="text-sm text-white"><b>{a.driverName}</b> · {MODE[a.mode]}<p className="text-xs text-white/60">{describe(a)} · from {day(a.startDate)}{a.endDate ? ` to ${day(a.endDate)}` : ""}</p></div>
+              <li key={a.id} className="rounded-lg p-3 flex flex-wrap items-center justify-between gap-2" style={{ background: "var(--vk-bg)", border: "1px solid var(--vk-line)" }}>
+                <div className="text-sm text-fg"><b>{a.driverName}</b> · {MODE[a.mode]}<p className="text-xs text-fg-muted">{describe(a)} · from {day(a.startDate)}{a.endDate ? ` to ${day(a.endDate)}` : ""}</p></div>
                 <div className="flex items-center gap-2"><Badge text={a.status} color={STATUS_COLOR[a.status]} />
                   {(a.status === "proposed" || a.status === "active") && <ActionButton small label={a.status === "proposed" ? "Withdraw" : "End"} color="#EF4444" onRun={async () => { const r = await call(`/money/agreements/${a.id}/cancel`, { method: "POST" }); reload(); return "error" in r ? { error: r.error } : undefined; }} />}</div>
               </li>))}</ul>)}</Status>
@@ -100,14 +100,14 @@ export function OwnerAgreements({ color }: { color: string }) {
       </SectionPanel>
       <SectionPanel title="Propose an agreement">
         <div className="p-4 grid sm:grid-cols-2 gap-3">
-          <label className="block"><span className="text-[11px] text-white/60">Driver</span><select className={inputCls + " mt-1"} value={f.driverId} onChange={set("driverId")}><option value="">Choose…</option>{active.map((d) => <option key={d.driverId} value={d.driverId}>{d.name}</option>)}</select></label>
-          <label className="block"><span className="text-[11px] text-white/60">How the driver is paid</span><select className={inputCls + " mt-1"} value={f.mode} onChange={set("mode")}>{Object.entries(MODE).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></label>
-          <label className="block"><span className="text-[11px] text-white/60">Amount ({f.mode === "cash_basis_weekly" ? "per week" : f.mode === "monthly_salary" ? "per month" : "per trip"})</span><input className={inputCls + " mt-1"} inputMode="decimal" placeholder="0.00" value={f.amount} onChange={set("amount")} /></label>
-          <label className="block"><span className="text-[11px] text-white/60">Currency</span><select className={inputCls + " mt-1"} value={f.currency} onChange={set("currency")}><option value="ZAR">Rand (R)</option><option value="ZMW">Kwacha (K)</option></select></label>
-          {f.mode === "cash_basis_weekly" && <label className="block"><span className="text-[11px] text-white/60">Weekly pay day</span><select className={inputCls + " mt-1"} value={f.payDay || "5"} onChange={set("payDay")}>{WEEKDAYS.map((d, i) => <option key={d} value={i + 1}>{d}</option>)}</select></label>}
-          {f.mode === "monthly_salary" && <label className="block"><span className="text-[11px] text-white/60">Salary day of the month (1 to 28)</span><input className={inputCls + " mt-1"} inputMode="numeric" placeholder="25" value={f.payDay} onChange={set("payDay")} /></label>}
-          <label className="block"><span className="text-[11px] text-white/60">Starts</span><input type="date" className={inputCls + " mt-1"} value={f.startDate} onChange={set("startDate")} /></label>
-          <label className="block"><span className="text-[11px] text-white/60">Ends (optional)</span><input type="date" className={inputCls + " mt-1"} value={f.endDate} onChange={set("endDate")} /></label>
+          <label className="block"><span className="text-[11px] text-fg-muted">Driver</span><select className={inputCls + " mt-1"} value={f.driverId} onChange={set("driverId")}><option value="">Choose…</option>{active.map((d) => <option key={d.driverId} value={d.driverId}>{d.name}</option>)}</select></label>
+          <label className="block"><span className="text-[11px] text-fg-muted">How the driver is paid</span><select className={inputCls + " mt-1"} value={f.mode} onChange={set("mode")}>{Object.entries(MODE).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></label>
+          <label className="block"><span className="text-[11px] text-fg-muted">Amount ({f.mode === "cash_basis_weekly" ? "per week" : f.mode === "monthly_salary" ? "per month" : "per trip"})</span><input className={inputCls + " mt-1"} inputMode="decimal" placeholder="0.00" value={f.amount} onChange={set("amount")} /></label>
+          <label className="block"><span className="text-[11px] text-fg-muted">Currency</span><select className={inputCls + " mt-1"} value={f.currency} onChange={set("currency")}><option value="ZAR">Rand (R)</option><option value="ZMW">Kwacha (K)</option></select></label>
+          {f.mode === "cash_basis_weekly" && <label className="block"><span className="text-[11px] text-fg-muted">Weekly pay day</span><select className={inputCls + " mt-1"} value={f.payDay || "5"} onChange={set("payDay")}>{WEEKDAYS.map((d, i) => <option key={d} value={i + 1}>{d}</option>)}</select></label>}
+          {f.mode === "monthly_salary" && <label className="block"><span className="text-[11px] text-fg-muted">Salary day of the month (1 to 28)</span><input className={inputCls + " mt-1"} inputMode="numeric" placeholder="25" value={f.payDay} onChange={set("payDay")} /></label>}
+          <label className="block"><span className="text-[11px] text-fg-muted">Starts</span><input type="date" className={inputCls + " mt-1"} value={f.startDate} onChange={set("startDate")} /></label>
+          <label className="block"><span className="text-[11px] text-fg-muted">Ends (optional)</span><input type="date" className={inputCls + " mt-1"} value={f.endDate} onChange={set("endDate")} /></label>
           <div className="sm:col-span-2"><ActionButton label="Send to the driver" color={color} onRun={submit} /></div>
         </div>
       </SectionPanel>
@@ -125,19 +125,19 @@ export function DriverAgreements({ color }: { color: string }) {
       <div className="p-4 space-y-3">
         <Status load={load}>{({ agreements }) => agreements.length === 0 ? <Empty>You have no pay agreement yet. Your owner can propose one from their dashboard.</Empty> : (
           <ul className="space-y-3">{agreements.map((a) => (
-            <li key={a.id} className="rounded-lg p-3 space-y-2" style={{ background: "#0D0B1E", border: "1px solid #2D2A50" }}>
-              <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm text-white"><b>{a.ownerName}</b> · {MODE[a.mode]}</p><Badge text={a.status} color={STATUS_COLOR[a.status]} /></div>
-              <p className="text-xs text-white/70">{describe(a)} · from {day(a.startDate)}{a.endDate ? ` to ${day(a.endDate)}` : ""}</p>
+            <li key={a.id} className="rounded-lg p-3 space-y-2" style={{ background: "var(--vk-bg)", border: "1px solid var(--vk-line)" }}>
+              <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm text-fg"><b>{a.ownerName}</b> · {MODE[a.mode]}</p><Badge text={a.status} color={STATUS_COLOR[a.status]} /></div>
+              <p className="text-xs text-fg">{describe(a)} · from {day(a.startDate)}{a.endDate ? ` to ${day(a.endDate)}` : ""}</p>
               {a.status === "proposed" && (
                 <>
-                  {a.consentText && <p className="text-xs text-white/60 italic">{a.consentText}</p>}
-                  <label className="flex items-start gap-2 text-xs text-white/80"><input type="checkbox" className="mt-0.5" checked={!!ticked[a.id]} onChange={(e) => setTicked((p) => ({ ...p, [a.id]: e.target.checked }))} />I have read this and I agree to these automatic transfers.</label>
+                  {a.consentText && <p className="text-xs text-fg-muted italic">{a.consentText}</p>}
+                  <label className="flex items-start gap-2 text-xs text-fg"><input type="checkbox" className="mt-0.5" checked={!!ticked[a.id]} onChange={(e) => setTicked((p) => ({ ...p, [a.id]: e.target.checked }))} />I have read this and I agree to these automatic transfers.</label>
                   <div className="flex gap-2">
                     <ActionButton small label="Accept" color={color} onRun={async () => { const r = await call(`/money/agreements/${a.id}/accept`, { method: "POST", body: { consent: !!ticked[a.id] } }); if (!("error" in r)) reload(); return "error" in r ? { error: r.error } : undefined; }} />
                     <ActionButton small label="Decline" color="#EF4444" onRun={async () => { const r = await call(`/money/agreements/${a.id}/decline`, { method: "POST" }); if (!("error" in r)) reload(); return "error" in r ? { error: r.error } : undefined; }} /></div>
                 </>)}
             </li>))}</ul>)}</Status>
-        <p className="text-[11px] text-white/40">Money only moves from your account when it is there: if your balance is short, the rest stays owed and is paid when funds arrive.</p>
+        <p className="text-[11px] text-fg-subtle">Money only moves from your account when it is there: if your balance is short, the rest stays owed and is paid when funds arrive.</p>
       </div>
     </SectionPanel>
   );
@@ -151,12 +151,12 @@ export function MarshalFeeSetting({ color }: { color: string }) {
   return (
     <SectionPanel title="Marshal fee">
       <div className="p-4 space-y-3">
-        <p className="text-xs text-white/60">Paid by the driver to the marshal for each completed trip. If no marshal logged the departure, it comes to the association's account.</p>
+        <p className="text-xs text-fg-muted">Paid by the driver to the marshal for each completed trip. If no marshal logged the departure, it comes to the association's account.</p>
         <Status load={load}>{(d) => {
           const shown = v ?? (d.marshalFeeCents === null ? "" : (d.marshalFeeCents / 100).toFixed(2));
           return (
             <div className="flex flex-wrap items-end gap-3">
-              <label className="block"><span className="text-[11px] text-white/60">Fee per trip (blank = default)</span><input className={inputCls + " mt-1 !w-40"} inputMode="decimal" value={shown} onChange={(e) => setV(e.target.value)} /></label>
+              <label className="block"><span className="text-[11px] text-fg-muted">Fee per trip (blank = default)</span><input className={inputCls + " mt-1 !w-40"} inputMode="decimal" value={shown} onChange={(e) => setV(e.target.value)} /></label>
               <ActionButton label="Save" color={color} onRun={async () => {
                 const cents = shown.trim() === "" ? null : Math.round(Number(shown) * 100);
                 if (cents !== null && (!Number.isFinite(cents) || cents < 0)) return { error: "Enter an amount like 20.00" };
@@ -184,19 +184,19 @@ export function VirtualAccountsPanel({ segment, color }: { segment: Role; color:
   return (
     <SectionPanel title="Paying money in">
       <div className="p-4 space-y-3">
-        <p className="text-xs text-white/60">Pay into the bank account shown and write your reference as the payment reference. We match it to your account when the bank reports the payment. Each reference is only yours.</p>
+        <p className="text-xs text-fg-muted">Pay into the bank account shown and write your reference as the payment reference. We match it to your account when the bank reports the payment. Each reference is only yours.</p>
         <Status load={wallet}>{({ wallets }) => wallets.length > 0 ? <div className="grid grid-cols-2 gap-3">{wallets.map((w) => <StatCard key={w.currency} label={`${w.currency} wallet`} value={money(w.balanceCents, w.currency)} icon={<Wallet className="w-4 h-4" />} color={color} />)}</div> : null}</Status>
         <Status load={load}>{({ accounts }) => accounts.length === 0 ? <Empty>You have no payment reference yet. Create one below.</Empty> : (
           <ul className="space-y-2">{accounts.map((a) => (
-            <li key={a.currency + a.pool} className="rounded-lg p-3" style={{ background: "#0D0B1E", border: "1px solid #2D2A50" }}>
-              <p className="text-[11px] text-white/50">{a.poolLabel} · {a.currency === "ZMW" ? "Kwacha" : "Rand"}</p>
-              <div className="flex flex-wrap items-center gap-3"><p className="font-mono text-lg font-bold tracking-wider text-white">{a.reference}</p>
+            <li key={a.currency + a.pool} className="rounded-lg p-3" style={{ background: "var(--vk-bg)", border: "1px solid var(--vk-line)" }}>
+              <p className="text-[11px] text-fg-muted">{a.poolLabel} · {a.currency === "ZMW" ? "Kwacha" : "Rand"}</p>
+              <div className="flex flex-wrap items-center gap-3"><p className="font-mono text-lg font-bold tracking-wider text-fg">{a.reference}</p>
                 <CopyButton value={a.reference} label="reference" color={color} /></div>
-              {a.payInto ? <p className="text-xs text-white/60 mt-1">Pay into {a.payInto.holder} · {a.payInto.bank} · account {a.payInto.accountNumber}</p> : <p className="text-xs text-amber-300 mt-1">The bank account to pay into has not been set up yet.</p>}
+              {a.payInto ? <p className="text-xs text-fg-muted mt-1">Pay into {a.payInto.holder} · {a.payInto.bank} · account {a.payInto.accountNumber}</p> : <p className="text-xs text-warn mt-1">The bank account to pay into has not been set up yet.</p>}
             </li>))}</ul>)}</Status>
         <div className="flex flex-wrap items-end gap-3">
-          <label className="block"><span className="text-[11px] text-white/60">Currency</span><select className={inputCls + " mt-1 !w-auto"} value={currency} onChange={(e) => setCurrency(e.target.value)}><option value="ZAR">Rand (R)</option><option value="ZMW">Kwacha (K)</option></select></label>
-          <label className="block"><span className="text-[11px] text-white/60">Pool</span><select className={inputCls + " mt-1 !w-auto"} value={pool} onChange={(e) => setPool(e.target.value)}><option value="in_person">In-Person Payment</option><option value="online">Online Payment</option></select></label>
+          <label className="block"><span className="text-[11px] text-fg-muted">Currency</span><select className={inputCls + " mt-1 !w-auto"} value={currency} onChange={(e) => setCurrency(e.target.value)}><option value="ZAR">Rand (R)</option><option value="ZMW">Kwacha (K)</option></select></label>
+          <label className="block"><span className="text-[11px] text-fg-muted">Pool</span><select className={inputCls + " mt-1 !w-auto"} value={pool} onChange={(e) => setPool(e.target.value)}><option value="in_person">In-Person Payment</option><option value="online">Online Payment</option></select></label>
           <ActionButton label="Get my reference" color={color} onRun={async () => { const r = await call("/money/virtual-accounts", { method: "POST", body: { currency, pool } }); if ("error" in r) return { error: r.error }; reload(); return { message: "Ready" }; }} />
         </div>
       </div>
@@ -222,9 +222,9 @@ export function CrossBorderPanel({ segment, color }: { segment: Role; color: str
       <div className="p-4 space-y-3">
         {corridors.length > 0 && !quote && (
           <div className="grid sm:grid-cols-3 gap-3">
-            <label className="block"><span className="text-[11px] text-white/60">Route</span><select className={inputCls + " mt-1"} value={chosen} onChange={(e) => setCorridor(e.target.value)}>{corridors.map((c) => <option key={c.id} value={c.id}>{c.fromCurrency} to {c.toCurrency}</option>)}</select></label>
-            <label className="block"><span className="text-[11px] text-white/60">Recipient's email</span><input className={inputCls + " mt-1"} type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></label>
-            <label className="block"><span className="text-[11px] text-white/60">You send ({route?.fromCurrency})</span><input className={inputCls + " mt-1"} inputMode="decimal" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)} /></label>
+            <label className="block"><span className="text-[11px] text-fg-muted">Route</span><select className={inputCls + " mt-1"} value={chosen} onChange={(e) => setCorridor(e.target.value)}>{corridors.map((c) => <option key={c.id} value={c.id}>{c.fromCurrency} to {c.toCurrency}</option>)}</select></label>
+            <label className="block"><span className="text-[11px] text-fg-muted">Recipient's email</span><input className={inputCls + " mt-1"} type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></label>
+            <label className="block"><span className="text-[11px] text-fg-muted">You send ({route?.fromCurrency})</span><input className={inputCls + " mt-1"} inputMode="decimal" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)} /></label>
             <div className="sm:col-span-3"><ActionButton label="Get a quote" color={color} onRun={async () => {
               const amountCents = Math.round(Number(amount) * 100);
               if (!email.includes("@")) return { error: "Enter the recipient's email" };
@@ -234,12 +234,12 @@ export function CrossBorderPanel({ segment, color }: { segment: Role; color: str
             }} /></div>
           </div>)}
         {quote && (
-          <div className="rounded-lg p-3 space-y-2" style={{ background: "#0D0B1E", border: "1px solid #2D2A50" }}>
-            <p className="text-sm text-white">{quote.recipient} receives <b>{money(quote.receiveCents, quote.receiveCurrency)}</b></p>
-            <p className="text-xs text-white/60">You pay {money(quote.sendCents, quote.sendCurrency)} including a fee of {money(quote.feeCents, quote.sendCurrency)} · rate {quote.rate.toFixed(4)} · this quote is valid until {when(quote.expiresAt)}{quote.rateSource && quote.rateSource !== "manual" ? ` · exchange rate by ${quote.rateSource}` : ""}</p>
+          <div className="rounded-lg p-3 space-y-2" style={{ background: "var(--vk-bg)", border: "1px solid var(--vk-line)" }}>
+            <p className="text-sm text-fg">{quote.recipient} receives <b>{money(quote.receiveCents, quote.receiveCurrency)}</b></p>
+            <p className="text-xs text-fg-muted">You pay {money(quote.sendCents, quote.sendCurrency)} including a fee of {money(quote.feeCents, quote.sendCurrency)} · rate {quote.rate.toFixed(4)} · this quote is valid until {when(quote.expiresAt)}{quote.rateSource && quote.rateSource !== "manual" ? ` · exchange rate by ${quote.rateSource}` : ""}</p>
             <div className="flex gap-2">
               <ActionButton label="Confirm and send" color={color} onRun={async () => { const r = await call(`/money/cross-border/${quote.id}/confirm`, { method: "POST" }); if ("error" in r) return { error: r.error }; setQuote(null); setAmount(""); reload(); return { message: "Sent" }; }} />
-              <button type="button" className="text-xs underline text-white/70" onClick={() => setQuote(null)}>Cancel</button></div>
+              <button type="button" className="text-xs underline text-fg" onClick={() => setQuote(null)}>Cancel</button></div>
           </div>)}
         {transfers.length > 0 && <TableCard title="Cross-border transfers" color={color} columns={["When", "", "With", "Amount"]} rows={transfers.map((t) => [when(t.expiresAt), t.direction === "sent" ? "Sent" : "Received", t.recipient, t.direction === "sent" ? `−${money(t.sendCents, t.sendCurrency)}` : `+${money(t.receiveCents, t.receiveCurrency)}`])} />}
       </div>

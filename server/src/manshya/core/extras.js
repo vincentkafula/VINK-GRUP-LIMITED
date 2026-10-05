@@ -3,7 +3,7 @@ const { ApiError, rid, now, sha256, num, text, oneOf } = require('./util');
 const { A } = require('./ledger');
 
 const FAQS = [
-  { topic: 'Payments', q: 'How long do payouts take?', a: 'Payouts to a Manshya account are instant. Payouts to other banks usually arrive the same business day.' },
+  { topic: 'Payments', q: 'How long do payouts take?', a: 'Payouts to a VINK account are instant. Payouts to other banks usually arrive the same business day.' },
   { topic: 'Payments', q: 'What are the fees?', a: 'Online payments cost 2.9% + R1.00, card machine payments 2.5%, and each payout R8.50. See Payouts and billing.' },
   { topic: 'Cards', q: 'What do I do if my card is lost or stolen?', a: 'Open Support, choose Report a lost or stolen card, and pick the card. It is blocked straight away and a replacement is ordered.' },
   { topic: 'Cards', q: 'How do I stop my card being used abroad?', a: 'Open Cards and turn International transactions off. You can turn it back on at any time.' },
@@ -102,7 +102,7 @@ module.exports = function buildExtras({ db, ledger, core, cards, vehicle, config
     const code = String(crypto.randomInt(0, 1e6)).padStart(6, '0');
     run('INSERT INTO buyer_links(merchant_id,email,code_hash,expires_at,attempts) VALUES(?,?,?,?,0) ON CONFLICT(merchant_id) DO UPDATE SET email=excluded.email,code_hash=excluded.code_hash,expires_at=excluded.expires_at,attempts=0,verified_at=NULL',
       m.id, email, sha256(`${m.id}:${code}`), new Date(Date.now() + 10 * 60e3).toISOString());
-    mail(m.id, email, 'Your Manshya verification code', `Your code is ${code}. It expires in 10 minutes. If you did not ask for it, ignore this message.`);
+    mail(m.id, email, 'Your VINK verification code', `Your code is ${code}. It expires in 10 minutes. If you did not ask for it, ignore this message.`);
     return { sent: true };
   }
   function confirmBuyerVerify(m, code) {

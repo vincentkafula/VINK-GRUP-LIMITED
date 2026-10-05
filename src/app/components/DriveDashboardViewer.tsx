@@ -39,7 +39,7 @@ const BLUE = "#2F5BFF";
 const ACCENTS: Record<string, { bg: string; ic: string; line: string }> = {
   power:   { bg: "bg-blue-50",    ic: "bg-blue-100 text-blue-600",       line: "#3B82F6" },
   preview: { bg: "bg-emerald-50", ic: "bg-emerald-100 text-emerald-600", line: "#10B981" },
-  stmt:    { bg: "bg-violet-50",  ic: "bg-violet-100 text-violet-600",   line: "#8B5CF6" },
+  stmt:    { bg: "bg-violet-50",  ic: "bg-violet-100 text-violet-600",   line: "#B04040" },
   pay:     { bg: "bg-orange-50",  ic: "bg-orange-100 text-orange-600",   line: "#F97316" },
   uif:     { bg: "bg-sky-50",     ic: "bg-sky-100 text-sky-600",         line: "#0EA5E9" },
   tax:     { bg: "bg-amber-50",   ic: "bg-amber-100 text-amber-600",     line: "#F59E0B" },
@@ -519,10 +519,10 @@ function PowerView({ deviceOn, setDeviceOn }: { deviceOn: boolean; setDeviceOn: 
               <p className="text-sm font-semibold text-slate-800">Tap-to-pay card reader: {readerReady ? "Ready" : "Not yet integrated"}</p>
               <p className="text-xs text-slate-500 mt-1 leading-relaxed">
                 {!nativeAvailable
-                  ? "You're viewing this in a browser. Tap-to-pay only works inside the installed MANSHYA Android app on a P18Q device."
+                  ? "You're viewing this in a browser. Tap-to-pay only works inside the installed VINK Android app on a P18Q device."
                   : readerReady
                   ? "The device's certified EMV card reader is connected and ready to accept taps."
-                  : "This device is running the MANSHYA app, but the certified EMV card-reader integration hasn't been added yet — taps aren't accepted until that's wired up on the hardware side."}
+                  : "This device is running the VINK app, but the certified EMV card-reader integration hasn't been added yet — taps aren't accepted until that's wired up on the hardware side."}
               </p>
             </div>
           </div>
@@ -781,7 +781,7 @@ function StatementsView({ trips, gross }: { trips: Trip[]; gross: number }) {
         <div className="bg-white rounded-2xl border border-slate-200 p-5 col-span-1">
           <div className="text-xs text-slate-400 mb-1">Trend this period</div>
           <div style={{ width: "100%", height: 44 }}>
-            <ResponsiveContainer><LineChart data={trend}><Line type="monotone" dataKey="total" stroke="#8B5CF6" strokeWidth={2} dot={false} /><Tooltip formatter={(v: number) => R(v)} contentStyle={{ fontSize: 11, borderRadius: 8 }} /></LineChart></ResponsiveContainer>
+            <ResponsiveContainer><LineChart data={trend}><Line type="monotone" dataKey="total" stroke="#B04040" strokeWidth={2} dot={false} /><Tooltip formatter={(v: number) => R(v)} contentStyle={{ fontSize: 11, borderRadius: 8 }} /></LineChart></ResponsiveContainer>
           </div>
         </div>
       </div>

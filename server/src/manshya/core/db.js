@@ -184,7 +184,7 @@ function openDb({ db, dbPath = ':memory:', mode = 'sandbox' } = {}) {
   // other mode is refused rather than quietly writing into it.
   const bound = conn.prepare("SELECT value FROM kv WHERE key='payments_mode'").get();
   if (bound && bound.value !== mode) {
-    throw new Error(`This Manshya database was created in ${bound.value} mode and cannot be opened in ${mode} mode. Use a separate database file for each mode.`);
+    throw new Error(`This VINK database was created in ${bound.value} mode and cannot be opened in ${mode} mode. Use a separate database file for each mode.`);
   }
   if (!bound) conn.prepare("INSERT INTO kv(key,value) VALUES('payments_mode',?)").run(mode);
   const addCol = (t, c, def) => {

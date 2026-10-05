@@ -71,9 +71,9 @@ export function StartMyBusinessViewer({ isOpen, onClose, onNavigate }: Props) {
           --pav-ink-soft:   #1F2937;
           --pav-paper:      #FAFCFB;
           --pav-paper-dim:  #F0F7F2;
-          --pav-gold:       #0F8A4B;
-          --pav-gold-dim:   #0B5C2E;
-          --pav-plum:       #0F8A4B;
+          --pav-gold:       #9B1C1C;
+          --pav-gold-dim:   #5C0A10;
+          --pav-plum:       #9B1C1C;
           --pav-text-on-ink: #EDE9FA;
           --pav-text-muted-on-ink: #A7E8BD;
           --pav-text-body:  #1F2937;
@@ -196,7 +196,7 @@ export function StartMyBusinessViewer({ isOpen, onClose, onNavigate }: Props) {
 
       <div className="pav-hero">
         <h1>Your business journey starts here</h1>
-        <p>MANSHYA helps South African entrepreneurs register, fund and operate businesses — locally and across six key global markets.</p>
+        <p>VINK helps South African entrepreneurs register, fund and operate businesses — locally and across six key global markets.</p>
         <div style={{ marginTop: 20 }}>
           <button className="pav-btn pav-btn-primary" style={{ width: "auto", padding: "10px 32px" }} onClick={() => setApplyCountry("South Africa")}>Help me decide</button>
         </div>

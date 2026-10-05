@@ -17,7 +17,7 @@ function fakeVisa(reply: { status?: number; body: unknown }) {
 }
 const make = (f: ReturnType<typeof fakeVisa>) => new VisaPavValidation({
   baseUrl: "https://sandbox.api.visa.com", authenticate: xPayAuthenticator("KEY", "SECRET"), acquiringBin: "408999", acquirerCountryCode: "840",
-  cardAcceptor: { name: "MANSHYA", idCode: "111111", terminalId: "12345678" }, fetchImpl: f.impl,
+  cardAcceptor: { name: "VINK", idCode: "111111", terminalId: "12345678" }, fetchImpl: f.impl,
 });
 
 describe("Visa PAV client (request matches the OpenAPI spec)", () => {
@@ -30,7 +30,7 @@ describe("Visa PAV client (request matches the OpenAPI spec)", () => {
     expect(c.url.startsWith("https://sandbox.api.visa.com/pav/v1/cardvalidation?apiKey=KEY")).toBe(true);
     expect(c.headers["x-pay-token"]).toMatch(/^xv2:\d+:[0-9a-f]{64}$/);
     expect(body).toMatchObject({ primaryAccountNumber: PAN, cardExpiryDate: "2040-10", cardCvv2Value: "022", acquiringBin: "408999", acquirerCountryCode: "840",
-      cardAcceptor: { name: "MANSHYA", idCode: "111111", terminalId: "12345678" }, addressVerificationResults: { postalCode: "94404", street: "801 Metro Center Blv" } });
+      cardAcceptor: { name: "VINK", idCode: "111111", terminalId: "12345678" }, addressVerificationResults: { postalCode: "94404", street: "801 Metro Center Blv" } });
     expect(body.retrievalReferenceNumber).toMatch(/^\d{12}$/);
     expect(Number.isInteger(body.systemsTraceAuditNumber)).toBe(true);
   });
@@ -101,7 +101,7 @@ describe("configuration", () => {
   it("defaults to the mock", () => expect(getAccountValidationProvider(resolvePaymentsConfig(env({}))).name).toBe("mock"));
   it("builds Visa PAV from sandbox settings, with defaults for the acceptor name and terminal", () => {
     const cfg = resolvePaymentsConfig(env(pav));
-    expect(cfg.visaPav).toMatchObject({ acquiringBin: "408999", acceptorName: "MANSHYA", terminalId: "00000001", baseUrl: "https://sandbox.api.visa.com" });
+    expect(cfg.visaPav).toMatchObject({ acquiringBin: "408999", acceptorName: "VINK", terminalId: "00000001", baseUrl: "https://sandbox.api.visa.com" });
     expect(getAccountValidationProvider(cfg).name).toBe("visa_pav");
   });
   it("never invents the acquirer BIN", () => {

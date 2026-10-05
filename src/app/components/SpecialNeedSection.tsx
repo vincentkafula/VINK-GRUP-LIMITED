@@ -1,6 +1,6 @@
 const AUDIENCES = [
   { icon: "🎓", label: "Students",         desc: "Build your credit history from day one, with zero fees and a low starting limit" },
-  { icon: "🏗️", label: "Credit Builders",  desc: "Secured MANSHYA cards with a clear upgrade pathway as your score improves" },
+  { icon: "🏗️", label: "Credit Builders",  desc: "Secured VINK cards with a clear upgrade pathway as your score improves" },
   { icon: "🚌", label: "Taxi Operators",   desc: "Manage fleet payments, fuel spend, and team wallets from one business account" },
   { icon: "🌍", label: "Newcomers to SA",  desc: "Simple FICA-compliant accounts with no prior banking history required" },
 ];
@@ -25,13 +25,13 @@ export const SpecialNeedSection = memo(function SpecialNeedSection() {
           </div>
           <div className="text-center md:text-left">
             <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4"
-              style={{ background: "#EDE9FE", color: "#5B21B6" }}>Tailored for You</span>
+              style={{ background: "#F2EFE8", color: "#8B0000" }}>Tailored for You</span>
             <h2 className="text-2xl sm:text-3xl font-black text-gray-900 leading-snug mb-3">
               Have a Special Need?<br />
-              <span style={{ color: "#5B21B6" }}>We Can Help.</span>
+              <span style={{ color: "#8B0000" }}>We Can Help.</span>
             </h2>
             <p className="text-gray-500 text-sm leading-relaxed mb-6 max-w-md mx-auto md:mx-0">
-              Not every customer is at the same place in life — and not every bank card fits every situation. MANSHYA offers targeted solutions for specific life stages, from students building credit for the first time to new South African residents setting up their financial lives. Whatever your circumstance, there&apos;s a MANSHYA product designed for you.
+              Not every customer is at the same place in life — and not every bank card fits every situation. VINK offers targeted solutions for specific life stages, from students building credit for the first time to new South African residents setting up their financial lives. Whatever your circumstance, there&apos;s a VINK product designed for you.
             </p>
             <div className="grid grid-cols-2 gap-3 mb-8 max-w-md mx-auto md:mx-0">
               {AUDIENCES.map((a, i) => (
@@ -46,11 +46,11 @@ export const SpecialNeedSection = memo(function SpecialNeedSection() {
             </div>
             <div className="flex flex-wrap justify-center md:justify-start gap-3">
               <button className="px-7 py-3 rounded-xl text-sm font-bold text-white transition-all hover:scale-105 active:scale-95 shadow-lg"
-                style={{ background: "linear-gradient(135deg,#4C1D95,#7C3AED)", boxShadow: "0 6px 20px rgba(124,58,237,.35)" }}>
+                style={{ background: "linear-gradient(135deg,#5C0A10,#9B1C1C)", boxShadow: "0 6px 20px rgba(139,0,0,.35)" }}>
                 Find My Card
               </button>
               <button className="px-7 py-3 rounded-xl text-sm font-semibold transition-all hover:bg-emerald-50"
-                style={{ border: "1.5px solid #5B21B6", color: "#5B21B6" }}>
+                style={{ border: "1.5px solid #8B0000", color: "#8B0000" }}>
                 Talk to an Expert
               </button>
             </div>

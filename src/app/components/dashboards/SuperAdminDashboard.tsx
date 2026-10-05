@@ -34,7 +34,7 @@ const ALL_USERS = [
   { name: "Commander Ndlovu", role: "Marshall", dashboard: "Marshall", lastLogin: "5m ago", status: "active" },
   { name: "NOC Engineer 1", role: "NOC", dashboard: "Mobile Network", lastLogin: "10m ago", status: "active" },
   { name: "Compliance Officer", role: "Authority", dashboard: "Authority", lastLogin: "1h ago", status: "idle" },
-  { name: "MANSHYA Finance Admin", role: "Finance", dashboard: "Account", lastLogin: "3h ago", status: "idle" },
+  { name: "VINK Finance Admin", role: "Finance", dashboard: "Account", lastLogin: "3h ago", status: "idle" },
 ];
 
 const AUDIT = [
@@ -76,9 +76,9 @@ export function SuperAdminDashboard({ isOpen, onClose }: { isOpen: boolean; onCl
         <div className="grid xl:grid-cols-3 gap-5">
           <div className="xl:col-span-2 space-y-4">
             {/* System load chart */}
-            <div className="rounded-xl p-5" style={{ background: "#1A1738", border: "1px solid #2D2A50" }}>
+            <div className="rounded-xl p-5" style={{ background: "var(--vk-surface)", border: "1px solid var(--vk-line)" }}>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <h3 className="text-sm font-bold text-fg flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" />
                   System Load (24h)
                 </h3>
@@ -88,28 +88,28 @@ export function SuperAdminDashboard({ isOpen, onClose }: { isOpen: boolean; onCl
                 </div>
               </div>
               <Sparkline values={SYSTEM_CHART} color="#DC2626" />
-              <div className="flex justify-between text-[9px] mt-1" style={{ color: "#8884AA" }}>
+              <div className="flex justify-between text-[9px] mt-1" style={{ color: "var(--vk-fg-muted)" }}>
                 <span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>Now</span>
               </div>
             </div>
 
             {/* Services health */}
-            <div className="rounded-xl overflow-hidden" style={{ background: "#1A1738", border: "1px solid #2D2A50" }}>
-              <div className="px-4 py-3 border-b flex items-center justify-between" style={{ borderColor: "#2D2A50" }}>
-                <h3 className="text-sm font-bold text-white">All Services Health</h3>
+            <div className="rounded-xl overflow-hidden" style={{ background: "var(--vk-surface)", border: "1px solid var(--vk-line)" }}>
+              <div className="px-4 py-3 border-b flex items-center justify-between" style={{ borderColor: "var(--vk-line)" }}>
+                <h3 className="text-sm font-bold text-fg">All Services Health</h3>
                 <div className="flex gap-2">
                   <Badge text={`${healthy} healthy`} color="#10B981" />
                   {degraded > 0 && <Badge text={`${degraded} degraded`} color="#F59E0B" />}
                 </div>
               </div>
-              <div className="divide-y" style={{ borderColor: "#2D2A5033" }}>
+              <div className="divide-y" style={{ borderColor: "var(--vk-line)33" }}>
                 {SERVICES.map((s, i) => (
-                  <div key={i} className="px-4 py-3 flex items-center gap-4 hover:bg-white/5 transition-colors">
+                  <div key={i} className="px-4 py-3 flex items-center gap-4 hover:bg-surface-2 transition-colors">
                     <div className={`w-2 h-2 rounded-full flex-shrink-0 ${s.status === "healthy" ? "bg-emerald-400" : "bg-amber-400"}`}
                       style={{ boxShadow: `0 0 6px ${s.color}` }} />
                     <div className="flex-1 min-w-0">
-                      <p className="text-[11px] font-semibold text-white">{s.name}</p>
-                      <p className="text-[9px]" style={{ color: "#8884AA" }}>Latency: {s.latency} · {s.requests}</p>
+                      <p className="text-[11px] font-semibold text-fg">{s.name}</p>
+                      <p className="text-[9px]" style={{ color: "var(--vk-fg-muted)" }}>Latency: {s.latency} · {s.requests}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-[10px] font-bold" style={{ color: s.color }}>{s.uptime}% uptime</p>
@@ -147,12 +147,12 @@ export function SuperAdminDashboard({ isOpen, onClose }: { isOpen: boolean; onCl
             <SectionPanel title="Recent Audit Log">
               <div className="space-y-2">
                 {AUDIT.map((a, i) => (
-                  <div key={i} className="flex items-start gap-2.5 py-2 border-b last:border-0" style={{ borderColor: "#2D2A5033" }}>
+                  <div key={i} className="flex items-start gap-2.5 py-2 border-b last:border-0" style={{ borderColor: "var(--vk-line)33" }}>
                     <div className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ background: riskColor[a.risk] }} />
                     <div className="flex-1 min-w-0">
-                      <p className="text-[10px] font-semibold text-white truncate">{a.action}</p>
-                      <p className="text-[9px]" style={{ color: "#8884AA" }}>{a.user} · {a.time}</p>
-                      <p className="text-[9px]" style={{ color: "#5A5880" }}>{a.target}</p>
+                      <p className="text-[10px] font-semibold text-fg truncate">{a.action}</p>
+                      <p className="text-[9px]" style={{ color: "var(--vk-fg-muted)" }}>{a.user} · {a.time}</p>
+                      <p className="text-[9px]" style={{ color: "var(--vk-fg-subtle)" }}>{a.target}</p>
                     </div>
                     <Badge text={a.risk} color={riskColor[a.risk]} />
                   </div>
@@ -171,7 +171,7 @@ export function SuperAdminDashboard({ isOpen, onClose }: { isOpen: boolean; onCl
                   { label: "System Health Report", color: "#34A853" },
                 ].map((c, i) => (
                   <button key={i} className="w-full py-2 px-3 rounded-xl text-[11px] font-semibold transition-all hover:opacity-90 text-left"
-                    style={{ background: c.color + "15", border: `1px solid ${c.color}30`, color: c.color }}>
+                    style={{ background: c.color + "15", border: `1px solid ${c.color}30`, color: `color-mix(in srgb, ${c.color} 62%, var(--vk-fg))` }}>
                     {c.label}
                   </button>
                 ))}
