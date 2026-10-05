@@ -5,7 +5,7 @@ const BADGES = ["Instant Approval", "Tap & Go Payments", "Earn on Every Ride"];
 
 export function SearchSection({ onFindCard }: { onFindCard?: () => void }) {
   return (
-    <section aria-label="Find a card" className="border-b border-line bg-surface-2">
+    <section aria-label="Find a card" className="dark border-b border-white/10 text-fg" style={{ background: "#4a0d14" }}>
       <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
           <div className="flex flex-col items-center gap-4 sm:flex-row">

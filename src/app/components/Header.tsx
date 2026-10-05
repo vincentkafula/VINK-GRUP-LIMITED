@@ -1,5 +1,5 @@
 import { Search, Menu, User, ChevronDown, LifeBuoy, LogIn, Briefcase, Building2, Home } from "lucide-react";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { GetHelpModal } from "./GetHelpModal";
 import { LoginModal } from "./LoginModal";
 import { NotificationCenter } from "./NotificationCenter";
@@ -54,6 +54,25 @@ export function Header({ onHome, onDashboardSelect, onSubNavClick, onOpenProfile
   const [isHelpModalOpen, setIsHelpModalOpen]   = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(isStaffMode());
   const [mobileOpen, setMobileOpen]             = useState(false);
+  // Over the top of the home page the header is transparent and sits on the hero's own background, so there is no seam between them. It turns
+  // solid as soon as the page scrolls (or a menu opens), and its height is published as --vk-header-h so the hero can slide up underneath it.
+  const [atTop, setAtTop] = useState(true);
+  const headerRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const onScroll = () => setAtTop(window.scrollY < 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const publish = () => document.documentElement.style.setProperty("--vk-header-h", `${el.getBoundingClientRect().height}px`);
+    publish();
+    const ro = new ResizeObserver(publish);
+    ro.observe(el);
+    return () => { ro.disconnect(); document.documentElement.style.removeProperty("--vk-header-h"); };
+  }, []);
   const [activeNav, setActiveNav]               = useState<NavItem | null>(null);
   const [paletteOpen, setPaletteOpen]           = useCommandPalette();
   const theme = useTheme();
@@ -114,7 +133,7 @@ export function Header({ onHome, onDashboardSelect, onSubNavClick, onOpenProfile
 
       <a href="#main" className="skip-link">Skip to content</a>
 
-      <header className="sticky top-0 z-40 border-b border-line bg-surface/90 backdrop-blur-md">
+      <header ref={headerRef} className={"sticky top-0 z-40 border-b transition-colors duration-200 " + (atTop && !activeNav && !mobileOpen ? "dark border-transparent bg-transparent text-fg" : "border-line bg-surface/90 backdrop-blur-md")}>
         <LaunchNotice />
 
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

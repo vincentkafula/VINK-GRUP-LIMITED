@@ -94,7 +94,7 @@ export function HeroSection({ onApplyClick }: { onApplyClick?: () => void }) {
   const slide = SLIDES[current];
 
   return (
-    <section className="text-white overflow-hidden relative" aria-roledescription="carousel" aria-label="Featured" onMouseEnter={() => setHold(true)} onMouseLeave={() => setHold(false)} onFocusCapture={() => setHold(true)} onBlurCapture={() => setHold(false)}
+    <section className="text-white overflow-hidden relative -mt-[var(--vk-header-h,97px)] pt-[var(--vk-header-h,97px)]" aria-roledescription="carousel" aria-label="Featured" onMouseEnter={() => setHold(true)} onMouseLeave={() => setHold(false)} onFocusCapture={() => setHold(true)} onBlurCapture={() => setHold(false)}
       style={{ background: "linear-gradient(160deg,#0c0e14 0%,#150f16 38%,#2e0b10 74%,#4a0d14 100%)" }}>
       {/* Signature motif — concentric "tap" rings, evoking the NFC contactless
           gesture that's central to how VINK actually works. Deliberately
