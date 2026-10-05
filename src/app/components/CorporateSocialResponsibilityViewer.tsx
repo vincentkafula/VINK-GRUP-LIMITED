@@ -10,7 +10,7 @@ const PD = "#2E0B10";
 
 const CORPORATE_SUB_NAV = ["Account", "Solutions & Credit Cards", "Loan", "Social Responsibility"];
 
-const PILLS = ["Urban Management", "Urban Management", "Social Development", "Communications"];
+const PILLS = ["Urban Management", "Safety & Security Department", "Social Development", "Communications"];
 
 export function CorporateSocialResponsibilityViewer({ isOpen, onClose, onNavigate }: Props) {
   const [activePill, setActivePill] = useState(0);
@@ -114,7 +114,7 @@ export function CorporateSocialResponsibilityViewer({ isOpen, onClose, onNavigat
         <p className="text-[15px]">
           Meet the team in the{" "}
           <a href="#" className="font-semibold hover:underline" style={{ color: "var(--vk-crimson-text)" }}>
-            Office of the CEO
+            Administration: Office of the CEO
           </a>
         </p>
       </div>
