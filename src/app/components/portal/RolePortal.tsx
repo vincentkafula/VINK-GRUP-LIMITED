@@ -11,6 +11,7 @@ import { AssociationDashboard } from "./AssociationDashboard";
 import { InvestorDashboard } from "./InvestorDashboard";
 const PersonalDashboard = lazy(() => import("./PersonalDashboard").then((m) => ({ default: m.PersonalDashboard })));   // pulls in the payments dashboard only when needed
 import { PORTALS, portalPathForRole, type PortalKey } from "./portalDefs";
+import { usePageTitle } from "../ds";
 
 /**
  * Shell for the role dashboards. The page itself is only a convenience: the real protection is on the server
@@ -18,6 +19,7 @@ import { PORTALS, portalPathForRole, type PortalKey } from "./portalDefs";
  */
 export function RolePortal({ portal, isOpen, onClose }: { portal: PortalKey; isOpen: boolean; onClose: () => void }) {
   const def = PORTALS[portal];
+  usePageTitle(isOpen ? def.title : null);
   const session = getSession();
   const [state, setState] = useState<"checking" | "ok" | "denied" | "signedOut" | "error">("checking");
   const [nav, setNav] = useState("Overview");
@@ -38,7 +40,7 @@ export function RolePortal({ portal, isOpen, onClose }: { portal: PortalKey; isO
   if (state !== "ok") {
     const own = portalPathForRole(session?.role);
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "var(--vk-bg)" }} role="dialog" aria-label={def.title}>
+      <div data-theme-aware className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "var(--vk-bg)" }} role="dialog" aria-label={def.title}>
         <div className="max-w-sm w-full rounded-2xl p-8 text-center" style={{ background: "var(--vk-surface)", border: "1px solid var(--vk-line)" }}>
           {state === "checking" ? <Loader2 className="w-6 h-6 animate-spin mx-auto text-fg" /> : <ShieldAlert className="w-8 h-8 mx-auto text-warn" />}
           <p className="mt-4 text-fg font-semibold">

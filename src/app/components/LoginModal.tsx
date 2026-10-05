@@ -55,7 +55,7 @@ function FormField({
         style={{
           border: `1.5px solid ${focused ? "#2E0B10" : "#e8e0d3"}`,
           boxShadow: focused ? "0 0 0 3px rgba(15,61,36,0.10)" : "none",
-          background: "#fff",
+          background: "var(--vk-surface)",
         }}
       >
         <span className="shrink-0 text-[#6b5d5f]">{icon}</span>
@@ -262,7 +262,7 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
               </p>
               <div className="flex gap-8 flex-wrap">
                 {STATS.map((s) => (
-                  <div key={s.label} className="pl-3.5" style={{ borderLeft: "2px solid #FF9900" }}>
+                  <div key={s.label} className="pl-3.5" style={{ borderLeft: "2px solid #C9A84C" }}>
                     <strong className="block text-white text-[20px] font-bold">{s.value}</strong>
                     <span className="text-[#d8c6b8] text-[11.5px]">{s.label}</span>
                   </div>
@@ -272,7 +272,7 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
           </div>
 
           {/* ── Right: login card ── */}
-          <div className="flex items-center justify-center p-6 sm:p-10" style={{ background: "#fff" }}>
+          <div className="flex items-center justify-center p-6 sm:p-10" style={{ background: "var(--vk-surface)" }}>
             <div className="w-full max-w-[380px]">
               <h2 className="text-[#5c1420] text-[24px] font-bold mb-1.5">{view === "login" ? "Sign in" : "Reset your password"}</h2>
               <p className="text-[13.5px] text-[#6b5d5f] mb-6">
@@ -359,7 +359,7 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
               </p>
 
               <div className="flex items-start gap-2 text-[11.5px] text-[#6b5d5f] leading-[1.5]">
-                <ShieldAlert className="w-3.5 h-3.5 shrink-0 mt-0.5 text-[#FF9900]" />
+                <ShieldAlert className="w-3.5 h-3.5 shrink-0 mt-0.5 text-[#C9A84C]" />
                 Never share your login details. VINK will never ask for your password by phone or email.
               </div>
             </div>

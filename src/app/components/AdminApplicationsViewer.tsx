@@ -20,15 +20,15 @@ import {
 interface Props { isOpen: boolean; onClose: () => void; }
 
 const P = "#5C0A10";
-const GOLD = "#F5A623";
+const GOLD = "#C9A84C";
 
 // ─── Status config ────────────────────────────────────────────────────────────
 const STATUS_CFG: Record<AppStatus, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
-  submitted:            { label: "Submitted",        color: "#F59E0B", bg: "#FEF3C7", icon: <Clock className="w-3.5 h-3.5" /> },
-  under_review:         { label: "Under Review",     color: "#3B82F6", bg: "#DBEAFE", icon: <Eye className="w-3.5 h-3.5" /> },
-  approved:             { label: "Approved",         color: "#10B981", bg: "#D1FAE5", icon: <CheckCircle className="w-3.5 h-3.5" /> },
-  declined:             { label: "Declined",         color: "#EF4444", bg: "#FEE2E2", icon: <XCircle className="w-3.5 h-3.5" /> },
-  more_info_requested:  { label: "More Info Needed", color: "#34A853", bg: "#F2EFE8", icon: <AlertTriangle className="w-3.5 h-3.5" /> },
+  submitted:            { label: "Submitted",        color: "#F59E0B", bg: "var(--vk-warn-bg)", icon: <Clock className="w-3.5 h-3.5" /> },
+  under_review:         { label: "Under Review",     color: "#3B82F6", bg: "var(--vk-info-bg)", icon: <Eye className="w-3.5 h-3.5" /> },
+  approved:             { label: "Approved",         color: "#10B981", bg: "var(--vk-ok-bg)", icon: <CheckCircle className="w-3.5 h-3.5" /> },
+  declined:             { label: "Declined",         color: "#EF4444", bg: "var(--vk-bad-bg)", icon: <XCircle className="w-3.5 h-3.5" /> },
+  more_info_requested:  { label: "More Info Needed", color: "#34A853", bg: "var(--vk-surface-2)", icon: <AlertTriangle className="w-3.5 h-3.5" /> },
 };
 
 // ─── Tier config ──────────────────────────────────────────────────────────────
@@ -40,9 +40,9 @@ const STATUS_CFG: Record<AppStatus, { label: string; color: string; bg: string; 
 // account applications are real now. Extending this to the other product
 // types would need its own schema/router work, not just a UI relabel.
 const TYPE_CFG: Record<AppTier, { label: string; icon: React.ReactNode; color: string }> = {
-  personal:   { label: "Personal Account",   icon: <Building2 className="w-4 h-4" />, color: "#8B0000" },
+  personal:   { label: "Personal Account",   icon: <Building2 className="w-4 h-4" />, color: "var(--vk-crimson-text)" },
   business:   { label: "Business Account",   icon: <Briefcase className="w-4 h-4" />, color: "#1565C0" },
-  corporate:  { label: "Corporate Account",  icon: <Building2 className="w-4 h-4" />, color: "#5C0A10" },
+  corporate:  { label: "Corporate Account",  icon: <Building2 className="w-4 h-4" />, color: "var(--vk-crimson-text)" },
 };
 
 const ALL_TYPES: AppTier[] = ["personal", "business", "corporate"];
@@ -56,14 +56,14 @@ function fmtDate(iso: string) {
 // ─── Stat card ────────────────────────────────────────────────────────────────
 function StatCard({ icon, label, value, color, sub }: { icon: React.ReactNode; label: string; value: string | number; color: string; sub?: string }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-5 flex items-start gap-4 shadow-sm hover:shadow-md transition-shadow">
+    <div className="bg-surface rounded-2xl border border-line p-5 flex items-start gap-4 shadow-sm hover:shadow-md transition-shadow">
       <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-white" style={{ background: color }}>
         {icon}
       </div>
       <div>
-        <p className="text-2xl font-black text-gray-900 leading-none">{value}</p>
-        <p className="text-xs font-semibold text-gray-500 mt-1">{label}</p>
-        {sub && <p className="text-[10px] text-gray-400 mt-0.5">{sub}</p>}
+        <p className="text-2xl font-black text-fg leading-none">{value}</p>
+        <p className="text-xs font-semibold text-fg-muted mt-1">{label}</p>
+        {sub && <p className="text-[10px] text-fg-subtle mt-0.5">{sub}</p>}
       </div>
     </div>
   );
@@ -88,19 +88,19 @@ function ApplicationDetail({ app, onClose, onStatusUpdate }: {
 
   return (
     <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
+      <div className="bg-surface rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between z-10">
+        <div className="sticky top-0 bg-surface border-b border-line px-6 py-4 flex items-center justify-between z-10">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white" style={{ background: tc.color }}>
               {tc.icon}
             </div>
             <div>
-              <p className="font-bold text-gray-900 text-sm">{app.referenceNumber}</p>
-              <p className="text-xs text-gray-500">{tc.label}{app.accountTypeRequested ? ` · ${app.accountTypeRequested}` : ""}</p>
+              <p className="font-bold text-fg text-sm">{app.referenceNumber}</p>
+              <p className="text-xs text-fg-muted">{tc.label}{app.accountTypeRequested ? ` · ${app.accountTypeRequested}` : ""}</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 text-gray-500"><X className="w-4 h-4" /></button>
+          <button onClick={onClose} className="p-2 rounded-full hover:bg-surface-2 text-fg-muted"><X className="w-4 h-4" /></button>
         </div>
 
         <div className="p-6 space-y-5">
@@ -110,29 +110,29 @@ function ApplicationDetail({ app, onClose, onStatusUpdate }: {
               style={{ background: sc.bg, color: sc.color }}>
               {sc.icon}{sc.label}
             </span>
-            <span className="text-xs text-gray-400">Submitted {fmtDate(app.submittedAt)}</span>
+            <span className="text-xs text-fg-subtle">Submitted {fmtDate(app.submittedAt)}</span>
           </div>
 
           {/* Applicant */}
-          <div className="rounded-xl border border-gray-200 p-4 space-y-2">
-            <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Applicant</p>
+          <div className="rounded-xl border border-line p-4 space-y-2">
+            <p className="text-xs font-bold uppercase tracking-wider text-fg-subtle mb-3">Applicant</p>
             <div className="grid grid-cols-2 gap-3 text-sm">
-              <div><p className="text-xs text-gray-400">Full name</p><p className="font-semibold text-gray-800">{app.applicantName || "—"}</p></div>
-              <div><p className="text-xs text-gray-400">Email</p><p className="font-semibold text-gray-800 truncate">{app.applicantEmail || "—"}</p></div>
-              <div><p className="text-xs text-gray-400">Phone</p><p className="font-semibold text-gray-800">{app.applicantPhone || "—"}</p></div>
-              <div><p className="text-xs text-gray-400">Account type requested</p><p className="font-semibold text-gray-800">{app.accountTypeRequested || "—"}</p></div>
+              <div><p className="text-xs text-fg-subtle">Full name</p><p className="font-semibold text-fg">{app.applicantName || "—"}</p></div>
+              <div><p className="text-xs text-fg-subtle">Email</p><p className="font-semibold text-fg truncate">{app.applicantEmail || "—"}</p></div>
+              <div><p className="text-xs text-fg-subtle">Phone</p><p className="font-semibold text-fg">{app.applicantPhone || "—"}</p></div>
+              <div><p className="text-xs text-fg-subtle">Account type requested</p><p className="font-semibold text-fg">{app.accountTypeRequested || "—"}</p></div>
             </div>
           </div>
 
           {/* Tier-specific data */}
           {app.tierData && Object.keys(app.tierData).length > 0 && (
-            <div className="rounded-xl border border-gray-200 p-4">
-              <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Application data</p>
+            <div className="rounded-xl border border-line p-4">
+              <p className="text-xs font-bold uppercase tracking-wider text-fg-subtle mb-3">Application data</p>
               <div className="grid grid-cols-2 gap-2">
                 {Object.entries(app.tierData).filter(([, v]) => v && String(v).trim() && typeof v !== "object").map(([k, v]) => (
                   <div key={k} className="text-xs">
-                    <span className="text-gray-400 capitalize">{k.replace(/([A-Z])/g, " $1").trim()}: </span>
-                    <span className="font-medium text-gray-700">{String(v)}</span>
+                    <span className="text-fg-subtle capitalize">{k.replace(/([A-Z])/g, " $1").trim()}: </span>
+                    <span className="font-medium text-fg">{String(v)}</span>
                   </div>
                 ))}
               </div>
@@ -141,13 +141,13 @@ function ApplicationDetail({ app, onClose, onStatusUpdate }: {
 
           {/* Status history */}
           {app.statusHistory && app.statusHistory.length > 0 && (
-            <div className="rounded-xl border border-gray-200 p-4">
-              <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Status history</p>
+            <div className="rounded-xl border border-line p-4">
+              <p className="text-xs font-bold uppercase tracking-wider text-fg-subtle mb-3">Status history</p>
               <div className="space-y-2">
                 {app.statusHistory.map((h, i) => (
                   <div key={i} className="text-xs flex items-start gap-2">
-                    <span className="font-semibold text-gray-700 shrink-0">{fmtDate(h.createdAt)}</span>
-                    <span className="text-gray-500">
+                    <span className="font-semibold text-fg shrink-0">{fmtDate(h.createdAt)}</span>
+                    <span className="text-fg-muted">
                       {h.fromStatus ? `${STATUS_CFG[h.fromStatus as AppStatus]?.label ?? h.fromStatus} → ` : ""}
                       <strong>{STATUS_CFG[h.toStatus as AppStatus]?.label ?? h.toStatus}</strong>
                       {h.changedByName ? ` by ${h.changedByName}` : ""} — {h.reason}
@@ -159,15 +159,15 @@ function ApplicationDetail({ app, onClose, onStatusUpdate }: {
           )}
 
           {/* Status update */}
-          <div className="rounded-xl border border-gray-200 p-4 space-y-3">
-            <p className="text-xs font-bold uppercase tracking-wider text-gray-400">Update status</p>
+          <div className="rounded-xl border border-line p-4 space-y-3">
+            <p className="text-xs font-bold uppercase tracking-wider text-fg-subtle">Update status</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {ALL_STATUSES.map(s => {
                 const sc2 = STATUS_CFG[s];
                 return (
                   <button key={s} onClick={() => setNewStatus(s)}
                     className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold border-2 transition-all"
-                    style={{ borderColor: newStatus === s ? sc2.color : "#E5E7EB", background: newStatus === s ? sc2.bg : "#FAFAFA", color: newStatus === s ? sc2.color : "#6B7280" }}>
+                    style={{ borderColor: newStatus === s ? sc2.color : "var(--vk-line)", background: newStatus === s ? sc2.bg : "#FAFAFA", color: newStatus === s ? sc2.color : "#6B7280" }}>
                     {sc2.icon}{sc2.label}
                   </button>
                 );
@@ -178,7 +178,7 @@ function ApplicationDetail({ app, onClose, onStatusUpdate }: {
               onChange={e => setReason(e.target.value)}
               rows={3}
               placeholder="Reason for this status change (required)…"
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400 resize-none"
+              className="w-full border border-line rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400 resize-none"
             />
             <button onClick={save} disabled={saving || !reason.trim() || newStatus === app.status}
               className="w-full py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-40"
@@ -249,30 +249,30 @@ export function AdminApplicationsViewer({ isOpen, onClose }: Props) {
   const statsByStatus = stats.byStatus as Record<string, number> ?? {};
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-[#FAF8F4]">
+    <div className="fixed inset-0 z-50 flex flex-col bg-surface-2">
       {/* ── Top bar ── */}
-      <div className="sticky top-0 z-20 bg-white border-b border-gray-100 shadow-sm">
+      <div className="sticky top-0 z-20 bg-surface border-b border-line shadow-sm">
         <div className="flex items-center justify-between px-5 py-3">
           <div className="flex items-center gap-3">
             <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
-            <div className="border-l border-gray-200 pl-3 hidden sm:block">
-              <p className="text-sm font-black text-gray-800">Applications Dashboard</p>
-              <p className="text-[11px] text-gray-400">VINK Finance · Admin · Personal / Business / Corporate accounts</p>
+            <div className="border-l border-line pl-3 hidden sm:block">
+              <p className="text-sm font-black text-fg">Applications Dashboard</p>
+              <p className="text-[11px] text-fg-subtle">VINK Finance · Admin · Personal / Business / Corporate accounts</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <button onClick={load} disabled={loading}
-              className="p-2 rounded-xl hover:bg-gray-100 transition-colors text-gray-500 disabled:opacity-40">
+              className="p-2 rounded-xl hover:bg-surface-2 transition-colors text-fg-muted disabled:opacity-40">
               <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
             </button>
-            <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 text-gray-500">
+            <button onClick={onClose} className="p-2 rounded-full hover:bg-surface-2 text-fg-muted">
               <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-gray-100 px-5">
+        <div className="flex border-b border-line px-5">
           {[{ id: "applications", label: "Applications" }, { id: "stats", label: "Analytics" }].map(t => (
             <button key={t.id} onClick={() => setActiveTab(t.id as typeof activeTab)}
               className="px-4 py-2.5 text-sm font-semibold transition-colors border-b-2 -mb-px"
@@ -295,8 +295,8 @@ export function AdminApplicationsViewer({ isOpen, onClose }: Props) {
             </div>
 
             {/* By tier */}
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-              <h3 className="font-bold text-gray-800 mb-4">Applications by Account Tier</h3>
+            <div className="bg-surface rounded-2xl border border-line p-5 shadow-sm">
+              <h3 className="font-bold text-fg mb-4">Applications by Account Tier</h3>
               <div className="space-y-3">
                 {ALL_TYPES.map(t => {
                   const tc = TYPE_CFG[t];
@@ -307,12 +307,12 @@ export function AdminApplicationsViewer({ isOpen, onClose }: Props) {
                       <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white flex-shrink-0" style={{ background: tc.color }}>
                         {tc.icon}
                       </div>
-                      <p className="text-sm font-medium text-gray-700 w-28 flex-shrink-0">{tc.label}</p>
-                      <div className="flex-1 bg-gray-100 rounded-full h-2 overflow-hidden">
+                      <p className="text-sm font-medium text-fg w-28 flex-shrink-0">{tc.label}</p>
+                      <div className="flex-1 bg-surface-2 rounded-full h-2 overflow-hidden">
                         <div className="h-full rounded-full transition-all duration-700"
                           style={{ width: `${(count / max) * 100}%`, background: tc.color }} />
                       </div>
-                      <span className="text-sm font-bold text-gray-800 w-8 text-right">{count}</span>
+                      <span className="text-sm font-bold text-fg w-8 text-right">{count}</span>
                     </div>
                   );
                 })}
@@ -320,8 +320,8 @@ export function AdminApplicationsViewer({ isOpen, onClose }: Props) {
             </div>
 
             {/* By status */}
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-              <h3 className="font-bold text-gray-800 mb-4">Applications by Status</h3>
+            <div className="bg-surface rounded-2xl border border-line p-5 shadow-sm">
+              <h3 className="font-bold text-fg mb-4">Applications by Status</h3>
               <div className="grid sm:grid-cols-5 gap-3">
                 {ALL_STATUSES.map(s => {
                   const sc = STATUS_CFG[s];
@@ -344,20 +344,20 @@ export function AdminApplicationsViewer({ isOpen, onClose }: Props) {
             {/* Filters */}
             <div className="flex flex-wrap gap-3 items-center">
               {/* Search */}
-              <div className="flex items-center gap-2 flex-1 min-w-[200px] bg-white border border-gray-200 rounded-xl px-3 py-2">
-                <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
+              <div className="flex items-center gap-2 flex-1 min-w-[200px] bg-surface border border-line rounded-xl px-3 py-2">
+                <Search className="w-4 h-4 text-fg-subtle flex-shrink-0" />
                 <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, email or reference…"
-                  className="flex-1 text-sm outline-none bg-transparent text-gray-700" />
+                  className="flex-1 text-sm outline-none bg-transparent text-fg" />
               </div>
               {/* Type filter */}
               <select value={filterType} onChange={e => { setFilterType(e.target.value); setPage(1); }}
-                className="text-sm border border-gray-200 rounded-xl px-3 py-2 outline-none bg-white">
+                className="text-sm border border-line rounded-xl px-3 py-2 outline-none bg-surface">
                 <option value="all">All types</option>
                 {ALL_TYPES.map(t => <option key={t} value={t}>{TYPE_CFG[t].label}</option>)}
               </select>
               {/* Status filter */}
               <select value={filterStatus} onChange={e => { setFilterStatus(e.target.value as AppStatus | "all"); setPage(1); }}
-                className="text-sm border border-gray-200 rounded-xl px-3 py-2 outline-none bg-white">
+                className="text-sm border border-line rounded-xl px-3 py-2 outline-none bg-surface">
                 <option value="all">All statuses</option>
                 {ALL_STATUSES.map(s => <option key={s} value={s}>{STATUS_CFG[s].label}</option>)}
               </select>
@@ -366,24 +366,24 @@ export function AdminApplicationsViewer({ isOpen, onClose }: Props) {
             {/* Table */}
             {loading ? (
               <div className="flex items-center justify-center py-20">
-                <RefreshCw className="w-8 h-8 animate-spin" style={{ color: P }} />
+                <RefreshCw className="w-8 h-8 animate-spin" style={{ color: "var(--vk-crimson-text)" }} />
               </div>
             ) : filtered.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-center">
                 <FileText className="w-12 h-12 text-gray-300 mb-3" />
-                <p className="font-semibold text-gray-500">No applications found</p>
-                <p className="text-sm text-gray-400 mt-1">
+                <p className="font-semibold text-fg-muted">No applications found</p>
+                <p className="text-sm text-fg-subtle mt-1">
                   {apps.length === 0 ? "Applications submitted via the forms will appear here." : "Try adjusting your search or filters."}
                 </p>
               </div>
             ) : (
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="bg-surface rounded-2xl border border-line shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-gray-100" style={{ background: "#FAF8F4" }}>
+                      <tr className="border-b border-line" style={{ background: "var(--vk-surface-2)" }}>
                         {["Reference", "Type", "Applicant", "Product", "Status", "Submitted", "Action"].map(h => (
-                          <th key={h} className="text-left px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-gray-400 whitespace-nowrap">{h}</th>
+                          <th key={h} className="text-left px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-fg-subtle whitespace-nowrap">{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -392,23 +392,23 @@ export function AdminApplicationsViewer({ isOpen, onClose }: Props) {
                         const sc = STATUS_CFG[app.status];
                         const tc = TYPE_CFG[app.tier] ?? TYPE_CFG.personal;
                         return (
-                          <tr key={app.id} className="hover:bg-gray-50 transition-colors">
+                          <tr key={app.id} className="hover:bg-surface-2 transition-colors">
                             <td className="px-4 py-3">
-                              <p className="font-mono text-xs font-bold text-gray-800">{app.referenceNumber}</p>
+                              <p className="font-mono text-xs font-bold text-fg">{app.referenceNumber}</p>
                             </td>
                             <td className="px-4 py-3">
                               <div className="flex items-center gap-1.5">
                                 <div className="w-5 h-5 rounded flex items-center justify-center text-white flex-shrink-0 text-[10px]"
                                   style={{ background: tc.color }}>{tc.icon}</div>
-                                <span className="text-xs font-medium text-gray-600 whitespace-nowrap">{tc.label}</span>
+                                <span className="text-xs font-medium text-fg-muted whitespace-nowrap">{tc.label}</span>
                               </div>
                             </td>
                             <td className="px-4 py-3">
-                              <p className="font-semibold text-gray-800 text-xs">{app.applicantName || "—"}</p>
-                              <p className="text-[10px] text-gray-400 truncate max-w-[140px]">{app.applicantEmail}</p>
+                              <p className="font-semibold text-fg text-xs">{app.applicantName || "—"}</p>
+                              <p className="text-[10px] text-fg-subtle truncate max-w-[140px]">{app.applicantEmail}</p>
                             </td>
                             <td className="px-4 py-3">
-                              <p className="text-xs text-gray-600 truncate max-w-[120px]">{app.accountTypeRequested || "—"}</p>
+                              <p className="text-xs text-fg-muted truncate max-w-[120px]">{app.accountTypeRequested || "—"}</p>
                             </td>
                             <td className="px-4 py-3">
                               <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full whitespace-nowrap"
@@ -417,7 +417,7 @@ export function AdminApplicationsViewer({ isOpen, onClose }: Props) {
                               </span>
                             </td>
                             <td className="px-4 py-3">
-                              <p className="text-xs text-gray-400 whitespace-nowrap">{fmtDate(app.submittedAt)}</p>
+                              <p className="text-xs text-fg-subtle whitespace-nowrap">{fmtDate(app.submittedAt)}</p>
                             </td>
                             <td className="px-4 py-3">
                               <button onClick={() => setSelectedApp(app)}
@@ -435,13 +435,13 @@ export function AdminApplicationsViewer({ isOpen, onClose }: Props) {
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                  <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
-                    <p className="text-xs text-gray-500">Page {page} of {totalPages}</p>
+                  <div className="flex items-center justify-between px-4 py-3 border-t border-line">
+                    <p className="text-xs text-fg-muted">Page {page} of {totalPages}</p>
                     <div className="flex gap-2">
                       <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1}
-                        className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40">← Previous</button>
+                        className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-line hover:bg-surface-2 disabled:opacity-40">← Previous</button>
                       <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages}
-                        className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40">Next →</button>
+                        className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-line hover:bg-surface-2 disabled:opacity-40">Next →</button>
                     </div>
                   </div>
                 )}

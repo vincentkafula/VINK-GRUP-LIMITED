@@ -6,6 +6,7 @@ import { Badge } from "../dashboards/DashboardShell";
 import { useLoad, Status, Empty, ActionButton, inputCls, rand, when } from "./ui";
 import { CopyButton, spaced, type BankLink } from "./BankAccount";
 import { Pager } from "./widgets";
+import { usePageTitle } from "../ds";
 
 const COLOR = "#38BDF8";
 const STAFF = ["owner", "superadmin"];
@@ -31,11 +32,12 @@ export function AdminBankLinks({ isOpen, onClose }: { isOpen: boolean; onClose: 
   const [load, reload] = useLoad<{ total: number; links: Row[] }>(() => api(`?${qs}`) as never, [qs]);
   const [rejecting, setRejecting] = useState<string | null>(null); const [note, setNote] = useState("");
   const session = getSession();
+  usePageTitle(isOpen ? "Bank accounts of all users" : null);
   if (!isOpen) return null;
   const staff = !!session && STAFF.includes(session.role);
 
   return (
-    <div className="fixed inset-0 z-[80] overflow-y-auto" style={{ background: "var(--vk-bg)" }} role="dialog" aria-modal="true" aria-label="Bank accounts of all users">
+    <div data-theme-aware className="fixed inset-0 z-[80] overflow-y-auto" style={{ background: "var(--vk-bg)" }} role="dialog" aria-modal="true" aria-label="Bank accounts of all users">
       <div className="max-w-6xl mx-auto p-4 sm:p-6 space-y-4">
         <div className="flex items-center justify-between"><h1 className="text-xl font-bold text-fg flex items-center gap-2"><ShieldCheck className="w-5 h-5" style={{ color: `color-mix(in srgb, ${COLOR} 62%, var(--vk-fg))` }} />Bank accounts of all users</h1>
           <button type="button" aria-label="Close" onClick={onClose} className="p-2 text-fg-muted"><X className="w-5 h-5" /></button></div>

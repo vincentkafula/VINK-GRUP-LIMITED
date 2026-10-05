@@ -17,18 +17,18 @@ export function CorporateSocialResponsibilityViewer({ isOpen, onClose, onNavigat
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-white">
+    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-surface">
 
       {/* ── Top bar ── */}
-      <div className="sticky top-0 z-20 flex items-center justify-between px-4 py-3 bg-white border-b shadow-sm" style={{ borderColor: "#e8e8f0" }}>
+      <div className="sticky top-0 z-20 flex items-center justify-between px-4 py-3 bg-surface border-b shadow-sm" style={{ borderColor: "#e8e8f0" }}>
         <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
-        <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-800">
+        <button onClick={onClose} className="p-2 rounded-full hover:bg-surface-2 transition-colors text-fg-muted hover:text-fg">
           <X className="w-5 h-5" />
         </button>
       </div>
 
       {/* ── Main nav ── */}
-      <div className="bg-white border-b px-6 flex gap-6 overflow-x-auto text-sm" style={{ borderColor: "#e8e8f0" }}>
+      <div className="bg-surface border-b px-6 flex gap-6 overflow-x-auto text-sm" style={{ borderColor: "#e8e8f0" }}>
         {["Personal", "Business", "Corporate"].map((item) => (
           <span key={item} className="py-3 flex-shrink-0 font-medium"
             style={{ color: item === "Corporate" ? P : "#5a5a72", borderBottom: item === "Corporate" ? `2px solid ${P}` : "2px solid transparent" }}>
@@ -113,7 +113,7 @@ export function CorporateSocialResponsibilityViewer({ isOpen, onClose, onNavigat
         </p>
         <p className="text-[15px]">
           Meet the team in the{" "}
-          <a href="#" className="font-semibold hover:underline" style={{ color: P }}>
+          <a href="#" className="font-semibold hover:underline" style={{ color: "var(--vk-crimson-text)" }}>
             Office of the CEO
           </a>
         </p>

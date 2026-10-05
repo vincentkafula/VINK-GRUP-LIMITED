@@ -67,7 +67,7 @@ export function ManageMyBusinessViewer({ isOpen, onClose, onNavigate }: Props) {
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
         .pav-root{
-          --pav-ink:        #FF7A1A;
+          --pav-ink:        #8B0000;
           --pav-ink-soft:   #1F2937;
           --pav-paper:      #FAFCFB;
           --pav-paper-dim:  #F0F7F2;

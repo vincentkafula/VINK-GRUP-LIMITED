@@ -29,21 +29,21 @@ import { memo } from "react";
 
 export const FeaturedOffersSection = memo(function FeaturedOffersSection({ onCompareCards }: { onCompareCards?: () => void }) {
   return (
-    <section className="py-10 sm:py-14" style={{ background: "#FAF8F4" }}>
+    <section className="py-10 sm:py-14" style={{ background: "var(--vk-surface-2)" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-end justify-between mb-8 gap-4 flex-wrap">
           <div>
             <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-2"
-              style={{ background: "#F2EFE8", color: "#8B0000" }}>Partner Offers</span>
-            <h2 className="text-2xl sm:text-3xl font-black text-gray-900">Featured Card Offers</h2>
+              style={{ background: "var(--vk-surface-2)", color: "var(--vk-crimson-text)" }}>Partner Offers</span>
+            <h2 className="text-2xl sm:text-3xl font-black text-fg">Featured Card Offers</h2>
           </div>
-          <button onClick={onCompareCards} className="text-sm font-semibold hover:underline flex-shrink-0 bg-transparent border-none cursor-pointer" style={{ color: "#8B0000" }}>
+          <button onClick={onCompareCards} className="text-sm font-semibold hover:underline flex-shrink-0 bg-transparent border-none cursor-pointer" style={{ color: "var(--vk-crimson-text)" }}>
             Compare all cards →
           </button>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           {OFFERS.map((o, i) => (
-            <div key={i} className="rounded-2xl overflow-hidden border border-gray-100 bg-white hover:shadow-2xl hover:-translate-y-1 transition-all group">
+            <div key={i} className="rounded-2xl overflow-hidden border border-line bg-surface hover:shadow-2xl hover:-translate-y-1 transition-all group">
               <div className="relative h-48 overflow-hidden" style={{ background: o.grad }}>
                 <div className="absolute -top-10 -right-10 w-44 h-44 rounded-full bg-white/10 pointer-events-none"/>
                 <div className="absolute top-3 left-3 text-white text-[10px] font-bold px-2.5 py-1 rounded-full"
@@ -68,9 +68,9 @@ export const FeaturedOffersSection = memo(function FeaturedOffersSection({ onCom
               </div>
               <div className="p-5">
                 <span className="text-xs font-bold px-2.5 py-1 rounded-full block mb-2"
-                  style={{ background: "#F2EFE8", color: "#8B0000" }}>{o.highlight}</span>
-                <p className="text-gray-400 text-xs mb-1">{o.detail}</p>
-                <p className="text-gray-400 text-[11px] mb-4">{o.issuer}</p>
+                  style={{ background: "var(--vk-surface-2)", color: "var(--vk-crimson-text)" }}>{o.highlight}</span>
+                <p className="text-fg-muted text-xs mb-1">{o.detail}</p>
+                <p className="text-fg-muted text-[11px] mb-4">{o.issuer}</p>
                 <button className="w-full py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 group-hover:scale-[1.02]"
                   style={{ background: "linear-gradient(135deg,#5C0A10,#9B1C1C)" }}>
                   Apply Today
@@ -79,7 +79,7 @@ export const FeaturedOffersSection = memo(function FeaturedOffersSection({ onCom
             </div>
           ))}
         </div>
-        <p className="text-center text-[11px] text-gray-400 mt-6">
+        <p className="text-center text-[11px] text-fg-muted mt-6">
           Subject to credit approval and FICA verification. Terms and conditions apply. VINK is an authorised Financial Services Provider.
         </p>
       </div>

@@ -4,7 +4,7 @@ import { Footer } from "../Footer";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 const P = "#5C0A10";
-const GOLD = "#F5A623";
+const GOLD = "#C9A84C";
 
 const THEMES = [
   { icon: "🚕", title: "Life on the Road", desc: "Real stories and practical money advice for taxi drivers, commuters, and the people who keep South Africa's transport economy moving." },
@@ -16,10 +16,10 @@ const THEMES = [
 export function VinkBlogViewer({ isOpen, onClose }: Props) {
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-white">
-      <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm">
+    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-surface">
+      <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-surface border-b border-line shadow-sm">
         <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
-        <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500"><X className="w-5 h-5" /></button>
+        <button onClick={onClose} className="p-2 rounded-full hover:bg-surface-2 transition-colors text-fg-muted"><X className="w-5 h-5" /></button>
       </div>
 
       <div className="py-16 px-6 text-white" style={{ background: `linear-gradient(135deg,#0F172A,${P})` }}>
@@ -35,28 +35,28 @@ export function VinkBlogViewer({ isOpen, onClose }: Props) {
 
       <div className="max-w-4xl mx-auto w-full px-5 py-10 space-y-10">
 
-        <section className="rounded-2xl p-5" style={{ background: "#FEF3C7", border: "1px solid #FDE68A" }}>
+        <section className="rounded-2xl p-5" style={{ background: "var(--vk-warn-bg)", border: "1px solid #FDE68A" }}>
           <p className="text-sm font-semibold" style={{ color: "#92400E" }}>
             The blog hasn't published yet — VINK is not currently in full operation. The first posts go live alongside our June 2027 launch. What follows is a preview of what we'll be writing about.
           </p>
         </section>
 
         <section>
-          <h2 className="text-2xl font-black mb-6" style={{ color: P }}>What We'll Write About</h2>
+          <h2 className="text-2xl font-black mb-6" style={{ color: "var(--vk-crimson-text)" }}>What We'll Write About</h2>
           <div className="grid sm:grid-cols-2 gap-4">
             {THEMES.map((t, i) => (
-              <div key={i} className="p-5 bg-white rounded-xl border border-gray-200">
+              <div key={i} className="p-5 bg-surface rounded-xl border border-line">
                 <span className="text-2xl mb-2 block">{t.icon}</span>
-                <p className="font-bold text-gray-900 mb-1">{t.title}</p>
-                <p className="text-gray-600 text-sm leading-relaxed">{t.desc}</p>
+                <p className="font-bold text-fg mb-1">{t.title}</p>
+                <p className="text-fg-muted text-sm leading-relaxed">{t.desc}</p>
               </div>
             ))}
           </div>
         </section>
 
-        <section className="bg-gray-50 rounded-2xl p-6 border border-gray-200">
-          <h2 className="text-lg font-black mb-3" style={{ color: P }}>Want to Be Notified?</h2>
-          <p className="text-gray-600 text-sm leading-relaxed">
+        <section className="bg-surface-2 rounded-2xl p-6 border border-line">
+          <h2 className="text-lg font-black mb-3" style={{ color: "var(--vk-crimson-text)" }}>Want to Be Notified?</h2>
+          <p className="text-fg-muted text-sm leading-relaxed">
             We'll announce the blog's launch through our usual channels. In the meantime, VINK at the World Economic Forum and Social Responsibility already share some of the thinking behind why we're building VINK the way we are.
           </p>
         </section>

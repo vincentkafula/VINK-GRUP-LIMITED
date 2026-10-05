@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { MessageCircle, X, Send, Paperclip, Phone, Video, ChevronDown, Bot, User, Clock, CheckCheck, AlertCircle, Star } from "lucide-react";
 
 const P = "#5C0A10";
-const GOLD = "#F5A623";
+const GOLD = "#C9A84C";
 
 type MessageRole = "user" | "agent" | "bot" | "system";
 
@@ -53,7 +53,7 @@ const BOT_RESPONSES: Record<string, string> = {
 
 const CATEGORIES = [
   { label: "Account", color: "#3B82F6" },
-  { label: "Cards", color: P },
+  { label: "Cards", color: "var(--vk-crimson-text)" },
   { label: "Loans", color: "#34A853" },
   { label: "Travel", color: "#F59E0B" },
   { label: "Technical", color: "#10B981" },
@@ -202,7 +202,7 @@ export function CustomerSupportChat() {
                     </div>
                     <div className="max-w-[80%] rounded-2xl rounded-bl-sm px-3 py-2" style={{ background: "rgba(255,255,255,0.08)" }}>
                       <p className="text-xs text-white/90 leading-relaxed whitespace-pre-line"
-                        dangerouslySetInnerHTML={{ __html: msg.text.replace(/\*\*(.*?)\*\*/g, '<strong style="color:#F5A623">$1</strong>') }}
+                        dangerouslySetInnerHTML={{ __html: msg.text.replace(/\*\*(.*?)\*\*/g, '<strong style="color:#C9A84C">$1</strong>') }}
                       />
                       <p className="text-[10px] text-white/30 mt-1">{msg.timestamp.toLocaleTimeString("en-ZA", { hour: "2-digit", minute: "2-digit" })}</p>
                     </div>

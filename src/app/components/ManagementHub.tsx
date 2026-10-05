@@ -70,7 +70,7 @@ const NAVY   = "#0A0F1E";
 const DEEP   = "#111827";
 const SURF   = "#1E293B";
 const P      = "#5C0A10";
-const GOLD   = "#F5A623";
+const GOLD   = "#C9A84C";
 const GREEN  = "#10B981";
 const RED    = "#EF4444";
 const TEAL   = "#14B8A6";
@@ -142,7 +142,7 @@ function Badge({ text, color }: { text: string; color: string }) {
 // ──────────────────────────────────────────────────────────────────────────────
 function OverviewScreen({ user }: { user: MgmtUser }) {
   const kpis = [
-    { label: "Total Accounts",    value: user.level <= 2 ? "2,841,204" : user.level <= 4 ? "184,420" : "12,840", sub: "+3.2%", color: P,     icon: <Users className="w-5 h-5" /> },
+    { label: "Total Accounts",    value: user.level <= 2 ? "2,841,204" : user.level <= 4 ? "184,420" : "12,840", sub: "+3.2%", color: "var(--vk-crimson-text)",     icon: <Users className="w-5 h-5" /> },
     { label: "Monthly Revenue",   value: user.level <= 2 ? "R266.4B"   : user.level <= 4 ? "R2.8B"   : "R48M",   sub: "+8.1%", color: GREEN, icon: <TrendingUp className="w-5 h-5" /> },
     { label: "Active Sessions",   value: user.level <= 3 ? "48,204"    : user.level <= 5 ? "4,820"   : "284",    sub: "Live",  color: TEAL,  icon: <Activity className="w-5 h-5" /> },
     { label: "Pending Approvals", value: user.level <= 3 ? "1,204"     : user.level <= 5 ? "48"      : "12",     color: GOLD,  icon: <CheckCircle className="w-5 h-5" /> },
@@ -312,7 +312,7 @@ function CustomersScreen({ user }: { user: MgmtUser }) {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-3 gap-4">
-        {[{ label:"Total Customers",value:"184,420",color:P,icon:<Users className="w-5 h-5"/>},
+        {[{ label:"Total Customers",value:"184,420",color:"var(--vk-crimson-text)",icon:<Users className="w-5 h-5"/>},
           { label:"KYC Pending",    value:"1,204",  color:GOLD,icon:<Clock className="w-5 h-5"/>},
           { label:"Business Accts", value:"2,840",  color:TEAL,icon:<Building2 className="w-5 h-5"/>}
         ].map((k,i) => <Stat key={i} {...k} />)}
@@ -388,7 +388,7 @@ function FinancialScreen({ user }: { user: MgmtUser }) {
       <Section title="Transaction Breakdown">
         <div className="space-y-3">
           {[
-            { cat: "Card Payments",    vol: "R48.2B", pct: 42, color: P },
+            { cat: "Card Payments",    vol: "R48.2B", pct: 42, color: "var(--vk-crimson-text)" },
             { cat: "EFT Transfers",    vol: "R38.4B", pct: 34, color: TEAL },
             { cat: "AFC Fare Taps",    vol: "R11.0B", pct: 10, color: GREEN },
             { cat: "Loan Disbursements",vol:"R8.2B",  pct: 7,  color: GOLD },
@@ -480,7 +480,7 @@ function ReportsScreen({ user }: { user: MgmtUser }) {
         <div className="space-y-2">
           {reports.map((r,i) => (
             <div key={i} className="flex items-center gap-4 p-3 rounded-xl" style={{ background: DEEP }}>
-              <FileText className="w-5 h-5 flex-shrink-0" style={{ color: P }} />
+              <FileText className="w-5 h-5 flex-shrink-0" style={{ color: "var(--vk-crimson-text)" }} />
               <div className="flex-1 min-w-0">
                 <p className="text-white text-sm font-semibold">{r.name}</p>
                 <p className="text-gray-500 text-xs">{r.period} · {r.size}</p>
@@ -551,7 +551,7 @@ function GenericScreen({ id, user }: { id: string; user: MgmtUser }) {
             <button key={i} className="flex items-center gap-3 p-4 rounded-xl text-left hover:bg-white/5 transition-all border group"
               style={{ background: DEEP, borderColor: "#2D2A50" }}>
               <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform"
-                style={{ background: P + "25", color: P }}>
+                style={{ background: P + "25", color: "var(--vk-crimson-text)" }}>
                 {nav?.icon}
               </div>
               <p className="text-white text-xs font-semibold leading-snug">{item}</p>
@@ -703,7 +703,7 @@ export function ManagementHub({ isOpen, onClose }: Props) {
       <div className="flex items-center justify-between px-5 py-3 border-b flex-shrink-0"
         style={{ background: DEEP, borderColor: "#1E2A45" }}>
         <div className="flex items-center gap-2">
-          <Shield className="w-5 h-5" style={{ color: P }} />
+          <Shield className="w-5 h-5" style={{ color: "var(--vk-crimson-text)" }} />
           <p className="text-white font-black text-sm">VINK Management Hub</p>
           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full ml-1" style={{ background: RED + "25", color: RED }}>
             🔒 SECURE

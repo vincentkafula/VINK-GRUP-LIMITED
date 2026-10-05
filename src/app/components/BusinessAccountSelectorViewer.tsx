@@ -96,7 +96,7 @@ export function BusinessAccountSelectorViewer({ isOpen, onClose, onNavigate, onA
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
         .pav-root{
-          --pav-ink:        #FF7A1A;
+          --pav-ink:        #8B0000;
           --pav-ink-soft:   #1F2937;
           --pav-paper:      #FAFCFB;
           --pav-paper-dim:  #F0F7F2;
@@ -207,12 +207,12 @@ export function BusinessAccountSelectorViewer({ isOpen, onClose, onNavigate, onA
       </nav>
 
       <div className="relative overflow-hidden" style={{ background: "linear-gradient(160deg,#FAFCFB 0%,#F3F9F5 100%)" }}>
-        <div className="absolute -left-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: "linear-gradient(180deg,#9B1C1C,#FF7A1A)", filter: "blur(60px)" }} />
-        <div className="absolute -right-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: "linear-gradient(180deg,#FF7A1A,#9B1C1C)", filter: "blur(60px)" }} />
+        <div className="absolute -left-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: "linear-gradient(180deg,#9B1C1C,#8B0000)", filter: "blur(60px)" }} />
+        <div className="absolute -right-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: "linear-gradient(180deg,#8B0000,#9B1C1C)", filter: "blur(60px)" }} />
         <div className="relative max-w-6xl mx-auto px-8 py-14 sm:py-16">
-          <span className="inline-block text-[11px] font-bold tracking-[0.14em] uppercase mb-3" style={{ color: "#FF7A1A" }}>Business Banking</span>
-          <h1 className="text-3xl sm:text-4xl font-black leading-[1.1] text-gray-900">Banking designed for<br />every South African business.</h1>
-          <p className="text-gray-500 text-sm sm:text-base mt-4 max-w-lg">Open a business account in minutes and manage your finances with the VINK app.</p>
+          <span className="inline-block text-[11px] font-bold tracking-[0.14em] uppercase mb-3" style={{ color: "#8B0000" }}>Business Banking</span>
+          <h1 className="text-3xl sm:text-4xl font-black leading-[1.1] text-fg">Banking designed for<br />every South African business.</h1>
+          <p className="text-fg-muted text-sm sm:text-base mt-4 max-w-lg">Open a business account in minutes and manage your finances with the VINK app.</p>
         </div>
       </div>
 

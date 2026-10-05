@@ -1,10 +1,11 @@
+import { ThemeToggle } from "./ds";
 import { useState, useEffect } from "react";
 import {
   LayoutGrid, Landmark, CreditCard,
   Building2, ShieldCheck, HeartHandshake, Users, Settings,
   ClipboardList, Menu, Search, Bell, ChevronDown, Plus, ArrowRight, TrendingUp,
   AlertTriangle, Monitor, CheckCircle2, CalendarDays, FileCheck2, UserCog, Loader2,
-  Check, X as XIcon, Lock, Moon,
+  Check, X as XIcon, Lock,
 } from "lucide-react";
 import { toast } from "sonner";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
@@ -12,9 +13,9 @@ import { rbacApi, jobsApi, getSession, getToken, type SectionApplication, type M
 
 interface Props { isOpen: boolean; onClose: () => void; adminName?: string; adminRole?: string; role?: string }
 
-const GREEN = "#1FAE58";
-const ORANGE = "#F4802F";
-const PURPLE = "#6D5DFC";
+const GREEN = "#C9A84C";
+const ORANGE = "#8B0000";
+const PURPLE = "#8B0000";
 
 // One distinct, meaningful color per module rather than alternating between
 // two -- this is what actually makes a module grid read as "professional":
@@ -77,7 +78,7 @@ const BOTTOM_STATS = [
   { value: "98%", label: "System Uptime", icon: <ShieldCheck className="w-5 h-5" />, iconBg: "#E9F7EF", iconColor: GREEN, spark: [7, 8, 7, 9, 8, 9, 8, 9] },
   { value: "1,245", label: "Active Sessions", icon: <Monitor className="w-5 h-5" />, iconBg: "#E6F0FF", iconColor: "#2563EB", spark: [4, 6, 5, 8, 6, 9, 7, 10] },
   { value: "12", label: "Pending Approvals", icon: <ClipboardList className="w-5 h-5" />, iconBg: "#FDECE0", iconColor: ORANGE, spark: [6, 5, 7, 4, 6, 3, 5, 4] },
-  { value: "24", label: "System Alerts", icon: <AlertTriangle className="w-5 h-5" />, iconBg: "#FEF2F2", iconColor: "#DC2626", spark: [8, 6, 9, 5, 7, 4, 6, 3] },
+  { value: "24", label: "System Alerts", icon: <AlertTriangle className="w-5 h-5" />, iconBg: "var(--vk-bad-bg)", iconColor: "#DC2626", spark: [8, 6, 9, 5, 7, 4, 6, 3] },
 ];
 
 type View = "dashboard" | "applications" | "managers" | "audit" | "apply" | "jobApplications";
@@ -306,22 +307,22 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
   const visibleTiles = isOwner ? MODULE_TILES : MODULE_TILES.filter(t => (mySections ?? []).includes(t.title));
 
   return (
-    <div className="fixed inset-0 z-50 flex text-[14px]" style={{ fontFamily: "'Segoe UI', Arial, sans-serif", background: "#F6F7FB" }}>
+    <div data-theme-aware className="fixed inset-0 z-50 flex text-[14px]" style={{ fontFamily: "var(--font-sans)", background: "var(--vk-bg)" }}>
 
       {sessionExpired && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" style={{ background: "rgba(14,20,32,0.75)" }}>
-          <div className="bg-white rounded-2xl max-w-sm w-full p-7 text-center">
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: "#FEF2F2" }}>
+          <div className="bg-surface rounded-2xl max-w-sm w-full p-7 text-center">
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: "var(--vk-bad-bg)" }}>
               <Lock className="w-7 h-7" style={{ color: "#DC2626" }} />
             </div>
-            <p className="text-base font-bold text-gray-900 mb-1.5">
+            <p className="text-base font-bold text-fg mb-1.5">
               {sessionExpiredDetail?.backendError === "No session found — please sign in again."
                 ? "You're not signed in"
                 : "Your session has expired"}
             </p>
-            <p className="text-sm text-gray-500 mb-4">Please sign in again from the main menu to continue.</p>
+            <p className="text-sm text-fg-muted mb-4">Please sign in again from the main menu to continue.</p>
             {sessionExpiredDetail && (
-              <div className="text-left text-[11px] font-mono bg-gray-50 rounded-lg p-3 mb-4 text-gray-500 break-words">
+              <div className="text-left text-[11px] font-mono bg-surface-2 rounded-lg p-3 mb-4 text-fg-muted break-words">
                 <p><strong>Endpoint:</strong> {sessionExpiredDetail.path}</p>
                 <p><strong>Token was sent:</strong> {sessionExpiredDetail.hadToken ? "Yes" : "No"}</p>
                 <p><strong>Server said:</strong> {sessionExpiredDetail.backendError ?? "—"}</p>
@@ -396,7 +397,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
               <button
                 onClick={() => goView("apply")}
                 className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[13px] font-semibold mt-1 border border-dashed"
-                style={view === "apply" ? { background: GREEN, color: "#fff", borderColor: GREEN } : { color: GREEN, borderColor: "rgba(31,174,88,0.4)" }}
+                style={view === "apply" ? { background: GREEN, color: "#fff", borderColor: GREEN } : { color: GREEN, borderColor: "rgba(201,168,76,0.4)" }}
               >
                 <Plus className="w-4 h-4" /> Apply for a Section
               </button>
@@ -434,37 +435,35 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
       {/* Main */}
       <div className="flex-1 flex flex-col overflow-y-auto">
         {/* Top bar */}
-        <div className="flex items-center gap-4 px-6 py-4 bg-white border-b border-gray-100 sticky top-0 z-10">
-          <button onClick={() => setSidebarOpen(o => !o)} className="p-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 shrink-0">
+        <div className="flex items-center gap-4 px-6 py-4 bg-surface border-b border-line sticky top-0 z-10">
+          <button onClick={() => setSidebarOpen(o => !o)} className="p-2 rounded-lg border border-line text-fg-muted hover:bg-surface-2 shrink-0">
             <Menu className="w-4 h-4" />
           </button>
           <div className="flex-1 max-w-md relative">
-            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input placeholder="Search anything..." className="w-full pl-9 pr-14 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-green-600" />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-semibold text-gray-400 border border-gray-200 rounded px-1.5 py-0.5">⌘K</span>
+            <Search className="w-4 h-4 text-fg-subtle absolute left-3 top-1/2 -translate-y-1/2" />
+            <input placeholder="Search anything..." className="w-full pl-9 pr-14 py-2 rounded-lg border border-line text-sm outline-none focus:border-green-600" />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-semibold text-fg-subtle border border-line rounded px-1.5 py-0.5">⌘K</span>
           </div>
           <div className="flex items-center gap-4 ml-auto shrink-0">
-            <button className="relative p-2 rounded-lg hover:bg-gray-50">
-              <Bell className="w-4.5 h-4.5 text-gray-500" />
+            <button className="relative p-2 rounded-lg hover:bg-surface-2">
+              <Bell className="w-4.5 h-4.5 text-fg-muted" />
               <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-[9px] font-bold text-white flex items-center justify-center" style={{ background: ORANGE }}>6</span>
             </button>
-            <button onClick={() => toast.info("Dark mode is coming soon.")} className="p-2 rounded-lg hover:bg-gray-50" aria-label="Toggle dark mode">
-              <Moon className="w-4.5 h-4.5 text-gray-500" />
-            </button>
-            <button onClick={() => toast.info("Settings are coming soon.")} className="p-2 rounded-lg hover:bg-gray-50" aria-label="Settings">
-              <Settings className="w-4.5 h-4.5 text-gray-500" />
+            <ThemeToggle />
+            <button onClick={() => toast.info("Settings are coming soon.")} className="p-2 rounded-lg hover:bg-surface-2" aria-label="Settings">
+              <Settings className="w-4.5 h-4.5 text-fg-muted" />
             </button>
             <button className="flex items-center gap-2.5 pl-2">
               <span className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: GREEN }}>
                 {adminName.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
               </span>
               <span className="text-left hidden sm:block">
-                <p className="text-[13px] font-semibold text-gray-900 leading-tight">{adminName}</p>
-                <p className="text-[11px] text-gray-400 leading-tight">{adminRole}</p>
+                <p className="text-[13px] font-semibold text-fg leading-tight">{adminName}</p>
+                <p className="text-[11px] text-fg-subtle leading-tight">{adminRole}</p>
               </span>
-              <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+              <ChevronDown className="w-3.5 h-3.5 text-fg-subtle" />
             </button>
-            <button onClick={onClose} className="text-xs font-semibold text-gray-400 hover:text-gray-700 border-l border-gray-200 pl-4">Close</button>
+            <button onClick={onClose} className="text-xs font-semibold text-fg-subtle hover:text-fg border-l border-line pl-4">Close</button>
           </div>
         </div>
 
@@ -474,23 +473,23 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
           {/* Welcome header */}
           <div className="flex items-start justify-between flex-wrap gap-4 mb-8">
             <div>
-              <h1 className="text-2xl font-black text-gray-900">Welcome back, Admin! 👋</h1>
-              <p className="text-gray-500 text-sm mt-1">Here's what's happening across the platform today.</p>
+              <h1 className="text-2xl font-black text-fg">Welcome back, Admin! 👋</h1>
+              <p className="text-fg-muted text-sm mt-1">Here's what's happening across the platform today.</p>
             </div>
-            <button className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 bg-white shrink-0">
-              <CalendarDays className="w-4 h-4 text-gray-400" /> 02 May 2025 - 08 May 2025 <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+            <button className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-line text-sm font-medium text-fg bg-surface shrink-0">
+              <CalendarDays className="w-4 h-4 text-fg-subtle" /> 02 May 2025 - 08 May 2025 <ChevronDown className="w-3.5 h-3.5 text-fg-subtle" />
             </button>
           </div>
 
           {/* Stat cards */}
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
             {STATS.map(s => (
-              <div key={s.label} className="bg-white rounded-2xl border border-gray-100 p-5">
+              <div key={s.label} className="bg-surface rounded-2xl border border-line p-5">
                 <div className="flex items-center gap-4">
                   <span className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style={{ background: s.iconBg, color: s.iconColor }}>{s.icon}</span>
                   <div className="min-w-0">
-                    <p className="text-xs text-gray-400">{s.label}</p>
-                    <p className="text-xl font-black text-gray-900 mt-0.5">{s.value}</p>
+                    <p className="text-xs text-fg-subtle">{s.label}</p>
+                    <p className="text-xl font-black text-fg mt-0.5">{s.value}</p>
                     <p className="text-[11px] font-semibold mt-0.5" style={{ color: s.trendColor }}>↑ {s.trend} from last month</p>
                   </div>
                 </div>
@@ -501,24 +500,24 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
 
           {/* Management Modules */}
           <div className="flex items-center justify-between mb-5">
-            <h2 className="flex items-center gap-2 text-lg font-black text-gray-900"><LayoutGrid className="w-4 h-4" style={{ color: PURPLE }} /> Management Modules</h2>
-            <button className="flex items-center gap-1 text-sm font-bold" style={{ color: PURPLE }}>View all modules <ArrowRight className="w-4 h-4" /></button>
+            <h2 className="flex items-center gap-2 text-lg font-black text-fg"><LayoutGrid className="w-4 h-4" style={{ color: "var(--vk-crimson-text)" }} /> Management Modules</h2>
+            <button className="flex items-center gap-1 text-sm font-bold" style={{ color: "var(--vk-crimson-text)" }}>View all modules <ArrowRight className="w-4 h-4" /></button>
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-5 mb-8">
             {!isOwner && mySections !== null && visibleTiles.length === 0 && (
-              <div className="col-span-full bg-white rounded-2xl border border-gray-100 p-8 text-center">
+              <div className="col-span-full bg-surface rounded-2xl border border-line p-8 text-center">
                 <Lock className="w-8 h-8 mx-auto text-gray-300 mb-3" />
-                <p className="text-sm font-bold text-gray-900">No sections assigned yet</p>
-                <p className="text-xs text-gray-500 mt-1 mb-4">Apply to manage a section — a Super Administrator will review your request.</p>
+                <p className="text-sm font-bold text-fg">No sections assigned yet</p>
+                <p className="text-xs text-fg-muted mt-1 mb-4">Apply to manage a section — a Super Administrator will review your request.</p>
                 <button onClick={() => goView("apply")} className="px-4 py-2 rounded-lg text-xs font-bold text-white" style={{ background: GREEN }}>Apply for a Section</button>
               </div>
             )}
             {visibleTiles.map(m => (
-              <div key={m.title} className="bg-white rounded-2xl border border-gray-100 p-5 flex flex-col">
+              <div key={m.title} className="bg-surface rounded-2xl border border-line p-5 flex flex-col">
                 <span className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ background: m.iconBg, color: m.iconColor }}>{m.icon}</span>
-                <p className="text-[15px] font-bold text-gray-900 leading-snug">{m.displayTitle}</p>
-                <p className="text-xs text-gray-500 mt-2 leading-relaxed flex-1">{m.desc}</p>
+                <p className="text-[15px] font-bold text-fg leading-snug">{m.displayTitle}</p>
+                <p className="text-xs text-fg-muted mt-2 leading-relaxed flex-1">{m.desc}</p>
                 <button onClick={() => openModule(m.title)} className="mt-4 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold transition-colors" style={{ background: m.iconBg, color: m.iconColor }}>
                   Manage <ArrowRight className="w-3 h-3" />
                 </button>
@@ -527,11 +526,11 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
 
             {/* Add New Module */}
             {isOwner && (
-            <button onClick={() => toast.info("Custom module builder is coming soon.")} className="bg-white rounded-2xl border-2 border-dashed border-gray-200 p-5 flex flex-col items-center justify-center text-center hover:border-gray-300 transition-colors">
-              <span className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 bg-gray-100 text-gray-400"><Plus className="w-7 h-7" /></span>
-              <p className="text-[15px] font-bold text-gray-900">Add New Module</p>
-              <p className="text-xs text-gray-500 mt-2">Create a new management module for your platform.</p>
-              <span className="mt-4 flex items-center justify-center gap-1.5 py-2 px-4 rounded-lg text-xs font-bold" style={{ background: "#EAF7EE", color: GREEN }}>
+            <button onClick={() => toast.info("Custom module builder is coming soon.")} className="bg-surface rounded-2xl border-2 border-dashed border-line p-5 flex flex-col items-center justify-center text-center hover:border-line-strong transition-colors">
+              <span className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 bg-surface-2 text-fg-subtle"><Plus className="w-7 h-7" /></span>
+              <p className="text-[15px] font-bold text-fg">Add New Module</p>
+              <p className="text-xs text-fg-muted mt-2">Create a new management module for your platform.</p>
+              <span className="mt-4 flex items-center justify-center gap-1.5 py-2 px-4 rounded-lg text-xs font-bold" style={{ background: "var(--vk-ok-bg)", color: GREEN }}>
                 Create Module <ArrowRight className="w-3 h-3" />
               </span>
             </button>
@@ -541,24 +540,24 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
           {/* Bottom stats strip */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-5">
             {BOTTOM_STATS.map(s => (
-              <div key={s.label} className="bg-white rounded-2xl border border-gray-100 p-4">
+              <div key={s.label} className="bg-surface rounded-2xl border border-line p-4">
                 <div className="flex items-center gap-2.5">
                   <span className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: s.iconBg, color: s.iconColor }}>{s.icon}</span>
                   <div className="min-w-0">
-                    <p className="text-base font-black text-gray-900 leading-tight">{s.value}</p>
-                    <p className="text-[11px] text-gray-400 leading-tight">{s.label}</p>
+                    <p className="text-base font-black text-fg leading-tight">{s.value}</p>
+                    <p className="text-[11px] text-fg-subtle leading-tight">{s.label}</p>
                   </div>
                 </div>
                 <Sparkline data={s.spark} color={s.iconColor} />
               </div>
             ))}
-            <div className="bg-white rounded-2xl border border-gray-100 p-4 flex flex-col justify-center">
+            <div className="bg-surface rounded-2xl border border-line p-4 flex flex-col justify-center">
               <div className="flex items-center gap-2.5">
-                <span className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "#E9F7EF" }}>
+                <span className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "var(--vk-ok-bg)" }}>
                   <CheckCircle2 className="w-5 h-5" style={{ color: GREEN }} />
                 </span>
                 <div className="min-w-0">
-                  <p className="text-[13px] font-bold text-gray-900 leading-tight">System Health</p>
+                  <p className="text-[13px] font-bold text-fg leading-tight">System Health</p>
                   <p className="text-[11px] leading-tight" style={{ color: GREEN }}>All systems operational</p>
                 </div>
               </div>
@@ -570,18 +569,18 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
           {/* ── Applications (owner only) ── */}
           {view === "applications" && (
             <div>
-              <h1 className="text-2xl font-black text-gray-900 mb-1">Section Manager Applications</h1>
-              <p className="text-gray-500 text-sm mb-6">Review, approve, or reject requests to manage a section.</p>
-              {loadingPanel ? <Loader2 className="w-5 h-5 animate-spin text-gray-400" /> : allApps.length === 0 ? (
-                <p className="text-sm text-gray-400">No applications yet.</p>
+              <h1 className="text-2xl font-black text-fg mb-1">Section Manager Applications</h1>
+              <p className="text-fg-muted text-sm mb-6">Review, approve, or reject requests to manage a section.</p>
+              {loadingPanel ? <Loader2 className="w-5 h-5 animate-spin text-fg-subtle" /> : allApps.length === 0 ? (
+                <p className="text-sm text-fg-subtle">No applications yet.</p>
               ) : (
-                <div className="bg-white rounded-2xl border border-gray-100 divide-y divide-gray-100">
+                <div className="bg-surface rounded-2xl border border-line divide-y divide-line">
                   {allApps.map(a => (
                     <div key={a.id} className="p-5 flex items-start justify-between gap-4 flex-wrap">
                       <div className="min-w-0">
-                        <p className="text-sm font-bold text-gray-900">{a.name} <span className="text-gray-400 font-normal">@{a.username}</span></p>
+                        <p className="text-sm font-bold text-fg">{a.name} <span className="text-fg-subtle font-normal">@{a.username}</span></p>
                         <p className="text-xs mt-1"><span className="font-semibold" style={{ color: GREEN }}>{a.section}</span> · {new Date(a.created_at).toLocaleDateString()}</p>
-                        {a.message && <p className="text-xs text-gray-500 mt-2 italic">"{a.message}"</p>}
+                        {a.message && <p className="text-xs text-fg-muted mt-2 italic">"{a.message}"</p>}
                         {a.status === "rejected" && a.rejection_reason && <p className="text-xs text-red-500 mt-2">Rejected: {a.rejection_reason}</p>}
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
@@ -591,7 +590,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
                             <button onClick={() => handleReject(a.id)} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-red-600 border border-red-200"><XIcon className="w-3.5 h-3.5" /> Reject</button>
                           </>
                         ) : (
-                          <span className="text-[11px] font-bold px-2.5 py-1 rounded-full" style={a.status === "approved" ? { background: "#E9F7EF", color: GREEN } : { background: "#FEF2F2", color: "#DC2626" }}>
+                          <span className="text-[11px] font-bold px-2.5 py-1 rounded-full" style={a.status === "approved" ? { background: "var(--vk-ok-bg)", color: GREEN } : { background: "var(--vk-bad-bg)", color: "#DC2626" }}>
                             {a.status === "approved" ? "Approved" : "Rejected"}
                           </span>
                         )}
@@ -606,18 +605,18 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
           {/* ── Managers (owner only) ── */}
           {view === "managers" && (
             <div>
-              <h1 className="text-2xl font-black text-gray-900 mb-1">Section Managers</h1>
-              <p className="text-gray-500 text-sm mb-6">Everyone currently granted access to at least one section.</p>
-              {loadingPanel ? <Loader2 className="w-5 h-5 animate-spin text-gray-400" /> : managers.length === 0 ? (
-                <p className="text-sm text-gray-400">No managers yet — approve an application to grant section access.</p>
+              <h1 className="text-2xl font-black text-fg mb-1">Section Managers</h1>
+              <p className="text-fg-muted text-sm mb-6">Everyone currently granted access to at least one section.</p>
+              {loadingPanel ? <Loader2 className="w-5 h-5 animate-spin text-fg-subtle" /> : managers.length === 0 ? (
+                <p className="text-sm text-fg-subtle">No managers yet — approve an application to grant section access.</p>
               ) : (
-                <div className="bg-white rounded-2xl border border-gray-100 divide-y divide-gray-100">
+                <div className="bg-surface rounded-2xl border border-line divide-y divide-line">
                   {managers.map(m => (
                     <div key={m.id} className="p-5">
-                      <p className="text-sm font-bold text-gray-900">{m.name} <span className="text-gray-400 font-normal">@{m.username}</span></p>
+                      <p className="text-sm font-bold text-fg">{m.name} <span className="text-fg-subtle font-normal">@{m.username}</span></p>
                       <div className="flex flex-wrap gap-2 mt-3">
                         {m.sections.map(s => (
-                          <span key={s.section} className="flex items-center gap-1.5 text-[11px] font-semibold pl-2.5 pr-1.5 py-1 rounded-full" style={{ background: "#E9F7EF", color: GREEN }}>
+                          <span key={s.section} className="flex items-center gap-1.5 text-[11px] font-semibold pl-2.5 pr-1.5 py-1 rounded-full" style={{ background: "var(--vk-ok-bg)", color: GREEN }}>
                             {s.section}{s.position ? ` — ${s.position}` : ""}
                             <button onClick={() => handleRevoke(m.id, s.section)} className="w-4 h-4 rounded-full flex items-center justify-center hover:bg-black/10" title="Revoke"><XIcon className="w-2.5 h-2.5" /></button>
                           </span>
@@ -633,20 +632,20 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
           {/* ── Audit Log (owner only) ── */}
           {view === "audit" && (
             <div>
-              <h1 className="text-2xl font-black text-gray-900 mb-1">Audit Log</h1>
-              <p className="text-gray-500 text-sm mb-6">Every approval, rejection, and permission change made by a Super Administrator.</p>
-              {loadingPanel ? <Loader2 className="w-5 h-5 animate-spin text-gray-400" /> : auditLog.length === 0 ? (
-                <p className="text-sm text-gray-400">No activity logged yet.</p>
+              <h1 className="text-2xl font-black text-fg mb-1">Audit Log</h1>
+              <p className="text-fg-muted text-sm mb-6">Every approval, rejection, and permission change made by a Super Administrator.</p>
+              {loadingPanel ? <Loader2 className="w-5 h-5 animate-spin text-fg-subtle" /> : auditLog.length === 0 ? (
+                <p className="text-sm text-fg-subtle">No activity logged yet.</p>
               ) : (
-                <div className="bg-white rounded-2xl border border-gray-100 divide-y divide-gray-100">
+                <div className="bg-surface rounded-2xl border border-line divide-y divide-line">
                   {auditLog.map(a => (
                     <div key={a.id} className="p-4 flex items-center justify-between gap-4 text-sm">
                       <div>
-                        <span className="font-bold text-gray-900">{a.actor_name}</span>{" "}
-                        <span className="text-gray-500">{a.action.replace(".", " ")}</span>{" "}
+                        <span className="font-bold text-fg">{a.actor_name}</span>{" "}
+                        <span className="text-fg-muted">{a.action.replace(".", " ")}</span>{" "}
                         {a.target && <span className="font-semibold" style={{ color: GREEN }}>{a.target}</span>}
                       </div>
-                      <span className="text-xs text-gray-400 shrink-0">{new Date(a.created_at).toLocaleString()}</span>
+                      <span className="text-xs text-fg-subtle shrink-0">{new Date(a.created_at).toLocaleString()}</span>
                     </div>
                   ))}
                 </div>
@@ -657,8 +656,8 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
           {/* ── Job Applications for a specific department ── */}
           {view === "jobApplications" && jobDept && (
             <div>
-              <h1 className="text-2xl font-black text-gray-900 mb-1">{jobDept} — Job Applications</h1>
-              <p className="text-gray-500 text-sm mb-6">Applications for positions in this department. Approving one grants real {jobDept} section access, the same as the RBAC "apply to manage a section" flow.</p>
+              <h1 className="text-2xl font-black text-fg mb-1">{jobDept} — Job Applications</h1>
+              <p className="text-fg-muted text-sm mb-6">Applications for positions in this department. Approving one grants real {jobDept} section access, the same as the RBAC "apply to manage a section" flow.</p>
 
               <div className="flex gap-2 mb-5">
                 {[
@@ -670,28 +669,28 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
                   { key: "rejected", label: "Rejected" },
                 ].map(f => (
                   <button key={f.label} onClick={() => loadJobApps(jobDept, f.key)}
-                    className="px-3 py-1.5 rounded-lg text-xs font-bold border border-gray-200 text-gray-600 hover:bg-gray-50">
+                    className="px-3 py-1.5 rounded-lg text-xs font-bold border border-line text-fg-muted hover:bg-surface-2">
                     {f.label}
                   </button>
                 ))}
               </div>
 
               {jobLoadError && (
-                <div className="px-4 py-3 rounded-xl mb-4 text-sm font-semibold" style={{ background: "#FEF2F2", color: "#DC2626" }}>
+                <div className="px-4 py-3 rounded-xl mb-4 text-sm font-semibold" style={{ background: "var(--vk-bad-bg)", color: "#DC2626" }}>
                   {jobLoadError}
                 </div>
               )}
 
-              {loadingPanel ? <Loader2 className="w-5 h-5 animate-spin text-gray-400" /> : jobLoadError ? null : jobApps.length === 0 ? (
-                <p className="text-sm text-gray-400">No applications for {jobDept} yet.</p>
+              {loadingPanel ? <Loader2 className="w-5 h-5 animate-spin text-fg-subtle" /> : jobLoadError ? null : jobApps.length === 0 ? (
+                <p className="text-sm text-fg-subtle">No applications for {jobDept} yet.</p>
               ) : (
-                <div className="bg-white rounded-2xl border border-gray-100 divide-y divide-gray-100">
+                <div className="bg-surface rounded-2xl border border-line divide-y divide-line">
                   {jobApps.map(a => (
                     <button key={a.id} onClick={() => openJobApp(a.referenceNumber)}
-                      className="w-full text-left p-5 flex items-center justify-between gap-4 hover:bg-gray-50 transition-colors">
+                      className="w-full text-left p-5 flex items-center justify-between gap-4 hover:bg-surface-2 transition-colors">
                       <div className="min-w-0">
-                        <p className="text-sm font-bold text-gray-900">{a.applicantName} <span className="text-gray-400 font-normal">· {a.position}</span></p>
-                        <p className="text-xs text-gray-500 mt-0.5">{a.referenceNumber} · Submitted {new Date(a.submittedAt).toLocaleDateString()}</p>
+                        <p className="text-sm font-bold text-fg">{a.applicantName} <span className="text-fg-subtle font-normal">· {a.position}</span></p>
+                        <p className="text-xs text-fg-muted mt-0.5">{a.referenceNumber} · Submitted {new Date(a.submittedAt).toLocaleDateString()}</p>
                       </div>
                       <JobStatusBadge status={a.status} />
                     </button>
@@ -704,16 +703,16 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
           {/* ── Apply for a section (non-owner) ── */}
           {view === "apply" && (
             <div className="max-w-lg">
-              <h1 className="text-2xl font-black text-gray-900 mb-1">Apply to Manage a Section</h1>
-              <p className="text-gray-500 text-sm mb-6">Your application is reviewed by a Super Administrator before you're granted access.</p>
-              <div className="bg-white rounded-2xl border border-gray-100 p-6">
-                <label className="text-xs font-bold text-gray-700">Section</label>
-                <select value={applySection} onChange={e => setApplySection(e.target.value)} className="w-full mt-1.5 mb-4 px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none">
+              <h1 className="text-2xl font-black text-fg mb-1">Apply to Manage a Section</h1>
+              <p className="text-fg-muted text-sm mb-6">Your application is reviewed by a Super Administrator before you're granted access.</p>
+              <div className="bg-surface rounded-2xl border border-line p-6">
+                <label className="text-xs font-bold text-fg">Section</label>
+                <select value={applySection} onChange={e => setApplySection(e.target.value)} className="w-full mt-1.5 mb-4 px-3 py-2.5 rounded-lg border border-line text-sm outline-none">
                   <option value="">Choose a section…</option>
                   {Object.values(SIDEBAR_TO_SECTION).filter(s => !(mySections ?? []).includes(s)).map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
-                <label className="text-xs font-bold text-gray-700">Why should you manage this section? (optional)</label>
-                <textarea value={applyMessage} onChange={e => setApplyMessage(e.target.value)} rows={3} className="w-full mt-1.5 mb-4 px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none resize-none" placeholder="Relevant experience, role, or context for the Super Administrator..." />
+                <label className="text-xs font-bold text-fg">Why should you manage this section? (optional)</label>
+                <textarea value={applyMessage} onChange={e => setApplyMessage(e.target.value)} rows={3} className="w-full mt-1.5 mb-4 px-3 py-2.5 rounded-lg border border-line text-sm outline-none resize-none" placeholder="Relevant experience, role, or context for the Super Administrator..." />
                 <button onClick={handleApply} disabled={applying} className="w-full py-2.5 rounded-lg text-sm font-bold text-white disabled:opacity-50" style={{ background: GREEN }}>
                   {applying ? "Submitting…" : "Submit Application"}
                 </button>
@@ -722,7 +721,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
           )}
         </div>
 
-        <div className="mt-auto flex items-center justify-between px-6 sm:px-8 py-5 text-[11px] text-gray-400 border-t border-gray-100">
+        <div className="mt-auto flex items-center justify-between px-6 sm:px-8 py-5 text-[11px] text-fg-subtle border-t border-line">
           <span>© 2026 VINK Management Panel. All rights reserved.</span>
           <div className="flex items-center gap-4">
             <span className="hover:text-gray-600 cursor-pointer">Privacy Policy</span>
@@ -735,39 +734,39 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
       {/* ── Job application review modal ── */}
       {selectedJobApp && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50" onClick={() => setSelectedJobApp(null)}>
-          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between z-10">
+          <div className="bg-surface rounded-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="sticky top-0 bg-surface border-b border-line px-6 py-4 flex items-center justify-between z-10">
               <div>
-                <p className="font-bold text-gray-900 text-sm">{selectedJobApp.applicantName}</p>
-                <p className="text-xs text-gray-500">{selectedJobApp.position} · {selectedJobApp.referenceNumber}</p>
+                <p className="font-bold text-fg text-sm">{selectedJobApp.applicantName}</p>
+                <p className="text-xs text-fg-muted">{selectedJobApp.position} · {selectedJobApp.referenceNumber}</p>
               </div>
-              <button onClick={() => setSelectedJobApp(null)} className="p-2 rounded-full hover:bg-gray-100 text-gray-500"><XIcon className="w-4 h-4" /></button>
+              <button onClick={() => setSelectedJobApp(null)} className="p-2 rounded-full hover:bg-surface-2 text-fg-muted"><XIcon className="w-4 h-4" /></button>
             </div>
 
             <div className="p-6 space-y-5">
               <div className="flex items-center gap-2 flex-wrap">
                 <JobStatusBadge status={selectedJobApp.status} />
                 {selectedJobApp.roleGranted && (
-                  <span className="text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ background: "#E9F7EF", color: GREEN }}>
+                  <span className="text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ background: "var(--vk-ok-bg)", color: GREEN }}>
                     {jobDept} access granted
                   </span>
                 )}
               </div>
 
-              <div className="rounded-xl border border-gray-200 p-4 grid grid-cols-2 gap-3 text-sm">
-                <div><p className="text-xs text-gray-400">Email</p><p className="font-semibold text-gray-800">{selectedJobApp.applicantEmail}</p></div>
-                <div><p className="text-xs text-gray-400">Phone</p><p className="font-semibold text-gray-800">{selectedJobApp.applicantPhone || "—"}</p></div>
-                <div><p className="text-xs text-gray-400">Submitted</p><p className="font-semibold text-gray-800">{new Date(selectedJobApp.submittedAt).toLocaleString()}</p></div>
-                <div><p className="text-xs text-gray-400">Department</p><p className="font-semibold text-gray-800">{selectedJobApp.department}</p></div>
+              <div className="rounded-xl border border-line p-4 grid grid-cols-2 gap-3 text-sm">
+                <div><p className="text-xs text-fg-subtle">Email</p><p className="font-semibold text-fg">{selectedJobApp.applicantEmail}</p></div>
+                <div><p className="text-xs text-fg-subtle">Phone</p><p className="font-semibold text-fg">{selectedJobApp.applicantPhone || "—"}</p></div>
+                <div><p className="text-xs text-fg-subtle">Submitted</p><p className="font-semibold text-fg">{new Date(selectedJobApp.submittedAt).toLocaleString()}</p></div>
+                <div><p className="text-xs text-fg-subtle">Department</p><p className="font-semibold text-fg">{selectedJobApp.department}</p></div>
               </div>
 
               {selectedJobApp.documents.length > 0 && (
-                <div className="rounded-xl border border-gray-200 p-4">
-                  <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Documents</p>
+                <div className="rounded-xl border border-line p-4">
+                  <p className="text-xs font-bold uppercase tracking-wider text-fg-subtle mb-3">Documents</p>
                   <div className="flex flex-wrap gap-2">
                     {selectedJobApp.documents.map(d => (
                       <button key={d.type} onClick={() => openDocument(selectedJobApp.referenceNumber, d.type)} disabled={openingDoc === d.type}
-                        className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-50">
+                        className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-line text-fg hover:bg-surface-2 disabled:opacity-50">
                         {openingDoc === d.type ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileCheck2 className="w-3.5 h-3.5" />} {d.filename}
                       </button>
                     ))}
@@ -776,13 +775,13 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
               )}
 
               {selectedJobApp.statusHistory && selectedJobApp.statusHistory.length > 0 && (
-                <div className="rounded-xl border border-gray-200 p-4">
-                  <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">History</p>
+                <div className="rounded-xl border border-line p-4">
+                  <p className="text-xs font-bold uppercase tracking-wider text-fg-subtle mb-3">History</p>
                   <div className="space-y-2">
                     {selectedJobApp.statusHistory.map((h, i) => (
                       <div key={i} className="text-xs flex items-start gap-2">
-                        <span className="font-semibold text-gray-700 shrink-0">{new Date(h.createdAt).toLocaleDateString()}</span>
-                        <span className="text-gray-500">{h.fromStatus ? `${h.fromStatus} → ` : ""}<strong>{h.toStatus}</strong>{h.changedByName ? ` by ${h.changedByName}` : ""} — {h.reason}</span>
+                        <span className="font-semibold text-fg shrink-0">{new Date(h.createdAt).toLocaleDateString()}</span>
+                        <span className="text-fg-muted">{h.fromStatus ? `${h.fromStatus} → ` : ""}<strong>{h.toStatus}</strong>{h.changedByName ? ` by ${h.changedByName}` : ""} — {h.reason}</span>
                       </div>
                     ))}
                   </div>
@@ -813,31 +812,31 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
                 if (!nextSteps.length) return null;
 
                 return (
-                  <div className="rounded-xl border border-gray-200 p-4 space-y-3">
-                    <p className="text-xs font-bold uppercase tracking-wider text-gray-400">
+                  <div className="rounded-xl border border-line p-4 space-y-3">
+                    <p className="text-xs font-bold uppercase tracking-wider text-fg-subtle">
                       Review decision{selectedJobApp.status === "rejected" ? " — this application was rejected; correct it below if that was a mistake" : ""}
                     </p>
                     <textarea value={jobActionReason} onChange={e => setJobActionReason(e.target.value)} rows={2}
                       placeholder="Reason for this decision (required)…"
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none resize-none" />
+                      className="w-full border border-line rounded-xl px-3 py-2.5 text-sm outline-none resize-none" />
 
                     {nextSteps.includes("offered") && !selectedJobApp.roleGranted && (
-                      <div className="rounded-lg p-3 space-y-2" style={{ background: "#F0FDF4", border: "1px solid #BBF7D0" }}>
-                        <p className="text-xs font-bold text-gray-700">If approving: set their VINK login (only needed if they don't have an account yet)</p>
+                      <div className="rounded-lg p-3 space-y-2" style={{ background: "var(--vk-ok-bg)", border: "1px solid #BBF7D0" }}>
+                        <p className="text-xs font-bold text-fg">If approving: set their VINK login (only needed if they don't have an account yet)</p>
                         <div className="grid grid-cols-2 gap-2">
                           <input value={newAccountUsername} onChange={e => setNewAccountUsername(e.target.value)}
-                            placeholder="Username" className="px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none" />
+                            placeholder="Username" className="px-3 py-2 rounded-lg border border-line text-sm outline-none" />
                           <input value={newAccountPassword} onChange={e => setNewAccountPassword(e.target.value)} type="text"
-                            placeholder="Password (min 8 characters)" className="px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none" />
+                            placeholder="Password (min 8 characters)" className="px-3 py-2 rounded-lg border border-line text-sm outline-none" />
                         </div>
-                        <p className="text-[11px] text-gray-500">Leave both blank if they already have a VINK account under this email — access is granted automatically either way.</p>
+                        <p className="text-[11px] text-fg-muted">Leave both blank if they already have a VINK account under this email — access is granted automatically either way.</p>
                       </div>
                     )}
 
                     <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${nextSteps.length}, 1fr)` }}>
                       {nextSteps.map(step => (
                         <button key={step} disabled={jobActionBusy} onClick={() => handleJobStatusChange(selectedJobApp.referenceNumber, step)}
-                          className={`py-2.5 rounded-lg text-xs font-bold disabled:opacity-50 ${LABELS[step]?.cls ?? "border border-gray-200 text-gray-600 hover:bg-gray-50"}`}
+                          className={`py-2.5 rounded-lg text-xs font-bold disabled:opacity-50 ${LABELS[step]?.cls ?? "border border-line text-fg-muted hover:bg-surface-2"}`}
                           style={step === "offered" ? { background: GREEN } : undefined}>
                           {jobActionBusy ? "…" : (LABELS[step]?.label ?? step)}
                         </button>
@@ -856,12 +855,12 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
 
 function JobStatusBadge({ status }: { status: string }) {
   const cfg: Record<string, { label: string; bg: string; color: string }> = {
-    submitted: { label: "New", bg: "#FEF3C7", color: "#F59E0B" },
-    under_review: { label: "Under Review", bg: "#DBEAFE", color: "#3B82F6" },
-    interview: { label: "Interview", bg: "#DBEAFE", color: "#3B82F6" },
+    submitted: { label: "New", bg: "var(--vk-warn-bg)", color: "#F59E0B" },
+    under_review: { label: "Under Review", bg: "var(--vk-info-bg)", color: "#3B82F6" },
+    interview: { label: "Interview", bg: "var(--vk-info-bg)", color: "#3B82F6" },
     offered: { label: "Approved", bg: "#E9F7EF", color: GREEN },
-    rejected: { label: "Rejected", bg: "#FEE2E2", color: "#EF4444" },
-    withdrawn: { label: "Withdrawn", bg: "#F3F4F6", color: "#6B7280" },
+    rejected: { label: "Rejected", bg: "var(--vk-bad-bg)", color: "#EF4444" },
+    withdrawn: { label: "Withdrawn", bg: "var(--vk-surface-2)", color: "var(--vk-fg-muted)" },
   };
   const c = cfg[status] ?? cfg.submitted;
   return <span className="text-[11px] font-bold px-2.5 py-1 rounded-full shrink-0" style={{ background: c.bg, color: c.color }}>{c.label}</span>;

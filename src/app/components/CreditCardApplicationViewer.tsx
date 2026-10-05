@@ -62,8 +62,8 @@ function FingerprintScanner({ onDone }: { onDone: () => void }) {
       <div
         className="relative w-36 h-36 rounded-3xl flex items-center justify-center cursor-pointer transition-all select-none"
         style={{
-          background: done ? "#D1FAE5" : scanning ? CP + "15" : "#F2EFE8",
-          border: `3px solid ${done ? GREEN : scanning ? CP : "#E4DFD3"}`,
+          background: done ? "var(--vk-ok-bg)" : scanning ? CP + "15" : "var(--vk-surface-2)",
+          border: `3px solid ${done ? GREEN : scanning ? CP : "var(--vk-line)"}`,
           boxShadow: scanning ? `0 0 30px ${CP}30` : "none",
         }}
         onClick={!scanning && !done ? () => { setAttempt(a => a + 1); startScan(); } : undefined}
@@ -90,19 +90,19 @@ function FingerprintScanner({ onDone }: { onDone: () => void }) {
       {done ? (
         <div className="text-center">
           <p className="font-bold text-green-700">Fingerprint verified</p>
-          <p className="text-xs text-gray-500 mt-0.5">Identity confirmed successfully</p>
+          <p className="text-xs text-fg-muted mt-0.5">Identity confirmed successfully</p>
         </div>
       ) : scanning ? (
         <div className="text-center">
-          <p className="font-semibold text-gray-700">Scanning… {Math.round(progress)}%</p>
-          <p className="text-xs text-gray-400 mt-0.5">Hold your finger steady</p>
+          <p className="font-semibold text-fg">Scanning… {Math.round(progress)}%</p>
+          <p className="text-xs text-fg-subtle mt-0.5">Hold your finger steady</p>
         </div>
       ) : (
         <div className="text-center">
-          <p className="font-semibold text-gray-700">
+          <p className="font-semibold text-fg">
             {attempt === 0 ? "Tap to scan fingerprint" : "Tap again to retry"}
           </p>
-          <p className="text-xs text-gray-400 mt-0.5">Place your index finger on the reader</p>
+          <p className="text-xs text-fg-subtle mt-0.5">Place your index finger on the reader</p>
         </div>
       )}
     </div>
@@ -173,12 +173,12 @@ function SelfieCapture({ onDone }: { onDone: () => void }) {
             style={{ background: CP }}>
             Take Selfie
           </button>
-          <p className="text-xs text-gray-400 text-center">
+          <p className="text-xs text-fg-subtle text-center">
             Ensure you are in good lighting · No glasses or hats · Face forward
           </p>
           <div className="flex items-center gap-2 w-full">
             <div className="flex-1 h-px bg-gray-200" />
-            <span className="text-xs text-gray-400">or</span>
+            <span className="text-xs text-fg-subtle">or</span>
             <div className="flex-1 h-px bg-gray-200" />
           </div>
           <label className="w-full text-center cursor-pointer text-sm font-semibold py-2.5 rounded-xl border-2 transition-all hover:bg-emerald-50"
@@ -192,8 +192,8 @@ function SelfieCapture({ onDone }: { onDone: () => void }) {
       {state === "captured" && (
         <div className="text-center space-y-2">
           <p className="font-bold text-green-700">Selfie captured successfully</p>
-          <p className="text-xs text-gray-500">Face liveness check passed · Match score: 97%</p>
-          <button onClick={() => setState("idle")} className="text-xs text-gray-400 hover:text-gray-700 underline">
+          <p className="text-xs text-fg-muted">Face liveness check passed · Match score: 97%</p>
+          <button onClick={() => setState("idle")} className="text-xs text-fg-subtle hover:text-fg underline">
             Retake photo
           </button>
         </div>
@@ -248,15 +248,15 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
   const back = () => setStep(s => Math.max(s - 1, 1));
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-[#FAF8F4]">
+    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-surface-2">
 
       {/* ── Top bar ── */}
-      <div className="sticky top-0 z-20 bg-white border-b border-gray-100 shadow-sm">
+      <div className="sticky top-0 z-20 bg-surface border-b border-line shadow-sm">
         <div className="flex items-center justify-between px-5 py-3">
           <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
           <div className="flex items-center gap-3">
-            <span className="hidden sm:block text-xs text-gray-400 font-medium">Step {step} of {STEPS.length}</span>
-            <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-800"><X className="w-5 h-5" /></button>
+            <span className="hidden sm:block text-xs text-fg-subtle font-medium">Step {step} of {STEPS.length}</span>
+            <button onClick={onClose} className="p-2 rounded-full hover:bg-surface-2 transition-colors text-fg-muted hover:text-fg"><X className="w-5 h-5" /></button>
           </div>
         </div>
         <div className="px-5 pb-4 space-y-3">
@@ -280,19 +280,19 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
         {step === 1 && (
           <>
             {/* Card selection */}
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-              <p className="text-sm font-bold text-gray-800 mb-4">Select your card type</p>
+            <div className="bg-surface rounded-2xl border border-line p-5 shadow-sm">
+              <p className="text-sm font-bold text-fg mb-4">Select your card type</p>
               <div className="grid sm:grid-cols-3 gap-3">
                 {CARD_TYPES.map(c => (
                   <button
                     key={c.id}
                     onClick={() => setSelectedCard(c.id)}
                     className="rounded-xl p-3 text-left transition-all border-2"
-                    style={{ borderColor: selectedCard === c.id ? CP : "#E5E7EB", background: selectedCard === c.id ? CP + "08" : "#fff" }}
+                    style={{ borderColor: selectedCard === c.id ? CP : "var(--vk-line)", background: selectedCard === c.id ? CP + "08" : "#fff" }}
                   >
                     <div className="h-8 rounded-lg mb-2" style={{ background: c.color }} />
-                    <p className="text-xs font-bold text-gray-800 leading-tight">{c.name}</p>
-                    <p className="text-[10px] text-gray-500 mt-0.5">{c.limit}</p>
+                    <p className="text-xs font-bold text-fg leading-tight">{c.name}</p>
+                    <p className="text-[10px] text-fg-muted mt-0.5">{c.limit}</p>
                     <p className="text-[10px] font-semibold mt-1" style={{ color: CP }}>{c.fee}</p>
                   </button>
                 ))}
@@ -342,7 +342,7 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
                       onChange={set("pin")}
                     />
                     <button type="button" onClick={() => setShowPin(v => !v)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-fg-subtle">
                       {showPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
@@ -368,14 +368,14 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
         {/* STEP 2 — Phone & Email OTP */}
         {step === 2 && (
           <FormCard stepN={2} title="Verify phone number and email address" subtitle="Each contact channel must be verified for FICA compliance">
-            <p className="text-sm text-gray-600">Each contact channel must be verified with a one-time PIN for FICA compliance.</p>
+            <p className="text-sm text-fg-muted">Each contact channel must be verified with a one-time PIN for FICA compliance.</p>
 
             {/* Phone OTP */}
-            <div className="rounded-xl border border-gray-200 p-4 space-y-3">
+            <div className="rounded-xl border border-line p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-gray-800">Mobile number</p>
-                  <p className="text-xs text-gray-500">{form.phone || "+27 ..."}</p>
+                  <p className="text-sm font-semibold text-fg">Mobile number</p>
+                  <p className="text-xs text-fg-muted">{form.phone || "+27 ..."}</p>
                 </div>
                 {phoneVerified
                   ? <VerifiedBadge label="Verified" />
@@ -396,18 +396,18 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
               )}
               {phoneOtpSent && !phoneVerified && (
                 <button onClick={() => { setPhoneOtpSent(false); setPhoneOtp(""); }}
-                  className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-700">
+                  className="flex items-center gap-1.5 text-xs text-fg-subtle hover:text-fg">
                   <RefreshCw className="w-3 h-3" />Resend OTP
                 </button>
               )}
             </div>
 
             {/* Email OTP */}
-            <div className="rounded-xl border border-gray-200 p-4 space-y-3">
+            <div className="rounded-xl border border-line p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-gray-800">Email address</p>
-                  <p className="text-xs text-gray-500">{form.email || "email@domain.com"}</p>
+                  <p className="text-sm font-semibold text-fg">Email address</p>
+                  <p className="text-xs text-fg-muted">{form.email || "email@domain.com"}</p>
                 </div>
                 {emailVerified
                   ? <VerifiedBadge label="Verified" />
@@ -428,7 +428,7 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
               )}
               {emailOtpSent && !emailVerified && (
                 <button onClick={() => { setEmailOtpSent(false); setEmailOtp(""); }}
-                  className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-700">
+                  className="flex items-center gap-1.5 text-xs text-fg-subtle hover:text-fg">
                   <RefreshCw className="w-3 h-3" />Resend OTP
                 </button>
               )}
@@ -445,7 +445,7 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
         {/* STEP 3 — Fingerprint */}
         {step === 3 && (
           <FormCard stepN={3} title="Fingerprint authentication" subtitle="Biometric verification required for FICA compliance">
-            <p className="text-sm text-gray-600 leading-relaxed">
+            <p className="text-sm text-fg-muted leading-relaxed">
               Biometric fingerprint verification is required for FICA compliance. This confirms your identity against the Home Affairs database.
             </p>
             <FingerprintScanner onDone={() => setFingerprintDone(true)} />
@@ -461,7 +461,7 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
         {/* STEP 4 — Selfie */}
         {step === 4 && (
           <FormCard stepN={4} title="Selfie capture" subtitle="Live selfie for facial recognition and liveness detection">
-            <p className="text-sm text-gray-600 leading-relaxed">
+            <p className="text-sm text-fg-muted leading-relaxed">
               Take a live selfie for facial recognition and liveness detection. This prevents identity theft and meets POCA requirements.
             </p>
             <SelfieCapture onDone={() => setSelfieDone(true)} />
@@ -473,7 +473,7 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
                   { label: "Document match",     pass: true },
                 ].map((c, i) => (
                   <div key={i} className="rounded-xl p-3 text-center border"
-                    style={{ borderColor: "#D1FAE5", background: "#F0FDF4" }}>
+                    style={{ borderColor: "var(--vk-ok-bg)", background: "var(--vk-ok-bg)" }}>
                     <CheckCircle className="w-5 h-5 text-green-500 mx-auto mb-1" />
                     <p className="text-[10px] font-semibold text-green-700">{c.label}</p>
                   </div>
@@ -486,7 +486,7 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
         {/* STEP 5 — Documents */}
         {step === 5 && (
           <FormCard stepN={5} title="Upload required documents" subtitle="Upload clear, legible scans or photos. PDF, JPG, PNG accepted. Max 10MB per file.">
-            <p className="text-sm text-gray-600">Upload clear, legible scans or photos. PDF, JPG, PNG accepted. Max 10MB per file.</p>
+            <p className="text-sm text-fg-muted">Upload clear, legible scans or photos. PDF, JPG, PNG accepted. Max 10MB per file.</p>
             <div className="space-y-3">
               {DOC_SLOTS.map(d => (
                 <DocSlot
@@ -498,7 +498,7 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
                 />
               ))}
             </div>
-            <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
+            <div className="flex items-center gap-2 text-xs text-fg-muted mt-1">
               <div className="flex-1 bg-gray-200 rounded-full h-1.5 overflow-hidden">
                 <div className="h-full rounded-full transition-all duration-500"
                   style={{ width: `${(Object.keys(docs).filter(k => docs[k]).length / DOC_SLOTS.filter(d => d.required).length) * 100}%`, background: CP }} />
@@ -511,25 +511,25 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
         {/* STEP 6 — Director confirmations */}
         {step === 6 && (
           <FormCard stepN={6} title="Director confirmations" subtitle="All directors with ≥25% shareholding must verify">
-            <p className="text-sm text-gray-600 leading-relaxed">
+            <p className="text-sm text-fg-muted leading-relaxed">
               For business credit cards, all directors with ≥25% shareholding must complete OTP, fingerprint, and document verification. For personal cards, the applicant completes this as the sole cardholder.
             </p>
-            <div className="rounded-xl border border-gray-200 p-4 space-y-4">
+            <div className="rounded-xl border border-line p-4 space-y-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-black text-sm flex-shrink-0"
                   style={{ background: CP }}>
                   {(form.firstName[0] || "A").toUpperCase()}{(form.lastName[0] || "B").toUpperCase()}
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-800 text-sm">{form.firstName || "Applicant"} {form.lastName}</p>
-                  <p className="text-xs text-gray-500">Primary cardholder / Director 1</p>
+                  <p className="font-semibold text-fg text-sm">{form.firstName || "Applicant"} {form.lastName}</p>
+                  <p className="text-xs text-fg-muted">Primary cardholder / Director 1</p>
                 </div>
                 {dirVerified && <div className="ml-auto"><VerifiedBadge label="Confirmed" /></div>}
               </div>
 
               {!dirVerified ? (
-                <div className="space-y-3 pt-1 border-t border-gray-100">
-                  <p className="text-xs text-gray-500">Send confirmation OTP to director</p>
+                <div className="space-y-3 pt-1 border-t border-line">
+                  <p className="text-xs text-fg-muted">Send confirmation OTP to director</p>
                   <OtpInput value={dirOtp} onChange={setDirOtp} />
                   <button
                     onClick={() => dirOtp.length === 6 && setDirVerified(true)}
@@ -537,12 +537,12 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
                     style={{ background: CP }} disabled={dirOtp.length < 6}>
                     Confirm
                   </button>
-                  <p className="text-[11px] text-gray-400">
+                  <p className="text-[11px] text-fg-subtle">
                     Demo: type any 6 digits to simulate director OTP confirmation
                   </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-3 gap-2 pt-2 border-t border-gray-100">
+                <div className="grid grid-cols-3 gap-2 pt-2 border-t border-line">
                   {["OTP verified", "Fingerprint", "Documents"].map((label, i) => (
                     <div key={i} className="rounded-lg p-2 text-center border border-green-200 bg-green-50">
                       <CheckCircle className="w-4 h-4 text-green-500 mx-auto mb-0.5" />
@@ -552,7 +552,7 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
                 </div>
               )}
             </div>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-fg-subtle">
               Additional directors can be verified by contacting your VINK relationship manager after card activation.
             </p>
           </FormCard>
@@ -561,8 +561,8 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
         {/* STEP 7 — Account creation */}
         {step === 7 && !submitted && (
           <div className="space-y-5">
-            <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm space-y-3">
-              <p className="text-xs text-gray-500 leading-relaxed">
+            <div className="bg-surface rounded-2xl border border-line p-5 shadow-sm space-y-3">
+              <p className="text-xs text-fg-muted leading-relaxed">
                 By submitting I confirm all information is true and accurate. I authorise VINK to conduct credit bureau inquiries and verify my identity with SARS, CIPC, and Home Affairs.
               </p>
               <button
@@ -597,14 +597,14 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
         {step === 7 && submitted && (
           <div className="space-y-5">
             {/* Animated success */}
-            <div className="bg-white rounded-2xl border border-green-200 p-8 shadow-sm text-center space-y-4">
+            <div className="bg-surface rounded-2xl border border-green-200 p-8 shadow-sm text-center space-y-4">
               <div className="w-24 h-24 rounded-full flex items-center justify-center mx-auto"
                 style={{ background: "linear-gradient(135deg,#D1FAE5,#A7F3D0)" }}>
                 <CheckCircle className="w-12 h-12 text-green-600" />
               </div>
               <div>
-                <h2 className="text-2xl font-black text-gray-900">Account Created!</h2>
-                <p className="text-gray-500 text-sm mt-1">Your VINK credit card has been approved and issued.</p>
+                <h2 className="text-2xl font-black text-fg">Account Created!</h2>
+                <p className="text-fg-muted text-sm mt-1">Your VINK credit card has been approved and issued.</p>
               </div>
 
               {/* Virtual card preview */}
@@ -633,8 +633,8 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
             </div>
 
             {/* Account details */}
-            <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm space-y-3">
-              <h3 className="font-bold text-gray-800 text-sm">Your card details</h3>
+            <div className="bg-surface rounded-2xl border border-line p-5 shadow-sm space-y-3">
+              <h3 className="font-bold text-fg text-sm">Your card details</h3>
               {[
                 { label: "Card number",       value: accountNumber },
                 { label: "Card type",         value: CARD_TYPES.find(c => c.id === selectedCard)?.name ?? "" },
@@ -643,17 +643,17 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
                 { label: "Account status",    value: "Active — card being printed" },
                 { label: "Reference number",  value: `VINK-CC-${new Date().getFullYear()}-${Math.floor(Math.random() * 90000 + 10000)}` },
               ].map((item, i) => (
-                <div key={i} className="flex justify-between py-2 border-b border-gray-100 last:border-0">
-                  <span className="text-xs text-gray-500 font-medium">{item.label}</span>
-                  <span className="text-xs font-bold text-gray-800">{item.value}</span>
+                <div key={i} className="flex justify-between py-2 border-b border-line last:border-0">
+                  <span className="text-xs text-fg-muted font-medium">{item.label}</span>
+                  <span className="text-xs font-bold text-fg">{item.value}</span>
                 </div>
               ))}
             </div>
 
-            <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm text-sm text-gray-600 leading-relaxed">
+            <div className="bg-surface rounded-2xl border border-line p-5 shadow-sm text-sm text-fg-muted leading-relaxed">
               <p>📦 Your physical card will be delivered to <strong>{form.address || "your registered address"}</strong> within <strong>5–7 business days</strong>.</p>
               <p className="mt-2">📱 Your virtual card is available immediately in the <strong>VINK app</strong> for online and tap-to-pay transactions.</p>
-              <p className="mt-2 text-xs text-gray-400">A welcome email has been sent to {form.email || "your registered email"}.</p>
+              <p className="mt-2 text-xs text-fg-subtle">A welcome email has been sent to {form.email || "your registered email"}.</p>
             </div>
 
             <button onClick={onClose}

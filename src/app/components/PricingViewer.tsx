@@ -83,7 +83,7 @@ function Card({ card, onApply }: { card: PricingCard; onApply: (name: string, pr
         </button>
         <button
           style={{ flex: 1, background: "transparent", color: card.featured ? "#fff" : BRAND, border: `1.5px solid ${card.featured ? "rgba(255,255,255,.5)" : "#E4DFFE"}`, padding: "11px 0", borderRadius: 8, fontSize: 13.5, fontWeight: 600, cursor: "pointer" }}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = card.featured ? "rgba(255,255,255,.12)" : "#FAF8F4"; }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = card.featured ? "rgba(255,255,255,.12)" : "var(--vk-surface-2)"; }}
           onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
         >
           Tell me more
@@ -140,7 +140,7 @@ export function PricingViewer({ isOpen, onClose, activeSubNav, heroTitle, heroSu
     <div className="fixed inset-0 z-50 overflow-y-auto" style={{ background: "#F8F7FC", fontFamily: "'Inter', sans-serif" }}>
 
       {/* Sticky nav */}
-      <nav style={{ background: "#fff", borderBottom: "1px solid #E4DFFE", position: "sticky", top: 0, zIndex: 100 }}>
+      <nav style={{ background: "var(--vk-surface)", borderBottom: "1px solid #E4DFFE", position: "sticky", top: 0, zIndex: 100 }}>
         {/* Top row */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 48px", height: 64, maxWidth: 1280, margin: "0 auto" }}>
           <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" style={{ height: 44, width: "auto", objectFit: "contain" }} />
@@ -188,7 +188,7 @@ export function PricingViewer({ isOpen, onClose, activeSubNav, heroTitle, heroSu
 
       {/* Hero */}
       <div style={{ textAlign: "center", padding: "72px 24px 56px" }}>
-        <h1 style={{ fontSize: "clamp(32px, 5vw, 52px)", fontWeight: 800, color: BRAND, letterSpacing: -1.5, lineHeight: 1.1, margin: 0 }}>
+        <h1 style={{ fontSize: "clamp(32px, 5vw, 52px)", fontWeight: 800, color: "var(--vk-crimson-text)", letterSpacing: -1.5, lineHeight: 1.1, margin: 0 }}>
           {heroTitle}
         </h1>
         <p style={{ marginTop: 10, fontSize: 16, color: "#8A82A6", fontWeight: 500 }}>{heroSub}</p>

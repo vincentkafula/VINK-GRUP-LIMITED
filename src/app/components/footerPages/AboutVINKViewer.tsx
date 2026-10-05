@@ -23,16 +23,16 @@ const MILESTONES = [
 ];
 
 const P = "#5C0A10";
-const GOLD = "#F5A623";
+const GOLD = "#C9A84C";
 
 export function AboutVINKViewer({ isOpen, onClose }: Props) {
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-white">
+    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-surface">
       {/* Top bar */}
-      <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm">
+      <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-surface border-b border-line shadow-sm">
         <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
-        <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500"><X className="w-5 h-5" /></button>
+        <button onClick={onClose} className="p-2 rounded-full hover:bg-surface-2 transition-colors text-fg-muted"><X className="w-5 h-5" /></button>
       </div>
 
       {/* Hero */}
@@ -66,15 +66,15 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
 
         {/* Founding Story */}
         <section>
-          <h2 className="text-2xl font-black mb-4" style={{ color: P }}>Our Founding Story</h2>
-          <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
-            <p className="text-gray-700 leading-relaxed mb-4">
+          <h2 className="text-2xl font-black mb-4" style={{ color: "var(--vk-crimson-text)" }}>Our Founding Story</h2>
+          <div className="bg-surface-2 rounded-2xl p-6 border border-line">
+            <p className="text-fg leading-relaxed mb-4">
               Vink Group (Pty) Ltd. was founded in 2018 in Cape Town by <strong>Vincent Kafula</strong> — a Cape Town native with deep roots in the public transport industry. Vincent saw a gap that no bank or fintech had filled: a payment system fast enough for the taxi industry, where 15 million South Africans board a minibus every single morning. He built one.
             </p>
-            <p className="text-gray-700 leading-relaxed mb-4">
+            <p className="text-fg leading-relaxed mb-4">
               From a single idea in the Cape Town CBD to a fully developed AFC payment platform, Vink was born from the belief that financial tools should serve everyone — not just those with traditional banking histories.
             </p>
-            <p className="text-gray-600 leading-relaxed">
+            <p className="text-fg-muted leading-relaxed">
               VINK charges just R0.50 per taxi transaction — the lowest processing fee in the industry. That revenue is shared across the ecosystem that makes the transaction possible: the financing bank, the driver&apos;s taxi association, neighbourhood watch initiatives in the area served, and a portion retained to seed a future VINK community bank built specifically for taxi drivers.
             </p>
           </div>
@@ -91,8 +91,8 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
           </div>
           <div className="rounded-2xl p-6 border-2" style={{ borderColor: P }}>
             <div className="text-3xl mb-3">🌍</div>
-            <h3 className="text-lg font-black mb-3" style={{ color: P }}>Our Vision</h3>
-            <p className="text-gray-600 text-sm leading-relaxed">
+            <h3 className="text-lg font-black mb-3" style={{ color: "var(--vk-crimson-text)" }}>Our Vision</h3>
+            <p className="text-fg-muted text-sm leading-relaxed">
               To be the provider of high-value, high-quality, and convergent AFC solutions to taxi industry and public transport operators worldwide — and to build a pan-African financial services business that creates real economic opportunity in the communities we serve.
             </p>
           </div>
@@ -100,14 +100,14 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
 
         {/* Core Values */}
         <section>
-          <h2 className="text-2xl font-black mb-6" style={{ color: P }}>Core Values</h2>
+          <h2 className="text-2xl font-black mb-6" style={{ color: "var(--vk-crimson-text)" }}>Core Values</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {VALUES.map((v, i) => (
-              <div key={i} className="flex items-start gap-4 p-5 bg-white rounded-xl border border-gray-200 hover:shadow-md transition-shadow">
+              <div key={i} className="flex items-start gap-4 p-5 bg-surface rounded-xl border border-line hover:shadow-md transition-shadow">
                 <span className="text-2xl flex-shrink-0">{v.icon}</span>
                 <div>
-                  <p className="font-bold text-gray-900 text-sm">{v.title}</p>
-                  <p className="text-gray-500 text-xs mt-1 leading-relaxed">{v.desc}</p>
+                  <p className="font-bold text-fg text-sm">{v.title}</p>
+                  <p className="text-fg-muted text-xs mt-1 leading-relaxed">{v.desc}</p>
                 </div>
               </div>
             ))}
@@ -115,24 +115,24 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
         </section>
 
         {/* BBBEE */}
-        <section className="rounded-2xl p-6" style={{ background: "#F2EFE8" }}>
-          <h2 className="text-lg font-black mb-3" style={{ color: P }}>BBBEE &amp; Ownership</h2>
-          <p className="text-gray-700 text-sm leading-relaxed">
+        <section className="rounded-2xl p-6" style={{ background: "var(--vk-surface-2)" }}>
+          <h2 className="text-lg font-black mb-3" style={{ color: "var(--vk-crimson-text)" }}>BBBEE &amp; Ownership</h2>
+          <p className="text-fg text-sm leading-relaxed">
             Vink is a <strong>100% black-owned business</strong>. The founder, Vincent Kafula, holds 80% of the shares. The remaining shares are held by South African co-shareholders and beneficiaries — including a 10% stake held in trust for a minor beneficiary, reflecting the founder&apos;s commitment to generational wealth building.
           </p>
         </section>
 
         {/* Timeline */}
         <section>
-          <h2 className="text-2xl font-black mb-6" style={{ color: P }}>Company Milestones</h2>
+          <h2 className="text-2xl font-black mb-6" style={{ color: "var(--vk-crimson-text)" }}>Company Milestones</h2>
           <div className="relative pl-6 border-l-2" style={{ borderColor: P }}>
             {MILESTONES.map((m, i) => (
               <div key={i} className="mb-6 relative">
                 <div className="absolute -left-[29px] top-0.5 w-5 h-5 rounded-full border-2 border-white flex items-center justify-center text-white text-[9px] font-black"
                   style={{ background: P }}>•</div>
                 <span className="text-xs font-black uppercase tracking-wider px-2 py-0.5 rounded"
-                  style={{ background: "#F2EFE8", color: P }}>{m.year}</span>
-                <p className="text-gray-700 text-sm mt-2 leading-relaxed">{m.text}</p>
+                  style={{ background: "var(--vk-surface-2)", color: "var(--vk-crimson-text)" }}>{m.year}</span>
+                <p className="text-fg text-sm mt-2 leading-relaxed">{m.text}</p>
               </div>
             ))}
           </div>

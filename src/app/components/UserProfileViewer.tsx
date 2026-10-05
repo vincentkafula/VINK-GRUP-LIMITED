@@ -3,7 +3,7 @@ import { X, User, Shield, CreditCard, Bell, Settings, LogOut, Camera, CheckCircl
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 
 const P = "#5C0A10";
-const GOLD = "#F5A623";
+const GOLD = "#C9A84C";
 
 interface Props {
   isOpen: boolean;
@@ -165,26 +165,26 @@ export function UserProfileViewer({ isOpen, onClose, onSignOut }: Props) {
       </div>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col overflow-hidden bg-[#FAF8F4]">
+      <div className="flex-1 flex flex-col overflow-hidden bg-surface-2">
         {/* Top bar */}
-        <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-100 shadow-sm">
+        <div className="flex items-center justify-between px-6 py-4 bg-surface border-b border-line shadow-sm">
           <div className="flex items-center gap-3">
             <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-8 w-auto" />
-            <span className="text-gray-400">/</span>
-            <span className="font-semibold text-gray-800">{tabs.find(t => t.id === tab)?.label}</span>
+            <span className="text-fg-subtle">/</span>
+            <span className="font-semibold text-fg">{tabs.find(t => t.id === tab)?.label}</span>
           </div>
           <div className="flex items-center gap-2">
             {tab === "overview" && (
               <button
                 onClick={() => setEditMode(v => !v)}
                 className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
-                style={{ background: editMode ? `${P}15` : "transparent", color: P, border: `1.5px solid ${P}44` }}
+                style={{ background: editMode ? `${P}15` : "transparent", color: "var(--vk-crimson-text)", border: `1.5px solid ${P}44` }}
               >
                 <Edit3 className="w-3.5 h-3.5" />
                 {editMode ? "Save Changes" : "Edit Profile"}
               </button>
             )}
-            <button onClick={onClose} className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 transition-colors">
+            <button onClick={onClose} className="p-2 rounded-xl hover:bg-surface-2 text-fg-subtle transition-colors">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -201,19 +201,19 @@ export function UserProfileViewer({ isOpen, onClose, onSignOut }: Props) {
                 <div className="grid grid-cols-2 gap-4">
                   <Field label="First Name" value={profile.firstName} edit={editMode} onChange={v => setProfile(p => ({ ...p, firstName: v }))} />
                   <Field label="Last Name" value={profile.lastName} edit={editMode} onChange={v => setProfile(p => ({ ...p, lastName: v }))} />
-                  <Field label="Email Address" value={profile.email} icon={<Mail className="w-3.5 h-3.5 text-gray-400" />} edit={false} verified />
-                  <Field label="Phone Number" value={profile.phone} icon={<Phone className="w-3.5 h-3.5 text-gray-400" />} edit={editMode} onChange={v => setProfile(p => ({ ...p, phone: v }))} />
-                  <Field label="Date of Birth" value={profile.dob} type="date" icon={<Calendar className="w-3.5 h-3.5 text-gray-400" />} edit={editMode} onChange={v => setProfile(p => ({ ...p, dob: v }))} />
-                  <Field label="Nationality" value={profile.nationality} icon={<Globe className="w-3.5 h-3.5 text-gray-400" />} edit={false} />
+                  <Field label="Email Address" value={profile.email} icon={<Mail className="w-3.5 h-3.5 text-fg-subtle" />} edit={false} verified />
+                  <Field label="Phone Number" value={profile.phone} icon={<Phone className="w-3.5 h-3.5 text-fg-subtle" />} edit={editMode} onChange={v => setProfile(p => ({ ...p, phone: v }))} />
+                  <Field label="Date of Birth" value={profile.dob} type="date" icon={<Calendar className="w-3.5 h-3.5 text-fg-subtle" />} edit={editMode} onChange={v => setProfile(p => ({ ...p, dob: v }))} />
+                  <Field label="Nationality" value={profile.nationality} icon={<Globe className="w-3.5 h-3.5 text-fg-subtle" />} edit={false} />
                 </div>
                 {/* ID Number — masked */}
-                <div className="mt-4 p-3 rounded-xl border border-gray-100 bg-gray-50">
-                  <label className="text-xs font-semibold text-gray-500 block mb-1">SA ID Number</label>
+                <div className="mt-4 p-3 rounded-xl border border-line bg-surface-2">
+                  <label className="text-xs font-semibold text-fg-muted block mb-1">SA ID Number</label>
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-sm font-medium text-gray-800">
+                    <span className="font-mono text-sm font-medium text-fg">
                       {showId ? profile.idNumber : profile.idNumber.substring(0, 6) + "•••••••"}
                     </span>
-                    <button onClick={() => setShowId(v => !v)} className="text-gray-400 hover:text-gray-600 ml-auto">
+                    <button onClick={() => setShowId(v => !v)} className="text-fg-subtle hover:text-gray-600 ml-auto">
                       {showId ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                     <span className="flex items-center gap-1 text-xs text-green-600 font-semibold"><CheckCircle className="w-3.5 h-3.5" /> Verified</span>
@@ -236,26 +236,26 @@ export function UserProfileViewer({ isOpen, onClose, onSignOut }: Props) {
 
               {/* Account Details */}
               <Section title="Account Details" icon={<CreditCard className="w-4 h-4" />}>
-                <div className="p-3 rounded-xl border border-gray-100 bg-gray-50">
-                  <label className="text-xs font-semibold text-gray-500 block mb-1">Primary Account Number</label>
+                <div className="p-3 rounded-xl border border-line bg-surface-2">
+                  <label className="text-xs font-semibold text-fg-muted block mb-1">Primary Account Number</label>
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-sm text-gray-800">
+                    <span className="font-mono text-sm text-fg">
                       {showAccountNo ? profile.accountNo : "VINK••••••••••"}
                     </span>
-                    <button onClick={() => setShowAccountNo(v => !v)} className="text-gray-400 hover:text-gray-600 ml-auto">
+                    <button onClick={() => setShowAccountNo(v => !v)} className="text-fg-subtle hover:text-gray-600 ml-auto">
                       {showAccountNo ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
                 </div>
-                <div className="mt-3 p-3 rounded-xl border border-gray-100 bg-gray-50">
-                  <label className="text-xs font-semibold text-gray-500 block mb-1">Referral Code</label>
+                <div className="mt-3 p-3 rounded-xl border border-line bg-surface-2">
+                  <label className="text-xs font-semibold text-fg-muted block mb-1">Referral Code</label>
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-sm font-bold" style={{ color: P }}>{profile.referralCode}</span>
-                    <button className="ml-auto text-xs font-semibold px-2 py-0.5 rounded-lg" style={{ background: `${P}15`, color: P }}>
+                    <span className="font-mono text-sm font-bold" style={{ color: "var(--vk-crimson-text)" }}>{profile.referralCode}</span>
+                    <button className="ml-auto text-xs font-semibold px-2 py-0.5 rounded-lg" style={{ background: `${P}15`, color: "var(--vk-crimson-text)" }}>
                       Copy
                     </button>
                   </div>
-                  <p className="text-xs text-gray-400 mt-1">Earn 500 ManshyaPoints for every friend who joins</p>
+                  <p className="text-xs text-fg-subtle mt-1">Earn 500 ManshyaPoints for every friend who joins</p>
                 </div>
               </Section>
             </div>
@@ -277,7 +277,7 @@ export function UserProfileViewer({ isOpen, onClose, onSignOut }: Props) {
                   </div>
                 </div>
                 <div className="h-2 rounded-full bg-white/20">
-                  <div className="h-full rounded-full bg-white transition-all" style={{ width: `${kycPct}%` }} />
+                  <div className="h-full rounded-full bg-surface transition-all" style={{ width: `${kycPct}%` }} />
                 </div>
               </div>
 
@@ -289,7 +289,7 @@ export function UserProfileViewer({ isOpen, onClose, onSignOut }: Props) {
                         ? <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
                         : <Clock className="w-5 h-5 text-amber-500 flex-shrink-0" />
                       }
-                      <span className="text-sm font-medium text-gray-700 flex-1">{step.label}</span>
+                      <span className="text-sm font-medium text-fg flex-1">{step.label}</span>
                       {step.done
                         ? <span className="text-xs text-green-600 font-semibold">Complete</span>
                         : <button className="text-xs font-semibold px-3 py-1 rounded-lg text-white" style={{ background: GOLD }}>Start</button>
@@ -306,11 +306,11 @@ export function UserProfileViewer({ isOpen, onClose, onSignOut }: Props) {
                     { name: "Selfie verification photo", status: "verified", date: "Uploaded 12 Mar 2024" },
                     { name: "Proof of address", status: "required", date: "Not uploaded" },
                   ].map(doc => (
-                    <div key={doc.name} className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 bg-gray-50">
-                      <FileText className="w-5 h-5 text-gray-400" />
+                    <div key={doc.name} className="flex items-center gap-3 p-3 rounded-xl border border-line bg-surface-2">
+                      <FileText className="w-5 h-5 text-fg-subtle" />
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-gray-700">{doc.name}</p>
-                        <p className="text-xs text-gray-400">{doc.date}</p>
+                        <p className="text-sm font-medium text-fg">{doc.name}</p>
+                        <p className="text-xs text-fg-subtle">{doc.date}</p>
                       </div>
                       {doc.status === "verified"
                         ? <span className="text-xs text-green-600 font-semibold flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5" /> Verified</span>
@@ -328,32 +328,32 @@ export function UserProfileViewer({ isOpen, onClose, onSignOut }: Props) {
             <div className="max-w-2xl space-y-6">
               <Section title="Authentication" icon={<Shield className="w-4 h-4" />}>
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 rounded-xl border border-gray-100 bg-gray-50">
+                  <div className="flex items-center justify-between p-4 rounded-xl border border-line bg-surface-2">
                     <div>
-                      <p className="text-sm font-semibold text-gray-800">Two-Factor Authentication</p>
-                      <p className="text-xs text-gray-500 mt-0.5">Add an extra layer of security with OTP verification</p>
+                      <p className="text-sm font-semibold text-fg">Two-Factor Authentication</p>
+                      <p className="text-xs text-fg-muted mt-0.5">Add an extra layer of security with OTP verification</p>
                     </div>
                     <button
                       onClick={() => setTwoFaEnabled(v => !v)}
                       className="relative w-12 h-6 rounded-full transition-colors"
-                      style={{ background: twoFaEnabled ? P : "#D1D5DB" }}
+                      style={{ background: twoFaEnabled ? P : "var(--vk-line)" }}
                     >
-                      <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${twoFaEnabled ? "left-6" : "left-0.5"}`} />
+                      <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-surface shadow transition-all ${twoFaEnabled ? "left-6" : "left-0.5"}`} />
                     </button>
                   </div>
-                  <button className="w-full text-left flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors">
+                  <button className="w-full text-left flex items-center justify-between p-4 rounded-xl border border-line hover:bg-surface-2 transition-colors">
                     <div>
-                      <p className="text-sm font-semibold text-gray-800">Change Password</p>
-                      <p className="text-xs text-gray-500 mt-0.5">Last changed 5 days ago</p>
+                      <p className="text-sm font-semibold text-fg">Change Password</p>
+                      <p className="text-xs text-fg-muted mt-0.5">Last changed 5 days ago</p>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                    <ChevronRight className="w-4 h-4 text-fg-subtle" />
                   </button>
-                  <button className="w-full text-left flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors">
+                  <button className="w-full text-left flex items-center justify-between p-4 rounded-xl border border-line hover:bg-surface-2 transition-colors">
                     <div>
-                      <p className="text-sm font-semibold text-gray-800">Biometric Login</p>
-                      <p className="text-xs text-gray-500 mt-0.5">Face ID / Fingerprint (mobile app)</p>
+                      <p className="text-sm font-semibold text-fg">Biometric Login</p>
+                      <p className="text-xs text-fg-muted mt-0.5">Face ID / Fingerprint (mobile app)</p>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                    <ChevronRight className="w-4 h-4 text-fg-subtle" />
                   </button>
                 </div>
               </Section>
@@ -361,15 +361,15 @@ export function UserProfileViewer({ isOpen, onClose, onSignOut }: Props) {
               <Section title="Recent Login Activity" icon={<Smartphone className="w-4 h-4" />}>
                 <div className="space-y-3">
                   {SECURITY_EVENTS.map((ev, i) => (
-                    <div key={i} className="flex items-start gap-3 p-3 rounded-xl border border-gray-100 bg-gray-50">
+                    <div key={i} className="flex items-start gap-3 p-3 rounded-xl border border-line bg-surface-2">
                       <div className={`w-2 h-2 mt-1.5 rounded-full flex-shrink-0 ${ev.current ? "bg-green-500" : "bg-gray-300"}`} />
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
-                          <p className="text-sm font-semibold text-gray-800">{ev.action}</p>
+                          <p className="text-sm font-semibold text-fg">{ev.action}</p>
                           {ev.current && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 font-semibold">Current</span>}
                         </div>
-                        <p className="text-xs text-gray-500">{ev.device}</p>
-                        <p className="text-xs text-gray-400">{ev.location} · {ev.time}</p>
+                        <p className="text-xs text-fg-muted">{ev.device}</p>
+                        <p className="text-xs text-fg-subtle">{ev.location} · {ev.time}</p>
                       </div>
                       {!ev.current && (
                         <button className="text-xs text-red-500 hover:text-red-700 font-semibold">Revoke</button>
@@ -403,10 +403,10 @@ export function UserProfileViewer({ isOpen, onClose, onSignOut }: Props) {
           {tab === "cards" && (
             <div className="max-w-2xl space-y-6">
               {[
-                { type: "Mastercard Debit", last4: "4291", expires: "09/28", status: "active", daily: 5000, monthly: 50000, spentToday: 850, spentMonth: 12480, color: "#5C0A10", online: true, international: false, contactless: true },
+                { type: "Mastercard Debit", last4: "4291", expires: "09/28", status: "active", daily: 5000, monthly: 50000, spentToday: 850, spentMonth: 12480, color: "var(--vk-crimson-text)", online: true, international: false, contactless: true },
                 { type: "Virtual Card", last4: "7742", expires: "12/26", status: "active", daily: 2000, monthly: 20000, spentToday: 0, spentMonth: 3200, color: "#0F172A", online: true, international: true, contactless: false },
               ].map(card => (
-                <div key={card.last4} className="rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
+                <div key={card.last4} className="rounded-2xl overflow-hidden border border-line shadow-sm">
                   {/* Card visual */}
                   <div className="p-5 flex justify-between items-start" style={{ background: `linear-gradient(135deg,${card.color},${card.color}99)` }}>
                     <div>
@@ -417,27 +417,27 @@ export function UserProfileViewer({ isOpen, onClose, onSignOut }: Props) {
                     <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-green-400/20 text-green-300">Active</span>
                   </div>
                   {/* Limits & controls */}
-                  <div className="p-4 space-y-3 bg-white">
+                  <div className="p-4 space-y-3 bg-surface">
                     <div className="grid grid-cols-2 gap-3 text-sm">
                       <LimitBar label="Daily limit" spent={card.spentToday} limit={card.daily} />
                       <LimitBar label="Monthly limit" spent={card.spentMonth} limit={card.monthly} />
                     </div>
                     <div className="flex gap-2 flex-wrap">
                       {[["Online payments", card.online], ["International", card.international], ["Contactless", card.contactless]].map(([label, val]) => (
-                        <span key={label as string} className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full" style={{ background: val ? "#F0FDF4" : "#F9FAFB", color: val ? "#16A34A" : "#9CA3AF", border: `1px solid ${val ? "#BBF7D0" : "#E5E7EB"}` }}>
+                        <span key={label as string} className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full" style={{ background: val ? "#F0FDF4" : "var(--vk-surface-2)", color: val ? "#16A34A" : "#9CA3AF", border: `1px solid ${val ? "#BBF7D0" : "var(--vk-line)"}` }}>
                           {val ? <CheckCircle className="w-3 h-3" /> : <X className="w-3 h-3" />}
                           {label as string}
                         </span>
                       ))}
                     </div>
                     <div className="flex gap-2">
-                      <button className="flex-1 py-2 rounded-xl text-xs font-semibold border transition-colors hover:bg-gray-50" style={{ color: P, borderColor: `${P}30` }}>Manage Limits</button>
+                      <button className="flex-1 py-2 rounded-xl text-xs font-semibold border transition-colors hover:bg-surface-2" style={{ color: "var(--vk-crimson-text)", borderColor: `${P}30` }}>Manage Limits</button>
                       <button className="flex-1 py-2 rounded-xl text-xs font-semibold bg-red-50 text-red-600 border border-red-100 hover:bg-red-100 transition-colors">Freeze Card</button>
                     </div>
                   </div>
                 </div>
               ))}
-              <button className="w-full py-3 rounded-2xl text-sm font-semibold border-2 border-dashed transition-colors" style={{ borderColor: `${P}40`, color: P }}>
+              <button className="w-full py-3 rounded-2xl text-sm font-semibold border-2 border-dashed transition-colors" style={{ borderColor: `${P}40`, color: "var(--vk-crimson-text)" }}>
                 + Apply for New Card
               </button>
             </div>
@@ -449,17 +449,17 @@ export function UserProfileViewer({ isOpen, onClose, onSignOut }: Props) {
               <Section title="Notification Preferences" icon={<Bell className="w-4 h-4" />}>
                 <div className="space-y-3">
                   {notifPrefs.map(pref => (
-                    <div key={pref.key} className="flex items-center justify-between p-4 rounded-xl border border-gray-100 bg-gray-50">
+                    <div key={pref.key} className="flex items-center justify-between p-4 rounded-xl border border-line bg-surface-2">
                       <div>
-                        <p className="text-sm font-semibold text-gray-800">{pref.label}</p>
-                        <p className="text-xs text-gray-500 mt-0.5">{pref.desc}</p>
+                        <p className="text-sm font-semibold text-fg">{pref.label}</p>
+                        <p className="text-xs text-fg-muted mt-0.5">{pref.desc}</p>
                       </div>
                       <button
                         onClick={() => setNotifPrefs(prev => prev.map(p => p.key === pref.key ? { ...p, enabled: !p.enabled } : p))}
                         className="relative w-11 h-6 rounded-full transition-colors flex-shrink-0"
-                        style={{ background: pref.enabled ? P : "#D1D5DB" }}
+                        style={{ background: pref.enabled ? P : "var(--vk-line)" }}
                       >
-                        <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${pref.enabled ? "left-5.5 translate-x-0.5" : "left-0.5"}`} style={{ left: pref.enabled ? "calc(100% - 22px)" : "2px" }} />
+                        <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-surface shadow transition-all ${pref.enabled ? "left-5.5 translate-x-0.5" : "left-0.5"}`} style={{ left: pref.enabled ? "calc(100% - 22px)" : "2px" }} />
                       </button>
                     </div>
                   ))}
@@ -475,8 +475,8 @@ export function UserProfileViewer({ isOpen, onClose, onSignOut }: Props) {
                 <div className="grid grid-cols-2 gap-4">
                   {[{ label: "Language", options: ["English", "Afrikaans", "Zulu", "Xhosa", "Sotho"] }, { label: "Currency Display", options: ["ZAR (R)", "USD ($)", "EUR (€)"] }].map(sel => (
                     <div key={sel.label}>
-                      <label className="text-xs font-semibold text-gray-500 block mb-1.5">{sel.label}</label>
-                      <select className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white focus:outline-none focus:ring-2" style={{ "--tw-ring-color": P } as React.CSSProperties}>
+                      <label className="text-xs font-semibold text-fg-muted block mb-1.5">{sel.label}</label>
+                      <select className="w-full px-3 py-2 rounded-xl border border-line text-sm bg-surface focus:outline-none focus:ring-2" style={{ "--tw-ring-color": P } as React.CSSProperties}>
                         {sel.options.map(o => <option key={o}>{o}</option>)}
                       </select>
                     </div>
@@ -486,7 +486,7 @@ export function UserProfileViewer({ isOpen, onClose, onSignOut }: Props) {
               <Section title="Appearance" icon={<Settings className="w-4 h-4" />}>
                 <div className="grid grid-cols-3 gap-3">
                   {["Light", "Dark", "System"].map(theme => (
-                    <button key={theme} className="p-4 rounded-xl border-2 text-sm font-semibold transition-all" style={{ borderColor: theme === "Light" ? P : "#E5E7EB", color: theme === "Light" ? P : "#374151", background: theme === "Light" ? `${P}08` : "transparent" }}>
+                    <button key={theme} className="p-4 rounded-xl border-2 text-sm font-semibold transition-all" style={{ borderColor: theme === "Light" ? P : "var(--vk-line)", color: theme === "Light" ? P : "#374151", background: theme === "Light" ? `${P}08` : "transparent" }}>
                       {theme}
                     </button>
                   ))}
@@ -503,10 +503,10 @@ export function UserProfileViewer({ isOpen, onClose, onSignOut }: Props) {
 
 function Section({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div className="bg-surface rounded-2xl shadow-sm border border-line overflow-hidden">
       <div className="flex items-center gap-2 px-5 py-4 border-b border-gray-50">
-        <span style={{ color: P }}>{icon}</span>
-        <h3 className="text-sm font-bold text-gray-800">{title}</h3>
+        <span style={{ color: "var(--vk-crimson-text)" }}>{icon}</span>
+        <h3 className="text-sm font-bold text-fg">{title}</h3>
       </div>
       <div className="p-5">{children}</div>
     </div>
@@ -516,7 +516,7 @@ function Section({ title, icon, children }: { title: string; icon: React.ReactNo
 function Field({ label, value, edit = false, type = "text", icon, verified, onChange }: { label: string; value: string; edit?: boolean; type?: string; icon?: React.ReactNode; verified?: boolean; onChange?: (v: string) => void }) {
   return (
     <div>
-      <label className="text-xs font-semibold text-gray-500 block mb-1">{label}</label>
+      <label className="text-xs font-semibold text-fg-muted block mb-1">{label}</label>
       <div className="relative">
         {icon && <span className="absolute left-3 top-1/2 -translate-y-1/2">{icon}</span>}
         <input
@@ -525,7 +525,7 @@ function Field({ label, value, edit = false, type = "text", icon, verified, onCh
           readOnly={!edit}
           onChange={e => onChange?.(e.target.value)}
           className="w-full px-3 py-2 rounded-xl border text-sm transition-all"
-          style={{ paddingLeft: icon ? "2rem" : undefined, borderColor: edit ? "#5C0A10" : "#E5E7EB", background: edit ? "#fff" : "#F9FAFB", color: "#1F2937" }}
+          style={{ paddingLeft: icon ? "2rem" : undefined, borderColor: edit ? "#5C0A10" : "var(--vk-line)", background: edit ? "#fff" : "var(--vk-surface-2)", color: "var(--vk-fg)" }}
         />
         {verified && (
           <span className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -542,8 +542,8 @@ function LimitBar({ label, spent, limit }: { label: string; spent: number; limit
   return (
     <div>
       <div className="flex justify-between text-xs mb-1">
-        <span className="text-gray-500">{label}</span>
-        <span className="font-semibold text-gray-700">R{spent.toLocaleString()} / R{limit.toLocaleString()}</span>
+        <span className="text-fg-muted">{label}</span>
+        <span className="font-semibold text-fg">R{spent.toLocaleString()} / R{limit.toLocaleString()}</span>
       </div>
       <div className="h-1.5 rounded-full bg-gray-200">
         <div className="h-full rounded-full" style={{ width: `${pct}%`, background: pct > 80 ? "#EF4444" : pct > 60 ? GOLD : "#10B981" }} />

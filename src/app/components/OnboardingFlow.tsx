@@ -3,7 +3,7 @@ import { CheckCircle, ArrowRight, User, Shield, CreditCard, Smartphone, Star, X 
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 
 const P = "#5C0A10";
-const GOLD = "#F5A623";
+const GOLD = "#C9A84C";
 
 interface Props {
   isOpen: boolean;
@@ -94,7 +94,7 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
                   ? (step === 1 ? "rgba(255,255,255,0.7)" : "#10B981")
                   : s.n === step
                   ? (step === 1 ? "#fff" : P)
-                  : (step === 1 ? "rgba(255,255,255,0.25)" : "#E5E7EB"),
+                  : (step === 1 ? "rgba(255,255,255,0.25)" : "var(--vk-line)"),
               }}
             />
           ))}
@@ -135,25 +135,25 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
             <div className="space-y-5">
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <User className="w-4 h-4" style={{ color: P }} />
-                  <h2 className="text-lg font-black text-gray-900">Your basic details</h2>
+                  <User className="w-4 h-4" style={{ color: "var(--vk-crimson-text)" }} />
+                  <h2 className="text-lg font-black text-fg">Your basic details</h2>
                 </div>
-                <p className="text-sm text-gray-500">This is used for your account and FICA compliance.</p>
+                <p className="text-sm text-fg-muted">This is used for your account and FICA compliance.</p>
               </div>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs font-semibold text-gray-500 block mb-1.5">First Name *</label>
-                    <input value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="e.g. Thabo" className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-emerald-500" />
+                    <label className="text-xs font-semibold text-fg-muted block mb-1.5">First Name *</label>
+                    <input value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="e.g. Thabo" className="w-full px-3 py-2.5 rounded-xl border border-line text-sm focus:outline-none focus:border-emerald-500" />
                   </div>
                   <div>
-                    <label className="text-xs font-semibold text-gray-500 block mb-1.5">Last Name *</label>
-                    <input value={lastName} onChange={e => setLastName(e.target.value)} placeholder="e.g. Nkosi" className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-emerald-500" />
+                    <label className="text-xs font-semibold text-fg-muted block mb-1.5">Last Name *</label>
+                    <input value={lastName} onChange={e => setLastName(e.target.value)} placeholder="e.g. Nkosi" className="w-full px-3 py-2.5 rounded-xl border border-line text-sm focus:outline-none focus:border-emerald-500" />
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-gray-500 block mb-1.5">Mobile Number *</label>
-                  <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="+27 72 123 4567" className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-emerald-500" />
+                  <label className="text-xs font-semibold text-fg-muted block mb-1.5">Mobile Number *</label>
+                  <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="+27 72 123 4567" className="w-full px-3 py-2.5 rounded-xl border border-line text-sm focus:outline-none focus:border-emerald-500" />
                 </div>
               </div>
             </div>
@@ -164,14 +164,14 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
             <div className="space-y-5">
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <Shield className="w-4 h-4" style={{ color: P }} />
-                  <h2 className="text-lg font-black text-gray-900">Identity Verification</h2>
+                  <Shield className="w-4 h-4" style={{ color: "var(--vk-crimson-text)" }} />
+                  <h2 className="text-lg font-black text-fg">Identity Verification</h2>
                 </div>
-                <p className="text-sm text-gray-500">Required by FICA and the FSCA. Takes 30 seconds.</p>
+                <p className="text-sm text-fg-muted">Required by FICA and the FSCA. Takes 30 seconds.</p>
               </div>
               <div>
-                <label className="text-xs font-semibold text-gray-500 block mb-1.5">SA ID Number / Passport Number *</label>
-                <input value={idNumber} onChange={e => setIdNumber(e.target.value)} placeholder="13-digit SA ID number" maxLength={13} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-emerald-500 font-mono" />
+                <label className="text-xs font-semibold text-fg-muted block mb-1.5">SA ID Number / Passport Number *</label>
+                <input value={idNumber} onChange={e => setIdNumber(e.target.value)} placeholder="13-digit SA ID number" maxLength={13} className="w-full px-3 py-2.5 rounded-xl border border-line text-sm focus:outline-none focus:border-emerald-500 font-mono" />
               </div>
               <div className="p-3 rounded-xl border border-emerald-100 bg-emerald-50 text-xs text-emerald-700">
                 📸 You will need to upload a clear photo of your ID document and a selfie to complete verification.
@@ -185,11 +185,11 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
                     <button
                       onClick={() => item.set(!item.state)}
                       className="w-5 h-5 mt-0.5 rounded-md border-2 flex-shrink-0 flex items-center justify-center transition-all"
-                      style={{ borderColor: item.state ? P : "#D1D5DB", background: item.state ? P : "#fff" }}
+                      style={{ borderColor: item.state ? P : "var(--vk-line)", background: item.state ? P : "#fff" }}
                     >
                       {item.state && <CheckCircle className="w-3.5 h-3.5 text-white" />}
                     </button>
-                    <span className="text-sm text-gray-600">{item.label}</span>
+                    <span className="text-sm text-fg-muted">{item.label}</span>
                   </label>
                 ))}
               </div>
@@ -201,10 +201,10 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
             <div className="space-y-4">
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <CreditCard className="w-4 h-4" style={{ color: P }} />
-                  <h2 className="text-lg font-black text-gray-900">Choose your products</h2>
+                  <CreditCard className="w-4 h-4" style={{ color: "var(--vk-crimson-text)" }} />
+                  <h2 className="text-lg font-black text-fg">Choose your products</h2>
                 </div>
-                <p className="text-sm text-gray-500">Select what you'd like to open. You can add more later.</p>
+                <p className="text-sm text-fg-muted">Select what you'd like to open. You can add more later.</p>
               </div>
               <div className="space-y-2">
                 {PRODUCTS.map(prod => (
@@ -213,19 +213,19 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
                     onClick={() => toggleProduct(prod.id)}
                     className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 text-left transition-all"
                     style={{
-                      borderColor: selectedProducts.includes(prod.id) ? P : "#E5E7EB",
+                      borderColor: selectedProducts.includes(prod.id) ? P : "var(--vk-line)",
                       background: selectedProducts.includes(prod.id) ? `${P}08` : "#fff",
                     }}
                   >
                     <span className="text-2xl">{prod.icon}</span>
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <p className="text-sm font-bold text-gray-800">{prod.label}</p>
+                        <p className="text-sm font-bold text-fg">{prod.label}</p>
                         {prod.popular && <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold" style={{ background: `${GOLD}22`, color: GOLD }}>Popular</span>}
                       </div>
-                      <p className="text-xs text-gray-500 mt-0.5">{prod.desc}</p>
+                      <p className="text-xs text-fg-muted mt-0.5">{prod.desc}</p>
                     </div>
-                    <div className="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0" style={{ borderColor: selectedProducts.includes(prod.id) ? P : "#D1D5DB", background: selectedProducts.includes(prod.id) ? P : "#fff" }}>
+                    <div className="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0" style={{ borderColor: selectedProducts.includes(prod.id) ? P : "var(--vk-line)", background: selectedProducts.includes(prod.id) ? P : "#fff" }}>
                       {selectedProducts.includes(prod.id) && <CheckCircle className="w-4 h-4 text-white" />}
                     </div>
                   </button>
@@ -239,10 +239,10 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
             <div className="space-y-5 text-center">
               <div>
                 <div className="flex items-center justify-center gap-2 mb-1">
-                  <Smartphone className="w-5 h-5" style={{ color: P }} />
-                  <h2 className="text-lg font-black text-gray-900">The VINK App Is Coming Soon</h2>
+                  <Smartphone className="w-5 h-5" style={{ color: "var(--vk-crimson-text)" }} />
+                  <h2 className="text-lg font-black text-fg">The VINK App Is Coming Soon</h2>
                 </div>
-                <p className="text-sm text-gray-500">Your account is already fully set up on web. We'll let you know the moment the app is ready.</p>
+                <p className="text-sm text-fg-muted">Your account is already fully set up on web. We'll let you know the moment the app is ready.</p>
               </div>
               <div className="flex gap-3 justify-center">
                 {[
@@ -252,8 +252,8 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
                   <div key={s.store} className="flex items-center gap-3 px-4 py-3 rounded-2xl border-2 text-left opacity-50" style={{ borderColor: P, background: `${P}08` }}>
                     <span className="text-2xl">{s.icon}</span>
                     <div>
-                      <p className="text-[10px] text-gray-500">{s.store}</p>
-                      <p className="text-sm font-bold text-gray-900">Coming Soon</p>
+                      <p className="text-[10px] text-fg-muted">{s.store}</p>
+                      <p className="text-sm font-bold text-fg">Coming Soon</p>
                     </div>
                   </div>
                 ))}
@@ -266,8 +266,8 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
             <div className="text-center space-y-5">
               <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mx-auto" style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>🎉</div>
               <div>
-                <h2 className="text-xl font-black text-gray-900">You're all set, {firstName || "welcome"}!</h2>
-                <p className="text-sm text-gray-500 mt-2">Your VINK account is being set up. You'll receive an email with your account details shortly.</p>
+                <h2 className="text-xl font-black text-fg">You're all set, {firstName || "welcome"}!</h2>
+                <p className="text-sm text-fg-muted mt-2">Your VINK account is being set up. You'll receive an email with your account details shortly.</p>
               </div>
               <div className="grid grid-cols-2 gap-3 text-left">
                 {[
@@ -276,7 +276,7 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
                   { icon: "⏳", text: "Account activation (minutes)" },
                   { icon: "⏳", text: "Card production (3–5 days)" },
                 ].map(item => (
-                  <div key={item.text} className="flex items-center gap-2 text-sm text-gray-700">
+                  <div key={item.text} className="flex items-center gap-2 text-sm text-fg">
                     <span>{item.icon}</span>
                     <span>{item.text}</span>
                   </div>
@@ -285,7 +285,7 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
               <div className="p-4 rounded-2xl" style={{ background: `${GOLD}12`, border: `1px solid ${GOLD}33` }}>
                 <div className="flex items-center gap-2">
                   <Star className="w-4 h-4" style={{ color: GOLD }} />
-                  <p className="text-sm font-semibold text-gray-800">Welcome bonus: <span style={{ color: GOLD }}>500 ManshyaPoints</span> added to your account!</p>
+                  <p className="text-sm font-semibold text-fg">Welcome bonus: <span style={{ color: GOLD }}>500 ManshyaPoints</span> added to your account!</p>
                 </div>
               </div>
             </div>
@@ -298,7 +298,7 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
             <button
               onClick={() => setStep((step - 1) as OnboardStep)}
               className="flex-1 py-3 rounded-2xl text-sm font-semibold border-2 transition-colors"
-              style={{ borderColor: step === 1 ? "rgba(255,255,255,0.3)" : "#E5E7EB", color: step === 1 ? "rgba(255,255,255,0.8)" : "#6B7280" }}
+              style={{ borderColor: step === 1 ? "rgba(255,255,255,0.3)" : "var(--vk-line)", color: step === 1 ? "rgba(255,255,255,0.8)" : "#6B7280" }}
             >
               Back
             </button>
@@ -308,7 +308,7 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
             disabled={!canProceed()}
             className="flex-1 py-3 rounded-2xl text-sm font-bold text-white flex items-center justify-center gap-2 transition-all"
             style={{
-              background: !canProceed() ? "#D1D5DB" : step === 1 ? "rgba(255,255,255,0.25)" : `linear-gradient(135deg,${P},#C9A84C)`,
+              background: !canProceed() ? "var(--vk-line)" : step === 1 ? "rgba(255,255,255,0.25)" : `linear-gradient(135deg,${P},#C9A84C)`,
               color: !canProceed() ? "#9CA3AF" : "#fff",
               border: step === 1 ? "2px solid rgba(255,255,255,0.4)" : "none",
             }}

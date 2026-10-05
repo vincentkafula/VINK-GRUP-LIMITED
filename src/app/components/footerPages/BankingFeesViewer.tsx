@@ -4,7 +4,7 @@ import { Footer } from "../Footer";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 const P = "#5C0A10";
-const GOLD = "#F5A623";
+const GOLD = "#C9A84C";
 
 const ACCOUNT_FEES = [
   { product: "VINK Commuter Card", monthly: "R0", note: "No monthly fee, ever." },
@@ -23,10 +23,10 @@ const TRANSACTION_FEES = [
 export function BankingFeesViewer({ isOpen, onClose }: Props) {
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-white">
-      <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm">
+    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-surface">
+      <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-surface border-b border-line shadow-sm">
         <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
-        <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500"><X className="w-5 h-5" /></button>
+        <button onClick={onClose} className="p-2 rounded-full hover:bg-surface-2 transition-colors text-fg-muted"><X className="w-5 h-5" /></button>
       </div>
 
       <div className="py-16 px-6 text-white" style={{ background: `linear-gradient(135deg,#0F172A,${P})` }}>
@@ -42,42 +42,42 @@ export function BankingFeesViewer({ isOpen, onClose }: Props) {
 
       <div className="max-w-4xl mx-auto w-full px-5 py-10 space-y-10">
 
-        <section className="rounded-2xl p-5" style={{ background: "#FEF3C7", border: "1px solid #FDE68A" }}>
+        <section className="rounded-2xl p-5" style={{ background: "var(--vk-warn-bg)", border: "1px solid #FDE68A" }}>
           <p className="text-sm font-semibold" style={{ color: "#92400E" }}>
             VINK is not yet in full operation. The figures below reflect our published product design and are confirmed in full when we launch in June 2027 — nothing on this page can be paid or activated today.
           </p>
         </section>
 
         <section>
-          <h2 className="text-2xl font-black mb-6" style={{ color: P }}>Account &amp; Card Fees</h2>
-          <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+          <h2 className="text-2xl font-black mb-6" style={{ color: "var(--vk-crimson-text)" }}>Account &amp; Card Fees</h2>
+          <div className="bg-surface rounded-2xl border border-line overflow-hidden">
             {ACCOUNT_FEES.map((f, i) => (
-              <div key={i} className={`p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 ${i > 0 ? "border-t border-gray-100" : ""}`}>
+              <div key={i} className={`p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 ${i > 0 ? "border-t border-line" : ""}`}>
                 <div>
-                  <p className="font-bold text-gray-900">{f.product}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{f.note}</p>
+                  <p className="font-bold text-fg">{f.product}</p>
+                  <p className="text-xs text-fg-muted mt-0.5">{f.note}</p>
                 </div>
-                <span className="text-sm font-bold shrink-0" style={{ color: P }}>{f.monthly}</span>
+                <span className="text-sm font-bold shrink-0" style={{ color: "var(--vk-crimson-text)" }}>{f.monthly}</span>
               </div>
             ))}
           </div>
         </section>
 
         <section>
-          <h2 className="text-2xl font-black mb-6" style={{ color: P }}>Transaction Fees</h2>
-          <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+          <h2 className="text-2xl font-black mb-6" style={{ color: "var(--vk-crimson-text)" }}>Transaction Fees</h2>
+          <div className="bg-surface rounded-2xl border border-line overflow-hidden">
             {TRANSACTION_FEES.map((f, i) => (
-              <div key={i} className={`p-5 flex items-center justify-between gap-4 ${i > 0 ? "border-t border-gray-100" : ""}`}>
-                <p className="text-gray-700 text-sm">{f.item}</p>
-                <span className="text-sm font-bold shrink-0 text-right" style={{ color: P }}>{f.fee}</span>
+              <div key={i} className={`p-5 flex items-center justify-between gap-4 ${i > 0 ? "border-t border-line" : ""}`}>
+                <p className="text-fg text-sm">{f.item}</p>
+                <span className="text-sm font-bold shrink-0 text-right" style={{ color: "var(--vk-crimson-text)" }}>{f.fee}</span>
               </div>
             ))}
           </div>
         </section>
 
-        <section className="bg-gray-50 rounded-2xl p-6 border border-gray-200">
-          <h2 className="text-lg font-black mb-3" style={{ color: P }}>Our Fee Philosophy</h2>
-          <p className="text-gray-600 text-sm leading-relaxed">
+        <section className="bg-surface-2 rounded-2xl p-6 border border-line">
+          <h2 className="text-lg font-black mb-3" style={{ color: "var(--vk-crimson-text)" }}>Our Fee Philosophy</h2>
+          <p className="text-fg-muted text-sm leading-relaxed">
             VINK was built for people who currently pay too much to move money — taxi commuters, drivers, and small operators. Wherever possible, our pricing is designed to undercut traditional banking fees on the transactions that matter most to the people we serve, starting with the daily taxi fare tap.
           </p>
         </section>

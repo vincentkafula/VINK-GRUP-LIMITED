@@ -4,7 +4,7 @@ import { Footer } from "../Footer";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 const P = "#5C0A10";
-const GOLD = "#F5A623";
+const GOLD = "#C9A84C";
 
 const REASONS = [
   { icon: "💳", title: "Lowest taxi fare fee in SA", desc: "Just R0.50 per transaction — no bank charges more in the taxi industry" },
@@ -31,10 +31,10 @@ const FICA = [
 export function SwitchToVINKViewer({ isOpen, onClose }: Props) {
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-white">
-      <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm">
+    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-surface">
+      <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-surface border-b border-line shadow-sm">
         <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
-        <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500"><X className="w-5 h-5" /></button>
+        <button onClick={onClose} className="p-2 rounded-full hover:bg-surface-2 transition-colors text-fg-muted"><X className="w-5 h-5" /></button>
       </div>
 
       {/* Hero */}
@@ -53,32 +53,32 @@ export function SwitchToVINKViewer({ isOpen, onClose }: Props) {
 
         {/* 5 reasons */}
         <section>
-          <h2 className="text-2xl font-black mb-6" style={{ color: P }}>Why Switch to VINK?</h2>
+          <h2 className="text-2xl font-black mb-6" style={{ color: "var(--vk-crimson-text)" }}>Why Switch to VINK?</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {REASONS.map((r, i) => (
-              <div key={i} className="p-5 rounded-xl border border-gray-200 bg-white hover:shadow-md transition-shadow">
+              <div key={i} className="p-5 rounded-xl border border-line bg-surface hover:shadow-md transition-shadow">
                 <span className="text-3xl block mb-3">{r.icon}</span>
-                <p className="font-bold text-gray-900 text-sm mb-1">{r.title}</p>
-                <p className="text-gray-500 text-xs leading-relaxed">{r.desc}</p>
+                <p className="font-bold text-fg text-sm mb-1">{r.title}</p>
+                <p className="text-fg-muted text-xs leading-relaxed">{r.desc}</p>
               </div>
             ))}
           </div>
         </section>
 
         {/* What VINK makes easy */}
-        <section className="rounded-2xl p-6" style={{ background: "#F2EFE8" }}>
-          <h2 className="text-xl font-black mb-4" style={{ color: P }}>What VINK Makes Easy</h2>
+        <section className="rounded-2xl p-6" style={{ background: "var(--vk-surface-2)" }}>
+          <h2 className="text-xl font-black mb-4" style={{ color: "var(--vk-crimson-text)" }}>What VINK Makes Easy</h2>
           <div className="space-y-3">
             {[
               { t: "Account number portability",  d: "Keep your FICA details — just switch your account." },
               { t: "Debit order switching",        d: "VINK contacts your existing providers on your behalf." },
               { t: "Salary redirect",              d: "One letter to your employer's payroll — VINK provides the template." },
             ].map((item, i) => (
-              <div key={i} className="flex items-start gap-3 bg-white rounded-xl p-4 border border-white/50">
+              <div key={i} className="flex items-start gap-3 bg-surface rounded-xl p-4 border border-white/50">
                 <CheckCircle className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: "#10B981" }} />
                 <div>
-                  <p className="font-semibold text-gray-900 text-sm">{item.t}</p>
-                  <p className="text-gray-500 text-xs mt-0.5">{item.d}</p>
+                  <p className="font-semibold text-fg text-sm">{item.t}</p>
+                  <p className="text-fg-muted text-xs mt-0.5">{item.d}</p>
                 </div>
               </div>
             ))}
@@ -87,15 +87,15 @@ export function SwitchToVINKViewer({ isOpen, onClose }: Props) {
 
         {/* How it works */}
         <section>
-          <h2 className="text-2xl font-black mb-6" style={{ color: P }}>How It Works — 4 Simple Steps</h2>
+          <h2 className="text-2xl font-black mb-6" style={{ color: "var(--vk-crimson-text)" }}>How It Works — 4 Simple Steps</h2>
           <div className="grid sm:grid-cols-2 gap-5">
             {STEPS.map((s, i) => (
-              <div key={i} className="flex items-start gap-4 p-5 bg-white rounded-xl border border-gray-200">
+              <div key={i} className="flex items-start gap-4 p-5 bg-surface rounded-xl border border-line">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-lg flex-shrink-0"
                   style={{ background: P }}>{s.n}</div>
                 <div>
-                  <p className="font-bold text-gray-900 text-sm mb-1">{s.title}</p>
-                  <p className="text-gray-500 text-xs leading-relaxed">{s.desc}</p>
+                  <p className="font-bold text-fg text-sm mb-1">{s.title}</p>
+                  <p className="text-fg-muted text-xs leading-relaxed">{s.desc}</p>
                 </div>
               </div>
             ))}
@@ -104,12 +104,12 @@ export function SwitchToVINKViewer({ isOpen, onClose }: Props) {
 
         {/* What you need */}
         <section>
-          <h2 className="text-2xl font-black mb-4" style={{ color: P }}>What You Need to Bring</h2>
-          <div className="bg-white rounded-2xl border border-gray-200 p-5 space-y-3">
+          <h2 className="text-2xl font-black mb-4" style={{ color: "var(--vk-crimson-text)" }}>What You Need to Bring</h2>
+          <div className="bg-surface rounded-2xl border border-line p-5 space-y-3">
             {FICA.map((item, i) => (
               <div key={i} className="flex items-start gap-3">
-                <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: P }} />
-                <p className="text-sm text-gray-700">{item}</p>
+                <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: "var(--vk-crimson-text)" }} />
+                <p className="text-sm text-fg">{item}</p>
               </div>
             ))}
           </div>

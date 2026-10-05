@@ -55,15 +55,15 @@ export function RichTextEditor({ value, onChange, placeholder }: Props) {
   ];
 
   return (
-    <div className="border border-gray-200 rounded-xl overflow-hidden">
-      <div className="flex items-center gap-0.5 px-2 py-1.5 border-b border-gray-100 bg-gray-50 flex-wrap">
+    <div className="border border-line rounded-xl overflow-hidden">
+      <div className="flex items-center gap-0.5 px-2 py-1.5 border-b border-line bg-surface-2 flex-wrap">
         {buttons.map(b => (
           <button key={b.title} type="button" title={b.title} onMouseDown={e => e.preventDefault()} onClick={() => exec(b.command, b.arg)}
-            className="p-1.5 rounded-md hover:bg-gray-200 text-gray-600">
+            className="p-1.5 rounded-md hover:bg-gray-200 text-fg-muted">
             {b.icon}
           </button>
         ))}
-        <button type="button" title="Link" onMouseDown={e => e.preventDefault()} onClick={handleLink} className="p-1.5 rounded-md hover:bg-gray-200 text-gray-600">
+        <button type="button" title="Link" onMouseDown={e => e.preventDefault()} onClick={handleLink} className="p-1.5 rounded-md hover:bg-gray-200 text-fg-muted">
           <Link2 className="w-3.5 h-3.5" />
         </button>
       </div>

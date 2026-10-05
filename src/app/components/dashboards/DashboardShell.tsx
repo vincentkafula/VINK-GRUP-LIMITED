@@ -76,7 +76,7 @@ export function DashboardShell({
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex bg-bg text-fg">
+    <div data-theme-aware className="fixed inset-0 z-50 flex bg-bg text-fg">
       {/* Side navigation: always on large screens, a drawer on small ones */}
       <aside className={`hidden shrink-0 flex-col border-r border-line bg-surface transition-[width] duration-200 lg:flex ${collapsed ? "w-[72px]" : "w-60"}`}>
         <div className="flex items-center gap-3 border-b border-line px-3.5 py-3.5">

@@ -21,7 +21,7 @@ export const AppShowcaseSection = memo(function AppShowcaseSection({ onOpenApps 
         {/* Header */}
         <div className="text-center mb-10">
           <span className="inline-block text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full mb-4"
-            style={{ background: "rgba(245,166,35,.15)", color: "#F5A623" }}>
+            style={{ background: "rgba(245,166,35,.15)", color: "#C9A84C" }}>
             VINK Super App Ecosystem
           </span>
           <h2 className="text-2xl sm:text-3xl font-black text-white mb-3">

@@ -16,7 +16,7 @@ const GOLD = "#c9a84c";
 interface Benefit { emoji: string; icon?: string; title: string; desc: string; featured: boolean; color: string; colorDark: string }
 
 const BENEFITS: Benefit[] = [
-  { emoji: "🎁", icon: iconRewards, title: "Rewards", desc: "Earn points on every spend and redeem for exciting rewards and offers.", featured: false, color: "#9B1C1C", colorDark: "#2E0B10" },
+  { emoji: "🎁", icon: iconRewards, title: "Rewards", desc: "Earn points on every spend and redeem for exciting rewards and offers.", featured: false, color: "var(--vk-crimson-text)", colorDark: "#2E0B10" },
   { emoji: "💵", icon: iconCashBack, title: "Cash Back", desc: "Get real cash back on your purchases and save more every day.", featured: true, color: "#4ADE80", colorDark: "#0F3D1F" },
   { emoji: "🔄", icon: iconBalanceTransfer, title: "Balance Transfer", desc: "Transfer your balance easily and pay off debt faster.", featured: false, color: "#3B82F6", colorDark: "#0F2A4A" },
   { emoji: "🧳", icon: iconTravel, title: "Travel", desc: "Exclusive travel benefits, airport lounge access, and more.", featured: false, color: "#F97316", colorDark: "#4A2008" },
@@ -25,7 +25,7 @@ const BENEFITS: Benefit[] = [
 ];
 
 const STATS = [
-  { Icon: Crown, value: "5X", label: "Points on dining & entertainment", color: "#9B1C1C" },
+  { Icon: Crown, value: "5X", label: "Points on dining & entertainment", color: "var(--vk-crimson-text)" },
   { Icon: Gift, value: "100+", label: "Partner brands and offers", color: "#F97316" },
   { Icon: Globe, value: "0", label: "Foreign transaction fees", color: "#2DD4BF" },
   { Icon: Smartphone, value: "24/7", label: "Dedicated customer support", color: "#EC4899" },

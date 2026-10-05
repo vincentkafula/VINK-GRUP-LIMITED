@@ -29,7 +29,7 @@ interface Account {
 
 const SUB_NAV = ["Account", "Credit Card", "Loan", "Invest", "Rewards"];
 const GREEN = "#9B1C1C";
-const ORANGE = "#FF7A1A";
+const ORANGE = "#8B0000";
 
 const ACCOUNTS: Account[] = [
   {
@@ -101,19 +101,19 @@ const ACCOUNTS: Account[] = [
 
 function AccountCard({ acct, onApply, onDetails }: { acct: Account; onApply: (name: string, price: string) => void; onDetails: (acct: Account) => void }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-6 flex flex-col hover:shadow-lg hover:-translate-y-0.5 transition-all relative">
-      <button onClick={() => onDetails(acct)} className="absolute top-5 right-5 w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-700 hover:border-gray-300 transition-colors">
+    <div className="bg-surface rounded-2xl border border-line p-6 flex flex-col hover:shadow-lg hover:-translate-y-0.5 transition-all relative">
+      <button onClick={() => onDetails(acct)} className="absolute top-5 right-5 w-8 h-8 rounded-full border border-line flex items-center justify-center text-fg-muted hover:text-fg hover:border-line-strong transition-colors">
         <ChevronRight className="w-4 h-4" />
       </button>
       <span className="w-12 h-12 rounded-full flex items-center justify-center mb-4" style={{ background: acct.iconBg, color: acct.iconColor }}>
         {acct.icon}
       </span>
-      <h3 className="text-lg font-bold mb-1.5" style={{ color: GREEN }}>{acct.name}</h3>
-      <p className="text-[13.5px] text-gray-500 leading-relaxed mb-4">{acct.desc}</p>
+      <h3 className="text-lg font-bold mb-1.5" style={{ color: "var(--vk-crimson-text)" }}>{acct.name}</h3>
+      <p className="text-[13.5px] text-fg-muted leading-relaxed mb-4">{acct.desc}</p>
       <ul className="space-y-2 mb-5">
         {acct.quickFeatures.map(f => (
-          <li key={f} className="flex items-start gap-2 text-[13px] text-gray-700">
-            <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" style={{ color: GREEN }} />
+          <li key={f} className="flex items-start gap-2 text-[13px] text-fg">
+            <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "var(--vk-crimson-text)" }} />
             <span>{f}</span>
           </li>
         ))}
@@ -129,7 +129,7 @@ function AccountCard({ acct, onApply, onDetails }: { acct: Account; onApply: (na
         <button
           onClick={() => onDetails(acct)}
           className="flex-1 py-2.5 rounded-lg text-[13.5px] font-bold border transition-colors"
-          style={{ borderColor: GREEN, color: GREEN }}
+          style={{ borderColor: GREEN, color: "var(--vk-crimson-text)" }}
         >
           View Details
         </button>
@@ -142,39 +142,39 @@ function AccountDetailModal({ acct, onClose, onApply }: { acct: Account; onClose
   const currency = useCurrency();
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center p-5" style={{ background: "rgba(15,30,20,0.55)" }} onClick={onClose}>
-      <div className="relative bg-white max-w-lg w-full max-h-[88vh] overflow-y-auto rounded-2xl p-8 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-        <button onClick={onClose} className="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-100" aria-label="Close">
+      <div className="relative bg-surface max-w-lg w-full max-h-[88vh] overflow-y-auto rounded-2xl p-8 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <button onClick={onClose} className="absolute top-4 right-4 w-8 h-8 rounded-full bg-surface-2 border border-line flex items-center justify-center text-fg-muted hover:bg-surface-2" aria-label="Close">
           <X className="w-4 h-4" />
         </button>
 
         <span className="w-12 h-12 rounded-full flex items-center justify-center mb-4" style={{ background: acct.iconBg, color: acct.iconColor }}>{acct.icon}</span>
-        <h3 className="text-2xl font-black mb-3" style={{ color: GREEN }}>{acct.name}</h3>
-        <blockquote className="italic text-gray-600 text-[15px] leading-relaxed mb-5 pl-4" style={{ borderLeft: `3px solid ${ORANGE}` }}>
+        <h3 className="text-2xl font-black mb-3" style={{ color: "var(--vk-crimson-text)" }}>{acct.name}</h3>
+        <blockquote className="italic text-fg-muted text-[15px] leading-relaxed mb-5 pl-4" style={{ borderLeft: `3px solid ${ORANGE}` }}>
           &ldquo;{acct.marketingMessage}&rdquo;
         </blockquote>
 
-        <div className="flex items-baseline gap-2 mb-5 pb-5 border-b border-gray-100">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Best for</span>
-          <span className="text-sm font-semibold text-gray-800">{acct.targetCustomer}</span>
+        <div className="flex items-baseline gap-2 mb-5 pb-5 border-b border-line">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-fg-muted">Best for</span>
+          <span className="text-sm font-semibold text-fg">{acct.targetCustomer}</span>
         </div>
 
-        <p className="text-sm font-bold text-gray-800 mb-3">
-          {acct.inheritsFrom ? <>Everything in <span style={{ color: GREEN }}>{acct.inheritsFrom}</span>, plus:</> : "Exclusive mobile app features"}
+        <p className="text-sm font-bold text-fg mb-3">
+          {acct.inheritsFrom ? <>Everything in <span style={{ color: "var(--vk-crimson-text)" }}>{acct.inheritsFrom}</span>, plus:</> : "Exclusive mobile app features"}
         </p>
         <ul className="grid sm:grid-cols-2 gap-x-4 gap-y-2 mb-6">
           {acct.appFeatures.map(f => (
-            <li key={f} className="flex items-start gap-2 text-[12.8px] text-gray-600">
+            <li key={f} className="flex items-start gap-2 text-[12.8px] text-fg-muted">
               <CheckCircle2 className="w-3.5 h-3.5 shrink-0 mt-0.5" style={{ color: ORANGE }} />
               <span>{f}</span>
             </li>
           ))}
         </ul>
 
-        <div className="flex items-center justify-between pt-5 border-t border-gray-100">
+        <div className="flex items-center justify-between pt-5 border-t border-line">
           <div>
-            <div className="text-2xl font-black text-gray-900">{formatZAR(acct.priceZAR)}<span className="text-sm font-medium text-gray-400">{acct.priceSub}</span></div>
+            <div className="text-2xl font-black text-fg">{formatZAR(acct.priceZAR)}<span className="text-sm font-medium text-fg-muted">{acct.priceSub}</span></div>
             {currency.country.code !== "ZAR" && (
-              <p className="text-[11px] text-gray-400 mt-1">Estimated in {currency.country.name} — you'll be billed {acct.price}{acct.priceSub} in South African Rand.</p>
+              <p className="text-[11px] text-fg-muted mt-1">Estimated in {currency.country.name} — you'll be billed {acct.price}{acct.priceSub} in South African Rand.</p>
             )}
           </div>
           <button onClick={() => onApply(acct.name, acct.price)} className="px-7 py-3 rounded-full text-white text-sm font-bold" style={{ background: ORANGE }}>
@@ -202,9 +202,9 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate, onOpenBanki
   const handleSignOut = () => { clearSession(); setAuthUser(null); };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-white">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-surface">
       {/* Sub-nav */}
-      <nav className="sticky top-0 z-20 bg-white border-b border-gray-100">
+      <nav className="sticky top-0 z-20 bg-surface border-b border-line">
         <div className="max-w-6xl mx-auto px-6 flex items-center gap-1 h-12 overflow-x-auto">
           {SUB_NAV.map((item) => (
             <button
@@ -217,40 +217,40 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate, onOpenBanki
                 onNavigate(map[item]);
               }}
               className="px-3.5 py-1.5 rounded-full text-[13px] font-semibold whitespace-nowrap transition-colors"
-              style={item === "Account" ? { background: "#E8F7EE", color: GREEN } : { color: "#6B7280" }}
+              style={item === "Account" ? { background: "#E8F7EE", color: "var(--vk-crimson-text)" } : { color: "var(--vk-fg-muted)" }}
             >
               {item}
             </button>
           ))}
           <div className="relative group ml-auto shrink-0">
-            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-semibold text-gray-600 hover:bg-gray-50">
+            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-semibold text-fg-muted hover:bg-surface-2">
               <Globe2 className="w-3.5 h-3.5" /> {currency.country.code}
             </button>
-            <div className="absolute right-0 top-full mt-0 w-64 bg-white rounded-b shadow-2xl border border-gray-200 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-30 max-h-80 overflow-y-auto">
-              <p className="px-3 pb-2 mb-1 border-b border-gray-100 text-[11px] text-gray-400">
+            <div className="absolute right-0 top-full mt-0 w-64 bg-surface rounded-b shadow-2xl border border-line py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-30 max-h-80 overflow-y-auto">
+              <p className="px-3 pb-2 mb-1 border-b border-line text-[11px] text-fg-muted">
                 Fees shown in your local currency for reference. All accounts are billed in South African Rand.
               </p>
               {currency.countries.map(c => (
                 <button
                   key={c.countryCode}
                   onClick={() => setCountryManually(c.countryCode)}
-                  className="w-full text-left px-3 py-1.5 text-sm hover:bg-gray-50 flex items-center justify-between"
+                  className="w-full text-left px-3 py-1.5 text-sm hover:bg-surface-2 flex items-center justify-between"
                   style={{ color: currency.country.countryCode === c.countryCode ? GREEN : "#111827", fontWeight: currency.country.countryCode === c.countryCode ? 700 : 400 }}
                 >
                   <span>{c.country ?? c.countryCode}</span>
-                  <span className="text-gray-400 text-xs">{c.code}</span>
+                  <span className="text-fg-muted text-xs">{c.code}</span>
                 </button>
               ))}
             </div>
           </div>
           {authUser ? (
             <div className="relative group shrink-0">
-              <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-semibold text-gray-700 hover:bg-gray-50">
+              <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-semibold text-fg hover:bg-surface-2">
                 <span className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white" style={{ background: GREEN }}>{authUser.name.charAt(0)}</span>
                 {authUser.name.split(" ")[0]}
               </button>
-              <div className="absolute right-0 top-full mt-0 w-40 bg-white rounded-b shadow-2xl border border-gray-200 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-30">
-                <button onClick={handleSignOut} className="w-full text-left px-3 py-1.5 text-sm hover:bg-gray-50 text-red-600">Sign out</button>
+              <div className="absolute right-0 top-full mt-0 w-40 bg-surface rounded-b shadow-2xl border border-line py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-30">
+                <button onClick={handleSignOut} className="w-full text-left px-3 py-1.5 text-sm hover:bg-surface-2 text-red-600">Sign out</button>
               </div>
             </div>
           ) : (
@@ -258,8 +258,8 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate, onOpenBanki
               Open an Account
             </button>
           )}
-          <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors" aria-label="Close">
-            <X className="w-4 h-4 text-gray-500" />
+          <button onClick={onClose} className="p-2 rounded-full hover:bg-surface-2 transition-colors" aria-label="Close">
+            <X className="w-4 h-4 text-fg-muted" />
           </button>
         </div>
       </nav>
@@ -274,19 +274,19 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate, onOpenBanki
             <span className="inline-block text-[11px] font-bold tracking-[0.14em] uppercase mb-4" style={{ color: ORANGE }}>Personal Banking</span>
             {authUser ? (
               <>
-                <h1 className="text-4xl sm:text-5xl font-black leading-[1.05] text-gray-900">
+                <h1 className="text-4xl sm:text-5xl font-black leading-[1.05] text-fg">
                   Banking that<br />moves with you.
                 </h1>
-                <p className="text-gray-500 text-base mt-5 max-w-md">
+                <p className="text-fg-muted text-base mt-5 max-w-md">
                   Pay. Save. Earn. All in one place, {authUser.name.split(" ")[0]}.
                 </p>
               </>
             ) : (
               <>
-                <h1 className="text-4xl sm:text-5xl font-black leading-[1.05] text-gray-900">
+                <h1 className="text-4xl sm:text-5xl font-black leading-[1.05] text-fg">
                   Banking designed for<br />every South African.
                 </h1>
-                <p className="text-gray-500 text-base mt-5 max-w-md">
+                <p className="text-fg-muted text-base mt-5 max-w-md">
                   Open an account in minutes and manage your money with the VINK app.
                 </p>
               </>
@@ -296,7 +296,7 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate, onOpenBanki
                 className="px-6 py-3 rounded-full text-white text-sm font-bold shadow-lg" style={{ background: ORANGE }}>
                 {authUser ? "Explore Products" : "Open an Account"}
               </button>
-              <button className="px-6 py-3 rounded-full text-sm font-bold border-2" style={{ borderColor: GREEN, color: GREEN }}>
+              <button className="px-6 py-3 rounded-full text-sm font-bold border-2" style={{ borderColor: GREEN, color: "var(--vk-crimson-text)" }}>
                 Compare Accounts
               </button>
             </div>
@@ -325,11 +325,11 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate, onOpenBanki
       {/* Choose your account */}
       <section className="max-w-6xl mx-auto px-6 py-16 sm:py-20">
         <div className="text-center mb-12">
-          <h2 className="text-3xl sm:text-4xl font-black text-gray-900">
-            Choose <span style={{ color: GREEN }}>Your</span> Account
+          <h2 className="text-3xl sm:text-4xl font-black text-fg">
+            Choose <span style={{ color: "var(--vk-crimson-text)" }}>Your</span> Account
           </h2>
           <div className="w-14 h-1 mx-auto mt-3 rounded-full" style={{ background: ORANGE }} />
-          <p className="text-gray-500 text-sm mt-4">Simple banking solutions for every stage of your journey.</p>
+          <p className="text-fg-muted text-sm mt-4">Simple banking solutions for every stage of your journey.</p>
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -341,12 +341,12 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate, onOpenBanki
       <section className="max-w-6xl mx-auto px-6 pb-16">
         <div className="relative overflow-hidden rounded-3xl px-8 py-10 flex flex-col sm:flex-row items-center justify-between gap-6" style={{ background: "linear-gradient(100deg,#F3F9F5,#FFF4EA)" }}>
           <div className="flex items-center gap-4">
-            <span className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style={{ background: "#E8F7EE", color: GREEN }}>
+            <span className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style={{ background: "#E8F7EE", color: "var(--vk-crimson-text)" }}>
               <UserCheck className="w-6 h-6" />
             </span>
             <div>
-              <p className="text-xl font-black text-gray-900">Ready to get started?</p>
-              <p className="text-gray-500 text-sm mt-1">Open your VINK account online in minutes and start banking your way.</p>
+              <p className="text-xl font-black text-fg">Ready to get started?</p>
+              <p className="text-fg-muted text-sm mt-1">Open your VINK account online in minutes and start banking your way.</p>
             </div>
           </div>
           <div className="flex flex-col items-center sm:items-end gap-2 shrink-0">
@@ -354,7 +354,7 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate, onOpenBanki
               className="px-7 py-3 rounded-full text-white text-sm font-bold shadow-lg whitespace-nowrap" style={{ background: ORANGE }}>
               Open an Account Now
             </button>
-            <button className="flex items-center gap-1 text-sm font-semibold" style={{ color: GREEN }}>
+            <button className="flex items-center gap-1 text-sm font-semibold" style={{ color: "var(--vk-crimson-text)" }}>
               Compare all accounts <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>

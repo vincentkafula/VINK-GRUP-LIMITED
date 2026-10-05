@@ -4,7 +4,7 @@ import { Footer } from "../Footer";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 const P = "#5C0A10";
-const GOLD = "#F5A623";
+const GOLD = "#C9A84C";
 
 const OFFERS = [
   { badge: "Best Value", name: "VINK Everyday Cashback", detail: "3% cashback at supermarkets and spaza shops, 1.5% at fuel stations, 0.5% everywhere else." },
@@ -35,7 +35,7 @@ export function LatestOffersViewer({ isOpen, onClose }: Props) {
 
       <div className="max-w-4xl mx-auto w-full px-5 py-10 space-y-10">
 
-        <section className="rounded-2xl p-5" style={{ background: "#FEF3C7", border: "1px solid #FDE68A" }}>
+        <section className="rounded-2xl p-5" style={{ background: "var(--vk-warn-bg)", border: "1px solid #FDE68A" }}>
           <p className="text-sm font-semibold" style={{ color: "#92400E" }}>
             VINK is not yet in full operation. None of the offers below can be applied for or redeemed today — they go live when we launch in June 2027.
           </p>
@@ -45,7 +45,7 @@ export function LatestOffersViewer({ isOpen, onClose }: Props) {
           <div className="grid sm:grid-cols-2 gap-4">
             {OFFERS.map((o, i) => (
               <div key={i} className="p-5 bg-white rounded-xl border border-gray-200">
-                <span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded mb-3" style={{ background: "#EAF7EE", color: P }}>{o.badge}</span>
+                <span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded mb-3" style={{ background: "var(--vk-ok-bg)", color: "var(--vk-crimson-text)" }}>{o.badge}</span>
                 <p className="font-bold text-gray-900 mb-1">{o.name}</p>
                 <p className="text-gray-600 text-sm leading-relaxed">{o.detail}</p>
               </div>
@@ -54,7 +54,7 @@ export function LatestOffersViewer({ isOpen, onClose }: Props) {
         </section>
 
         <section className="bg-gray-50 rounded-2xl p-6 border border-gray-200">
-          <h2 className="text-lg font-black mb-3" style={{ color: P }}>Want to Know First?</h2>
+          <h2 className="text-lg font-black mb-3" style={{ color: "var(--vk-crimson-text)" }}>Want to Know First?</h2>
           <p className="text-gray-600 text-sm leading-relaxed">
             Full terms, eligibility, and any additional launch offers will be published here and across the app closer to June 2027. Check back, or reach out through Contact Us if you'd like to be notified.
           </p>

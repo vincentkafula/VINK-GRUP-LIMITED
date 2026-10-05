@@ -36,10 +36,10 @@ const STEPS = [
 export function SafetySecurityViewer({ isOpen, onClose }: Props) {
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-gray-50">
-      <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm">
+    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-surface-2">
+      <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-surface border-b border-line shadow-sm">
         <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
-        <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500"><X className="w-5 h-5" /></button>
+        <button onClick={onClose} className="p-2 rounded-full hover:bg-surface-2 transition-colors text-fg-muted"><X className="w-5 h-5" /></button>
       </div>
 
       {/* Hero */}
@@ -57,13 +57,13 @@ export function SafetySecurityViewer({ isOpen, onClose }: Props) {
 
         {/* How VINK protects you */}
         <section>
-          <h2 className="text-2xl font-black mb-6" style={{ color: P }}>How VINK Protects You</h2>
+          <h2 className="text-2xl font-black mb-6" style={{ color: "var(--vk-crimson-text)" }}>How VINK Protects You</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {HOW_VINK_PROTECTS.map((item, i) => (
-              <div key={i} className="p-5 bg-white rounded-xl border border-gray-200 hover:shadow-md transition-shadow">
+              <div key={i} className="p-5 bg-surface rounded-xl border border-line hover:shadow-md transition-shadow">
                 <span className="text-3xl block mb-3">{item.icon}</span>
-                <p className="font-bold text-gray-900 text-sm mb-1">{item.title}</p>
-                <p className="text-gray-500 text-xs leading-relaxed">{item.desc}</p>
+                <p className="font-bold text-fg text-sm mb-1">{item.title}</p>
+                <p className="text-fg-muted text-xs leading-relaxed">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -71,13 +71,13 @@ export function SafetySecurityViewer({ isOpen, onClose }: Props) {
 
         {/* Security tips */}
         <section>
-          <h2 className="text-2xl font-black mb-6" style={{ color: P }}>Security Tips for Customers</h2>
-          <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+          <h2 className="text-2xl font-black mb-6" style={{ color: "var(--vk-crimson-text)" }}>Security Tips for Customers</h2>
+          <div className="bg-surface rounded-2xl border border-line overflow-hidden">
             {TIPS.map((tip, i) => (
-              <div key={i} className={`flex items-start gap-4 px-5 py-4 ${i < TIPS.length - 1 ? "border-b border-gray-100" : ""}`}>
+              <div key={i} className={`flex items-start gap-4 px-5 py-4 ${i < TIPS.length - 1 ? "border-b border-line" : ""}`}>
                 <div className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mt-0.5"
                   style={{ background: P }}>{i + 1}</div>
-                <p className="text-sm text-gray-700 leading-relaxed">{tip}</p>
+                <p className="text-sm text-fg leading-relaxed">{tip}</p>
               </div>
             ))}
           </div>
@@ -87,14 +87,14 @@ export function SafetySecurityViewer({ isOpen, onClose }: Props) {
         <section>
           <div className="flex items-center gap-3 mb-6">
             <AlertTriangle className="w-6 h-6 text-orange-500" />
-            <h2 className="text-2xl font-black" style={{ color: P }}>What to Do If Your Card Is Compromised</h2>
+            <h2 className="text-2xl font-black" style={{ color: "var(--vk-crimson-text)" }}>What to Do If Your Card Is Compromised</h2>
           </div>
           <div className="bg-orange-50 rounded-2xl border border-orange-200 p-5 space-y-3">
             {STEPS.map((step, i) => (
               <div key={i} className="flex items-start gap-3">
                 <div className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mt-0.5"
                   style={{ background: "#F59E0B" }}>{i + 1}</div>
-                <p className="text-sm text-gray-800 leading-relaxed">{step}</p>
+                <p className="text-sm text-fg leading-relaxed">{step}</p>
               </div>
             ))}
           </div>

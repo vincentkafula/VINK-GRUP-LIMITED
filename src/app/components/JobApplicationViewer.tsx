@@ -259,7 +259,7 @@ export function JobApplicationViewer({ isOpen, onClose }: Props) {
                   Please complete the required fields before continuing.
                 </div>
               )}
-              <div className="bg-white border rounded p-8" style={{ borderColor: LINE }}>
+              <div className="bg-surface border rounded p-8" style={{ borderColor: LINE }}>
                 {step === 1 && <StepPersonal personal={personal} setPersonal={setPersonal} natInput={natInput} setNatInput={setNatInput} errors={errors} />}
                 {step === 2 && <StepEducation education={education} setEducation={setEducation} errors={errors} />}
                 {step === 3 && <StepExperience experience={experience} setExperience={setExperience} errors={errors} />}
@@ -286,7 +286,7 @@ export function JobApplicationViewer({ isOpen, onClose }: Props) {
       {phase === "done" && dept && (
         <div className="flex justify-center px-6 py-16 min-h-screen">
           <div className="w-full max-w-[640px]">
-            <div className="bg-white border rounded p-14 text-center" style={{ borderColor: LINE }}>
+            <div className="bg-surface border rounded p-14 text-center" style={{ borderColor: LINE }}>
               <div className="inline-flex flex-col items-center justify-center w-[160px] h-[160px] rounded-full border-[3px] mb-6" style={{ borderColor: GOLD, color: GOLD, transform: "rotate(-8deg)" }}>
                 <span className="text-[10px] tracking-widest uppercase" style={{ fontFamily: MONO }}>Application</span>
                 <span className="font-bold text-xl my-1" style={{ fontFamily: "'Source Serif 4', serif" }}>Received</span>

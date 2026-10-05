@@ -123,22 +123,22 @@ function NetworkBadge({ network }: { network: string }) {
     <span className="inline-flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded"
       style={{ background: VISA_BLUE, color: "#fff" }}>VISA</span>
   ) : (
-    <span className="inline-flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded" style={{ background: "#F3F4F6" }}>
+    <span className="inline-flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded" style={{ background: "var(--vk-surface-2)" }}>
       <span style={{ color: MC_RED }}>●</span><span style={{ color: MC_ORANGE }}>●</span>
-      <span className="text-gray-700">MC</span>
+      <span className="text-fg">MC</span>
     </span>
   );
 }
 
 function StatusBadge({ status }: { status: string }) {
   const cfg: Record<string, { color: string; bg: string }> = {
-    approved: { color: "#10B981", bg: "#D1FAE5" },
-    declined: { color: "#EF4444", bg: "#FEE2E2" },
-    settled:  { color: "#10B981", bg: "#D1FAE5" },
-    pending:  { color: "#F59E0B", bg: "#FEF3C7" },
-    in_progress: { color: "#3B82F6", bg: "#DBEAFE" },
-    active:   { color: "#10B981", bg: "#D1FAE5" },
-    inactive: { color: "#9CA3AF", bg: "#F3F4F6" },
+    approved: { color: "#10B981", bg: "var(--vk-ok-bg)" },
+    declined: { color: "#EF4444", bg: "var(--vk-bad-bg)" },
+    settled:  { color: "#10B981", bg: "var(--vk-ok-bg)" },
+    pending:  { color: "#F59E0B", bg: "var(--vk-warn-bg)" },
+    in_progress: { color: "#3B82F6", bg: "var(--vk-info-bg)" },
+    active:   { color: "#10B981", bg: "var(--vk-ok-bg)" },
+    inactive: { color: "var(--vk-fg-subtle)", bg: "var(--vk-surface-2)" },
   };
   const c = cfg[status] ?? cfg.pending;
   return <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: c.bg, color: c.color }}>{status.replace("_"," ")}</span>;
@@ -188,9 +188,9 @@ function AFCSimulator() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <p className="text-sm font-black text-gray-800">AFC Payment Simulator — 3-Second Guarantee</p>
+        <p className="text-sm font-black text-fg">AFC Payment Simulator — 3-Second Guarantee</p>
         {totalMs > 0 && (
-          <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ background: result === "approved" ? "#D1FAE5" : result === "declined" ? "#FEE2E2" : "#F2EFE8", color: result === "approved" ? "#059669" : result === "declined" ? "#DC2626" : P }}>
+          <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ background: result === "approved" ? "var(--vk-ok-bg)" : result === "declined" ? "var(--vk-bad-bg)" : "var(--vk-surface-2)", color: result === "approved" ? "#059669" : result === "declined" ? "#DC2626" : P }}>
             {totalMs}ms {totalMs < 500 ? "⚡" : totalMs < 1000 ? "✓" : totalMs < 3000 ? "⚠" : "❌"}
           </span>
         )}
@@ -201,9 +201,9 @@ function AFCSimulator() {
         {(Object.keys(EMV_PATHS) as EMVPath[]).map(path => (
           <button key={path} onClick={() => !running && setSelectedPath(path)}
             className="rounded-xl p-2.5 text-center transition-all border-2"
-            style={{ borderColor: selectedPath === path ? EMV_PATHS[path].color : "transparent", background: selectedPath === path ? EMV_PATHS[path].color + "12" : "#FAF8F4" }}>
+            style={{ borderColor: selectedPath === path ? EMV_PATHS[path].color : "transparent", background: selectedPath === path ? EMV_PATHS[path].color + "12" : "var(--vk-surface-2)" }}>
             <p className="text-[10px] font-black" style={{ color: EMV_PATHS[path].color }}>{EMV_PATHS[path].label.split(" ")[0]}</p>
-            <p className="text-[9px] text-gray-500 mt-0.5">{EMV_PATHS[path].totalMs}</p>
+            <p className="text-[9px] text-fg-muted mt-0.5">{EMV_PATHS[path].totalMs}</p>
           </button>
         ))}
       </div>
@@ -302,12 +302,12 @@ function AFCSimulator() {
       <div className="grid grid-cols-3 gap-3">
         {[
           { label: "EMV Chip", sub: "ISO/IEC 7816", color: VISA_BLUE },
-          { label: "NFC/Tap", sub: "ISO/IEC 14443", color: P },
+          { label: "NFC/Tap", sub: "ISO/IEC 14443", color: "var(--vk-crimson-text)" },
           { label: "ISO 8583", sub: "Auth messages", color: "#10B981" },
         ].map((s, i) => (
-          <div key={i} className="rounded-xl p-3 text-center border border-gray-100 bg-white">
+          <div key={i} className="rounded-xl p-3 text-center border border-line bg-surface">
             <p className="text-xs font-black" style={{ color: s.color }}>{s.label}</p>
-            <p className="text-[10px] text-gray-500 mt-0.5">{s.sub}</p>
+            <p className="text-[10px] text-fg-muted mt-0.5">{s.sub}</p>
           </div>
         ))}
       </div>
@@ -328,9 +328,9 @@ function AuthFeed() {
   }, []);
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-      <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
-        <p className="text-sm font-black text-gray-800">Live Authorization Feed</p>
+    <div className="bg-surface rounded-2xl border border-line overflow-hidden">
+      <div className="flex items-center justify-between px-5 py-3 border-b border-line">
+        <p className="text-sm font-black text-fg">Live Authorization Feed</p>
         <span className="flex items-center gap-1.5 text-xs text-green-600 font-semibold">
           <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />Live
         </span>
@@ -339,21 +339,21 @@ function AuthFeed() {
         {auths.map((auth, i) => (
           <div key={auth.id} className={`flex items-center gap-3 px-4 py-2.5 transition-all ${i === 0 ? "bg-emerald-50" : ""}`}>
             <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-              style={{ background: auth.status === "approved" ? "#D1FAE5" : "#FEE2E2" }}>
+              style={{ background: auth.status === "approved" ? "var(--vk-ok-bg)" : "var(--vk-bad-bg)" }}>
               {auth.status === "approved"
                 ? <CheckCircle className="w-3.5 h-3.5 text-green-600" />
                 : <XCircle className="w-3.5 h-3.5 text-red-500" />}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <p className="text-xs font-bold text-gray-800 truncate">{String(auth.merchantName)}</p>
+                <p className="text-xs font-bold text-fg truncate">{String(auth.merchantName)}</p>
                 <NetworkBadge network={String(auth.network)} />
               </div>
-              <p className="text-[10px] text-gray-400">{String(auth.pan)} · {String(auth.channel)}</p>
+              <p className="text-[10px] text-fg-subtle">{String(auth.pan)} · {String(auth.channel)}</p>
             </div>
             <div className="text-right flex-shrink-0">
-              <p className="text-sm font-black text-gray-900">R{Number(auth.amount).toFixed(2)}</p>
-              <p className="text-[9px] text-gray-400">{Number(auth.processingTime)}ms · {String(auth.authCode ?? "DECLINED")}</p>
+              <p className="text-sm font-black text-fg">R{Number(auth.amount).toFixed(2)}</p>
+              <p className="text-[9px] text-fg-subtle">{Number(auth.processingTime)}ms · {String(auth.authCode ?? "DECLINED")}</p>
             </div>
           </div>
         ))}
@@ -387,31 +387,31 @@ export function CardNetworkDashboard({ isOpen, onClose }: Props) {
   const totalInterchange = SETTLEMENTS.filter(s => s.status === "settled").reduce((s, t) => s + (t.interchange ?? 0), 0);
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-gray-50">
+    <div className="fixed inset-0 z-50 flex flex-col bg-surface-2">
 
       {/* Top bar */}
-      <div className="flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm flex-shrink-0 z-10">
+      <div className="flex items-center justify-between px-5 py-3 bg-surface border-b border-line shadow-sm flex-shrink-0 z-10">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1">
             <div className="w-8 h-5 rounded flex items-center justify-center text-white text-[9px] font-black" style={{ background: VISA_BLUE }}>VISA</div>
-            <div className="w-8 h-5 rounded flex items-center justify-center" style={{ background: "#F3F4F6" }}>
+            <div className="w-8 h-5 rounded flex items-center justify-center" style={{ background: "var(--vk-surface-2)" }}>
               <span style={{ color: MC_RED, fontSize: 8, fontWeight: 900 }}>●</span>
               <span style={{ color: MC_ORANGE, fontSize: 8, fontWeight: 900, marginLeft: -2 }}>●</span>
             </div>
           </div>
           <div>
-            <p className="text-sm font-black text-gray-900 leading-none">Card Network Integration</p>
-            <p className="text-[10px] text-gray-400 mt-0.5">Visa + Mastercard · BIN Management · AFC Processing · Settlement</p>
+            <p className="text-sm font-black text-fg leading-none">Card Network Integration</p>
+            <p className="text-[10px] text-fg-subtle mt-0.5">Visa + Mastercard · BIN Management · AFC Processing · Settlement</p>
           </div>
         </div>
-        <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 text-gray-500">
+        <button onClick={onClose} className="p-2 rounded-full hover:bg-surface-2 text-fg-muted">
           <X className="w-5 h-5" />
         </button>
       </div>
 
       <div className="flex flex-1 min-h-0">
         {/* Sidebar */}
-        <aside className="w-52 flex-shrink-0 bg-white border-r border-gray-100 flex flex-col py-4 px-2 overflow-y-auto">
+        <aside className="w-52 flex-shrink-0 bg-surface border-r border-line flex flex-col py-4 px-2 overflow-y-auto">
           {NAV.map(item => (
             <button key={item.id} onClick={() => setScreen(item.id as Screen)}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left text-sm font-medium mb-0.5"
@@ -419,8 +419,8 @@ export function CardNetworkDashboard({ isOpen, onClose }: Props) {
               {item.icon}<span>{item.label}</span>
             </button>
           ))}
-          <div className="mt-auto mx-1 mb-1 p-3 rounded-xl bg-gray-50 border border-gray-100 space-y-2">
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Network Status</p>
+          <div className="mt-auto mx-1 mb-1 p-3 rounded-xl bg-surface-2 border border-line space-y-2">
+            <p className="text-[10px] font-bold text-fg-subtle uppercase tracking-wide">Network Status</p>
             {[
               { label: "VisaNet",    color: "#10B981" },
               { label: "Banknet",   color: "#10B981" },
@@ -428,7 +428,7 @@ export function CardNetworkDashboard({ isOpen, onClose }: Props) {
               { label: "HSM/Keys",  color: "#10B981" },
             ].map(s => (
               <div key={s.label} className="flex justify-between items-center">
-                <span className="text-[11px] text-gray-600">{s.label}</span>
+                <span className="text-[11px] text-fg-muted">{s.label}</span>
                 <span className="text-[10px] font-bold flex items-center gap-1" style={{ color: s.color }}>
                   <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: s.color }} />Online
                 </span>
@@ -443,7 +443,7 @@ export function CardNetworkDashboard({ isOpen, onClose }: Props) {
           {/* ══ OVERVIEW ══ */}
           {screen === "overview" && (
             <div className="space-y-5 max-w-5xl">
-              <h1 className="text-xl font-black text-gray-900">Card Network Overview</h1>
+              <h1 className="text-xl font-black text-fg">Card Network Overview</h1>
 
               {/* Network membership cards */}
               <div className="grid sm:grid-cols-2 gap-5">
@@ -451,7 +451,7 @@ export function CardNetworkDashboard({ isOpen, onClose }: Props) {
                 <div className="rounded-2xl overflow-hidden text-white shadow-lg" style={{ background: `linear-gradient(135deg,${VISA_BLUE},#2E0B10)` }}>
                   <div className="p-5">
                     <div className="flex items-center justify-between mb-4">
-                      <div className="bg-white rounded px-3 py-1 text-[14px] font-black italic" style={{ color: VISA_BLUE }}>VISA</div>
+                      <div className="bg-surface rounded px-3 py-1 text-[14px] font-black italic" style={{ color: VISA_BLUE }}>VISA</div>
                       <span className="text-xs font-bold bg-green-500 px-2 py-0.5 rounded-full">Principal Member</span>
                     </div>
                     <p className="text-2xl font-black mb-1">Visa Principal Membership</p>
@@ -516,14 +516,14 @@ export function CardNetworkDashboard({ isOpen, onClose }: Props) {
               {/* KPIs */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
-                  { label: "Total BINs Active",    value: BIN_RANGES.filter(b => b.status === "active").length.toString(), color: P },
+                  { label: "Total BINs Active",    value: BIN_RANGES.filter(b => b.status === "active").length.toString(), color: "var(--vk-crimson-text)" },
                   { label: "24h Auth Volume",      value: "R4.8M",    color: VISA_BLUE },
                   { label: "Approval Rate",        value: "98.4%",    color: "#10B981" },
                   { label: "Avg Auth Time",        value: "840ms",    color: MC_RED },
                 ].map((kpi, i) => (
-                  <div key={i} className="bg-white rounded-2xl border border-gray-100 p-4">
+                  <div key={i} className="bg-surface rounded-2xl border border-line p-4">
                     <p className="text-2xl font-black" style={{ color: kpi.color }}>{kpi.value}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">{kpi.label}</p>
+                    <p className="text-xs text-fg-muted mt-0.5">{kpi.label}</p>
                   </div>
                 ))}
               </div>
@@ -536,25 +536,25 @@ export function CardNetworkDashboard({ isOpen, onClose }: Props) {
           {/* ══ BIN MANAGEMENT ══ */}
           {screen === "bins" && (
             <div className="space-y-4 max-w-5xl">
-              <h1 className="text-xl font-black text-gray-900">BIN (Bank Identification Number) Management</h1>
+              <h1 className="text-xl font-black text-fg">BIN (Bank Identification Number) Management</h1>
               <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-sm text-emerald-800 leading-relaxed">
                 <strong>How BINs work:</strong> Each VINK card type is assigned a BIN registered in its target country. When a payment is processed, the card network identifies the BIN and routes the transaction domestically — the acquiring bank sees it as a local card, eliminating cross-border fees. VINK holds Visa and Mastercard principal membership, allowing direct BIN assignment without a third-party BIN sponsor.
               </div>
-              <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+              <div className="bg-surface rounded-2xl border border-line overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-gray-100" style={{ background: "#FAF8F4" }}>
+                      <tr className="border-b border-line" style={{ background: "var(--vk-surface-2)" }}>
                         {["Network","BIN","Country","Currency","Card Type","Tier","Daily Limit","Routing","Interchange","Status"].map(h => (
-                          <th key={h} className="text-left px-4 py-3 text-[10px] font-black uppercase tracking-wide text-gray-500">{h}</th>
+                          <th key={h} className="text-left px-4 py-3 text-[10px] font-black uppercase tracking-wide text-fg-muted">{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {BIN_RANGES.map((bin, i) => (
-                        <tr key={bin.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                        <tr key={bin.id} className="border-b border-gray-50 hover:bg-surface-2 transition-colors">
                           <td className="px-4 py-3"><NetworkBadge network={bin.network} /></td>
-                          <td className="px-4 py-3 font-mono text-xs font-bold text-gray-800">{bin.bin}xxxx</td>
+                          <td className="px-4 py-3 font-mono text-xs font-bold text-fg">{bin.bin}xxxx</td>
                           <td className="px-4 py-3 text-xs">{bin.country}</td>
                           <td className="px-4 py-3 text-xs font-semibold">{bin.currency}</td>
                           <td className="px-4 py-3 text-xs">{bin.cardType}</td>
@@ -565,7 +565,7 @@ export function CardNetworkDashboard({ isOpen, onClose }: Props) {
                               {bin.domesticRouting ? "🏠 Local" : "🌐 Intl"}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-xs font-bold" style={{ color: P }}>{bin.interchange}%</td>
+                          <td className="px-4 py-3 text-xs font-bold" style={{ color: "var(--vk-crimson-text)" }}>{bin.interchange}%</td>
                           <td className="px-4 py-3"><StatusBadge status={bin.status} /></td>
                         </tr>
                       ))}
@@ -579,12 +579,12 @@ export function CardNetworkDashboard({ isOpen, onClose }: Props) {
           {/* ══ AUTHORIZATIONS ══ */}
           {screen === "authorizations" && (
             <div className="space-y-4 max-w-5xl">
-              <h1 className="text-xl font-black text-gray-900">Real-time Authorization Feed</h1>
+              <h1 className="text-xl font-black text-fg">Real-time Authorization Feed</h1>
               <AuthFeed />
 
               {/* ISO 8583 message example */}
-              <div className="bg-white rounded-2xl border border-gray-100 p-5">
-                <p className="text-sm font-black text-gray-800 mb-3">ISO 8583 Authorization Request (Field Map)</p>
+              <div className="bg-surface rounded-2xl border border-line p-5">
+                <p className="text-sm font-black text-fg mb-3">ISO 8583 Authorization Request (Field Map)</p>
                 <div className="bg-gray-900 rounded-xl p-4 font-mono text-xs space-y-1 overflow-x-auto">
                   {[
                     ["F001", "MTI",           "0100 — Authorization Request"],
@@ -616,7 +616,7 @@ export function CardNetworkDashboard({ isOpen, onClose }: Props) {
           {/* ══ AFC PROCESSING ══ */}
           {screen === "afc" && (
             <div className="space-y-5 max-w-4xl">
-              <h1 className="text-xl font-black text-gray-900">AFC Device — Visa/MC Payment Processing</h1>
+              <h1 className="text-xl font-black text-fg">AFC Device — Visa/MC Payment Processing</h1>
               <AFCSimulator />
             </div>
           )}
@@ -624,45 +624,45 @@ export function CardNetworkDashboard({ isOpen, onClose }: Props) {
           {/* ══ SETTLEMENT ══ */}
           {screen === "settlement" && (
             <div className="space-y-5 max-w-5xl">
-              <h1 className="text-xl font-black text-gray-900">Settlement & Clearing</h1>
+              <h1 className="text-xl font-black text-fg">Settlement & Clearing</h1>
               <div className="grid sm:grid-cols-3 gap-4">
                 {[
                   { label: "Total Settled (48h)", value: `R${(totalSettledVol/1000000).toFixed(1)}M`, color: "#10B981" },
-                  { label: "Interchange Earned",  value: `R${(totalInterchange/1000).toFixed(0)}K`, color: P },
+                  { label: "Interchange Earned",  value: `R${(totalInterchange/1000).toFixed(0)}K`, color: "var(--vk-crimson-text)" },
                   { label: "Pending Settlement",  value: `R${((384500+248300)/1000).toFixed(0)}K`, color: "#F59E0B" },
                 ].map((kpi, i) => (
-                  <div key={i} className="bg-white rounded-2xl border border-gray-100 p-4">
+                  <div key={i} className="bg-surface rounded-2xl border border-line p-4">
                     <p className="text-3xl font-black" style={{ color: kpi.color }}>{kpi.value}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">{kpi.label}</p>
+                    <p className="text-xs text-fg-muted mt-0.5">{kpi.label}</p>
                   </div>
                 ))}
               </div>
 
-              <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-                <div className="px-5 py-3 border-b border-gray-100">
-                  <p className="text-sm font-black text-gray-800">Settlement Batches</p>
+              <div className="bg-surface rounded-2xl border border-line overflow-hidden">
+                <div className="px-5 py-3 border-b border-line">
+                  <p className="text-sm font-black text-fg">Settlement Batches</p>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-gray-100 bg-gray-50">
+                      <tr className="border-b border-line bg-surface-2">
                         {["Batch ID","Network","Date","Txns","Volume","Interchange","Net Amount","Status"].map(h => (
-                          <th key={h} className="text-left px-4 py-3 text-[10px] font-bold uppercase tracking-wide text-gray-500">{h}</th>
+                          <th key={h} className="text-left px-4 py-3 text-[10px] font-bold uppercase tracking-wide text-fg-muted">{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {SETTLEMENTS.map((s, i) => (
-                        <tr key={s.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                          <td className="px-4 py-3 text-xs font-mono font-bold text-gray-700">{s.id}</td>
+                        <tr key={s.id} className="border-b border-gray-50 hover:bg-surface-2 transition-colors">
+                          <td className="px-4 py-3 text-xs font-mono font-bold text-fg">{s.id}</td>
                           <td className="px-4 py-3"><NetworkBadge network={s.network} /></td>
                           <td className="px-4 py-3 text-xs">{s.date}</td>
                           <td className="px-4 py-3 text-xs font-semibold">{s.txnCount.toLocaleString()}</td>
-                          <td className="px-4 py-3 text-xs font-bold text-gray-800">R{(s.volume/1000).toFixed(0)}K</td>
-                          <td className="px-4 py-3 text-xs font-bold" style={{ color: P }}>
+                          <td className="px-4 py-3 text-xs font-bold text-fg">R{(s.volume/1000).toFixed(0)}K</td>
+                          <td className="px-4 py-3 text-xs font-bold" style={{ color: "var(--vk-crimson-text)" }}>
                             {s.interchange ? `R${(s.interchange/1000).toFixed(1)}K` : "—"}
                           </td>
-                          <td className="px-4 py-3 text-xs font-bold text-gray-800">
+                          <td className="px-4 py-3 text-xs font-bold text-fg">
                             {s.netAmount ? `R${(s.netAmount/1000).toFixed(0)}K` : "Pending"}
                           </td>
                           <td className="px-4 py-3"><StatusBadge status={s.status} /></td>
@@ -674,11 +674,11 @@ export function CardNetworkDashboard({ isOpen, onClose }: Props) {
               </div>
 
               {/* Settlement timeline */}
-              <div className="bg-white rounded-2xl border border-gray-100 p-5">
-                <p className="text-sm font-black text-gray-800 mb-4">Settlement Cycle — T+1 (Standard)</p>
+              <div className="bg-surface rounded-2xl border border-line p-5">
+                <p className="text-sm font-black text-fg mb-4">Settlement Cycle — T+1 (Standard)</p>
                 <div className="relative flex items-center gap-2 overflow-x-auto pb-2">
                   {[
-                    { time: "00:00", label: "Batch closes", desc: "Day's transactions compiled", color: P },
+                    { time: "00:00", label: "Batch closes", desc: "Day's transactions compiled", color: "var(--vk-crimson-text)" },
                     { time: "01:00", label: "Net position", desc: "Interchange calculated", color: "#3B82F6" },
                     { time: "04:00", label: "VisaNet/Banknet", desc: "Clearing files exchanged", color: VISA_BLUE },
                     { time: "08:00", label: "RTGS payment", desc: "Funds transferred SA Reserve Bank", color: "#10B981" },
@@ -688,9 +688,9 @@ export function CardNetworkDashboard({ isOpen, onClose }: Props) {
                       <div className="flex flex-col items-center min-w-[100px]">
                         <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-black"
                           style={{ background: step.color }}>{i + 1}</div>
-                        <p className="text-xs font-bold mt-1 text-gray-800">{step.time}</p>
-                        <p className="text-[10px] text-gray-600 text-center">{step.label}</p>
-                        <p className="text-[9px] text-gray-400 text-center leading-tight mt-0.5">{step.desc}</p>
+                        <p className="text-xs font-bold mt-1 text-fg">{step.time}</p>
+                        <p className="text-[10px] text-fg-muted text-center">{step.label}</p>
+                        <p className="text-[9px] text-fg-subtle text-center leading-tight mt-0.5">{step.desc}</p>
                       </div>
                       {i < 4 && <div className="w-8 h-0.5 flex-shrink-0" style={{ background: step.color + "60" }} />}
                     </div>
@@ -703,21 +703,21 @@ export function CardNetworkDashboard({ isOpen, onClose }: Props) {
           {/* ══ INTERCHANGE ══ */}
           {screen === "interchange" && (
             <div className="space-y-5 max-w-4xl">
-              <h1 className="text-xl font-black text-gray-900">Interchange Income Calculator</h1>
+              <h1 className="text-xl font-black text-fg">Interchange Income Calculator</h1>
 
-              <div className="bg-white rounded-2xl border border-gray-100 p-6 space-y-5">
-                <p className="text-sm text-gray-600 leading-relaxed">
+              <div className="bg-surface rounded-2xl border border-line p-6 space-y-5">
+                <p className="text-sm text-fg-muted leading-relaxed">
                   <strong>Interchange</strong> is the fee paid by the merchant's bank (acquirer) to the card issuer (VINK) on every transaction. As a Visa/MC principal member, VINK earns interchange directly on every card transaction processed globally.
                 </p>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Transaction Amount (ZAR)</label>
-                    <input type="number" className="w-full border border-gray-200 rounded-xl px-4 py-3 text-2xl font-black outline-none focus:border-emerald-400"
+                    <label className="text-xs font-bold text-fg-muted uppercase tracking-wide block mb-1.5">Transaction Amount (ZAR)</label>
+                    <input type="number" className="w-full border border-line rounded-xl px-4 py-3 text-2xl font-black outline-none focus:border-emerald-400"
                       value={interchangeAmt} onChange={e => setInterchangeAmt(e.target.value)} />
                   </div>
                   <div>
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Transaction Type</label>
-                    <select className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-400"
+                    <label className="text-xs font-bold text-fg-muted uppercase tracking-wide block mb-1.5">Transaction Type</label>
+                    <select className="w-full border border-line rounded-xl px-4 py-3 text-sm outline-none focus:border-emerald-400"
                       value={interchangeType} onChange={e => setInterchangeType(e.target.value)}>
                       {Object.entries(IC_RATES).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
                     </select>
@@ -727,22 +727,22 @@ export function CardNetworkDashboard({ isOpen, onClose }: Props) {
                   <div className="rounded-2xl p-5 text-center" style={{ background: VISA_BLUE + "10", border: `2px solid ${VISA_BLUE}30` }}>
                     <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: VISA_BLUE }}>Visa Interchange ({icRate.visa}%)</p>
                     <p className="text-4xl font-black" style={{ color: VISA_BLUE }}>R{visaIC}</p>
-                    <p className="text-xs text-gray-500 mt-1">per transaction</p>
+                    <p className="text-xs text-fg-muted mt-1">per transaction</p>
                   </div>
                   <div className="rounded-2xl p-5 text-center border-2" style={{ borderColor: MC_RED + "30", background: MC_RED + "08" }}>
                     <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: MC_RED }}>Mastercard Interchange ({icRate.mc}%)</p>
                     <p className="text-4xl font-black" style={{ color: MC_RED }}>R{mcIC}</p>
-                    <p className="text-xs text-gray-500 mt-1">per transaction</p>
+                    <p className="text-xs text-fg-muted mt-1">per transaction</p>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl border border-gray-100 p-5">
-                <p className="text-sm font-black text-gray-800 mb-4">All Interchange Rates</p>
+              <div className="bg-surface rounded-2xl border border-line p-5">
+                <p className="text-sm font-black text-fg mb-4">All Interchange Rates</p>
                 <div className="space-y-2">
                   {Object.entries(IC_RATES).map(([k, v]) => (
                     <div key={k} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
-                      <p className="text-sm text-gray-700 font-medium">{v.label}</p>
+                      <p className="text-sm text-fg font-medium">{v.label}</p>
                       <div className="flex items-center gap-4">
                         <span className="text-xs font-black" style={{ color: VISA_BLUE }}>Visa {v.visa}%</span>
                         <span className="text-xs font-black" style={{ color: MC_RED }}>MC {v.mc}%</span>
@@ -757,23 +757,23 @@ export function CardNetworkDashboard({ isOpen, onClose }: Props) {
           {/* ══ FRAUD & RISK ══ */}
           {screen === "fraud" && (
             <div className="space-y-5 max-w-4xl">
-              <h1 className="text-xl font-black text-gray-900">Fraud Detection & Risk Rules</h1>
+              <h1 className="text-xl font-black text-fg">Fraud Detection & Risk Rules</h1>
               <div className="grid sm:grid-cols-3 gap-4">
                 {[
-                  { label: "Transactions Checked", value: "18,470", color: P },
+                  { label: "Transactions Checked", value: "18,470", color: "var(--vk-crimson-text)" },
                   { label: "Fraud Alerts (24h)", value: "23", color: "#F59E0B" },
                   { label: "Blocked (24h)", value: "7", color: "#EF4444" },
                 ].map((kpi, i) => (
-                  <div key={i} className="bg-white rounded-2xl border border-gray-100 p-4">
+                  <div key={i} className="bg-surface rounded-2xl border border-line p-4">
                     <p className="text-3xl font-black" style={{ color: kpi.color }}>{kpi.value}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">{kpi.label}</p>
+                    <p className="text-xs text-fg-muted mt-0.5">{kpi.label}</p>
                   </div>
                 ))}
               </div>
 
               {/* Fraud rules */}
-              <div className="bg-white rounded-2xl border border-gray-100 p-5">
-                <p className="text-sm font-black text-gray-800 mb-4">Active Fraud Rules</p>
+              <div className="bg-surface rounded-2xl border border-line p-5">
+                <p className="text-sm font-black text-fg mb-4">Active Fraud Rules</p>
                 <div className="space-y-3">
                   {[
                     { rule: "Velocity Check — Cards",     desc: ">5 txns in 60 seconds on same card",            action: "Block",   trigger: "High", network: "both" },
@@ -785,21 +785,21 @@ export function CardNetworkDashboard({ isOpen, onClose }: Props) {
                     { rule: "AFC Fare Anomaly",           desc: "AFC fare >R200 (normal max R50)",               action: "Hold",    trigger: "Medium", network: "both" },
                     { rule: "After-Hours Large Withdraw", desc: "ATM withdrawal >R5,000 between 22:00–05:00",    action: "SMS Alert", trigger: "Low", network: "both" },
                   ].map((r, i) => (
-                    <div key={i} className="flex items-start gap-3 p-3 rounded-xl border border-gray-100 hover:border-emerald-100 hover:bg-emerald-50 transition-all">
+                    <div key={i} className="flex items-start gap-3 p-3 rounded-xl border border-line hover:border-emerald-100 hover:bg-emerald-50 transition-all">
                       <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5"
                         style={{ color: r.trigger === "Critical" ? "#EF4444" : r.trigger === "High" ? "#F59E0B" : r.trigger === "Medium" ? "#3B82F6" : "#10B981" }} />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <p className="text-sm font-bold text-gray-800">{r.rule}</p>
+                          <p className="text-sm font-bold text-fg">{r.rule}</p>
                           <span className="text-[9px] font-bold px-1.5 py-0.5 rounded"
-                            style={{ background: r.trigger === "Critical" ? "#FEE2E2" : r.trigger === "High" ? "#FEF3C7" : r.trigger === "Medium" ? "#DBEAFE" : "#D1FAE5", color: r.trigger === "Critical" ? "#DC2626" : r.trigger === "High" ? "#D97706" : r.trigger === "Medium" ? "#1D4ED8" : "#059669" }}>
+                            style={{ background: r.trigger === "Critical" ? "var(--vk-bad-bg)" : r.trigger === "High" ? "var(--vk-warn-bg)" : r.trigger === "Medium" ? "var(--vk-info-bg)" : "var(--vk-ok-bg)", color: r.trigger === "Critical" ? "#DC2626" : r.trigger === "High" ? "#D97706" : r.trigger === "Medium" ? "#1D4ED8" : "#059669" }}>
                             {r.trigger}
                           </span>
                           {r.network !== "both" && <NetworkBadge network={r.network} />}
                         </div>
-                        <p className="text-[11px] text-gray-500 mt-0.5">{r.desc}</p>
+                        <p className="text-[11px] text-fg-muted mt-0.5">{r.desc}</p>
                       </div>
-                      <span className="flex-shrink-0 text-[10px] font-bold px-2 py-1 rounded" style={{ background: "#F2EFE8", color: P }}>{r.action}</span>
+                      <span className="flex-shrink-0 text-[10px] font-bold px-2 py-1 rounded" style={{ background: "var(--vk-surface-2)", color: "var(--vk-crimson-text)" }}>{r.action}</span>
                     </div>
                   ))}
                 </div>

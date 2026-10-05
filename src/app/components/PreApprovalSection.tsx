@@ -43,55 +43,55 @@ export function PreApprovalSection() {
   const scoreColor = (s: number) => s >= 750 ? "#10B981" : s >= 650 ? "#3B82F6" : s >= 550 ? "#F59E0B" : "#EF4444";
 
   return (
-    <section className="py-10 sm:py-14" style={{ background: "#FAF8F4" }}>
+    <section className="py-10 sm:py-14" style={{ background: "var(--vk-surface-2)" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-3"
-            style={{ background: "#F2EFE8", color: P }}>No Hard Inquiry</span>
-          <h2 className="text-2xl sm:text-3xl font-black text-gray-900 mb-2">
+            style={{ background: "var(--vk-surface-2)", color: "var(--vk-crimson-text)" }}>No Hard Inquiry</span>
+          <h2 className="text-2xl sm:text-3xl font-black text-fg mb-2">
             Know exactly where you stand before you apply for any VINK card.
           </h2>
-          <p className="text-gray-500 text-sm max-w-md mx-auto">
+          <p className="text-fg-muted text-sm max-w-md mx-auto">
             It&apos;s completely free, takes under 60 seconds, and won&apos;t touch your credit score.
           </p>
         </div>
 
         {/* Credit check result */}
         {result && (
-          <div className="max-w-3xl mx-auto mb-8 bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+          <div className="max-w-3xl mx-auto mb-8 bg-surface rounded-2xl border border-line p-6 shadow-sm">
             <div className="flex items-center justify-between mb-5">
               <div>
-                <p className="text-xs text-gray-500 font-medium">Your Credit Score</p>
+                <p className="text-xs text-fg-muted font-medium">Your Credit Score</p>
                 <div className="flex items-end gap-2 mt-1">
                   <span className="text-5xl font-black" style={{ color: scoreColor(result.score) }}>{result.score}</span>
-                  <span className="text-lg font-semibold text-gray-600 mb-1">/ 850</span>
+                  <span className="text-lg font-semibold text-fg-muted mb-1">/ 850</span>
                   <span className="mb-1 px-2 py-0.5 rounded-full text-xs font-bold text-white" style={{ background: scoreColor(result.score) }}>{result.rating}</span>
                 </div>
               </div>
-              <button onClick={() => setResult(null)} className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400"><X className="w-4 h-4" /></button>
+              <button onClick={() => setResult(null)} className="p-1.5 rounded-full hover:bg-surface-2 text-fg-muted"><X className="w-4 h-4" /></button>
             </div>
             <div className="mb-4">
-              <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-3">Pre-Qualification Results</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-fg-muted mb-3">Pre-Qualification Results</p>
               <div className="space-y-2">
                 {result.eligible.map((e, i) => (
                   <div key={i} className="flex items-center gap-3 p-2.5 rounded-lg border"
-                    style={{ borderColor: e.approved ? "#D1FAE5" : "#FEE2E2", background: e.approved ? "#F0FDF4" : "#FFF5F5" }}>
+                    style={{ borderColor: e.approved ? "var(--vk-ok-bg)" : "var(--vk-bad-bg)", background: e.approved ? "#F0FDF4" : "#FFF5F5" }}>
                     <span style={{ color: e.approved ? "#10B981" : "#EF4444" }} className="text-base">{e.approved ? "✓" : "✗"}</span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-semibold text-gray-800">{e.product}</p>
-                      <p className="text-[10px] text-gray-500">{e.reason}</p>
+                      <p className="text-xs font-semibold text-fg">{e.product}</p>
+                      <p className="text-[10px] text-fg-muted">{e.reason}</p>
                     </div>
-                    {e.approved && <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: "#D1FAE5", color: "#059669" }}>Eligible</span>}
+                    {e.approved && <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: "var(--vk-ok-bg)", color: "#059669" }}>Eligible</span>}
                   </div>
                 ))}
               </div>
             </div>
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Tips to Improve Your Score</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-fg-muted mb-2">Tips to Improve Your Score</p>
               <ul className="space-y-1">
                 {result.tips.map((tip, i) => (
-                  <li key={i} className="flex items-start gap-2 text-xs text-gray-600">
-                    <span style={{ color: P }}>•</span>{tip}
+                  <li key={i} className="flex items-start gap-2 text-xs text-fg-muted">
+                    <span style={{ color: "var(--vk-crimson-text)" }}>•</span>{tip}
                   </li>
                 ))}
               </ul>
@@ -101,7 +101,7 @@ export function PreApprovalSection() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
           {/* Card 1 — Credit Score */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-7 hover:shadow-xl hover:-translate-y-1 transition-all group relative overflow-hidden">
+          <div className="bg-surface rounded-2xl border border-line p-7 hover:shadow-xl hover:-translate-y-1 transition-all group relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 rounded-full opacity-5 pointer-events-none"
               style={{ background: `radial-gradient(circle,${P},transparent)`, transform: "translate(30%,-30%)" }}/>
             <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform"
@@ -114,23 +114,23 @@ export function PreApprovalSection() {
             </div>
             <span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded mb-3"
               style={{ background: "#DCFCE7", color: "#16A34A" }}>Free — Always</span>
-            <h3 className="font-bold text-gray-900 text-base mb-2">See Your Credit Score Instantly</h3>
-            <p className="text-gray-500 text-sm leading-relaxed mb-5">
+            <h3 className="font-bold text-fg text-base mb-2">See Your Credit Score Instantly</h3>
+            <p className="text-fg-muted text-sm leading-relaxed mb-5">
               View your full credit profile at no cost. We show which VINK cards you&apos;re likely to qualify for and personalised tips to improve your score.
             </p>
 
             {showForm ? (
               <div className="space-y-3">
                 <input value={form.idNumber} onChange={e => setForm(f => ({ ...f, idNumber: e.target.value }))}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-400" placeholder="ID Number *" />
+                  className="w-full border border-line rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-400" placeholder="ID Number *" />
                 <div className="grid grid-cols-2 gap-2">
                   <input value={form.firstName} onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))}
-                    className="border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-400" placeholder="First name" />
+                    className="border border-line rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-400" placeholder="First name" />
                   <input value={form.lastName} onChange={e => setForm(f => ({ ...f, lastName: e.target.value }))}
-                    className="border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-400" placeholder="Last name" />
+                    className="border border-line rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-400" placeholder="Last name" />
                 </div>
                 <input value={form.income} onChange={e => setForm(f => ({ ...f, income: e.target.value }))}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-400" placeholder="Monthly income (optional)" />
+                  className="w-full border border-line rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-400" placeholder="Monthly income (optional)" />
                 <button onClick={handleCreditCheck} disabled={loading}
                   className="w-full py-2.5 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-2 disabled:opacity-60"
                   style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
@@ -147,7 +147,7 @@ export function PreApprovalSection() {
           </div>
 
           {/* Card 2 — Pre-qualify */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-7 hover:shadow-xl hover:-translate-y-1 transition-all group relative overflow-hidden">
+          <div className="bg-surface rounded-2xl border border-line p-7 hover:shadow-xl hover:-translate-y-1 transition-all group relative overflow-hidden">
             <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform"
               style={{ background: "linear-gradient(135deg,#DBEAFE,#BFDBFE)" }}>
               <svg viewBox="0 0 40 40" className="w-7 h-7" fill="none">
@@ -158,11 +158,11 @@ export function PreApprovalSection() {
               </svg>
             </div>
             <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded mb-3"
-              style={{ background: "#DBEAFE", color: "#1D4ED8" }}>
+              style={{ background: "var(--vk-info-bg)", color: "#1D4ED8" }}>
               <Clock className="w-2.5 h-2.5"/> 60 Seconds
             </span>
-            <h3 className="font-bold text-gray-900 text-base mb-2">Pre-Qualify With No Impact</h3>
-            <p className="text-gray-500 text-sm leading-relaxed mb-5">
+            <h3 className="font-bold text-fg text-base mb-2">Pre-Qualify With No Impact</h3>
+            <p className="text-fg-muted text-sm leading-relaxed mb-5">
               Answer three quick questions and see personalised card offers matched to your profile — no hard credit inquiry, no risk.
             </p>
             <button onClick={() => { setShowForm(true); toast.info("Enter your ID number to pre-qualify."); }}

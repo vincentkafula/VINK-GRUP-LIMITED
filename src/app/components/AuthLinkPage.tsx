@@ -55,7 +55,7 @@ export function AuthLinkPage({ kind, isOpen, onClose }: { kind: "reset" | "verif
 
   return (
     <div className="fixed inset-0 z-[80] flex items-center justify-center p-4" style={{ background: "rgba(10,8,30,0.85)" }} role="dialog" aria-modal="true" aria-label={title}>
-      <div className="w-full max-w-[420px] rounded-2xl bg-white p-8" style={{ boxShadow: "0 40px 100px rgba(0,0,0,0.6)" }}>
+      <div className="w-full max-w-[420px] rounded-2xl bg-surface p-8" style={{ boxShadow: "0 40px 100px rgba(0,0,0,0.6)" }}>
         <h1 className="text-[22px] font-bold text-[#5c1420] mb-4">{title}</h1>
 
         {state === "working" && <p className="flex items-center gap-2 text-[14px] text-[#6b5d5f]"><Loader2 className="w-4 h-4 animate-spin" /> Confirming…</p>}

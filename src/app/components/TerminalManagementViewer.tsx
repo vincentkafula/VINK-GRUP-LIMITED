@@ -61,14 +61,14 @@ const API_BASE = import.meta.env.VITE_API_URL || "https://vink-grup-limited-prod
 
 const STATUS_STYLE: Record<Terminal["status"], { bg: string; color: string; icon: any; label: string }> = {
   active: { bg: "#E9F7EF", color: "#059669", icon: ShieldCheck, label: "Active" },
-  inactive: { bg: "#F3F4F6", color: "#6B7280", icon: ShieldOff, label: "Inactive" },
-  revoked: { bg: "#FEE2E2", color: "#DC2626", icon: ShieldAlert, label: "Revoked" },
+  inactive: { bg: "var(--vk-surface-2)", color: "var(--vk-fg-muted)", icon: ShieldOff, label: "Inactive" },
+  revoked: { bg: "var(--vk-bad-bg)", color: "#DC2626", icon: ShieldAlert, label: "Revoked" },
 };
 
 const FAULT_SEVERITY_STYLE: Record<DeviceFault["severity"], { background: string; color: string }> = {
-  info: { background: "#EFF6FF", color: "#2563EB" },
+  info: { background: "var(--vk-info-bg)", color: "#2563EB" },
   warning: { background: "#FFF7ED", color: "#D97706" },
-  critical: { background: "#FEE2E2", color: "#DC2626" },
+  critical: { background: "var(--vk-bad-bg)", color: "#DC2626" },
 };
 
 interface Props { isOpen: boolean; onClose: () => void }
@@ -171,20 +171,20 @@ export function TerminalManagementViewer({ isOpen, onClose }: Props) {
 
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center p-5" style={{ background: "rgba(10,14,35,.55)" }}>
-      <div className="bg-white rounded-2xl w-full max-w-3xl max-h-[88vh] overflow-y-auto">
-        <div className="p-5 flex items-start justify-between border-b border-gray-100 sticky top-0 bg-white z-10">
+      <div className="bg-surface rounded-2xl w-full max-w-3xl max-h-[88vh] overflow-y-auto">
+        <div className="p-5 flex items-start justify-between border-b border-line sticky top-0 bg-surface z-10">
           <div>
-            <p className="text-[17px] font-black text-gray-900 flex items-center gap-2"><Smartphone className="w-5 h-5" /> Device Management</p>
-            <p className="text-[12.5px] text-gray-500 mt-0.5">Access control, live status, fault alarms, and app updates for every P18Q/P10 device.</p>
+            <p className="text-[17px] font-black text-fg flex items-center gap-2"><Smartphone className="w-5 h-5" /> Device Management</p>
+            <p className="text-[12.5px] text-fg-muted mt-0.5">Access control, live status, fault alarms, and app updates for every P18Q/P10 device.</p>
           </div>
-          <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 text-gray-400"><X className="w-4 h-4" /></button>
+          <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-surface-2 text-fg-subtle"><X className="w-4 h-4" /></button>
         </div>
 
-        <div className="px-5 pt-3 flex gap-1 border-b border-gray-100 sticky top-[73px] bg-white z-10">
+        <div className="px-5 pt-3 flex gap-1 border-b border-line sticky top-[73px] bg-surface z-10">
           {([["terminals", "Terminals"], ["faults", "Fault Alarms"], ["releases", "App Releases"]] as const).map(([key, label]) => (
             <button key={key} onClick={() => setTab(key)}
               className="px-3.5 py-2 text-[12.5px] font-bold rounded-t-lg"
-              style={tab === key ? { color: "#2E0B10", borderBottom: "2px solid #2E0B10" } : { color: "#9CA3AF" }}>
+              style={tab === key ? { color: "#2E0B10", borderBottom: "2px solid #2E0B10" } : { color: "var(--vk-fg-subtle)" }}>
               {label}
               {key === "faults" && faults.filter(f => !f.resolved).length > 0 && (
                 <span className="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] bg-red-100 text-red-600">{faults.filter(f => !f.resolved).length}</span>
@@ -195,7 +195,7 @@ export function TerminalManagementViewer({ isOpen, onClose }: Props) {
 
         <div className="p-5">
           <div className="flex items-center justify-between mb-4">
-            <button onClick={() => (tab === "terminals" ? loadTerminals() : tab === "faults" ? loadFaults() : loadReleases())} className="flex items-center gap-1.5 text-[12.5px] font-bold text-gray-500 hover:text-gray-700">
+            <button onClick={() => (tab === "terminals" ? loadTerminals() : tab === "faults" ? loadFaults() : loadReleases())} className="flex items-center gap-1.5 text-[12.5px] font-bold text-fg-muted hover:text-fg">
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} /> Refresh
             </button>
             {tab === "terminals" && (
@@ -215,18 +215,18 @@ export function TerminalManagementViewer({ isOpen, onClose }: Props) {
           {tab === "terminals" && (
           <>
           {terminals.length === 0 && !loading ? (
-            <div className="text-center py-12 text-gray-400"><Smartphone className="w-8 h-8 mx-auto mb-2" /><p className="text-sm">No terminals registered yet</p></div>
+            <div className="text-center py-12 text-fg-subtle"><Smartphone className="w-8 h-8 mx-auto mb-2" /><p className="text-sm">No terminals registered yet</p></div>
           ) : (
             <div className="space-y-2.5">
               {terminals.map(t => {
                 const s = STATUS_STYLE[t.status];
                 return (
-                  <div key={t.id} className="rounded-xl border border-gray-100 p-4 flex items-center gap-4 flex-wrap">
+                  <div key={t.id} className="rounded-xl border border-line p-4 flex items-center gap-4 flex-wrap">
                     <span className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ background: s.bg, color: s.color }}><s.icon className="w-5 h-5" /></span>
                     <div className="flex-1 min-w-[180px]">
-                      <p className="text-[13.5px] font-bold text-gray-900 font-mono">{t.serial}</p>
-                      <p className="text-[11.5px] text-gray-400">{t.model} {t.assigned_driver ? `· ${t.assigned_driver}` : ""} {t.last_seen_at ? `· last seen ${new Date(t.last_seen_at).toLocaleString()}` : "· never connected"}</p>
-                      <p className="text-[11px] text-gray-400 mt-0.5">
+                      <p className="text-[13.5px] font-bold text-fg font-mono">{t.serial}</p>
+                      <p className="text-[11.5px] text-fg-subtle">{t.model} {t.assigned_driver ? `· ${t.assigned_driver}` : ""} {t.last_seen_at ? `· last seen ${new Date(t.last_seen_at).toLocaleString()}` : "· never connected"}</p>
+                      <p className="text-[11px] text-fg-subtle mt-0.5">
                         {t.app_version ? `v${t.app_version}` : "version unknown"}
                         {t.battery_pct !== null ? ` · ${t.battery_pct}% battery` : ""}
                         {t.last_heartbeat_at ? ` · checked in ${new Date(t.last_heartbeat_at).toLocaleString()}` : " · no heartbeat yet"}
@@ -238,8 +238,8 @@ export function TerminalManagementViewer({ isOpen, onClose }: Props) {
                     <span className="px-2.5 py-1 rounded-full text-[11px] font-bold" style={{ background: s.bg, color: s.color }}>{s.label}</span>
                     <div className="flex items-center gap-1.5">
                       <button onClick={() => setAssigningTerminal(t)} className="px-3 py-1.5 rounded-lg text-[11.5px] font-bold border border-indigo-200 text-indigo-600 hover:bg-indigo-50">Assign ownership</button>
-                      {t.status !== "active" && <button onClick={() => updateStatus(t.id, "active")} className="px-3 py-1.5 rounded-lg text-[11.5px] font-bold border border-gray-200 text-gray-600 hover:bg-gray-50">Activate</button>}
-                      {t.status !== "inactive" && <button onClick={() => updateStatus(t.id, "inactive")} className="px-3 py-1.5 rounded-lg text-[11.5px] font-bold border border-gray-200 text-gray-600 hover:bg-gray-50">Deactivate</button>}
+                      {t.status !== "active" && <button onClick={() => updateStatus(t.id, "active")} className="px-3 py-1.5 rounded-lg text-[11.5px] font-bold border border-line text-fg-muted hover:bg-surface-2">Activate</button>}
+                      {t.status !== "inactive" && <button onClick={() => updateStatus(t.id, "inactive")} className="px-3 py-1.5 rounded-lg text-[11.5px] font-bold border border-line text-fg-muted hover:bg-surface-2">Deactivate</button>}
                       {t.status !== "revoked" && <button onClick={() => updateStatus(t.id, "revoked")} className="px-3 py-1.5 rounded-lg text-[11.5px] font-bold border border-red-200 text-red-600 hover:bg-red-50">Revoke</button>}
                     </div>
                   </div>
@@ -252,22 +252,22 @@ export function TerminalManagementViewer({ isOpen, onClose }: Props) {
 
           {tab === "faults" && (
             faults.length === 0 && !loading ? (
-              <div className="text-center py-12 text-gray-400"><ShieldCheck className="w-8 h-8 mx-auto mb-2" /><p className="text-sm">No fault alarms</p></div>
+              <div className="text-center py-12 text-fg-subtle"><ShieldCheck className="w-8 h-8 mx-auto mb-2" /><p className="text-sm">No fault alarms</p></div>
             ) : (
               <div className="space-y-2.5">
                 {faults.map(f => (
-                  <div key={f.id} className="rounded-xl border border-gray-100 p-4 flex items-center gap-4 flex-wrap">
+                  <div key={f.id} className="rounded-xl border border-line p-4 flex items-center gap-4 flex-wrap">
                     <span className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={FAULT_SEVERITY_STYLE[f.severity]}><ShieldAlert className="w-5 h-5" /></span>
                     <div className="flex-1 min-w-[180px]">
-                      <p className="text-[13.5px] font-bold text-gray-900">{f.fault_code}</p>
-                      <p className="text-[11.5px] text-gray-400 font-mono">{f.serial} · {new Date(f.reported_at).toLocaleString()}</p>
-                      {f.message && <p className="text-[12px] text-gray-600 mt-1">{f.message}</p>}
+                      <p className="text-[13.5px] font-bold text-fg">{f.fault_code}</p>
+                      <p className="text-[11.5px] text-fg-subtle font-mono">{f.serial} · {new Date(f.reported_at).toLocaleString()}</p>
+                      {f.message && <p className="text-[12px] text-fg-muted mt-1">{f.message}</p>}
                     </div>
                     <span className="px-2.5 py-1 rounded-full text-[11px] font-bold capitalize" style={FAULT_SEVERITY_STYLE[f.severity]}>{f.severity}</span>
                     {f.resolved ? (
                       <span className="text-[11.5px] font-bold text-emerald-600 flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5" /> Resolved</span>
                     ) : (
-                      <button onClick={() => resolveFault(f.id)} className="px-3 py-1.5 rounded-lg text-[11.5px] font-bold border border-gray-200 text-gray-600 hover:bg-gray-50">Mark resolved</button>
+                      <button onClick={() => resolveFault(f.id)} className="px-3 py-1.5 rounded-lg text-[11.5px] font-bold border border-line text-fg-muted hover:bg-surface-2">Mark resolved</button>
                     )}
                   </div>
                 ))}
@@ -277,17 +277,17 @@ export function TerminalManagementViewer({ isOpen, onClose }: Props) {
 
           {tab === "releases" && (
             releases.length === 0 && !loading ? (
-              <div className="text-center py-12 text-gray-400"><Smartphone className="w-8 h-8 mx-auto mb-2" /><p className="text-sm">No app releases published yet</p></div>
+              <div className="text-center py-12 text-fg-subtle"><Smartphone className="w-8 h-8 mx-auto mb-2" /><p className="text-sm">No app releases published yet</p></div>
             ) : (
               <div className="space-y-2.5">
                 {releases.map(r => (
-                  <div key={r.id} className="rounded-xl border border-gray-100 p-4 flex items-center gap-4 flex-wrap">
+                  <div key={r.id} className="rounded-xl border border-line p-4 flex items-center gap-4 flex-wrap">
                     <div className="flex-1 min-w-[180px]">
-                      <p className="text-[13.5px] font-bold text-gray-900">v{r.version} {r.mandatory && <span className="text-[10px] font-bold text-red-600 ml-1">MANDATORY</span>}</p>
-                      <p className="text-[11.5px] text-gray-400">Published {new Date(r.created_at).toLocaleString()}</p>
-                      {r.release_notes && <p className="text-[12px] text-gray-600 mt-1">{r.release_notes}</p>}
+                      <p className="text-[13.5px] font-bold text-fg">v{r.version} {r.mandatory && <span className="text-[10px] font-bold text-red-600 ml-1">MANDATORY</span>}</p>
+                      <p className="text-[11.5px] text-fg-subtle">Published {new Date(r.created_at).toLocaleString()}</p>
+                      {r.release_notes && <p className="text-[12px] text-fg-muted mt-1">{r.release_notes}</p>}
                     </div>
-                    <span className="px-2.5 py-1 rounded-full text-[11px] font-bold" style={r.active ? { background: "#E9F7EF", color: "#059669" } : { background: "#F3F4F6", color: "#6B7280" }}>{r.active ? "Active" : "Inactive"}</span>
+                    <span className="px-2.5 py-1 rounded-full text-[11px] font-bold" style={r.active ? { background: "var(--vk-ok-bg)", color: "#059669" } : { background: "var(--vk-surface-2)", color: "var(--vk-fg-muted)" }}>{r.active ? "Active" : "Inactive"}</span>
                   </div>
                 ))}
               </div>
@@ -327,39 +327,39 @@ function RegisterTerminalModal({ onClose, onRegistered, token }: { onClose: () =
 
   return (
     <div className="fixed inset-0 z-[130] flex items-center justify-center p-5" style={{ background: "rgba(10,14,35,.6)" }} onClick={result ? undefined : onClose}>
-      <div className="bg-white rounded-2xl w-full max-w-md p-5" onClick={e => e.stopPropagation()}>
+      <div className="bg-surface rounded-2xl w-full max-w-md p-5" onClick={e => e.stopPropagation()}>
         {!result ? (
           <>
-            <h3 className="text-[16px] font-black text-gray-900 mb-1">Register a new terminal</h3>
-            <p className="text-[12.5px] text-gray-400 mb-4">This is the only step required before a device buyer can pair the standalone terminal app to this unit.</p>
+            <h3 className="text-[16px] font-black text-fg mb-1">Register a new terminal</h3>
+            <p className="text-[12.5px] text-fg-subtle mb-4">This is the only step required before a device buyer can pair the standalone terminal app to this unit.</p>
             <div className="space-y-3">
               <div>
-                <label className="block text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">Serial number</label>
-                <input value={serial} onChange={e => setSerial(e.target.value)} placeholder="e.g. P18Q-CT-00847" className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none" />
+                <label className="block text-[11px] font-bold uppercase tracking-widest text-fg-subtle mb-1.5">Serial number</label>
+                <input value={serial} onChange={e => setSerial(e.target.value)} placeholder="e.g. P18Q-CT-00847" className="w-full px-3 py-2.5 rounded-lg border border-line text-sm outline-none" />
               </div>
               <div>
-                <label className="block text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">Model</label>
-                <input value={model} onChange={e => setModel(e.target.value)} className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none" />
+                <label className="block text-[11px] font-bold uppercase tracking-widest text-fg-subtle mb-1.5">Model</label>
+                <input value={model} onChange={e => setModel(e.target.value)} className="w-full px-3 py-2.5 rounded-lg border border-line text-sm outline-none" />
               </div>
             </div>
             {error && <p className="text-[12px] text-red-600 mt-3">{error}</p>}
             <div className="flex gap-2.5 mt-5">
-              <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-[13px] font-bold">Cancel</button>
+              <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-line text-[13px] font-bold">Cancel</button>
               <button onClick={handleRegister} disabled={!serial.trim()} className="flex-1 py-2.5 rounded-xl text-white text-[13px] font-bold disabled:opacity-40" style={{ background: "#2E0B10" }}>Register</button>
             </div>
           </>
         ) : (
           <>
-            <h3 className="text-[16px] font-black text-gray-900 mb-1">Terminal registered</h3>
+            <h3 className="text-[16px] font-black text-fg mb-1">Terminal registered</h3>
             <p className="text-[12.5px] text-amber-600 font-semibold mb-4">This API key is shown once. Copy it now and give it to whoever is setting up the device -- it cannot be retrieved again after you close this.</p>
-            <div className="rounded-xl bg-gray-50 p-4 space-y-3">
-              <div><p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Serial</p><p className="text-[13px] font-mono font-bold text-gray-900">{result.serial}</p></div>
+            <div className="rounded-xl bg-surface-2 p-4 space-y-3">
+              <div><p className="text-[10px] font-bold uppercase tracking-widest text-fg-subtle">Serial</p><p className="text-[13px] font-mono font-bold text-fg">{result.serial}</p></div>
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">API Key</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-fg-subtle">API Key</p>
                 <div className="flex items-center gap-2">
-                  <p className="text-[12px] font-mono text-gray-900 break-all flex-1">{result.apiKey}</p>
+                  <p className="text-[12px] font-mono text-fg break-all flex-1">{result.apiKey}</p>
                   <button onClick={() => { navigator.clipboard.writeText(result.apiKey); setCopied(true); }} className="shrink-0 p-1.5 rounded-lg hover:bg-gray-200">
-                    {copied ? <CheckCircle2 className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4 text-gray-500" />}
+                    {copied ? <CheckCircle2 className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4 text-fg-muted" />}
                   </button>
                 </div>
               </div>
@@ -415,31 +415,31 @@ function AssignOwnershipModal({ terminal, onClose, onSaved, token }: { terminal:
 
   return (
     <div className="fixed inset-0 z-[130] flex items-center justify-center p-5" style={{ background: "rgba(10,14,35,.6)" }} onClick={onClose}>
-      <div className="bg-white rounded-2xl w-full max-w-md p-5" onClick={e => e.stopPropagation()}>
-        <h3 className="text-[16px] font-black text-gray-900 mb-1">Assign ownership</h3>
-        <p className="text-[12.5px] text-gray-400 mb-4 font-mono">{terminal.serial}</p>
-        <p className="text-[12px] text-gray-500 mb-4">Enter each party's VINK account ID (UUID). On every real tap: VINK keeps a flat R1.00 fee, of which 10% (R0.10) goes to the investor. The owner receives everything else. The driver's pay is a separate fixed amount agreed privately with the owner -- VINK's system doesn't calculate or touch it.</p>
+      <div className="bg-surface rounded-2xl w-full max-w-md p-5" onClick={e => e.stopPropagation()}>
+        <h3 className="text-[16px] font-black text-fg mb-1">Assign ownership</h3>
+        <p className="text-[12.5px] text-fg-subtle mb-4 font-mono">{terminal.serial}</p>
+        <p className="text-[12px] text-fg-muted mb-4">Enter each party's VINK account ID (UUID). On every real tap: VINK keeps a flat R1.00 fee, of which 10% (R0.10) goes to the investor. The owner receives everything else. The driver's pay is a separate fixed amount agreed privately with the owner -- VINK's system doesn't calculate or touch it.</p>
         <div className="space-y-3">
           <div>
-            <label className="block text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">Investor account ID</label>
-            <input value={investorId} onChange={e => setInvestorId(e.target.value)} placeholder="UUID" className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none font-mono" />
+            <label className="block text-[11px] font-bold uppercase tracking-widest text-fg-subtle mb-1.5">Investor account ID</label>
+            <input value={investorId} onChange={e => setInvestorId(e.target.value)} placeholder="UUID" className="w-full px-3 py-2.5 rounded-lg border border-line text-sm outline-none font-mono" />
           </div>
           <div>
-            <label className="block text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">Owner account ID</label>
-            <input value={ownerId} onChange={e => setOwnerId(e.target.value)} placeholder="UUID" className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none font-mono" />
+            <label className="block text-[11px] font-bold uppercase tracking-widest text-fg-subtle mb-1.5">Owner account ID</label>
+            <input value={ownerId} onChange={e => setOwnerId(e.target.value)} placeholder="UUID" className="w-full px-3 py-2.5 rounded-lg border border-line text-sm outline-none font-mono" />
           </div>
           <div>
-            <label className="block text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">Driver account ID <span className="normal-case font-normal text-gray-400">(identification only -- not part of the per-tap split)</span></label>
-            <input value={driverId} onChange={e => setDriverId(e.target.value)} placeholder="UUID" className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none font-mono" />
+            <label className="block text-[11px] font-bold uppercase tracking-widest text-fg-subtle mb-1.5">Driver account ID <span className="normal-case font-normal text-fg-subtle">(identification only -- not part of the per-tap split)</span></label>
+            <input value={driverId} onChange={e => setDriverId(e.target.value)} placeholder="UUID" className="w-full px-3 py-2.5 rounded-lg border border-line text-sm outline-none font-mono" />
           </div>
           <div>
-            <label className="block text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">Association account ID <span className="normal-case font-normal text-gray-400">(reporting only -- not part of the per-tap split)</span></label>
-            <input value={associationId} onChange={e => setAssociationId(e.target.value)} placeholder="UUID" className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none font-mono" />
+            <label className="block text-[11px] font-bold uppercase tracking-widest text-fg-subtle mb-1.5">Association account ID <span className="normal-case font-normal text-fg-subtle">(reporting only -- not part of the per-tap split)</span></label>
+            <input value={associationId} onChange={e => setAssociationId(e.target.value)} placeholder="UUID" className="w-full px-3 py-2.5 rounded-lg border border-line text-sm outline-none font-mono" />
           </div>
         </div>
         {error && <p className="text-[12px] text-red-600 mt-3">{error}</p>}
         <div className="flex gap-2.5 mt-5">
-          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-[13px] font-bold">Cancel</button>
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-line text-[13px] font-bold">Cancel</button>
           <button onClick={handleSave} disabled={saving} className="flex-1 py-2.5 rounded-xl text-white text-[13px] font-bold disabled:opacity-50" style={{ background: "#2E0B10" }}>{saving ? "Saving..." : "Save"}</button>
         </div>
       </div>
@@ -484,30 +484,30 @@ function PublishReleaseModal({ onClose, onPublished, token }: { onClose: () => v
 
   return (
     <div className="fixed inset-0 z-[130] flex items-center justify-center p-5" style={{ background: "rgba(10,14,35,.6)" }} onClick={onClose}>
-      <div className="bg-white rounded-2xl w-full max-w-md p-5" onClick={e => e.stopPropagation()}>
-        <h3 className="text-[16px] font-black text-gray-900 mb-1">Publish app release</h3>
-        <p className="text-[12.5px] text-gray-400 mb-4">Devices see this the next time they check in (every 30 minutes while running, or on pairing). This only records where the update lives -- it doesn't push or install anything by itself; each device still shows an "Install" prompt the operator has to tap.</p>
+      <div className="bg-surface rounded-2xl w-full max-w-md p-5" onClick={e => e.stopPropagation()}>
+        <h3 className="text-[16px] font-black text-fg mb-1">Publish app release</h3>
+        <p className="text-[12.5px] text-fg-subtle mb-4">Devices see this the next time they check in (every 30 minutes while running, or on pairing). This only records where the update lives -- it doesn't push or install anything by itself; each device still shows an "Install" prompt the operator has to tap.</p>
         <div className="space-y-3">
           <div>
-            <label className="block text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">Version</label>
-            <input value={version} onChange={e => setVersion(e.target.value)} placeholder="e.g. 1.1.0" className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none" />
+            <label className="block text-[11px] font-bold uppercase tracking-widest text-fg-subtle mb-1.5">Version</label>
+            <input value={version} onChange={e => setVersion(e.target.value)} placeholder="e.g. 1.1.0" className="w-full px-3 py-2.5 rounded-lg border border-line text-sm outline-none" />
           </div>
           <div>
-            <label className="block text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">Download URL</label>
-            <input value={downloadUrl} onChange={e => setDownloadUrl(e.target.value)} placeholder="https://.../vink-terminal-1.1.0.apk" className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none" />
+            <label className="block text-[11px] font-bold uppercase tracking-widest text-fg-subtle mb-1.5">Download URL</label>
+            <input value={downloadUrl} onChange={e => setDownloadUrl(e.target.value)} placeholder="https://.../vink-terminal-1.1.0.apk" className="w-full px-3 py-2.5 rounded-lg border border-line text-sm outline-none" />
           </div>
           <div>
-            <label className="block text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">Release notes (optional)</label>
-            <textarea value={releaseNotes} onChange={e => setReleaseNotes(e.target.value)} rows={2} className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm outline-none resize-none" />
+            <label className="block text-[11px] font-bold uppercase tracking-widest text-fg-subtle mb-1.5">Release notes (optional)</label>
+            <textarea value={releaseNotes} onChange={e => setReleaseNotes(e.target.value)} rows={2} className="w-full px-3 py-2.5 rounded-lg border border-line text-sm outline-none resize-none" />
           </div>
-          <label className="flex items-center gap-2 text-[12.5px] text-gray-600">
+          <label className="flex items-center gap-2 text-[12.5px] text-fg-muted">
             <input type="checkbox" checked={mandatory} onChange={e => setMandatory(e.target.checked)} />
             Mandatory update (hides the "Later" option on devices)
           </label>
         </div>
         {error && <p className="text-[12px] text-red-600 mt-3">{error}</p>}
         <div className="flex gap-2.5 mt-5">
-          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-[13px] font-bold">Cancel</button>
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-line text-[13px] font-bold">Cancel</button>
           <button onClick={handlePublish} disabled={saving || !version.trim() || !downloadUrl.trim()} className="flex-1 py-2.5 rounded-xl text-white text-[13px] font-bold disabled:opacity-50" style={{ background: "#2E0B10" }}>{saving ? "Publishing..." : "Publish"}</button>
         </div>
       </div>

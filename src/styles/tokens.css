@@ -20,6 +20,7 @@
   --vk-brand: #8b0000;            /* crimson: primary actions, links */
   --vk-brand-hover: #720000;
   --vk-brand-fg: #ffffff;
+  --vk-crimson-text: #6e0a12;     /* crimson used as TEXT or an icon colour on a surface: 9.6:1 on white */
   --vk-gold: #c9a84c;             /* gold: highlights, focus accents */
   --vk-gold-text: #8a6a12;        /* gold that is readable as text on light surfaces */
   --vk-gold-fg: #14161d;
@@ -60,6 +61,7 @@
   --vk-brand: #c9a84c;            /* in the dark, gold carries the primary action */
   --vk-brand-hover: #d8b95e;
   --vk-brand-fg: #0c0e14;
+  --vk-crimson-text: #e8868d;     /* the same, lightened for dark surfaces: 6.9:1 on the dark surface */
   --vk-gold: #c9a84c;
   --vk-gold-text: #c9a84c;
   --vk-gold-fg: #0c0e14;
@@ -120,6 +122,7 @@
   --color-brand: var(--vk-brand);
   --color-brand-hover: var(--vk-brand-hover);
   --color-brand-fg: var(--vk-brand-fg);
+  --color-crimson-text: var(--vk-crimson-text);
   --color-gold: var(--vk-gold);
   --color-gold-text: var(--vk-gold-text);
   --color-gold-fg: var(--vk-gold-fg);
@@ -162,3 +165,29 @@
 /* A link that lets keyboard users jump past the header. */
 .skip-link { position: fixed; left: 12px; top: -48px; z-index: 300; background: var(--vk-brand); color: var(--vk-brand-fg); padding: 10px 16px; border-radius: 10px; font-weight: 600; transition: top .15s; }
 .skip-link:focus { top: 12px; }
+
+/*
+ * Older pages colour text and icons with the brand crimson written straight into inline styles. On a dark surface that crimson is nearly invisible,
+ * so in dark mode any inline TEXT colour that is one of the brand crimsons is shown in the lightened one. Fills and borders are not touched
+ * (the selectors match "color:" at the start of the style or after a semicolon, never "background-color:").
+ */
+.dark [data-theme-aware] :is([style^="color: rgb(92, 10, 16)"], [style*="; color: rgb(92, 10, 16)"], [style^="color: rgb(139, 0, 0)"], [style*="; color: rgb(139, 0, 0)"],
+          [style^="color: rgb(155, 28, 28)"], [style*="; color: rgb(155, 28, 28)"], [style^="color: rgb(176, 64, 64)"], [style*="; color: rgb(176, 64, 64)"]) {
+  color: var(--vk-crimson-text) !important;
+}
+
+/*
+ * Screens that have been built on the tokens (the home page, the dashboards, the admin pages, the management panel) follow the theme and say so with
+ * data-theme-aware. The older full-screen pages (application forms, product pages, legal and help pages) were designed on white, and many paint their own
+ * light heroes and panels. They stay LIGHT whatever the theme, by resolving the tokens to their light values inside them, so they are never half dark.
+ * Converting each of them to follow the theme is a page-by-page job; until a page is converted it simply does not carry data-theme-aware.
+ */
+.dark .fixed.inset-0:not([data-theme-aware]):not([data-state]):not([data-theme]):not([data-overlay-ignore]) {
+  color-scheme: light;
+  --vk-bg: #faf8f4; --vk-surface: #ffffff; --vk-surface-2: #f2efe8; --vk-line: #e4dfd3; --vk-line-strong: #cfc8b8;
+  --vk-fg: #14161d; --vk-fg-muted: #5b6070; --vk-fg-subtle: #6b7080;
+  --vk-brand: #8b0000; --vk-brand-hover: #720000; --vk-brand-fg: #ffffff; --vk-gold-text: #8a6a12; --vk-gold-fg: #14161d; --vk-crimson-text: #6e0a12;
+  --vk-ok: #17784a; --vk-ok-bg: #e6f4ec; --vk-warn: #8f5b00; --vk-warn-bg: #fbf1dc; --vk-bad: #b3202f; --vk-bad-bg: #fbe8ea; --vk-info: #2457c5; --vk-info-bg: #e8effc;
+  --vk-focus: #1d4ed8; --vk-shadow-1: 0 1px 2px rgba(20, 22, 29, 0.06), 0 1px 1px rgba(20, 22, 29, 0.04); --vk-shadow-2: 0 4px 12px -2px rgba(20, 22, 29, 0.10), 0 2px 4px -2px rgba(20, 22, 29, 0.06);
+  background-color: var(--vk-bg); color: var(--vk-fg);
+}

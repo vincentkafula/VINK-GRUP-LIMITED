@@ -46,7 +46,7 @@ function Card({ card }: { card: { name: string; price: string; featured?: boolea
           onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.opacity = "0.88"; }}
           onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.opacity = "1"; }}>Apply Now</button>
         <button style={{ flex: 1, background: "transparent", color: card.featured ? "#fff" : BRAND, border: `1.5px solid ${card.featured ? "#fff" : BRAND}`, borderRadius: 20, padding: "10px 0", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = card.featured ? "rgba(255,255,255,.1)" : "#F2EFE8"; }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = card.featured ? "rgba(255,255,255,.1)" : "var(--vk-surface-2)"; }}
           onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}>Tell me more</button>
       </div>
     </div>
@@ -56,10 +56,10 @@ function Card({ card }: { card: { name: string; price: string; featured?: boolea
 export function InvestViewer({ isOpen, onClose }: Props) {
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto" style={{ background: "#fff", fontFamily: "'Segoe UI', Arial, sans-serif", fontSize: 15 }}>
+    <div className="fixed inset-0 z-50 overflow-y-auto" style={{ background: "var(--vk-surface)", fontFamily: "'Segoe UI', Arial, sans-serif", fontSize: 15 }}>
 
       {/* Top nav */}
-      <nav style={{ background: "#fff", borderBottom: "1px solid #e8e8f0", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 32px", height: 56, position: "sticky", top: 0, zIndex: 100 }}>
+      <nav style={{ background: "var(--vk-surface)", borderBottom: "1px solid #e8e8f0", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 32px", height: 56, position: "sticky", top: 0, zIndex: 100 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
           <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" style={{ height: 38, width: "auto", objectFit: "contain" }} />
           <ul style={{ display: "flex", gap: 4, listStyle: "none", margin: 0, padding: 0 }} className="hidden md:flex">
@@ -105,7 +105,7 @@ export function InvestViewer({ isOpen, onClose }: Props) {
 
       {/* T&C Banner */}
       <div style={{ textAlign: "center", background: "#f7f7f9", padding: "28px 24px", margin: "16px 0 0" }}>
-        <h3 style={{ fontSize: 17, fontWeight: 700, color: BRAND, marginBottom: 6 }}>Terms and Conditions Apply</h3>
+        <h3 style={{ fontSize: 17, fontWeight: 700, color: "var(--vk-crimson-text)", marginBottom: 6 }}>Terms and Conditions Apply</h3>
         <p style={{ fontSize: 13, color: "#5a5a72", marginBottom: 4 }}>*These four Business Platinum Checkings meet different needs — choose what&apos;s right for you.</p>
         <p style={{ fontSize: 13, color: "#5a5a72", marginBottom: 4 }}>Note: Shari&apos;ah-compliant investment options are available on request.</p>
         <button style={{ marginTop: 14, background: BRAND, color: "#fff", border: "none", borderRadius: 20, padding: "11px 28px", fontSize: 14, fontWeight: 600, cursor: "pointer" }}

@@ -4,7 +4,7 @@ import { Footer } from "../Footer";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 const P = "#5C0A10";
-const GOLD = "#F5A623";
+const GOLD = "#C9A84C";
 
 const STEPS = [
   { n: "1", title: "Open your account", desc: "Apply online in minutes — a personal, business, or commuter card account. FICA verification happens digitally, no branch visit required." },
@@ -23,10 +23,10 @@ const TOPICS = [
 export function BankingGuideViewer({ isOpen, onClose }: Props) {
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-white">
-      <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm">
+    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-surface">
+      <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-surface border-b border-line shadow-sm">
         <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
-        <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500"><X className="w-5 h-5" /></button>
+        <button onClick={onClose} className="p-2 rounded-full hover:bg-surface-2 transition-colors text-fg-muted"><X className="w-5 h-5" /></button>
       </div>
 
       <div className="py-16 px-6 text-white" style={{ background: `linear-gradient(135deg,#0F172A,${P})` }}>
@@ -42,21 +42,21 @@ export function BankingGuideViewer({ isOpen, onClose }: Props) {
 
       <div className="max-w-4xl mx-auto w-full px-5 py-10 space-y-10">
 
-        <section className="rounded-2xl p-5" style={{ background: "#FEF3C7", border: "1px solid #FDE68A" }}>
+        <section className="rounded-2xl p-5" style={{ background: "var(--vk-warn-bg)", border: "1px solid #FDE68A" }}>
           <p className="text-sm font-semibold" style={{ color: "#92400E" }}>
             VINK is not yet in full operation. This guide describes how VINK will work once we launch in June 2027 — you're welcome to read through it now, but accounts and cards aren't active yet.
           </p>
         </section>
 
         <section>
-          <h2 className="text-2xl font-black mb-6" style={{ color: P }}>Getting Started, Step by Step</h2>
+          <h2 className="text-2xl font-black mb-6" style={{ color: "var(--vk-crimson-text)" }}>Getting Started, Step by Step</h2>
           <div className="space-y-4">
             {STEPS.map((s, i) => (
-              <div key={i} className="flex items-start gap-4 p-5 bg-white rounded-xl border border-gray-200">
+              <div key={i} className="flex items-start gap-4 p-5 bg-surface rounded-xl border border-line">
                 <span className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-black text-white shrink-0" style={{ background: P }}>{s.n}</span>
                 <div>
-                  <p className="font-bold text-gray-900 mb-1">{s.title}</p>
-                  <p className="text-gray-600 text-sm leading-relaxed">{s.desc}</p>
+                  <p className="font-bold text-fg mb-1">{s.title}</p>
+                  <p className="text-fg-muted text-sm leading-relaxed">{s.desc}</p>
                 </div>
               </div>
             ))}
@@ -64,21 +64,21 @@ export function BankingGuideViewer({ isOpen, onClose }: Props) {
         </section>
 
         <section>
-          <h2 className="text-2xl font-black mb-6" style={{ color: P }}>Popular Topics</h2>
+          <h2 className="text-2xl font-black mb-6" style={{ color: "var(--vk-crimson-text)" }}>Popular Topics</h2>
           <div className="grid sm:grid-cols-2 gap-4">
             {TOPICS.map((t, i) => (
-              <div key={i} className="p-5 bg-gray-50 rounded-xl border border-gray-200">
+              <div key={i} className="p-5 bg-surface-2 rounded-xl border border-line">
                 <span className="text-2xl mb-2 block">{t.icon}</span>
-                <p className="font-bold text-gray-900 mb-1">{t.title}</p>
-                <p className="text-gray-600 text-sm leading-relaxed">{t.desc}</p>
+                <p className="font-bold text-fg mb-1">{t.title}</p>
+                <p className="text-fg-muted text-sm leading-relaxed">{t.desc}</p>
               </div>
             ))}
           </div>
         </section>
 
-        <section className="bg-gray-50 rounded-2xl p-6 border border-gray-200">
-          <h2 className="text-lg font-black mb-3" style={{ color: P }}>Still Have Questions?</h2>
-          <p className="text-gray-600 text-sm leading-relaxed">
+        <section className="bg-surface-2 rounded-2xl p-6 border border-line">
+          <h2 className="text-lg font-black mb-3" style={{ color: "var(--vk-crimson-text)" }}>Still Have Questions?</h2>
+          <p className="text-fg-muted text-sm leading-relaxed">
             Our support team is happy to help, even before launch. Reach out through Contact Us and we'll get back to you within one business day.
           </p>
         </section>

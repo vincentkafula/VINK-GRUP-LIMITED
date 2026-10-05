@@ -15,19 +15,19 @@ interface Props {
 
 // ─── Tile definitions — icon, label, colour, target screen ───────────────────
 const TILES = [
-  { id: "login",        label: "Login",         bg: "#F2EFE8", fg: "#FF9900", icon: LoginIcon },
+  { id: "login",        label: "Login",         bg: "#F2EFE8", fg: "#C9A84C", icon: LoginIcon },
   { id: "message",      label: "Message",       bg: "#D1FAE5", fg: "#059669", icon: MessageIcon },
   { id: "contactus",    label: "Contact Us",    bg: "#FEF3C7", fg: "#D97706", icon: PhoneIcon },
   { id: "buy",          label: "Buy",           bg: "#DBEAFE", fg: "#2563EB", icon: CartIcon },
   { id: "connect",      label: "Connect",       bg: "#D1FAE5", fg: "#059669", icon: ConnectIcon },
   { id: "payments",     label: "Payments",      bg: "#FEF3C7", fg: "#D97706", icon: PayIcon },
-  { id: "transfer",     label: "Transfer",      bg: "#F2EFE8", fg: "#FF9900", icon: TransferIcon },
+  { id: "transfer",     label: "Transfer",      bg: "#F2EFE8", fg: "#C9A84C", icon: TransferIcon },
   { id: "cards",        label: "Cards",         bg: "#DBEAFE", fg: "#2563EB", icon: CardIcon },
   { id: "device",       label: "Device",        bg: "#D1FAE5", fg: "#059669", icon: DeviceIcon },
   { id: "guardme",      label: "Guard Me",      bg: "#FEE2E2", fg: "#DC2626", icon: ShieldIcon },
   { id: "insurance",    label: "Insurance",     bg: "#DBEAFE", fg: "#2563EB", icon: InsureIcon },
   { id: "vinktv",        label: "VINK TV",        bg: "#D1FAE5", fg: "#059669", icon: TVIcon },
-  { id: "cardlesscash", label: "Cardless Cash", bg: "#F2EFE8", fg: "#FF9900", icon: CashIcon },
+  { id: "cardlesscash", label: "Cardless Cash", bg: "#F2EFE8", fg: "#C9A84C", icon: CashIcon },
   { id: "elections",    label: "Elections",     bg: "#FEF3C7", fg: "#D97706", icon: ElectionIcon },
   { id: "scantopay",    label: "Scan to Pay",   bg: "#FEE2E2", fg: "#DC2626", icon: ScanIcon },
   { id: "restaurant",   label: "Restaurant",    bg: "#D1FAE5", fg: "#059669", icon: RestIcon },
@@ -139,7 +139,7 @@ export function VinkMobileApp({ isOpen, onClose, onNavigate }: Props) {
             {/* Featured banner */}
             <div
               className="rounded-2xl p-5 mb-5 relative overflow-hidden cursor-pointer"
-              style={{ background: "linear-gradient(135deg,#5C0A10 0%,#FF9900 50%,#C9A84C 100%)", minHeight: 120 }}
+              style={{ background: "linear-gradient(135deg,#5C0A10 0%,#C9A84C 50%,#C9A84C 100%)", minHeight: 120 }}
               onClick={() => onNavigate("payments")}
             >
               <div className="absolute -top-6 -right-6 w-32 h-32 rounded-full opacity-20 bg-white pointer-events-none" />

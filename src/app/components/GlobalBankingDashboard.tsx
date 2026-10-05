@@ -117,20 +117,20 @@ const NAV = [
 
 function KpiCard({ label, value, sub, icon, color }: { label: string; value: string; sub?: string; icon: React.ReactNode; color: string }) {
   return (
-    <div className="rounded-2xl p-5 flex items-center gap-4 bg-white border border-gray-100 hover:shadow-md transition-shadow">
+    <div className="rounded-2xl p-5 flex items-center gap-4 bg-surface border border-line hover:shadow-md transition-shadow">
       <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 text-white shadow-sm"
         style={{ background: color }}>{icon}</div>
       <div className="min-w-0">
-        <p className="text-xs text-gray-500 font-medium truncate">{label}</p>
-        <p className="text-xl font-black text-gray-900 leading-tight">{value}</p>
-        {sub && <p className="text-[10px] text-gray-400 mt-0.5">{sub}</p>}
+        <p className="text-xs text-fg-muted font-medium truncate">{label}</p>
+        <p className="text-xl font-black text-fg leading-tight">{value}</p>
+        {sub && <p className="text-[10px] text-fg-subtle mt-0.5">{sub}</p>}
       </div>
     </div>
   );
 }
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
-  return <h2 className="text-base font-black text-gray-800 mb-4 flex items-center gap-2">{children}</h2>;
+  return <h2 className="text-base font-black text-fg mb-4 flex items-center gap-2">{children}</h2>;
 }
 
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
@@ -242,25 +242,25 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
   }, 0);
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-gray-50">
+    <div className="fixed inset-0 z-50 flex flex-col bg-surface-2">
 
       {/* ── Top bar ── */}
-      <div className="flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm flex-shrink-0 z-10">
+      <div className="flex items-center justify-between px-5 py-3 bg-surface border-b border-line shadow-sm flex-shrink-0 z-10">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white" style={{ background: P }}>
             <Globe className="w-4 h-4" />
           </div>
           <div>
-            <p className="text-sm font-black text-gray-900 leading-none">Global Unified Banking & Card System</p>
-            <p className="text-[10px] text-gray-400 mt-0.5">Ref: {String(primaryAccount.referenceNumber ?? ACCOUNT.referenceNumber)} · {String(primaryAccount.tier ?? ACCOUNT.tier).toUpperCase()} · 5 Nostro Accounts</p>
+            <p className="text-sm font-black text-fg leading-none">Global Unified Banking & Card System</p>
+            <p className="text-[10px] text-fg-subtle mt-0.5">Ref: {String(primaryAccount.referenceNumber ?? ACCOUNT.referenceNumber)} · {String(primaryAccount.tier ?? ACCOUNT.tier).toUpperCase()} · 5 Nostro Accounts</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <div className={`hidden md:flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full ${liveConnected ? "text-green-600 bg-green-50" : liveData.loading ? "text-amber-600 bg-amber-50" : "text-gray-500 bg-gray-50"}`}>
+          <div className={`hidden md:flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full ${liveConnected ? "text-green-600 bg-green-50" : liveData.loading ? "text-amber-600 bg-amber-50" : "text-fg-muted bg-surface-2"}`}>
             <span className={`w-1.5 h-1.5 rounded-full ${liveConnected ? "bg-green-500 animate-pulse" : liveData.loading ? "bg-amber-500 animate-pulse" : "bg-gray-400"}`} />
             {liveConnected ? "Supabase Live" : liveData.loading ? "Connecting…" : "Demo mode"}
           </div>
-          <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 text-gray-500 transition-colors">
+          <button onClick={onClose} className="p-2 rounded-full hover:bg-surface-2 text-fg-muted transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -269,7 +269,7 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
       <div className="flex flex-1 min-h-0">
 
         {/* ── Sidebar ── */}
-        <aside className="w-52 flex-shrink-0 bg-white border-r border-gray-100 flex flex-col py-4 px-2 overflow-y-auto">
+        <aside className="w-52 flex-shrink-0 bg-surface border-r border-line flex flex-col py-4 px-2 overflow-y-auto">
           {NAV.map(item => (
             <button key={item.id} onClick={() => setScreen(item.id as Screen)}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left text-sm font-medium mb-0.5"
@@ -278,11 +278,11 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
               <span>{item.label}</span>
             </button>
           ))}
-          <div className="mt-auto px-3 py-3 rounded-xl border border-gray-100 mx-1 mb-1 space-y-1">
-            <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide">Compliance</p>
+          <div className="mt-auto px-3 py-3 rounded-xl border border-line mx-1 mb-1 space-y-1">
+            <p className="text-[10px] text-fg-subtle font-semibold uppercase tracking-wide">Compliance</p>
             {[{ label: "KYC", status: "Approved", color: "#10B981" }, { label: "AML", status: "Clear", color: "#10B981" }, { label: "POPIA", status: "Consented", color: "#10B981" }].map(c => (
               <div key={c.label} className="flex justify-between items-center">
-                <span className="text-[11px] text-gray-600">{c.label}</span>
+                <span className="text-[11px] text-fg-muted">{c.label}</span>
                 <span className="text-[10px] font-bold" style={{ color: c.color }}>✓ {c.status}</span>
               </div>
             ))}
@@ -350,15 +350,15 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
                   return (<>
                     <KpiCard label="24h Transactions" value={kpi ? String(kpi.txnCount24h ?? KPI.txnCount24h) : String(KPI.txnCount24h)} sub={liveConnected ? "Live — Supabase" : "Demo data"} icon={<Activity className="w-5 h-5" />} color="#5C0A10" />
                     <KpiCard label="Domestic Routing" value={`${kpi ? (kpi.domesticRoutingPct ?? KPI.domesticPct) : KPI.domesticPct}%`} sub="No cross-border fees" icon={<Globe className="w-5 h-5" />} color="#10B981" />
-                    <KpiCard label="Interchange Earned" value={`R${fmtM(kpi ? (kpi.interchangeEarnedToday ?? KPI.interchangeToday) : KPI.interchangeToday)}`} sub="Today's card income" icon={<TrendingUp className="w-5 h-5" />} color="#F5A623" />
+                    <KpiCard label="Interchange Earned" value={`R${fmtM(kpi ? (kpi.interchangeEarnedToday ?? KPI.interchangeToday) : KPI.interchangeToday)}`} sub="Today's card income" icon={<TrendingUp className="w-5 h-5" />} color="#C9A84C" />
                     <KpiCard label="Active Cards" value={String(kpi ? (kpi.activeCards ?? KPI.activeCards) : KPI.activeCards)} sub="Visa + Mastercard" icon={<DollarSign className="w-5 h-5" />} color="#3B82F6" />
                   </>);
                 })()}
               </div>
 
               {/* Architecture flow */}
-              <div className="bg-white rounded-2xl border border-gray-100 p-5">
-                <SectionTitle><Layers className="w-4 h-4" style={{ color: P }} />System Architecture</SectionTitle>
+              <div className="bg-surface rounded-2xl border border-line p-5">
+                <SectionTitle><Layers className="w-4 h-4" style={{ color: "var(--vk-crimson-text)" }} />System Architecture</SectionTitle>
                 <div className="overflow-x-auto">
                   <div className="flex flex-col items-center gap-2 min-w-[600px]">
                     {/* Layer 1 */}
@@ -384,7 +384,7 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
                       ].map(e => (
                         <div key={e.label} className="rounded-xl p-3 text-center" style={{ background: e.color + "15", border: `1px solid ${e.color}30` }}>
                           <p className="text-xs font-bold" style={{ color: e.color }}>{e.label}</p>
-                          <p className="text-[10px] text-gray-500 mt-0.5">{e.sub}</p>
+                          <p className="text-[10px] text-fg-muted mt-0.5">{e.sub}</p>
                         </div>
                       ))}
                     </div>
@@ -401,7 +401,7 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
                     {/* Layer 5 */}
                     <div className="grid grid-cols-4 gap-2 w-full">
                       {["🏦 Bank Deposit\nEFT/RTGS", "📱 Mobile Money\nMTN/Airtel/M-Pesa", "💵 Cash Agent\nRetail network", "🌐 Online/App\nQR/eWallet"].map((c, i) => (
-                        <div key={i} className="rounded-xl p-2.5 text-center text-xs bg-gray-50 border border-gray-200 whitespace-pre-line font-medium text-gray-700">{c}</div>
+                        <div key={i} className="rounded-xl p-2.5 text-center text-xs bg-surface-2 border border-line whitespace-pre-line font-medium text-fg">{c}</div>
                       ))}
                     </div>
                     <div className="w-px h-4 bg-gray-300" />
@@ -416,9 +416,9 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
               </div>
 
               {/* Recent transactions — live or static */}
-              <div className="bg-white rounded-2xl border border-gray-100 p-5">
+              <div className="bg-surface rounded-2xl border border-line p-5">
                 <div className="flex items-center justify-between mb-4">
-                  <SectionTitle><Activity className="w-4 h-4" style={{ color: P }} />Recent Transactions</SectionTitle>
+                  <SectionTitle><Activity className="w-4 h-4" style={{ color: "var(--vk-crimson-text)" }} />Recent Transactions</SectionTitle>
                   {liveConnected && <span className="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">● Live</span>}
                 </div>
                 <div className="space-y-2">
@@ -435,14 +435,14 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
                           {dir === "credit" ? <ArrowDownLeft className="w-3.5 h-3.5" /> : <ArrowUpRight className="w-3.5 h-3.5" />}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-gray-800 truncate">{desc}</p>
+                          <p className="text-sm font-semibold text-fg truncate">{desc}</p>
                           <div className="flex items-center gap-2 mt-0.5">
-                            {cat && <span className="text-[10px] text-gray-400">{cat}</span>}
+                            {cat && <span className="text-[10px] text-fg-subtle">{cat}</span>}
                             {domestic && <span className="text-[10px] font-bold text-green-600 bg-green-50 px-1.5 rounded">Domestic ✓</span>}
                           </div>
                         </div>
                         <div className="text-right flex-shrink-0">
-                          <p className={`text-sm font-black ${dir === "credit" ? "text-green-600" : "text-gray-800"}`}>
+                          <p className={`text-sm font-black ${dir === "credit" ? "text-green-600" : "text-fg"}`}>
                             {dir === "credit" ? "+" : "-"}{billed}
                           </p>
                         </div>
@@ -457,7 +457,7 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
           {/* ══ NOSTRO ACCOUNTS ══════════════════════════════════════════ */}
           {screen === "nostro" && (
             <div className="space-y-5 max-w-5xl">
-              <SectionTitle><Globe className="w-4 h-4" style={{ color: P }} />Nostro (Mirror) Accounts — 5 Countries</SectionTitle>
+              <SectionTitle><Globe className="w-4 h-4" style={{ color: "var(--vk-crimson-text)" }} />Nostro (Mirror) Accounts — 5 Countries</SectionTitle>
               <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-sm text-emerald-800 leading-relaxed">
                 <strong>How it works:</strong> VINK holds a registered bank account in each country. When a customer's card is used at a merchant, the transaction is routed domestically against the local nostro account — eliminating international cross-border fees entirely. The customer's master balance is debited simultaneously via the internal FX engine.
               </div>
@@ -465,7 +465,7 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
                 {NOSTRO.map(n => {
                   const reservePct = Math.round((n.reserve / n.balance) * 100);
                   return (
-                    <div key={n.id} className="bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-md transition-shadow">
+                    <div key={n.id} className="bg-surface rounded-2xl border border-line p-5 hover:shadow-md transition-shadow">
                       <div className="flex items-start gap-4">
                         <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"
                           style={{ background: COLORS[n.currency as keyof typeof COLORS]?.light }}>
@@ -474,19 +474,19 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-3 flex-wrap">
                             <div>
-                              <p className="font-black text-gray-900">{n.bank}</p>
-                              <p className="text-xs text-gray-500 mt-0.5">SWIFT: {n.swift} · {n.centralBank}</p>
+                              <p className="font-black text-fg">{n.bank}</p>
+                              <p className="text-xs text-fg-muted mt-0.5">SWIFT: {n.swift} · {n.centralBank}</p>
                             </div>
                             <div className="text-right">
                               <p className="text-xl font-black" style={{ color: COLORS[n.currency as keyof typeof COLORS]?.bg }}>
                                 {symbols[n.currency]}{fmtM(n.balance)}
                               </p>
-                              <p className="text-[10px] text-gray-400">Balance in {n.currency}</p>
+                              <p className="text-[10px] text-fg-subtle">Balance in {n.currency}</p>
                             </div>
                           </div>
                           <div className="mt-3 grid grid-cols-2 md:grid-cols-3 gap-3">
                             <div>
-                              <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">Payment Rails</p>
+                              <p className="text-[10px] text-fg-subtle font-medium uppercase tracking-wide">Payment Rails</p>
                               <div className="flex flex-wrap gap-1 mt-1">
                                 {n.rails.map(r => (
                                   <span key={r} className="text-[9px] font-bold px-1.5 py-0.5 rounded"
@@ -497,14 +497,14 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
                               </div>
                             </div>
                             <div>
-                              <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">Reserve Required</p>
-                              <p className="text-sm font-bold text-gray-800 mt-0.5">{symbols[n.currency]}{fmtM(n.reserve)}</p>
-                              <div className="mt-1 h-1.5 rounded-full bg-gray-100 overflow-hidden">
+                              <p className="text-[10px] text-fg-subtle font-medium uppercase tracking-wide">Reserve Required</p>
+                              <p className="text-sm font-bold text-fg mt-0.5">{symbols[n.currency]}{fmtM(n.reserve)}</p>
+                              <div className="mt-1 h-1.5 rounded-full bg-surface-2 overflow-hidden">
                                 <div className="h-full rounded-full" style={{ width: `${reservePct}%`, background: COLORS[n.currency as keyof typeof COLORS]?.bg }} />
                               </div>
                             </div>
                             <div>
-                              <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">Status</p>
+                              <p className="text-[10px] text-fg-subtle font-medium uppercase tracking-wide">Status</p>
                               <div className="flex items-center gap-1.5 mt-1">
                                 <span className="w-2 h-2 rounded-full bg-green-500" />
                                 <span className="text-sm font-semibold text-green-700">Active · Reconciled</span>
@@ -517,8 +517,8 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
                   );
                 })}
               </div>
-              <div className="bg-white rounded-2xl border border-gray-100 p-5">
-                <p className="text-sm font-black text-gray-800 mb-3">Total Nostro Position (USD equivalent)</p>
+              <div className="bg-surface rounded-2xl border border-line p-5">
+                <p className="text-sm font-black text-fg mb-3">Total Nostro Position (USD equivalent)</p>
                 <div className="grid grid-cols-5 gap-3">
                   {NOSTRO.map(n => {
                     const rates: Record<string,number> = { ZAR: 1/18.35, ZMW: 1/27.20, EUR: 1.086, USD: 1, CNY: 1/7.248 };
@@ -526,7 +526,7 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
                     return (
                       <div key={n.id} className="rounded-xl p-3 text-center" style={{ background: COLORS[n.currency as keyof typeof COLORS]?.light }}>
                         <p className="text-xl">{n.flag}</p>
-                        <p className="text-xs font-bold text-gray-700 mt-1">{n.currency}</p>
+                        <p className="text-xs font-bold text-fg mt-1">{n.currency}</p>
                         <p className="text-sm font-black mt-0.5" style={{ color: COLORS[n.currency as keyof typeof COLORS]?.bg }}>
                           ${fmtM(usd)}
                         </p>
@@ -541,48 +541,48 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
           {/* ══ FX EXCHANGE ══════════════════════════════════════════════ */}
           {screen === "fx" && (
             <div className="space-y-5 max-w-3xl">
-              <SectionTitle><RefreshCw className="w-4 h-4" style={{ color: P }} />FX Conversion Engine</SectionTitle>
-              <div className="bg-white rounded-2xl border border-gray-100 p-6 space-y-5">
+              <SectionTitle><RefreshCw className="w-4 h-4" style={{ color: "var(--vk-crimson-text)" }} />FX Conversion Engine</SectionTitle>
+              <div className="bg-surface rounded-2xl border border-line p-6 space-y-5">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">From currency</label>
-                    <select className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-emerald-400" value={fxFrom} onChange={e => setFxFrom(e.target.value)}>
+                    <label className="text-xs font-bold text-fg-muted uppercase tracking-wide block mb-1.5">From currency</label>
+                    <select className="w-full border border-line rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-emerald-400" value={fxFrom} onChange={e => setFxFrom(e.target.value)}>
                       {["ZAR","ZMW","EUR","USD","CNY"].map(c => <option key={c}>{c} — {COLORS[c as keyof typeof COLORS]?.label}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">To currency</label>
-                    <select className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-emerald-400" value={fxTo} onChange={e => setFxTo(e.target.value)}>
+                    <label className="text-xs font-bold text-fg-muted uppercase tracking-wide block mb-1.5">To currency</label>
+                    <select className="w-full border border-line rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-emerald-400" value={fxTo} onChange={e => setFxTo(e.target.value)}>
                       {["ZAR","ZMW","EUR","USD","CNY"].filter(c => c !== fxFrom).map(c => <option key={c}>{c} — {COLORS[c as keyof typeof COLORS]?.label}</option>)}
                     </select>
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Amount ({fxFrom})</label>
-                  <input type="number" className="w-full border border-gray-200 rounded-xl px-4 py-3 text-2xl font-black outline-none focus:border-emerald-400" value={fxAmt} onChange={e => setFxAmt(e.target.value)} />
+                  <label className="text-xs font-bold text-fg-muted uppercase tracking-wide block mb-1.5">Amount ({fxFrom})</label>
+                  <input type="number" className="w-full border border-line rounded-xl px-4 py-3 text-2xl font-black outline-none focus:border-emerald-400" value={fxAmt} onChange={e => setFxAmt(e.target.value)} />
                 </div>
                 {fxRate && (
-                  <div className="rounded-xl p-4" style={{ background: "#F2EFE8" }}>
+                  <div className="rounded-xl p-4" style={{ background: "var(--vk-surface-2)" }}>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
                       <div>
-                        <p className="text-[10px] text-gray-500 uppercase tracking-wide">You get</p>
-                        <p className="text-2xl font-black mt-0.5" style={{ color: P }}>{symbols[fxTo]}{Number(fxResult).toLocaleString("en-ZA", { maximumFractionDigits: 2 })}</p>
-                        <p className="text-xs text-gray-500">{fxTo}</p>
+                        <p className="text-[10px] text-fg-muted uppercase tracking-wide">You get</p>
+                        <p className="text-2xl font-black mt-0.5" style={{ color: "var(--vk-crimson-text)" }}>{symbols[fxTo]}{Number(fxResult).toLocaleString("en-ZA", { maximumFractionDigits: 2 })}</p>
+                        <p className="text-xs text-fg-muted">{fxTo}</p>
                       </div>
                       <div>
-                        <p className="text-[10px] text-gray-500 uppercase tracking-wide">Interbank rate</p>
-                        <p className="text-lg font-black text-gray-900 mt-0.5">{fxRate.rate}</p>
+                        <p className="text-[10px] text-fg-muted uppercase tracking-wide">Interbank rate</p>
+                        <p className="text-lg font-black text-fg mt-0.5">{fxRate.rate}</p>
                       </div>
                       <div>
-                        <p className="text-[10px] text-gray-500 uppercase tracking-wide">Your rate</p>
-                        <p className="text-lg font-black text-gray-900 mt-0.5">{fxRate.customer}</p>
+                        <p className="text-[10px] text-fg-muted uppercase tracking-wide">Your rate</p>
+                        <p className="text-lg font-black text-fg mt-0.5">{fxRate.customer}</p>
                       </div>
                       <div>
-                        <p className="text-[10px] text-gray-500 uppercase tracking-wide">Spread</p>
-                        <p className="text-lg font-black mt-0.5" style={{ color: "#F5A623" }}>{fxRate.spread}%</p>
+                        <p className="text-[10px] text-fg-muted uppercase tracking-wide">Spread</p>
+                        <p className="text-lg font-black mt-0.5" style={{ color: "#C9A84C" }}>{fxRate.spread}%</p>
                       </div>
                     </div>
-                    <p className="text-[10px] text-gray-400 text-center mt-3">Rate valid for 30 seconds · Settled against your local nostro account — no international wire required</p>
+                    <p className="text-[10px] text-fg-subtle text-center mt-3">Rate valid for 30 seconds · Settled against your local nostro account — no international wire required</p>
                   </div>
                 )}
                 <div className="flex gap-3">
@@ -600,23 +600,23 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
               </div>
 
               {/* Live rate table */}
-              <div className="bg-white rounded-2xl border border-gray-100 p-5">
-                <p className="text-sm font-black text-gray-800 mb-4">Live Exchange Rates</p>
+              <div className="bg-surface rounded-2xl border border-line p-5">
+                <p className="text-sm font-black text-fg mb-4">Live Exchange Rates</p>
                 <div className="space-y-2">
                   {FX_RATES.map((r, i) => (
                     <div key={i} className="flex items-center justify-between py-2.5 border-b border-gray-50 last:border-0">
                       <div className="flex items-center gap-3">
-                        <span className="text-sm font-black text-gray-900">{r.from} → {r.to}</span>
-                        <span className="text-[10px] text-gray-400">{COLORS[r.from as keyof typeof COLORS]?.label} → {COLORS[r.to as keyof typeof COLORS]?.label}</span>
+                        <span className="text-sm font-black text-fg">{r.from} → {r.to}</span>
+                        <span className="text-[10px] text-fg-subtle">{COLORS[r.from as keyof typeof COLORS]?.label} → {COLORS[r.to as keyof typeof COLORS]?.label}</span>
                       </div>
                       <div className="flex items-center gap-4 text-right">
                         <div>
-                          <p className="text-[10px] text-gray-400">Interbank</p>
-                          <p className="text-xs font-semibold text-gray-600">{r.rate}</p>
+                          <p className="text-[10px] text-fg-subtle">Interbank</p>
+                          <p className="text-xs font-semibold text-fg-muted">{r.rate}</p>
                         </div>
                         <div>
-                          <p className="text-[10px] text-gray-400">Customer</p>
-                          <p className="text-sm font-black text-gray-900">{r.customer}</p>
+                          <p className="text-[10px] text-fg-subtle">Customer</p>
+                          <p className="text-sm font-black text-fg">{r.customer}</p>
                         </div>
                         <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">{r.spread}% spread</span>
                       </div>
@@ -630,12 +630,12 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
           {/* ══ CARDS ═════════════════════════════════════════════════════ */}
           {screen === "cards" && (
             <div className="space-y-5 max-w-4xl">
-              <SectionTitle><CreditCard className="w-4 h-4" style={{ color: P }} />Card Issuance — All Card Types</SectionTitle>
+              <SectionTitle><CreditCard className="w-4 h-4" style={{ color: "var(--vk-crimson-text)" }} />Card Issuance — All Card Types</SectionTitle>
               <div className="grid sm:grid-cols-2 gap-5">
                 {CARDS.map(card => {
                   const frozen = frozenCards.has(card.id);
                   return (
-                    <div key={card.id} className="rounded-2xl overflow-hidden border border-gray-100 shadow-md">
+                    <div key={card.id} className="rounded-2xl overflow-hidden border border-line shadow-md">
                       {/* Card visual */}
                       <div className="relative p-5 text-white" style={{ background: CARD_GRADIENTS[card.type] }}>
                         {frozen && <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-10"><Lock className="w-10 h-10 text-white/80" /><p className="text-white font-bold ml-2">FROZEN</p></div>}
@@ -659,20 +659,20 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
                         </div>
                       </div>
                       {/* Card controls */}
-                      <div className="bg-white p-4 space-y-3">
+                      <div className="bg-surface p-4 space-y-3">
                         <div className="grid grid-cols-3 gap-2">
                           {[
                             { label: "Daily Limit", value: `${symbols[card.currency]}${fmtM(card.dailyLimit)}` },
                             { label: "Spent Today", value: `${symbols[card.currency]}${fmtM(card.spent)}` },
                             { label: "Available", value: `${symbols[card.currency]}${fmtM(card.dailyLimit - card.spent)}` },
                           ].map(s => (
-                            <div key={s.label} className="text-center p-2 rounded-xl bg-gray-50">
-                              <p className="text-[10px] text-gray-400">{s.label}</p>
-                              <p className="text-sm font-black text-gray-800 mt-0.5">{s.value}</p>
+                            <div key={s.label} className="text-center p-2 rounded-xl bg-surface-2">
+                              <p className="text-[10px] text-fg-subtle">{s.label}</p>
+                              <p className="text-sm font-black text-fg mt-0.5">{s.value}</p>
                             </div>
                           ))}
                         </div>
-                        <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden">
+                        <div className="h-1.5 rounded-full bg-surface-2 overflow-hidden">
                           <div className="h-full rounded-full transition-all" style={{ width: `${Math.round(card.spent / card.dailyLimit * 100)}%`, background: card.spent / card.dailyLimit > 0.8 ? "#EF4444" : P }} />
                         </div>
                         <div className="flex gap-2">
@@ -699,24 +699,24 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
           {/* ══ TRANSACTIONS ══════════════════════════════════════════════ */}
           {screen === "transactions" && (
             <div className="space-y-4 max-w-4xl">
-              <SectionTitle><Activity className="w-4 h-4" style={{ color: P }} />Transaction Ledger</SectionTitle>
-              <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-                <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
-                  <p className="text-xs text-gray-500 font-semibold">Showing {TRANSACTIONS.length} recent transactions across all currencies</p>
+              <SectionTitle><Activity className="w-4 h-4" style={{ color: "var(--vk-crimson-text)" }} />Transaction Ledger</SectionTitle>
+              <div className="bg-surface rounded-2xl border border-line overflow-hidden">
+                <div className="px-5 py-3 border-b border-line flex items-center justify-between">
+                  <p className="text-xs text-fg-muted font-semibold">Showing {TRANSACTIONS.length} recent transactions across all currencies</p>
                   <span className="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full">{TRANSACTIONS.filter(t => t.domestic).length}/{TRANSACTIONS.length} domestic routed</span>
                 </div>
                 <div className="divide-y divide-gray-50">
                   {TRANSACTIONS.map(t => (
-                    <div key={t.id} className="flex items-center gap-4 px-5 py-3 hover:bg-gray-50 transition-colors">
+                    <div key={t.id} className="flex items-center gap-4 px-5 py-3 hover:bg-surface-2 transition-colors">
                       <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-white"
                         style={{ background: t.dir === "credit" ? "#10B981" : P }}>
                         {t.dir === "credit" ? <ArrowDownLeft className="w-4 h-4" /> : <ArrowUpRight className="w-4 h-4" />}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-gray-800 truncate">{t.desc}</p>
+                        <p className="text-sm font-semibold text-fg truncate">{t.desc}</p>
                         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                          <span className="text-[10px] text-gray-400 capitalize">{t.channel.replace("_"," ")}</span>
-                          <span className="text-[10px] text-gray-400">· {t.cat}</span>
+                          <span className="text-[10px] text-fg-subtle capitalize">{t.channel.replace("_"," ")}</span>
+                          <span className="text-[10px] text-fg-subtle">· {t.cat}</span>
                           {t.domestic
                             ? <span className="text-[9px] font-bold text-green-600 bg-green-50 px-1 rounded">🏠 Domestic</span>
                             : <span className="text-[9px] font-bold text-amber-600 bg-amber-50 px-1 rounded">🌐 Cross-border</span>
@@ -724,11 +724,11 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
                         </div>
                       </div>
                       <div className="text-right flex-shrink-0">
-                        <p className={`text-sm font-black ${t.dir === "credit" ? "text-green-600" : "text-gray-900"}`}>
+                        <p className={`text-sm font-black ${t.dir === "credit" ? "text-green-600" : "text-fg"}`}>
                           {t.dir === "credit" ? "+" : "-"}{t.billed}
                         </p>
-                        {t.local !== t.billed && <p className="text-[10px] text-gray-400">{t.local} local</p>}
-                        <p className="text-[10px] text-gray-400">{t.time}</p>
+                        {t.local !== t.billed && <p className="text-[10px] text-fg-subtle">{t.local} local</p>}
+                        <p className="text-[10px] text-fg-subtle">{t.time}</p>
                       </div>
                     </div>
                   ))}
@@ -740,34 +740,34 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
           {/* ══ PAYMENTS ══════════════════════════════════════════════════ */}
           {screen === "payments" && (
             <div className="space-y-5 max-w-4xl">
-              <SectionTitle><Zap className="w-4 h-4" style={{ color: P }} />Deposit & Payment Channels</SectionTitle>
+              <SectionTitle><Zap className="w-4 h-4" style={{ color: "var(--vk-crimson-text)" }} />Deposit & Payment Channels</SectionTitle>
 
               {/* P2P Transfer */}
-              <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4">
-                <p className="text-sm font-black text-gray-800">P2P Transfer — by Reference Number</p>
+              <div className="bg-surface rounded-2xl border border-line p-5 space-y-4">
+                <p className="text-sm font-black text-fg">P2P Transfer — by Reference Number</p>
                 {p2pSent ? (
                   <div className="flex flex-col items-center gap-3 py-4 text-center">
                     <CheckCircle className="w-12 h-12 text-green-500" />
                     <p className="font-bold text-green-700">Transfer Sent Successfully</p>
-                    <button onClick={() => setP2pSent(false)} className="text-sm underline text-gray-500">Send another</button>
+                    <button onClick={() => setP2pSent(false)} className="text-sm underline text-fg-muted">Send another</button>
                   </div>
                 ) : (
                   <>
                     <div className="grid sm:grid-cols-3 gap-3">
                       <div className="sm:col-span-2">
-                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wide block mb-1">Recipient reference number</label>
-                        <input className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="VINK-GBL-2024-XXXXX" value={p2pRef} onChange={e => setP2pRef(e.target.value)} />
+                        <label className="text-[10px] font-bold text-fg-muted uppercase tracking-wide block mb-1">Recipient reference number</label>
+                        <input className="w-full border border-line rounded-xl px-4 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="VINK-GBL-2024-XXXXX" value={p2pRef} onChange={e => setP2pRef(e.target.value)} />
                       </div>
                       <div>
-                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wide block mb-1">Currency</label>
-                        <select className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-emerald-400" value={p2pCur} onChange={e => setP2pCur(e.target.value)}>
+                        <label className="text-[10px] font-bold text-fg-muted uppercase tracking-wide block mb-1">Currency</label>
+                        <select className="w-full border border-line rounded-xl px-4 py-2.5 text-sm outline-none focus:border-emerald-400" value={p2pCur} onChange={e => setP2pCur(e.target.value)}>
                           {["ZAR","ZMW","EUR","USD","CNY"].map(c => <option key={c}>{c}</option>)}
                         </select>
                       </div>
                     </div>
                     <div>
-                      <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wide block mb-1">Amount</label>
-                      <input type="number" className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-xl font-black outline-none focus:border-emerald-400" placeholder="0.00" value={p2pAmt} onChange={e => setP2pAmt(e.target.value)} />
+                      <label className="text-[10px] font-bold text-fg-muted uppercase tracking-wide block mb-1">Amount</label>
+                      <input type="number" className="w-full border border-line rounded-xl px-4 py-2.5 text-xl font-black outline-none focus:border-emerald-400" placeholder="0.00" value={p2pAmt} onChange={e => setP2pAmt(e.target.value)} />
                     </div>
                     <button onClick={doP2P} disabled={!p2pRef || !p2pAmt || p2pLoading}
                       className="w-full py-3 rounded-xl text-sm font-black text-white transition-all hover:opacity-90 shadow-md disabled:opacity-40 flex items-center justify-center gap-2"
@@ -779,8 +779,8 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
               </div>
 
               {/* Deposit channels grid */}
-              <div className="bg-white rounded-2xl border border-gray-100 p-5">
-                <p className="text-sm font-black text-gray-800 mb-4">Deposit Channels — All Currencies</p>
+              <div className="bg-surface rounded-2xl border border-line p-5">
+                <p className="text-sm font-black text-fg mb-4">Deposit Channels — All Currencies</p>
                 <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   {[
                     { label: "Bank Deposit", sub: "EFT · Wire · RTGS · SEPA · ACH", icon: "🏦", countries: "ZA · EU · US · ZM" },
@@ -792,10 +792,10 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
                     { label: "UnionPay", sub: "CNY card-to-card", icon: "🇨🇳", countries: "CN" },
                     { label: "PayShap", sub: "Instant EFT South Africa", icon: "⚡", countries: "ZA" },
                   ].map((ch, i) => (
-                    <div key={i} className="rounded-xl p-4 border border-gray-100 hover:border-emerald-200 hover:bg-emerald-50 transition-all cursor-pointer">
+                    <div key={i} className="rounded-xl p-4 border border-line hover:border-emerald-200 hover:bg-emerald-50 transition-all cursor-pointer">
                       <span className="text-2xl block mb-2">{ch.icon}</span>
-                      <p className="text-sm font-bold text-gray-800">{ch.label}</p>
-                      <p className="text-[10px] text-gray-500 mt-0.5">{ch.sub}</p>
+                      <p className="text-sm font-bold text-fg">{ch.label}</p>
+                      <p className="text-[10px] text-fg-muted mt-0.5">{ch.sub}</p>
                       <p className="text-[9px] text-emerald-600 font-bold mt-1.5">{ch.countries}</p>
                     </div>
                   ))}
@@ -803,8 +803,8 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
               </div>
 
               {/* Touchpoints */}
-              <div className="bg-white rounded-2xl border border-gray-100 p-5">
-                <p className="text-sm font-black text-gray-800 mb-4">Customer & Merchant Touchpoints</p>
+              <div className="bg-surface rounded-2xl border border-line p-5">
+                <p className="text-sm font-black text-fg mb-4">Customer & Merchant Touchpoints</p>
                 <div className="grid sm:grid-cols-4 gap-3">
                   {[
                     { label: "ATM Withdrawal", sub: "Any Visa / MC ATM worldwide", icon: "🏧", note: "R15 fee" },
@@ -812,11 +812,11 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
                     { label: "Online Checkout", sub: "E-commerce globally", icon: "🛍️", note: "Free — BIN routed" },
                     { label: "P2P Transfer", sub: "Ref. no. · Instant", icon: "↔️", note: "Free" },
                   ].map((t, i) => (
-                    <div key={i} className="rounded-xl p-4 text-center" style={{ background: "#F2EFE8" }}>
+                    <div key={i} className="rounded-xl p-4 text-center" style={{ background: "var(--vk-surface-2)" }}>
                       <span className="text-3xl block mb-2">{t.icon}</span>
-                      <p className="text-sm font-bold text-gray-800">{t.label}</p>
-                      <p className="text-[10px] text-gray-500 mt-0.5">{t.sub}</p>
-                      <p className="text-[10px] font-bold mt-1.5" style={{ color: P }}>{t.note}</p>
+                      <p className="text-sm font-bold text-fg">{t.label}</p>
+                      <p className="text-[10px] text-fg-muted mt-0.5">{t.sub}</p>
+                      <p className="text-[10px] font-bold mt-1.5" style={{ color: "var(--vk-crimson-text)" }}>{t.note}</p>
                     </div>
                   ))}
                 </div>
@@ -827,11 +827,11 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
           {/* ══ COMPLIANCE ════════════════════════════════════════════════ */}
           {screen === "compliance" && (
             <div className="space-y-5 max-w-4xl">
-              <SectionTitle><Shield className="w-4 h-4" style={{ color: P }} />Compliance & KYC Engine</SectionTitle>
+              <SectionTitle><Shield className="w-4 h-4" style={{ color: "var(--vk-crimson-text)" }} />Compliance & KYC Engine</SectionTitle>
 
               {/* KYC status */}
-              <div className="bg-white rounded-2xl border border-gray-100 p-5">
-                <p className="text-sm font-black text-gray-800 mb-4">KYC Records ({ACCOUNT.customerName})</p>
+              <div className="bg-surface rounded-2xl border border-line p-5">
+                <p className="text-sm font-black text-fg mb-4">KYC Records ({ACCOUNT.customerName})</p>
                 <div className="grid sm:grid-cols-3 gap-3">
                   {[
                     { label: "Document Verified", value: "SA Passport A12345678", status: "approved", icon: "📄" },
@@ -844,8 +844,8 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
                     <div key={i} className="rounded-xl p-4 flex items-start gap-3 border border-green-100 bg-green-50">
                       <span className="text-xl">{k.icon}</span>
                       <div>
-                        <p className="text-xs font-bold text-gray-700">{k.label}</p>
-                        <p className="text-[11px] text-gray-600 mt-0.5">{k.value}</p>
+                        <p className="text-xs font-bold text-fg">{k.label}</p>
+                        <p className="text-[11px] text-fg-muted mt-0.5">{k.value}</p>
                         <p className="text-[10px] font-bold text-green-600 mt-1">✓ {k.status.charAt(0).toUpperCase() + k.status.slice(1)}</p>
                       </div>
                     </div>
@@ -854,8 +854,8 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
               </div>
 
               {/* Regulatory framework */}
-              <div className="bg-white rounded-2xl border border-gray-100 p-5">
-                <p className="text-sm font-black text-gray-800 mb-4">Regulatory Framework — 5 Jurisdictions</p>
+              <div className="bg-surface rounded-2xl border border-line p-5">
+                <p className="text-sm font-black text-fg mb-4">Regulatory Framework — 5 Jurisdictions</p>
                 <div className="space-y-3">
                   {[
                     { country: "🇿🇦 South Africa", regs: ["SARB Banking/PSP Licence", "FSCA FSP Registration", "POPIA Data Protection", "FICA AML Compliance"], status: "licensed" },
@@ -864,16 +864,16 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
                     { country: "🇺🇸 USA", regs: ["FinCEN MSB Registration", "State Money Transmitter Licences", "BaaS via Column Bank N.A."], status: "licensed" },
                     { country: "🇨🇳 China", regs: ["UnionPay International Partner Agreement", "PBOC via Alipay International"], status: "partner" },
                   ].map((r, i) => (
-                    <div key={i} className="rounded-xl p-4 border border-gray-100">
+                    <div key={i} className="rounded-xl p-4 border border-line">
                       <div className="flex items-center justify-between mb-2">
-                        <p className="text-sm font-black text-gray-800">{r.country}</p>
+                        <p className="text-sm font-black text-fg">{r.country}</p>
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                          style={{ background: r.status === "licensed" ? "#D1FAE5" : "#FEF3C7", color: r.status === "licensed" ? "#059669" : "#D97706" }}>
+                          style={{ background: r.status === "licensed" ? "var(--vk-ok-bg)" : "var(--vk-warn-bg)", color: r.status === "licensed" ? "#059669" : "#D97706" }}>
                           {r.status === "licensed" ? "✓ Licensed" : "⚡ Partner"}
                         </span>
                       </div>
                       <div className="flex flex-wrap gap-1.5">
-                        {r.regs.map(reg => <span key={reg} className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{reg}</span>)}
+                        {r.regs.map(reg => <span key={reg} className="text-[10px] bg-surface-2 text-fg-muted px-2 py-0.5 rounded-full">{reg}</span>)}
                       </div>
                     </div>
                   ))}
@@ -881,8 +881,8 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
               </div>
 
               {/* AML alerts */}
-              <div className="bg-white rounded-2xl border border-gray-100 p-5">
-                <p className="text-sm font-black text-gray-800 mb-2">AML Monitoring</p>
+              <div className="bg-surface rounded-2xl border border-line p-5">
+                <p className="text-sm font-black text-fg mb-2">AML Monitoring</p>
                 <div className="flex items-center gap-2 p-3 rounded-xl bg-green-50 border border-green-200">
                   <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
                   <p className="text-sm font-semibold text-green-700">All accounts clear · No active AML alerts · FATF risk score: Low</p>
@@ -894,21 +894,21 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
           {/* ══ ANALYTICS ════════════════════════════════════════════════ */}
           {screen === "analytics" && (
             <div className="space-y-5 max-w-5xl">
-              <SectionTitle><BarChart3 className="w-4 h-4" style={{ color: P }} />Platform Analytics & Revenue</SectionTitle>
+              <SectionTitle><BarChart3 className="w-4 h-4" style={{ color: "var(--vk-crimson-text)" }} />Platform Analytics & Revenue</SectionTitle>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <KpiCard label="Total Accounts" value={KPI.totalAccounts.toLocaleString()} sub="Across 5 countries" icon={<Users className="w-5 h-5" />} color="#5C0A10" />
                 <KpiCard label="Active Cards" value={KPI.activeCards.toLocaleString()} sub="Visa + Mastercard" icon={<CreditCard className="w-5 h-5" />} color="#3B82F6" />
                 <KpiCard label="FX Conversions" value={KPI.fxConversions24h.toString()} sub="Last 24 hours" icon={<RefreshCw className="w-5 h-5" />} color="#10B981" />
-                <KpiCard label="Domestic Routing" value={`${KPI.domesticPct}%`} sub="No cross-border fees" icon={<Globe className="w-5 h-5" />} color="#F5A623" />
+                <KpiCard label="Domestic Routing" value={`${KPI.domesticPct}%`} sub="No cross-border fees" icon={<Globe className="w-5 h-5" />} color="#C9A84C" />
               </div>
 
               {/* Revenue breakdown */}
-              <div className="bg-white rounded-2xl border border-gray-100 p-5">
-                <p className="text-sm font-black text-gray-800 mb-4">Revenue Streams — Today</p>
+              <div className="bg-surface rounded-2xl border border-line p-5">
+                <p className="text-sm font-black text-fg mb-4">Revenue Streams — Today</p>
                 <div className="space-y-3">
                   {[
-                    { stream: "Interchange Income", amount: KPI.interchangeToday, note: "0.5–1.8% per card transaction", pct: 62, color: P },
+                    { stream: "Interchange Income", amount: KPI.interchangeToday, note: "0.5–1.8% per card transaction", pct: 62, color: "var(--vk-crimson-text)" },
                     { stream: "FX Spread Revenue", amount: KPI.fxRevenueToday, note: "0.5–1% above interbank on conversions", pct: 26, color: "#10B981" },
                     { stream: "Account & Card Fees", amount: 4820, note: "Monthly/annual premium account fees", pct: 10, color: "#3B82F6" },
                     { stream: "ATM Withdrawal Fees", amount: 1240, note: "R15 per ATM withdrawal", pct: 2, color: "#F59E0B" },
@@ -916,13 +916,13 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
                     <div key={i} className="flex items-center gap-4">
                       <div className="flex-1">
                         <div className="flex justify-between mb-1">
-                          <p className="text-sm font-semibold text-gray-800">{r.stream}</p>
+                          <p className="text-sm font-semibold text-fg">{r.stream}</p>
                           <p className="text-sm font-black" style={{ color: r.color }}>R{fmtM(r.amount)}</p>
                         </div>
-                        <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+                        <div className="h-2 rounded-full bg-surface-2 overflow-hidden">
                           <div className="h-full rounded-full transition-all" style={{ width: `${r.pct}%`, background: r.color }} />
                         </div>
-                        <p className="text-[10px] text-gray-400 mt-0.5">{r.note}</p>
+                        <p className="text-[10px] text-fg-subtle mt-0.5">{r.note}</p>
                       </div>
                     </div>
                   ))}
@@ -930,8 +930,8 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
               </div>
 
               {/* Transaction volume per country */}
-              <div className="bg-white rounded-2xl border border-gray-100 p-5">
-                <p className="text-sm font-black text-gray-800 mb-4">Transaction Volume by Country (Last 7 Days)</p>
+              <div className="bg-surface rounded-2xl border border-line p-5">
+                <p className="text-sm font-black text-fg mb-4">Transaction Volume by Country (Last 7 Days)</p>
                 <div className="space-y-3">
                   {[
                     { country: "🇿🇦 South Africa", volume: 28_400_000, txns: 12_847, pct: 58 },
@@ -942,13 +942,13 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
                   ].map((r, i) => (
                     <div key={i}>
                       <div className="flex justify-between mb-1">
-                        <span className="text-sm font-semibold text-gray-800">{r.country}</span>
+                        <span className="text-sm font-semibold text-fg">{r.country}</span>
                         <div className="flex items-center gap-3">
-                          <span className="text-[10px] text-gray-400">{r.txns.toLocaleString()} txns</span>
-                          <span className="text-sm font-black text-gray-900">R{fmtM(r.volume)}</span>
+                          <span className="text-[10px] text-fg-subtle">{r.txns.toLocaleString()} txns</span>
+                          <span className="text-sm font-black text-fg">R{fmtM(r.volume)}</span>
                         </div>
                       </div>
-                      <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+                      <div className="h-2 rounded-full bg-surface-2 overflow-hidden">
                         <div className="h-full rounded-full" style={{ width: `${r.pct}%`, background: P }} />
                       </div>
                     </div>
@@ -957,13 +957,13 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
               </div>
 
               {/* Competitive positioning */}
-              <div className="bg-white rounded-2xl border border-gray-100 p-5">
-                <p className="text-sm font-black text-gray-800 mb-3">Competitive Positioning</p>
+              <div className="bg-surface rounded-2xl border border-line p-5">
+                <p className="text-sm font-black text-fg mb-3">Competitive Positioning</p>
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs">
-                    <thead><tr className="border-b border-gray-100">
+                    <thead><tr className="border-b border-line">
                       {["Feature", "VINK Global", "Revolut", "Wise", "Traditional Bank"].map(h => (
-                        <th key={h} className="text-left py-2 px-3 font-bold text-gray-500 uppercase tracking-wide">{h}</th>
+                        <th key={h} className="text-left py-2 px-3 font-bold text-fg-muted uppercase tracking-wide">{h}</th>
                       ))}
                     </tr></thead>
                     <tbody>
@@ -977,7 +977,7 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
                       ].map((row, i) => (
                         <tr key={i} className="border-b border-gray-50">
                           {row.map((cell, j) => (
-                            <td key={j} className={`py-2.5 px-3 ${j === 0 ? "font-semibold text-gray-700" : j === 1 ? "font-black text-green-600" : "text-gray-500"}`}>
+                            <td key={j} className={`py-2.5 px-3 ${j === 0 ? "font-semibold text-fg" : j === 1 ? "font-black text-green-600" : "text-fg-muted"}`}>
                               {cell}
                             </td>
                           ))}

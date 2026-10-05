@@ -174,15 +174,15 @@ function Badge({ label, color }: { label: string; color: string }) {
 // ─── Stat Card ─────────────────────────────────────────────────────────────────
 function StatCard({ label, value, sub, icon, color, loading }: { label: string; value: string; sub?: string; icon: React.ReactNode; color: string; loading?: boolean }) {
   return (
-    <div className="rounded-2xl p-5 bg-white border border-gray-100 hover:shadow-md transition-shadow">
+    <div className="rounded-2xl p-5 bg-surface border border-line hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between mb-3">
         <div className="p-2.5 rounded-xl" style={{ background: color + "15" }}>
           <div style={{ color }}>{icon}</div>
         </div>
         {sub && <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">{sub}</span>}
       </div>
-      {loading ? <div className="h-6 w-28 bg-gray-100 rounded animate-pulse mb-1"/> : <p className="text-2xl font-black text-gray-900">{value}</p>}
-      <p className="text-xs text-gray-400 mt-0.5">{label}</p>
+      {loading ? <div className="h-6 w-28 bg-surface-2 rounded animate-pulse mb-1"/> : <p className="text-2xl font-black text-fg">{value}</p>}
+      <p className="text-xs text-fg-subtle mt-0.5">{label}</p>
     </div>
   );
 }
@@ -199,16 +199,16 @@ function TxnRow({ t }: { t: R }) {
           : <ArrowUpRight className="w-4 h-4 text-red-500"/>}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-gray-900 truncate">{String(t.description)}</p>
+        <p className="text-sm font-semibold text-fg truncate">{String(t.description)}</p>
         <div className="flex items-center gap-2 mt-0.5">
-          <p className="text-[11px] text-gray-400 truncate">{String(t.counterpartyName ?? t.merchantName ?? "")}</p>
+          <p className="text-[11px] text-fg-subtle truncate">{String(t.counterpartyName ?? t.merchantName ?? "")}</p>
           <span className="text-[10px] text-gray-300">·</span>
-          <p className="text-[11px] text-gray-400">{ago(t.createdAt as string)} ago</p>
+          <p className="text-[11px] text-fg-subtle">{ago(t.createdAt as string)} ago</p>
           {t.flagged && <Badge label="⚠ flagged" color="#EF4444"/>}
         </div>
       </div>
       <div className="text-right flex-shrink-0">
-        <p className={`text-sm font-bold ${isCredit ? "text-emerald-600" : "text-gray-900"}`}>
+        <p className={`text-sm font-bold ${isCredit ? "text-emerald-600" : "text-fg"}`}>
           {isCredit ? "+" : "-"}{fmtZAR(t.amount as number)}
         </p>
         <Badge label={String(t.status)} color={t.status === "completed" ? "#10B981" : t.status === "pending" ? "#F59E0B" : "#EF4444"}/>
@@ -222,23 +222,23 @@ function KycRow({ k, onApprove, onReject }: { k: R; onApprove: () => void; onRej
   const statusColor = k.status === "approved" ? "#10B981" : k.status === "pending" || k.status === "in_review" ? "#F59E0B" : "#EF4444";
   const u = k.user as R | undefined;
   return (
-    <tr className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+    <tr className="border-b border-gray-50 hover:bg-surface-2/50 transition-colors">
       <td className="px-4 py-3">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
-            style={{ background: "#F2EFE8", color: "#8B0000" }}>
+            style={{ background: "var(--vk-surface-2)", color: "var(--vk-crimson-text)" }}>
             {u ? `${String(u.firstName)[0]}${String(u.lastName)[0]}` : "?"}
           </div>
           <div>
-            <p className="text-sm font-semibold text-gray-900">{u ? `${u.firstName} ${u.lastName}` : "Unknown"}</p>
-            <p className="text-[11px] text-gray-400">{u ? String(u.email) : ""}</p>
+            <p className="text-sm font-semibold text-fg">{u ? `${u.firstName} ${u.lastName}` : "Unknown"}</p>
+            <p className="text-[11px] text-fg-subtle">{u ? String(u.email) : ""}</p>
           </div>
         </div>
       </td>
       <td className="px-4 py-3"><Badge label={cap(String(u?.role ?? ""))} color="#8B0000"/></td>
-      <td className="px-4 py-3 text-xs text-gray-600">{cap(String(k.documentType)).replace("_"," ")}</td>
+      <td className="px-4 py-3 text-xs text-fg-muted">{cap(String(k.documentType)).replace("_"," ")}</td>
       <td className="px-4 py-3">
-        {k.faceMatchScore ? <span className="text-xs font-semibold text-gray-700">{String(k.faceMatchScore)}%</span> : <span className="text-xs text-gray-300">—</span>}
+        {k.faceMatchScore ? <span className="text-xs font-semibold text-fg">{String(k.faceMatchScore)}%</span> : <span className="text-xs text-gray-300">—</span>}
       </td>
       <td className="px-4 py-3"><Badge label={cap(String(k.status))} color={statusColor}/></td>
       <td className="px-4 py-3">
@@ -286,7 +286,7 @@ function OverviewPanel({ role, kpis, accounts, cards, txns, loading }: {
 
   const roleStats = {
     passenger: [
-      { label: "Total Balance", value: fmtZAR(totalBalance), sub: "+2.4%", icon: <Wallet className="w-5 h-5"/>, color: "#8B0000" },
+      { label: "Total Balance", value: fmtZAR(totalBalance), sub: "+2.4%", icon: <Wallet className="w-5 h-5"/>, color: "var(--vk-crimson-text)" },
       { label: "Cards Active", value: String(cards.filter(c=>c.status==="active").length), icon: <CreditCard className="w-5 h-5"/>, color: "#10B981" },
       { label: "This Month Spent", value: fmtZAR(txns.filter(t=>t.type==="debit").reduce((s,t)=>s+Number(t.amount),0)), icon: <ArrowUpRight className="w-5 h-5"/>, color: "#F59E0B" },
       { label: "Transactions", value: String(txns.length), icon: <Activity className="w-5 h-5"/>, color: "#3B82F6" },
@@ -294,23 +294,23 @@ function OverviewPanel({ role, kpis, accounts, cards, txns, loading }: {
     driver: [
       { label: "Earnings Wallet", value: fmtZAR(totalBalance), sub: "+R" + (Math.floor(Math.random()*500+200)), icon: <Wallet className="w-5 h-5"/>, color: "#3B82F6" },
       { label: "Total Earned", value: fmtZAR(txns.filter(t=>t.type==="credit").reduce((s,t)=>s+Number(t.amount),0)), icon: <DollarSign className="w-5 h-5"/>, color: "#10B981" },
-      { label: "This Week Trips", value: String(Math.floor(txns.filter(t=>t.category==="earnings").length * 0.3 + 5)), icon: <Activity className="w-5 h-5"/>, color: "#8B0000" },
+      { label: "This Week Trips", value: String(Math.floor(txns.filter(t=>t.category==="earnings").length * 0.3 + 5)), icon: <Activity className="w-5 h-5"/>, color: "var(--vk-crimson-text)" },
       { label: "Driver Card", value: cards.length > 0 ? "Active" : "Not issued", icon: <CreditCard className="w-5 h-5"/>, color: "#F59E0B" },
     ],
     investor: [
       { label: "Portfolio Value", value: fmtZAR(totalBalance * 1.12), sub: "+12%", icon: <TrendingUp className="w-5 h-5"/>, color: "#F59E0B" },
-      { label: "Capital Deposited", value: fmtZAR(totalBalance), icon: <DollarSign className="w-5 h-5"/>, color: "#8B0000" },
+      { label: "Capital Deposited", value: fmtZAR(totalBalance), icon: <DollarSign className="w-5 h-5"/>, color: "var(--vk-crimson-text)" },
       { label: "Total Returns", value: fmtZAR(totalBalance * 0.12), sub: "+14.5%", icon: <BarChart3 className="w-5 h-5"/>, color: "#10B981" },
       { label: "Dividends Paid", value: fmtZAR(totalBalance * 0.04), icon: <Star className="w-5 h-5"/>, color: "#3B82F6" },
     ],
     owner: [
       { label: "Business Balance", value: fmtZAR(totalBalance), icon: <Building2 className="w-5 h-5"/>, color: "#10B981" },
-      { label: "Revenue Today", value: fmtZAR(kpis ? Number(kpis.revenueToday) : 0), sub: "+8%", icon: <TrendingUp className="w-5 h-5"/>, color: "#8B0000" },
+      { label: "Revenue Today", value: fmtZAR(kpis ? Number(kpis.revenueToday) : 0), sub: "+8%", icon: <TrendingUp className="w-5 h-5"/>, color: "var(--vk-crimson-text)" },
       { label: "Active Employees", value: "24", icon: <Users className="w-5 h-5"/>, color: "#F59E0B" },
       { label: "Pending Settlements", value: String(kpis ? Number(kpis.settlementsPending) : 0), icon: <Globe className="w-5 h-5"/>, color: "#3B82F6" },
     ],
     admin: [
-      { label: "Total Users", value: String(kpis ? Number(kpis.totalUsers) : 0), icon: <Users className="w-5 h-5"/>, color: "#8B0000" },
+      { label: "Total Users", value: String(kpis ? Number(kpis.totalUsers) : 0), icon: <Users className="w-5 h-5"/>, color: "var(--vk-crimson-text)" },
       { label: "Active Cards", value: String(kpis ? Number(kpis.activeCards) : 0), icon: <CreditCard className="w-5 h-5"/>, color: "#10B981" },
       { label: "Fraud Alerts", value: String(kpis ? Number(kpis.fraudAlertsActive) : 0), icon: <AlertTriangle className="w-5 h-5"/>, color: "#EF4444" },
       { label: "KYC Pending", value: String(kpis ? Number(kpis.kycPending) : 0), icon: <Shield className="w-5 h-5"/>, color: "#F59E0B" },
@@ -319,13 +319,13 @@ function OverviewPanel({ role, kpis, accounts, cards, txns, loading }: {
       { label: "KYC Pending", value: String(kpis ? Number(kpis.kycPending) : 0), icon: <Shield className="w-5 h-5"/>, color: "#34A853" },
       { label: "Active Fraud Alerts", value: String(kpis ? Number(kpis.fraudAlertsActive) : 0), icon: <AlertTriangle className="w-5 h-5"/>, color: "#EF4444" },
       { label: "AML Reviews", value: "3", icon: <Eye className="w-5 h-5"/>, color: "#F59E0B" },
-      { label: "SARs Filed", value: "0", icon: <FileText className="w-5 h-5"/>, color: "#8B0000" },
+      { label: "SARs Filed", value: "0", icon: <FileText className="w-5 h-5"/>, color: "var(--vk-crimson-text)" },
     ],
     treasury: [
       { label: "Treasury Balance", value: fmtZAR(kpis ? Number(kpis.treasuryBalance) : 0), icon: <Wallet className="w-5 h-5"/>, color: "#06B6D4" },
       { label: "Volume 24h", value: fmtZAR(kpis ? Number(kpis.totalVolume24h) : 0), sub: "+12%", icon: <Activity className="w-5 h-5"/>, color: "#10B981" },
       { label: "Settlements Pending", value: String(kpis ? Number(kpis.settlementsPending) : 0), icon: <Globe className="w-5 h-5"/>, color: "#F59E0B" },
-      { label: "Txns Today", value: fmtNum(kpis ? Number(kpis.txnCount24h) : 0), icon: <BarChart3 className="w-5 h-5"/>, color: "#8B0000" },
+      { label: "Txns Today", value: fmtNum(kpis ? Number(kpis.txnCount24h) : 0), icon: <BarChart3 className="w-5 h-5"/>, color: "var(--vk-crimson-text)" },
     ],
   };
 
@@ -340,10 +340,10 @@ function OverviewPanel({ role, kpis, accounts, cards, txns, loading }: {
 
       <div className="grid lg:grid-cols-3 gap-5">
         {/* Activity chart */}
-        <div className="lg:col-span-2 bg-white rounded-2xl p-5 border border-gray-100">
+        <div className="lg:col-span-2 bg-surface rounded-2xl p-5 border border-line">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-bold text-gray-900">Activity — Last 7 Days</h3>
-            <div className="flex items-center gap-3 text-[11px] text-gray-400">
+            <h3 className="text-sm font-bold text-fg">Activity — Last 7 Days</h3>
+            <div className="flex items-center gap-3 text-[11px] text-fg-subtle">
               <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full inline-block" style={{ background: color }}/> Spent</span>
               <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full inline-block bg-emerald-400"/> Received</span>
             </div>
@@ -360,7 +360,7 @@ function OverviewPanel({ role, kpis, accounts, cards, txns, loading }: {
                   <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6"/>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--vk-surface-2)"/>
               <XAxis dataKey="label" tick={{ fontSize: 11, fill: "#9CA3AF" }} axisLine={false} tickLine={false}/>
               <YAxis tick={{ fontSize: 11, fill: "#9CA3AF" }} axisLine={false} tickLine={false} tickFormatter={v => `R${v >= 1000 ? (v/1000).toFixed(0)+"K" : v}`}/>
               <Tooltip formatter={(v: number) => fmtZAR(v)} contentStyle={{ fontSize: 12, borderRadius: 8 }}/>
@@ -372,8 +372,8 @@ function OverviewPanel({ role, kpis, accounts, cards, txns, loading }: {
 
         {/* Spending breakdown */}
         {pieData.length > 0 ? (
-          <div className="bg-white rounded-2xl p-5 border border-gray-100">
-            <h3 className="text-sm font-bold text-gray-900 mb-4">Spending Breakdown</h3>
+          <div className="bg-surface rounded-2xl p-5 border border-line">
+            <h3 className="text-sm font-bold text-fg mb-4">Spending Breakdown</h3>
             <ResponsiveContainer width="100%" height={130}>
               <RechartsPie>
                 <Pie data={pieData} cx="50%" cy="50%" innerRadius={40} outerRadius={62} paddingAngle={3} dataKey="value">
@@ -387,15 +387,15 @@ function OverviewPanel({ role, kpis, accounts, cards, txns, loading }: {
                 <div key={i} className="flex items-center justify-between text-[11px]">
                   <div className="flex items-center gap-1.5">
                     <div className="w-2 h-2 rounded-full" style={{ background: PIE_COLORS[i % PIE_COLORS.length] }}/>
-                    <span className="text-gray-600 truncate max-w-[100px]">{d.name}</span>
+                    <span className="text-fg-muted truncate max-w-[100px]">{d.name}</span>
                   </div>
-                  <span className="font-semibold text-gray-800">{fmtZAR(d.value)}</span>
+                  <span className="font-semibold text-fg">{fmtZAR(d.value)}</span>
                 </div>
               ))}
             </div>
           </div>
         ) : (
-          <div className="bg-white rounded-2xl p-5 border border-gray-100 flex items-center justify-center">
+          <div className="bg-surface rounded-2xl p-5 border border-line flex items-center justify-center">
             <div className="text-center text-gray-300">
               <PieChart className="w-10 h-10 mx-auto mb-2 opacity-30"/>
               <p className="text-xs">No spending data yet</p>
@@ -406,10 +406,10 @@ function OverviewPanel({ role, kpis, accounts, cards, txns, loading }: {
 
       {/* Recent transactions */}
       {txns.length > 0 && (
-        <div className="bg-white rounded-2xl border border-gray-100">
+        <div className="bg-surface rounded-2xl border border-line">
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-50">
-            <h3 className="text-sm font-bold text-gray-900">Recent Transactions</h3>
-            <span className="text-xs text-gray-400">{txns.length} total</span>
+            <h3 className="text-sm font-bold text-fg">Recent Transactions</h3>
+            <span className="text-xs text-fg-subtle">{txns.length} total</span>
           </div>
           <div className="px-5 divide-y divide-gray-50">
             {txns.slice(0, 6).map((t, i) => <TxnRow key={i} t={t}/>)}
@@ -438,7 +438,7 @@ function CardsPanel({ userId, cards, onRefresh }: { userId: string; cards: R[]; 
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h2 className="text-base font-bold text-gray-900">My Cards ({userCards.length})</h2>
+        <h2 className="text-base font-bold text-fg">My Cards ({userCards.length})</h2>
         <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white"
           style={{ background: "#8B0000" }}>
           <Plus className="w-3.5 h-3.5"/> Request New Card
@@ -449,7 +449,7 @@ function CardsPanel({ userId, cards, onRefresh }: { userId: string; cards: R[]; 
         {userCards.map((card, i) => (
           <div key={i} className="space-y-3">
             <VisualCard card={card}/>
-            <div className="bg-white rounded-2xl p-4 border border-gray-100 space-y-3">
+            <div className="bg-surface rounded-2xl p-4 border border-line space-y-3">
               <div className="grid grid-cols-2 gap-2 text-[11px]">
                 {[
                   { label: "Daily Limit", value: fmtZAR(card.dailyLimit as number) },
@@ -457,9 +457,9 @@ function CardsPanel({ userId, cards, onRefresh }: { userId: string; cards: R[]; 
                   { label: "Monthly Limit", value: fmtZAR(card.monthlyLimit as number) },
                   { label: "Spent Month", value: fmtZAR(card.spentThisMonth as number) },
                 ].map((s, j) => (
-                  <div key={j} className="p-2 rounded-xl" style={{ background: "#F9FAFB" }}>
-                    <p className="text-gray-400">{s.label}</p>
-                    <p className="font-bold text-gray-800 mt-0.5">{s.value}</p>
+                  <div key={j} className="p-2 rounded-xl" style={{ background: "var(--vk-surface-2)" }}>
+                    <p className="text-fg-subtle">{s.label}</p>
+                    <p className="font-bold text-fg mt-0.5">{s.value}</p>
                   </div>
                 ))}
               </div>
@@ -473,17 +473,17 @@ function CardsPanel({ userId, cards, onRefresh }: { userId: string; cards: R[]; 
                 {card.status === "active"
                   ? <button onClick={() => handleAction(String(card.id), "freeze")} disabled={!!action}
                       className="flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5"
-                      style={{ background: "#EFF6FF", color: "#3B82F6" }}>
+                      style={{ background: "var(--vk-info-bg)", color: "#3B82F6" }}>
                       {action?.cardId === card.id ? <Loader2 className="w-3 h-3 animate-spin"/> : <Lock className="w-3 h-3"/>} Freeze
                     </button>
                   : <button onClick={() => handleAction(String(card.id), "unfreeze")} disabled={!!action}
                       className="flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5"
-                      style={{ background: "#ECFDF5", color: "#10B981" }}>
+                      style={{ background: "var(--vk-ok-bg)", color: "#10B981" }}>
                       <Unlock className="w-3 h-3"/> Unfreeze
                     </button>}
                 <button onClick={() => handleAction(String(card.id), "block")} disabled={!!action}
                   className="flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5"
-                  style={{ background: "#FEF2F2", color: "#EF4444" }}>
+                  style={{ background: "var(--vk-bad-bg)", color: "#EF4444" }}>
                   <XCircle className="w-3 h-3"/> Block
                 </button>
               </div>
@@ -514,18 +514,18 @@ function TransactionsPanel({ txns }: { txns: R[] }) {
         {[
           { label: "Total In", value: fmtZAR(totalIn), color: "#10B981" },
           { label: "Total Out", value: fmtZAR(totalOut), color: "#EF4444" },
-          { label: "Net", value: fmtZAR(totalIn - totalOut), color: "#8B0000" },
+          { label: "Net", value: fmtZAR(totalIn - totalOut), color: "var(--vk-crimson-text)" },
         ].map((s, i) => (
-          <div key={i} className="bg-white rounded-2xl p-4 border border-gray-100 text-center">
+          <div key={i} className="bg-surface rounded-2xl p-4 border border-line text-center">
             <p className="text-xl font-black" style={{ color: s.color }}>{s.value}</p>
-            <p className="text-xs text-gray-400 mt-0.5">{s.label}</p>
+            <p className="text-xs text-fg-subtle mt-0.5">{s.label}</p>
           </div>
         ))}
       </div>
 
       {/* Filters */}
       <div className="flex items-center gap-3 flex-wrap">
-        <div className="flex items-center gap-2 p-1 rounded-xl bg-gray-100">
+        <div className="flex items-center gap-2 p-1 rounded-xl bg-surface-2">
           {(["all","credit","debit"] as const).map(f => (
             <button key={f} onClick={() => setFilter(f)}
               className="px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-all"
@@ -534,25 +534,25 @@ function TransactionsPanel({ txns }: { txns: R[] }) {
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-2 flex-1 min-w-0 bg-white border border-gray-200 rounded-xl px-3 py-2">
-          <Search className="w-4 h-4 text-gray-400 flex-shrink-0"/>
+        <div className="flex items-center gap-2 flex-1 min-w-0 bg-surface border border-line rounded-xl px-3 py-2">
+          <Search className="w-4 h-4 text-fg-subtle flex-shrink-0"/>
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search transactions…"
-            className="flex-1 text-sm outline-none text-gray-700 bg-transparent"/>
+            className="flex-1 text-sm outline-none text-fg bg-transparent"/>
         </div>
-        <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">
+        <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-fg-muted border border-line hover:bg-surface-2 transition-colors">
           <Download className="w-3.5 h-3.5"/> Export
         </button>
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-2xl border border-gray-100">
+      <div className="bg-surface rounded-2xl border border-line">
         <div className="px-5 py-4 border-b border-gray-50 flex items-center justify-between">
-          <h3 className="text-sm font-bold text-gray-900">All Transactions</h3>
-          <span className="text-xs text-gray-400">{filtered.length} records</span>
+          <h3 className="text-sm font-bold text-fg">All Transactions</h3>
+          <span className="text-xs text-fg-subtle">{filtered.length} records</span>
         </div>
         <div className="px-5 max-h-96 overflow-y-auto divide-y divide-gray-50">
           {filtered.length === 0
-            ? <p className="text-center text-sm text-gray-400 py-8">No transactions found</p>
+            ? <p className="text-center text-sm text-fg-subtle py-8">No transactions found</p>
             : filtered.map((t, i) => <TxnRow key={i} t={t}/>)}
         </div>
       </div>
@@ -591,7 +591,7 @@ function PaymentsPanel({ userId, accounts }: { userId: string; accounts: R[] }) 
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center gap-3 p-1 bg-gray-100 rounded-xl w-fit">
+      <div className="flex items-center gap-3 p-1 bg-surface-2 rounded-xl w-fit">
         {(["send","history"] as const).map(t => (
           <button key={t} onClick={() => setTab(t)}
             className="px-5 py-2 rounded-lg text-sm font-semibold capitalize transition-all"
@@ -603,14 +603,14 @@ function PaymentsPanel({ userId, accounts }: { userId: string; accounts: R[] }) 
 
       {tab === "send" ? (
         <div className="grid lg:grid-cols-2 gap-6">
-          <form onSubmit={handleSend} className="bg-white rounded-2xl p-6 border border-gray-100 space-y-4">
-            <h3 className="text-sm font-bold text-gray-900">Send Money</h3>
+          <form onSubmit={handleSend} className="bg-surface rounded-2xl p-6 border border-line space-y-4">
+            <h3 className="text-sm font-bold text-fg">Send Money</h3>
             {fromAcct && (
-              <div className="p-3 rounded-xl flex items-center gap-3" style={{ background: "#EAF7EE" }}>
-                <Wallet className="w-4 h-4" style={{ color: "#8B0000" }}/>
+              <div className="p-3 rounded-xl flex items-center gap-3" style={{ background: "var(--vk-ok-bg)" }}>
+                <Wallet className="w-4 h-4" style={{ color: "var(--vk-crimson-text)" }}/>
                 <div>
-                  <p className="text-xs text-gray-500">From</p>
-                  <p className="text-sm font-semibold text-gray-800">{String(fromAcct.label)} · {fmtZAR(fromAcct.balance as number)}</p>
+                  <p className="text-xs text-fg-muted">From</p>
+                  <p className="text-sm font-semibold text-fg">{String(fromAcct.label)} · {fmtZAR(fromAcct.balance as number)}</p>
                 </div>
               </div>
             )}
@@ -620,20 +620,20 @@ function PaymentsPanel({ userId, accounts }: { userId: string; accounts: R[] }) 
               { label: "Description", val: description, set: setDesc, placeholder: "Payment reference" },
             ].map(f => (
               <div key={f.label}>
-                <label className="block text-xs font-semibold text-gray-500 mb-1.5">{f.label}</label>
+                <label className="block text-xs font-semibold text-fg-muted mb-1.5">{f.label}</label>
                 <input type={f.type ?? "text"} value={f.val} onChange={e => f.set(e.target.value)} required placeholder={f.placeholder}
-                  className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"/>
+                  className="w-full rounded-xl border border-line px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"/>
               </div>
             ))}
             <div>
-              <label className="block text-xs font-semibold text-gray-500 mb-1.5">Payment Rail</label>
+              <label className="block text-xs font-semibold text-fg-muted mb-1.5">Payment Rail</label>
               <div className="grid grid-cols-2 gap-2">
                 {rails.map(r => (
                   <button type="button" key={r.id} onClick={() => setRail(r.id)}
                     className="p-2.5 rounded-xl text-left transition-all"
-                    style={{ background: rail === r.id ? "#EAF7EE" : "#F9FAFB", border: `1.5px solid ${rail === r.id ? "#8B0000" : "#E5E7EB"}` }}>
+                    style={{ background: rail === r.id ? "#EAF7EE" : "var(--vk-surface-2)", border: `1.5px solid ${rail === r.id ? "#8B0000" : "var(--vk-line)"}` }}>
                     <p className="text-xs font-semibold" style={{ color: rail === r.id ? "#8B0000" : "#374151" }}>{r.label}</p>
-                    <p className="text-[10px] text-gray-400">{r.fee} · {r.eta}</p>
+                    <p className="text-[10px] text-fg-subtle">{r.fee} · {r.eta}</p>
                   </button>
                 ))}
               </div>
@@ -653,40 +653,40 @@ function PaymentsPanel({ userId, accounts }: { userId: string; accounts: R[] }) 
 
           {/* Quick pay options */}
           <div className="space-y-4">
-            <div className="bg-white rounded-2xl p-5 border border-gray-100">
-              <h3 className="text-sm font-bold text-gray-900 mb-4">Quick Transfers</h3>
+            <div className="bg-surface rounded-2xl p-5 border border-line">
+              <h3 className="text-sm font-bold text-fg mb-4">Quick Transfers</h3>
               {[
                 { label: "Passenger → Driver", desc: "Trip payment distribution", icon: "🚗" },
                 { label: "Driver → Own Account", desc: "Move earnings to main account", icon: "💳" },
                 { label: "Owner → Payroll", desc: "Bulk salary disbursement", icon: "💼" },
                 { label: "Investor Dividend", desc: "Revenue share distribution", icon: "📈" },
               ].map((q, i) => (
-                <div key={i} className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 cursor-pointer transition-colors mb-1">
+                <div key={i} className="flex items-center gap-3 p-3 rounded-xl hover:bg-surface-2 cursor-pointer transition-colors mb-1">
                   <span className="text-xl">{q.icon}</span>
                   <div className="flex-1">
-                    <p className="text-sm font-semibold text-gray-800">{q.label}</p>
-                    <p className="text-xs text-gray-400">{q.desc}</p>
+                    <p className="text-sm font-semibold text-fg">{q.label}</p>
+                    <p className="text-xs text-fg-subtle">{q.desc}</p>
                   </div>
                   <ChevronRight className="w-4 h-4 text-gray-300"/>
                 </div>
               ))}
             </div>
-            <div className="bg-white rounded-2xl p-5 border border-gray-100">
-              <h3 className="text-sm font-bold text-gray-900 mb-3">QR Payment</h3>
-              <div className="bg-gray-50 rounded-xl p-8 flex flex-col items-center justify-center gap-3">
+            <div className="bg-surface rounded-2xl p-5 border border-line">
+              <h3 className="text-sm font-bold text-fg mb-3">QR Payment</h3>
+              <div className="bg-surface-2 rounded-xl p-8 flex flex-col items-center justify-center gap-3">
                 <div className="grid grid-cols-5 gap-0.5 opacity-60">
                   {Array.from({length: 25}).map((_,i) => (
                     <div key={i} className={`w-5 h-5 rounded-sm ${Math.random()>0.5?"bg-gray-800":"bg-transparent"}`}/>
                   ))}
                 </div>
-                <p className="text-xs text-gray-500">Scan to receive payment</p>
+                <p className="text-xs text-fg-muted">Scan to receive payment</p>
               </div>
             </div>
           </div>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl p-5 border border-gray-100">
-          <p className="text-sm text-gray-400 text-center py-8">Payment history loaded from accounts</p>
+        <div className="bg-surface rounded-2xl p-5 border border-line">
+          <p className="text-sm text-fg-subtle text-center py-8">Payment history loaded from accounts</p>
         </div>
       )}
     </div>
@@ -724,33 +724,33 @@ function TreasuryPanel() {
       {/* Treasury accounts */}
       <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
         {data.accounts.map((a, i) => (
-          <div key={i} className="bg-white rounded-2xl p-5 border border-gray-100">
+          <div key={i} className="bg-surface rounded-2xl p-5 border border-line">
             <div className="flex items-start justify-between mb-3">
               <div>
-                <p className="text-xs text-gray-400 uppercase tracking-wide">{String(a.purpose)}</p>
-                <p className="text-sm font-bold text-gray-900 mt-0.5">{String(a.label)}</p>
+                <p className="text-xs text-fg-subtle uppercase tracking-wide">{String(a.purpose)}</p>
+                <p className="text-sm font-bold text-fg mt-0.5">{String(a.label)}</p>
               </div>
               <Badge label={String(a.purpose)} color="#06B6D4"/>
             </div>
-            <p className="text-2xl font-black text-gray-900">{fmtZAR(a.balance as number)}</p>
+            <p className="text-2xl font-black text-fg">{fmtZAR(a.balance as number)}</p>
             {Number(a.reserveBalance) > 0 && (
-              <p className="text-xs text-gray-400 mt-1">Reserve: {fmtZAR(a.reserveBalance as number)}</p>
+              <p className="text-xs text-fg-subtle mt-1">Reserve: {fmtZAR(a.reserveBalance as number)}</p>
             )}
           </div>
         ))}
-        <div className="bg-white rounded-2xl p-5 border border-gray-100 flex flex-col justify-center items-center text-center">
-          <p className="text-xs text-gray-400 mb-1">Total Treasury</p>
+        <div className="bg-surface rounded-2xl p-5 border border-line flex flex-col justify-center items-center text-center">
+          <p className="text-xs text-fg-subtle mb-1">Total Treasury</p>
           <p className="text-3xl font-black" style={{ color: "#06B6D4" }}>{fmtZAR(totalTreasury)}</p>
         </div>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-5">
         {/* Settlement chart */}
-        <div className="bg-white rounded-2xl p-5 border border-gray-100">
-          <h3 className="text-sm font-bold text-gray-900 mb-4">Settlement Volume (ZAR 000s)</h3>
+        <div className="bg-surface rounded-2xl p-5 border border-line">
+          <h3 className="text-sm font-bold text-fg mb-4">Settlement Volume (ZAR 000s)</h3>
           <ResponsiveContainer width="100%" height={180}>
             <BarChart data={barData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6"/>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--vk-surface-2)"/>
               <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#9CA3AF" }} axisLine={false} tickLine={false}/>
               <YAxis tick={{ fontSize: 11, fill: "#9CA3AF" }} axisLine={false} tickLine={false}/>
               <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }}/>
@@ -761,21 +761,21 @@ function TreasuryPanel() {
         </div>
 
         {/* Revenue splits */}
-        <div className="bg-white rounded-2xl p-5 border border-gray-100">
-          <h3 className="text-sm font-bold text-gray-900 mb-4">Revenue Distribution</h3>
+        <div className="bg-surface rounded-2xl p-5 border border-line">
+          <h3 className="text-sm font-bold text-fg mb-4">Revenue Distribution</h3>
           <div className="space-y-3">
             {recentSplits.map((s, i) => (
-              <div key={i} className="p-3 rounded-xl" style={{ background: "#F9FAFB" }}>
+              <div key={i} className="p-3 rounded-xl" style={{ background: "var(--vk-surface-2)" }}>
                 <div className="flex justify-between items-center mb-2">
-                  <p className="text-xs font-semibold text-gray-700">{fmtZAR(s.totalAmount as number)} split</p>
-                  <span className="text-[10px] text-gray-400">{ago(s.createdAt as string)} ago</span>
+                  <p className="text-xs font-semibold text-fg">{fmtZAR(s.totalAmount as number)} split</p>
+                  <span className="text-[10px] text-fg-subtle">{ago(s.createdAt as string)} ago</span>
                 </div>
                 <div className="flex gap-1 h-3 rounded-full overflow-hidden">
                   <div className="h-full bg-emerald-500 rounded-l" style={{ width: "75%" }} title="Driver 75%"/>
                   <div className="h-full bg-amber-400" style={{ width: "10%" }} title="Investor 10%"/>
                   <div className="h-full bg-emerald-500 rounded-r" style={{ width: "15%" }} title="Owner 15%"/>
                 </div>
-                <div className="flex justify-between mt-1 text-[10px] text-gray-400">
+                <div className="flex justify-between mt-1 text-[10px] text-fg-subtle">
                   <span>Driver 75%</span><span>Investor 10%</span><span>Owner 15%</span>
                 </div>
               </div>
@@ -806,8 +806,8 @@ function KycPanel() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h2 className="text-base font-bold text-gray-900">KYC Review Queue</h2>
-        <div className="flex items-center gap-2 p-1 bg-gray-100 rounded-xl">
+        <h2 className="text-base font-bold text-fg">KYC Review Queue</h2>
+        <div className="flex items-center gap-2 p-1 bg-surface-2 rounded-xl">
           {["all","pending","in_review","approved","rejected"].map(f => (
             <button key={f} onClick={() => setFilter(f)}
               className="px-3 py-1.5 rounded-lg text-[11px] font-semibold capitalize transition-all"
@@ -818,22 +818,22 @@ function KycPanel() {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+      <div className="bg-surface rounded-2xl border border-line overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-emerald-500"/></div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left">
-              <thead className="bg-gray-50">
+              <thead className="bg-surface-2">
                 <tr>
                   {["Applicant","Role","Document","Face Match","Status","Actions"].map(h => (
-                    <th key={h} className="px-4 py-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider">{h}</th>
+                    <th key={h} className="px-4 py-3 text-[11px] font-bold text-fg-muted uppercase tracking-wider">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {records.length === 0
-                  ? <tr><td colSpan={6} className="text-center text-sm text-gray-400 py-8">No records found</td></tr>
+                  ? <tr><td colSpan={6} className="text-center text-sm text-fg-subtle py-8">No records found</td></tr>
                   : records.map((k, i) => (
                     <KycRow key={i} k={k}
                       onApprove={async () => { await bankCompliance.approveKyc(String(k.id)); load(); }}
@@ -868,8 +868,8 @@ function FraudPanel() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h2 className="text-base font-bold text-gray-900">Fraud & Security Alerts</h2>
-        <div className="flex items-center gap-2 p-1 bg-gray-100 rounded-xl">
+        <h2 className="text-base font-bold text-fg">Fraud & Security Alerts</h2>
+        <div className="flex items-center gap-2 p-1 bg-surface-2 rounded-xl">
           {[["false","Active"],["true","Resolved"]].map(([v,l]) => (
             <button key={v} onClick={() => setFilter(v)}
               className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
@@ -882,25 +882,25 @@ function FraudPanel() {
         {loading ? (
           <div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-emerald-500"/></div>
         ) : alerts.length === 0 ? (
-          <div className="bg-white rounded-2xl p-12 border border-gray-100 flex flex-col items-center gap-2">
+          <div className="bg-surface rounded-2xl p-12 border border-line flex flex-col items-center gap-2">
             <CheckCircle className="w-10 h-10 text-emerald-400"/>
-            <p className="text-sm text-gray-400">No {filter === "false" ? "active" : "resolved"} fraud alerts</p>
+            <p className="text-sm text-fg-subtle">No {filter === "false" ? "active" : "resolved"} fraud alerts</p>
           </div>
         ) : alerts.map((a, i) => {
           const u = a.user as R | undefined;
           return (
-            <div key={i} className="bg-white rounded-2xl p-4 border border-gray-100 flex items-start gap-4">
+            <div key={i} className="bg-surface rounded-2xl p-4 border border-line flex items-start gap-4">
               <div className="p-2.5 rounded-xl flex-shrink-0" style={{ background: riskColor(String(a.riskLevel)) + "15" }}>
                 <AlertTriangle className="w-5 h-5" style={{ color: riskColor(String(a.riskLevel)) }}/>
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap mb-1">
-                  <p className="text-sm font-bold text-gray-900">{String(a.description)}</p>
+                  <p className="text-sm font-bold text-fg">{String(a.description)}</p>
                   <Badge label={String(a.riskLevel)} color={riskColor(String(a.riskLevel))}/>
                   {a.blocked && <Badge label="Blocked" color="#EF4444"/>}
                 </div>
-                <p className="text-xs text-gray-500">Rule: <span className="font-semibold text-gray-700">{String(a.ruleTriggered).replace(/_/g," ")}</span></p>
-                {u && <p className="text-xs text-gray-400 mt-0.5">User: {String(u.firstName)} {String(u.lastName)} · {String(u.email)}</p>}
+                <p className="text-xs text-fg-muted">Rule: <span className="font-semibold text-fg">{String(a.ruleTriggered).replace(/_/g," ")}</span></p>
+                {u && <p className="text-xs text-fg-subtle mt-0.5">User: {String(u.firstName)} {String(u.lastName)} · {String(u.email)}</p>}
                 <p className="text-[11px] text-gray-300 mt-0.5">{ago(a.createdAt as string)} ago</p>
               </div>
               {!a.resolved && (
@@ -939,15 +939,15 @@ function UsersPanel() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h2 className="text-base font-bold text-gray-900">User Management</h2>
+        <h2 className="text-base font-bold text-fg">User Management</h2>
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-3 py-2">
-            <Search className="w-4 h-4 text-gray-400 flex-shrink-0"/>
+          <div className="flex items-center gap-2 bg-surface border border-line rounded-xl px-3 py-2">
+            <Search className="w-4 h-4 text-fg-subtle flex-shrink-0"/>
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search users…"
               className="text-sm outline-none bg-transparent w-48"/>
           </div>
           <select value={roleFilter} onChange={e => setRoleFilter(e.target.value)}
-            className="text-sm border border-gray-200 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+            className="text-sm border border-line rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-emerald-500 bg-surface">
             <option value="all">All Roles</option>
             {["passenger","driver","investor","owner","admin","compliance","treasury"].map(r => (
               <option key={r} value={r}>{cap(r)}</option>
@@ -956,22 +956,22 @@ function UsersPanel() {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+      <div className="bg-surface rounded-2xl border border-line overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-emerald-500"/></div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50">
+              <thead className="bg-surface-2">
                 <tr>
                   {["User","Role","KYC","AML","Balance","Cards","Joined","Actions"].map(h => (
-                    <th key={h} className="px-4 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-wider">{h}</th>
+                    <th key={h} className="px-4 py-3 text-left text-[11px] font-bold text-fg-muted uppercase tracking-wider">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {filtered.map((u, i) => (
-                  <tr key={i} className="hover:bg-gray-50/50 transition-colors">
+                  <tr key={i} className="hover:bg-surface-2/50 transition-colors">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
@@ -979,17 +979,17 @@ function UsersPanel() {
                           {String(u.firstName)[0]}{String(u.lastName)[0]}
                         </div>
                         <div>
-                          <p className="text-sm font-semibold text-gray-900">{String(u.firstName)} {String(u.lastName)}</p>
-                          <p className="text-[11px] text-gray-400 truncate max-w-[160px]">{String(u.email)}</p>
+                          <p className="text-sm font-semibold text-fg">{String(u.firstName)} {String(u.lastName)}</p>
+                          <p className="text-[11px] text-fg-subtle truncate max-w-[160px]">{String(u.email)}</p>
                         </div>
                       </div>
                     </td>
                     <td className="px-4 py-3"><Badge label={String(u.role)} color={ROLE_COLOR[u.role as BankRole] ?? "#6B7280"}/></td>
                     <td className="px-4 py-3"><Badge label={String(u.kycStatus).replace("_"," ")} color={kycColor(String(u.kycStatus))}/></td>
                     <td className="px-4 py-3"><Badge label={String(u.amlStatus).replace("_"," ")} color={u.amlStatus === "clear" ? "#10B981" : "#EF4444"}/></td>
-                    <td className="px-4 py-3 text-sm font-semibold text-gray-800">{fmtZAR(u.totalBalance as number)}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600">{String(u.cardCount)}</td>
-                    <td className="px-4 py-3 text-xs text-gray-400">{ago(u.createdAt as string)} ago</td>
+                    <td className="px-4 py-3 text-sm font-semibold text-fg">{fmtZAR(u.totalBalance as number)}</td>
+                    <td className="px-4 py-3 text-sm text-fg-muted">{String(u.cardCount)}</td>
+                    <td className="px-4 py-3 text-xs text-fg-subtle">{ago(u.createdAt as string)} ago</td>
                     <td className="px-4 py-3">
                       <button className="text-xs font-semibold text-emerald-600 hover:underline">View</button>
                     </td>
@@ -1008,30 +1008,30 @@ function UsersPanel() {
 function AccountsPanel({ accounts }: { accounts: R[] }) {
   return (
     <div className="space-y-4">
-      <h2 className="text-base font-bold text-gray-900">My Accounts</h2>
+      <h2 className="text-base font-bold text-fg">My Accounts</h2>
       <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
         {accounts.map((a, i) => (
-          <div key={i} className="bg-white rounded-2xl p-5 border border-gray-100 hover:shadow-md transition-shadow">
+          <div key={i} className="bg-surface rounded-2xl p-5 border border-line hover:shadow-md transition-shadow">
             <div className="flex items-start justify-between mb-4">
               <div>
-                <p className="text-xs text-gray-400 uppercase tracking-wide">{String(a.type)}</p>
-                <p className="text-sm font-bold text-gray-900 mt-0.5">{String(a.label)}</p>
+                <p className="text-xs text-fg-subtle uppercase tracking-wide">{String(a.type)}</p>
+                <p className="text-sm font-bold text-fg mt-0.5">{String(a.label)}</p>
               </div>
               <Badge label={String(a.status)} color={a.status === "active" ? "#10B981" : a.status === "frozen" ? "#3B82F6" : "#9CA3AF"}/>
             </div>
-            <p className="text-2xl font-black text-gray-900 mb-1">{fmtZAR(a.balance as number)}</p>
-            <p className="text-xs text-gray-400 mb-3">Available: {fmtZAR(a.availableBalance as number)}</p>
-            <div className="bg-gray-50 rounded-xl px-3 py-2 space-y-1">
+            <p className="text-2xl font-black text-fg mb-1">{fmtZAR(a.balance as number)}</p>
+            <p className="text-xs text-fg-subtle mb-3">Available: {fmtZAR(a.availableBalance as number)}</p>
+            <div className="bg-surface-2 rounded-xl px-3 py-2 space-y-1">
               <div className="flex justify-between text-[11px]">
-                <span className="text-gray-400">Account No.</span>
-                <span className="font-mono font-semibold text-gray-700">{String(a.accountNumber)}</span>
+                <span className="text-fg-subtle">Account No.</span>
+                <span className="font-mono font-semibold text-fg">{String(a.accountNumber)}</span>
               </div>
               <div className="flex justify-between text-[11px]">
-                <span className="text-gray-400">IBAN</span>
-                <span className="font-mono text-gray-600 truncate max-w-[140px]">{String(a.iban)}</span>
+                <span className="text-fg-subtle">IBAN</span>
+                <span className="font-mono text-fg-muted truncate max-w-[140px]">{String(a.iban)}</span>
               </div>
               <div className="flex justify-between text-[11px]">
-                <span className="text-gray-400">Interest Rate</span>
+                <span className="text-fg-subtle">Interest Rate</span>
                 <span className="font-semibold text-emerald-600">{String(a.interestRate)}% p.a.</span>
               </div>
             </div>
@@ -1158,16 +1158,16 @@ export function BankingDashboard({ isOpen, onClose, onOpenDriveDashboard, onOpen
       case "earnings":     return <TransactionsPanel txns={txns.filter(t => t.category === "earnings" || t.type === "credit")}/>;
       case "portfolio":    return (
         <div className="space-y-4">
-          <h2 className="text-base font-bold text-gray-900">Investment Portfolio</h2>
+          <h2 className="text-base font-bold text-fg">Investment Portfolio</h2>
           <div className="grid md:grid-cols-2 gap-4">
             {[
-              { label:"Capital Deposited",  val: fmtZAR(accounts.reduce((s,a)=>s+Number(a.balance),0)), color:"#8B0000" },
+              { label:"Capital Deposited",  val: fmtZAR(accounts.reduce((s,a)=>s+Number(a.balance),0)), color:"var(--vk-crimson-text)" },
               { label:"Current Value",      val: fmtZAR(accounts.reduce((s,a)=>s+Number(a.balance),0)*1.12), color:"#10B981" },
               { label:"Total Returns",      val: fmtZAR(accounts.reduce((s,a)=>s+Number(a.balance),0)*0.12), color:"#F59E0B" },
               { label:"Revenue Share",      val: "10% of platform revenue", color:"#3B82F6" },
             ].map((c,i) => (
-              <div key={i} className="bg-white rounded-2xl p-5 border border-gray-100">
-                <p className="text-xs text-gray-400">{c.label}</p>
+              <div key={i} className="bg-surface rounded-2xl p-5 border border-line">
+                <p className="text-xs text-fg-subtle">{c.label}</p>
                 <p className="text-2xl font-black mt-1" style={{ color: c.color }}>{c.val}</p>
               </div>
             ))}
@@ -1177,25 +1177,25 @@ export function BankingDashboard({ isOpen, onClose, onOpenDriveDashboard, onOpen
       case "settlements":  return <TreasuryPanel/>;
       case "reports":
         return (
-          <div className="bg-white rounded-2xl p-8 border border-gray-100 text-center">
+          <div className="bg-surface rounded-2xl p-8 border border-line text-center">
             <FileText className="w-12 h-12 mx-auto mb-3 text-gray-300"/>
-            <p className="text-sm font-semibold text-gray-600 mb-1">Report Generation</p>
-            <p className="text-xs text-gray-400 mb-4">Generate PDF, Excel or CSV reports for transactions, revenue, KYC, and fraud.</p>
+            <p className="text-sm font-semibold text-fg-muted mb-1">Report Generation</p>
+            <p className="text-xs text-fg-subtle mb-4">Generate PDF, Excel or CSV reports for transactions, revenue, KYC, and fraud.</p>
             <div className="flex gap-3 justify-center flex-wrap">
               {["Transaction Report","Revenue Report","KYC Report","Fraud Report","Settlement Report"].map((r,i) => (
-                <button key={i} className="px-4 py-2.5 rounded-xl text-sm font-semibold border border-gray-200 hover:border-emerald-300 hover:text-emerald-600 transition-colors">
+                <button key={i} className="px-4 py-2.5 rounded-xl text-sm font-semibold border border-line hover:border-emerald-300 hover:text-emerald-600 transition-colors">
                   {r}
                 </button>
               ))}
             </div>
           </div>
         );
-      default: return <p className="text-gray-400 text-sm">Section coming soon…</p>;
+      default: return <p className="text-fg-subtle text-sm">Section coming soon…</p>;
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex" style={{ background: "#F3F4F6" }}>
+    <div className="fixed inset-0 z-50 flex" style={{ background: "var(--vk-surface-2)" }}>
       {!authed ? (
         <>
           <button onClick={onClose} className="absolute top-4 right-4 z-50 p-2 rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors">
@@ -1307,25 +1307,25 @@ export function BankingDashboard({ isOpen, onClose, onOpenDriveDashboard, onOpen
             {/* Demo mode banner */}
             <DemoModeBanner />
             {/* Top bar */}
-            <header className="flex items-center justify-between px-6 py-3 flex-shrink-0 bg-white border-b border-gray-200">
+            <header className="flex items-center justify-between px-6 py-3 flex-shrink-0 bg-surface border-b border-line">
               <div>
-                <div className="flex items-center gap-1.5 text-xs text-gray-400">
+                <div className="flex items-center gap-1.5 text-xs text-fg-subtle">
                   <span className="capitalize font-semibold" style={{ color: accentColor }}>{role}</span>
                   <ChevronRight className="w-3 h-3"/>
-                  <span className="text-gray-700 font-medium capitalize">{section.replace("_"," ")}</span>
+                  <span className="text-fg font-medium capitalize">{section.replace("_"," ")}</span>
                 </div>
-                <p className="text-base font-black text-gray-900 mt-0.5 capitalize">{section.replace("_"," ")} Dashboard</p>
+                <p className="text-base font-black text-fg mt-0.5 capitalize">{section.replace("_"," ")} Dashboard</p>
               </div>
               <div className="flex items-center gap-2">
                 <button onClick={() => loadRoleData(role, userId)} disabled={loading}
-                  className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 disabled:opacity-40">
+                  className="p-2 rounded-lg hover:bg-surface-2 transition-colors text-fg-muted disabled:opacity-40">
                   <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`}/>
                 </button>
-                <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">
+                <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-fg-muted border border-line hover:bg-surface-2 transition-colors">
                   <Bell className="w-3.5 h-3.5"/>
                   <span className="w-1.5 h-1.5 rounded-full bg-red-500 ml-0.5"/>
                 </button>
-                <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-900">
+                <button onClick={onClose} className="p-2 rounded-lg hover:bg-surface-2 transition-colors text-fg-muted hover:text-fg">
                   <X className="w-4 h-4"/>
                 </button>
               </div>

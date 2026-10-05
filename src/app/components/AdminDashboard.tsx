@@ -16,16 +16,16 @@ import vinkLogo from "../../imports/LOGO_FINAL.png";
 interface Props { isOpen: boolean; onClose: () => void; }
 
 const P = "#5C0A10";
-const GOLD = "#F5A623";
+const GOLD = "#C9A84C";
 
 // ─── Status config ────────────────────────────────────────────────────────────
 
 const STATUS_CONFIG: Record<AppStatus, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
-  submitted:            { label: "Submitted",         color: "#F59E0B", bg: "#FEF3C7", icon: <Clock className="w-3.5 h-3.5" /> },
-  under_review:         { label: "Under Review",      color: "#3B82F6", bg: "#DBEAFE", icon: <Eye className="w-3.5 h-3.5" /> },
-  approved:             { label: "Approved",          color: "#10B981", bg: "#D1FAE5", icon: <CheckCircle className="w-3.5 h-3.5" /> },
-  declined:             { label: "Declined",          color: "#EF4444", bg: "#FEE2E2", icon: <XCircle className="w-3.5 h-3.5" /> },
-  more_info_requested:  { label: "More Info Needed",  color: "#34A853", bg: "#F2EFE8", icon: <AlertCircle className="w-3.5 h-3.5" /> },
+  submitted:            { label: "Submitted",         color: "#F59E0B", bg: "var(--vk-warn-bg)", icon: <Clock className="w-3.5 h-3.5" /> },
+  under_review:         { label: "Under Review",      color: "#3B82F6", bg: "var(--vk-info-bg)", icon: <Eye className="w-3.5 h-3.5" /> },
+  approved:             { label: "Approved",          color: "#10B981", bg: "var(--vk-ok-bg)", icon: <CheckCircle className="w-3.5 h-3.5" /> },
+  declined:             { label: "Declined",          color: "#EF4444", bg: "var(--vk-bad-bg)", icon: <XCircle className="w-3.5 h-3.5" /> },
+  more_info_requested:  { label: "More Info Needed",  color: "#34A853", bg: "var(--vk-surface-2)", icon: <AlertCircle className="w-3.5 h-3.5" /> },
 };
 
 // Narrowed to the 3 account tiers this system actually persists — see the
@@ -95,23 +95,23 @@ function AppDetailDrawer({ app, onClose, onAction }: {
   const formEntries = Object.entries(app.tierData ?? {}).filter(([, v]) => v !== "" && v !== null && v !== false);
 
   return (
-    <div className="fixed inset-y-0 right-0 z-60 w-full max-w-xl bg-white shadow-2xl flex flex-col border-l border-gray-200">
+    <div className="fixed inset-y-0 right-0 z-60 w-full max-w-xl bg-surface shadow-2xl flex flex-col border-l border-line">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 flex-shrink-0">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-line flex-shrink-0">
         <div>
-          <p className="text-sm font-black text-gray-900">{app.referenceNumber}</p>
-          <p className="text-xs text-gray-500 mt-0.5">{app.applicantName} · {TYPE_LABELS_TIER[app.tier] ?? app.tier}</p>
+          <p className="text-sm font-black text-fg">{app.referenceNumber}</p>
+          <p className="text-xs text-fg-muted mt-0.5">{app.applicantName} · {TYPE_LABELS_TIER[app.tier] ?? app.tier}</p>
         </div>
         <div className="flex items-center gap-2">
           <StatusBadge status={app.status} />
-          <button onClick={onClose} className="p-1.5 rounded-full hover:bg-gray-100 text-gray-500">
+          <button onClick={onClose} className="p-1.5 rounded-full hover:bg-surface-2 text-fg-muted">
             <X className="w-4 h-4" />
           </button>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-gray-200 flex-shrink-0">
+      <div className="flex border-b border-line flex-shrink-0">
         {(["details", "formData", "events"] as const).map(t => (
           <button key={t} onClick={() => setTab(t)}
             className="px-4 py-2.5 text-xs font-semibold transition-colors border-b-2"
@@ -137,18 +137,18 @@ function AppDetailDrawer({ app, onClose, onAction }: {
                 { label: "Assigned To",     value: app.statusReason || "Unassigned" },
                 { label: "Review Notes",    value: app.statusReason || "None" },
               ].map((item, i) => (
-                <div key={i} className="p-3 rounded-xl bg-gray-50">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">{item.label}</p>
-                  <p className="text-sm font-semibold text-gray-800 mt-0.5 break-words">{item.value}</p>
+                <div key={i} className="p-3 rounded-xl bg-surface-2">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-fg-subtle">{item.label}</p>
+                  <p className="text-sm font-semibold text-fg mt-0.5 break-words">{item.value}</p>
                 </div>
               ))}
             </div>
 
             {/* Assign reviewer */}
-            <div className="rounded-xl border border-gray-200 p-4 space-y-3">
-              <p className="text-xs font-bold text-gray-700 uppercase tracking-wide">Assign to Reviewer</p>
+            <div className="rounded-xl border border-line p-4 space-y-3">
+              <p className="text-xs font-bold text-fg uppercase tracking-wide">Assign to Reviewer</p>
               <div className="flex gap-2">
-                <select className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-400"
+                <select className="flex-1 border border-line rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-400"
                   value={selectedReviewer} onChange={e => setSelectedReviewer(e.target.value)}>
                   <option value="">Select reviewer…</option>
                   {REVIEWERS.map(r => <option key={r}>{r}</option>)}
@@ -167,13 +167,13 @@ function AppDetailDrawer({ app, onClose, onAction }: {
         {tab === "formData" && (
           <div className="space-y-2">
             {formEntries.length === 0 ? (
-              <p className="text-sm text-gray-400 text-center py-8">No form data captured.</p>
+              <p className="text-sm text-fg-subtle text-center py-8">No form data captured.</p>
             ) : formEntries.map(([key, val], i) => (
-              <div key={i} className="flex items-start gap-3 px-4 py-3 rounded-xl bg-gray-50">
-                <span className="text-[10px] font-bold uppercase tracking-wide text-gray-400 w-28 flex-shrink-0 mt-0.5">
+              <div key={i} className="flex items-start gap-3 px-4 py-3 rounded-xl bg-surface-2">
+                <span className="text-[10px] font-bold uppercase tracking-wide text-fg-subtle w-28 flex-shrink-0 mt-0.5">
                   {key.replace(/([A-Z])/g, " $1").trim()}
                 </span>
-                <span className="text-sm text-gray-800 font-medium break-words flex-1">
+                <span className="text-sm text-fg font-medium break-words flex-1">
                   {typeof val === "boolean" ? (val ? "Yes" : "No") : String(val ?? "—")}
                 </span>
               </div>
@@ -184,17 +184,17 @@ function AppDetailDrawer({ app, onClose, onAction }: {
         {tab === "events" && (
           <div className="space-y-3">
             {events.length === 0 ? (
-              <p className="text-sm text-gray-400 text-center py-8">No events recorded yet.</p>
+              <p className="text-sm text-fg-subtle text-center py-8">No events recorded yet.</p>
             ) : [...events].reverse().map((ev: Record<string,unknown>, i: number) => (
-              <div key={i} className="flex items-start gap-3 p-3 rounded-xl border border-gray-100">
+              <div key={i} className="flex items-start gap-3 p-3 rounded-xl border border-line">
                 <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-white text-xs font-bold"
                   style={{ background: ev.action === "approved" ? "#10B981" : ev.action === "declined" ? "#EF4444" : P }}>
                   {String(ev.action ?? "?")[0].toUpperCase()}
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-gray-800 capitalize">{String(ev.action ?? "").replace(/_/g, " ")}</p>
-                  {ev.note && <p className="text-xs text-gray-600 mt-0.5">{String(ev.note)}</p>}
-                  <p className="text-[10px] text-gray-400 mt-1">by {String(ev.by ?? "Admin")} · {new Date(String(ev.at ?? "")).toLocaleString("en-ZA", { dateStyle: "short", timeStyle: "short" })}</p>
+                  <p className="text-sm font-bold text-fg capitalize">{String(ev.action ?? "").replace(/_/g, " ")}</p>
+                  {ev.note && <p className="text-xs text-fg-muted mt-0.5">{String(ev.note)}</p>}
+                  <p className="text-[10px] text-fg-subtle mt-1">by {String(ev.by ?? "Admin")} · {new Date(String(ev.at ?? "")).toLocaleString("en-ZA", { dateStyle: "short", timeStyle: "short" })}</p>
                 </div>
               </div>
             ))}
@@ -204,16 +204,16 @@ function AppDetailDrawer({ app, onClose, onAction }: {
 
       {/* Action bar — only for actionable statuses */}
       {(app.status === "submitted" || app.status === "under_review" || app.status === "more_info_requested") && (
-        <div className="border-t border-gray-200 p-4 space-y-3 flex-shrink-0 bg-gray-50">
+        <div className="border-t border-line p-4 space-y-3 flex-shrink-0 bg-surface-2">
 
           {showDeclineForm && (
             <div className="space-y-2">
               <p className="text-xs font-bold text-red-600">Decline reason (required)</p>
-              <textarea className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-red-400 resize-none" rows={3}
+              <textarea className="w-full border border-line rounded-xl px-3 py-2.5 text-sm outline-none focus:border-red-400 resize-none" rows={3}
                 placeholder="Explain why this application is being declined…"
                 value={declineReason} onChange={e => setDeclineReason(e.target.value)} />
               <div className="flex gap-2">
-                <button onClick={() => { setShowDeclineForm(false); setDeclineReason(""); }} className="flex-1 py-2 rounded-xl text-xs font-bold text-gray-500 bg-white border border-gray-200">Cancel</button>
+                <button onClick={() => { setShowDeclineForm(false); setDeclineReason(""); }} className="flex-1 py-2 rounded-xl text-xs font-bold text-fg-muted bg-surface border border-line">Cancel</button>
                 <button onClick={() => declineReason && doAction("decline")} disabled={!declineReason || acting === "decline"}
                   className="flex-1 py-2 rounded-xl text-xs font-bold text-white disabled:opacity-40" style={{ background: "#EF4444" }}>
                   {acting === "decline" ? "Declining…" : "Confirm Decline"}
@@ -225,11 +225,11 @@ function AppDetailDrawer({ app, onClose, onAction }: {
           {showInfoForm && (
             <div className="space-y-2">
               <p className="text-xs font-bold text-emerald-600">Describe the information required</p>
-              <textarea className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400 resize-none" rows={3}
+              <textarea className="w-full border border-line rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400 resize-none" rows={3}
                 placeholder="e.g. Please provide latest 3 months' bank statements…"
                 value={infoNote} onChange={e => setInfoNote(e.target.value)} />
               <div className="flex gap-2">
-                <button onClick={() => { setShowInfoForm(false); setInfoNote(""); }} className="flex-1 py-2 rounded-xl text-xs font-bold text-gray-500 bg-white border border-gray-200">Cancel</button>
+                <button onClick={() => { setShowInfoForm(false); setInfoNote(""); }} className="flex-1 py-2 rounded-xl text-xs font-bold text-fg-muted bg-surface border border-line">Cancel</button>
                 <button onClick={() => infoNote && doAction("request_info")} disabled={!infoNote || acting === "request_info"}
                   className="flex-1 py-2 rounded-xl text-xs font-bold text-white disabled:opacity-40" style={{ background: "#34A853" }}>
                   {acting === "request_info" ? "Sending…" : "Send Request"}
@@ -254,7 +254,7 @@ function AppDetailDrawer({ app, onClose, onAction }: {
               </button>
               <button onClick={() => setShowInfoForm(true)}
                 className="flex flex-col items-center gap-1.5 py-3 rounded-2xl text-xs font-black text-white transition-all hover:scale-[1.03] active:scale-[0.97]"
-                style={{ background: "linear-gradient(135deg,#C9A84C,#FF9900)" }}>
+                style={{ background: "linear-gradient(135deg,#C9A84C,#C9A84C)" }}>
                 <MessageSquare className="w-5 h-5" />
                 More Info
               </button>
@@ -362,7 +362,7 @@ export function AdminDashboard({ isOpen, onClose }: Props) {
   } | null;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-gray-50">
+    <div className="fixed inset-0 z-50 flex flex-col bg-surface-2">
 
       {/* Toast */}
       {toast && (
@@ -372,12 +372,12 @@ export function AdminDashboard({ isOpen, onClose }: Props) {
       )}
 
       {/* Top bar */}
-      <div className="flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm flex-shrink-0 z-10">
+      <div className="flex items-center justify-between px-5 py-3 bg-surface border-b border-line shadow-sm flex-shrink-0 z-10">
         <div className="flex items-center gap-3">
           <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-8 w-auto object-contain" />
-          <div className="border-l border-gray-200 pl-3">
-            <p className="text-sm font-black text-gray-900 leading-none">Admin Dashboard</p>
-            <p className="text-[10px] text-gray-400 mt-0.5">Application Review & Approval Centre</p>
+          <div className="border-l border-line pl-3">
+            <p className="text-sm font-black text-fg leading-none">Admin Dashboard</p>
+            <p className="text-[10px] text-fg-subtle mt-0.5">Application Review & Approval Centre</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -386,10 +386,10 @@ export function AdminDashboard({ isOpen, onClose }: Props) {
             {connected ? "Supabase Live" : "Connecting…"}
           </div>
           <button onClick={() => { loadDashboard(); if (view === "applications") loadApplications(); }}
-            className="p-2 rounded-full hover:bg-gray-100 text-gray-500 transition-colors">
+            className="p-2 rounded-full hover:bg-surface-2 text-fg-muted transition-colors">
             <RefreshCw className="w-4 h-4" />
           </button>
-          <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 text-gray-500 transition-colors">
+          <button onClick={onClose} className="p-2 rounded-full hover:bg-surface-2 text-fg-muted transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -397,7 +397,7 @@ export function AdminDashboard({ isOpen, onClose }: Props) {
 
       <div className="flex flex-1 min-h-0">
         {/* Sidebar */}
-        <aside className="w-52 flex-shrink-0 bg-white border-r border-gray-100 flex flex-col py-4 px-2 overflow-y-auto">
+        <aside className="w-52 flex-shrink-0 bg-surface border-r border-line flex flex-col py-4 px-2 overflow-y-auto">
           {[
             { id: "dashboard",     label: "Dashboard",      icon: <BarChart3 className="w-4 h-4" />,  badge: null },
             { id: "applications",  label: "Applications",   icon: <FileText className="w-4 h-4" />,   badge: s?.pendingCount ? String(s.pendingCount) : null },
@@ -418,16 +418,16 @@ export function AdminDashboard({ isOpen, onClose }: Props) {
 
           {/* Quick stats in sidebar */}
           {s && (
-            <div className="mt-auto mx-1 mb-1 p-3 rounded-xl bg-gray-50 border border-gray-100 space-y-2">
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Quick Stats</p>
+            <div className="mt-auto mx-1 mb-1 p-3 rounded-xl bg-surface-2 border border-line space-y-2">
+              <p className="text-[10px] font-bold text-fg-subtle uppercase tracking-wide">Quick Stats</p>
               {[
                 { label: "Pending",     value: s.pendingCount,     color: "#F59E0B" },
                 { label: "Approved",    value: s.approvedCount,    color: "#10B981" },
                 { label: "Declined",    value: s.declinedCount,    color: "#EF4444" },
-                { label: "Total",       value: s.totalApplications, color: P },
+                { label: "Total",       value: s.totalApplications, color: "var(--vk-crimson-text)" },
               ].map(stat => (
                 <div key={stat.label} className="flex justify-between items-center">
-                  <span className="text-[11px] text-gray-600">{stat.label}</span>
+                  <span className="text-[11px] text-fg-muted">{stat.label}</span>
                   <span className="text-[11px] font-black" style={{ color: stat.color }}>{String(stat.value ?? 0)}</span>
                 </div>
               ))}
@@ -442,12 +442,12 @@ export function AdminDashboard({ isOpen, onClose }: Props) {
           {view === "dashboard" && (
             <div className="space-y-6 max-w-5xl">
               <div className="flex items-center justify-between">
-                <h1 className="text-xl font-black text-gray-900">Overview</h1>
-                {s?.lastUpdated && <p className="text-xs text-gray-400">Updated {new Date(String(s.lastUpdated)).toLocaleTimeString("en-ZA")}</p>}
+                <h1 className="text-xl font-black text-fg">Overview</h1>
+                {s?.lastUpdated && <p className="text-xs text-fg-subtle">Updated {new Date(String(s.lastUpdated)).toLocaleTimeString("en-ZA")}</p>}
               </div>
 
               {loading && !s ? (
-                <div className="flex items-center justify-center py-20 gap-3 text-gray-400">
+                <div className="flex items-center justify-center py-20 gap-3 text-fg-subtle">
                   <RefreshCw className="w-5 h-5 animate-spin" />
                   <span className="text-sm">Loading from Supabase…</span>
                 </div>
@@ -456,29 +456,29 @@ export function AdminDashboard({ isOpen, onClose }: Props) {
                   {/* KPI cards */}
                   <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                     {[
-                      { label: "Total",       value: s?.totalApplications ?? 0,    color: P },
+                      { label: "Total",       value: s?.totalApplications ?? 0,    color: "var(--vk-crimson-text)" },
                       { label: "Pending",     value: s?.pendingCount ?? 0,         color: "#F59E0B" },
                       { label: "Under Review",value: s?.underReviewCount ?? 0,     color: "#3B82F6" },
                       { label: "Approved",    value: s?.approvedCount ?? 0,        color: "#10B981" },
                       { label: "Declined",    value: s?.declinedCount ?? 0,        color: "#EF4444" },
                     ].map((kpi, i) => (
-                      <div key={i} className="bg-white rounded-2xl border border-gray-100 p-4 hover:shadow-md transition-shadow cursor-pointer"
+                      <div key={i} className="bg-surface rounded-2xl border border-line p-4 hover:shadow-md transition-shadow cursor-pointer"
                         onClick={() => { setFilterStatus(i === 0 ? "" : ["","pending","under_review","approved","declined"][i]); setView("applications"); }}>
                         <p className="text-3xl font-black" style={{ color: kpi.color }}>{String(kpi.value)}</p>
-                        <p className="text-xs font-medium text-gray-500 mt-1">{kpi.label}</p>
+                        <p className="text-xs font-medium text-fg-muted mt-1">{kpi.label}</p>
                       </div>
                     ))}
                   </div>
 
                   {/* By type */}
-                  <div className="bg-white rounded-2xl border border-gray-100 p-5">
-                    <h2 className="text-sm font-black text-gray-800 mb-4">Applications by Type</h2>
+                  <div className="bg-surface rounded-2xl border border-line p-5">
+                    <h2 className="text-sm font-black text-fg mb-4">Applications by Type</h2>
                     <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
                       {Object.entries((s?.byType as Record<string,number>) ?? {}).map(([type, count]) => (
                         <button key={type} onClick={() => { setFilterType(type); setFilterStatus(""); setView("applications"); }}
-                          className="rounded-xl p-3 text-center hover:shadow-md transition-all cursor-pointer border border-gray-100 hover:border-emerald-200">
+                          className="rounded-xl p-3 text-center hover:shadow-md transition-all cursor-pointer border border-line hover:border-emerald-200">
                           <p className="text-2xl font-black" style={{ color: TYPE_COLORS_TIER[type] ?? P }}>{count}</p>
-                          <p className="text-[10px] font-semibold text-gray-500 mt-0.5">{TYPE_LABELS_TIER[type] ?? type}</p>
+                          <p className="text-[10px] font-semibold text-fg-muted mt-0.5">{TYPE_LABELS_TIER[type] ?? type}</p>
                         </button>
                       ))}
                     </div>
@@ -486,9 +486,9 @@ export function AdminDashboard({ isOpen, onClose }: Props) {
 
                   {/* Pending queue */}
                   {((s?.pendingQueue as Application[]) ?? []).length > 0 && (
-                    <div className="bg-white rounded-2xl border border-gray-100 p-5">
+                    <div className="bg-surface rounded-2xl border border-line p-5">
                       <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-sm font-black text-gray-800 flex items-center gap-2">
+                        <h2 className="text-sm font-black text-fg flex items-center gap-2">
                           <Clock className="w-4 h-4 text-amber-500" />
                           Pending Queue — Needs Action
                         </h2>
@@ -497,19 +497,19 @@ export function AdminDashboard({ isOpen, onClose }: Props) {
                       </div>
                       <div className="space-y-2">
                         {((s?.pendingQueue as Application[]) ?? []).map((app, i) => (
-                          <div key={i} className="flex items-center gap-3 py-2.5 px-3 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer border border-transparent hover:border-gray-200"
+                          <div key={i} className="flex items-center gap-3 py-2.5 px-3 rounded-xl hover:bg-surface-2 transition-colors cursor-pointer border border-transparent hover:border-line"
                             onClick={() => { setSelectedApp(app); setView("applications"); }}>
                             <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white text-xs font-black flex-shrink-0"
                               style={{ background: TYPE_COLORS_TIER[app.tier] ?? P }}>
                               {(TYPE_LABELS_TIER[app.tier] ?? app.tier)[0]}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-bold text-gray-800 truncate">{app.applicantName}</p>
-                              <p className="text-[10px] text-gray-500">{app.referenceNumber} · {TYPE_LABELS_TIER[app.tier] ?? app.tier}</p>
+                              <p className="text-sm font-bold text-fg truncate">{app.applicantName}</p>
+                              <p className="text-[10px] text-fg-muted">{app.referenceNumber} · {TYPE_LABELS_TIER[app.tier] ?? app.tier}</p>
                             </div>
                             <div className="text-right flex-shrink-0">
                               <StatusBadge status={app.status} />
-                              <p className="text-[10px] text-gray-400 mt-0.5">{new Date(app.submittedAt).toLocaleDateString("en-ZA")}</p>
+                              <p className="text-[10px] text-fg-subtle mt-0.5">{new Date(app.submittedAt).toLocaleDateString("en-ZA")}</p>
                             </div>
                           </div>
                         ))}
@@ -519,13 +519,13 @@ export function AdminDashboard({ isOpen, onClose }: Props) {
 
                   {/* Extra stats */}
                   <div className="grid sm:grid-cols-2 gap-4">
-                    <div className="bg-white rounded-2xl border border-gray-100 p-5">
-                      <p className="text-sm font-black text-gray-800 mb-1">Contact Form Submissions</p>
-                      <p className="text-3xl font-black" style={{ color: P }}>{String(s?.totalContacts ?? 0)}</p>
+                    <div className="bg-surface rounded-2xl border border-line p-5">
+                      <p className="text-sm font-black text-fg mb-1">Contact Form Submissions</p>
+                      <p className="text-3xl font-black" style={{ color: "var(--vk-crimson-text)" }}>{String(s?.totalContacts ?? 0)}</p>
                       <button onClick={() => setView("contacts")} className="text-xs text-emerald-600 font-semibold mt-2 hover:underline">View all →</button>
                     </div>
-                    <div className="bg-white rounded-2xl border border-gray-100 p-5">
-                      <p className="text-sm font-black text-gray-800 mb-1">Newsletter Subscribers</p>
+                    <div className="bg-surface rounded-2xl border border-line p-5">
+                      <p className="text-sm font-black text-fg mb-1">Newsletter Subscribers</p>
                       <p className="text-3xl font-black" style={{ color: "#10B981" }}>{String(s?.newsletterSubscribers ?? 0)}</p>
                       <button onClick={() => setView("newsletter")} className="text-xs text-green-600 font-semibold mt-2 hover:underline">View all →</button>
                     </div>
@@ -539,63 +539,63 @@ export function AdminDashboard({ isOpen, onClose }: Props) {
           {view === "applications" && (
             <div className="space-y-4 max-w-5xl">
               <div className="flex items-center justify-between flex-wrap gap-3">
-                <h1 className="text-xl font-black text-gray-900">Applications</h1>
-                <div className="text-xs text-gray-500">{apps.length} results · Page {page}/{totalPages}</div>
+                <h1 className="text-xl font-black text-fg">Applications</h1>
+                <div className="text-xs text-fg-muted">{apps.length} results · Page {page}/{totalPages}</div>
               </div>
 
               {/* Filters */}
-              <div className="bg-white rounded-2xl border border-gray-100 p-4 flex flex-wrap gap-3 items-center">
-                <div className="flex items-center gap-2 flex-1 min-w-[200px] border border-gray-200 rounded-xl px-3 py-2">
-                  <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
+              <div className="bg-surface rounded-2xl border border-line p-4 flex flex-wrap gap-3 items-center">
+                <div className="flex items-center gap-2 flex-1 min-w-[200px] border border-line rounded-xl px-3 py-2">
+                  <Search className="w-4 h-4 text-fg-subtle flex-shrink-0" />
                   <input className="flex-1 text-sm outline-none bg-transparent" placeholder="Search name, reference, email…"
                     value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} />
                 </div>
-                <select className="border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-400 bg-white"
+                <select className="border border-line rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-400 bg-surface"
                   value={filterStatus} onChange={e => { setFilterStatus(e.target.value); setPage(1); }}>
                   <option value="">All statuses</option>
                   {Object.entries(STATUS_CONFIG).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
                 </select>
-                <select className="border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-400 bg-white"
+                <select className="border border-line rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-400 bg-surface"
                   value={filterType} onChange={e => { setFilterType(e.target.value); setPage(1); }}>
                   <option value="">All types</option>
                   {Object.entries(TYPE_LABELS_TIER).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                 </select>
-                <button onClick={loadApplications} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors">
+                <button onClick={loadApplications} className="p-2 rounded-xl hover:bg-surface-2 text-fg-muted transition-colors">
                   <RefreshCw className="w-4 h-4" />
                 </button>
               </div>
 
               {/* Applications table */}
-              <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+              <div className="bg-surface rounded-2xl border border-line overflow-hidden">
                 {loading ? (
-                  <div className="flex items-center justify-center py-16 gap-3 text-gray-400">
+                  <div className="flex items-center justify-center py-16 gap-3 text-fg-subtle">
                     <RefreshCw className="w-5 h-5 animate-spin" />
                     <span className="text-sm">Loading…</span>
                   </div>
                 ) : apps.length === 0 ? (
-                  <div className="py-16 text-center text-gray-400 text-sm">No applications match your filters.</div>
+                  <div className="py-16 text-center text-fg-subtle text-sm">No applications match your filters.</div>
                 ) : (
                   <div className="divide-y divide-gray-50">
                     {apps.map((app, i) => (
                       <div key={i}
-                        className={`flex items-center gap-4 px-5 py-3.5 hover:bg-gray-50 transition-colors cursor-pointer ${selectedApp?.referenceNumber === app.referenceNumber ? "bg-emerald-50" : ""}`}
+                        className={`flex items-center gap-4 px-5 py-3.5 hover:bg-surface-2 transition-colors cursor-pointer ${selectedApp?.referenceNumber === app.referenceNumber ? "bg-emerald-50" : ""}`}
                         onClick={() => setSelectedApp(selectedApp?.referenceNumber === app.referenceNumber ? null : app)}>
                         <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-black flex-shrink-0"
                           style={{ background: TYPE_COLORS_TIER[app.tier] ?? P }}>
                           {(TYPE_LABELS_TIER[app.tier] ?? app.tier)[0]}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-bold text-gray-800 truncate">{app.applicantName}</p>
-                          <p className="text-[11px] text-gray-500">{app.referenceNumber} · {app.applicantEmail || app.applicantPhone}</p>
+                          <p className="text-sm font-bold text-fg truncate">{app.applicantName}</p>
+                          <p className="text-[11px] text-fg-muted">{app.referenceNumber} · {app.applicantEmail || app.applicantPhone}</p>
                         </div>
                         <div className="hidden md:block flex-shrink-0">
-                          <p className="text-xs font-semibold text-gray-600">{TYPE_LABELS_TIER[app.tier] ?? app.tier}</p>
-                          {app.accountTypeRequested && <p className="text-[10px] text-gray-400">{app.accountTypeRequested}</p>}
+                          <p className="text-xs font-semibold text-fg-muted">{TYPE_LABELS_TIER[app.tier] ?? app.tier}</p>
+                          {app.accountTypeRequested && <p className="text-[10px] text-fg-subtle">{app.accountTypeRequested}</p>}
                         </div>
                         <div className="flex-shrink-0"><StatusBadge status={app.status} /></div>
                         <div className="text-right flex-shrink-0 hidden sm:block">
-                          <p className="text-[10px] text-gray-400">{new Date(app.submittedAt).toLocaleDateString("en-ZA")}</p>
-                          {app.statusReason && <p className="text-[10px] text-gray-500 mt-0.5">→ {app.statusReason}</p>}
+                          <p className="text-[10px] text-fg-subtle">{new Date(app.submittedAt).toLocaleDateString("en-ZA")}</p>
+                          {app.statusReason && <p className="text-[10px] text-fg-muted mt-0.5">→ {app.statusReason}</p>}
                         </div>
                         <ChevronRight className="w-4 h-4 text-gray-300 flex-shrink-0" />
                       </div>
@@ -608,10 +608,10 @@ export function AdminDashboard({ isOpen, onClose }: Props) {
               {totalPages > 1 && (
                 <div className="flex items-center justify-center gap-2">
                   <button disabled={page <= 1} onClick={() => setPage(p => p - 1)}
-                    className="px-4 py-2 rounded-xl text-sm font-semibold text-gray-600 bg-white border border-gray-200 disabled:opacity-40 hover:bg-gray-50 transition-all">← Prev</button>
-                  <span className="text-sm text-gray-500">Page {page} of {totalPages}</span>
+                    className="px-4 py-2 rounded-xl text-sm font-semibold text-fg-muted bg-surface border border-line disabled:opacity-40 hover:bg-surface-2 transition-all">← Prev</button>
+                  <span className="text-sm text-fg-muted">Page {page} of {totalPages}</span>
                   <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}
-                    className="px-4 py-2 rounded-xl text-sm font-semibold text-gray-600 bg-white border border-gray-200 disabled:opacity-40 hover:bg-gray-50 transition-all">Next →</button>
+                    className="px-4 py-2 rounded-xl text-sm font-semibold text-fg-muted bg-surface border border-line disabled:opacity-40 hover:bg-surface-2 transition-all">Next →</button>
                 </div>
               )}
             </div>
@@ -620,23 +620,23 @@ export function AdminDashboard({ isOpen, onClose }: Props) {
           {/* ══ CONTACTS ══ */}
           {view === "contacts" && (
             <div className="space-y-4 max-w-4xl">
-              <h1 className="text-xl font-black text-gray-900">Contact Form Submissions ({contacts.length})</h1>
-              <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+              <h1 className="text-xl font-black text-fg">Contact Form Submissions ({contacts.length})</h1>
+              <div className="bg-surface rounded-2xl border border-line overflow-hidden">
                 {contacts.length === 0 ? (
-                  <div className="py-16 text-center text-gray-400 text-sm">No contact submissions yet.</div>
+                  <div className="py-16 text-center text-fg-subtle text-sm">No contact submissions yet.</div>
                 ) : (
                   <div className="divide-y divide-gray-50">
                     {contacts.map((c, i) => (
                       <div key={i} className="px-5 py-4">
                         <div className="flex items-start justify-between gap-3">
                           <div>
-                            <p className="text-sm font-bold text-gray-800">{String(c.name ?? "Unknown")}</p>
-                            <p className="text-xs text-gray-500 mt-0.5">{String(c.email ?? "")} · {String(c.phone ?? "")}</p>
+                            <p className="text-sm font-bold text-fg">{String(c.name ?? "Unknown")}</p>
+                            <p className="text-xs text-fg-muted mt-0.5">{String(c.email ?? "")} · {String(c.phone ?? "")}</p>
                           </div>
-                          <span className="text-[10px] text-gray-400 flex-shrink-0">{new Date(String(c.createdAt ?? "")).toLocaleDateString("en-ZA")}</span>
+                          <span className="text-[10px] text-fg-subtle flex-shrink-0">{new Date(String(c.createdAt ?? "")).toLocaleDateString("en-ZA")}</span>
                         </div>
-                        <p className="text-xs font-semibold text-gray-700 mt-2">{String(c.subject ?? "(no subject)")}</p>
-                        <p className="text-xs text-gray-600 mt-1 leading-relaxed">{String(c.message ?? "")}</p>
+                        <p className="text-xs font-semibold text-fg mt-2">{String(c.subject ?? "(no subject)")}</p>
+                        <p className="text-xs text-fg-muted mt-1 leading-relaxed">{String(c.message ?? "")}</p>
                       </div>
                     ))}
                   </div>
@@ -649,7 +649,7 @@ export function AdminDashboard({ isOpen, onClose }: Props) {
           {view === "newsletter" && (
             <div className="space-y-4 max-w-4xl">
               <div className="flex items-center justify-between">
-                <h1 className="text-xl font-black text-gray-900">Newsletter Subscribers ({newsletters.length})</h1>
+                <h1 className="text-xl font-black text-fg">Newsletter Subscribers ({newsletters.length})</h1>
                 <button onClick={() => {
                   const csv = "Email\n" + newsletters.join("\n");
                   const blob = new Blob([csv], { type: "text/csv" });
@@ -661,16 +661,16 @@ export function AdminDashboard({ isOpen, onClose }: Props) {
                   <Download className="w-3.5 h-3.5" />Export CSV
                 </button>
               </div>
-              <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+              <div className="bg-surface rounded-2xl border border-line overflow-hidden">
                 {newsletters.length === 0 ? (
-                  <div className="py-16 text-center text-gray-400 text-sm">No subscribers yet.</div>
+                  <div className="py-16 text-center text-fg-subtle text-sm">No subscribers yet.</div>
                 ) : (
                   <div className="divide-y divide-gray-50">
                     {newsletters.map((email, i) => (
                       <div key={i} className="flex items-center gap-3 px-5 py-3">
                         <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-black flex-shrink-0"
                           style={{ background: P }}>{email[0].toUpperCase()}</div>
-                        <p className="text-sm font-medium text-gray-800">{email}</p>
+                        <p className="text-sm font-medium text-fg">{email}</p>
                         <span className="ml-auto text-[10px] text-green-600 bg-green-50 px-2 py-0.5 rounded-full font-bold">Subscribed</span>
                       </div>
                     ))}

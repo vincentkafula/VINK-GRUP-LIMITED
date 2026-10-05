@@ -169,7 +169,7 @@ function ToggleSwitch({ checked, onChange, label }: { checked: boolean; onChange
   return (
     <button onClick={() => onChange(!checked)} className="flex items-center gap-3 group" aria-pressed={checked}>
       <span className={`w-11 h-6 rounded-full relative transition-colors duration-200 ${checked ? "bg-emerald-500" : "bg-slate-300"}`}>
-        <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${checked ? "translate-x-5" : ""}`} />
+        <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-surface rounded-full shadow transition-transform duration-200 ${checked ? "translate-x-5" : ""}`} />
       </span>
       {label && <span className="text-sm text-slate-600">{label}</span>}
     </button>
@@ -270,7 +270,7 @@ const NOTIFICATIONS = [
 function Topbar({ setMobileOpen, driverName, deviceOn, onClose }: { setMobileOpen: (v: boolean) => void; driverName: string; deviceOn: boolean; onClose: () => void }) {
   const [notifOpen, setNotifOpen] = useState(false);
   return (
-    <div className="flex items-center justify-between px-4 lg:px-8 py-4 border-b border-slate-200 bg-white sticky top-0 z-20">
+    <div className="flex items-center justify-between px-4 lg:px-8 py-4 border-b border-slate-200 bg-surface sticky top-0 z-20">
       <div className="flex items-center gap-3 flex-1">
         <button className="lg:hidden text-slate-600" onClick={() => setMobileOpen(true)}><Menu size={22} /></button>
         <div className="hidden sm:flex items-center gap-2 bg-slate-100 rounded-xl px-4 py-2.5 w-full max-w-sm">
@@ -292,7 +292,7 @@ function Topbar({ setMobileOpen, driverName, deviceOn, onClose }: { setMobileOpe
           {notifOpen && (
             <>
               <div className="fixed inset-0 z-30" onClick={() => setNotifOpen(false)} />
-              <div className="absolute right-0 top-10 w-80 bg-white rounded-2xl border border-slate-200 shadow-xl z-40 overflow-hidden">
+              <div className="absolute right-0 top-10 w-80 bg-surface rounded-2xl border border-slate-200 shadow-xl z-40 overflow-hidden">
                 <div className="px-4 py-3 border-b border-slate-100 text-sm font-semibold text-slate-700">Notifications</div>
                 {NOTIFICATIONS.map((n, i) => (
                   <div key={i} className="flex items-start gap-3 px-4 py-3 border-b border-slate-50 last:border-0 hover:bg-slate-50">
@@ -342,28 +342,28 @@ function DashboardView({ trips, gross, uif, paye, netPay, driverName }: { trips:
   return (
     <div>
       <SectionHeader title={`Welcome back, ${driverName.split(" ")[0]} 👋`} subtitle="Here's what's happening on your drive account today."
-        right={<div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4 py-2 text-sm text-slate-600 shadow-sm"><Calendar size={16} /> 05 May 2025 – 11 May 2025 <ChevronDown size={14} /></div>} />
+        right={<div className="flex items-center gap-2 bg-surface border border-slate-200 rounded-xl px-4 py-2 text-sm text-slate-600 shadow-sm"><Calendar size={16} /> 05 May 2025 – 11 May 2025 <ChevronDown size={14} /></div>} />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {stats.map(s => <StatCard key={s.label} {...s} />)}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-6">
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-5">
+        <div className="lg:col-span-2 bg-surface rounded-2xl border border-slate-200 p-5">
           <h3 className="font-semibold text-slate-800 mb-4">Earnings by day</h3>
           <div style={{ width: "100%", height: 220 }}>
             <ResponsiveContainer>
               <BarChart data={byDay} barCategoryGap={22}>
-                <CartesianGrid vertical={false} stroke="#F1F5F9" />
+                <CartesianGrid vertical={false} stroke="var(--vk-surface-2)" />
                 <XAxis dataKey="day" tick={{ fontSize: 12, fill: "#94A3B8" }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: "#94A3B8" }} axisLine={false} tickLine={false} width={40} />
-                <Tooltip formatter={(v: number) => R(v)} cursor={{ fill: "#F8FAFC" }} contentStyle={{ fontSize: 12, borderRadius: 8 }} />
+                <Tooltip formatter={(v: number) => R(v)} cursor={{ fill: "var(--vk-surface-2)" }} contentStyle={{ fontSize: 12, borderRadius: 8 }} />
                 <Bar dataKey="total" fill="#2F5BFF" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
-        <div className="bg-white rounded-2xl border border-slate-200 p-5">
+        <div className="bg-surface rounded-2xl border border-slate-200 p-5">
           <h3 className="font-semibold text-slate-800 mb-4">Card vs cash</h3>
           <div style={{ width: "100%", height: 180 }}>
             <ResponsiveContainer>
@@ -382,7 +382,7 @@ function DashboardView({ trips, gross, uif, paye, netPay, driverName }: { trips:
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
-        <div className="bg-white rounded-2xl border border-slate-200 p-5">
+        <div className="bg-surface rounded-2xl border border-slate-200 p-5">
           <h3 className="font-semibold text-slate-800 mb-4">Recent Activity</h3>
           <div className="space-y-4">
             {trips.slice(0, 3).map(t => (
@@ -400,7 +400,7 @@ function DashboardView({ trips, gross, uif, paye, netPay, driverName }: { trips:
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200 p-5">
+        <div className="bg-surface rounded-2xl border border-slate-200 p-5">
           <div className="flex items-center justify-between mb-4"><h3 className="font-semibold text-slate-800">Upcoming Deadlines</h3><span className="text-xs font-semibold text-blue-600 cursor-pointer">View all</span></div>
           <div className="space-y-4">
             {[
@@ -417,12 +417,12 @@ function DashboardView({ trips, gross, uif, paye, netPay, driverName }: { trips:
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200 p-5">
+        <div className="bg-surface rounded-2xl border border-slate-200 p-5">
           <h3 className="font-semibold text-slate-800 mb-4">System Overview</h3>
           <div className="flex items-center gap-5">
             <div className="relative w-24 h-24">
               <svg viewBox="0 0 36 36" className="w-24 h-24 -rotate-90">
-                <circle cx="18" cy="18" r="16" fill="none" stroke="#E2E8F0" strokeWidth="4" />
+                <circle cx="18" cy="18" r="16" fill="none" stroke="var(--vk-line)" strokeWidth="4" />
                 <circle cx="18" cy="18" r="16" fill="none" stroke="#10B981" strokeWidth="4" strokeDasharray="100" strokeDashoffset="16" strokeLinecap="round" />
               </svg>
               <div className="absolute inset-0 grid place-items-center"><div className="text-lg font-bold text-slate-800 leading-none">98.4%</div></div>
@@ -438,7 +438,7 @@ function DashboardView({ trips, gross, uif, paye, netPay, driverName }: { trips:
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-        <div className="bg-white rounded-2xl border border-slate-200 p-5">
+        <div className="bg-surface rounded-2xl border border-slate-200 p-5">
           <h3 className="font-semibold text-slate-800 mb-1">Payment split</h3>
           <p className="text-xs text-slate-400 mb-4">Card (via machine) vs offline cash trips this period</p>
           <div className="flex-1">
@@ -448,7 +448,7 @@ function DashboardView({ trips, gross, uif, paye, netPay, driverName }: { trips:
             <div className="h-2 rounded-full bg-slate-100 overflow-hidden"><div className="h-full bg-amber-400" style={{ width: `${(cashTotal / (cardTotal + cashTotal)) * 100}%` }} /></div>
           </div>
         </div>
-        <div className="bg-white rounded-2xl border border-slate-200 p-5">
+        <div className="bg-surface rounded-2xl border border-slate-200 p-5">
           <h3 className="font-semibold text-slate-800 mb-1">This week's net pay</h3>
           <p className="text-xs text-slate-400 mb-4">Gross minus tax, UIF and association fee</p>
           <div className="space-y-1.5 text-sm">
@@ -486,14 +486,14 @@ function PowerView({ deviceOn, setDeviceOn }: { deviceOn: boolean; setDeviceOn: 
     <div>
       <SectionHeader eyebrow="Drive module" title="Turn on or off" subtitle="Control the card-tap machine mounted in your vehicle." />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-1 bg-white rounded-2xl border border-slate-200 p-6 flex flex-col items-center text-center">
+        <div className="lg:col-span-1 bg-surface rounded-2xl border border-slate-200 p-6 flex flex-col items-center text-center">
           <div className={`w-20 h-20 rounded-full grid place-items-center mb-4 ${deviceOn ? "bg-emerald-100 text-emerald-600" : "bg-slate-100 text-slate-400"}`}><Power size={32} /></div>
           <div className="text-lg font-bold text-slate-800">{deviceOn ? "Machine is On" : "Machine is Off"}</div>
           <p className="text-sm text-slate-400 mt-1 mb-5">{deviceOn ? "Accepting card taps and processing trips." : "No trips will be recorded until turned on."}</p>
           <ToggleSwitch checked={deviceOn} onChange={setDeviceOn} label={deviceOn ? "Tap to turn off" : "Tap to turn on"} />
         </div>
 
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-6">
+        <div className="lg:col-span-2 bg-surface rounded-2xl border border-slate-200 p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-slate-800">Device information</h3>
             <button onClick={() => setShowTerminal(true)} className="text-xs font-bold text-blue-600 flex items-center gap-1">View full terminal specs <ChevronRight size={12} /></button>
@@ -652,7 +652,7 @@ function PreviewView({ trips, deviceOn }: { trips: Trip[]; deviceOn: boolean }) 
         } />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 flex flex-col items-center justify-center text-center relative overflow-hidden">
+        <div className="bg-surface rounded-2xl border border-slate-200 p-6 flex flex-col items-center justify-center text-center relative overflow-hidden">
           <div className="relative w-24 h-24 grid place-items-center mb-4">
             {deviceOn && <span className="absolute inset-0 rounded-full border-2 border-emerald-400" style={{ animation: "ringExpand 2.2s ease-out infinite" }} />}
             <div className={`w-16 h-16 rounded-full grid place-items-center ${deviceOn ? "bg-emerald-500 text-white" : "bg-slate-200 text-slate-400"}`} style={deviceOn ? { animation: "tapPulse 2.2s infinite" } : {}}>
@@ -663,7 +663,7 @@ function PreviewView({ trips, deviceOn }: { trips: Trip[]; deviceOn: boolean }) 
           <p className="text-xs text-slate-400 mt-1">{deviceOn ? "New taps appear below the moment they happen." : "Turn the machine on to start receiving taps."}</p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200 p-6">
+        <div className="bg-surface rounded-2xl border border-slate-200 p-6">
           <div className="text-xs font-semibold text-slate-400 uppercase mb-3">Last tap</div>
           {latest ? (
             <div className="flex items-center gap-4" style={{ animation: flashId === latest.id ? "cardTap 0.5s ease-out" : "none" }}>
@@ -683,7 +683,7 @@ function PreviewView({ trips, deviceOn }: { trips: Trip[]; deviceOn: boolean }) 
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200 p-6">
+        <div className="bg-surface rounded-2xl border border-slate-200 p-6">
           <div className="text-xs font-semibold text-slate-400 uppercase mb-1">Running total — today</div>
           <div className="text-2xl font-bold text-slate-900 mb-3">{R(todayTotal)}</div>
           <div style={{ width: "100%", height: 70 }}>
@@ -701,13 +701,13 @@ function PreviewView({ trips, deviceOn }: { trips: Trip[]; deviceOn: boolean }) 
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
         <div className="flex gap-2">
           {([["all", "All"], ["card", "Card taps"], ["cash", "Cash (offline)"]] as const).map(([k, l]) => (
-            <button key={k} onClick={() => setFilter(k)} className={`px-4 py-2 rounded-xl text-sm font-medium border ${filter === k ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-600 border-slate-200"}`}>{l}</button>
+            <button key={k} onClick={() => setFilter(k)} className={`px-4 py-2 rounded-xl text-sm font-medium border ${filter === k ? "bg-slate-900 text-white border-slate-900" : "bg-surface text-slate-600 border-slate-200"}`}>{l}</button>
           ))}
         </div>
         <div className="flex items-center gap-1.5 text-xs text-slate-400"><Radio size={13} className={deviceOn ? "text-emerald-500" : ""} /> Auto-updating live</div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+      <div className="bg-surface rounded-2xl border border-slate-200 overflow-hidden">
         <div className="grid grid-cols-6 gap-2 px-5 py-3 text-xs font-semibold text-slate-400 uppercase border-b border-slate-100">
           <span className="col-span-2">Trip</span><span>Amount</span><span>Method</span><span>Location</span><span>Status</span>
         </div>
@@ -775,10 +775,10 @@ function StatementsView({ trips, gross }: { trips: Trip[]; gross: number }) {
         } />
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-2xl border border-slate-200 p-5"><div className="text-xs text-slate-400 mb-1">Total trips</div><div className="text-2xl font-bold text-slate-900">{trips.length}</div></div>
-        <div className="bg-white rounded-2xl border border-slate-200 p-5"><div className="text-xs text-slate-400 mb-1">Gross earned</div><div className="text-2xl font-bold text-slate-900">{R(gross)}</div></div>
-        <div className="bg-white rounded-2xl border border-slate-200 p-5"><div className="text-xs text-slate-400 mb-1">Card / Cash split</div><div className="text-xl font-bold text-slate-900">{R(cardTotal)} <span className="text-slate-300">/</span> {R(cashTotal)}</div></div>
-        <div className="bg-white rounded-2xl border border-slate-200 p-5 col-span-1">
+        <div className="bg-surface rounded-2xl border border-slate-200 p-5"><div className="text-xs text-slate-400 mb-1">Total trips</div><div className="text-2xl font-bold text-slate-900">{trips.length}</div></div>
+        <div className="bg-surface rounded-2xl border border-slate-200 p-5"><div className="text-xs text-slate-400 mb-1">Gross earned</div><div className="text-2xl font-bold text-slate-900">{R(gross)}</div></div>
+        <div className="bg-surface rounded-2xl border border-slate-200 p-5"><div className="text-xs text-slate-400 mb-1">Card / Cash split</div><div className="text-xl font-bold text-slate-900">{R(cardTotal)} <span className="text-slate-300">/</span> {R(cashTotal)}</div></div>
+        <div className="bg-surface rounded-2xl border border-slate-200 p-5 col-span-1">
           <div className="text-xs text-slate-400 mb-1">Trend this period</div>
           <div style={{ width: "100%", height: 44 }}>
             <ResponsiveContainer><LineChart data={trend}><Line type="monotone" dataKey="total" stroke="#B04040" strokeWidth={2} dot={false} /><Tooltip formatter={(v: number) => R(v)} contentStyle={{ fontSize: 11, borderRadius: 8 }} /></LineChart></ResponsiveContainer>
@@ -790,17 +790,17 @@ function StatementsView({ trips, gross }: { trips: Trip[]; gross: number }) {
         <div className="flex gap-2 flex-wrap">
           <span className="text-xs font-semibold text-slate-400 self-center mr-1">Method</span>
           {([["all", "All"], ["card", "Card"], ["cash", "Cash"]] as const).map(([k, l]) => (
-            <button key={k} onClick={() => setMethodFilter(k)} className={`px-3.5 py-1.5 rounded-lg text-xs font-medium border ${methodFilter === k ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-600 border-slate-200"}`}>{l}</button>
+            <button key={k} onClick={() => setMethodFilter(k)} className={`px-3.5 py-1.5 rounded-lg text-xs font-medium border ${methodFilter === k ? "bg-slate-900 text-white border-slate-900" : "bg-surface text-slate-600 border-slate-200"}`}>{l}</button>
           ))}
           <span className="text-xs font-semibold text-slate-400 self-center ml-3 mr-1">Status</span>
           {([["all", "All"], ["approved", "Approved"], ["declined", "Declined"]] as const).map(([k, l]) => (
-            <button key={k} onClick={() => setStatusFilter(k)} className={`px-3.5 py-1.5 rounded-lg text-xs font-medium border ${statusFilter === k ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-600 border-slate-200"}`}>{l}</button>
+            <button key={k} onClick={() => setStatusFilter(k)} className={`px-3.5 py-1.5 rounded-lg text-xs font-medium border ${statusFilter === k ? "bg-slate-900 text-white border-slate-900" : "bg-surface text-slate-600 border-slate-200"}`}>{l}</button>
           ))}
         </div>
         <div className="text-xs text-slate-400">{filtered.length} trips · {R(filteredTotal)}</div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-x-auto">
+      <div className="bg-surface rounded-2xl border border-slate-200 overflow-x-auto">
         <table className="w-full text-sm min-w-[640px]">
           <thead><tr className="text-left text-xs font-semibold text-slate-400 uppercase border-b border-slate-100">
             <th className="px-5 py-3">Trip ID</th><th className="px-5 py-3">Date</th><th className="px-5 py-3">Location</th>
@@ -863,12 +863,12 @@ function PayslipView({ gross, uif, paye, driverName }: { gross: number; uif: Ret
       <SectionHeader eyebrow="Drive module" title="Payslip" subtitle="Gross earnings and deductions for the pay period."
         right={
           <div className="flex bg-slate-100 rounded-xl p-1 text-sm font-medium">
-            {(["weekly", "monthly"] as const).map(p => <button key={p} onClick={() => setPeriod(p)} className={`px-4 py-1.5 rounded-lg capitalize ${period === p ? "bg-white shadow text-slate-800" : "text-slate-500"}`}>{p}</button>)}
+            {(["weekly", "monthly"] as const).map(p => <button key={p} onClick={() => setPeriod(p)} className={`px-4 py-1.5 rounded-lg capitalize ${period === p ? "bg-surface shadow text-slate-800" : "text-slate-500"}`}>{p}</button>)}
           </div>
         } />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden lg:col-span-2">
+        <div className="bg-surface rounded-2xl border border-slate-200 overflow-hidden lg:col-span-2">
           <div className="p-6 border-b border-dashed border-slate-200 flex items-center justify-between" style={{ background: "linear-gradient(135deg,#0B1330,#1c2a5e)" }}>
             <div><div className="text-white font-bold text-lg">Drive Payslip</div><div className="text-slate-300 text-xs mt-1">{period === "weekly" ? "Week of 05 – 11 May 2025" : "May 2025"}</div></div>
             <div className="text-right"><div className="text-white text-sm font-medium">{driverName}</div><div className="text-slate-300 text-xs">Driver ID: DRV-10024</div></div>
@@ -892,7 +892,7 @@ function PayslipView({ gross, uif, paye, driverName }: { gross: number; uif: Ret
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200 p-6">
+        <div className="bg-surface rounded-2xl border border-slate-200 p-6">
           <h3 className="font-semibold text-slate-800 mb-3">Where the money goes</h3>
           <div style={{ width: "100%", height: 190 }}>
             <ResponsiveContainer>
@@ -930,7 +930,7 @@ function UifView({ uif, gross }: { uif: ReturnType<typeof calcUIF>; gross: numbe
     <div>
       <SectionHeader eyebrow="Drive module" title="UIF" subtitle="Unemployment Insurance Fund contribution, calculated automatically each month." />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 lg:col-span-2">
+        <div className="bg-surface rounded-2xl border border-slate-200 p-6 lg:col-span-2">
           <h3 className="font-semibold text-slate-800 mb-4">This month's contribution</h3>
           <div className="grid grid-cols-2 gap-y-4 text-sm">
             <div className="text-slate-500">Gross monthly remuneration</div><div className="text-right font-medium text-slate-800">{R(gross)}</div>
@@ -948,16 +948,16 @@ function UifView({ uif, gross }: { uif: ReturnType<typeof calcUIF>; gross: numbe
           <div style={{ width: "100%", height: 140 }}>
             <ResponsiveContainer>
               <BarChart data={history} barCategoryGap={26}>
-                <CartesianGrid vertical={false} stroke="#F1F5F9" />
+                <CartesianGrid vertical={false} stroke="var(--vk-surface-2)" />
                 <XAxis dataKey="m" tick={{ fontSize: 11, fill: "#94A3B8" }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 10, fill: "#94A3B8" }} axisLine={false} tickLine={false} width={36} />
-                <Tooltip formatter={(v: number) => R(v)} cursor={{ fill: "#F8FAFC" }} contentStyle={{ fontSize: 12, borderRadius: 8 }} />
+                <Tooltip formatter={(v: number) => R(v)} cursor={{ fill: "var(--vk-surface-2)" }} contentStyle={{ fontSize: 12, borderRadius: 8 }} />
                 <Bar dataKey="total" fill="#0EA5E9" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
-        <div className="bg-white rounded-2xl border border-slate-200 p-6">
+        <div className="bg-surface rounded-2xl border border-slate-200 p-6">
           <h3 className="font-semibold text-slate-800 mb-3">Contribution history</h3>
           <div className="space-y-3">
             {["Apr 2025", "Mar 2025", "Feb 2025"].map((m, i) => (
@@ -977,7 +977,7 @@ function TaxView({ paye, gross }: { paye: ReturnType<typeof calcPAYE>; gross: nu
     <div>
       <SectionHeader eyebrow="Drive module" title="Tax" subtitle="PAYE income tax, calculated automatically from your logged earnings." />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 lg:col-span-2">
+        <div className="bg-surface rounded-2xl border border-slate-200 p-6 lg:col-span-2">
           <h3 className="font-semibold text-slate-800 mb-4">Monthly PAYE breakdown</h3>
           <div className="grid grid-cols-2 gap-y-4 text-sm">
             <div className="text-slate-500">Gross monthly earnings</div><div className="text-right font-medium text-slate-800">{R(gross)}</div>
@@ -992,7 +992,7 @@ function TaxView({ paye, gross }: { paye: ReturnType<typeof calcPAYE>; gross: nu
           <div style={{ width: "100%", height: 140 }}>
             <ResponsiveContainer>
               <LineChart data={history}>
-                <CartesianGrid vertical={false} stroke="#F1F5F9" />
+                <CartesianGrid vertical={false} stroke="var(--vk-surface-2)" />
                 <XAxis dataKey="m" tick={{ fontSize: 11, fill: "#94A3B8" }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 10, fill: "#94A3B8" }} axisLine={false} tickLine={false} width={36} />
                 <Tooltip formatter={(v: number) => R(v)} contentStyle={{ fontSize: 12, borderRadius: 8 }} />
@@ -1003,7 +1003,7 @@ function TaxView({ paye, gross }: { paye: ReturnType<typeof calcPAYE>; gross: nu
 
           <button className="mt-5 flex items-center gap-2 text-sm font-medium text-blue-600"><Download size={15} /> Download IRP5 / tax certificate</button>
         </div>
-        <div className="bg-white rounded-2xl border border-slate-200 p-6">
+        <div className="bg-surface rounded-2xl border border-slate-200 p-6">
           <h3 className="font-semibold text-slate-800 mb-3">Tax brackets (2025)</h3>
           <div className="space-y-2 text-xs">
             {[["Up to R237,100", "18%"], ["R237,101 – R370,500", "26%"], ["R370,501 – R512,800", "31%"], ["R512,801 – R673,000", "36%"], ["Above R673,000", "39%"]].map(([r, p]) => (
@@ -1028,7 +1028,7 @@ function AssocView() {
     <div>
       <SectionHeader eyebrow="Drive module" title="Tax association fee" subtitle="Monthly fee paid to your taxi / driver association." />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="bg-white rounded-2xl border border-slate-200 p-6">
+        <div className="bg-surface rounded-2xl border border-slate-200 p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 grid place-items-center"><Landmark size={18} /></div>
             <div><div className="font-semibold text-slate-800">Greater Joburg Drivers Association</div><div className="text-xs text-slate-400">Member since Jan 2023</div></div>
@@ -1038,7 +1038,7 @@ function AssocView() {
           <button className="mt-4 w-full bg-slate-900 text-white text-sm font-medium py-2.5 rounded-xl">Pay now</button>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 lg:col-span-2">
+        <div className="bg-surface rounded-2xl border border-slate-200 p-6 lg:col-span-2">
           <h3 className="font-semibold text-slate-800 mb-4">Payment history</h3>
           <div className="space-y-3">
             {history.map(h => (
@@ -1062,7 +1062,7 @@ function ContractView({ driverName }: { driverName: string }) {
     <div>
       <SectionHeader eyebrow="Drive module" title="Contract" subtitle="The agreement between you and the vehicle owner." />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 lg:col-span-2">
+        <div className="bg-surface rounded-2xl border border-slate-200 p-6 lg:col-span-2">
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 grid place-items-center"><Signature size={18} /></div>
@@ -1112,7 +1112,7 @@ function ContractView({ driverName }: { driverName: string }) {
           <button className="mt-6 w-full flex items-center justify-center gap-2 bg-slate-900 text-white font-medium py-3 rounded-xl"><Download size={16} /> Download signed contract (PDF)</button>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200 p-6">
+        <div className="bg-surface rounded-2xl border border-slate-200 p-6">
           <h3 className="font-semibold text-slate-800 mb-4">Signature status</h3>
           <div className="space-y-4 text-sm">
             <div className="flex items-center gap-3"><Check size={16} className="text-emerald-500" /> <div><div className="font-medium text-slate-800">Driver signed</div><div className="text-xs text-slate-400">01 Jan 2025</div></div></div>
@@ -1154,7 +1154,7 @@ export function DriveDashboardViewer({ isOpen, onClose, driverName = "Driver" }:
   };
 
   return (
-    <div className="fixed inset-0 z-[110] min-h-screen bg-[#F4F6FB] flex" style={{ fontFamily: "Inter, ui-sans-serif, system-ui" }}>
+    <div className="fixed inset-0 z-[110] min-h-screen bg-bg flex" style={{ fontFamily: "Inter, ui-sans-serif, system-ui" }}>
       <GlobalStyles />
       <Sidebar view={view} setView={setView} mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} deviceOn={deviceOn} onClose={onClose} />
       <div className="flex-1 min-w-0 overflow-y-auto">
