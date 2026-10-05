@@ -8,7 +8,9 @@ import { COUNTRIES, provincesForCountry, alpha2ForCountry, idDocumentTypesForCou
 import { validatePostalCode, getCountryByCode, getPostalLabel } from "postal-code-checker";
 import { API_BASE } from "../services/config";
 
-interface Props { isOpen: boolean; onClose: () => void; onGoToDashboard?: () => void; }
+interface Props { isOpen: boolean; onClose: () => void; onGoToDashboard?: () => void; /** The banking account the applicant picked before opening the form. */ initialAccountType?: string; }
+
+const ACCOUNT_TYPES = ["Spark Account","Anchor Account","Momentum Account","Horizon Account","Summit Account","Legacy Account"];
 
 const BLUE = "#1B6FD8";
 
@@ -567,8 +569,8 @@ function Step5({ onNext, onBack, updateForm, idType }: { onNext: () => void; onB
 }
 
 // ─── Step 6 — Services ───────────────────────────────────────────────────────
-function Step6({ onNext, onBack, submitting }: { onNext: (data: Record<string, string>) => void; onBack: () => void; submitting?: boolean }) {
-  const [accountType, setAccountType] = useState("Spark Account");
+function Step6({ onNext, onBack, submitting, initialAccountType }: { onNext: (data: Record<string, string>) => void; onBack: () => void; submitting?: boolean; initialAccountType?: string }) {
+  const [accountType, setAccountType] = useState(initialAccountType && ACCOUNT_TYPES.includes(initialAccountType) ? initialAccountType : "Spark Account");
   const [cardType, setCardType] = useState("Debit Card (free)");
   const [services, setServices] = useState<Record<string, boolean>>({
     internetBanking: true, mobileApp: true, smsAlerts: true, debitCard: true,
@@ -599,7 +601,7 @@ function Step6({ onNext, onBack, submitting }: { onNext: (data: Record<string, s
       <SectionHead title="Select Services" sub="Section 6 — Choose your account type and activate optional services" />
       <div className="grid sm:grid-cols-2 gap-4">
         <SelectField label="Account type" value={accountType} onChange={setAccountType}
-          options={["Spark Account","Anchor Account","Momentum Account","Horizon Account","Summit Account","Legacy Account"]}
+          options={ACCOUNT_TYPES}
           required />
         <SelectField label="Card preference" value={cardType} onChange={setCardType}
           options={["Debit Card (free)","Prepaid Card","Virtual Card only","No card"]}
@@ -770,7 +772,7 @@ function Step7({ onClose, onGoToDashboard, referenceNumber, accountNumber, login
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
-export function PersonalAccountApplicationViewer({ isOpen, onClose, onGoToDashboard }: Props) {
+export function PersonalAccountApplicationViewer({ isOpen, onClose, onGoToDashboard, initialAccountType }: Props) {
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState<Record<string, string>>({});
@@ -910,6 +912,7 @@ export function PersonalAccountApplicationViewer({ isOpen, onClose, onGoToDashbo
               onNext={submitApplication}
               onBack={back}
               submitting={submitting}
+              initialAccountType={formData.accountType ?? initialAccountType}
             />
           )}
           {step === 7 && <Step7 onClose={onClose} onGoToDashboard={onGoToDashboard ?? onClose} referenceNumber={referenceNumber} accountNumber={accountNumber} loginUsername={loginUsername} loginCreated={loginCreated} loginError={loginError} />}
