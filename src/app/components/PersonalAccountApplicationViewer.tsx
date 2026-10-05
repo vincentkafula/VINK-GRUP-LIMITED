@@ -25,20 +25,20 @@ const STEPS = [
 // ─── Step bar ─────────────────────────────────────────────────────────────────
 function StepBar({ current }: { current: number }) {
   return (
-    <div className="flex items-stretch border-b border-gray-200 overflow-x-auto bg-white flex-shrink-0">
+    <div className="flex items-stretch border-b border-line overflow-x-auto bg-surface flex-shrink-0">
       {STEPS.map((s) => {
         const done   = s.n < current;
         const active = s.n === current;
         return (
           <div key={s.n}
-            className="flex-1 min-w-[52px] flex flex-col items-center justify-center py-2.5 px-1 border-r border-gray-100 last:border-r-0"
-            style={{ background: active ? BLUE : done ? "#EFF6FF" : "#fff" }}>
+            className="flex-1 min-w-[52px] flex flex-col items-center justify-center py-2.5 px-1 border-r border-line last:border-r-0"
+            style={{ background: active ? BLUE : done ? "color-mix(in srgb, #EFF6FF var(--vk-wash), var(--vk-surface))" : "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" }}>
             <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold mb-0.5"
-              style={{ background: active ? "#fff" : done ? BLUE : "#E5E7EB", color: active ? BLUE : done ? "#fff" : "#9CA3AF" }}>
+              style={{ background: active ? "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" : done ? BLUE : "var(--vk-line)", color: active ? BLUE : done ? "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" : "#9CA3AF" }}>
               {done ? "✓" : s.n}
             </div>
             <p className="text-[9px] font-semibold leading-tight text-center"
-              style={{ color: active ? "#fff" : done ? BLUE : "#9CA3AF" }}>
+              style={{ color: active ? "#fff" : done ? BLUE : "var(--vk-fg-muted)" }}>
               {s.label}
             </p>
           </div>
@@ -58,11 +58,11 @@ function InputField({ label, value, onChange, placeholder, type = "text", requir
   const listId = useRef(suggestions ? `dl-${++datalistIdCounter}` : undefined).current;
   return (
     <div>
-      <label className="block text-[11px] font-semibold text-gray-600 mb-1">
+      <label className="block text-[11px] font-semibold text-fg-muted mb-1">
         {label}{required && <span className="text-red-500 ml-0.5">*</span>}
       </label>
       <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} list={listId}
-        className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-emerald-400 bg-white transition-colors" />
+        className="w-full border border-line rounded-lg px-3 py-2.5 text-sm text-fg outline-none focus:border-emerald-400 bg-surface transition-colors" />
       {suggestions && listId && (
         <datalist id={listId}>
           {suggestions.map(s => <option key={s} value={s} />)}
@@ -77,11 +77,11 @@ function SelectField({ label, value, onChange, options, required }: {
 }) {
   return (
     <div>
-      <label className="block text-[11px] font-semibold text-gray-600 mb-1">
+      <label className="block text-[11px] font-semibold text-fg-muted mb-1">
         {label}{required && <span className="text-red-500 ml-0.5">*</span>}
       </label>
       <select value={value} onChange={e => onChange(e.target.value)}
-        className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-emerald-400 bg-white transition-colors">
+        className="w-full border border-line rounded-lg px-3 py-2.5 text-sm text-fg outline-none focus:border-emerald-400 bg-surface transition-colors">
         {options.map(o => <option key={o} value={o}>{o}</option>)}
       </select>
     </div>
@@ -92,11 +92,11 @@ function NavButtons({ onBack, onNext, nextLabel = "Next", nextDisabled = false }
   onBack?: () => void; onNext?: () => void; nextLabel?: string; nextDisabled?: boolean;
 }) {
   return (
-    <div className="flex gap-3 pt-4 border-t border-gray-100">
+    <div className="flex gap-3 pt-4 border-t border-line">
       {onBack && (
         <button onClick={onBack}
-          className="flex items-center gap-1.5 px-5 py-2.5 rounded-lg border text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
-          style={{ borderColor: "#D1D5DB" }}>
+          className="flex items-center gap-1.5 px-5 py-2.5 rounded-lg border text-sm font-semibold text-fg-muted hover:bg-surface-2 transition-colors"
+          style={{ borderColor: "var(--vk-line)" }}>
           <ChevronLeft className="w-4 h-4" /> Back
         </button>
       )}
@@ -115,8 +115,8 @@ function NavButtons({ onBack, onNext, nextLabel = "Next", nextDisabled = false }
 function SectionHead({ title, sub }: { title: string; sub: string }) {
   return (
     <div className="mb-5">
-      <h2 className="text-base font-bold text-gray-900">{title}</h2>
-      <p className="text-xs text-gray-500 mt-0.5">{sub}</p>
+      <h2 className="text-base font-bold text-fg">{title}</h2>
+      <p className="text-xs text-fg-muted mt-0.5">{sub}</p>
     </div>
   );
 }
@@ -233,7 +233,7 @@ function Step1({ onNext, updateForm }: { onNext: () => void; updateForm: (d: Rec
         <InputField label="Email address" value={email} onChange={setEmail} type="email" placeholder="you@example.co.za" required />
       </div>
       <div>
-        <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-3">Residential Address</p>
+        <p className="text-[11px] font-bold uppercase tracking-wider text-fg-muted mb-3">Residential Address</p>
         <div className="grid sm:grid-cols-2 gap-4">
           <InputField label="Address line 1" value={addr1} onChange={setAddr1} placeholder="Street address" required />
           <InputField label="Address line 2 (optional)" value={addr2} onChange={setAddr2} placeholder="Suburb / Unit" />
@@ -250,8 +250,8 @@ function Step1({ onNext, updateForm }: { onNext: () => void; updateForm: (d: Rec
         </div>
       </div>
       <div>
-        <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-3">Set Your Banking App Login</p>
-        <p className="text-xs text-gray-500 mb-3">You'll use your email address and this password to log into the VINK Banking App once your application is submitted.</p>
+        <p className="text-[11px] font-bold uppercase tracking-wider text-fg-muted mb-3">Set Your Banking App Login</p>
+        <p className="text-xs text-fg-muted mb-3">You'll use your email address and this password to log into the VINK Banking App once your application is submitted.</p>
         <div className="grid sm:grid-cols-2 gap-4">
           <InputField label="Password" value={password} onChange={setPassword} type="password" placeholder="At least 8 characters" required />
           <InputField label="Confirm password" value={confirmPassword} onChange={setConfirmPassword} type="password" placeholder="Re-enter your password" required />
@@ -305,7 +305,7 @@ function Step2({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () 
         <InputField label="SARS Tax reference number" value={taxNo} onChange={setTaxNo} placeholder="9234567890" />
         <SelectField label="Politically Exposed Person (PEP)?" value={pep} onChange={setPep} options={["No","Yes"]} />
       </div>
-      <div className="rounded-xl p-4 text-xs leading-relaxed" style={{ background: "#EFF6FF", color: "#1D4ED8" }}>
+      <div className="rounded-xl p-4 text-xs leading-relaxed" style={{ background: "var(--vk-info-bg)", color: "#1D4ED8" }}>
         <strong>Why do we ask this?</strong> VINK is required by the Financial Intelligence Centre Act (FICA) to verify your source of funds and confirm your PEP status. All information is kept strictly confidential.
       </div>
       <NavButtons onBack={onBack} onNext={handleNext} nextLabel="Next: Verify" nextDisabled={!isValid} />
@@ -382,12 +382,12 @@ function Step3({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () 
       )}
 
       {/* Phone OTP */}
-      <div className="border border-gray-200 rounded-xl p-5 space-y-3">
+      <div className="border border-line rounded-xl p-5 space-y-3">
         <div className="flex items-center gap-2">
           {phoneOk
             ? <CheckCircle className="w-4 h-4 text-green-500" />
             : <Clock className="w-4 h-4 text-yellow-500" />}
-          <span className="text-sm font-semibold text-gray-800">Phone Number OTP</span>
+          <span className="text-sm font-semibold text-fg">Phone Number OTP</span>
           {phoneOk && <span className="ml-auto text-xs font-bold text-green-600">Verified</span>}
         </div>
         <InputField label="Cell number" value={phone} onChange={setPhone} placeholder="+27 82 000 0000" />
@@ -401,7 +401,7 @@ function Step3({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () 
         ) : !phoneOk ? (
           <div className="flex gap-2 items-center">
             <input value={otpPhone} onChange={e => setOtpPhone(e.target.value)} placeholder="Enter 6-digit OTP"
-              maxLength={6} className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-400 w-40" />
+              maxLength={6} className="border border-line rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-400 w-40" />
             <button onClick={verifyPhoneOtp} disabled={verifyingPhone || otpPhone.length < 4}
               className="px-4 py-2 rounded-lg text-xs font-bold text-white border-0 disabled:opacity-50 flex items-center gap-1.5"
               style={{ background: BLUE }}>
@@ -412,12 +412,12 @@ function Step3({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () 
       </div>
 
       {/* Email OTP */}
-      <div className="border border-gray-200 rounded-xl p-5 space-y-3">
+      <div className="border border-line rounded-xl p-5 space-y-3">
         <div className="flex items-center gap-2">
           {emailOk
             ? <CheckCircle className="w-4 h-4 text-green-500" />
             : <Clock className="w-4 h-4 text-yellow-500" />}
-          <span className="text-sm font-semibold text-gray-800">Email Address OTP</span>
+          <span className="text-sm font-semibold text-fg">Email Address OTP</span>
           {emailOk && <span className="ml-auto text-xs font-bold text-green-600">Verified</span>}
         </div>
         <InputField label="Email address" value={email} onChange={setEmail} type="email" placeholder="you@example.co.za" />
@@ -431,7 +431,7 @@ function Step3({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () 
         ) : !emailOk ? (
           <div className="flex gap-2 items-center">
             <input value={otpEmail} onChange={e => setOtpEmail(e.target.value)} placeholder="Enter 6-digit OTP"
-              maxLength={6} className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-400 w-40" />
+              maxLength={6} className="border border-line rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-400 w-40" />
             <button onClick={verifyEmailOtp} disabled={verifyingEmail || otpEmail.length < 4}
               className="px-4 py-2 rounded-lg text-xs font-bold text-white border-0 disabled:opacity-50 flex items-center gap-1.5"
               style={{ background: BLUE }}>
@@ -463,18 +463,18 @@ function Step4({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () 
       <SectionHead title="Biometrics & Selfie" sub="Section 4 — Fingerprint and selfie confirmation required" />
 
       <div className="border-2 border-dashed rounded-2xl p-8 text-center transition-colors"
-        style={{ borderColor: fp ? "#10B981" : "#E5E7EB", background: fp ? "#F0FDF4" : "#fff" }}>
+        style={{ borderColor: fp ? "#10B981" : "var(--vk-line)", background: fp ? "color-mix(in srgb, #F0FDF4 var(--vk-wash), var(--vk-surface))" : "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" }}>
         {!fp ? (
           <>
             <div className="text-5xl mb-3">👆</div>
-            <p className="text-sm font-semibold text-gray-700 mb-1">Fingerprint Scan</p>
-            <p className="text-xs text-gray-400 mb-4">Place your finger on the scanner or mobile biometric sensor</p>
+            <p className="text-sm font-semibold text-fg mb-1">Fingerprint Scan</p>
+            <p className="text-xs text-fg-muted mb-4">Place your finger on the scanner or mobile biometric sensor</p>
             <button onClick={() => setFp(true)}
               className="px-6 py-2.5 rounded-lg text-sm font-bold text-white border-0"
               style={{ background: BLUE }}>
               Capture Fingerprint
             </button>
-            <p className="text-[10px] text-gray-300 mt-3">Simulated for this demo environment — no biometric scanner hardware is connected.</p>
+            <p className="text-[10px] text-fg-muted mt-3">Simulated for this demo environment — no biometric scanner hardware is connected.</p>
           </>
         ) : (
           <div className="flex flex-col items-center gap-2">
@@ -485,13 +485,13 @@ function Step4({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () 
       </div>
 
       <div className="border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-colors"
-        style={{ borderColor: selfie ? "#10B981" : "#E5E7EB", background: selfie ? "#F0FDF4" : "#fff" }}
+        style={{ borderColor: selfie ? "#10B981" : "var(--vk-line)", background: selfie ? "color-mix(in srgb, #F0FDF4 var(--vk-wash), var(--vk-surface))" : "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" }}
         onClick={() => !selfie && fileRef.current?.click()}>
         {!selfie ? (
           <>
             <div className="text-5xl mb-3">🤳</div>
-            <p className="text-sm font-semibold text-gray-700 mb-1">Selfie Confirmation</p>
-            <p className="text-xs text-gray-400 mb-4">Upload a clear photo of your face · JPG or PNG · Max 5MB</p>
+            <p className="text-sm font-semibold text-fg mb-1">Selfie Confirmation</p>
+            <p className="text-xs text-fg-muted mb-4">Upload a clear photo of your face · JPG or PNG · Max 5MB</p>
             <span className="px-5 py-2.5 rounded-lg text-sm font-bold text-white inline-block" style={{ background: BLUE }}>
               Upload Selfie
             </span>
@@ -542,16 +542,16 @@ function Step5({ onNext, onBack, updateForm, idType }: { onNext: () => void; onB
       <div className="space-y-3">
         {DOCS.map(d => (
           <label key={d.key}
-            className="flex items-center justify-between p-4 bg-white border rounded-xl cursor-pointer hover:bg-emerald-50 transition-colors"
-            style={{ borderColor: uploaded[d.key] ? "#10B981" : "#E5E7EB" }}>
+            className="flex items-center justify-between p-4 bg-surface border rounded-xl cursor-pointer hover:bg-emerald-50 transition-colors"
+            style={{ borderColor: uploaded[d.key] ? "#10B981" : "var(--vk-line)" }}>
             <div className="flex items-center gap-3">
               {uploaded[d.key]
                 ? <CheckCircle className="w-5 h-5 flex-shrink-0 text-green-500" />
-                : <Upload className="w-5 h-5 text-gray-400 flex-shrink-0" />}
-              <span className="text-sm font-medium text-gray-800">{d.label}</span>
+                : <Upload className="w-5 h-5 text-fg-muted flex-shrink-0" />}
+              <span className="text-sm font-medium text-fg">{d.label}</span>
             </div>
             <span className="text-xs px-3 py-1 rounded-full font-semibold ml-3 flex-shrink-0"
-              style={{ background: uploaded[d.key] ? "#DCFCE7" : "#EFF6FF", color: uploaded[d.key] ? "#059669" : BLUE }}>
+              style={{ background: uploaded[d.key] ? "color-mix(in srgb, #DCFCE7 var(--vk-wash), var(--vk-surface))" : "color-mix(in srgb, #EFF6FF var(--vk-wash), var(--vk-surface))", color: uploaded[d.key] ? "#059669" : BLUE }}>
               {uploaded[d.key] ? "Uploaded" : "Upload"}
             </span>
             <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png"
@@ -559,7 +559,7 @@ function Step5({ onNext, onBack, updateForm, idType }: { onNext: () => void; onB
           </label>
         ))}
       </div>
-      <p className="text-[10px] text-gray-400">Document names are attached to your application for our team's records. Secure document upload isn't wired up in this environment yet, so please also bring or email certified copies as a backup.</p>
+      <p className="text-[10px] text-fg-muted">Document names are attached to your application for our team's records. Secure document upload isn't wired up in this environment yet, so please also bring or email certified copies as a backup.</p>
       {!allDone && <p className="text-xs text-red-500">Please upload all required documents before continuing.</p>}
       <NavButtons onBack={onBack} onNext={handleNext} nextLabel="Next: Services" nextDisabled={!allDone} />
     </div>
@@ -607,17 +607,17 @@ function Step6({ onNext, onBack, submitting }: { onNext: (data: Record<string, s
       </div>
 
       <div>
-        <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-3">Optional Services</p>
+        <p className="text-[11px] font-bold uppercase tracking-wider text-fg-muted mb-3">Optional Services</p>
         <div className="space-y-2">
           {SERVICE_LIST.map(sv => (
             <label key={sv.key}
-              className="flex items-center gap-3 p-3.5 bg-white border rounded-xl cursor-pointer hover:bg-emerald-50 transition-colors"
-              style={{ borderColor: services[sv.key] ? BLUE : "#E5E7EB" }}>
+              className="flex items-center gap-3 p-3.5 bg-surface border rounded-xl cursor-pointer hover:bg-emerald-50 transition-colors"
+              style={{ borderColor: services[sv.key] ? BLUE : "var(--vk-line)" }}>
               <input type="checkbox" checked={!!services[sv.key]} onChange={() => toggle(sv.key)}
                 className="w-4 h-4 flex-shrink-0" style={{ accentColor: BLUE }} />
               <div>
-                <p className="text-sm font-semibold text-gray-800">{sv.label}</p>
-                <p className="text-xs text-gray-400">{sv.sub}</p>
+                <p className="text-sm font-semibold text-fg">{sv.label}</p>
+                <p className="text-xs text-fg-muted">{sv.sub}</p>
               </div>
             </label>
           ))}
@@ -625,10 +625,10 @@ function Step6({ onNext, onBack, submitting }: { onNext: (data: Record<string, s
       </div>
 
       <label className="flex items-start gap-3 cursor-pointer p-4 rounded-xl border"
-        style={{ borderColor: consent ? BLUE : "#E5E7EB", background: consent ? "#EFF6FF" : "#fff" }}>
+        style={{ borderColor: consent ? BLUE : "var(--vk-line)", background: consent ? "color-mix(in srgb, #EFF6FF var(--vk-wash), var(--vk-surface))" : "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" }}>
         <input type="checkbox" checked={consent} onChange={e => setConsent(e.target.checked)}
           className="mt-0.5 w-4 h-4 flex-shrink-0" style={{ accentColor: BLUE }} />
-        <p className="text-xs text-gray-600 leading-relaxed">
+        <p className="text-xs text-fg-muted leading-relaxed">
           I consent to VINK processing my personal information in accordance with the POPIA Privacy Policy and acknowledge the VINK Terms &amp; Conditions for the selected account and services.
         </p>
       </label>
@@ -653,29 +653,29 @@ function Step7({ onClose, onGoToDashboard, referenceNumber, accountNumber, login
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-lg font-black text-gray-900">Application submitted successfully</h2>
-        <p className="text-xs text-gray-500 mt-0.5">Section 7 — Your application reference</p>
+        <h2 className="text-lg font-black text-fg">Application submitted successfully</h2>
+        <p className="text-xs text-fg-muted mt-0.5">Section 7 — Your application reference</p>
       </div>
 
       {/* Reference number box */}
-      <div className="border border-gray-200 rounded-xl p-6 text-center bg-white">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3">
+      <div className="border border-line rounded-xl p-6 text-center bg-surface">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-fg-muted mb-3">
           YOUR APPLICATION REFERENCE NUMBER
         </p>
         <div className="w-12 h-px bg-gray-300 mx-auto mb-4" />
         <p className="text-2xl font-black tracking-widest" style={{ color: BLUE }}>{referenceNumber}</p>
-        <p className="text-[11px] text-gray-400 mt-3">Quote this reference if you contact us about your application.</p>
+        <p className="text-[11px] text-fg-muted mt-3">Quote this reference if you contact us about your application.</p>
       </div>
 
       {/* Account number box */}
       {accountNumber && (
-        <div className="border border-gray-200 rounded-xl p-6 text-center bg-white">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3">
+        <div className="border border-line rounded-xl p-6 text-center bg-surface">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-fg-muted mb-3">
             YOUR ACCOUNT NUMBER
           </p>
           <div className="w-12 h-px bg-gray-300 mx-auto mb-4" />
           <p className="text-2xl font-black tracking-widest" style={{ color: BLUE }}>{accountNumber}</p>
-          <p className="text-[11px] text-gray-500 mt-3 leading-relaxed">
+          <p className="text-[11px] text-fg-muted mt-3 leading-relaxed">
             This is your account number now, generated as soon as you applied. It becomes permanent once your application is approved. <strong>If your application is declined, this number is removed 14 days after that decision.</strong>
           </p>
         </div>
@@ -683,24 +683,24 @@ function Step7({ onClose, onGoToDashboard, referenceNumber, accountNumber, login
 
       {/* Banking app login details */}
       {loginCreated ? (
-        <div className="border rounded-xl p-5 bg-white" style={{ borderColor: "#10B981" }}>
+        <div className="border rounded-xl p-5 bg-surface" style={{ borderColor: "#10B981" }}>
           <div className="flex items-center gap-2 mb-3">
             <CheckCircle className="w-4 h-4 text-green-500" />
-            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">YOUR VINK BANKING APP LOGIN</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-fg-muted">YOUR VINK BANKING APP LOGIN</p>
           </div>
-          <p className="text-xs text-gray-600 leading-relaxed mb-3">You can log into the VINK Banking App right now with the email and password you set in Section 1.</p>
-          <div className="rounded-lg p-3" style={{ background: "#F0FDF4" }}>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">Username / Email</p>
-            <p className="text-sm font-bold text-gray-900">{loginUsername}</p>
+          <p className="text-xs text-fg-muted leading-relaxed mb-3">You can log into the VINK Banking App right now with the email and password you set in Section 1.</p>
+          <div className="rounded-lg p-3" style={{ background: "var(--vk-ok-bg)" }}>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-fg-muted mb-0.5">Username / Email</p>
+            <p className="text-sm font-bold text-fg">{loginUsername}</p>
           </div>
         </div>
       ) : (
-        <div className="border rounded-xl p-5 bg-white" style={{ borderColor: "#F59E0B" }}>
+        <div className="border rounded-xl p-5 bg-surface" style={{ borderColor: "#F59E0B" }}>
           <div className="flex items-center gap-2 mb-2">
             <AlertTriangle className="w-4 h-4" style={{ color: "#F59E0B" }} />
-            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">BANKING APP LOGIN</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-fg-muted">BANKING APP LOGIN</p>
           </div>
-          <p className="text-xs text-gray-600 leading-relaxed">
+          <p className="text-xs text-fg-muted leading-relaxed">
             {loginError || "Your application was submitted, but we couldn't set up your banking app login automatically."}
             {" "}If you already have a VINK account, log in with your existing details. Otherwise, contact our support team and quote your reference number above.
           </p>
@@ -708,46 +708,46 @@ function Step7({ onClose, onGoToDashboard, referenceNumber, accountNumber, login
       )}
 
       {/* Account summary */}
-      <div className="border border-gray-200 rounded-xl p-5 bg-white">
-        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-4">ACCOUNT SUMMARY</p>
+      <div className="border border-line rounded-xl p-5 bg-surface">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-fg-muted mb-4">ACCOUNT SUMMARY</p>
         <div className="space-y-2.5">
           {SUMMARY_ITEMS.map((item, i) => (
             <div key={i} className="flex items-start gap-2.5">
               <input type="checkbox" checked readOnly
                 className="mt-0.5 w-3.5 h-3.5 flex-shrink-0" style={{ accentColor: BLUE }} />
-              <p className="text-xs text-gray-600 leading-snug">{item}</p>
+              <p className="text-xs text-fg-muted leading-snug">{item}</p>
             </div>
           ))}
         </div>
       </div>
 
       {/* Important notes */}
-      <div className="border border-gray-200 rounded-xl p-5 bg-white">
-        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-3">IMPORTANT NOTES</p>
-        <p className="text-xs text-gray-600 leading-relaxed">
+      <div className="border border-line rounded-xl p-5 bg-surface">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-fg-muted mb-3">IMPORTANT NOTES</p>
+        <p className="text-xs text-fg-muted leading-relaxed">
           Keep your account active to avoid dormant status. Accounts inactive for 10 consecutive years may be transferred to the South African Reserve Bank (SARB) in accordance with the Unclaimed Monies Act. Uncollected cards or iBanking credentials held for 60+ days are subject to destruction and re-issuance fees.
         </p>
       </div>
 
       {/* Contact */}
-      <div className="border border-gray-200 rounded-xl p-5 bg-white">
-        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-4">VINK FINANCE CONTACT</p>
-        <div className="grid sm:grid-cols-2 gap-3 text-xs text-gray-700">
+      <div className="border border-line rounded-xl p-5 bg-surface">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-fg-muted mb-4">VINK FINANCE CONTACT</p>
+        <div className="grid sm:grid-cols-2 gap-3 text-xs text-fg">
           <div>
-            <p className="text-gray-400 mb-0.5">Website</p>
+            <p className="text-fg-muted mb-0.5">Website</p>
             <a href="#" className="font-semibold" style={{ color: BLUE }}>www.vinkbank.co.za</a>
           </div>
           <div>
-            <p className="text-gray-400 mb-0.5">VINK Call Centre</p>
-            <a href="tel:+27210070772" className="font-semibold text-gray-800">+27 (0)21 007 0772</a>
+            <p className="text-fg-muted mb-0.5">VINK Call Centre</p>
+            <a href="tel:+27210070772" className="font-semibold text-fg">+27 (0)21 007 0772</a>
           </div>
           <div>
-            <p className="text-gray-400 mb-0.5">Support Email</p>
+            <p className="text-fg-muted mb-0.5">Support Email</p>
             <a href="mailto:support@vink.co.za" className="font-semibold" style={{ color: BLUE }}>support@vink.co.za</a>
           </div>
           <div>
-            <p className="text-gray-400 mb-0.5">Head Office</p>
-            <p className="font-semibold text-gray-800">8 Rose Street, Cape Town CBD</p>
+            <p className="text-fg-muted mb-0.5">Head Office</p>
+            <p className="font-semibold text-fg">8 Rose Street, Cape Town CBD</p>
           </div>
         </div>
       </div>
@@ -883,14 +883,14 @@ export function PersonalAccountApplicationViewer({ isOpen, onClose, onGoToDashbo
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-gray-50">
+    <div className="fixed inset-0 z-50 flex flex-col bg-surface-2">
       {/* Top bar */}
-      <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm flex-shrink-0">
+      <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-surface border-b border-line shadow-sm flex-shrink-0">
         <div className="flex items-center gap-3">
           <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
-          <span className="text-sm font-semibold text-gray-700 hidden sm:block">Personal Account Application</span>
+          <span className="text-sm font-semibold text-fg hidden sm:block">Personal Account Application</span>
         </div>
-        <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500">
+        <button onClick={onClose} className="p-2 rounded-full hover:bg-surface-2 transition-colors text-fg-muted">
           <X className="w-5 h-5" />
         </button>
       </div>

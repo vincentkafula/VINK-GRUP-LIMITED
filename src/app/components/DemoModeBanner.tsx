@@ -42,7 +42,7 @@ export function DemoModeBanner({ dark = false }: DemoModeBannerProps) {
 
   return (
     <div className="flex items-center gap-2.5 px-4 py-2 flex-shrink-0"
-      style={{ background: "#FFFBEB", borderBottom: "1px solid #FDE68A" }}>
+      style={{ background: "color-mix(in srgb, #FFFBEB var(--vk-wash), var(--vk-surface))", borderBottom: "1px solid color-mix(in srgb, #FDE68A var(--vk-wash), var(--vk-surface))" }}>
       <WifiOff className="w-3.5 h-3.5 flex-shrink-0 text-amber-500" />
       <p className="text-xs text-amber-700 flex-1">
         <span className="font-bold">Demo Mode</span> — backend server is offline. Showing simulated data. To connect: <code className="font-mono bg-amber-100 px-1 rounded text-amber-800">cd server && pnpm dev</code>

@@ -7,7 +7,7 @@ interface Props { isOpen: boolean; onClose: () => void; }
 
 const P  = "#5C0A10";
 const PD = "#0C0E14";
-const GOLD = "#F5A623";
+const GOLD = "#C9A84C";
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
@@ -16,7 +16,7 @@ const SELLER_PILLS = ["Integrity", "Commitment", "Performance", "Loyalty", "Insi
 const KPI_CARDS = [
   { label: "Addressable Market", value: "R11B", sub: "Estimated annual TAM across the national taxi network", color: "#10B981" },
   { label: "Revenue Model", value: "Per-Tap", sub: "R0.50–R1.00 per transaction, scaling with network volume", color: "#3B82F6" },
-  { label: "Target Growth", value: "Multi-Year", sub: "Detailed year-by-year projections available on request", color: "#F5A623" },
+  { label: "Target Growth", value: "Multi-Year", sub: "Detailed year-by-year projections available on request", color: "#C9A84C" },
 ];
 
 const REASONS = [
@@ -56,7 +56,7 @@ const DOCS: { name: string; size: string; date: string }[] = [
 ];
 
 const BOARD_MEMBERS = [
-  { name: "Vincent Kafula",       role: "Founder & Chief Executive Officer",    initial: "VK", color: "#5C0A10" },
+  { name: "Vincent Kafula",       role: "Founder & Chief Executive Officer",    initial: "VK", color: "var(--vk-crimson-text)" },
   { name: "Siyasanga Mahlulo",    role: "Chief Executive Officer (Operations)", initial: "SM", color: "#3B82F6" },
   { name: "Thabo Dlamini",        role: "Chief Financial Officer",              initial: "TD", color: "#10B981" },
   { name: "Priya Naidoo",         role: "Chief Operating Officer",              initial: "PN", color: "#34A853" },
@@ -69,7 +69,7 @@ const MINI_CHART = [1.44,1.62,1.55,1.80,2.10,1.95,2.30,2.45,2.20,2.50,2.38,2.60]
 // ─── Corporate Governance data ────────────────────────────────────────────────
 
 const MANAGEMENT_TEAM = [
-  { name: "Vincent Kafula",      title: "Founder & CEO",                       initial: "VK", color: "#5C0A10", province: "Cape Town, Western Cape" },
+  { name: "Vincent Kafula",      title: "Founder & CEO",                       initial: "VK", color: "var(--vk-crimson-text)", province: "Cape Town, Western Cape" },
   { name: "Siyasanga Mahlulo",   title: "Chief Executive Officer (Operations)",initial: "SM", color: "#3B82F6", province: "Cape Town, Western Cape" },
   { name: "Thabo Dlamini",       title: "Chief Financial Officer",             initial: "TD", color: "#10B981", province: "Gauteng" },
   { name: "Priya Naidoo",        title: "Chief Operating Officer",             initial: "PN", color: "#34A853", province: "KwaZulu-Natal" },
@@ -83,16 +83,16 @@ const COMMITTEES = [
   {
     name: "AUDIT COMMITTEE",
     color: "#EDE7F6",
-    borderColor: "#FF9900",
+    borderColor: "#C9A84C",
     members: [
-      { initial: "PD", name: "Pieter Du Plessis", role: "Chair",   province: "Western Cape",   color: "#FF9900" },
-      { initial: "RS", name: "Reza Solomon",       role: "Member",  province: "KwaZulu-Natal",  color: "#FF9900" },
-      { initial: "AM", name: "Amahle Mokoena",     role: "Member",  province: "Gauteng",         color: "#FF9900" },
+      { initial: "PD", name: "Pieter Du Plessis", role: "Chair",   province: "Western Cape",   color: "#C9A84C" },
+      { initial: "RS", name: "Reza Solomon",       role: "Member",  province: "KwaZulu-Natal",  color: "#C9A84C" },
+      { initial: "AM", name: "Amahle Mokoena",     role: "Member",  province: "Gauteng",         color: "#C9A84C" },
     ],
   },
   {
     name: "RISK COMMITTEE",
-    color: "#FEF3C7",
+    color: "var(--vk-warn-bg)",
     borderColor: "#D97706",
     members: [
       { initial: "TN", name: "Thabo Nkosi",    role: "Chair",   province: "Gauteng",        color: "#D97706" },
@@ -112,7 +112,7 @@ const COMMITTEES = [
   },
   {
     name: "SOCIAL & ETHICS COMMITTEE",
-    color: "#FEE2E2",
+    color: "var(--vk-bad-bg)",
     borderColor: "#DC2626",
     members: [
       { initial: "NZ", name: "Nomsa Zulu",    role: "Chair",   province: "Mpumalanga",   color: "#DC2626" },
@@ -175,7 +175,7 @@ function Sparkline({ data }: { data: number[] }) {
 // ─── Section heading ──────────────────────────────────────────────────────────
 function SectionHeading({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="text-lg font-bold mb-5 pb-2 border-b-2" style={{ color: PD, borderColor: GOLD }}>
+    <h2 className="text-lg font-bold mb-5 pb-2 border-b-2" style={{ color: "var(--vk-fg)", borderColor: GOLD }}>
       {children}
     </h2>
   );
@@ -189,25 +189,25 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto" style={{ background: "#f7f7fb" }}>
+    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto" style={{ background: "color-mix(in srgb, #f7f7fb var(--vk-wash), var(--vk-surface))" }}>
 
       {/* ── Top bar ── */}
-      <div className="sticky top-0 z-20 flex items-center justify-between px-4 py-3 bg-white border-b shadow-sm" style={{ borderColor: "#e0e0e0" }}>
+      <div className="sticky top-0 z-20 flex items-center justify-between px-4 py-3 bg-surface border-b shadow-sm" style={{ borderColor: "#e0e0e0" }}>
         <div className="flex items-center gap-3">
           <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
           <div className="hidden sm:flex items-center gap-6 text-sm ml-4">
             {["Personal", "Business", "Corporate"].map(n => (
-              <span key={n} className="text-gray-500 hover:text-gray-800 cursor-pointer transition-colors">{n}</span>
+              <span key={n} className="text-fg-muted hover:text-fg cursor-pointer transition-colors">{n}</span>
             ))}
           </div>
         </div>
-        <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500">
+        <button onClick={onClose} className="p-2 rounded-full hover:bg-surface-2 transition-colors text-fg-muted">
           <X className="w-5 h-5" />
         </button>
       </div>
 
       {/* ── Hero banner ── */}
-      <div className="px-6 py-8" style={{ background: `linear-gradient(135deg,${PD} 0%,${P} 60%,#C9A84C 100%)` }}>
+      <div className="px-6 py-8" style={{ background: `linear-gradient(135deg,${PD} 0%,${P} 60%,#9B1C1C 100%)` }}>
         <div className="max-w-5xl mx-auto">
           <p className="text-white/60 text-xs uppercase tracking-widest mb-1">VINK Finance · Corporate</p>
           <h1 className="text-3xl md:text-4xl font-black text-white mb-1">Investor Relations</h1>
@@ -237,7 +237,7 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
             {SELLER_PILLS.map((p, i) => (
               <button key={p} onClick={() => setActivePill(i)}
                 className="rounded-full px-5 py-1.5 text-sm font-medium transition-all border"
-                style={{ background: activePill === i ? P : "#fff", color: activePill === i ? "#fff" : P, borderColor: P }}>
+                style={{ background: activePill === i ? P : "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))", color: activePill === i ? "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" : P, borderColor: P }}>
                 {p}
               </button>
             ))}
@@ -248,30 +248,30 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
         <div className="grid md:grid-cols-2 gap-6">
           <div>
             <SectionHeading>VINK MULTI SERVICES (PTY) LTD</SectionHeading>
-            <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-3">
-              <p className="text-sm text-gray-700 leading-relaxed">
+            <div className="bg-surface rounded-xl border border-line p-5 space-y-3">
+              <p className="text-sm text-fg leading-relaxed">
                 Vink Multi Services (Pty) Ltd is a professional diversified financial services company. Our commitment to financial excellence drives innovative solutions for banking, insurance, telecommunications and e-mobility services across Southern Africa.
               </p>
               <div className="border-t pt-3 space-y-2 text-sm">
-                <div className="flex justify-between"><span className="text-gray-500">Status</span><span className="font-semibold text-gray-800">Pre-launch — full operation June 2027</span></div>
-                <div className="flex justify-between"><span className="text-gray-500">United States</span><span className="font-semibold text-gray-800">EIN: 37-2148609</span></div>
-                <div className="flex justify-between"><span className="text-gray-500">South Africa</span><span className="font-semibold text-gray-800">Reg: 2018/079316/07</span></div>
-                <div className="flex justify-between"><span className="text-gray-500">Zambia</span><span className="font-semibold text-gray-800">Reg: 120210020196</span></div>
+                <div className="flex justify-between"><span className="text-fg-muted">Status</span><span className="font-semibold text-fg">Pre-launch — full operation June 2027</span></div>
+                <div className="flex justify-between"><span className="text-fg-muted">United States</span><span className="font-semibold text-fg">EIN: 37-2148609</span></div>
+                <div className="flex justify-between"><span className="text-fg-muted">South Africa</span><span className="font-semibold text-fg">Reg: 2018/079316/07</span></div>
+                <div className="flex justify-between"><span className="text-fg-muted">Zambia</span><span className="font-semibold text-fg">Reg: 120210020196</span></div>
               </div>
             </div>
           </div>
           <div>
             <SectionHeading>Mission &amp; Vision</SectionHeading>
-            <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
+            <div className="bg-surface rounded-xl border border-line p-5 space-y-4">
               <div>
-                <p className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: P }}>Mission</p>
-                <p className="text-sm text-gray-700 leading-relaxed">
+                <p className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: "var(--vk-crimson-text)" }}>Mission</p>
+                <p className="text-sm text-fg leading-relaxed">
                   To provide accessible, innovative and transformative financial services that empower individuals, businesses and communities across Africa through technology-driven solutions.
                 </p>
               </div>
               <div className="border-t pt-3">
-                <p className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: P }}>Vision</p>
-                <p className="text-sm text-gray-700 leading-relaxed">
+                <p className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: "var(--vk-crimson-text)" }}>Vision</p>
+                <p className="text-sm text-fg leading-relaxed">
                   To be the leading pan-African financial services group, recognised for integrity, performance and commitment to sustainable growth that benefits all stakeholders.
                 </p>
               </div>
@@ -281,16 +281,16 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
 
         {/* ── 3 Reasons ── */}
         <div>
-          <h2 className="text-xl font-black text-center mb-2" style={{ color: PD }}>
+          <h2 className="text-xl font-black text-center mb-2" style={{ color: "var(--vk-fg)" }}>
             3 Reasons to Consider Investing in VINK MULTI SERVICES PTY LTD
           </h2>
-          <p className="text-center text-sm text-gray-500 mb-6">Why sophisticated investors choose Vink</p>
+          <p className="text-center text-sm text-fg-muted mb-6">Why sophisticated investors choose Vink</p>
           <div className="grid sm:grid-cols-3 gap-5">
             {REASONS.map((r) => (
-              <div key={r.title} className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow">
+              <div key={r.title} className="bg-surface rounded-xl border border-line p-6 hover:shadow-md transition-shadow">
                 <div className="text-4xl mb-3">{r.icon}</div>
-                <h3 className="text-base font-bold mb-2" style={{ color: PD }}>{r.title}</h3>
-                <p className="text-sm text-gray-600 leading-relaxed">{r.text}</p>
+                <h3 className="text-base font-bold mb-2" style={{ color: "var(--vk-fg)" }}>{r.title}</h3>
+                <p className="text-sm text-fg-muted leading-relaxed">{r.text}</p>
               </div>
             ))}
           </div>
@@ -299,22 +299,22 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
         {/* ── Share price ── */}
         <div>
           <SectionHeading>Our Share Price in Action</SectionHeading>
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <div className="bg-surface rounded-xl border border-line p-5">
             <div className="flex flex-col md:flex-row gap-6 items-start">
               <div className="flex-shrink-0">
                 <div className="flex items-end gap-2 mb-1">
-                  <span className="text-4xl font-black" style={{ color: PD }}>2.60</span>
+                  <span className="text-4xl font-black" style={{ color: "var(--vk-fg)" }}>2.60</span>
                   <span className="text-sm font-bold text-green-600 mb-1">+1.96% ▲</span>
                 </div>
-                <p className="text-xs text-gray-500 mb-4">ZAR · JSE · 15 Sep 2022</p>
+                <p className="text-xs text-fg-muted mb-4">ZAR · JSE · 15 Sep 2022</p>
                 <Sparkline data={MINI_CHART} />
-                <p className="text-[10px] text-gray-400 mt-1">12-month price movement</p>
+                <p className="text-[10px] text-fg-subtle mt-1">12-month price movement</p>
               </div>
               <div className="flex-1 grid grid-cols-2 gap-x-8 gap-y-2">
                 {SHARE_ROWS.map((r) => (
-                  <div key={r.label} className="flex justify-between border-b border-gray-100 py-1.5 text-xs">
-                    <span className="text-gray-500 font-medium">{r.label}</span>
-                    <span className="font-bold text-gray-800">{r.value}</span>
+                  <div key={r.label} className="flex justify-between border-b border-line py-1.5 text-xs">
+                    <span className="text-fg-muted font-medium">{r.label}</span>
+                    <span className="font-bold text-fg">{r.value}</span>
                   </div>
                 ))}
               </div>
@@ -326,23 +326,23 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
         <div>
           <SectionHeading>Investor News</SectionHeading>
           {INVESTOR_NEWS.length === 0 ? (
-            <div className="bg-white rounded-xl border border-gray-200 p-6 text-center">
-              <p className="text-sm text-gray-500">VINK is not yet in full operation. Investor news and quarterly updates will be published here as we approach our June 2027 launch.</p>
+            <div className="bg-surface rounded-xl border border-line p-6 text-center">
+              <p className="text-sm text-fg-muted">VINK is not yet in full operation. Investor news and quarterly updates will be published here as we approach our June 2027 launch.</p>
             </div>
           ) : (
           <div className="space-y-2">
             {INVESTOR_NEWS.map((n, i) => (
-              <div key={i} className="bg-white rounded-xl border border-gray-200 flex items-center gap-4 p-4 hover:shadow-sm transition-shadow cursor-pointer">
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "#FEE2E2" }}>
+              <div key={i} className="bg-surface rounded-xl border border-line flex items-center gap-4 p-4 hover:shadow-sm transition-shadow cursor-pointer">
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "var(--vk-bad-bg)" }}>
                   <FileText className="w-5 h-5" style={{ color: "#EF4444" }} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-800 leading-snug">{n.title}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">{n.date}</p>
+                  <p className="text-sm font-semibold text-fg leading-snug">{n.title}</p>
+                  <p className="text-xs text-fg-subtle mt-0.5">{n.date}</p>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <span className="text-[10px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded">{n.type}</span>
-                  <Download className="w-4 h-4 text-gray-400 hover:text-gray-700 transition-colors" />
+                  <Download className="w-4 h-4 text-fg-subtle hover:text-fg transition-colors" />
                 </div>
               </div>
             ))}
@@ -353,25 +353,25 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
         {/* ── Documents and Reports ── */}
         <div>
           <SectionHeading>Documents and Reports</SectionHeading>
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="bg-surface rounded-xl border border-line overflow-hidden">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-200" style={{ background: "#F2EFE8" }}>
-                  <th className="text-left px-5 py-3 text-xs font-bold uppercase tracking-wide" style={{ color: PD }}>Document</th>
-                  <th className="text-left px-5 py-3 text-xs font-bold uppercase tracking-wide" style={{ color: PD }}>Size</th>
-                  <th className="text-left px-5 py-3 text-xs font-bold uppercase tracking-wide" style={{ color: PD }}>Date</th>
+                <tr className="border-b border-line" style={{ background: "var(--vk-surface-2)" }}>
+                  <th className="text-left px-5 py-3 text-xs font-bold uppercase tracking-wide" style={{ color: "var(--vk-fg)" }}>Document</th>
+                  <th className="text-left px-5 py-3 text-xs font-bold uppercase tracking-wide" style={{ color: "var(--vk-fg)" }}>Size</th>
+                  <th className="text-left px-5 py-3 text-xs font-bold uppercase tracking-wide" style={{ color: "var(--vk-fg)" }}>Date</th>
                   <th className="px-5 py-3" />
                 </tr>
               </thead>
               <tbody>
                 {DOCS.map((d, i) => (
-                  <tr key={i} className="border-b border-gray-100 hover:bg-emerald-50 transition-colors">
-                    <td className="px-5 py-3 font-medium text-gray-800">{d.name}</td>
-                    <td className="px-5 py-3 text-gray-500 text-xs">{d.size}</td>
-                    <td className="px-5 py-3 text-gray-500 text-xs">{d.date}</td>
+                  <tr key={i} className="border-b border-line hover:bg-emerald-50 transition-colors">
+                    <td className="px-5 py-3 font-medium text-fg">{d.name}</td>
+                    <td className="px-5 py-3 text-fg-muted text-xs">{d.size}</td>
+                    <td className="px-5 py-3 text-fg-muted text-xs">{d.date}</td>
                     <td className="px-5 py-3 text-right">
                       <button className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors hover:opacity-90"
-                        style={{ background: P, color: "#fff" }}>
+                        style={{ background: P, color: "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" }}>
                         <Download className="w-3 h-3" />
                         Download
                       </button>
@@ -388,16 +388,16 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
           <SectionHeading>Corporate Governance</SectionHeading>
 
           {/* Intro text (always visible, matches image) */}
-          <div className="bg-white rounded-xl border border-gray-200 p-5 mb-5 text-sm text-gray-700 leading-relaxed">
+          <div className="bg-surface rounded-xl border border-line p-5 mb-5 text-sm text-fg leading-relaxed">
             <div className="flex items-center gap-2 mb-2">
-              <BarChart3 className="w-4 h-4 flex-shrink-0" style={{ color: P }} />
-              <span className="font-bold text-gray-900">Vink is committed to the highest standards of corporate governance.</span>
+              <BarChart3 className="w-4 h-4 flex-shrink-0" style={{ color: "var(--vk-crimson-text)" }} />
+              <span className="font-bold text-fg">Vink is committed to the highest standards of corporate governance.</span>
             </div>
             The Board of Directors is responsible for the overall governance of the company, including setting strategic direction, overseeing management, and ensuring accountability to stakeholders.
           </div>
 
           {/* Tab strip */}
-          <div className="flex gap-1 border-b border-gray-200 mb-6 overflow-x-auto">
+          <div className="flex gap-1 border-b border-line mb-6 overflow-x-auto">
             {([
               { key: "board",           label: "Board of Directors" },
               { key: "management",      label: "Management" },
@@ -422,13 +422,13 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
           {govTab === "board" && (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {BOARD_MEMBERS.map((m) => (
-                <div key={m.name} className="flex flex-col items-center text-center rounded-xl p-5 bg-white border border-gray-200 hover:shadow-md transition-shadow">
+                <div key={m.name} className="flex flex-col items-center text-center rounded-xl p-5 bg-surface border border-line hover:shadow-md transition-shadow">
                   <div className="w-14 h-14 rounded-full flex items-center justify-center text-white font-black text-lg mb-3"
                     style={{ background: m.color }}>
                     {m.initial}
                   </div>
-                  <p className="text-xs font-bold text-gray-800 leading-snug mb-1">{m.name}</p>
-                  <p className="text-[10px] text-gray-500 leading-tight">{m.role}</p>
+                  <p className="text-xs font-bold text-fg leading-snug mb-1">{m.name}</p>
+                  <p className="text-[10px] text-fg-muted leading-tight">{m.role}</p>
                 </div>
               ))}
             </div>
@@ -438,15 +438,15 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
           {govTab === "management" && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {MANAGEMENT_TEAM.map((m) => (
-                <div key={m.name} className="flex items-center gap-4 bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow">
+                <div key={m.name} className="flex items-center gap-4 bg-surface rounded-xl border border-line p-4 hover:shadow-md transition-shadow">
                   <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-black text-base flex-shrink-0"
                     style={{ background: m.color }}>
                     {m.initial}
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-gray-800">{m.name}</p>
-                    <p className="text-xs font-medium mt-0.5" style={{ color: P }}>{m.title}</p>
-                    <p className="text-[11px] text-gray-400 mt-0.5">{m.province}</p>
+                    <p className="text-sm font-bold text-fg">{m.name}</p>
+                    <p className="text-xs font-medium mt-0.5" style={{ color: "var(--vk-crimson-text)" }}>{m.title}</p>
+                    <p className="text-[11px] text-fg-subtle mt-0.5">{m.province}</p>
                   </div>
                 </div>
               ))}
@@ -456,14 +456,14 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
           {/* ── Board Committees ── */}
           {govTab === "committees" && (
             <div>
-              <h3 className="text-base font-bold text-center mb-5 text-gray-700">Board Committee Members</h3>
+              <h3 className="text-base font-bold text-center mb-5 text-fg">Board Committee Members</h3>
               <div className="grid sm:grid-cols-2 gap-5">
                 {COMMITTEES.map((c) => (
                   <div key={c.name} className="rounded-xl border-2 overflow-hidden" style={{ borderColor: c.borderColor }}>
                     <div className="px-4 py-2.5 text-xs font-black uppercase tracking-wider" style={{ background: c.color, color: c.borderColor }}>
                       {c.name}
                     </div>
-                    <div className="bg-white divide-y divide-gray-100">
+                    <div className="bg-surface divide-y divide-line">
                       {c.members.map((m) => (
                         <div key={m.name} className="flex items-center gap-3 px-4 py-3">
                           <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-black flex-shrink-0"
@@ -471,8 +471,8 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
                             {m.initial}
                           </div>
                           <div>
-                            <p className="text-sm font-semibold text-gray-800">{m.name}</p>
-                            <p className="text-[11px] text-gray-500">{m.role} · {m.province}</p>
+                            <p className="text-sm font-semibold text-fg">{m.name}</p>
+                            <p className="text-[11px] text-fg-muted">{m.role} · {m.province}</p>
                           </div>
                         </div>
                       ))}
@@ -487,10 +487,10 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
           {govTab === "responsibilities" && (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {RESPONSIBILITIES.map((r) => (
-                <div key={r.title} className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow">
+                <div key={r.title} className="bg-surface rounded-xl border border-line p-5 hover:shadow-md transition-shadow">
                   <div className="text-3xl mb-3">{r.icon}</div>
-                  <h4 className="text-sm font-bold mb-2" style={{ color: PD }}>{r.title}</h4>
-                  <p className="text-xs text-gray-600 leading-relaxed">{r.text}</p>
+                  <h4 className="text-sm font-bold mb-2" style={{ color: "var(--vk-fg)" }}>{r.title}</h4>
+                  <p className="text-xs text-fg-muted leading-relaxed">{r.text}</p>
                 </div>
               ))}
             </div>

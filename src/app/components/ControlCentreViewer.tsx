@@ -83,7 +83,7 @@ export function ControlCentreViewer({ isOpen, onClose, onOpenTerminalManagement 
       ]);
 
       setRecentActivity([
-        { label: "Taxi taps", icon: Receipt, color: "#2E0B10", count: (taps.data ?? []).length },
+        { label: "Taxi taps", icon: Receipt, color: "var(--vk-fg)", count: (taps.data ?? []).length },
         { label: "Retail transactions", icon: Receipt, color: "#1E3A8A", count: (transactions.data ?? []).length },
         { label: "Till sales", icon: Receipt, color: "#065F46", count: (sales.data ?? []).length },
       ]);
@@ -103,21 +103,21 @@ export function ControlCentreViewer({ isOpen, onClose, onOpenTerminalManagement 
 
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center p-5" style={{ background: "rgba(10,14,35,.55)" }}>
-      <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[88vh] overflow-y-auto">
-        <div className="p-5 flex items-start justify-between border-b border-gray-100 sticky top-0 bg-white z-10">
+      <div className="bg-surface rounded-2xl w-full max-w-4xl max-h-[88vh] overflow-y-auto">
+        <div className="p-5 flex items-start justify-between border-b border-line sticky top-0 bg-surface z-10">
           <div>
-            <p className="text-[17px] font-black text-gray-900 flex items-center gap-2"><LayoutGrid className="w-5 h-5" /> Control Centre</p>
-            <p className="text-[12.5px] text-gray-500 mt-0.5">Every device fleet, one backend. Each app is a separate Google Play Console listing, all connected here.</p>
+            <p className="text-[17px] font-black text-fg flex items-center gap-2"><LayoutGrid className="w-5 h-5" /> Control Centre</p>
+            <p className="text-[12.5px] text-fg-muted mt-0.5">Every device fleet, one backend. Each app is a separate Google Play Console listing, all connected here.</p>
           </div>
-          <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 text-gray-400"><X className="w-4 h-4" /></button>
+          <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-surface-2 text-fg-subtle"><X className="w-4 h-4" /></button>
         </div>
 
         <div className="p-5">
           <div className="flex items-center justify-between mb-4">
-            <button onClick={loadAll} className="flex items-center gap-1.5 text-[12.5px] font-bold text-gray-500 hover:text-gray-700">
+            <button onClick={loadAll} className="flex items-center gap-1.5 text-[12.5px] font-bold text-fg-muted hover:text-fg">
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} /> Refresh
             </button>
-            <div className="flex items-center gap-3 text-[12px] font-bold text-gray-500">
+            <div className="flex items-center gap-3 text-[12px] font-bold text-fg-muted">
               <span>{totalDevices} devices total</span>
               {totalUnresolvedFaults > 0 && (
                 <span className="flex items-center gap-1" style={{ color: "#DC2626" }}><AlertTriangle className="w-3.5 h-3.5" /> {totalUnresolvedFaults} unresolved faults</span>
@@ -129,15 +129,15 @@ export function ControlCentreViewer({ isOpen, onClose, onOpenTerminalManagement 
 
           <div className="grid md:grid-cols-3 gap-3 mb-6">
             {fleets.map(f => (
-              <div key={f.label} className="rounded-xl border border-gray-100 p-4">
+              <div key={f.label} className="rounded-xl border border-line p-4">
                 <div className="flex items-center gap-2.5 mb-3">
                   <span className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: f.color + "18", color: f.color }}><f.icon className="w-4 h-4" /></span>
-                  <p className="text-[13px] font-bold text-gray-900">{f.label}</p>
+                  <p className="text-[13px] font-bold text-fg">{f.label}</p>
                 </div>
-                <p className="text-2xl font-black text-gray-900 mb-2">{f.total}</p>
+                <p className="text-2xl font-black text-fg mb-2">{f.total}</p>
                 <div className="flex items-center gap-3 text-[11px]">
                   <span className="flex items-center gap-1 text-emerald-600"><CheckCircle2 className="w-3 h-3" /> {f.active} active</span>
-                  <span className="text-gray-400">{f.inactive} inactive</span>
+                  <span className="text-fg-subtle">{f.inactive} inactive</span>
                   <span className="text-red-500">{f.revoked} revoked</span>
                 </div>
                 {f.unresolvedFaults > 0 && (
@@ -147,19 +147,19 @@ export function ControlCentreViewer({ isOpen, onClose, onOpenTerminalManagement 
             ))}
           </div>
 
-          <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-2">Recent activity (most recent 200 per fleet)</p>
+          <p className="text-[11px] font-bold uppercase tracking-widest text-fg-subtle mb-2">Recent activity (most recent 200 per fleet)</p>
           <div className="grid md:grid-cols-3 gap-3 mb-6">
             {recentActivity.map(a => (
-              <div key={a.label} className="rounded-xl border border-gray-100 p-4 flex items-center gap-3">
+              <div key={a.label} className="rounded-xl border border-line p-4 flex items-center gap-3">
                 <span className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: a.color + "18", color: a.color }}><a.icon className="w-4 h-4" /></span>
-                <div><p className="text-lg font-black text-gray-900">{a.count}</p><p className="text-[11px] text-gray-400">{a.label}</p></div>
+                <div><p className="text-lg font-black text-fg">{a.count}</p><p className="text-[11px] text-fg-subtle">{a.label}</p></div>
               </div>
             ))}
           </div>
 
           <div className="flex gap-2.5">
             {onOpenTerminalManagement && (
-              <button onClick={onOpenTerminalManagement} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-[12.5px] font-bold text-gray-700 hover:bg-gray-50">
+              <button onClick={onOpenTerminalManagement} className="flex-1 py-2.5 rounded-xl border border-line text-[12.5px] font-bold text-fg hover:bg-surface-2">
                 Manage taxi terminals →
               </button>
             )}

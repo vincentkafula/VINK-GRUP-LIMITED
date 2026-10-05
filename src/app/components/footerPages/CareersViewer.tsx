@@ -5,7 +5,7 @@ import { Footer } from "../Footer";
 interface Props { isOpen: boolean; onClose: () => void; }
 
 const P = "#5C0A10";
-const GOLD = "#F5A623";
+const GOLD = "#C9A84C";
 
 const BENEFITS = [
   { icon: "💰", title: "Competitive Salaries",     desc: "Market-rate salaries with annual performance reviews" },
@@ -39,15 +39,15 @@ const STEPS = [
 export function CareersViewer({ isOpen, onClose }: Props) {
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-white">
-      <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm">
+    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-surface">
+      <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-surface border-b border-line shadow-sm">
         <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
-        <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500"><X className="w-5 h-5" /></button>
+        <button onClick={onClose} className="p-2 rounded-full hover:bg-surface-2 transition-colors text-fg-muted"><X className="w-5 h-5" /></button>
       </div>
 
       {/* Hero */}
       <div className="py-20 px-6 text-white relative overflow-hidden"
-        style={{ background: `linear-gradient(135deg,#1B1837 0%,${P} 60%,#C9A84C 100%)` }}>
+        style={{ background: `linear-gradient(135deg,#1B1837 0%,${P} 60%,#9B1C1C 100%)` }}>
         <div className="max-w-4xl mx-auto relative z-10">
           <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4"
             style={{ background: "rgba(245,166,35,.2)", color: GOLD }}>Join the Team</span>
@@ -75,14 +75,14 @@ export function CareersViewer({ isOpen, onClose }: Props) {
 
         {/* Benefits */}
         <section>
-          <h2 className="text-2xl font-black mb-6" style={{ color: P }}>Why Work at VINK?</h2>
+          <h2 className="text-2xl font-black mb-6" style={{ color: "var(--vk-crimson-text)" }}>Why Work at VINK?</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {BENEFITS.map((b, i) => (
-              <div key={i} className="flex items-start gap-3 p-4 rounded-xl border border-gray-200 hover:border-emerald-200 hover:bg-emerald-50 transition-all">
+              <div key={i} className="flex items-start gap-3 p-4 rounded-xl border border-line hover:border-emerald-200 hover:bg-emerald-50 transition-all">
                 <span className="text-2xl">{b.icon}</span>
                 <div>
-                  <p className="font-bold text-gray-900 text-sm">{b.title}</p>
-                  <p className="text-gray-500 text-xs mt-0.5 leading-snug">{b.desc}</p>
+                  <p className="font-bold text-fg text-sm">{b.title}</p>
+                  <p className="text-fg-muted text-xs mt-0.5 leading-snug">{b.desc}</p>
                 </div>
               </div>
             ))}
@@ -91,16 +91,16 @@ export function CareersViewer({ isOpen, onClose }: Props) {
 
         {/* Open Roles */}
         <section>
-          <h2 className="text-2xl font-black mb-6" style={{ color: P }}>Open Roles</h2>
+          <h2 className="text-2xl font-black mb-6" style={{ color: "var(--vk-crimson-text)" }}>Open Roles</h2>
           <div className="space-y-3">
             {ROLES.map((r, i) => (
-              <div key={i} className="flex items-center justify-between gap-4 p-4 rounded-xl border border-gray-200 bg-white hover:shadow-md transition-shadow group cursor-pointer">
+              <div key={i} className="flex items-center justify-between gap-4 p-4 rounded-xl border border-line bg-surface hover:shadow-md transition-shadow group cursor-pointer">
                 <div className="flex-1 min-w-0">
-                  <p className="font-bold text-gray-900 text-sm group-hover:text-emerald-700 transition-colors">{r.title}</p>
+                  <p className="font-bold text-fg text-sm group-hover:text-emerald-700 transition-colors">{r.title}</p>
                   <div className="flex items-center gap-3 mt-1 flex-wrap">
-                    <span className="flex items-center gap-1 text-xs text-gray-500"><Briefcase className="w-3 h-3" />{r.dept}</span>
-                    <span className="flex items-center gap-1 text-xs text-gray-500"><MapPin className="w-3 h-3" />{r.location}</span>
-                    <span className="flex items-center gap-1 text-xs text-gray-500"><Clock className="w-3 h-3" />{r.type}</span>
+                    <span className="flex items-center gap-1 text-xs text-fg-muted"><Briefcase className="w-3 h-3" />{r.dept}</span>
+                    <span className="flex items-center gap-1 text-xs text-fg-muted"><MapPin className="w-3 h-3" />{r.location}</span>
+                    <span className="flex items-center gap-1 text-xs text-fg-muted"><Clock className="w-3 h-3" />{r.type}</span>
                   </div>
                 </div>
                 <button className="flex-shrink-0 text-xs font-bold px-4 py-2 rounded-lg text-white transition-all hover:opacity-90"
@@ -112,19 +112,19 @@ export function CareersViewer({ isOpen, onClose }: Props) {
 
         {/* How to Apply */}
         <section>
-          <h2 className="text-2xl font-black mb-6" style={{ color: P }}>How to Apply</h2>
+          <h2 className="text-2xl font-black mb-6" style={{ color: "var(--vk-crimson-text)" }}>How to Apply</h2>
           <div className="relative pl-6 border-l-2" style={{ borderColor: P }}>
             {STEPS.map((step, i) => (
               <div key={i} className="mb-5 relative">
                 <div className="absolute -left-[30px] top-0 w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-black"
                   style={{ background: P }}>{i + 1}</div>
-                <p className="text-gray-700 text-sm leading-relaxed">{step}</p>
+                <p className="text-fg text-sm leading-relaxed">{step}</p>
               </div>
             ))}
           </div>
           <div className="mt-6 p-5 rounded-2xl border-2" style={{ borderColor: P }}>
-            <p className="text-sm font-semibold text-gray-800 mb-1">Application Email</p>
-            <a href="mailto:careers@vink.co.za" className="font-bold text-lg" style={{ color: P }}>careers@vink.co.za</a>
+            <p className="text-sm font-semibold text-fg mb-1">Application Email</p>
+            <a href="mailto:careers@vink.co.za" className="font-bold text-lg" style={{ color: "var(--vk-crimson-text)" }}>careers@vink.co.za</a>
           </div>
         </section>
 
@@ -134,8 +134,8 @@ export function CareersViewer({ isOpen, onClose }: Props) {
           <p className="text-white/80 text-sm leading-relaxed mb-4">
             VINK offers a 12-month paid internship programme for recent graduates in Computer Science, Finance, Marketing, and Business Management. Applications open annually in January.
           </p>
-          <a href="mailto:intern@vink.co.za" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-white transition-all hover:opacity-90"
-            style={{ color: P }}>
+          <a href="mailto:intern@vink.co.za" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-surface transition-all hover:opacity-90"
+            style={{ color: "var(--vk-crimson-text)" }}>
             Email intern@vink.co.za
           </a>
         </section>

@@ -29,7 +29,7 @@ export const RewardsSection = memo(function RewardsSection() {
         <h2 className="text-5xl sm:text-6xl mb-4"
           style={{
             fontFamily: "'Fraunces', serif", fontWeight: 700,
-            backgroundImage: "linear-gradient(180deg,#FDE9A8 0%,#F5C842 35%,#C9861F 75%,#A66E15 100%)",
+            backgroundImage: "linear-gradient(180deg,color-mix(in srgb, #FDE9A8 var(--vk-wash), var(--vk-surface)) 0%,#F5C842 35%,#C9861F 75%,#A66E15 100%)",
             WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent",
             filter: "drop-shadow(0 2px 1px rgba(0,0,0,0.4)) drop-shadow(0 1px 0 rgba(255,239,180,0.4))",
           }}>

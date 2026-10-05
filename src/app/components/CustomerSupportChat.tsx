@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { MessageCircle, X, Send, Paperclip, Phone, Video, ChevronDown, Bot, User, Clock, CheckCheck, AlertCircle, Star } from "lucide-react";
 
 const P = "#5C0A10";
-const GOLD = "#F5A623";
+const GOLD = "#C9A84C";
 
 type MessageRole = "user" | "agent" | "bot" | "system";
 
@@ -53,7 +53,7 @@ const BOT_RESPONSES: Record<string, string> = {
 
 const CATEGORIES = [
   { label: "Account", color: "#3B82F6" },
-  { label: "Cards", color: P },
+  { label: "Cards", color: "var(--vk-crimson-text)" },
   { label: "Loans", color: "#34A853" },
   { label: "Travel", color: "#F59E0B" },
   { label: "Technical", color: "#10B981" },
@@ -127,7 +127,7 @@ export function CustomerSupportChat() {
       <button
         onClick={open}
         className="fixed bottom-6 right-6 z-[300] flex items-center gap-2 px-4 py-3 rounded-2xl shadow-2xl text-white font-semibold text-sm transition-all hover:scale-105"
-        style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}
+        style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}
       >
         <MessageCircle className="w-5 h-5" />
         Support
@@ -144,7 +144,7 @@ export function CustomerSupportChat() {
       style={{ width: 380, height: 580, background: "#0A0A14", border: "1px solid rgba(255,255,255,0.1)" }}
     >
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10" style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10" style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
         <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center text-lg">🎧</div>
         <div className="flex-1">
           <p className="text-white font-bold text-sm">VINK Support</p>
@@ -202,7 +202,7 @@ export function CustomerSupportChat() {
                     </div>
                     <div className="max-w-[80%] rounded-2xl rounded-bl-sm px-3 py-2" style={{ background: "rgba(255,255,255,0.08)" }}>
                       <p className="text-xs text-white/90 leading-relaxed whitespace-pre-line"
-                        dangerouslySetInnerHTML={{ __html: msg.text.replace(/\*\*(.*?)\*\*/g, '<strong style="color:#F5A623">$1</strong>') }}
+                        dangerouslySetInnerHTML={{ __html: msg.text.replace(/\*\*(.*?)\*\*/g, '<strong style="color:#C9A84C">$1</strong>') }}
                       />
                       <p className="text-[10px] text-white/30 mt-1">{msg.timestamp.toLocaleTimeString("en-ZA", { hour: "2-digit", minute: "2-digit" })}</p>
                     </div>
@@ -271,7 +271,7 @@ export function CustomerSupportChat() {
               onClick={() => sendMessage()}
               disabled={!input.trim()}
               className="p-2 rounded-xl transition-all flex-shrink-0"
-              style={{ background: input.trim() ? P : "rgba(255,255,255,0.05)", color: input.trim() ? "#fff" : "rgba(255,255,255,0.2)" }}
+              style={{ background: input.trim() ? P : "rgba(255,255,255,0.05)", color: input.trim() ? "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" : "rgba(255,255,255,0.2)" }}
             >
               <Send className="w-4 h-4" />
             </button>
@@ -349,7 +349,7 @@ export function CustomerSupportChat() {
                 onClick={() => ticketCategory && ticketSubject && ticketDescription ? setTicketSubmitted(true) : null}
                 disabled={!ticketCategory || !ticketSubject || !ticketDescription}
                 className="w-full py-3 rounded-xl text-sm font-bold text-white transition-all"
-                style={{ background: ticketCategory && ticketSubject && ticketDescription ? P : "rgba(255,255,255,0.1)", color: ticketCategory && ticketSubject && ticketDescription ? "#fff" : "rgba(255,255,255,0.3)" }}
+                style={{ background: ticketCategory && ticketSubject && ticketDescription ? P : "rgba(255,255,255,0.1)", color: ticketCategory && ticketSubject && ticketDescription ? "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" : "rgba(255,255,255,0.3)" }}
               >
                 Submit Ticket
               </button>

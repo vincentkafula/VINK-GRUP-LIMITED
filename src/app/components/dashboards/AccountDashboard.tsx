@@ -28,8 +28,8 @@ const TRANSACTIONS = [
 
 const BALANCE_CHART = [28400, 32100, 29800, 34500, 31200, 38900, 36400, 42100, 39800, 45200, 48400, 52800];
 const CARDS = [
-  { type: "VINK Business Visa", last4: "4521", limit: 50000, used: 18240, expiry: "09/28", color: "from-[#C9A84C] to-[#8B0000]" },
-  { type: "VINK Platinum MC", last4: "8834", limit: 100000, used: 34820, expiry: "03/27", color: "from-[#C9A84C] to-[#14532D]" },
+  { type: "VINK Business Visa", last4: "4521", limit: 50000, used: 18240, expiry: "09/28", color: "from-[#9B1C1C] to-[#8B0000]" },
+  { type: "VINK Platinum MC", last4: "8834", limit: 100000, used: 34820, expiry: "03/27", color: "from-[#9B1C1C] to-[#14532D]" },
 ];
 
 const fmt = (n: number) => `R${Math.abs(n).toLocaleString()}`;
@@ -108,7 +108,7 @@ export function AccountDashboard({ isOpen, onClose }: { isOpen: boolean; onClose
                       </div>
                     </div>
                     <div className="mt-2 h-1 rounded-full bg-white/20">
-                      <div className="h-full rounded-full bg-white/80" style={{ width: `${(c.used/c.limit)*100}%` }} />
+                      <div className="h-full rounded-full bg-surface/80" style={{ width: `${(c.used/c.limit)*100}%` }} />
                     </div>
                   </div>
                 ))}

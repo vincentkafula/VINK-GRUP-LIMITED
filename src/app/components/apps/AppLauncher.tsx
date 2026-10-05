@@ -30,7 +30,7 @@ const APPS = [
     gradient: "linear-gradient(135deg,#5C0A10,#C9A84C)",
     emoji: "🚌",
     badge: "P18Q Hardware",
-    badgeColor: "#F5A623",
+    badgeColor: "#C9A84C",
     features: [
       "P18Q · Android 12 · Quad-Core 2.0 GHz · 7\" 720×1280",
       "ISO 14443 A/B NFC · Mifare · EMV L1 · Paywave · Paypass",
@@ -85,7 +85,7 @@ const APPS = [
     size: "Internal",
     rating: 5.0,
     reviews: "Internal",
-    gradient: "linear-gradient(135deg,#5C0A10,#F5A623)",
+    gradient: "linear-gradient(135deg,#5C0A10,#C9A84C)",
     emoji: "💹",
     badge: "Operations",
     badgeColor: "#5C0A10",
@@ -141,7 +141,7 @@ export function AppLauncher({ isOpen, onClose, onLaunchApp }: Props) {
               <div className="flex items-center gap-2 mt-2">
                 <div className="flex gap-0.5">
                   {[1,2,3,4,5].map(s => (
-                    <Star key={s} className="w-3 h-3" fill={s <= Math.round(selectedApp.rating) ? "#F5A623" : "transparent"} stroke="#F5A623" />
+                    <Star key={s} className="w-3 h-3" fill={s <= Math.round(selectedApp.rating) ? "#C9A84C" : "transparent"} stroke="#C9A84C" />
                   ))}
                 </div>
                 <span className="text-white/50 text-xs">{selectedApp.rating} ({selectedApp.reviews} ratings)</span>
@@ -293,7 +293,7 @@ export function AppLauncher({ isOpen, onClose, onLaunchApp }: Props) {
                 <div className="flex items-center gap-3 mt-2">
                   <div className="flex gap-0.5">
                     {[1,2,3,4,5].map(s => (
-                      <Star key={s} className="w-2.5 h-2.5" fill={s <= Math.round(app.rating) ? "#F5A623" : "transparent"} stroke="#F5A623" />
+                      <Star key={s} className="w-2.5 h-2.5" fill={s <= Math.round(app.rating) ? "#C9A84C" : "transparent"} stroke="#C9A84C" />
                     ))}
                   </div>
                   <span className="text-white/40 text-[10px]">{app.rating}</span>

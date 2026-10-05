@@ -74,15 +74,15 @@ export function BusinessLoanApplicationViewer({ isOpen, onClose }: Props) {
   const back = () => setStep(s => Math.max(s - 1, 1));
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-[#FAF8F4]">
+    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-surface-2">
 
       {/* ── Top bar ── */}
-      <div className="sticky top-0 z-20 bg-white border-b border-gray-100 shadow-sm">
+      <div className="sticky top-0 z-20 bg-surface border-b border-line shadow-sm">
         <div className="flex items-center justify-between px-5 py-3">
           <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
           <div className="flex items-center gap-3">
-            <span className="hidden sm:block text-xs text-gray-400 font-medium">Step {step} of {STEPS.length}</span>
-            <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-800"><X className="w-5 h-5" /></button>
+            <span className="hidden sm:block text-xs text-fg-subtle font-medium">Step {step} of {STEPS.length}</span>
+            <button onClick={onClose} className="p-2 rounded-full hover:bg-surface-2 transition-colors text-fg-muted hover:text-fg"><X className="w-5 h-5" /></button>
           </div>
         </div>
         <div className="px-5 pb-4 space-y-3">
@@ -96,7 +96,7 @@ export function BusinessLoanApplicationViewer({ isOpen, onClose }: Props) {
         tag="VINK Business Banking · NCRCP Licensed"
         title="Small Business Loan Application"
         subtitle="Fast, transparent funding for South African businesses. Complete all 7 steps to receive your decision."
-        gradient={`linear-gradient(135deg,${CP} 0%,#0C0E14 50%,#C9A84C 100%)`}
+        gradient={`linear-gradient(135deg,${CP} 0%,#0C0E14 50%,#9B1C1C 100%)`}
       />
 
       {/* ── Content ── */}
@@ -187,12 +187,12 @@ export function BusinessLoanApplicationViewer({ isOpen, onClose }: Props) {
 
             {/* Indicative repayment */}
             {form.loanAmount && (
-              <div className="rounded-xl p-4 mt-2" style={{ background: "#F2EFE8" }}>
+              <div className="rounded-xl p-4 mt-2" style={{ background: "var(--vk-surface-2)" }}>
                 <p className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: CP }}>Indicative monthly repayment</p>
                 <p className="text-2xl font-black" style={{ color: CP }}>
                   R {Math.round(Number(form.loanAmount) * 0.025 * Math.pow(1.025, Number(form.loanTerm)) / (Math.pow(1.025, Number(form.loanTerm)) - 1)).toLocaleString("en-ZA")}
                 </p>
-                <p className="text-xs text-gray-500 mt-0.5">Based on indicative 2.5%/month · Subject to credit assessment</p>
+                <p className="text-xs text-fg-muted mt-0.5">Based on indicative 2.5%/month · Subject to credit assessment</p>
               </div>
             )}
           </FormCard>
@@ -201,7 +201,7 @@ export function BusinessLoanApplicationViewer({ isOpen, onClose }: Props) {
         {/* ── Step 3: OTP Verify ── */}
         {step === 3 && (
           <FormCard stepN={3} title="OTP verification" subtitle="We'll send a one-time PIN to verify your identity">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-fg-muted">
               We will send a one-time PIN to <strong>{form.contactNumber || "+27 ..."}</strong> to verify your identity.
             </p>
 
@@ -235,7 +235,7 @@ export function BusinessLoanApplicationViewer({ isOpen, onClose }: Props) {
                         console.info("Demo OTP:", (r.data as { demoCode?: string }).demoCode);
                       }
                     }}
-                    className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-800 transition-colors">
+                    className="flex items-center gap-1.5 text-xs text-fg-muted hover:text-fg transition-colors">
                     <RefreshCw className="w-3.5 h-3.5" />Resend OTP
                   </button>
                 </div>
@@ -261,18 +261,18 @@ export function BusinessLoanApplicationViewer({ isOpen, onClose }: Props) {
         {/* ── Step 4: Biometrics ── */}
         {step === 4 && (
           <FormCard stepN={4} title="Biometric verification" subtitle="Take a selfie to complete your FICA biometric check">
-            <p className="text-sm text-gray-600 leading-relaxed">
+            <p className="text-sm text-fg-muted leading-relaxed">
               Take a selfie to complete your FICA biometric check. Your face will be matched against your provided ID document.
             </p>
-            <div className="border-2 border-dashed border-gray-200 rounded-2xl p-8 flex flex-col items-center gap-4 text-center">
+            <div className="border-2 border-dashed border-line rounded-2xl p-8 flex flex-col items-center gap-4 text-center">
               {!bioDone ? (
                 <>
-                  <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center">
-                    <Camera className="w-8 h-8 text-gray-400" />
+                  <div className="w-20 h-20 rounded-full bg-surface-2 flex items-center justify-center">
+                    <Camera className="w-8 h-8 text-fg-subtle" />
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-800 text-sm mb-1">Take a selfie</p>
-                    <p className="text-xs text-gray-500">Ensure you are in good lighting with your full face visible</p>
+                    <p className="font-semibold text-fg text-sm mb-1">Take a selfie</p>
+                    <p className="text-xs text-fg-muted">Ensure you are in good lighting with your full face visible</p>
                   </div>
                   <button
                     onClick={() => setBioDone(true)}
@@ -280,7 +280,7 @@ export function BusinessLoanApplicationViewer({ isOpen, onClose }: Props) {
                     style={{ background: CP }}>
                     Open Camera
                   </button>
-                  <p className="text-xs text-gray-400">or</p>
+                  <p className="text-xs text-fg-subtle">or</p>
                   <label className="cursor-pointer text-sm font-semibold" style={{ color: CP }}>
                     Upload a clear photo
                     <input type="file" accept="image/*" className="hidden" onChange={() => setBioDone(true)} />
@@ -293,7 +293,7 @@ export function BusinessLoanApplicationViewer({ isOpen, onClose }: Props) {
                     <CheckCircle className="w-10 h-10" />
                   </div>
                   <p className="font-bold text-green-700">Biometric check complete</p>
-                  <p className="text-xs text-gray-500">Face matched successfully</p>
+                  <p className="text-xs text-fg-muted">Face matched successfully</p>
                 </div>
               )}
             </div>
@@ -314,7 +314,7 @@ export function BusinessLoanApplicationViewer({ isOpen, onClose }: Props) {
                 />
               ))}
             </div>
-            <p className="text-xs text-gray-400 mt-2">
+            <p className="text-xs text-fg-subtle mt-2">
               {Object.keys(docs).filter(k => docs[k]).length} of {DOC_SLOTS.filter(d => d.required).length} required documents uploaded
             </p>
           </FormCard>
@@ -323,11 +323,11 @@ export function BusinessLoanApplicationViewer({ isOpen, onClose }: Props) {
         {/* ── Step 6: Directors ── */}
         {step === 6 && (
           <FormCard stepN={6} title="Director information" subtitle="All directors with ≥25% shareholding must be declared">
-            <p className="text-sm text-gray-500">All directors with ≥25% shareholding must be declared.</p>
+            <p className="text-sm text-fg-muted">All directors with ≥25% shareholding must be declared.</p>
 
             {/* Director 1 (from applicant info) */}
-            <div className="rounded-xl border border-gray-200 p-4 space-y-3">
-              <p className="text-xs font-bold uppercase tracking-wider text-gray-500">Director 1 (Applicant)</p>
+            <div className="rounded-xl border border-line p-4 space-y-3">
+              <p className="text-xs font-bold uppercase tracking-wider text-fg-muted">Director 1 (Applicant)</p>
               <FieldRow>
                 <Field label="Full name">
                   <input className={inputCls} value={form.fullName} onChange={set("fullName")} />
@@ -342,8 +342,8 @@ export function BusinessLoanApplicationViewer({ isOpen, onClose }: Props) {
             </div>
 
             {/* Director 2 */}
-            <div className="rounded-xl border border-gray-200 p-4 space-y-3">
-              <p className="text-xs font-bold uppercase tracking-wider text-gray-500">Director 2 (if applicable)</p>
+            <div className="rounded-xl border border-line p-4 space-y-3">
+              <p className="text-xs font-bold uppercase tracking-wider text-fg-muted">Director 2 (if applicable)</p>
               <FieldRow>
                 <Field label="Full name">
                   <input className={inputCls} placeholder="Director full name" value={form.director2Name} onChange={set("director2Name")} />
@@ -357,7 +357,7 @@ export function BusinessLoanApplicationViewer({ isOpen, onClose }: Props) {
               </Field>
             </div>
 
-            <p className="text-xs text-gray-400">Add more directors by contacting your VINK relationship manager after submission.</p>
+            <p className="text-xs text-fg-subtle">Add more directors by contacting your VINK relationship manager after submission.</p>
           </FormCard>
         )}
 
@@ -378,22 +378,22 @@ export function BusinessLoanApplicationViewer({ isOpen, onClose }: Props) {
                       { label: "Collateral", value: form.collateralType || "—" },
                       { label: "Contact", value: form.contactNumber || "—" },
                     ].map((item, i) => (
-                      <div key={i} className="p-3 rounded-xl bg-gray-50">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">{item.label}</p>
-                        <p className="text-sm font-semibold text-gray-800 mt-0.5">{item.value}</p>
+                      <div key={i} className="p-3 rounded-xl bg-surface-2">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-fg-subtle">{item.label}</p>
+                        <p className="text-sm font-semibold text-fg mt-0.5">{item.value}</p>
                       </div>
                     ))}
                   </div>
                 </FormCard>
 
-                <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm space-y-3">
-                  <p className="text-xs text-gray-500 leading-relaxed">
+                <div className="bg-surface rounded-2xl border border-line p-5 shadow-sm space-y-3">
+                  <p className="text-xs text-fg-muted leading-relaxed">
                     By submitting this application I confirm that all information provided is true and accurate. I authorise Vink Group (Pty) Ltd to conduct a credit bureau inquiry and verify my information. I have read and agree to the <span className="font-semibold" style={{ color: CP }}>Loan Terms and Conditions</span> and <span className="font-semibold" style={{ color: CP }}>Privacy Policy</span>.
                   </p>
                   <label className="flex items-start gap-3 cursor-pointer">
                     <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)}
                       className="mt-0.5 w-4 h-4 rounded accent-emerald-700 flex-shrink-0" />
-                    <span className="text-sm font-semibold text-gray-700">
+                    <span className="text-sm font-semibold text-fg">
                       I agree to the terms and conditions and consent to a credit check
                     </span>
                   </label>
@@ -420,28 +420,28 @@ export function BusinessLoanApplicationViewer({ isOpen, onClose }: Props) {
                     }
                   }}
                   className="w-full py-4 rounded-xl text-base font-black text-white transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed shadow-lg"
-                  style={{ background: agreed ? `linear-gradient(135deg,${CP},#C9A84C)` : "#9CA3AF" }}>
+                  style={{ background: agreed ? `linear-gradient(135deg,${CP},#9B1C1C)` : "#9CA3AF" }}>
                   {submitting ? "Submitting..." : "Submit Loan Application"}
                 </button>
                 {submitError && <p className="text-red-600 text-sm text-center mt-2">{submitError}</p>}
               </>
             ) : (
-              <div className="bg-white rounded-2xl border border-green-200 p-8 shadow-sm text-center space-y-4">
+              <div className="bg-surface rounded-2xl border border-green-200 p-8 shadow-sm text-center space-y-4">
                 <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto"
-                  style={{ background: "#D1FAE5" }}>
+                  style={{ background: "var(--vk-ok-bg)" }}>
                   <CheckCircle className="w-10 h-10 text-green-600" />
                 </div>
-                <h2 className="text-2xl font-black text-gray-900">Application Submitted!</h2>
-                <p className="text-gray-600 text-sm leading-relaxed max-w-md mx-auto">
+                <h2 className="text-2xl font-black text-fg">Application Submitted!</h2>
+                <p className="text-fg-muted text-sm leading-relaxed max-w-md mx-auto">
                   Your business loan application has been received. A VINK credit officer will review your application and contact you at <strong>{form.contactNumber}</strong> within <strong>2 business days</strong>.
                 </p>
-                <div className="rounded-xl p-4 mt-2" style={{ background: "#F2EFE8" }}>
-                  <p className="text-xs text-gray-500 mb-1">Application reference number</p>
+                <div className="rounded-xl p-4 mt-2" style={{ background: "var(--vk-surface-2)" }}>
+                  <p className="text-xs text-fg-muted mb-1">Application reference number</p>
                   <p className="font-black text-lg" style={{ color: CP }}>
                     VINK-BL-{new Date().getFullYear()}-{Math.floor(Math.random() * 90000 + 10000)}
                   </p>
                 </div>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-fg-subtle">
                   A confirmation email has been sent to {form.email || "your registered email address"}.
                 </p>
                 <button onClick={onClose}

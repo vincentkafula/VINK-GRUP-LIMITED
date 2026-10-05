@@ -314,7 +314,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
   if (!isOpen) return null;
 
   const P = "#5C0A10";
-  const GOLD = "#F5A623";
+  const GOLD = "#C9A84C";
   const stages = selectedRoute.baseFare < 500 && networkOnline ? OFFLINE_STAGES : ONLINE_STAGES;
   const isOfflinePath = selectedRoute.baseFare < 500 && networkOnline;
 
@@ -872,7 +872,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
             </div>
             <button onClick={() => setScreen("setup")}
               className="w-full mt-3 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90"
-              style={{ background: "#F5A623", color: "#0A0A14" }}>
+              style={{ background: "#C9A84C", color: "#0A0A14" }}>
               Register Device Now
             </button>
           </div>

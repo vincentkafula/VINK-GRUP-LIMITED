@@ -4,7 +4,7 @@ import { Footer } from "../Footer";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 const P = "#5C0A10";
-const GOLD = "#F5A623";
+const GOLD = "#C9A84C";
 
 const CHANNELS = [
   { icon: <Smartphone className="w-6 h-6" />, title: "VINK App", desc: "The primary way to manage your account — check your balance, view transactions in real time, freeze your card, and apply for new products. Available on iOS and Android at launch." },
@@ -16,10 +16,10 @@ const CHANNELS = [
 export function BankingChannelsViewer({ isOpen, onClose }: Props) {
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-white">
-      <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm">
+    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-surface">
+      <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-surface border-b border-line shadow-sm">
         <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
-        <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500"><X className="w-5 h-5" /></button>
+        <button onClick={onClose} className="p-2 rounded-full hover:bg-surface-2 transition-colors text-fg-muted"><X className="w-5 h-5" /></button>
       </div>
 
       <div className="py-16 px-6 text-white" style={{ background: `linear-gradient(135deg,#0F172A,${P})` }}>
@@ -35,8 +35,8 @@ export function BankingChannelsViewer({ isOpen, onClose }: Props) {
 
       <div className="max-w-4xl mx-auto w-full px-5 py-10 space-y-10">
 
-        <section className="rounded-2xl p-5" style={{ background: "#FEF3C7", border: "1px solid #FDE68A" }}>
-          <p className="text-sm font-semibold" style={{ color: "#92400E" }}>
+        <section className="rounded-2xl p-5" style={{ background: "var(--vk-warn-bg)", border: "1px solid color-mix(in srgb, #FDE68A var(--vk-wash), var(--vk-surface))" }}>
+          <p className="text-sm font-semibold" style={{ color: "var(--vk-warn)" }}>
             VINK is not yet in full operation. These channels go live when we launch in June 2027.
           </p>
         </section>
@@ -44,20 +44,20 @@ export function BankingChannelsViewer({ isOpen, onClose }: Props) {
         <section>
           <div className="space-y-4">
             {CHANNELS.map((c, i) => (
-              <div key={i} className="flex items-start gap-4 p-5 bg-white rounded-xl border border-gray-200">
-                <span className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: "#EAF7EE", color: P }}>{c.icon}</span>
+              <div key={i} className="flex items-start gap-4 p-5 bg-surface rounded-xl border border-line">
+                <span className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: "var(--vk-ok-bg)", color: "var(--vk-crimson-text)" }}>{c.icon}</span>
                 <div>
-                  <p className="font-bold text-gray-900 mb-1">{c.title}</p>
-                  <p className="text-gray-600 text-sm leading-relaxed">{c.desc}</p>
+                  <p className="font-bold text-fg mb-1">{c.title}</p>
+                  <p className="text-fg-muted text-sm leading-relaxed">{c.desc}</p>
                 </div>
               </div>
             ))}
           </div>
         </section>
 
-        <section className="bg-gray-50 rounded-2xl p-6 border border-gray-200">
-          <h2 className="text-lg font-black mb-3" style={{ color: P }}>Why So Many Channels?</h2>
-          <p className="text-gray-600 text-sm leading-relaxed">
+        <section className="bg-surface-2 rounded-2xl p-6 border border-line">
+          <h2 className="text-lg font-black mb-3" style={{ color: "var(--vk-crimson-text)" }}>Why So Many Channels?</h2>
+          <p className="text-fg-muted text-sm leading-relaxed">
             South Africa's transport economy runs on every kind of device, from the latest smartphone to a basic feature phone. Banking that only works in an app leaves people out. VINK is designed so that no matter what device you're carrying, you can still check your balance, see your transactions, and know your money is where it should be.
           </p>
         </section>

@@ -18,17 +18,17 @@ export function SignInElsewhere({ onClose, label = "This area" }: { onClose: () 
   return (
     <div className="flex-1 flex flex-col items-center justify-center text-center px-6 gap-4" style={{ color: "#fff" }}>
       <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: "rgba(255,255,255,0.08)" }}>
-        <LogIn className="w-7 h-7" style={{ color: "#8884AA" }} />
+        <LogIn className="w-7 h-7" style={{ color: "var(--vk-fg-muted)" }} />
       </div>
       <div>
         <p className="text-base font-bold">Sign in required</p>
-        <p className="text-sm mt-1 max-w-xs" style={{ color: "#8884AA" }}>
+        <p className="text-sm mt-1 max-w-xs" style={{ color: "var(--vk-fg-muted)" }}>
           {label} uses the same one sign-in as the rest of VINK. Use the <strong>Login</strong> button in the main menu, then come back here.
         </p>
       </div>
       <button onClick={onClose}
         className="px-6 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90"
-        style={{ background: "linear-gradient(135deg,#1FAE58,#C9A84C)" }}>
+        style={{ background: "linear-gradient(135deg,#1FAE58,#9B1C1C)" }}>
         Close
       </button>
     </div>

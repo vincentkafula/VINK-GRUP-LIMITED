@@ -48,7 +48,7 @@ const SERVICE_CONFIG: Record<ServiceType, {
     tag:           "VINK Personal Banking · ManshyaPoints",
     title:         "ManshyaPoints Rewards Enrolment",
     subtitle:      "Enrol in ManshyaPoints to earn on every taxi ride, fuel purchase, grocery trip, and online spend.",
-    gradient:      "linear-gradient(135deg,#FF9900 0%,#FFB84D 50%,#FFCC80 100%)",
+    gradient:      "linear-gradient(135deg,#9B1C1C 0%,#FFB84D 50%,#FFCC80 100%)",
     successTitle:  "ManshyaPoints Account Created!",
     successBody:   "You have been enrolled in ManshyaPoints. Your welcome bonus of 5,000 points (worth R50) has been credited.",
     accountLabel:  "ManshyaPoints member number",
@@ -59,7 +59,7 @@ const SERVICE_CONFIG: Record<ServiceType, {
     tag:           "VINK Personal Banking · Accounts",
     title:         "Bank Account Application",
     subtitle:      "Open your selected VINK account in minutes — FICA-verified and ready to use.",
-    gradient:      "linear-gradient(135deg,#1A237E 0%,#8B0000 55%,#C9A84C 100%)",
+    gradient:      "linear-gradient(135deg,#1A237E 0%,#8B0000 55%,#9B1C1C 100%)",
     successTitle:  "Account Opened!",
     successBody:   "Your VINK finance account is active. Your VINK card will be delivered to your registered address within 5–7 business days.",
     accountLabel:  "Account number",
@@ -203,7 +203,7 @@ function FingerprintScanner({ onDone, accentColor }: { onDone: () => void; accen
     <div className="flex flex-col items-center gap-5 py-4">
       <div
         className="relative w-36 h-36 rounded-3xl flex items-center justify-center cursor-pointer transition-all select-none"
-        style={{ background: done ? "#D1FAE5" : scanning ? accentColor + "15" : "#F2EFE8", border: `3px solid ${done ? GREEN : scanning ? accentColor : "#E4DFD3"}`, boxShadow: scanning ? `0 0 30px ${accentColor}30` : "none" }}
+        style={{ background: done ? "var(--vk-ok-bg)" : scanning ? accentColor + "15" : "var(--vk-surface-2)", border: `3px solid ${done ? GREEN : scanning ? accentColor : "var(--vk-line)"}`, boxShadow: scanning ? `0 0 30px ${accentColor}30` : "none" }}
         onClick={!scanning && !done ? () => { setAttempt(a => a + 1); startScan(); } : undefined}
       >
         <Fingerprint className="w-16 h-16 transition-colors" style={{ color: done ? GREEN : scanning ? accentColor : "#A7E8BD" }} />
@@ -219,12 +219,12 @@ function FingerprintScanner({ onDone, accentColor }: { onDone: () => void; accen
       {done ? (
         <div className="text-center">
           <p className="font-bold text-green-700">Fingerprint verified</p>
-          <p className="text-xs text-gray-500 mt-0.5">Identity confirmed successfully</p>
+          <p className="text-xs text-fg-muted mt-0.5">Identity confirmed successfully</p>
         </div>
       ) : scanning ? (
-        <div className="text-center"><p className="font-semibold text-gray-700">Scanning… {Math.round(progress)}%</p><p className="text-xs text-gray-400 mt-0.5">Hold your finger steady</p></div>
+        <div className="text-center"><p className="font-semibold text-fg">Scanning… {Math.round(progress)}%</p><p className="text-xs text-fg-subtle mt-0.5">Hold your finger steady</p></div>
       ) : (
-        <div className="text-center"><p className="font-semibold text-gray-700">{attempt === 0 ? "Tap to scan fingerprint" : "Tap again to retry"}</p><p className="text-xs text-gray-400 mt-0.5">Place your index finger on the reader</p></div>
+        <div className="text-center"><p className="font-semibold text-fg">{attempt === 0 ? "Tap to scan fingerprint" : "Tap again to retry"}</p><p className="text-xs text-fg-subtle mt-0.5">Place your index finger on the reader</p></div>
       )}
     </div>
   );
@@ -251,12 +251,12 @@ function SelfieCapture({ onDone, accentColor }: { onDone: () => void; accentColo
       {state === "idle" && (
         <div className="flex flex-col items-center gap-3 w-full max-w-xs">
           <button onClick={startCapture} className="w-full py-3 rounded-xl text-sm font-bold text-white" style={{ background: accentColor }}>Take Selfie</button>
-          <p className="text-xs text-gray-400 text-center">Good lighting · No glasses · Face forward</p>
-          <div className="flex items-center gap-2 w-full"><div className="flex-1 h-px bg-gray-200" /><span className="text-xs text-gray-400">or</span><div className="flex-1 h-px bg-gray-200" /></div>
+          <p className="text-xs text-fg-subtle text-center">Good lighting · No glasses · Face forward</p>
+          <div className="flex items-center gap-2 w-full"><div className="flex-1 h-px bg-gray-200" /><span className="text-xs text-fg-subtle">or</span><div className="flex-1 h-px bg-gray-200" /></div>
           <label className="w-full text-center cursor-pointer text-sm font-semibold py-2.5 rounded-xl border-2 hover:opacity-80 transition-all" style={{ borderColor: accentColor, color: accentColor }}>Upload a clear photo<input type="file" accept="image/*" className="hidden" onChange={() => { setState("captured"); onDone(); }} /></label>
         </div>
       )}
-      {state === "captured" && <div className="text-center space-y-2"><p className="font-bold text-green-700">Selfie captured</p><p className="text-xs text-gray-500">Liveness check · Face match · Passed</p><button onClick={() => setState("idle")} className="text-xs text-gray-400 hover:text-gray-700 underline">Retake photo</button></div>}
+      {state === "captured" && <div className="text-center space-y-2"><p className="font-bold text-green-700">Selfie captured</p><p className="text-xs text-fg-muted">Liveness check · Face match · Passed</p><button onClick={() => setState("idle")} className="text-xs text-fg-subtle hover:text-fg underline">Retake photo</button></div>}
     </div>
   );
 }
@@ -355,15 +355,15 @@ export function ServiceApplicationViewer({ isOpen, onClose, serviceType }: Props
   const doneReqDocs = docs.filter(d => d.required && uploadedDocs[d.key]).length;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-[#FAF8F4]">
+    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-surface-2">
 
       {/* ── Top bar ── */}
-      <div className="sticky top-0 z-20 bg-white border-b border-gray-100 shadow-sm">
+      <div className="sticky top-0 z-20 bg-surface border-b border-line shadow-sm">
         <div className="flex items-center justify-between px-5 py-3">
           <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
           <div className="flex items-center gap-3">
-            <span className="hidden sm:block text-xs text-gray-400 font-medium">Step {step} of {STEPS.length}</span>
-            <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-800"><X className="w-5 h-5" /></button>
+            <span className="hidden sm:block text-xs text-fg-subtle font-medium">Step {step} of {STEPS.length}</span>
+            <button onClick={onClose} className="p-2 rounded-full hover:bg-surface-2 transition-colors text-fg-muted hover:text-fg"><X className="w-5 h-5" /></button>
           </div>
         </div>
         <div className="px-5 pb-4 space-y-3">
@@ -398,9 +398,9 @@ export function ServiceApplicationViewer({ isOpen, onClose, serviceType }: Props
           <FormCard stepN={2} stepColor={cfg.accentColor} title="Verify phone number and email address"
             subtitle="Each applicant receives an OTP to confirm their contact details for FICA compliance.">
             {/* Phone */}
-            <div className="rounded-xl border border-gray-200 p-4 space-y-3">
+            <div className="rounded-xl border border-line p-4 space-y-3">
               <div className="flex items-center justify-between gap-3">
-                <div><p className="text-sm font-semibold text-gray-800">Mobile number</p><p className="text-xs text-gray-500">{form.phone || "+27 ..."}</p></div>
+                <div><p className="text-sm font-semibold text-fg">Mobile number</p><p className="text-xs text-fg-muted">{form.phone || "+27 ..."}</p></div>
                 {phoneVerified
                   ? <VerifiedBadge label="Verified" />
                   : !phoneOtpSent
@@ -412,14 +412,14 @@ export function ServiceApplicationViewer({ isOpen, onClose, serviceType }: Props
                 <div className="space-y-3">
                   <OtpInput value={phoneOtp} onChange={setPhoneOtp} />
                   {phoneOtp.length === 6 && <button onClick={verifyPhoneOtp} className="w-full py-2.5 rounded-xl text-sm font-bold text-white" style={{ background: GREEN }}>✓ Verify Phone OTP</button>}
-                  <button onClick={() => { setPhoneOtpSent(false); setPhoneOtp(""); }} className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-700"><RefreshCw className="w-3 h-3" />Resend OTP</button>
+                  <button onClick={() => { setPhoneOtpSent(false); setPhoneOtp(""); }} className="flex items-center gap-1.5 text-xs text-fg-subtle hover:text-fg"><RefreshCw className="w-3 h-3" />Resend OTP</button>
                 </div>
               )}
             </div>
             {/* Email */}
-            <div className="rounded-xl border border-gray-200 p-4 space-y-3">
+            <div className="rounded-xl border border-line p-4 space-y-3">
               <div className="flex items-center justify-between gap-3">
-                <div><p className="text-sm font-semibold text-gray-800">Email address</p><p className="text-xs text-gray-500">{form.email || "email@domain.com"}</p></div>
+                <div><p className="text-sm font-semibold text-fg">Email address</p><p className="text-xs text-fg-muted">{form.email || "email@domain.com"}</p></div>
                 {emailVerified
                   ? <VerifiedBadge label="Verified" />
                   : !emailOtpSent
@@ -431,7 +431,7 @@ export function ServiceApplicationViewer({ isOpen, onClose, serviceType }: Props
                 <div className="space-y-3">
                   <OtpInput value={emailOtp} onChange={setEmailOtp} />
                   {emailOtp.length === 6 && <button onClick={verifyEmailOtp} className="w-full py-2.5 rounded-xl text-sm font-bold text-white" style={{ background: GREEN }}>✓ Verify Email OTP</button>}
-                  <button onClick={() => { setEmailOtpSent(false); setEmailOtp(""); }} className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-700"><RefreshCw className="w-3 h-3" />Resend OTP</button>
+                  <button onClick={() => { setEmailOtpSent(false); setEmailOtp(""); }} className="flex items-center gap-1.5 text-xs text-fg-subtle hover:text-fg"><RefreshCw className="w-3 h-3" />Resend OTP</button>
                 </div>
               )}
             </div>
@@ -491,7 +491,7 @@ export function ServiceApplicationViewer({ isOpen, onClose, serviceType }: Props
                 <div className="h-full rounded-full transition-all duration-500"
                   style={{ width: `${(doneReqDocs / reqDocs) * 100}%`, background: cfg.accentColor }} />
               </div>
-              <span className="text-xs font-semibold text-gray-600 flex-shrink-0">{doneReqDocs}/{reqDocs} required</span>
+              <span className="text-xs font-semibold text-fg-muted flex-shrink-0">{doneReqDocs}/{reqDocs} required</span>
             </div>
           </FormCard>
         )}
@@ -500,21 +500,21 @@ export function ServiceApplicationViewer({ isOpen, onClose, serviceType }: Props
         {step === 6 && (
           <FormCard stepN={6} stepColor={cfg.accentColor} title="Director confirmations"
             subtitle="The primary applicant must confirm their identity and set a secure PIN.">
-            <div className="rounded-xl border border-gray-200 p-4 space-y-4">
+            <div className="rounded-xl border border-line p-4 space-y-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-black text-sm flex-shrink-0"
                   style={{ background: cfg.accentColor }}>
                   {(form.firstName[0] || "A").toUpperCase()}{(form.lastName[0] || "B").toUpperCase()}
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-800 text-sm">{form.firstName || "Applicant"} {form.lastName}</p>
-                  <p className="text-xs text-gray-500">Primary account holder</p>
+                  <p className="font-semibold text-fg text-sm">{form.firstName || "Applicant"} {form.lastName}</p>
+                  <p className="text-xs text-fg-muted">Primary account holder</p>
                 </div>
                 {dirVerified && <div className="ml-auto"><VerifiedBadge label="Confirmed" /></div>}
               </div>
               {!dirVerified && (
-                <div className="space-y-3 pt-2 border-t border-gray-100">
-                  <p className="text-xs text-gray-500">Enter confirmation OTP (any 6 digits in demo)</p>
+                <div className="space-y-3 pt-2 border-t border-line">
+                  <p className="text-xs text-fg-muted">Enter confirmation OTP (any 6 digits in demo)</p>
                   <OtpInput value={dirOtp} onChange={setDirOtp} />
                   {dirOtp.length === 6 && (
                     <button onClick={() => setDirVerified(true)} className="w-full py-2.5 rounded-xl text-sm font-bold text-white" style={{ background: GREEN }}>Confirm Identity</button>
@@ -523,16 +523,16 @@ export function ServiceApplicationViewer({ isOpen, onClose, serviceType }: Props
               )}
             </div>
             {/* Set PIN */}
-            <div className="rounded-xl border border-gray-200 p-4 space-y-3">
-              <p className="text-sm font-semibold text-gray-800">Set your 4-digit account PIN</p>
+            <div className="rounded-xl border border-line p-4 space-y-3">
+              <p className="text-sm font-semibold text-fg">Set your 4-digit account PIN</p>
               <div className="relative max-w-xs">
                 <input type={showPin ? "text" : "password"} maxLength={4} value={pin} onChange={e => setPin(e.target.value.replace(/\D/, ""))}
                   className={inputCls + " pr-10 text-center text-2xl tracking-[0.5em] font-black"} placeholder="····" />
-                <button type="button" onClick={() => setShowPin(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                <button type="button" onClick={() => setShowPin(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-fg-subtle">
                   {showPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-              <p className="text-[10px] text-gray-400">Used for app login and transactions</p>
+              <p className="text-[10px] text-fg-subtle">Used for app login and transactions</p>
             </div>
           </FormCard>
         )}
@@ -551,18 +551,18 @@ export function ServiceApplicationViewer({ isOpen, onClose, serviceType }: Props
                 { label: "Product",     value: form.product || form.plan || "—" },
                 { label: "Documents",   value: `${Object.keys(uploadedDocs).filter(k => uploadedDocs[k]).length} uploaded` },
               ].map((item, i) => (
-                <div key={i} className="p-3 rounded-xl bg-gray-50 border border-gray-100">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">{item.label}</p>
-                  <p className="text-sm font-semibold text-gray-800 mt-0.5">{item.value}</p>
+                <div key={i} className="p-3 rounded-xl bg-surface-2 border border-line">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-fg-subtle">{item.label}</p>
+                  <p className="text-sm font-semibold text-fg mt-0.5">{item.value}</p>
                 </div>
               ))}
             </div>
-            <div className="rounded-xl p-4 text-xs text-gray-600 leading-relaxed" style={{ background: cfg.accentColor + "08", border: `1px solid ${cfg.accentColor}20` }}>
+            <div className="rounded-xl p-4 text-xs text-fg-muted leading-relaxed" style={{ background: cfg.accentColor + "08", border: `1px solid ${cfg.accentColor}20` }}>
               By submitting I confirm all information is true and accurate. I authorise VINK to conduct credit bureau inquiries and verify my identity with SARS, CIPC, and Home Affairs.
             </div>
             <label className="flex items-start gap-3 cursor-pointer">
               <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)} className="mt-0.5 w-4 h-4 rounded flex-shrink-0" />
-              <span className="text-sm font-semibold text-gray-700">I agree to the Terms and Conditions and consent to the processing of this application</span>
+              <span className="text-sm font-semibold text-fg">I agree to the Terms and Conditions and consent to the processing of this application</span>
             </label>
             <button disabled={!agreed || submitting} onClick={async () => {
                 setSubmitting(true);
@@ -594,13 +594,13 @@ export function ServiceApplicationViewer({ isOpen, onClose, serviceType }: Props
         {/* ── SUCCESS ── */}
         {step === 7 && submitted && (
           <div className="space-y-5">
-            <div className="bg-white rounded-2xl border p-8 text-center space-y-4" style={{ borderColor: GREEN + "40" }}>
+            <div className="bg-surface rounded-2xl border p-8 text-center space-y-4" style={{ borderColor: GREEN + "40" }}>
               <div className="w-24 h-24 rounded-full flex items-center justify-center mx-auto" style={{ background: `linear-gradient(135deg,${GREEN}30,${GREEN}15)` }}>
                 <CheckCircle className="w-12 h-12" style={{ color: GREEN }} />
               </div>
               <div>
-                <h2 className="text-2xl font-black text-gray-900">{cfg.successTitle}</h2>
-                <p className="text-gray-500 text-sm mt-1 max-w-sm mx-auto">{cfg.successBody}</p>
+                <h2 className="text-2xl font-black text-fg">{cfg.successTitle}</h2>
+                <p className="text-fg-muted text-sm mt-1 max-w-sm mx-auto">{cfg.successBody}</p>
               </div>
               {/* Account number card */}
               <div className="rounded-2xl p-5 mx-auto max-w-xs text-white relative overflow-hidden" style={{ background: cfg.gradient }}>
@@ -609,11 +609,11 @@ export function ServiceApplicationViewer({ isOpen, onClose, serviceType }: Props
                 <p className="font-black text-xl tracking-wide">{accountNo}</p>
                 <p className="text-[10px] opacity-60 mt-2">{form.firstName} {form.lastName}</p>
               </div>
-              <p className="text-xs text-gray-400">A confirmation email has been sent to <strong>{form.email || "your registered email"}</strong>.</p>
+              <p className="text-xs text-fg-subtle">A confirmation email has been sent to <strong>{form.email || "your registered email"}</strong>.</p>
             </div>
             <button onClick={onClose}
               className="w-full py-3.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 shadow-lg"
-              style={{ background: `linear-gradient(135deg,${CP},#C9A84C)` }}>
+              style={{ background: `linear-gradient(135deg,${CP},#9B1C1C)` }}>
               Back to VINK
             </button>
           </div>

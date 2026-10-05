@@ -9,7 +9,7 @@ import { memo } from "react";
 
 export const SpecialNeedSection = memo(function SpecialNeedSection() {
   return (
-    <section className="bg-white py-10 sm:py-14">
+    <section className="bg-surface py-10 sm:py-14">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-14 items-center">
           <div className="grid grid-cols-2 gap-3 h-72 sm:h-80">
@@ -25,21 +25,21 @@ export const SpecialNeedSection = memo(function SpecialNeedSection() {
           </div>
           <div className="text-center md:text-left">
             <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4"
-              style={{ background: "#F2EFE8", color: "#8B0000" }}>Tailored for You</span>
-            <h2 className="text-2xl sm:text-3xl font-black text-gray-900 leading-snug mb-3">
+              style={{ background: "var(--vk-surface-2)", color: "var(--vk-crimson-text)" }}>Tailored for You</span>
+            <h2 className="text-2xl sm:text-3xl font-black text-fg leading-snug mb-3">
               Have a Special Need?<br />
-              <span style={{ color: "#8B0000" }}>We Can Help.</span>
+              <span style={{ color: "var(--vk-crimson-text)" }}>We Can Help.</span>
             </h2>
-            <p className="text-gray-500 text-sm leading-relaxed mb-6 max-w-md mx-auto md:mx-0">
+            <p className="text-fg-muted text-sm leading-relaxed mb-6 max-w-md mx-auto md:mx-0">
               Not every customer is at the same place in life — and not every bank card fits every situation. VINK offers targeted solutions for specific life stages, from students building credit for the first time to new South African residents setting up their financial lives. Whatever your circumstance, there&apos;s a VINK product designed for you.
             </p>
             <div className="grid grid-cols-2 gap-3 mb-8 max-w-md mx-auto md:mx-0">
               {AUDIENCES.map((a, i) => (
-                <div key={i} className="flex items-start gap-3 p-3 rounded-xl border border-gray-100 hover:border-emerald-200 hover:bg-emerald-50 transition-all cursor-pointer text-left">
+                <div key={i} className="flex items-start gap-3 p-3 rounded-xl border border-line hover:border-emerald-200 hover:bg-emerald-50 transition-all cursor-pointer text-left">
                   <span className="text-2xl flex-shrink-0">{a.icon}</span>
                   <div>
-                    <p className="text-xs font-bold text-gray-800">{a.label}</p>
-                    <p className="text-[10px] text-gray-500 leading-snug mt-0.5">{a.desc}</p>
+                    <p className="text-xs font-bold text-fg">{a.label}</p>
+                    <p className="text-[10px] text-fg-muted leading-snug mt-0.5">{a.desc}</p>
                   </div>
                 </div>
               ))}
@@ -50,7 +50,7 @@ export const SpecialNeedSection = memo(function SpecialNeedSection() {
                 Find My Card
               </button>
               <button className="px-7 py-3 rounded-xl text-sm font-semibold transition-all hover:bg-emerald-50"
-                style={{ border: "1.5px solid #8B0000", color: "#8B0000" }}>
+                style={{ border: "1.5px solid #8B0000", color: "var(--vk-crimson-text)" }}>
                 Talk to an Expert
               </button>
             </div>

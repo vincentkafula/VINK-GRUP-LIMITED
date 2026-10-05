@@ -10,7 +10,7 @@ interface Props { isOpen: boolean; onClose: () => void; }
 
 const P    = "#FF6B00";  // 500 Global orange
 const NAVY = "#0A0F1E";
-const RULE = "#E5E7EB";
+const RULE = "var(--vk-line)";
 
 /* ─── Field component ─────────────────────────────────────── */
 function Field({
@@ -35,18 +35,18 @@ function Field({
     width: "100%", fontSize: 14, color: NAVY, outline: "none",
     border: `1.5px solid ${focused ? P : over ? "#DC2626" : RULE}`,
     borderRadius: 10, padding: "10px 14px", resize: "vertical",
-    background: "#FAFAFA", fontFamily: "inherit", lineHeight: 1.6,
+    background: "color-mix(in srgb, #FAFAFA var(--vk-wash), var(--vk-surface))", fontFamily: "inherit", lineHeight: 1.6,
     transition: "border-color 0.15s",
   };
 
   return (
     <div style={{ marginBottom: 24 }}>
       <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 6 }}>
-        <label style={{ fontSize: 13, fontWeight: 700, color: NAVY }}>
+        <label style={{ fontSize: 13, fontWeight: 700, color: "var(--vk-fg)" }}>
           {label}{required && <span style={{ color: P, marginLeft: 3 }}>*</span>}
         </label>
         {hint && (
-          <span style={{ fontSize: 11, color: "#6B7280", display: "flex", alignItems: "center", gap: 3 }}>
+          <span style={{ fontSize: 11, color: "var(--vk-fg-muted)", display: "flex", alignItems: "center", gap: 3 }}>
             <Info className="w-3 h-3" />{hint}
           </span>
         )}
@@ -70,7 +70,7 @@ function Field({
           onClick={copy}
           title="Copy to clipboard"
           style={{ position: "absolute", right: 10, top: rows ? 10 : "50%", transform: rows ? "none" : "translateY(-50%)",
-            background: "none", border: "none", cursor: "pointer", color: "#9CA3AF", padding: 4 }}>
+            background: "none", border: "none", cursor: "pointer", color: "var(--vk-fg-muted)", padding: 4 }}>
           {copied ? <CheckCircle className="w-4 h-4" style={{ color: "#10B981" }} />
                   : <Copy className="w-4 h-4" />}
         </button>
@@ -78,12 +78,12 @@ function Field({
 
       {maxLen && (
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
-          <div style={{ height: 3, flex: 1, marginRight: 8, borderRadius: 2, background: "#E5E7EB", overflow: "hidden" }}>
+          <div style={{ height: 3, flex: 1, marginRight: 8, borderRadius: 2, background: "var(--vk-line)", overflow: "hidden" }}>
             <div style={{ height: "100%", width: `${Math.min(pct!, 100)}%`,
               background: over ? "#DC2626" : pct! > 80 ? "#F59E0B" : "#10B981",
               transition: "width 0.2s, background 0.2s" }} />
           </div>
-          <span style={{ fontSize: 11, color: over ? "#DC2626" : "#9CA3AF", fontVariantNumeric: "tabular-nums" }}>
+          <span style={{ fontSize: 11, color: over ? "#DC2626" : "var(--vk-fg-muted)", fontVariantNumeric: "tabular-nums" }}>
             {value.length} / {maxLen}
           </span>
         </div>
@@ -101,20 +101,20 @@ function AppSection({
 }) {
   const [open, setOpen] = useState(true);
   return (
-    <div style={{ marginBottom: 12, border: `1.5px solid ${complete ? "#D1FAE5" : RULE}`,
-      borderRadius: 16, overflow: "hidden", background: "#fff" }}>
+    <div style={{ marginBottom: 12, border: `1.5px solid ${complete ? "var(--vk-ok-bg)" : RULE}`,
+      borderRadius: 16, overflow: "hidden", background: "var(--vk-surface)" }}>
       <button onClick={() => setOpen(o => !o)}
         style={{ width: "100%", display: "flex", alignItems: "center", gap: 14, padding: "16px 20px",
-          background: open ? "#FAFAFA" : "#fff", border: "none", cursor: "pointer", textAlign: "left" }}>
-        <span style={{ fontSize: 11, fontWeight: 700, color: "#9CA3AF",
+          background: open ? "color-mix(in srgb, #FAFAFA var(--vk-wash), var(--vk-surface))" : "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))", border: "none", cursor: "pointer", textAlign: "left" }}>
+        <span style={{ fontSize: 11, fontWeight: 700, color: "var(--vk-fg-muted)",
           fontFamily: "monospace", minWidth: 24 }}>{num}</span>
         <div style={{ flex: 1 }}>
-          <p style={{ fontSize: 15, fontWeight: 800, color: NAVY, margin: 0 }}>{title}</p>
-          {subtitle && <p style={{ fontSize: 12, color: "#6B7280", margin: "2px 0 0" }}>{subtitle}</p>}
+          <p style={{ fontSize: 15, fontWeight: 800, color: "var(--vk-fg)", margin: 0 }}>{title}</p>
+          {subtitle && <p style={{ fontSize: 12, color: "var(--vk-fg-muted)", margin: "2px 0 0" }}>{subtitle}</p>}
         </div>
         {complete && <CheckCircle className="w-5 h-5 flex-shrink-0" style={{ color: "#10B981" }} />}
-        {open ? <ChevronUp className="w-5 h-5 flex-shrink-0" style={{ color: "#9CA3AF" }} />
-               : <ChevronDown className="w-5 h-5 flex-shrink-0" style={{ color: "#9CA3AF" }} />}
+        {open ? <ChevronUp className="w-5 h-5 flex-shrink-0" style={{ color: "var(--vk-fg-muted)" }} />
+               : <ChevronDown className="w-5 h-5 flex-shrink-0" style={{ color: "var(--vk-fg-muted)" }} />}
       </button>
       {open && <div style={{ padding: "0 20px 20px" }}>{children}</div>}
     </div>
@@ -125,9 +125,9 @@ function AppSection({
 function Tip({ children }: { children: React.ReactNode }) {
   return (
     <div style={{ display: "flex", gap: 10, padding: "10px 14px", borderRadius: 10, marginBottom: 18,
-      background: "#FFF7ED", border: "1px solid #FED7AA" }}>
+      background: "color-mix(in srgb, #FFF7ED var(--vk-wash), var(--vk-surface))", border: "1px solid color-mix(in srgb, #FED7AA var(--vk-wash), var(--vk-surface))" }}>
       <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: "#EA580C" }} />
-      <p style={{ fontSize: 12, color: "#9A3412", lineHeight: 1.6, margin: 0 }}>{children}</p>
+      <p style={{ fontSize: 12, color: "var(--vk-warn)", lineHeight: 1.6, margin: 0 }}>{children}</p>
     </div>
   );
 }
@@ -351,7 +351,7 @@ We are ready for 500 Global. The product is built. The partnership is signed. Th
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col overflow-hidden" style={{ background: "#F3F4F6" }}>
+    <div data-theme-light className="fixed inset-0 z-50 flex flex-col overflow-hidden" style={{ background: "var(--vk-surface-2)" }}>
 
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b flex-shrink-0"
@@ -367,7 +367,7 @@ We are ready for 500 Global. The product is built. The partnership is signed. Th
         <div className="flex items-center gap-3">
           <button onClick={allCopied}
             className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all hover:opacity-90"
-            style={{ background: P, color: "#fff" }}>
+            style={{ background: P, color: "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" }}>
             <Copy className="w-3.5 h-3.5" /> Copy All Fields
           </button>
           <button onClick={onClose} className="text-white/40 hover:text-white px-2 text-xl leading-none">×</button>
@@ -377,7 +377,7 @@ We are ready for 500 Global. The product is built. The partnership is signed. Th
       {/* Body */}
       <div className="flex-1 overflow-y-auto px-4 py-6 max-w-3xl mx-auto w-full">
 
-        <div className="mb-6 p-4 rounded-xl border" style={{ background: "#EFF6FF", borderColor: "#BFDBFE" }}>
+        <div className="mb-6 p-4 rounded-xl border" style={{ background: "var(--vk-info-bg)", borderColor: "#BFDBFE" }}>
           <p className="text-sm font-bold text-emerald-800 mb-1">How to use this form</p>
           <p className="text-xs text-emerald-700 leading-relaxed">
             Every field below is pre-filled with your VINK system details. Read each answer, edit if you want to personalise the language, then click the copy icon on any field to paste it directly into the 500 Global application at <strong>500.co/flagship</strong>. Use <strong>"Copy All Fields"</strong> above to copy the full document at once.
@@ -530,7 +530,7 @@ We are ready for 500 Global. The product is built. The partnership is signed. Th
           <div className="flex gap-3">
             <button onClick={allCopied}
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all hover:opacity-90"
-              style={{ background: P, color: "#fff" }}>
+              style={{ background: P, color: "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" }}>
               <Copy className="w-4 h-4" /> Copy All Answers
             </button>
             <a href="https://500.co/flagship" target="_blank" rel="noopener noreferrer"

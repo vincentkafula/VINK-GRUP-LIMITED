@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Bell, X, Check, CheckCheck, Trash2, Settings, TrendingUp, Shield, CreditCard, Tag, AlertCircle, Plane, ChevronRight } from "lucide-react";
 
 const P = "#5C0A10";
-const GOLD = "#F5A623";
+const GOLD = "#C9A84C";
 
 type NotifType = "transaction" | "security" | "account" | "promotion" | "system" | "kyc" | "loan" | "travel";
 

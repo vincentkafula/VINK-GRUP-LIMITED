@@ -47,8 +47,8 @@ export class ErrorBoundary extends Component<Props, State> {
           <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 bg-blue-50">
             <RefreshCw className="w-8 h-8 text-blue-500" />
           </div>
-          <h2 className="text-lg font-black text-gray-900 mb-2">VINK was just updated</h2>
-          <p className="text-sm text-gray-500 mb-6 max-w-sm">
+          <h2 className="text-lg font-black text-fg mb-2">VINK was just updated</h2>
+          <p className="text-sm text-fg-muted mb-6 max-w-sm">
             This page loaded an older version. Reloading will bring you back to the latest one.
           </p>
           <button onClick={() => window.location.reload()}
@@ -65,12 +65,12 @@ export class ErrorBoundary extends Component<Props, State> {
         <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 bg-red-50">
           <AlertTriangle className="w-8 h-8 text-red-500" />
         </div>
-        <h2 className="text-lg font-black text-gray-900 mb-2">Something went wrong</h2>
-        <p className="text-sm text-gray-500 mb-1 max-w-sm">
+        <h2 className="text-lg font-black text-fg mb-2">Something went wrong</h2>
+        <p className="text-sm text-fg-muted mb-1 max-w-sm">
           {this.props.label && <span className="font-semibold">{this.props.label} — </span>}
           {error.message || "An unexpected error occurred."}
         </p>
-        <p className="text-xs text-gray-400 mb-6 max-w-sm">
+        <p className="text-xs text-fg-muted mb-6 max-w-sm">
           If this keeps happening, please contact support at support@vink.co.za.
         </p>
         <button onClick={this.reset}

@@ -55,17 +55,17 @@ export function AuthLinkPage({ kind, isOpen, onClose }: { kind: "reset" | "verif
 
   return (
     <div className="fixed inset-0 z-[80] flex items-center justify-center p-4" style={{ background: "rgba(10,8,30,0.85)" }} role="dialog" aria-modal="true" aria-label={title}>
-      <div className="w-full max-w-[420px] rounded-2xl bg-white p-8" style={{ boxShadow: "0 40px 100px rgba(0,0,0,0.6)" }}>
-        <h1 className="text-[22px] font-bold text-[#5c1420] mb-4">{title}</h1>
+      <div className="w-full max-w-[420px] rounded-2xl bg-surface p-8" style={{ boxShadow: "0 40px 100px rgba(0,0,0,0.6)" }}>
+        <h1 className="text-[22px] font-bold text-crimson-text mb-4">{title}</h1>
 
-        {state === "working" && <p className="flex items-center gap-2 text-[14px] text-[#6b5d5f]"><Loader2 className="w-4 h-4 animate-spin" /> Confirming…</p>}
+        {state === "working" && <p className="flex items-center gap-2 text-[14px] text-fg-muted"><Loader2 className="w-4 h-4 animate-spin" /> Confirming…</p>}
 
         {state === "ready" && (
           <form onSubmit={submitReset} noValidate>
-            <label className="block text-[12.5px] font-semibold text-[#241416] mb-1.5" htmlFor="new-password">New password</label>
+            <label className="block text-[12.5px] font-semibold text-fg mb-1.5" htmlFor="new-password">New password</label>
             <input id="new-password" type="password" autoComplete="new-password" autoFocus value={password} onChange={(e) => setPassword(e.target.value)}
               className="w-full rounded-lg border border-[#e8e0d3] px-3 py-2.5 text-[14.5px] mb-4" />
-            <label className="block text-[12.5px] font-semibold text-[#241416] mb-1.5" htmlFor="confirm-password">Repeat the new password</label>
+            <label className="block text-[12.5px] font-semibold text-fg mb-1.5" htmlFor="confirm-password">Repeat the new password</label>
             <input id="confirm-password" type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)}
               className="w-full rounded-lg border border-[#e8e0d3] px-3 py-2.5 text-[14.5px] mb-4" />
             {message && <p role="alert" className="flex items-start gap-2 text-[13px] mb-4" style={{ color: "#b3261e" }}><TriangleAlert className="w-4 h-4 shrink-0 mt-0.5" />{message}</p>}
@@ -78,7 +78,7 @@ export function AuthLinkPage({ kind, isOpen, onClose }: { kind: "reset" | "verif
 
         {state === "done" && (
           <>
-            <p className="flex items-start gap-2 text-[14px] text-[#2E0B10] mb-5"><CheckCircle2 className="w-5 h-5 shrink-0" />{message}</p>
+            <p className="flex items-start gap-2 text-[14px] text-fg mb-5"><CheckCircle2 className="w-5 h-5 shrink-0" />{message}</p>
             <button onClick={goSignIn} className="w-full py-3 rounded-lg font-bold text-[14.5px]" style={{ background: "linear-gradient(135deg,#2E0B10,#0C0E14)", color: "#fdf3e7" }}>Sign in</button>
           </>
         )}
@@ -86,12 +86,12 @@ export function AuthLinkPage({ kind, isOpen, onClose }: { kind: "reset" | "verif
         {state === "error" && (
           <>
             <p role="alert" className="flex items-start gap-2 text-[14px] mb-5" style={{ color: "#b3261e" }}><TriangleAlert className="w-5 h-5 shrink-0" />{message}</p>
-            <button onClick={onClose} className="w-full py-3 rounded-lg font-bold text-[14.5px] border border-[#e8e0d3] text-[#241416]">Back to the site</button>
+            <button onClick={onClose} className="w-full py-3 rounded-lg font-bold text-[14.5px] border border-[#e8e0d3] text-fg">Back to the site</button>
           </>
         )}
 
         {state !== "done" && state !== "error" && (
-          <button onClick={onClose} className="block mx-auto mt-4 text-[13px] text-[#6b5d5f] hover:underline">Cancel</button>
+          <button onClick={onClose} className="block mx-auto mt-4 text-[13px] text-fg-muted hover:underline">Cancel</button>
         )}
       </div>
     </div>

@@ -50,7 +50,7 @@ export const CATEGORY_CONFIG: Record<ProductCategory, {
     title: "Choose Your Rewards Programme",
     subtitle: "Earn ManshyaPoints on every purchase — pick the card that rewards you most for how you spend.",
     tag: "Personal Banking · ManshyaPoints",
-    gradient: "linear-gradient(135deg,#FF9900 0%,#FFB84D 55%,#FFCC80 100%)",
+    gradient: "linear-gradient(135deg,#9B1C1C 0%,#FFB84D 55%,#FFCC80 100%)",
     accentColor: "#FFB84D",
   },
   loan: {
@@ -64,14 +64,14 @@ export const CATEGORY_CONFIG: Record<ProductCategory, {
     title: "Choose Your VINK Card",
     subtitle: "From your first credit card to a premium Visa Infinite — pick the card that matches your lifestyle.",
     tag: "Personal Banking · Credit Cards",
-    gradient: "linear-gradient(135deg,#5C0A10 0%,#8B0000 55%,#C9A84C 100%)",
+    gradient: "linear-gradient(135deg,#5C0A10 0%,#8B0000 55%,#9B1C1C 100%)",
     accentColor: "#8B0000",
   },
   account: {
     title: "Choose Your Bank Account",
     subtitle: "From your first account to private banking — find the account that works for your life stage.",
     tag: "Personal Banking · Accounts",
-    gradient: "linear-gradient(135deg,#1A237E 0%,#2E0B10 55%,#C9A84C 100%)",
+    gradient: "linear-gradient(135deg,#1A237E 0%,#2E0B10 55%,#9B1C1C 100%)",
     accentColor: "#8B0000",
   },
 };
@@ -80,43 +80,43 @@ export const CATEGORY_CONFIG: Record<ProductCategory, {
 
 export const PRODUCTS: Record<ProductCategory, Product[]> = {
   account: [
-    { id: "clear-access", name: "Spark Account", tagline: "For anyone starting their banking journey", price: "R0", priceLabel: "/month — always free", emoji: "🌱", gradient: "linear-gradient(135deg,#E3F2FD,#BBDEFB)", features: ["No minimum balance", "Free VINK card included", "Instant transaction notifications", "Online and app banking"], badge: "Free Forever", badgeColor: "#10B981" },
-    { id: "everyday", name: "Anchor Account", tagline: "Designed for daily commuters and casual spenders", price: "R0", priceLabel: "/month", emoji: "🚌", gradient: "linear-gradient(135deg,#E8F5E9,#C8E6C9)", features: ["Free taxi fare payments via tap-and-go", "2 free ATM withdrawals/month", "Free airtime and electricity in-app", "Debit order support"] },
-    { id: "prime", name: "Momentum Account", tagline: "For working adults who want more from their bank", price: "R85", priceLabel: "/month", emoji: "⭐", gradient: "linear-gradient(135deg,#FFF8E1,#FFF3CD)", features: ["5 free ATM withdrawals/month", "Earn 0.5% cashback on all spend", "Overdraft facility up to R5,000", "Dedicated phone support"] },
-    { id: "premier", name: "Horizon Account", tagline: "For high-earners who need premium everyday banking", price: "R170", priceLabel: "/month", emoji: "💎", gradient: "linear-gradient(135deg,#F3E5F5,#EAF7EE)", features: ["10 free ATM withdrawals at any bank", "1% cashback on all spend", "R15,000 overdraft facility", "Travel notifications included"] },
-    { id: "grain", name: "Summit Account", tagline: "The flagship VINK account — full financial control", price: "R265", priceLabel: "/month", emoji: "🏆", gradient: "linear-gradient(135deg,#5C0A10,#C9A84C)", featured: true, badge: "Most Popular", badgeColor: "#F5A623", features: ["Unlimited ATM withdrawals", "1.5% cashback on all spend", "R30,000 overdraft", "Dedicated relationship manager", "Investment sub-account", "International transfers to 60+ countries"] },
+    { id: "clear-access", name: "Spark Account", tagline: "For anyone starting their banking journey", price: "R0", priceLabel: "/month — always free", emoji: "🌱", gradient: "linear-gradient(135deg,color-mix(in srgb, #E3F2FD var(--vk-wash), var(--vk-surface)),#BBDEFB)", features: ["No minimum balance", "Free VINK card included", "Instant transaction notifications", "Online and app banking"], badge: "Free Forever", badgeColor: "#10B981" },
+    { id: "everyday", name: "Anchor Account", tagline: "Designed for daily commuters and casual spenders", price: "R0", priceLabel: "/month", emoji: "🚌", gradient: "linear-gradient(135deg,color-mix(in srgb, #E8F5E9 var(--vk-wash), var(--vk-surface)),color-mix(in srgb, #C8E6C9 var(--vk-wash), var(--vk-surface)))", features: ["Free taxi fare payments via tap-and-go", "2 free ATM withdrawals/month", "Free airtime and electricity in-app", "Debit order support"] },
+    { id: "prime", name: "Momentum Account", tagline: "For working adults who want more from their bank", price: "R85", priceLabel: "/month", emoji: "⭐", gradient: "linear-gradient(135deg,color-mix(in srgb, #FFF8E1 var(--vk-wash), var(--vk-surface)),color-mix(in srgb, #FFF3CD var(--vk-wash), var(--vk-surface)))", features: ["5 free ATM withdrawals/month", "Earn 0.5% cashback on all spend", "Overdraft facility up to R5,000", "Dedicated phone support"] },
+    { id: "premier", name: "Horizon Account", tagline: "For high-earners who need premium everyday banking", price: "R170", priceLabel: "/month", emoji: "💎", gradient: "linear-gradient(135deg,color-mix(in srgb, #F3E5F5 var(--vk-wash), var(--vk-surface)),color-mix(in srgb, #EAF7EE var(--vk-wash), var(--vk-surface)))", features: ["10 free ATM withdrawals at any bank", "1% cashback on all spend", "R15,000 overdraft facility", "Travel notifications included"] },
+    { id: "grain", name: "Summit Account", tagline: "The flagship VINK account — full financial control", price: "R265", priceLabel: "/month", emoji: "🏆", gradient: "linear-gradient(135deg,#5C0A10,#9B1C1C)", featured: true, badge: "Most Popular", badgeColor: "#9B1C1C", features: ["Unlimited ATM withdrawals", "1.5% cashback on all spend", "R30,000 overdraft", "Dedicated relationship manager", "Investment sub-account", "International transfers to 60+ countries"] },
     { id: "animal", name: "Legacy Account", tagline: "For high-net-worth individuals", price: "R415", priceLabel: "/month", emoji: "🦁", gradient: "linear-gradient(135deg,#1A1A2E,#4A4A6A)", features: ["Unlimited transactions", "2% cashback on all spend", "Private banking concierge", "R100,000 overdraft", "Multi-currency wallet", "Will and estate planning guidance"] },
   ],
   invest: [
-    { id: "tfsa", name: "NovaWealth", tagline: "A growth-oriented investment solution designed to help individuals build wealth over the medium to long term.", price: "R0", priceLabel: "admin fee", emoji: "🛡️", gradient: "linear-gradient(135deg,#E3F2FD,#BBDEFB)", badge: "Best for Beginners", badgeColor: "#10B981", features: ["Zero tax on interest, dividends, and capital gains", "R36,000 annual contribution limit", "Access your funds any time", "Linked to VINK money market fund"] },
-    { id: "fixed-3m", name: "HorizonPlus", tagline: "A diversified investment plan built for investors seeking balanced growth with manageable risk.", price: "7.2%", priceLabel: "p.a. indicative rate", emoji: "🔒", gradient: "linear-gradient(135deg,#E8F5E9,#C8E6C9)", features: ["3-month lock-in period", "Interest paid at maturity", "No monthly fees", "Early exit penalty of 1% applies"] },
-    { id: "fixed-12m", name: "ProsperNest", tagline: "An investment solution designed around long-term savings goals, from major purchases to retirement.", price: "9.5%", priceLabel: "p.a. indicative rate", emoji: "📈", gradient: "linear-gradient(135deg,#E8F5E9,#A5D6A7)", featured: true, badge: "Best Rate", badgeColor: "#F5A623", features: ["12-month lock-in period", "Interest credited monthly or at maturity", "No monthly fees", "Guaranteed rate at opening"] },
-    { id: "unit-trust", name: "InfinityGrowth", tagline: "A high-growth investment option for investors comfortable with a longer time horizon and higher return potential.", price: "R500", priceLabel: "minimum/month", emoji: "📊", gradient: "linear-gradient(135deg,#FFF8E1,#FFF3CD)", features: ["Diversified across equity, bonds, and property", "Managed by qualified portfolio team", "Monthly or lump-sum contributions", "Quarterly investment statements"] },
-    { id: "ra", name: "Evergreen Portfolio", tagline: "A stability-focused investment portfolio designed to preserve and steadily grow capital over time.", price: "27.5%", priceLabel: "of income tax-deductible", emoji: "🎯", gradient: "linear-gradient(135deg,#F3E5F5,#EAF7EE)", features: ["Tax-deductible contributions up to 27.5% of income", "Lump-sum or monthly contributions", "Choice of underlying fund", "Portable between employers"] },
-    { id: "money-market", name: "LegacyBuilder", tagline: "An investment plan designed to help individuals build and protect wealth to pass on to future generations.", price: "R0", priceLabel: "no minimum balance", emoji: "💰", gradient: "linear-gradient(135deg,#E0F2F1,#B2DFDB)", features: ["Instant access", "Daily interest accrual", "Rate linked to repo rate", "No minimum balance required"] },
+    { id: "tfsa", name: "NovaWealth", tagline: "A growth-oriented investment solution designed to help individuals build wealth over the medium to long term.", price: "R0", priceLabel: "admin fee", emoji: "🛡️", gradient: "linear-gradient(135deg,color-mix(in srgb, #E3F2FD var(--vk-wash), var(--vk-surface)),#BBDEFB)", badge: "Best for Beginners", badgeColor: "#10B981", features: ["Zero tax on interest, dividends, and capital gains", "R36,000 annual contribution limit", "Access your funds any time", "Linked to VINK money market fund"] },
+    { id: "fixed-3m", name: "HorizonPlus", tagline: "A diversified investment plan built for investors seeking balanced growth with manageable risk.", price: "7.2%", priceLabel: "p.a. indicative rate", emoji: "🔒", gradient: "linear-gradient(135deg,color-mix(in srgb, #E8F5E9 var(--vk-wash), var(--vk-surface)),color-mix(in srgb, #C8E6C9 var(--vk-wash), var(--vk-surface)))", features: ["3-month lock-in period", "Interest paid at maturity", "No monthly fees", "Early exit penalty of 1% applies"] },
+    { id: "fixed-12m", name: "ProsperNest", tagline: "An investment solution designed around long-term savings goals, from major purchases to retirement.", price: "9.5%", priceLabel: "p.a. indicative rate", emoji: "📈", gradient: "linear-gradient(135deg,color-mix(in srgb, #E8F5E9 var(--vk-wash), var(--vk-surface)),#A5D6A7)", featured: true, badge: "Best Rate", badgeColor: "#9B1C1C", features: ["12-month lock-in period", "Interest credited monthly or at maturity", "No monthly fees", "Guaranteed rate at opening"] },
+    { id: "unit-trust", name: "InfinityGrowth", tagline: "A high-growth investment option for investors comfortable with a longer time horizon and higher return potential.", price: "R500", priceLabel: "minimum/month", emoji: "📊", gradient: "linear-gradient(135deg,color-mix(in srgb, #FFF8E1 var(--vk-wash), var(--vk-surface)),color-mix(in srgb, #FFF3CD var(--vk-wash), var(--vk-surface)))", features: ["Diversified across equity, bonds, and property", "Managed by qualified portfolio team", "Monthly or lump-sum contributions", "Quarterly investment statements"] },
+    { id: "ra", name: "Evergreen Portfolio", tagline: "A stability-focused investment portfolio designed to preserve and steadily grow capital over time.", price: "27.5%", priceLabel: "of income tax-deductible", emoji: "🎯", gradient: "linear-gradient(135deg,color-mix(in srgb, #F3E5F5 var(--vk-wash), var(--vk-surface)),color-mix(in srgb, #EAF7EE var(--vk-wash), var(--vk-surface)))", features: ["Tax-deductible contributions up to 27.5% of income", "Lump-sum or monthly contributions", "Choice of underlying fund", "Portable between employers"] },
+    { id: "money-market", name: "LegacyBuilder", tagline: "An investment plan designed to help individuals build and protect wealth to pass on to future generations.", price: "R0", priceLabel: "no minimum balance", emoji: "💰", gradient: "linear-gradient(135deg,color-mix(in srgb, #E0F2F1 var(--vk-wash), var(--vk-surface)),#B2DFDB)", features: ["Instant access", "Daily interest accrual", "Rate linked to repo rate", "No minimum balance required"] },
   ],
   rewards: [
-    { id: "balance-transfer", name: "LifePerks", tagline: "A rewards programme built around everyday life, offering benefits on the purchases and services people use most.", price: "R0", priceLabel: "/month", emoji: "🔄", gradient: "linear-gradient(135deg,#E8F5E9,#C8E6C9)", features: ["0% interest for 6 months on transferred balance", "3% transfer fee (minimum R50)", "No annual fee", "Reports to all 4 credit bureaux"] },
-    { id: "cash-back", name: "SparkRewards", tagline: "An entry-level rewards programme designed to give new customers immediate value and easy-to-earn benefits.", price: "R0", priceLabel: "/month", emoji: "💵", gradient: "linear-gradient(135deg,#E3F2FD,#BBDEFB)", features: ["1% cashback on all spend", "Capped at R500/month", "Credited last day of each month", "No minimum spend required"] },
-    { id: "fuel-rewards", name: "NovaPoints", tagline: "A points-based rewards programme offering flexible redemption across travel, retail, and lifestyle categories.", price: "R85", priceLabel: "/month", emoji: "⛽", gradient: "linear-gradient(135deg,#FFF8E1,#FFF3CD)", features: ["Earn 8c per litre at Engen, Shell & Sasol", "500 ManshyaPoints bonus per R500 fuel spend", "Monthly fuel rewards statement", "Use points for any purchase"] },
-    { id: "retail-rewards", name: "ThriveClub", tagline: "A wellness-linked rewards programme that rewards healthy habits and positive lifestyle choices.", price: "R170", priceLabel: "/month", emoji: "🛒", gradient: "linear-gradient(135deg,#F3E5F5,#EAF7EE)", features: ["Double ManshyaPoints at Pick n Pay, Shoprite, Checkers & Spar", "Redeem in-store or on the VINK app", "Selected independent retailers included", "Points never expire while account is active"] },
-    { id: "travel-rewards", name: "ElevateRewards", tagline: "A premium rewards programme offering enhanced benefits for high-engagement VINK customers.", price: "R265", priceLabel: "/month", emoji: "✈️", gradient: "linear-gradient(135deg,#FF9900,#FFB84D)", featured: true, badge: "Top Pick", badgeColor: "#F5A623", features: ["3× ManshyaPoints on flights and hotels", "Access to Bidvest Lounges at all SA airports", "Travel insurance on bookings", "Airline partners: Comair and FlySafair"] },
+    { id: "balance-transfer", name: "LifePerks", tagline: "A rewards programme built around everyday life, offering benefits on the purchases and services people use most.", price: "R0", priceLabel: "/month", emoji: "🔄", gradient: "linear-gradient(135deg,color-mix(in srgb, #E8F5E9 var(--vk-wash), var(--vk-surface)),color-mix(in srgb, #C8E6C9 var(--vk-wash), var(--vk-surface)))", features: ["0% interest for 6 months on transferred balance", "3% transfer fee (minimum R50)", "No annual fee", "Reports to all 4 credit bureaux"] },
+    { id: "cash-back", name: "SparkRewards", tagline: "An entry-level rewards programme designed to give new customers immediate value and easy-to-earn benefits.", price: "R0", priceLabel: "/month", emoji: "💵", gradient: "linear-gradient(135deg,color-mix(in srgb, #E3F2FD var(--vk-wash), var(--vk-surface)),#BBDEFB)", features: ["1% cashback on all spend", "Capped at R500/month", "Credited last day of each month", "No minimum spend required"] },
+    { id: "fuel-rewards", name: "NovaPoints", tagline: "A points-based rewards programme offering flexible redemption across travel, retail, and lifestyle categories.", price: "R85", priceLabel: "/month", emoji: "⛽", gradient: "linear-gradient(135deg,color-mix(in srgb, #FFF8E1 var(--vk-wash), var(--vk-surface)),color-mix(in srgb, #FFF3CD var(--vk-wash), var(--vk-surface)))", features: ["Earn 8c per litre at Engen, Shell & Sasol", "500 ManshyaPoints bonus per R500 fuel spend", "Monthly fuel rewards statement", "Use points for any purchase"] },
+    { id: "retail-rewards", name: "ThriveClub", tagline: "A wellness-linked rewards programme that rewards healthy habits and positive lifestyle choices.", price: "R170", priceLabel: "/month", emoji: "🛒", gradient: "linear-gradient(135deg,color-mix(in srgb, #F3E5F5 var(--vk-wash), var(--vk-surface)),color-mix(in srgb, #EAF7EE var(--vk-wash), var(--vk-surface)))", features: ["Double ManshyaPoints at Pick n Pay, Shoprite, Checkers & Spar", "Redeem in-store or on the VINK app", "Selected independent retailers included", "Points never expire while account is active"] },
+    { id: "travel-rewards", name: "ElevateRewards", tagline: "A premium rewards programme offering enhanced benefits for high-engagement VINK customers.", price: "R265", priceLabel: "/month", emoji: "✈️", gradient: "linear-gradient(135deg,#9B1C1C,#FFB84D)", featured: true, badge: "Top Pick", badgeColor: "#9B1C1C", features: ["3× ManshyaPoints on flights and hotels", "Access to Bidvest Lounges at all SA airports", "Travel insurance on bookings", "Airline partners: Comair and FlySafair"] },
     { id: "automotive-rewards", name: "JourneyPoints", tagline: "A travel-focused rewards programme designed to reward spending with travel perks, upgrades, and experiences.", price: "R415", priceLabel: "/month", emoji: "🔧", gradient: "linear-gradient(135deg,#212121,#424242)", features: ["Earn ManshyaPoints at Tiger Wheel & Tyre, Supa Quick & AutoZone", "Redeem for oil changes, tyres, and services", "Monthly automotive spend report", "Linked to fleet management tools"] },
   ],
   loan: [
-    { id: "personal", name: "LifeAdvance", tagline: "A flexible personal loan designed to help fund major life milestones, from home improvements to family events.", price: "R0", priceLabel: "application fee", emoji: "👤", gradient: "linear-gradient(135deg,#FFEBEE,#FFCDD2)", badge: "Same-day Approval", badgeColor: "#10B981", features: ["R1,000 – R250,000", "12–60 month terms", "Interest rate 12.5%–24.5% p.a.", "Same-day approval for qualifying applicants"] },
-    { id: "home-loan", name: "FlexiLoan", tagline: "A personal loan built around flexibility, with adjustable repayment options to suit changing circumstances.", price: "R0", priceLabel: "application fee", emoji: "🏠", gradient: "linear-gradient(135deg,#E8F5E9,#C8E6C9)", features: ["Up to 100% LTV for first-time buyers", "20-year term available", "Linked to prime rate", "Free property valuation included"] },
-    { id: "student-loan", name: "HorizonLoan", tagline: "Medium-to-long-term personal financing designed for larger goals that need structured, predictable repayment.", price: "R85", priceLabel: "admin fee", emoji: "🎓", gradient: "linear-gradient(135deg,#E3F2FD,#BBDEFB)", features: ["Covers tuition, textbooks, and accommodation", "Repayment deferred until 6 months post-graduation", "All public universities in SA eligible", "No collateral required"] },
-    { id: "pension-backed", name: "SwiftCash", tagline: "Fast-access personal financing designed for short-term needs, with a streamlined application process.", price: "R170", priceLabel: "admin fee", emoji: "🏦", gradient: "linear-gradient(135deg,#FFF8E1,#FFF3CD)", features: ["Up to 90% of pension fund value", "No credit check required", "Any registered pension fund in SA", "Lower interest rate than unsecured loans"] },
-    { id: "vehicle-loan", name: "DreamFund", tagline: "A personal loan designed to help fund significant personal goals, from weddings to travel to education.", price: "R265", priceLabel: "admin fee", emoji: "🚗", gradient: "linear-gradient(135deg,#B71C1C,#E53935)", featured: true, badge: "Most Chosen", badgeColor: "#F5A623", features: ["New and used vehicles", "Finance up to 100%", "Balloon payment option available", "Linked VINK vehicle insurance option", "12–72 month terms"] },
+    { id: "personal", name: "LifeAdvance", tagline: "A flexible personal loan designed to help fund major life milestones, from home improvements to family events.", price: "R0", priceLabel: "application fee", emoji: "👤", gradient: "linear-gradient(135deg,color-mix(in srgb, #FFEBEE var(--vk-wash), var(--vk-surface)),#FFCDD2)", badge: "Same-day Approval", badgeColor: "#10B981", features: ["R1,000 – R250,000", "12–60 month terms", "Interest rate 12.5%–24.5% p.a.", "Same-day approval for qualifying applicants"] },
+    { id: "home-loan", name: "FlexiLoan", tagline: "A personal loan built around flexibility, with adjustable repayment options to suit changing circumstances.", price: "R0", priceLabel: "application fee", emoji: "🏠", gradient: "linear-gradient(135deg,color-mix(in srgb, #E8F5E9 var(--vk-wash), var(--vk-surface)),color-mix(in srgb, #C8E6C9 var(--vk-wash), var(--vk-surface)))", features: ["Up to 100% LTV for first-time buyers", "20-year term available", "Linked to prime rate", "Free property valuation included"] },
+    { id: "student-loan", name: "HorizonLoan", tagline: "Medium-to-long-term personal financing designed for larger goals that need structured, predictable repayment.", price: "R85", priceLabel: "admin fee", emoji: "🎓", gradient: "linear-gradient(135deg,color-mix(in srgb, #E3F2FD var(--vk-wash), var(--vk-surface)),#BBDEFB)", features: ["Covers tuition, textbooks, and accommodation", "Repayment deferred until 6 months post-graduation", "All public universities in SA eligible", "No collateral required"] },
+    { id: "pension-backed", name: "SwiftCash", tagline: "Fast-access personal financing designed for short-term needs, with a streamlined application process.", price: "R170", priceLabel: "admin fee", emoji: "🏦", gradient: "linear-gradient(135deg,color-mix(in srgb, #FFF8E1 var(--vk-wash), var(--vk-surface)),color-mix(in srgb, #FFF3CD var(--vk-wash), var(--vk-surface)))", features: ["Up to 90% of pension fund value", "No credit check required", "Any registered pension fund in SA", "Lower interest rate than unsecured loans"] },
+    { id: "vehicle-loan", name: "DreamFund", tagline: "A personal loan designed to help fund significant personal goals, from weddings to travel to education.", price: "R265", priceLabel: "admin fee", emoji: "🚗", gradient: "linear-gradient(135deg,#B71C1C,#E53935)", featured: true, badge: "Most Chosen", badgeColor: "#9B1C1C", features: ["New and used vehicles", "Finance up to 100%", "Balloon payment option available", "Linked VINK vehicle insurance option", "12–72 month terms"] },
     { id: "vehicle-leasing", name: "ElevateLoan", tagline: "A premium personal loan offering, providing higher limits and preferential terms for qualifying individuals.", price: "R415", priceLabel: "admin fee", emoji: "🔑", gradient: "linear-gradient(135deg,#37474F,#546E7A)", features: ["Operating or finance lease", "Maintenance, tyres, and licensing included", "Fixed monthly cost", "Residual value guaranteed", "Ideal for personal and business"] },
   ],
   creditCard: [
-    { id: "student", name: "Pulse Card", tagline: "An everyday credit card built for simplicity and value, ideal for managing day-to-day spending with confidence.", price: "R0", priceLabel: "/month", emoji: "🎓", gradient: "linear-gradient(135deg,#E3F2FD,#BBDEFB)", badge: "No Annual Fee", badgeColor: "#10B981", features: ["Credit limit R1,000 – R5,000", "Credit-builder reporting to all 4 bureaux", "0.5% cashback on study and grocery spend", "Free online statements"] },
-    { id: "secure", name: "Nova Card", tagline: "A rewards-driven card designed for people who want their everyday spending to work harder, with benefits on the purchases that matter most.", price: "R0", priceLabel: "/month", emoji: "🔐", gradient: "linear-gradient(135deg,#E8F5E9,#C8E6C9)", features: ["Secured by a deposit you choose", "Upgrade to unsecured after 12 months", "Reports to all credit bureaux", "Free replacement card"] },
-    { id: "co-branded", name: "Orbit Card", tagline: "A travel-focused card offering benefits designed around flights, accommodation, and life on the move.", price: "R85", priceLabel: "/month", emoji: "🛒", gradient: "linear-gradient(135deg,#FFF8E1,#FFF3CD)", features: ["Earn 1 Smart Shopper point per R5 at PnP", "0.5% cashback everywhere else", "R0 transaction fees at PnP tills", "Exclusive monthly bonus offers"] },
-    { id: "investment-cc", name: "Elevate Card", tagline: "A card built for upwardly mobile professionals, combining everyday value with premium lifestyle perks.", price: "R170", priceLabel: "/month", emoji: "📈", gradient: "linear-gradient(135deg,#F3E5F5,#EAF7EE)", features: ["1% of every purchase to a linked unit trust", "Quarterly investment statements", "Linked to Allan Gray or Coronation", "Travel insurance included"] },
-    { id: "grain-cc", name: "Apex Card", tagline: "A premium card offering elevated rewards, travel benefits, and exclusive access for high-value spenders.", price: "R265", priceLabel: "/month", emoji: "🏆", gradient: "linear-gradient(135deg,#5C0A10,#FF9900)", featured: true, badge: "Premium Choice", badgeColor: "#F5A623", features: ["Airport lounge access — 1,000+ lounges", "2% cashback on travel · 1% everywhere", "Credit limit up to R500,000", "Dedicated concierge service", "Medical emergency cover"] },
+    { id: "student", name: "Pulse Card", tagline: "An everyday credit card built for simplicity and value, ideal for managing day-to-day spending with confidence.", price: "R0", priceLabel: "/month", emoji: "🎓", gradient: "linear-gradient(135deg,color-mix(in srgb, #E3F2FD var(--vk-wash), var(--vk-surface)),#BBDEFB)", badge: "No Annual Fee", badgeColor: "#10B981", features: ["Credit limit R1,000 – R5,000", "Credit-builder reporting to all 4 bureaux", "0.5% cashback on study and grocery spend", "Free online statements"] },
+    { id: "secure", name: "Nova Card", tagline: "A rewards-driven card designed for people who want their everyday spending to work harder, with benefits on the purchases that matter most.", price: "R0", priceLabel: "/month", emoji: "🔐", gradient: "linear-gradient(135deg,color-mix(in srgb, #E8F5E9 var(--vk-wash), var(--vk-surface)),color-mix(in srgb, #C8E6C9 var(--vk-wash), var(--vk-surface)))", features: ["Secured by a deposit you choose", "Upgrade to unsecured after 12 months", "Reports to all credit bureaux", "Free replacement card"] },
+    { id: "co-branded", name: "Orbit Card", tagline: "A travel-focused card offering benefits designed around flights, accommodation, and life on the move.", price: "R85", priceLabel: "/month", emoji: "🛒", gradient: "linear-gradient(135deg,color-mix(in srgb, #FFF8E1 var(--vk-wash), var(--vk-surface)),color-mix(in srgb, #FFF3CD var(--vk-wash), var(--vk-surface)))", features: ["Earn 1 Smart Shopper point per R5 at PnP", "0.5% cashback everywhere else", "R0 transaction fees at PnP tills", "Exclusive monthly bonus offers"] },
+    { id: "investment-cc", name: "Elevate Card", tagline: "A card built for upwardly mobile professionals, combining everyday value with premium lifestyle perks.", price: "R170", priceLabel: "/month", emoji: "📈", gradient: "linear-gradient(135deg,color-mix(in srgb, #F3E5F5 var(--vk-wash), var(--vk-surface)),color-mix(in srgb, #EAF7EE var(--vk-wash), var(--vk-surface)))", features: ["1% of every purchase to a linked unit trust", "Quarterly investment statements", "Linked to Allan Gray or Coronation", "Travel insurance included"] },
+    { id: "grain-cc", name: "Apex Card", tagline: "A premium card offering elevated rewards, travel benefits, and exclusive access for high-value spenders.", price: "R265", priceLabel: "/month", emoji: "🏆", gradient: "linear-gradient(135deg,#5C0A10,#9B1C1C)", featured: true, badge: "Premium Choice", badgeColor: "#9B1C1C", features: ["Airport lounge access — 1,000+ lounges", "2% cashback on travel · 1% everywhere", "Credit limit up to R500,000", "Dedicated concierge service", "Medical emergency cover"] },
     { id: "animal-cc", name: "Vertex Card", tagline: "Our top-tier personal credit card, delivering elite rewards, concierge-level service, and premium lifestyle privileges.", price: "R415", priceLabel: "/month", emoji: "🦁", gradient: "linear-gradient(135deg,#1A1A1A,#4A4A4A)", features: ["R1,000,000 credit limit", "3% cashback on international spend", "Personal concierge 24/7", "Global medical emergency evacuation", "Earn up to 120,000 ManshyaPoints/year"] },
   ],
 };
@@ -161,25 +161,25 @@ function ProductCard({
       </div>
 
       {/* Card body */}
-      <div className="bg-white p-4 space-y-3">
-        <p className="text-xs text-gray-500 leading-snug">{product.tagline}</p>
+      <div className="bg-surface p-4 space-y-3">
+        <p className="text-xs text-fg-muted leading-snug">{product.tagline}</p>
 
         {/* Price */}
         <div>
-          <span className="text-2xl font-black text-gray-900">{product.price}</span>
-          <span className="text-xs text-gray-400 ml-1">{product.priceLabel}</span>
+          <span className="text-2xl font-black text-fg">{product.price}</span>
+          <span className="text-xs text-fg-subtle ml-1">{product.priceLabel}</span>
         </div>
 
         {/* Features */}
         <ul className="space-y-1.5">
           {product.features.slice(0, 4).map((f, i) => (
-            <li key={i} className="flex items-start gap-1.5 text-[11px] text-gray-600 leading-snug">
+            <li key={i} className="flex items-start gap-1.5 text-[11px] text-fg-muted leading-snug">
               <span className="mt-0.5 flex-shrink-0 font-bold" style={{ color: accentColor }}>✓</span>
               {f}
             </li>
           ))}
           {product.features.length > 4 && (
-            <li className="text-[10px] text-gray-400">+{product.features.length - 4} more features</li>
+            <li className="text-[10px] text-fg-subtle">+{product.features.length - 4} more features</li>
           )}
         </ul>
       </div>
@@ -198,18 +198,18 @@ export function ProductSelectorViewer({ isOpen, onClose, category, onSelect }: P
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-[#FAF8F4]">
+    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-surface-2">
 
       {/* ── Top bar ── */}
-      <div className="sticky top-0 z-20 bg-white border-b border-gray-100 shadow-sm flex items-center justify-between px-5 py-3">
+      <div className="sticky top-0 z-20 bg-surface border-b border-line shadow-sm flex items-center justify-between px-5 py-3">
         <div className="flex items-center gap-3">
           <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
-          <div className="hidden sm:block border-l border-gray-200 pl-3">
-            <p className="text-sm font-bold text-gray-800">Product Selection</p>
-            <p className="text-[11px] text-gray-400">{cfg.tag}</p>
+          <div className="hidden sm:block border-l border-line pl-3">
+            <p className="text-sm font-bold text-fg">Product Selection</p>
+            <p className="text-[11px] text-fg-subtle">{cfg.tag}</p>
           </div>
         </div>
-        <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500">
+        <button onClick={onClose} className="p-2 rounded-full hover:bg-surface-2 transition-colors text-fg-muted">
           <X className="w-5 h-5" />
         </button>
       </div>
@@ -217,9 +217,9 @@ export function ProductSelectorViewer({ isOpen, onClose, category, onSelect }: P
       {/* ── Hero ── */}
       <div className="relative overflow-hidden px-6 py-10 text-white" style={{ background: cfg.gradient }}>
         <div className="absolute -top-16 -right-16 w-64 h-64 rounded-full opacity-10 pointer-events-none"
-          style={{ background: "radial-gradient(circle,#fff,transparent)" }} />
+          style={{ background: "radial-gradient(circle,color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface)),transparent)" }} />
         <div className="absolute -bottom-12 -left-12 w-48 h-48 rounded-full opacity-10 pointer-events-none"
-          style={{ background: "radial-gradient(circle,#F5A623,transparent)" }} />
+          style={{ background: "radial-gradient(circle,#9B1C1C,transparent)" }} />
         <div className="max-w-4xl mx-auto relative z-10">
           <span className="inline-block text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full mb-3"
             style={{ background: "rgba(255,255,255,.15)" }}>
@@ -254,24 +254,24 @@ export function ProductSelectorViewer({ isOpen, onClose, category, onSelect }: P
         </div>
 
         {/* Compare note */}
-        <p className="text-center text-xs text-gray-400 mt-6">
+        <p className="text-center text-xs text-fg-subtle mt-6">
           Not sure which to choose? <span className="underline cursor-pointer" style={{ color: cfg.accentColor }}>Compare all products</span> or speak to a VINK advisor at 0800 VINK (8465).
         </p>
       </div>
 
       {/* ── Sticky apply bar ── */}
-      <div className="sticky bottom-0 z-20 bg-white border-t border-gray-200 shadow-[0_-4px_24px_rgba(0,0,0,.08)]">
+      <div className="sticky bottom-0 z-20 bg-surface border-t border-line shadow-[0_-4px_24px_rgba(0,0,0,.08)]">
         <div className="max-w-5xl mx-auto px-5 py-4 flex items-center justify-between gap-4">
           {selectedProduct ? (
             <div className="flex items-center gap-3 min-w-0">
               <span className="text-2xl flex-shrink-0">{selectedProduct.emoji}</span>
               <div className="min-w-0">
-                <p className="text-sm font-bold text-gray-800 truncate">{selectedProduct.name}</p>
-                <p className="text-xs text-gray-500">{selectedProduct.price} <span className="text-gray-400">{selectedProduct.priceLabel}</span></p>
+                <p className="text-sm font-bold text-fg truncate">{selectedProduct.name}</p>
+                <p className="text-xs text-fg-muted">{selectedProduct.price} <span className="text-fg-subtle">{selectedProduct.priceLabel}</span></p>
               </div>
             </div>
           ) : (
-            <p className="text-sm text-gray-400 font-medium">← Select a product to continue</p>
+            <p className="text-sm text-fg-subtle font-medium">← Select a product to continue</p>
           )}
 
           <button

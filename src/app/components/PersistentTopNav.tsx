@@ -22,7 +22,7 @@ interface Props {
  */
 export function PersistentTopNav({ active, onSelect, onHome }: Props) {
   return (
-    <div className="fixed inset-x-0 top-0 z-[100]" style={{ height: NOTICE_H + BAR_H }}>
+    <div data-persistent-nav className="fixed inset-x-0 top-0 z-[100]" style={{ height: NOTICE_H + BAR_H }}>
       <LaunchNotice />
       <div className="border-b border-line bg-surface/95 backdrop-blur-md" style={{ height: BAR_H }}>
         <div className="mx-auto flex h-full max-w-7xl items-center gap-2 px-3 sm:gap-4 sm:px-6 lg:px-8">

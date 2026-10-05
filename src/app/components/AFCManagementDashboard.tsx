@@ -23,7 +23,7 @@ interface Props { isOpen: boolean; onClose: () => void; }
 
 // ─── Color + formatting ───────────────────────────────────────────────────────
 const P   = "#5C0A10";
-const GOLD = "#F5A623";
+const GOLD = "#C9A84C";
 const GREEN = "#10B981";
 const fmt = (n: number) => `R ${Number(n).toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const fmtM = (n: number) => n >= 1000 ? `R${(n/1000).toFixed(1)}K` : `R${n}`;
@@ -314,7 +314,7 @@ export function AFCManagementDashboard({ isOpen, onClose }: Props) {
           {screen === "overview" && (
             <div className="space-y-5 max-w-5xl">
               {/* Hero concept card */}
-              <div className="rounded-2xl overflow-hidden" style={{ background: `linear-gradient(135deg,${P} 0%,#0C0E14 50%,#C9A84C 100%)` }}>
+              <div className="rounded-2xl overflow-hidden" style={{ background: `linear-gradient(135deg,${P} 0%,#0C0E14 50%,#9B1C1C 100%)` }}>
                 <div className="p-5 relative overflow-hidden">
                   <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white/5 pointer-events-none" />
                   <p className="text-white/60 text-[9px] uppercase tracking-widest mb-2">How It Works</p>
@@ -344,7 +344,7 @@ export function AFCManagementDashboard({ isOpen, onClose }: Props) {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
                   { label: "Online Devices",    value: `${totalOnline}/${DEVICES.length}`,       sub: "All routes active",   color: GREEN,    icon: <Radio className="w-5 h-5" /> },
-                  { label: "Taps Today",        value: totalTodayTaps.toString(),                sub: "Passenger payments",  color: P,        icon: <Zap className="w-5 h-5" /> },
+                  { label: "Taps Today",        value: totalTodayTaps.toString(),                sub: "Passenger payments",  color: "var(--vk-crimson-text)",        icon: <Zap className="w-5 h-5" /> },
                   { label: "Revenue Today",     value: fmtM(totalTodayRev),                      sub: "Across all devices",  color: GOLD,     icon: <TrendingUp className="w-5 h-5" /> },
                   { label: "Approval Rate",     value: `${approvalRate}%`,                       sub: "Tap success rate",    color: "#10B981", icon: <CheckCircle className="w-5 h-5" /> },
                 ].map(k => (
@@ -609,7 +609,7 @@ export function AFCManagementDashboard({ isOpen, onClose }: Props) {
               <p className="text-white font-black text-lg">Platform Analytics</p>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
-                  { label: "Total Devices", value: DEVICES.length.toString(), color: P },
+                  { label: "Total Devices", value: DEVICES.length.toString(), color: "var(--vk-crimson-text)" },
                   { label: "VINK Fee Today", value: `R${(totalTodayTaps * 0.50).toFixed(2)}`, color: GOLD, note: "R0.50 × taps" },
                   { label: "Driver Payouts", value: fmtM(totalTodayRev * 0.85), color: GREEN },
                   { label: "Community Fund", value: fmtM(totalTodayRev * 0.10), color: "#34A853" },
@@ -651,7 +651,7 @@ export function AFCManagementDashboard({ isOpen, onClose }: Props) {
                     { label: "Taxi Association",         amount: 0.70,  pct: 5,  color: "#3B82F6" },
                     { label: "Neighbourhood Watch",      amount: 0.70,  pct: 5,  color: GOLD },
                     { label: "Community Bank Fund",      amount: 0.70,  pct: 5,  color: "#34A853" },
-                    { label: "VINK transaction fee",      amount: 0.50,  pct: 3.5, color: P, note: "Fixed R0.50 — not from fare" },
+                    { label: "VINK transaction fee",      amount: 0.50,  pct: 3.5, color: "var(--vk-crimson-text)", note: "Fixed R0.50 — not from fare" },
                   ].map(r => (
                     <div key={r.label}>
                       <div className="flex justify-between mb-1">

@@ -33,7 +33,7 @@ const COLS = [
 const LEGAL_LINKS = ["Privacy Policy", "Terms of Use", "Advertiser Disclosure", "Site Map", "Accessibility", "Ad Choices"];
 
 const CONTACT_CHANNELS = [
-  { icon: <Phone className="w-5 h-5" />, label: "Call Us", value: "0800 VINK (8465)", sub: "Mon–Fri 08:00–20:00 | Sat 09:00–14:00", color: "#8B0000" },
+  { icon: <Phone className="w-5 h-5" />, label: "Call Us", value: "0800 VINK (8465)", sub: "Mon–Fri 08:00–20:00 | Sat 09:00–14:00", color: "var(--vk-crimson-text)" },
   { icon: <MessageCircle className="w-5 h-5" />, label: "Live Chat", value: "Chat on VINK App", sub: "Available 24/7", color: "#10B981" },
   { icon: <Mail className="w-5 h-5" />, label: "Email Support", value: "support@vink.co.za", sub: "Reply within 2 business hours", color: "#3B82F6" },
   { icon: <MapPin className="w-5 h-5" />, label: "Visit Us", value: "8 Rose Street, Cape Town CBD", sub: "By appointment", color: "#F59E0B" },
@@ -114,7 +114,7 @@ export function GetHelpModal({ isOpen, onClose }: GetHelpModalProps) {
                   {col.links.map((link) => (
                     <li key={link}>
                       <a href="#" className="text-white/45 text-[11px] hover:text-white transition-colors flex items-center gap-1 group leading-relaxed">
-                        <ChevronRight className="w-2.5 h-2.5 opacity-0 group-hover:opacity-100 flex-shrink-0 transition-opacity" style={{ color: "#8B0000" }} />
+                        <ChevronRight className="w-2.5 h-2.5 opacity-0 group-hover:opacity-100 flex-shrink-0 transition-opacity" style={{ color: "var(--vk-crimson-text)" }} />
                         {link}
                       </a>
                     </li>
@@ -161,7 +161,7 @@ export function GetHelpModal({ isOpen, onClose }: GetHelpModalProps) {
 
             {/* Card brand logos */}
             <div className="flex flex-wrap items-center gap-4">
-              <div className="bg-white rounded-md px-3 py-1.5">
+              <div className="bg-surface rounded-md px-3 py-1.5">
                 <svg viewBox="0 0 58 18" className="h-4 w-14"><text x="0" y="15" fontSize="18" fontWeight="900" fill="#1A1F71" fontFamily="Arial">VISA</text></svg>
               </div>
               <div className="flex">
@@ -171,7 +171,7 @@ export function GetHelpModal({ isOpen, onClose }: GetHelpModalProps) {
               <div className="rounded-md px-3 py-1.5" style={{ background: "#007BC1" }}>
                 <svg viewBox="0 0 56 18" className="h-4 w-12"><text x="0" y="14" fontSize="13" fontWeight="700" fill="white" fontFamily="Arial">AMEX</text></svg>
               </div>
-              <div className="bg-white rounded-md px-3 py-1.5 flex items-center gap-1.5">
+              <div className="bg-surface rounded-md px-3 py-1.5 flex items-center gap-1.5">
                 <svg viewBox="0 0 80 18" className="h-4 w-20"><text x="0" y="14" fontSize="11" fontWeight="700" fill="#231F20" fontFamily="Arial">DISCOVER</text></svg>
                 <div className="w-4 h-4 rounded-full" style={{ background: "linear-gradient(135deg,#F4841B,#E36900)" }} />
               </div>

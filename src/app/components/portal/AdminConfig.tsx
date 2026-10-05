@@ -4,6 +4,7 @@ import { authFetch, getSession } from "../../services/apiClient";
 import { API_BASE } from "../../services/config";
 import { Badge } from "../dashboards/DashboardShell";
 import { useLoad, Status, Empty, ActionButton, inputCls, when } from "./ui";
+import { usePageTitle } from "../ds";
 
 const COLOR = "#38BDF8";
 const STAFF = ["owner", "superadmin"];
@@ -24,6 +25,7 @@ const cents = (n: number, cur = "ZAR") => `${cur} ${(n / 100).toFixed(2)}`;
 
 /** Staff page for the country configuration: edit a draft, see exactly what changes, submit it for approval, approve (someone else), activate. */
 export function AdminConfig({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  usePageTitle(isOpen ? "Country configuration" : null);
   const session = getSession();
   if (!isOpen) return null;
   const staff = !!session && STAFF.includes(session.role);
@@ -36,7 +38,7 @@ function ConfigPage({ onClose, staff, meId }: { onClose: () => void; staff: bool
   const refresh = () => setTick((t) => t + 1);
 
   return (
-    <div className="fixed inset-0 z-[80] overflow-y-auto" style={{ background: "var(--vk-bg)" }} role="dialog" aria-modal="true" aria-label="Country configuration">
+    <div data-theme-aware className="fixed inset-0 z-[80] overflow-y-auto" style={{ background: "var(--vk-bg)" }} role="dialog" aria-modal="true" aria-label="Country configuration">
       <div className="max-w-6xl mx-auto p-4 sm:p-6 space-y-4">
         <div className="flex items-center justify-between"><h1 className="text-xl font-bold text-fg flex items-center gap-2"><SlidersHorizontal className="w-5 h-5" style={{ color: `color-mix(in srgb, ${COLOR} 62%, var(--vk-fg))` }} />Country configuration</h1>
           <button type="button" aria-label="Close" onClick={onClose} className="p-2 text-fg-muted"><X className="w-5 h-5" /></button></div>

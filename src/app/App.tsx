@@ -1,7 +1,7 @@
 import { PORTALS, type PortalKey } from "./components/portal/portalDefs";
 import { useState, lazy, Suspense, startTransition, useEffect, useCallback } from "react";
 import { Toaster } from "sonner";
-import { useTheme } from "./components/ds";
+import { useTheme, useOverlayA11y } from "./components/ds";
 import { checkHealth, getSession, startHealthRecoveryWatch } from "./services/apiClient";
 import { setPageMeta, PAGE_META } from "./services/seo";
 import { Header } from "./components/Header";
@@ -98,6 +98,7 @@ const ManagementHub                = lazy(() => import("./components/ManagementH
 
 export default function App() {
   const theme = useTheme();
+  useOverlayA11y();
   // ── Mounted set — overlays mount on first open, stay mounted ──────────────
   const [mounted, setMounted] = useState<Set<string>>(new Set());
   const mount = useCallback((key: string) => {

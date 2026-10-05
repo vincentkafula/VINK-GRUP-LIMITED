@@ -115,15 +115,15 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
     setFunding(f => ({ ...f, [k]: e.target.value }));
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-[#FAF8F4]">
+    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-surface-2">
 
       {/* ── Top bar ── */}
-      <div className="sticky top-0 z-20 bg-white border-b border-gray-100 shadow-sm">
+      <div className="sticky top-0 z-20 bg-surface border-b border-line shadow-sm">
         <div className="flex items-center justify-between px-5 py-3">
           <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
           <div className="flex items-center gap-3">
-            <span className="hidden sm:block text-xs text-gray-400 font-medium">Step {step} of {STEPS.length}</span>
-            <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-800"><X className="w-5 h-5" /></button>
+            <span className="hidden sm:block text-xs text-fg-muted font-medium">Step {step} of {STEPS.length}</span>
+            <button onClick={onClose} className="p-2 rounded-full hover:bg-surface-2 transition-colors text-fg-muted hover:text-fg"><X className="w-5 h-5" /></button>
           </div>
         </div>
         <div className="px-5 pb-4 space-y-3">
@@ -137,7 +137,7 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
         tag="VINK Corporate Banking · Blended Finance Programme"
         title="Corporate Loan — Online Application"
         subtitle="Institutional-grade financing for growth, infrastructure, and working capital."
-        gradient={`linear-gradient(135deg,#0F172A 0%,${CP} 55%,#C9A84C 100%)`}
+        gradient={`linear-gradient(135deg,#0F172A 0%,${CP} 55%,#9B1C1C 100%)`}
       />
 
       <div className="max-w-2xl mx-auto w-full px-5 py-8 space-y-5">
@@ -146,7 +146,7 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
         {step === 1 && (
           <>
             <FormCard stepN={1} title="Eligibility check" subtitle="All criteria must be confirmed before proceeding">
-              <div className="rounded-xl p-3 flex items-start gap-2 text-sm" style={{ background: "#EFF6FF", border: "1px solid #BFDBFE" }}>
+              <div className="rounded-xl p-3 flex items-start gap-2 text-sm" style={{ background: "var(--vk-info-bg)", border: "1px solid #BFDBFE" }}>
                 <AlertTriangle className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
                 <p className="text-emerald-700 text-xs">Please confirm all eligibility criteria below before proceeding. <strong>All conditions must be met.</strong></p>
               </div>
@@ -154,22 +154,22 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
               <div className="grid sm:grid-cols-2 gap-2">
                 {ELIGIBILITY_CRITERIA.map(c => (
                   <label key={c.key}
-                    className="flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition-all hover:bg-gray-50 select-none"
-                    style={{ borderColor: eligibility[c.key] ? GREEN + "60" : "#E5E7EB", background: eligibility[c.key] ? GREEN + "08" : "#fff" }}>
-                    <div className={`w-4 h-4 rounded mt-0.5 flex-shrink-0 flex items-center justify-center border-2 transition-all ${eligibility[c.key] ? "border-green-500 bg-green-500" : "border-gray-300"}`}>
+                    className="flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition-all hover:bg-surface-2 select-none"
+                    style={{ borderColor: eligibility[c.key] ? GREEN + "60" : "var(--vk-line)", background: eligibility[c.key] ? GREEN + "08" : "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" }}>
+                    <div className={`w-4 h-4 rounded mt-0.5 flex-shrink-0 flex items-center justify-center border-2 transition-all ${eligibility[c.key] ? "border-green-500 bg-green-500" : "border-line-strong"}`}>
                       {eligibility[c.key] && <CheckCircle className="w-3 h-3 text-white" />}
                     </div>
                     <input type="checkbox" className="hidden"
                       checked={!!eligibility[c.key]}
                       onChange={e => setEligibility(prev => ({ ...prev, [c.key]: e.target.checked }))} />
-                    <p className="text-xs text-gray-700 leading-snug">{c.label}</p>
+                    <p className="text-xs text-fg leading-snug">{c.label}</p>
                   </label>
                 ))}
               </div>
             </FormCard>
 
             <FormCard stepN={undefined} title="The following business types are excluded from this programme" subtitle="If your business falls into any category below, you are not eligible">
-              <div className="rounded-xl p-3 flex items-start gap-2" style={{ background: "#FFF7ED", border: "1px solid #FED7AA" }}>
+              <div className="rounded-xl p-3 flex items-start gap-2" style={{ background: "color-mix(in srgb, #FFF7ED var(--vk-wash), var(--vk-surface))", border: "1px solid color-mix(in srgb, #FED7AA var(--vk-wash), var(--vk-surface))" }}>
                 <AlertTriangle className="w-4 h-4 text-orange-500 flex-shrink-0 mt-0.5" />
                 <p className="text-orange-700 text-xs">If your business falls into any of the categories below, you are not eligible to apply.</p>
               </div>
@@ -186,7 +186,7 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
             </FormCard>
 
             <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-fg-muted">
                 {eligibilityCount}/{ELIGIBILITY_CRITERIA.length} criteria confirmed
                 {eligibilityCount > 0 && !allEligible && <span className="text-amber-600 ml-2">— confirm all to continue</span>}
               </div>
@@ -194,7 +194,7 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
                 disabled={!allEligible}
                 onClick={() => { setEligibilityConfirmed(true); setStep(2); }}
                 className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:scale-105 shadow-md disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
-                style={{ background: allEligible ? `linear-gradient(135deg,${CP},#C9A84C)` : "#9CA3AF" }}>
+                style={{ background: allEligible ? `linear-gradient(135deg,${CP},#9B1C1C)` : "#9CA3AF" }}>
                 Confirm eligibility &amp; continue →
               </button>
             </div>
@@ -204,7 +204,7 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
         {/* ── STEP 2: Contact ── */}
         {step === 2 && (
           <FormCard stepN={2} title="Contact person details" subtitle="Primary contact authorised to act on behalf of the applicant company">
-            <p className="text-xs text-gray-500">Primary contact person authorised to act on behalf of the applicant company.</p>
+            <p className="text-xs text-fg-muted">Primary contact person authorised to act on behalf of the applicant company.</p>
             <div className="grid grid-cols-2 gap-4">
               <Field label="First name(s)" required>
                 <input className={inputCls} placeholder="e.g. Vincent" value={contact.firstName} onChange={setC("firstName")} />
@@ -272,7 +272,7 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
         {/* ── STEP 4: Assets & Collateral ── */}
         {step === 4 && (
           <FormCard stepN={4} title="Assets &amp; collateral" subtitle="Provide details of assets offered as security">
-            <p className="text-xs text-gray-500">Provide details of assets offered as security. Collateral strengthens your application and may improve your rate.</p>
+            <p className="text-xs text-fg-muted">Provide details of assets offered as security. Collateral strengthens your application and may improve your rate.</p>
             <div className="grid grid-cols-2 gap-4">
               <Field label="Primary collateral type" required full>
                 <select className={selectCls} value={assets.collateralType} onChange={setA("collateralType")}>
@@ -309,16 +309,16 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
                 {LOAN_PRODUCTS.map(p => (
                   <label key={p.id}
                     className="flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all hover:border-emerald-200 select-none"
-                    style={{ borderColor: selectedProduct === p.id ? CP : "#E5E7EB", background: selectedProduct === p.id ? CP + "06" : "#fff" }}>
+                    style={{ borderColor: selectedProduct === p.id ? CP : "var(--vk-line)", background: selectedProduct === p.id ? CP + "06" : "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" }}>
                     <div className="w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all"
-                      style={{ borderColor: selectedProduct === p.id ? CP : "#D1D5DB" }}>
+                      style={{ borderColor: selectedProduct === p.id ? CP : "var(--vk-line)" }}>
                       {selectedProduct === p.id && <div className="w-2 h-2 rounded-full" style={{ background: CP }} />}
                     </div>
                     <input type="radio" name="product" className="hidden" value={p.id}
                       checked={selectedProduct === p.id} onChange={() => setSelectedProduct(p.id)} />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-gray-800">{p.name}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">{p.range} · {p.term}</p>
+                      <p className="text-sm font-bold text-fg">{p.name}</p>
+                      <p className="text-xs text-fg-muted mt-0.5">{p.range} · {p.term}</p>
                     </div>
                     <span className="text-xs font-bold flex-shrink-0" style={{ color: CP }}>{p.rate}</span>
                   </label>
@@ -351,26 +351,26 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
               </div>
 
               {funding.amount && (
-                <div className="rounded-xl p-4 mt-2 grid grid-cols-3 gap-3" style={{ background: "#F2EFE8" }}>
+                <div className="rounded-xl p-4 mt-2 grid grid-cols-3 gap-3" style={{ background: "var(--vk-surface-2)" }}>
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wide text-gray-500 mb-1">Loan amount</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wide text-fg-muted mb-1">Loan amount</p>
                     <p className="text-lg font-black" style={{ color: CP }}>
                       R {Number(funding.amount).toLocaleString("en-ZA")}
                     </p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wide text-gray-500 mb-1">Indicative rate</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wide text-fg-muted mb-1">Indicative rate</p>
                     <p className="text-lg font-black" style={{ color: CP }}>
                       {LOAN_PRODUCTS.find(p => p.id === selectedProduct)?.rate}
                     </p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wide text-gray-500 mb-1">Product</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wide text-fg-muted mb-1">Product</p>
                     <p className="text-sm font-bold" style={{ color: CP }}>
                       {LOAN_PRODUCTS.find(p => p.id === selectedProduct)?.name}
                     </p>
                   </div>
-                  <p className="col-span-3 text-[10px] text-gray-400">Subject to credit assessment · Final terms set at offer stage</p>
+                  <p className="col-span-3 text-[10px] text-fg-muted">Subject to credit assessment · Final terms set at offer stage</p>
                 </div>
               )}
             </FormCard>
@@ -380,7 +380,7 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
         {/* ── STEP 6: Documents ── */}
         {step === 6 && (
           <FormCard stepN={6} title="Upload supporting documents" subtitle="Upload certified, legible copies. PDF, JPG, PNG accepted. Max 20MB per document.">
-            <p className="text-sm text-gray-500">Upload certified, legible copies. PDF, JPG, PNG accepted. Max 20MB per document.</p>
+            <p className="text-sm text-fg-muted">Upload certified, legible copies. PDF, JPG, PNG accepted. Max 20MB per document.</p>
             <div className="space-y-2">
               {DOC_SLOTS.map(d => (
                 <DocSlot
@@ -397,7 +397,7 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
                 <div className="h-full rounded-full transition-all duration-500"
                   style={{ width: `${(reqDocsCount / totalReq) * 100}%`, background: CP }} />
               </div>
-              <span className="text-xs font-semibold text-gray-600 flex-shrink-0">{reqDocsCount}/{totalReq} required</span>
+              <span className="text-xs font-semibold text-fg-muted flex-shrink-0">{reqDocsCount}/{totalReq} required</span>
             </div>
           </FormCard>
         )}
@@ -420,25 +420,25 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
                   { label: "Collateral",        value: assets.collateralType || "—" },
                   { label: "Documents",         value: `${Object.keys(docs).filter(k => docs[k]).length} uploaded` },
                 ].map((item, i) => (
-                  <div key={i} className="p-3 rounded-xl bg-gray-50 border border-gray-100">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">{item.label}</p>
-                    <p className="text-sm font-semibold text-gray-800 mt-0.5">{item.value}</p>
+                  <div key={i} className="p-3 rounded-xl bg-surface-2 border border-line">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-fg-muted">{item.label}</p>
+                    <p className="text-sm font-semibold text-fg mt-0.5">{item.value}</p>
                   </div>
                 ))}
               </div>
             </FormCard>
 
             <FormCard stepN={undefined} title="Declaration" subtitle="Please read and confirm before submitting">
-              <p className="text-xs text-gray-600 leading-relaxed">
+              <p className="text-xs text-fg-muted leading-relaxed">
                 I, the undersigned, declare that I am duly authorised by the applicant company to submit this application. I confirm that all information provided is true, complete, and accurate to the best of my knowledge and belief. I authorise Vink Group (Pty) Ltd to conduct credit bureau inquiries, verify all stated information with relevant institutions (including SARS, CIPC, and credit bureaux), and to share application information with co-lending partners where applicable.
               </p>
-              <p className="text-xs text-gray-600 leading-relaxed">
+              <p className="text-xs text-fg-muted leading-relaxed">
                 I understand that submission of this form does not constitute an offer of credit, and that any credit facility is subject to VINK's full credit assessment process, internal credit committee approval, and applicable regulatory requirements.
               </p>
               <label className="flex items-start gap-3 cursor-pointer mt-2">
                 <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)}
                   className="mt-0.5 w-4 h-4 accent-emerald-700 flex-shrink-0 rounded" />
-                <span className="text-sm font-semibold text-gray-700">
+                <span className="text-sm font-semibold text-fg">
                   I confirm the above declaration and consent to the processing of this application
                 </span>
               </label>
@@ -465,7 +465,7 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
                   }
                 }}
                 className="w-full py-4 rounded-xl text-base font-black text-white transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed shadow-lg mt-2"
-                style={{ background: agreed && reqDocsCount >= totalReq ? `linear-gradient(135deg,${CP},#C9A84C)` : "#9CA3AF" }}>
+                style={{ background: agreed && reqDocsCount >= totalReq ? `linear-gradient(135deg,${CP},#9B1C1C)` : "#9CA3AF" }}>
                 {submitting ? "Submitting..." : reqDocsCount < totalReq
                   ? `Upload all required documents first (${reqDocsCount}/${totalReq})`
                   : "Submit Corporate Loan Application"}
@@ -478,25 +478,25 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
         {/* ── SUCCESS ── */}
         {submitted && (
           <div className="space-y-5">
-            <div className="bg-white rounded-2xl border border-green-200 p-8 shadow-sm text-center space-y-4">
-              <div className="w-24 h-24 rounded-full flex items-center justify-center mx-auto" style={{ background: "linear-gradient(135deg,#D1FAE5,#A7F3D0)" }}>
+            <div className="bg-surface rounded-2xl border border-green-200 p-8 shadow-sm text-center space-y-4">
+              <div className="w-24 h-24 rounded-full flex items-center justify-center mx-auto" style={{ background: "linear-gradient(135deg,color-mix(in srgb, #D1FAE5 var(--vk-wash), var(--vk-surface)),color-mix(in srgb, #A7F3D0 var(--vk-wash), var(--vk-surface)))" }}>
                 <CheckCircle className="w-12 h-12 text-green-600" />
               </div>
               <div>
-                <h2 className="text-2xl font-black text-gray-900">Application Submitted</h2>
-                <p className="text-gray-500 text-sm mt-1 max-w-sm mx-auto">
+                <h2 className="text-2xl font-black text-fg">Application Submitted</h2>
+                <p className="text-fg-muted text-sm mt-1 max-w-sm mx-auto">
                   Your corporate loan application has been received and is under review by VINK Credit.
                 </p>
               </div>
-              <div className="rounded-xl p-4" style={{ background: "#F2EFE8" }}>
-                <p className="text-xs text-gray-500 mb-1">Application reference number</p>
+              <div className="rounded-xl p-4" style={{ background: "var(--vk-surface-2)" }}>
+                <p className="text-xs text-fg-muted mb-1">Application reference number</p>
                 <p className="font-black text-xl" style={{ color: CP }}>{refNo}</p>
-                <p className="text-xs text-gray-400 mt-1">Keep this reference for all future correspondence</p>
+                <p className="text-xs text-fg-muted mt-1">Keep this reference for all future correspondence</p>
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm space-y-3">
-              <h3 className="font-bold text-gray-800">What happens next?</h3>
+            <div className="bg-surface rounded-2xl border border-line p-5 shadow-sm space-y-3">
+              <h3 className="font-bold text-fg">What happens next?</h3>
               {[
                 { step: "1", title: "Initial screening",       desc: "VINK Credit reviews your eligibility and completeness of documents (1–2 business days)" },
                 { step: "2", title: "Credit assessment",       desc: "Full credit bureau, CIPC, and SARS verification conducted (3–5 business days)" },
@@ -508,8 +508,8 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
                   <div className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-black flex-shrink-0 mt-0.5"
                     style={{ background: CP }}>{item.step}</div>
                   <div>
-                    <p className="text-sm font-semibold text-gray-800">{item.title}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">{item.desc}</p>
+                    <p className="text-sm font-semibold text-fg">{item.title}</p>
+                    <p className="text-xs text-fg-muted mt-0.5">{item.desc}</p>
                   </div>
                 </div>
               ))}
@@ -517,7 +517,7 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
 
             <button onClick={onClose}
               className="w-full py-3.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 shadow-lg"
-              style={{ background: `linear-gradient(135deg,${CP},#C9A84C)` }}>
+              style={{ background: `linear-gradient(135deg,${CP},#9B1C1C)` }}>
               Back to VINK Corporate Banking
             </button>
           </div>

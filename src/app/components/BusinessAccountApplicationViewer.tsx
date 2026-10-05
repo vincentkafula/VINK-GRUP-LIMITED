@@ -42,19 +42,19 @@ const blankDirector = (id: number): Director => ({
 // ─── Step indicator ───────────────────────────────────────────────────────────
 function StepBar({ current }: { current: number }) {
   return (
-    <div className="flex items-stretch bg-white border-b border-gray-200 overflow-x-auto">
+    <div className="flex items-stretch bg-surface border-b border-line overflow-x-auto">
       {STEPS.map((s) => {
         const done    = s.n < current;
         const active  = s.n === current;
         return (
-          <div key={s.n} className="flex-1 min-w-[64px] flex flex-col items-center justify-center py-2.5 px-1 relative border-r border-gray-100 last:border-r-0"
-            style={{ background: active ? PURPLE : done ? "#F0FDF4" : "#fff" }}>
+          <div key={s.n} className="flex-1 min-w-[64px] flex flex-col items-center justify-center py-2.5 px-1 relative border-r border-line last:border-r-0"
+            style={{ background: active ? PURPLE : done ? "color-mix(in srgb, #F0FDF4 var(--vk-wash), var(--vk-surface))" : "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" }}>
             <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold mb-0.5"
-              style={{ background: active ? "#fff" : done ? GREEN : "#E5E7EB", color: active ? PURPLE : done ? "#fff" : "#9CA3AF" }}>
+              style={{ background: active ? "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" : done ? GREEN : "var(--vk-line)", color: active ? PURPLE : done ? "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" : "#9CA3AF" }}>
               {done ? "✓" : s.n}
             </div>
             <p className="text-[9px] font-semibold leading-tight text-center"
-              style={{ color: active ? "#fff" : done ? GREEN : "#9CA3AF" }}>
+              style={{ color: active ? "#fff" : done ? GREEN : "var(--vk-fg-muted)" }}>
               {s.label}
             </p>
           </div>
@@ -80,8 +80,8 @@ function Step1({ onNext, updateForm }: { onNext: () => void; updateForm: (d: Rec
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-base font-bold text-gray-900 mb-0.5">Business Details</h2>
-        <p className="text-xs text-gray-500">Section 1 — Tell us about your business</p>
+        <h2 className="text-base font-bold text-fg mb-0.5">Business Details</h2>
+        <p className="text-xs text-fg-muted">Section 1 — Tell us about your business</p>
       </div>
       <div className="grid sm:grid-cols-2 gap-4">
         <Field label="Registered business name *" value={form.bizName} onChange={f("bizName")} placeholder="ABC Trading (Pty) Ltd" />
@@ -125,8 +125,8 @@ function Step2({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () 
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-base font-bold text-gray-900 mb-0.5">Verify Your Identity</h2>
-        <p className="text-xs text-gray-500">Section 2 — We will send a one-time password to confirm your identity</p>
+        <h2 className="text-base font-bold text-fg mb-0.5">Verify Your Identity</h2>
+        <p className="text-xs text-fg-muted">Section 2 — We will send a one-time password to confirm your identity</p>
       </div>
       <div className="grid sm:grid-cols-2 gap-4">
         <Field label="Cell number *" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+27 82 000 0000" />
@@ -164,15 +164,15 @@ function Step3({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () 
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-base font-bold text-gray-900 mb-0.5">Biometric Verification</h2>
-        <p className="text-xs text-gray-500">Section 3 — Fingerprint scan required for all directors</p>
+        <h2 className="text-base font-bold text-fg mb-0.5">Biometric Verification</h2>
+        <p className="text-xs text-fg-muted">Section 3 — Fingerprint scan required for all directors</p>
       </div>
-      <div className="border-2 border-dashed border-gray-200 rounded-2xl p-10 text-center">
+      <div className="border-2 border-dashed border-line rounded-2xl p-10 text-center">
         {!captured ? (
           <>
             <div className="text-5xl mb-4">👆</div>
-            <p className="text-sm font-semibold text-gray-700 mb-1">Place your finger on the scanner</p>
-            <p className="text-xs text-gray-400 mb-5">Use a fingerprint reader or mobile biometric sensor</p>
+            <p className="text-sm font-semibold text-fg mb-1">Place your finger on the scanner</p>
+            <p className="text-xs text-fg-muted mb-5">Use a fingerprint reader or mobile biometric sensor</p>
             <button onClick={() => setCaptured(true)}
               className="px-6 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90"
               style={{ background: PURPLE }}>
@@ -183,7 +183,7 @@ function Step3({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () 
           <div className="flex flex-col items-center gap-2">
             <CheckCircle className="w-12 h-12 text-green-500" />
             <p className="text-sm font-bold text-green-700">Fingerprint matched successfully</p>
-            <p className="text-xs text-gray-400">Identity confirmed via biometric scan</p>
+            <p className="text-xs text-fg-muted">Identity confirmed via biometric scan</p>
           </div>
         )}
       </div>
@@ -200,16 +200,16 @@ function Step4({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () 
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-base font-bold text-gray-900 mb-0.5">Selfie Confirmation</h2>
-        <p className="text-xs text-gray-500">Section 4 — Upload a clear selfie to confirm your identity</p>
+        <h2 className="text-base font-bold text-fg mb-0.5">Selfie Confirmation</h2>
+        <p className="text-xs text-fg-muted">Section 4 — Upload a clear selfie to confirm your identity</p>
       </div>
-      <div className="border-2 border-dashed border-gray-200 rounded-2xl p-10 text-center cursor-pointer hover:border-emerald-300 hover:bg-emerald-50 transition-colors"
+      <div className="border-2 border-dashed border-line rounded-2xl p-10 text-center cursor-pointer hover:border-emerald-300 hover:bg-emerald-50 transition-colors"
         onClick={() => fileRef.current?.click()}>
         {!captured ? (
           <>
             <div className="text-5xl mb-4">🤳</div>
-            <p className="text-sm font-semibold text-gray-700 mb-1">Upload a selfie or take a photo</p>
-            <p className="text-xs text-gray-400 mb-4">Must clearly show your face · JPG or PNG · Max 5MB</p>
+            <p className="text-sm font-semibold text-fg mb-1">Upload a selfie or take a photo</p>
+            <p className="text-xs text-fg-muted mb-4">Must clearly show your face · JPG or PNG · Max 5MB</p>
             <span className="px-5 py-2 rounded-lg text-sm font-bold text-white" style={{ background: PURPLE }}>
               Choose Photo
             </span>
@@ -249,22 +249,22 @@ function Step5({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () 
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-base font-bold text-gray-900 mb-0.5">Upload Documents</h2>
-        <p className="text-xs text-gray-500">Section 5 — All documents must be certified copies · PDF, JPG, PNG · Max 10MB each</p>
+        <h2 className="text-base font-bold text-fg mb-0.5">Upload Documents</h2>
+        <p className="text-xs text-fg-muted">Section 5 — All documents must be certified copies · PDF, JPG, PNG · Max 10MB each</p>
       </div>
       <div className="space-y-3">
         {docs.map(d => (
-          <label key={d.key} className="flex items-center justify-between p-4 bg-white border rounded-xl cursor-pointer hover:border-emerald-300 hover:bg-emerald-50 transition-colors"
-            style={{ borderColor: uploaded[d.key] ? GREEN : "#E5E7EB" }}>
+          <label key={d.key} className="flex items-center justify-between p-4 bg-surface border rounded-xl cursor-pointer hover:border-emerald-300 hover:bg-emerald-50 transition-colors"
+            style={{ borderColor: uploaded[d.key] ? GREEN : "var(--vk-line)" }}>
             <div className="flex items-center gap-3">
               {uploaded[d.key]
                 ? <CheckCircle className="w-5 h-5 flex-shrink-0" style={{ color: GREEN }} />
-                : <Upload className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                : <Upload className="w-5 h-5 text-fg-muted flex-shrink-0" />
               }
-              <span className="text-sm font-medium text-gray-800">{d.label}</span>
+              <span className="text-sm font-medium text-fg">{d.label}</span>
             </div>
             <span className="text-xs px-3 py-1 rounded-full font-semibold"
-              style={{ background: uploaded[d.key] ? "#DCFCE7" : "#F2EFE8", color: uploaded[d.key] ? GREEN : PURPLE }}>
+              style={{ background: uploaded[d.key] ? "color-mix(in srgb, #DCFCE7 var(--vk-wash), var(--vk-surface))" : "var(--vk-surface-2)", color: uploaded[d.key] ? GREEN : PURPLE }}>
               {uploaded[d.key] ? "Uploaded" : "Upload"}
             </span>
             <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png"
@@ -313,28 +313,28 @@ function Step6({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-base font-bold text-gray-900 mb-0.5">Director Confirmations</h2>
-        <p className="text-xs text-gray-500">Section 6 — All directors must verify their identity and upload documents</p>
+        <h2 className="text-base font-bold text-fg mb-0.5">Director Confirmations</h2>
+        <p className="text-xs text-fg-muted">Section 6 — All directors must verify their identity and upload documents</p>
       </div>
 
       {/* Directors */}
       {directors.map((dir, idx) => (
-        <div key={dir.id} className="border rounded-2xl overflow-hidden" style={{ borderColor: dir.verified ? GREEN : "#E5E7EB" }}>
+        <div key={dir.id} className="border rounded-2xl overflow-hidden" style={{ borderColor: dir.verified ? GREEN : "var(--vk-line)" }}>
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-b border-gray-100">
+          <div className="flex items-center justify-between px-4 py-3 bg-surface-2 border-b border-line">
             <div className="flex items-center gap-2">
               <input type="checkbox" checked={dir.verified} readOnly className="w-4 h-4 accent-emerald-600" />
-              <span className="text-sm font-semibold text-gray-900">
+              <span className="text-sm font-semibold text-fg">
                 Director {idx + 1}{idx === 0 ? " (Primary applicant)" : ""}
               </span>
             </div>
             <div className="flex items-center gap-2">
               {dir.verified
-                ? <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={{ background: "#DCFCE7", color: GREEN }}>Verified</span>
+                ? <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={{ background: "color-mix(in srgb, #DCFCE7 var(--vk-wash), var(--vk-surface))", color: GREEN }}>Verified</span>
                 : <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-yellow-50 text-yellow-700">Pending</span>
               }
               {idx > 0 && (
-                <button onClick={() => removeDir(dir.id)} className="p-1 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors">
+                <button onClick={() => removeDir(dir.id)} className="p-1 rounded-lg hover:bg-red-50 text-fg-muted hover:text-red-500 transition-colors">
                   <Trash2 className="w-4 h-4" />
                 </button>
               )}
@@ -375,7 +375,7 @@ function Step6({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () 
                     { key: "fingerprintPending", label: "Fingerprint pending" },
                     { key: "selfiePending",      label: "Selfie pending" },
                   ].map(item => (
-                    <div key={item.key} className="flex items-center gap-2 text-xs text-gray-500">
+                    <div key={item.key} className="flex items-center gap-2 text-xs text-fg-muted">
                       <Clock className="w-3.5 h-3.5 flex-shrink-0 text-yellow-500" />
                       {item.label}
                     </div>
@@ -383,7 +383,7 @@ function Step6({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () 
                 </div>
 
                 {/* Document upload */}
-                <label className="flex items-center justify-center gap-2 p-4 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-emerald-300 hover:bg-emerald-50 transition-colors text-sm text-gray-500"
+                <label className="flex items-center justify-center gap-2 p-4 border-2 border-dashed border-line rounded-xl cursor-pointer hover:border-emerald-300 hover:bg-emerald-50 transition-colors text-sm text-fg-muted"
                   onClick={() => setUploadingId(dir.id)}>
                   <Upload className="w-4 h-4" />
                   Upload director documents — click to upload
@@ -403,14 +403,14 @@ function Step6({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () 
       {/* Add director */}
       <button onClick={addDir}
         className="flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all hover:bg-emerald-50"
-        style={{ borderColor: PURPLE, color: PURPLE }}>
+        style={{ borderColor: PURPLE, color: "var(--vk-crimson-text)" }}>
         <Plus className="w-4 h-4" />
         Add another director
       </button>
 
       {/* Financial Advisor Details */}
-      <div className="border border-gray-200 rounded-2xl p-5 space-y-4">
-        <p className="text-xs font-bold uppercase tracking-wider text-gray-500">Financial Advisor Details</p>
+      <div className="border border-line rounded-2xl p-5 space-y-4">
+        <p className="text-xs font-bold uppercase tracking-wider text-fg-muted">Financial Advisor Details</p>
         <div className="grid sm:grid-cols-2 gap-3">
           <Field label="FSP name" value={advisor.fspName} onChange={e => setAdvisor(a => ({ ...a, fspName: e.target.value }))} placeholder="FSP Company Name" />
           <Field label="Advisor first name" value={advisor.firstName} onChange={e => setAdvisor(a => ({ ...a, firstName: e.target.value }))} placeholder="Jane" />
@@ -422,7 +422,7 @@ function Step6({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () 
             <button key={opt.key} onClick={() => setAdvisor(a => ({ ...a, discretionary: opt.key }))}
               className="px-4 py-2 rounded-lg text-sm font-semibold transition-all"
               style={{
-                background: advisor.discretionary === opt.key ? PURPLE : "#F3F4F6",
+                background: advisor.discretionary === opt.key ? PURPLE : "var(--vk-surface-2)",
                 color: advisor.discretionary === opt.key ? "#fff" : "#6B7280",
               }}>
               {opt.label}
@@ -432,15 +432,15 @@ function Step6({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () 
       </div>
 
       {/* Investment Details */}
-      <div className="border border-gray-200 rounded-2xl p-5 space-y-4">
-        <p className="text-xs font-bold uppercase tracking-wider text-gray-500">Investment Details (Section 5)</p>
+      <div className="border border-line rounded-2xl p-5 space-y-4">
+        <p className="text-xs font-bold uppercase tracking-wider text-fg-muted">Investment Details (Section 5)</p>
         <div className="grid sm:grid-cols-2 gap-3">
           <div>
             <Field label="Security name" value={investment.securityName} onChange={e => setInvestment(i => ({ ...i, securityName: e.target.value }))} placeholder="e.g. Absa Capital Securities Plan" />
           </div>
           <div>
             <Field label="Investment amount (GBP)" type="number" value={investment.amount} onChange={e => setInvestment(i => ({ ...i, amount: e.target.value }))} placeholder="100000" />
-            <p className="text-[11px] text-gray-400 mt-1">Minimum lump sum: GBP 100,000</p>
+            <p className="text-[11px] text-fg-muted mt-1">Minimum lump sum: GBP 100,000</p>
           </div>
         </div>
       </div>
@@ -484,11 +484,11 @@ function Step7({ onBack, onClose, initialAccountType, formData }: { onBack: () =
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
         <CheckCircle className="w-16 h-16" style={{ color: GREEN }} />
-        <h2 className="text-2xl font-black text-gray-900">Application Submitted!</h2>
-        <p className="text-gray-500 text-sm max-w-md">
+        <h2 className="text-2xl font-black text-fg">Application Submitted!</h2>
+        <p className="text-fg-muted text-sm max-w-md">
           Your business account application has been received. Our team will review it within 2–5 business days and contact you at the email address provided.
         </p>
-        <p className="text-xs text-gray-400">Reference: {referenceNumber}</p>
+        <p className="text-xs text-fg-muted">Reference: {referenceNumber}</p>
         <button onClick={onClose}
           className="mt-4 px-8 py-3 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90"
           style={{ background: PURPLE }}>
@@ -501,8 +501,8 @@ function Step7({ onBack, onClose, initialAccountType, formData }: { onBack: () =
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-base font-bold text-gray-900 mb-0.5">Account Setup</h2>
-        <p className="text-xs text-gray-500">Section 7 — Review and submit your business account application</p>
+        <h2 className="text-base font-bold text-fg mb-0.5">Account Setup</h2>
+        <p className="text-xs text-fg-muted">Section 7 — Review and submit your business account application</p>
       </div>
 
       <div className="grid sm:grid-cols-2 gap-4">
@@ -521,8 +521,8 @@ function Step7({ onBack, onClose, initialAccountType, formData }: { onBack: () =
       </div>
 
       {/* Summary */}
-      <div className="bg-gray-50 rounded-2xl border border-gray-200 p-5">
-        <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-3">Application Summary</p>
+      <div className="bg-surface-2 rounded-2xl border border-line p-5">
+        <p className="text-xs font-bold uppercase tracking-wider text-fg-muted mb-3">Application Summary</p>
         <div className="space-y-2 text-sm">
           {[
             { label: "Selected account", value: accountType },
@@ -532,8 +532,8 @@ function Step7({ onBack, onClose, initialAccountType, formData }: { onBack: () =
             { label: "Identity verification", value: "Complete" },
           ].map(row => (
             <div key={row.label} className="flex justify-between">
-              <span className="text-gray-500">{row.label}</span>
-              <span className="font-semibold text-gray-800">{row.value}</span>
+              <span className="text-fg-muted">{row.label}</span>
+              <span className="font-semibold text-fg">{row.value}</span>
             </div>
           ))}
         </div>
@@ -543,15 +543,15 @@ function Step7({ onBack, onClose, initialAccountType, formData }: { onBack: () =
       <label className="flex items-start gap-3 cursor-pointer">
         <input type="checkbox" checked={agreeTerms} onChange={e => setAgreeTerms(e.target.checked)}
           className="mt-0.5 w-4 h-4 accent-emerald-600 flex-shrink-0" />
-        <p className="text-xs text-gray-600 leading-relaxed">
-          I confirm that all information provided is accurate and complete. I authorise VINK to perform FICA verification, credit checks, and to open the selected business account on behalf of the registered entity. I have read and agree to the <span className="font-semibold" style={{ color: PURPLE }}>Terms and Conditions</span> and <span className="font-semibold" style={{ color: PURPLE }}>Privacy Policy</span>.
+        <p className="text-xs text-fg-muted leading-relaxed">
+          I confirm that all information provided is accurate and complete. I authorise VINK to perform FICA verification, credit checks, and to open the selected business account on behalf of the registered entity. I have read and agree to the <span className="font-semibold" style={{ color: "var(--vk-crimson-text)" }}>Terms and Conditions</span> and <span className="font-semibold" style={{ color: "var(--vk-crimson-text)" }}>Privacy Policy</span>.
         </p>
       </label>
 
       <div className="flex gap-3">
         <button onClick={onBack}
-          className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl border text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
-          style={{ borderColor: "#D1D5DB" }}>
+          className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl border text-sm font-semibold text-fg-muted hover:bg-surface-2 transition-colors"
+          style={{ borderColor: "var(--vk-line)" }}>
           <ChevronLeft className="w-4 h-4" /> Back
         </button>
         <button onClick={handleSubmit}
@@ -586,8 +586,8 @@ function NavButtons({ onBack, onNext, nextLabel = "Next", nextDisabled = false }
     <div className="flex gap-3 pt-2">
       {onBack && (
         <button onClick={onBack}
-          className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl border text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
-          style={{ borderColor: "#D1D5DB" }}>
+          className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl border text-sm font-semibold text-fg-muted hover:bg-surface-2 transition-colors"
+          style={{ borderColor: "var(--vk-line)" }}>
           <ChevronLeft className="w-4 h-4" /> Back
         </button>
       )}
@@ -619,18 +619,18 @@ export function BusinessAccountApplicationViewer({ isOpen, onClose, initialAccou
       {/* Inject field styles once */}
       <style>{`
         .field-label { display: block; font-size: 11px; font-weight: 600; color: #6B7280; margin-bottom: 4px; }
-        .field-input { width: 100%; border: 1px solid #E5E7EB; border-radius: 10px; padding: 9px 14px; font-size: 13px; outline: none; background: #fff; color: #111827; }
+        .field-input { width: 100%; border: 1px solid color-mix(in srgb, #E5E7EB var(--vk-wash), var(--vk-surface)); border-radius: 10px; padding: 9px 14px; font-size: 13px; outline: none; background: color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface)); color: #111827; }
         .field-input:focus { border-color: #5C0A10; }
       `}</style>
 
-      <div className="fixed inset-0 z-50 flex flex-col bg-gray-50">
+      <div className="fixed inset-0 z-50 flex flex-col bg-surface-2">
         {/* Top bar */}
-        <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-white border-b border-gray-200 shadow-sm flex-shrink-0">
+        <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-surface border-b border-line shadow-sm flex-shrink-0">
           <div className="flex items-center gap-3">
             <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
-            <span className="text-sm font-semibold text-gray-700 hidden sm:block">Business Account Application</span>
+            <span className="text-sm font-semibold text-fg hidden sm:block">Business Account Application</span>
           </div>
-          <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500">
+          <button onClick={onClose} className="p-2 rounded-full hover:bg-surface-2 transition-colors text-fg-muted">
             <X className="w-5 h-5" />
           </button>
         </div>

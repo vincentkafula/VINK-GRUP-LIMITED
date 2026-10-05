@@ -74,7 +74,7 @@ function BusinessGraphic() {
         </div>
       </div>
       <div className="absolute -bottom-4 -right-4 w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: GOLD, boxShadow: "0 14px 30px -10px rgba(201,168,76,0.5)" }}>
-        <CreditCard className="w-6 h-6" style={{ color: INK }} />
+        <CreditCard className="w-6 h-6" style={{ color: "var(--vk-fg)" }} />
       </div>
     </div>
   );
@@ -96,12 +96,12 @@ export function BusinessLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
   const prev = () => setSlide(i => (i - 1 + SLIDES.length) % SLIDES.length);
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-white" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-surface" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
       {/* ── Top bar ── */}
-      <div className="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-black/[0.06]">
+      <div className="sticky top-0 z-30 bg-surface/95 backdrop-blur border-b border-line">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-11 flex items-center justify-end">
-          <button onClick={onClose} className="p-1.5 rounded-full hover:bg-gray-100 transition-colors" aria-label="Close">
-            <X className="w-4 h-4 text-gray-500" />
+          <button onClick={onClose} className="p-1.5 rounded-full hover:bg-surface-2 transition-colors" aria-label="Close">
+            <X className="w-4 h-4 text-fg-muted" />
           </button>
         </div>
 
@@ -123,13 +123,13 @@ export function BusinessLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
       </div>
 
       {/* ── Promo strip ── */}
-      <div className="border-b border-black/[0.06]">
+      <div className="border-b border-line">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7 sm:py-8 flex flex-col sm:flex-row items-center justify-between gap-5">
           <div>
-            <p className="text-lg sm:text-[21px] font-semibold tracking-tight" style={{ color: INK, fontFamily: "'Fraunces', serif" }}>
+            <p className="text-lg sm:text-[21px] font-semibold tracking-tight" style={{ color: "var(--vk-fg)", fontFamily: "'Fraunces', serif" }}>
               Let's find the business account that fits.
             </p>
-            <p className="text-[13px] text-gray-500 mt-1.5">Taxi associations, fleets, fuel stations, retailers — built around how you work.</p>
+            <p className="text-[13px] text-fg-muted mt-1.5">Taxi associations, fleets, fuel stations, retailers — built around how you work.</p>
           </div>
           <button onClick={onApplyClick}
             className="flex items-center gap-2 px-6 py-3 rounded-full text-white text-sm font-semibold shrink-0 shadow-[0_10px_24px_-8px_rgba(11,92,46,0.55)] hover:brightness-105 transition-all"
@@ -188,27 +188,27 @@ export function BusinessLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
           <span className="inline-block text-[11px] font-semibold tracking-[0.16em] uppercase mb-3" style={{ color: GOLD }}>
             Why choose VINK Business
           </span>
-          <h2 className="text-[26px] sm:text-[32px] font-medium tracking-tight" style={{ color: INK, fontFamily: "'Fraunces', serif" }}>
+          <h2 className="text-[26px] sm:text-[32px] font-medium tracking-tight" style={{ color: "var(--vk-fg)", fontFamily: "'Fraunces', serif" }}>
             Built for How Your Business Moves
           </h2>
-          <p className="text-gray-500 text-sm mt-3 max-w-md mx-auto">From single taxi operators to multi-branch fleets, everything scales with you.</p>
+          <p className="text-fg-muted text-sm mt-3 max-w-md mx-auto">From single taxi operators to multi-branch fleets, everything scales with you.</p>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {FEATURES.map(f => (
             <button key={f.title} onClick={onApplyClick}
-              className="group text-left bg-white rounded-2xl border border-black/[0.06] p-5 flex flex-col gap-4 hover:shadow-[0_16px_32px_-16px_rgba(21,10,51,0.25)] hover:border-transparent hover:-translate-y-1 transition-all duration-200">
+              className="group text-left bg-surface rounded-2xl border border-line p-5 flex flex-col gap-4 hover:shadow-[0_16px_32px_-16px_rgba(21,10,51,0.25)] hover:border-transparent hover:-translate-y-1 transition-all duration-200">
               <div className="flex items-start justify-between">
-                <span className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: "#EAF7EE", color: VIOLET }}>
+                <span className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: "var(--vk-ok-bg)", color: "var(--vk-crimson-text)" }}>
                   {f.icon}
                 </span>
                 <span className="text-[10px] font-mono tracking-wide" style={{ color: GOLD }}>{f.folio}</span>
               </div>
               <span>
-                <span className="block text-[13.5px] font-bold" style={{ color: INK }}>{f.title}</span>
-                <span className="block text-[12px] text-gray-500 mt-1.5 leading-relaxed">{f.desc}</span>
+                <span className="block text-[13.5px] font-bold" style={{ color: "var(--vk-fg)" }}>{f.title}</span>
+                <span className="block text-[12px] text-fg-muted mt-1.5 leading-relaxed">{f.desc}</span>
               </span>
-              <ChevronRight className="w-4 h-4 mt-auto transition-transform group-hover:translate-x-0.5" style={{ color: VIOLET }} />
+              <ChevronRight className="w-4 h-4 mt-auto transition-transform group-hover:translate-x-0.5" style={{ color: "var(--vk-crimson-text)" }} />
             </button>
           ))}
         </div>
@@ -229,8 +229,8 @@ export function BusinessLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
             </div>
           </div>
           <button onClick={onSecurityClick}
-            className="relative flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-white text-[13.5px] font-semibold shrink-0 hover:bg-white/90 transition-colors"
-            style={{ color: PLUM }}>
+            className="relative flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-surface text-[13.5px] font-semibold shrink-0 hover:bg-white/90 transition-colors"
+            style={{ color: "var(--vk-crimson-text)" }}>
             Learn about security <ChevronRight className="w-4 h-4" />
           </button>
         </div>

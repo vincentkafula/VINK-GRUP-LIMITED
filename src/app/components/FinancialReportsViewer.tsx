@@ -25,7 +25,7 @@ async function apiFetch(path: string, opts?: RequestInit): Promise<Response> {
 
 const API = SUPABASE_BASE; // kept for reference
 const P = "#5C0A10";
-const GOLD = "#F5A623";
+const GOLD = "#C9A84C";
 const GREEN = "#10B981";
 const RED = "#EF4444";
 
@@ -48,16 +48,16 @@ function StatRow({ label, value, indent = 0, bold = false, border = false, highl
   label: string; value: string | React.ReactNode; indent?: number; bold?: boolean; border?: boolean; highlight?: boolean; color?: string;
 }) {
   return (
-    <div className={`flex justify-between items-center py-1.5 ${border ? "border-t border-gray-200 mt-1 pt-2" : ""} ${highlight ? "bg-emerald-50 px-2 rounded" : ""}`}
+    <div className={`flex justify-between items-center py-1.5 ${border ? "border-t border-line mt-1 pt-2" : ""} ${highlight ? "bg-emerald-50 px-2 rounded" : ""}`}
       style={{ paddingLeft: indent * 16 }}>
-      <span className={`text-sm ${bold ? "font-black text-gray-900" : "text-gray-600"}`}>{label}</span>
-      <span className={`text-sm ${bold ? "font-black" : "font-semibold"}`} style={{ color: color ?? (bold ? P : "#374151") }}>{value}</span>
+      <span className={`text-sm ${bold ? "font-black text-fg" : "text-fg-muted"}`}>{label}</span>
+      <span className={`text-sm ${bold ? "font-black" : "font-semibold"}`} style={{ color: color ?? (bold ? P : "var(--vk-fg)") }}>{value}</span>
     </div>
   );
 }
 
 function SectionHeader({ children }: { children: React.ReactNode }) {
-  return <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mt-5 mb-2 pb-1 border-b border-gray-100">{children}</p>;
+  return <p className="text-[10px] font-black uppercase tracking-widest text-fg-muted mt-5 mb-2 pb-1 border-b border-line">{children}</p>;
 }
 
 export function FinancialReportsViewer({ isOpen, onClose }: Props) {
@@ -124,28 +124,28 @@ export function FinancialReportsViewer({ isOpen, onClose }: Props) {
   const printPage = () => window.print();
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-gray-50">
+    <div className="fixed inset-0 z-50 flex flex-col bg-surface-2">
 
       {/* ── Top bar ── */}
-      <div className="sticky top-0 z-20 bg-white border-b border-gray-200 shadow-sm flex-shrink-0">
+      <div className="sticky top-0 z-20 bg-surface border-b border-line shadow-sm flex-shrink-0">
         <div className="flex items-center justify-between px-5 py-3">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white" style={{ background: P }}>
               <FileText className="w-4 h-4" />
             </div>
             <div>
-              <p className="text-sm font-black text-gray-900">Financial Reports</p>
-              <p className="text-[10px] text-gray-400">Driver · Business · All Statements</p>
+              <p className="text-sm font-black text-fg">Financial Reports</p>
+              <p className="text-[10px] text-fg-muted">Driver · Business · All Statements</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={loadAll} className="p-2 rounded-full hover:bg-gray-100 text-gray-500 transition-colors" title="Refresh">
+            <button onClick={loadAll} className="p-2 rounded-full hover:bg-surface-2 text-fg-muted transition-colors" title="Refresh">
               <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
             </button>
-            <button onClick={printPage} className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">
+            <button onClick={printPage} className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-fg-muted border border-line hover:bg-surface-2 transition-colors">
               <Printer className="w-3.5 h-3.5" />Print
             </button>
-            <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 text-gray-500 transition-colors">
+            <button onClick={onClose} className="p-2 rounded-full hover:bg-surface-2 text-fg-muted transition-colors">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -155,7 +155,7 @@ export function FinancialReportsViewer({ isOpen, onClose }: Props) {
           {NAV.map(n => (
             <button key={n.id} onClick={() => setScreen(n.id as Screen)}
               className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold flex-shrink-0 transition-all"
-              style={{ background: screen === n.id ? P : "transparent", color: screen === n.id ? "#fff" : "#6B7280" }}>
+              style={{ background: screen === n.id ? P : "transparent", color: screen === n.id ? "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" : "#6B7280" }}>
               {n.icon}{n.label}
             </button>
           ))}
@@ -170,9 +170,9 @@ export function FinancialReportsViewer({ isOpen, onClose }: Props) {
         {screen === "payslip" && (
           <div className="space-y-5">
             {/* Payslip document */}
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden print:shadow-none print:border-0">
+            <div className="bg-surface rounded-2xl border border-line shadow-sm overflow-hidden print:shadow-none print:border-0">
               {/* Header band */}
-              <div className="px-8 py-5 text-white" style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
+              <div className="px-8 py-5 text-white" style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
                 <div className="flex justify-between items-start flex-wrap gap-4">
                   <div>
                     <p className="text-xs font-bold uppercase tracking-widest opacity-70 mb-1">PAYSLIP</p>
@@ -190,7 +190,7 @@ export function FinancialReportsViewer({ isOpen, onClose }: Props) {
 
               <div className="px-8 py-5 space-y-1">
                 {/* Employee details */}
-                <div className="grid sm:grid-cols-2 gap-x-8 gap-y-1 mb-4 pb-4 border-b border-gray-100">
+                <div className="grid sm:grid-cols-2 gap-x-8 gap-y-1 mb-4 pb-4 border-b border-line">
                   {[
                     ["Employee", ps?.employeeName ?? "Sipho Dlamini"],
                     ["ID Number", ps?.employeeId ?? "8707125482085"],
@@ -202,8 +202,8 @@ export function FinancialReportsViewer({ isOpen, onClose }: Props) {
                     ["Trips this period", String(ps?.tripsCount ?? sm?.tripCount ?? 0)],
                   ].map(([l, v]) => (
                     <div key={l} className="flex justify-between py-0.5">
-                      <span className="text-xs text-gray-500">{l}</span>
-                      <span className="text-xs font-semibold text-gray-800">{v}</span>
+                      <span className="text-xs text-fg-muted">{l}</span>
+                      <span className="text-xs font-semibold text-fg">{v}</span>
                     </div>
                   ))}
                 </div>
@@ -232,7 +232,7 @@ export function FinancialReportsViewer({ isOpen, onClose }: Props) {
                 <StatRow label="Total Deductions" value={fmt(ps?.totalDeductions ?? 4630)} bold border color={RED} />
 
                 {/* Net pay */}
-                <div className="mt-4 p-4 rounded-2xl text-white" style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
+                <div className="mt-4 p-4 rounded-2xl text-white" style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
                   <div className="flex justify-between items-center">
                     <div>
                       <p className="text-white/70 text-xs font-semibold uppercase tracking-wide">NET PAY</p>
@@ -244,7 +244,7 @@ export function FinancialReportsViewer({ isOpen, onClose }: Props) {
                   </div>
                 </div>
 
-                <p className="text-[10px] text-gray-400 text-center mt-4">
+                <p className="text-[10px] text-fg-muted text-center mt-4">
                   This payslip is a certified financial record generated by VINK Finance · Authorised Financial Services Provider (NCRCP)
                   and may be used as proof of income for vehicle finance and loan applications.
                 </p>
@@ -258,39 +258,39 @@ export function FinancialReportsViewer({ isOpen, onClose }: Props) {
           <div className="space-y-4">
             <div className="grid sm:grid-cols-4 gap-3">
               {[
-                { label: "Opening Balance", value: fmt(bankMeta.openingBalance ?? 0), color: P },
+                { label: "Opening Balance", value: fmt(bankMeta.openingBalance ?? 0), color: "var(--vk-crimson-text)" },
                 { label: "Total Credits",   value: fmt(bankMeta.totalCredits ?? 0),   color: GREEN },
                 { label: "Total Debits",    value: fmt(bankMeta.totalDebits ?? 0),    color: RED },
-                { label: "Closing Balance", value: fmt(bankMeta.closingBalance ?? 0), color: P },
+                { label: "Closing Balance", value: fmt(bankMeta.closingBalance ?? 0), color: "var(--vk-crimson-text)" },
               ].map((s, i) => (
-                <div key={i} className="bg-white rounded-xl border border-gray-100 p-4 text-center shadow-sm">
-                  <p className="text-[10px] text-gray-400 uppercase tracking-wide font-bold">{s.label}</p>
+                <div key={i} className="bg-surface rounded-xl border border-line p-4 text-center shadow-sm">
+                  <p className="text-[10px] text-fg-muted uppercase tracking-wide font-bold">{s.label}</p>
                   <p className="text-xl font-black mt-1" style={{ color: s.color }}>{s.value}</p>
                 </div>
               ))}
             </div>
 
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-              <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
-                <p className="text-sm font-black text-gray-900">Transaction History — Driver Account (CA 847-891)</p>
-                <span className="text-[10px] text-gray-400">{bankEntries.length} transactions</span>
+            <div className="bg-surface rounded-2xl border border-line shadow-sm overflow-hidden">
+              <div className="px-5 py-3 border-b border-line flex items-center justify-between">
+                <p className="text-sm font-black text-fg">Transaction History — Driver Account (CA 847-891)</p>
+                <span className="text-[10px] text-fg-muted">{bankEntries.length} transactions</span>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-xs">
-                  <thead><tr className="bg-gray-50 border-b border-gray-100">
+                  <thead><tr className="bg-surface-2 border-b border-line">
                     {["Date", "Description", "Reference", "Debit", "Credit", "Balance"].map(h => (
-                      <th key={h} className="text-left px-4 py-3 font-bold text-gray-500 uppercase tracking-wide text-[10px]">{h}</th>
+                      <th key={h} className="text-left px-4 py-3 font-bold text-fg-muted uppercase tracking-wide text-[10px]">{h}</th>
                     ))}
                   </tr></thead>
                   <tbody>
                     {bankEntries.map((e: Record<string, unknown>, i: number) => (
-                      <tr key={i} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                        <td className="px-4 py-3 font-medium text-gray-700 whitespace-nowrap">{String(e.date)}</td>
-                        <td className="px-4 py-3 text-gray-700">{String(e.description)}</td>
-                        <td className="px-4 py-3 text-gray-400 font-mono text-[10px]">{String(e.reference)}</td>
+                      <tr key={i} className="border-b border-gray-50 hover:bg-surface-2 transition-colors">
+                        <td className="px-4 py-3 font-medium text-fg whitespace-nowrap">{String(e.date)}</td>
+                        <td className="px-4 py-3 text-fg">{String(e.description)}</td>
+                        <td className="px-4 py-3 text-fg-muted font-mono text-[10px]">{String(e.reference)}</td>
                         <td className="px-4 py-3 font-semibold" style={{ color: RED }}>{e.debit ? fmt(Number(e.debit)) : ""}</td>
                         <td className="px-4 py-3 font-semibold" style={{ color: GREEN }}>{e.credit ? fmt(Number(e.credit)) : ""}</td>
-                        <td className="px-4 py-3 font-black text-gray-900">{fmt(Number(e.balance))}</td>
+                        <td className="px-4 py-3 font-black text-fg">{fmt(Number(e.balance))}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -302,11 +302,11 @@ export function FinancialReportsViewer({ isOpen, onClose }: Props) {
 
         {/* ══ INCOME STATEMENT ═════════════════════════════════════════════════ */}
         {screen === "income" && is && (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+          <div className="bg-surface rounded-2xl border border-line shadow-sm p-6">
             <div className="flex items-start justify-between mb-6">
               <div>
-                <p className="text-xl font-black text-gray-900">Income Statement</p>
-                <p className="text-xs text-gray-500 mt-0.5">VINK / VINK Taxi Operations — {is.periodStart} to {is.periodEnd}</p>
+                <p className="text-xl font-black text-fg">Income Statement</p>
+                <p className="text-xs text-fg-muted mt-0.5">VINK / VINK Taxi Operations — {is.periodStart} to {is.periodEnd}</p>
               </div>
               <div className={`px-3 py-1.5 rounded-xl text-sm font-black ${is.netProfit >= 0 ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
                 {is.netProfit >= 0 ? "PROFIT" : "LOSS"} {fmt(is.netProfit)}
@@ -356,11 +356,11 @@ export function FinancialReportsViewer({ isOpen, onClose }: Props) {
           const ncl = bs.nonCurrentLiabilities as Record<string, number>;
           const eq = bs.equity as Record<string, number>;
           return (
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <div className="bg-surface rounded-2xl border border-line shadow-sm p-6">
               <div className="flex items-start justify-between mb-6 flex-wrap gap-3">
                 <div>
-                  <p className="text-xl font-black text-gray-900">Balance Sheet</p>
-                  <p className="text-xs text-gray-500 mt-0.5">VINK / VINK Taxi Operations — As at {String(bs.asAt)}</p>
+                  <p className="text-xl font-black text-fg">Balance Sheet</p>
+                  <p className="text-xs text-fg-muted mt-0.5">VINK / VINK Taxi Operations — As at {String(bs.asAt)}</p>
                 </div>
                 <span className={`px-3 py-1.5 rounded-xl text-xs font-black ${bs.balanced ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
                   {bs.balanced ? "✓ BALANCED" : "⚠ NOT BALANCED"}
@@ -371,12 +371,12 @@ export function FinancialReportsViewer({ isOpen, onClose }: Props) {
                 {/* Assets */}
                 <div>
                   <SectionHeader>Assets</SectionHeader>
-                  <p className="text-xs font-bold text-gray-500 mb-2">Current Assets</p>
+                  <p className="text-xs font-bold text-fg-muted mb-2">Current Assets</p>
                   <StatRow label="Cash in hand" value={fmt(ca.cashInHand)} indent={1} />
                   <StatRow label="Bank balance" value={fmt(ca.bankBalance)} indent={1} />
                   <StatRow label="Debtors / receivables" value={fmt(ca.debtors)} indent={1} />
                   <StatRow label="Total Current Assets" value={fmt(ca.total)} bold border />
-                  <p className="text-xs font-bold text-gray-500 mb-2 mt-4">Non-Current Assets</p>
+                  <p className="text-xs font-bold text-fg-muted mb-2 mt-4">Non-Current Assets</p>
                   <StatRow label="Vehicles (at cost)" value={fmt(nca.vehicles)} indent={1} />
                   <StatRow label="Accumulated depreciation" value={`(${fmt(nca.accumulatedDepreciation, true)})`} indent={1} />
                   <StatRow label="AFC devices" value={fmt(nca.afcDevices)} indent={1} />
@@ -387,12 +387,12 @@ export function FinancialReportsViewer({ isOpen, onClose }: Props) {
                 {/* Liabilities + Equity */}
                 <div>
                   <SectionHeader>Liabilities</SectionHeader>
-                  <p className="text-xs font-bold text-gray-500 mb-2">Current Liabilities</p>
+                  <p className="text-xs font-bold text-fg-muted mb-2">Current Liabilities</p>
                   <StatRow label="Trade creditors" value={fmt(cl.tradeCreditors)} indent={1} />
                   <StatRow label="Tax payable" value={fmt(cl.taxPayable)} indent={1} />
                   <StatRow label="UIF payable" value={fmt(cl.uifPayable)} indent={1} />
                   <StatRow label="Total Current Liabilities" value={fmt(cl.total)} bold border />
-                  <p className="text-xs font-bold text-gray-500 mb-2 mt-4">Non-Current Liabilities</p>
+                  <p className="text-xs font-bold text-fg-muted mb-2 mt-4">Non-Current Liabilities</p>
                   <StatRow label="Vehicle loan — FNB" value={fmt(ncl.vehicleLoan)} indent={1} />
                   <StatRow label="Total Non-Current Liabilities" value={fmt(ncl.total)} bold border />
                   <StatRow label="TOTAL LIABILITIES" value={fmt(Number(bs.totalLiabilities))} bold border highlight color={RED} />
@@ -412,11 +412,11 @@ export function FinancialReportsViewer({ isOpen, onClose }: Props) {
 
         {/* ══ CASH FLOW ═══════════════════════════════════════════════════════ */}
         {screen === "cashflow" && cf && (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+          <div className="bg-surface rounded-2xl border border-line shadow-sm p-6">
             <div className="flex items-start justify-between mb-6 flex-wrap gap-3">
               <div>
-                <p className="text-xl font-black text-gray-900">Statement of Cash Flows</p>
-                <p className="text-xs text-gray-500 mt-0.5">VINK / VINK Taxi Operations — {cf.periodStart} to {cf.periodEnd}</p>
+                <p className="text-xl font-black text-fg">Statement of Cash Flows</p>
+                <p className="text-xs text-fg-muted mt-0.5">VINK / VINK Taxi Operations — {cf.periodStart} to {cf.periodEnd}</p>
               </div>
               <div className={`px-3 py-1.5 rounded-xl text-sm font-black ${cf.netChangeInCash >= 0 ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
                 Net cash {cf.netChangeInCash >= 0 ? "inflow" : "outflow"} {fmt(cf.netChangeInCash)}
@@ -459,16 +459,16 @@ export function FinancialReportsViewer({ isOpen, onClose }: Props) {
         {screen === "journal" && (
           <div className="space-y-5">
             {/* Add entry */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-              <p className="text-sm font-black text-gray-900 mb-4">Add Manual Entry</p>
+            <div className="bg-surface rounded-2xl border border-line shadow-sm p-5">
+              <p className="text-sm font-black text-fg mb-4">Add Manual Entry</p>
               <div className="grid sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wide block mb-1">Date</label>
-                  <input type="date" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400" value={newEntry.date} onChange={e => setNewEntry(n => ({ ...n, date: e.target.value }))} />
+                  <label className="text-[10px] font-bold text-fg-muted uppercase tracking-wide block mb-1">Date</label>
+                  <input type="date" className="w-full border border-line rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400" value={newEntry.date} onChange={e => setNewEntry(n => ({ ...n, date: e.target.value }))} />
                 </div>
                 <div>
-                  <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wide block mb-1">Account / Category</label>
-                  <select className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400" value={newEntry.category} onChange={e => setNewEntry(n => ({ ...n, category: e.target.value, account: e.target.options[e.target.selectedIndex].text }))}>
+                  <label className="text-[10px] font-bold text-fg-muted uppercase tracking-wide block mb-1">Account / Category</label>
+                  <select className="w-full border border-line rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400" value={newEntry.category} onChange={e => setNewEntry(n => ({ ...n, category: e.target.value, account: e.target.options[e.target.selectedIndex].text }))}>
                     <option value="fuel">Fuel Cost</option>
                     <option value="vehicle_maintenance">Vehicle Maintenance</option>
                     <option value="driver_wages">Driver Wages</option>
@@ -484,48 +484,48 @@ export function FinancialReportsViewer({ isOpen, onClose }: Props) {
                   </select>
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wide block mb-1">Description</label>
-                  <input className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="e.g. BP garage fill-up, Shell N2" value={newEntry.description} onChange={e => setNewEntry(n => ({ ...n, description: e.target.value }))} />
+                  <label className="text-[10px] font-bold text-fg-muted uppercase tracking-wide block mb-1">Description</label>
+                  <input className="w-full border border-line rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="e.g. BP garage fill-up, Shell N2" value={newEntry.description} onChange={e => setNewEntry(n => ({ ...n, description: e.target.value }))} />
                 </div>
                 <div>
-                  <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wide block mb-1">Debit (expense / asset)</label>
-                  <input type="number" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="0.00" value={newEntry.debit} onChange={e => setNewEntry(n => ({ ...n, debit: e.target.value, credit: "" }))} />
+                  <label className="text-[10px] font-bold text-fg-muted uppercase tracking-wide block mb-1">Debit (expense / asset)</label>
+                  <input type="number" className="w-full border border-line rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="0.00" value={newEntry.debit} onChange={e => setNewEntry(n => ({ ...n, debit: e.target.value, credit: "" }))} />
                 </div>
                 <div>
-                  <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wide block mb-1">Credit (income / liability)</label>
-                  <input type="number" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="0.00" value={newEntry.credit} onChange={e => setNewEntry(n => ({ ...n, credit: e.target.value, debit: "" }))} />
+                  <label className="text-[10px] font-bold text-fg-muted uppercase tracking-wide block mb-1">Credit (income / liability)</label>
+                  <input type="number" className="w-full border border-line rounded-xl px-3 py-2.5 text-sm outline-none focus:border-emerald-400" placeholder="0.00" value={newEntry.credit} onChange={e => setNewEntry(n => ({ ...n, credit: e.target.value, debit: "" }))} />
                 </div>
               </div>
               <button onClick={addJournalEntry} disabled={!newEntry.description || (!newEntry.debit && !newEntry.credit)}
                 className="mt-4 w-full py-3 rounded-xl text-sm font-black text-white transition-all hover:opacity-90 disabled:opacity-40 flex items-center justify-center gap-2"
-                style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
+                style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
                 {entryAdded ? <><CheckCircle className="w-4 h-4" />Entry Added!</> : <><Plus className="w-4 h-4" />Add to Journal</>}
               </button>
-              <p className="text-[10px] text-gray-400 text-center mt-2">Card and cash fare entries are added automatically from the AFC app. Add fuel, maintenance, wages, and other items manually here.</p>
+              <p className="text-[10px] text-fg-muted text-center mt-2">Card and cash fare entries are added automatically from the AFC app. Add fuel, maintenance, wages, and other items manually here.</p>
             </div>
 
             {/* Journal entries table */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-              <div className="px-5 py-3 border-b border-gray-100">
-                <p className="text-sm font-black text-gray-900">Journal Entries — Business Account</p>
+            <div className="bg-surface rounded-2xl border border-line shadow-sm overflow-hidden">
+              <div className="px-5 py-3 border-b border-line">
+                <p className="text-sm font-black text-fg">Journal Entries — Business Account</p>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-xs">
-                  <thead><tr className="bg-gray-50 border-b border-gray-100">
+                  <thead><tr className="bg-surface-2 border-b border-line">
                     {["Date", "Account", "Description", "Debit", "Credit", "Source"].map(h => (
-                      <th key={h} className="text-left px-4 py-3 font-bold text-gray-500 uppercase tracking-wide text-[10px]">{h}</th>
+                      <th key={h} className="text-left px-4 py-3 font-bold text-fg-muted uppercase tracking-wide text-[10px]">{h}</th>
                     ))}
                   </tr></thead>
                   <tbody>
                     {journal.map((e: Record<string, unknown>, i: number) => (
-                      <tr key={i} className="border-b border-gray-50 hover:bg-gray-50">
-                        <td className="px-4 py-3 text-gray-700 whitespace-nowrap">{String(e.date)}</td>
-                        <td className="px-4 py-3 font-semibold text-gray-800">{String(e.account)}</td>
-                        <td className="px-4 py-3 text-gray-600">{String(e.description)}</td>
+                      <tr key={i} className="border-b border-gray-50 hover:bg-surface-2">
+                        <td className="px-4 py-3 text-fg whitespace-nowrap">{String(e.date)}</td>
+                        <td className="px-4 py-3 font-semibold text-fg">{String(e.account)}</td>
+                        <td className="px-4 py-3 text-fg-muted">{String(e.description)}</td>
                         <td className="px-4 py-3 font-semibold" style={{ color: RED }}>{Number(e.debit) > 0 ? fmt(Number(e.debit)) : ""}</td>
                         <td className="px-4 py-3 font-semibold" style={{ color: GREEN }}>{Number(e.credit) > 0 ? fmt(Number(e.credit)) : ""}</td>
                         <td className="px-4 py-3">
-                          <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${String(e.source) === "auto" ? "bg-emerald-50 text-emerald-600" : "bg-gray-100 text-gray-500"}`}>
+                          <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${String(e.source) === "auto" ? "bg-emerald-50 text-emerald-600" : "bg-surface-2 text-fg-muted"}`}>
                             {String(e.source).toUpperCase()}
                           </span>
                         </td>

@@ -25,7 +25,7 @@ export function DeviceTerminalModal({ device, onClose }: { device: DeviceTermina
 
   return (
     <div className="fixed inset-0 z-[130] flex items-center justify-center p-5" style={{ background: "rgba(10,14,35,.6)" }} onClick={onClose}>
-      <div className="bg-white rounded-2xl w-full max-w-xl max-h-[88vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+      <div className="bg-surface rounded-2xl w-full max-w-xl max-h-[88vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <div className="p-5 flex items-start justify-between" style={{ background: "linear-gradient(135deg,#0B1330,#1c2a5e)" }}>
           <div>
             <p className="text-white font-black text-[17px]">{P18Q_SPEC.model}</p>
@@ -36,45 +36,45 @@ export function DeviceTerminalModal({ device, onClose }: { device: DeviceTermina
 
         <div className="p-5">
           <div className="grid grid-cols-2 gap-3 mb-5">
-            <div className="rounded-xl p-3.5 bg-gray-50">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Serial</p>
-              <p className="text-[13.5px] font-bold text-gray-900 font-mono">{device.serial}</p>
+            <div className="rounded-xl p-3.5 bg-surface-2">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-fg-subtle mb-1">Serial</p>
+              <p className="text-[13.5px] font-bold text-fg font-mono">{device.serial}</p>
             </div>
-            <div className="rounded-xl p-3.5 bg-gray-50">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Status</p>
+            <div className="rounded-xl p-3.5 bg-surface-2">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-fg-subtle mb-1">Status</p>
               <p className="text-[13.5px] font-bold flex items-center gap-1.5" style={{ color: device.status === "online" ? "#059669" : "#9CA3AF" }}>
                 <span className="w-2 h-2 rounded-full" style={{ background: device.status === "online" ? "#059669" : "#9CA3AF" }} />
                 {device.status === "online" ? "Online" : "Offline"}
               </p>
             </div>
-            <div className="rounded-xl p-3.5 bg-gray-50">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Battery</p>
-              <p className="text-[13.5px] font-bold text-gray-900">{device.battery}%</p>
+            <div className="rounded-xl p-3.5 bg-surface-2">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-fg-subtle mb-1">Battery</p>
+              <p className="text-[13.5px] font-bold text-fg">{device.battery}%</p>
             </div>
-            <div className="rounded-xl p-3.5 bg-gray-50">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Signal</p>
-              <p className="text-[13.5px] font-bold text-gray-900">{device.signal}</p>
+            <div className="rounded-xl p-3.5 bg-surface-2">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-fg-subtle mb-1">Signal</p>
+              <p className="text-[13.5px] font-bold text-fg">{device.signal}</p>
             </div>
-            <div className="rounded-xl p-3.5 bg-gray-50 col-span-2">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Assigned to</p>
-              <p className="text-[13.5px] font-bold text-gray-900">{device.driver} · {device.vehicle}</p>
+            <div className="rounded-xl p-3.5 bg-surface-2 col-span-2">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-fg-subtle mb-1">Assigned to</p>
+              <p className="text-[13.5px] font-bold text-fg">{device.driver} · {device.vehicle}</p>
             </div>
           </div>
 
-          <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-3">Hardware specification</p>
+          <p className="text-[11px] font-bold uppercase tracking-widest text-fg-subtle mb-3">Hardware specification</p>
           <div className="space-y-3">
             {rows.map(r => (
               <div key={r.label} className="flex items-start gap-3">
                 <span className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: "#EEEBFF", color: "#6D5DFC" }}><r.icon className="w-4 h-4" /></span>
                 <div className="min-w-0">
-                  <p className="text-[12px] font-bold text-gray-900">{r.label}</p>
-                  <p className="text-[11.5px] text-gray-500 leading-relaxed">{r.value}</p>
+                  <p className="text-[12px] font-bold text-fg">{r.label}</p>
+                  <p className="text-[11.5px] text-fg-muted leading-relaxed">{r.value}</p>
                 </div>
               </div>
             ))}
           </div>
 
-          <p className="text-[11px] text-gray-400 mt-5 leading-relaxed">Every VINK AFC terminal on the network runs identical hardware — this device's specs are shared across all VINK dashboards, so drivers, owners, investors and associations always see the same certified equipment.</p>
+          <p className="text-[11px] text-fg-subtle mt-5 leading-relaxed">Every VINK AFC terminal on the network runs identical hardware — this device's specs are shared across all VINK dashboards, so drivers, owners, investors and associations always see the same certified equipment.</p>
         </div>
       </div>
     </div>
