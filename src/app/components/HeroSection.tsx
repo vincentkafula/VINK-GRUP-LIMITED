@@ -3,7 +3,6 @@ import { Pause, Play } from "lucide-react";
 import heroCardPhone from "../../imports/HeroCardPhone.webp";
 import heroGlobalSim from "../../imports/HeroGlobalSim.webp";
 import heroValidator from "../../imports/HeroValidator.webp";
-import { TodaysMarketStrip } from "./TodaysMarketStrip";
 
 type Side = "left" | "right" | "bottom";
 const FADE_DIR: Record<Side, string> = { left: "to right", right: "to left", bottom: "to top" };
@@ -46,8 +45,8 @@ const RAW_SLIDES = [
   },
   {
     image:   heroValidator,
-    cropped: ["left", "right", "bottom"] as Side[],
-    strip: true,                                  // the Today's Market band shows under the hero on this slide
+    cropped: [] as Side[],
+    wide: true,                                   // a complete designed picture (Today's Market): shown whole, in a larger frame
     eyebrow: "VINK AFC — Today's Market Multi-ticketing Validator",
     headline: <>Multi-ticketing<br /><span className="relative inline-block"><span className="relative z-10">validator.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#C9A84C" }} /></span></>,
     body: "Smarter, faster and cashless payments for a seamless travel experience — multi-channel, integrated in one system.",
@@ -117,7 +116,7 @@ export function HeroSection({ onApplyClick }: { onApplyClick?: () => void }) {
         style={{ background: "radial-gradient(circle,#c9a84c 0%,transparent 70%)", transform: "translate(-40%,40%)" }} />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 lg:py-14 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+        <div className={"grid grid-cols-1 gap-10 items-center transition-[grid-template-columns] duration-500 " + (slide.wide ? "md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]" : "md:grid-cols-2")}>
 
           {/* ── Text side — fades with the slide ── */}
           <div
@@ -165,8 +164,8 @@ export function HeroSection({ onApplyClick }: { onApplyClick?: () => void }) {
             <img
               key={current}
               src={slide.image}
-              alt={slide.eyebrow}
-              className="relative z-10 w-full max-w-sm sm:max-w-md md:max-w-lg max-h-[60vh] object-contain"
+              alt={slide.wide ? "Today's Market: the multi-ticketing validator combines NFC card payment, QR-code, balance inquiry, segmented charge and GPS location in one system; shown with a commuter tapping a VINK card on a bus validator, and the EMVCo and Mastercard PayPass marks." : slide.eyebrow}
+              className={"relative z-10 w-full object-contain " + (slide.wide ? "max-w-3xl rounded-3xl shadow-2xl" : "max-w-sm sm:max-w-md md:max-w-lg max-h-[60vh]")}
               draggable={false}
               style={{
                 transition: "opacity 0.4s ease", opacity: fading ? 0 : 1,
@@ -204,7 +203,6 @@ export function HeroSection({ onApplyClick }: { onApplyClick?: () => void }) {
         </div>
       </div>
 
-      <TodaysMarketStrip open={!!slide.strip} />
     </section>
   );
 }
