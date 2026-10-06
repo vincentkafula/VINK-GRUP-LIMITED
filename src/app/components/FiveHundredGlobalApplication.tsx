@@ -152,7 +152,7 @@ export function FiveHundredGlobalApplication({ isOpen, onClose }: Props) {
 
   /* ── One-liner / pitch ── */
   const [oneLiner, setOneLiner] = useState(
-    "VINK is South Africa's first transport-native digital bank — embedding automatic fare collection, banking, MVNO, and ride-hailing into the minibus taxi network that moves 15 million South Africans every day."
+    "VINK aims to be South Africa's first transport-native digital bank — embedding automatic fare collection, banking, MVNO, and ride-hailing into the minibus taxi network that moves 15 million South Africans every day."
   );
 
   /* ── Problem ── */
@@ -182,29 +182,27 @@ This is the wedge. From there, VINK radiates outward:
 • VINK Driver App — earnings dashboard, ride-hailing, cash-fare entry, payslips, bank statements.
 • VINK Ride — full Uber-like platform: passenger booking, driver matching, in-app chat, masked calling, surge pricing.
 • VINK Fleet Tracker — live GPS, geofencing, driver behaviour scoring, maintenance scheduling.
-• VINK SIM (MVNO) — affordable data and calls for drivers and passengers via Cell C infrastructure.
+• VINK SIM (MVNO) — affordable data and calls for drivers and passengers through a mobile network partner (to be agreed).
 
 The insight that competitors miss: we don't ask drivers or passengers to change behaviour. We install our device in the vehicle. The driver's employment depends on the device. Adoption is structural, not optional.`
   );
 
   /* ── Traction ── */
   const [traction, setTraction] = useState(
-    `Product:
-• Full 5-app ecosystem built and operational (React 18 + TypeScript, Supabase backend, Edge Functions).
-• AFC terminal simulator processing sub-3-second transactions with offline EMV cryptography.
-• Complete ride-hailing system: passenger booking, driver matching, real-time chat, masked calling, rating system — all backed by live Supabase API.
-• Global banking dashboard: nostro accounts across 5 countries (ZA, ZM, EU, US, CN), FX conversion engine, P2P transfers, card issuance.
-• Financial reporting system: PAYE/UIF payslips, bank statements, income statements, balance sheets, cash flow statements — all auto-generated from transaction data.
+    `Status: pre-launch. VINK is not yet operational; full launch is planned for June 2027.
 
-Partnerships:
-• MVNO agreement finalised with Cell C (South Africa's 3rd largest mobile network) — VINK SIM can be activated for any driver or passenger today.
-
-Funding:
-• Formal business plan submitted for R4.5 billion funding round (60-month, 7% p.a. structured instrument).
+Product (working prototypes, not yet in production):
+• Banking app, driver app, ride-hailing, fleet tracker and AFC terminal built as working prototypes on a React 18 + TypeScript web platform.
+• Money engine (ledger, multi-currency accounts, fees, limits, reconciliation) built and in testing.
+• Visa and Mastercard API integration in sandbox. Production requires a BIN sponsor, which we are seeking.
 
 Market validation:
-• Letters of intent from 3 taxi association chairpersons in Cape Town for AFC pilot deployment.
-• Pilot deployment of 10 AFC devices scheduled for Q1 2026 across Observatory–Cape Town CBD route.`
+• Presenting to taxi associations since 2022. CODETA agreed to work with VINK in February 2022, pending our launch; CATA and other Cape Town associations have seen the system.
+• SANTACO approval will follow a working system.
+• An investor is willing to fund 15,000 devices for the Western Cape in the first year.
+
+Funding:
+• Seeking a R4.5 billion funding round (60-month, 7% p.a. structured instrument). Business plan prepared; funding not yet secured.`
   );
 
   /* ── Business model ── */
@@ -215,7 +213,7 @@ Market validation:
 
 2. Banking & Cards — interchange (1.5–2%), monthly account fees (R59–R199/month by tier), and FX spreads (0.5–1% on cross-border). 500,000 driver accounts = R354M/year at R59 base tier.
 
-3. MVNO / SIM — data bundles, voice, and SMS sold through the VINK SIM on Cell C infrastructure. Wholesale margin: ~40%. Target: 200,000 active SIMs by Year 2.
+3. MVNO / SIM — data bundles, voice, and SMS sold through the VINK SIM through a mobile network partner (to be agreed). Wholesale margin: ~40%. Target: 200,000 active SIMs by Year 2.
 
 4. Ride-Hailing Commission — 15–20% on all VINK Ride trips. Driver-side acquisition already built into the Driver App ecosystem.
 
@@ -290,7 +288,7 @@ Post-programme, we will close a $7.5M Series A (target valuation $35–50M) base
 • 1,000 AFC devices live, generating real daily transaction data
 • 50,000 VINK Banking accounts with 3+ months transaction history
 • 500+ daily active VINK Driver users
-• A functional MVNO subscriber base with Cell C
+• An MVNO partnership agreed and a first SIM pilot
 
 We have identified 4 Development Finance Institutions (DFIs) and 2 African-focused VC funds as primary Series A targets, all of whom have expressed preliminary interest pending traction metrics.`
   );
@@ -444,7 +442,7 @@ We are ready for 500 Global. The product is built. The partnership is signed. Th
 
         {/* ── SECTION 6: Traction ── */}
         <AppSection num="06" title="Traction & Milestones" subtitle="What have you built and validated so far?">
-          <Tip>Concrete is better than impressive. Real users, real contracts, real deployments beat projections every time. Lead with the Cell C agreement — that is a signed commercial deal.</Tip>
+          <Tip>Concrete is better than impressive. Real users, real contracts, real deployments beat projections every time. State plainly what is built, what is signed and what is still a plan.</Tip>
           <Field
             label="Describe your traction, key milestones, and metrics"
             hint="Be specific — contracts, LOIs, users, deployments"

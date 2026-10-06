@@ -93,7 +93,7 @@ export function BusinessLoanApplicationViewer({ isOpen, onClose }: Props) {
 
       {/* ── Hero ── */}
       <AppHero
-        tag="VINK Business Banking · NCRCP Licensed"
+        tag="VINK Business Banking · Preview"
         title="Small Business Loan Application"
         subtitle="Fast, transparent funding for South African businesses. Complete all 7 steps to receive your decision."
         gradient={`linear-gradient(135deg,${CP} 0%,#0C0E14 50%,#9B1C1C 100%)`}

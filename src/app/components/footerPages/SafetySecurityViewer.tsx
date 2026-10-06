@@ -11,7 +11,7 @@ const HOW_VINK_PROTECTS = [
   { icon: "✅", title: "Zero-liability guarantee",    desc: "You will never be held responsible for unauthorised transactions. If something goes wrong, VINK makes it right." },
   { icon: "🔐", title: "Two-factor authentication",   desc: "All VINK app logins require 2FA — protecting your account even if your password is compromised." },
   { icon: "🔒", title: "256-bit AES encryption",      desc: "All data in transit and at rest is protected with bank-grade 256-bit AES encryption." },
-  { icon: "🏦", title: "Nedbank backbone security",   desc: "VINK's Nedbank API integration provides an additional layer of bank-grade security infrastructure." },
+  { icon: "🏦", title: "Sponsor-bank oversight (planned)", desc: "When we launch, cards and settlement will run through a licensed sponsor bank, adding a further layer of bank-grade controls." },
 ];
 
 const TIPS = [

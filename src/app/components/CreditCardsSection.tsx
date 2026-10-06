@@ -26,10 +26,10 @@ const CARDS = [
     image: vinkBlueVisaCard,
     features: [
       "Linked to your AFC device — funds available instantly after each fare",
-      "Withdraw at any Nedbank ATM fee-free",
-      "Fuel discounts at Shell, Engen, BP, Total, Caltex, and Sasol",
+      "Cash withdrawals at partner ATMs (network to be announced)",
+      "Fuel rewards with partner fuel brands (to be announced)",
       "Buy airtime, electricity, and pay bills from your wallet",
-      "R20 gym access at Planet Fitness, Zones Fitness, and Virgin Active",
+      "Gym access with partner gyms (to be announced)",
     ],
   },
   {

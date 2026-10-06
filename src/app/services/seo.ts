@@ -15,7 +15,7 @@
  */
 
 const DEFAULT_TITLE = "VINK Finance";
-const DEFAULT_DESCRIPTION = "VINK — South Africa's first transport-native digital bank. AFC payments, banking, ride-hailing, fleet tracking and MVNO in one platform.";
+const DEFAULT_DESCRIPTION = "VINK — building a transport-native digital bank for South Africa. AFC payments, banking, fleet tracking and more in one platform. Launching June 2027.";
 
 export function setPageMeta(title: string, description: string): () => void {
   const prevTitle = document.title;

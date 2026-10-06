@@ -13,19 +13,19 @@ const P = "#5C0A10";
 const GOLD = "#C9A84C";
 
 const STATS = [
-  { v: "250,000+", l: "AFC devices" },
-  { v: "15M", l: "daily commuters" },
-  { v: "100%", l: "black-owned" },
-  { v: "2018", l: "founded, Cape Town" },
+  { v: "15M", l: "daily taxi commuters in SA (the market)" },
+  { v: "15,000", l: "devices planned, Western Cape year one" },
+  { v: "250,000+", l: "devices: our 5-year goal" },
+  { v: "Jun 2027", l: "planned launch" },
 ];
 
 const WHAT_WE_DO: { icon: ReactNode; title: string; desc: string }[] = [
-  { icon: <Bus />, title: "Taxi and transport payments", desc: "Our AFC payment system lets passengers tap a card, scan a QR code or pay by phone on a minibus taxi, with balance enquiry, segmented charges and GPS location built in." },
-  { icon: <Landmark />, title: "Everyday banking", desc: "Personal, business and corporate accounts, built around the people who already use our payment network." },
-  { icon: <CreditCard />, title: "Cards", desc: "Debit and credit cards with rewards, instant notifications and a zero-liability guarantee on unauthorised transactions." },
-  { icon: <Wifi />, title: "Global SIM", desc: "Connectivity for customers on the move: global coverage, high-speed data and clear calls on one SIM." },
-  { icon: <Smartphone />, title: "The VINK app", desc: "Money, cards and travel in one place, with real-time fraud alerts sent straight to your phone." },
-  { icon: <HeartHandshake />, title: "Safer, cleaner cities", desc: "A dedicated portion of VINK’s profits funds safer, cleaner, more inclusive cities, starting in seven cities across South Africa and Zambia." },
+  { icon: <Bus />, title: "Taxi and transport payments", desc: "Our AFC payment system is designed to let passengers tap a card, scan a QR code or pay by phone on a minibus taxi, paying the driver within seconds, with balance enquiry, segmented charges and GPS location built in." },
+  { icon: <Landmark />, title: "Everyday banking", desc: "Planned personal, business and corporate accounts, built around the people who use our payment network." },
+  { icon: <CreditCard />, title: "Cards", desc: "Planned debit and credit cards for drivers, owners, investors and commuters, issued through a sponsor bank." },
+  { icon: <Wifi />, title: "Global SIM", desc: "A planned connectivity product for customers on the move. Our mobile network partner is yet to be agreed." },
+  { icon: <Smartphone />, title: "The VINK app", desc: "Money, cards and travel in one place, with real-time fraud alerts, as we roll out." },
+  { icon: <HeartHandshake />, title: "Safer, cleaner cities", desc: "We plan to fund programmes for safer, cleaner, more inclusive cities from a portion of VINK’s profits, starting in seven cities across South Africa and Zambia." },
 ];
 
 const VALUES: { icon: ReactNode; title: string; desc: string }[] = [
@@ -37,19 +37,19 @@ const VALUES: { icon: ReactNode; title: string; desc: string }[] = [
   { icon: <ShieldCheck />, title: "Anti-corruption", desc: "Zero tolerance. Always." },
 ];
 
-const MILESTONES = [
-  { year: "2018", text: "VINK incorporated (Reg: 2018/079316/07); AFC payment system developed." },
-  { year: "2019", text: "Website launched; first taxi association partnerships established." },
-  { year: "2020", text: "Driver Wallet, Smart Pay Card and Marshall Wallet products launched." },
-  { year: "2021", text: "VINK MVNO agreement with Cell C; Nedbank API integration completed." },
-  { year: "2022", text: "Business plan submitted for a R4.5 billion funding round." },
-  { year: "Now", text: "Expansion to gyms, fuel stations and the VINK Online Store is under way." },
+const MILESTONES: { year: string; text: string; planned?: boolean }[] = [
+  { year: "2018", text: "VINK incorporated in Cape Town (Reg: 2018/079316/07); development of the AFC payment system begins." },
+  { year: "2022", text: "We start presenting to taxi associations. CODETA agrees to work with VINK in February 2022, once our system is ready." },
+  { year: "2026", text: "Visa and Mastercard integration in sandbox. A sponsor bank (BIN sponsor) is needed before we can go live, and we are seeking one. An investor is willing to fund 15,000 devices for the Western Cape." },
+  { year: "Next", text: "SANTACO approval, which follows a working system, and a first route, Langa to Cape Town.", planned: true },
+  { year: "Jun 2027", text: "Planned launch: 15,000 devices in the Western Cape and cards for 15,000 drivers, 7,000 owners and 10,000 investors in the first year.", planned: true },
+  { year: "5 years", text: "Our goal: a national network of 250,000+ devices, then Zambia, fuel stations, gyms and the VINK Online Store.", planned: true },
 ];
 
 const SECTIONS = [
   { id: "about-story", label: "Our story" },
   { id: "about-purpose", label: "Mission & vision" },
-  { id: "about-what", label: "What we do" },
+  { id: "about-what", label: "What we are building" },
   { id: "about-values", label: "Core values" },
   { id: "about-community", label: "Giving back" },
   { id: "about-ownership", label: "Ownership" },
@@ -92,9 +92,9 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
             <MapPin className="size-3.5" aria-hidden="true" /> Est. Cape Town, 2018
           </p>
           <h1 className="font-display text-4xl font-bold leading-tight md:text-6xl">About VINK</h1>
-          <p className="mt-2 text-lg font-medium text-white/90 md:text-xl">Vink Multi Services (Pty) Ltd.</p>
+          <p className="mt-2 text-lg font-medium text-white/90 md:text-xl">Vink Group (Pty) Ltd, trading as VINK</p>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-white/85 md:text-lg">
-            South Africa&apos;s first transport-native digital bank, built by a Cape Town native for the 15 million South Africans who board a minibus taxi every morning.
+            We aim to be South Africa&apos;s first transport-native digital bank, built by a Cape Town native for the 15 million South Africans who board a minibus taxi every morning.
           </p>
           <dl className="mt-8 grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-4">
             {STATS.map((s) => (
@@ -106,6 +106,11 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
           </dl>
         </div>
       </header>
+
+      {/* Status: where we are today */}
+      <div role="note" className="border-b border-line bg-surface-2 px-6 py-3 text-center text-sm text-fg">
+        <strong>Where we are today:</strong> VINK is not yet operational. Our full launch is planned for June 2027. Everything on this page describes what we are building and our goals.
+      </div>
 
       {/* Section menu */}
       <nav aria-label="On this page" className="sticky top-[57px] z-20 border-b border-line bg-surface/95 backdrop-blur">
@@ -126,17 +131,17 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
           <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
             <div className="space-y-4 rounded-2xl border border-line bg-surface p-6 shadow-card">
               <p className="leading-relaxed">
-                VINK was founded in 2018 in Cape Town by <strong>Vincent Kafula</strong>, a Cape Town native with deep roots in the public transport industry. Vincent saw a gap that no bank or fintech had filled: a payment system fast enough for the taxi industry, where 15 million South Africans board a minibus every single morning. He built one.
+                VINK was founded in 2018 in Cape Town by <strong>Vincent Kafula</strong>, a Cape Town native with deep roots in the public transport industry. Vincent saw a gap that no bank or fintech had filled: a payment system fast enough for the taxi industry, where 15 million South Africans board a minibus every single morning. He set out to build one.
               </p>
               <p className="leading-relaxed">
-                From a single idea in the Cape Town CBD to a fully developed AFC payment platform, VINK was born from the belief that financial tools should serve everyone, not just those with traditional banking histories.
+                VINK began from a simple observation: sitting in a taxi, it is hard for drivers to collect fares and to give change, especially in the morning. Drivers also depend on each fare to buy fuel and keep working. We are building a system that pays them within seconds, works on every route, and serves everyone, not just people with traditional banking histories.
               </p>
             </div>
             <aside className="rounded-2xl p-6 text-white" style={{ background: `linear-gradient(135deg,#2E0B10,${P})` }}>
               <p className="text-3xl font-bold" style={{ color: "#E8D9B0" }}>R0.50</p>
-              <p className="mt-1 text-sm font-semibold uppercase tracking-wider text-white/80">per taxi transaction</p>
+              <p className="mt-1 text-sm font-semibold uppercase tracking-wider text-white/80">planned fee per taxi transaction</p>
               <p className="mt-3 text-sm leading-relaxed text-white/85">
-                The lowest processing fee in the industry, shared across the ecosystem that makes each transaction possible: the financing bank, the driver&apos;s taxi association, neighbourhood watch initiatives in the area served, and a portion retained to seed a future VINK community bank built for taxi drivers.
+                Planned to be shared across the ecosystem that makes each transaction possible: the financing bank, the driver&apos;s taxi association, neighbourhood watch initiatives in the area served, and a portion retained to seed a future VINK community bank built for taxi drivers.
               </p>
             </aside>
           </div>
@@ -165,7 +170,7 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
 
         {/* What we do */}
         <section id="about-what" aria-labelledby="about-what-h" className="scroll-mt-32">
-          <Heading id="about-what" eyebrow="What we do">One network, many services</Heading>
+          <Heading id="about-what" eyebrow="What we are building">One network, many services</Heading>
           <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {WHAT_WE_DO.map((w) => (
               <li key={w.title} className="rounded-2xl border border-line bg-surface p-5 shadow-card">
@@ -200,7 +205,7 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
               <p className="mb-1 text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "#E8D9B0" }}>Giving back</p>
               <h2 id="about-community-h" className="text-2xl font-bold md:text-3xl">Social Development</h2>
               <p className="mt-3 max-w-2xl text-sm leading-relaxed text-white/85 md:text-base">
-                A dedicated portion of VINK&apos;s profits funds programmes that help our cities become cleaner, safer, more inclusive and more economically vibrant. We are preparing to bring them to Cape Town, Johannesburg, Pretoria, Durban, Lusaka, Kitwe and Ndola, in partnership with local businesses, NGOs and non-profit organisations.
+                We plan to dedicate a portion of VINK&apos;s profits to programmes that help our cities become cleaner, safer, more inclusive and more economically vibrant. We are preparing to bring them to Cape Town, Johannesburg, Pretoria, Durban, Lusaka, Kitwe and Ndola, in partnership with local businesses, NGOs and non-profit organisations.
               </p>
             </div>
             <button type="button" onClick={() => { onClose(); go("Social Responsibility"); }}
@@ -227,8 +232,8 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
           <ol className="relative space-y-6 border-l-2 pl-8" style={{ borderColor: P }}>
             {MILESTONES.map((m) => (
               <li key={m.year} className="relative">
-                <span aria-hidden="true" className="absolute -left-[41px] top-1 flex size-5 items-center justify-center rounded-full border-2 border-surface" style={{ background: m.year === "Now" ? GOLD : P }} />
-                <span className="inline-block rounded-md bg-surface-2 px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-crimson-text">{m.year}</span>
+                <span aria-hidden="true" className="absolute -left-[41px] top-1 flex size-5 items-center justify-center rounded-full border-2 border-surface" style={{ background: m.planned ? GOLD : P }} />
+                <span className="inline-block rounded-md bg-surface-2 px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-crimson-text">{m.year}</span>{m.planned && <span className="ml-2 text-[11px] font-semibold uppercase tracking-wider text-gold-text">Planned</span>}
                 <p className="mt-2 text-sm leading-relaxed md:text-base">{m.text}</p>
               </li>
             ))}
