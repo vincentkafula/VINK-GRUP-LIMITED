@@ -30,7 +30,7 @@ const RAW_SLIDES = [
   {
     image:   heroGlobalSim,
     cropped: [] as Side[],
-    eyebrow: "VINK MVNO — Global Connectivity",
+    eyebrow: "VINK SIM — planned, launching June 2027",
     headline: <>All the benefits of SIM,<br /><span className="relative inline-block"><span className="relative z-10">on your phone.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#C9A84C" }} /></span></>,
     body: "Stay connected anywhere in the world with reliable data, clear calls and seamless connectivity.",
     ctas: [
@@ -38,9 +38,9 @@ const RAW_SLIDES = [
       { label: "Learn More",    style: { background: "rgba(255,255,255,.15)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,.25)" } },
     ],
     trust: [
-      { value: "200+",    label: "Countries covered" },
-      { value: "4G/5G",   label: "High-speed data" },
-      { value: "24/7",    label: "Customer support" },
+      { value: "Global",   label: "Coverage planned" },
+      { value: "4G/5G",   label: "Data (planned)" },
+      { value: "Jun 2027", label: "Planned launch" },
     ],
   },
   {

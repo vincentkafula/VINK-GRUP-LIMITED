@@ -41,11 +41,7 @@ const DIRECTORY = [
 
 const AGENT_NETWORKS = [
   { name: "VINK Head Office", type: "office" as const, icon: "🏢", cover: "8 Rose Street, Cape Town CBD", services: "Account opening, FICA verification, card collection, business banking consultations", hours: "Mon–Fri 08:00–17:00" },
-  { name: "Pick n Pay",  type: "agent" as const, icon: "🛒", cover: "Nationwide — all stores", services: "Card recharge, replacement, cash withdrawals", hours: "Store trading hours" },
-  { name: "Shoprite",   type: "agent" as const, icon: "🛒", cover: "Nationwide — all stores", services: "Card recharge, cash withdrawals", hours: "Store trading hours" },
-  { name: "Checkers",   type: "agent" as const, icon: "🛒", cover: "Nationwide — all stores", services: "Card recharge, cash withdrawals", hours: "Store trading hours" },
-  { name: "Spar",       type: "agent" as const, icon: "🛒", cover: "Nationwide — all stores", services: "Card recharge, cash withdrawals", hours: "Store trading hours" },
-  { name: "Spaza Shops", type: "agent" as const, icon: "🏪", cover: "Western Cape — participating", services: "Card recharge, airtime top-up", hours: "Store trading hours" },
+  { name: "Retail and spaza-shop agents (planned)", type: "agent" as const, icon: "🏪", cover: "Western Cape first; locations announced before launch", services: "Card recharge and cash services, once we are live", hours: "To be announced" },
 ];
 
 const BEFORE_YOU_VISIT = [

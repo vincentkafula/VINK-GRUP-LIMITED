@@ -6,11 +6,7 @@ interface Props { isOpen: boolean; onClose: () => void; }
 const P = "#5C0A10";
 
 const AGENT_NETWORKS = [
-  { name: "Pick n Pay",  icon: "🛒", cover: "Nationwide — all stores",      services: "Card recharge, replacement, cash withdrawals" },
-  { name: "Shoprite",   icon: "🛒", cover: "Nationwide — all stores",      services: "Card recharge, cash withdrawals" },
-  { name: "Checkers",   icon: "🛒", cover: "Nationwide — all stores",      services: "Card recharge, cash withdrawals" },
-  { name: "Spar",       icon: "🛒", cover: "Nationwide — all stores",      services: "Card recharge, cash withdrawals" },
-  { name: "Spaza Shops", icon: "🏪", cover: "Western Cape — participating", services: "Card recharge, airtime top-up" },
+  { name: "Retail and spaza-shop agents (planned)", icon: "🏪", cover: "Western Cape first; locations announced before launch", services: "Card recharge and cash services, once we are live" },
 ];
 
 export function BranchLocatorViewer({ isOpen, onClose }: Props) {

@@ -11,7 +11,7 @@ const BENEFITS = [
   { icon: "💰", title: "Competitive Salaries",     desc: "Market-rate salaries with annual performance reviews" },
   { icon: "🏠", title: "Hybrid Working",            desc: "Flexible hybrid arrangements for Cape Town-based roles" },
   { icon: "📚", title: "Learning Budget",            desc: "Annual development budget per employee" },
-  { icon: "💪", title: "Gym Access",                 desc: "Planet Fitness, Zones & Virgin Active at R20/visit" },
+  { icon: "💪", title: "Gym Access",                 desc: "Partner gyms (to be announced)" },
   { icon: "🌴", title: "21 Days Leave",              desc: "Annual leave plus all South African public holidays" },
   { icon: "🎯", title: "Mission-Driven",             desc: "Work that genuinely changes lives — not just another bank" },
 ];
@@ -55,7 +55,7 @@ export function CareersViewer({ isOpen, onClose }: Props) {
             Build the Future of<br />African Payments.
           </h1>
           <p className="text-white/80 text-lg max-w-2xl leading-relaxed">
-            At VINK, you&apos;re not just building software — you&apos;re building the financial infrastructure for 15 million South Africans who take a taxi every day.
+            At VINK, you&apos;re not just building software — you&apos;re helping build the financial infrastructure for the 15 million South Africans who take a taxi every day. We launch in June 2027.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <span className="px-4 py-2 rounded-full text-sm font-semibold" style={{ background: "rgba(255,255,255,.15)" }}>

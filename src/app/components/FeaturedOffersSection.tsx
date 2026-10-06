@@ -80,7 +80,7 @@ export const FeaturedOffersSection = memo(function FeaturedOffersSection({ onCom
           ))}
         </div>
         <p className="text-center text-[11px] text-fg-muted mt-6">
-          Subject to credit approval and FICA verification. Terms and conditions apply. VINK is an authorised Financial Services Provider.
+          Subject to credit approval and FICA verification. Terms and conditions apply. VINK is not yet operational; these offers are previews and are not yet available.
         </p>
       </div>
     </section>
