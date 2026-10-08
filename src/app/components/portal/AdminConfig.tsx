@@ -328,7 +328,7 @@ async function tokenApi(path: string, init?: { method?: string; body?: unknown }
 function TokensAdminPanel() {
   const [sum, reloadSum] = useLoad<{ summary: { circulationCents: number; wallets: number; byRole: Record<string, { wallets: number; cents: number }>; pendingCashouts: { count: number; cents: number }; clearingCents: number }; settings: { deviceFeeCents: number } }>(() => tokenApi("/summary") as never);
   const [list, reloadList] = useLoad<{ cashOuts: { id: string; name: string; email: string; amountCents: number; currency: string; reason: string; status: string; note: string | null; requestedAt: string }[] }>(() => tokenApi("/cash-outs?status=requested") as never);
-  const [fee, setFee] = useState(""); const [uid, setUid] = useState(""); const [amt, setAmt] = useState(""); const [why, setWhy] = useState("");
+  const [fee, setFee] = useState(""); const [tierUid, setTierUid] = useState(""); const [tier, setTier] = useState("standard"); const [uid, setUid] = useState(""); const [amt, setAmt] = useState(""); const [why, setWhy] = useState("");
   const both = () => { reloadSum(); reloadList(); };
   return (
     <section className="rounded-xl p-4 space-y-3" style={{ background: "var(--vk-surface)", border: "1px solid var(--vk-line)" }}>
@@ -350,6 +350,11 @@ function TokensAdminPanel() {
       <div className="flex flex-wrap items-end gap-3">
         <label className="block"><span className="text-[11px] text-fg-muted">Device fee per trip (R)</span><input className={inputCls + " mt-1 !w-28"} inputMode="decimal" value={fee} onChange={(e) => setFee(e.target.value)} placeholder="1.00" /></label>
         <ActionButton label="Set device fee" color={COLOR} onRun={async () => { const c = Math.round(Number(fee.replace(",", ".")) * 100); if (!Number.isInteger(c) || c < 0) return { error: "Enter an amount, 0 or more" }; const r = await tokenApi("/settings", { method: "PUT", body: { deviceFeeCents: c } }); if ("error" in r) return { error: r.error }; reloadSum(); return { message: "Saved. It applies to trips completed from now on." }; }} />
+      </div>
+      <div className="flex flex-wrap items-end gap-3">
+        <label className="block"><span className="text-[11px] text-fg-muted">Verification level: holder's user id</span><input className={inputCls + " mt-1"} value={tierUid} onChange={(e) => setTierUid(e.target.value)} /></label>
+        <label className="block"><span className="text-[11px] text-fg-muted">Level</span><select className={inputCls + " mt-1 !w-auto"} value={tier} onChange={(e) => setTier(e.target.value)}><option value="basic">Basic</option><option value="standard">Standard</option><option value="full">Full</option><option value="business">Business</option></select></label>
+        <ActionButton label="Set level" color={COLOR} onRun={async () => { const r = await tokenApi("/wallets/tier", { method: "PUT", body: { userId: tierUid.trim(), currency: "ZAR", tier } }); if ("error" in r) return { error: r.error }; return { message: "Level saved. The country profile's limits for that level now apply." }; }} />
       </div>
       <div className="flex flex-wrap items-end gap-3">
         <label className="block"><span className="text-[11px] text-fg-muted">Refund: holder's user id</span><input className={inputCls + " mt-1"} value={uid} onChange={(e) => setUid(e.target.value)} /></label>

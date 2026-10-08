@@ -1183,9 +1183,11 @@ CREATE TABLE IF NOT EXISTS token_wallets (
   currency    TEXT NOT NULL CHECK (currency IN ('ZAR','ZMW')),
   role        TEXT NOT NULL CHECK (role IN ('passenger','driver','owner','marshal','association','investor')),
   status      TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active','frozen','closed')),
+  kyc_tier    TEXT NOT NULL DEFAULT 'basic' CHECK (kyc_tier IN ('basic','standard','full','business')),   -- set by staff once the holder's identity checks are done; decides the limits
   created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE (user_id, currency)
 );
+ALTER TABLE token_wallets ADD COLUMN IF NOT EXISTS kyc_tier TEXT NOT NULL DEFAULT 'basic';
 -- A closed-loop VINK card is identified by its chip's UID. Only a hash is stored, with the last four characters to show the holder which card it is.
 CREATE TABLE IF NOT EXISTS token_cards (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),

@@ -13,7 +13,8 @@ import { DEFAULT_ZA } from "../config/countryConfig.js";
 const id = (n: number) => `00000000-0000-0000-0000-${String(n).padStart(12, "0")}`;
 const U = { owner: id(3), driver: id(5), marshal: id(7), investor: id(8), assoc: id(1), pax: id(9), pax2: id(10), staff: id(11) };
 const T = id(100), V = id(200), ROUTE = id(300);
-const reader = { active: async () => ({ version: 1, config: DEFAULT_ZA }), invalidate() {} } as never;
+let enforce = false;
+const reader = { active: async () => ({ version: 1, config: enforce ? { ...DEFAULT_ZA, limits: { ...DEFAULT_ZA.limits, enforce: true } } : DEFAULT_ZA }), invalidate() {} } as never;
 
 type Mod = Awaited<ReturnType<(typeof import("../manshya/mount.js"))["createManshyaModule"]>>;
 let mod: Mod, db: Db, ledger: LedgerPort, engine: Engine, tokens: TokenService, acct: Record<string, string>;
@@ -28,6 +29,7 @@ const topUp = async (user: string, cents: number) => {
 const tap = (key: string, o: { uid?: string; route?: string } = {}) => tokens.tapToken({ terminalId: T, cardUid: o.uid ?? "04A1B2C3", routeId: o.route ?? ROUTE, key });
 
 beforeEach(async () => {
+  enforce = false;
   process.env.MANSHYA_DB_PATH = ":memory:";
   mod = (await import("../manshya/mount.js")).createManshyaModule();
   db = allPortalsDb();
@@ -235,5 +237,50 @@ describe("reconciliation", () => {
     expect(clean.issues.filter((i) => i.severity === "problem")).toEqual([]);
     await db.query(`INSERT INTO terminal_taps (terminal_id, amount, status, scheme, idempotency_key) VALUES ($1, 20, 'confirmed', 'vink_token', 'toktap:ghost')`, [T]);
     expect((await reconcile(db, ledger, new Date("2026-10-05T12:00:00Z"))).issues.map((i) => i.code)).toContain("token_tap_without_posting");
+  });
+});
+
+describe("verification levels", () => {
+  const credit = async (user: string, cents: number, bankRef: string) => {
+    const w = await tokens.wallet(user, "ZAR");
+    return recordPoolCredit({ db, ledger, engine, reader }, { bankRef, reference: w!.accountNumber!, amountCents: cents, currency: "ZAR", by: null });
+  };
+
+  it("a new wallet is basic, and a top-up over its limit waits for staff instead of being credited", async () => {
+    enforce = true;
+    expect((await tokens.wallet(U.pax, "ZAR"))!.kycTier).toBe("basic");
+    const r = await credit(U.pax, 200_000, "LIM-0001");                                          // R2 000: over the basic limits of R1 500
+    expect(r.status).toBe("unmatched");
+    expect(tok(U.pax)).toBe(0);
+    expect((await q(`SELECT reason FROM pool_credits WHERE bank_ref = 'LIM-0001'`))[0].reason).toMatch(/limit/);
+    expect((await credit(U.pax, 100_000, "LIM-0002")).status).toBe("credited");                  // R1 000 is fine
+  });
+
+  it("staff raise the level after checking identity, and the higher limits apply at once", async () => {
+    enforce = true;
+    expect((await tokens.setTier(U.pax, "ZAR", "standard")).ok).toBe(true);
+    expect((await credit(U.pax, 900_000, "LIM-0003")).status).toBe("credited");                  // R9 000 is within standard
+    expect((await tokens.setTier(U.pax, "ZAR", "gold")).ok).toBe(false);
+    expect((await tokens.setTier(U.staff, "ZAR", "full"))).toMatchObject({ ok: false, status: 404 });   // no wallet
+  });
+
+  it("limits what can leave a wallet in a day: transfers, moves to the bank and cash-outs together", async () => {
+    enforce = true;
+    await tokens.setTier(U.pax, "ZAR", "standard");                                              // R5 000 a day out
+    await credit(U.pax, 900_000, "LIM-0004");
+    const send = (cents: number, key: string) => tokens.transfer(U.pax, { recipient: "Pam@x.test", currency: "ZAR", amountCents: cents, key });
+    expect(await send(500_100, "lim-send-1")).toMatchObject({ ok: false, status: 409, code: "daily_transfer_out_limit" });
+    expect((await send(400_000, "lim-send-2")).ok).toBe(true);
+    expect(await send(150_000, "lim-send-3")).toMatchObject({ ok: false, code: "daily_transfer_out_limit" });
+    expect(await tokens.requestCashOut(U.pax, { currency: "ZAR", amountCents: 150_000, by: U.pax })).toMatchObject({ ok: false, code: "daily_transfer_out_limit" });
+    expect(await tokens.redeemToBank(U.pax, { currency: "ZAR", amountCents: 150_000, key: "lim-red-1" })).toMatchObject({ ok: false, code: "daily_transfer_out_limit" });
+    expect((await tokens.requestCashOut(U.pax, { currency: "ZAR", amountCents: 150_000, reason: "refund", by: U.staff, note: "Staff refund" })).ok).toBe(true);   // a refund by staff is not limited
+    expect((await send(100_000, "lim-send-4")).ok).toBe(true);                                   // R4 000 + R1 000 = the R5 000 limit exactly
+  });
+
+  it("tapping a card is never limited by the daily outgoing limit", async () => {
+    enforce = true;
+    await credit(U.pax, 100_000, "LIM-0005");
+    for (let i = 0; i < 6; i++) expect((await tap(`lim-tap-${i}`)).ok).toBe(true);              // R120 of fares
   });
 });

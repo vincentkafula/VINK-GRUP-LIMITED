@@ -12,7 +12,7 @@ import { money } from "./MoneyPanels";
 export type TokenSegment = "personal" | "driver" | "owner" | "marshal" | "association" | "investor";
 
 interface WalletView {
-  id: string; currency: string; role: string; status: string; accountNumber: string | null; balanceCents: number;
+  id: string; currency: string; role: string; status: string; kycTier?: string; accountNumber: string | null; balanceCents: number;
   payInto: { bank: string; holder: string; accountNumber: string; type: string } | null;
   cards: { id: string; last4: string; status: string }[];
   activity: { at: string; kind: string; amountCents: number; label: string }[];
@@ -60,7 +60,7 @@ function Wallet({ w, call, color, reload }: { w: WalletView; call: Call; color: 
       <div className="p-4 space-y-5">
         <div className="grid grid-cols-2 gap-3">
           <StatCard label="Token balance" value={money(w.balanceCents, cur)} sub={`1 token = ${cur === "ZMW" ? "K1" : "R1"}`} icon={<Coins className="w-4 h-4" />} color={color} />
-          <StatCard label="Wallet" value={w.status === "active" ? "Active" : w.status} icon={<Landmark className="w-4 h-4" />} color={w.status === "active" ? "#10B981" : "#F59E0B"} />
+          <StatCard label="Verification level" value={(w.kycTier ?? "basic").replace(/^./, (c) => c.toUpperCase())} sub={w.status === "active" ? "Higher limits once VINK has checked your identity" : `Wallet ${w.status}`} icon={<Landmark className="w-4 h-4" />} color={w.status === "active" ? "#10B981" : "#F59E0B"} />
         </div>
 
         <section aria-label="Buy tokens" className="rounded-lg p-3" style={{ background: "var(--vk-bg)", border: "1px solid var(--vk-line)" }}>

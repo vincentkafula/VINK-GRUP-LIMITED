@@ -13,7 +13,8 @@ import jwt from "jsonwebtoken";
 import fraudRiskRouter from "./routes/fraudRiskRouter.js";
 import terminalRouter from "./routes/terminalRouter.js";
 import { createTokenService } from "./services/tokenService.js";
-import { createTokenTerminalRouter, createTokenAdminRouter } from "./portal/tokenRoutes.js";
+import { createTokenTerminalRouter, createTokenAdminRouter, createTokenRetailRouter } from "./portal/tokenRoutes.js";
+import { authenticateRetailTerminal } from "./services/retailAuth.js";
 import { authenticateTerminal } from "./services/terminalAuth.js";
 import retailRouter from "./routes/retailRouter.js";
 import routeRouter from "./routes/routeRouter.js";
@@ -161,6 +162,7 @@ app.use("/api/auth",          (hasDb ? createDbAuthRouter() : createMemoryAuthRo
 app.use("/api/fraud-risk",    fraudRiskRouter);
 if (tokenService && pool) {
   app.use("/api/terminal/token", createTokenTerminalRouter({ db: pool, tokens: tokenService, authenticate: authenticateTerminal }));          // before the general terminal routes
+  if (moneyEngine) app.use("/api/retail/token", createTokenRetailRouter({ db: pool, ledger: moneyLedger, engine: moneyEngine, reader: configReader, authenticate: authenticateRetailTerminal }));          // before the general retail routes
   app.use("/api/admin/tokens", requireAuth, requireRole("owner", "superadmin"), createTokenAdminRouter({ db: pool, tokens: tokenService }));
 }
 app.use("/api/terminal",      terminalRouter);

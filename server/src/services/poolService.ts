@@ -105,7 +105,8 @@ export async function settleCredit(d: PoolDeps, creditId: string, by: string | n
   if (!party) return hold("The account holder has no verified linked account yet.");
   const cfg = (await d.reader.active(countryForCurrency(currency))).config;
   if (cfg.limits.enforce) {
-    const tier: KycTier = "standard";
+    const w = (await db.query(`SELECT kyc_tier FROM token_wallets WHERE user_id = $1 AND currency = $2`, [va.user_id, currency])).rows[0];
+    const tier: KycTier = (w?.kyc_tier as KycTier | undefined) ?? "standard";            // a token wallet is held to its own verification level
     const usedToday = Number((await db.query(`SELECT COALESCE(SUM(amount_cents),0) AS s FROM pool_credits WHERE user_id = $1 AND status = 'credited' AND credited_at >= $2`, [va.user_id, new Date((d.now?.() ?? new Date()).getTime() - 24 * 3600_000)])).rows[0].s);
     const v = checkTierLimit(cfg, tier, { channel: "transfer_in", amountCents: amount, usedTodayCents: usedToday, balanceCents: d.ledger.balance(party.account) });
     if (!v.ok) return hold(v.message);

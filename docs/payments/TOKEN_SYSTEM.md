@@ -47,6 +47,30 @@ POST /api/terminal/token/tap                          Idempotency-Key: <unique p
 A retry with the same key answers as before and never charges twice. The device only names the route; **the server decides the fare**, so a tampered device cannot
 change a price. A card is identified by its chip UID, stored only as a hash. A holder blocks a lost card at once from their screen.
 
+### The card reader app (`/reader`)
+
+A driver opens **`/reader`** in Chrome on an Android phone with NFC. The first time, they enter the serial number and API key the device was registered with (kept on that phone only). They pick the route, tap **Start reading cards**, and the passenger taps a VINK card on the back of the phone. The chip number is read with Web NFC and sent to the tap endpoint; the screen shows a large green **R 20.00 Paid** (with the card's balance and how many seconds it took) or a red **Not enough tokens**. A phone or browser without NFC can type the card number instead.
+
+A tap that loses the connection is never assumed paid or unpaid: the screen offers **Try again**, which resends the same tap reference, so the passenger is charged at most once. There is no offline payment: a balance can only be checked by the server.
+
+## Buying tokens with cash at a retailer
+
+A VINK point of sale at a till or a spaza shop (registered like any retail terminal) calls `/api/retail/token` with its serial number and API key (`x-retail-serial`, `x-retail-api-key`):
+
+```
+POST /api/retail/token/lookup   { "reference": "VKR123456789" }                         -> { "holder": "Pam M." }   so the cashier can confirm the customer
+POST /api/retail/token/topup    { "reference": "VKR123456789", "amountCents": 20000, "receipt": "TILL-0001" }
+201 credited now | 202 recorded, tokens arrive when the retailer's payment clears | 200 already recorded | 409/404/400 refused
+```
+
+A cash top-up is between R10 and R5 000, and the receipt number makes it happen once. The retailer pays the money into the pooled account afterwards, so the credit is recorded as not yet cleared: the customer's tokens are issued at once when the instant-credit reserve covers it (and the country profile's limits allow it), otherwise when staff mark the retailer's settlement as cleared on the money page, like any other bank credit that has not arrived yet. Only token wallets are served: the cashier sees the customer's first name and surname initial and nothing else.
+
+## Verification levels
+
+Every wallet starts at **basic**. Staff raise it (basic, standard, full, business) on the staff page once the holder's identity is checked. The country profile's limits for that level then apply: the balance limit and daily money in (top-ups that go over wait for staff instead of being credited), and the daily limit on tokens leaving a wallet (transfers, moves to the bank and cash-outs together). Fares are never limited, and a refund made by staff is not limited. Limits are only enforced when the country profile has "enforce limits" switched on.
+
+
+
 ## Settings
 
 | Setting | Where | Default |
@@ -70,11 +94,10 @@ Please confirm the spelling of the last two with CATA before entering them. The 
   - a **BIN sponsor / sponsor bank** and the pooled account are in place, and the legal structure for holding customer funds (stored value / e-money, FICA accountable-institution status, safeguarding of the pool) is confirmed by the company's legal adviser;
   - the **licences** for South Africa and Zambia are in place;
   - the pooled account's details and the bank-feed webhook are configured (see `MONEY_ENGINE.md`).
-- Wallets currently use the standard KYC tier limits of the country profile. Per-tier wallet limits tied to the identity checks a holder has passed are still to be built.
+- A retailer must have a settlement agreement before its point of sale is registered: the cash it takes is the retailer's debt to the pool until it pays.
 
 ## Not built yet
 
-- Buying tokens at a retailer (Shoprite, Pick n Pay and so on): today a customer pays by EFT or deposit into the pooled account with their account number as the reference. A retail agent channel would pay into the same account and quote the same reference.
-- A physical reader app that calls the device API (the API is ready and tested).
-- Issuing a real bank card (Visa/Mastercard) linked to the holder's VINK bank account. Today tokens move into the VINK bank account instantly, and the card on that account is the existing banking product.
+- Issuing a real bank card (Visa/Mastercard) linked to the holder's VINK bank account: it depends on the BIN sponsor and the card processor. Today tokens move into the VINK bank account instantly, and the card on that account is the existing banking product.
 - Refunds back to the original payer's bank account are paid by staff by hand from the pool and then marked paid.
+- A native Android reader app with the card reader's own NFC kernel. The `/reader` web app covers phones with NFC today; a dedicated device app would add offline lists and a customer-facing display.

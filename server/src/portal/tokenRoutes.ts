@@ -3,6 +3,9 @@ import { h, uid, fail, audit, isUuid, type Db } from "./common.js";
 import { TOKEN_ROLE_FOR_ACCOUNT, type TokenService } from "../services/tokenService.js";
 import type { ChannelAccount } from "./bankLinks.js";
 import type { CrossBorder } from "../services/crossBorderService.js";
+import type { Engine, LedgerPort } from "../services/moneyEngine.js";
+import type { ConfigReader } from "../config/configService.js";
+import { recordPoolCredit, referenceLooksValid, normaliseReference } from "../services/poolService.js";
 
 /**
  * VINK tokens for every portal user (passengers, drivers, owners, marshals, associations, investors). Mounted at /api/portal/<role>/tokens.
@@ -180,6 +183,7 @@ export function createTokenTerminalRouter(d: { db: Db; tokens: TokenService; aut
  *   GET  /summary?currency=ZAR   tokens in circulation by role, what is waiting to be paid out, and the programme settings
  *   GET  /cash-outs?status=      requests to pay out; POST /cash-outs/:id/paid | /reject
  *   POST /refund                 { userId, currency, amountCents, note } takes tokens from a holder into a payout (any reason)
+ *   PUT  /wallets/tier           { userId, currency, tier } sets a holder's verification level (basic, standard, full, business) once their identity is checked
  *   PUT  /settings               { deviceFeeCents } the per-trip fee paid to the investor who sponsored a device
  */
 export function createTokenAdminRouter(d: { db: Db; tokens: TokenService }): Router {
@@ -215,11 +219,73 @@ export function createTokenAdminRouter(d: { db: Db; tokens: TokenService }): Rou
     await audit(d.db, req, "token.refund", r.value.id, { userId: b.userId, amountCents: b.amountCents, note });
     res.status(201).json({ success: true, id: r.value.id });
   }));
+  router.put("/wallets/tier", h(async (req, res) => {
+    const b = (req.body ?? {}) as Record<string, unknown>;
+    if (!isUuid(b.userId)) return fail(res, 400, "Choose the holder");
+    const r = await d.tokens.setTier(b.userId, CURRENCIES.includes(String(b.currency)) ? String(b.currency) : "ZAR", b.tier);
+    if (!r.ok) return fail(res, r.status, r.error);
+    await audit(d.db, req, "token.wallet.tier", b.userId, { tier: r.value.kycTier });
+    res.json({ success: true, ...r.value });
+  }));
   router.put("/settings", h(async (req, res) => {
     const r = await d.tokens.setDeviceFee((req.body ?? {}).deviceFeeCents, uid(req));
     if (!r.ok) return fail(res, r.status, r.error);
     await audit(d.db, req, "token.settings", null, { deviceFeeCents: r.value.deviceFeeCents });
     res.json({ success: true, ...r.value });
+  }));
+  return router;
+}
+
+/* ───────────────────────── retail agents ───────────────────────── */
+export const RETAIL_MIN_CENTS = 1000;                 // R10
+export const RETAIL_MAX_CENTS = 500_000;              // R5 000 in one cash top-up
+
+/**
+ * Buying tokens with cash at a retailer (a supermarket till or a spaza shop with a VINK point of sale), mounted at /api/retail/token. The POS proves who it is
+ * with its serial number and API key (x-retail-serial, x-retail-api-key).
+ *   POST /lookup   { reference }                     the holder's first name and surname initial, so the cashier can confirm it is the right customer
+ *   POST /topup    { reference, amountCents, receipt } the customer has paid the cashier. The receipt number makes it happen once.
+ *
+ * The retailer pays the money into the pooled account afterwards, so the credit is recorded as NOT YET CLEARED. The customer's tokens are issued at once when the
+ * instant-credit reserve covers it (the limits of the country profile apply), otherwise when staff mark the retailer's settlement as cleared, exactly like any
+ * other bank credit that has not arrived yet. Nothing here moves real money by itself.
+ */
+export interface RetailAuth { authenticated: boolean; terminalId?: string; error?: string }
+export function createTokenRetailRouter(d: { db: Db; ledger: LedgerPort; engine: Pick<Engine, "partyOf">; reader: ConfigReader; authenticate: (serial: string, apiKey: string) => Promise<RetailAuth> }): Router {
+  const router = Router();
+  router.use(json({ limit: "2kb" }));
+  const authed = (req: { header(n: string): string | undefined }) => d.authenticate(req.header("x-retail-serial") ?? "", req.header("x-retail-api-key") ?? "");
+  const currencyOf = (ref: string) => (ref.startsWith("VKK") ? "ZMW" : "ZAR");
+  /** The customer's token wallet for a payment reference, or null (a reference that belongs to no token wallet is not served here). */
+  const holder = async (reference: unknown) => {
+    const ref = typeof reference === "string" ? normaliseReference(reference) : "";
+    if (!referenceLooksValid(ref)) return null;
+    const r = (await d.db.query(`SELECT u.name, v.currency FROM virtual_accounts v JOIN users u ON u.id = v.user_id JOIN token_wallets w ON w.user_id = v.user_id AND w.currency = v.currency AND w.status = 'active' WHERE v.reference = $1 AND v.status = 'active'`, [ref])).rows[0];
+    return r ? { ref, name: String(r.name), currency: String(r.currency) } : null;
+  };
+  const masked = (name: string) => { const p = name.trim().split(/\s+/); return p.length > 1 ? `${p[0]} ${p[p.length - 1][0]}.` : p[0]; };
+
+  router.post("/lookup", h(async (req, res) => {
+    const a = await authed(req);
+    if (!a.authenticated) return fail(res, 401, a.error ?? "Terminal authentication failed");
+    const hld = await holder((req.body ?? {}).reference);
+    if (!hld) return fail(res, 404, "That account number does not belong to a VINK token wallet. Check it and try again.");
+    res.json({ success: true, holder: masked(hld.name), currency: hld.currency });
+  }));
+
+  router.post("/topup", h(async (req, res) => {
+    const a = await authed(req);
+    if (!a.authenticated || !a.terminalId) return fail(res, 401, a.error ?? "Terminal authentication failed");
+    const b = (req.body ?? {}) as Record<string, unknown>;
+    if (typeof b.receipt !== "string" || !/^[A-Za-z0-9._-]{4,40}$/.test(b.receipt)) return fail(res, 400, "A receipt number of 4 to 40 letters or numbers is required");
+    if (!Number.isInteger(b.amountCents) || (b.amountCents as number) < RETAIL_MIN_CENTS || (b.amountCents as number) > RETAIL_MAX_CENTS) return fail(res, 400, `A cash top-up is between ${RETAIL_MIN_CENTS / 100} and ${RETAIL_MAX_CENTS / 100}`);
+    const hld = await holder(b.reference);
+    if (!hld) return fail(res, 404, "That account number does not belong to a VINK token wallet. Check it and try again.");
+    const r = await recordPoolCredit({ db: d.db, ledger: d.ledger, engine: d.engine, reader: d.reader }, { bankRef: `R-${a.terminalId.slice(0, 8)}-${b.receipt}`, reference: hld.ref, amountCents: b.amountCents as number, currency: hld.currency, by: null, pending: true });
+    if (r.status === "credited") { res.status(201).json({ success: true, status: "credited", message: "Tokens added to the customer's wallet.", holder: masked(hld.name) }); return; }
+    if (r.status === "duplicate") { res.json({ success: true, status: "credited", replayed: true, message: "This top-up was already recorded.", holder: masked(hld.name) }); return; }
+    if (r.status === "awaiting_clearing") { res.status(202).json({ success: true, status: "awaiting_clearing", message: "Recorded. The tokens are added when the retailer's payment reaches the bank.", holder: masked(hld.name) }); return; }
+    fail(res, 409, r.reason ?? "This top-up could not be recorded. Keep the receipt and ask the customer to contact VINK.");
   }));
   return router;
 }

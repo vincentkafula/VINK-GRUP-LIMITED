@@ -32,6 +32,7 @@ const TaxiAssociationDashboardViewer = lazy(() => import("./components/TaxiAssoc
 const TerminalManagementViewer = lazy(() => import("./components/TerminalManagementViewer").then(m => ({ default: m.TerminalManagementViewer })));
 const ControlCentreViewer = lazy(() => import("./components/ControlCentreViewer").then(m => ({ default: m.ControlCentreViewer })));
 const InvestorFleetDashboardViewer = lazy(() => import("./components/InvestorFleetDashboardViewer").then(m => ({ default: m.InvestorFleetDashboardViewer })));
+const TokenReader                 = lazy(() => import("./components/TokenReader").then(m => ({ default: m.TokenReader })));
 const ManagementPanelViewer       = lazy(() => import("./components/ManagementPanelViewer").then(m => ({ default: m.ManagementPanelViewer })));
 import { PersistentTopNav } from "./components/PersistentTopNav";
 const PersonalAccountViewer       = lazy(() => import("./components/PersonalAccountViewer").then(m => ({ default: m.PersonalAccountViewer })));
@@ -119,6 +120,7 @@ export default function App() {
   const [showControlCentre, setShowControlCentre] = useState(false);
   const [showInvestorDashboard, setShowInvestorDashboard] = useState(false);
   const [showManagementPanel, setShowManagementPanel]       = useState(false);
+  const [showTokenReader, setShowTokenReader]                 = useState(false);
   const [showSIMApp, setShowSIMApp]                         = useState(false);
 
   // ── Super App Ecosystem ────────────────────────────────────────────────────
@@ -499,6 +501,8 @@ export default function App() {
     }
     if (path === "/contact-us") { mount("contactUs"); setShowContactUs(true); return true; }
     if (path === "/management-panel") { mount("managementPanel"); setShowManagementPanel(true); return true; }
+    // The VINK card reader for a driver's phone: it signs in as the registered device, not as a user.
+    if (path === "/reader") { mount("tokenReader"); setShowTokenReader(true); return true; }
     // VINK: dashboard is customer-only (it shows a sign-in prompt to anyone else), back office is staff-only,
     // /pay is the public hosted checkout for payment links.
     // Role dashboards: /portal/personal | driver | marshal | owner | association. The server decides who may open each one.
@@ -681,6 +685,7 @@ export default function App() {
       {has("manshya")         && <Suspense fallback={null}><ManshyaDashboard      isOpen={showManshya}         onClose={() => { setShowManshya(false); pushRoute("/"); }} onSignOut={() => { setIsLoggedIn(false); setUserRole("personal"); window.dispatchEvent(new Event("vink:open-login")); }} /></Suspense>}
       {has("manshyaAdmin")    && <Suspense fallback={null}><ManshyaAdmin          isOpen={showManshyaAdmin}    onClose={() => { setShowManshyaAdmin(false); pushRoute("/"); }} /></Suspense>}
       {has("manshyaPay")      && <Suspense fallback={null}><ManshyaPay            isOpen={showManshyaPay}      onClose={() => { setShowManshyaPay(false); window.history.replaceState({}, "", "/"); }} /></Suspense>}
+      {has("tokenReader")     && <Suspense fallback={null}><TokenReader isOpen={showTokenReader} /></Suspense>}
       {has("managementPanel") && <Suspense fallback={null}><ManagementPanelViewer  isOpen={showManagementPanel} onClose={() => { setShowManagementPanel(false); pushRoute("/"); }} adminName={getSession()?.name} adminRole={getSession()?.role === "superadmin" ? "Super Administrator" : getSession()?.role === "owner" ? "System Owner" : getSession()?.role} role={getSession()?.role} /></Suspense>}
 
       {/* Personal products */}

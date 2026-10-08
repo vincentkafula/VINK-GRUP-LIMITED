@@ -5,7 +5,8 @@ import { systemAccounts, walletLedgerAccount, bankLedgerAccount, type Engine, ty
 import { ensureVirtualAccount } from "./poolService.js";
 import { calculateRevenueSplit } from "./revenueSplitService.js";
 import type { ConfigReader } from "../config/configService.js";
-import { countryForCurrency } from "../config/countryConfig.js";
+import { countryForCurrency, KYC_TIERS, type KycTier } from "../config/countryConfig.js";
+import { checkTierLimit } from "../config/riskRules.js";
 
 /**
  * VINK tokens: a closed-loop points system on top of the pooled bank account, like a city bus card.
@@ -33,7 +34,7 @@ export const normaliseCardUid = (uid: unknown): string | null => { const s = typ
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Loose = { query(sql: string, params?: unknown[]): Promise<{ rows: any[]; rowCount?: number | null }> };
-export interface TokenWallet { id: string; userId: string; currency: string; role: TokenRole; status: string; accountNumber: string | null; balanceCents: number }
+export interface TokenWallet { id: string; userId: string; currency: string; role: TokenRole; status: string; kycTier: KycTier; accountNumber: string | null; balanceCents: number }
 export type TokenResult<T> = { ok: true; value: T } | { ok: false; status: number; error: string; code?: string };
 const bad = (status: number, error: string, code?: string): TokenResult<never> => ({ ok: false, status, error, code });
 export type TapOutcome =
@@ -60,7 +61,7 @@ export function createTokenService(deps: { db: Db; ledger: LedgerPort; reader: C
 
   const view = async (r: Record<string, unknown>): Promise<TokenWallet> => {
     const va = (await db.query(`SELECT reference FROM virtual_accounts WHERE user_id = $1 AND currency = $2 AND pool = 'in_person'`, [r.user_id, r.currency])).rows[0];
-    return { id: String(r.id), userId: String(r.user_id), currency: String(r.currency), role: r.role as TokenRole, status: String(r.status), accountNumber: va?.reference ?? null, balanceCents: ledger.balance(account(String(r.currency), String(r.user_id))) };
+    return { id: String(r.id), userId: String(r.user_id), currency: String(r.currency), role: r.role as TokenRole, status: String(r.status), kycTier: (r.kyc_tier as KycTier) ?? "basic", accountNumber: va?.reference ?? null, balanceCents: ledger.balance(account(String(r.currency), String(r.user_id))) };
   };
 
   async function wallet(userId: string, currency: string): Promise<TokenWallet | null> {
@@ -79,6 +80,13 @@ export function createTokenService(deps: { db: Db; ledger: LedgerPort; reader: C
     }
     await ensureVirtualAccount(deps.db, userId, currency, "in_person");
     return { ok: true, value: (await wallet(userId, currency))! };
+  }
+
+  /** Staff set a holder's verification level after checking their identity. The level decides the balance and daily limits of the country profile. */
+  async function setTier(userId: string, currency: string, tier: unknown): Promise<TokenResult<{ kycTier: KycTier }>> {
+    if (typeof tier !== "string" || !(KYC_TIERS as readonly string[]).includes(tier)) return bad(400, "Choose basic, standard, full or business");
+    const r = await db.query(`UPDATE token_wallets SET kyc_tier = $3 WHERE user_id = $1 AND currency = $2 RETURNING id`, [userId, currency, tier]);
+    return r.rows.length ? { ok: true, value: { kycTier: tier as KycTier } } : bad(404, "This holder has no token wallet in that currency");
   }
 
   /* ── cards ── */
@@ -146,6 +154,16 @@ export function createTokenService(deps: { db: Db; ledger: LedgerPort; reader: C
   }
 
   /* ── moving tokens between holders, and out of the system ── */
+  const LEAVING = ["transfer_out", "to_bank", "cash_out"];
+  /** The holder's daily limit for tokens leaving their wallet, by their verification level. Only enforced when the country profile enforces limits. */
+  async function withinLimit(userId: string, currency: string, amountCents: number): Promise<TokenResult<null>> {
+    const cfg = (await reader.active(countryForCurrency(currency))).config;
+    if (!cfg.limits.enforce) return { ok: true, value: null };
+    const w = (await db.query(`SELECT kyc_tier FROM token_wallets WHERE user_id = $1 AND currency = $2`, [userId, currency])).rows[0];
+    const used = Number((await db.query(`SELECT COALESCE(-SUM(amount_cents),0) AS s FROM token_events WHERE user_id = $1 AND currency = $2 AND kind = ANY($3) AND created_at >= $4`, [userId, currency, LEAVING, new Date(clock().getTime() - 24 * 3600_000)])).rows[0].s);
+    const v = checkTierLimit(cfg, (w?.kyc_tier as KycTier) ?? "basic", { channel: "transfer_out", amountCents, usedTodayCents: used, balanceCents: 0 });
+    return v.ok ? { ok: true, value: null } : bad(409, v.message, v.code);
+  }
   const amountOk = (cents: unknown): cents is number => Number.isInteger(cents) && (cents as number) > 0 && (cents as number) <= MAX_CENTS;
 
   /** Tokens from one holder to another in the same currency (for example a passenger sending tokens to family). Exactly once per key. */
@@ -160,6 +178,7 @@ export function createTokenService(deps: { db: Db; ledger: LedgerPort; reader: C
     if (to.id === from) return bad(400, "Choose someone else as the recipient");
     const mine = await partyOf(from, a.currency), theirs = await partyOf(String(to.id), a.currency);
     if (!mine) return bad(409, "Open your VINK token wallet first");
+    const lim = await withinLimit(from, a.currency, a.amountCents); if (!lim.ok) return lim;
     if (!theirs) return bad(409, "The recipient has no active VINK token wallet in this currency");
     const ref = `xfer:${from}:${a.key}`;
     const r = ledger.post(ref, "token_transfer", [line(a.currency, from, -a.amountCents, true), line(a.currency, String(to.id), a.amountCents)], `Token transfer to ${to.name}`);
@@ -176,6 +195,7 @@ export function createTokenService(deps: { db: Db; ledger: LedgerPort; reader: C
     if (!/^[A-Za-z0-9._-]{6,80}$/.test(a.key)) return bad(400, "A unique request reference is required");
     if (a.currency !== "ZAR") return bad(409, "Only rand tokens can be moved to a VINK bank account at the moment");
     if (!(await partyOf(userId, a.currency))) return bad(409, "Open your VINK token wallet first");
+    const lim = await withinLimit(userId, a.currency, a.amountCents); if (!lim.ok) return lim;
     const link = (await db.query(`SELECT manshya_account_id FROM bank_account_links WHERE user_id = $1 AND status = 'verified'`, [userId])).rows[0];
     if (!link) return bad(409, "Link and verify a VINK bank account first");
     const ref = `redeem:${userId}:${a.key}`;
@@ -190,6 +210,7 @@ export function createTokenService(deps: { db: Db; ledger: LedgerPort; reader: C
     if (!amountOk(a.amountCents)) return bad(400, "Enter an amount above zero");
     if (a.amountCents < MIN_CASHOUT_CENTS) return bad(400, `The smallest cash-out is ${(MIN_CASHOUT_CENTS / 100).toFixed(2)}`);
     if (!(await partyOf(userId, a.currency))) return bad(409, "This holder has no active VINK token wallet");
+    if ((a.reason ?? "cash_out") === "cash_out") { const lim = await withinLimit(userId, a.currency, a.amountCents); if (!lim.ok) return lim; }          // a refund by staff is not limited
     const id = randomUUID(), ref = `cashout:${id}`, reason = a.reason ?? "cash_out";
     await db.query(`INSERT INTO token_cashouts (id, user_id, currency, amount_cents, reason, ref, note, requested_by) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`, [id, userId, a.currency, a.amountCents, reason, ref, a.note ?? null, a.by]);
     const r = ledger.post(ref, "token_cashout", [line(a.currency, userId, -a.amountCents, true), { account: cashoutHold(a.currency), kind: "system", amount: a.amountCents }], `${reason} request ${id}`);
@@ -271,6 +292,6 @@ export function createTokenService(deps: { db: Db; ledger: LedgerPort; reader: C
     return { ok: true, value: { id: String(row.id) } };
   }
 
-  return { bindEngine(e: Pick<Engine, "settleTaps">) { engine = e; }, partyOf, wallet, openWallet, linkCard, cards, blockCard, tapToken, transfer, redeemToBank, requestCashOut, decideCashOut, activity, summary, settings, setDeviceFee, routes, upsertRoute };
+  return { bindEngine(e: Pick<Engine, "settleTaps">) { engine = e; }, partyOf, setTier, wallet, openWallet, linkCard, cards, blockCard, tapToken, transfer, redeemToBank, requestCashOut, decideCashOut, activity, summary, settings, setDeviceFee, routes, upsertRoute };
 }
 export type TokenService = ReturnType<typeof createTokenService>;
