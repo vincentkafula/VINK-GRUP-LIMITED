@@ -10,6 +10,7 @@ import { createTokenService, type TokenService } from "../services/tokenService.
 import { recordPoolCredit } from "../services/poolService.js";
 import { createTokenRouter, createTokenTerminalRouter, createTokenAdminRouter } from "./tokenRoutes.js";
 import { DEFAULT_ZA } from "../config/countryConfig.js";
+import { MockCardRail } from "../payments/providers/mockCardRail.js";
 import { pinClock, unpinClock } from "../testClock.js";
 
 const id = (n: number) => `00000000-0000-0000-0000-${String(n).padStart(12, "0")}`;
@@ -33,7 +34,7 @@ beforeEach(async () => {
   }
   await db.query(`INSERT INTO terminals (id, serial, driver_id, owner_id, investor_id, association_id) VALUES ($1,'SN1',$2,$3,$4,$5)`, [T, U.driver, U.owner, U.investor, U.assoc]);
   ledger = manshyaLedgerPort(mod as never);
-  tokens = createTokenService({ db, ledger, reader });
+  tokens = createTokenService({ db, ledger, reader, rail: (() => { const m = new MockCardRail(); return { name: "mock", vault: m, payout: m }; })() });
   engine = createMoneyEngine({ db, ledger, reader, tokenParty: tokens.partyOf });
   tokens.bindEngine(engine);
   await tokens.openWallet(U.owner, "owner", "ZAR"); await tokens.openWallet(U.driver, "driver", "ZAR"); await tokens.openWallet(U.investor, "investor", "ZAR");
@@ -78,9 +79,27 @@ describe("the holder's tokens", () => {
     expect((await call("/me/transfer", "POST", { recipient: "Ina@x.test", amountCents: 1000, key: "xfer-ok-01" })).body.balanceCents).toBe(9000);
     expect((await call("/me/redeem", "POST", { amountCents: 1000, key: "redeem-001" })).status).toBe(409);              // no verified bank account
     expect((await call("/me/cash-out", "POST", { amountCents: 500 })).status).toBe(400);
-    expect((await call("/me/cash-out", "POST", { amountCents: 3000 })).status).toBe(201);
-    expect((await call("/me/cash-outs")).body.cashOuts[0]).toMatchObject({ amountCents: 3000, status: "requested" });
-    expect((await call("/me")).body.wallets[0].balanceCents).toBe(6000);
+    expect((await call("/me/cash-out", "POST", { amountCents: 3000 })).body.error).toMatch(/own debit card/);          // no card yet: nothing is paid anywhere else
+    expect((await call("/me")).body.wallets[0].balanceCents).toBe(9000);
+  });
+
+  it("adds a debit card, then a cash-out is paid to it by the system and shows on the list", async () => {
+    await call("/me/wallet", "POST", {}); await buy(10_000);
+    const card = { primaryAccountNumber: "4111 1111 1111 1111", expiry: "12/34", cardholderName: "Pax Pax" };
+    expect((await call("/me/payout-cards", "POST", { ...card, primaryAccountNumber: "4532015112830366" })).status).toBe(403);   // a real number: refused
+    const added = await call("/me/payout-cards", "POST", card);
+    expect(added).toMatchObject({ status: 201, body: { last4: "1111", brand: "visa", status: "verified" } });
+    expect(JSON.stringify(added.body)).not.toContain("4111");
+    expect((await call("/me/payout-cards")).body.cards).toEqual([{ id: expect.any(String), brand: "visa", last4: "1111", expiry: "12/34", status: "verified" }]);
+    const out = await call("/me/cash-out", "POST", { amountCents: 3000 });
+    expect(out).toMatchObject({ status: 201, body: { status: "paid", balanceCents: 7000, message: "Paid to your debit card." } });
+    expect((await call("/me/cash-outs")).body.cashOuts[0]).toMatchObject({ amountCents: 3000, status: "paid", card: "visa ****1111", problem: null });
+    expect((await call("/me")).body.payoutCards).toHaveLength(1);
+    const audit = (await db.query(`SELECT details FROM audit_log WHERE action = 'token.payout_card.add'`)).rows[0];
+    expect(String(audit.details)).not.toMatch(/4111|1111 1111/);                                                         // the card number is never written to the audit log
+    const cardId = added.body.id as string;
+    expect((await call(`/me/payout-cards/${cardId}`, "DELETE")).status).toBe(200);
+    expect((await call("/me/cash-out", "POST", { amountCents: 3000 })).status).toBe(409);                                // no card again
   });
 
   it("a holder cannot set fares; an association sets them and only its own", async () => {
@@ -126,18 +145,47 @@ describe("the device", () => {
 });
 
 describe("staff", () => {
-  it("sees the tokens in circulation, pays or rejects cash-outs once, makes refunds with a reason, and sets the device fee", async () => {
+  const holderWithCard = async (pan = "4111111111111111") => {
     await call("/me/wallet", "POST", {}); await buy(10_000);
-    const co = (await call("/me/cash-out", "POST", { amountCents: 4000 })).body.id;
+    await call("/me/payout-cards", "POST", { primaryAccountNumber: pan, expiry: "12/34", cardholderName: "Pax Pax" });
+  };
+
+  it("sees the tokens in circulation and the payouts, but cannot pay one: there is no way to mark a payout paid", async () => {
+    await holderWithCard("4000000000000119");                                                                            // a card whose payout fails twice, so it waits
+    const co = (await call("/me/cash-out", "POST", { amountCents: 4000 })).body;
+    expect(co).toMatchObject({ status: "requested" });
     as = U.staff;
     expect((await call("/admin/summary")).body.summary).toMatchObject({ circulationCents: 6000, pendingCashouts: { count: 1, cents: 4000 }, holdingCents: 4000 });
-    expect((await call("/admin/cash-outs?status=requested")).body.cashOuts[0]).toMatchObject({ id: co, name: "Pax", amountCents: 4000 });
-    expect((await call(`/admin/cash-outs/${co}/paid`, "POST", {})).status).toBe(200);
-    expect((await call(`/admin/cash-outs/${co}/paid`, "POST", {})).status).toBe(409);
+    expect((await call("/admin/cash-outs?status=open")).body.cashOuts[0]).toMatchObject({ id: co.id, name: "Pax", amountCents: 4000 });
+    expect((await call(`/admin/cash-outs/${co.id}/paid`, "POST", {})).status).toBe(404);                              // the route does not exist
+    expect((await call(`/admin/cash-outs/${co.id}/retry`, "POST", {})).body).toMatchObject({ success: true, status: "requested" });   // the second failure
+    expect((await call(`/admin/cash-outs/${co.id}/retry`, "POST", {})).body.status).toBe("paid");                      // the third try is the one the card service accepts
     expect((await call("/admin/summary")).body.summary).toMatchObject({ pendingCashouts: { count: 0 }, holdingCents: 0 });
+    expect((await call(`/admin/cash-outs/${co.id}/reject`, "POST", {})).status).toBe(409);                            // already paid
+  });
+
+  it("refuses a waiting payout and the tokens go back, makes refunds with a reason to the holder's own card, and sets the device fee and level", async () => {
+    await holderWithCard("4000000000000119");
+    const co = (await call("/me/cash-out", "POST", { amountCents: 4000 })).body;
+    as = U.staff;
+    expect((await call(`/admin/cash-outs/${co.id}/reject`, "POST", { note: "Holder asked us to stop" })).status).toBe(200);
+    expect((await call("/admin/summary")).body.summary).toMatchObject({ circulationCents: 10_000, holdingCents: 0 });
     expect((await call("/admin/refund", "POST", { userId: U.pax, amountCents: 2000 })).status).toBe(400);               // a reason is required
     expect((await call("/admin/refund", "POST", { userId: U.pax, amountCents: 2000, note: "Duplicate top-up" })).status).toBe(201);
+    expect((await call("/admin/refund", "POST", { userId: U.assoc, amountCents: 2000, note: "No card" })).status).toBe(409);   // a holder with no verified debit card cannot be refunded
     expect((await call("/admin/settings", "PUT", { deviceFeeCents: 150 })).body.deviceFeeCents).toBe(150);
     expect((await call("/admin/settings", "PUT", { deviceFeeCents: -5 })).status).toBe(400);
+    expect((await call("/admin/wallets/tier", "PUT", { userId: U.pax, tier: "standard" })).body.kycTier).toBe("standard");
+  });
+
+  it("reviews a debit card whose name does not match the account holder's", async () => {
+    await call("/me/wallet", "POST", {});
+    const r = await call("/me/payout-cards", "POST", { primaryAccountNumber: "5555555555554444", expiry: "12/34", cardholderName: "Someone Else" });
+    expect(r).toMatchObject({ status: 201, body: { status: "needs_review" } });
+    as = U.staff;
+    expect((await call("/admin/payout-cards")).body.cards[0]).toMatchObject({ id: r.body.id, accountName: "Pax", cardholderName: "Someone Else", last4: "4444" });
+    expect((await call(`/admin/payout-cards/${r.body.id}/approve`, "POST", {})).body.status).toBe("verified");
+    expect((await call(`/admin/payout-cards/${r.body.id}/reject`, "POST", {})).status).toBe(404);                      // decided already
+    expect((await call("/admin/payout-cards")).body.cards).toEqual([]);
   });
 });

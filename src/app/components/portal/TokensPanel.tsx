@@ -17,24 +17,28 @@ interface WalletView {
   cards: { id: string; last4: string; status: string }[];
   activity: { at: string; kind: string; amountCents: number; label: string }[];
 }
-const KIND: Record<string, string> = { top_up: "Tokens bought", fare: "Fare", transfer_out: "Sent", transfer_in: "Received", to_bank: "Moved to bank account", cash_out: "Cash-out requested", refund: "Refund", cashout_paid: "Cash-out paid", cashout_rejected: "Cash-out returned", marshal_fee: "Association levy", per_trip_pay: "Per trip", weekly_cash_payment: "Weekly payment", monthly_salary: "Salary" };
+const KIND: Record<string, string> = { payout_sent: "Paid to your debit card", payout_declined: "Payout declined, tokens returned", top_up: "Tokens bought", fare: "Fare", transfer_out: "Sent", transfer_in: "Received", to_bank: "Moved to bank account", cash_out: "Cash-out requested", refund: "Refund", cashout_paid: "Cash-out paid", cashout_rejected: "Cash-out returned", marshal_fee: "Association levy", per_trip_pay: "Per trip", weekly_cash_payment: "Weekly payment", monthly_salary: "Salary" };
 const key = () => (globalThis.crypto?.randomUUID?.() ?? `k-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 const toCents = (v: string) => { const n = Math.round(Number(v.replace(",", ".")) * 100); return Number.isFinite(n) ? n : NaN; };
 
 export function TokensPanel({ segment, color }: { segment: TokenSegment; color: string }) {
   const call = portalClient(segment);
-  const [load, reload] = useLoad<{ wallets: WalletView[]; role: string | null }>(() => call("/tokens"));
+  const [load, reload] = useLoad<{ wallets: WalletView[]; payoutCards?: PayoutCardRow[]; role: string | null }>(() => call("/tokens"));
   return (
     <div className="space-y-4">
       <Status load={load}>{(d) => d.wallets.length === 0
         ? <OpenWallet call={call} color={color} onDone={reload} />
-        : <>{d.wallets.map((w) => <Wallet key={w.currency} w={w} call={call} color={color} reload={reload} />)}</>}</Status>
+        : <>{d.wallets.map((w) => <Wallet key={w.currency} w={w} cards={d.payoutCards ?? []} call={call} color={color} reload={reload} />)}</>}</Status>
       {segment === "association" && <RouteFares call={call} color={color} />}
     </div>
   );
 }
 
 type Call = ReturnType<typeof portalClient>;
+interface PayoutCardRow { id: string; brand: string; last4: string; expiry: string; status: string }
+interface CashOutRow { id: string; amountCents: number; currency: string; reason: string; status: string; card: string | null; problem: string | null; requestedAt: string }
+const CARD_STATUS: Record<string, [string, string]> = { verified: ["Ready for payouts", "#10B981"], needs_review: ["Being checked by VINK", "#F59E0B"], rejected: ["Not accepted", "#EF4444"] };
+const PAYOUT_STATUS: Record<string, [string, string]> = { requested: ["Waiting to be sent", "#F59E0B"], processing: ["With the card service", "#38BDF8"], paid: ["Paid", "#10B981"], rejected: ["Not paid, tokens returned", "#EF4444"] };
 
 function OpenWallet({ call, color, onDone }: { call: Call; color: string; onDone: () => void }) {
   const [currency, setCurrency] = useState("ZAR");
@@ -51,7 +55,9 @@ function OpenWallet({ call, color, onDone }: { call: Call; color: string; onDone
   );
 }
 
-function Wallet({ w, call, color, reload }: { w: WalletView; call: Call; color: string; reload: () => void }) {
+function Wallet({ w, cards, call, color, reload }: { w: WalletView; cards: PayoutCardRow[]; call: Call; color: string; reload: () => void }) {
+  const [pan, setPan] = useState(""); const [exp, setExp] = useState(""); const [nameOnCard, setNameOnCard] = useState(""); const [pickCard, setPickCard] = useState("");
+  const [outs, reloadOuts] = useLoad<{ cashOuts: CashOutRow[] }>(() => call("/tokens/cash-outs"));
   const [card, setCard] = useState(""); const [to, setTo] = useState(""); const [sendAmt, setSendAmt] = useState(""); const [outAmt, setOutAmt] = useState("");
   const cur = w.currency;
   const act = (label: string, run: () => Promise<{ error: string } | { data: unknown }>, done?: () => void) => async () => { const r = await run(); if ("error" in r) return { error: r.error }; done?.(); reload(); return { message: label }; };
@@ -94,13 +100,41 @@ function Wallet({ w, call, color, reload }: { w: WalletView; call: Call; color: 
 
         <section aria-label="Turn tokens into money">
           <p className="text-sm font-semibold text-fg mb-1">Turn tokens into money</p>
-          <p className="text-xs text-fg-muted mb-2">Move tokens into your own VINK bank account at once, or ask for a cash-out (staff pay it into your bank, minimum {money(1000, cur)}). Tokens cannot be taken out any other way.</p>
+          <p className="text-xs text-fg-muted mb-2">Move tokens into your own VINK bank account at once. Or pay them out to <b>your own debit card</b>: the system sends the money to the card as soon as you ask (minimum {money(1000, cur)}). A payout is only ever made to your own debit card: never to a bank account, and never by hand.</p>
           <div className="flex flex-wrap items-end gap-3">
             <label className="block"><span className="text-[11px] text-fg-muted">Amount</span><input className={inputCls + " mt-1 !w-28"} inputMode="decimal" value={outAmt} onChange={(e) => setOutAmt(e.target.value)} placeholder="0.00" /></label>
             <ActionButton label="Move to my bank account" color={color} onRun={async () => { const amountCents = toCents(outAmt); if (!Number.isInteger(amountCents) || amountCents <= 0) return { error: "Enter an amount above zero" }; return act("Moved to your bank account", () => call("/tokens/redeem", { method: "POST", body: { currency: cur, amountCents, key: key() } }), () => setOutAmt(""))(); }} />
-            <ActionButton label="Ask for a cash-out" color="#64748B" onRun={async () => { const amountCents = toCents(outAmt); if (!Number.isInteger(amountCents) || amountCents <= 0) return { error: "Enter an amount above zero" }; return act("Cash-out requested", () => call("/tokens/cash-out", { method: "POST", body: { currency: cur, amountCents } }), () => setOutAmt(""))(); }} />
+            {cards.filter((c) => c.status === "verified").length > 1 && <label className="block"><span className="text-[11px] text-fg-muted">Pay to</span><select className={inputCls + " mt-1 !w-auto"} value={pickCard} onChange={(e) => setPickCard(e.target.value)}><option value="">Latest card</option>{cards.filter((c) => c.status === "verified").map((c) => <option key={c.id} value={c.id}>{c.brand} ****{c.last4}</option>)}</select></label>}
+            <ActionButton label="Pay to my debit card" color="#64748B" onRun={async () => { const amountCents = toCents(outAmt); if (!Number.isInteger(amountCents) || amountCents <= 0) return { error: "Enter an amount above zero" }; const r = await call<{ message?: string }>("/tokens/cash-out", { method: "POST", body: { currency: cur, amountCents, ...(pickCard ? { cardId: pickCard } : {}) } }); if ("error" in r) return { error: r.error }; setOutAmt(""); reload(); reloadOuts(); return { message: r.data.message ?? "Requested" }; }} />
+          </div>
+          {cards.filter((c) => c.status === "verified").length === 0 && <p className="text-xs text-warn mt-2">You need a verified debit card of your own before money can be paid out. Add one below.</p>}
+        </section>
+
+        <section aria-label="My debit cards">
+          <p className="text-sm font-semibold text-fg mb-2 flex items-center gap-2"><CreditCard className="w-4 h-4" /> My debit cards for payouts</p>
+          {cards.length === 0 ? <Empty>No debit card yet.</Empty> : (
+            <ul className="space-y-2">{cards.map((c) => {
+              const [label, tone] = CARD_STATUS[c.status] ?? [c.status, "#94A3B8"];
+              return (
+                <li key={c.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg p-3" style={{ background: "var(--vk-bg)", border: "1px solid var(--vk-line)" }}>
+                  <span className="text-sm text-fg">{c.brand === "visa" ? "Visa" : "Mastercard"} debit ****{c.last4} · {c.expiry} <Badge text={label} color={tone} /></span>
+                  <ActionButton small label="Remove" color="#64748B" onRun={act("Card removed", () => call(`/tokens/payout-cards/${c.id}`, { method: "DELETE" }))} />
+                </li>);
+            })}</ul>)}
+          <p className="text-xs text-warn mt-3">Sandbox: only test cards work for now (for example Visa 4111 1111 1111 1111, any future date). Never enter a real card number.</p>
+          <div className="flex flex-wrap items-end gap-3 mt-2">
+            <label className="block"><span className="text-[11px] text-fg-muted">Card number</span><input className={inputCls + " mt-1"} value={pan} onChange={(e) => setPan(e.target.value)} inputMode="numeric" autoComplete="off" placeholder="4111 1111 1111 1111" /></label>
+            <label className="block"><span className="text-[11px] text-fg-muted">Expiry (MM/YY)</span><input className={inputCls + " mt-1 !w-28"} value={exp} onChange={(e) => setExp(e.target.value)} autoComplete="off" placeholder="12/34" /></label>
+            <label className="block"><span className="text-[11px] text-fg-muted">Name on the card</span><input className={inputCls + " mt-1"} value={nameOnCard} onChange={(e) => setNameOnCard(e.target.value)} autoComplete="off" /></label>
+            <ActionButton label="Add debit card" color={color} onRun={async () => { const r = await call<{ message?: string }>("/tokens/payout-cards", { method: "POST", body: { primaryAccountNumber: pan, expiry: exp, cardholderName: nameOnCard } }); if ("error" in r) return { error: r.error }; setPan(""); setExp(""); setNameOnCard(""); reload(); return { message: r.data.message ?? "Card added." }; }} />
           </div>
         </section>
+
+        <Status load={outs}>{({ cashOuts }) => !cashOuts || cashOuts.length === 0 ? null : (
+          <TableCard title="Payouts to my card" color={color} columns={["When", "Amount", "Card", "Status"]} rows={cashOuts.map((c) => {
+            const [label, tone] = PAYOUT_STATUS[c.status] ?? [c.status, "#94A3B8"];
+            return [when(c.requestedAt), money(c.amountCents, c.currency), c.card ?? "—", <span key="s"><Badge text={label} color={tone} />{c.problem ? <span className="block text-[11px] text-fg-subtle">{c.problem}</span> : null}</span>];
+          })} />)}</Status>
 
         {w.activity.length === 0 ? <Empty>Nothing yet. Buy tokens to get started.</Empty> : (
           <TableCard title="Latest activity" color={color} columns={["When", "What", "Amount"]} rows={w.activity.map((a) => [

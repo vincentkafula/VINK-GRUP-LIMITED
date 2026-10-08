@@ -19,6 +19,12 @@ export type CardServicingProviderName = "mock" | "visa_dps";
 /** Checks a card is valid. visa_pav = Visa Payment Account Validation, SANDBOX ONLY. */
 export type AccountValidationProviderName = "mock" | "visa_pav";
 
+/**
+ * Sends money to a holder's own debit card (cash-outs and refunds). mock = the bundled sandbox rail; visa_direct = Visa Direct push-to-card, SANDBOX ONLY.
+ * Mastercard Send is not built: it needs Mastercard's API documentation, a partner id and signing keys, which are not available here and must not be guessed.
+ */
+export type CardPayoutProviderName = "mock" | "visa_direct";
+
 export const LIVE_ENABLE_PHRASE = "I_UNDERSTAND_THIS_MOVES_REAL_MONEY";
 
 export interface ProviderCredentials {
@@ -37,6 +43,10 @@ export interface PaymentsConfig {
   visaPav: { baseUrl: string; auth: VisaAuthConfig; acquiringBin: string; acquirerCountryCode: string; acceptorName: string; acceptorIdCode: string; terminalId: string } | null;
   /** Visa sandbox settings, only when cardServicingProvider is visa_dps. */
   visaDps: { baseUrl: string; auth: VisaAuthConfig; programType: "debit" | "prepaid" } | null;
+  /** Pays cash-outs and refunds to the holder's own debit card. */
+  cardPayoutProvider: CardPayoutProviderName;
+  /** Visa Direct sandbox settings, only when cardPayoutProvider is visa_direct. */
+  visaDirect: { baseUrl: string; auth: VisaAuthConfig; acquiringBin: string; acquirerCountryCode: string; sender: { accountNumber: string; name: string; countryCode: string; city?: string; address?: string }; cardAcceptor: { name: string; idCode: string; terminalId: string; city: string; country: string }; vaultKey: string; extraTestPans: string[] } | null;
   /** Credentials for the selected real provider, taken from the SANDBOX_ or LIVE_ variable set matching `mode`. Null for "mock". */
   paymentology: ProviderCredentials | null;
 }
@@ -101,6 +111,22 @@ export function resolvePaymentsConfig(env: NodeJS.ProcessEnv = process.env): Pay
     ? { baseUrl: env.SANDBOX_VISA_BASE_URL?.trim() || "https://sandbox.api.visa.com", auth: visaAuth, programType: programType as "debit" | "prepaid" }
     : null;
 
+  const payoutRaw = (env.CARD_PAYOUT_PROVIDER ?? "mock").trim().toLowerCase();
+  if (payoutRaw === "mastercard_send") throw new Error("CARD_PAYOUT_PROVIDER=mastercard_send is not built: Mastercard Send needs Mastercard's API documentation, a partner id and signing keys. Use mock or visa_direct.");
+  if (payoutRaw !== "mock" && payoutRaw !== "visa_direct") throw new Error(`CARD_PAYOUT_PROVIDER must be mock or visa_direct, got "${payoutRaw}".`);
+  const payout: CardPayoutProviderName = payoutRaw;
+  const payoutAuth = payout === "visa_direct" ? (visaAuth ?? visaAuthFrom(env, authProblems)) : null;
+  const vd = (k: string) => env[`SANDBOX_VISA_DIRECT_${k}`]?.trim();
+  const vaultKey = env.SANDBOX_CARD_VAULT_KEY?.trim();
+  const visaDirect = payout === "visa_direct" && payoutAuth && vd("ACQUIRING_BIN") && vd("ACQUIRER_COUNTRY") && vd("SENDER_ACCOUNT") && vd("ACCEPTOR_ID_CODE") && vaultKey
+    ? {
+        baseUrl: env.SANDBOX_VISA_BASE_URL?.trim() || "https://sandbox.api.visa.com", auth: payoutAuth, acquiringBin: vd("ACQUIRING_BIN")!, acquirerCountryCode: vd("ACQUIRER_COUNTRY")!,
+        sender: { accountNumber: vd("SENDER_ACCOUNT")!, name: vd("SENDER_NAME") || "VINK", countryCode: vd("SENDER_COUNTRY") || "ZAF", city: vd("SENDER_CITY") || "Cape Town", address: vd("SENDER_ADDRESS") },
+        cardAcceptor: { name: vd("ACCEPTOR_NAME") || "VINK", idCode: vd("ACCEPTOR_ID_CODE")!, terminalId: vd("TERMINAL_ID") || "00000001", city: vd("ACCEPTOR_CITY") || "Cape Town", country: vd("ACCEPTOR_COUNTRY") || "ZAF" },
+        vaultKey, extraTestPans: (vd("TEST_PANS") ?? "").split(",").map((x) => x.trim()).filter(Boolean),
+      }
+    : null;
+
   const validation = (env.ACCOUNT_VALIDATION_PROVIDER ?? "mock").trim().toLowerCase() as AccountValidationProviderName;
   if (!VALIDATORS.includes(validation)) throw new Error(`ACCOUNT_VALIDATION_PROVIDER must be one of ${VALIDATORS.join(", ")}, got "${validation}".`);
   const bin = env.SANDBOX_VISA_ACQUIRING_BIN?.trim(), country = env.SANDBOX_VISA_ACQUIRER_COUNTRY?.trim(), idCode = env.SANDBOX_VISA_ACCEPTOR_ID_CODE?.trim();
@@ -120,7 +146,10 @@ export function resolvePaymentsConfig(env: NodeJS.ProcessEnv = process.env): Pay
 
   if (validation === "visa_pav" && !visaPav) problems.push("ACCOUNT_VALIDATION_PROVIDER=visa_pav needs SANDBOX_VISA_ACQUIRING_BIN, SANDBOX_VISA_ACQUIRER_COUNTRY (3-digit ISO numeric) and SANDBOX_VISA_ACCEPTOR_ID_CODE.");
 
+  if (payout === "visa_direct" && !visaDirect) problems.push("CARD_PAYOUT_PROVIDER=visa_direct needs the Visa credentials (SANDBOX_VISA_AUTH and its keys), SANDBOX_VISA_DIRECT_ACQUIRING_BIN, SANDBOX_VISA_DIRECT_ACQUIRER_COUNTRY (3-digit ISO numeric), SANDBOX_VISA_DIRECT_SENDER_ACCOUNT, SANDBOX_VISA_DIRECT_ACCEPTOR_ID_CODE and SANDBOX_CARD_VAULT_KEY (16 or more characters).");
+
   if (mode === "live") {
+    problems.push("Live mode has no card payout provider yet: the bundled rail and Visa Direct are sandbox-only, and paying to a real card needs the BIN sponsor's tokenised push-to-card service, whose adapter is not built.");
     if (validation !== "mock") problems.push("Live mode cannot use the Visa PAV sandbox provider (it needs an acquiring BIN from an acquirer; none is set up).");
     problems.push("Live mode has no card-servicing provider yet: visa_dps is sandbox-only and live cards go through the BIN sponsor (Paymentology), whose servicing adapter is not built.");
     if (env.NODE_ENV !== "production") problems.push("Live mode needs NODE_ENV=production.");
@@ -134,7 +163,7 @@ export function resolvePaymentsConfig(env: NodeJS.ProcessEnv = process.env): Pay
   if (problems.length) {
     throw new Error(`Payments configuration refused:\n  - ${problems.join("\n  - ")}`);
   }
-  return { mode, issuingProvider: issuing, acquiringProvider: acquiring, cardServicingProvider: servicing, visaDps, accountValidationProvider: validation, visaPav, paymentology };
+  return { mode, issuingProvider: issuing, acquiringProvider: acquiring, cardServicingProvider: servicing, visaDps, accountValidationProvider: validation, visaPav, cardPayoutProvider: payout, visaDirect, paymentology };
 }
 
 /** VINK core calls its sandbox "test" (it prefixes API keys mk_test_ / mk_live_). */

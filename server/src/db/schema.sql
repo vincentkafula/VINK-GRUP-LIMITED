@@ -1229,14 +1229,40 @@ CREATE TABLE IF NOT EXISTS token_events (
   UNIQUE (user_id, ref, kind)
 );
 CREATE INDEX IF NOT EXISTS idx_token_events_user ON token_events(user_id, created_at DESC);
--- Cash-outs and refunds: tokens move to a holding account first; staff pay the money out of the pool and mark it paid, or reject it and the tokens go back.
+-- The holder's own DEBIT cards that money can be paid to. Only a provider token and what is safe to show are kept, never the card number.
+-- A cash-out or refund is paid to a verified debit card of the holder, automatically, and to nothing else: not to a bank account, and not by hand.
+CREATE TABLE IF NOT EXISTS token_payout_cards (
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id          UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  brand            TEXT NOT NULL CHECK (brand IN ('visa','mastercard')),
+  last4            TEXT NOT NULL,
+  expiry           TEXT NOT NULL,
+  funding          TEXT NOT NULL DEFAULT 'debit',
+  cardholder_name  TEXT NOT NULL,
+  provider         TEXT NOT NULL,
+  token            TEXT NOT NULL,
+  status           TEXT NOT NULL DEFAULT 'verified' CHECK (status IN ('verified','needs_review','rejected','removed')),   -- needs_review: the name on the card does not match the account holder's
+  review_note      TEXT,
+  reviewed_by      UUID REFERENCES users(id) ON DELETE SET NULL,
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (user_id, token)
+);
+-- Cash-outs and refunds: tokens move to a holding account, then the money is pushed to the holder's debit card by the system (never by hand).
+-- requested = waiting for the (next) attempt, processing = sent to the card service and waiting for its answer, paid = on the card, rejected = the tokens went back.
 CREATE TABLE IF NOT EXISTS token_cashouts (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id       UUID NOT NULL REFERENCES users(id),
   currency      TEXT NOT NULL,
   amount_cents  BIGINT NOT NULL CHECK (amount_cents > 0),
   reason        TEXT NOT NULL DEFAULT 'cash_out' CHECK (reason IN ('cash_out','refund')),
-  status        TEXT NOT NULL DEFAULT 'requested' CHECK (status IN ('requested','paid','rejected')),
+  status        TEXT NOT NULL DEFAULT 'requested' CHECK (status IN ('requested','processing','paid','rejected')),
+  card_id       UUID REFERENCES token_payout_cards(id),
+  provider      TEXT,
+  provider_ref  TEXT,
+  attempts      INTEGER NOT NULL DEFAULT 0,
+  attempted_at  TIMESTAMPTZ,
+  next_attempt_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  last_error    TEXT,
   ref           TEXT NOT NULL UNIQUE,
   note          TEXT,
   requested_by  UUID REFERENCES users(id) ON DELETE SET NULL,

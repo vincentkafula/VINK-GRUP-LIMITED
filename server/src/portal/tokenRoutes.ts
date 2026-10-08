@@ -15,7 +15,8 @@ import { recordPoolCredit, referenceLooksValid, normaliseReference } from "../se
  *   POST /cards                 register a VINK card to my wallet; POST /cards/:id/block stops a lost card at once
  *   POST /transfer              send tokens to someone by email or account number
  *   POST /redeem                move tokens into my own verified VINK bank account
- *   POST /cash-out              ask for tokens to be paid out of the pool as money (staff pay it)
+ *   GET/POST /payout-cards     my debit cards that money can be paid to; DELETE /payout-cards/:id removes one
+ *   POST /cash-out              { amountCents, cardId? } tokens are paid to my verified debit card by the system. Never to a bank account, never by hand.
  *   GET/PUT /routes             association only: the fare for each route its devices serve
  *   cross-border                tokens to a holder in the other country (the same quote-then-confirm flow as money)
  *
@@ -42,7 +43,7 @@ export function createTokenRouter(db: Db, tokens: TokenService, deps: TokenRoute
       const pool = deps.channels?.(currency)?.in_person ?? null;
       out.push({ ...w, payInto: pool ? { bank: pool.bank, holder: pool.holder, accountNumber: pool.accountNumber, type: pool.type } : null, cards: await tokens.cards(userId, currency), activity: await tokens.activity(userId, currency, 20) });
     }
-    res.json({ success: true, wallets: out, role: roleOf(req) ?? null, deviceFeeCents: roleOf(req) === "investor" ? (await tokens.settings()).deviceFeeCents : undefined });
+    res.json({ success: true, wallets: out, payoutCards: await tokens.payoutCards(userId), role: roleOf(req) ?? null, deviceFeeCents: roleOf(req) === "investor" ? (await tokens.settings()).deviceFeeCents : undefined });
   }));
 
   router.post("/wallet", h(async (req, res) => {
@@ -87,14 +88,28 @@ export function createTokenRouter(db: Db, tokens: TokenService, deps: TokenRoute
   }));
   router.post("/cash-out", h(async (req, res) => {
     const b = (req.body ?? {}) as Record<string, unknown>;
-    const r = await tokens.requestCashOut(uid(req), { currency: currencyOf(b.currency), amountCents: b.amountCents, by: uid(req) });
+    const r = await tokens.requestCashOut(uid(req), { currency: currencyOf(b.currency), amountCents: b.amountCents, by: uid(req), cardId: b.cardId });
     if (!r.ok) return fail(res, r.status, r.error);
-    await audit(db, req, "token.cashout.request", r.value.id, { amountCents: b.amountCents });
+    await audit(db, req, "token.cashout.request", r.value.id, { amountCents: b.amountCents, status: r.value.status });
     res.status(201).json({ success: true, ...r.value });
   }));
+  router.get("/payout-cards", h(async (req, res) => { res.json({ success: true, cards: await tokens.payoutCards(uid(req)) }); }));
+  router.post("/payout-cards", h(async (req, res) => {
+    const r = await tokens.addPayoutCard(uid(req), (req.body ?? {}) as Record<string, unknown>);
+    if (!r.ok) return fail(res, r.status, r.error);
+    await audit(db, req, "token.payout_card.add", r.value.id, { last4: r.value.last4, brand: r.value.brand, status: r.value.status });       // never the card number
+    res.status(201).json({ success: true, ...r.value, message: r.value.status === "verified" ? "Card added." : "Card added. The name on it is not the name on your account, so VINK will check it before you can be paid to it." });
+  }));
+  router.delete("/payout-cards/:id", h(async (req, res) => {
+    if (!isUuid(req.params.id)) return fail(res, 400, "Invalid card");
+    const r = await tokens.removePayoutCard(uid(req), req.params.id as string);
+    if (!r.ok) return fail(res, r.status, r.error);
+    await audit(db, req, "token.payout_card.remove", req.params.id as string);
+    res.json({ success: true });
+  }));
   router.get("/cash-outs", h(async (req, res) => {
-    const rows = (await db.query(`SELECT id, currency, amount_cents, reason, status, requested_at, decided_at FROM token_cashouts WHERE user_id = $1 ORDER BY requested_at DESC LIMIT 20`, [uid(req)])).rows;
-    res.json({ success: true, cashOuts: rows.map((r) => ({ id: r.id, currency: r.currency, amountCents: Number(r.amount_cents), reason: r.reason, status: r.status, requestedAt: new Date(r.requested_at as string).toISOString(), decidedAt: r.decided_at ? new Date(r.decided_at as string).toISOString() : null })) });
+    const rows = (await db.query(`SELECT c.id, c.currency, c.amount_cents, c.reason, c.status, c.last_error, c.requested_at, c.decided_at, p.brand, p.last4 FROM token_cashouts c LEFT JOIN token_payout_cards p ON p.id = c.card_id WHERE c.user_id = $1 ORDER BY c.requested_at DESC LIMIT 20`, [uid(req)])).rows;
+    res.json({ success: true, cashOuts: rows.map((r) => ({ id: r.id, currency: r.currency, amountCents: Number(r.amount_cents), reason: r.reason, status: r.status, card: r.last4 ? `${r.brand} ****${r.last4}` : null, problem: r.status === "paid" ? null : r.last_error ?? null, requestedAt: new Date(r.requested_at as string).toISOString(), decidedAt: r.decided_at ? new Date(r.decided_at as string).toISOString() : null })) });
   }));
 
   /* the association's fares per route (the devices of its members use these) */
@@ -181,8 +196,10 @@ export function createTokenTerminalRouter(d: { db: Db; tokens: TokenService; aut
 /**
  * Staff tools, mounted at /api/admin/tokens (owner and superadmin).
  *   GET  /summary?currency=ZAR   tokens in circulation by role, what is waiting to be paid out, and the programme settings
- *   GET  /cash-outs?status=      requests to pay out; POST /cash-outs/:id/paid | /reject
- *   POST /refund                 { userId, currency, amountCents, note } takes tokens from a holder into a payout (any reason)
+ *   GET  /cash-outs?status=      payouts to holders' debit cards and where each one stands. Staff cannot pay one: the system pushes it to the card.
+ *                                POST /cash-outs/:id/retry asks the system to try now; POST /cash-outs/:id/reject refuses a waiting payout and the tokens go back
+ *   GET  /payout-cards           debit cards whose name does not match the account holder's, waiting for a person; POST /payout-cards/:id/approve | /reject
+ *   POST /refund                 { userId, currency, amountCents, note } a refund: paid by the system to the holder's own verified debit card, for any reason
  *   PUT  /wallets/tier           { userId, currency, tier } sets a holder's verification level (basic, standard, full, business) once their identity is checked
  *   PUT  /settings               { deviceFeeCents } the per-trip fee paid to the investor who sponsored a device
  */
@@ -194,12 +211,13 @@ export function createTokenAdminRouter(d: { db: Db; tokens: TokenService }): Rou
     res.json({ success: true, summary: await d.tokens.summary(currency), settings: await d.tokens.settings() });
   }));
   router.get("/cash-outs", h(async (req, res) => {
-    const status = typeof req.query.status === "string" && ["requested", "paid", "rejected"].includes(req.query.status) ? req.query.status : null;
-    const cols = "c.id, c.user_id, u.name, u.email, c.currency, c.amount_cents, c.reason, c.status, c.note, c.requested_at, c.decided_at";
-    const rows = (await d.db.query(`SELECT ${cols} FROM token_cashouts c JOIN users u ON u.id = c.user_id ${status ? "WHERE c.status = $1" : ""} ORDER BY c.requested_at DESC LIMIT 100`, status ? [status] : [])).rows;
-    res.json({ success: true, cashOuts: rows.map((r) => ({ id: r.id, userId: r.user_id, name: r.name, email: r.email, currency: r.currency, amountCents: Number(r.amount_cents), reason: r.reason, status: r.status, note: r.note ?? null, requestedAt: new Date(r.requested_at as string).toISOString(), decidedAt: r.decided_at ? new Date(r.decided_at as string).toISOString() : null })) });
+    const q = typeof req.query.status === "string" ? req.query.status : "";
+    const where = q === "open" ? "WHERE c.status IN ('requested','processing')" : ["requested", "processing", "paid", "rejected"].includes(q) ? "WHERE c.status = $1" : "";
+    const cols = "c.id, c.user_id, u.name, u.email, c.currency, c.amount_cents, c.reason, c.status, c.note, c.last_error, c.attempts, c.requested_at, c.decided_at, p.brand, p.last4";
+    const rows = (await d.db.query(`SELECT ${cols} FROM token_cashouts c JOIN users u ON u.id = c.user_id LEFT JOIN token_payout_cards p ON p.id = c.card_id ${where} ORDER BY c.requested_at DESC LIMIT 100`, where.includes("$1") ? [q] : [])).rows;
+    res.json({ success: true, cashOuts: rows.map((r) => ({ id: r.id, userId: r.user_id, name: r.name, email: r.email, currency: r.currency, amountCents: Number(r.amount_cents), reason: r.reason, status: r.status, note: r.note ?? null, card: r.last4 ? `${r.brand} ****${r.last4}` : null, lastError: r.last_error ?? null, attempts: Number(r.attempts ?? 0), requestedAt: new Date(r.requested_at as string).toISOString(), decidedAt: r.decided_at ? new Date(r.decided_at as string).toISOString() : null })) });
   }));
-  const decide = (decision: "paid" | "rejected") => h(async (req, res) => {
+  const decide = (decision: "rejected") => h(async (req, res) => {
     if (!isUuid(req.params.id)) return fail(res, 400, "Invalid request");
     const note = typeof (req.body ?? {}).note === "string" ? String((req.body ?? {}).note).slice(0, 300) : undefined;
     const r = await d.tokens.decideCashOut(req.params.id as string, uid(req), decision, note);
@@ -207,8 +225,25 @@ export function createTokenAdminRouter(d: { db: Db; tokens: TokenService }): Rou
     await audit(d.db, req, `token.cashout.${decision}`, req.params.id as string, { note: note ?? null });
     res.json({ success: true, status: r.value.status });
   });
-  router.post("/cash-outs/:id/paid", decide("paid"));
   router.post("/cash-outs/:id/reject", decide("rejected"));
+  router.post("/cash-outs/:id/retry", h(async (req, res) => {
+    if (!isUuid(req.params.id)) return fail(res, 400, "Invalid request");
+    const r = await d.tokens.retryCashOut(req.params.id as string);
+    if (!r.ok) return fail(res, r.status, r.error);
+    await audit(d.db, req, "token.cashout.retry", req.params.id as string, { status: r.value.status });
+    res.json({ success: true, status: r.value.status });
+  }));
+  router.get("/payout-cards", h(async (_req, res) => { res.json({ success: true, cards: await d.tokens.cardsToReview() }); }));
+  const reviewCard = (decision: "approve" | "reject") => h(async (req, res) => {
+    if (!isUuid(req.params.id)) return fail(res, 400, "Invalid card");
+    const note = typeof (req.body ?? {}).note === "string" ? String((req.body ?? {}).note).slice(0, 300) : undefined;
+    const r = await d.tokens.reviewPayoutCard(req.params.id as string, uid(req), decision, note);
+    if (!r.ok) return fail(res, r.status, r.error);
+    await audit(d.db, req, `token.payout_card.${decision}`, req.params.id as string, { note: note ?? null });
+    res.json({ success: true, status: r.value.status });
+  });
+  router.post("/payout-cards/:id/approve", reviewCard("approve"));
+  router.post("/payout-cards/:id/reject", reviewCard("reject"));
   router.post("/refund", h(async (req, res) => {
     const b = (req.body ?? {}) as Record<string, unknown>;
     if (!isUuid(b.userId)) return fail(res, 400, "Choose the holder");
@@ -217,7 +252,7 @@ export function createTokenAdminRouter(d: { db: Db; tokens: TokenService }): Rou
     const r = await d.tokens.requestCashOut(b.userId, { currency: CURRENCIES.includes(String(b.currency)) ? String(b.currency) : "ZAR", amountCents: b.amountCents, reason: "refund", by: uid(req), note });
     if (!r.ok) return fail(res, r.status, r.error);
     await audit(d.db, req, "token.refund", r.value.id, { userId: b.userId, amountCents: b.amountCents, note });
-    res.status(201).json({ success: true, id: r.value.id });
+    res.status(201).json({ success: true, id: r.value.id, status: r.value.status, message: r.value.message });
   }));
   router.put("/wallets/tier", h(async (req, res) => {
     const b = (req.body ?? {}) as Record<string, unknown>;

@@ -15,6 +15,7 @@ import terminalRouter from "./routes/terminalRouter.js";
 import { createTokenService } from "./services/tokenService.js";
 import { createTokenTerminalRouter, createTokenAdminRouter, createTokenRetailRouter } from "./portal/tokenRoutes.js";
 import { authenticateRetailTerminal } from "./services/retailAuth.js";
+import { getCardRail, getAccountValidationProvider } from "./payments/providers/registry.js";
 import { authenticateTerminal } from "./services/terminalAuth.js";
 import retailRouter from "./routes/retailRouter.js";
 import routeRouter from "./routes/routeRouter.js";
@@ -139,7 +140,8 @@ export const configReader = createConfigReader(pool);
 // The money engine and the pooled-account tools share one ledger port. The Banking module asks the limit guard before it sends money out, using a cached copy of the active ZA profile.
 const moneyLedger = manshyaLedgerPort(manshya as never);
 // VINK tokens (the closed-loop points system): a holder with a token wallet is paid in, and pays out of, tokens everywhere the engine moves money.
-const tokenService = pool ? createTokenService({ db: pool, ledger: moneyLedger, reader: configReader }) : null;
+const cardRail = getCardRail(manshya.payments);
+const tokenService = pool ? createTokenService({ db: pool, ledger: moneyLedger, reader: configReader, rail: cardRail, validator: getAccountValidationProvider(manshya.payments), extraTestPans: manshya.payments.visaDirect?.extraTestPans }) : null;
 const moneyEngine = pool ? createMoneyEngine({ db: pool, ledger: moneyLedger, reader: configReader, tokenParty: tokenService?.partyOf }) : null;
 if (moneyEngine) tokenService?.bindEngine(moneyEngine);
 let zaProfile: CountryConfig | null = null;
@@ -360,7 +362,7 @@ async function boot() {
         setInterval(() => {
           if (running) return; running = true;
           configReader.active("ZA").then((a) => { zaProfile = a.config; }).catch(() => {});
-          engine.runCycle().catch((e) => console.error("[money] cycle failed:", e instanceof Error ? e.message : e)).finally(() => { running = false; });
+          engine.runCycle().catch((e) => console.error("[money] cycle failed:", e instanceof Error ? e.message : e)).then(() => tokenService?.processPayouts()).catch((e) => console.error("[token] payouts failed:", e instanceof Error ? e.message : e)).finally(() => { running = false; });
         }, 30_000).unref();
       }
     } catch (err) {

@@ -327,26 +327,41 @@ async function tokenApi(path: string, init?: { method?: string; body?: unknown }
 /** VINK tokens: how many are in circulation, the cash-outs and refunds waiting to be paid out of the pool, and the per-trip device fee paid to investors. */
 function TokensAdminPanel() {
   const [sum, reloadSum] = useLoad<{ summary: { circulationCents: number; wallets: number; byRole: Record<string, { wallets: number; cents: number }>; pendingCashouts: { count: number; cents: number }; clearingCents: number }; settings: { deviceFeeCents: number } }>(() => tokenApi("/summary") as never);
-  const [list, reloadList] = useLoad<{ cashOuts: { id: string; name: string; email: string; amountCents: number; currency: string; reason: string; status: string; note: string | null; requestedAt: string }[] }>(() => tokenApi("/cash-outs?status=requested") as never);
+  const [list, reloadList] = useLoad<{ cashOuts: { id: string; name: string; email: string; amountCents: number; currency: string; reason: string; status: string; note: string | null; card: string | null; lastError: string | null; attempts: number; requestedAt: string }[] }>(() => tokenApi("/cash-outs?status=open") as never);
+  const [review, reloadReview] = useLoad<{ cards: { id: string; accountName: string; email: string; cardholderName: string; brand: string; last4: string }[] }>(() => tokenApi("/payout-cards") as never);
   const [fee, setFee] = useState(""); const [tierUid, setTierUid] = useState(""); const [tier, setTier] = useState("standard"); const [uid, setUid] = useState(""); const [amt, setAmt] = useState(""); const [why, setWhy] = useState("");
-  const both = () => { reloadSum(); reloadList(); };
+  const both = () => { reloadSum(); reloadList(); reloadReview(); };
   return (
     <section className="rounded-xl p-4 space-y-3" style={{ background: "var(--vk-surface)", border: "1px solid var(--vk-line)" }}>
-      <h2 className="text-sm font-bold text-fg">VINK tokens <span className="font-normal text-fg-muted">· the closed-loop points system. Tokens leave only by cash-out, refund or a transfer to the holder's own bank account.</span></h2>
+      <h2 className="text-sm font-bold text-fg">VINK tokens <span className="font-normal text-fg-muted">· the closed-loop points system. Tokens leave only as a payout the system makes to the holder's own debit card, or a transfer to their own VINK bank account. Staff cannot pay a payout by hand.</span></h2>
       <Status load={sum}>{({ summary: s, settings }) => !s ? <Empty>Token figures are not available.</Empty> : (
         <>
           <p className="text-xs text-fg">In circulation: <b>{cents(s.circulationCents)}</b> across {s.wallets} wallets · waiting to be paid out: <b>{cents(s.pendingCashouts?.cents ?? 0)}</b> ({s.pendingCashouts?.count ?? 0}) · device fee per trip: <b>{cents(settings?.deviceFeeCents ?? 0)}</b></p>
           <p className="text-[11px] text-fg-muted">{Object.entries(s.byRole ?? {}).map(([r, v]) => `${r}: ${cents(v.cents)} (${v.wallets})`).join(" · ") || "No wallets yet."}</p>
         </>)}</Status>
-      <Status load={list}>{({ cashOuts }) => !cashOuts || cashOuts.length === 0 ? <Empty>No cash-outs or refunds waiting.</Empty> : (
+      <Status load={list}>{({ cashOuts }) => !cashOuts || cashOuts.length === 0 ? <Empty>No payouts waiting. The system pays each one to the holder's debit card as soon as it is asked for.</Empty> : (
         <ul className="space-y-2">{cashOuts.map((c) => (
           <li key={c.id} className="rounded-lg p-3 text-xs text-fg" style={{ background: "var(--vk-bg)", border: "1px solid var(--vk-line)" }}>
-            <p><b>{c.name}</b> ({c.email}) · {c.reason === "refund" ? "Refund" : "Cash-out"} · <b>{cents(c.amountCents, c.currency)}</b> · {when(c.requestedAt)}{c.note ? ` · ${c.note}` : ""}</p>
-            <div className="flex gap-2 mt-2">
-              <ActionButton small label="Mark paid (money sent from the pool)" color="#10B981" onRun={async () => { const r = await tokenApi(`/cash-outs/${c.id}/paid`, { method: "POST", body: {} }); if ("error" in r) return { error: r.error }; both(); }} />
-              <ActionButton small label="Reject (tokens go back)" color="#EF4444" onRun={async () => { const r = await tokenApi(`/cash-outs/${c.id}/reject`, { method: "POST", body: {} }); if ("error" in r) return { error: r.error }; both(); }} />
-            </div>
+            <p><b>{c.name}</b> ({c.email}) · {c.reason === "refund" ? "Refund" : "Cash-out"} · <b>{cents(c.amountCents, c.currency)}</b> to {c.card ?? "no card"} · {c.status === "processing" ? "with the card service" : `waiting (${c.attempts} tries)`} · {when(c.requestedAt)}{c.note ? ` · ${c.note}` : ""}</p>
+            {c.lastError && <p className="text-warn mt-1">Last problem: {c.lastError}</p>}
+            {c.status === "requested" && (
+              <div className="flex gap-2 mt-2">
+                <ActionButton small label="Try now" color="#10B981" onRun={async () => { const r = await tokenApi(`/cash-outs/${c.id}/retry`, { method: "POST", body: {} }); if ("error" in r) return { error: r.error }; both(); return { message: `Result: ${r.data.status}` }; }} />
+                <ActionButton small label="Refuse (tokens go back)" color="#EF4444" onRun={async () => { const r = await tokenApi(`/cash-outs/${c.id}/reject`, { method: "POST", body: {} }); if ("error" in r) return { error: r.error }; both(); }} />
+              </div>)}
           </li>))}</ul>)}</Status>
+      <Status load={review}>{({ cards }) => !cards || cards.length === 0 ? null : (
+        <div>
+          <p className="text-xs font-semibold text-fg mb-1">Debit cards to check: the name on the card is not the account holder's</p>
+          <ul className="space-y-2">{cards.map((c) => (
+            <li key={c.id} className="rounded-lg p-3 text-xs text-fg" style={{ background: "var(--vk-bg)", border: "1px solid var(--vk-line)" }}>
+              <p>Account <b>{c.accountName}</b> ({c.email}) · card in the name of <b>{c.cardholderName}</b> · {c.brand} ****{c.last4}</p>
+              <div className="flex gap-2 mt-2">
+                <ActionButton small label="Approve" color="#10B981" onRun={async () => { const r = await tokenApi(`/payout-cards/${c.id}/approve`, { method: "POST", body: {} }); if ("error" in r) return { error: r.error }; both(); }} />
+                <ActionButton small label="Reject" color="#EF4444" onRun={async () => { const r = await tokenApi(`/payout-cards/${c.id}/reject`, { method: "POST", body: {} }); if ("error" in r) return { error: r.error }; both(); }} />
+              </div>
+            </li>))}</ul>
+        </div>)}</Status>
       <div className="flex flex-wrap items-end gap-3">
         <label className="block"><span className="text-[11px] text-fg-muted">Device fee per trip (R)</span><input className={inputCls + " mt-1 !w-28"} inputMode="decimal" value={fee} onChange={(e) => setFee(e.target.value)} placeholder="1.00" /></label>
         <ActionButton label="Set device fee" color={COLOR} onRun={async () => { const c = Math.round(Number(fee.replace(",", ".")) * 100); if (!Number.isInteger(c) || c < 0) return { error: "Enter an amount, 0 or more" }; const r = await tokenApi("/settings", { method: "PUT", body: { deviceFeeCents: c } }); if ("error" in r) return { error: r.error }; reloadSum(); return { message: "Saved. It applies to trips completed from now on." }; }} />
@@ -360,7 +375,7 @@ function TokensAdminPanel() {
         <label className="block"><span className="text-[11px] text-fg-muted">Refund: holder's user id</span><input className={inputCls + " mt-1"} value={uid} onChange={(e) => setUid(e.target.value)} /></label>
         <label className="block"><span className="text-[11px] text-fg-muted">Amount (R)</span><input className={inputCls + " mt-1 !w-24"} inputMode="decimal" value={amt} onChange={(e) => setAmt(e.target.value)} /></label>
         <label className="block"><span className="text-[11px] text-fg-muted">Reason</span><input className={inputCls + " mt-1"} value={why} onChange={(e) => setWhy(e.target.value)} /></label>
-        <ActionButton label="Refund to a payout" color="#F59E0B" onRun={async () => { const c = Math.round(Number(amt.replace(",", ".")) * 100); if (!Number.isInteger(c) || c <= 0) return { error: "Enter the amount" }; const r = await tokenApi("/refund", { method: "POST", body: { userId: uid.trim(), currency: "ZAR", amountCents: c, note: why } }); if ("error" in r) return { error: r.error }; both(); setAmt(""); setWhy(""); return { message: "Refund created. Pay it out, then mark it paid." }; }} />
+        <ActionButton label="Refund to their debit card" color="#F59E0B" onRun={async () => { const c = Math.round(Number(amt.replace(",", ".")) * 100); if (!Number.isInteger(c) || c <= 0) return { error: "Enter the amount" }; const r = await tokenApi("/refund", { method: "POST", body: { userId: uid.trim(), currency: "ZAR", amountCents: c, note: why } }); if ("error" in r) return { error: r.error }; both(); setAmt(""); setWhy(""); return { message: "Refund made: the system pays it to the holder's own debit card." }; }} />
       </div>
     </section>
   );

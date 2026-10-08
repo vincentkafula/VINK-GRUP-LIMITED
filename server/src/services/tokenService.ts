@@ -7,6 +7,8 @@ import { calculateRevenueSplit } from "./revenueSplitService.js";
 import type { ConfigReader } from "../config/configService.js";
 import { countryForCurrency, KYC_TIERS, type KycTier } from "../config/countryConfig.js";
 import { checkTierLimit } from "../config/riskRules.js";
+import type { CardVaultProvider, CardPayoutProvider, AccountValidationProvider } from "../payments/providers/types.js";
+import { MOCK_CARD_SCENARIOS, expiryOf } from "../payments/providers/mockCardRail.js";
 
 /**
  * VINK tokens: a closed-loop points system on top of the pooled bank account, like a city bus card.
@@ -24,7 +26,19 @@ import { checkTierLimit } from "../config/riskRules.js";
 export type TokenRole = "passenger" | "driver" | "owner" | "marshal" | "association" | "investor";
 /** The portal account type -> the wallet role. */
 export const TOKEN_ROLE_FOR_ACCOUNT: Record<string, TokenRole> = { personal: "passenger", driver: "driver", vehicle_owner: "owner", marshal: "marshal", association: "association", investor: "investor" };
-export const MIN_CASHOUT_CENTS = 1000;                         // R10: a payout is a real bank transfer, so tiny ones are not worth making
+export const MIN_CASHOUT_CENTS = 1000;                         // R10: a payout is a real card transaction, so tiny ones are not worth making
+export const MAX_PAYOUT_CENTS = 2_500_000;                     // R25 000 in one payout
+export const MAX_PAYOUT_ATTEMPTS = 6;
+const PAYOUT_BACKOFF_MIN = [1, 5, 30, 120, 360, 720];
+const PROCESSING_STALE_MS = 5 * 60_000;                        // a payout sent but never answered is asked again after this (the reference stops it paying twice)
+
+const nameWords = (v: string) => v.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z\s'-]/g, " ").split(/\s+/).filter(Boolean);
+/** The name on the card must be the account holder's: their surname and the initial of their first name both appear on the card. Otherwise a person decides. */
+export function namesMatch(accountName: string, cardName: string): boolean {
+  const a = nameWords(accountName), c = nameWords(cardName);
+  if (!a.length || !c.length) return false;
+  return c.includes(a[a.length - 1]) && c.some((w) => w[0] === a[0][0]);
+}
 const MAX_CENTS = 100_000_000;                                  // 1 000 000.00: a typing slip must not become a real movement
 const CURRENCIES = ["ZAR", "ZMW"];
 
@@ -42,7 +56,18 @@ export type TapOutcome =
   | { ok: false; status: number; code: string; message: string; tapId?: string };
 export interface ActivityLine { at: string; kind: string; amountCents: number; label: string }
 
-export function createTokenService(deps: { db: Db; ledger: LedgerPort; reader: ConfigReader; now?: () => Date }) {
+export interface PayoutCardView { id: string; brand: string; last4: string; expiry: string; status: string }
+export interface PayoutAttempt { status: "paid" | "rejected" | "requested" | "processing" | "none"; reason?: string }
+
+export function createTokenService(deps: {
+  db: Db; ledger: LedgerPort; reader: ConfigReader; now?: () => Date;
+  /** Turns a card into a token, and pushes money to a token. Without it nobody can cash out or be refunded. */
+  rail?: { name: string; vault: CardVaultProvider; payout: CardPayoutProvider };
+  /** Checks a card is real before it is added. */
+  validator?: AccountValidationProvider;
+  /** Further sandbox test card numbers (from the settings) that may be added. */
+  extraTestPans?: string[];
+}) {
   const db = deps.db as unknown as Loose, { ledger, reader } = deps;
   let engine: Pick<Engine, "settleTaps"> | null = null;
   const clock = deps.now ?? (() => new Date());
@@ -205,35 +230,162 @@ export function createTokenService(deps: { db: Db; ledger: LedgerPort; reader: C
     return { ok: true, value: { balanceCents: ledger.balance(account(a.currency, userId)) } };
   }
 
-  /** A cash-out (the holder) or a refund (staff, for any reason): the tokens move to a holding account and staff pay the money out of the pool. */
-  async function requestCashOut(userId: string, a: { currency: string; amountCents: unknown; reason?: "cash_out" | "refund"; by: string; note?: string }): Promise<TokenResult<{ id: string; balanceCents: number }>> {
+  /* ── the holder's own debit cards, the only place money is ever paid to ── */
+  const TEST_PANS = new Set([...MOCK_CARD_SCENARIOS.map((c) => c.pan), ...(deps.extraTestPans ?? [])]);
+
+  /**
+   * Adds a debit card to receive payouts. The card number is passed on once to be tokenised and is never stored or logged. Until the processor's hosted card fields
+   * exist (so the number never reaches this server), only the published SANDBOX TEST cards are accepted: a real card number is refused before anything is done with it.
+   */
+  async function addPayoutCard(userId: string, b: { primaryAccountNumber?: unknown; expiry?: unknown; cardholderName?: unknown }): Promise<TokenResult<{ id: string; last4: string; brand: string; status: string }>> {
+    if (!deps.rail) return bad(503, "Card payouts are not set up yet");
+    const pan = typeof b.primaryAccountNumber === "string" ? b.primaryAccountNumber.replace(/[\s-]/g, "") : "";
+    if (!/^[0-9]{13,19}$/.test(pan)) return bad(400, "Enter the card number");
+    if (!TEST_PANS.has(pan)) return bad(403, "Only sandbox test cards can be added until live card tokenisation is in place. Do not enter a real card number.", "sandbox_only");
+    const name = typeof b.cardholderName === "string" ? b.cardholderName.trim() : "";
+    if (name.length < 2 || name.length > 40 || /[<>]/.test(name)) return bad(400, "Enter the name on the card");
+    const raw = typeof b.expiry === "string" ? b.expiry.trim() : "";
+    const mmyy = /^(0[1-9]|1[0-2])\s*\/\s*(\d{2})$/.exec(raw);
+    const expiry = mmyy ? `20${mmyy[2]}-${mmyy[1]}` : raw;
+    if (!expiryOf(expiry, clock())) return bad(400, "The card has expired, or the expiry date is not valid");
+    const user = (await db.query(`SELECT name FROM users WHERE id = $1`, [userId])).rows[0];
+    if (!user) return bad(404, "No such user");
+    if (Number((await db.query(`SELECT COUNT(*) AS n FROM token_payout_cards WHERE user_id = $1 AND status IN ('verified','needs_review')`, [userId])).rows[0].n) >= 3) return bad(409, "You can have up to 3 cards. Remove one first.");
+    if (deps.validator) {
+      try {
+        const v = await deps.validator.validate({ primaryAccountNumber: pan, expiry });
+        if (!v.valid) return bad(409, `The card could not be verified (code ${v.actionCode}). Check the details.`, "card_invalid");
+      } catch { return bad(502, "The card could not be checked right now. Please try again."); }
+    }
+    let card;
+    try { card = await deps.rail.vault.tokenise({ primaryAccountNumber: pan, expiry, cardholderName: name }); }
+    catch (e) { return bad(400, e instanceof Error ? e.message : "The card could not be added"); }
+    if (card.funding !== "debit") return bad(409, `A payout can only be made to a debit card. This looks like a ${card.funding} card.`, "not_debit");
+    const status = namesMatch(String(user.name), name) ? "verified" : "needs_review";
+    try {
+      const r = await db.query(`INSERT INTO token_payout_cards (user_id, brand, last4, expiry, funding, cardholder_name, provider, token, status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
+        [userId, card.brand, card.last4, card.expiry, card.funding, name, deps.rail.name, card.token, status]);
+      return { ok: true, value: { id: String(r.rows[0].id), last4: card.last4, brand: card.brand, status } };
+    } catch (e) { if (isUniqueViolation(e)) return bad(409, "This card is already added"); throw e; }
+  }
+  async function payoutCards(userId: string): Promise<PayoutCardView[]> {
+    return (await db.query(`SELECT id, brand, last4, expiry, status FROM token_payout_cards WHERE user_id = $1 AND status <> 'removed' ORDER BY created_at`, [userId])).rows
+      .map((r) => ({ id: String(r.id), brand: String(r.brand), last4: String(r.last4), expiry: String(r.expiry), status: String(r.status) }));
+  }
+  async function removePayoutCard(userId: string, cardId: string): Promise<TokenResult<null>> {
+    if ((await db.query(`SELECT 1 AS x FROM token_cashouts WHERE card_id = $1 AND status IN ('requested','processing')`, [cardId])).rows.length) return bad(409, "A payout to this card is still in progress. Remove it when it has finished.");
+    const r = await db.query(`UPDATE token_payout_cards SET status = 'removed' WHERE id = $1 AND user_id = $2 AND status <> 'removed' RETURNING id`, [cardId, userId]);
+    return r.rows.length ? { ok: true, value: null } : bad(404, "No such card");
+  }
+  /** Staff look at a card whose name does not match the account holder's and either approve it or refuse it. */
+  async function reviewPayoutCard(cardId: string, by: string, decision: "approve" | "reject", note?: string): Promise<TokenResult<{ status: string }>> {
+    const status = decision === "approve" ? "verified" : "rejected";
+    const r = await db.query(`UPDATE token_payout_cards SET status = $2, reviewed_by = $3, review_note = $4 WHERE id = $1 AND status = 'needs_review' RETURNING id`, [cardId, status, by, note ?? null]);
+    return r.rows.length ? { ok: true, value: { status } } : bad(404, "No card is waiting for review with that id");
+  }
+  async function cardsToReview() {
+    return (await db.query(`SELECT c.id, c.user_id, u.name AS account_name, u.email, c.cardholder_name, c.brand, c.last4, c.created_at FROM token_payout_cards c JOIN users u ON u.id = c.user_id WHERE c.status = 'needs_review' ORDER BY c.created_at`)).rows
+      .map((r) => ({ id: String(r.id), userId: String(r.user_id), accountName: String(r.account_name), email: String(r.email), cardholderName: String(r.cardholder_name), brand: String(r.brand), last4: String(r.last4), createdAt: new Date(r.created_at).toISOString() }));
+  }
+  const pickCard = async (userId: string, cardId: unknown) => {
+    if (cardId !== undefined && cardId !== null && cardId !== "") return (await db.query(`SELECT id FROM token_payout_cards WHERE id = $1 AND user_id = $2 AND status = 'verified'`, [cardId, userId])).rows[0] ?? null;
+    return (await db.query(`SELECT id FROM token_payout_cards WHERE user_id = $1 AND status = 'verified' ORDER BY created_at DESC LIMIT 1`, [userId])).rows[0] ?? null;
+  };
+
+  /**
+   * A cash-out (the holder) or a refund (staff, for any reason). The tokens move to a holding account and the money is pushed to the holder's OWN verified debit card
+   * by the system, at once and again later if the card service is not available. It is never paid to a bank account and never by hand.
+   */
+  async function requestCashOut(userId: string, a: { currency: string; amountCents: unknown; reason?: "cash_out" | "refund"; by: string; note?: string; cardId?: unknown }): Promise<TokenResult<{ id: string; balanceCents: number; status: string; message: string }>> {
+    if (!deps.rail) return bad(503, "Card payouts are not set up yet");
     if (!amountOk(a.amountCents)) return bad(400, "Enter an amount above zero");
     if (a.amountCents < MIN_CASHOUT_CENTS) return bad(400, `The smallest cash-out is ${(MIN_CASHOUT_CENTS / 100).toFixed(2)}`);
+    if (a.amountCents > MAX_PAYOUT_CENTS) return bad(400, `The most that can be paid to a card at once is ${(MAX_PAYOUT_CENTS / 100).toFixed(2)}`);
+    if (a.currency !== "ZAR") return bad(409, "Cash-outs are paid to a rand debit card. Kwacha cash-outs are not available yet.");
     if (!(await partyOf(userId, a.currency))) return bad(409, "This holder has no active VINK token wallet");
-    if ((a.reason ?? "cash_out") === "cash_out") { const lim = await withinLimit(userId, a.currency, a.amountCents); if (!lim.ok) return lim; }          // a refund by staff is not limited
-    const id = randomUUID(), ref = `cashout:${id}`, reason = a.reason ?? "cash_out";
-    await db.query(`INSERT INTO token_cashouts (id, user_id, currency, amount_cents, reason, ref, note, requested_by) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`, [id, userId, a.currency, a.amountCents, reason, ref, a.note ?? null, a.by]);
+    const card = await pickCard(userId, a.cardId);
+    if (!card) return bad(409, "Add and verify your own debit card first. Money is only ever paid out to your own debit card, never to a bank account.", "no_payout_card");
+    const reason = a.reason ?? "cash_out";
+    if (reason === "cash_out") { const lim = await withinLimit(userId, a.currency, a.amountCents); if (!lim.ok) return lim; }          // a refund by staff is not limited
+    const id = randomUUID(), ref = `cashout:${id}`;
+    await db.query(`INSERT INTO token_cashouts (id, user_id, currency, amount_cents, reason, ref, note, requested_by, card_id, provider) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`, [id, userId, a.currency, a.amountCents, reason, ref, a.note ?? null, a.by, card.id, deps.rail.name]);
     const r = ledger.post(ref, "token_cashout", [line(a.currency, userId, -a.amountCents, true), { account: cashoutHold(a.currency), kind: "system", amount: a.amountCents }], `${reason} request ${id}`);
     if (r === "insufficient") {
       await db.query(`DELETE FROM token_cashouts WHERE id = $1`, [id]);
       return bad(409, "There are not enough tokens in the wallet", "insufficient_tokens");
     }
-    await event(userId, a.currency, reason, -a.amountCents, "Pending payout", ref);
-    return { ok: true, value: { id, balanceCents: ledger.balance(account(a.currency, userId)) } };
+    await event(userId, a.currency, reason, -a.amountCents, "Payout to your debit card", ref);
+    const out = await attemptPayout(id);
+    const message = out.status === "paid" ? "Paid to your debit card." : out.status === "rejected" ? `The card was not paid: ${out.reason ?? "it was declined"}. Your tokens are back in your wallet.` : "On its way to your debit card. We keep trying if the card service is busy.";
+    return { ok: true, value: { id, balanceCents: ledger.balance(account(a.currency, userId)), status: out.status === "none" ? "requested" : out.status, message } };
   }
 
-  /** Staff have paid the money out of the pool (paid), or refuse the request and the tokens return to the wallet (rejected). Each happens once. */
-  async function decideCashOut(id: string, by: string, decision: "paid" | "rejected", note?: string): Promise<TokenResult<{ status: string }>> {
+  /**
+   * Pushes one payout to the card. Safe to call again at any time: the payout reference is the cash-out's own, so the card service pays it once however often it is asked,
+   * and a payout that was sent but never answered is asked again after a few minutes. A definite refusal returns the tokens; an unknown outcome is retried, never returned.
+   */
+  async function attemptPayout(id: string, now: Date = clock()): Promise<PayoutAttempt> {
+    if (!deps.rail) return { status: "none" };
+    const claimed = (await db.query(
+      `UPDATE token_cashouts SET status = 'processing', attempts = attempts + 1, attempted_at = $2
+        WHERE id = $1 AND ((status = 'requested' AND next_attempt_at <= $2 AND attempts < $3) OR (status = 'processing' AND attempted_at < $4)) RETURNING *`,
+      [id, now, MAX_PAYOUT_ATTEMPTS, new Date(now.getTime() - PROCESSING_STALE_MS)])).rows[0];
+    if (!claimed) return { status: ((await db.query(`SELECT status FROM token_cashouts WHERE id = $1`, [id])).rows[0]?.status ?? "none") as PayoutAttempt["status"] };
+    const cur = String(claimed.currency), amount = Number(claimed.amount_cents), user = String(claimed.user_id), ref = String(claimed.ref);
+    const card = (await db.query(`SELECT token, brand, cardholder_name, last4 FROM token_payout_cards WHERE id = $1`, [claimed.card_id])).rows[0];
+    let res;
+    try {
+      res = card ? await deps.rail.payout.push({ reference: ref, card: { token: String(card.token), brand: card.brand }, amount: { amount, currency: cur }, recipientName: String(card.cardholder_name), narrative: claimed.reason === "refund" ? "VINK refund" : "VINK cash-out" })
+                 : { status: "declined" as const, reason: "The card is no longer available" };
+    } catch (e) { res = { status: "error" as const, reason: e instanceof Error ? e.message.slice(0, 200) : "The card service failed" }; }
+    if (res.status === "sent") {
+      ledger.post(`${ref}:paid`, "token_cashout_paid", [{ account: cashoutHold(cur), kind: "system", amount: -amount }, { account: systemAccounts(cur).externalIn, kind: "system", amount }], `Payout ${claimed.id} sent to the debit card`);
+      await db.query(`UPDATE token_cashouts SET status = 'paid', provider_ref = $2, decided_at = now(), last_error = NULL WHERE id = $1`, [id, res.providerRef ?? null]);
+      await event(user, cur, "payout_sent", 0, `Debit card ****${card?.last4 ?? ""}`, `${ref}:paid`);
+      return { status: "paid" };
+    }
+    if (res.status === "declined") {
+      ledger.post(`${ref}:back`, "token_cashout_back", [{ account: cashoutHold(cur), kind: "system", amount: -amount }, line(cur, user, amount)], `Payout ${claimed.id} declined`);
+      await db.query(`UPDATE token_cashouts SET status = 'rejected', last_error = $2, decided_at = now() WHERE id = $1`, [id, res.reason ?? "declined"]);
+      await event(user, cur, "payout_declined", amount, res.reason ?? null, `${ref}:rejected`);
+      return { status: "rejected", reason: res.reason };
+    }
+    const wait = PAYOUT_BACKOFF_MIN[Math.min(Number(claimed.attempts) - 1, PAYOUT_BACKOFF_MIN.length - 1)];
+    await db.query(`UPDATE token_cashouts SET status = 'requested', last_error = $2, next_attempt_at = $3 WHERE id = $1`, [id, res.reason ?? "The card service did not answer", new Date(now.getTime() + wait * 60_000)]);
+    return { status: "requested", reason: res.reason };
+  }
+
+  /** Every payout that is due: waiting for a retry, or sent and not answered for a few minutes. Run by the money cycle; safe to repeat. */
+  async function processPayouts(now: Date = clock(), limit = 50): Promise<{ paid: number; rejected: number; waiting: number }> {
+    const ids = (await db.query(
+      `SELECT id FROM token_cashouts WHERE (status = 'requested' AND next_attempt_at <= $1 AND attempts < $2) OR (status = 'processing' AND attempted_at < $3) ORDER BY requested_at LIMIT $4`,
+      [now, MAX_PAYOUT_ATTEMPTS, new Date(now.getTime() - PROCESSING_STALE_MS), limit])).rows.map((r) => String(r.id));
+    const out = { paid: 0, rejected: 0, waiting: 0 };
+    for (const id of ids) { const r = await attemptPayout(id, now); if (r.status === "paid") out.paid++; else if (r.status === "rejected") out.rejected++; else out.waiting++; }
+    return out;
+  }
+
+  /** Staff cannot pay a payout. They can ask the system to try again now, which is the way out of a payout whose retries ran out. */
+  async function retryCashOut(id: string): Promise<TokenResult<{ status: string }>> {
+    const r = await db.query(`UPDATE token_cashouts SET attempts = 0, next_attempt_at = now() WHERE id = $1 AND status = 'requested' RETURNING id`, [id]);
+    if (!r.rows.length) return bad(409, "Only a payout that is waiting can be retried");
+    const out = await attemptPayout(id);
+    return { ok: true, value: { status: out.status } };
+  }
+
+  /** Staff refuse a payout that is waiting (for example the holder asks to stop it, or the retries ran out and the card service confirms nothing was sent): the tokens go back to the wallet. */
+  async function decideCashOut(id: string, by: string, decision: "rejected", note?: string): Promise<TokenResult<{ status: string }>> {
+    if (decision !== "rejected") return bad(400, "A payout can only be refused. It is paid to the card by the system.");
     const c = (await db.query(`SELECT * FROM token_cashouts WHERE id = $1`, [id])).rows[0];
     if (!c) return bad(404, "No such request");
+    if (c.status === "processing") return bad(409, "This payout is with the card service now. Try again in a few minutes.");
     if (c.status !== "requested") return bad(409, `This request is already ${c.status}`);
     const cur = String(c.currency), amount = Number(c.amount_cents), user = String(c.user_id);
-    if (decision === "paid") ledger.post(`${c.ref}:paid`, "token_cashout_paid", [{ account: cashoutHold(cur), kind: "system", amount: -amount }, { account: systemAccounts(cur).externalIn, kind: "system", amount }], `Cash-out ${id} paid from the pool`);
-    else ledger.post(`${c.ref}:back`, "token_cashout_back", [{ account: cashoutHold(cur), kind: "system", amount: -amount }, line(cur, user, amount)], `Cash-out ${id} rejected`);
-    const done = await db.query(`UPDATE token_cashouts SET status = $2, decided_by = $3, decided_at = now(), note = COALESCE($4, note) WHERE id = $1 AND status = 'requested' RETURNING id`, [id, decision, by, note ?? null]);
-    if (!done.rows.length) return bad(409, "This request was just decided by someone else");
-    await event(user, cur, decision === "paid" ? "cashout_paid" : "cashout_rejected", decision === "paid" ? 0 : amount, null, `${c.ref}:${decision}`);
-    return { ok: true, value: { status: decision } };
+    const done = await db.query(`UPDATE token_cashouts SET status = 'rejected', decided_by = $2, decided_at = now(), note = COALESCE($3, note) WHERE id = $1 AND status = 'requested' RETURNING id`, [id, by, note ?? null]);
+    if (!done.rows.length) return bad(409, "This payout just moved on. Look at it again.");
+    ledger.post(`${c.ref}:back`, "token_cashout_back", [{ account: cashoutHold(cur), kind: "system", amount: -amount }, line(cur, user, amount)], `Cash-out ${id} refused by staff`);
+    await event(user, cur, "cashout_rejected", amount, null, `${c.ref}:rejected`);
+    return { ok: true, value: { status: "rejected" } };
   }
 
   /* ── what the holder and staff see ── */
@@ -258,7 +410,7 @@ export function createTokenService(deps: { db: Db; ledger: LedgerPort; reader: C
       circulation += b;
       const k = (byRole[String(r.role)] ??= { wallets: 0, cents: 0 }); k.wallets++; k.cents += b;
     }
-    const open = (await db.query(`SELECT COUNT(*) AS n, COALESCE(SUM(amount_cents),0) AS s FROM token_cashouts WHERE currency = $1 AND status = 'requested'`, [currency])).rows[0];
+    const open = (await db.query(`SELECT COUNT(*) AS n, COALESCE(SUM(amount_cents),0) AS s FROM token_cashouts WHERE currency = $1 AND status IN ('requested','processing')`, [currency])).rows[0];
     return { currency, wallets: rows.length, circulationCents: circulation, byRole, clearingCents: ledger.balance(systemAccounts(currency).clearing), pendingCashouts: { count: Number(open.n), cents: Number(open.s) }, holdingCents: ledger.balance(cashoutHold(currency)) };
   }
 
@@ -292,6 +444,6 @@ export function createTokenService(deps: { db: Db; ledger: LedgerPort; reader: C
     return { ok: true, value: { id: String(row.id) } };
   }
 
-  return { bindEngine(e: Pick<Engine, "settleTaps">) { engine = e; }, partyOf, setTier, wallet, openWallet, linkCard, cards, blockCard, tapToken, transfer, redeemToBank, requestCashOut, decideCashOut, activity, summary, settings, setDeviceFee, routes, upsertRoute };
+  return { bindEngine(e: Pick<Engine, "settleTaps">) { engine = e; }, partyOf, setTier, wallet, openWallet, linkCard, cards, blockCard, tapToken, transfer, redeemToBank, requestCashOut, decideCashOut, retryCashOut, processPayouts, attemptPayout, addPayoutCard, payoutCards, removePayoutCard, reviewPayoutCard, cardsToReview, activity, summary, settings, setDeviceFee, routes, upsertRoute };
 }
 export type TokenService = ReturnType<typeof createTokenService>;

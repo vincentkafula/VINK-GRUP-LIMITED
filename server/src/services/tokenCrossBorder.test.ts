@@ -7,6 +7,7 @@ import { createTokenService, type TokenService } from "./tokenService.js";
 import { createCrossBorder, type CrossBorder } from "./crossBorderService.js";
 import { recordPoolCredit } from "./poolService.js";
 import { DEFAULT_ZA, DEFAULT_ZM, type CountryConfig } from "../config/countryConfig.js";
+import { MockCardRail } from "../payments/providers/mockCardRail.js";
 import { pinClock, unpinClock } from "../testClock.js";
 
 const id = (n: number) => `00000000-0000-0000-0000-${String(n).padStart(12, "0")}`;
@@ -27,7 +28,7 @@ beforeEach(async () => {
     core.ensureMerchant(u, name);
   }
   ledger = manshyaLedgerPort(mod as never);
-  tokens = createTokenService({ db, ledger, reader });
+  tokens = createTokenService({ db, ledger, reader, rail: (() => { const m = new MockCardRail(); return { name: "mock", vault: m, payout: m }; })() });
   const engine = createMoneyEngine({ db, ledger, reader, tokenParty: tokens.partyOf });
   xb = createCrossBorder({ db, ledger, engine, reader, now: () => new Date() });
   await xb.setRate("ZAR", "ZMW", 1.5, null); await xb.setRate("ZMW", "ZAR", 0.6, null);
@@ -54,7 +55,8 @@ describe("tokens across the border", () => {
   it("is refused when the sender has too few tokens, and nothing moves", async () => {
     const q = await xb.quote(U.sam, { recipientEmail: "zee@x.test", amountCents: 20_000, corridorId: "ZA-ZM" });
     if (!q.ok) throw new Error("quote");
-    await tokens.requestCashOut(U.sam, { currency: "ZAR", amountCents: 95_000, by: U.sam });            // most of the tokens are now waiting to be paid out
+    await tokens.addPayoutCard(U.sam, { primaryAccountNumber: "4111111111111111", expiry: "12/34", cardholderName: "Sam Sam" });
+    await tokens.requestCashOut(U.sam, { currency: "ZAR", amountCents: 95_000, by: U.sam });            // most of the tokens are paid out to the card
     const r = await xb.confirm(U.sam, q.value.id);
     expect(r.ok).toBe(false);
     expect(ledger.balance(walletLedgerAccount("ZMW", U.zee))).toBe(0);

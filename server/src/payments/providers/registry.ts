@@ -1,5 +1,7 @@
 import type { PaymentsConfig } from "../config.js";
-import type { IssuingProvider, CardServicingProvider, AccountValidationProvider } from "./types.js";
+import type { IssuingProvider, CardServicingProvider, AccountValidationProvider, CardVaultProvider, CardPayoutProvider } from "./types.js";
+import { MockCardRail } from "./mockCardRail.js";
+import { VisaDirectPayout, SandboxPanVault } from "./visaDirect.js";
 import { VisaPavValidation } from "./visaPav.js";
 import { MockAccountValidation } from "./mockAccountValidation.js";
 import { VisaDpsServicing } from "./visaDps.js";
@@ -35,6 +37,20 @@ export function getAccountValidationProvider(cfg: PaymentsConfig): AccountValida
         baseUrl: v.baseUrl, ...buildVisaAuth(v.auth), acquiringBin: v.acquiringBin, acquirerCountryCode: v.acquirerCountryCode,
         cardAcceptor: { name: v.acceptorName, idCode: v.acceptorIdCode, terminalId: v.terminalId },
       });
+    }
+  }
+}
+
+let mockRail: MockCardRail | null = null;
+/** The vault (card number -> token) and the payout (money -> card) of the selected provider. They share one instance, so a token made by one is understood by the other. */
+export function getCardRail(cfg: PaymentsConfig): { name: string; vault: CardVaultProvider; payout: CardPayoutProvider } {
+  switch (cfg.cardPayoutProvider) {
+    case "mock": { mockRail ??= new MockCardRail(); return { name: "mock", vault: mockRail, payout: mockRail }; }
+    case "visa_direct": {
+      const v = cfg.visaDirect!;   // config validation guarantees the settings
+      const vault = new SandboxPanVault(v.vaultKey, v.extraTestPans);
+      const payout = new VisaDirectPayout({ baseUrl: v.baseUrl, ...buildVisaAuth(v.auth), vault, acquiringBin: v.acquiringBin, acquirerCountryCode: v.acquirerCountryCode, sender: v.sender, cardAcceptor: v.cardAcceptor });
+      return { name: "visa_direct", vault, payout };
     }
   }
 }
