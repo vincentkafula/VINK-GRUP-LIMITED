@@ -288,9 +288,7 @@ Post-programme, we will close a $7.5M Series A (target valuation $35–50M) base
 • 1,000 AFC devices live, generating real daily transaction data
 • 50,000 VINK Banking accounts with 3+ months transaction history
 • 500+ daily active VINK Driver users
-• An MVNO partnership agreed and a first SIM pilot
-
-We have identified 4 Development Finance Institutions (DFIs) and 2 African-focused VC funds as primary Series A targets, all of whom have expressed preliminary interest pending traction metrics.`
+• An MVNO partnership agreed and a first SIM pilot`
   );
 
   /* ── Additional ── */

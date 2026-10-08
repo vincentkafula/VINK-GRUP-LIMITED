@@ -76,7 +76,6 @@ const ContactUsViewer             = lazy(() => import("./components/footerPages/
 const SwitchToVINKViewer           = lazy(() => import("./components/footerPages/SwitchToVINKViewer").then(m => ({ default: m.SwitchToVINKViewer })));
 const BranchLocatorViewer          = lazy(() => import("./components/footerPages/BranchLocatorViewer").then(m => ({ default: m.BranchLocatorViewer })));
 const SponsorshipViewer            = lazy(() => import("./components/footerPages/SponsorshipViewer").then(m => ({ default: m.SponsorshipViewer })));
-const WEFViewer                    = lazy(() => import("./components/footerPages/WEFViewer").then(m => ({ default: m.WEFViewer })));
 const BankingFeesViewer            = lazy(() => import("./components/footerPages/BankingFeesViewer").then(m => ({ default: m.BankingFeesViewer })));
 const BankingGuideViewer           = lazy(() => import("./components/footerPages/BankingGuideViewer").then(m => ({ default: m.BankingGuideViewer })));
 const BankingChannelsViewer        = lazy(() => import("./components/footerPages/BankingChannelsViewer").then(m => ({ default: m.BankingChannelsViewer })));
@@ -187,7 +186,6 @@ export default function App() {
   const [showSwitchToVINK, setShowSwitchToVINK]               = useState(false);
   const [showBranchLocator, setShowBranchLocator]              = useState(false);
   const [showSponsorship, setShowSponsorship]                  = useState(false);
-  const [showWEF, setShowWEF]                                  = useState(false);
   const [showBankingFees, setShowBankingFees]                  = useState(false);
   const [showBankingGuide, setShowBankingGuide]                = useState(false);
   const [showBankingChannels, setShowBankingChannels]          = useState(false);
@@ -565,7 +563,6 @@ export default function App() {
       if (label === "Social Responsibility")                     { mount("corpCSR"); setShowCorporateCSR(true); }
       if (label === "Find the Branch")                           { mount("branchLocator"); setShowBranchLocator(true); }
       if (label === "Sponsorship")                               { mount("sponsorship"); setShowSponsorship(true); }
-      if (label === "VINK at the World Economic Forum")          { mount("wef"); setShowWEF(true); }
       if (label === "Banking rates and fees")                    { mount("bankingFees"); setShowBankingFees(true); }
       if (label === "Guide to help you bank")                    { mount("bankingGuide"); setShowBankingGuide(true); }
       if (label === "App, Online and other banking")             { mount("bankingChannels"); setShowBankingChannels(true); }
@@ -750,7 +747,6 @@ export default function App() {
       {has("switchToVINK")        && <Suspense fallback={null}><SwitchToVINKViewer          isOpen={showSwitchToVINK} onClose={() => setShowSwitchToVINK(false)} /></Suspense>}
       {has("branchLocator")       && <Suspense fallback={null}><BranchLocatorViewer         isOpen={showBranchLocator} onClose={() => setShowBranchLocator(false)} /></Suspense>}
       {has("sponsorship")         && <Suspense fallback={null}><SponsorshipViewer           isOpen={showSponsorship} onClose={() => setShowSponsorship(false)} /></Suspense>}
-      {has("wef")                 && <Suspense fallback={null}><WEFViewer                   isOpen={showWEF} onClose={() => setShowWEF(false)} /></Suspense>}
       {has("bankingFees")         && <Suspense fallback={null}><BankingFeesViewer           isOpen={showBankingFees} onClose={() => setShowBankingFees(false)} /></Suspense>}
       {has("bankingGuide")        && <Suspense fallback={null}><BankingGuideViewer          isOpen={showBankingGuide} onClose={() => setShowBankingGuide(false)} /></Suspense>}
       {has("bankingChannels")     && <Suspense fallback={null}><BankingChannelsViewer       isOpen={showBankingChannels} onClose={() => setShowBankingChannels(false)} /></Suspense>}
