@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { TrendingUp, RadioTower, ListOrdered, FileText, Landmark } from "lucide-react";
+import { TokensPanel } from "./TokensPanel";
+import { TrendingUp, RadioTower, ListOrdered, FileText, Landmark, Coins } from "lucide-react";
 import { BankStrip, BankScreen } from "./BankAccount";
 import { DashboardShell, SectionPanel, StatCard, TableCard, Badge } from "../dashboards/DashboardShell";
 import { portalClient, useLoad, Status, Empty, rand, when } from "./ui";
@@ -9,7 +10,7 @@ const COLOR = "#14B8A6";
 const call = portalClient("investor");
 const NAV = [
   { icon: <TrendingUp className="w-4 h-4" />, label: "Income" }, { icon: <RadioTower className="w-4 h-4" />, label: "Devices" },
-  { icon: <ListOrdered className="w-4 h-4" />, label: "Trips & taps" }, { icon: <FileText className="w-4 h-4" />, label: "Statements" }, { icon: <Landmark className="w-4 h-4" />, label: "Bank account" },
+  { icon: <ListOrdered className="w-4 h-4" />, label: "Trips & taps" }, { icon: <FileText className="w-4 h-4" />, label: "Statements" }, { icon: <Coins className="w-4 h-4" />, label: "VINK Tokens" }, { icon: <Landmark className="w-4 h-4" />, label: "Bank account" },
 ];
 
 interface Period { fares: number; income: number }
@@ -28,6 +29,7 @@ export function InvestorDashboard({ userName, onClose }: { userName?: string; on
           {nav === "Devices" && <DevicesScreen />}
           {nav === "Trips & taps" && <TapsScreen />}
           {nav === "Statements" && <StatementsScreen />}
+          {nav === "VINK Tokens" && <TokensPanel segment="investor" color={COLOR} />}
           {nav === "Bank account" && <BankScreen segment="investor" color={COLOR} />}
         </ScreenBoundary>
       </div>

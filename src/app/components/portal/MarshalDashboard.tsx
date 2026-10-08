@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { ListOrdered, History, BarChart3, Link2, Landmark } from "lucide-react";
+import { TokensPanel } from "./TokensPanel";
+import { ListOrdered, History, BarChart3, Link2, Landmark, Coins } from "lucide-react";
 import { Banknote } from "lucide-react";
 import { PaymentsPanel, TripsPanel, CrossBorderPanel, VirtualAccountsPanel } from "./MoneyPanels";
 import { BankStrip, BankScreen } from "./BankAccount";
@@ -13,7 +14,7 @@ const call = portalClient("marshal");
 const NAV = [
   { icon: <ListOrdered className="w-4 h-4" />, label: "Ranks & queue" },
   { icon: <History className="w-4 h-4" />, label: "Departures" },
-  { icon: <BarChart3 className="w-4 h-4" />, label: "Reports" }, { icon: <Landmark className="w-4 h-4" />, label: "Bank account" },
+  { icon: <BarChart3 className="w-4 h-4" />, label: "Reports" }, { icon: <Coins className="w-4 h-4" />, label: "VINK Tokens" }, { icon: <Landmark className="w-4 h-4" />, label: "Bank account" },
   { icon: <Banknote className="w-4 h-4" />, label: "Payments & trips" },
   { icon: <Link2 className="w-4 h-4" />, label: "Requests & links" },
 ];
@@ -41,6 +42,7 @@ export function MarshalDashboard({ userName, onClose }: { userName?: string; onC
           {nav === "Reports" && <ReportsScreen />}
           {nav === "Payments & trips" && <><VirtualAccountsPanel segment="marshal" color={COLOR} /><CrossBorderPanel segment="marshal" color={COLOR} /><PaymentsPanel segment="marshal" color={COLOR} /><TripsPanel segment="marshal" color={COLOR} /></>}
           {nav === "Requests & links" && <LinksPanel call={call} color={COLOR} />}
+          {nav === "VINK Tokens" && <TokensPanel segment="marshal" color={COLOR} />}
           {nav === "Bank account" && <BankScreen segment="marshal" color={COLOR} />}
         </ScreenBoundary>
       </div>

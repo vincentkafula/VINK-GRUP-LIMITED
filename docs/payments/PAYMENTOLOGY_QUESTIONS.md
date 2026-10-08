@@ -45,3 +45,14 @@ BIN sponsorship. To integrate, please send the items below (or tell us where to 
 
 Kind regards,
 Vincent Kafula
+
+## Still to confirm after reading the public Banking.Live documentation
+
+The public pages answered the shape of customer and card creation, card status codes, the `X-API-Key` header and the FAST message types. They did not answer, and the adapter does not guess:
+
+1. Which path style is correct for the UAT base URL: `/pws/v2/pws_create_card/` (code samples) or `/api/v1/pws_create_card` (OpenAPI export)?
+2. How does FAST authenticate itself to our endpoint (shared header, mutual TLS, IP list, signature)? We use a shared secret in `X-API-Key` as a stop-gap.
+3. Is `ISO_MSG.DE2` the card's public token (as returned by card creation) or the card number? We never receive the number.
+4. What exact reply do the advice (0120), reversal (0400/0420) and clearing (1240) messages expect, and which DE39 code do you want for a card that is not ours?
+5. Is the amount in `Billing_Amount` always in the account currency in decimal units?
+6. Is a UAT test card and a way to simulate purchases available to us?

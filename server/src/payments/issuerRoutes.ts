@@ -21,11 +21,19 @@ export interface IssuerAuthoriser {
   cards: { authoriseFromProvider(a: { provider: string; authorisationId: string; providerCardId: string; amount: number; currency?: string; channel?: string; descriptor?: string }): { id: string | null; approved: boolean; reason: string | null; replayed: boolean } };
 }
 
-export function createIssuerRouter(cfg: PaymentsConfig, core: IssuerAuthoriser): Router {
+/** VINK tokens cards: asked before the older card engine. Returns null when the card is not a token card. */
+export interface TokenCardAuthoriser {
+  authorise(a: { provider: string; providerCardId: string; authorisationId: string; amountCents: number; currency?: string; channel?: string; merchant?: string }): Promise<{ approved: boolean; reason?: string; replayed: boolean } | null>;
+  reverse(a: { provider: string; authorisationId?: string; threadId?: string; amountCents?: number; reversalId?: string }): Promise<{ reversed: boolean; refundedCents?: number } | null>;
+  /** Is this one of ours and live? (null = not ours). For checks with no amount. */
+  isActive?(provider: string, providerCardId: string): Promise<boolean | null>;
+}
+
+export function createIssuerRouter(cfg: PaymentsConfig, core: IssuerAuthoriser, tokenCards?: TokenCardAuthoriser): Router {
   const router = Router();
   const issuer = getIssuingProvider(cfg);
 
-  router.post("/authorisation", express.raw({ type: "*/*", limit: "100kb" }), (req: Request, res: Response) => {
+  router.post("/authorisation", express.raw({ type: "*/*", limit: "100kb" }), async (req: Request, res: Response) => {
     const raw = Buffer.isBuffer(req.body) ? req.body : Buffer.alloc(0);
     let evt;
     try {
@@ -36,11 +44,21 @@ export function createIssuerRouter(cfg: PaymentsConfig, core: IssuerAuthoriser):
       return;
     }
     const d = evt.data as { providerCardId?: unknown; amount?: { amount?: unknown; currency?: unknown }; channel?: unknown; merchantName?: unknown } | undefined;
+    if (evt.type === "card.reversal" && tokenCards && typeof (d as { authorisationId?: unknown } | undefined)?.authorisationId === "string") {
+      try {
+        const r = await tokenCards.reverse({ provider: issuer.name, authorisationId: (d as { authorisationId: string }).authorisationId });
+        if (r) { res.json({ reversed: r.reversed }); return; }
+      } catch (e) { console.error("[issuer] reversal failed:", (e as Error).message); res.status(200).json({ reversed: false, reason: "system_error" }); return; }
+    }
     if (evt.type !== "card.authorisation" || !d || typeof d.providerCardId !== "string") {
       res.status(400).json({ approved: false, reason: "malformed_request" });
       return;
     }
     try {
+      if (tokenCards) {
+        const t = await tokenCards.authorise({ provider: issuer.name, authorisationId: evt.id, providerCardId: d.providerCardId, amountCents: d.amount?.amount as number, currency: typeof d.amount?.currency === "string" ? d.amount.currency : undefined, channel: typeof d.channel === "string" ? d.channel : undefined, merchant: typeof d.merchantName === "string" ? d.merchantName : undefined });
+        if (t) { res.json({ approved: t.approved, reason: t.reason, replayed: t.replayed }); return; }          // a VINK token card: decided against the holder's tokens
+      }
       const r = core.cards.authoriseFromProvider({
         provider: issuer.name,
         authorisationId: evt.id,

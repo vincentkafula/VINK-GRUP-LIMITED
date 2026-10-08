@@ -30,6 +30,30 @@ export async function reconcile(db: Db, ledger: LedgerPort, now: Date = new Date
   const unmatched = n((await one(`SELECT COUNT(*) AS c FROM pool_credits WHERE status = 'unmatched'`)).c);
   if (unmatched) issues.push({ severity: "attention", code: "bank_credits_unmatched", message: "Bank credits could not be matched to an account. Match them on the money page.", count: unmatched });
 
+  // VINK tokens: every confirmed token tap has the journal that took the tokens from the card's wallet, and the cash-out holding account holds exactly what is waiting to be paid out
+  const tokenTaps = (await db.query(`SELECT idempotency_key AS ref, currency FROM terminal_taps WHERE scheme = 'vink_token' AND status = 'confirmed' ORDER BY received_at DESC LIMIT $1`, [sample])).rows;
+  const tokenLost = tokenTaps.filter((r) => ledger.moved(String(r.ref), systemAccounts(String(r.currency ?? "ZAR")).clearing) === null).length;
+  if (tokenLost) issues.push({ severity: "problem", code: "token_tap_without_posting", message: "Some token taps are confirmed but the tokens were never taken from the card's wallet. Ask an engineer to look.", count: tokenLost });
+  for (const cur of ["ZAR", "ZMW"]) {
+    const owed = n((await one(`SELECT COALESCE(SUM(amount_cents),0) AS s FROM token_cashouts WHERE status IN ('requested','processing') AND currency = $1`, [cur])).s);
+    const hold = ledger.balance(cur === "ZAR" ? "sys:token_cashout" : `sys:${cur.toLowerCase()}:token_cashout`);
+    if (hold !== owed) issues.push({ severity: "problem", code: "token_cashout_mismatch", message: `The ${cur} cash-out holding account does not match the payouts that are waiting or with the card service. Ask an engineer to look.`, count: 1 });
+  }
+  // VINK debit cards: the amount waiting for the sponsor bank equals the purchases the cards approved and nobody has reversed
+  for (const cur of ["ZAR", "ZMW"]) {
+    const approved = n((await one(`SELECT COALESCE(SUM(amount_cents - reversed_cents),0) AS s FROM token_card_spend WHERE status = 'approved' AND currency = $1`, [cur])).s);
+    const held = ledger.balance(cur === "ZAR" ? "sys:card_settlement" : `sys:${cur.toLowerCase()}:card_settlement`);
+    if (held !== approved) issues.push({ severity: "problem", code: "card_settlement_mismatch", message: `The ${cur} card settlement account does not match the card purchases that were approved. Ask an engineer to look.`, count: 1 });
+  }
+  const stuckPayouts = n((await one(`SELECT COUNT(*) AS c FROM token_cashouts WHERE status = 'processing' AND attempted_at < $1`, [new Date(now.getTime() - 15 * 60_000)])).c);
+  if (stuckPayouts) issues.push({ severity: "problem", code: "token_payouts_stuck", message: "Payouts to cards were sent and have had no answer for over 15 minutes. The system asks again by itself; if this stays, ask an engineer to look.", count: stuckPayouts });
+  const exhausted = n((await one(`SELECT COUNT(*) AS c FROM token_cashouts WHERE status = 'requested' AND attempts >= 6`)).c);
+  if (exhausted) issues.push({ severity: "attention", code: "token_payouts_exhausted", message: "Payouts to cards failed six times in a row. Retry them from the staff page, or refuse them and the tokens go back to the holder.", count: exhausted });
+  const cardsWaiting = n((await one(`SELECT COUNT(*) AS c FROM token_payout_cards WHERE status = 'needs_review'`)).c);
+  if (cardsWaiting) issues.push({ severity: "attention", code: "token_cards_to_review", message: "Debit cards whose name does not match the account holder's are waiting for a person to check them.", count: cardsWaiting });
+  const oldCashouts = n((await one(`SELECT COUNT(*) AS c FROM token_cashouts WHERE status IN ('requested','processing') AND requested_at < $1`, [new Date(now.getTime() - 24 * 3600_000)])).c);
+  if (oldCashouts) issues.push({ severity: "attention", code: "token_cashouts_waiting", message: "Token payouts have been waiting more than a day.", count: oldCashouts });
+
   const stuckXb = n((await one(`SELECT COUNT(*) AS c FROM cross_border_transfers WHERE status = 'posting' AND created_at < $1`, [new Date(now.getTime() - 5 * 60_000)])).c);
   if (stuckXb) issues.push({ severity: "problem", code: "cross_border_half_posted", message: "Cross-border transfers are stuck half-posted. Ask the sender to confirm again, or an engineer to finish them.", count: stuckXb });
 

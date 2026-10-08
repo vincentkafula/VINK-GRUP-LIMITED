@@ -87,3 +87,17 @@ adapter layer exists so a direct connection can be added later without touching 
 - Card numbers, CVV and track data never pass through any adapter; only provider tokens, last4, brand and expiry.
 - Every money-moving call takes an idempotency key.
 - Sandbox and live credentials use different variable names (`SANDBOX_*` vs `LIVE_*`) so one is never read for the other.
+
+
+## Card payouts (money to a holder's own debit card)
+
+- Select with `CARD_PAYOUT_PROVIDER=mock` (default) or `visa_direct` (sandbox only). Code: `providers/mockCardRail.ts`, `providers/visaDirect.ts`. Live mode refuses to start: there is no live push-to-card adapter yet.
+- `visa_direct` needs the Visa auth settings plus `SANDBOX_VISA_DIRECT_ACQUIRING_BIN`, `SANDBOX_VISA_DIRECT_ACQUIRER_COUNTRY`, `SANDBOX_VISA_DIRECT_SENDER_ACCOUNT`, `SANDBOX_VISA_DIRECT_ACCEPTOR_ID_CODE`, `SANDBOX_CARD_VAULT_KEY` (optional: `SANDBOX_VISA_DIRECT_SENDER_NAME`, `_SENDER_COUNTRY` (alpha-3, default ZAF), `_SENDER_CITY`, `_ACCEPTOR_NAME`, `_TERMINAL_ID`, `_ACCEPTOR_CITY`, `_ACCEPTOR_COUNTRY`, `_TEST_PANS`).
+- **Mastercard Send is not built** (no documentation or credentials; not to be guessed). `CARD_PAYOUT_PROVIDER=mastercard_send` is refused at startup.
+- How it is used, and the rules (verified debit card in the holder's own name, no payouts by hand): see `TOKEN_SYSTEM.md`.
+
+## Paymentology (Banking.Live) issuing
+
+- Select with `ISSUING_PROVIDER=paymentology`. Code: `providers/paymentologyIssuer.ts` (create customer, create virtual card with no number or security code returned, set status) and `paymentologyFast.ts` (real-time authorisation, reversal, advice and clearing messages on `POST /api/payments/issuer/fast`).
+- Needs `SANDBOX_PAYMENTOLOGY_BASE_URL` (UAT: `https://uat.banking.live:55555/ppws/api`), `_API_KEY`, `_CLIENT_ID`, `_CARD_PRODUCT_ID`, `_IMAGE_NAME`, `_PARENT_ACCOUNT_ID`, `_CARD_BRAND` (visa or mastercard), optional `_CURRENCY_NUMERIC` (default 710), and `PAYMENTOLOGY_FAST_SECRET` for the FAST endpoint.
+- Built from the public API reference only and **not yet run against UAT**. Open points are in `PAYMENTOLOGY_QUESTIONS.md`: path style (`/pws/v2/...` in samples vs `/api/v1/...` in the OpenAPI export), FAST authentication, whether DE2 is the public token, the advice reply schema.

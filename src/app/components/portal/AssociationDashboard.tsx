@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { TokensPanel } from "./TokensPanel";
 import { Home, Users, CheckCircle2, MapPin, Route as RouteIcon, Coins, Car, Map as MapIcon, Landmark, FileText, UserCog, UserCheck, Building2 } from "lucide-react";
 import { Banknote } from "lucide-react";
 import { PaymentsPanel, TripsPanel, CrossBorderPanel, VirtualAccountsPanel, MarshalFeeSetting } from "./MoneyPanels";
@@ -30,7 +31,7 @@ export function AssociationDashboard({ userName, onClose }: { userName?: string;
     { icon: <RouteIcon className="w-4 h-4" />, label: "Routes" }, { icon: <MapIcon className="w-4 h-4" />, label: "Map" },
     { icon: <Coins className="w-4 h-4" />, label: "Levies" }, { icon: <Landmark className="w-4 h-4" />, label: "Fines ledger" }, { icon: <FileText className="w-4 h-4" />, label: "Statements" },
     { icon: <Banknote className="w-4 h-4" />, label: "Marshal fee & payments" },
-    { icon: <Building2 className="w-4 h-4" />, label: "Bank account" },
+    { icon: <Coins className="w-4 h-4" />, label: "VINK Tokens" }, { icon: <Building2 className="w-4 h-4" />, label: "Bank account" },
   ];
   return (
     <DashboardShell title="Association" subtitle="Members, ranks, routes and levies" accentColor={COLOR} gradient={`from-[${COLOR}]`} navItems={items} activeNav={nav} onNavChange={setNav} onClose={onClose} userName={userName} alertCount={pending || undefined}>
@@ -50,6 +51,7 @@ export function AssociationDashboard({ userName, onClose }: { userName?: string;
           {nav === "Fines ledger" && <FinesLedger />}
           {nav === "Statements" && <AssociationStatements />}
           {nav === "Marshal fee & payments" && <><MarshalFeeSetting color={COLOR} /><VirtualAccountsPanel segment="association" color={COLOR} /><CrossBorderPanel segment="association" color={COLOR} /><PaymentsPanel segment="association" color={COLOR} /><TripsPanel segment="association" color={COLOR} /></>}
+          {nav === "VINK Tokens" && <TokensPanel segment="association" color={COLOR} />}
           {nav === "Bank account" && <BankScreen segment="association" color={COLOR} />}
         </ScreenBoundary>
       </div>

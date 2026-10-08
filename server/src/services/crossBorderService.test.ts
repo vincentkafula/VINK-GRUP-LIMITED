@@ -1,4 +1,7 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { pinClock, unpinClock } from "../testClock.js";
+beforeEach(() => pinClock("2026-10-05T06:00:00Z"));
+afterEach(() => unpinClock());
 import { allPortalsDb } from "../portal/testDb.js";
 import type { Db } from "../portal/driverRoutes.js";
 import { manshyaBankCore } from "../portal/bankLinks.js";

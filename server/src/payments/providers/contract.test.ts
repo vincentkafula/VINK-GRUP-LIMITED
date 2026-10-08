@@ -53,8 +53,8 @@ describe("mock issuer sandbox scenarios", () => {
 describe("Paymentology adapter (not implemented yet)", () => {
   const p = new PaymentologyIssuer({ baseUrl: "https://sandbox.example", apiKey: "k", webhookSecret: "s" });
   it("fails loudly instead of pretending to work", async () => {
-    await expect(p.createCard()).rejects.toBeInstanceOf(NotConfiguredError);
-    await expect(p.setCardStatus()).rejects.toBeInstanceOf(NotConfiguredError);
+    await expect(p.createCard({ customerRef: "c1", kind: "virtual" })).rejects.toBeInstanceOf(NotConfiguredError);       // no card settings: nothing is guessed
+    await expect(p.setCardStatus("123", "frozen")).rejects.toBeInstanceOf(NotConfiguredError);
     expect(() => p.verifyWebhook()).toThrow(NotConfiguredError);
   });
 });

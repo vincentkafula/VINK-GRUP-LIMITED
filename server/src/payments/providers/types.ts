@@ -36,7 +36,8 @@ export interface AuthorisationDecision {
 
 export interface IssuingProvider {
   readonly name: string;
-  createCard(input: { customerRef: string; kind: "physical" | "virtual" }): Promise<IssuedCard>;
+  /** requestId makes a retry of the same issuing request return the same card. holder is the cardholder (some processors keep a customer record). */
+  createCard(input: { customerRef: string; kind: "physical" | "virtual"; requestId?: string; holder?: { firstName: string; lastName: string; mobile: string; email?: string } }): Promise<IssuedCard>;
   setCardStatus(providerCardId: string, status: "active" | "frozen" | "blocked"): Promise<void>;
   /** Verify a webhook from the provider and return its parsed event. Throws on a bad signature or a replay. */
   /**
@@ -125,4 +126,46 @@ export interface AcquiringProvider {
 
 export class NotConfiguredError extends Error {
   constructor(what: string) { super(what); this.name = "NotConfiguredError"; }
+}
+
+/* ───────── Card payouts: sending money TO a holder's own debit card (Visa Direct, Mastercard Send) ───────── */
+
+/**
+ * A card the holder has registered to receive money. We keep only the provider's token and what is safe to show: brand, last4, expiry and the card's funding type.
+ * A cash-out or refund is only ever paid to a verified DEBIT card that belongs to the holder, never to a bank account and never by hand.
+ */
+export interface PayoutCard {
+  token: string;
+  last4: string;
+  brand: "visa" | "mastercard";
+  /** MM/YY */
+  expiry: string;
+  funding: "debit" | "credit" | "prepaid" | "unknown";
+}
+
+/**
+ * Turns a card number into a token. The card number is PCI-scoped: it is passed once, server-to-server, never stored, never logged. (Live use needs the processor's
+ * hosted card fields so the number never reaches our servers at all; until that exists the endpoint that calls this accepts sandbox test cards only.)
+ */
+export interface CardVaultProvider {
+  readonly name: string;
+  tokenise(input: { primaryAccountNumber: string; expiry: string; cardholderName: string }): Promise<PayoutCard>;
+}
+
+export type PayoutStatus = "sent" | "declined" | "error";
+export interface PayoutResult {
+  status: PayoutStatus;
+  /** The provider's reference for the transaction, when it gave one. */
+  providerRef?: string;
+  /** Why it was declined or failed, in words that are safe to show. */
+  reason?: string;
+}
+
+/**
+ * Pushes money to a card. The reference makes the transaction unique: sending the same reference again must not pay twice (the scheme de-duplicates on it),
+ * so a retry after an unknown outcome is safe. "error" means the outcome is not known or the provider was unavailable: it is retried, never treated as paid.
+ */
+export interface CardPayoutProvider {
+  readonly name: string;
+  push(input: { reference: string; card: { token: string; brand: "visa" | "mastercard" }; amount: Money; recipientName: string; narrative: string }): Promise<PayoutResult>;
 }

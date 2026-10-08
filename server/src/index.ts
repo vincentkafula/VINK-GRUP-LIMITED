@@ -12,6 +12,11 @@ import { LiveHub, type VerifiedToken } from "./services/liveHub.js";
 import jwt from "jsonwebtoken";
 import fraudRiskRouter from "./routes/fraudRiskRouter.js";
 import terminalRouter from "./routes/terminalRouter.js";
+import { createTokenService } from "./services/tokenService.js";
+import { createTokenTerminalRouter, createTokenAdminRouter, createTokenRetailRouter } from "./portal/tokenRoutes.js";
+import { authenticateRetailTerminal } from "./services/retailAuth.js";
+import { getCardRail, getAccountValidationProvider, getIssuingProvider } from "./payments/providers/registry.js";
+import { authenticateTerminal } from "./services/terminalAuth.js";
 import retailRouter from "./routes/retailRouter.js";
 import routeRouter from "./routes/routeRouter.js";
 import bankAccountsRouter from "./routes/bankAccounts.js";
@@ -35,7 +40,8 @@ import levySystemRouter from "./routes/levySystem.js";
 import afcRouter from "./routes/afc.js";
 import { createManshyaModule } from "./manshya/mount.js";
 import { createPaymentsSandboxRouter } from "./payments/sandboxRoutes.js";
-import { createIssuerRouter } from "./payments/issuerRoutes.js";
+import { createIssuerRouter, type TokenCardAuthoriser } from "./payments/issuerRoutes.js";
+import { createPaymentologyFastRouter } from "./payments/paymentologyFast.js";
 import { hasDb, pool } from "./db/pool.js";
 import { migrateAndSeed } from "./db/migrate.js";
 import { requireAuth, requireRole, JWT_SECRET } from "./middleware/auth.js";
@@ -81,7 +87,10 @@ app.use("/api", rateLimit({ windowMs: 60_000, max: 300, standardHeaders: true, l
 const manshya = createManshyaModule();
 app.use("/api/manshya", manshya.router);
 // Card issuer-processor real-time authorisations (raw body needed for the signature, so also before the JSON parser).
-app.use("/api/payments/issuer", createIssuerRouter(manshya.payments, manshya));
+// VINK token cards are decided by the token service, which is created further down; the issuer endpoint asks it through this bridge when a request arrives.
+const tokenCardsBridge: TokenCardAuthoriser = { authorise: async (a) => (tokenService ? tokenService.authoriseCardSpend(a) : null), reverse: async (a) => (tokenService ? tokenService.reverseCardSpend(a) : null), isActive: async (p, c) => (tokenService ? tokenService.cardIsActive(p, c) : null) };
+app.use("/api/payments/issuer", createIssuerRouter(manshya.payments, manshya, tokenCardsBridge));
+app.use("/api/payments/issuer", createPaymentologyFastRouter({ tokens: tokenCardsBridge, secret: process.env.PAYMENTOLOGY_FAST_SECRET?.trim() || null }));
 
 
 // Incoming email from Resend (raw body for the signature check, so also before the JSON parser). Staff-only list endpoints.
@@ -134,14 +143,19 @@ const bankDeps = { core: manshyaBankCore(manshya), crypto: createFieldCrypto(pro
 export const configReader = createConfigReader(pool);
 // The money engine and the pooled-account tools share one ledger port. The Banking module asks the limit guard before it sends money out, using a cached copy of the active ZA profile.
 const moneyLedger = manshyaLedgerPort(manshya as never);
-const moneyEngine = pool ? createMoneyEngine({ db: pool, ledger: moneyLedger, reader: configReader }) : null;
+// VINK tokens (the closed-loop points system): a holder with a token wallet is paid in, and pays out of, tokens everywhere the engine moves money.
+const cardRail = getCardRail(manshya.payments);
+const cardIssuer = getIssuingProvider(manshya.payments);
+const tokenService = pool ? createTokenService({ db: pool, ledger: moneyLedger, reader: configReader, rail: cardRail, validator: getAccountValidationProvider(manshya.payments), extraTestPans: manshya.payments.visaDirect?.extraTestPans, issuer: cardIssuer }) : null;
+const moneyEngine = pool ? createMoneyEngine({ db: pool, ledger: moneyLedger, reader: configReader, tokenParty: tokenService?.partyOf }) : null;
+if (moneyEngine) tokenService?.bindEngine(moneyEngine);
 let zaProfile: CountryConfig | null = null;
 (manshya.config as unknown as { limitGuard: unknown }).limitGuard = createLimitGuard(() => zaProfile);
 const crossBorder = moneyEngine && pool ? createCrossBorder({ db: pool, ledger: moneyLedger, engine: moneyEngine, reader: configReader }) : undefined;
 if (moneyEngine) bankFeed.router = createBankFeedRouter({ deps: { db: pool!, ledger: moneyLedger, engine: moneyEngine, reader: configReader }, secret: process.env.BANK_WEBHOOK_SECRET?.trim() || undefined });
 const channelAccounts = () => pooled.forCurrency("ZAR");
 app.use("/api/portal",        createPortalRouter(pool, bankDeps, {
-  channels: (currency) => pooled.forCurrency(currency), crossBorder,
+  channels: (currency) => pooled.forCurrency(currency), crossBorder, tokens: tokenService ?? undefined,
   wallets: (userId) => { const b = moneyLedger.balance(walletLedgerAccount("ZMW", userId)); return b ? [{ currency: "ZMW", balanceCents: b }] : []; },
 }));
 if (pool) app.use("/api/admin/money", requireAuth, requireRole("owner", "superadmin"), createMoneyAdminRouter({ db: pool, ledger: moneyLedger, reader: configReader, engine: moneyEngine ?? undefined, channels: channelAccounts, pooled, crossBorder }));
@@ -153,6 +167,11 @@ if (pool) app.use("/api/admin/config", requireAuth, requireRole("owner", "supera
 if (pool) app.use("/api/admin/bank-links", requireAuth, requireRole("owner", "superadmin"), createBankAdminRouter({ db: pool, ...bankDeps }));
 app.use("/api/auth",          (hasDb ? createDbAuthRouter() : createMemoryAuthRouter()).router);
 app.use("/api/fraud-risk",    fraudRiskRouter);
+if (tokenService && pool) {
+  app.use("/api/terminal/token", createTokenTerminalRouter({ db: pool, tokens: tokenService, authenticate: authenticateTerminal }));          // before the general terminal routes
+  if (moneyEngine) app.use("/api/retail/token", createTokenRetailRouter({ db: pool, ledger: moneyLedger, engine: moneyEngine, reader: configReader, authenticate: authenticateRetailTerminal }));          // before the general retail routes
+  app.use("/api/admin/tokens", requireAuth, requireRole("owner", "superadmin"), createTokenAdminRouter({ db: pool, tokens: tokenService, sandbox: manshya.payments.mode === "sandbox" }));
+}
 app.use("/api/terminal",      terminalRouter);
 app.use("/api/retail",        retailRouter);
 app.use("/api/routes",        routeRouter);
@@ -348,7 +367,7 @@ async function boot() {
         setInterval(() => {
           if (running) return; running = true;
           configReader.active("ZA").then((a) => { zaProfile = a.config; }).catch(() => {});
-          engine.runCycle().catch((e) => console.error("[money] cycle failed:", e instanceof Error ? e.message : e)).finally(() => { running = false; });
+          engine.runCycle().catch((e) => console.error("[money] cycle failed:", e instanceof Error ? e.message : e)).then(() => tokenService?.processPayouts()).catch((e) => console.error("[token] payouts failed:", e instanceof Error ? e.message : e)).finally(() => { running = false; });
         }, 30_000).unref();
       }
     } catch (err) {

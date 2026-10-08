@@ -64,6 +64,7 @@ function Body({ country, setCountry, tick, refresh, meId }: { country: "ZA" | "Z
             <PooledAccountsPanel />
             <StatementImportPanel />
             <FxPanel />
+            <TokensAdminPanel />
             <RulesTester country={country} />
             <Audit key={tick} />
           </>
@@ -310,6 +311,77 @@ function FxPanel() {
         <label className="block"><span className="text-[11px] text-fg-muted">Rate</span><input className={inputCls + " mt-1 !w-28"} inputMode="decimal" value={rate} onChange={(e) => setRate(e.target.value)} /></label>
         <ActionButton label="Refresh automatically now" color={COLOR} onRun={async () => { const r = await moneyApi("/fx/refresh", { method: "POST" }); if ("error" in r) return { error: r.error }; reload(); const bad = (r.data.results as { pair: string; status: string; reason?: string }[]).filter((x) => x.status !== "updated"); return bad.length ? { error: bad.map((x) => `${x.pair}: ${x.reason ?? x.status}`).join(" ") } : { message: "Rates updated" }; }} />
         <ActionButton label="Set rate by hand" color="#F59E0B" onRun={async () => { const n = Number(rate); if (!(n > 0)) return { error: "Enter a rate above zero" }; const [from, to] = pair.split("-"); const r = await moneyApi("/fx", { method: "PUT", body: { from, to, rate: n } }); if ("error" in r) return { error: r.error }; setRate(""); reload(); return { message: "Saved" }; }} />
+      </div>
+    </section>
+  );
+}
+
+async function tokenApi(path: string, init?: { method?: string; body?: unknown }): Promise<Reply> {
+  try {
+    const res = await authFetch(`${API_BASE}/api/admin/tokens${path}`, { method: init?.method ?? "GET", headers: { "Content-Type": "application/json" }, body: init?.body === undefined ? undefined : JSON.stringify(init.body) });
+    const body = await res.json().catch(() => ({}));
+    return !res.ok || body.success === false ? { error: body.error ?? `Request failed (${res.status})` } : { data: body };
+  } catch { return { error: "We could not reach the server." }; }
+}
+
+/** VINK tokens: how many are in circulation, the cash-outs and refunds waiting to be paid out of the pool, and the per-trip device fee paid to investors. */
+function TokensAdminPanel() {
+  const [sum, reloadSum] = useLoad<{ summary: { circulationCents: number; wallets: number; byRole: Record<string, { wallets: number; cents: number }>; pendingCashouts: { count: number; cents: number }; clearingCents: number; cardSettlementCents?: number }; settings: { deviceFeeCents: number } }>(() => tokenApi("/summary") as never);
+  const [list, reloadList] = useLoad<{ cashOuts: { id: string; name: string; email: string; amountCents: number; currency: string; reason: string; status: string; note: string | null; card: string | null; lastError: string | null; attempts: number; requestedAt: string }[] }>(() => tokenApi("/cash-outs?status=open") as never);
+  const [review, reloadReview] = useLoad<{ cards: { id: string; accountName: string; email: string; cardholderName: string; brand: string; last4: string }[] }>(() => tokenApi("/payout-cards") as never);
+  const [sbxCard, setSbxCard] = useState(""); const [sbxAmt, setSbxAmt] = useState(""); const [sbxChan, setSbxChan] = useState("chip"); const [fee, setFee] = useState(""); const [tierUid, setTierUid] = useState(""); const [tier, setTier] = useState("standard"); const [uid, setUid] = useState(""); const [amt, setAmt] = useState(""); const [why, setWhy] = useState("");
+  const both = () => { reloadSum(); reloadList(); reloadReview(); };
+  return (
+    <section className="rounded-xl p-4 space-y-3" style={{ background: "var(--vk-surface)", border: "1px solid var(--vk-line)" }}>
+      <h2 className="text-sm font-bold text-fg">VINK tokens <span className="font-normal text-fg-muted">· the closed-loop points system. Tokens leave only as a payout the system makes to the holder's own debit card, or a transfer to their own VINK bank account. Staff cannot pay a payout by hand.</span></h2>
+      <Status load={sum}>{({ summary: s, settings }) => !s ? <Empty>Token figures are not available.</Empty> : (
+        <>
+          <p className="text-xs text-fg">In circulation: <b>{cents(s.circulationCents)}</b> across {s.wallets} wallets · waiting to be paid out: <b>{cents(s.pendingCashouts?.cents ?? 0)}</b> ({s.pendingCashouts?.count ?? 0}) · device fee per trip: <b>{cents(settings?.deviceFeeCents ?? 0)}</b> · card purchases waiting for the sponsor bank: <b>{cents(s.cardSettlementCents ?? 0)}</b></p>
+          <p className="text-[11px] text-fg-muted">{Object.entries(s.byRole ?? {}).map(([r, v]) => `${r}: ${cents(v.cents)} (${v.wallets})`).join(" · ") || "No wallets yet."}</p>
+        </>)}</Status>
+      <Status load={list}>{({ cashOuts }) => !cashOuts || cashOuts.length === 0 ? <Empty>No payouts waiting. The system pays each one to the holder's debit card as soon as it is asked for.</Empty> : (
+        <ul className="space-y-2">{cashOuts.map((c) => (
+          <li key={c.id} className="rounded-lg p-3 text-xs text-fg" style={{ background: "var(--vk-bg)", border: "1px solid var(--vk-line)" }}>
+            <p><b>{c.name}</b> ({c.email}) · {c.reason === "refund" ? "Refund" : "Cash-out"} · <b>{cents(c.amountCents, c.currency)}</b> to {c.card ?? "no card"} · {c.status === "processing" ? "with the card service" : `waiting (${c.attempts} tries)`} · {when(c.requestedAt)}{c.note ? ` · ${c.note}` : ""}</p>
+            {c.lastError && <p className="text-warn mt-1">Last problem: {c.lastError}</p>}
+            {c.status === "requested" && (
+              <div className="flex gap-2 mt-2">
+                <ActionButton small label="Try now" color="#10B981" onRun={async () => { const r = await tokenApi(`/cash-outs/${c.id}/retry`, { method: "POST", body: {} }); if ("error" in r) return { error: r.error }; both(); return { message: `Result: ${r.data.status}` }; }} />
+                <ActionButton small label="Refuse (tokens go back)" color="#EF4444" onRun={async () => { const r = await tokenApi(`/cash-outs/${c.id}/reject`, { method: "POST", body: {} }); if ("error" in r) return { error: r.error }; both(); }} />
+              </div>)}
+          </li>))}</ul>)}</Status>
+      <Status load={review}>{({ cards }) => !cards || cards.length === 0 ? null : (
+        <div>
+          <p className="text-xs font-semibold text-fg mb-1">Debit cards to check: the name on the card is not the account holder's</p>
+          <ul className="space-y-2">{cards.map((c) => (
+            <li key={c.id} className="rounded-lg p-3 text-xs text-fg" style={{ background: "var(--vk-bg)", border: "1px solid var(--vk-line)" }}>
+              <p>Account <b>{c.accountName}</b> ({c.email}) · card in the name of <b>{c.cardholderName}</b> · {c.brand} ****{c.last4}</p>
+              <div className="flex gap-2 mt-2">
+                <ActionButton small label="Approve" color="#10B981" onRun={async () => { const r = await tokenApi(`/payout-cards/${c.id}/approve`, { method: "POST", body: {} }); if ("error" in r) return { error: r.error }; both(); }} />
+                <ActionButton small label="Reject" color="#EF4444" onRun={async () => { const r = await tokenApi(`/payout-cards/${c.id}/reject`, { method: "POST", body: {} }); if ("error" in r) return { error: r.error }; both(); }} />
+              </div>
+            </li>))}</ul>
+        </div>)}</Status>
+      <div className="flex flex-wrap items-end gap-3">
+        <label className="block"><span className="text-[11px] text-fg-muted">Device fee per trip (R)</span><input className={inputCls + " mt-1 !w-28"} inputMode="decimal" value={fee} onChange={(e) => setFee(e.target.value)} placeholder="1.00" /></label>
+        <ActionButton label="Set device fee" color={COLOR} onRun={async () => { const c = Math.round(Number(fee.replace(",", ".")) * 100); if (!Number.isInteger(c) || c < 0) return { error: "Enter an amount, 0 or more" }; const r = await tokenApi("/settings", { method: "PUT", body: { deviceFeeCents: c } }); if ("error" in r) return { error: r.error }; reloadSum(); return { message: "Saved. It applies to trips completed from now on." }; }} />
+      </div>
+      <div className="flex flex-wrap items-end gap-3">
+        <label className="block"><span className="text-[11px] text-fg-muted">Sandbox: try a card purchase. Card id</span><input className={inputCls + " mt-1"} value={sbxCard} onChange={(e) => setSbxCard(e.target.value)} /></label>
+        <label className="block"><span className="text-[11px] text-fg-muted">Amount (R)</span><input className={inputCls + " mt-1 !w-24"} inputMode="decimal" value={sbxAmt} onChange={(e) => setSbxAmt(e.target.value)} /></label>
+        <label className="block"><span className="text-[11px] text-fg-muted">Where</span><select className={inputCls + " mt-1 !w-auto"} value={sbxChan} onChange={(e) => setSbxChan(e.target.value)}><option value="chip">Shop (chip)</option><option value="tap">Shop (tap)</option><option value="online">Online</option><option value="atm">Cash machine</option></select></label>
+        <ActionButton label="Try purchase" color="#64748B" onRun={async () => { const c = Math.round(Number(sbxAmt.replace(",", ".")) * 100); if (!Number.isInteger(c) || c <= 0) return { error: "Enter the amount" }; const r = await tokenApi("/sandbox/card-purchase", { method: "POST", body: { cardId: sbxCard.trim(), amountCents: c, channel: sbxChan } }); if ("error" in r) return { error: r.error }; both(); const d = r.data.decision; return { message: d?.approved ? "Approved: the tokens left the wallet." : `Declined: ${d?.reason ?? "unknown"}` }; }} />
+      </div>
+      <div className="flex flex-wrap items-end gap-3">
+        <label className="block"><span className="text-[11px] text-fg-muted">Verification level: holder's user id</span><input className={inputCls + " mt-1"} value={tierUid} onChange={(e) => setTierUid(e.target.value)} /></label>
+        <label className="block"><span className="text-[11px] text-fg-muted">Level</span><select className={inputCls + " mt-1 !w-auto"} value={tier} onChange={(e) => setTier(e.target.value)}><option value="basic">Basic</option><option value="standard">Standard</option><option value="full">Full</option><option value="business">Business</option></select></label>
+        <ActionButton label="Set level" color={COLOR} onRun={async () => { const r = await tokenApi("/wallets/tier", { method: "PUT", body: { userId: tierUid.trim(), currency: "ZAR", tier } }); if ("error" in r) return { error: r.error }; return { message: "Level saved. The country profile's limits for that level now apply." }; }} />
+      </div>
+      <div className="flex flex-wrap items-end gap-3">
+        <label className="block"><span className="text-[11px] text-fg-muted">Refund: holder's user id</span><input className={inputCls + " mt-1"} value={uid} onChange={(e) => setUid(e.target.value)} /></label>
+        <label className="block"><span className="text-[11px] text-fg-muted">Amount (R)</span><input className={inputCls + " mt-1 !w-24"} inputMode="decimal" value={amt} onChange={(e) => setAmt(e.target.value)} /></label>
+        <label className="block"><span className="text-[11px] text-fg-muted">Reason</span><input className={inputCls + " mt-1"} value={why} onChange={(e) => setWhy(e.target.value)} /></label>
+        <ActionButton label="Refund to their debit card" color="#F59E0B" onRun={async () => { const c = Math.round(Number(amt.replace(",", ".")) * 100); if (!Number.isInteger(c) || c <= 0) return { error: "Enter the amount" }; const r = await tokenApi("/refund", { method: "POST", body: { userId: uid.trim(), currency: "ZAR", amountCents: c, note: why } }); if ("error" in r) return { error: r.error }; both(); setAmt(""); setWhy(""); return { message: "Refund made: the system pays it to the holder's own debit card." }; }} />
       </div>
     </section>
   );
