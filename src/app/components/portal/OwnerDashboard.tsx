@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Home, Car, Users, BarChart3, FileText, Bell, Link2, Wallet, MapPin, Scale, Landmark } from "lucide-react";
+import { TokensPanel } from "./TokensPanel";
+import { Home, Car, Users, BarChart3, FileText, Bell, Link2, Wallet, MapPin, Scale, Landmark, Coins } from "lucide-react";
 import { Banknote } from "lucide-react";
 import { PaymentsPanel, TripsPanel, CrossBorderPanel, VirtualAccountsPanel, OwnerAgreements } from "./MoneyPanels";
 import { BankStrip, BankScreen } from "./BankAccount";
@@ -28,7 +29,7 @@ export function OwnerDashboard({ userName, onClose }: { userName?: string; onClo
     { icon: <BarChart3 className="w-4 h-4" />, label: "Reports" }, { icon: <Scale className="w-4 h-4" />, label: "Financials" },
     { icon: <FileText className="w-4 h-4" />, label: "Documents" }, { icon: <Bell className="w-4 h-4" />, label: "Notifications", badge: unread || undefined },
     { icon: <Banknote className="w-4 h-4" />, label: "Driver pay" }, { icon: <Scale className="w-4 h-4" />, label: "Payments & trips" },
-    { icon: <Link2 className="w-4 h-4" />, label: "Requests & links" }, { icon: <Landmark className="w-4 h-4" />, label: "Bank account" },
+    { icon: <Link2 className="w-4 h-4" />, label: "Requests & links" }, { icon: <Coins className="w-4 h-4" />, label: "VINK Tokens" }, { icon: <Landmark className="w-4 h-4" />, label: "Bank account" },
   ];
   return (
     <DashboardShell title="Owner Dashboard" subtitle="Vehicles, drivers and earnings" accentColor={COLOR} gradient={`from-[${COLOR}]`} navItems={items} activeNav={nav} onNavChange={setNav} onClose={onClose} userName={userName} alertCount={unread || undefined}>
@@ -46,6 +47,7 @@ export function OwnerDashboard({ userName, onClose }: { userName?: string; onClo
           {nav === "Documents" && <Documents onChanged={reloadNotes} />}
           {nav === "Notifications" && <Notifications notes={notes} reload={reloadNotes} />}
           {nav === "Requests & links" && <LinksPanel call={call} color={COLOR} />}
+          {nav === "VINK Tokens" && <TokensPanel segment="owner" color={COLOR} />}
           {nav === "Bank account" && <BankScreen segment="owner" color={COLOR} />}
         </ScreenBoundary>
       </div>

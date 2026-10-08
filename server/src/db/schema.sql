@@ -1172,3 +1172,74 @@ CREATE TABLE IF NOT EXISTS cross_border_transfers (
   completed_at     TIMESTAMPTZ
 );
 CREATE INDEX IF NOT EXISTS idx_xb_sender ON cross_border_transfers(sender_id, created_at DESC);
+
+-- ─── VINK tokens: the closed-loop points system ───────────────────────────────────────────────────────────────────────────────────────────────
+-- Money received into the pooled bank account is held there and issued as tokens (1 token = 1 unit of the currency, kept in cents) to the payer's
+-- wallet, matched by the payment reference (virtual_accounts). A passenger who taps pays in tokens: tokens move between wallets on the ledger and
+-- NOTHING moves in the bank. Tokens leave the system only through the engine: to the holder's VINK bank account, or as a cash-out paid from the pool.
+CREATE TABLE IF NOT EXISTS token_wallets (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  currency    TEXT NOT NULL CHECK (currency IN ('ZAR','ZMW')),
+  role        TEXT NOT NULL CHECK (role IN ('passenger','driver','owner','marshal','association','investor')),
+  status      TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active','frozen','closed')),
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (user_id, currency)
+);
+-- A closed-loop VINK card is identified by its chip's UID. Only a hash is stored, with the last four characters to show the holder which card it is.
+CREATE TABLE IF NOT EXISTS token_cards (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  wallet_id   UUID NOT NULL REFERENCES token_wallets(id) ON DELETE CASCADE,
+  card_hash   TEXT NOT NULL UNIQUE,
+  last4       TEXT NOT NULL,
+  status      TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active','blocked','lost')),
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+-- The fare for each route an association runs (for example CATA's Langa routes). The device sends the route; the server decides the amount.
+CREATE TABLE IF NOT EXISTS token_routes (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  association_id  UUID REFERENCES users(id) ON DELETE CASCADE,
+  name            TEXT NOT NULL,
+  fare_cents      BIGINT NOT NULL CHECK (fare_cents > 0),
+  currency        TEXT NOT NULL DEFAULT 'ZAR',
+  effective_from  DATE,
+  active          BOOLEAN NOT NULL DEFAULT true,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (association_id, name)
+);
+-- Programme settings. The device fee (paid to the investor who sponsored the device) is per completed trip and still being negotiated, so it is a setting.
+CREATE TABLE IF NOT EXISTS token_settings (
+  scope            TEXT PRIMARY KEY,
+  device_fee_cents BIGINT NOT NULL DEFAULT 100 CHECK (device_fee_cents >= 0),
+  updated_by       UUID REFERENCES users(id) ON DELETE SET NULL,
+  updated_at       TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+-- What the token service did for a holder, shown on their statement (top-ups come from pool_credits).
+CREATE TABLE IF NOT EXISTS token_events (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id       UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  currency      TEXT NOT NULL,
+  kind          TEXT NOT NULL,
+  amount_cents  BIGINT NOT NULL,
+  counterparty  TEXT,
+  ref           TEXT NOT NULL,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (user_id, ref, kind)
+);
+CREATE INDEX IF NOT EXISTS idx_token_events_user ON token_events(user_id, created_at DESC);
+-- Cash-outs and refunds: tokens move to a holding account first; staff pay the money out of the pool and mark it paid, or reject it and the tokens go back.
+CREATE TABLE IF NOT EXISTS token_cashouts (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id       UUID NOT NULL REFERENCES users(id),
+  currency      TEXT NOT NULL,
+  amount_cents  BIGINT NOT NULL CHECK (amount_cents > 0),
+  reason        TEXT NOT NULL DEFAULT 'cash_out' CHECK (reason IN ('cash_out','refund')),
+  status        TEXT NOT NULL DEFAULT 'requested' CHECK (status IN ('requested','paid','rejected')),
+  ref           TEXT NOT NULL UNIQUE,
+  note          TEXT,
+  requested_by  UUID REFERENCES users(id) ON DELETE SET NULL,
+  decided_by    UUID REFERENCES users(id) ON DELETE SET NULL,
+  requested_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  decided_at    TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS idx_token_cashouts_open ON token_cashouts(status, requested_at);

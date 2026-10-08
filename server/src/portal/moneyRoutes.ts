@@ -3,6 +3,7 @@ import { h, uid, num, iso, dateOnly, isUuid, validDate, fail, isUniqueViolation,
 import { ensureVirtualAccount, POOLS, POOL_LABEL, type Pool } from "../services/poolService.js";
 import type { ChannelAccount } from "./bankLinks.js";
 import type { CrossBorder } from "../services/crossBorderService.js";
+import type { TokenService } from "../services/tokenService.js";
 
 /**
  * Driver-owner agreements, the marshal fee and the payments the rules create. Mounted at /api/portal/<role>/money for the four roles that use it.
@@ -40,6 +41,8 @@ export interface MoneyDeps {
   wallets?: (userId: string) => { currency: string; balanceCents: number }[];
   /** Sending money between South Africa and Zambia. */
   crossBorder?: CrossBorder;
+  /** VINK tokens: the closed-loop points system, available to every portal user. */
+  tokens?: TokenService;
 }
 
 export function createMoneyRouter(db: Db, role: MoneyRole, deps: MoneyDeps = {}): Router {

@@ -1,5 +1,6 @@
 import { lazy, Suspense, useState } from "react";
-import { User, CreditCard, MapPin, LifeBuoy } from "lucide-react";
+import { TokensPanel } from "./TokensPanel";
+import { User, CreditCard, MapPin, LifeBuoy, Coins } from "lucide-react";
 import { DashboardShell, SectionPanel, Badge } from "../dashboards/DashboardShell";
 import { portalClient, useLoad, Status, Empty, Field, ActionButton, inputCls, when } from "./ui";
 import { ScreenBoundary } from "./widgets";
@@ -13,7 +14,7 @@ const NAV = [
   { icon: <User className="w-4 h-4" />, label: "Profile" },
   { icon: <CreditCard className="w-4 h-4" />, label: "Payments & banking" },
   { icon: <MapPin className="w-4 h-4" />, label: "Trips" },
-  { icon: <LifeBuoy className="w-4 h-4" />, label: "Support" },
+  { icon: <Coins className="w-4 h-4" />, label: "VINK Tokens" }, { icon: <LifeBuoy className="w-4 h-4" />, label: "Support" },
 ];
 
 interface Profile { phone: string | null; homeArea: string | null; favouriteRoute: string | null; emergencyContactName: string | null; emergencyContactPhone: string | null }
@@ -28,6 +29,7 @@ export function PersonalDashboard({ userName, onClose }: { userName?: string; on
           <ScreenBoundary resetKey={nav}>
           {nav === "Profile" && <ProfileScreen />}
           {nav === "Trips" && <SectionPanel title="Trip and booking history"><div className="p-4"><Empty>Your trips will appear here once they can be linked to your account. Nothing is recorded yet. Your payments are under Payments &amp; banking.</Empty></div></SectionPanel>}
+          {nav === "VINK Tokens" && <TokensPanel segment="personal" color={COLOR} />}
           {nav === "Support" && <SupportScreen />}
           {nav === "Payments & banking" && <SectionPanel title="Payments & banking"><div className="p-4"><Empty>Opening your payments and banking dashboard…</Empty></div></SectionPanel>}
           </ScreenBoundary>

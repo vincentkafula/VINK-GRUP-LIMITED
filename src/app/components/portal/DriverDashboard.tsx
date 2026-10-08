@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { User, Car, Route as RouteIcon, Wallet, Bell, Loader2, TriangleAlert, Link2, FileText, Landmark } from "lucide-react";
+import { TokensPanel } from "./TokensPanel";
+import { User, Car, Route as RouteIcon, Wallet, Bell, Loader2, TriangleAlert, Link2, FileText, Landmark, Coins } from "lucide-react";
 import { Banknote } from "lucide-react";
 import { PaymentsPanel, TripsPanel, CrossBorderPanel, VirtualAccountsPanel, DriverAgreements } from "./MoneyPanels";
 import { BankStrip, BankScreen } from "./BankAccount";
@@ -19,7 +20,7 @@ const NAV_BASE = [
   { icon: <Car className="w-4 h-4" />, label: "Vehicle & licence" },
   { icon: <RouteIcon className="w-4 h-4" />, label: "Route & trips" },
   { icon: <Wallet className="w-4 h-4" />, label: "Earnings" },
-  { icon: <FileText className="w-4 h-4" />, label: "Statements" }, { icon: <Landmark className="w-4 h-4" />, label: "Bank account" },
+  { icon: <FileText className="w-4 h-4" />, label: "Statements" }, { icon: <Coins className="w-4 h-4" />, label: "VINK Tokens" }, { icon: <Landmark className="w-4 h-4" />, label: "Bank account" },
   { icon: <Banknote className="w-4 h-4" />, label: "Pay agreement" }, { icon: <Wallet className="w-4 h-4" />, label: "Payments & trips" },
   { icon: <Bell className="w-4 h-4" />, label: "Notifications" },
   { icon: <Link2 className="w-4 h-4" />, label: "Requests & links" },
@@ -73,6 +74,7 @@ export function DriverDashboard({ userName, onClose }: { userName?: string; onCl
           {nav === "Payments & trips" && <><VirtualAccountsPanel segment="driver" color={COLOR} /><CrossBorderPanel segment="driver" color={COLOR} /><PaymentsPanel segment="driver" color={COLOR} /><TripsPanel segment="driver" color={COLOR} /></>}
           {nav === "Notifications" && <NotificationsScreen notes={notes} reload={reloadNotes} />}
           {nav === "Requests & links" && <LinksPanel call={linkCall} color={COLOR} canAskOwner />}
+          {nav === "VINK Tokens" && <TokensPanel segment="driver" color={COLOR} />}
           {nav === "Bank account" && <BankScreen segment="driver" color={COLOR} />}
         </ScreenBoundary>
       </div>

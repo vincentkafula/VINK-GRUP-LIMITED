@@ -82,13 +82,19 @@ export interface Engine {
   partyOf(userId: string | null | undefined, currency?: string): Promise<Party | null>;
 }
 
-export function createMoneyEngine(deps: { db: Db; ledger: LedgerPort; reader: ConfigReader; now?: () => Date }): Engine {
+export function createMoneyEngine(deps: {
+  db: Db; ledger: LedgerPort; reader: ConfigReader; now?: () => Date;
+  /** The holder's VINK token wallet in this currency, if they have an active one (see services/tokenService.ts). Tokens come first: a holder with a token wallet is paid in tokens. */
+  tokenParty?: (userId: string, currency: string) => Promise<Party | null>;
+}): Engine {
   const { ledger, reader } = deps;
   const db = deps.db as unknown as Loose;
   const clock = deps.now ?? (() => new Date());
 
   async function partyOf(userId: string | null | undefined, currency = "ZAR"): Promise<Party | null> {
     if (!userId) return null;
+    const tokens = await deps.tokenParty?.(userId, currency);
+    if (tokens) return tokens;
     const r = (await db.query(`SELECT manshya_account_id FROM bank_account_links WHERE user_id = $1 AND status = 'verified'`, [userId])).rows[0];
     if (!r) return null;                                                          // a verified linked account is the proof of identity for every currency
     return { userId, account: currency === "ZAR" ? bankLedgerAccount(r.manshya_account_id) : walletLedgerAccount(currency, userId) };
@@ -146,9 +152,9 @@ export function createMoneyEngine(deps: { db: Db; ledger: LedgerPort; reader: Co
       `SELECT DISTINCT t.terminal_id FROM terminal_taps t WHERE t.status = 'confirmed' AND t.trip_id IS NULL`)).rows;
     let made = 0;
     for (const { terminal_id } of terms) {
-      const term = (await db.query(`SELECT id, vehicle_id, driver_id, owner_id, association_id FROM terminals WHERE id = $1`, [terminal_id])).rows[0];
+      const term = (await db.query(`SELECT id, vehicle_id, driver_id, owner_id, association_id, investor_id FROM terminals WHERE id = $1`, [terminal_id])).rows[0];
       if (!term) continue;
-      const taps = (await db.query(`SELECT id, amount, currency, received_at FROM terminal_taps WHERE terminal_id = $1 AND status = 'confirmed' AND trip_id IS NULL ORDER BY received_at, id`, [terminal_id])).rows;
+      const taps = (await db.query(`SELECT id, amount, currency, received_at, scheme FROM terminal_taps WHERE terminal_id = $1 AND status = 'confirmed' AND trip_id IS NULL ORDER BY received_at, id`, [terminal_id])).rows;
       if (!taps.length) continue;
       const cfg = await cfgFor(taps[0].currency);
       const per = cfg.trip.tapsPerTrip;
@@ -172,13 +178,13 @@ export function createMoneyEngine(deps: { db: Db; ledger: LedgerPort; reader: Co
         } catch (e) { if (isUniqueViolation(e)) break; throw e; }          // another run took this trip number: the next cycle carries on
         for (const g of group) await db.query(`UPDATE terminal_taps SET trip_id = $1 WHERE id = $2 AND trip_id IS NULL`, [tripId, g.id]);
         made++;
-        await createTripItems(tripId, { ...term, marshal_id: dep?.marshal_id ?? null }, group[0].currency, last, cfg);
+        await createTripItems(tripId, { ...term, marshal_id: dep?.marshal_id ?? null }, group[0].currency, last, cfg, group.every((g) => g.scheme === "vink_token"));
       }
     }
     return { trips: made };
   }
 
-  async function createTripItems(tripId: string, t: { driver_id: string | null; owner_id: string | null; association_id: string | null; marshal_id: string | null }, currency: string, at: Date, cfg: CountryConfig) {
+  async function createTripItems(tripId: string, t: { driver_id: string | null; owner_id: string | null; association_id: string | null; marshal_id: string | null; investor_id?: string | null }, currency: string, at: Date, cfg: CountryConfig, tokenTrip = false) {
     const fee = cfg.marshalFee;
     const set = t.association_id ? (await db.query(`SELECT marshal_fee_cents FROM association_settings WHERE association_id = $1`, [t.association_id])).rows[0] : null;
     const amount = set?.marshal_fee_cents != null ? Number(set.marshal_fee_cents) : fee.amountCents;
@@ -196,6 +202,18 @@ export function createMoneyEngine(deps: { db: Db; ledger: LedgerPort; reader: Co
       await db.query(`INSERT INTO payment_items (kind, payer_id, payee_id, amount_cents, remaining_cents, currency, ref, trip_id, agreement_id, note, status)
                       VALUES ('per_trip_pay',$1,$2,$3,$3,$4,$5,$6,$7,'Per-trip pay for a completed trip','pending') ON CONFLICT (ref) DO NOTHING`,
         [agr.owner_id, agr.driver_id, agr.amount_cents, agr.currency, `trippay:${tripId}`, tripId, agr.id]);
+    }
+    // A trip paid in tokens also pays the investor who sponsored the device: a fixed fee per completed trip (a setting, still being negotiated), paid by the driver
+    // out of the fares collected, like the marshal fee, and waiting if the driver's tokens do not cover it yet.
+    if (tokenTrip && t.investor_id) {
+      const row = (await db.query(`SELECT device_fee_cents FROM token_settings WHERE scope = 'default'`)).rows[0];
+      const deviceFee = row ? Number(row.device_fee_cents) : 100;
+      const payer = t.driver_id ?? t.owner_id;
+      if (deviceFee > 0 && payer && payer !== t.investor_id) {
+        await db.query(`INSERT INTO payment_items (kind, payer_id, payee_id, amount_cents, remaining_cents, currency, ref, trip_id, note, status)
+                        VALUES ('per_trip_pay',$1,$2,$3,$3,$4,$5,$6,'Device fee for a completed trip','pending') ON CONFLICT (ref) DO NOTHING`,
+          [payer, t.investor_id, deviceFee, currency, `device:${tripId}`, tripId]);
+      }
     }
   }
 

@@ -12,6 +12,7 @@ import { createLinkRouter } from "../portal/linkRoutes.js";
 import { createBankRouter, type Deps as BankDeps } from "../portal/bankLinks.js";
 import type { BankRole } from "../portal/bankRules.js";
 import { createMoneyRouter, type MoneyDeps, type MoneyRole } from "../portal/moneyRoutes.js";
+import { createTokenRouter } from "../portal/tokenRoutes.js";
 
 /**
  * Role portals. Every account type has its own prefix and ONLY that role may call it, checked on the server from the signed
@@ -49,6 +50,7 @@ export function createPortalRouter(db: Db | null = pool, bank: Omit<BankDeps, "d
     if (!db) sub.use(unavailable);
     else {
       if (links) sub.use(links(db));
+      if (money.tokens) sub.use("/tokens", createTokenRouter(db, money.tokens, { channels: money.channels, crossBorder: money.crossBorder }));         // every role can hold tokens
       if (role !== "personal") sub.use("/bank", bank ? createBankRouter({ ...bank, db }, role as BankRole) : unavailable);   // the five business roles; passengers use the VINK dashboard directly
       if (role === "driver" || role === "vehicle_owner" || role === "marshal" || role === "association") sub.use("/money", createMoneyRouter(db, role as MoneyRole, money));
       sub.use(make(db));

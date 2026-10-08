@@ -12,6 +12,9 @@ import { LiveHub, type VerifiedToken } from "./services/liveHub.js";
 import jwt from "jsonwebtoken";
 import fraudRiskRouter from "./routes/fraudRiskRouter.js";
 import terminalRouter from "./routes/terminalRouter.js";
+import { createTokenService } from "./services/tokenService.js";
+import { createTokenTerminalRouter, createTokenAdminRouter } from "./portal/tokenRoutes.js";
+import { authenticateTerminal } from "./services/terminalAuth.js";
 import retailRouter from "./routes/retailRouter.js";
 import routeRouter from "./routes/routeRouter.js";
 import bankAccountsRouter from "./routes/bankAccounts.js";
@@ -134,14 +137,17 @@ const bankDeps = { core: manshyaBankCore(manshya), crypto: createFieldCrypto(pro
 export const configReader = createConfigReader(pool);
 // The money engine and the pooled-account tools share one ledger port. The Banking module asks the limit guard before it sends money out, using a cached copy of the active ZA profile.
 const moneyLedger = manshyaLedgerPort(manshya as never);
-const moneyEngine = pool ? createMoneyEngine({ db: pool, ledger: moneyLedger, reader: configReader }) : null;
+// VINK tokens (the closed-loop points system): a holder with a token wallet is paid in, and pays out of, tokens everywhere the engine moves money.
+const tokenService = pool ? createTokenService({ db: pool, ledger: moneyLedger, reader: configReader }) : null;
+const moneyEngine = pool ? createMoneyEngine({ db: pool, ledger: moneyLedger, reader: configReader, tokenParty: tokenService?.partyOf }) : null;
+if (moneyEngine) tokenService?.bindEngine(moneyEngine);
 let zaProfile: CountryConfig | null = null;
 (manshya.config as unknown as { limitGuard: unknown }).limitGuard = createLimitGuard(() => zaProfile);
 const crossBorder = moneyEngine && pool ? createCrossBorder({ db: pool, ledger: moneyLedger, engine: moneyEngine, reader: configReader }) : undefined;
 if (moneyEngine) bankFeed.router = createBankFeedRouter({ deps: { db: pool!, ledger: moneyLedger, engine: moneyEngine, reader: configReader }, secret: process.env.BANK_WEBHOOK_SECRET?.trim() || undefined });
 const channelAccounts = () => pooled.forCurrency("ZAR");
 app.use("/api/portal",        createPortalRouter(pool, bankDeps, {
-  channels: (currency) => pooled.forCurrency(currency), crossBorder,
+  channels: (currency) => pooled.forCurrency(currency), crossBorder, tokens: tokenService ?? undefined,
   wallets: (userId) => { const b = moneyLedger.balance(walletLedgerAccount("ZMW", userId)); return b ? [{ currency: "ZMW", balanceCents: b }] : []; },
 }));
 if (pool) app.use("/api/admin/money", requireAuth, requireRole("owner", "superadmin"), createMoneyAdminRouter({ db: pool, ledger: moneyLedger, reader: configReader, engine: moneyEngine ?? undefined, channels: channelAccounts, pooled, crossBorder }));
@@ -153,6 +159,10 @@ if (pool) app.use("/api/admin/config", requireAuth, requireRole("owner", "supera
 if (pool) app.use("/api/admin/bank-links", requireAuth, requireRole("owner", "superadmin"), createBankAdminRouter({ db: pool, ...bankDeps }));
 app.use("/api/auth",          (hasDb ? createDbAuthRouter() : createMemoryAuthRouter()).router);
 app.use("/api/fraud-risk",    fraudRiskRouter);
+if (tokenService && pool) {
+  app.use("/api/terminal/token", createTokenTerminalRouter({ db: pool, tokens: tokenService, authenticate: authenticateTerminal }));          // before the general terminal routes
+  app.use("/api/admin/tokens", requireAuth, requireRole("owner", "superadmin"), createTokenAdminRouter({ db: pool, tokens: tokenService }));
+}
 app.use("/api/terminal",      terminalRouter);
 app.use("/api/retail",        retailRouter);
 app.use("/api/routes",        routeRouter);

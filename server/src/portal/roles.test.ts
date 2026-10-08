@@ -1,4 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { pinClock, unpinClock } from "../testClock.js";
+beforeEach(() => pinClock("2026-10-07T10:00:00Z"));
+afterEach(() => unpinClock());
 import express from "express";
 import type { Server } from "http";
 import type { AddressInfo } from "net";
