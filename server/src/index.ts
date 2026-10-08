@@ -41,6 +41,7 @@ import afcRouter from "./routes/afc.js";
 import { createManshyaModule } from "./manshya/mount.js";
 import { createPaymentsSandboxRouter } from "./payments/sandboxRoutes.js";
 import { createIssuerRouter, type TokenCardAuthoriser } from "./payments/issuerRoutes.js";
+import { createPaymentologyFastRouter } from "./payments/paymentologyFast.js";
 import { hasDb, pool } from "./db/pool.js";
 import { migrateAndSeed } from "./db/migrate.js";
 import { requireAuth, requireRole, JWT_SECRET } from "./middleware/auth.js";
@@ -87,8 +88,9 @@ const manshya = createManshyaModule();
 app.use("/api/manshya", manshya.router);
 // Card issuer-processor real-time authorisations (raw body needed for the signature, so also before the JSON parser).
 // VINK token cards are decided by the token service, which is created further down; the issuer endpoint asks it through this bridge when a request arrives.
-const tokenCardsBridge: TokenCardAuthoriser = { authorise: async (a) => (tokenService ? tokenService.authoriseCardSpend(a) : null), reverse: async (a) => (tokenService ? tokenService.reverseCardSpend(a) : null) };
+const tokenCardsBridge: TokenCardAuthoriser = { authorise: async (a) => (tokenService ? tokenService.authoriseCardSpend(a) : null), reverse: async (a) => (tokenService ? tokenService.reverseCardSpend(a) : null), isActive: async (p, c) => (tokenService ? tokenService.cardIsActive(p, c) : null) };
 app.use("/api/payments/issuer", createIssuerRouter(manshya.payments, manshya, tokenCardsBridge));
+app.use("/api/payments/issuer", createPaymentologyFastRouter({ tokens: tokenCardsBridge, secret: process.env.PAYMENTOLOGY_FAST_SECRET?.trim() || null }));
 
 
 // Incoming email from Resend (raw body for the signature check, so also before the JSON parser). Staff-only list endpoints.

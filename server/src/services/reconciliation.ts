@@ -41,7 +41,7 @@ export async function reconcile(db: Db, ledger: LedgerPort, now: Date = new Date
   }
   // VINK debit cards: the amount waiting for the sponsor bank equals the purchases the cards approved and nobody has reversed
   for (const cur of ["ZAR", "ZMW"]) {
-    const approved = n((await one(`SELECT COALESCE(SUM(amount_cents),0) AS s FROM token_card_spend WHERE status = 'approved' AND currency = $1`, [cur])).s);
+    const approved = n((await one(`SELECT COALESCE(SUM(amount_cents - reversed_cents),0) AS s FROM token_card_spend WHERE status = 'approved' AND currency = $1`, [cur])).s);
     const held = ledger.balance(cur === "ZAR" ? "sys:card_settlement" : `sys:${cur.toLowerCase()}:card_settlement`);
     if (held !== approved) issues.push({ severity: "problem", code: "card_settlement_mismatch", message: `The ${cur} card settlement account does not match the card purchases that were approved. Ask an engineer to look.`, count: 1 });
   }

@@ -1297,6 +1297,7 @@ CREATE TABLE IF NOT EXISTS token_card_spend (
   authorisation_id  TEXT NOT NULL,
   amount_cents      BIGINT NOT NULL,
   fee_cents         BIGINT NOT NULL DEFAULT 0,
+  reversed_cents    BIGINT NOT NULL DEFAULT 0,                 -- how much of the amount has been returned by a reversal or refund (a partial one leaves the purchase approved)
   channel           TEXT NOT NULL,
   merchant          TEXT,
   status            TEXT NOT NULL CHECK (status IN ('approved','declined','reversed')),

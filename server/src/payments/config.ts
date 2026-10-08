@@ -47,6 +47,8 @@ export interface PaymentsConfig {
   cardPayoutProvider: CardPayoutProviderName;
   /** Visa Direct sandbox settings, only when cardPayoutProvider is visa_direct. */
   visaDirect: { baseUrl: string; auth: VisaAuthConfig; acquiringBin: string; acquirerCountryCode: string; sender: { accountNumber: string; name: string; countryCode: string; city?: string; address?: string }; cardAcceptor: { name: string; idCode: string; terminalId: string; city: string; country: string }; vaultKey: string; extraTestPans: string[] } | null;
+  /** Paymentology card settings (client id, card product, parent account, brand), when all are set. */
+  paymentologyProgramme: { clientId: number; cardProductId: number; imageName: string; parentAccountId: number; currencyNumeric: string; cardBrand: "visa" | "mastercard" } | null;
   /** Credentials for the selected real provider, taken from the SANDBOX_ or LIVE_ variable set matching `mode`. Null for "mock". */
   paymentology: ProviderCredentials | null;
 }
@@ -138,6 +140,13 @@ export function resolvePaymentsConfig(env: NodeJS.ProcessEnv = process.env): Pay
   // Credentials are looked up by mode: SANDBOX_PAYMENTOLOGY_* in sandbox, LIVE_PAYMENTOLOGY_* in live. Never the other set.
   const paymentology = issuing === "paymentology" ? credsFor(`${mode === "live" ? "LIVE" : "SANDBOX"}_PAYMENTOLOGY`, env) : null;
 
+  const pm = (k: string) => env[`${mode === "live" ? "LIVE" : "SANDBOX"}_PAYMENTOLOGY_${k}`]?.trim();
+  const int = (v: string | undefined) => (v && /^\d{1,15}$/.test(v) && Number(v) > 0 ? Number(v) : null);
+  const brandRaw = pm("CARD_BRAND")?.toLowerCase();
+  const paymentologyProgramme = issuing === "paymentology" && paymentology && int(pm("CLIENT_ID")) && int(pm("CARD_PRODUCT_ID")) && pm("IMAGE_NAME") && int(pm("PARENT_ACCOUNT_ID")) && (brandRaw === "visa" || brandRaw === "mastercard")
+    ? { clientId: int(pm("CLIENT_ID"))!, cardProductId: int(pm("CARD_PRODUCT_ID"))!, imageName: pm("IMAGE_NAME")!, parentAccountId: int(pm("PARENT_ACCOUNT_ID"))!, currencyNumeric: /^\d{3}$/.test(pm("CURRENCY_NUMERIC") ?? "") ? pm("CURRENCY_NUMERIC")! : "710", cardBrand: brandRaw as "visa" | "mastercard" }
+    : null;
+
   const problems: string[] = [];
   if (issuing === "paymentology" && !paymentology) {
     problems.push(`ISSUING_PROVIDER=paymentology needs ${mode === "live" ? "LIVE" : "SANDBOX"}_PAYMENTOLOGY_BASE_URL, _API_KEY and _WEBHOOK_SECRET.`);
@@ -163,7 +172,7 @@ export function resolvePaymentsConfig(env: NodeJS.ProcessEnv = process.env): Pay
   if (problems.length) {
     throw new Error(`Payments configuration refused:\n  - ${problems.join("\n  - ")}`);
   }
-  return { mode, issuingProvider: issuing, acquiringProvider: acquiring, cardServicingProvider: servicing, visaDps, accountValidationProvider: validation, visaPav, cardPayoutProvider: payout, visaDirect, paymentology };
+  return { mode, issuingProvider: issuing, acquiringProvider: acquiring, cardServicingProvider: servicing, visaDps, accountValidationProvider: validation, visaPav, cardPayoutProvider: payout, visaDirect, paymentologyProgramme, paymentology };
 }
 
 /** VINK core calls its sandbox "test" (it prefixes API keys mk_test_ / mk_live_). */

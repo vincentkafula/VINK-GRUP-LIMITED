@@ -407,7 +407,12 @@ export function createTokenService(deps: {
     if (w.kyc_tier === "basic") return bad(409, "A VINK card needs your identity to be checked first. Ask VINK to verify you.", "needs_verification");
     if ((await db.query(`SELECT 1 AS x FROM token_issued_cards WHERE user_id = $1 AND currency = $2 AND status <> 'blocked'`, [userId, currency])).rows.length) return bad(409, "You already have a VINK card. Block it first if you need a new one.");
     let card;
-    try { card = await deps.issuer.createCard({ customerRef: userId, kind: "virtual" }); }
+    const u = (await db.query(`SELECT u.name, u.email, COALESCE(p.phone, d.phone) AS phone FROM users u LEFT JOIN personal_profiles p ON p.user_id = u.id LEFT JOIN driver_profiles d ON d.user_id = u.id WHERE u.id = $1`, [userId])).rows[0];
+    const parts = String(u?.name ?? "").trim().split(/s+/).filter(Boolean);
+    const digits = String(u?.phone ?? "").replace(/[^0-9]/g, "");
+    const mobile = digits.startsWith("0") ? `27${digits.slice(1)}` : digits;                                         // 082... -> 2782...
+    const holder = { firstName: parts[0] ?? "", lastName: parts.slice(1).join(" ") || parts[0] || "", mobile, email: u?.email ? String(u.email) : undefined };
+    try { card = await deps.issuer.createCard({ customerRef: userId, kind: "virtual", requestId: `${userId}-${currency}-${Date.now()}`, holder }); }
     catch (e) { return bad(502, e instanceof Error ? e.message.slice(0, 160) : "The card could not be issued"); }
     const r = await db.query(`INSERT INTO token_issued_cards (user_id, currency, provider, provider_card_id, brand, last4, expiry, status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`,
       [userId, currency, deps.issuer.name, card.providerCardId, card.brand, card.last4, card.expiry, card.status === "active" ? "active" : "frozen"]);
@@ -467,17 +472,35 @@ export function createTokenService(deps: {
     return { approved: true, replayed: false };
   }
 
-  /** The merchant refunded a purchase, or the processor reversed an authorisation: the tokens (and any fee) go back to the wallet, once. */
-  async function reverseCardSpend(a: { provider: string; authorisationId: string }): Promise<{ reversed: boolean } | null> {
-    const sp = (await db.query(`SELECT * FROM token_card_spend WHERE provider = $1 AND authorisation_id = $2`, [a.provider, a.authorisationId])).rows[0];
+  /**
+   * The merchant refunded a purchase, or the processor reversed an authorisation. The purchase is found by the processor's authorisation id, or (when it only knows the
+   * transaction thread) by the thread id the authorisation id starts with. A partial reversal returns just that amount and leaves the rest approved; a reversal for the
+   * whole of what is left returns the ATM fee too. `reversalId` makes each reversal message count once, so a redelivered message returns nothing twice.
+   */
+  async function reverseCardSpend(a: { provider: string; authorisationId?: string; threadId?: string; amountCents?: number; reversalId?: string }): Promise<{ reversed: boolean; refundedCents: number } | null> {
+    const sp = a.authorisationId
+      ? (await db.query(`SELECT * FROM token_card_spend WHERE provider = $1 AND authorisation_id = $2`, [a.provider, a.authorisationId])).rows[0]
+      : a.threadId ? (await db.query(`SELECT * FROM token_card_spend WHERE provider = $1 AND authorisation_id LIKE $2 AND status <> 'declined' ORDER BY created_at DESC LIMIT 1`, [a.provider, `${a.threadId.replace(/[%_]/g, "")}:%`])).rows[0] : null;
     if (!sp) return null;
-    if (sp.status === "reversed") return { reversed: true };
-    if (sp.status !== "approved") return { reversed: false };
-    const cur = String(sp.currency), amount = Number(sp.amount_cents), fee = Number(sp.fee_cents);
-    ledger.post(`cardrev:${a.provider}:${a.authorisationId}`, "token_card_reversal", [{ account: cardSettlement(cur), kind: "system", amount: -amount }, ...(fee > 0 ? [{ account: systemAccounts(cur).fees, kind: "system", amount: -fee }] : []), line(cur, String(sp.user_id), amount + fee)], "Card purchase reversed");
-    await db.query(`UPDATE token_card_spend SET status = 'reversed' WHERE id = $1 AND status = 'approved'`, [sp.id]);
-    await event(String(sp.user_id), cur, "card_refund", amount + fee, sp.merchant ?? "Card refund", `cardrev:${a.authorisationId}`);
-    return { reversed: true };
+    if (sp.status === "declined") return { reversed: false, refundedCents: 0 };
+    const cur = String(sp.currency), amount = Number(sp.amount_cents), fee = Number(sp.fee_cents), done = Number(sp.reversed_cents);
+    const left = amount - done;
+    if (left <= 0) return { reversed: true, refundedCents: 0 };                                       // already fully returned: a repeat changes nothing
+    const rid = a.reversalId ?? "full", ref = `cardrev:${a.provider}:${sp.authorisation_id}:${rid}`;
+    const wanted = a.amountCents === undefined ? left : Math.min(Math.max(0, Math.floor(a.amountCents)), left);
+    if (wanted <= 0) return { reversed: false, refundedCents: 0 };
+    const completes = wanted === left, feeBack = completes ? fee : 0;
+    const r = ledger.post(ref, "token_card_reversal", [{ account: cardSettlement(cur), kind: "system", amount: -wanted }, ...(feeBack > 0 ? [{ account: systemAccounts(cur).fees, kind: "system", amount: -feeBack }] : []), line(cur, String(sp.user_id), wanted + feeBack)], "Card purchase reversed");
+    if (r === "duplicate") return { reversed: true, refundedCents: 0 };                              // this reversal message was already applied
+    await db.query(`UPDATE token_card_spend SET reversed_cents = reversed_cents + $2, status = CASE WHEN reversed_cents + $2 >= amount_cents THEN 'reversed' ELSE status END WHERE id = $1`, [sp.id, wanted]);
+    await event(String(sp.user_id), cur, "card_refund", wanted + feeBack, sp.merchant ?? "Card refund", `cardrev:${sp.authorisation_id}:${rid}`);
+    return { reversed: true, refundedCents: wanted + feeBack };
+  }
+
+  /** Is this one of our token cards, and is it live? Used for zero-amount checks. null = not our card. */
+  async function cardIsActive(provider: string, providerCardId: string): Promise<boolean | null> {
+    const c = (await db.query(`SELECT c.status AS card_status, w.status AS wallet_status FROM token_issued_cards c JOIN token_wallets w ON w.user_id = c.user_id AND w.currency = c.currency WHERE c.provider = $1 AND c.provider_card_id = $2`, [provider, providerCardId])).rows[0];
+    return c ? c.card_status === "active" && c.wallet_status === "active" : null;
   }
 
   /* ── what the holder and staff see ── */
@@ -536,6 +559,6 @@ export function createTokenService(deps: {
     return { ok: true, value: { id: String(row.id) } };
   }
 
-  return { bindEngine(e: Pick<Engine, "settleTaps">) { engine = e; }, partyOf, setTier, wallet, openWallet, linkCard, cards, blockCard, tapToken, transfer, redeemToBank, requestCashOut, decideCashOut, retryCashOut, processPayouts, attemptPayout, issueCard, issuedCards, setIssuedCardStatus, authoriseCardSpend, reverseCardSpend, addPayoutCard, payoutCards, removePayoutCard, reviewPayoutCard, cardsToReview, activity, summary, settings, setDeviceFee, routes, upsertRoute };
+  return { bindEngine(e: Pick<Engine, "settleTaps">) { engine = e; }, partyOf, setTier, wallet, openWallet, linkCard, cards, blockCard, tapToken, transfer, redeemToBank, requestCashOut, decideCashOut, retryCashOut, processPayouts, attemptPayout, issueCard, issuedCards, setIssuedCardStatus, authoriseCardSpend, reverseCardSpend, cardIsActive, addPayoutCard, payoutCards, removePayoutCard, reviewPayoutCard, cardsToReview, activity, summary, settings, setDeviceFee, routes, upsertRoute };
 }
 export type TokenService = ReturnType<typeof createTokenService>;

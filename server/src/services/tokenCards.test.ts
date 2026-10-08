@@ -147,18 +147,31 @@ describe("spending on the card: the processor asks, the tokens decide", () => {
     expect(await pay(c, { amount: 100_000, channel: "tap" })).toMatchObject({ approved: true });                       // shops have their own limit
   });
 
+  it("a partial refund returns just that amount, each message counts once, and the rest can be returned later", async () => {
+    await tokens.issueCard(U.pax, "ZAR"); await topUp(U.pax, 100_000);
+    const c = await rawCard();
+    await pay(c, { id: "T7:R1", amount: 20_000 });
+    expect(await tokens.reverseCardSpend({ provider: c.provider, threadId: "T7", amountCents: 5_000, reversalId: "R2" })).toEqual({ reversed: true, refundedCents: 5_000 });
+    expect(await tokens.reverseCardSpend({ provider: c.provider, threadId: "T7", amountCents: 5_000, reversalId: "R2" })).toEqual({ reversed: true, refundedCents: 0 });   // redelivered
+    expect(tok(U.pax)).toBe(100_000 - 15_000); expect(ledger.balance(cardSettlement("ZAR"))).toBe(15_000);
+    expect(await tokens.reverseCardSpend({ provider: c.provider, threadId: "T7", amountCents: 99_000, reversalId: "R3" })).toEqual({ reversed: true, refundedCents: 15_000 });   // capped at what is left
+    expect(tok(U.pax)).toBe(100_000); expect(ledger.balance(cardSettlement("ZAR"))).toBe(0);
+    expect(await tokens.reverseCardSpend({ provider: c.provider, threadId: "nope" })).toBeNull();
+    expect(await tokens.cardIsActive(c.provider, c.providerCardId)).toBe(true); expect(await tokens.cardIsActive(c.provider, "other")).toBeNull();
+  });
+
   it("a refund or reversal returns the tokens and the fee once, and every token is accounted for", async () => {
     await tokens.issueCard(U.pax, "ZAR"); await topUp(U.pax, 100_000);
     const c = await rawCard();
     await pay(c, { id: "buy-1", amount: 20_000 }); await pay(c, { id: "atm-1", amount: 10_000, channel: "atm" });
     expect(tok(U.pax) + ledger.balance(cardSettlement("ZAR")) + ledger.balance(SYS_FEES)).toBe(100_000);                // nothing created or lost
-    expect(await tokens.reverseCardSpend({ provider: c.provider, authorisationId: "atm-1" })).toEqual({ reversed: true });
-    expect(await tokens.reverseCardSpend({ provider: c.provider, authorisationId: "atm-1" })).toEqual({ reversed: true });   // once
+    expect(await tokens.reverseCardSpend({ provider: c.provider, authorisationId: "atm-1" })).toEqual({ reversed: true, refundedCents: 10_000 + 1_000 });
+    expect(await tokens.reverseCardSpend({ provider: c.provider, authorisationId: "atm-1" })).toEqual({ reversed: true, refundedCents: 0 });   // once
     expect(tok(U.pax)).toBe(100_000 - 20_000);
     expect(ledger.balance(SYS_FEES)).toBe(0); expect(ledger.balance(cardSettlement("ZAR"))).toBe(20_000);
     expect(await tokens.reverseCardSpend({ provider: c.provider, authorisationId: "nope" })).toBeNull();
     await pay(c, { id: "no-1", amount: 900_000 });
-    expect(await tokens.reverseCardSpend({ provider: c.provider, authorisationId: "no-1" })).toEqual({ reversed: false });   // a declined purchase has nothing to reverse
+    expect(await tokens.reverseCardSpend({ provider: c.provider, authorisationId: "no-1" })).toEqual({ reversed: false, refundedCents: 0 });   // a declined purchase has nothing to reverse
     expect((await tokens.activity(U.pax, "ZAR")).map((l) => l.kind)).toContain("card_refund");
   });
 });

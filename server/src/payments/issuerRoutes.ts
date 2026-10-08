@@ -24,7 +24,9 @@ export interface IssuerAuthoriser {
 /** VINK tokens cards: asked before the older card engine. Returns null when the card is not a token card. */
 export interface TokenCardAuthoriser {
   authorise(a: { provider: string; providerCardId: string; authorisationId: string; amountCents: number; currency?: string; channel?: string; merchant?: string }): Promise<{ approved: boolean; reason?: string; replayed: boolean } | null>;
-  reverse(a: { provider: string; authorisationId: string }): Promise<{ reversed: boolean } | null>;
+  reverse(a: { provider: string; authorisationId?: string; threadId?: string; amountCents?: number; reversalId?: string }): Promise<{ reversed: boolean; refundedCents?: number } | null>;
+  /** Is this one of ours and live? (null = not ours). For checks with no amount. */
+  isActive?(provider: string, providerCardId: string): Promise<boolean | null>;
 }
 
 export function createIssuerRouter(cfg: PaymentsConfig, core: IssuerAuthoriser, tokenCards?: TokenCardAuthoriser): Router {

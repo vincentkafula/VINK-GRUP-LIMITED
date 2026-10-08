@@ -114,7 +114,7 @@ Staff have no "mark as paid" button and there is no endpoint for it. A **refund*
 
 ## The VINK debit card (Visa or Mastercard, sandbox)
 
-A holder whose identity staff have verified (level above basic) can get a **virtual VINK debit card** under **VINK Tokens > My VINK debit card**. It is issued through the issuing provider (`ISSUING_PROVIDER`: the bundled sandbox issuer today; Paymentology's adapter is not built and needs their documentation). The card spends the holder's **tokens**, so there is nothing to top up: it works as soon as the wallet holds tokens.
+A holder whose identity staff have verified (level above basic) can get a **virtual VINK debit card** under **VINK Tokens > My VINK debit card**. It is issued through the issuing provider (`ISSUING_PROVIDER`: the bundled sandbox issuer today; Paymentology's adapter is built from their public API reference and has not yet been run against their UAT). The card spends the holder's **tokens**, so there is nothing to top up: it works as soon as the wallet holds tokens.
 
 - **Spending.** For every purchase the processor calls `POST /api/payments/issuer/authorisation` and VINK answers approve or decline in real time. VINK approves only if the card and wallet are active, the currency is rand, the amount is within the holder's daily limit for that channel (shop, online or cash machine, from the country profile when it enforces limits) and the wallet holds the amount plus any fee. The tokens leave the wallet at once and wait in the card settlement account for the sponsor bank. Declines are recorded with the reason and move nothing.
 - **Charges.** A cash-machine withdrawal carries the country profile's ATM fee (R10 by default). Shop and online purchases carry none for the cardholder: the profile's card_pos and card_online rules are the merchant's.
@@ -135,7 +135,7 @@ A holder whose identity staff have verified (level above basic) can get a **virt
 ## Not built yet
 
 - **Mastercard Send** (payouts to Mastercard cards), and a **live** push-to-card provider: both need the providers' documentation and credentials.
-- **Paymentology issuing** (live cards and their real-time authorisation format): needs their documentation and sandbox. The bundled issuer stands in for it.
+- **Paymentology issuing is written but untested**: card creation (`providers/paymentologyIssuer.ts`) and the FAST endpoint (`payments/paymentologyFast.ts`, `POST /api/payments/issuer/fast`) follow Paymentology's public pages, but nothing has run against UAT. Still to confirm with them: the exact API paths, how FAST authenticates to us (interim: a shared secret in `X-API-Key`, set `PAYMENTOLOGY_FAST_SECRET`; the endpoint answers 501 without it), and that `ISO_MSG.DE2` is the card's public token. Card settings: `SANDBOX_PAYMENTOLOGY_CLIENT_ID`, `_CARD_PRODUCT_ID`, `_IMAGE_NAME`, `_PARENT_ACCOUNT_ID`, `_CARD_BRAND`.
 - **Hosted card fields** so a card number never reaches VINK's servers (the sandbox accepts test cards only).
 - **Scheme settlement:** the card settlement account is the amount owed to the sponsor bank; matching it to the sponsor bank's settlement files is not built.
 - Physical (plastic) cards and digital wallets (Apple Pay, Google Pay).
