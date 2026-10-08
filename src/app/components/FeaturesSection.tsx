@@ -79,6 +79,7 @@ export const FeaturesSection = memo(function FeaturesSection({ onExploreAll }: {
             <p className="text-fg-muted text-base mt-5 max-w-md leading-relaxed">
               Unlock a world of exclusive benefits that reward your everyday and elevate every moment.
             </p>
+            <p className="mt-3 inline-block rounded-full border border-line bg-surface-2 px-3 py-1 text-xs font-medium text-fg-muted">Planned benefits, available at our June 2027 launch.</p>
 
             <div className="relative mt-8 max-w-sm">
               <div className="absolute -inset-6 rounded-full opacity-40" style={{ background: `radial-gradient(circle,${GOLD}33,transparent 70%)` }} />

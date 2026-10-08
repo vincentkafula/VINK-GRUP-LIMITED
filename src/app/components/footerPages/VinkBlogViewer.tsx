@@ -57,7 +57,7 @@ export function VinkBlogViewer({ isOpen, onClose }: Props) {
         <section className="bg-surface-2 rounded-2xl p-6 border border-line">
           <h2 className="text-lg font-black mb-3" style={{ color: "var(--vk-crimson-text)" }}>Want to Be Notified?</h2>
           <p className="text-fg-muted text-sm leading-relaxed">
-            We'll announce the blog's launch through our usual channels. In the meantime, VINK at the World Economic Forum and Social Responsibility already share some of the thinking behind why we're building VINK the way we are.
+            We'll announce the blog's launch through our usual channels. In the meantime, our Social Responsibility page shares some of the thinking behind why we're building VINK the way we are.
           </p>
         </section>
       </div>

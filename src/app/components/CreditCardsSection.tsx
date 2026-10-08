@@ -120,6 +120,7 @@ export function CreditCardsSection({ onApply }: { onApply?: () => void }) {
         <div className="text-center mb-10">
           <span className="inline-block text-xs font-bold uppercase tracking-[0.14em] px-3 py-1 rounded-full mb-3 bg-gold/15 text-gold-text">Compare Cards</span>
           <h2 className="font-display text-2xl sm:text-3xl text-fg font-semibold">Choose Your Perfect VINK Card</h2>
+          <p className="mx-auto mt-3 inline-block rounded-full border border-line bg-surface px-3 py-1 text-xs font-medium text-fg-muted">Planned cards and benefits, available at our June 2027 launch.</p>
         </div>
 
         <div className="flex justify-center gap-4 sm:gap-6 flex-wrap mb-6">
