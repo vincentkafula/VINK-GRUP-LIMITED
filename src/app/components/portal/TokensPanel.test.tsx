@@ -119,3 +119,24 @@ describe("TokensPanel: payouts go only to the holder's own debit card", () => {
     expect(host.textContent).toContain("Paid to your debit card.");
   });
 });
+
+describe("TokensPanel: the VINK debit card", () => {
+  it("offers a card when there is none, and asks the server to issue it", async () => {
+    mockApi((url, init) => (init?.method === "POST" ? { status: 201, body: { success: true, card: { id: "ic1" } } } : url.endsWith("/tokens/cash-outs") ? { body: { success: true, cashOuts: [] } } : { body: { success: true, wallets: [WALLET], issuedCards: [], role: "passenger" } }));
+    await render(<TokensPanel segment="personal" color="#f00" />);
+    expect(host.textContent).toContain("My VINK debit card"); expect(host.textContent).toContain("spends your tokens");
+    await act(async () => { btn("Get my VINK card")!.click(); }); await settle();
+    const post = calls.find((c) => c.url.endsWith("/api/portal/personal/tokens/card") && c.init?.method === "POST")!;
+    expect(JSON.parse(String(post.init!.body))).toEqual({ currency: "ZAR" });
+  });
+
+  it("shows the card with only brand, last four and expiry, and lets the holder freeze it", async () => {
+    mockApi((url, init) => (init?.method === "POST" ? { body: { success: true, card: {} } } : url.endsWith("/tokens/cash-outs") ? { body: { success: true, cashOuts: [] } } : { body: { success: true, wallets: [WALLET], issuedCards: [{ id: "ic1", brand: "mastercard", last4: "7788", expiry: "10/30", status: "active", currency: "ZAR" }], role: "passenger" } }));
+    await render(<TokensPanel segment="personal" color="#f00" />);
+    expect(host.textContent).toContain("Mastercard debit ****7788 · 10/30"); expect(host.textContent).toContain("Active");
+    expect(btn("Get my VINK card")).toBeUndefined();
+    await act(async () => { btn("Freeze")!.click(); }); await settle();
+    const post = calls.find((c) => c.url.endsWith("/tokens/card/ic1/status"))!;
+    expect(JSON.parse(String(post.init!.body))).toEqual({ status: "frozen" });
+  });
+});

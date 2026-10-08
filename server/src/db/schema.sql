@@ -1271,3 +1271,37 @@ CREATE TABLE IF NOT EXISTS token_cashouts (
   decided_at    TIMESTAMPTZ
 );
 CREATE INDEX IF NOT EXISTS idx_token_cashouts_open ON token_cashouts(status, requested_at);
+
+-- ─── The VINK debit card: a Visa or Mastercard issued to a token holder, spending their TOKENS ──────────────────────────────────────────────────
+-- The card is a virtual debit card issued through the issuing provider (the bundled sandbox issuer for now). When it is used the processor asks us to approve or
+-- decline the purchase (/api/payments/issuer/authorisation); we approve only if the wallet holds the amount (and any ATM fee), and take the tokens at once. The amount
+-- waits in the card settlement account until the sponsor bank settles with the card scheme. Only the provider's card id, brand, last4 and expiry are kept.
+CREATE TABLE IF NOT EXISTS token_issued_cards (
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id           UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  currency          TEXT NOT NULL,
+  provider          TEXT NOT NULL,
+  provider_card_id  TEXT NOT NULL UNIQUE,
+  brand             TEXT NOT NULL,
+  last4             TEXT NOT NULL,
+  expiry            TEXT NOT NULL,
+  status            TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active','frozen','blocked')),
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS token_card_spend (
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  card_id           UUID NOT NULL REFERENCES token_issued_cards(id),
+  user_id           UUID NOT NULL REFERENCES users(id),
+  currency          TEXT NOT NULL,
+  provider          TEXT NOT NULL,
+  authorisation_id  TEXT NOT NULL,
+  amount_cents      BIGINT NOT NULL,
+  fee_cents         BIGINT NOT NULL DEFAULT 0,
+  channel           TEXT NOT NULL,
+  merchant          TEXT,
+  status            TEXT NOT NULL CHECK (status IN ('approved','declined','reversed')),
+  reason            TEXT,
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (provider, authorisation_id)
+);
+CREATE INDEX IF NOT EXISTS idx_token_card_spend_user ON token_card_spend(user_id, created_at DESC);

@@ -11,6 +11,8 @@ import { recordPoolCredit } from "../services/poolService.js";
 import { createTokenRouter, createTokenTerminalRouter, createTokenAdminRouter } from "./tokenRoutes.js";
 import { DEFAULT_ZA } from "../config/countryConfig.js";
 import { MockCardRail } from "../payments/providers/mockCardRail.js";
+import { MockIssuer } from "../payments/providers/mockIssuer.js";
+import { reconcile } from "../services/reconciliation.js";
 import { pinClock, unpinClock } from "../testClock.js";
 
 const id = (n: number) => `00000000-0000-0000-0000-${String(n).padStart(12, "0")}`;
@@ -34,7 +36,7 @@ beforeEach(async () => {
   }
   await db.query(`INSERT INTO terminals (id, serial, driver_id, owner_id, investor_id, association_id) VALUES ($1,'SN1',$2,$3,$4,$5)`, [T, U.driver, U.owner, U.investor, U.assoc]);
   ledger = manshyaLedgerPort(mod as never);
-  tokens = createTokenService({ db, ledger, reader, rail: (() => { const m = new MockCardRail(); return { name: "mock", vault: m, payout: m }; })() });
+  tokens = createTokenService({ db, ledger, reader, rail: (() => { const m = new MockCardRail(); return { name: "mock", vault: m, payout: m }; })(), issuer: new MockIssuer() });
   engine = createMoneyEngine({ db, ledger, reader, tokenParty: tokens.partyOf });
   tokens.bindEngine(engine);
   await tokens.openWallet(U.owner, "owner", "ZAR"); await tokens.openWallet(U.driver, "driver", "ZAR"); await tokens.openWallet(U.investor, "investor", "ZAR");
@@ -42,7 +44,8 @@ beforeEach(async () => {
   app.use("/api/terminal/token", createTokenTerminalRouter({ db, tokens, authenticate: async (serial, key) => (serial === "SN1" && key === "good" ? { authenticated: true, terminalId: T } : { authenticated: false, error: "Terminal authentication failed" }) }));
   app.use((req, _r, next) => { req.user = { userId: as, username: "u", role: ROLE[as] }; next(); });
   app.use("/me", createTokenRouter(db, tokens, { channels: () => ({ in_person: { accountNumber: "1234567890", holder: "Vink Pool", bank: "Test Bank", type: "Business" as const } }) }));
-  app.use("/admin", createTokenAdminRouter({ db, tokens }));
+  app.use("/admin", createTokenAdminRouter({ db, tokens, sandbox: true }));
+  app.use("/admin-live", createTokenAdminRouter({ db, tokens, sandbox: false }));
   await new Promise<void>((ok) => { server = app.listen(0, "127.0.0.1", ok); });
   url = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
   as = U.pax;
@@ -187,5 +190,44 @@ describe("staff", () => {
     expect((await call(`/admin/payout-cards/${r.body.id}/approve`, "POST", {})).body.status).toBe("verified");
     expect((await call(`/admin/payout-cards/${r.body.id}/reject`, "POST", {})).status).toBe(404);                      // decided already
     expect((await call("/admin/payout-cards")).body.cards).toEqual([]);
+  });
+});
+
+describe("the VINK debit card", () => {
+  it("is issued after staff verify the holder, spends tokens, and can be frozen by its holder", async () => {
+    await call("/me/wallet", "POST", {}); await buy(100_000);
+    expect((await call("/me/card", "POST", {})).body.error).toMatch(/identity/);                                       // basic level: not yet
+    as = U.staff;
+    await call("/admin/wallets/tier", "PUT", { userId: U.pax, tier: "standard" });
+    as = U.pax;
+    const issued = await call("/me/card", "POST", {});
+    expect(issued).toMatchObject({ status: 201, body: { card: { status: "active", currency: "ZAR" } } });
+    expect(JSON.stringify(issued.body)).not.toMatch(/d{12,}/);                                                       // no card number anywhere
+    expect((await call("/me")).body.issuedCards).toHaveLength(1);
+    const cardId = issued.body.card.id as string;
+
+    as = U.staff;
+    const buyIt = (amountCents: number, extra: Record<string, unknown> = {}) => call("/admin/sandbox/card-purchase", "POST", { cardId, amountCents, merchant: "Pick n Pay", ...extra });
+    const ok = await buyIt(25_000);
+    expect(ok.body).toMatchObject({ success: true, decision: { approved: true, replayed: false } });
+    expect((await buyIt(25_000, { authorisationId: ok.body.authorisationId })).body.decision).toMatchObject({ approved: true, replayed: true });
+    expect((await call("/admin/summary")).body.summary).toMatchObject({ circulationCents: 75_000, cardSettlementCents: 25_000 });
+    expect((await reconcile(db, ledger, new Date("2026-10-05T12:00:00Z"))).issues.filter((i) => i.severity === "problem")).toEqual([]);
+    expect((await call("/admin/sandbox/card-refund", "POST", { provider: "mock", authorisationId: ok.body.authorisationId })).body).toMatchObject({ reversed: true });
+    expect((await call("/admin/summary")).body.summary).toMatchObject({ circulationCents: 100_000, cardSettlementCents: 0 });
+
+    as = U.pax;
+    expect((await call(`/me/card/${cardId}/status`, "POST", { status: "frozen" })).body.card.status).toBe("frozen");
+    as = U.staff;
+    expect((await buyIt(1000)).body.decision).toMatchObject({ approved: false, reason: "card_frozen" });
+    as = U.pax;
+    expect((await call(`/me/card/${cardId}/status`, "POST", { status: "paused" })).status).toBe(400);
+    expect((await call("/me/card", "POST", {})).status).toBe(409);                                                    // one live card at a time
+  });
+
+  it("staff sandbox tools do not exist outside the sandbox", async () => {
+    as = U.staff;
+    expect((await call("/admin-live/sandbox/card-purchase", "POST", { cardId: id(1), amountCents: 100 })).status).toBe(404);
+    expect((await call("/admin-live/sandbox/card-refund", "POST", { provider: "mock", authorisationId: "x" })).status).toBe(404);
   });
 });

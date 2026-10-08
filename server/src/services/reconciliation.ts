@@ -39,6 +39,12 @@ export async function reconcile(db: Db, ledger: LedgerPort, now: Date = new Date
     const hold = ledger.balance(cur === "ZAR" ? "sys:token_cashout" : `sys:${cur.toLowerCase()}:token_cashout`);
     if (hold !== owed) issues.push({ severity: "problem", code: "token_cashout_mismatch", message: `The ${cur} cash-out holding account does not match the payouts that are waiting or with the card service. Ask an engineer to look.`, count: 1 });
   }
+  // VINK debit cards: the amount waiting for the sponsor bank equals the purchases the cards approved and nobody has reversed
+  for (const cur of ["ZAR", "ZMW"]) {
+    const approved = n((await one(`SELECT COALESCE(SUM(amount_cents),0) AS s FROM token_card_spend WHERE status = 'approved' AND currency = $1`, [cur])).s);
+    const held = ledger.balance(cur === "ZAR" ? "sys:card_settlement" : `sys:${cur.toLowerCase()}:card_settlement`);
+    if (held !== approved) issues.push({ severity: "problem", code: "card_settlement_mismatch", message: `The ${cur} card settlement account does not match the card purchases that were approved. Ask an engineer to look.`, count: 1 });
+  }
   const stuckPayouts = n((await one(`SELECT COUNT(*) AS c FROM token_cashouts WHERE status = 'processing' AND attempted_at < $1`, [new Date(now.getTime() - 15 * 60_000)])).c);
   if (stuckPayouts) issues.push({ severity: "problem", code: "token_payouts_stuck", message: "Payouts to cards were sent and have had no answer for over 15 minutes. The system asks again by itself; if this stays, ask an engineer to look.", count: stuckPayouts });
   const exhausted = n((await one(`SELECT COUNT(*) AS c FROM token_cashouts WHERE status = 'requested' AND attempts >= 6`)).c);

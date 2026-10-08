@@ -326,17 +326,17 @@ async function tokenApi(path: string, init?: { method?: string; body?: unknown }
 
 /** VINK tokens: how many are in circulation, the cash-outs and refunds waiting to be paid out of the pool, and the per-trip device fee paid to investors. */
 function TokensAdminPanel() {
-  const [sum, reloadSum] = useLoad<{ summary: { circulationCents: number; wallets: number; byRole: Record<string, { wallets: number; cents: number }>; pendingCashouts: { count: number; cents: number }; clearingCents: number }; settings: { deviceFeeCents: number } }>(() => tokenApi("/summary") as never);
+  const [sum, reloadSum] = useLoad<{ summary: { circulationCents: number; wallets: number; byRole: Record<string, { wallets: number; cents: number }>; pendingCashouts: { count: number; cents: number }; clearingCents: number; cardSettlementCents?: number }; settings: { deviceFeeCents: number } }>(() => tokenApi("/summary") as never);
   const [list, reloadList] = useLoad<{ cashOuts: { id: string; name: string; email: string; amountCents: number; currency: string; reason: string; status: string; note: string | null; card: string | null; lastError: string | null; attempts: number; requestedAt: string }[] }>(() => tokenApi("/cash-outs?status=open") as never);
   const [review, reloadReview] = useLoad<{ cards: { id: string; accountName: string; email: string; cardholderName: string; brand: string; last4: string }[] }>(() => tokenApi("/payout-cards") as never);
-  const [fee, setFee] = useState(""); const [tierUid, setTierUid] = useState(""); const [tier, setTier] = useState("standard"); const [uid, setUid] = useState(""); const [amt, setAmt] = useState(""); const [why, setWhy] = useState("");
+  const [sbxCard, setSbxCard] = useState(""); const [sbxAmt, setSbxAmt] = useState(""); const [sbxChan, setSbxChan] = useState("chip"); const [fee, setFee] = useState(""); const [tierUid, setTierUid] = useState(""); const [tier, setTier] = useState("standard"); const [uid, setUid] = useState(""); const [amt, setAmt] = useState(""); const [why, setWhy] = useState("");
   const both = () => { reloadSum(); reloadList(); reloadReview(); };
   return (
     <section className="rounded-xl p-4 space-y-3" style={{ background: "var(--vk-surface)", border: "1px solid var(--vk-line)" }}>
       <h2 className="text-sm font-bold text-fg">VINK tokens <span className="font-normal text-fg-muted">· the closed-loop points system. Tokens leave only as a payout the system makes to the holder's own debit card, or a transfer to their own VINK bank account. Staff cannot pay a payout by hand.</span></h2>
       <Status load={sum}>{({ summary: s, settings }) => !s ? <Empty>Token figures are not available.</Empty> : (
         <>
-          <p className="text-xs text-fg">In circulation: <b>{cents(s.circulationCents)}</b> across {s.wallets} wallets · waiting to be paid out: <b>{cents(s.pendingCashouts?.cents ?? 0)}</b> ({s.pendingCashouts?.count ?? 0}) · device fee per trip: <b>{cents(settings?.deviceFeeCents ?? 0)}</b></p>
+          <p className="text-xs text-fg">In circulation: <b>{cents(s.circulationCents)}</b> across {s.wallets} wallets · waiting to be paid out: <b>{cents(s.pendingCashouts?.cents ?? 0)}</b> ({s.pendingCashouts?.count ?? 0}) · device fee per trip: <b>{cents(settings?.deviceFeeCents ?? 0)}</b> · card purchases waiting for the sponsor bank: <b>{cents(s.cardSettlementCents ?? 0)}</b></p>
           <p className="text-[11px] text-fg-muted">{Object.entries(s.byRole ?? {}).map(([r, v]) => `${r}: ${cents(v.cents)} (${v.wallets})`).join(" · ") || "No wallets yet."}</p>
         </>)}</Status>
       <Status load={list}>{({ cashOuts }) => !cashOuts || cashOuts.length === 0 ? <Empty>No payouts waiting. The system pays each one to the holder's debit card as soon as it is asked for.</Empty> : (
@@ -365,6 +365,12 @@ function TokensAdminPanel() {
       <div className="flex flex-wrap items-end gap-3">
         <label className="block"><span className="text-[11px] text-fg-muted">Device fee per trip (R)</span><input className={inputCls + " mt-1 !w-28"} inputMode="decimal" value={fee} onChange={(e) => setFee(e.target.value)} placeholder="1.00" /></label>
         <ActionButton label="Set device fee" color={COLOR} onRun={async () => { const c = Math.round(Number(fee.replace(",", ".")) * 100); if (!Number.isInteger(c) || c < 0) return { error: "Enter an amount, 0 or more" }; const r = await tokenApi("/settings", { method: "PUT", body: { deviceFeeCents: c } }); if ("error" in r) return { error: r.error }; reloadSum(); return { message: "Saved. It applies to trips completed from now on." }; }} />
+      </div>
+      <div className="flex flex-wrap items-end gap-3">
+        <label className="block"><span className="text-[11px] text-fg-muted">Sandbox: try a card purchase. Card id</span><input className={inputCls + " mt-1"} value={sbxCard} onChange={(e) => setSbxCard(e.target.value)} /></label>
+        <label className="block"><span className="text-[11px] text-fg-muted">Amount (R)</span><input className={inputCls + " mt-1 !w-24"} inputMode="decimal" value={sbxAmt} onChange={(e) => setSbxAmt(e.target.value)} /></label>
+        <label className="block"><span className="text-[11px] text-fg-muted">Where</span><select className={inputCls + " mt-1 !w-auto"} value={sbxChan} onChange={(e) => setSbxChan(e.target.value)}><option value="chip">Shop (chip)</option><option value="tap">Shop (tap)</option><option value="online">Online</option><option value="atm">Cash machine</option></select></label>
+        <ActionButton label="Try purchase" color="#64748B" onRun={async () => { const c = Math.round(Number(sbxAmt.replace(",", ".")) * 100); if (!Number.isInteger(c) || c <= 0) return { error: "Enter the amount" }; const r = await tokenApi("/sandbox/card-purchase", { method: "POST", body: { cardId: sbxCard.trim(), amountCents: c, channel: sbxChan } }); if ("error" in r) return { error: r.error }; both(); const d = r.data.decision; return { message: d?.approved ? "Approved: the tokens left the wallet." : `Declined: ${d?.reason ?? "unknown"}` }; }} />
       </div>
       <div className="flex flex-wrap items-end gap-3">
         <label className="block"><span className="text-[11px] text-fg-muted">Verification level: holder's user id</span><input className={inputCls + " mt-1"} value={tierUid} onChange={(e) => setTierUid(e.target.value)} /></label>

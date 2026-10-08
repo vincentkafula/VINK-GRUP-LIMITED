@@ -23,18 +23,20 @@ const toCents = (v: string) => { const n = Math.round(Number(v.replace(",", ".")
 
 export function TokensPanel({ segment, color }: { segment: TokenSegment; color: string }) {
   const call = portalClient(segment);
-  const [load, reload] = useLoad<{ wallets: WalletView[]; payoutCards?: PayoutCardRow[]; role: string | null }>(() => call("/tokens"));
+  const [load, reload] = useLoad<{ wallets: WalletView[]; payoutCards?: PayoutCardRow[]; issuedCards?: IssuedCardRow[]; role: string | null }>(() => call("/tokens"));
   return (
     <div className="space-y-4">
       <Status load={load}>{(d) => d.wallets.length === 0
         ? <OpenWallet call={call} color={color} onDone={reload} />
-        : <>{d.wallets.map((w) => <Wallet key={w.currency} w={w} cards={d.payoutCards ?? []} call={call} color={color} reload={reload} />)}</>}</Status>
+        : <>{d.wallets.map((w) => <Wallet key={w.currency} w={w} cards={d.payoutCards ?? []} issued={(d.issuedCards ?? []).filter((c) => c.currency === w.currency)} call={call} color={color} reload={reload} />)}</>}</Status>
       {segment === "association" && <RouteFares call={call} color={color} />}
     </div>
   );
 }
 
 type Call = ReturnType<typeof portalClient>;
+interface IssuedCardRow { id: string; brand: string; last4: string; expiry: string; status: string; currency: string }
+const ISSUED_STATUS: Record<string, [string, string]> = { active: ["Active", "#10B981"], frozen: ["Frozen", "#F59E0B"], blocked: ["Blocked", "#EF4444"] };
 interface PayoutCardRow { id: string; brand: string; last4: string; expiry: string; status: string }
 interface CashOutRow { id: string; amountCents: number; currency: string; reason: string; status: string; card: string | null; problem: string | null; requestedAt: string }
 const CARD_STATUS: Record<string, [string, string]> = { verified: ["Ready for payouts", "#10B981"], needs_review: ["Being checked by VINK", "#F59E0B"], rejected: ["Not accepted", "#EF4444"] };
@@ -55,7 +57,7 @@ function OpenWallet({ call, color, onDone }: { call: Call; color: string; onDone
   );
 }
 
-function Wallet({ w, cards, call, color, reload }: { w: WalletView; cards: PayoutCardRow[]; call: Call; color: string; reload: () => void }) {
+function Wallet({ w, cards, issued, call, color, reload }: { w: WalletView; cards: PayoutCardRow[]; issued: IssuedCardRow[]; call: Call; color: string; reload: () => void }) {
   const [pan, setPan] = useState(""); const [exp, setExp] = useState(""); const [nameOnCard, setNameOnCard] = useState(""); const [pickCard, setPickCard] = useState("");
   const [outs, reloadOuts] = useLoad<{ cashOuts: CashOutRow[] }>(() => call("/tokens/cash-outs"));
   const [card, setCard] = useState(""); const [to, setTo] = useState(""); const [sendAmt, setSendAmt] = useState(""); const [outAmt, setOutAmt] = useState("");
@@ -73,6 +75,28 @@ function Wallet({ w, cards, call, color, reload }: { w: WalletView; cards: Payou
           <p className="text-[11px] text-fg-muted">Buy tokens: pay money into the bank account below and write your account number as the payment reference.</p>
           <div className="flex flex-wrap items-center gap-3 mt-1"><p className="font-mono text-lg font-bold tracking-wider text-fg">{w.accountNumber ?? "…"}</p>{w.accountNumber && <CopyButton value={w.accountNumber} label="account number" color={color} />}</div>
           {w.payInto ? <p className="text-xs text-fg-muted mt-1">Pay into {w.payInto.holder} · {w.payInto.bank} · account {w.payInto.accountNumber}. Your tokens arrive when the bank reports the payment.</p> : <p className="text-xs text-warn mt-1">The bank account to pay into has not been set up yet.</p>}
+        </section>
+
+        <section aria-label="My VINK debit card">
+          <p className="text-sm font-semibold text-fg mb-1 flex items-center gap-2"><CreditCard className="w-4 h-4" /> My VINK debit card <Badge text="sandbox" color="#94A3B8" /></p>
+          <p className="text-xs text-fg-muted mb-2">A Visa or Mastercard debit card that spends your tokens at shops, online and at cash machines (the bank's cash-machine fee applies). Each purchase is approved only if your tokens cover it, and they leave your wallet at once.</p>
+          {issued.length === 0 ? (
+            <ActionButton label="Get my VINK card" color={color} onRun={async () => { const r = await call("/tokens/card", { method: "POST", body: { currency: cur } }); if ("error" in r) return { error: r.error }; reload(); return { message: "Your card is ready." }; }} />
+          ) : (
+            <ul className="space-y-2">{issued.map((c) => {
+              const [label, tone] = ISSUED_STATUS[c.status] ?? [c.status, "#94A3B8"];
+              const setStatus = (status: string, msg: string) => act(msg, () => call(`/tokens/card/${c.id}/status`, { method: "POST", body: { status } }));
+              return (
+                <li key={c.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg p-3" style={{ background: "var(--vk-bg)", border: "1px solid var(--vk-line)" }}>
+                  <span className="text-sm text-fg">{c.brand === "visa" ? "Visa" : "Mastercard"} debit ****{c.last4} · {c.expiry} <Badge text={label} color={tone} /></span>
+                  <span className="flex gap-2">
+                    {c.status === "active" && <ActionButton small label="Freeze" color="#F59E0B" onRun={setStatus("frozen", "Card frozen")} />}
+                    {c.status === "frozen" && <ActionButton small label="Unfreeze" color="#10B981" onRun={setStatus("active", "Card unfrozen")} />}
+                    {c.status !== "blocked" && <ActionButton small label="Block for good" color="#EF4444" onRun={setStatus("blocked", "Card blocked")} />}
+                  </span>
+                </li>);
+            })}</ul>)}
+          <p className="text-xs text-fg-subtle mt-2">The full card number and security code are only shown by the card processor's secure screen once VINK is live. You need your identity verified before a card can be issued.</p>
         </section>
 
         <section aria-label="My cards">

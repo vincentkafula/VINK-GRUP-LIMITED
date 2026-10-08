@@ -7,7 +7,8 @@ import { calculateRevenueSplit } from "./revenueSplitService.js";
 import type { ConfigReader } from "../config/configService.js";
 import { countryForCurrency, KYC_TIERS, type KycTier } from "../config/countryConfig.js";
 import { checkTierLimit } from "../config/riskRules.js";
-import type { CardVaultProvider, CardPayoutProvider, AccountValidationProvider } from "../payments/providers/types.js";
+import type { CardVaultProvider, CardPayoutProvider, AccountValidationProvider, IssuingProvider } from "../payments/providers/types.js";
+import { computeFee } from "../config/feeEngine.js";
 import { MOCK_CARD_SCENARIOS, expiryOf } from "../payments/providers/mockCardRail.js";
 
 /**
@@ -42,6 +43,8 @@ export function namesMatch(accountName: string, cardName: string): boolean {
 const MAX_CENTS = 100_000_000;                                  // 1 000 000.00: a typing slip must not become a real movement
 const CURRENCIES = ["ZAR", "ZMW"];
 
+/** Amounts approved on a VINK card wait here until the sponsor bank settles them with the card scheme. */
+export const cardSettlement = (currency: string) => (currency === "ZAR" ? "sys:card_settlement" : `sys:${currency.toLowerCase()}:card_settlement`);
 export const cashoutHold = (currency: string) => (currency === "ZAR" ? "sys:token_cashout" : `sys:${currency.toLowerCase()}:token_cashout`);
 export const cardHash = (uid: string) => createHash("sha256").update(uid.trim().toUpperCase()).digest("hex");
 export const normaliseCardUid = (uid: unknown): string | null => { const s = typeof uid === "string" ? uid.replace(/[\s:-]/g, "").toUpperCase() : ""; return /^[0-9A-Z]{4,32}$/.test(s) ? s : null; };
@@ -57,6 +60,8 @@ export type TapOutcome =
 export interface ActivityLine { at: string; kind: string; amountCents: number; label: string }
 
 export interface PayoutCardView { id: string; brand: string; last4: string; expiry: string; status: string }
+export interface IssuedCardView { id: string; brand: string; last4: string; expiry: string; status: string; currency: string }
+export interface CardDecision { approved: boolean; reason?: string; replayed: boolean }
 export interface PayoutAttempt { status: "paid" | "rejected" | "requested" | "processing" | "none"; reason?: string }
 
 export function createTokenService(deps: {
@@ -67,6 +72,8 @@ export function createTokenService(deps: {
   validator?: AccountValidationProvider;
   /** Further sandbox test card numbers (from the settings) that may be added. */
   extraTestPans?: string[];
+  /** Issues the VINK debit card (virtual) and freezes or blocks it. Without it nobody can be issued a card. */
+  issuer?: IssuingProvider;
 }) {
   const db = deps.db as unknown as Loose, { ledger, reader } = deps;
   let engine: Pick<Engine, "settleTaps"> | null = null;
@@ -388,6 +395,91 @@ export function createTokenService(deps: {
     return { ok: true, value: { status: "rejected" } };
   }
 
+  /* ── the VINK debit card: a Visa or Mastercard that spends the holder's tokens ── */
+  const cardView = (r: Record<string, unknown>): IssuedCardView => ({ id: String(r.id), brand: String(r.brand), last4: String(r.last4), expiry: String(r.expiry), status: String(r.status), currency: String(r.currency) });
+
+  /** Issues a virtual debit card against the holder's token wallet. It needs a wallet that is active and a verification level above basic, and one live card at a time. */
+  async function issueCard(userId: string, currency: string): Promise<TokenResult<IssuedCardView>> {
+    if (!deps.issuer) return bad(503, "Card issuing is not set up yet");
+    const w = (await db.query(`SELECT status, kyc_tier FROM token_wallets WHERE user_id = $1 AND currency = $2`, [userId, currency])).rows[0];
+    if (!w) return bad(409, "Open your VINK token wallet first");
+    if (w.status !== "active") return bad(409, "This wallet is not active");
+    if (w.kyc_tier === "basic") return bad(409, "A VINK card needs your identity to be checked first. Ask VINK to verify you.", "needs_verification");
+    if ((await db.query(`SELECT 1 AS x FROM token_issued_cards WHERE user_id = $1 AND currency = $2 AND status <> 'blocked'`, [userId, currency])).rows.length) return bad(409, "You already have a VINK card. Block it first if you need a new one.");
+    let card;
+    try { card = await deps.issuer.createCard({ customerRef: userId, kind: "virtual" }); }
+    catch (e) { return bad(502, e instanceof Error ? e.message.slice(0, 160) : "The card could not be issued"); }
+    const r = await db.query(`INSERT INTO token_issued_cards (user_id, currency, provider, provider_card_id, brand, last4, expiry, status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`,
+      [userId, currency, deps.issuer.name, card.providerCardId, card.brand, card.last4, card.expiry, card.status === "active" ? "active" : "frozen"]);
+    return { ok: true, value: cardView(r.rows[0]) };
+  }
+  async function issuedCards(userId: string, currency?: string): Promise<IssuedCardView[]> {
+    return (await db.query(`SELECT * FROM token_issued_cards WHERE user_id = $1 ${currency ? "AND currency = $2" : ""} ORDER BY created_at DESC`, currency ? [userId, currency] : [userId])).rows.map(cardView);
+  }
+  /** Freeze, unfreeze or permanently block the holder's own card. Our own record decides purchases (the processor asks us), so it takes effect at once. */
+  async function setIssuedCardStatus(userId: string, cardId: string, status: unknown): Promise<TokenResult<IssuedCardView>> {
+    if (status !== "frozen" && status !== "active" && status !== "blocked") return bad(400, "Choose freeze, unfreeze or block");
+    const c = (await db.query(`SELECT * FROM token_issued_cards WHERE id = $1 AND user_id = $2`, [cardId, userId])).rows[0];
+    if (!c) return bad(404, "No such card");
+    if (c.status === "blocked") return bad(409, "A blocked card cannot be changed");
+    if (deps.issuer) { try { await deps.issuer.setCardStatus(String(c.provider_card_id), status); } catch (e) { console.warn("[token] the card provider did not take the status change:", e instanceof Error ? e.message : e); } }
+    const r = await db.query(`UPDATE token_issued_cards SET status = $2 WHERE id = $1 RETURNING *`, [cardId, status]);
+    return { ok: true, value: cardView(r.rows[0]) };
+  }
+
+  const CHANNEL_LIMIT: Record<string, "pos" | "online" | "atm"> = { chip: "pos", tap: "pos", online: "online", international: "online", atm: "atm" };
+  /**
+   * The processor asks: may this card pay this amount? Returns null when the card is not one of ours (the caller then asks the older card engine). Otherwise the answer is
+   * recorded under the processor's own authorisation id, so a retry gets the same answer and never spends twice. Approved: the tokens (and any ATM fee) leave the wallet at once
+   * and wait in the card settlement account for the sponsor bank. Declined: nothing moves.
+   */
+  async function authoriseCardSpend(a: { provider: string; providerCardId: string; authorisationId: string; amountCents: number; currency?: string; channel?: string; merchant?: string }): Promise<CardDecision | null> {
+    const card = (await db.query(`SELECT * FROM token_issued_cards WHERE provider = $1 AND provider_card_id = $2`, [a.provider, a.providerCardId])).rows[0];
+    if (!card) return null;
+    const prior = (await db.query(`SELECT status, reason FROM token_card_spend WHERE provider = $1 AND authorisation_id = $2`, [a.provider, a.authorisationId])).rows[0];
+    if (prior) return { approved: prior.status !== "declined", reason: prior.reason ?? undefined, replayed: true };
+    const cur = String(card.currency), user = String(card.user_id), channel = a.channel ?? "chip";
+    const record = async (status: "approved" | "declined", reason: string | null, amount: number, fee: number) => {
+      try { await db.query(`INSERT INTO token_card_spend (card_id, user_id, currency, provider, authorisation_id, amount_cents, fee_cents, channel, merchant, status, reason) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`, [card.id, user, cur, a.provider, a.authorisationId, amount, fee, channel, a.merchant ?? null, status, reason]); }
+      catch (e) { if (!isUniqueViolation(e)) throw e; }
+    };
+    const decline = async (reason: string): Promise<CardDecision> => { await record("declined", reason, Number.isInteger(a.amountCents) ? a.amountCents : 0, 0); return { approved: false, reason, replayed: false }; };
+    if (!Number.isInteger(a.amountCents) || a.amountCents <= 0) return decline("bad_amount");
+    if (card.status !== "active") return decline(card.status === "frozen" ? "card_frozen" : "card_not_active");
+    const w = (await db.query(`SELECT status, kyc_tier FROM token_wallets WHERE user_id = $1 AND currency = $2`, [user, cur])).rows[0];
+    if (!w || w.status !== "active") return decline("wallet_inactive");
+    if ((a.currency ?? cur) !== cur) return decline("currency_not_supported");
+    const cfg = (await reader.active(countryForCurrency(cur))).config;
+    const limitChannel = CHANNEL_LIMIT[channel] ?? "pos";
+    if (cfg.limits.enforce) {
+      const used = Number((await db.query(`SELECT COALESCE(SUM(amount_cents),0) AS s FROM token_card_spend WHERE user_id = $1 AND currency = $2 AND status = 'approved' AND channel = ANY($3) AND created_at >= $4`,
+        [user, cur, Object.keys(CHANNEL_LIMIT).filter((k) => CHANNEL_LIMIT[k] === limitChannel), new Date(clock().getTime() - 24 * 3600_000)])).rows[0].s);
+      const v = checkTierLimit(cfg, w.kyc_tier as KycTier, { channel: limitChannel, amountCents: a.amountCents, usedTodayCents: used, balanceCents: 0 });
+      if (!v.ok) return decline("limit_exceeded");
+    }
+    // a cash-machine withdrawal carries the bank's charge; shop purchases carry none for the cardholder (the 2.5% and 2.9% rules in the fee schedule are the merchant's)
+    const fee = channel === "atm" ? computeFee(cfg.fees.rules, { txn: "atm", amountCents: a.amountCents, tier: w.kyc_tier as KycTier }).feeCents : 0;
+    const lines = [line(cur, user, -(a.amountCents + fee), true), { account: cardSettlement(cur), kind: "system", amount: a.amountCents }, ...(fee > 0 ? [{ account: systemAccounts(cur).fees, kind: "system", amount: fee }] : [])];
+    const r = ledger.post(`cardauth:${a.provider}:${a.authorisationId}`, "token_card_spend", lines, `Card purchase ${a.merchant ?? ""}`.trim());
+    if (r === "insufficient") return decline("insufficient_funds");
+    await record("approved", null, a.amountCents, fee);
+    await event(user, cur, "card_spend", -(a.amountCents + fee), a.merchant ?? "Card purchase", `cardauth:${a.authorisationId}`);
+    return { approved: true, replayed: false };
+  }
+
+  /** The merchant refunded a purchase, or the processor reversed an authorisation: the tokens (and any fee) go back to the wallet, once. */
+  async function reverseCardSpend(a: { provider: string; authorisationId: string }): Promise<{ reversed: boolean } | null> {
+    const sp = (await db.query(`SELECT * FROM token_card_spend WHERE provider = $1 AND authorisation_id = $2`, [a.provider, a.authorisationId])).rows[0];
+    if (!sp) return null;
+    if (sp.status === "reversed") return { reversed: true };
+    if (sp.status !== "approved") return { reversed: false };
+    const cur = String(sp.currency), amount = Number(sp.amount_cents), fee = Number(sp.fee_cents);
+    ledger.post(`cardrev:${a.provider}:${a.authorisationId}`, "token_card_reversal", [{ account: cardSettlement(cur), kind: "system", amount: -amount }, ...(fee > 0 ? [{ account: systemAccounts(cur).fees, kind: "system", amount: -fee }] : []), line(cur, String(sp.user_id), amount + fee)], "Card purchase reversed");
+    await db.query(`UPDATE token_card_spend SET status = 'reversed' WHERE id = $1 AND status = 'approved'`, [sp.id]);
+    await event(String(sp.user_id), cur, "card_refund", amount + fee, sp.merchant ?? "Card refund", `cardrev:${a.authorisationId}`);
+    return { reversed: true };
+  }
+
   /* ── what the holder and staff see ── */
   async function activity(userId: string, currency: string, limit = 30): Promise<ActivityLine[]> {
     const lines: ActivityLine[] = [];
@@ -411,7 +503,7 @@ export function createTokenService(deps: {
       const k = (byRole[String(r.role)] ??= { wallets: 0, cents: 0 }); k.wallets++; k.cents += b;
     }
     const open = (await db.query(`SELECT COUNT(*) AS n, COALESCE(SUM(amount_cents),0) AS s FROM token_cashouts WHERE currency = $1 AND status IN ('requested','processing')`, [currency])).rows[0];
-    return { currency, wallets: rows.length, circulationCents: circulation, byRole, clearingCents: ledger.balance(systemAccounts(currency).clearing), pendingCashouts: { count: Number(open.n), cents: Number(open.s) }, holdingCents: ledger.balance(cashoutHold(currency)) };
+    return { currency, wallets: rows.length, circulationCents: circulation, byRole, clearingCents: ledger.balance(systemAccounts(currency).clearing), pendingCashouts: { count: Number(open.n), cents: Number(open.s) }, holdingCents: ledger.balance(cashoutHold(currency)), cardSettlementCents: ledger.balance(cardSettlement(currency)) };
   }
 
   async function settings() {
@@ -444,6 +536,6 @@ export function createTokenService(deps: {
     return { ok: true, value: { id: String(row.id) } };
   }
 
-  return { bindEngine(e: Pick<Engine, "settleTaps">) { engine = e; }, partyOf, setTier, wallet, openWallet, linkCard, cards, blockCard, tapToken, transfer, redeemToBank, requestCashOut, decideCashOut, retryCashOut, processPayouts, attemptPayout, addPayoutCard, payoutCards, removePayoutCard, reviewPayoutCard, cardsToReview, activity, summary, settings, setDeviceFee, routes, upsertRoute };
+  return { bindEngine(e: Pick<Engine, "settleTaps">) { engine = e; }, partyOf, setTier, wallet, openWallet, linkCard, cards, blockCard, tapToken, transfer, redeemToBank, requestCashOut, decideCashOut, retryCashOut, processPayouts, attemptPayout, issueCard, issuedCards, setIssuedCardStatus, authoriseCardSpend, reverseCardSpend, addPayoutCard, payoutCards, removePayoutCard, reviewPayoutCard, cardsToReview, activity, summary, settings, setDeviceFee, routes, upsertRoute };
 }
 export type TokenService = ReturnType<typeof createTokenService>;

@@ -15,7 +15,7 @@ import terminalRouter from "./routes/terminalRouter.js";
 import { createTokenService } from "./services/tokenService.js";
 import { createTokenTerminalRouter, createTokenAdminRouter, createTokenRetailRouter } from "./portal/tokenRoutes.js";
 import { authenticateRetailTerminal } from "./services/retailAuth.js";
-import { getCardRail, getAccountValidationProvider } from "./payments/providers/registry.js";
+import { getCardRail, getAccountValidationProvider, getIssuingProvider } from "./payments/providers/registry.js";
 import { authenticateTerminal } from "./services/terminalAuth.js";
 import retailRouter from "./routes/retailRouter.js";
 import routeRouter from "./routes/routeRouter.js";
@@ -40,7 +40,7 @@ import levySystemRouter from "./routes/levySystem.js";
 import afcRouter from "./routes/afc.js";
 import { createManshyaModule } from "./manshya/mount.js";
 import { createPaymentsSandboxRouter } from "./payments/sandboxRoutes.js";
-import { createIssuerRouter } from "./payments/issuerRoutes.js";
+import { createIssuerRouter, type TokenCardAuthoriser } from "./payments/issuerRoutes.js";
 import { hasDb, pool } from "./db/pool.js";
 import { migrateAndSeed } from "./db/migrate.js";
 import { requireAuth, requireRole, JWT_SECRET } from "./middleware/auth.js";
@@ -86,7 +86,9 @@ app.use("/api", rateLimit({ windowMs: 60_000, max: 300, standardHeaders: true, l
 const manshya = createManshyaModule();
 app.use("/api/manshya", manshya.router);
 // Card issuer-processor real-time authorisations (raw body needed for the signature, so also before the JSON parser).
-app.use("/api/payments/issuer", createIssuerRouter(manshya.payments, manshya));
+// VINK token cards are decided by the token service, which is created further down; the issuer endpoint asks it through this bridge when a request arrives.
+const tokenCardsBridge: TokenCardAuthoriser = { authorise: async (a) => (tokenService ? tokenService.authoriseCardSpend(a) : null), reverse: async (a) => (tokenService ? tokenService.reverseCardSpend(a) : null) };
+app.use("/api/payments/issuer", createIssuerRouter(manshya.payments, manshya, tokenCardsBridge));
 
 
 // Incoming email from Resend (raw body for the signature check, so also before the JSON parser). Staff-only list endpoints.
@@ -141,7 +143,8 @@ export const configReader = createConfigReader(pool);
 const moneyLedger = manshyaLedgerPort(manshya as never);
 // VINK tokens (the closed-loop points system): a holder with a token wallet is paid in, and pays out of, tokens everywhere the engine moves money.
 const cardRail = getCardRail(manshya.payments);
-const tokenService = pool ? createTokenService({ db: pool, ledger: moneyLedger, reader: configReader, rail: cardRail, validator: getAccountValidationProvider(manshya.payments), extraTestPans: manshya.payments.visaDirect?.extraTestPans }) : null;
+const cardIssuer = getIssuingProvider(manshya.payments);
+const tokenService = pool ? createTokenService({ db: pool, ledger: moneyLedger, reader: configReader, rail: cardRail, validator: getAccountValidationProvider(manshya.payments), extraTestPans: manshya.payments.visaDirect?.extraTestPans, issuer: cardIssuer }) : null;
 const moneyEngine = pool ? createMoneyEngine({ db: pool, ledger: moneyLedger, reader: configReader, tokenParty: tokenService?.partyOf }) : null;
 if (moneyEngine) tokenService?.bindEngine(moneyEngine);
 let zaProfile: CountryConfig | null = null;
@@ -165,7 +168,7 @@ app.use("/api/fraud-risk",    fraudRiskRouter);
 if (tokenService && pool) {
   app.use("/api/terminal/token", createTokenTerminalRouter({ db: pool, tokens: tokenService, authenticate: authenticateTerminal }));          // before the general terminal routes
   if (moneyEngine) app.use("/api/retail/token", createTokenRetailRouter({ db: pool, ledger: moneyLedger, engine: moneyEngine, reader: configReader, authenticate: authenticateRetailTerminal }));          // before the general retail routes
-  app.use("/api/admin/tokens", requireAuth, requireRole("owner", "superadmin"), createTokenAdminRouter({ db: pool, tokens: tokenService }));
+  app.use("/api/admin/tokens", requireAuth, requireRole("owner", "superadmin"), createTokenAdminRouter({ db: pool, tokens: tokenService, sandbox: manshya.payments.mode === "sandbox" }));
 }
 app.use("/api/terminal",      terminalRouter);
 app.use("/api/retail",        retailRouter);

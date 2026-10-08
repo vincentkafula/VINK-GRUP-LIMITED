@@ -87,3 +87,11 @@ adapter layer exists so a direct connection can be added later without touching 
 - Card numbers, CVV and track data never pass through any adapter; only provider tokens, last4, brand and expiry.
 - Every money-moving call takes an idempotency key.
 - Sandbox and live credentials use different variable names (`SANDBOX_*` vs `LIVE_*`) so one is never read for the other.
+
+
+## Card payouts (money to a holder's own debit card)
+
+- Select with `CARD_PAYOUT_PROVIDER=mock` (default) or `visa_direct` (sandbox only). Code: `providers/mockCardRail.ts`, `providers/visaDirect.ts`. Live mode refuses to start: there is no live push-to-card adapter yet.
+- `visa_direct` needs the Visa auth settings plus `SANDBOX_VISA_DIRECT_ACQUIRING_BIN`, `SANDBOX_VISA_DIRECT_ACQUIRER_COUNTRY`, `SANDBOX_VISA_DIRECT_SENDER_ACCOUNT`, `SANDBOX_VISA_DIRECT_ACCEPTOR_ID_CODE`, `SANDBOX_CARD_VAULT_KEY` (optional: `SANDBOX_VISA_DIRECT_SENDER_NAME`, `_SENDER_COUNTRY` (alpha-3, default ZAF), `_SENDER_CITY`, `_ACCEPTOR_NAME`, `_TERMINAL_ID`, `_ACCEPTOR_CITY`, `_ACCEPTOR_COUNTRY`, `_TEST_PANS`).
+- **Mastercard Send is not built** (no documentation or credentials; not to be guessed). `CARD_PAYOUT_PROVIDER=mastercard_send` is refused at startup.
+- How it is used, and the rules (verified debit card in the holder's own name, no payouts by hand): see `TOKEN_SYSTEM.md`.

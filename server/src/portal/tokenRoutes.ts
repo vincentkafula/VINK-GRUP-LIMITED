@@ -15,6 +15,7 @@ import { recordPoolCredit, referenceLooksValid, normaliseReference } from "../se
  *   POST /cards                 register a VINK card to my wallet; POST /cards/:id/block stops a lost card at once
  *   POST /transfer              send tokens to someone by email or account number
  *   POST /redeem                move tokens into my own verified VINK bank account
+ *   POST /card                  { currency } issue my VINK debit card (virtual) that spends my tokens; POST /card/:id/status { status: frozen | active | blocked }
  *   GET/POST /payout-cards     my debit cards that money can be paid to; DELETE /payout-cards/:id removes one
  *   POST /cash-out              { amountCents, cardId? } tokens are paid to my verified debit card by the system. Never to a bank account, never by hand.
  *   GET/PUT /routes             association only: the fare for each route its devices serve
@@ -43,7 +44,7 @@ export function createTokenRouter(db: Db, tokens: TokenService, deps: TokenRoute
       const pool = deps.channels?.(currency)?.in_person ?? null;
       out.push({ ...w, payInto: pool ? { bank: pool.bank, holder: pool.holder, accountNumber: pool.accountNumber, type: pool.type } : null, cards: await tokens.cards(userId, currency), activity: await tokens.activity(userId, currency, 20) });
     }
-    res.json({ success: true, wallets: out, payoutCards: await tokens.payoutCards(userId), role: roleOf(req) ?? null, deviceFeeCents: roleOf(req) === "investor" ? (await tokens.settings()).deviceFeeCents : undefined });
+    res.json({ success: true, wallets: out, payoutCards: await tokens.payoutCards(userId), issuedCards: await tokens.issuedCards(userId), role: roleOf(req) ?? null, deviceFeeCents: roleOf(req) === "investor" ? (await tokens.settings()).deviceFeeCents : undefined });
   }));
 
   router.post("/wallet", h(async (req, res) => {
@@ -92,6 +93,19 @@ export function createTokenRouter(db: Db, tokens: TokenService, deps: TokenRoute
     if (!r.ok) return fail(res, r.status, r.error);
     await audit(db, req, "token.cashout.request", r.value.id, { amountCents: b.amountCents, status: r.value.status });
     res.status(201).json({ success: true, ...r.value });
+  }));
+  router.post("/card", h(async (req, res) => {
+    const r = await tokens.issueCard(uid(req), currencyOf((req.body ?? {}).currency));
+    if (!r.ok) return fail(res, r.status, r.error);
+    await audit(db, req, "token.card.issue", r.value.id, { last4: r.value.last4, brand: r.value.brand });
+    res.status(201).json({ success: true, card: r.value });
+  }));
+  router.post("/card/:id/status", h(async (req, res) => {
+    if (!isUuid(req.params.id)) return fail(res, 400, "Invalid card");
+    const r = await tokens.setIssuedCardStatus(uid(req), req.params.id as string, (req.body ?? {}).status);
+    if (!r.ok) return fail(res, r.status, r.error);
+    await audit(db, req, "token.card.status", req.params.id as string, { status: r.value.status });
+    res.json({ success: true, card: r.value });
   }));
   router.get("/payout-cards", h(async (req, res) => { res.json({ success: true, cards: await tokens.payoutCards(uid(req)) }); }));
   router.post("/payout-cards", h(async (req, res) => {
@@ -203,7 +217,7 @@ export function createTokenTerminalRouter(d: { db: Db; tokens: TokenService; aut
  *   PUT  /wallets/tier           { userId, currency, tier } sets a holder's verification level (basic, standard, full, business) once their identity is checked
  *   PUT  /settings               { deviceFeeCents } the per-trip fee paid to the investor who sponsored a device
  */
-export function createTokenAdminRouter(d: { db: Db; tokens: TokenService }): Router {
+export function createTokenAdminRouter(d: { db: Db; tokens: TokenService; sandbox?: boolean }): Router {
   const router = Router();
   router.use(json({ limit: "10kb" }));
   router.get("/summary", h(async (req, res) => {
@@ -253,6 +267,25 @@ export function createTokenAdminRouter(d: { db: Db; tokens: TokenService }): Rou
     if (!r.ok) return fail(res, r.status, r.error);
     await audit(d.db, req, "token.refund", r.value.id, { userId: b.userId, amountCents: b.amountCents, note });
     res.status(201).json({ success: true, id: r.value.id, status: r.value.status, message: r.value.message });
+  }));
+  /** Sandbox only: act as the card processor, so a purchase, an ATM withdrawal or a refund can be tried end to end. 404 outside the sandbox. */
+  router.post("/sandbox/card-purchase", h(async (req, res) => {
+    if (!d.sandbox) return fail(res, 404, "Endpoint not found");
+    const b = (req.body ?? {}) as Record<string, unknown>;
+    if (!isUuid(b.cardId)) return fail(res, 400, "Choose the card");
+    const c = (await d.db.query(`SELECT provider, provider_card_id, currency FROM token_issued_cards WHERE id = $1`, [b.cardId])).rows[0];
+    if (!c) return fail(res, 404, "No such card");
+    const authorisationId = typeof b.authorisationId === "string" && /^[A-Za-z0-9._-]{4,60}$/.test(b.authorisationId) ? b.authorisationId : `sbx-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const r = await d.tokens.authoriseCardSpend({ provider: String(c.provider), providerCardId: String(c.provider_card_id), authorisationId, amountCents: b.amountCents as number, currency: String(c.currency), channel: typeof b.channel === "string" ? b.channel : "chip", merchant: typeof b.merchant === "string" ? b.merchant.slice(0, 40) : "Sandbox shop" });
+    res.json({ success: true, authorisationId, decision: r });
+  }));
+  router.post("/sandbox/card-refund", h(async (req, res) => {
+    if (!d.sandbox) return fail(res, 404, "Endpoint not found");
+    const b = (req.body ?? {}) as Record<string, unknown>;
+    if (typeof b.authorisationId !== "string" || typeof b.provider !== "string") return fail(res, 400, "Give the provider and the authorisation id");
+    const r = await d.tokens.reverseCardSpend({ provider: b.provider, authorisationId: b.authorisationId });
+    if (!r) return fail(res, 404, "No such purchase");
+    res.json({ success: true, ...r });
   }));
   router.put("/wallets/tier", h(async (req, res) => {
     const b = (req.body ?? {}) as Record<string, unknown>;
