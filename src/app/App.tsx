@@ -36,6 +36,7 @@ const TokenReader                 = lazy(() => import("./components/TokenReader"
 const ManagementPanelViewer       = lazy(() => import("./components/ManagementPanelViewer").then(m => ({ default: m.ManagementPanelViewer })));
 import { PersistentTopNav } from "./components/PersistentTopNav";
 import { siteChrome } from "./sitePages";
+import { markPageBars } from "./pageBars";
 const PersonalAccountViewer       = lazy(() => import("./components/PersonalAccountViewer").then(m => ({ default: m.PersonalAccountViewer })));
 const PersonalLandingViewer       = lazy(() => import("./components/PersonalLandingViewer").then(m => ({ default: m.PersonalLandingViewer })));
 const BusinessLandingViewer       = lazy(() => import("./components/BusinessLandingViewer").then(m => ({ default: m.BusinessLandingViewer })));
@@ -427,6 +428,15 @@ export default function App() {
     selectorOpen, showContactUs, showAboutVINK, showCareers, showSwitchToVINK, showSafetySecurity, showTaxiAssociations, showJobApp,
     showLegal, showBranchLocator, showSponsorship, showBankingFees, showBankingGuide, showBankingChannels, showExchangeRates, showLatestOffers, showMarketIndices, showVinkBlog,
   });
+
+  // Pages draw their own logo + X bar; under the site header that is a second logo, so mark those bars for theme.css to hide (pages mount lazily, hence the observer).
+  useEffect(() => {
+    if (!showPersistentNav) return;
+    markPageBars();
+    const obs = new MutationObserver(() => markPageBars());
+    obs.observe(document.body, { childList: true, subtree: true });
+    return () => obs.disconnect();
+  }, [showPersistentNav]);
 
   const goToSection = (section: "Personal" | "Business" | "Corporate") => {
     startTransition(() => {

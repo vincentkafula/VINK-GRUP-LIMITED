@@ -1,4 +1,4 @@
-import { X, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { LaunchNotice, BrandMark, AppLink, SECTIONS, navItemClass, NOTICE_H, BAR_H } from "./SiteChrome";
 import { ThemeToggle } from "./ds";
 
@@ -15,6 +15,8 @@ interface Props {
  * (Personal / Business / Corporate and everything nested under
  * them), so switching sections never requires backing out to the homepage
  * first. Rendered once in App.tsx, above all overlays.
+ *
+ * There is no Close button: the logo is the way back to the home page.
  *
  * Its height is a contract: notice + bar = 88px, and the rule in styles/theme.css
  * (.has-persistent-nav .fixed.inset-0) offsets every full-screen page by exactly that.
@@ -38,9 +40,6 @@ export function PersistentTopNav({ active, onSelect, onHome }: Props) {
           <div className="flex-1" />
           <button type="button" onClick={() => window.dispatchEvent(new Event("vink:open-search"))} aria-label="Search pages and actions" className="inline-flex size-10 shrink-0 items-center justify-center rounded-full text-fg-muted hover:bg-surface-2 hover:text-fg"><Search className="size-[18px]" aria-hidden="true" /></button>
           <ThemeToggle className="shrink-0" />
-          <button type="button" onClick={onHome} aria-label="Close and return to the home page" className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full px-3 text-sm font-medium text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg">
-            <span className="hidden sm:inline">Close</span><X className="size-4" aria-hidden="true" />
-          </button>
         </div>
       </div>
     </div>

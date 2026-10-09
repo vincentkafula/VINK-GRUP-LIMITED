@@ -53,6 +53,10 @@
 .has-persistent-nav .fixed.inset-0 {
   top: 88px !important;
 }
+/* A page's own logo + X bar (marked by pageBars.ts) would be a second logo under the site header, whose logo is the way home. */
+.has-persistent-nav [data-page-bar] {
+  display: none !important;
+}
 
 .dark {
   --background: oklch(0.145 0 0);
