@@ -199,7 +199,7 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {["+27(0) 21 007 0772", "+27(0) 61 461 5035"].map((num) => (
-                  <a key={num} href={`tel:${num.replace(/[^+\d]/g, "")}`}
+                  <a key={num} href={`tel:${num.replace(/\(0\)/, "").replace(/[^+\d]/g, "")}`}
                     style={{ color: "#fff", fontSize: 14, lineHeight: "20px", textDecoration: "none", display: "flex", alignItems: "center", gap: 8 }}>
                     <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 22, height: 22, background: "#EF4444", borderRadius: "50%", flexShrink: 0 }}>
                       <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
