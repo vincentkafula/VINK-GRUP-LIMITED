@@ -7,23 +7,28 @@ import { PremiumIcon } from "./PremiumIcon";
 const PURPLE = "var(--vk-brand)";           // crimson in light, gold in dark
 const DEEP_PURPLE = "#0c0e14";                // ink: the chip always carries white text
 const GOLD = "#c9a84c";
+// One palette for the whole block, taken from the brand (crimson and gold on warm ink) instead of a different neon colour for each card.
+const GOLD_METAL = "#D4AF5A";      // the medallions and arrows
+const GOLD_SOFT = "#EBD592";       // card titles
+const INK = "#1A0D10";             // the warm dark each medallion and card is built on
+const CRIMSON_GLOW = "139,0,0";    // the brand crimson (#8b0000), as an rgb triple for the glows
 
 interface Benefit { icon: React.ComponentProps<typeof PremiumIcon>["icon"]; title: string; desc: string; featured: boolean; color: string; colorDark: string }
 
 const BENEFITS: Benefit[] = [
-  { icon: Gift, title: "Rewards", desc: "Earn points on every spend and redeem for exciting rewards and offers.", featured: false, color: "#F2545B", colorDark: "#2E0B10" },
-  { icon: Banknote, title: "Cash Back", desc: "Get real cash back on your purchases and save more every day.", featured: true, color: "#4ADE80", colorDark: "#0F3D1F" },
-  { icon: ArrowLeftRight, title: "Balance Transfer", desc: "Transfer your balance easily and pay off debt faster.", featured: false, color: "#3B82F6", colorDark: "#0F2A4A" },
-  { icon: Plane, title: "Travel", desc: "Exclusive travel benefits, airport lounge access, and more.", featured: false, color: "#F97316", colorDark: "#4A2008" },
-  { icon: BadgePercent, title: "Zero Percent", desc: "Enjoy 0% interest on eligible purchases for a limited time.", featured: false, color: "#2DD4BF", colorDark: "#0D3B36" },
-  { icon: TrendingDown, title: "Low Interest", desc: "Competitive interest rates that help you save more.", featured: false, color: "#EC4899", colorDark: "#4A0F2E" },
+  { icon: Gift, title: "Rewards", desc: "Earn points on every spend and redeem for exciting rewards and offers.", featured: false, color: GOLD_METAL, colorDark: INK },
+  { icon: Banknote, title: "Cash Back", desc: "Get real cash back on your purchases and save more every day.", featured: true, color: GOLD_METAL, colorDark: INK },
+  { icon: ArrowLeftRight, title: "Balance Transfer", desc: "Transfer your balance easily and pay off debt faster.", featured: false, color: GOLD_METAL, colorDark: INK },
+  { icon: Plane, title: "Travel", desc: "Exclusive travel benefits, airport lounge access, and more.", featured: false, color: GOLD_METAL, colorDark: INK },
+  { icon: BadgePercent, title: "Zero Percent", desc: "Enjoy 0% interest on eligible purchases for a limited time.", featured: false, color: GOLD_METAL, colorDark: INK },
+  { icon: TrendingDown, title: "Low Interest", desc: "Competitive interest rates that help you save more.", featured: false, color: GOLD_METAL, colorDark: INK },
 ];
 
 const STATS = [
-  { Icon: Crown, value: "5X", label: "Points on dining & entertainment", color: "#F2545B", text: "var(--vk-crimson-text)" },
-  { Icon: Gift, value: "100+", label: "Partner brands and offers", color: "#F97316", text: "#F97316" },
-  { Icon: Globe, value: "0", label: "Foreign transaction fees", color: "#2DD4BF", text: "#2DD4BF" },
-  { Icon: Smartphone, value: "24/7", label: "Dedicated customer support", color: "#EC4899", text: "#EC4899" },
+  { Icon: Crown, value: "5X", label: "Points on dining & entertainment", color: GOLD_METAL, text: "var(--vk-crimson-text)" },
+  { Icon: Gift, value: "100+", label: "Partner brands and offers", color: GOLD_METAL, text: "var(--vk-crimson-text)" },
+  { Icon: Globe, value: "0", label: "Foreign transaction fees", color: GOLD_METAL, text: "var(--vk-crimson-text)" },
+  { Icon: Smartphone, value: "24/7", label: "Dedicated customer support", color: GOLD_METAL, text: "var(--vk-crimson-text)" },
 ];
 
 function BenefitCard({ b }: { b: Benefit }) {
@@ -31,18 +36,19 @@ function BenefitCard({ b }: { b: Benefit }) {
     <div
       className="group rounded-2xl p-4 flex flex-col transition-all duration-300 hover:-translate-y-1 relative overflow-hidden text-white"
       style={{
-        background: `linear-gradient(160deg,${b.colorDark} 0%,#0D0620 85%)`,
-        border: `1px solid color-mix(in srgb, ${b.color} 24%, transparent)`,
-        boxShadow: `0 10px 30px -10px color-mix(in srgb, ${b.color} 38%, transparent), inset 0 1px 0 rgba(255,255,255,0.06)`,
+        background: `linear-gradient(160deg,#241216 0%,${b.colorDark} 45%,#0B0709 100%)`,
+        border: `1px solid color-mix(in srgb, ${b.color} ${b.featured ? 55 : 24}%, transparent)`,
+        boxShadow: `0 14px 32px -16px rgba(${CRIMSON_GLOW},0.7), 0 2px 6px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.07)${b.featured ? `, 0 0 0 1px color-mix(in srgb, ${b.color} 20%, transparent)` : ""}`,
       }}
     >
       {/* Ambient glow behind the icon, echoing the reference's per-icon lighting */}
       <div className="absolute -top-6 -right-6 w-32 h-32 rounded-full pointer-events-none"
-        style={{ background: `radial-gradient(circle,color-mix(in srgb, ${b.color} 25%, transparent),transparent 70%)` }} />
+        style={{ background: `radial-gradient(circle,rgba(${CRIMSON_GLOW},0.5),transparent 70%)` }} />
+      <div className="absolute -bottom-10 -left-8 w-32 h-32 rounded-full pointer-events-none" style={{ background: `radial-gradient(circle,color-mix(in srgb, ${b.color} 14%, transparent),transparent 70%)` }} />
 
       <PremiumIcon icon={b.icon} accent={b.color} dark={b.colorDark} size={72} className="mb-3 mx-auto sm:mx-0" />
-      <p className="text-base font-bold mb-1 text-center sm:text-left" style={{ color: b.color }}>{b.title}</p>
-      <p className="text-[13px] leading-relaxed mb-3 text-white/80 text-center sm:text-left">{b.desc}</p>
+      <p className="text-base font-bold mb-1 text-center sm:text-left" style={{ color: GOLD_SOFT }}>{b.title}</p>
+      <p className="text-[13px] leading-relaxed mb-3 text-white/75 text-center sm:text-left">{b.desc}</p>
       <div className="mt-auto flex items-center justify-center sm:justify-between gap-2 flex-wrap">
       <span aria-hidden="true" className="w-8 h-8 rounded-full flex items-center justify-center"
         style={{ background: `color-mix(in srgb, ${b.color} 15%, transparent)`, color: b.color, border: `1px solid color-mix(in srgb, ${b.color} 30%, transparent)` }}>
