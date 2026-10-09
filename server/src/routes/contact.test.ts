@@ -165,4 +165,14 @@ describe("the department list is the same on the server and on the website", () 
     const web = [...file.matchAll(/\{ key: "([a-z]+)", name: "([^"]+)", address: "([^"]+)", purpose: "([^"]+)", respondWithin: "([^"]+)" \}/g)].map((m) => ({ key: m[1], name: m[2], address: m[3], purpose: m[4], respondWithin: m[5] }));
     expect(web).toEqual(DEPARTMENTS);
   });
+  it("sends attachments to Resend as base64, and sends nothing extra when there are none", async () => {
+    const bodies: Record<string, unknown>[] = [];
+    const f = (async (_u: string, i: RequestInit) => { bodies.push(JSON.parse(String(i.body))); return new Response("{}", { status: 200 }); }) as unknown as typeof fetch;
+    const r = new ResendEmail("key", "VINK <no-reply@vink.co.za>", f);
+    const base = { to: "x@example.com", subject: "s", text: "t", html: "h" };
+    await r.send({ ...base, attachments: [{ filename: "a.pdf", content: Buffer.from("hello"), contentType: "application/pdf" }, { filename: "b.bin", content: Buffer.from([1, 2, 3]) }] });
+    await r.send(base);
+    expect(bodies[0].attachments).toEqual([{ filename: "a.pdf", content: "aGVsbG8=", content_type: "application/pdf" }, { filename: "b.bin", content: "AQID" }]);
+    expect(bodies[1]).not.toHaveProperty("attachments");
+  });
 });

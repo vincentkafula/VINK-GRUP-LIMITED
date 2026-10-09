@@ -1423,3 +1423,31 @@ CREATE TABLE IF NOT EXISTS mail_outbound (
 );
 CREATE INDEX IF NOT EXISTS idx_mail_outbound_dept ON mail_outbound(department, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_mail_outbound_user ON mail_outbound(sent_by, created_at DESC);
+
+-- Files in department mail: attachments on incoming email (fetched from Resend), files staff attach to an email they send, and files shared as an expiring link when
+-- they are too big to attach (see services/mailFiles.ts). kind: inbound (email_id = inbound_emails.id) | outbound (email_id = mail_outbound.id) | upload (staged by a
+-- member of staff, not sent yet). status: stored (data is here) | pending (still to be fetched from Resend) | toolarge (never fetched).
+CREATE TABLE IF NOT EXISTS mail_files (
+  id             UUID PRIMARY KEY,
+  kind           TEXT NOT NULL CHECK (kind IN ('inbound','outbound','upload')),
+  email_id       UUID,
+  department     TEXT,
+  filename       TEXT NOT NULL,
+  content_type   TEXT NOT NULL DEFAULT 'application/octet-stream',
+  size           BIGINT NOT NULL DEFAULT 0,
+  data           BYTEA,
+  status         TEXT NOT NULL DEFAULT 'stored' CHECK (status IN ('stored','pending','toolarge')),
+  resend_email_id TEXT,
+  resend_att_id  TEXT,
+  uploaded_by    UUID REFERENCES users(id) ON DELETE SET NULL,
+  share_token    TEXT UNIQUE,
+  share_expires  TIMESTAMPTZ,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_mail_files_email ON mail_files(kind, email_id);
+CREATE INDEX IF NOT EXISTS idx_mail_files_upload ON mail_files(uploaded_by, created_at) WHERE kind = 'upload';
+-- Virus scan result per file (see services/fileScan.ts) and the Content-ID an incoming email uses to show the file inline.
+ALTER TABLE mail_files ADD COLUMN IF NOT EXISTS scan_status TEXT NOT NULL DEFAULT 'unscanned';
+ALTER TABLE mail_files ADD COLUMN IF NOT EXISTS scan_detail TEXT;
+ALTER TABLE mail_files ADD COLUMN IF NOT EXISTS scanned_at TIMESTAMPTZ;
+ALTER TABLE mail_files ADD COLUMN IF NOT EXISTS content_id TEXT;

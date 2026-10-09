@@ -2,6 +2,7 @@ import crypto from "crypto";
 import type { Db } from "../portal/driverRoutes.js";
 import type { EmailSender } from "../auth/email.js";
 import { DEPARTMENTS, SECTION_ALIASES, departmentByKey, type Department } from "../config/departments.js";
+import { createMailFiles, ATTACH_LIMIT_BYTES, LINK_DAYS, prettySize, type MailFiles, type FileInfo, type FileResult, type StoredFile } from "./mailFiles.js";
 
 /**
  * Department mail for staff: read what was sent to a department (website messages and incoming email), reply from the department's own address, and write new
@@ -14,8 +15,8 @@ import { DEPARTMENTS, SECTION_ALIASES, departmentByKey, type Department } from "
  *    The section name is the department's name, for example "Sales".
  *
  * Everything a person sends is stored (mail_outbound) with who sent it, is limited to 40 an hour per person, and goes out from the department's address with the
- * department's address as the reply address, so answers come back into the department's mailbox. Message text is returned as plain text only: incoming HTML is
- * never passed on, because it comes from the open internet.
+ * department's address as the reply address, so answers come back into the department's mailbox. Message text is returned as plain text, and the HTML of an
+ * incoming email is returned separately as untrusted: the website cleans it (DOMPurify) and shows it in a sandboxed frame with remote pictures blocked.
  */
 export const UNROUTED = { key: "unrouted", name: "Other mail (not addressed to a department)", address: "", purpose: "", respondWithin: "" };
 export type MailKind = "web" | "email";
@@ -23,7 +24,7 @@ export interface MailUser { userId: string; role: string }
 const SEND_LIMIT_PER_HOUR = 40;
 
 export interface MailListItem { kind: MailKind; id: string; department: string; fromName: string; fromEmail: string; subject: string; preview: string; status: string; at: string; ref?: string }
-export interface MailDetail extends MailListItem { text: string; replies: { id: string; to: string; subject: string; body: string; status: string; by: string; at: string }[] }
+export interface MailDetail extends MailListItem { text: string; /** The HTML of an incoming email, as received (untrusted: the website cleans it and shows it in a sandbox). */ html: string | null; attachments: FileInfo[]; replies: { id: string; to: string; subject: string; body: string; status: string; by: string; at: string; attachments: FileInfo[] }[] }
 export type MailResult<T> = { ok: true; value: T } | { ok: false; status: number; error: string };
 
 const isSuper = (role: string) => role === "owner" || role === "superadmin";
@@ -40,9 +41,12 @@ export function parseAddress(raw: string): { name: string; email: string } {
   return { name: (m ? m[1].trim() : "") || email, email };
 }
 
-export function createMailService(deps: { db: Db; mail: EmailSender; now?: () => Date }) {
+export function createMailService(deps: { db: Db; mail: EmailSender; now?: () => Date; files?: MailFiles; /** Up to this many bytes of files are attached; more goes as links (default 15 MB). */ attachLimitBytes?: number; /** Where the public download links point (the API's own address). */ publicApiUrl?: string }) {
   const { db, mail } = deps;
   const now = deps.now ?? (() => new Date());
+  const files = deps.files ?? createMailFiles({ db, now });
+  const attachLimit = deps.attachLimitBytes ?? ATTACH_LIMIT_BYTES;
+  const apiUrl = (deps.publicApiUrl ?? process.env.PUBLIC_API_URL ?? "https://api.vink.co.za").replace(/\/+$/, "");
 
   /** The departments this person may use. */
   async function departmentsFor(user: MailUser): Promise<(Department | typeof UNROUTED)[]> {
@@ -98,9 +102,12 @@ export function createMailService(deps: { db: Db; mail: EmailSender; now?: () =>
     const m = await load(kind, id);
     if (!m) return bad(404, "No such message");
     if (!(await canUse(user, m.item.department))) return bad(403, "You do not manage this department's mail");
-    const replies = (await db.query(`SELECT * FROM mail_outbound WHERE reply_kind = $1 AND reply_id = $2 ORDER BY created_at`, [kind, id])).rows
-      .map((r: Record<string, unknown>) => ({ id: String(r.id), to: String(r.to_addr), subject: String(r.subject), body: String(r.body), status: String(r.status), by: String(r.sent_by_name), at: new Date(String(r.created_at)).toISOString() }));
-    return { ok: true, value: { ...m.item, text: m.text.slice(0, 20000), replies } };
+    const replyRows = (await db.query(`SELECT * FROM mail_outbound WHERE reply_kind = $1 AND reply_id = $2 ORDER BY created_at`, [kind, id])).rows;
+    const replies = await Promise.all(replyRows.map(async (r: Record<string, unknown>) => ({ id: String(r.id), to: String(r.to_addr), subject: String(r.subject), body: String(r.body), status: String(r.status), by: String(r.sent_by_name), at: new Date(String(r.created_at)).toISOString(), attachments: await files.forEmail("outbound", String(r.id)) })));
+    const attachments = kind === "email" ? await files.forEmail("inbound", id) : [];
+    const htmlRow = kind === "email" ? (await db.query(`SELECT html_body FROM inbound_emails WHERE id = $1`, [id])).rows[0] : null;
+    const html = htmlRow?.html_body ? String(htmlRow.html_body).slice(0, 300_000) : null;
+    return { ok: true, value: { ...m.item, text: m.text.slice(0, 20000), html, attachments, replies } };
   }
 
   async function setStatus(user: MailUser, kind: string, id: string, status: unknown): Promise<MailResult<{ status: string }>> {
@@ -117,7 +124,7 @@ export function createMailService(deps: { db: Db; mail: EmailSender; now?: () =>
   }
 
   /** Sends an email from a department and records it. */
-  async function send(user: MailUser, username: string, a: { department: string; to: string; subject: string; body: string; replyKind?: MailKind; replyId?: string }): Promise<MailResult<{ id: string }>> {
+  async function send(user: MailUser, username: string, a: { department: string; to: string; subject: string; body: string; replyKind?: MailKind; replyId?: string; attachmentIds?: unknown }): Promise<MailResult<{ id: string }>> {
     const dept = departmentByKey(a.department);
     if (!dept) return bad(400, "Choose a department to send from");
     if (!(await canUse(user, dept.key))) return bad(403, "You do not manage this department's mail");
@@ -127,19 +134,29 @@ export function createMailService(deps: { db: Db; mail: EmailSender; now?: () =>
     if (body.length < 2) return bad(400, "Write the message");
     if (body.length > 20000) return bad(400, "The message is too long");
     if ((await sentThisHour(user.userId)) >= SEND_LIMIT_PER_HOUR) return bad(429, "You have sent a lot of email this hour. Please wait a while.");
+    const claimed = await files.claim(user.userId, a.attachmentIds);
+    if (!claimed.ok) return bad(claimed.status, claimed.error);
+    const list = claimed.value;
+    const asLinks = list.reduce((n, f) => n + f.size, 0) > attachLimit;          // too big to attach: send expiring download links instead
+    const links = asLinks ? files.planLinks(list) : undefined;
+    const linkLines = asLinks ? list.map((f) => ({ name: f.filename, size: prettySize(f.size), url: `${apiUrl}/api/shared-files/${links!.get(f.id)!.token}` })) : [];
+    const expiry = asLinks ? [...links!.values()][0].expires.toISOString().slice(0, 10) : "";
+    const linkText = asLinks ? `\n\nFiles shared with you (the links work until ${expiry}):\n${linkLines.map((l) => `- ${l.name} (${l.size}): ${l.url}`).join("\n")}` : "";
+    const linkHtml = asLinks ? `<p>Files shared with you (the links work until ${esc(expiry)}):</p><ul>${linkLines.map((l) => `<li><a href="${esc(l.url)}">${esc(l.name)}</a> (${esc(l.size)})</li>`).join("")}</ul>` : "";
     const id = crypto.randomUUID();
-    const html = `<p style="white-space:pre-wrap">${esc(body)}</p><p>${esc(dept.name)}<br>VINK</p>`;
+    const html = `<p style="white-space:pre-wrap">${esc(body)}</p>${linkHtml}<p>${esc(dept.name)}<br>VINK</p>`;
     let error: string | null = null;
-    try { await mail.send({ to, subject, text: `${body}\n\n${dept.name}\nVINK`, html, from: `VINK ${dept.name} <${dept.address}>`, replyTo: dept.address }); }
+    try { await mail.send({ to, subject, text: `${body}${linkText}\n\n${dept.name}\nVINK`, html, from: `VINK ${dept.name} <${dept.address}>`, replyTo: dept.address, ...(list.length && !asLinks ? { attachments: list.map((f) => ({ filename: f.filename, content: f.data, contentType: f.contentType })) } : {}) }); }
     catch (e) { error = e instanceof Error ? e.message.slice(0, 200) : "send failed"; }
     await db.query(`INSERT INTO mail_outbound (id, department, to_addr, subject, body, reply_kind, reply_id, sent_by, sent_by_name, status, error, created_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
       [id, dept.key, to, subject, body, a.replyKind ?? null, a.replyId ?? null, user.userId, username || "staff", error ? "failed" : "sent", error, now()]);
     if (error) return bad(502, "The email could not be sent right now. Nothing was delivered; try again.");
+    await files.bindSent(list, id, dept.key, links);
     return { ok: true, value: { id } };
   }
 
   /** Answers a message from its department's address. The message is marked answered once the email has gone. */
-  async function reply(user: MailUser, username: string, kind: string, id: string, body: unknown): Promise<MailResult<{ id: string }>> {
+  async function reply(user: MailUser, username: string, kind: string, id: string, body: unknown, attachmentIds?: unknown): Promise<MailResult<{ id: string }>> {
     const m = await load(kind, id);
     if (!m) return bad(404, "No such message");
     if (m.item.department === "unrouted") return bad(409, "This email was not sent to a department address. Write a new email from the department you choose.");
@@ -148,11 +165,20 @@ export function createMailService(deps: { db: Db; mail: EmailSender; now?: () =>
     const quoted = m.text.split("\n").slice(0, 25).map((l) => `> ${l}`).join("\n").slice(0, 1500);
     const text = typeof body === "string" ? body.trim() : "";
     if (text.length < 2) return bad(400, "Write your reply");
-    const r = await send(user, username, { department: m.item.department, to: m.item.fromEmail, subject: m.item.ref ? `${subject} (${m.item.ref})` : subject, body: text ? `${text}\n\n---\nOn ${m.item.at.slice(0, 10)}, ${m.item.fromName} wrote:\n${quoted}` : "", replyKind: kind as MailKind, replyId: id });
+    const r = await send(user, username, { department: m.item.department, to: m.item.fromEmail, subject: m.item.ref ? `${subject} (${m.item.ref})` : subject, body: text ? `${text}\n\n---\nOn ${m.item.at.slice(0, 10)}, ${m.item.fromName} wrote:\n${quoted}` : "", replyKind: kind as MailKind, replyId: id, attachmentIds });
     if (r.ok) await db.query(kind === "web" ? `UPDATE contact_messages SET status = 'answered' WHERE id = $1 AND status = 'open'` : `UPDATE inbound_emails SET status = 'answered' WHERE id = $1 AND status = 'open'`, [id]);
     return r;
   }
 
-  return { departmentsFor, unread, list, get, setStatus, send, reply };
+  /** A file a person is allowed to download: one on a message of a department they manage. */
+  async function openFile(user: MailUser, fileId: string): Promise<FileResult<StoredFile>> {
+    if (!/^[0-9a-f-]{36}$/i.test(fileId)) return bad(400, "Invalid file");
+    const m = await files.meta(fileId);
+    if (!m || !m.department || m.row.kind === "upload") return bad(404, "No such file");
+    if (!(await canUse(user, m.department))) return bad(403, "You do not manage this department's mail");
+    return files.read(fileId);
+  }
+
+  return { departmentsFor, unread, list, get, setStatus, send, reply, openFile, files };
 }
 export type MailService = ReturnType<typeof createMailService>;

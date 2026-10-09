@@ -60,6 +60,25 @@ describe("inbound router", () => {
     expect(store.rows[0]).toMatchObject({ resendId: "em_123", subject: "Help", text: "hello there" });
   });
 
+  it("hands the stored email to the attachment handler once, with its id and department, and still stores the email if that fails", async () => {
+    const seen: unknown[][] = []; let fail = false;
+    const files = { recordInbound: async (...a: unknown[]) => { seen.push(a); if (fail) throw new Error("boom"); return 1; } } as never;
+    const app2 = express();
+    app2.use("/api/inbound", createInboundRouter({ store, webhookSecret: SECRET, apiKey: "re_test", fetchImpl: (async () => new Response(JSON.stringify({ from: "A <a@example.test>", to: ["sales@vink.co.za"], subject: "S", text: "t" }))) as unknown as typeof fetch, now: () => NOW, guard: [asStaff], files }));
+    const s2 = await new Promise<Server>((ok) => { const x = app2.listen(0, "127.0.0.1", () => ok(x)); });
+    const u2 = `http://127.0.0.1:${(s2.address() as AddressInfo).port}/api/inbound/webhook`;
+    const send = (e: string, id: string) => fetch(u2, { method: "POST", headers: { "Content-Type": "application/json", ...hdrs(e, id) }, body: e });
+    expect((await send(evt, "m1")).status).toBe(200);
+    expect(seen).toEqual([[store.rows[0].id, "em_123", "sales"]]);
+    await send(evt, "m2");                                                        // the same delivery again: stored already, so nothing more to record
+    expect(seen).toHaveLength(1);
+    fail = true;
+    const evt2 = JSON.stringify({ type: "email.received", data: { email_id: "em_456" } });
+    expect((await send(evt2, "m3")).status).toBe(200);                            // recording the attachments failed, but the email is kept and Resend is told it worked
+    expect(store.rows).toHaveLength(2);
+    await new Promise<void>((ok) => s2.close(() => ok()));
+  });
+
   it("the same delivery twice stores one message", async () => {
     await post(evt, hdrs(evt)); await post(evt, hdrs(evt, "msg_2"));
     expect(store.rows).toHaveLength(1);
