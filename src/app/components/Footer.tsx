@@ -1,4 +1,3 @@
-import { Phone } from "lucide-react";
 import vinkLogoDark from "../../imports/LOGO_FINAL.png";
 import { PremiumIcon } from "./PremiumIcon";
 
@@ -191,29 +190,7 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
 
           <LinkColumn title="Our Sites" links={COLS[2].links} onLinkClick={handleLinkClick} />
 
-          {/* Support + Lost cards stacked */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 36 }}>
-            <LinkColumn title="Support" links={COLS[4].links} onLinkClick={handleLinkClick} />
-
-            {/* Lost / stolen cards */}
-            <div style={{ padding: "16px 12px 14px", borderRadius: 16, border: "1px solid rgba(239,68,68,0.28)", background: "linear-gradient(160deg,rgba(239,68,68,0.10),rgba(239,68,68,0.02))", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)" }}>
-              <div style={{ marginBottom: 14 }}>
-                <p style={{ color: "#fff", fontSize: 12.5, fontWeight: 700, lineHeight: "18px", letterSpacing: "0.18em", textTransform: "uppercase", margin: 0 }}>
-                  Lost or stolen cards
-                </p>
-                <div style={{ width: 32, height: 2, background: "linear-gradient(90deg,#EF4444,transparent)", borderRadius: 2, marginTop: 9 }} />
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {["+27(0) 21 007 0772", "+27(0) 61 461 5035"].map((num) => (
-                  <a key={num} href={`tel:${num.replace(/\(0\)/, "").replace(/[^+\d]/g, "")}`}
-                    style={{ color: "#fff", fontSize: 14, fontWeight: 600, lineHeight: "20px", textDecoration: "none", display: "flex", alignItems: "center", gap: 8, whiteSpace: "nowrap" }}>
-                    <PremiumIcon icon={Phone} accent="#E5484D" dark="#2A0A0C" size={26} />
-                    {num}
-                  </a>
-                ))}
-              </div>
-            </div>
-          </div>
+          <LinkColumn title="Support" links={COLS[4].links} onLinkClick={handleLinkClick} />
 
           {/* ── Download apps, with Legal underneath ───── */}
           <div style={{ display: "flex", flexDirection: "column", gap: 36 }}>
