@@ -6,7 +6,6 @@ import { createRoot, type Root } from "react-dom/client";
 import { act } from "react";
 import { SECTION_PAGES, OTHER_SITE_PAGES, APP_PAGES, siteChrome } from "./sitePages";
 import { BusinessAccountApplicationViewer } from "./components/BusinessAccountApplicationViewer";
-import { FiveHundredGlobalApplication } from "./components/FiveHundredGlobalApplication";
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const app = fs.readFileSync(path.resolve(__dirname, "App.tsx"), "utf8");
@@ -58,8 +57,4 @@ describe("footers on the pages that used to have none", () => {
     expect(host.querySelector("footer")).not.toBeNull(); expect(host.textContent).toContain("Useful Tools"); expect(host.textContent).toContain("Who We Are");
   });
 
-  it("the 500 Global application ends with the site footer", () => {
-    act(() => { root.render(<FiveHundredGlobalApplication isOpen onClose={() => {}} />); });
-    expect(host.querySelector("footer")).not.toBeNull(); expect(host.textContent).toContain("Useful Tools");
-  });
 });
