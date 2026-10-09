@@ -42,7 +42,7 @@ const LEGAL_LINKS = ["Privacy Policy", "Terms of Use", "Advertiser Disclosure", 
 const CONTACT_CHANNELS = [
   { icon: <Phone className="w-5 h-5" />, label: "Call Us", value: "0800 VINK (8465)", sub: "Mon–Fri 08:00–20:00 | Sat 09:00–14:00", color: "var(--vk-crimson-text)" },
   { icon: <MessageCircle className="w-5 h-5" />, label: "Live Chat", value: "Chat on VINK App", sub: "Available 24/7", color: "#10B981" },
-  { icon: <Mail className="w-5 h-5" />, label: "Email Support", value: "support@vink.co.za", sub: "Reply within 2 business hours", color: "#3B82F6" },
+  { icon: <Mail className="w-5 h-5" />, label: "Email Support", value: "support@vink.co.za", sub: "Reply within 1–2 business days", color: "#3B82F6" },
   { icon: <MapPin className="w-5 h-5" />, label: "Visit Us", value: "8 Rose Street, Cape Town CBD", sub: "By appointment", color: "#F59E0B" },
 ];
 

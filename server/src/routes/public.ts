@@ -4,22 +4,9 @@ import { v4 as uuid } from "uuid";
 const router: ReturnType<typeof Router> = Router();
 
 // In-memory stores for public submissions
-const contacts:     { id: string; name: string; email: string; phone: string; subject: string; message: string; type: string; createdAt: string; status: string }[] = [];
 const subscribers:  { id: string; email: string; createdAt: string }[] = [];
 const applications: { id: string; product: string; tier: string; name: string; email: string; phone: string; idNumber: string; income: string; employmentStatus: string; message: string; createdAt: string; status: string }[] = [];
 const registrations:{ id: string; firstName: string; lastName: string; email: string; phone: string; idNumber: string; dateOfBirth: string; accountType: string; createdAt: string; status: string }[] = [];
-
-// ─── POST /api/public/contact ─────────────────────────────────────────────────
-router.post("/contact", (req: Request, res: Response): void => {
-  const { name, email, phone, subject, message, type } = req.body;
-  if (!name || !email || !message) {
-    res.status(400).json({ success: false, error: "name, email and message are required" });
-    return;
-  }
-  const record = { id: uuid(), name, email, phone: phone ?? "", subject: subject ?? "General Enquiry", message, type: type ?? "Personal", createdAt: new Date().toISOString(), status: "open" };
-  contacts.push(record);
-  res.status(201).json({ success: true, data: { id: record.id, message: "Thank you for contacting us. We will respond within 2 business hours." } });
-});
 
 // ─── POST /api/public/newsletter ─────────────────────────────────────────────
 router.post("/newsletter", (req: Request, res: Response): void => {
@@ -107,8 +94,6 @@ router.get("/stats", (_req: Request, res: Response): void => {
   res.json({ success: true, data: { afcDevices: 250000, dailyCommuters: 15000000, appRating: 4.8, partnerMerchants: 2100, countriesCovered: 175, merchantLocations: 55000000, sadcNations: 14 } });
 });
 
-// ─── GET /api/public/contacts (admin view) ────────────────────────────────────
-router.get("/contacts",     (_req, res) => res.json({ success: true, data: contacts,     meta: { total: contacts.length } }));
 router.get("/applications", (_req, res) => res.json({ success: true, data: applications, meta: { total: applications.length } }));
 router.get("/subscribers",  (_req, res) => res.json({ success: true, data: subscribers,  meta: { total: subscribers.length } }));
 

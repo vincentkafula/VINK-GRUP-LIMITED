@@ -58,6 +58,7 @@ export function allPortalsDb(): Db {
     CREATE TABLE go_live_checks (key TEXT PRIMARY KEY, confirmed_by UUID, confirmed_by_name TEXT NOT NULL, confirmed_at TIMESTAMPTZ NOT NULL, note TEXT NOT NULL);
     CREATE TABLE card_settlement_files (id UUID PRIMARY KEY, provider TEXT NOT NULL, filename TEXT NOT NULL, sha256 TEXT NOT NULL UNIQUE, line_count INTEGER NOT NULL, matched INTEGER, exceptions INTEGER, imported_by UUID, imported_at TIMESTAMPTZ NOT NULL);
     CREATE TABLE card_settlement_lines (id UUID PRIMARY KEY, file_id UUID NOT NULL, provider TEXT NOT NULL, authorisation_id TEXT NOT NULL, line_type TEXT NOT NULL, amount_cents BIGINT NOT NULL, currency TEXT NOT NULL, settled_on DATE NOT NULL, reference TEXT NOT NULL DEFAULT '', result TEXT NOT NULL, resolved_at TIMESTAMPTZ, resolved_by UUID, resolved_note TEXT, UNIQUE (provider, authorisation_id, line_type, reference));
+    CREATE TABLE contact_messages (id UUID PRIMARY KEY, ref TEXT NOT NULL UNIQUE, department TEXT NOT NULL, name TEXT NOT NULL, email TEXT NOT NULL, phone TEXT, subject TEXT NOT NULL, message TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'open', notified_at TIMESTAMPTZ, ack_sent_at TIMESTAMPTZ, tries INTEGER NOT NULL DEFAULT 0, last_error TEXT, created_at TIMESTAMPTZ NOT NULL DEFAULT now());
     CREATE TABLE support_requests (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), user_id UUID NOT NULL, subject TEXT NOT NULL, message TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'open', created_at TIMESTAMPTZ NOT NULL DEFAULT now());
   `);
   const { Pool } = mem.adapters.createPg();

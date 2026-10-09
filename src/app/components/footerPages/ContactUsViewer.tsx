@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import vinkLogo from "../../../imports/LOGO_FINAL.png";
 import { publicApi } from "../../services/apiClient";
 import { Footer } from "../Footer";
+import { DEPARTMENTS, departmentByKey } from "../../data/departments";
 
 interface Props { isOpen: boolean; onClose: () => void; initialTab?: TabId; }
 const P = "#5C0A10";
@@ -296,7 +297,7 @@ function LocateTab() {
 // ── Tab: Send Us Your Feedback ──────────────────────────────────────────
 function FeedbackTab() {
   const [form, setForm] = useState({
-    bankingType: "Personal Banking", topic: TOPICS[0], message: "",
+    department: "support", bankingType: "Personal Banking", topic: TOPICS[0], message: "", website: "",
     name: "", surname: "", email: "", phone: "",
   });
   const [captchaCode, setCaptchaCode] = useState(genCode);
@@ -316,16 +317,17 @@ function FeedbackTab() {
       return;
     }
     setSubmitting(true);
+    const dept = departmentByKey(form.department);
     const r = await publicApi.contact({
-      name: `${form.name} ${form.surname}`, email: form.email, phone: form.phone,
-      subject: form.topic, message: `Feedback for: ${form.bankingType}\n\n${form.message}`, type: form.bankingType,
+      department: form.department, name: `${form.name} ${form.surname}`.trim(), email: form.email, phone: form.phone || undefined,
+      subject: form.topic, message: `Feedback for: ${form.bankingType}\n\n${form.message}`, website: form.website,
     });
     setSubmitting(false);
-    if (r.success) {
-      setSubmitted("VINK-" + Math.random().toString(36).slice(2, 8).toUpperCase());
+    if (r.success && r.data) {
+      setSubmitted(r.data.ref);
       toast.success("Message sent — thank you!");
     } else {
-      toast.error(r.error ?? "Failed to send message. Please try email directly.");
+      toast.error(r.error ?? `We could not send your message. Please email ${dept?.address ?? "info@vink.co.za"} directly.`);
     }
   };
 
@@ -335,7 +337,7 @@ function FeedbackTab() {
         <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
         <h3 className="text-lg font-black text-fg mb-1">Message sent</h3>
         <p className="text-fg-muted text-sm">Your reference number is <strong style={{ color: "var(--vk-crimson-text)" }}>{submitted}</strong>.</p>
-        <p className="text-fg-muted text-sm mt-1">We'll respond to <strong className="text-fg">{form.email}</strong> within 1–2 business days.</p>
+        <p className="text-fg-muted text-sm mt-1">We sent a receipt to <strong className="text-fg">{form.email}</strong>. {departmentByKey(form.department)?.name ?? "VINK"} will reply within {departmentByKey(form.department)?.respondWithin ?? "1–2 business days"}.</p>
       </div>
     );
   }
@@ -358,6 +360,15 @@ function FeedbackTab() {
         <div className="max-w-xl mx-auto">
           <h2 className="text-base font-black text-fg mb-4">Send a Message:</h2>
           <div className="space-y-5">
+            <div>
+              <label htmlFor="contact-department" className="text-sm text-fg-muted block mb-1.5">Who is your message for?</label>
+              <select id="contact-department" value={form.department} onChange={e => setForm(f => ({ ...f, department: e.target.value }))}
+                className="w-full border border-line rounded-lg px-4 py-3 text-sm outline-none focus:border-emerald-400 bg-surface text-fg">
+                {DEPARTMENTS.map(d => <option key={d.key} value={d.key}>{d.name} — {d.purpose}</option>)}
+              </select>
+              <p className="text-xs text-fg-muted mt-1.5">Goes to <a href={`mailto:${departmentByKey(form.department)?.address}`} className="font-semibold" style={{ color: "var(--vk-crimson-text)" }}>{departmentByKey(form.department)?.address}</a>. You can also write to that address yourself.</p>
+            </div>
+
             <div>
               <label className="text-sm text-fg-muted block mb-1.5">Please choose a topic</label>
               <select value={form.topic} onChange={e => setForm(f => ({ ...f, topic: e.target.value }))}
@@ -395,6 +406,10 @@ function FeedbackTab() {
               <label className="text-sm text-fg-muted block mb-1.5">Phone number (optional)</label>
               <input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
                 className="w-full border border-line rounded-lg px-4 py-3 text-sm outline-none focus:border-emerald-400" />
+            </div>
+
+            <div aria-hidden="true" style={{ position: "absolute", left: "-10000px", width: 1, height: 1, overflow: "hidden" }}>
+              <label>Leave this empty<input tabIndex={-1} autoComplete="off" value={form.website} onChange={e => setForm(f => ({ ...f, website: e.target.value }))} /></label>
             </div>
 
             <div>
