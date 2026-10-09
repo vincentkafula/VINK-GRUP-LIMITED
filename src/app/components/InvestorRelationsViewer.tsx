@@ -39,9 +39,7 @@ const REASONS = [
 
 const SHARE_ROWS = [
   { label: "STATUS",             value: "Pre-launch — full operation June 2027" },
-  { label: "US REGISTRATION",    value: "EIN 37-2148609" },
-  { label: "SA REGISTRATION",    value: "2018/079316/07" },
-  { label: "ZAMBIA REGISTRATION", value: "120210020196" },
+  { label: "REGISTRATION NO.",   value: "2018/079316/07" },
   { label: "TARGET GROWTH",      value: "7.5% p.a." },
   { label: "FUNDING SOUGHT",     value: "R4.5 Billion" },
   { label: "FUNDING TERM",       value: "60 months @ 7%" },
@@ -254,9 +252,7 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
               </p>
               <div className="border-t pt-3 space-y-2 text-sm">
                 <div className="flex justify-between"><span className="text-fg-muted">Status</span><span className="font-semibold text-fg">Pre-launch — full operation June 2027</span></div>
-                <div className="flex justify-between"><span className="text-fg-muted">United States</span><span className="font-semibold text-fg">EIN: 37-2148609</span></div>
-                <div className="flex justify-between"><span className="text-fg-muted">South Africa</span><span className="font-semibold text-fg">Reg: 2018/079316/07</span></div>
-                <div className="flex justify-between"><span className="text-fg-muted">Zambia</span><span className="font-semibold text-fg">Reg: 120210020196</span></div>
+                <div className="flex justify-between"><span className="text-fg-muted">Registration No.</span><span className="font-semibold text-fg">2018/079316/07</span></div>
               </div>
             </div>
           </div>

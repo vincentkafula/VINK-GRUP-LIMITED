@@ -262,17 +262,13 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
               </span>
             ))}
             <span style={{ color: "rgba(255,255,255,0.62)", fontSize: 12.5, lineHeight: 1.65, padding: "10px 4px 0", textAlign: "center", flexBasis: "100%", maxWidth: 860 }}>
-              VINK is a trading name of Vink Group (Pty) Ltd. VINK is not yet operational and is not yet authorised or registered to provide financial services; licensing and registrations will be completed before launch. Enterprise No. 2026/719501/07. Vink Group Reg. No. 2018/079316/07.
+              VINK is a trading name of Vink Group (Pty) Ltd. VINK is not yet operational and is not yet authorised or registered to provide financial services; licensing and registrations will be completed before launch. Vink Group Reg. No. 2018/079316/07.
             </span>
           </div>
           {/* Copyright */}
           <div style={{ padding: "6px 0 24px", textAlign: "center" }}>
             <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 12.5, margin: 0, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "4px 12px" }}>
-              <span>United States – EIN: 37-2148609</span>
-              <span aria-hidden="true" style={{ color: "rgba(255,255,255,0.25)" }}>|</span>
-              <span>South Africa – Registration No: 2018/079316/07</span>
-              <span aria-hidden="true" style={{ color: "rgba(255,255,255,0.25)" }}>|</span>
-              <span>Zambia – Registration No: 120210020196</span>
+              <span>Registration No: 2018/079316/07</span>
             </p>
           </div>
         </div>
