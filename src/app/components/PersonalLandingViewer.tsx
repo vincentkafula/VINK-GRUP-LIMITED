@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import {
-  X, ChevronRight, ChevronLeft, ArrowRight, Gift, Smartphone, Radio, Tag,
+  ChevronRight, ChevronLeft, ArrowRight, Gift, Smartphone, Radio, Tag,
   Headphones, ShieldCheck, Wifi, Lock,
 } from "lucide-react";
 import siteHeroBg from "../../imports/assets/site-hero-bg.webp";
@@ -125,18 +125,8 @@ export function PersonalLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-surface" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-      {/* ── Top bar ── */}
+      {/* ── Sub-nav (the site header above has the logo and the way home) ── */}
       <div className="sticky top-0 z-30 bg-surface/95 backdrop-blur border-b border-line">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-11 flex items-center justify-end">
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-full hover:bg-surface-2 transition-colors"
-            aria-label="Close"
-          >
-            <X className="w-4 h-4 text-fg-muted" />
-          </button>
-        </div>
-
         {/* Sub-nav */}
         <div style={{ background: INK }}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
