@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { X, CheckCircle, Clock, Upload, Plus, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
+import { Footer } from "./Footer";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { applicationsApi } from "../services/applicationsApi";
 
@@ -651,6 +652,7 @@ export function BusinessAccountApplicationViewer({ isOpen, onClose, initialAccou
             {step === 6 && <Step6 onNext={next} onBack={back} updateForm={updateForm} />}
             {step === 7 && <Step7 onBack={back} onClose={onClose} initialAccountType={initialAccountType} formData={formData} />}
           </div>
+          <Footer />
         </div>
       </div>
     </>
