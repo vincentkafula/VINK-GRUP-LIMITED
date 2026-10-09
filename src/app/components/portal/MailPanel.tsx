@@ -3,6 +3,7 @@ import { Mail, Send, Inbox, PenSquare } from "lucide-react";
 import { useLoad, Status, Empty, ActionButton, inputCls, when } from "./ui";
 import { API_BASE } from "../../services/config";
 import { authFetch } from "../../services/apiClient";
+import { AttachPicker, AttachmentList, useAttachments, type MailFile } from "./MailAttachments";
 
 /**
  * Department mail for the management panel. An owner or superadmin sees every department; a department manager sees only the department(s) they have been
@@ -10,7 +11,7 @@ import { authFetch } from "../../services/apiClient";
  */
 interface Dept { key: string; name: string; address: string; open: number }
 interface Item { kind: "web" | "email"; id: string; department: string; fromName: string; fromEmail: string; subject: string; preview: string; status: string; at: string; ref?: string }
-interface Detail extends Item { text: string; replies: { id: string; to: string; subject: string; body: string; status: string; by: string; at: string }[] }
+interface Detail extends Item { text: string; attachments?: MailFile[]; replies: { id: string; to: string; subject: string; body: string; status: string; by: string; at: string; attachments?: MailFile[] }[] }
 
 /** The same small client the portals use (see portal/ui.tsx), pointed at /api/mail. */
 function mailClient() {
@@ -101,6 +102,7 @@ export function MailPanel() {
 function Message({ call, kind, id, onChanged }: { call: ReturnType<typeof mailClient>; kind: string; id: string; onChanged: () => void }) {
   const [load, reload] = useLoad<{ message: Detail }>(() => call(`/messages/${kind}/${id}`), [kind, id]);
   const [body, setBody] = useState("");
+  const att = useAttachments();
   return (
     <Status load={load}>{({ message: m }) => (
       <div className="space-y-3">
@@ -109,16 +111,19 @@ function Message({ call, kind, id, onChanged }: { call: ReturnType<typeof mailCl
           <p className="text-xs text-fg-muted">From <b className="text-fg">{m.fromName}</b> &lt;{m.fromEmail}&gt; · {when(m.at)}{m.ref ? ` · ${m.ref}` : ""} · {STATUS_LABEL[m.status] ?? m.status}</p>
         </div>
         <pre className="whitespace-pre-wrap break-words text-sm text-fg font-sans rounded-lg p-3" style={{ background: "var(--vk-bg)", border: "1px solid var(--vk-line)" }}>{m.text || "(no text)"}</pre>
+        <AttachmentList files={m.attachments} />
         {m.replies.length > 0 && (
           <div className="space-y-2">{m.replies.map((r) => (
             <div key={r.id} className="rounded-lg p-3 text-sm" style={{ background: "var(--vk-bg)", borderLeft: `3px solid ${r.status === "sent" ? "#047857" : "#DC2626"}` }}>
               <p className="text-[11px] text-fg-muted">{r.by} · {when(r.at)} · {r.status === "sent" ? "Sent" : "Not sent"}</p>
               <p className="whitespace-pre-wrap break-words text-fg">{r.body}</p>
+              <div className="mt-2"><AttachmentList files={r.attachments} label="Sent with this reply" /></div>
             </div>))}</div>)}
         <label className="block"><span className="text-xs font-bold text-fg">Your reply</span>
           <textarea aria-label="Your reply" value={body} onChange={(e) => setBody(e.target.value)} rows={5} className={inputCls + " mt-1"} placeholder="Write your answer. It is sent from the department's address." /></label>
+        <AttachPicker att={att} />
         <div className="flex flex-wrap gap-2">
-          <ActionButton label="Send reply" color={COLOR} onRun={async () => { const r = await call(`/messages/${kind}/${id}/reply`, { method: "POST", body: { body } }); if ("error" in r) return { error: r.error }; setBody(""); reload(); onChanged(); return { message: "Reply sent." }; }} />
+          <ActionButton label="Send reply" color={COLOR} onRun={async () => { const r = await call(`/messages/${kind}/${id}/reply`, { method: "POST", body: { body, ...(att.ids.length ? { attachmentIds: att.ids } : {}) } }); if ("error" in r) return { error: r.error }; setBody(""); att.clear(); reload(); onChanged(); return { message: "Reply sent." }; }} />
           {m.status !== "closed" && <ActionButton label="Mark closed" color="#64748B" onRun={async () => { const r = await call(`/messages/${kind}/${id}/status`, { method: "POST", body: { status: "closed" } }); if ("error" in r) return { error: r.error }; reload(); onChanged(); }} />}
           {m.status === "closed" && <ActionButton label="Reopen" color="#64748B" onRun={async () => { const r = await call(`/messages/${kind}/${id}/status`, { method: "POST", body: { status: "open" } }); if ("error" in r) return { error: r.error }; reload(); onChanged(); }} />}
         </div>
@@ -129,6 +134,7 @@ function Message({ call, kind, id, onChanged }: { call: ReturnType<typeof mailCl
 function Compose({ call, departments, initial, onSent }: { call: ReturnType<typeof mailClient>; departments: Dept[]; initial: string; onSent: () => void }) {
   const [department, setDepartment] = useState(departments.some((d) => d.key === initial) ? initial : departments[0]?.key ?? "");
   const [to, setTo] = useState(""); const [subject, setSubject] = useState(""); const [body, setBody] = useState("");
+  const att = useAttachments();
   const from = departments.find((d) => d.key === department);
   return (
     <div className="space-y-3">
@@ -138,7 +144,8 @@ function Compose({ call, departments, initial, onSent }: { call: ReturnType<type
       <label className="block"><span className="text-xs font-bold text-fg">To</span><input aria-label="To" type="email" value={to} onChange={(e) => setTo(e.target.value)} className={inputCls + " mt-1"} placeholder="name@example.com" /></label>
       <label className="block"><span className="text-xs font-bold text-fg">Subject</span><input aria-label="Subject" value={subject} onChange={(e) => setSubject(e.target.value)} className={inputCls + " mt-1"} maxLength={200} /></label>
       <label className="block"><span className="text-xs font-bold text-fg">Message</span><textarea aria-label="Message" value={body} onChange={(e) => setBody(e.target.value)} rows={8} className={inputCls + " mt-1"} /></label>
-      <ActionButton label={`Send from ${from?.address ?? "department"}`} color={COLOR} onRun={async () => { const r = await call("/send", { method: "POST", body: { department, to, subject, body } }); if ("error" in r) return { error: r.error }; onSent(); return { message: "Email sent." }; }} />
+      <AttachPicker att={att} />
+      <ActionButton label={`Send from ${from?.address ?? "department"}`} color={COLOR} onRun={async () => { const r = await call("/send", { method: "POST", body: { department, to, subject, body, ...(att.ids.length ? { attachmentIds: att.ids } : {}) } }); if ("error" in r) return { error: r.error }; att.clear(); onSent(); return { message: "Email sent." }; }} />
     </div>
   );
 }

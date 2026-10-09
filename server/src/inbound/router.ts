@@ -1,5 +1,6 @@
 import express, { Router, type Request, type Response, type RequestHandler } from "express";
 import { verifySvix, WebhookSignatureError } from "./svix.js";
+import type { MailFiles } from "../services/mailFiles.js";
 import type { InboundStore } from "./store.js";
 
 /**
@@ -14,6 +15,8 @@ import type { InboundStore } from "./store.js";
 export interface InboundDeps {
   store: InboundStore;
   webhookSecret?: string;
+  /** Where the attachments of incoming email are recorded and fetched (see services/mailFiles.ts). Without it attachments are ignored. */
+  files?: MailFiles;
   apiKey?: string;
   fetchImpl?: typeof fetch;
   now?: () => Date;
@@ -50,6 +53,11 @@ export function createInboundRouter(d: InboundDeps): Router {
         resendId: emailId, from: String(m.from ?? "").slice(0, 320), to: (m.to ?? []).map(String).slice(0, 50),
         subject: String(m.subject ?? "").slice(0, 998), text: m.text ?? null, html: m.html ?? null, receivedAt: m.created_at,
       });
+      // the attachments: recorded now, fetched in the background (a failure here never loses the email, which is already stored)
+      if (saved && d.files) {
+        try { const row = await d.store.find(emailId); if (row) await d.files.recordInbound(row.id, emailId, row.department); }
+        catch (e) { console.error(`[inbound] attachments of ${emailId} were not recorded:`, e instanceof Error ? e.message : e); }
+      }
       res.json({ success: true, stored: saved });
     } catch (e) {
       console.error(`[inbound] could not store ${emailId}:`, e instanceof Error ? e.message : e);

@@ -8,7 +8,8 @@
  */
 
 /** from: a sender such as "VINK Support <support@vink.co.za>" (used only if its domain is the verified sending domain). replyTo: where a reply should go. */
-export interface EmailMessage { to: string; subject: string; text: string; html: string; from?: string; replyTo?: string }
+export interface EmailAttachment { filename: string; content: Buffer; contentType?: string }
+export interface EmailMessage { to: string; subject: string; text: string; html: string; from?: string; replyTo?: string; attachments?: EmailAttachment[] }
 export interface EmailSender { readonly name: string; send(msg: EmailMessage): Promise<void> }
 
 export class ResendEmail implements EmailSender {
@@ -25,8 +26,8 @@ export class ResendEmail implements EmailSender {
     const res = await this.fetchImpl("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${this.apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: this.senderFor(msg.from), to: [msg.to], subject: msg.subject, html: msg.html, text: msg.text, ...(msg.replyTo && !/[\r\n]/.test(msg.replyTo) ? { reply_to: msg.replyTo } : {}) }),
-      signal: AbortSignal.timeout(10_000),
+      body: JSON.stringify({ from: this.senderFor(msg.from), to: [msg.to], subject: msg.subject, html: msg.html, text: msg.text, ...(msg.replyTo && !/[\r\n]/.test(msg.replyTo) ? { reply_to: msg.replyTo } : {}), ...(msg.attachments?.length ? { attachments: msg.attachments.map((a) => ({ filename: a.filename, content: a.content.toString("base64"), ...(a.contentType ? { content_type: a.contentType } : {}) })) } : {}) }),
+      signal: AbortSignal.timeout(msg.attachments?.length ? 90_000 : 10_000),
     });
     if (!res.ok) {
       // Never include the message body (it contains a one-time link) or the API key in the error.

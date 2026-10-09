@@ -14,6 +14,8 @@ export interface InboundStore {
   save(m: NewInbound): Promise<boolean>;
   list(limit: number, offset: number, department?: string): Promise<InboundEmail[]>;
   get(id: string): Promise<InboundEmail | null>;
+  /** The id and department of the stored email that came with this Resend id (so its attachments can be recorded against it). */
+  find(resendId: string): Promise<{ id: string; department: string | null } | null>;
 }
 
 export class MemoryInboundStore implements InboundStore {
@@ -25,6 +27,7 @@ export class MemoryInboundStore implements InboundStore {
   }
   async list(limit: number, offset: number, department?: string) { return this.rows.filter((r) => !department || r.department === department).slice(offset, offset + limit); }
   async get(id: string) { return this.rows.find((r) => r.id === id) ?? null; }
+  async find(resendId: string) { const r = this.rows.find((x) => x.resendId === resendId); return r ? { id: r.id, department: r.department } : null; }
 }
 
 const map = (r: Record<string, unknown>): InboundEmail => ({
@@ -51,5 +54,9 @@ export class PgInboundStore implements InboundStore {
   async get(id: string) {
     const r = await this.pool.query(`SELECT * FROM inbound_emails WHERE id = $1`, [id]);
     return r.rows[0] ? map(r.rows[0]) : null;
+  }
+  async find(resendId: string) {
+    const r = await this.pool.query(`SELECT id, department FROM inbound_emails WHERE resend_id = $1`, [resendId]);
+    return r.rows[0] ? { id: r.rows[0].id as string, department: (r.rows[0].department as string) ?? null } : null;
   }
 }

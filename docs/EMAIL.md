@@ -56,3 +56,11 @@ Response times are shown as "1–2 business days" everywhere; change them in the
 - Incoming email only appears here once inbound email is set up (see above). Until then the inbox shows website messages only.
 
 **Careers page names:** a job application for "Legal & Compliance" or "Client Services" opens the Compliance and Customer Support mailboxes (the aliases are in `SECTION_ALIASES`, kept identical on the server and the website by a test). A job application for "Sales" opens Sales as it is.
+
+## Attachments
+
+- **Incoming email:** the webhook records each attachment (name, type, size) and fetches the files from Resend in the background, keeping them in the database (`mail_files`), so they stay available. If a fetch fails, the file is fetched again, with a fresh link, the first time someone opens it. A file over 50 MB is listed but not kept ("too large to keep").
+- **Opening one:** the message in **Department mail** lists its attachments with a Download button. Only people who manage that department (and owners and superadmins) can download; each download is written to the audit log. A file always downloads and is never shown in the browser (attachment disposition, `nosniff`, a sandboxing CSP), so a file from outside cannot run as a page on our site. Types that run on a computer (exe, bat, js, msi, iso and so on) carry a warning and ask before downloading.
+- **Sending:** in a reply or a new email, **Attach files** (or drop files) uploads each file, privately, until the email is sent. Up to 5 files, 50 MB each, 60 MB together. Up to **15 MB together** goes as ordinary attachments. **More than 15 MB** is sent as **expiring download links** (valid 7 days, at `/api/shared-files/<token>`, no sign-in, the link is the secret), because most mailboxes refuse big attachments. If the email cannot be sent, the files are kept for another try; unsent uploads are thrown away after a day. Sent files are kept with the email and can be downloaded from its reply.
+- **Settings:** `PUBLIC_API_URL` (default `https://api.vink.co.za`) is where the download links point. Code: `server/src/services/mailFiles.ts`; limits are repeated in `src/app/components/portal/MailAttachments.tsx`.
+- **Not done yet:** virus scanning (a scanner can be called from `MailFiles.stage` and `recordInbound`), inline images in incoming HTML (email is still shown as plain text).

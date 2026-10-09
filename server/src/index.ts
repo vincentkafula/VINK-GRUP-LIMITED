@@ -51,7 +51,8 @@ import { createOpsAdminRouter } from "./routes/opsAdminRouter.js";
 import { createContactService } from "./services/contactService.js";
 import { createContactRouter, createContactAdminRouter } from "./routes/contactRouter.js";
 import { createMailService } from "./services/mailService.js";
-import { createMailRouter } from "./routes/mailRouter.js";
+import { createMailRouter, createShareRouter } from "./routes/mailRouter.js";
+import { createMailFiles } from "./services/mailFiles.js";
 import { liveStartBlockers } from "./payments/goLive.js";
 import { createEmailSender } from "./auth/email.js";
 import { hasDb, pool } from "./db/pool.js";
@@ -105,8 +106,12 @@ app.use("/api/payments/issuer", createIssuerRouter(manshya.payments, manshya, to
 app.use("/api/payments/issuer", createPaymentologyFastRouter({ tokens: tokenCardsBridge, secret: process.env.PAYMENTOLOGY_FAST_SECRET?.trim() || null }));
 
 
+// Files in department mail: attachments of incoming email, files staff attach, and the expiring links for big ones (services/mailFiles.ts).
+const mailFiles = pool ? createMailFiles({ db: pool, apiKey: process.env.RESEND_API_KEY?.trim() || undefined }) : undefined;
+
 // Incoming email from Resend (raw body for the signature check, so also before the JSON parser). Staff-only list endpoints.
 app.use("/api/inbound", createInboundRouter({
+  files: mailFiles,
   store: pool ? new PgInboundStore(pool) : new MemoryInboundStore(),
   webhookSecret: process.env.RESEND_WEBHOOK_SECRET?.trim() || undefined,
   apiKey: process.env.RESEND_API_KEY?.trim() || undefined,
@@ -219,7 +224,8 @@ if (contactService) {
   app.use("/api/contact", createContactRouter(contactService));
   app.use("/api/admin/contact", requireAuth, requireRole("owner", "superadmin"), createContactAdminRouter({ db: pool!, svc: contactService }));
   // Department mail for the management panel: owners and superadmins see every department, a department manager sees only the department(s) they are approved for.
-  app.use("/api/mail", requireAuth, createMailRouter({ db: pool!, svc: createMailService({ db: pool!, mail: createEmailSender() }) }));
+  app.use("/api/shared-files", createShareRouter(mailFiles!));          // public: the link is the secret, and it expires
+  app.use("/api/mail", requireAuth, createMailRouter({ db: pool!, svc: createMailService({ db: pool!, mail: createEmailSender(), files: mailFiles }) }));
 }
 app.use("/api/global",             globalBankingRouter);
 app.use("/api/financial",          financialReportsRouter);
