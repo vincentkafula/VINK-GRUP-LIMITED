@@ -21,7 +21,7 @@ export const TABS: Tab[] = [
     title: "About Social Development",
     blocks: [
       { t: "lead", text: "Cleaner, safer and more inclusive cities across South Africa and Zambia." },
-      { t: "p", text: "Social Development is the social responsibility arm of VINK Multi Services. We exist to help our cities become cleaner, safer, more inclusive and more economically vibrant." },
+      { t: "p", text: "Social Development is the social responsibility arm of VINK. We exist to help our cities become cleaner, safer, more inclusive and more economically vibrant." },
       { t: "p", text: "A dedicated portion of VINK’s profits is allocated to fund our programmes. A professional management team delivers them in partnership with local businesses, non-governmental organisations and non-profit organisations. We start in one precinct, prove the model, and then replicate it. We are preparing to bring it to seven cities across South Africa and Zambia: Cape Town, Johannesburg, Pretoria, Durban, Lusaka, Kitwe and Ndola." },
       { t: "h", text: "Our mission" },
       { t: "p", text: "To build safe, clean, welcoming and inclusive urban environments where businesses can thrive, residents feel secure and every person has the opportunity to rise." },

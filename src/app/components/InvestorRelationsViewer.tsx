@@ -244,45 +244,10 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
           </div>
         </div>
 
-        {/* ── Company info ── */}
-        <div className="grid md:grid-cols-2 gap-6">
-          <div>
-            <SectionHeading>VINK MULTI SERVICES (PTY) LTD</SectionHeading>
-            <div className="bg-surface rounded-xl border border-line p-5 space-y-3">
-              <p className="text-sm text-fg leading-relaxed">
-                Vink Multi Services (Pty) Ltd is a professional diversified financial services company. Our commitment to financial excellence drives innovative solutions for banking, insurance, telecommunications and e-mobility services across Southern Africa.
-              </p>
-              <div className="border-t pt-3 space-y-2 text-sm">
-                <div className="flex justify-between"><span className="text-fg-muted">Status</span><span className="font-semibold text-fg">Pre-launch — full operation June 2027</span></div>
-                <div className="flex justify-between"><span className="text-fg-muted">United States</span><span className="font-semibold text-fg">EIN: 37-2148609</span></div>
-                <div className="flex justify-between"><span className="text-fg-muted">South Africa</span><span className="font-semibold text-fg">Reg: 2018/079316/07</span></div>
-                <div className="flex justify-between"><span className="text-fg-muted">Zambia</span><span className="font-semibold text-fg">Reg: 120210020196</span></div>
-              </div>
-            </div>
-          </div>
-          <div>
-            <SectionHeading>Mission &amp; Vision</SectionHeading>
-            <div className="bg-surface rounded-xl border border-line p-5 space-y-4">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: "var(--vk-crimson-text)" }}>Mission</p>
-                <p className="text-sm text-fg leading-relaxed">
-                  To provide accessible, innovative and transformative financial services that empower individuals, businesses and communities across Africa through technology-driven solutions.
-                </p>
-              </div>
-              <div className="border-t pt-3">
-                <p className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: "var(--vk-crimson-text)" }}>Vision</p>
-                <p className="text-sm text-fg leading-relaxed">
-                  To be the leading pan-African financial services group, recognised for integrity, performance and commitment to sustainable growth that benefits all stakeholders.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* ── 3 Reasons ── */}
         <div>
           <h2 className="text-xl font-black text-center mb-2" style={{ color: "var(--vk-fg)" }}>
-            3 Reasons to Consider Investing in VINK MULTI SERVICES PTY LTD
+            3 Reasons to Consider Investing in VINK
           </h2>
           <p className="text-center text-sm text-fg-muted mb-6">Why sophisticated investors choose Vink</p>
           <div className="grid sm:grid-cols-3 gap-5">
