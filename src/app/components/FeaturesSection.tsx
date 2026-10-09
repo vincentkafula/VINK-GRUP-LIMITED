@@ -1,64 +1,59 @@
 import { memo, useState } from "react";
-import { ArrowRight, ShieldCheck, Headphones, Sparkles, Flame, Crown, Gift, Globe, Smartphone } from "lucide-react";
+import { ArrowRight, ShieldCheck, Headphones, Sparkles, Flame, Crown, Gift, Globe, Smartphone, Banknote, ArrowLeftRight, Plane, BadgePercent, TrendingDown } from "lucide-react";
 import vinkGoldFeatureCard from "../../imports/VinkGoldFeatureCard.webp";
-import iconRewards from "../../imports/BenefitIconRewards.png";
-import iconCashBack from "../../imports/BenefitIconCashBack.png";
-import iconBalanceTransfer from "../../imports/BenefitIconBalanceTransfer.png";
-import iconTravel from "../../imports/BenefitIconTravel.png";
-import iconZeroPercent from "../../imports/BenefitIconZeroPercent.png";
-import iconLowInterest from "../../imports/BenefitIconLowInterest.png";
 import { Card3DViewer } from "./Card3DViewer";
+import { PremiumIcon } from "./PremiumIcon";
 
 const PURPLE = "var(--vk-brand)";           // crimson in light, gold in dark
 const DEEP_PURPLE = "#0c0e14";                // ink: the chip always carries white text
 const GOLD = "#c9a84c";
 
-interface Benefit { emoji: string; icon?: string; title: string; desc: string; featured: boolean; color: string; colorDark: string }
+interface Benefit { icon: React.ComponentProps<typeof PremiumIcon>["icon"]; title: string; desc: string; featured: boolean; color: string; colorDark: string }
 
 const BENEFITS: Benefit[] = [
-  { emoji: "🎁", icon: iconRewards, title: "Rewards", desc: "Earn points on every spend and redeem for exciting rewards and offers.", featured: false, color: "var(--vk-crimson-text)", colorDark: "#2E0B10" },
-  { emoji: "💵", icon: iconCashBack, title: "Cash Back", desc: "Get real cash back on your purchases and save more every day.", featured: true, color: "#4ADE80", colorDark: "#0F3D1F" },
-  { emoji: "🔄", icon: iconBalanceTransfer, title: "Balance Transfer", desc: "Transfer your balance easily and pay off debt faster.", featured: false, color: "#3B82F6", colorDark: "#0F2A4A" },
-  { emoji: "🧳", icon: iconTravel, title: "Travel", desc: "Exclusive travel benefits, airport lounge access, and more.", featured: false, color: "#F97316", colorDark: "#4A2008" },
-  { emoji: "0️⃣", icon: iconZeroPercent, title: "Zero Percent", desc: "Enjoy 0% interest on eligible purchases for a limited time.", featured: false, color: "#2DD4BF", colorDark: "#0D3B36" },
-  { emoji: "🛡️", icon: iconLowInterest, title: "Low Interest", desc: "Competitive interest rates that help you save more.", featured: false, color: "#EC4899", colorDark: "#4A0F2E" },
+  { icon: Gift, title: "Rewards", desc: "Earn points on every spend and redeem for exciting rewards and offers.", featured: false, color: "#F2545B", colorDark: "#2E0B10" },
+  { icon: Banknote, title: "Cash Back", desc: "Get real cash back on your purchases and save more every day.", featured: true, color: "#4ADE80", colorDark: "#0F3D1F" },
+  { icon: ArrowLeftRight, title: "Balance Transfer", desc: "Transfer your balance easily and pay off debt faster.", featured: false, color: "#3B82F6", colorDark: "#0F2A4A" },
+  { icon: Plane, title: "Travel", desc: "Exclusive travel benefits, airport lounge access, and more.", featured: false, color: "#F97316", colorDark: "#4A2008" },
+  { icon: BadgePercent, title: "Zero Percent", desc: "Enjoy 0% interest on eligible purchases for a limited time.", featured: false, color: "#2DD4BF", colorDark: "#0D3B36" },
+  { icon: TrendingDown, title: "Low Interest", desc: "Competitive interest rates that help you save more.", featured: false, color: "#EC4899", colorDark: "#4A0F2E" },
 ];
 
 const STATS = [
-  { Icon: Crown, value: "5X", label: "Points on dining & entertainment", color: "var(--vk-crimson-text)" },
-  { Icon: Gift, value: "100+", label: "Partner brands and offers", color: "#F97316" },
-  { Icon: Globe, value: "0", label: "Foreign transaction fees", color: "#2DD4BF" },
-  { Icon: Smartphone, value: "24/7", label: "Dedicated customer support", color: "#EC4899" },
+  { Icon: Crown, value: "5X", label: "Points on dining & entertainment", color: "#F2545B", text: "var(--vk-crimson-text)" },
+  { Icon: Gift, value: "100+", label: "Partner brands and offers", color: "#F97316", text: "#F97316" },
+  { Icon: Globe, value: "0", label: "Foreign transaction fees", color: "#2DD4BF", text: "#2DD4BF" },
+  { Icon: Smartphone, value: "24/7", label: "Dedicated customer support", color: "#EC4899", text: "#EC4899" },
 ];
 
 function BenefitCard({ b }: { b: Benefit }) {
   return (
     <div
-      className="rounded-2xl p-4 flex flex-col transition-all duration-300 hover:-translate-y-1 relative overflow-hidden text-white"
+      className="group rounded-2xl p-4 flex flex-col transition-all duration-300 hover:-translate-y-1 relative overflow-hidden text-white"
       style={{
         background: `linear-gradient(160deg,${b.colorDark} 0%,#0D0620 85%)`,
-        border: `1px solid ${b.color}33`,
-        boxShadow: `0 10px 30px -10px ${b.color}55`,
+        border: `1px solid color-mix(in srgb, ${b.color} 24%, transparent)`,
+        boxShadow: `0 10px 30px -10px color-mix(in srgb, ${b.color} 38%, transparent), inset 0 1px 0 rgba(255,255,255,0.06)`,
       }}
     >
       {/* Ambient glow behind the icon, echoing the reference's per-icon lighting */}
       <div className="absolute -top-6 -right-6 w-32 h-32 rounded-full pointer-events-none"
-        style={{ background: `radial-gradient(circle,${b.color}40,transparent 70%)` }} />
+        style={{ background: `radial-gradient(circle,color-mix(in srgb, ${b.color} 25%, transparent),transparent 70%)` }} />
 
+      <PremiumIcon icon={b.icon} accent={b.color} dark={b.colorDark} size={72} className="mb-3 mx-auto sm:mx-0" />
+      <p className="text-base font-bold mb-1 text-center sm:text-left" style={{ color: b.color }}>{b.title}</p>
+      <p className="text-[13px] leading-relaxed mb-3 text-white/80 text-center sm:text-left">{b.desc}</p>
+      <div className="mt-auto flex items-center justify-center sm:justify-between gap-2 flex-wrap">
+      <span aria-hidden="true" className="w-8 h-8 rounded-full flex items-center justify-center"
+        style={{ background: `color-mix(in srgb, ${b.color} 15%, transparent)`, color: b.color, border: `1px solid color-mix(in srgb, ${b.color} 30%, transparent)` }}>
+        <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5" />
+      </span>
       {b.featured && (
-        <span className="absolute top-3 right-3 flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full z-10" style={{ background: GOLD, color: "#0c0e14" }}>
+        <span className="flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-full" style={{ background: GOLD, color: "#0c0e14", boxShadow: "0 2px 10px -2px rgba(201,168,76,0.6), inset 0 1px 0 rgba(255,255,255,0.45)" }}>
           <Flame className="size-3" aria-hidden="true" />Most Popular
         </span>
       )}
-      <div className="relative w-20 h-20 rounded-2xl flex items-center justify-center text-5xl mb-2.5 overflow-hidden mx-auto sm:mx-0">
-        {b.icon ? <img loading="lazy" decoding="async" src={b.icon} alt="" aria-hidden="true" className="w-full h-full object-contain scale-125" draggable={false} /> : b.emoji}
       </div>
-      <p className="text-base font-bold mb-1 text-center sm:text-left" style={{ color: b.color }}>{b.title}</p>
-      <p className="text-[13px] leading-relaxed mb-3 text-white/80 text-center sm:text-left">{b.desc}</p>
-      <span aria-hidden="true" className="mt-auto w-8 h-8 rounded-full flex items-center justify-center mx-auto sm:mx-0"
-        style={{ background: `${b.color}25`, color: b.color }}>
-        <ArrowRight className="w-4 h-4" />
-      </span>
     </div>
   );
 }
@@ -111,10 +106,10 @@ export const FeaturesSection = memo(function FeaturesSection({ onExploreAll }: {
         {/* Stats strip */}
         <div className="mt-8 bg-surface rounded-2xl border border-line shadow-card px-6 py-5 grid grid-cols-2 lg:grid-cols-4 gap-6">
           {STATS.map(s => (
-            <div key={s.label} className="flex items-center gap-3">
-              <span className="w-11 h-11 rounded-full flex items-center justify-center shrink-0" style={{ background: `${s.color}22`, color: s.color }}><s.Icon className="size-5" aria-hidden="true" /></span>
+            <div key={s.label} className="group flex items-center gap-3">
+              <PremiumIcon icon={s.Icon} accent={s.color} size={48} />
               <div>
-                <p className="text-lg leading-tight" style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, color: s.color }}>{s.value}</p>
+                <p className="text-lg leading-tight" style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, color: s.text }}>{s.value}</p>
                 <p className="text-xs text-fg-muted leading-snug">{s.label}</p>
               </div>
             </div>
