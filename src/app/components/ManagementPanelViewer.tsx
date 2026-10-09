@@ -5,10 +5,12 @@ import {
   Building2, ShieldCheck, HeartHandshake, Users, Settings,
   ClipboardList, Menu, Search, Bell, ChevronDown, Plus, ArrowRight, TrendingUp,
   AlertTriangle, Monitor, CheckCircle2, CalendarDays, FileCheck2, UserCog, Loader2,
-  Check, X as XIcon, Lock,
+  Check, X as XIcon, Lock, Mail,
 } from "lucide-react";
 import { toast } from "sonner";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
+import { MailPanel } from "./portal/MailPanel";
+import { DEPARTMENTS } from "../data/departments";
 import { rbacApi, jobsApi, getSession, getToken, type SectionApplication, type ManagerRecord, type AuditEntry, type JobApplication } from "../services/apiClient";
 
 interface Props { isOpen: boolean; onClose: () => void; adminName?: string; adminRole?: string; role?: string }
@@ -81,7 +83,10 @@ const BOTTOM_STATS = [
   { value: "24", label: "System Alerts", icon: <AlertTriangle className="w-5 h-5" />, iconBg: "var(--vk-bad-bg)", iconColor: "#DC2626", spark: [8, 6, 9, 5, 7, 4, 6, 3] },
 ];
 
-type View = "dashboard" | "applications" | "managers" | "audit" | "apply" | "jobApplications";
+type View = "dashboard" | "applications" | "managers" | "audit" | "apply" | "jobApplications" | "mail";
+
+/** Department mailboxes are sections too, named exactly like the department ("Sales", "Customer Support"...). */
+const DEPARTMENT_SECTIONS = DEPARTMENTS.map((d) => d.name);
 
 /** A small trend-line sparkline, matching the mini charts on each stat
  *  card in the reference. Pure SVG, no charting library needed for
@@ -305,6 +310,8 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
   // Which sidebar/grid sections this account can actually see
   const visibleSidebarModules = isOwner ? SIDEBAR_MODULES : SIDEBAR_MODULES.filter(m => (mySections ?? []).includes(SIDEBAR_TO_SECTION[m.label]));
   const visibleTiles = isOwner ? MODULE_TILES : MODULE_TILES.filter(t => (mySections ?? []).includes(t.title));
+  // Department mail: owners and superadmins see every department, a manager sees the departments they are approved for
+  const canUseMail = isOwner || (mySections ?? []).some(s => DEPARTMENT_SECTIONS.includes(s));
 
   return (
     <div data-theme-aware className="fixed inset-0 z-50 flex text-[14px]" style={{ fontFamily: "var(--font-sans)", background: "var(--vk-bg)" }}>
@@ -355,6 +362,16 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
             >
               <LayoutGrid className="w-4 h-4" /> Dashboard
             </button>
+
+            {canUseMail && (
+              <button
+                onClick={() => goView("mail")}
+                className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-semibold mb-4"
+                style={view === "mail" ? { background: PURPLE, color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
+              >
+                <Mail className="w-4 h-4" /> Department mail
+              </button>
+            )}
 
             {isOwner && (
               <>
@@ -630,6 +647,8 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
           )}
 
           {/* ── Audit Log (owner only) ── */}
+          {view === "mail" && canUseMail && <MailPanel />}
+
           {view === "audit" && (
             <div>
               <h1 className="text-2xl font-black text-fg mb-1">Audit Log</h1>
@@ -709,7 +728,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
                 <label className="text-xs font-bold text-fg">Section</label>
                 <select value={applySection} onChange={e => setApplySection(e.target.value)} className="w-full mt-1.5 mb-4 px-3 py-2.5 rounded-lg border border-line text-sm outline-none">
                   <option value="">Choose a section…</option>
-                  {Object.values(SIDEBAR_TO_SECTION).filter(s => !(mySections ?? []).includes(s)).map(s => <option key={s} value={s}>{s}</option>)}
+                  {[...Object.values(SIDEBAR_TO_SECTION), ...DEPARTMENT_SECTIONS].filter(s => !(mySections ?? []).includes(s)).map(s => <option key={s} value={s}>{s}{DEPARTMENT_SECTIONS.includes(s) ? " (department mail)" : ""}</option>)}
                 </select>
                 <label className="text-xs font-bold text-fg">Why should you manage this section? (optional)</label>
                 <textarea value={applyMessage} onChange={e => setApplyMessage(e.target.value)} rows={3} className="w-full mt-1.5 mb-4 px-3 py-2.5 rounded-lg border border-line text-sm outline-none resize-none" placeholder="Relevant experience, role, or context for the Super Administrator..." />

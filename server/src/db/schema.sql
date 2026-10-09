@@ -1404,3 +1404,22 @@ CREATE TABLE IF NOT EXISTS contact_messages (
 CREATE INDEX IF NOT EXISTS idx_contact_department ON contact_messages(department, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_contact_undelivered ON contact_messages(created_at) WHERE notified_at IS NULL;
 ALTER TABLE inbound_emails ADD COLUMN IF NOT EXISTS department TEXT;
+
+-- Staff mail: incoming email gets a status like website messages do, and everything staff send from a department is recorded (see services/mailService.ts).
+ALTER TABLE inbound_emails ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'open';
+CREATE TABLE IF NOT EXISTS mail_outbound (
+  id           UUID PRIMARY KEY,
+  department   TEXT NOT NULL,
+  to_addr      TEXT NOT NULL,
+  subject      TEXT NOT NULL,
+  body         TEXT NOT NULL,
+  reply_kind   TEXT,                      -- web | email: the message this answers, if it is a reply
+  reply_id     UUID,
+  sent_by      UUID REFERENCES users(id) ON DELETE SET NULL,
+  sent_by_name TEXT NOT NULL,
+  status       TEXT NOT NULL CHECK (status IN ('sent','failed')),
+  error        TEXT,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_mail_outbound_dept ON mail_outbound(department, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_mail_outbound_user ON mail_outbound(sent_by, created_at DESC);

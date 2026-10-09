@@ -50,6 +50,8 @@ import { createSchemeSettlement } from "./services/schemeSettlement.js";
 import { createOpsAdminRouter } from "./routes/opsAdminRouter.js";
 import { createContactService } from "./services/contactService.js";
 import { createContactRouter, createContactAdminRouter } from "./routes/contactRouter.js";
+import { createMailService } from "./services/mailService.js";
+import { createMailRouter } from "./routes/mailRouter.js";
 import { liveStartBlockers } from "./payments/goLive.js";
 import { createEmailSender } from "./auth/email.js";
 import { hasDb, pool } from "./db/pool.js";
@@ -216,6 +218,8 @@ const contactService = pool ? createContactService({ db: pool, mail: createEmail
 if (contactService) {
   app.use("/api/contact", createContactRouter(contactService));
   app.use("/api/admin/contact", requireAuth, requireRole("owner", "superadmin"), createContactAdminRouter({ db: pool!, svc: contactService }));
+  // Department mail for the management panel: owners and superadmins see every department, a department manager sees only the department(s) they are approved for.
+  app.use("/api/mail", requireAuth, createMailRouter({ db: pool!, svc: createMailService({ db: pool!, mail: createEmailSender() }) }));
 }
 app.use("/api/global",             globalBankingRouter);
 app.use("/api/financial",          financialReportsRouter);
