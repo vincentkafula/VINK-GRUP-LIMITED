@@ -268,7 +268,11 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
           {/* Copyright */}
           <div style={{ padding: "6px 0 24px", textAlign: "center" }}>
             <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 12.5, margin: 0, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "4px 12px" }}>
-              <span>Registration No: 2018/079316/07</span>
+              <span>United States – EIN: 37-2148609</span>
+              <span aria-hidden="true" style={{ color: "rgba(255,255,255,0.25)" }}>|</span>
+              <span>South Africa – Registration No: 2018/079316/07</span>
+              <span aria-hidden="true" style={{ color: "rgba(255,255,255,0.25)" }}>|</span>
+              <span>Zambia – Registration No: 120210020196</span>
             </p>
           </div>
         </div>
