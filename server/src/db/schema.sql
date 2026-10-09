@@ -1297,6 +1297,7 @@ CREATE TABLE IF NOT EXISTS token_card_spend (
   authorisation_id  TEXT NOT NULL,
   amount_cents      BIGINT NOT NULL,
   fee_cents         BIGINT NOT NULL DEFAULT 0,
+  settled_at        TIMESTAMPTZ,                               -- when the sponsor bank's settlement file confirmed this purchase
   reversed_cents    BIGINT NOT NULL DEFAULT 0,                 -- how much of the amount has been returned by a reversal or refund (a partial one leaves the purchase approved)
   channel           TEXT NOT NULL,
   merchant          TEXT,
@@ -1306,3 +1307,53 @@ CREATE TABLE IF NOT EXISTS token_card_spend (
   UNIQUE (provider, authorisation_id)
 );
 CREATE INDEX IF NOT EXISTS idx_token_card_spend_user ON token_card_spend(user_id, created_at DESC);
+
+-- What the monitor has already told people, so a restart or a repeat check never sends the same alert twice.
+CREATE TABLE IF NOT EXISTS ops_alert_state (
+  code        TEXT PRIMARY KEY,
+  severity    TEXT NOT NULL,
+  message     TEXT NOT NULL,
+  count       INTEGER NOT NULL DEFAULT 0,
+  first_seen  TIMESTAMPTZ NOT NULL,
+  last_sent   TIMESTAMPTZ,
+  resolved_at TIMESTAMPTZ
+);
+
+-- The go-live gate: manual items a named person has confirmed, with where the evidence is.
+CREATE TABLE IF NOT EXISTS go_live_checks (
+  key               TEXT PRIMARY KEY,
+  confirmed_by      UUID REFERENCES users(id) ON DELETE SET NULL,
+  confirmed_by_name TEXT NOT NULL,
+  confirmed_at      TIMESTAMPTZ NOT NULL,
+  note              TEXT NOT NULL
+);
+
+-- Sponsor-bank settlement files and their lines, matched to token_card_spend (see services/schemeSettlement.ts).
+CREATE TABLE IF NOT EXISTS card_settlement_files (
+  id          UUID PRIMARY KEY,
+  provider    TEXT NOT NULL,
+  filename    TEXT NOT NULL,
+  sha256      TEXT NOT NULL UNIQUE,
+  line_count  INTEGER NOT NULL,
+  matched     INTEGER,
+  exceptions  INTEGER,
+  imported_by UUID REFERENCES users(id) ON DELETE SET NULL,
+  imported_at TIMESTAMPTZ NOT NULL
+);
+CREATE TABLE IF NOT EXISTS card_settlement_lines (
+  id               UUID PRIMARY KEY,
+  file_id          UUID NOT NULL REFERENCES card_settlement_files(id),
+  provider         TEXT NOT NULL,
+  authorisation_id TEXT NOT NULL,
+  line_type        TEXT NOT NULL CHECK (line_type IN ('purchase','refund')),
+  amount_cents     BIGINT NOT NULL,
+  currency         TEXT NOT NULL,
+  settled_on       DATE NOT NULL,
+  reference        TEXT NOT NULL DEFAULT '',
+  result           TEXT NOT NULL,
+  resolved_at      TIMESTAMPTZ,
+  resolved_by      UUID REFERENCES users(id) ON DELETE SET NULL,
+  resolved_note    TEXT,
+  UNIQUE (provider, authorisation_id, line_type, reference)
+);
+CREATE INDEX IF NOT EXISTS idx_card_settlement_open ON card_settlement_lines(result) WHERE resolved_at IS NULL;
