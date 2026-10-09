@@ -69,6 +69,8 @@ export interface PayoutAttempt { status: "paid" | "rejected" | "requested" | "pr
 export function createTokenService(deps: {
   /** The processor's hosted card fields. With these, a card is added without its number ever reaching this server. */
   hosted?: HostedCardFields;
+  /** false: tokens cannot be paid out to an outside debit card (cash-outs, refunds and adding payout cards are refused). Default true. See PaymentsConfig.externalPayouts. */
+  externalPayouts?: boolean;
   /** false in live mode: card numbers are then refused here and can only come through the hosted fields. Default true (sandbox test cards). */
   acceptRawCardNumbers?: boolean;
   db: Db; ledger: LedgerPort; reader: ConfigReader; now?: () => Date;
@@ -251,6 +253,7 @@ export function createTokenService(deps: {
    * exist (so the number never reaches this server), only the published SANDBOX TEST cards are accepted: a real card number is refused before anything is done with it.
    */
   async function addPayoutCard(userId: string, b: { primaryAccountNumber?: unknown; expiry?: unknown; cardholderName?: unknown }): Promise<TokenResult<{ id: string; last4: string; brand: string; status: string }>> {
+    if (deps.externalPayouts === false) return bad(403, "Payouts to other cards are not used. Withdraw with your VINK card.", "withdraw_with_card");
     if (!deps.rail) return bad(503, "Card payouts are not set up yet");
     if (deps.acceptRawCardNumbers === false) return bad(403, "Card numbers are entered in the secure card form only.", "card_fields_required");
     const pan = typeof b.primaryAccountNumber === "string" ? b.primaryAccountNumber.replace(/[\s-]/g, "") : "";
@@ -290,6 +293,7 @@ export function createTokenService(deps: {
 
   /** Starts a secure card-entry session. The card form is the processor's, so the number is never sent to this server. */
   async function startCardSession(userId: string): Promise<TokenResult<HostedCardSession>> {
+    if (deps.externalPayouts === false) return bad(403, "Payouts to other cards are not used. Withdraw with your VINK card.", "withdraw_with_card");
     if (!deps.hosted || !deps.rail) return bad(501, "Secure card entry is not available here.", "hosted_unavailable");
     if (Number((await db.query(`SELECT COUNT(*) AS n FROM token_payout_cards WHERE user_id = $1 AND status IN ('verified','needs_review')`, [userId])).rows[0].n) >= 3) return bad(409, "You can have up to 3 cards. Remove one first.");
     try { return { ok: true, value: await deps.hosted.createSession({ userId }) }; }
@@ -338,6 +342,7 @@ export function createTokenService(deps: {
    * by the system, at once and again later if the card service is not available. It is never paid to a bank account and never by hand.
    */
   async function requestCashOut(userId: string, a: { currency: string; amountCents: unknown; reason?: "cash_out" | "refund"; by: string; note?: string; cardId?: unknown }): Promise<TokenResult<{ id: string; balanceCents: number; status: string; message: string }>> {
+    if (deps.externalPayouts === false) return bad(403, "Money is withdrawn with your VINK card, at a cash machine or in a shop. Tokens are not paid out to other cards.", "withdraw_with_card");
     if (!deps.rail) return bad(503, "Card payouts are not set up yet");
     if (!amountOk(a.amountCents)) return bad(400, "Enter an amount above zero");
     if (a.amountCents < MIN_CASHOUT_CENTS) return bad(400, `The smallest cash-out is ${(MIN_CASHOUT_CENTS / 100).toFixed(2)}`);
@@ -685,6 +690,6 @@ export function createTokenService(deps: {
     return { ok: true, value: { id: String(row.id) } };
   }
 
-  return { bindEngine(e: Pick<Engine, "settleTaps">) { engine = e; }, partyOf, setTier, wallet, openWallet, linkCard, cards, blockCard, tapToken, transfer, redeemToBank, requestCashOut, decideCashOut, retryCashOut, processPayouts, attemptPayout, issueCard, issuedCards, activateCard, cardOrders, shipCardOrder, resetActivation, cardOptions, setIssuedCardStatus, authoriseCardSpend, reverseCardSpend, cardIsActive, addPayoutCard, startCardSession, addPayoutCardFromSession, cardEntry: () => ({ hosted: !!deps.hosted, raw: deps.acceptRawCardNumbers !== false }), payoutCards, removePayoutCard, reviewPayoutCard, cardsToReview, activity, summary, settings, setDeviceFee, routes, upsertRoute };
+  return { bindEngine(e: Pick<Engine, "settleTaps">) { engine = e; }, partyOf, setTier, wallet, openWallet, linkCard, cards, blockCard, tapToken, transfer, redeemToBank, requestCashOut, decideCashOut, retryCashOut, processPayouts, attemptPayout, issueCard, issuedCards, activateCard, cardOrders, shipCardOrder, resetActivation, cardOptions, setIssuedCardStatus, authoriseCardSpend, reverseCardSpend, cardIsActive, addPayoutCard, startCardSession, addPayoutCardFromSession, cardEntry: () => ({ hosted: !!deps.hosted, raw: deps.acceptRawCardNumbers !== false }), payoutsEnabled: () => deps.externalPayouts !== false, payoutCards, removePayoutCard, reviewPayoutCard, cardsToReview, activity, summary, settings, setDeviceFee, routes, upsertRoute };
 }
 export type TokenService = ReturnType<typeof createTokenService>;

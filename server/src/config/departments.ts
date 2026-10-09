@@ -27,6 +27,15 @@ export const DEPARTMENTS: Department[] = [
   { key: "media", name: "Media Relations", address: "media@vink.co.za", purpose: "Press and media requests", respondWithin: "1–2 business days" },
 ];
 
+/**
+ * Other names a department goes by in job applications. Approving a job application grants the section named in it, and the Careers page names two departments
+ * differently from their mailboxes, so these job departments also open the matching mailbox.
+ */
+export const SECTION_ALIASES: Record<string, string> = {
+  "Legal & Compliance": "compliance",
+  "Client Services": "support",
+};
+
 export const departmentByKey = (key: unknown): Department | undefined => (typeof key === "string" ? DEPARTMENTS.find((d) => d.key === key) : undefined);
 
 /** The department an incoming email was sent to, from its recipient addresses ("Name <addr>" is accepted). null when it was sent to none of ours. */

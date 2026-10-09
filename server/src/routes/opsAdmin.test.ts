@@ -136,6 +136,13 @@ describe("the go-live gate", () => {
     expect((await evaluateGoLive(db, ctx)).items.find((i) => i.key === "legal_structure")?.ok).toBe(false);
   });
 
+  it("does not ask for a payout provider when payouts to outside cards are off (money leaves with the VINK card only)", async () => {
+    const item = async (c: typeof cfg) => (await evaluateGoLive(db, { cfg: c, fastSecretSet: true, alertSinks: 1, reconcileClean: true })).items.find((i) => i.key === "payout_provider_real")!;
+    expect(await item({ ...cfg, externalPayouts: true })).toMatchObject({ ok: false });
+    expect(await item({ ...cfg, externalPayouts: false })).toMatchObject({ ok: true, detail: expect.stringContaining("VINK card only") });
+    expect(await item({ ...cfg, externalPayouts: true, cardPayoutProvider: "visa_direct_live" as never })).toMatchObject({ ok: true });
+  });
+
   it("is ready only when everything holds together, and sandbox start-up is never blocked", async () => {
     for (const it of MANUAL_ITEMS) await confirmItem(db, it.key, { id: null, name: "V" }, `Evidence on file: ${it.key}`);
     const live = { ...cfg, mode: "live" as const, issuingProvider: "paymentology" as const, cardPayoutProvider: "visa_direct_live" as never };

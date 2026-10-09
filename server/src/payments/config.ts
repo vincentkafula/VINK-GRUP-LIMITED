@@ -45,6 +45,11 @@ export interface PaymentsConfig {
   visaDps: { baseUrl: string; auth: VisaAuthConfig; programType: "debit" | "prepaid" } | null;
   /** Pays cash-outs and refunds to the holder's own debit card. */
   cardPayoutProvider: CardPayoutProviderName;
+  /**
+   * Whether token holders may be paid to an outside debit card (cash-outs and refunds). TOKEN_EXTERNAL_PAYOUTS=on|off. The default is on in the sandbox and OFF in live mode:
+   * VINK's rule is that the pool's money leaves with the holder's VINK card (a cash machine or a shop), so live mode needs no payout provider unless this is switched on.
+   */
+  externalPayouts: boolean;
   /** Visa Direct sandbox settings, only when cardPayoutProvider is visa_direct. */
   visaDirect: { baseUrl: string; auth: VisaAuthConfig; acquiringBin: string; acquirerCountryCode: string; sender: { accountNumber: string; name: string; countryCode: string; city?: string; address?: string }; cardAcceptor: { name: string; idCode: string; terminalId: string; city: string; country: string }; vaultKey: string; extraTestPans: string[] } | null;
   /** Paymentology card settings (client id, card product, parent account, brand), when all are set. */
@@ -167,10 +172,14 @@ export function resolvePaymentsConfig(env: NodeJS.ProcessEnv = process.env): Pay
 
   if (payout === "visa_direct" && !visaDirect) problems.push("CARD_PAYOUT_PROVIDER=visa_direct needs the Visa credentials (SANDBOX_VISA_AUTH and its keys), SANDBOX_VISA_DIRECT_ACQUIRING_BIN, SANDBOX_VISA_DIRECT_ACQUIRER_COUNTRY (3-digit ISO numeric), SANDBOX_VISA_DIRECT_SENDER_ACCOUNT, SANDBOX_VISA_DIRECT_ACCEPTOR_ID_CODE and SANDBOX_CARD_VAULT_KEY (16 or more characters).");
 
+  const extRaw = env.TOKEN_EXTERNAL_PAYOUTS?.trim().toLowerCase();
+  if (extRaw && extRaw !== "on" && extRaw !== "off") problems.push('TOKEN_EXTERNAL_PAYOUTS must be "on" or "off".');
+  const externalPayouts = extRaw ? extRaw === "on" : mode !== "live";
+
   if (mode === "live") {
-    problems.push("Live mode has no card payout provider yet: the bundled rail and Visa Direct are sandbox-only, and paying to a real card needs the BIN sponsor's tokenised push-to-card service, whose adapter is not built.");
+    if (externalPayouts) problems.push("Live mode has no card payout provider yet: the bundled rail and Visa Direct are sandbox-only, and paying to a real card needs the BIN sponsor's tokenised push-to-card service, whose adapter is not built. Set TOKEN_EXTERNAL_PAYOUTS=off to let money leave only with the VINK card.");
     if (validation !== "mock") problems.push("Live mode cannot use the Visa PAV sandbox provider (it needs an acquiring BIN from an acquirer; none is set up).");
-    problems.push("Live mode has no card-servicing provider yet: visa_dps is sandbox-only and live cards go through the BIN sponsor (Paymentology), whose servicing adapter is not built.");
+    if (servicing === "visa_dps") problems.push("Live mode cannot use CARD_SERVICING_PROVIDER=visa_dps: it is sandbox-only. Live cards are issued and switched on and off through Paymentology.");
     if (env.NODE_ENV !== "production") problems.push("Live mode needs NODE_ENV=production.");
     if (env.PAYMENTS_LIVE_ENABLED !== LIVE_ENABLE_PHRASE) problems.push(`Live mode needs PAYMENTS_LIVE_ENABLED=${LIVE_ENABLE_PHRASE}.`);
     if (!env.PAYMENTS_LIVE_APPROVED_BY?.trim()) problems.push("Live mode needs PAYMENTS_LIVE_APPROVED_BY (who signed off docs/payments/GO_LIVE_CHECKLIST.md).");
@@ -182,7 +191,7 @@ export function resolvePaymentsConfig(env: NodeJS.ProcessEnv = process.env): Pay
   if (problems.length) {
     throw new Error(`Payments configuration refused:\n  - ${problems.join("\n  - ")}`);
   }
-  return { mode, issuingProvider: issuing, acquiringProvider: acquiring, cardServicingProvider: servicing, visaDps, accountValidationProvider: validation, visaPav, cardPayoutProvider: payout, visaDirect, paymentologyProgrammes, paymentology };
+  return { mode, issuingProvider: issuing, acquiringProvider: acquiring, cardServicingProvider: servicing, visaDps, accountValidationProvider: validation, visaPav, cardPayoutProvider: payout, visaDirect, paymentologyProgrammes, paymentology, externalPayouts };
 }
 
 /** VINK core calls its sandbox "test" (it prefixes API keys mk_test_ / mk_live_). */

@@ -147,6 +147,8 @@ describe("configuration", () => {
   it("refuses Mastercard Send (not built), unknown providers, and any payout provider in live mode", () => {
     expect(() => resolvePaymentsConfig({ ...base, CARD_PAYOUT_PROVIDER: "mastercard_send" })).toThrow(/not built/);
     expect(() => resolvePaymentsConfig({ ...base, CARD_PAYOUT_PROVIDER: "other" })).toThrow(/mock or visa_direct/);
-    expect(() => resolvePaymentsConfig({ ...base, PAYMENTS_MODE: "live", NODE_ENV: "production" })).toThrow(/no card payout provider/);
+    // live mode: outside-card payouts are off by default (money leaves with the VINK card), so no payout provider is asked for; switched on, one is needed and none exists
+    expect(() => resolvePaymentsConfig({ ...base, PAYMENTS_MODE: "live", NODE_ENV: "production" })).not.toThrow(/card payout provider/);
+    expect(() => resolvePaymentsConfig({ ...base, PAYMENTS_MODE: "live", NODE_ENV: "production", TOKEN_EXTERNAL_PAYOUTS: "on" })).toThrow(/no card payout provider/);
   });
 });

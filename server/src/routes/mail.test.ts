@@ -33,7 +33,10 @@ describe("who sees which department's mail", () => {
     for (const u of [ROOT, OWNER]) expect((await svc.departmentsFor(u)).map((d) => d.key)).toEqual([...DEPARTMENTS.map((d) => d.key), "unrouted"]);
     expect((await svc.departmentsFor(SALES)).map((d) => d.key)).toEqual(["sales"]);
     expect((await svc.departmentsFor(SUPPORT_AND_CAREERS)).map((d) => d.key)).toEqual(["support", "careers"]);
-    expect(await svc.departmentsFor(NOBODY)).toEqual([]);                                                     // a section like Bank Management is not a mailbox
+    expect(await svc.departmentsFor(NOBODY)).toEqual([]);
+    // a job application for "Legal & Compliance" or "Client Services" (the Careers page's names) opens the matching mailbox
+    await db.query("INSERT INTO section_permissions (user_id, section) VALUES ($1,'Legal & Compliance'), ($1,'Client Services')", [NOBODY.userId]);
+    expect((await svc.departmentsFor(NOBODY)).map((d) => d.key)).toEqual(["support", "compliance"]);                                                     // a section like Bank Management is not a mailbox
   });
 
   it("lets a manager apply for a department as a section, because the department names are sections", () => {

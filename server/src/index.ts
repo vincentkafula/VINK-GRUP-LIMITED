@@ -164,7 +164,7 @@ const gateContext = () => ({ cfg: manshya.payments, fastSecretSet: !!process.env
 const sandboxMode = manshya.payments.mode === "sandbox";
 const hostedFields = sandboxMode ? new SandboxHostedFields(cardRail.vault, new Set([...MOCK_CARD_SCENARIOS.map((c) => c.pan), ...(manshya.payments.visaDirect?.extraTestPans ?? [])])) : null;
 if (hostedFields) app.use("/api/payments/sandbox-vault", createSandboxVaultRouter(hostedFields, listedOrigins()));          // sandbox only: stands in for the processor's card form
-const tokenService = pool ? createTokenService({ hosted: hostedFields ?? undefined, acceptRawCardNumbers: sandboxMode, db: pool, ledger: moneyLedger, reader: configReader, rail: cardRail, validator: getAccountValidationProvider(manshya.payments), extraTestPans: manshya.payments.visaDirect?.extraTestPans, issuer: cardIssuer }) : null;
+const tokenService = pool ? createTokenService({ externalPayouts: manshya.payments.externalPayouts, hosted: hostedFields ?? undefined, acceptRawCardNumbers: sandboxMode, db: pool, ledger: moneyLedger, reader: configReader, rail: cardRail, validator: getAccountValidationProvider(manshya.payments), extraTestPans: manshya.payments.visaDirect?.extraTestPans, issuer: cardIssuer }) : null;
 const moneyEngine = pool ? createMoneyEngine({ db: pool, ledger: moneyLedger, reader: configReader, tokenParty: tokenService?.partyOf }) : null;
 if (moneyEngine) tokenService?.bindEngine(moneyEngine);
 let zaProfile: CountryConfig | null = null;

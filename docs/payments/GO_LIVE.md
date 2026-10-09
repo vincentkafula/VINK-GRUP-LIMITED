@@ -48,3 +48,9 @@ A holder adds a payout debit card in a separate card form shown in a frame on th
 - **Sandbox**: `payments/providers/hostedFields.ts` provides the form page and a vault endpoint (`/api/payments/sandbox-vault/*`, mounted only in sandbox mode) that stand in for the processor. Test card numbers only. The page may be framed only by the origins in `ALLOWED_ORIGINS` / `FRONTEND_URL` and the production domains.
 - **Live**: a provider implementing `HostedCardFields` (in `providers/types.ts`) replaces the sandbox class; the token service and the front end do not change. In live mode typed card numbers are refused outright (`card_fields_required`).
 - **Not done**: the real processor's hosted-field integration, which needs the BIN sponsor's or processor's documentation.
+
+## Staff screen, and payouts to outside cards
+
+- **Management Panel > Operations** (owners and superadmins) shows the go-live gate with a Confirm box (evidence note) for each item only people can do, the system health with where alerts go and a "Check now" button, and the sponsor bank's settlement files with the lines that need a person. It uses the `/api/admin/ops` calls above.
+- **Payouts to an outside debit card are off in live mode** (`TOKEN_EXTERNAL_PAYOUTS=off` is the live default; set `on` only if a live push-to-card provider is built). When they are off, cash-outs, staff refunds and adding payout cards are refused with "withdraw with your VINK card", the wallet screen no longer shows the payout screens, and the go-live gate does not ask for a payout provider. Money then leaves the pool only through the VINK card. In the sandbox the setting defaults to `on`, so the earlier tests and demos still work.
+- Live mode is still refused until the other live requirements are met, including a real acquiring provider (`ACQUIRING_PROVIDER`; none is implemented), a real issuing provider, `NODE_ENV=production`, `PAYMENTS_LIVE_ENABLED` and `PAYMENTS_LIVE_APPROVED_BY`.

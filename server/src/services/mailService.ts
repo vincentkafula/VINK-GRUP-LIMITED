@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import type { Db } from "../portal/driverRoutes.js";
 import type { EmailSender } from "../auth/email.js";
-import { DEPARTMENTS, departmentByKey, type Department } from "../config/departments.js";
+import { DEPARTMENTS, SECTION_ALIASES, departmentByKey, type Department } from "../config/departments.js";
 
 /**
  * Department mail for staff: read what was sent to a department (website messages and incoming email), reply from the department's own address, and write new
@@ -49,7 +49,8 @@ export function createMailService(deps: { db: Db; mail: EmailSender; now?: () =>
     if (isSuper(user.role)) return [...DEPARTMENTS, UNROUTED];
     const rows = (await db.query(`SELECT section FROM section_permissions WHERE user_id = $1`, [user.userId])).rows;
     const names = new Set(rows.map((r: Record<string, unknown>) => String(r.section)));
-    return DEPARTMENTS.filter((d) => names.has(d.name));
+    const viaAlias = new Set([...names].map((n) => SECTION_ALIASES[n]).filter(Boolean));
+    return DEPARTMENTS.filter((d) => names.has(d.name) || viaAlias.has(d.key));
   }
   const canUse = async (user: MailUser, key: string) => (await departmentsFor(user)).some((d) => d.key === key);
 

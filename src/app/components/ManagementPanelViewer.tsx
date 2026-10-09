@@ -5,12 +5,13 @@ import {
   Building2, ShieldCheck, HeartHandshake, Users, Settings,
   ClipboardList, Menu, Search, Bell, ChevronDown, Plus, ArrowRight, TrendingUp,
   AlertTriangle, Monitor, CheckCircle2, CalendarDays, FileCheck2, UserCog, Loader2,
-  Check, X as XIcon, Lock, Mail,
+  Check, X as XIcon, Lock, Mail, Activity,
 } from "lucide-react";
 import { toast } from "sonner";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { MailPanel } from "./portal/MailPanel";
-import { DEPARTMENTS } from "../data/departments";
+import { OpsPanel } from "./portal/OpsPanel";
+import { DEPARTMENTS, SECTION_ALIASES } from "../data/departments";
 import { rbacApi, jobsApi, getSession, getToken, type SectionApplication, type ManagerRecord, type AuditEntry, type JobApplication } from "../services/apiClient";
 
 interface Props { isOpen: boolean; onClose: () => void; adminName?: string; adminRole?: string; role?: string }
@@ -83,7 +84,7 @@ const BOTTOM_STATS = [
   { value: "24", label: "System Alerts", icon: <AlertTriangle className="w-5 h-5" />, iconBg: "var(--vk-bad-bg)", iconColor: "#DC2626", spark: [8, 6, 9, 5, 7, 4, 6, 3] },
 ];
 
-type View = "dashboard" | "applications" | "managers" | "audit" | "apply" | "jobApplications" | "mail";
+type View = "dashboard" | "applications" | "managers" | "audit" | "apply" | "jobApplications" | "mail" | "ops";
 
 /** Department mailboxes are sections too, named exactly like the department ("Sales", "Customer Support"...). */
 const DEPARTMENT_SECTIONS = DEPARTMENTS.map((d) => d.name);
@@ -311,7 +312,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
   const visibleSidebarModules = isOwner ? SIDEBAR_MODULES : SIDEBAR_MODULES.filter(m => (mySections ?? []).includes(SIDEBAR_TO_SECTION[m.label]));
   const visibleTiles = isOwner ? MODULE_TILES : MODULE_TILES.filter(t => (mySections ?? []).includes(t.title));
   // Department mail: owners and superadmins see every department, a manager sees the departments they are approved for
-  const canUseMail = isOwner || (mySections ?? []).some(s => DEPARTMENT_SECTIONS.includes(s));
+  const canUseMail = isOwner || (mySections ?? []).some(s => DEPARTMENT_SECTIONS.includes(s) || s in SECTION_ALIASES);
 
   return (
     <div data-theme-aware className="fixed inset-0 z-50 flex text-[14px]" style={{ fontFamily: "var(--font-sans)", background: "var(--vk-bg)" }}>
@@ -390,6 +391,13 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
                   style={view === "managers" ? { background: PURPLE, color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
                 >
                   <span className="flex items-center gap-2.5"><UserCog className="w-4 h-4" /> Managers</span>
+                </button>
+                <button
+                  onClick={() => goView("ops")}
+                  className="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors"
+                  style={view === "ops" ? { background: PURPLE, color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
+                >
+                  <span className="flex items-center gap-2.5"><Activity className="w-4 h-4" /> Operations</span>
                 </button>
               </>
             )}
@@ -648,6 +656,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
 
           {/* ── Audit Log (owner only) ── */}
           {view === "mail" && canUseMail && <MailPanel />}
+          {view === "ops" && isOwner && <OpsPanel />}
 
           {view === "audit" && (
             <div>
