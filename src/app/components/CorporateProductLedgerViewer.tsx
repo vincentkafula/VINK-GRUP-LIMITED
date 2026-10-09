@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { ApplyModal } from "./ApplyModal";
 import { Footer } from "./Footer";
+import siteHeroBg from "../../imports/assets/site-hero-bg.webp";
 import vinkCorporateTrain from "../../imports/VinkCorporateTrain.webp";
 
 type CorpCategory = "account" | "solutions" | "loan";
@@ -453,19 +454,20 @@ export function CorporateProductLedgerViewer({ isOpen, onClose, initialCategory,
         </div>
       </nav>
 
-      <div className="relative overflow-hidden" style={{ background: "linear-gradient(160deg,color-mix(in srgb, #FAFCFB var(--vk-wash), var(--vk-surface)) 0%,color-mix(in srgb, #F3F9F5 var(--vk-wash), var(--vk-surface)) 100%)" }}>
-        <div className="absolute -left-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: "linear-gradient(180deg,#9B1C1C,#8B0000)", filter: "blur(60px)" }} />
-        <div className="absolute -right-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: "linear-gradient(180deg,#8B0000,#9B1C1C)", filter: "blur(60px)" }} />
+      {/* the same hero background as the Personal and Business pages */}
+      <div className="relative overflow-hidden" style={{ background: "linear-gradient(120deg, #14532D 0%, #8B0000 58%, #5C0A10 100%)" }}>
+        <img loading="lazy" decoding="async" src={siteHeroBg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-[0.14] mix-blend-luminosity" />
+        <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: "radial-gradient(rgba(255,255,255,0.9) 1px, transparent 1px)", backgroundSize: "22px 22px" }} />
         <div className="relative max-w-6xl mx-auto px-8 py-14 sm:py-16 flex flex-col md:flex-row md:items-center md:justify-between gap-10">
           <div className="max-w-lg">
-            <span className="inline-block text-[11px] font-bold tracking-[0.14em] uppercase mb-3" style={{ color: "#8B0000" }}>{copy.heroEyebrow}</span>
-            <h1 className="text-3xl sm:text-4xl font-black leading-[1.1] text-fg whitespace-pre-line">{copy.heroTitle}</h1>
-            <p className="text-fg-muted text-sm sm:text-base mt-4 max-w-lg">{copy.heroSubtitle}</p>
+            <span className="inline-block text-[11px] font-bold tracking-[0.14em] uppercase mb-3" style={{ color: "#F0E4C4" }}>{copy.heroEyebrow}</span>
+            <h1 className="text-3xl sm:text-4xl font-black leading-[1.1] text-white whitespace-pre-line">{copy.heroTitle}</h1>
+            <p className="text-white/70 text-sm sm:text-base mt-4 max-w-lg">{copy.heroSubtitle}</p>
           </div>
           {/* the cut-out has hard edges, so every side fades out */}
           <img src={vinkCorporateTrain} alt="" width={1100} height={734} decoding="async"
             className="w-full max-w-[300px] sm:max-w-[420px] md:max-w-[460px] h-auto self-center md:self-auto shrink-0"
-            style={{ filter: "drop-shadow(0 24px 30px rgba(20,10,10,0.25))", WebkitMaskImage: "linear-gradient(to right, transparent, #000 16%, #000 88%, transparent), linear-gradient(to top, transparent, #000 14%, #000 90%, transparent)", WebkitMaskComposite: "source-in", maskImage: "linear-gradient(to right, transparent, #000 16%, #000 88%, transparent), linear-gradient(to top, transparent, #000 14%, #000 90%, transparent)", maskComposite: "intersect" }} />
+            style={{ WebkitMaskImage: "linear-gradient(to right, transparent, #000 16%, #000 88%, transparent), linear-gradient(to top, transparent, #000 14%, #000 90%, transparent)", WebkitMaskComposite: "source-in", maskImage: "linear-gradient(to right, transparent, #000 16%, #000 88%, transparent), linear-gradient(to top, transparent, #000 14%, #000 90%, transparent)", maskComposite: "intersect" }} />
         </div>
       </div>
 

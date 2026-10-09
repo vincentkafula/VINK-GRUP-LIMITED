@@ -56,10 +56,8 @@ const SLIDES = [
 function BusinessGraphic() {
   return (
     <div className="relative flex justify-center">
-      {/* soft glow behind the terminal */}
-      <div aria-hidden="true" className="absolute inset-0 m-auto h-72 w-72 rounded-full" style={{ background: "radial-gradient(circle, rgba(201,168,76,0.22), transparent 68%)" }} />
       <img src={vinkBusinessTerminal} alt="VINK payment terminal: tap a card or scan a QR code" width={772} height={1505} decoding="async"
-        className="relative h-[300px] w-auto sm:h-[380px]" style={{ filter: "drop-shadow(0 28px 38px rgba(0,0,0,0.45))", WebkitMaskImage: "linear-gradient(to bottom, #000 82%, transparent)", maskImage: "linear-gradient(to bottom, #000 82%, transparent)" }} />
+        className="relative h-[300px] w-auto sm:h-[380px]" style={{ WebkitMaskImage: "linear-gradient(to bottom, #000 82%, transparent)", maskImage: "linear-gradient(to bottom, #000 82%, transparent)" }} />
     </div>
   );
 }
