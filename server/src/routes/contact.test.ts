@@ -9,7 +9,7 @@ import type { Db } from "../portal/driverRoutes.js";
 import { ConsoleEmail, ResendEmail, type EmailMessage, type EmailSender } from "../auth/email.js";
 import { createContactService, type ContactService } from "../services/contactService.js";
 import { createContactRouter, createContactAdminRouter } from "./contactRouter.js";
-import { DEPARTMENTS, departmentOfAddresses, notifyTargets } from "../config/departments.js";
+import { DEPARTMENTS, SECTION_ALIASES, departmentOfAddresses, notifyTargets } from "../config/departments.js";
 import { MemoryInboundStore } from "../inbound/store.js";
 import { createOpsMonitor } from "../services/opsMonitor.js";
 import { manshyaLedgerPort } from "../services/moneyEngine.js";
@@ -160,6 +160,8 @@ describe("the routes", () => {
 describe("the department list is the same on the server and on the website", () => {
   it("has identical departments and addresses in both places", async () => {
     const file = fs.readFileSync(path.resolve(__dirname, "../../../src/app/data/departments.ts"), "utf8");
+    const aliasBlock = /SECTION_ALIASES[^{]*\{([^}]*)\}/.exec(file)?.[1] ?? "";
+    expect([...aliasBlock.matchAll(/"([^"]+)":\s*"([^"]+)"/g)].map((m) => [m[1], m[2]])).toEqual(Object.entries(SECTION_ALIASES));
     const web = [...file.matchAll(/\{ key: "([a-z]+)", name: "([^"]+)", address: "([^"]+)", purpose: "([^"]+)", respondWithin: "([^"]+)" \}/g)].map((m) => ({ key: m[1], name: m[2], address: m[3], purpose: m[4], respondWithin: m[5] }));
     expect(web).toEqual(DEPARTMENTS);
   });

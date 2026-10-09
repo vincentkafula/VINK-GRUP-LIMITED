@@ -41,7 +41,7 @@ function autoItems(c: GateContext): GateStatus[] {
   return [
     mk("payments_mode_live", "Payments mode is set to live", "PAYMENTS_MODE=live", live, live ? "Live" : "Still in sandbox"),
     mk("issuing_provider_real", "A real card issuing provider is selected", "ISSUING_PROVIDER is not the bundled mock", cfg.issuingProvider !== "mock", `Provider: ${cfg.issuingProvider}`),
-    mk("payout_provider_real", "A live card payout provider is selected", "CARD_PAYOUT_PROVIDER is not the bundled mock and not a sandbox-only provider", cfg.cardPayoutProvider !== "mock" && cfg.cardPayoutProvider !== "visa_direct", `Provider: ${cfg.cardPayoutProvider}`),
+    mk("payout_provider_real", "Payouts to outside cards are off, or a live payout provider is selected", "TOKEN_EXTERNAL_PAYOUTS=off (money leaves only with the VINK card), or CARD_PAYOUT_PROVIDER is a live provider", !cfg.externalPayouts || (cfg.cardPayoutProvider !== "mock" && cfg.cardPayoutProvider !== "visa_direct"), cfg.externalPayouts ? `Outside-card payouts on, provider: ${cfg.cardPayoutProvider}` : "Outside-card payouts off: money leaves with the VINK card only"),
     mk("card_endpoint_secured", "The card authorisation endpoint has its secret", "PAYMENTOLOGY_FAST_SECRET (or the provider's own signing secret) is set", c.fastSecretSet, c.fastSecretSet ? "Set" : "Missing"),
     mk("alerts_configured", "Alerts reach a person", "ALERT_WEBHOOK_URL or ALERT_EMAIL_TO is set", c.alertSinks > 0, `${c.alertSinks} destination(s)`),
     mk("reconciliation_clean", "Reconciliation shows no problems", "Open the money page and clear every problem first", c.reconcileClean === true, c.reconcileClean === null ? "Not checked" : c.reconcileClean ? "Clean" : "Problems found"),

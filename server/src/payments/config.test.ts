@@ -8,6 +8,19 @@ const liveOk = {
   LIVE_PAYMENTOLOGY_BASE_URL: "https://api.example.com", LIVE_PAYMENTOLOGY_API_KEY: "k", LIVE_PAYMENTOLOGY_WEBHOOK_SECRET: "s",
 };
 
+describe("payouts to outside cards", () => {
+  it("are on in the sandbox, off in live mode, and live mode needs no payout provider when they are off", () => {
+    expect(resolvePaymentsConfig(env({})).externalPayouts).toBe(true);
+    expect(resolvePaymentsConfig(env({ TOKEN_EXTERNAL_PAYOUTS: "off" })).externalPayouts).toBe(false);
+    expect(() => resolvePaymentsConfig(env({ TOKEN_EXTERNAL_PAYOUTS: "maybe" }))).toThrow(/TOKEN_EXTERNAL_PAYOUTS/);
+    const msgOf = (e: Record<string, string>) => { try { resolvePaymentsConfig(env(e)); return ""; } catch (x) { return (x as Error).message; } };
+    const byDefault = msgOf(liveOk);
+    expect(byDefault).not.toMatch(/card payout provider/); expect(byDefault).not.toMatch(/card-servicing/); expect(byDefault).toMatch(/ACQUIRING_PROVIDER=mock/);
+    expect(msgOf({ ...liveOk, TOKEN_EXTERNAL_PAYOUTS: "on" })).toMatch(/card payout provider/);
+    expect(msgOf({ ...liveOk, CARD_SERVICING_PROVIDER: "visa_dps" })).toMatch(/visa_dps/);
+  });
+});
+
 describe("Paymentology card products", () => {
   const base = { ISSUING_PROVIDER: "paymentology", SANDBOX_PAYMENTOLOGY_BASE_URL: "https://sbx.test", SANDBOX_PAYMENTOLOGY_API_KEY: "k", SANDBOX_PAYMENTOLOGY_WEBHOOK_SECRET: "s", SANDBOX_PAYMENTOLOGY_CLIENT_ID: "7" };
   it("reads one card product per brand, and the older single set for one brand", () => {

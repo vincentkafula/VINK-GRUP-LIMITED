@@ -46,7 +46,7 @@ export function createTokenRouter(db: Db, tokens: TokenService, deps: TokenRoute
       const pool = deps.channels?.(currency)?.in_person ?? null;
       out.push({ ...w, payInto: pool ? { bank: pool.bank, holder: pool.holder, accountNumber: pool.accountNumber, type: pool.type } : null, cards: await tokens.cards(userId, currency), activity: await tokens.activity(userId, currency, 20) });
     }
-    res.json({ success: true, wallets: out, payoutCards: await tokens.payoutCards(userId), cardEntry: tokens.cardEntry(), issuedCards: await tokens.issuedCards(userId), cardOptions: tokens.cardOptions(), role: roleOf(req) ?? null, deviceFeeCents: roleOf(req) === "investor" ? (await tokens.settings()).deviceFeeCents : undefined });
+    res.json({ success: true, wallets: out, payoutCards: await tokens.payoutCards(userId), cardEntry: tokens.cardEntry(), payoutsEnabled: tokens.payoutsEnabled(), issuedCards: await tokens.issuedCards(userId), cardOptions: tokens.cardOptions(), role: roleOf(req) ?? null, deviceFeeCents: roleOf(req) === "investor" ? (await tokens.settings()).deviceFeeCents : undefined });
   }));
 
   router.post("/wallet", h(async (req, res) => {

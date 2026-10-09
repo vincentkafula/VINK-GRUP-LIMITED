@@ -87,6 +87,20 @@ describe("issuing the VINK debit card", () => {
 const ADDRESS = { nameOnCard: "t nkosi", addressLine1: "12 Long Street", city: "Cape Town", postalCode: "8001", country: "ZA", phone: "082 000 0000" };
 const STAFF = id(77);
 
+describe("money leaves only with the VINK card", () => {
+  it("refuses cash-outs, refunds and outside payout cards when external payouts are off, and still allows the VINK card", async () => {
+    const off = createTokenService({ db, ledger, reader, issuer: new MockIssuer(), externalPayouts: false });
+    expect(off.payoutsEnabled()).toBe(false); expect(tokens.payoutsEnabled()).toBe(true);
+    await topUp(U.pax, 50_000);
+    expect(await off.requestCashOut(U.pax, { currency: "ZAR", amountCents: 10_000, by: U.pax })).toMatchObject({ ok: false, status: 403, code: "withdraw_with_card" });
+    expect(await off.requestCashOut(U.pax, { currency: "ZAR", amountCents: 10_000, by: U.pam, reason: "refund", note: "x" })).toMatchObject({ ok: false, code: "withdraw_with_card" });
+    expect(await off.addPayoutCard(U.pax, { primaryAccountNumber: "4111111111111111", expiry: "12/34", cardholderName: "Pax" })).toMatchObject({ ok: false, code: "withdraw_with_card" });
+    expect(await off.startCardSession(U.pax)).toMatchObject({ ok: false, code: "withdraw_with_card" });
+    expect(tok(U.pax)).toBe(50_000);
+    expect((await off.issueCard(U.pax, "ZAR", { brand: "visa" })).ok).toBe(true);
+  });
+});
+
 describe("choosing Visa or Mastercard, virtual or physical", () => {
   it("makes the holder choose a brand, honours the choice, and allows one live virtual and one live physical card", async () => {
     expect(await tokens.issueCard(U.pax, "ZAR")).toMatchObject({ ok: false, status: 400, error: expect.stringContaining("Choose Visa or Mastercard") });

@@ -143,6 +143,16 @@ describe("TokensPanel: payouts go only to the holder's own debit card", () => {
   });
 });
 
+describe("TokensPanel: when money leaves only with the VINK card", () => {
+  it("hides the outside-card payout screens and says to withdraw with the VINK card", async () => {
+    mockApi((url) => (url.endsWith("/tokens/cash-outs") ? { body: { success: true, cashOuts: [] } } : { body: { success: true, wallets: [WALLET], payoutCards: [], payoutsEnabled: false, role: "passenger" } }));
+    await render(<TokensPanel segment="personal" color="#f00" />);
+    expect(host.textContent).toContain("withdraw with your VINK card");
+    expect(btn("Pay to my debit card")).toBeUndefined(); expect(btn("Add debit card")).toBeUndefined();
+    expect(host.textContent).not.toContain("My debit cards for payouts"); expect(btn("Move to my bank account")).toBeTruthy();
+  });
+});
+
 describe("TokensPanel: the VINK debit card", () => {
   const set = async (el: HTMLElement | null | undefined, v: string) => { await act(async () => { const e = el as HTMLInputElement | HTMLSelectElement; Object.getOwnPropertyDescriptor(e.tagName === "SELECT" ? HTMLSelectElement.prototype : HTMLInputElement.prototype, "value")!.set!.call(e, v); e.dispatchEvent(new Event(e.tagName === "SELECT" ? "change" : "input", { bubbles: true })); }); };
   const byLabel = (t: string) => [...document.querySelectorAll("label")].find((l) => l.textContent?.startsWith(t))?.querySelector("input,select") as HTMLElement | undefined;

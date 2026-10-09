@@ -13,6 +13,7 @@ vi.mock("../services/apiClient", async (orig) => {
   };
 });
 vi.mock("./portal/MailPanel", () => ({ MailPanel: () => <div>MAIL PANEL</div> }));
+vi.mock("./portal/OpsPanel", () => ({ OpsPanel: () => <div>OPS PANEL</div> }));
 
 import { ManagementPanelViewer } from "./ManagementPanelViewer";
 
@@ -44,6 +45,20 @@ describe("Management Panel: department mail", () => {
     act(() => root.unmount()); host.remove(); host = document.createElement("div"); document.body.appendChild(host); root = createRoot(host);
     sections = []; await open("customer");
     expect(btn("Department mail")).toBeUndefined();
+  });
+
+  it("opens for a manager hired under the Careers page's department names", async () => {
+    sections = ["Client Services"]; await open("customer");
+    expect(btn("Department mail")).toBeTruthy();
+  });
+
+  it("shows Operations to owners and superadmins only", async () => {
+    await open("superadmin"); expect(btn("Operations")).toBeTruthy();
+    await act(async () => { btn("Operations")!.click(); }); await settle();
+    expect(host.textContent).toContain("OPS PANEL");
+    act(() => root.unmount()); host.remove(); host = document.createElement("div"); document.body.appendChild(host); root = createRoot(host);
+    sections = ["Sales"]; await open("customer");
+    expect(btn("Operations")).toBeUndefined();
   });
 
   it("offers every department as a section to apply for", async () => {
