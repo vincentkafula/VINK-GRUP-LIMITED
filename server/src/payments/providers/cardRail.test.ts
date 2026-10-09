@@ -76,9 +76,9 @@ describe("the sandbox vault", () => {
 describe("Visa Direct (sandbox)", () => {
   const vault = new SandboxPanVault("a-long-enough-vault-secret");
   const calls: { url: string; init: RequestInit }[] = [];
-  const build = (respond: () => Response | Promise<Response>) => {
+  const build = (respond: (url: string) => Response | Promise<Response>) => {
     calls.length = 0;
-    const fetchImpl = (async (url: string, init: RequestInit) => { calls.push({ url: String(url), init }); return respond(); }) as unknown as typeof fetch;
+    const fetchImpl = (async (url: string, init: RequestInit) => { calls.push({ url: String(url), init }); return respond(String(url)); }) as unknown as typeof fetch;
     return new VisaDirectPayout({
       baseUrl: "https://sandbox.api.visa.com", authenticate: xPayAuthenticator("KEY", "SECRET"), fetchImpl, vault, acquiringBin: "408999", acquirerCountryCode: "710",
       sender: { accountNumber: "1234567890", name: "VINK", countryCode: "ZAF", city: "Cape Town" },
@@ -95,15 +95,15 @@ describe("Visa Direct (sandbox)", () => {
     expect(calls[0].url).toContain("/visadirect/fundstransfer/v1/pushfundstransactions?apiKey=KEY");
     expect((calls[0].init.headers as Record<string, string>)["x-pay-token"]).toBeTruthy();
     const b = JSON.parse(String(calls[0].init.body));
-    expect(b).toMatchObject({ amount: "20.50", transactionCurrencyCode: "ZAR", businessApplicationId: "FD", acquiringBin: "408999", acquirerCountryCode: "710", recipientName: "Pam Mokoena", recipientPrimaryAccountNumber: "4111111111111111", senderAccountNumber: "1234567890", senderCountryCode: "ZAF", merchantCategoryCode: "6012", localTransactionDateTime: "2026-10-08T10:20:30" });
-    expect(b.retrievalReferenceNumber).toMatch(/^\d{12}$/); expect(b.systemsTraceAuditNumber).toMatch(/^\d{6}$/);
+    expect(b).toMatchObject({ amount: 20.5, transactionCurrencyCode: "ZAR", businessApplicationId: "FD", acquiringBin: 408999, acquirerCountryCode: 710, recipientName: "Pam Mokoena", recipientPrimaryAccountNumber: "4111111111111111", senderAccountNumber: "1234567890", senderCountryCode: "ZAF", merchantCategoryCode: 6012, localTransactionDateTime: "2026-10-08T10:20:30" });
+    expect(b.retrievalReferenceNumber).toMatch(/^\d{12}$/); expect(Number.isInteger(b.systemsTraceAuditNumber) && b.systemsTraceAuditNumber > 0).toBe(true); expect(b).not.toHaveProperty("transactionIdentifier");   // that field is the AFT's id, which a payout without an AFT does not have
     expect(b.cardAcceptor).toMatchObject({ name: "VINK", terminalId: "00000001", address: { city: "Cape Town", country: "ZAF" } });
   });
   it("sends the SAME transaction numbers for the same reference, so a retry cannot pay twice", async () => {
     const p = build(() => ok("00"));
     await p.push(await input("cashout:same")); await p.push(await input("cashout:same")); await p.push(await input("cashout:other"));
     const [a, b, c] = calls.map((x) => JSON.parse(String(x.init.body)));
-    expect(a.retrievalReferenceNumber).toBe(b.retrievalReferenceNumber); expect(a.transactionIdentifier).toBe(b.transactionIdentifier);
+    expect(a.retrievalReferenceNumber).toBe(b.retrievalReferenceNumber); expect(a.systemsTraceAuditNumber).toBe(b.systemsTraceAuditNumber);
     expect(a.retrievalReferenceNumber).not.toBe(c.retrievalReferenceNumber);
   });
   it("tells a refusal (declined) from an unknown outcome (error, retried)", async () => {
@@ -112,6 +112,13 @@ describe("Visa Direct (sandbox)", () => {
     expect((await build(() => new Response("down", { status: 503 })).push(await input()))).toMatchObject({ status: "error" });
     expect((await build(() => { throw new TypeError("network"); }).push(await input()))).toMatchObject({ status: "error" });
     expect((await build(() => new Response("bad request", { status: 400 })).push(await input()))).toMatchObject({ status: "declined" });
+  });
+  it("when Visa answers a timeout with a status identifier, it asks Visa for the final result", async () => {
+    const p = build((url) => (url.includes("pushfundstransactions/ST-1") ? ok("00") : new Response(JSON.stringify({ statusIdentifier: "ST-1" }), { status: 200 })));
+    expect(await p.push(await input())).toMatchObject({ status: "sent" });
+    expect(calls).toHaveLength(2); expect(calls[1].url).toContain("/visadirect/fundstransfer/v1/pushfundstransactions/ST-1"); expect(calls[1].init.method).toBe("GET");
+    const still = build((url) => (url.includes("ST-1") ? new Response("busy", { status: 503 }) : new Response(JSON.stringify({ statusIdentifier: "ST-1" }), { status: 200 })));
+    expect(await still.push(await input())).toMatchObject({ status: "error" });          // not final: tried again, never treated as paid
   });
   it("does not pay Mastercard cards (Mastercard Send is not built) or a token it did not make, and never leaks the card number", async () => {
     expect(await build(() => ok("00")).push(await input("c9", "mastercard", "5555555555554444"))).toMatchObject({ status: "declined", reason: expect.stringMatching(/Mastercard Send/) });
