@@ -1,5 +1,7 @@
 import { Router, Request, Response } from "express";
 import { cities as WORLD_CITIES } from "world-cities-json";
+import { createRatesCache } from "../services/liveRates.js";
+import { createRatesRouter } from "./ratesRouter.js";
 
 const router: ReturnType<typeof Router> = Router();
 
@@ -121,40 +123,8 @@ router.get("/cities", (req: Request, res: Response): void => {
 });
 
 // ─── Live FX rates ───────────────────────────────────────────────────────────
-let rateCache: { base: string; rates: Record<string, number>; fetchedAt: number } | null = null;
-const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour — matches how often the free-tier source actually updates
-
-// GET /api/currency/rates — live exchange rates with ZAR as the base
-// (every price in this app is stored/settled in ZAR; this converts for
-// *display* only). Cached server-side for an hour so we don't hammer the
-// upstream API and every storefront request stays fast.
-router.get("/rates", async (_req: Request, res: Response): Promise<void> => {
-  const now = Date.now();
-  if (rateCache && now - rateCache.fetchedAt < CACHE_TTL_MS) {
-    res.json({ success: true, data: rateCache, cached: true });
-    return;
-  }
-
-  try {
-    // open.er-api.com: free, no API key, rates update roughly daily.
-    const resp = await fetch("https://open.er-api.com/v6/latest/ZAR", { signal: AbortSignal.timeout(5000) });
-    if (!resp.ok) throw new Error(`open.er-api.com returned ${resp.status}`);
-    const data = await resp.json() as { result?: string; rates?: Record<string, number>; time_last_update_utc?: string };
-
-    if (data.result !== "success" || !data.rates) throw new Error("rate provider returned an error result");
-
-    rateCache = { base: "ZAR", rates: data.rates, fetchedAt: now };
-    res.json({ success: true, data: rateCache, cached: false });
-  } catch (err) {
-    console.error("[currency] Live rate fetch failed:", err instanceof Error ? err.message : err);
-    if (rateCache) {
-      // Serve the last known-good cache rather than fail the whole page —
-      // stale rates are far better than no rates for a storefront.
-      res.json({ success: true, data: rateCache, cached: true, stale: true });
-      return;
-    }
-    res.status(503).json({ success: false, error: "Exchange rates are temporarily unavailable" });
-  }
-});
+// GET /api/currency/rates and GET /api/currency/convert: live market rates with ZAR as the base, for display (every price in this app is stored and settled in
+// ZAR). Two sources with a fallback, validated, cached for an hour, last good table served if both are down. See services/liveRates.ts.
+router.use(createRatesRouter(createRatesCache({ fetchFn: fetch as never, key: process.env.FX_PROVIDER_KEY?.trim() || undefined })));
 
 export default router;
