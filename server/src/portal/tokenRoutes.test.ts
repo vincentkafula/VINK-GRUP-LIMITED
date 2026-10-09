@@ -196,11 +196,11 @@ describe("staff", () => {
 describe("the VINK debit card", () => {
   it("is issued after staff verify the holder, spends tokens, and can be frozen by its holder", async () => {
     await call("/me/wallet", "POST", {}); await buy(100_000);
-    expect((await call("/me/card", "POST", {})).body.error).toMatch(/identity/);                                       // basic level: not yet
+    expect((await call("/me/card", "POST", { brand: "visa" })).body.error).toMatch(/identity/);                                       // basic level: not yet
     as = U.staff;
     await call("/admin/wallets/tier", "PUT", { userId: U.pax, tier: "standard" });
     as = U.pax;
-    const issued = await call("/me/card", "POST", {});
+    const issued = await call("/me/card", "POST", { brand: "visa" });
     expect(issued).toMatchObject({ status: 201, body: { card: { status: "active", currency: "ZAR" } } });
     expect(JSON.stringify(issued.body)).not.toMatch(/d{12,}/);                                                       // no card number anywhere
     expect((await call("/me")).body.issuedCards).toHaveLength(1);
@@ -222,7 +222,33 @@ describe("the VINK debit card", () => {
     expect((await buyIt(1000)).body.decision).toMatchObject({ approved: false, reason: "card_frozen" });
     as = U.pax;
     expect((await call(`/me/card/${cardId}/status`, "POST", { status: "paused" })).status).toBe(400);
-    expect((await call("/me/card", "POST", {})).status).toBe(409);                                                    // one live card at a time
+    expect((await call("/me/card", "POST", { brand: "visa" })).status).toBe(409);                                                    // one live card at a time
+  });
+
+  it("a holder orders a physical card with a delivery address, staff send it, the holder activates it, and it works at a cash machine", async () => {
+    await call("/me/wallet", "POST", {}); await buy(100_000);
+    as = U.staff; await call("/admin/wallets/tier", "PUT", { userId: U.pax, tier: "standard" });
+    as = U.pax;
+    const address = { nameOnCard: "Pax Pax", addressLine1: "5 Main Road", city: "Langa", postalCode: "7455", country: "ZA", phone: "0820000000" };
+    expect((await call("/me/card", "POST", { brand: "mastercard", form: "physical" })).status).toBe(400);                            // no address
+    const ordered = await call("/me/card", "POST", { brand: "mastercard", form: "physical", delivery: address });
+    expect(ordered).toMatchObject({ status: 201, body: { card: { brand: "mastercard", form: "physical", activated: false, delivery: "ordered" } } });
+    expect((await call("/me")).body.cardOptions).toMatchObject({ brands: ["visa", "mastercard"] });
+    const cardId = ordered.body.card.id as string, last4 = (await db.query(`SELECT last4 FROM token_issued_cards WHERE id = $1`, [cardId])).rows[0].last4 as string;
+    expect((await call(`/me/card/${cardId}/activate`, "POST", { last4 })).status).toBe(409);                                       // not sent yet
+    as = U.staff;
+    const list = (await call("/admin/card-orders")).body.orders;
+    expect(list).toHaveLength(1); expect(list[0]).toMatchObject({ holder: "Pax", nameOnCard: "PAX PAX", status: "ordered" });
+    expect((await call(`/admin/card-orders/${list[0].id}/ship`, "POST", { note: "Courier 991" })).body.status).toBe("shipped");
+    expect((await call(`/admin/card-orders/${list[0].id}/ship`, "POST", {})).status).toBe(409);
+    expect((await call("/admin/sandbox/card-purchase", "POST", { cardId, amountCents: 5000, channel: "atm" })).body.decision).toMatchObject({ approved: false, reason: "card_not_activated" });
+    as = U.pax;
+    expect((await call(`/me/card/${cardId}/activate`, "POST", { last4: last4 === "0000" ? "1111" : "0000" })).status).toBe(400);
+    expect((await call(`/me/card/${cardId}/activate`, "POST", { last4 })).body.card).toMatchObject({ activated: true, delivery: "activated" });
+    as = U.staff;
+    expect((await call("/admin/sandbox/card-purchase", "POST", { cardId, amountCents: 5000, channel: "atm" })).body.decision).toMatchObject({ approved: true });
+    expect((await call("/admin/card-orders")).body.orders).toEqual([]);
+    expect((await reconcile(db, ledger, new Date("2026-10-05T12:00:00Z"))).issues.filter((i) => i.severity === "problem")).toEqual([]);
   });
 
   it("staff sandbox tools do not exist outside the sandbox", async () => {

@@ -37,7 +37,9 @@ export interface AuthorisationDecision {
 export interface IssuingProvider {
   readonly name: string;
   /** requestId makes a retry of the same issuing request return the same card. holder is the cardholder (some processors keep a customer record). */
-  createCard(input: { customerRef: string; kind: "physical" | "virtual"; requestId?: string; holder?: { firstName: string; lastName: string; mobile: string; email?: string } }): Promise<IssuedCard>;
+  createCard(input: { customerRef: string; kind: "physical" | "virtual"; requestId?: string; holder?: { firstName: string; lastName: string; mobile: string; email?: string }; brand?: "visa" | "mastercard"; embossName?: string }): Promise<IssuedCard>;
+  /** The card brands this provider can issue (each is a separate card product). Used to offer the holder a choice. */
+  brands?(): ("visa" | "mastercard")[];
   setCardStatus(providerCardId: string, status: "active" | "frozen" | "blocked"): Promise<void>;
   /** Verify a webhook from the provider and return its parsed event. Throws on a bad signature or a replay. */
   /**

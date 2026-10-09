@@ -60,7 +60,9 @@ export type TapOutcome =
 export interface ActivityLine { at: string; kind: string; amountCents: number; label: string }
 
 export interface PayoutCardView { id: string; brand: string; last4: string; expiry: string; status: string }
-export interface IssuedCardView { id: string; brand: string; last4: string; expiry: string; status: string; currency: string }
+export interface IssuedCardView { id: string; brand: string; last4: string; expiry: string; status: string; currency: string; form: "virtual" | "physical"; /** A physical card works only once activated. */ activated: boolean; /** Physical cards: ordered, shipped or activated. */ delivery?: string }
+export interface CardOrderView { id: string; cardId: string; userId: string; holder: string; brand: string; last4: string; nameOnCard: string; address: string; phone: string; status: string; orderedAt: string; shippedAt: string | null; attempts: number }
+const MAX_ACTIVATION_TRIES = 5;
 export interface CardDecision { approved: boolean; reason?: string; replayed: boolean }
 export interface PayoutAttempt { status: "paid" | "rejected" | "requested" | "processing" | "none"; reason?: string }
 
@@ -428,31 +430,122 @@ export function createTokenService(deps: {
   }
 
   /* ── the VINK debit card: a Visa or Mastercard that spends the holder's tokens ── */
-  const cardView = (r: Record<string, unknown>): IssuedCardView => ({ id: String(r.id), brand: String(r.brand), last4: String(r.last4), expiry: String(r.expiry), status: String(r.status), currency: String(r.currency) });
+  const cardView = (r: Record<string, unknown>, delivery?: string): IssuedCardView => {
+    const physical = r.form === "physical";
+    return { id: String(r.id), brand: String(r.brand), last4: String(r.last4), expiry: String(r.expiry), status: String(r.status), currency: String(r.currency), form: physical ? "physical" : "virtual", activated: !physical || !!r.activated_at, ...(physical ? { delivery: delivery ?? (r.activated_at ? "activated" : "ordered") } : {}) };
+  };
 
-  /** Issues a virtual debit card against the holder's token wallet. It needs a wallet that is active and a verification level above basic, and one live card at a time. */
-  async function issueCard(userId: string, currency: string): Promise<TokenResult<IssuedCardView>> {
+  /** What the holder may choose when getting a card. */
+  const cardOptions = () => ({ brands: deps.issuer?.brands?.() ?? [], forms: ["virtual", "physical"], countries: ["ZA", "ZM"] });
+
+  /** The delivery details of a physical card, checked. The name is what is printed on the card, so it is limited to what a card can carry. */
+  function cleanDelivery(d: unknown): TokenResult<{ nameOnCard: string; addressLine1: string; addressLine2: string | null; city: string; province: string | null; postalCode: string; country: string; phone: string }> {
+    const o = (d && typeof d === "object" ? d : {}) as Record<string, unknown>;
+    const t = (k: string) => (typeof o[k] === "string" ? String(o[k]).trim() : "");
+    const nameOnCard = t("nameOnCard").toUpperCase();
+    if (!/^[A-Z][A-Z .'-]{1,25}$/.test(nameOnCard)) return bad(400, "Enter the name to print on the card (letters only, up to 26 characters)");
+    if (t("addressLine1").length < 3 || t("addressLine1").length > 60) return bad(400, "Enter the street address");
+    if (t("addressLine2").length > 60) return bad(400, "The second address line is too long");
+    if (t("city").length < 2 || t("city").length > 40) return bad(400, "Enter the town or city");
+    if (t("province").length > 40) return bad(400, "The province is too long");
+    if (!/^[A-Za-z0-9 -]{3,10}$/.test(t("postalCode"))) return bad(400, "Enter the postal code");
+    const country = t("country").toUpperCase();
+    if (country !== "ZA" && country !== "ZM") return bad(400, "Cards are delivered in South Africa or Zambia");
+    const phone = t("phone").replace(/[\s()-]/g, "");
+    if (!/^\+?[0-9]{9,15}$/.test(phone)) return bad(400, "Enter a phone number for the courier");
+    return { ok: true, value: { nameOnCard, addressLine1: t("addressLine1"), addressLine2: t("addressLine2") || null, city: t("city"), province: t("province") || null, postalCode: t("postalCode"), country, phone } };
+  }
+
+  /**
+   * Issues a Visa or Mastercard debit card against the holder's token wallet. It needs a wallet that is active and a verification level above basic. The holder
+   * chooses the brand, and a virtual card, a physical card or both (one live card of each kind). A physical card needs a delivery address, is delivered to the
+   * holder, and works only after the holder activates it.
+   */
+  async function issueCard(userId: string, currency: string, opts: { brand?: unknown; form?: unknown; delivery?: unknown } = {}): Promise<TokenResult<IssuedCardView>> {
     if (!deps.issuer) return bad(503, "Card issuing is not set up yet");
+    const form = opts.form === undefined || opts.form === "virtual" ? "virtual" : opts.form === "physical" ? "physical" : null;
+    if (!form) return bad(400, "Choose a virtual or a physical card");
+    const available = deps.issuer.brands?.();
+    let brand: "visa" | "mastercard" | undefined;
+    if (opts.brand !== undefined && opts.brand !== "visa" && opts.brand !== "mastercard") return bad(400, "Choose Visa or Mastercard");
+    brand = opts.brand as typeof brand;
+    if (brand && available && !available.includes(brand)) return bad(409, `${brand === "visa" ? "Visa" : "Mastercard"} cards are not available yet`);
+    if (!brand && available && available.length > 1) return bad(400, "Choose Visa or Mastercard");
+    if (!brand && available?.length === 1) brand = available[0];
     const w = (await db.query(`SELECT status, kyc_tier FROM token_wallets WHERE user_id = $1 AND currency = $2`, [userId, currency])).rows[0];
     if (!w) return bad(409, "Open your VINK token wallet first");
     if (w.status !== "active") return bad(409, "This wallet is not active");
     if (w.kyc_tier === "basic") return bad(409, "A VINK card needs your identity to be checked first. Ask VINK to verify you.", "needs_verification");
-    if ((await db.query(`SELECT 1 AS x FROM token_issued_cards WHERE user_id = $1 AND currency = $2 AND status <> 'blocked'`, [userId, currency])).rows.length) return bad(409, "You already have a VINK card. Block it first if you need a new one.");
-    let card;
+    let delivery: ReturnType<typeof cleanDelivery> | null = null;
+    if (form === "physical") { delivery = cleanDelivery(opts.delivery); if (!delivery.ok) return delivery; }
+    if ((await db.query(`SELECT 1 AS x FROM token_issued_cards WHERE user_id = $1 AND currency = $2 AND form = $3 AND status <> 'blocked'`, [userId, currency, form])).rows.length) return bad(409, `You already have a ${form} VINK card. Block it first if you need a new one.`);
     const u = (await db.query(`SELECT u.name, u.email, COALESCE(p.phone, d.phone) AS phone FROM users u LEFT JOIN personal_profiles p ON p.user_id = u.id LEFT JOIN driver_profiles d ON d.user_id = u.id WHERE u.id = $1`, [userId])).rows[0];
-    const parts = String(u?.name ?? "").trim().split(/s+/).filter(Boolean);
-    const digits = String(u?.phone ?? "").replace(/[^0-9]/g, "");
+    const parts = String(u?.name ?? "").trim().split(/\s+/).filter(Boolean);
+    const digits = String((delivery?.ok ? delivery.value.phone : u?.phone) ?? "").replace(/[^0-9]/g, "");
     const mobile = digits.startsWith("0") ? `27${digits.slice(1)}` : digits;                                         // 082... -> 2782...
     const holder = { firstName: parts[0] ?? "", lastName: parts.slice(1).join(" ") || parts[0] || "", mobile, email: u?.email ? String(u.email) : undefined };
-    try { card = await deps.issuer.createCard({ customerRef: userId, kind: "virtual", requestId: `${userId}-${currency}-${Date.now()}`, holder }); }
+    let card;
+    try { card = await deps.issuer.createCard({ customerRef: userId, kind: form, requestId: `${userId}-${currency}-${form}-${Date.now()}`, holder, brand, ...(delivery?.ok ? { embossName: delivery.value.nameOnCard } : {}) }); }
     catch (e) { return bad(502, e instanceof Error ? e.message.slice(0, 160) : "The card could not be issued"); }
-    const r = await db.query(`INSERT INTO token_issued_cards (user_id, currency, provider, provider_card_id, brand, last4, expiry, status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`,
-      [userId, currency, deps.issuer.name, card.providerCardId, card.brand, card.last4, card.expiry, card.status === "active" ? "active" : "frozen"]);
-    return { ok: true, value: cardView(r.rows[0]) };
+    const physical = form === "physical";
+    const r = await db.query(`INSERT INTO token_issued_cards (user_id, currency, provider, provider_card_id, brand, last4, expiry, status, form, activated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
+      [userId, currency, deps.issuer.name, card.providerCardId, card.brand, card.last4, card.expiry, physical || card.status === "active" ? "active" : "frozen", form, physical ? null : clock()]);
+    if (physical && delivery?.ok) {
+      const d = delivery.value;
+      try {
+        await db.query(`INSERT INTO token_card_orders (card_id, user_id, name_on_card, address_line1, address_line2, city, province, postal_code, country, phone) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+          [r.rows[0].id, userId, d.nameOnCard, d.addressLine1, d.addressLine2, d.city, d.province, d.postalCode, d.country, d.phone]);
+      } catch (e) {
+        await db.query(`UPDATE token_issued_cards SET status = 'blocked' WHERE id = $1`, [r.rows[0].id]);                      // no order, no card: never leave a card nobody is sending
+        try { await deps.issuer.setCardStatus(card.providerCardId, "blocked"); } catch { /* the processor is told again when staff look */ }
+        throw e;
+      }
+    }
+    return { ok: true, value: cardView(r.rows[0], physical ? "ordered" : undefined) };
   }
   async function issuedCards(userId: string, currency?: string): Promise<IssuedCardView[]> {
-    return (await db.query(`SELECT * FROM token_issued_cards WHERE user_id = $1 ${currency ? "AND currency = $2" : ""} ORDER BY created_at DESC`, currency ? [userId, currency] : [userId])).rows.map(cardView);
+    const rows = (await db.query(`SELECT c.*, o.status AS order_status FROM token_issued_cards c LEFT JOIN token_card_orders o ON o.card_id = c.id WHERE c.user_id = $1 ${currency ? "AND c.currency = $2" : ""} ORDER BY c.created_at DESC`, currency ? [userId, currency] : [userId])).rows;
+    return rows.map((r) => cardView(r, r.order_status ? String(r.order_status) : undefined));
   }
+
+  /** The holder has the physical card and confirms the last four digits printed on it. Wrong digits are counted; too many wrong tries lock it until staff reset it. */
+  async function activateCard(userId: string, cardId: string, last4: unknown): Promise<TokenResult<IssuedCardView>> {
+    const c = (await db.query(`SELECT * FROM token_issued_cards WHERE id = $1 AND user_id = $2`, [cardId, userId])).rows[0];
+    if (!c) return bad(404, "No such card");
+    if (c.form !== "physical") return bad(409, "A virtual card needs no activation");
+    if (c.activated_at) return bad(409, "This card is already active");
+    if (c.status === "blocked") return bad(409, "This card has been blocked");
+    const o = (await db.query(`SELECT * FROM token_card_orders WHERE card_id = $1`, [cardId])).rows[0];
+    if (!o) return bad(409, "This card has no delivery order");
+    if (o.status === "ordered") return bad(409, "Your card has not been sent yet. You can activate it once it is on its way.");
+    if (Number(o.attempts) >= MAX_ACTIVATION_TRIES) return bad(429, "Too many wrong tries. Contact VINK to unlock activation.", "activation_locked");
+    if (typeof last4 !== "string" || !/^[0-9]{4}$/.test(last4.trim()) || last4.trim() !== String(c.last4)) {
+      const n = Number((await db.query(`UPDATE token_card_orders SET attempts = attempts + 1 WHERE id = $1 RETURNING attempts`, [o.id])).rows[0].attempts);
+      return bad(400, n >= MAX_ACTIVATION_TRIES ? "Too many wrong tries. Contact VINK to unlock activation." : `Those are not the last four digits on your card. ${MAX_ACTIVATION_TRIES - n} tries left.`, n >= MAX_ACTIVATION_TRIES ? "activation_locked" : undefined);
+    }
+    if (deps.issuer) { try { await deps.issuer.setCardStatus(String(c.provider_card_id), "active"); } catch (e) { return bad(502, "The card could not be switched on right now. Please try again."); } }
+    const r = await db.query(`UPDATE token_issued_cards SET activated_at = $2 WHERE id = $1 RETURNING *`, [cardId, clock()]);
+    await db.query(`UPDATE token_card_orders SET status = 'activated', activated_at = $2 WHERE id = $1`, [o.id, clock()]);
+    return { ok: true, value: cardView(r.rows[0], "activated") };
+  }
+
+  /** Staff: the physical cards that are waiting to be dispatched or are on their way, with the delivery details. */
+  async function cardOrders(status?: string): Promise<CardOrderView[]> {
+    const want = status === "ordered" || status === "shipped" ? [status] : ["ordered", "shipped"];
+    const rows = (await db.query(`SELECT o.*, c.brand, c.last4, u.name AS holder FROM token_card_orders o JOIN token_issued_cards c ON c.id = o.card_id JOIN users u ON u.id = o.user_id WHERE o.status = ANY($1) AND c.status <> 'blocked' ORDER BY o.created_at`, [want])).rows;
+    return rows.map((r) => ({ id: String(r.id), cardId: String(r.card_id), userId: String(r.user_id), holder: String(r.holder), brand: String(r.brand), last4: String(r.last4), nameOnCard: String(r.name_on_card),
+      address: [r.address_line1, r.address_line2, r.city, r.province, r.postal_code, r.country].filter(Boolean).join(", "), phone: String(r.phone), status: String(r.status), orderedAt: new Date(r.created_at).toISOString(), shippedAt: r.shipped_at ? new Date(r.shipped_at).toISOString() : null, attempts: Number(r.attempts) }));
+  }
+  async function shipCardOrder(orderId: string, by: string, note?: string): Promise<TokenResult<{ status: string }>> {
+    const r = await db.query(`UPDATE token_card_orders SET status = 'shipped', shipped_by = $2, shipped_at = $3, ship_note = $4 WHERE id = $1 AND status = 'ordered' RETURNING id`, [orderId, by, clock(), note ? note.slice(0, 300) : null]);
+    return r.rows.length ? { ok: true, value: { status: "shipped" } } : bad(409, "Only a card that is waiting to be sent can be marked as sent");
+  }
+  /** Staff unlock activation after the holder was locked out by wrong tries (they should first check who is asking). */
+  async function resetActivation(orderId: string): Promise<TokenResult<{ status: string }>> {
+    const r = await db.query(`UPDATE token_card_orders SET attempts = 0 WHERE id = $1 AND status = 'shipped' RETURNING id`, [orderId]);
+    return r.rows.length ? { ok: true, value: { status: "unlocked" } } : bad(409, "Only a card that has been sent and not yet activated can be unlocked");
+  }
+
   /** Freeze, unfreeze or permanently block the holder's own card. Our own record decides purchases (the processor asks us), so it takes effect at once. */
   async function setIssuedCardStatus(userId: string, cardId: string, status: unknown): Promise<TokenResult<IssuedCardView>> {
     if (status !== "frozen" && status !== "active" && status !== "blocked") return bad(400, "Choose freeze, unfreeze or block");
@@ -483,6 +576,7 @@ export function createTokenService(deps: {
     const decline = async (reason: string): Promise<CardDecision> => { await record("declined", reason, Number.isInteger(a.amountCents) ? a.amountCents : 0, 0); return { approved: false, reason, replayed: false }; };
     if (!Number.isInteger(a.amountCents) || a.amountCents <= 0) return decline("bad_amount");
     if (card.status !== "active") return decline(card.status === "frozen" ? "card_frozen" : "card_not_active");
+    if (card.form === "physical" && !card.activated_at) return decline("card_not_activated");
     const w = (await db.query(`SELECT status, kyc_tier FROM token_wallets WHERE user_id = $1 AND currency = $2`, [user, cur])).rows[0];
     if (!w || w.status !== "active") return decline("wallet_inactive");
     if ((a.currency ?? cur) !== cur) return decline("currency_not_supported");
@@ -531,8 +625,8 @@ export function createTokenService(deps: {
 
   /** Is this one of our token cards, and is it live? Used for zero-amount checks. null = not our card. */
   async function cardIsActive(provider: string, providerCardId: string): Promise<boolean | null> {
-    const c = (await db.query(`SELECT c.status AS card_status, w.status AS wallet_status FROM token_issued_cards c JOIN token_wallets w ON w.user_id = c.user_id AND w.currency = c.currency WHERE c.provider = $1 AND c.provider_card_id = $2`, [provider, providerCardId])).rows[0];
-    return c ? c.card_status === "active" && c.wallet_status === "active" : null;
+    const c = (await db.query(`SELECT c.status AS card_status, c.form, c.activated_at, w.status AS wallet_status FROM token_issued_cards c JOIN token_wallets w ON w.user_id = c.user_id AND w.currency = c.currency WHERE c.provider = $1 AND c.provider_card_id = $2`, [provider, providerCardId])).rows[0];
+    return c ? c.card_status === "active" && c.wallet_status === "active" && (c.form !== "physical" || !!c.activated_at) : null;
   }
 
   /* ── what the holder and staff see ── */
@@ -591,6 +685,6 @@ export function createTokenService(deps: {
     return { ok: true, value: { id: String(row.id) } };
   }
 
-  return { bindEngine(e: Pick<Engine, "settleTaps">) { engine = e; }, partyOf, setTier, wallet, openWallet, linkCard, cards, blockCard, tapToken, transfer, redeemToBank, requestCashOut, decideCashOut, retryCashOut, processPayouts, attemptPayout, issueCard, issuedCards, setIssuedCardStatus, authoriseCardSpend, reverseCardSpend, cardIsActive, addPayoutCard, startCardSession, addPayoutCardFromSession, cardEntry: () => ({ hosted: !!deps.hosted, raw: deps.acceptRawCardNumbers !== false }), payoutCards, removePayoutCard, reviewPayoutCard, cardsToReview, activity, summary, settings, setDeviceFee, routes, upsertRoute };
+  return { bindEngine(e: Pick<Engine, "settleTaps">) { engine = e; }, partyOf, setTier, wallet, openWallet, linkCard, cards, blockCard, tapToken, transfer, redeemToBank, requestCashOut, decideCashOut, retryCashOut, processPayouts, attemptPayout, issueCard, issuedCards, activateCard, cardOrders, shipCardOrder, resetActivation, cardOptions, setIssuedCardStatus, authoriseCardSpend, reverseCardSpend, cardIsActive, addPayoutCard, startCardSession, addPayoutCardFromSession, cardEntry: () => ({ hosted: !!deps.hosted, raw: deps.acceptRawCardNumbers !== false }), payoutCards, removePayoutCard, reviewPayoutCard, cardsToReview, activity, summary, settings, setDeviceFee, routes, upsertRoute };
 }
 export type TokenService = ReturnType<typeof createTokenService>;

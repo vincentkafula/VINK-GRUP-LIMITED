@@ -1357,3 +1357,29 @@ CREATE TABLE IF NOT EXISTS card_settlement_lines (
   UNIQUE (provider, authorisation_id, line_type, reference)
 );
 CREATE INDEX IF NOT EXISTS idx_card_settlement_open ON card_settlement_lines(result) WHERE resolved_at IS NULL;
+
+-- Visa or Mastercard debit cards come as virtual or physical. A physical card is ordered with a delivery address, sent to the holder, and only works once the holder
+-- activates it (by confirming the last four digits printed on the card). Delivery details live apart from the card so they are shown to staff who dispatch it only.
+ALTER TABLE token_issued_cards ADD COLUMN IF NOT EXISTS form TEXT NOT NULL DEFAULT 'virtual';
+ALTER TABLE token_issued_cards ADD COLUMN IF NOT EXISTS activated_at TIMESTAMPTZ;
+CREATE TABLE IF NOT EXISTS token_card_orders (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  card_id       UUID NOT NULL UNIQUE REFERENCES token_issued_cards(id) ON DELETE CASCADE,
+  user_id       UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  name_on_card  TEXT NOT NULL,
+  address_line1 TEXT NOT NULL,
+  address_line2 TEXT,
+  city          TEXT NOT NULL,
+  province      TEXT,
+  postal_code   TEXT NOT NULL,
+  country       TEXT NOT NULL,
+  phone         TEXT NOT NULL,
+  status        TEXT NOT NULL DEFAULT 'ordered' CHECK (status IN ('ordered','shipped','activated')),
+  attempts      INTEGER NOT NULL DEFAULT 0,
+  shipped_by    UUID REFERENCES users(id) ON DELETE SET NULL,
+  shipped_at    TIMESTAMPTZ,
+  ship_note     TEXT,
+  activated_at  TIMESTAMPTZ,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_card_orders_open ON token_card_orders(status) WHERE status <> 'activated';
