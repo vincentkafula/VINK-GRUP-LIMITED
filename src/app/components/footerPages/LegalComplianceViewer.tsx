@@ -96,7 +96,6 @@ export function LegalComplianceViewer({ isOpen, onClose, initialTab }: Props) {
               <p><strong>Company Name:</strong> Vink Group (Pty) Ltd.</p>
               <p><strong>Trading As:</strong> VINK</p>
               <p><strong>Company Registration Number:</strong> 2018/079316/07</p>
-              <p><strong>VINK Enterprise Number:</strong> 2026/719501/07</p>
               <p><strong>VINK Tax Number:</strong> 9475452232</p>
               <p><strong>VINK Reference Number:</strong> 9465919196</p>
               <p><strong>Registered Address:</strong> 8 Rose Street, Cape Town CBD, State House Building, Cape Town, 8001</p>
