@@ -48,6 +48,8 @@ import { MOCK_CARD_SCENARIOS } from "./payments/providers/mockCardRail.js";
 import { listedOrigins } from "./auth/origins.js";
 import { createSchemeSettlement } from "./services/schemeSettlement.js";
 import { createOpsAdminRouter } from "./routes/opsAdminRouter.js";
+import { createContactService } from "./services/contactService.js";
+import { createContactRouter, createContactAdminRouter } from "./routes/contactRouter.js";
 import { liveStartBlockers } from "./payments/goLive.js";
 import { createEmailSender } from "./auth/email.js";
 import { hasDb, pool } from "./db/pool.js";
@@ -209,6 +211,12 @@ app.use("/api/applications",       applicationsRouter);
 app.use("/api/otp",                otpRouter);
 app.use("/api/jobs",               jobsRouter);
 app.use("/api/public",             publicRouter);
+// Messages to a VINK department: stored, then emailed to the department, with a receipt to the sender (see services/contactService.ts).
+const contactService = pool ? createContactService({ db: pool, mail: createEmailSender() }) : null;
+if (contactService) {
+  app.use("/api/contact", createContactRouter(contactService));
+  app.use("/api/admin/contact", requireAuth, requireRole("owner", "superadmin"), createContactAdminRouter({ db: pool!, svc: contactService }));
+}
 app.use("/api/global",             globalBankingRouter);
 app.use("/api/financial",          financialReportsRouter);
 app.use("/api/levy",              levySystemRouter);
@@ -384,6 +392,7 @@ async function boot() {
         void refresh().catch((e) => console.error("[fx] refresh failed:", e instanceof Error ? e.message : e));
         setInterval(() => { refresh().catch((e) => console.error("[fx] refresh failed:", e instanceof Error ? e.message : e)); }, 3600_000).unref();
       }
+      if (contactService) setInterval(() => { contactService.retryUnsent().catch((e) => console.error("[contact] retry failed:", e instanceof Error ? e.message : e)); }, 300_000).unref();
       if (opsMonitor && process.env.OPS_MONITOR !== "off") {
         // Every five minutes: reconcile, and tell a person about anything new or still open (see services/opsMonitor.ts).
         const mon = opsMonitor;

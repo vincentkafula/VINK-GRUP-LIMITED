@@ -7,7 +7,7 @@ import type { InboundStore } from "./store.js";
  *  POST /api/inbound/webhook  — Resend calls this for every received email. The body is verified against RESEND_WEBHOOK_SECRET
  *                               (raw bytes, so this router is mounted BEFORE the JSON parser). The webhook only carries metadata, so the
  *                               body is fetched from Resend and stored. Repeats are harmless (idempotent on the Resend email id).
- *  GET  /api/inbound          — staff only: list stored messages;  GET /api/inbound/:id — one message.
+ *  GET  /api/inbound          — staff only: list stored messages (?department=support filters by the department it was addressed to);  GET /api/inbound/:id — one message.
  * Stored text/HTML is untrusted input from the open internet: the API returns it as JSON data and the UI must never render the
  * HTML unescaped.
  */
@@ -59,7 +59,7 @@ export function createInboundRouter(d: InboundDeps): Router {
 
   router.get("/", ...d.guard, h(async (req, res) => {
     const limit = Math.min(Math.max(Number(req.query.limit) || 50, 1), 200), offset = Math.max(Number(req.query.offset) || 0, 0);
-    const rows = await d.store.list(limit, offset);
+    const rows = await d.store.list(limit, offset, typeof req.query.department === "string" ? req.query.department : undefined);
     res.json({ success: true, messages: rows.map(({ html: _h, text, ...rest }) => ({ ...rest, preview: (text ?? "").slice(0, 200) })) });
   }));
 

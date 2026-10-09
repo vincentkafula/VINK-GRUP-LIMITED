@@ -315,10 +315,11 @@ export const newsApi = {
 
 // ─── Public API ───────────────────────────────────────────────────────────────
 export const publicApi = {
+  /** A message to a VINK department (see data/departments.ts). The server stores it, emails the department and sends the reply-to address a receipt with a reference. */
   contact: (data: {
-    name: string; email: string; phone?: string;
-    subject?: string; message: string; type?: string;
-  }) => api.post("/api/public/contact", data),
+    department: string; name: string; email: string; phone?: string;
+    subject?: string; message: string; website?: string;
+  }) => api.post<{ ref: string; department: string; message: string }>("/api/contact", data),
 
   newsletter: (email: string) =>
     api.post("/api/public/newsletter", { email }),

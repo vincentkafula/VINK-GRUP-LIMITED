@@ -1383,3 +1383,24 @@ CREATE TABLE IF NOT EXISTS token_card_orders (
   created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_card_orders_open ON token_card_orders(status) WHERE status <> 'activated';
+
+-- Messages sent to a VINK department from the website (see services/contactService.ts). Stored first, then emailed; not_delivered ones are retried.
+CREATE TABLE IF NOT EXISTS contact_messages (
+  id          UUID PRIMARY KEY,
+  ref         TEXT NOT NULL UNIQUE,
+  department  TEXT NOT NULL,
+  name        TEXT NOT NULL,
+  email       TEXT NOT NULL,
+  phone       TEXT,
+  subject     TEXT NOT NULL,
+  message     TEXT NOT NULL,
+  status      TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open','answered','closed')),
+  notified_at TIMESTAMPTZ,
+  ack_sent_at TIMESTAMPTZ,
+  tries       INTEGER NOT NULL DEFAULT 0,
+  last_error  TEXT,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_contact_department ON contact_messages(department, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_contact_undelivered ON contact_messages(created_at) WHERE notified_at IS NULL;
+ALTER TABLE inbound_emails ADD COLUMN IF NOT EXISTS department TEXT;

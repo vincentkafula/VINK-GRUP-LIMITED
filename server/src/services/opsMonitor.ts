@@ -58,6 +58,8 @@ export function createOpsMonitor(deps: MonitorDeps) {
     const r = (await db.query(`SELECT COUNT(*) AS total, COALESCE(SUM(CASE WHEN status = 'declined' THEN 1 ELSE 0 END),0) AS declined FROM token_card_spend WHERE created_at >= $1`, [hourAgo])).rows[0] as Record<string, unknown>;
     const total = Number(r?.total ?? 0), declined = Number(r?.declined ?? 0);
     if (total >= 20 && declined / total >= 0.5) out.push({ severity: "attention", code: "card_declines_high", message: `Over half of the card purchases in the last hour were declined (${declined} of ${total}). Check the decline reasons: this is either a real problem with the card service or a run of fraud attempts.`, count: declined });
+    const undelivered = Number((await db.query(`SELECT COUNT(*) AS n FROM contact_messages WHERE notified_at IS NULL AND created_at < $1`, [new Date(at.getTime() - 15 * 60_000)])).rows[0]?.n ?? 0);
+    if (undelivered) out.push({ severity: "attention", code: "contact_messages_undelivered", message: "Messages sent through the website have not reached their department by email (the email service is down or not set up). They are saved: open the contact messages list and retry.", count: undelivered });
     return out;
   }
 

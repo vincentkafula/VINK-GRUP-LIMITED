@@ -7,18 +7,25 @@
  * from the user's point of view (they never learn whether an account exists).
  */
 
-export interface EmailMessage { to: string; subject: string; text: string; html: string }
+/** from: a sender such as "VINK Support <support@vink.co.za>" (used only if its domain is the verified sending domain). replyTo: where a reply should go. */
+export interface EmailMessage { to: string; subject: string; text: string; html: string; from?: string; replyTo?: string }
 export interface EmailSender { readonly name: string; send(msg: EmailMessage): Promise<void> }
 
 export class ResendEmail implements EmailSender {
   readonly name = "resend";
   constructor(private readonly apiKey: string, private readonly from: string, private readonly fetchImpl: typeof fetch = fetch) {}
 
+  /** A department's own address is used as the sender only on the same domain as the verified one; anything else falls back to the default sender. */
+  private senderFor(wanted?: string): string {
+    const domain = (a: string) => /@([^>\s]+)>?\s*$/.exec(a)?.[1]?.toLowerCase();
+    return wanted && domain(wanted) && domain(wanted) === domain(this.from) && !/[\r\n]/.test(wanted) ? wanted : this.from;
+  }
+
   async send(msg: EmailMessage): Promise<void> {
     const res = await this.fetchImpl("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${this.apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: this.from, to: [msg.to], subject: msg.subject, html: msg.html, text: msg.text }),
+      body: JSON.stringify({ from: this.senderFor(msg.from), to: [msg.to], subject: msg.subject, html: msg.html, text: msg.text, ...(msg.replyTo && !/[\r\n]/.test(msg.replyTo) ? { reply_to: msg.replyTo } : {}) }),
       signal: AbortSignal.timeout(10_000),
     });
     if (!res.ok) {
