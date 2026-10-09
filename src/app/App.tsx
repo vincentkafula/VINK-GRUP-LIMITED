@@ -35,6 +35,7 @@ const InvestorFleetDashboardViewer = lazy(() => import("./components/InvestorFle
 const TokenReader                 = lazy(() => import("./components/TokenReader").then(m => ({ default: m.TokenReader })));
 const ManagementPanelViewer       = lazy(() => import("./components/ManagementPanelViewer").then(m => ({ default: m.ManagementPanelViewer })));
 import { PersistentTopNav } from "./components/PersistentTopNav";
+import { siteChrome } from "./sitePages";
 const PersonalAccountViewer       = lazy(() => import("./components/PersonalAccountViewer").then(m => ({ default: m.PersonalAccountViewer })));
 const PersonalLandingViewer       = lazy(() => import("./components/PersonalLandingViewer").then(m => ({ default: m.PersonalLandingViewer })));
 const BusinessLandingViewer       = lazy(() => import("./components/BusinessLandingViewer").then(m => ({ default: m.BusinessLandingViewer })));
@@ -409,39 +410,25 @@ export default function App() {
     });
   };
 
+  // Every public page, by name, with the function that closes it. Closing from the header (Close, or switching section) uses this list, the same pages
+  // the header is shown for (sitePages.ts), so a page can never stay open underneath another.
+  const sitePageClosers: Record<string, (open: boolean) => void> = { showPersonalLanding: setShowPersonalLanding, showPersonalAccount: setShowPersonalAccount, showPersonalLedger: setShowPersonalLedger, showCreditCard: setShowCreditCard, showCreditCardApp: setShowCreditCardApp, showLoan: setShowLoan, showInvest: setShowInvest, showRewards: setShowRewards, showInvestApp: setShowInvestApp, showRewardsApp: setShowRewardsApp, showAccountApp: setShowAccountApp, showBusinessLanding: setShowBusinessLanding, showStartBusiness: setShowStartBusiness, showBusinessAccountSelector: setShowBusinessAccountSelector, showBusinessAccounts: setShowBusinessAccounts, showBusinessLedger: setShowBusinessLedger, showBusinessLoanApp: setShowBusinessLoanApp, showManageBusiness: setShowManageBusiness, showCorporateLedger: setShowCorporateLedger, showCorporateLoanApp: setShowCorporateLoanApp, showCorporateCSR: setShowCorporateCSR, showInvestorRelations: setShowInvestorRelations, selectorOpen: setSelectorOpen, showContactUs: setShowContactUs, showAboutVINK: setShowAboutVINK, showCareers: setShowCareers, showSwitchToVINK: setShowSwitchToVINK, showSafetySecurity: setShowSafetySecurity, showTaxiAssociations: setShowTaxiAssociations, show500App: setShow500App, showJobApp: setShowJobApp, showLegal: setShowLegal, showBranchLocator: setShowBranchLocator, showSponsorship: setShowSponsorship, showBankingFees: setShowBankingFees, showBankingGuide: setShowBankingGuide, showBankingChannels: setShowBankingChannels, showExchangeRates: setShowExchangeRates, showLatestOffers: setShowLatestOffers, showMarketIndices: setShowMarketIndices, showVinkBlog: setShowVinkBlog };
   const closeAllRoutedViewers = () => {
-    setShowPersonalLanding(false);
-    setShowPersonalAccount(false); setShowPersonalLedger(false);
-    setShowCreditCard(false); setShowCreditCardApp(false); setShowLoan(false); setShowInvest(false);
-    setShowRewards(false); setShowInvestApp(false);
-    setShowRewardsApp(false); setShowAccountApp(false);
-    setSelectorOpen(false);
-    setShowStartBusiness(false); setShowBusinessAccountSelector(false); setShowBusinessAccounts(false);
-    setShowBusinessLedger(false); setShowManageBusiness(false);
-    setShowCorporateLedger(false); setShowCorporateCSR(false);
-    setShowContactUs(false); setShowAboutVINK(false); setShowCareers(false);
-    setShowSwitchToVINK(false); setShowSafetySecurity(false); setShowInvestorRelations(false);
-    setShowTaxiAssociations(false); setShow500App(false);
+    for (const set of Object.values(sitePageClosers)) set(false);
     setShowManshya(false); setShowManshyaAdmin(false); setShowManshyaPay(false); setAuthLink(null); setPortal(null); setAdminBank(false);
   };
 
   // ── Persistent top nav (Personal/Business/Corporate) ─────────
   // Shown above every full-screen site page so switching sections never
   // requires backing out to the homepage first.
-  const activeSiteSection: "Personal" | "Business" | "Corporate" | null =
-    (showPersonalLanding || showPersonalAccount || showPersonalLedger || showCreditCard || showCreditCardApp ||
-     showLoan || showInvest || showRewards || showInvestApp || showRewardsApp ||
-     showAccountApp) ? "Personal" :
-    (showStartBusiness || showBusinessAccountSelector || showBusinessAccounts || showBusinessLedger ||
-     showBusinessLoanApp || showManageBusiness)
-      ? "Business" :
-    (showCorporateLedger || showCorporateLoanApp || showCorporateCSR ||
-     showInvestorRelations) ? "Corporate" :
-    null;
-
-  const showPersistentNav =
-    activeSiteSection !== null || selectorOpen || showContactUs || showAboutVINK || showCareers ||
-    showSwitchToVINK || showSafetySecurity || showTaxiAssociations || show500App || showJobApp;
+  // Every public page shows the header: the list of pages and the rule are in sitePages.ts (a test makes sure no page is left out).
+  const { section: activeSiteSection, showNav: showPersistentNav } = siteChrome({
+    showPersonalLanding, showPersonalAccount, showPersonalLedger, showCreditCard, showCreditCardApp, showLoan, showInvest, showRewards, showInvestApp, showRewardsApp, showAccountApp,
+    showBusinessLanding, showStartBusiness, showBusinessAccountSelector, showBusinessAccounts, showBusinessLedger, showBusinessLoanApp, showManageBusiness,
+    showCorporateLedger, showCorporateLoanApp, showCorporateCSR, showInvestorRelations,
+    selectorOpen, showContactUs, showAboutVINK, showCareers, showSwitchToVINK, showSafetySecurity, showTaxiAssociations, show500App, showJobApp,
+    showLegal, showBranchLocator, showSponsorship, showBankingFees, showBankingGuide, showBankingChannels, showExchangeRates, showLatestOffers, showMarketIndices, showVinkBlog,
+  });
 
   const goToSection = (section: "Personal" | "Business" | "Corporate") => {
     startTransition(() => {

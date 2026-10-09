@@ -4,6 +4,7 @@
  * User can edit any field before copying / submitting.
  */
 import { useState, useRef } from "react";
+import { Footer } from "./Footer";
 import { CheckCircle, Copy, ChevronDown, ChevronUp, AlertCircle, Info } from "lucide-react";
 
 interface Props { isOpen: boolean; onClose: () => void; }
@@ -371,7 +372,8 @@ We are ready for 500 Global. The product is built. The partnership is signed. Th
       </div>
 
       {/* Body */}
-      <div className="flex-1 overflow-y-auto px-4 py-6 max-w-3xl mx-auto w-full">
+      <div className="flex-1 overflow-y-auto">
+      <div className="px-4 py-6 max-w-3xl mx-auto w-full">
 
         <div className="mb-6 p-4 rounded-xl border" style={{ background: "var(--vk-info-bg)", borderColor: "#BFDBFE" }}>
           <p className="text-sm font-bold text-emerald-800 mb-1">How to use this form</p>
@@ -538,6 +540,8 @@ We are ready for 500 Global. The product is built. The partnership is signed. Th
         </div>
 
         <div className="h-8" />
+      </div>
+      <Footer />
       </div>
     </div>
   );
