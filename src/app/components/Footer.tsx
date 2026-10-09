@@ -183,11 +183,7 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
           <LinkColumn title="Useful Tools" links={COLS[0].links} onLinkClick={handleLinkClick} />
           <LinkColumn title="Who We Are"   links={COLS[1].links} onLinkClick={handleLinkClick} />
 
-          {/* Our Sites + Legal stacked */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 36 }}>
-            <LinkColumn title="Our Sites" links={COLS[2].links} onLinkClick={handleLinkClick} />
-            <LinkColumn title="Legal"     links={COLS[3].links} onLinkClick={handleLinkClick} />
-          </div>
+          <LinkColumn title="Our Sites" links={COLS[2].links} onLinkClick={handleLinkClick} />
 
           {/* Support + Lost cards stacked */}
           <div style={{ display: "flex", flexDirection: "column", gap: 36 }}>
@@ -217,7 +213,8 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
             </div>
           </div>
 
-          {/* ── Download apps ────────────────────────── */}
+          {/* ── Download apps, with Legal underneath ───── */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 36 }}>
           <div style={{
             display: "flex", flexDirection: "column", gap: 10,
           }}>
@@ -258,6 +255,8 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
                 <p style={{ color: "#fff", fontSize: 15, fontWeight: 600, lineHeight: "20px", margin: "3px 0 0", letterSpacing: "-0.01em" }}>Coming Soon</p>
               </div>
             </div>
+          </div>
+            <LinkColumn title="Legal" links={COLS[3].links} onLinkClick={handleLinkClick} />
           </div>
         </div>
       </div>
