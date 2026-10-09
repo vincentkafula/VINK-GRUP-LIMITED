@@ -4,6 +4,7 @@ import { useLoad, Status, Empty, ActionButton, inputCls, when } from "./ui";
 import { API_BASE } from "../../services/config";
 import { authFetch } from "../../services/apiClient";
 import { AttachPicker, AttachmentList, useAttachments, type MailFile } from "./MailAttachments";
+import { EmailHtml } from "./MailHtmlBody";
 
 /**
  * Department mail for the management panel. An owner or superadmin sees every department; a department manager sees only the department(s) they have been
@@ -11,7 +12,7 @@ import { AttachPicker, AttachmentList, useAttachments, type MailFile } from "./M
  */
 interface Dept { key: string; name: string; address: string; open: number }
 interface Item { kind: "web" | "email"; id: string; department: string; fromName: string; fromEmail: string; subject: string; preview: string; status: string; at: string; ref?: string }
-interface Detail extends Item { text: string; attachments?: MailFile[]; replies: { id: string; to: string; subject: string; body: string; status: string; by: string; at: string; attachments?: MailFile[] }[] }
+interface Detail extends Item { text: string; html?: string | null; attachments?: MailFile[]; replies: { id: string; to: string; subject: string; body: string; status: string; by: string; at: string; attachments?: MailFile[] }[] }
 
 /** The same small client the portals use (see portal/ui.tsx), pointed at /api/mail. */
 function mailClient() {
@@ -103,6 +104,7 @@ function Message({ call, kind, id, onChanged }: { call: ReturnType<typeof mailCl
   const [load, reload] = useLoad<{ message: Detail }>(() => call(`/messages/${kind}/${id}`), [kind, id]);
   const [body, setBody] = useState("");
   const att = useAttachments();
+  const [view, setView] = useState<"formatted" | "text">("formatted");
   return (
     <Status load={load}>{({ message: m }) => (
       <div className="space-y-3">
@@ -110,7 +112,11 @@ function Message({ call, kind, id, onChanged }: { call: ReturnType<typeof mailCl
           <h2 className="text-base font-black text-fg">{m.subject}</h2>
           <p className="text-xs text-fg-muted">From <b className="text-fg">{m.fromName}</b> &lt;{m.fromEmail}&gt; · {when(m.at)}{m.ref ? ` · ${m.ref}` : ""} · {STATUS_LABEL[m.status] ?? m.status}</p>
         </div>
-        <pre className="whitespace-pre-wrap break-words text-sm text-fg font-sans rounded-lg p-3" style={{ background: "var(--vk-bg)", border: "1px solid var(--vk-line)" }}>{m.text || "(no text)"}</pre>
+        {m.html && (
+          <div role="tablist" aria-label="How to show the message" className="flex gap-1.5 text-[11px]">
+            {([["formatted", "As sent"], ["text", "Plain text"]] as const).map(([k, label]) => <button key={k} role="tab" aria-selected={view === k} onClick={() => setView(k)} className="px-2.5 py-1 rounded-md font-bold border" style={view === k ? { background: COLOR, color: "#fff", borderColor: COLOR } : { color: "var(--vk-fg)", borderColor: "var(--vk-line)" }}>{label}</button>)}
+          </div>)}
+        {m.html && view === "formatted" ? <EmailHtml html={m.html} files={m.attachments} /> : <pre className="whitespace-pre-wrap break-words text-sm text-fg font-sans rounded-lg p-3" style={{ background: "var(--vk-bg)", border: "1px solid var(--vk-line)" }}>{m.text || "(no text)"}</pre>}
         <AttachmentList files={m.attachments} />
         {m.replies.length > 0 && (
           <div className="space-y-2">{m.replies.map((r) => (

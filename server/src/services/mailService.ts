@@ -15,8 +15,8 @@ import { createMailFiles, ATTACH_LIMIT_BYTES, LINK_DAYS, prettySize, type MailFi
  *    The section name is the department's name, for example "Sales".
  *
  * Everything a person sends is stored (mail_outbound) with who sent it, is limited to 40 an hour per person, and goes out from the department's address with the
- * department's address as the reply address, so answers come back into the department's mailbox. Message text is returned as plain text only: incoming HTML is
- * never passed on, because it comes from the open internet.
+ * department's address as the reply address, so answers come back into the department's mailbox. Message text is returned as plain text, and the HTML of an
+ * incoming email is returned separately as untrusted: the website cleans it (DOMPurify) and shows it in a sandboxed frame with remote pictures blocked.
  */
 export const UNROUTED = { key: "unrouted", name: "Other mail (not addressed to a department)", address: "", purpose: "", respondWithin: "" };
 export type MailKind = "web" | "email";
@@ -24,7 +24,7 @@ export interface MailUser { userId: string; role: string }
 const SEND_LIMIT_PER_HOUR = 40;
 
 export interface MailListItem { kind: MailKind; id: string; department: string; fromName: string; fromEmail: string; subject: string; preview: string; status: string; at: string; ref?: string }
-export interface MailDetail extends MailListItem { text: string; attachments: FileInfo[]; replies: { id: string; to: string; subject: string; body: string; status: string; by: string; at: string; attachments: FileInfo[] }[] }
+export interface MailDetail extends MailListItem { text: string; /** The HTML of an incoming email, as received (untrusted: the website cleans it and shows it in a sandbox). */ html: string | null; attachments: FileInfo[]; replies: { id: string; to: string; subject: string; body: string; status: string; by: string; at: string; attachments: FileInfo[] }[] }
 export type MailResult<T> = { ok: true; value: T } | { ok: false; status: number; error: string };
 
 const isSuper = (role: string) => role === "owner" || role === "superadmin";
@@ -105,7 +105,9 @@ export function createMailService(deps: { db: Db; mail: EmailSender; now?: () =>
     const replyRows = (await db.query(`SELECT * FROM mail_outbound WHERE reply_kind = $1 AND reply_id = $2 ORDER BY created_at`, [kind, id])).rows;
     const replies = await Promise.all(replyRows.map(async (r: Record<string, unknown>) => ({ id: String(r.id), to: String(r.to_addr), subject: String(r.subject), body: String(r.body), status: String(r.status), by: String(r.sent_by_name), at: new Date(String(r.created_at)).toISOString(), attachments: await files.forEmail("outbound", String(r.id)) })));
     const attachments = kind === "email" ? await files.forEmail("inbound", id) : [];
-    return { ok: true, value: { ...m.item, text: m.text.slice(0, 20000), attachments, replies } };
+    const htmlRow = kind === "email" ? (await db.query(`SELECT html_body FROM inbound_emails WHERE id = $1`, [id])).rows[0] : null;
+    const html = htmlRow?.html_body ? String(htmlRow.html_body).slice(0, 300_000) : null;
+    return { ok: true, value: { ...m.item, text: m.text.slice(0, 20000), html, attachments, replies } };
   }
 
   async function setStatus(user: MailUser, kind: string, id: string, status: unknown): Promise<MailResult<{ status: string }>> {

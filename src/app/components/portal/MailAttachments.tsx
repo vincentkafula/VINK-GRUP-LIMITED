@@ -1,5 +1,5 @@
-import { useRef, useState, type DragEvent } from "react";
-import { Paperclip, Download, X, AlertTriangle, FileText } from "lucide-react";
+import { useEffect, useRef, useState, type DragEvent } from "react";
+import { Paperclip, Download, X, AlertTriangle, FileText, ShieldCheck, ShieldAlert, Eye } from "lucide-react";
 import { API_BASE } from "../../services/config";
 import { authFetch } from "../../services/apiClient";
 
@@ -7,10 +7,22 @@ import { authFetch } from "../../services/apiClient";
  * Files in department mail: the attachments of a message (download), and the files a person adds to an email they are writing (upload, then send).
  * The limits are the server's (services/mailFiles.ts), repeated here so a person is told before a big file is uploaded.
  */
-export interface MailFile { id: string; filename: string; contentType: string; size: number; status: string; risky: boolean }
+export interface MailFile { id: string; filename: string; contentType: string; size: number; status: string; risky: boolean; /** clean | infected | suspicious | unscanned */ scan: string; scanDetail: string | null; contentId: string | null }
 const MB = 1024 * 1024;
 export const LIMITS = { file: 50 * MB, files: 5, total: 60 * MB, attach: 15 * MB };
+/** Pictures the panel will show: the common safe formats, not too big, and not infected. (SVG is left out: it can carry script.) */
+export const MAX_INLINE_IMAGE = 5 * MB;
+export const isPreviewableImage = (f: Pick<MailFile, "contentType" | "size" | "scan" | "status">) => /^image\/(png|jpe?g|gif|webp)$/i.test(f.contentType) && f.size <= MAX_INLINE_IMAGE && f.scan !== "infected" && f.status !== "toolarge";
+
 export const sizeText = (n: number) => (n >= MB ? `${(n / MB).toFixed(1)} MB` : n >= 1024 ? `${Math.round(n / 1024)} KB` : `${n} bytes`);
+
+/** What the virus check found, in a few words. Nothing is shown for a file nobody has checked yet, except a quiet note. */
+export function ScanBadge({ file }: { file: Pick<MailFile, "scan" | "scanDetail"> }) {
+  if (file.scan === "infected") return <span className="inline-flex items-center gap-1 shrink-0 text-[10px] font-bold" style={{ color: "#DC2626" }}><ShieldAlert className="w-3 h-3" /> Blocked: {file.scanDetail ?? "virus found"}</span>;
+  if (file.scan === "suspicious") return <span className="inline-flex items-center gap-1 shrink-0 text-[10px] font-bold" style={{ color: "#B45309" }}><ShieldAlert className="w-3 h-3" /> Suspicious: {file.scanDetail ?? "be careful"}</span>;
+  if (file.scan === "clean") return <span className="inline-flex items-center gap-1 shrink-0 text-[10px] font-semibold" style={{ color: "#047857" }}><ShieldCheck className="w-3 h-3" /> Checked, no virus found</span>;
+  return <span className="shrink-0 text-[10px] text-fg-muted">not checked by an antivirus</span>;
+}
 
 /** Files being added to an email: uploaded one by one, kept privately on the server until the email is sent. */
 export function useAttachments() {
@@ -66,6 +78,7 @@ export function AttachPicker({ att }: { att: Attachments }) {
             <FileText className="w-3.5 h-3.5 shrink-0 text-fg-muted" />
             <span className="truncate text-fg font-medium">{f.filename}</span><span className="text-fg-muted shrink-0">{sizeText(f.size)}</span>
             {f.risky && <span className="inline-flex items-center gap-1 shrink-0 text-[10px] font-bold" style={{ color: "#B45309" }}><AlertTriangle className="w-3 h-3" /> can run on a computer</span>}
+            <ScanBadge file={f} />
             <button type="button" onClick={() => void att.remove(f.id)} aria-label={`Remove ${f.filename}`} className="ml-auto p-0.5 rounded hover:bg-surface-2"><X className="w-3.5 h-3.5" /></button>
           </li>))}</ul>)}
       {att.total > LIMITS.attach && <p className="text-[11px]" style={{ color: "#B45309" }}>These files are over {sizeText(LIMITS.attach)} together, so they are sent as download links (valid for 7 days) instead of attachments.</p>}
@@ -91,7 +104,18 @@ async function downloadFile(f: MailFile): Promise<string> {
 export function AttachmentList({ files, label = "Attachments" }: { files: MailFile[] | undefined; label?: string }) {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState("");
+  const [previews, setPreviews] = useState<Record<string, string>>({});
+  useEffect(() => () => { Object.values(previews).forEach((u) => URL.revokeObjectURL(u)); }, [previews]);
   if (!files || files.length === 0) return null;
+  const preview = async (f: MailFile) => {
+    setBusy(f.id); setError("");
+    try {
+      const res = await authFetch(`${API_BASE}/api/mail/files/${f.id}`);
+      if (!res.ok) { const body = await res.json().catch(() => ({})); setError(body.error ?? `The picture could not be loaded (${res.status}).`); }
+      else { const url = URL.createObjectURL(new Blob([await res.blob()], { type: f.contentType })); setPreviews((cur) => ({ ...cur, [f.id]: url })); }
+    } catch { setError("We could not reach the server. Please try again."); }
+    setBusy("");
+  };
   return (
     <div className="space-y-1.5">
       <p className="text-xs font-bold text-fg flex items-center gap-1.5"><Paperclip className="w-3.5 h-3.5" /> {label} ({files.length})</p>
@@ -100,11 +124,15 @@ export function AttachmentList({ files, label = "Attachments" }: { files: MailFi
           <FileText className="w-4 h-4 shrink-0 text-fg-muted" />
           <span className="truncate text-fg font-medium">{f.filename}</span><span className="text-fg-muted shrink-0">{sizeText(f.size)}</span>
           {f.risky && <span className="inline-flex items-center gap-1 shrink-0 text-[10px] font-bold" style={{ color: "#B45309" }}><AlertTriangle className="w-3 h-3" /> can run on a computer</span>}
+          <ScanBadge file={f} />
+          {isPreviewableImage(f) && !previews[f.id] && <button type="button" disabled={busy === f.id} onClick={() => void preview(f)} aria-label={`Preview ${f.filename}`} className="ml-auto inline-flex items-center gap-1 px-2 py-1 rounded-md font-bold border border-line text-fg hover:bg-surface-2 disabled:opacity-50"><Eye className="w-3.5 h-3.5" /> Preview</button>}
           {f.status === "toolarge"
             ? <span className="ml-auto text-[10px] text-fg-muted">too large to keep</span>
+            : f.scan === "infected" ? null
             : <button type="button" disabled={busy === f.id} onClick={async () => { setBusy(f.id); setError(""); setError(await downloadFile(f)); setBusy(""); }} aria-label={`Download ${f.filename}`}
-                className="ml-auto inline-flex items-center gap-1 px-2 py-1 rounded-md font-bold border border-line text-fg hover:bg-surface-2 disabled:opacity-50"><Download className="w-3.5 h-3.5" /> {busy === f.id ? "Downloading…" : "Download"}</button>}
+                className={`${isPreviewableImage(f) && !previews[f.id] ? "" : "ml-auto "}inline-flex items-center gap-1 px-2 py-1 rounded-md font-bold border border-line text-fg hover:bg-surface-2 disabled:opacity-50`}><Download className="w-3.5 h-3.5" /> {busy === f.id ? "Downloading…" : "Download"}</button>}
         </li>))}</ul>
+      {files.filter((f) => previews[f.id]).map((f) => <img key={f.id} src={previews[f.id]} alt={f.filename} className="max-h-64 max-w-full rounded-lg border border-line" />)}
       {error && <p role="alert" className="text-[11px] font-semibold" style={{ color: "#DC2626" }}>{error}</p>}
     </div>
   );

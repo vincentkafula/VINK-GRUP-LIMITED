@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import type { Db } from "../portal/driverRoutes.js";
+import { createScanner, type FileScanner } from "./fileScan.js";
 
 /**
  * Files in department mail.
@@ -33,20 +34,21 @@ export function safeFilename(raw: unknown): string {
 const safeType = (raw: unknown) => (typeof raw === "string" && /^[\w.+-]+\/[\w.+-]+$/.test(raw.trim()) ? raw.trim().toLowerCase().slice(0, 100) : "application/octet-stream");
 export const prettySize = (n: number) => (n >= 1048576 ? `${(n / 1048576).toFixed(1)} MB` : n >= 1024 ? `${Math.round(n / 1024)} KB` : `${n} bytes`);
 
-export interface FileInfo { id: string; filename: string; contentType: string; size: number; status: string; risky: boolean }
+export interface FileInfo { id: string; filename: string; contentType: string; size: number; status: string; risky: boolean; /** clean | infected | suspicious | unscanned: see fileScan.ts */ scan: string; scanDetail: string | null; /** The Content-ID an email uses to show this file inside its text (cid:...), if it does. */ contentId: string | null }
 export interface StoredFile { id: string; filename: string; contentType: string; size: number; data: Buffer }
 export type FileResult<T> = { ok: true; value: T } | { ok: false; status: number; error: string };
 const bad = (status: number, error: string): { ok: false; status: number; error: string } => ({ ok: false, status, error });
 
-interface ResendAttachment { id?: string; filename?: string; content_type?: string; size?: number; download_url?: string; content_disposition?: string }
+interface ResendAttachment { id?: string; filename?: string; content_type?: string; size?: number; download_url?: string; content_disposition?: string; content_id?: string }
 
-export function createMailFiles(deps: { db: Db; apiKey?: string; fetchImpl?: typeof fetch; now?: () => Date }) {
+export function createMailFiles(deps: { db: Db; apiKey?: string; fetchImpl?: typeof fetch; now?: () => Date; /** Virus checking (default: only the built-in checks). */ scanner?: FileScanner }) {
   const { db } = deps;
   const doFetch = deps.fetchImpl ?? fetch;
+  const scanner = deps.scanner ?? createScanner({} as NodeJS.ProcessEnv);
   const now = deps.now ?? (() => new Date());
   const background = new Set<Promise<unknown>>();
 
-  const info = (r: Record<string, unknown>): FileInfo => ({ id: String(r.id), filename: String(r.filename), contentType: String(r.content_type), size: Number(r.size), status: String(r.status), risky: isRiskyFile(String(r.filename)) });
+  const info = (r: Record<string, unknown>): FileInfo => ({ id: String(r.id), filename: String(r.filename), contentType: String(r.content_type), size: Number(r.size), status: String(r.status), risky: isRiskyFile(String(r.filename)), scan: String(r.scan_status ?? "unscanned"), scanDetail: r.scan_detail ? String(r.scan_detail) : null, contentId: r.content_id ? String(r.content_id) : null });
   const track = (p: Promise<unknown>) => { const t = p.catch(() => undefined).finally(() => background.delete(t)); background.add(t); };
 
   /** The attachments Resend lists for a received email (empty if none, or if the list cannot be read). */
@@ -68,8 +70,8 @@ export function createMailFiles(deps: { db: Db; apiKey?: string; fetchImpl?: typ
     for (const a of list) {
       if (!a.id) continue;
       const size = Math.max(0, Math.floor(Number(a.size) || 0));
-      await db.query(`INSERT INTO mail_files (id, kind, email_id, department, filename, content_type, size, status, resend_email_id, resend_att_id, created_at) VALUES ($1,'inbound',$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
-        [crypto.randomUUID(), emailId, department, safeFilename(a.filename), safeType(a.content_type), size, size > MAX_INBOUND_FETCH ? "toolarge" : "pending", resendEmailId, String(a.id), now()]);
+      await db.query(`INSERT INTO mail_files (id, kind, email_id, department, filename, content_type, size, status, resend_email_id, resend_att_id, created_at, content_id) VALUES ($1,'inbound',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+        [crypto.randomUUID(), emailId, department, safeFilename(a.filename), safeType(a.content_type), size, size > MAX_INBOUND_FETCH ? "toolarge" : "pending", resendEmailId, String(a.id), now(), a.content_id ? String(a.content_id).replace(/[<>\s]/g, "").slice(0, 200) : null]);
       n++;
     }
     if (n) track(fetchPending(emailId));
@@ -98,12 +100,13 @@ export function createMailFiles(deps: { db: Db; apiKey?: string; fetchImpl?: typ
     if (!fresh?.download_url) return null;
     const buf = await downloadFrom(fresh.download_url);
     if (!buf) return null;
-    await db.query(`UPDATE mail_files SET data = $2, size = $3, status = 'stored' WHERE id = $1`, [fileId, buf, buf.length]);
+    const v = await scanner.scan(buf, String(row.filename));
+    await db.query(`UPDATE mail_files SET data = $2, size = $3, status = 'stored', scan_status = $4, scan_detail = $5, scanned_at = $6 WHERE id = $1`, [fileId, buf, buf.length, v.status, v.detail.slice(0, 300), now()]);
     return buf;
   }
 
   async function forEmail(kind: "inbound" | "outbound", emailId: string): Promise<FileInfo[]> {
-    return (await db.query(`SELECT id, filename, content_type, size, status FROM mail_files WHERE kind = $1 AND email_id = $2 ORDER BY created_at, filename`, [kind, emailId])).rows.map(info);
+    return (await db.query(`SELECT id, filename, content_type, size, status, scan_status, scan_detail, content_id FROM mail_files WHERE kind = $1 AND email_id = $2 ORDER BY created_at, filename`, [kind, emailId])).rows.map(info);
   }
 
   /** The file and the department whose mail it belongs to (null while it is only a private upload). */
@@ -121,9 +124,11 @@ export function createMailFiles(deps: { db: Db; apiKey?: string; fetchImpl?: typ
   async function read(fileId: string): Promise<FileResult<StoredFile>> {
     const row = (await db.query(`SELECT * FROM mail_files WHERE id = $1`, [fileId])).rows[0];
     if (!row) return bad(404, "No such file");
+    if (row.scan_status === "infected") return bad(422, `This file was blocked: ${String(row.scan_detail ?? "a virus was found")}. It cannot be downloaded.`);
     let data: Buffer | null = row.data ? Buffer.from(row.data as Uint8Array) : null;
     if (!data && row.status === "toolarge") return bad(413, "This file was too large to keep. Ask the sender to share it another way.");
     if (!data) data = await fetchOne(fileId);
+    if (data && !row.data) { const fresh = (await db.query(`SELECT scan_status, scan_detail FROM mail_files WHERE id = $1`, [fileId])).rows[0]; if (fresh?.scan_status === "infected") return bad(422, `This file was blocked: ${String(fresh.scan_detail ?? "a virus was found")}. It cannot be downloaded.`); }
     if (!data) return bad(502, "The file could not be fetched right now. Please try again in a minute.");
     return { ok: true, value: { id: String(row.id), filename: String(row.filename), contentType: String(row.content_type), size: data.length, data } };
   }
@@ -136,9 +141,13 @@ export function createMailFiles(deps: { db: Db; apiKey?: string; fetchImpl?: typ
     await db.query(`DELETE FROM mail_files WHERE kind = 'upload' AND created_at < $1`, [new Date(now().getTime() - STAGED_HOURS * 3600_000)]);
     const mine = Number((await db.query(`SELECT COUNT(*) AS n FROM mail_files WHERE kind = 'upload' AND uploaded_by = $1`, [userId])).rows[0].n);
     if (mine >= 20) return bad(429, "You have a lot of unsent files waiting. Send or remove some first.");
+    const fname = safeFilename(name), v = await scanner.scan(data, fname);
+    if (v.status === "infected") return bad(422, `"${fname}" was not uploaded: ${v.detail}. Do not send it.`);
+    if (v.status === "suspicious" && v.engine === "built-in") return bad(422, `"${fname}" was not uploaded: ${v.detail}.`);          // a program dressed up as a document
+    if ((v as { engineFailed?: boolean }).engineFailed) return bad(503, "Files cannot be checked for viruses right now, so nothing can be attached. Please try again in a few minutes.");
     const id = crypto.randomUUID();
-    await db.query(`INSERT INTO mail_files (id, kind, filename, content_type, size, data, status, uploaded_by, created_at) VALUES ($1,'upload',$2,$3,$4,$5,'stored',$6,$7)`, [id, safeFilename(name), safeType(type), data.length, data, userId, now()]);
-    return { ok: true, value: { id, filename: safeFilename(name), contentType: safeType(type), size: data.length, status: "stored", risky: isRiskyFile(safeFilename(name)) } };
+    await db.query(`INSERT INTO mail_files (id, kind, filename, content_type, size, data, status, uploaded_by, created_at, scan_status, scan_detail, scanned_at) VALUES ($1,'upload',$2,$3,$4,$5,'stored',$6,$7,$8,$9,$7)`, [id, fname, safeType(type), data.length, data, userId, now(), v.status, v.detail.slice(0, 300)]);
+    return { ok: true, value: { id, filename: fname, contentType: safeType(type), size: data.length, status: "stored", risky: isRiskyFile(fname), scan: v.status, scanDetail: v.detail, contentId: null } };
   }
 
   async function discard(userId: string, fileId: string): Promise<boolean> {

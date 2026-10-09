@@ -1446,3 +1446,8 @@ CREATE TABLE IF NOT EXISTS mail_files (
 );
 CREATE INDEX IF NOT EXISTS idx_mail_files_email ON mail_files(kind, email_id);
 CREATE INDEX IF NOT EXISTS idx_mail_files_upload ON mail_files(uploaded_by, created_at) WHERE kind = 'upload';
+-- Virus scan result per file (see services/fileScan.ts) and the Content-ID an incoming email uses to show the file inline.
+ALTER TABLE mail_files ADD COLUMN IF NOT EXISTS scan_status TEXT NOT NULL DEFAULT 'unscanned';
+ALTER TABLE mail_files ADD COLUMN IF NOT EXISTS scan_detail TEXT;
+ALTER TABLE mail_files ADD COLUMN IF NOT EXISTS scanned_at TIMESTAMPTZ;
+ALTER TABLE mail_files ADD COLUMN IF NOT EXISTS content_id TEXT;

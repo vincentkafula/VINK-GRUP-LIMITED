@@ -53,6 +53,7 @@ import { createContactRouter, createContactAdminRouter } from "./routes/contactR
 import { createMailService } from "./services/mailService.js";
 import { createMailRouter, createShareRouter } from "./routes/mailRouter.js";
 import { createMailFiles } from "./services/mailFiles.js";
+import { createScanner } from "./services/fileScan.js";
 import { liveStartBlockers } from "./payments/goLive.js";
 import { createEmailSender } from "./auth/email.js";
 import { hasDb, pool } from "./db/pool.js";
@@ -107,7 +108,7 @@ app.use("/api/payments/issuer", createPaymentologyFastRouter({ tokens: tokenCard
 
 
 // Files in department mail: attachments of incoming email, files staff attach, and the expiring links for big ones (services/mailFiles.ts).
-const mailFiles = pool ? createMailFiles({ db: pool, apiKey: process.env.RESEND_API_KEY?.trim() || undefined }) : undefined;
+const mailFiles = pool ? createMailFiles({ db: pool, apiKey: process.env.RESEND_API_KEY?.trim() || undefined, scanner: createScanner(process.env) }) : undefined;
 
 // Incoming email from Resend (raw body for the signature check, so also before the JSON parser). Staff-only list endpoints.
 app.use("/api/inbound", createInboundRouter({

@@ -10,9 +10,9 @@ let root: Root, host: HTMLElement, calls: { url: string; init?: RequestInit }[];
 const MID = "11111111-1111-1111-1111-111111111111";
 const WEB = { kind: "email", id: MID, department: "sales", fromName: "Pam Mokoena", fromEmail: "pam@example.com", subject: "Quote", preview: "see attached", status: "open", at: "2026-10-09T10:00:00Z" };
 const FILES: MailFile[] = [
-  { id: "f1", filename: "Quote 2026.pdf", contentType: "application/pdf", size: 2_411_724, status: "stored", risky: false },
-  { id: "f2", filename: "setup.exe", contentType: "application/octet-stream", size: 1024, status: "stored", risky: true },
-  { id: "f3", filename: "film.mp4", contentType: "video/mp4", size: 80 * 1024 * 1024, status: "toolarge", risky: false },
+  { id: "f1", filename: "Quote 2026.pdf", contentType: "application/pdf", size: 2_411_724, status: "stored", risky: false, scan: "clean", scanDetail: "No virus found", contentId: null },
+  { id: "f2", filename: "setup.exe", contentType: "application/octet-stream", size: 1024, status: "stored", risky: true, scan: "unscanned", scanDetail: null, contentId: null },
+  { id: "f3", filename: "film.mp4", contentType: "video/mp4", size: 80 * 1024 * 1024, status: "toolarge", risky: false, scan: "unscanned", scanDetail: null, contentId: null },
 ];
 let uploadReply: (u: string) => { status: number; body: unknown };
 
