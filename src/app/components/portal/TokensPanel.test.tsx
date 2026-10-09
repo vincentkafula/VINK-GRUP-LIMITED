@@ -144,22 +144,57 @@ describe("TokensPanel: payouts go only to the holder's own debit card", () => {
 });
 
 describe("TokensPanel: the VINK debit card", () => {
-  it("offers a card when there is none, and asks the server to issue it", async () => {
-    mockApi((url, init) => (init?.method === "POST" ? { status: 201, body: { success: true, card: { id: "ic1" } } } : url.endsWith("/tokens/cash-outs") ? { body: { success: true, cashOuts: [] } } : { body: { success: true, wallets: [WALLET], issuedCards: [], role: "passenger" } }));
+  const set = async (el: HTMLElement | null | undefined, v: string) => { await act(async () => { const e = el as HTMLInputElement | HTMLSelectElement; Object.getOwnPropertyDescriptor(e.tagName === "SELECT" ? HTMLSelectElement.prototype : HTMLInputElement.prototype, "value")!.set!.call(e, v); e.dispatchEvent(new Event(e.tagName === "SELECT" ? "change" : "input", { bubbles: true })); }); };
+  const byLabel = (t: string) => [...document.querySelectorAll("label")].find((l) => l.textContent?.startsWith(t))?.querySelector("input,select") as HTMLElement | undefined;
+  const load = (issuedCards: unknown[], extra: Record<string, unknown> = {}) => mockApi((url, init) => (init?.method === "POST" ? { status: 201, body: { success: true, card: { id: "ic1" } } } : url.endsWith("/tokens/cash-outs") ? { body: { success: true, cashOuts: [] } } : { body: { success: true, wallets: [WALLET], issuedCards, cardOptions: { brands: ["visa", "mastercard"] }, role: "passenger", ...extra } }));
+
+  it("makes the holder choose Visa or Mastercard, then asks the server for a virtual card", async () => {
+    load([]);
     await render(<TokensPanel segment="personal" color="#f00" />);
-    expect(host.textContent).toContain("My VINK debit card"); expect(host.textContent).toContain("spends your tokens");
-    await act(async () => { btn("Get my VINK card")!.click(); }); await settle();
+    expect(host.textContent).toContain("My VINK debit cards"); expect(host.textContent).toContain("spends your tokens");
+    await act(async () => { btn("Get my virtual card")!.click(); }); await settle();
+    expect(calls.some((c) => c.url.endsWith("/tokens/card") && c.init?.method === "POST")).toBe(false);          // no brand chosen: nothing sent
+    expect(host.textContent).toContain("Choose Visa or Mastercard");
+    await set(byLabel("Card"), "mastercard");
+    await act(async () => { btn("Get my virtual card")!.click(); }); await settle();
     const post = calls.find((c) => c.url.endsWith("/api/portal/personal/tokens/card") && c.init?.method === "POST")!;
-    expect(JSON.parse(String(post.init!.body))).toEqual({ currency: "ZAR" });
+    expect(JSON.parse(String(post.init!.body))).toEqual({ currency: "ZAR", brand: "mastercard", form: "virtual" });
   });
 
-  it("shows the card with only brand, last four and expiry, and lets the holder freeze it", async () => {
-    mockApi((url, init) => (init?.method === "POST" ? { body: { success: true, card: {} } } : url.endsWith("/tokens/cash-outs") ? { body: { success: true, cashOuts: [] } } : { body: { success: true, wallets: [WALLET], issuedCards: [{ id: "ic1", brand: "mastercard", last4: "7788", expiry: "10/30", status: "active", currency: "ZAR" }], role: "passenger" } }));
+  it("orders a physical card with the delivery address", async () => {
+    load([{ id: "ic0", brand: "visa", last4: "1111", expiry: "10/30", status: "active", currency: "ZAR", form: "virtual", activated: true }]);
     await render(<TokensPanel segment="personal" color="#f00" />);
-    expect(host.textContent).toContain("Mastercard debit ****7788 · 10/30"); expect(host.textContent).toContain("Active");
-    expect(btn("Get my VINK card")).toBeUndefined();
+    expect(byLabel("Type")!.textContent).toContain("Physical"); expect(byLabel("Type")!.textContent).not.toContain("Virtual");   // already has a virtual card
+    expect(host.textContent).toContain("Name to print on the card");
+    await set(byLabel("Card"), "visa"); await set(byLabel("Name to print"), "T NKOSI"); await set(byLabel("Street address"), "12 Long Street"); await set(byLabel("Town or city"), "Cape Town");
+    await set(byLabel("Postal code"), "8001"); await set(byLabel("Phone for the courier"), "082 000 0000");
+    await act(async () => { btn("Order my physical card")!.click(); }); await settle();
+    const post = calls.find((c) => c.url.endsWith("/tokens/card") && c.init?.method === "POST")!;
+    expect(JSON.parse(String(post.init!.body))).toMatchObject({ currency: "ZAR", brand: "visa", form: "physical", delivery: { nameOnCard: "T NKOSI", addressLine1: "12 Long Street", city: "Cape Town", postalCode: "8001", country: "ZA", phone: "082 000 0000" } });
+  });
+
+  it("shows each card with brand, type, last four and expiry, and lets the holder freeze it", async () => {
+    load([{ id: "ic1", brand: "mastercard", last4: "7788", expiry: "10/30", status: "active", currency: "ZAR", form: "virtual", activated: true }]);
+    await render(<TokensPanel segment="personal" color="#f00" />);
+    expect(host.textContent).toContain("Mastercard virtual debit ****7788 · 10/30"); expect(host.textContent).toContain("Active");
     await act(async () => { btn("Freeze")!.click(); }); await settle();
     const post = calls.find((c) => c.url.endsWith("/tokens/card/ic1/status"))!;
     expect(JSON.parse(String(post.init!.body))).toEqual({ status: "frozen" });
+  });
+
+  it("a physical card shows where it is, and can be activated with the last four digits once it is on its way", async () => {
+    load([{ id: "ic2", brand: "visa", last4: "4242", expiry: "10/30", status: "active", currency: "ZAR", form: "physical", activated: false, delivery: "ordered" }]);
+    await render(<TokensPanel segment="personal" color="#f00" />);
+    expect(host.textContent).toContain("Visa physical debit ****4242"); expect(host.textContent).toContain("Ordered: VINK will send it to you");
+    expect(btn("Activate my card")).toBeUndefined();                                                                // not sent yet
+    act(() => root.unmount()); host.remove(); host = document.createElement("div"); document.body.appendChild(host); root = createRoot(host);
+    load([{ id: "ic2", brand: "visa", last4: "4242", expiry: "10/30", status: "active", currency: "ZAR", form: "physical", activated: false, delivery: "shipped" }]);
+    await render(<TokensPanel segment="personal" color="#f00" />);
+    expect(host.textContent).toContain("On its way: activate it when it arrives");
+    expect(btn("Freeze")).toBeUndefined();                                                                           // nothing to freeze before it is active
+    await set(byLabel("Last four digits"), "4242");
+    await act(async () => { btn("Activate my card")!.click(); }); await settle();
+    const post = calls.find((c) => c.url.endsWith("/tokens/card/ic2/activate"))!;
+    expect(JSON.parse(String(post.init!.body))).toEqual({ last4: "4242" });
   });
 });

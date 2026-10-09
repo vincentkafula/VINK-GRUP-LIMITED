@@ -14,6 +14,7 @@ function mockApi(profile: Record<string, unknown>, approvals: unknown[] = []) {
     const u = String(url);
     let body: unknown = { success: true };
     if (u.endsWith("/api/admin/config/") || u.endsWith("/api/admin/config")) body = { success: true, approvalsRequired: 2, countries: [{ country: "ZA", active: { id: "p1", version: 1, mode: "sandbox" }, inProgress: { id: "p2", version: 2, status: profile.status }, versions: 2 }, { country: "ZM", active: null, inProgress: null, versions: 0 }] };
+    else if (u.includes("/api/admin/tokens/card-orders")) body = { success: true, orders: [{ id: "o1", holder: "Thandi", brand: "visa", last4: "4242", nameOnCard: "T NKOSI", address: "12 Long Street, Cape Town, 8001, ZA", phone: "0820000000", status: "ordered", orderedAt: "2026-10-05T08:00:00Z", attempts: 0 }, { id: "o2", holder: "Sam", brand: "mastercard", last4: "9999", nameOnCard: "S DUBE", address: "1 Main Rd, Lusaka, 10101, ZM", phone: "0970000000", status: "shipped", orderedAt: "2026-10-03T08:00:00Z", attempts: 5 }] };
     else if (u.includes("/readiness")) body = { success: true, readiness: { mode: "sandbox", ready: false, blockers: 2, items: [{ id: "licence", label: "Bank of Zambia licence or approval reference", ok: false, blocking: true, hint: "Set regulator.licenceRef." }, { id: "partner_bank", label: "Partner bank named", ok: true, blocking: true, hint: "" }] } };
     else if (u.includes("/api/admin/money/pooled-accounts")) body = { success: true, accounts: [{ pool: "online", currency: "ZMW", accountNumber: "9876543210", holder: "Vink Zambia", bank: "Absa Bank Zambia", type: "Business" }] };
     else if (u.includes("/profiles/")) body = { success: true, profile: { id: "p2", version: 2, createdBy: "me", note: null, config: CONFIG, ...profile }, approvals, approvalsRequired: 2, changesFromActive: [{ path: "marshalFee.amountCents", before: 2000, after: 2500 }] };
@@ -31,6 +32,19 @@ afterEach(() => { act(() => root.unmount()); host.remove(); vi.unstubAllGlobals(
 const settle = () => act(async () => { await new Promise((r) => setTimeout(r, 450)); });
 const render = async () => { await act(async () => { root.render(<AdminConfig isOpen onClose={() => {}} />); }); await settle(); };
 const btn = (t: string) => [...document.querySelectorAll("button")].find((b) => b.textContent?.includes(t)) as HTMLButtonElement | undefined;
+
+describe("AdminConfig: physical cards to send", () => {
+  it("lists the cards to dispatch with the delivery address, marks one as sent, and offers to unlock a locked activation", async () => {
+    mockApi({ status: "draft" });
+    await render();
+    expect(host.textContent).toContain("Physical cards to send"); expect(host.textContent).toContain("print T NKOSI"); expect(host.textContent).toContain("Deliver to: 12 Long Street, Cape Town, 8001, ZA");
+    expect(btn("Unlock activation")).toBeTruthy();
+    await act(async () => { btn("Mark as sent")!.click(); }); await settle();
+    expect(calls.some((c) => c.url.endsWith("/api/admin/tokens/card-orders/o1/ship") && c.init?.method === "POST")).toBe(true);
+    await act(async () => { btn("Unlock activation")!.click(); }); await settle();
+    expect(calls.some((c) => c.url.endsWith("/api/admin/tokens/card-orders/o2/unlock") && c.init?.method === "POST")).toBe(true);
+  });
+});
 
 describe("AdminConfig", () => {
   it("is for staff: without a staff session it says so and calls nothing", async () => {
