@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { ApplyModal } from "./ApplyModal";
 import { Footer } from "./Footer";
+import vinkCorporateTrain from "../../imports/VinkCorporateTrain.webp";
 
 type CorpCategory = "account" | "solutions" | "loan";
 type NavItem = "Account" | "Solutions & Credit Cards" | "Loan" | "Social Responsibility";
@@ -455,10 +456,16 @@ export function CorporateProductLedgerViewer({ isOpen, onClose, initialCategory,
       <div className="relative overflow-hidden" style={{ background: "linear-gradient(160deg,color-mix(in srgb, #FAFCFB var(--vk-wash), var(--vk-surface)) 0%,color-mix(in srgb, #F3F9F5 var(--vk-wash), var(--vk-surface)) 100%)" }}>
         <div className="absolute -left-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: "linear-gradient(180deg,#9B1C1C,#8B0000)", filter: "blur(60px)" }} />
         <div className="absolute -right-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: "linear-gradient(180deg,#8B0000,#9B1C1C)", filter: "blur(60px)" }} />
-        <div className="relative max-w-6xl mx-auto px-8 py-14 sm:py-16">
-          <span className="inline-block text-[11px] font-bold tracking-[0.14em] uppercase mb-3" style={{ color: "#8B0000" }}>{copy.heroEyebrow}</span>
-          <h1 className="text-3xl sm:text-4xl font-black leading-[1.1] text-fg whitespace-pre-line">{copy.heroTitle}</h1>
-          <p className="text-fg-muted text-sm sm:text-base mt-4 max-w-lg">{copy.heroSubtitle}</p>
+        <div className="relative max-w-6xl mx-auto px-8 py-14 sm:py-16 flex flex-col md:flex-row md:items-center md:justify-between gap-10">
+          <div className="max-w-lg">
+            <span className="inline-block text-[11px] font-bold tracking-[0.14em] uppercase mb-3" style={{ color: "#8B0000" }}>{copy.heroEyebrow}</span>
+            <h1 className="text-3xl sm:text-4xl font-black leading-[1.1] text-fg whitespace-pre-line">{copy.heroTitle}</h1>
+            <p className="text-fg-muted text-sm sm:text-base mt-4 max-w-lg">{copy.heroSubtitle}</p>
+          </div>
+          {/* the cut-out has hard edges, so every side fades out */}
+          <img src={vinkCorporateTrain} alt="" width={1100} height={734} decoding="async"
+            className="w-full max-w-[300px] sm:max-w-[420px] md:max-w-[460px] h-auto self-center md:self-auto shrink-0"
+            style={{ filter: "drop-shadow(0 24px 30px rgba(20,10,10,0.25))", WebkitMaskImage: "linear-gradient(to right, transparent, #000 16%, #000 88%, transparent), linear-gradient(to top, transparent, #000 14%, #000 90%, transparent)", WebkitMaskComposite: "source-in", maskImage: "linear-gradient(to right, transparent, #000 16%, #000 88%, transparent), linear-gradient(to top, transparent, #000 14%, #000 90%, transparent)", maskComposite: "intersect" }} />
         </div>
       </div>
 
