@@ -4,6 +4,8 @@ import {
   Headphones, ShieldCheck, Wifi, Lock,
 } from "lucide-react";
 import siteHeroBg from "../../imports/assets/site-hero-bg.webp";
+import vinkMastercardBlack from "../../imports/VinkHeroMastercardBlack.webp";
+import vinkVisaSignatureBlue from "../../imports/VinkHeroVisaSignatureBlue.webp";
 import { Footer } from "./Footer";
 
 interface Props {
@@ -44,55 +46,31 @@ const SLIDES = [
   { eyebrow: "One tap, total control", heading: "Freeze your card\nin one tap",               body: "Lost it? Lock it instantly and keep shopping with a digital card while it's away.", cta: "Explore card controls" },
 ];
 
-// ─── A believable, original premium-card graphic (no imitation of any real card) ──
+// ─── The two VINK cards of the Personal hero: black Mastercard behind, blue Visa Signature in front ──
 function CardGraphic() {
   return (
     <div className="relative select-none" style={{ width: 300, height: 240 }}>
       {/* ambient glow */}
       <div className="absolute inset-0 rounded-[32px]" style={{ background: "radial-gradient(circle at 60% 40%, rgba(201,168,76,0.18), transparent 65%)" }} />
 
-      {/* back card */}
-      <div
+      {/* back card: the black Mastercard, tilted left */}
+      <img
+        src={vinkMastercardBlack} alt="VINK Mastercard" width={244} height={154} decoding="async"
         className="absolute rounded-2xl shadow-2xl"
-        style={{
-          width: 244, height: 154, top: 66, left: 6, rotate: "-9deg",
-          background: "linear-gradient(150deg,#0C0E14 0%,#0C0E14 100%)",
-          border: "1px solid rgba(255,255,255,0.08)",
-        }}
+        style={{ width: 252, height: "auto", top: 74, left: -14, rotate: "-9deg" }}
       />
 
-      {/* front card */}
-      <div
-        className="absolute rounded-2xl shadow-2xl overflow-hidden"
-        style={{
-          width: 258, height: 164, top: 30, left: 24, rotate: "6deg",
-          background: "linear-gradient(155deg,#8B0000 0%,#2E0B10 55%,#0C0E14 100%)",
-          border: "1px solid rgba(255,255,255,0.12)",
-        }}
-      >
-        <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full" style={{ background: "rgba(255,255,255,0.08)" }} />
-        <div className="relative h-full flex flex-col justify-between p-5">
-          <div className="flex items-start justify-between">
-            <div
-              className="w-8 h-6 rounded-[4px]"
-              style={{ background: "linear-gradient(150deg,color-mix(in srgb, #F5E2A8 var(--vk-wash), var(--vk-surface)),#9B1C1C 55%,#9C7F35)" }}
-            />
-            <Wifi className="w-4 h-4 text-white/70 rotate-90" />
-          </div>
-          <div>
-            <p className="text-white/85 text-[13px] font-mono tracking-[0.18em]">•••• •••• •••• 4521</p>
-            <div className="flex items-center justify-between mt-2">
-              <p className="text-white/55 text-[9px] tracking-wide uppercase">VINK Personal</p>
-              <p className="text-white text-[13px] font-black italic tracking-tight">VISA</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* front card: the blue Visa Signature, tilted right, so the two face each other */}
+      <img
+        src={vinkVisaSignatureBlue} alt="VINK Visa Signature" width={258} height={164} decoding="async"
+        className="absolute rounded-2xl shadow-2xl"
+        style={{ width: 258, height: "auto", top: 26, left: 40, rotate: "6deg" }}
+      />
 
       {/* floating lock badge */}
       <div
         className="absolute flex items-center justify-center rounded-full shadow-lg"
-        style={{ width: 46, height: 46, top: 6, right: 2, background: "var(--vk-surface)" }}
+        style={{ width: 46, height: 46, top: -10, right: -22, background: "var(--vk-surface)" }}
       >
         <Lock className="w-4 h-4" style={{ color: "var(--vk-crimson-text)" }} />
       </div>
