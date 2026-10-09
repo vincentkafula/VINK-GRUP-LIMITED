@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import {
-  ChevronRight, ChevronLeft, ArrowRight, Users, CreditCard, Globe2, Fuel,
+  ChevronRight, ChevronLeft, ArrowRight, Users, Globe2, Fuel,
   ShieldCheck, Headphones, Building2, TrendingUp,
 } from "lucide-react";
 import siteHeroBg from "../../imports/assets/site-hero-bg.webp";
+import vinkBusinessTerminal from "../../imports/VinkBusinessTerminal.webp";
 import { Footer } from "./Footer";
 
 interface Props {
@@ -54,28 +55,11 @@ const SLIDES = [
 // not a copy of any real product's UI. ─────────────────────────────────────
 function BusinessGraphic() {
   return (
-    <div className="relative w-[280px] sm:w-[320px]">
-      <div className="rounded-2xl p-5" style={{ background: "linear-gradient(155deg,#2E0B10,#0C0E14)", border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 30px 60px -20px rgba(0,0,0,0.5)" }}>
-        <div className="flex items-center justify-between mb-4">
-          <span className="text-white/50 text-[10px] font-mono uppercase tracking-widest">Business Overview</span>
-          <span className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: "rgba(201,168,76,0.18)" }}>
-            <Building2 className="w-3 h-3" style={{ color: GOLD }} />
-          </span>
-        </div>
-        <p className="text-white text-2xl font-semibold mb-1" style={{ fontFamily: "'Fraunces',serif" }}>R284,650.00</p>
-        <p className="text-white/40 text-[11px] mb-5">Available balance</p>
-        <div className="space-y-2.5">
-          {[["Fleet cards active", "12"], ["Pending settlements", "R18,400"], ["This month's spend", "R94,200"]].map(([label, val]) => (
-            <div key={label} className="flex items-center justify-between py-2 px-3 rounded-lg" style={{ background: "rgba(255,255,255,0.04)" }}>
-              <span className="text-white/60 text-[11.5px]">{label}</span>
-              <span className="text-white text-[12.5px] font-semibold" style={{ fontFamily: "'JetBrains Mono',monospace" }}>{val}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-      <div className="absolute -bottom-4 -right-4 w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: GOLD, boxShadow: "0 14px 30px -10px rgba(201,168,76,0.5)" }}>
-        <CreditCard className="w-6 h-6" style={{ color: "var(--vk-fg)" }} />
-      </div>
+    <div className="relative flex justify-center">
+      {/* soft glow behind the terminal */}
+      <div aria-hidden="true" className="absolute inset-0 m-auto h-72 w-72 rounded-full" style={{ background: "radial-gradient(circle, rgba(201,168,76,0.22), transparent 68%)" }} />
+      <img src={vinkBusinessTerminal} alt="VINK payment terminal: tap a card or scan a QR code" width={772} height={1505} decoding="async"
+        className="relative h-[300px] w-auto sm:h-[380px]" style={{ filter: "drop-shadow(0 28px 38px rgba(0,0,0,0.45))", WebkitMaskImage: "linear-gradient(to bottom, #000 82%, transparent)", maskImage: "linear-gradient(to bottom, #000 82%, transparent)" }} />
     </div>
   );
 }
