@@ -7,6 +7,7 @@ One list, in two places that a test keeps identical: `server/src/config/departme
 | Department | Address | For |
 |---|---|---|
 | Customer Support | support@vink.co.za | Wallet, card, account or app help |
+| Sales | sales@vink.co.za | Sales enquiries about VINK products and services |
 | General Enquiries | info@vink.co.za | Anything else |
 | Compliance | compliance@vink.co.za | Regulatory enquiries, reporting a concern |
 | Privacy and Information Officer | privacy@vink.co.za | Access, correct or delete personal information (POPIA) |

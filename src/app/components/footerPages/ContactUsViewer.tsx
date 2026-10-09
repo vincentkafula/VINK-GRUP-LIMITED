@@ -37,6 +37,7 @@ const DIRECTORY = [
   { title: "Savings & Investments", icon: <Building2 className="w-4 h-4" />, items: ["Fixed deposits", "Investment accounts", "Wealth management"] },
   { title: "Insurance", icon: <Building2 className="w-4 h-4" />, items: ["Claims", "New policies", "Financial advice"] },
   { title: "International Banking", icon: <Building2 className="w-4 h-4" />, items: ["Forex", "International payments", "Travel cards"] },
+  { title: "Sales", icon: <Mail className="w-4 h-4" />, items: ["Sales enquiries — sales@vink.co.za", "Products and services for individuals, owners and businesses"] },
   { title: "Media & General", icon: <Mail className="w-4 h-4" />, items: ["Media relations — media@vink.co.za", "General enquiries — info@vink.co.za"] },
 ];
 

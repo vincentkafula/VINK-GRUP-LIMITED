@@ -13,6 +13,7 @@ export interface Department {
 
 export const DEPARTMENTS: Department[] = [
   { key: "support", name: "Customer Support", address: "support@vink.co.za", purpose: "Help with your wallet, card, account or the app", respondWithin: "1–2 business days" },
+  { key: "sales", name: "Sales", address: "sales@vink.co.za", purpose: "Sales enquiries about VINK products and services", respondWithin: "1–2 business days" },
   { key: "general", name: "General Enquiries", address: "info@vink.co.za", purpose: "Any other question about VINK", respondWithin: "1–2 business days" },
   { key: "compliance", name: "Compliance", address: "compliance@vink.co.za", purpose: "Regulatory and compliance enquiries, and reporting a concern", respondWithin: "1–2 business days" },
   { key: "privacy", name: "Privacy and Information Officer", address: "privacy@vink.co.za", purpose: "Access, correct or delete your personal information (POPIA)", respondWithin: "1–2 business days" },
