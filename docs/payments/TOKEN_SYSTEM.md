@@ -136,7 +136,8 @@ A holder whose identity staff have verified (level above basic) can get a **virt
 
 - **Mastercard Send** (payouts to Mastercard cards), and a **live** push-to-card provider: both need the providers' documentation and credentials.
 - **Paymentology issuing is written but untested**: card creation (`providers/paymentologyIssuer.ts`) and the FAST endpoint (`payments/paymentologyFast.ts`, `POST /api/payments/issuer/fast`) follow Paymentology's public pages, but nothing has run against UAT. Still to confirm with them: the exact API paths, how FAST authenticates to us (interim: a shared secret in `X-API-Key`, set `PAYMENTOLOGY_FAST_SECRET`; the endpoint answers 501 without it), and that `ISO_MSG.DE2` is the card's public token. Card settings: `SANDBOX_PAYMENTOLOGY_CLIENT_ID`, `_CARD_PRODUCT_ID`, `_IMAGE_NAME`, `_PARENT_ACCOUNT_ID`, `_CARD_BRAND`.
-- **Hosted card fields** so a card number never reaches VINK's servers (the sandbox accepts test cards only).
-- **Scheme settlement:** the card settlement account is the amount owed to the sponsor bank; matching it to the sponsor bank's settlement files is not built.
+- **Live hosted card fields:** the flow is built and tested with a sandbox stand-in (see `GO_LIVE.md`); the real processor's card fields still need their documentation.
+- **Real settlement file format:** matching is built against VINK's own layout; it has to be mapped to the sponsor bank's actual file.
+- **Staff screens** for the go-live gate, alerts and settlement exceptions (the API exists).
 - Physical (plastic) cards and digital wallets (Apple Pay, Google Pay).
 - A native Android reader app with the card reader's own NFC kernel. The `/reader` web app covers phones with NFC today.

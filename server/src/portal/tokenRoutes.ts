@@ -16,6 +16,7 @@ import { recordPoolCredit, referenceLooksValid, normaliseReference } from "../se
  *   POST /transfer              send tokens to someone by email or account number
  *   POST /redeem                move tokens into my own verified VINK bank account
  *   POST /card                  { currency } issue my VINK debit card (virtual) that spends my tokens; POST /card/:id/status { status: frozen | active | blocked }
+ *   POST /payout-cards/session, /payout-cards/from-session   secure card entry (the number never reaches this API)
  *   GET/POST /payout-cards     my debit cards that money can be paid to; DELETE /payout-cards/:id removes one
  *   POST /cash-out              { amountCents, cardId? } tokens are paid to my verified debit card by the system. Never to a bank account, never by hand.
  *   GET/PUT /routes             association only: the fare for each route its devices serve
@@ -44,7 +45,7 @@ export function createTokenRouter(db: Db, tokens: TokenService, deps: TokenRoute
       const pool = deps.channels?.(currency)?.in_person ?? null;
       out.push({ ...w, payInto: pool ? { bank: pool.bank, holder: pool.holder, accountNumber: pool.accountNumber, type: pool.type } : null, cards: await tokens.cards(userId, currency), activity: await tokens.activity(userId, currency, 20) });
     }
-    res.json({ success: true, wallets: out, payoutCards: await tokens.payoutCards(userId), issuedCards: await tokens.issuedCards(userId), role: roleOf(req) ?? null, deviceFeeCents: roleOf(req) === "investor" ? (await tokens.settings()).deviceFeeCents : undefined });
+    res.json({ success: true, wallets: out, payoutCards: await tokens.payoutCards(userId), cardEntry: tokens.cardEntry(), issuedCards: await tokens.issuedCards(userId), role: roleOf(req) ?? null, deviceFeeCents: roleOf(req) === "investor" ? (await tokens.settings()).deviceFeeCents : undefined });
   }));
 
   router.post("/wallet", h(async (req, res) => {
@@ -108,6 +109,18 @@ export function createTokenRouter(db: Db, tokens: TokenService, deps: TokenRoute
     res.json({ success: true, card: r.value });
   }));
   router.get("/payout-cards", h(async (req, res) => { res.json({ success: true, cards: await tokens.payoutCards(uid(req)) }); }));
+  /** Secure card entry: start a session (the card form is the processor's), then collect the finished card by its session id. The number never comes through these routes. */
+  router.post("/payout-cards/session", h(async (req, res) => {
+    const r = await tokens.startCardSession(uid(req));
+    if (!r.ok) return fail(res, r.status, r.error);
+    res.status(201).json({ success: true, ...r.value });
+  }));
+  router.post("/payout-cards/from-session", h(async (req, res) => {
+    const r = await tokens.addPayoutCardFromSession(uid(req), (req.body ?? {}).sessionId);
+    if (!r.ok) return fail(res, r.status, r.error);
+    await audit(db, req, "token.payout_card.add", r.value.id, { last4: r.value.last4, brand: r.value.brand, status: r.value.status, via: "hosted_fields" });
+    res.status(201).json({ success: true, ...r.value, message: r.value.status === "verified" ? "Card added." : "Card added. The name on it is not the name on your account, so VINK will check it before you can be paid to it." });
+  }));
   router.post("/payout-cards", h(async (req, res) => {
     const r = await tokens.addPayoutCard(uid(req), (req.body ?? {}) as Record<string, unknown>);
     if (!r.ok) return fail(res, r.status, r.error);

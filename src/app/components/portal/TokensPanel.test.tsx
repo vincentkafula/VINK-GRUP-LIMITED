@@ -108,6 +108,29 @@ describe("TokensPanel: payouts go only to the holder's own debit card", () => {
     expect(JSON.parse(String(post.init!.body))).toEqual({ primaryAccountNumber: "4111 1111 1111 1111", expiry: "12/34", cardholderName: "Pax Pax" });
   });
 
+  it("with secure card entry there are no number fields: the card form is a frame, and only its own finished message adds the card", async () => {
+    mockApi((url, init) => {
+      if (url.endsWith("/payout-cards/session")) return { status: 201, body: { success: true, sessionId: "S".repeat(24), fieldsUrl: "/api/payments/sandbox-vault/fields/" + "S".repeat(24) } };
+      if (url.endsWith("/payout-cards/from-session")) return { status: 201, body: { success: true, id: "k9", last4: "1111", brand: "visa", status: "verified", message: "Card added." } };
+      if (url.endsWith("/tokens/cash-outs")) return { body: { success: true, cashOuts: [] } };
+      return { body: { success: true, wallets: [WALLET], payoutCards: [], cardEntry: { hosted: true, raw: false }, role: "passenger" } };
+    });
+    await render(<TokensPanel segment="personal" color="#f00" />);
+    expect(document.querySelector('input[placeholder="4111 1111 1111 1111"]')).toBeNull();
+    expect(host.textContent).toContain("VINK never sees it");
+    await act(async () => { btn("Add debit card")!.click(); }); await settle();
+    const frame = document.querySelector("iframe") as HTMLIFrameElement;
+    expect(frame.title).toBe("Secure card form"); expect(frame.src).toContain("/api/payments/sandbox-vault/fields/" + "S".repeat(24));
+    const origin = new URL(frame.src).origin, ok = { type: "vink-card-complete", sessionId: "S".repeat(24) };
+    await act(async () => { window.dispatchEvent(new MessageEvent("message", { data: ok, origin: "https://evil.example" })); }); await settle();   // not from the card form
+    await act(async () => { window.dispatchEvent(new MessageEvent("message", { data: { ...ok, sessionId: "other" }, origin })); }); await settle();   // not this session
+    expect(calls.some((x) => x.url.endsWith("/payout-cards/from-session"))).toBe(false);
+    await act(async () => { window.dispatchEvent(new MessageEvent("message", { data: ok, origin })); }); await settle();
+    const post = calls.find((x) => x.url.endsWith("/payout-cards/from-session"))!;
+    expect(JSON.parse(String(post.init!.body))).toEqual({ sessionId: "S".repeat(24) });
+    expect(document.querySelector("iframe")).toBeNull(); expect(host.textContent).toContain("Card added.");
+  });
+
   it("asks the system to pay an amount to the card, and shows what it answered", async () => {
     setup([CARD], () => ({ status: 201, body: { success: true, id: "c2", status: "paid", balanceCents: 5000, message: "Paid to your debit card." } }));
     await render(<TokensPanel segment="personal" color="#f00" />);

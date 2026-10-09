@@ -7,7 +7,7 @@ import { calculateRevenueSplit } from "./revenueSplitService.js";
 import type { ConfigReader } from "../config/configService.js";
 import { countryForCurrency, KYC_TIERS, type KycTier } from "../config/countryConfig.js";
 import { checkTierLimit } from "../config/riskRules.js";
-import type { CardVaultProvider, CardPayoutProvider, AccountValidationProvider, IssuingProvider } from "../payments/providers/types.js";
+import type { CardVaultProvider, CardPayoutProvider, AccountValidationProvider, IssuingProvider, HostedCardFields, HostedCardResult, HostedCardSession } from "../payments/providers/types.js";
 import { computeFee } from "../config/feeEngine.js";
 import { MOCK_CARD_SCENARIOS, expiryOf } from "../payments/providers/mockCardRail.js";
 
@@ -65,6 +65,10 @@ export interface CardDecision { approved: boolean; reason?: string; replayed: bo
 export interface PayoutAttempt { status: "paid" | "rejected" | "requested" | "processing" | "none"; reason?: string }
 
 export function createTokenService(deps: {
+  /** The processor's hosted card fields. With these, a card is added without its number ever reaching this server. */
+  hosted?: HostedCardFields;
+  /** false in live mode: card numbers are then refused here and can only come through the hosted fields. Default true (sandbox test cards). */
+  acceptRawCardNumbers?: boolean;
   db: Db; ledger: LedgerPort; reader: ConfigReader; now?: () => Date;
   /** Turns a card into a token, and pushes money to a token. Without it nobody can cash out or be refunded. */
   rail?: { name: string; vault: CardVaultProvider; payout: CardPayoutProvider };
@@ -246,6 +250,7 @@ export function createTokenService(deps: {
    */
   async function addPayoutCard(userId: string, b: { primaryAccountNumber?: unknown; expiry?: unknown; cardholderName?: unknown }): Promise<TokenResult<{ id: string; last4: string; brand: string; status: string }>> {
     if (!deps.rail) return bad(503, "Card payouts are not set up yet");
+    if (deps.acceptRawCardNumbers === false) return bad(403, "Card numbers are entered in the secure card form only.", "card_fields_required");
     const pan = typeof b.primaryAccountNumber === "string" ? b.primaryAccountNumber.replace(/[\s-]/g, "") : "";
     if (!/^[0-9]{13,19}$/.test(pan)) return bad(400, "Enter the card number");
     if (!TEST_PANS.has(pan)) return bad(403, "Only sandbox test cards can be added until live card tokenisation is in place. Do not enter a real card number.", "sandbox_only");
@@ -267,13 +272,40 @@ export function createTokenService(deps: {
     let card;
     try { card = await deps.rail.vault.tokenise({ primaryAccountNumber: pan, expiry, cardholderName: name }); }
     catch (e) { return bad(400, e instanceof Error ? e.message : "The card could not be added"); }
+    return finishAdd(userId, String(user.name), card, name);
+  }
+
+  /** What every way of adding a card ends with: debit only, name checked against the account, stored as a token. */
+  async function finishAdd(userId: string, accountName: string, card: { token: string; last4: string; brand: string; expiry: string; funding: string }, name: string): Promise<TokenResult<{ id: string; last4: string; brand: string; status: string }>> {
     if (card.funding !== "debit") return bad(409, `A payout can only be made to a debit card. This looks like a ${card.funding} card.`, "not_debit");
-    const status = namesMatch(String(user.name), name) ? "verified" : "needs_review";
+    const status = namesMatch(accountName, name) ? "verified" : "needs_review";
     try {
       const r = await db.query(`INSERT INTO token_payout_cards (user_id, brand, last4, expiry, funding, cardholder_name, provider, token, status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
-        [userId, card.brand, card.last4, card.expiry, card.funding, name, deps.rail.name, card.token, status]);
+        [userId, card.brand, card.last4, card.expiry, card.funding, name, deps.rail!.name, card.token, status]);
       return { ok: true, value: { id: String(r.rows[0].id), last4: card.last4, brand: card.brand, status } };
     } catch (e) { if (isUniqueViolation(e)) return bad(409, "This card is already added"); throw e; }
+  }
+
+  /** Starts a secure card-entry session. The card form is the processor's, so the number is never sent to this server. */
+  async function startCardSession(userId: string): Promise<TokenResult<HostedCardSession>> {
+    if (!deps.hosted || !deps.rail) return bad(501, "Secure card entry is not available here.", "hosted_unavailable");
+    if (Number((await db.query(`SELECT COUNT(*) AS n FROM token_payout_cards WHERE user_id = $1 AND status IN ('verified','needs_review')`, [userId])).rows[0].n) >= 3) return bad(409, "You can have up to 3 cards. Remove one first.");
+    try { return { ok: true, value: await deps.hosted.createSession({ userId }) }; }
+    catch (e) { return bad(503, e instanceof Error ? e.message.slice(0, 160) : "Card entry is not available right now."); }
+  }
+  /** The card form reported "done". Collect the tokenised card for this user and add it. */
+  async function addPayoutCardFromSession(userId: string, sessionId: unknown): Promise<TokenResult<{ id: string; last4: string; brand: string; status: string }>> {
+    if (!deps.hosted || !deps.rail) return bad(501, "Secure card entry is not available here.", "hosted_unavailable");
+    if (typeof sessionId !== "string" || sessionId.length < 10 || sessionId.length > 200) return bad(400, "That card form is not valid.");
+    let card: HostedCardResult | null;
+    try { card = await deps.hosted.complete({ sessionId, userId }); } catch { return bad(502, "The card could not be collected right now. Please try again."); }
+    if (!card) return bad(409, "That card form has expired or was already used. Start again.");
+    const mmyy = /^(0[1-9]|1[0-2])\/(\d{2})$/.exec(card.expiry);
+    if (!mmyy || !expiryOf(`20${mmyy[2]}-${mmyy[1]}`, clock())) return bad(400, "The card has expired, or the expiry date is not valid");
+    const user = (await db.query(`SELECT name FROM users WHERE id = $1`, [userId])).rows[0];
+    if (!user) return bad(404, "No such user");
+    if (Number((await db.query(`SELECT COUNT(*) AS n FROM token_payout_cards WHERE user_id = $1 AND status IN ('verified','needs_review')`, [userId])).rows[0].n) >= 3) return bad(409, "You can have up to 3 cards. Remove one first.");
+    return finishAdd(userId, String(user.name), card, card.cardholderName);
   }
   async function payoutCards(userId: string): Promise<PayoutCardView[]> {
     return (await db.query(`SELECT id, brand, last4, expiry, status FROM token_payout_cards WHERE user_id = $1 AND status <> 'removed' ORDER BY created_at`, [userId])).rows
@@ -559,6 +591,6 @@ export function createTokenService(deps: {
     return { ok: true, value: { id: String(row.id) } };
   }
 
-  return { bindEngine(e: Pick<Engine, "settleTaps">) { engine = e; }, partyOf, setTier, wallet, openWallet, linkCard, cards, blockCard, tapToken, transfer, redeemToBank, requestCashOut, decideCashOut, retryCashOut, processPayouts, attemptPayout, issueCard, issuedCards, setIssuedCardStatus, authoriseCardSpend, reverseCardSpend, cardIsActive, addPayoutCard, payoutCards, removePayoutCard, reviewPayoutCard, cardsToReview, activity, summary, settings, setDeviceFee, routes, upsertRoute };
+  return { bindEngine(e: Pick<Engine, "settleTaps">) { engine = e; }, partyOf, setTier, wallet, openWallet, linkCard, cards, blockCard, tapToken, transfer, redeemToBank, requestCashOut, decideCashOut, retryCashOut, processPayouts, attemptPayout, issueCard, issuedCards, setIssuedCardStatus, authoriseCardSpend, reverseCardSpend, cardIsActive, addPayoutCard, startCardSession, addPayoutCardFromSession, cardEntry: () => ({ hosted: !!deps.hosted, raw: deps.acceptRawCardNumbers !== false }), payoutCards, removePayoutCard, reviewPayoutCard, cardsToReview, activity, summary, settings, setDeviceFee, routes, upsertRoute };
 }
 export type TokenService = ReturnType<typeof createTokenService>;
