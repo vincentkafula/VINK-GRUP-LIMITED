@@ -48,7 +48,8 @@ export interface PaymentsConfig {
   /** Visa Direct sandbox settings, only when cardPayoutProvider is visa_direct. */
   visaDirect: { baseUrl: string; auth: VisaAuthConfig; acquiringBin: string; acquirerCountryCode: string; sender: { accountNumber: string; name: string; countryCode: string; city?: string; address?: string }; cardAcceptor: { name: string; idCode: string; terminalId: string; city: string; country: string }; vaultKey: string; extraTestPans: string[] } | null;
   /** Paymentology card settings (client id, card product, parent account, brand), when all are set. */
-  paymentologyProgramme: { clientId: number; cardProductId: number; imageName: string; parentAccountId: number; currencyNumeric: string; cardBrand: "visa" | "mastercard" } | null;
+  /** One card product per brand. Empty until the card settings are set. */
+  paymentologyProgrammes: Partial<Record<"visa" | "mastercard", { clientId: number; cardProductId: number; imageName: string; parentAccountId: number; currencyNumeric: string; cardBrand: "visa" | "mastercard" }>>;
   /** Credentials for the selected real provider, taken from the SANDBOX_ or LIVE_ variable set matching `mode`. Null for "mock". */
   paymentology: ProviderCredentials | null;
 }
@@ -142,10 +143,19 @@ export function resolvePaymentsConfig(env: NodeJS.ProcessEnv = process.env): Pay
 
   const pm = (k: string) => env[`${mode === "live" ? "LIVE" : "SANDBOX"}_PAYMENTOLOGY_${k}`]?.trim();
   const int = (v: string | undefined) => (v && /^\d{1,15}$/.test(v) && Number(v) > 0 ? Number(v) : null);
-  const brandRaw = pm("CARD_BRAND")?.toLowerCase();
-  const paymentologyProgramme = issuing === "paymentology" && paymentology && int(pm("CLIENT_ID")) && int(pm("CARD_PRODUCT_ID")) && pm("IMAGE_NAME") && int(pm("PARENT_ACCOUNT_ID")) && (brandRaw === "visa" || brandRaw === "mastercard")
-    ? { clientId: int(pm("CLIENT_ID"))!, cardProductId: int(pm("CARD_PRODUCT_ID"))!, imageName: pm("IMAGE_NAME")!, parentAccountId: int(pm("PARENT_ACCOUNT_ID"))!, currencyNumeric: /^\d{3}$/.test(pm("CURRENCY_NUMERIC") ?? "") ? pm("CURRENCY_NUMERIC")! : "710", cardBrand: brandRaw as "visa" | "mastercard" }
-    : null;
+  // One card product per brand. SANDBOX_PAYMENTOLOGY_VISA_* and _MASTERCARD_* (CARD_PRODUCT_ID, IMAGE_NAME, PARENT_ACCOUNT_ID) give one product each;
+  // the older single set (CARD_PRODUCT_ID, IMAGE_NAME, PARENT_ACCOUNT_ID, CARD_BRAND) still works for one brand. CLIENT_ID and CURRENCY_NUMERIC are shared.
+  const paymentologyProgrammes: PaymentsConfig["paymentologyProgrammes"] = {};
+  if (issuing === "paymentology" && paymentology && int(pm("CLIENT_ID"))) {
+    const currencyNumeric = /^\d{3}$/.test(pm("CURRENCY_NUMERIC") ?? "") ? pm("CURRENCY_NUMERIC")! : "710";
+    const legacy = pm("CARD_BRAND")?.toLowerCase();
+    for (const brand of ["visa", "mastercard"] as const) {
+      const key = brand.toUpperCase();
+      const useLegacy = legacy === brand && !pm(`${key}_CARD_PRODUCT_ID`);
+      const product = int(pm(useLegacy ? "CARD_PRODUCT_ID" : `${key}_CARD_PRODUCT_ID`)), image = pm(useLegacy ? "IMAGE_NAME" : `${key}_IMAGE_NAME`), parent = int(pm(useLegacy ? "PARENT_ACCOUNT_ID" : `${key}_PARENT_ACCOUNT_ID`));
+      if (product && image && parent) paymentologyProgrammes[brand] = { clientId: int(pm("CLIENT_ID"))!, cardProductId: product, imageName: image, parentAccountId: parent, currencyNumeric, cardBrand: brand };
+    }
+  }
 
   const problems: string[] = [];
   if (issuing === "paymentology" && !paymentology) {
@@ -172,7 +182,7 @@ export function resolvePaymentsConfig(env: NodeJS.ProcessEnv = process.env): Pay
   if (problems.length) {
     throw new Error(`Payments configuration refused:\n  - ${problems.join("\n  - ")}`);
   }
-  return { mode, issuingProvider: issuing, acquiringProvider: acquiring, cardServicingProvider: servicing, visaDps, accountValidationProvider: validation, visaPav, cardPayoutProvider: payout, visaDirect, paymentologyProgramme, paymentology };
+  return { mode, issuingProvider: issuing, acquiringProvider: acquiring, cardServicingProvider: servicing, visaDps, accountValidationProvider: validation, visaPav, cardPayoutProvider: payout, visaDirect, paymentologyProgrammes, paymentology };
 }
 
 /** VINK core calls its sandbox "test" (it prefixes API keys mk_test_ / mk_live_). */

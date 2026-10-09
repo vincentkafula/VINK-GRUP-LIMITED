@@ -10,7 +10,7 @@ import type { ProviderCredentials } from "../config.js";
  * What is documented and implemented:
  *  - Authentication: a static `X-API-Key` header (the value comes from onboarding).
  *  - Create a customer: POST /pws/v2/pws_create_customer (cu_fname, cu_sname, cu_mobile are required), answer body.customer_id.
- *  - Create a card: POST /pws/v2/pws_create_card/ (card_type 2 = virtual, cu_id, ac_parent_id + ac_name to create the card's own account, image_delivery 3 = JSON with
+ *  - Create a card: POST /pws/v2/pws_create_card/ (card_type 2 = virtual; 1 = physical, created switched off, with emboss_name for the printed name, cu_id, ac_parent_id + ac_name to create the card's own account, image_delivery 3 = JSON with
  *    no image and image_fields / xml_fields "00000", so the card number, the security code and any image are NEVER returned to us). Answer body.token (the card's public
  *    token), body.last_four_digit and body.expiry (MM/YY).
  *  - Set the card status: POST /pws/v2/pws_set_card_status/ (status_nwk 1000 operational, 1005 decline all, 1009 void), answer header.error_id (0 is success).
@@ -36,6 +36,9 @@ export interface PaymentologyProgramme {
   cardBrand: "visa" | "mastercard";
 }
 
+/** One card product per brand. A single programme (the older form) is accepted and keyed by its own brand. */
+export type PaymentologyProgrammes = Partial<Record<"visa" | "mastercard", PaymentologyProgramme>>;
+
 export interface PaymentologyDeps { fetchImpl?: typeof fetch; timeoutMs?: number }
 
 /** What the card's holder is called, and how to reach them, for the customer record Paymentology keeps. */
@@ -51,11 +54,22 @@ export class PaymentologyApiError extends Error {
 
 export class PaymentologyIssuer implements IssuingProvider {
   readonly name = "paymentology";
-  constructor(private readonly creds: ProviderCredentials, private readonly programme: PaymentologyProgramme | null = null, private readonly deps: PaymentologyDeps = {}) {}
+  private readonly programmes: PaymentologyProgrammes;
+  constructor(private readonly creds: ProviderCredentials, programme: PaymentologyProgramme | PaymentologyProgrammes | null = null, private readonly deps: PaymentologyDeps = {}) {
+    this.programmes = programme && "clientId" in programme ? { [programme.cardBrand]: programme } : (programme ?? {});
+  }
 
-  private need(): PaymentologyProgramme {
-    if (!this.programme) throw new NotConfiguredError("Paymentology card settings are missing: set SANDBOX_PAYMENTOLOGY_CLIENT_ID, _CARD_PRODUCT_ID, _IMAGE_NAME, _PARENT_ACCOUNT_ID and _CARD_BRAND.");
-    return this.programme;
+  brands(): ("visa" | "mastercard")[] { return (Object.keys(this.programmes) as ("visa" | "mastercard")[]).filter((b) => this.programmes[b]); }
+
+  /** The card product for a brand. With one product configured the brand may be left out; with several it must be chosen. */
+  private need(brand?: "visa" | "mastercard"): PaymentologyProgramme {
+    const have = this.brands();
+    if (!have.length) throw new NotConfiguredError("Paymentology card settings are missing: set SANDBOX_PAYMENTOLOGY_CLIENT_ID and, for each brand, _VISA_ or _MASTERCARD_ CARD_PRODUCT_ID, IMAGE_NAME and PARENT_ACCOUNT_ID.");
+    const b = brand ?? (have.length === 1 ? have[0] : undefined);
+    if (!b) throw new PaymentologyApiError("Choose Visa or Mastercard");
+    const p = this.programmes[b];
+    if (!p) throw new NotConfiguredError(`${b === "visa" ? "Visa" : "Mastercard"} cards are not set up yet`);
+    return p;
   }
 
   /** One API call. Paymentology answers HTTP 200 even for most failures, so success is header.error_id === 0. */
@@ -80,9 +94,10 @@ export class PaymentologyIssuer implements IssuingProvider {
   }
 
   /** The holder is needed to open the customer record; without a mobile number Paymentology cannot create it. */
-  async createCard(input: { customerRef: string; kind: "physical" | "virtual"; requestId?: string; holder?: CardHolder }): Promise<IssuedCard> {
-    const p = this.need();
-    if (input.kind !== "virtual") throw new NotConfiguredError("Only virtual cards are issued through Paymentology so far");
+  async createCard(input: { customerRef: string; kind: "physical" | "virtual"; requestId?: string; holder?: CardHolder; brand?: "visa" | "mastercard"; embossName?: string }): Promise<IssuedCard> {
+    const p = this.need(input.brand);
+    const physical = input.kind === "physical";
+    if (physical && !input.embossName) throw new PaymentologyApiError("The name to print on the card is needed");
     if (!input.holder?.mobile) throw new PaymentologyApiError("A mobile number is needed to issue a card");
     const rid = (input.requestId ?? crypto.randomUUID()).replace(/[^A-Za-z0-9]/g, "").slice(0, 34);
     const customer = await this.call("/pws/v2/pws_create_customer", {
@@ -92,19 +107,20 @@ export class PaymentologyIssuer implements IssuingProvider {
     const cuId = Number(customer.body?.customer_id);
     if (!Number.isInteger(cuId) || cuId <= 0) throw new PaymentologyApiError("Paymentology did not return the customer id");
     const card = await this.call("/pws/v2/pws_create_card/", {
-      api_call_unique_identifier: `vkk${rid}`.slice(0, 40), client_id: p.clientId, card_type: 2, crd_prdct_id: p.cardProductId, cu_id: cuId,
-      status_nwk: Number(STATUS_NWK.active), image_name: p.imageName, image_delivery: 3, image_fields: "00000", xml_fields: "00000",
+      api_call_unique_identifier: `vkk${rid}`.slice(0, 40), client_id: p.clientId, card_type: physical ? 1 : 2, crd_prdct_id: p.cardProductId, cu_id: cuId,
+      // a physical card is created switched off (decline all) and switched on when the holder activates it
+      status_nwk: Number(physical ? STATUS_NWK.frozen : STATUS_NWK.active), ...(physical ? { emboss_name: String(input.embossName).slice(0, 26) } : {}), image_name: p.imageName, image_delivery: 3, image_fields: "00000", xml_fields: "00000",
       ac_parent_id: p.parentAccountId, ac_name: `VINK ${input.customerRef}`.slice(0, 50), ac_set_ccy: p.currencyNumeric, ac_bill_ccy: p.currencyNumeric,
-      client_card_ref: input.customerRef.slice(0, 100), remarks: "VINK virtual debit card",
+      client_card_ref: input.customerRef.slice(0, 100), remarks: physical ? "VINK physical debit card" : "VINK virtual debit card",
     });
     const token = card.body?.token, last4 = String(card.body?.last_four_digit ?? ""), expiry = String(card.body?.expiry ?? "");
     if (token === undefined || token === null || !/^\d{1,19}$/.test(String(token))) throw new PaymentologyApiError("Paymentology did not return the card token");
     if (!/^\d{4}$/.test(last4) || !/^\d\d\/\d\d$/.test(expiry)) throw new PaymentologyApiError("Paymentology did not return the last four digits and the expiry");
-    return { providerCardId: String(token), last4, brand: p.cardBrand, expiry, status: "active" };
+    return { providerCardId: String(token), last4, brand: p.cardBrand, expiry, status: physical ? "inactive" : "active" };
   }
 
   async setCardStatus(providerCardId: string, status: "active" | "frozen" | "blocked"): Promise<void> {
-    const p = this.need();
+    const p = Object.values(this.programmes)[0] ?? this.need();                  // the client id is shared by every product
     if (!/^\d{1,19}$/.test(providerCardId)) throw new PaymentologyApiError("This is not a Paymentology card token");
     await this.call("/pws/v2/pws_set_card_status/", {
       api_call_unique_identifier: `vks${crypto.randomUUID().replace(/-/g, "")}`.slice(0, 40), client_id: p.clientId, status_nwk: STATUS_NWK[status], token: Number(providerCardId), action: 1, note: `VINK ${status}`.slice(0, 200),

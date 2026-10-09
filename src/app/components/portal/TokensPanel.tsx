@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { API_BASE } from "../../services/config";
 import { Coins, CreditCard, Send, Landmark } from "lucide-react";
 import { SectionPanel, StatCard, TableCard, Badge } from "../dashboards/DashboardShell";
 import { portalClient, useLoad, Status, Empty, ActionButton, inputCls, when } from "./ui";
@@ -23,20 +24,23 @@ const toCents = (v: string) => { const n = Math.round(Number(v.replace(",", ".")
 
 export function TokensPanel({ segment, color }: { segment: TokenSegment; color: string }) {
   const call = portalClient(segment);
-  const [load, reload] = useLoad<{ wallets: WalletView[]; payoutCards?: PayoutCardRow[]; issuedCards?: IssuedCardRow[]; role: string | null }>(() => call("/tokens"));
+  const [load, reload] = useLoad<{ wallets: WalletView[]; payoutCards?: PayoutCardRow[]; cardEntry?: CardEntry; cardOptions?: CardOptions; issuedCards?: IssuedCardRow[]; role: string | null }>(() => call("/tokens"));
   return (
     <div className="space-y-4">
       <Status load={load}>{(d) => d.wallets.length === 0
         ? <OpenWallet call={call} color={color} onDone={reload} />
-        : <>{d.wallets.map((w) => <Wallet key={w.currency} w={w} cards={d.payoutCards ?? []} issued={(d.issuedCards ?? []).filter((c) => c.currency === w.currency)} call={call} color={color} reload={reload} />)}</>}</Status>
+        : <>{d.wallets.map((w) => <Wallet key={w.currency} w={w} cards={d.payoutCards ?? []} entry={d.cardEntry ?? { hosted: false, raw: true }} options={d.cardOptions ?? { brands: [] }} issued={(d.issuedCards ?? []).filter((c) => c.currency === w.currency)} call={call} color={color} reload={reload} />)}</>}</Status>
       {segment === "association" && <RouteFares call={call} color={color} />}
     </div>
   );
 }
 
 type Call = ReturnType<typeof portalClient>;
-interface IssuedCardRow { id: string; brand: string; last4: string; expiry: string; status: string; currency: string }
+interface IssuedCardRow { id: string; brand: string; last4: string; expiry: string; status: string; currency: string; form?: "virtual" | "physical"; activated?: boolean; delivery?: string }
+interface CardOptions { brands: string[] }
 const ISSUED_STATUS: Record<string, [string, string]> = { active: ["Active", "#10B981"], frozen: ["Frozen", "#F59E0B"], blocked: ["Blocked", "#EF4444"] };
+/** How a card may be added: in the processor's secure card form (hosted) and/or by typing the number here (raw, sandbox test cards only). */
+interface CardEntry { hosted: boolean; raw: boolean }
 interface PayoutCardRow { id: string; brand: string; last4: string; expiry: string; status: string }
 interface CashOutRow { id: string; amountCents: number; currency: string; reason: string; status: string; card: string | null; problem: string | null; requestedAt: string }
 const CARD_STATUS: Record<string, [string, string]> = { verified: ["Ready for payouts", "#10B981"], needs_review: ["Being checked by VINK", "#F59E0B"], rejected: ["Not accepted", "#EF4444"] };
@@ -57,7 +61,7 @@ function OpenWallet({ call, color, onDone }: { call: Call; color: string; onDone
   );
 }
 
-function Wallet({ w, cards, issued, call, color, reload }: { w: WalletView; cards: PayoutCardRow[]; issued: IssuedCardRow[]; call: Call; color: string; reload: () => void }) {
+function Wallet({ w, cards, entry, options, issued, call, color, reload }: { w: WalletView; cards: PayoutCardRow[]; entry: CardEntry; options: CardOptions; issued: IssuedCardRow[]; call: Call; color: string; reload: () => void }) {
   const [pan, setPan] = useState(""); const [exp, setExp] = useState(""); const [nameOnCard, setNameOnCard] = useState(""); const [pickCard, setPickCard] = useState("");
   const [outs, reloadOuts] = useLoad<{ cashOuts: CashOutRow[] }>(() => call("/tokens/cash-outs"));
   const [card, setCard] = useState(""); const [to, setTo] = useState(""); const [sendAmt, setSendAmt] = useState(""); const [outAmt, setOutAmt] = useState("");
@@ -77,27 +81,7 @@ function Wallet({ w, cards, issued, call, color, reload }: { w: WalletView; card
           {w.payInto ? <p className="text-xs text-fg-muted mt-1">Pay into {w.payInto.holder} · {w.payInto.bank} · account {w.payInto.accountNumber}. Your tokens arrive when the bank reports the payment.</p> : <p className="text-xs text-warn mt-1">The bank account to pay into has not been set up yet.</p>}
         </section>
 
-        <section aria-label="My VINK debit card">
-          <p className="text-sm font-semibold text-fg mb-1 flex items-center gap-2"><CreditCard className="w-4 h-4" /> My VINK debit card <Badge text="sandbox" color="#94A3B8" /></p>
-          <p className="text-xs text-fg-muted mb-2">A Visa or Mastercard debit card that spends your tokens at shops, online and at cash machines (the bank's cash-machine fee applies). Each purchase is approved only if your tokens cover it, and they leave your wallet at once.</p>
-          {issued.length === 0 ? (
-            <ActionButton label="Get my VINK card" color={color} onRun={async () => { const r = await call("/tokens/card", { method: "POST", body: { currency: cur } }); if ("error" in r) return { error: r.error }; reload(); return { message: "Your card is ready." }; }} />
-          ) : (
-            <ul className="space-y-2">{issued.map((c) => {
-              const [label, tone] = ISSUED_STATUS[c.status] ?? [c.status, "#94A3B8"];
-              const setStatus = (status: string, msg: string) => act(msg, () => call(`/tokens/card/${c.id}/status`, { method: "POST", body: { status } }));
-              return (
-                <li key={c.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg p-3" style={{ background: "var(--vk-bg)", border: "1px solid var(--vk-line)" }}>
-                  <span className="text-sm text-fg">{c.brand === "visa" ? "Visa" : "Mastercard"} debit ****{c.last4} · {c.expiry} <Badge text={label} color={tone} /></span>
-                  <span className="flex gap-2">
-                    {c.status === "active" && <ActionButton small label="Freeze" color="#F59E0B" onRun={setStatus("frozen", "Card frozen")} />}
-                    {c.status === "frozen" && <ActionButton small label="Unfreeze" color="#10B981" onRun={setStatus("active", "Card unfrozen")} />}
-                    {c.status !== "blocked" && <ActionButton small label="Block for good" color="#EF4444" onRun={setStatus("blocked", "Card blocked")} />}
-                  </span>
-                </li>);
-            })}</ul>)}
-          <p className="text-xs text-fg-subtle mt-2">The full card number and security code are only shown by the card processor's secure screen once VINK is live. You need your identity verified before a card can be issued.</p>
-        </section>
+        <VinkCards issued={issued} options={options} cur={cur} call={call} color={color} reload={reload} act={act} />
 
         <section aria-label="My cards">
           <p className="text-sm font-semibold text-fg mb-2 flex items-center gap-2"><CreditCard className="w-4 h-4" /> My VINK cards</p>
@@ -145,13 +129,17 @@ function Wallet({ w, cards, issued, call, color, reload }: { w: WalletView; card
                   <ActionButton small label="Remove" color="#64748B" onRun={act("Card removed", () => call(`/tokens/payout-cards/${c.id}`, { method: "DELETE" }))} />
                 </li>);
             })}</ul>)}
-          <p className="text-xs text-warn mt-3">Sandbox: only test cards work for now (for example Visa 4111 1111 1111 1111, any future date). Never enter a real card number.</p>
-          <div className="flex flex-wrap items-end gap-3 mt-2">
-            <label className="block"><span className="text-[11px] text-fg-muted">Card number</span><input className={inputCls + " mt-1"} value={pan} onChange={(e) => setPan(e.target.value)} inputMode="numeric" autoComplete="off" placeholder="4111 1111 1111 1111" /></label>
-            <label className="block"><span className="text-[11px] text-fg-muted">Expiry (MM/YY)</span><input className={inputCls + " mt-1 !w-28"} value={exp} onChange={(e) => setExp(e.target.value)} autoComplete="off" placeholder="12/34" /></label>
-            <label className="block"><span className="text-[11px] text-fg-muted">Name on the card</span><input className={inputCls + " mt-1"} value={nameOnCard} onChange={(e) => setNameOnCard(e.target.value)} autoComplete="off" /></label>
-            <ActionButton label="Add debit card" color={color} onRun={async () => { const r = await call<{ message?: string }>("/tokens/payout-cards", { method: "POST", body: { primaryAccountNumber: pan, expiry: exp, cardholderName: nameOnCard } }); if ("error" in r) return { error: r.error }; setPan(""); setExp(""); setNameOnCard(""); reload(); return { message: r.data.message ?? "Card added." }; }} />
-          </div>
+          {entry.hosted ? <SecureCardForm call={call} color={color} onAdded={reload} />
+            : entry.raw ? <>
+            <p className="text-xs text-warn mt-3">Sandbox: only test cards work for now (for example Visa 4111 1111 1111 1111, any future date). Never enter a real card number.</p>
+            <div className="flex flex-wrap items-end gap-3 mt-2">
+              <label className="block"><span className="text-[11px] text-fg-muted">Card number</span><input className={inputCls + " mt-1"} value={pan} onChange={(e) => setPan(e.target.value)} inputMode="numeric" autoComplete="off" placeholder="4111 1111 1111 1111" /></label>
+              <label className="block"><span className="text-[11px] text-fg-muted">Expiry (MM/YY)</span><input className={inputCls + " mt-1 !w-28"} value={exp} onChange={(e) => setExp(e.target.value)} autoComplete="off" placeholder="12/34" /></label>
+              <label className="block"><span className="text-[11px] text-fg-muted">Name on the card</span><input className={inputCls + " mt-1"} value={nameOnCard} onChange={(e) => setNameOnCard(e.target.value)} autoComplete="off" /></label>
+              <ActionButton label="Add debit card" color={color} onRun={async () => { const r = await call<{ message?: string }>("/tokens/payout-cards", { method: "POST", body: { primaryAccountNumber: pan, expiry: exp, cardholderName: nameOnCard } }); if ("error" in r) return { error: r.error }; setPan(""); setExp(""); setNameOnCard(""); reload(); return { message: r.data.message ?? "Card added." }; }} />
+            </div>
+            </>
+            : <p className="text-xs text-fg-subtle mt-3">Adding a card is not available yet.</p>}
         </section>
 
         <Status load={outs}>{({ cashOuts }) => !cashOuts || cashOuts.length === 0 ? null : (
@@ -192,4 +180,114 @@ function RouteFares({ call, color }: { call: Call; color: string }) {
       </div>
     </SectionPanel>
   );
+}
+
+/**
+ * Adds a debit card through the processor's secure card form. The form is a separate page shown in a frame: the card number is typed into it and goes
+ * straight to the processor, never into this page or to VINK's servers. The page only learns that the form finished (a session id), then asks VINK to add that card.
+ */
+function SecureCardForm({ call, color, onAdded }: { call: Call; color: string; onAdded: () => void }) {
+  const [session, setSession] = useState<{ sessionId: string; src: string } | null>(null);
+  const [note, setNote] = useState<{ error?: string; message?: string } | null>(null);
+  useEffect(() => {
+    if (!session) return;
+    const origin = new URL(session.src, window.location.href).origin;
+    const onMessage = async (e: MessageEvent) => {
+      if (e.origin !== origin) return;                                                                            // only the card form itself
+      const d = e.data as { type?: unknown; sessionId?: unknown } | null;
+      if (!d || d.type !== "vink-card-complete" || d.sessionId !== session.sessionId) return;
+      setSession(null);
+      const r = await call<{ message?: string }>("/tokens/payout-cards/from-session", { method: "POST", body: { sessionId: session.sessionId } });
+      if ("error" in r) { setNote({ error: r.error }); return; }
+      setNote({ message: r.data.message ?? "Card added." }); onAdded();
+    };
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, [session, call, onAdded]);
+  return (
+    <div className="mt-3">
+      {!session && <ActionButton label="Add debit card" color={color} onRun={async () => {
+        setNote(null);
+        const r = await call<{ sessionId: string; fieldsUrl: string }>("/tokens/payout-cards/session", { method: "POST", body: {} });
+        if ("error" in r) return { error: r.error };
+        setSession({ sessionId: r.data.sessionId, src: /^https?:/i.test(r.data.fieldsUrl) ? r.data.fieldsUrl : `${API_BASE}${r.data.fieldsUrl}` });
+        return { message: "Enter the card details below." };
+      }} />}
+      {session && (
+        <div>
+          <iframe title="Secure card form" src={session.src} className="w-full rounded-lg" style={{ height: 300, border: "1px solid var(--vk-line)", background: "#fff" }} referrerPolicy="no-referrer" />
+          <button type="button" className="text-xs text-fg-subtle underline mt-2" onClick={() => setSession(null)}>Cancel</button>
+        </div>)}
+      {note?.error && <p role="alert" className="text-xs text-bad mt-2">{note.error}</p>}
+      {note?.message && <p role="status" className="text-xs text-ok mt-2">{note.message}</p>}
+      <p className="text-xs text-fg-subtle mt-2">Your card number goes straight to the card processor. VINK never sees it.</p>
+    </div>);
+}
+
+const DELIVERY_TEXT: Record<string, string> = { ordered: "Ordered: VINK will send it to you", shipped: "On its way: activate it when it arrives", activated: "Active" };
+const BRAND_NAME: Record<string, string> = { visa: "Visa", mastercard: "Mastercard" };
+type Act = (label: string, run: () => Promise<{ error: string } | { data: unknown }>, done?: () => void) => () => Promise<{ error: string } | { message: string }>;
+
+/** The holder's VINK debit cards: choose Visa or Mastercard, virtual and/or physical (a physical card is delivered to the holder and activated on arrival). */
+function VinkCards({ issued, options, cur, call, color, reload, act }: { issued: IssuedCardRow[]; options: CardOptions; cur: string; call: Call; color: string; reload: () => void; act: Act }) {
+  const live = issued.filter((c) => c.status !== "blocked");
+  const has = (form: string) => live.some((c) => (c.form ?? "virtual") === form);
+  const brands = options.brands.length ? options.brands : ["visa", "mastercard"];
+  const [brand, setBrand] = useState(brands.length === 1 ? brands[0] : "");
+  const [form, setForm] = useState<"virtual" | "physical">(has("virtual") ? "physical" : "virtual");
+  const [d, setD] = useState({ nameOnCard: "", addressLine1: "", addressLine2: "", city: "", province: "", postalCode: "", country: "ZA", phone: "" });
+  const [digits, setDigits] = useState<Record<string, string>>({});
+  const set = (k: keyof typeof d) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setD((x) => ({ ...x, [k]: e.target.value }));
+  const field = (k: keyof typeof d, label: string, ph = "", cls = "") => <label key={k} className="block"><span className="text-[11px] text-fg-muted">{label}</span><input className={inputCls + " mt-1 " + cls} value={d[k]} onChange={set(k)} placeholder={ph} autoComplete="off" /></label>;
+  const bothHeld = has("virtual") && has("physical");
+  return (
+    <section aria-label="My VINK debit cards">
+      <p className="text-sm font-semibold text-fg mb-1 flex items-center gap-2"><CreditCard className="w-4 h-4" /> My VINK debit cards <Badge text="sandbox" color="#94A3B8" /></p>
+      <p className="text-xs text-fg-muted mb-2">A Visa or Mastercard debit card that spends your tokens at shops, online and at cash machines (the bank's cash-machine fee applies). Cash machines need the physical card, which is delivered to you. Each purchase is approved only if your tokens cover it, and they leave your wallet at once.</p>
+      {issued.length > 0 && (
+        <ul className="space-y-2 mb-3">{issued.map((c) => {
+          const [label, tone] = ISSUED_STATUS[c.status] ?? [c.status, "#94A3B8"];
+          const physical = c.form === "physical", waiting = physical && c.activated === false && c.status !== "blocked";
+          const setStatus = (status: string, msg: string) => act(msg, () => call(`/tokens/card/${c.id}/status`, { method: "POST", body: { status } }));
+          return (
+            <li key={c.id} className="rounded-lg p-3 space-y-2" style={{ background: "var(--vk-bg)", border: "1px solid var(--vk-line)" }}>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="text-sm text-fg">{BRAND_NAME[c.brand] ?? c.brand} {physical ? "physical" : "virtual"} debit ****{c.last4} · {c.expiry} <Badge text={waiting ? (DELIVERY_TEXT[c.delivery ?? "ordered"] ?? "Waiting") : label} color={waiting ? "#38BDF8" : tone} /></span>
+                <span className="flex gap-2">
+                  {c.status === "active" && !waiting && <ActionButton small label="Freeze" color="#F59E0B" onRun={setStatus("frozen", "Card frozen")} />}
+                  {c.status === "frozen" && <ActionButton small label="Unfreeze" color="#10B981" onRun={setStatus("active", "Card unfrozen")} />}
+                  {c.status !== "blocked" && <ActionButton small label="Block for good" color="#EF4444" onRun={setStatus("blocked", "Card blocked")} />}
+                </span>
+              </div>
+              {waiting && c.delivery === "shipped" && (
+                <div className="flex flex-wrap items-end gap-3">
+                  <label className="block"><span className="text-[11px] text-fg-muted">Last four digits printed on the card</span><input className={inputCls + " mt-1 !w-28"} inputMode="numeric" maxLength={4} value={digits[c.id] ?? ""} onChange={(e) => setDigits((x) => ({ ...x, [c.id]: e.target.value }))} autoComplete="off" /></label>
+                  <ActionButton label="Activate my card" color={color} onRun={act("Your card is active", () => call(`/tokens/card/${c.id}/activate`, { method: "POST", body: { last4: digits[c.id] ?? "" } }))} />
+                </div>)}
+            </li>);
+        })}</ul>)}
+      {!bothHeld ? (
+        <div className="space-y-3">
+          <p className="text-xs font-semibold text-fg">Get a card</p>
+          <div className="flex flex-wrap items-end gap-3">
+            <label className="block"><span className="text-[11px] text-fg-muted">Card</span><select className={inputCls + " mt-1 !w-auto"} value={brand} onChange={(e) => setBrand(e.target.value)}><option value="">Choose…</option>{brands.map((b) => <option key={b} value={b}>{BRAND_NAME[b] ?? b}</option>)}</select></label>
+            <label className="block"><span className="text-[11px] text-fg-muted">Type</span><select className={inputCls + " mt-1 !w-auto"} value={form} onChange={(e) => setForm(e.target.value as "virtual" | "physical")}>
+              {!has("virtual") && <option value="virtual">Virtual (instant, online and in apps)</option>}{!has("physical") && <option value="physical">Physical (delivered to you, for cash machines)</option>}</select></label>
+          </div>
+          {form === "physical" && (
+            <div className="flex flex-wrap items-end gap-3">
+              {field("nameOnCard", "Name to print on the card", "T NKOSI")}{field("addressLine1", "Street address", "12 Long Street")}{field("addressLine2", "Suburb (optional)")}
+              {field("city", "Town or city")}{field("province", "Province (optional)", "", "!w-32")}{field("postalCode", "Postal code", "", "!w-24")}
+              <label className="block"><span className="text-[11px] text-fg-muted">Country</span><select className={inputCls + " mt-1 !w-auto"} value={d.country} onChange={set("country")}><option value="ZA">South Africa</option><option value="ZM">Zambia</option></select></label>
+              {field("phone", "Phone for the courier", "082 000 0000")}
+            </div>)}
+          <ActionButton label={form === "physical" ? "Order my physical card" : "Get my virtual card"} color={color} onRun={async () => {
+            if (!brand) return { error: "Choose Visa or Mastercard" };
+            const r = await call("/tokens/card", { method: "POST", body: { currency: cur, brand, form, ...(form === "physical" ? { delivery: d } : {}) } });
+            if ("error" in r) return { error: r.error }; reload();
+            return { message: form === "physical" ? "Your card is ordered. We will tell you when it is on its way." : "Your card is ready." };
+          }} />
+        </div>) : <p className="text-xs text-fg-subtle">You have a virtual and a physical card. Block one for good if you need a new one.</p>}
+      <p className="text-xs text-fg-subtle mt-2">The full card number and security code are only shown by the card processor's secure screen once VINK is live. You need your identity verified before a card can be issued.</p>
+    </section>);
 }

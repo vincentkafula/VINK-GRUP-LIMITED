@@ -45,6 +45,13 @@ export async function reconcile(db: Db, ledger: LedgerPort, now: Date = new Date
     const held = ledger.balance(cur === "ZAR" ? "sys:card_settlement" : `sys:${cur.toLowerCase()}:card_settlement`);
     if (held !== approved) issues.push({ severity: "problem", code: "card_settlement_mismatch", message: `The ${cur} card settlement account does not match the card purchases that were approved. Ask an engineer to look.`, count: 1 });
   }
+  // Sponsor-bank settlement: lines that do not match what VINK approved are problems; approved purchases the bank has not settled after 5 days need a look (only once a file has ever been imported)
+  const settleOpen = n((await one(`SELECT COUNT(*) AS c FROM card_settlement_lines WHERE result <> 'matched' AND resolved_at IS NULL`)).c);
+  if (settleOpen) issues.push({ severity: "problem", code: "card_settlement_exceptions", message: "The sponsor bank's settlement file has lines that do not match the card purchases VINK approved. Review them on the settlement page.", count: settleOpen });
+  if (n((await one(`SELECT COUNT(*) AS c FROM card_settlement_files`)).c) > 0) {
+    const unsettled = n((await one(`SELECT COUNT(*) AS c FROM token_card_spend WHERE status = 'approved' AND settled_at IS NULL AND created_at < $1`, [new Date(now.getTime() - 5 * 24 * 3600_000)])).c);
+    if (unsettled) issues.push({ severity: "attention", code: "card_purchases_unsettled", message: "Approved card purchases older than five days have not appeared in a settlement file yet.", count: unsettled });
+  }
   const stuckPayouts = n((await one(`SELECT COUNT(*) AS c FROM token_cashouts WHERE status = 'processing' AND attempted_at < $1`, [new Date(now.getTime() - 15 * 60_000)])).c);
   if (stuckPayouts) issues.push({ severity: "problem", code: "token_payouts_stuck", message: "Payouts to cards were sent and have had no answer for over 15 minutes. The system asks again by itself; if this stays, ask an engineer to look.", count: stuckPayouts });
   const exhausted = n((await one(`SELECT COUNT(*) AS c FROM token_cashouts WHERE status = 'requested' AND attempts >= 6`)).c);

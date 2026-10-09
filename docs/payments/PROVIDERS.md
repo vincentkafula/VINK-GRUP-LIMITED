@@ -101,3 +101,23 @@ adapter layer exists so a direct connection can be added later without touching 
 - Select with `ISSUING_PROVIDER=paymentology`. Code: `providers/paymentologyIssuer.ts` (create customer, create virtual card with no number or security code returned, set status) and `paymentologyFast.ts` (real-time authorisation, reversal, advice and clearing messages on `POST /api/payments/issuer/fast`).
 - Needs `SANDBOX_PAYMENTOLOGY_BASE_URL` (UAT: `https://uat.banking.live:55555/ppws/api`), `_API_KEY`, `_CLIENT_ID`, `_CARD_PRODUCT_ID`, `_IMAGE_NAME`, `_PARENT_ACCOUNT_ID`, `_CARD_BRAND` (visa or mastercard), optional `_CURRENCY_NUMERIC` (default 710), and `PAYMENTOLOGY_FAST_SECRET` for the FAST endpoint.
 - Built from the public API reference only and **not yet run against UAT**. Open points are in `PAYMENTOLOGY_QUESTIONS.md`: path style (`/pws/v2/...` in samples vs `/api/v1/...` in the OpenAPI export), FAST authentication, whether DE2 is the public token, the advice reply schema.
+
+### Visa Direct push-to-card: checked against Visa's OpenAPI reference
+
+`providers/visaDirect.ts` was compared with the Visa Direct OpenAPI reference (server `https://sandbox.api.visa.com`, `POST /visadirect/fundstransfer/v1/pushfundstransactions`). Changes made from that comparison: `amount`, `acquiringBin`, `acquirerCountryCode`, `systemsTraceAuditNumber` and `merchantCategoryCode` are sent as numbers, the invented `transactionIdentifier` was removed (it is the id of a preceding AFT, which a payout does not have), and a timed-out transaction (a `statusIdentifier` with no result) is resolved with `GET .../pushfundstransactions/{statusIdentifier}` instead of being guessed.
+
+Required by the reference: `acquirerCountryCode`, `acquiringBin`, `amount`, `businessApplicationId`, `cardAcceptor` (name, idCode, terminalId, address city and country), `localTransactionDateTime`, `retrievalReferenceNumber`, `systemsTraceAuditNumber`, `transactionCurrencyCode`, plus a `recipientPrimaryAccountNumber`.
+
+Sandbox values that appear in Visa's own examples (use for the first test, then confirm with Visa's test data page): acquiring BIN `408999`, acquirer country `840`, recipient test cards `4060320000000127` and `4104920120500001` (add them with `SANDBOX_VISA_DIRECT_TEST_PANS`).
+
+Not in that reference, so still open: how the project authenticates (the file defines no security scheme; the adapter supports the `x-pay-token` and mutual-TLS styles), the action-code table, and **Visa Direct Account and Wallet** (payouts to bank accounts and wallets), which has no path in the file.
+
+### Visa Direct Account and Wallet (bank account and mobile-wallet payouts): adapter written, NOT wired in
+
+`providers/visaPayouts.ts` follows Visa's Account and Wallet OpenAPI reference (`POST /visapayouts/v3/payouts`, `GET /visapayouts/v3/payouts`, `POST /visapayouts/v1/extensions/verifyRecipient`). It can send a bank or wallet payout, ask for a payout's status by VINK's own reference, and verify a recipient. Nothing in the token system calls it: **the payout rule (only to the holder's own verified debit card) has not been changed.** Connecting it needs that decision first.
+
+What the reference says that matters before connecting it:
+- **Accepted is not delivered.** `PAYMENT_RECEIVED` / `PENDING` only mean Visa has the instruction. Final success is `PAYMENT_DELIVERED` or `DELIVERED_TO_RECIPIENT_BANK`; `RETURNED`, `REJECTED`, `DECLINED`, `FAILED` and `CANCELLED` mean the money is not coming. Status arrives by webhook (`/v3/payouts/statusNotification`, `/v3/payouts/return`) or by query. The token flow would need a new "held until delivered, returned if it fails" stage, and VINK would need public webhook endpoints for these notifications.
+- **Prefunded only.** The reference offers one funding model, `PREFUNDED`: Visa debits a funding account that VINK keeps topped up (there is a Get Account Balance operation).
+- **Required fields differ by country**; Visa's Endpoint Guide lists them. Wallet payouts need an operator name (for example `AIRTEL_MONEY`); the Zambian operator names have to be confirmed.
+- **Still open:** how the project authenticates (the file's security section is empty), whether a Zambian or South African originator is supported on the sandbox, and the Visa-assigned `initiatingPartyId`.

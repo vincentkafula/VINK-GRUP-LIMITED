@@ -92,6 +92,23 @@ describe("PaymentologyIssuer", () => {
     expect(JSON.parse(i1.body).api_call_unique_identifier).toBe("vkcreq1");
   });
 
+  it("issues Visa and Mastercard from separate card products, and a physical card is created switched off with the name to print", async () => {
+    const both = { visa: programme, mastercard: { ...programme, cardProductId: 22, cardBrand: "mastercard" as const } };
+    const f = vi.fn().mockImplementation(async (url: string) => (String(url).includes("create_customer") ? ok({ customer_id: 42 }) : ok({ token: 777, last_four_digit: "4321", expiry: "09/29" })));
+    const p = new PaymentologyIssuer(creds, both, { fetchImpl: f as any });
+    expect(p.brands().sort()).toEqual(["mastercard", "visa"]);
+    const mc = await p.createCard({ customerRef: "u-1", kind: "physical", requestId: "r2", holder, brand: "mastercard", embossName: "T NKOSI" });
+    expect(mc).toMatchObject({ brand: "mastercard", status: "inactive" });
+    const body = JSON.parse(f.mock.calls[1][1].body);
+    expect(body).toMatchObject({ card_type: 1, crd_prdct_id: 22, status_nwk: 1005, emboss_name: "T NKOSI" });
+    await p.createCard({ customerRef: "u-1", kind: "virtual", requestId: "r3", holder, brand: "visa" });
+    expect(JSON.parse(f.mock.calls[3][1].body)).toMatchObject({ card_type: 2, crd_prdct_id: 11, status_nwk: 1000 });
+    expect(JSON.parse(f.mock.calls[3][1].body)).not.toHaveProperty("emboss_name");
+    await expect(p.createCard({ customerRef: "u-1", kind: "virtual", holder })).rejects.toThrow(/Choose Visa or Mastercard/);        // two products: the brand must be chosen
+    await expect(p.createCard({ customerRef: "u-1", kind: "physical", holder, brand: "visa" })).rejects.toThrow(/name to print/);
+    await expect(new PaymentologyIssuer(creds, { visa: programme }, { fetchImpl: f as any }).createCard({ customerRef: "u", kind: "virtual", holder, brand: "mastercard" })).rejects.toBeInstanceOf(NotConfiguredError);
+  });
+
   it("maps failures: an error id, a retryable 1066, a 404, a 500, a missing mobile and an incomplete card answer", async () => {
     const mk = (f: any) => new PaymentologyIssuer(creds, programme, { fetchImpl: f });
     const input = { customerRef: "u-1", kind: "virtual" as const, holder };

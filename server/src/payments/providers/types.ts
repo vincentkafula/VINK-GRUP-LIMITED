@@ -37,7 +37,9 @@ export interface AuthorisationDecision {
 export interface IssuingProvider {
   readonly name: string;
   /** requestId makes a retry of the same issuing request return the same card. holder is the cardholder (some processors keep a customer record). */
-  createCard(input: { customerRef: string; kind: "physical" | "virtual"; requestId?: string; holder?: { firstName: string; lastName: string; mobile: string; email?: string } }): Promise<IssuedCard>;
+  createCard(input: { customerRef: string; kind: "physical" | "virtual"; requestId?: string; holder?: { firstName: string; lastName: string; mobile: string; email?: string }; brand?: "visa" | "mastercard"; embossName?: string }): Promise<IssuedCard>;
+  /** The card brands this provider can issue (each is a separate card product). Used to offer the holder a choice. */
+  brands?(): ("visa" | "mastercard")[];
   setCardStatus(providerCardId: string, status: "active" | "frozen" | "blocked"): Promise<void>;
   /** Verify a webhook from the provider and return its parsed event. Throws on a bad signature or a replay. */
   /**
@@ -150,6 +152,19 @@ export interface PayoutCard {
 export interface CardVaultProvider {
   readonly name: string;
   tokenise(input: { primaryAccountNumber: string; expiry: string; cardholderName: string }): Promise<PayoutCard>;
+}
+
+/** A short-lived card-entry session. The card form is shown from the processor's own address (fieldsUrl) inside a frame on VINK's page. */
+export interface HostedCardSession { sessionId: string; fieldsUrl: string; expiresAt: string }
+export type HostedCardResult = PayoutCard & { cardholderName: string };
+/**
+ * Hosted card fields: the cardholder types the number into the processor's form, not VINK's, so it never reaches VINK's page or servers.
+ * VINK starts a session for a signed-in user, the form reports back "done" with the session id only, and VINK then collects the tokenised card from the session.
+ * A session works for the user it was made for, once, and expires.
+ */
+export interface HostedCardFields {
+  createSession(input: { userId: string }): Promise<HostedCardSession>;
+  complete(input: { sessionId: string; userId: string }): Promise<HostedCardResult | null>;
 }
 
 export type PayoutStatus = "sent" | "declined" | "error";

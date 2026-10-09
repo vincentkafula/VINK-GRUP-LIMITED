@@ -42,6 +42,14 @@ import { createManshyaModule } from "./manshya/mount.js";
 import { createPaymentsSandboxRouter } from "./payments/sandboxRoutes.js";
 import { createIssuerRouter, type TokenCardAuthoriser } from "./payments/issuerRoutes.js";
 import { createPaymentologyFastRouter } from "./payments/paymentologyFast.js";
+import { createOpsMonitor, sinksFromEnv } from "./services/opsMonitor.js";
+import { SandboxHostedFields, createSandboxVaultRouter } from "./payments/providers/hostedFields.js";
+import { MOCK_CARD_SCENARIOS } from "./payments/providers/mockCardRail.js";
+import { listedOrigins } from "./auth/origins.js";
+import { createSchemeSettlement } from "./services/schemeSettlement.js";
+import { createOpsAdminRouter } from "./routes/opsAdminRouter.js";
+import { liveStartBlockers } from "./payments/goLive.js";
+import { createEmailSender } from "./auth/email.js";
 import { hasDb, pool } from "./db/pool.js";
 import { migrateAndSeed } from "./db/migrate.js";
 import { requireAuth, requireRole, JWT_SECRET } from "./middleware/auth.js";
@@ -146,7 +154,13 @@ const moneyLedger = manshyaLedgerPort(manshya as never);
 // VINK tokens (the closed-loop points system): a holder with a token wallet is paid in, and pays out of, tokens everywhere the engine moves money.
 const cardRail = getCardRail(manshya.payments);
 const cardIssuer = getIssuingProvider(manshya.payments);
-const tokenService = pool ? createTokenService({ db: pool, ledger: moneyLedger, reader: configReader, rail: cardRail, validator: getAccountValidationProvider(manshya.payments), extraTestPans: manshya.payments.visaDirect?.extraTestPans, issuer: cardIssuer }) : null;
+let opsMonitor: ReturnType<typeof createOpsMonitor> | null = null;
+const gateContext = () => ({ cfg: manshya.payments, fastSecretSet: !!process.env.PAYMENTOLOGY_FAST_SECRET?.trim(), alertSinks: opsMonitor?.sinkNames().length ?? 0 });
+// Card numbers are entered in a separate card form (the processor's hosted fields; in the sandbox, a stand-in page) so they never reach VINK's page or API.
+const sandboxMode = manshya.payments.mode === "sandbox";
+const hostedFields = sandboxMode ? new SandboxHostedFields(cardRail.vault, new Set([...MOCK_CARD_SCENARIOS.map((c) => c.pan), ...(manshya.payments.visaDirect?.extraTestPans ?? [])])) : null;
+if (hostedFields) app.use("/api/payments/sandbox-vault", createSandboxVaultRouter(hostedFields, listedOrigins()));          // sandbox only: stands in for the processor's card form
+const tokenService = pool ? createTokenService({ hosted: hostedFields ?? undefined, acceptRawCardNumbers: sandboxMode, db: pool, ledger: moneyLedger, reader: configReader, rail: cardRail, validator: getAccountValidationProvider(manshya.payments), extraTestPans: manshya.payments.visaDirect?.extraTestPans, issuer: cardIssuer }) : null;
 const moneyEngine = pool ? createMoneyEngine({ db: pool, ledger: moneyLedger, reader: configReader, tokenParty: tokenService?.partyOf }) : null;
 if (moneyEngine) tokenService?.bindEngine(moneyEngine);
 let zaProfile: CountryConfig | null = null;
@@ -170,6 +184,11 @@ app.use("/api/fraud-risk",    fraudRiskRouter);
 if (tokenService && pool) {
   app.use("/api/terminal/token", createTokenTerminalRouter({ db: pool, tokens: tokenService, authenticate: authenticateTerminal }));          // before the general terminal routes
   if (moneyEngine) app.use("/api/retail/token", createTokenRetailRouter({ db: pool, ledger: moneyLedger, engine: moneyEngine, reader: configReader, authenticate: authenticateRetailTerminal }));          // before the general retail routes
+  {
+    const monitor = createOpsMonitor({ db: pool, ledger: moneyLedger, sinks: sinksFromEnv(process.env, createEmailSender()) });
+    opsMonitor = monitor;
+    app.use("/api/admin/ops", requireAuth, requireRole("owner", "superadmin"), createOpsAdminRouter({ db: pool, ledger: moneyLedger, monitor, settlement: createSchemeSettlement(pool), gateContext: gateContext }));
+  }
   app.use("/api/admin/tokens", requireAuth, requireRole("owner", "superadmin"), createTokenAdminRouter({ db: pool, tokens: tokenService, sandbox: manshya.payments.mode === "sandbox" }));
 }
 app.use("/api/terminal",      terminalRouter);
@@ -347,6 +366,11 @@ async function boot() {
     try {
       await migrateAndSeed();
       if (pool) await seedBankLinks({ db: pool, ...bankDeps }).catch((e) => console.error("[seed] bank links failed (server continues):", e instanceof Error ? e.message : e));
+      if (pool && manshya.payments.mode === "live") {
+        // Real money starts only when every item on the go-live gate is satisfied (confirmed beforehand, in sandbox mode, on this database).
+        const blockers = await liveStartBlockers(pool, { cfg: manshya.payments, fastSecretSet: !!process.env.PAYMENTOLOGY_FAST_SECRET?.trim(), alertSinks: sinksFromEnv(process.env, createEmailSender()).length });
+        if (blockers.length) { console.error("[go-live] PAYMENTS_MODE=live is refused until these are satisfied:\n  - " + blockers.join("\n  - ")); process.exit(1); }
+      }
       await pooled.refresh();
       if (pool) await configReader.active("ZA").then((a) => { zaProfile = a.config; return syncManshyaFees(manshya.config as never, a.config); }).catch((e) => console.error("[config] fee sync failed:", e instanceof Error ? e.message : e));
       if (pool && process.env.FX_AUTO !== "off") {
@@ -359,6 +383,11 @@ async function boot() {
         };
         void refresh().catch((e) => console.error("[fx] refresh failed:", e instanceof Error ? e.message : e));
         setInterval(() => { refresh().catch((e) => console.error("[fx] refresh failed:", e instanceof Error ? e.message : e)); }, 3600_000).unref();
+      }
+      if (opsMonitor && process.env.OPS_MONITOR !== "off") {
+        // Every five minutes: reconcile, and tell a person about anything new or still open (see services/opsMonitor.ts).
+        const mon = opsMonitor;
+        setInterval(() => { mon.check().catch((e) => console.error("[ops] check failed:", e instanceof Error ? e.message : e)); }, 300_000).unref();
       }
       if (pool && process.env.MONEY_ENGINE !== "off") {
         // Settles confirmed taps, closes trips, creates the marshal fee / agreement payments and pays what is due. Safe to repeat: every posting is idempotent.

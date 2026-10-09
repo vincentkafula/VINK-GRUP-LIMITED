@@ -330,7 +330,8 @@ function TokensAdminPanel() {
   const [list, reloadList] = useLoad<{ cashOuts: { id: string; name: string; email: string; amountCents: number; currency: string; reason: string; status: string; note: string | null; card: string | null; lastError: string | null; attempts: number; requestedAt: string }[] }>(() => tokenApi("/cash-outs?status=open") as never);
   const [review, reloadReview] = useLoad<{ cards: { id: string; accountName: string; email: string; cardholderName: string; brand: string; last4: string }[] }>(() => tokenApi("/payout-cards") as never);
   const [sbxCard, setSbxCard] = useState(""); const [sbxAmt, setSbxAmt] = useState(""); const [sbxChan, setSbxChan] = useState("chip"); const [fee, setFee] = useState(""); const [tierUid, setTierUid] = useState(""); const [tier, setTier] = useState("standard"); const [uid, setUid] = useState(""); const [amt, setAmt] = useState(""); const [why, setWhy] = useState("");
-  const both = () => { reloadSum(); reloadList(); reloadReview(); };
+  const [orders, reloadOrders] = useLoad<{ orders: { id: string; holder: string; brand: string; last4: string; nameOnCard: string; address: string; phone: string; status: string; orderedAt: string; attempts: number }[] }>(() => tokenApi("/card-orders") as never);
+  const both = () => { reloadSum(); reloadList(); reloadReview(); reloadOrders(); };
   return (
     <section className="rounded-xl p-4 space-y-3" style={{ background: "var(--vk-surface)", border: "1px solid var(--vk-line)" }}>
       <h2 className="text-sm font-bold text-fg">VINK tokens <span className="font-normal text-fg-muted">· the closed-loop points system. Tokens leave only as a payout the system makes to the holder's own debit card, or a transfer to their own VINK bank account. Staff cannot pay a payout by hand.</span></h2>
@@ -359,6 +360,19 @@ function TokensAdminPanel() {
               <div className="flex gap-2 mt-2">
                 <ActionButton small label="Approve" color="#10B981" onRun={async () => { const r = await tokenApi(`/payout-cards/${c.id}/approve`, { method: "POST", body: {} }); if ("error" in r) return { error: r.error }; both(); }} />
                 <ActionButton small label="Reject" color="#EF4444" onRun={async () => { const r = await tokenApi(`/payout-cards/${c.id}/reject`, { method: "POST", body: {} }); if ("error" in r) return { error: r.error }; both(); }} />
+              </div>
+            </li>))}</ul>
+        </div>)}</Status>
+      <Status load={orders}>{({ orders: list }) => !list || list.length === 0 ? null : (
+        <div>
+          <p className="text-xs font-semibold text-fg mb-1">Physical cards to send, and cards on their way</p>
+          <ul className="space-y-2">{list.map((o) => (
+            <li key={o.id} className="rounded-lg p-3 text-xs text-fg" style={{ background: "var(--vk-bg)", border: "1px solid var(--vk-line)" }}>
+              <p><b>{o.holder}</b> · {o.brand === "visa" ? "Visa" : "Mastercard"} ****{o.last4} · print <b>{o.nameOnCard}</b> · {o.status === "ordered" ? "waiting to be sent" : "sent, not yet activated"} · {when(o.orderedAt)}</p>
+              <p className="text-fg-muted mt-1">Deliver to: {o.address} · phone {o.phone}</p>
+              <div className="flex gap-2 mt-2">
+                {o.status === "ordered" && <ActionButton small label="Mark as sent" color="#10B981" onRun={async () => { const r = await tokenApi(`/card-orders/${o.id}/ship`, { method: "POST", body: {} }); if ("error" in r) return { error: r.error }; both(); }} />}
+                {o.status === "shipped" && o.attempts >= 5 && <ActionButton small label="Unlock activation" color="#F59E0B" onRun={async () => { const r = await tokenApi(`/card-orders/${o.id}/unlock`, { method: "POST", body: {} }); if ("error" in r) return { error: r.error }; both(); }} />}
               </div>
             </li>))}</ul>
         </div>)}</Status>

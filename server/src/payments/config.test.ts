@@ -8,6 +8,20 @@ const liveOk = {
   LIVE_PAYMENTOLOGY_BASE_URL: "https://api.example.com", LIVE_PAYMENTOLOGY_API_KEY: "k", LIVE_PAYMENTOLOGY_WEBHOOK_SECRET: "s",
 };
 
+describe("Paymentology card products", () => {
+  const base = { ISSUING_PROVIDER: "paymentology", SANDBOX_PAYMENTOLOGY_BASE_URL: "https://sbx.test", SANDBOX_PAYMENTOLOGY_API_KEY: "k", SANDBOX_PAYMENTOLOGY_WEBHOOK_SECRET: "s", SANDBOX_PAYMENTOLOGY_CLIENT_ID: "7" };
+  it("reads one card product per brand, and the older single set for one brand", () => {
+    const both = resolvePaymentsConfig(env({ ...base, SANDBOX_PAYMENTOLOGY_VISA_CARD_PRODUCT_ID: "11", SANDBOX_PAYMENTOLOGY_VISA_IMAGE_NAME: "vv", SANDBOX_PAYMENTOLOGY_VISA_PARENT_ACCOUNT_ID: "5",
+      SANDBOX_PAYMENTOLOGY_MASTERCARD_CARD_PRODUCT_ID: "22", SANDBOX_PAYMENTOLOGY_MASTERCARD_IMAGE_NAME: "mm", SANDBOX_PAYMENTOLOGY_MASTERCARD_PARENT_ACCOUNT_ID: "6" })).paymentologyProgrammes;
+    expect(both.visa).toMatchObject({ clientId: 7, cardProductId: 11, imageName: "vv", parentAccountId: 5, cardBrand: "visa", currencyNumeric: "710" });
+    expect(both.mastercard).toMatchObject({ cardProductId: 22, parentAccountId: 6, cardBrand: "mastercard" });
+    const one = resolvePaymentsConfig(env({ ...base, SANDBOX_PAYMENTOLOGY_CARD_PRODUCT_ID: "9", SANDBOX_PAYMENTOLOGY_IMAGE_NAME: "x", SANDBOX_PAYMENTOLOGY_PARENT_ACCOUNT_ID: "4", SANDBOX_PAYMENTOLOGY_CARD_BRAND: "Mastercard" })).paymentologyProgrammes;
+    expect(Object.keys(one)).toEqual(["mastercard"]); expect(one.mastercard).toMatchObject({ cardProductId: 9 });
+    expect(resolvePaymentsConfig(env(base)).paymentologyProgrammes).toEqual({});                                          // nothing set: no guessing
+    expect(resolvePaymentsConfig(env({ ...base, SANDBOX_PAYMENTOLOGY_VISA_CARD_PRODUCT_ID: "11" })).paymentologyProgrammes).toEqual({});   // incomplete product: not used
+  });
+});
+
 describe("resolvePaymentsConfig", () => {
   it("defaults to sandbox with mock providers", () => {
     expect(resolvePaymentsConfig(env({}))).toMatchObject({ mode: "sandbox", issuingProvider: "mock", acquiringProvider: "mock", paymentology: null });

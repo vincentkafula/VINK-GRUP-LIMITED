@@ -4,7 +4,8 @@ import { VisaHttp, VisaApiError, redactPan, type VisaAuthenticator, type VisaTls
 import { MOCK_CARD_SCENARIOS, luhnValid, brandOf, expiryOf } from "./mockCardRail.js";
 
 /**
- * Visa Direct "Funds Transfer: push funds to a card" (SANDBOX): POST /visadirect/fundstransfer/v1/pushfundstransactions.
+ * Visa Direct "Funds Transfer: push funds to a card" (SANDBOX): POST /visadirect/fundstransfer/v1/pushfundstransactions, checked against Visa's OpenAPI reference (server https://sandbox.api.visa.com).
+ * Not covered: Visa Direct Account and Wallet (payouts to bank accounts and wallets). That product is not in this reference.
  * This is the "original credit transaction" that puts money on a Visa debit card, which is how a cash-out or refund reaches the holder's own card.
  *
  * Read before relying on it:
@@ -66,7 +67,7 @@ export interface VisaDirectOptions {
   now?: () => Date;
 }
 
-interface PushResponse { transactionIdentifier?: number | string; actionCode?: string; responseCode?: string; approvalCode?: string }
+interface PushResponse { transactionIdentifier?: number | string; actionCode?: string; responseCode?: string; approvalCode?: string; statusIdentifier?: string }
 
 /** Visa action codes that mean the card or issuer said no: retrying will not help. Anything else that is not "00" is treated as "outcome unknown", and retried. */
 const DECLINE_ACTION_CODES = new Set(["05", "13", "14", "15", "41", "43", "51", "54", "57", "61", "62", "63", "65", "78", "93"]);
@@ -94,15 +95,15 @@ export class VisaDirectPayout implements CardPayoutProvider {
     try { pan = this.o.vault.reveal(i.card.token); } catch { return { status: "declined", reason: "This card is not registered with the sandbox vault" }; }
     const a = this.o.cardAcceptor, s = this.o.sender;
     const body = {
-      amount: (i.amount.amount / 100).toFixed(2),
+      amount: Number((i.amount.amount / 100).toFixed(2)),                     // a number in the currency's units, as Visa's reference defines it
       localTransactionDateTime: localDateTime((this.o.now ?? (() => new Date()))()),
       retrievalReferenceNumber: digitsFrom(i.reference, 12, "rrn"),
-      systemsTraceAuditNumber: String(Math.max(1, Number(digitsFrom(i.reference, 6, "stan")))).padStart(6, "0"),
-      acquirerCountryCode: this.o.acquirerCountryCode,
-      acquiringBin: this.o.acquiringBin,
+      systemsTraceAuditNumber: Math.max(1, Number(digitsFrom(i.reference, 6, "stan"))),
+      acquirerCountryCode: Number(this.o.acquirerCountryCode),
+      acquiringBin: Number(this.o.acquiringBin),
       businessApplicationId: this.o.businessApplicationId ?? "FD",
       cardAcceptor: { name: a.name.slice(0, 25), idCode: a.idCode.slice(0, 15), terminalId: a.terminalId.slice(0, 8), address: { city: a.city.slice(0, 13), country: a.country } },
-      merchantCategoryCode: this.o.merchantCategoryCode ?? "6012",
+      merchantCategoryCode: Number(this.o.merchantCategoryCode ?? "6012"),
       recipientName: i.recipientName.slice(0, 30),
       recipientPrimaryAccountNumber: pan,
       senderAccountNumber: s.accountNumber,
@@ -112,7 +113,6 @@ export class VisaDirectPayout implements CardPayoutProvider {
       ...(s.address ? { senderAddress: s.address.slice(0, 35) } : {}),
       sourceOfFundsCode: this.o.sourceOfFundsCode ?? "05",
       transactionCurrencyCode: i.amount.currency,
-      transactionIdentifier: digitsFrom(i.reference, 15, "txid"),
     };
     let r: PushResponse;
     try {
@@ -122,6 +122,11 @@ export class VisaDirectPayout implements CardPayoutProvider {
       // A rejected request (4xx) is a problem with what we sent, which another try will not fix. No answer, or a Visa-side failure, is an unknown outcome.
       if (err.status && err.status >= 400 && err.status < 500 && err.status !== 408 && err.status !== 429) return { status: "declined", reason: redactPan(err.message).slice(0, 200) };
       return { status: "error", reason: "Visa Direct did not answer. It will be tried again." };
+    }
+    // A timed-out transaction comes back with a statusIdentifier and no result: ask Visa what became of it instead of guessing.
+    if (!r.actionCode && r.statusIdentifier) {
+      try { r = await this.http.call<PushResponse>({ method: "GET", path: `/visadirect/fundstransfer/v1/pushfundstransactions/${encodeURIComponent(r.statusIdentifier)}` }); }
+      catch { return { status: "error", reason: "Visa Direct has not given a final result yet. It will be tried again." }; }
     }
     const ref = r.transactionIdentifier !== undefined ? String(r.transactionIdentifier) : undefined;
     if (r.actionCode === "00") return { status: "sent", providerRef: ref };

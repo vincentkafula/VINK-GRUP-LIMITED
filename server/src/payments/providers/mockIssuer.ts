@@ -14,12 +14,14 @@ export class MockIssuer implements IssuingProvider {
   /** secret null = no secret configured: webhooks are refused (501) rather than accepted with a publicly known key. */
   constructor(private secret: string | null = MOCK_WEBHOOK_SECRET) {}
 
-  async createCard({ kind }: { customerRef: string; kind: "physical" | "virtual" }): Promise<IssuedCard> {
+  brands(): ("visa" | "mastercard")[] { return ["visa", "mastercard"]; }
+
+  async createCard({ kind, brand }: { customerRef: string; kind: "physical" | "virtual"; brand?: "visa" | "mastercard" }): Promise<IssuedCard> {
     const now = new Date();
     const card: IssuedCard = {
       providerCardId: "mock_card_" + crypto.randomBytes(8).toString("hex"),
       last4: String(crypto.randomInt(0, 10000)).padStart(4, "0"),
-      brand: crypto.randomInt(0, 2) ? "visa" : "mastercard",
+      brand: brand ?? (crypto.randomInt(0, 2) ? "visa" : "mastercard"),
       expiry: `${String(now.getMonth() + 1).padStart(2, "0")}/${String((now.getFullYear() + 4) % 100).padStart(2, "0")}`,
       status: kind === "virtual" ? "active" : "inactive",
     };

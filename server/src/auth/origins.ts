@@ -6,6 +6,13 @@
  */
 export const PRODUCTION_DOMAINS = ["https://www.vink.co.za", "https://vink.co.za"];
 
+/** The listed browser origins, for places that must name them (for example which sites may frame the sandbox card form). */
+export function listedOrigins(env: NodeJS.ProcessEnv = process.env): string[] {
+  const out = new Set<string>([...(env.ALLOWED_ORIGINS ?? "http://localhost:5173,http://localhost:4173").split(",").map((o) => o.trim()).filter(Boolean), ...PRODUCTION_DOMAINS]);
+  if (env.FRONTEND_URL) out.add(env.FRONTEND_URL.replace(/\/+$/, ""));
+  return [...out].filter((o) => /^https?:\/\/[^\s;,'"]+$/.test(o));
+}
+
 export function createOriginPolicy(env: NodeJS.ProcessEnv = process.env): (origin: string | undefined) => boolean {
   const listed = new Set<string>([
     ...(env.ALLOWED_ORIGINS ?? "http://localhost:5173,http://localhost:4173").split(",").map((o) => o.trim()).filter(Boolean),

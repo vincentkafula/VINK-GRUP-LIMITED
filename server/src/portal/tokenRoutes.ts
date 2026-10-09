@@ -15,7 +15,9 @@ import { recordPoolCredit, referenceLooksValid, normaliseReference } from "../se
  *   POST /cards                 register a VINK card to my wallet; POST /cards/:id/block stops a lost card at once
  *   POST /transfer              send tokens to someone by email or account number
  *   POST /redeem                move tokens into my own verified VINK bank account
- *   POST /card                  { currency } issue my VINK debit card (virtual) that spends my tokens; POST /card/:id/status { status: frozen | active | blocked }
+ *   POST /card                  { currency, brand: visa | mastercard, form: virtual | physical, delivery? } get my VINK debit card that spends my tokens (a physical card needs a delivery address)
+ *   POST /card/:id/activate     { last4 } switch on a physical card once it has arrived; POST /card/:id/status { status: frozen | active | blocked }
+ *   POST /payout-cards/session, /payout-cards/from-session   secure card entry (the number never reaches this API)
  *   GET/POST /payout-cards     my debit cards that money can be paid to; DELETE /payout-cards/:id removes one
  *   POST /cash-out              { amountCents, cardId? } tokens are paid to my verified debit card by the system. Never to a bank account, never by hand.
  *   GET/PUT /routes             association only: the fare for each route its devices serve
@@ -44,7 +46,7 @@ export function createTokenRouter(db: Db, tokens: TokenService, deps: TokenRoute
       const pool = deps.channels?.(currency)?.in_person ?? null;
       out.push({ ...w, payInto: pool ? { bank: pool.bank, holder: pool.holder, accountNumber: pool.accountNumber, type: pool.type } : null, cards: await tokens.cards(userId, currency), activity: await tokens.activity(userId, currency, 20) });
     }
-    res.json({ success: true, wallets: out, payoutCards: await tokens.payoutCards(userId), issuedCards: await tokens.issuedCards(userId), role: roleOf(req) ?? null, deviceFeeCents: roleOf(req) === "investor" ? (await tokens.settings()).deviceFeeCents : undefined });
+    res.json({ success: true, wallets: out, payoutCards: await tokens.payoutCards(userId), cardEntry: tokens.cardEntry(), issuedCards: await tokens.issuedCards(userId), cardOptions: tokens.cardOptions(), role: roleOf(req) ?? null, deviceFeeCents: roleOf(req) === "investor" ? (await tokens.settings()).deviceFeeCents : undefined });
   }));
 
   router.post("/wallet", h(async (req, res) => {
@@ -95,10 +97,18 @@ export function createTokenRouter(db: Db, tokens: TokenService, deps: TokenRoute
     res.status(201).json({ success: true, ...r.value });
   }));
   router.post("/card", h(async (req, res) => {
-    const r = await tokens.issueCard(uid(req), currencyOf((req.body ?? {}).currency));
+    const b = (req.body ?? {}) as Record<string, unknown>;
+    const r = await tokens.issueCard(uid(req), currencyOf(b.currency), { brand: b.brand, form: b.form, delivery: b.delivery });
     if (!r.ok) return fail(res, r.status, r.error);
-    await audit(db, req, "token.card.issue", r.value.id, { last4: r.value.last4, brand: r.value.brand });
+    await audit(db, req, "token.card.issue", r.value.id, { last4: r.value.last4, brand: r.value.brand, form: r.value.form });
     res.status(201).json({ success: true, card: r.value });
+  }));
+  router.post("/card/:id/activate", h(async (req, res) => {
+    if (!isUuid(req.params.id)) return fail(res, 400, "Invalid card");
+    const r = await tokens.activateCard(uid(req), req.params.id as string, (req.body ?? {}).last4);
+    if (!r.ok) return fail(res, r.status, r.error);
+    await audit(db, req, "token.card.activate", req.params.id as string, {});
+    res.json({ success: true, card: r.value });
   }));
   router.post("/card/:id/status", h(async (req, res) => {
     if (!isUuid(req.params.id)) return fail(res, 400, "Invalid card");
@@ -108,6 +118,18 @@ export function createTokenRouter(db: Db, tokens: TokenService, deps: TokenRoute
     res.json({ success: true, card: r.value });
   }));
   router.get("/payout-cards", h(async (req, res) => { res.json({ success: true, cards: await tokens.payoutCards(uid(req)) }); }));
+  /** Secure card entry: start a session (the card form is the processor's), then collect the finished card by its session id. The number never comes through these routes. */
+  router.post("/payout-cards/session", h(async (req, res) => {
+    const r = await tokens.startCardSession(uid(req));
+    if (!r.ok) return fail(res, r.status, r.error);
+    res.status(201).json({ success: true, ...r.value });
+  }));
+  router.post("/payout-cards/from-session", h(async (req, res) => {
+    const r = await tokens.addPayoutCardFromSession(uid(req), (req.body ?? {}).sessionId);
+    if (!r.ok) return fail(res, r.status, r.error);
+    await audit(db, req, "token.payout_card.add", r.value.id, { last4: r.value.last4, brand: r.value.brand, status: r.value.status, via: "hosted_fields" });
+    res.status(201).json({ success: true, ...r.value, message: r.value.status === "verified" ? "Card added." : "Card added. The name on it is not the name on your account, so VINK will check it before you can be paid to it." });
+  }));
   router.post("/payout-cards", h(async (req, res) => {
     const r = await tokens.addPayoutCard(uid(req), (req.body ?? {}) as Record<string, unknown>);
     if (!r.ok) return fail(res, r.status, r.error);
@@ -245,6 +267,23 @@ export function createTokenAdminRouter(d: { db: Db; tokens: TokenService; sandbo
     const r = await d.tokens.retryCashOut(req.params.id as string);
     if (!r.ok) return fail(res, r.status, r.error);
     await audit(d.db, req, "token.cashout.retry", req.params.id as string, { status: r.value.status });
+    res.json({ success: true, status: r.value.status });
+  }));
+  /** Physical cards waiting to be sent or on their way. Staff mark them sent; the holder activates them on arrival. */
+  router.get("/card-orders", h(async (req, res) => { res.json({ success: true, orders: await d.tokens.cardOrders(typeof req.query.status === "string" ? req.query.status : undefined) }); }));
+  router.post("/card-orders/:id/ship", h(async (req, res) => {
+    if (!isUuid(req.params.id)) return fail(res, 400, "Invalid order");
+    const note = typeof (req.body ?? {}).note === "string" ? String((req.body ?? {}).note).slice(0, 300) : undefined;
+    const r = await d.tokens.shipCardOrder(req.params.id as string, uid(req), note);
+    if (!r.ok) return fail(res, r.status, r.error);
+    await audit(d.db, req, "token.card_order.ship", req.params.id as string, { note: note ?? null });
+    res.json({ success: true, status: r.value.status });
+  }));
+  router.post("/card-orders/:id/unlock", h(async (req, res) => {
+    if (!isUuid(req.params.id)) return fail(res, 400, "Invalid order");
+    const r = await d.tokens.resetActivation(req.params.id as string);
+    if (!r.ok) return fail(res, r.status, r.error);
+    await audit(d.db, req, "token.card_order.unlock", req.params.id as string, {});
     res.json({ success: true, status: r.value.status });
   }));
   router.get("/payout-cards", h(async (_req, res) => { res.json({ success: true, cards: await d.tokens.cardsToReview() }); }));

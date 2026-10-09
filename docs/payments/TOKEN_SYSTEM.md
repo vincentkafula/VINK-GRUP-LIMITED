@@ -119,9 +119,22 @@ A holder whose identity staff have verified (level above basic) can get a **virt
 - **Spending.** For every purchase the processor calls `POST /api/payments/issuer/authorisation` and VINK answers approve or decline in real time. VINK approves only if the card and wallet are active, the currency is rand, the amount is within the holder's daily limit for that channel (shop, online or cash machine, from the country profile when it enforces limits) and the wallet holds the amount plus any fee. The tokens leave the wallet at once and wait in the card settlement account for the sponsor bank. Declines are recorded with the reason and move nothing.
 - **Charges.** A cash-machine withdrawal carries the country profile's ATM fee (R10 by default). Shop and online purchases carry none for the cardholder: the profile's card_pos and card_online rules are the merchant's.
 - **Repeats.** The processor's own authorisation id makes a retried request return the first answer and never spend twice. A `card.reversal` event (or a merchant refund) returns the tokens and any fee once.
-- **Control.** The holder can freeze, unfreeze or permanently block the card; it takes effect at once because the processor asks VINK on every purchase. One live card at a time; a blocked card can be replaced.
+- **Control.** The holder can freeze, unfreeze or permanently block the card; it takes effect at once because the processor asks VINK on every purchase. One live card of each kind (virtual, physical) at a time; a blocked card can be replaced.
 - **What is kept.** Only the provider's card id, brand, last four and expiry. The full number and security code are shown by the processor's secure screen when live.
 - **Try it.** Staff can act as the processor in the sandbox (`POST /api/admin/tokens/sandbox/card-purchase` and `/card-refund`, or the **Try purchase** form on the staff panel). These routes do not exist outside the sandbox.
+
+### Visa or Mastercard, virtual or physical
+
+The holder **chooses the brand** (Visa or Mastercard; each is a separate card product at the card processor) and gets a **virtual card, a physical card, or both**. The brands offered are the ones the issuing provider has a card product for.
+
+- **Virtual**: issued at once, usable online and in apps.
+- **Physical** (for cash machines): the holder gives the name to print and a delivery address in South Africa or Zambia, delivered to the individual (not collected at a rank). The card is created switched off. Staff see the order on the staff page, send it and **mark it as sent**; when it arrives the holder **activates it by entering the last four digits printed on it**. Until then every purchase and cash withdrawal is declined (`card_not_activated`). Five wrong tries lock activation until staff unlock it. A blocked card leaves the dispatch list.
+- The delivery details are kept in `token_card_orders`, apart from the card, and shown only to staff.
+- Cash machines: the holder's wallet is checked live, the amount and the bank's ATM fee leave the wallet at once, and the sponsor bank settles with the card scheme out of the pool (see `GO_LIVE.md` for settlement matching).
+
+Paymentology settings, one card product per brand: `SANDBOX_PAYMENTOLOGY_CLIENT_ID` plus `_VISA_CARD_PRODUCT_ID`, `_VISA_IMAGE_NAME`, `_VISA_PARENT_ACCOUNT_ID` and the same three with `_MASTERCARD_`. The older single set (`_CARD_PRODUCT_ID`, `_IMAGE_NAME`, `_PARENT_ACCOUNT_ID`, `_CARD_BRAND`) still works for one brand.
+
+**Not confirmed with Paymentology (written from the public pages, not run against their test system):** the physical card type value (`card_type` 1), the emboss name field, creating the card switched off (`status_nwk` 1005) and switching it on at activation, and how the delivery address and the PIN reach the card bureau (the address is kept by VINK and shown to staff; PIN setup is not built).
 
 ## Before real money
 
@@ -136,7 +149,8 @@ A holder whose identity staff have verified (level above basic) can get a **virt
 
 - **Mastercard Send** (payouts to Mastercard cards), and a **live** push-to-card provider: both need the providers' documentation and credentials.
 - **Paymentology issuing is written but untested**: card creation (`providers/paymentologyIssuer.ts`) and the FAST endpoint (`payments/paymentologyFast.ts`, `POST /api/payments/issuer/fast`) follow Paymentology's public pages, but nothing has run against UAT. Still to confirm with them: the exact API paths, how FAST authenticates to us (interim: a shared secret in `X-API-Key`, set `PAYMENTOLOGY_FAST_SECRET`; the endpoint answers 501 without it), and that `ISO_MSG.DE2` is the card's public token. Card settings: `SANDBOX_PAYMENTOLOGY_CLIENT_ID`, `_CARD_PRODUCT_ID`, `_IMAGE_NAME`, `_PARENT_ACCOUNT_ID`, `_CARD_BRAND`.
-- **Hosted card fields** so a card number never reaches VINK's servers (the sandbox accepts test cards only).
-- **Scheme settlement:** the card settlement account is the amount owed to the sponsor bank; matching it to the sponsor bank's settlement files is not built.
+- **Live hosted card fields:** the flow is built and tested with a sandbox stand-in (see `GO_LIVE.md`); the real processor's card fields still need their documentation.
+- **Real settlement file format:** matching is built against VINK's own layout; it has to be mapped to the sponsor bank's actual file.
+- **Staff screens** for the go-live gate, alerts and settlement exceptions (the API exists).
 - Physical (plastic) cards and digital wallets (Apple Pay, Google Pay).
 - A native Android reader app with the card reader's own NFC kernel. The `/reader` web app covers phones with NFC today.

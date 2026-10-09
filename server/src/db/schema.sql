@@ -1297,6 +1297,7 @@ CREATE TABLE IF NOT EXISTS token_card_spend (
   authorisation_id  TEXT NOT NULL,
   amount_cents      BIGINT NOT NULL,
   fee_cents         BIGINT NOT NULL DEFAULT 0,
+  settled_at        TIMESTAMPTZ,                               -- when the sponsor bank's settlement file confirmed this purchase
   reversed_cents    BIGINT NOT NULL DEFAULT 0,                 -- how much of the amount has been returned by a reversal or refund (a partial one leaves the purchase approved)
   channel           TEXT NOT NULL,
   merchant          TEXT,
@@ -1306,3 +1307,79 @@ CREATE TABLE IF NOT EXISTS token_card_spend (
   UNIQUE (provider, authorisation_id)
 );
 CREATE INDEX IF NOT EXISTS idx_token_card_spend_user ON token_card_spend(user_id, created_at DESC);
+
+-- What the monitor has already told people, so a restart or a repeat check never sends the same alert twice.
+CREATE TABLE IF NOT EXISTS ops_alert_state (
+  code        TEXT PRIMARY KEY,
+  severity    TEXT NOT NULL,
+  message     TEXT NOT NULL,
+  count       INTEGER NOT NULL DEFAULT 0,
+  first_seen  TIMESTAMPTZ NOT NULL,
+  last_sent   TIMESTAMPTZ,
+  resolved_at TIMESTAMPTZ
+);
+
+-- The go-live gate: manual items a named person has confirmed, with where the evidence is.
+CREATE TABLE IF NOT EXISTS go_live_checks (
+  key               TEXT PRIMARY KEY,
+  confirmed_by      UUID REFERENCES users(id) ON DELETE SET NULL,
+  confirmed_by_name TEXT NOT NULL,
+  confirmed_at      TIMESTAMPTZ NOT NULL,
+  note              TEXT NOT NULL
+);
+
+-- Sponsor-bank settlement files and their lines, matched to token_card_spend (see services/schemeSettlement.ts).
+CREATE TABLE IF NOT EXISTS card_settlement_files (
+  id          UUID PRIMARY KEY,
+  provider    TEXT NOT NULL,
+  filename    TEXT NOT NULL,
+  sha256      TEXT NOT NULL UNIQUE,
+  line_count  INTEGER NOT NULL,
+  matched     INTEGER,
+  exceptions  INTEGER,
+  imported_by UUID REFERENCES users(id) ON DELETE SET NULL,
+  imported_at TIMESTAMPTZ NOT NULL
+);
+CREATE TABLE IF NOT EXISTS card_settlement_lines (
+  id               UUID PRIMARY KEY,
+  file_id          UUID NOT NULL REFERENCES card_settlement_files(id),
+  provider         TEXT NOT NULL,
+  authorisation_id TEXT NOT NULL,
+  line_type        TEXT NOT NULL CHECK (line_type IN ('purchase','refund')),
+  amount_cents     BIGINT NOT NULL,
+  currency         TEXT NOT NULL,
+  settled_on       DATE NOT NULL,
+  reference        TEXT NOT NULL DEFAULT '',
+  result           TEXT NOT NULL,
+  resolved_at      TIMESTAMPTZ,
+  resolved_by      UUID REFERENCES users(id) ON DELETE SET NULL,
+  resolved_note    TEXT,
+  UNIQUE (provider, authorisation_id, line_type, reference)
+);
+CREATE INDEX IF NOT EXISTS idx_card_settlement_open ON card_settlement_lines(result) WHERE resolved_at IS NULL;
+
+-- Visa or Mastercard debit cards come as virtual or physical. A physical card is ordered with a delivery address, sent to the holder, and only works once the holder
+-- activates it (by confirming the last four digits printed on the card). Delivery details live apart from the card so they are shown to staff who dispatch it only.
+ALTER TABLE token_issued_cards ADD COLUMN IF NOT EXISTS form TEXT NOT NULL DEFAULT 'virtual';
+ALTER TABLE token_issued_cards ADD COLUMN IF NOT EXISTS activated_at TIMESTAMPTZ;
+CREATE TABLE IF NOT EXISTS token_card_orders (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  card_id       UUID NOT NULL UNIQUE REFERENCES token_issued_cards(id) ON DELETE CASCADE,
+  user_id       UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  name_on_card  TEXT NOT NULL,
+  address_line1 TEXT NOT NULL,
+  address_line2 TEXT,
+  city          TEXT NOT NULL,
+  province      TEXT,
+  postal_code   TEXT NOT NULL,
+  country       TEXT NOT NULL,
+  phone         TEXT NOT NULL,
+  status        TEXT NOT NULL DEFAULT 'ordered' CHECK (status IN ('ordered','shipped','activated')),
+  attempts      INTEGER NOT NULL DEFAULT 0,
+  shipped_by    UUID REFERENCES users(id) ON DELETE SET NULL,
+  shipped_at    TIMESTAMPTZ,
+  ship_note     TEXT,
+  activated_at  TIMESTAMPTZ,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_card_orders_open ON token_card_orders(status) WHERE status <> 'activated';
