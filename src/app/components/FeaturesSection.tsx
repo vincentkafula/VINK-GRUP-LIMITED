@@ -7,11 +7,9 @@ import { PremiumIcon } from "./PremiumIcon";
 const PURPLE = "var(--vk-brand)";           // crimson in light, gold in dark
 const DEEP_PURPLE = "#0c0e14";                // ink: the chip always carries white text
 const GOLD = "#c9a84c";
-// One palette for the whole block, taken from the brand (crimson and gold on warm ink) instead of a different neon colour for each card.
-const GOLD_METAL = "#D4AF5A";      // the medallions and arrows
-const GOLD_SOFT = "#EBD592";       // card titles
-const INK = "#1A0D10";             // the warm dark each medallion and card is built on
-const CRIMSON_GLOW = "139,0,0";    // the brand crimson (#8b0000), as an rgb triple for the glows
+// The cards use the website's own background and text colours (so they follow the light and dark themes); only the icon medallions carry colour: gold metal on warm ink.
+const GOLD_METAL = "#D4AF5A";      // the medallions
+const INK = "#1A0D10";             // the warm dark each medallion is built on
 
 interface Benefit { icon: React.ComponentProps<typeof PremiumIcon>["icon"]; title: string; desc: string; featured: boolean; color: string; colorDark: string }
 
@@ -34,24 +32,19 @@ const STATS = [
 function BenefitCard({ b }: { b: Benefit }) {
   return (
     <div
-      className="group rounded-2xl p-4 flex flex-col transition-all duration-300 hover:-translate-y-1 relative overflow-hidden text-white"
+      className="group rounded-2xl p-4 flex flex-col transition-all duration-300 hover:-translate-y-1 relative overflow-hidden"
       style={{
-        background: `linear-gradient(160deg,#241216 0%,${b.colorDark} 45%,#0B0709 100%)`,
-        border: `1px solid color-mix(in srgb, ${b.color} ${b.featured ? 55 : 24}%, transparent)`,
-        boxShadow: `0 14px 32px -16px rgba(${CRIMSON_GLOW},0.7), 0 2px 6px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.07)${b.featured ? `, 0 0 0 1px color-mix(in srgb, ${b.color} 20%, transparent)` : ""}`,
+        background: "var(--vk-bg)",                                                              // the website's own background colour, so the cards sit on the page instead of on dark panels
+        border: b.featured ? `1px solid ${b.color}` : "1px solid var(--vk-line)",
+        boxShadow: b.featured ? `0 12px 28px -14px color-mix(in srgb, ${b.color} 60%, transparent), 0 1px 2px rgba(0,0,0,0.06)` : "0 8px 22px -16px rgba(0,0,0,0.35), 0 1px 2px rgba(0,0,0,0.05)",
       }}
     >
-      {/* Ambient glow behind the icon, echoing the reference's per-icon lighting */}
-      <div className="absolute -top-6 -right-6 w-32 h-32 rounded-full pointer-events-none"
-        style={{ background: `radial-gradient(circle,rgba(${CRIMSON_GLOW},0.5),transparent 70%)` }} />
-      <div className="absolute -bottom-10 -left-8 w-32 h-32 rounded-full pointer-events-none" style={{ background: `radial-gradient(circle,color-mix(in srgb, ${b.color} 14%, transparent),transparent 70%)` }} />
-
       <PremiumIcon icon={b.icon} accent={b.color} dark={b.colorDark} size={72} className="mb-3 mx-auto sm:mx-0" />
-      <p className="text-base font-bold mb-1 text-center sm:text-left" style={{ color: GOLD_SOFT }}>{b.title}</p>
-      <p className="text-[13px] leading-relaxed mb-3 text-white/75 text-center sm:text-left">{b.desc}</p>
+      <p className="text-base font-bold mb-1 text-center sm:text-left text-fg">{b.title}</p>
+      <p className="text-[13px] leading-relaxed mb-3 text-fg-muted text-center sm:text-left">{b.desc}</p>
       <div className="mt-auto flex items-center justify-center sm:justify-between gap-2 flex-wrap">
       <span aria-hidden="true" className="w-8 h-8 rounded-full flex items-center justify-center"
-        style={{ background: `color-mix(in srgb, ${b.color} 15%, transparent)`, color: b.color, border: `1px solid color-mix(in srgb, ${b.color} 30%, transparent)` }}>
+        style={{ background: "color-mix(in srgb, var(--vk-gold) 16%, transparent)", color: "var(--vk-gold-text)", border: "1px solid color-mix(in srgb, var(--vk-gold) 40%, transparent)" }}>
         <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5" />
       </span>
       {b.featured && (
