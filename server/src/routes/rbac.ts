@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import { randomUUID } from "crypto";
 import { pool, hasDb } from "../db/pool.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
+import { DEPARTMENTS } from "../config/departments.js";
 
 // Both 'owner' (the platform's designated top-authority role) and
 // 'superadmin' (the original full-access role, retained on the 'admin'
@@ -13,11 +14,14 @@ const SUPER_ADMIN_ROLES = ["owner", "superadmin"] as const;
 
 const router: ReturnType<typeof Router> = Router();
 
-export const SECTIONS = [
+// The four management modules, then one section per department mailbox (named exactly like the department, for example "Sales"): a department manager is
+// someone approved for that section, either from an application to manage it or from an approved job application for the department.
+export const SECTIONS: readonly string[] = [
   "Bank Management", "Payment Management",
   "Company Registration Management",
   "Social Responsibility Management",
-] as const;
+  ...DEPARTMENTS.map((d) => d.name),
+];
 
 function noDb(res: Response): boolean {
   if (!hasDb || !pool) { res.status(503).json({ success: false, error: "Database not configured" }); return true; }

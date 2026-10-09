@@ -43,3 +43,14 @@ Email sent to a department address is received through Resend (`POST /api/inboun
 - **Alerts**: `ALERT_EMAIL_TO` and `ALERT_WEBHOOK_URL` (see `payments/GO_LIVE.md`).
 
 Response times are shown as "1–2 business days" everywhere; change them in the department list once the support team has agreed what it can keep.
+
+## Staff: department mail in the Management Panel
+
+**Management Panel > Department mail** is where managers read and send department email.
+
+- **Owners and superadmins see every department**, plus any email that arrived at an address that is not a department's.
+- **Each department has its own mailbox view.** A department manager sees only the department(s) they are approved for.
+- **How a department manager is created:** the department's name is a section in the same approval system as the other management sections. A person either applies under **Apply for a Section** (the department names are listed there) and a Super Administrator approves, or their **job application for that department is approved** (the approval already grants the section named in the application; the department in the job application must be written exactly as the department's name, for example "Sales"). Approval gives access at once; removing the section removes it.
+- **What a manager can do:** read website messages and incoming email (plain text only), reply (sent from the department's address, with the department address as the reply address, so the customer's answer comes back to the department), mark messages answered or closed, see what has been sent, and write a new email from the department. Every send records who sent it, and each person is limited to 40 emails an hour.
+- API: `GET /api/mail/departments`, `GET /api/mail/messages?department=&box=inbox|sent&status=`, `GET /api/mail/messages/:kind/:id`, `POST /api/mail/messages/:kind/:id/reply`, `POST /api/mail/messages/:kind/:id/status`, `POST /api/mail/send` (kind is `web` for a website message, `email` for incoming email).
+- Incoming email only appears here once inbound email is set up (see above). Until then the inbox shows website messages only.
