@@ -4,6 +4,7 @@ import vinkBlueVisaCard from "../../imports/VinkBlueVisaCard.webp";
 import vinkBlackVisaCard from "../../imports/VinkBlackVisaCard.webp";
 import vinkBlueMastercard from "../../imports/VinkBlueMastercard.webp";
 import { Card3DViewer } from "./Card3DViewer";
+import { ZoomImage } from "./ZoomImage";
 
 const CARDS = [
   {
@@ -72,7 +73,7 @@ function CardVisual({ card, active }: { card: typeof CARDS[0]; active: boolean }
         boxShadow: active ? "0 20px 44px -10px rgba(0,0,0,0.45)" : "0 4px 14px -4px rgba(0,0,0,0.2)",
       }}>
       {image ? (
-        <img loading="lazy" decoding="async" src={image} alt={`${card.name} — physical card design`} className="w-full h-full object-cover" draggable={false} />
+        <ZoomImage src={image} alt={`${card.name} — physical card design`} className="w-full h-full object-cover" />
       ) : (
       <>
       <div className="absolute top-0 right-0 w-36 h-36 rounded-full bg-white/10 -mr-14 -mt-14" />
@@ -122,6 +123,9 @@ export function CreditCardsSection({ onApply }: { onApply?: () => void }) {
           <h2 className="font-display text-2xl sm:text-3xl text-fg font-semibold">Choose Your Perfect VINK Card</h2>
           <p className="mx-auto mt-3 inline-block rounded-full border border-line bg-surface px-3 py-1 text-xs font-medium text-fg-muted">Planned cards and benefits, available at our June 2027 launch.</p>
         </div>
+
+        <p className="hidden [@media(hover:hover)]:block text-center text-xs font-medium text-fg-muted mb-5">Roll over image to zoom in · click a card to open it</p>
+        <p className="text-center text-xs font-medium text-fg-muted mb-5 [@media(hover:hover)]:hidden">Tap a card to see it up close</p>
 
         <div className="flex justify-center gap-4 sm:gap-6 flex-wrap mb-6">
           {CARDS.map((c, i) => (
