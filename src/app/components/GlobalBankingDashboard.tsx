@@ -78,7 +78,7 @@ const FX_RATES = [
 const CARDS = [
   { id: "c1", type: "debit",        network: "visa",       pan: "•••• •••• •••• 4291", name: "VINCENT KAFULA",    country: "ZA", currency: "ZAR", status: "active",  dailyLimit: 50000, spent: 4820 },
   { id: "c2", type: "virtual",      network: "mastercard", pan: "•••• •••• •••• 7782", name: "VINCENT KAFULA",    country: "EU", currency: "EUR", status: "active",  dailyLimit: 10000, spent: 0 },
-  { id: "c3", type: "business",     network: "visa",       pan: "•••• •••• •••• 1003", name: "VINK MULTI SERVICES",country: "US", currency: "USD", status: "active",  dailyLimit: 100000, spent: 15240 },
+  { id: "c3", type: "business",     network: "visa",       pan: "•••• •••• •••• 1003", name: "VINK",country: "US", currency: "USD", status: "active",  dailyLimit: 100000, spent: 15240 },
   { id: "c4", type: "sub-account",  network: "mastercard", pan: "•••• •••• •••• 5100", name: "SIPHO DLAMINI",     country: "ZA", currency: "ZAR", status: "active",  dailyLimit: 5000, spent: 840 },
 ];
 
