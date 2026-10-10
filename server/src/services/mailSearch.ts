@@ -1,14 +1,14 @@
 /**
  * Searching department mail with the operators people know from Gmail:
- *   from:pam   to:sales   subject:invoice   has:attachment   is:starred   is:open | answered | closed   is:web | email
+ *   from:pam   to:sales   subject:invoice   label:urgent   has:attachment   is:starred   is:open | answered | closed   is:web | email
  *   after:2026-10-01   before:2026-10-31   "a quoted phrase"   -word (leave out)
  * Anything else is a word that must appear in the sender, subject or message text. All matching is case-insensitive.
  */
 export interface Search {
-  terms: string[]; exclude: string[]; from: string[]; to: string[]; subject: string[];
+  terms: string[]; exclude: string[]; from: string[]; to: string[]; subject: string[]; label: string[];
   hasAttachment: boolean; is: string[]; after: number | null; before: number | null;
 }
-export interface Searchable { fromName: string; fromEmail: string; subject: string; text: string; at: string; status: string; starred: boolean; kind: string; hasAttachment: boolean }
+export interface Searchable { fromName: string; fromEmail: string; subject: string; text: string; at: string; status: string; starred: boolean; kind: string; hasAttachment: boolean; /** Names of the labels on the message. */ labels: string[] }
 
 const IS_VALUES = new Set(["starred", "open", "unread", "answered", "closed", "web", "email"]);
 
@@ -16,7 +16,7 @@ const IS_VALUES = new Set(["starred", "open", "unread", "answered", "closed", "w
 export const normalizeSubject = (s: string) => s.replace(/^(\s*(re|fwd?|fw)\s*:\s*)+/i, "").replace(/\s+/g, " ").trim().toLowerCase();
 
 export function parseSearch(q: string): Search {
-  const s: Search = { terms: [], exclude: [], from: [], to: [], subject: [], hasAttachment: false, is: [], after: null, before: null };
+  const s: Search = { terms: [], exclude: [], from: [], to: [], subject: [], label: [], hasAttachment: false, is: [], after: null, before: null };
   const tokens = [...q.slice(0, 300).matchAll(/(-?)(?:(\w+):)?(?:"([^"]*)"|(\S+))/g)];
   for (const m of tokens) {
     const neg = m[1] === "-", op = m[2]?.toLowerCase(), val = (m[3] ?? m[4] ?? "").trim().toLowerCase();
@@ -24,6 +24,7 @@ export function parseSearch(q: string): Search {
     if (op === "from") s.from.push(val);
     else if (op === "to") s.to.push(val);
     else if (op === "subject") s.subject.push(val);
+    else if (op === "label") s.label.push(val);
     else if (op === "has") { if (val === "attachment" || val === "attachments") s.hasAttachment = true; }
     else if (op === "is") { if (IS_VALUES.has(val)) s.is.push(val); }
     else if (op === "after" || op === "before") {
@@ -43,6 +44,7 @@ export function matchesSearch(s: Search, m: Searchable, toAddr = ""): boolean {
   if (s.from.some((x) => !who.includes(x))) return false;
   if (s.to.some((x) => !toAddr.toLowerCase().includes(x))) return false;
   if (s.subject.some((x) => !subject.includes(x))) return false;
+  if (s.label.some((x) => !m.labels.some((l) => l.toLowerCase().includes(x)))) return false;
   if (s.hasAttachment && !m.hasAttachment) return false;
   for (const flag of s.is) {
     if (flag === "starred" && !m.starred) return false;
@@ -57,4 +59,4 @@ export function matchesSearch(s: Search, m: Searchable, toAddr = ""): boolean {
   return true;
 }
 
-export const isEmptySearch = (s: Search) => !s.terms.length && !s.exclude.length && !s.from.length && !s.to.length && !s.subject.length && !s.hasAttachment && !s.is.length && s.after === null && s.before === null;
+export const isEmptySearch = (s: Search) => !s.terms.length && !s.exclude.length && !s.from.length && !s.to.length && !s.subject.length && !s.label.length && !s.hasAttachment && !s.is.length && s.after === null && s.before === null;

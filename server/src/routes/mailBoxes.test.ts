@@ -29,7 +29,7 @@ beforeEach(async () => {
 });
 
 describe("search operators", () => {
-  const m = (o: Partial<Parameters<typeof matchesSearch>[1]> = {}) => ({ fromName: "Pam Mokoena", fromEmail: "pam@example.com", subject: "Price list 2026", text: "Please send the quote for 20 taxis", at: "2026-10-05T10:00:00Z", status: "open", starred: false, kind: "email", hasAttachment: false, ...o });
+  const m = (o: Partial<Parameters<typeof matchesSearch>[1]> = {}) => ({ fromName: "Pam Mokoena", fromEmail: "pam@example.com", subject: "Price list 2026", text: "Please send the quote for 20 taxis", at: "2026-10-05T10:00:00Z", status: "open", starred: false, kind: "email", hasAttachment: false, labels: [] as string[], ...o });
   it("understands from:, subject:, has:attachment, is:, dates, phrases and exclusions", () => {
     const s = parseSearch(`from:pam subject:price has:attachment is:starred is:open after:2026-10-01 before:2026-10-31 "the quote" -spam taxis`);
     expect(s).toMatchObject({ from: ["pam"], subject: ["price"], hasAttachment: true, is: ["starred", "open"], terms: ["the quote", "taxis"], exclude: ["spam"] });

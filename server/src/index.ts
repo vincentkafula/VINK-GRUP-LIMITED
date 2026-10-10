@@ -112,6 +112,11 @@ const mailEmail = createEmailSender();
 const mailFiles = pool ? createMailFiles({ db: pool, apiKey: process.env.RESEND_API_KEY?.trim() || undefined, scanner: createScanner(process.env) }) : undefined;
 
 const mailService = pool ? createMailService({ db: pool, mail: mailEmail, files: mailFiles }) : undefined;
+// Emails scheduled to be sent later: send the ones that are due, every 30 seconds (and once shortly after start-up, for any missed during a restart).
+if (mailService && process.env.NODE_ENV !== "test") {
+  const tick = () => mailService.sendDue().catch((e) => console.error("[mail] scheduled send failed:", e instanceof Error ? e.message : e));
+  setTimeout(tick, 15_000).unref(); setInterval(tick, 30_000).unref();
+}
 
 // Incoming email from Resend (raw body for the signature check, so also before the JSON parser). Staff-only list endpoints.
 app.use("/api/inbound", createInboundRouter({

@@ -1485,3 +1485,100 @@ CREATE TABLE IF NOT EXISTS mail_drafts (
 );
 CREATE INDEX IF NOT EXISTS idx_mail_drafts_user ON mail_drafts(user_id, department, updated_at DESC);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_mail_drafts_reply ON mail_drafts(user_id, reply_kind, reply_id) WHERE reply_id IS NOT NULL;
+
+-- Department mail, part 3 (services/mailService.ts, mailExtras.ts): rich text, signatures, templates, labels, snooze, scheduled send, filters, out-of-office, spam reasons.
+ALTER TABLE mail_outbound ADD COLUMN IF NOT EXISTS body_html TEXT;
+ALTER TABLE mail_drafts ADD COLUMN IF NOT EXISTS body_html TEXT;
+ALTER TABLE mail_flags ADD COLUMN IF NOT EXISTS snooze_until TIMESTAMPTZ;
+ALTER TABLE mail_flags ADD COLUMN IF NOT EXISTS reason TEXT;
+-- Each person's signature details per department (the design is the same for all; name, title, phone and picture are theirs).
+CREATE TABLE IF NOT EXISTS mail_signatures (
+  user_id    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  department TEXT NOT NULL,
+  full_name  TEXT NOT NULL,
+  title      TEXT NOT NULL DEFAULT '',
+  phone      TEXT NOT NULL DEFAULT '',
+  photo_url  TEXT NOT NULL DEFAULT '',
+  enabled    BOOLEAN NOT NULL DEFAULT true,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (user_id, department)
+);
+-- Reusable replies, shared by a department.
+CREATE TABLE IF NOT EXISTS mail_templates (
+  id         UUID PRIMARY KEY,
+  department TEXT NOT NULL,
+  name       TEXT NOT NULL,
+  subject    TEXT NOT NULL DEFAULT '',
+  body_html  TEXT NOT NULL,
+  created_by UUID REFERENCES users(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (department, name)
+);
+CREATE TABLE IF NOT EXISTS mail_labels (
+  id         UUID PRIMARY KEY,
+  department TEXT NOT NULL,
+  name       TEXT NOT NULL,
+  color      TEXT NOT NULL DEFAULT '#8B0000',
+  UNIQUE (department, name)
+);
+CREATE TABLE IF NOT EXISTS mail_message_labels (
+  kind       TEXT NOT NULL CHECK (kind IN ('web','email')),
+  message_id UUID NOT NULL,
+  label_id   UUID NOT NULL REFERENCES mail_labels(id) ON DELETE CASCADE,
+  PRIMARY KEY (kind, message_id, label_id)
+);
+CREATE INDEX IF NOT EXISTS idx_mail_message_labels_label ON mail_message_labels(label_id);
+-- Emails written now and sent later. A worker sends the due ones (status pending -> sending -> sent | failed).
+CREATE TABLE IF NOT EXISTS mail_scheduled (
+  id             UUID PRIMARY KEY,
+  user_id        UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  sent_by_name   TEXT NOT NULL,
+  department     TEXT NOT NULL,
+  to_addr        TEXT NOT NULL,
+  subject        TEXT NOT NULL,
+  body           TEXT NOT NULL,
+  body_html      TEXT,
+  attachment_ids TEXT[] NOT NULL DEFAULT '{}',
+  reply_kind     TEXT,
+  reply_id       UUID,
+  send_at        TIMESTAMPTZ NOT NULL,
+  status         TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','sending','sent','failed','cancelled')),
+  error          TEXT,
+  claimed_at     TIMESTAMPTZ,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_mail_scheduled_due ON mail_scheduled(status, send_at);
+-- Rules applied to each new email of a department: every filled-in condition must match; then the actions are applied.
+CREATE TABLE IF NOT EXISTS mail_filters (
+  id                  UUID PRIMARY KEY,
+  department          TEXT NOT NULL,
+  name                TEXT NOT NULL,
+  cond_from           TEXT NOT NULL DEFAULT '',
+  cond_subject        TEXT NOT NULL DEFAULT '',
+  cond_words          TEXT NOT NULL DEFAULT '',
+  cond_has_attachment BOOLEAN NOT NULL DEFAULT false,
+  act_label_id        UUID REFERENCES mail_labels(id) ON DELETE SET NULL,
+  act_star            BOOLEAN NOT NULL DEFAULT false,
+  act_folder          TEXT CHECK (act_folder IN ('spam','trash')),
+  act_close           BOOLEAN NOT NULL DEFAULT false,
+  active              BOOLEAN NOT NULL DEFAULT true,
+  created_by          UUID REFERENCES users(id) ON DELETE SET NULL,
+  created_at          TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+-- Out-of-office reply of a department, and who has already had it (one reply per sender every few days).
+CREATE TABLE IF NOT EXISTS mail_autoreply (
+  department TEXT PRIMARY KEY,
+  enabled    BOOLEAN NOT NULL DEFAULT false,
+  subject    TEXT NOT NULL DEFAULT 'Out of office',
+  body       TEXT NOT NULL DEFAULT '',
+  start_on   DATE,
+  end_on     DATE,
+  updated_by UUID REFERENCES users(id) ON DELETE SET NULL,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS mail_autoreply_log (
+  department TEXT NOT NULL,
+  email      TEXT NOT NULL,
+  sent_at    TIMESTAMPTZ NOT NULL,
+  PRIMARY KEY (department, email)
+);
