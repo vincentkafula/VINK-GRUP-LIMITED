@@ -25,7 +25,7 @@ beforeEach(() => { localStorage.clear(); localStorage.setItem("vink.mail.undoSec
 afterEach(() => { act(() => root.unmount()); host.remove(); vi.unstubAllGlobals(); });
 const settle = () => act(async () => { await new Promise((r) => setTimeout(r, 10)); });
 const render = async () => { await act(async () => { root.render(<MailPanel />); }); await settle(); await settle(); };
-const btn = (t: string) => [...document.querySelectorAll("button")].find((b) => b.textContent?.includes(t)) as HTMLButtonElement | undefined;
+const btn = (t: string) => [...document.querySelectorAll("button")].find((b) => b.textContent?.includes(t) || b.getAttribute("aria-label") === t) as HTMLButtonElement | undefined;
 const type = async (el: HTMLElement | null, v: string) => { await act(async () => { if ((el as HTMLElement | null)?.getAttribute("contenteditable") === "true") { (el as HTMLElement).innerHTML = `<div>${v}</div>`; (el as HTMLElement).dispatchEvent(new Event("input", { bubbles: true })); return; } const e = el as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement; const proto = e.tagName === "TEXTAREA" ? HTMLTextAreaElement.prototype : e.tagName === "SELECT" ? HTMLSelectElement.prototype : HTMLInputElement.prototype; Object.getOwnPropertyDescriptor(proto, "value")!.set!.call(e, v); e.dispatchEvent(new Event(e.tagName === "SELECT" ? "change" : "input", { bubbles: true })); }); };
 
 describe("MailPanel", () => {

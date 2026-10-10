@@ -46,9 +46,9 @@ const posts = (suffix: string) => calls.filter((c) => c.url.endsWith(suffix) && 
 const body = (c: { init?: RequestInit }) => JSON.parse(String(c.init!.body));
 
 describe("boxes", () => {
-  it("has Inbox, Starred, Drafts, Sent, Spam and Trash, with the waiting and draft counts, and asks for the right box", async () => {
+  it("has Inbox, Starred, Snoozed, Sent, Drafts, Scheduled, Spam and Trash, with the waiting and draft counts, and asks for the right box", async () => {
     mockApi(); await render();
-    expect([...document.querySelectorAll('[aria-label="Boxes"] [role="tab"]')].map((t) => t.textContent!.replace(/\s+/g, " ").trim())).toEqual(["Inbox(3)", "Starred", "Snoozed", "Drafts(2)", "Scheduled", "Sent", "Spam", "Trash"]);
+    expect([...document.querySelectorAll('[aria-label="Boxes"] [role="tab"]')].map((t) => t.textContent!.replace(/\s+/g, " ").trim())).toEqual(["Inbox3", "Starred", "Snoozed", "Sent", "Drafts2", "Scheduled", "Spam", "Trash"]);
     for (const [name, param] of [["Starred", "starred"], ["Spam", "spam"], ["Trash", "trash"], ["Sent", "sent"]] as const) {
       await click(box(name)); expect(calls.some((c) => c.url.includes(`messages?department=sales&box=${param}`)), name).toBe(true);
     }
@@ -58,7 +58,7 @@ describe("boxes", () => {
 
   it("says what an empty box is for, and marks starred messages", async () => {
     mockApi(); await render();
-    expect(document.querySelector('[aria-label="Starred"]')).toBeTruthy();                      // the star on the second message
+    expect(document.querySelectorAll('section[aria-label="Messages"] button[aria-label="Remove star"]')).toHaveLength(1);       // the filled star on the second message
     vi.stubGlobal("fetch", vi.fn(async (u: string) => new Response(JSON.stringify(String(u).endsWith("/departments") ? { success: true, departments: [{ key: "sales", name: "Sales", address: "sales@vink.co.za", open: 0 }] } : { success: true, messages: [] }))));
     await click(box("Spam")); expect(host.textContent).toContain("Nothing in Spam."); await click(box("Trash")); expect(host.textContent).toContain("Trash is empty.");
     await click(box("Starred")); expect(host.textContent).toContain("No starred messages");
@@ -76,6 +76,8 @@ describe("drafts box", () => {
     expect((host.querySelector('input[aria-label="Subject"]') as HTMLInputElement).value).toBe("Your quote");
     expect(host.querySelector('[aria-label="Message"][contenteditable="true"]')!.textContent).toBe("Hello buyer");
     expect(host.textContent).toContain("Discard draft");
+    await click(btn("Back to the list"));
+    expect(host.querySelector('input[aria-label="To"]')).toBeNull(); expect(host.textContent).toContain("Reply draft");
     await click((document.querySelectorAll("section[aria-label='Messages'] ul button")[1]) as HTMLElement);
     expect(calls.some((c) => c.url.endsWith(`/api/mail/messages/email/${A}`))).toBe(true);        // the message the reply belongs to
     expect(box("Inbox").getAttribute("aria-selected")).toBe("true");
@@ -129,7 +131,7 @@ describe("message actions", () => {
     await click(btn("Report spam")); await click(host.querySelector('[aria-label="Report spam"] input[type="checkbox"]') as HTMLElement);
     await click(btn("Move to Spam"));
     expect(body(posts(`/messages/email/${A}/folder`)[0])).toEqual({ folder: "spam", blockSender: true });
-    expect(host.textContent).toContain("Choose a message to read it");                          // the message left the inbox, so the pane is cleared
+    expect(host.querySelector("section[aria-label='Message']")).toBeNull(); expect(host.querySelector("section[aria-label='Messages']")).toBeTruthy();          // the message left the inbox: back to the list
     await openFirst(); await click(btn("Report spam")); await click(btn("Move to Spam"));
     expect(body(posts(`/messages/email/${A}/folder`)[1])).toEqual({ folder: "spam" });         // not blocked unless asked
     await openFirst(); await click(btn("Move to trash"));
@@ -192,7 +194,7 @@ describe("autosaving drafts", () => {
     const save = calls.filter((c) => c.url.endsWith("/api/mail/drafts"))[0];
     expect(body(save)).toMatchObject({ department: "sales", replyKind: "email", replyId: A, bodyHtml: "<div>Dear Pam, here you go</div>" });
     detail = { ...detail, draft: DRAFT_REPLY };
-    await click(document.querySelectorAll("section[aria-label='Messages'] ul button")[1] as HTMLElement); await openFirst();
+    await click(btn("Back to the list")); await click(document.querySelectorAll("section[aria-label='Messages'] ul > li > button")[1] as HTMLElement); await settle(); await settle();
     expect(host.querySelector('[aria-label="Your reply"][contenteditable="true"]')!.textContent).toBe("Dear Pam, ");
   }, 10000);
 

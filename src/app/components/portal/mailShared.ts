@@ -30,7 +30,26 @@ export function mailClient() {
   };
 }
 
-export const COLOR = "#8B0000";
+/** The mailbox colours: a navy sidebar, blue for the main action and the open box, white and soft blue-grey elsewhere. */
+export const COLOR = "#2F6BFF";
+export const NAVY = "#0F2A52";
+export const NAVY_ACTIVE = "#24509E";
+const AVATARS = ["#2F6BFF", "#10B981", "#8B5CF6", "#EF4444", "#F59E0B", "#06B6D4", "#EC4899", "#64748B"];
+/** The same colour for the same person, every time. */
+export const avatarColor = (name: string) => { let h = 0; for (const c of name) h = (h * 31 + c.charCodeAt(0)) >>> 0; return AVATARS[h % AVATARS.length]; };
+export const initialOf = (name: string) => (name.trim().match(/[\p{L}\p{N}]/u)?.[0] ?? "?").toUpperCase();
+
+/** The time of a message in a list: the clock time today, "Yesterday", the weekday this week, otherwise the date. (South African time.) */
+export function listTime(iso: string, now: Date = new Date()): string {
+  const tz = "Africa/Johannesburg", day = (d: Date) => d.toLocaleDateString("en-CA", { timeZone: tz });
+  const d = new Date(iso);
+  if (day(d) === day(now)) return d.toLocaleTimeString("en-US", { timeZone: tz, hour: "numeric", minute: "2-digit" });
+  if (day(d) === day(new Date(now.getTime() - 86400_000))) return "Yesterday";
+  const age = (now.getTime() - d.getTime()) / 86400_000;
+  if (age > 0 && age < 6) return d.toLocaleDateString("en-US", { timeZone: tz, weekday: "long" });
+  const sameYear = d.toLocaleDateString("en-CA", { timeZone: tz, year: "numeric" }) === now.toLocaleDateString("en-CA", { timeZone: tz, year: "numeric" });
+  return d.toLocaleDateString("en-ZA", { timeZone: tz, day: "2-digit", month: "short", ...(sameYear ? {} : { year: "numeric" }) });
+}
 export const STATUS_LABEL: Record<string, string> = { open: "Open", answered: "Answered", closed: "Closed", sent: "Sent", failed: "Not sent", pending: "Waiting", sending: "Sending" };
 
 /** Plain text to HTML paragraphs (an old draft or template that was saved as text). */
