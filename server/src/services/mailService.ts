@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import type { Db } from "../portal/driverRoutes.js";
 import type { EmailSender } from "../auth/email.js";
-import { DEPARTMENTS, SECTION_ALIASES, departmentByKey, type Department } from "../config/departments.js";
+import { allDepartments, SECTION_ALIASES, departmentByKey, type Department } from "../config/departments.js";
 import { parseSearch, matchesSearch, isEmptySearch, normalizeSubject } from "./mailSearch.js";
 import { createMailFiles, ATTACH_LIMIT_BYTES, LINK_DAYS, prettySize, type MailFiles, type FileInfo, type FileResult, type StoredFile } from "./mailFiles.js";
 import { cleanOutgoingHtml, htmlToText, textToHtml } from "./mailHtml.js";
@@ -88,11 +88,11 @@ export function createMailService(deps: {
 
   /** The departments this person may use. */
   async function departmentsFor(user: MailUser): Promise<(Department | typeof UNROUTED)[]> {
-    if (isSuper(user.role)) return [...DEPARTMENTS, UNROUTED];
+    if (isSuper(user.role)) return [...allDepartments(), UNROUTED];
     const rows = (await db.query(`SELECT section FROM section_permissions WHERE user_id = $1`, [user.userId])).rows;
     const names = new Set(rows.map((r: Record<string, unknown>) => String(r.section)));
     const viaAlias = new Set([...names].map((n) => SECTION_ALIASES[n]).filter(Boolean));
-    return DEPARTMENTS.filter((d) => names.has(d.name) || viaAlias.has(d.key));
+    return allDepartments().filter((d) => names.has(d.name) || viaAlias.has(d.key));
   }
   const canUse = async (user: MailUser, key: string) => (await departmentsFor(user)).some((d) => d.key === key);
   /** A real department (not "unrouted") that this person may use, or the refusal to give. */
@@ -156,13 +156,13 @@ export function createMailService(deps: {
 
   async function unread(user: MailUser) {
     await wakeSnoozed();
-    const out: { key: string; name: string; address: string; open: number; drafts: number; scheduled: number }[] = [];
+    const out: { key: string; name: string; address: string; open: number; drafts: number; scheduled: number; /** false for a department a Super Administrator has switched off */ active: boolean }[] = [];
     for (const d of await departmentsFor(user)) {
       const rows = await loadRows([d.key], "open", 1000);
       const real = d.key !== "unrouted";
       const drafts = real ? Number((await db.query(`SELECT COUNT(*) AS n FROM mail_drafts WHERE user_id = $1 AND department = $2`, [user.userId, d.key])).rows[0].n) : 0;
       const scheduled = real ? Number((await db.query(`SELECT COUNT(*) AS n FROM mail_scheduled WHERE department = $1 AND status IN ('pending','sending','failed')`, [d.key])).rows[0].n) : 0;
-      out.push({ key: d.key, name: d.name, address: d.address, open: rows.filter((r) => r.item.folder === "inbox" && !isSnoozed(r.item)).length, drafts, scheduled });
+      out.push({ key: d.key, name: d.name, address: d.address, active: (d as Department).active !== false, open: rows.filter((r) => r.item.folder === "inbox" && !isSnoozed(r.item)).length, drafts, scheduled });
     }
     return out;
   }
@@ -298,6 +298,7 @@ export function createMailService(deps: {
     const dept = departmentByKey(a.department);
     if (!dept) return bad(400, "Choose a department to send from");
     if (!(await canUse(user, dept.key))) return bad(403, "You do not manage this department's mail");
+    if (dept.active === false) return bad(409, "This department is switched off. Ask a Super Administrator to switch it on to send from it.");
     const addr = checkAddressing(a); if (!addr.ok) return addr;
     const content = checkBody(a); if (!content.ok) return content;
     const { to, subject } = addr, { body } = content;

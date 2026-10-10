@@ -2,7 +2,7 @@ import { Router, Request, Response } from "express";
 import { randomUUID } from "crypto";
 import { pool, hasDb } from "../db/pool.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
-import { DEPARTMENTS } from "../config/departments.js";
+import { allDepartments, onDepartmentsChanged } from "../config/departments.js";
 
 // Both 'owner' (the platform's designated top-authority role) and
 // 'superadmin' (the original full-access role, retained on the 'admin'
@@ -16,12 +16,14 @@ const router: ReturnType<typeof Router> = Router();
 
 // The four management modules, then one section per department mailbox (named exactly like the department, for example "Sales"): a department manager is
 // someone approved for that section, either from an application to manage it or from an approved job application for the department.
-export const SECTIONS: readonly string[] = [
+export const MODULE_SECTIONS: readonly string[] = [
   "Bank Management", "Payment Management",
   "Company Registration Management",
   "Social Responsibility Management",
-  ...DEPARTMENTS.map((d) => d.name),
 ];
+// A live list: when a Super Administrator makes (or switches off) a department it is rebuilt in place, so everything that checks it sees the change.
+export const SECTIONS: string[] = [...MODULE_SECTIONS, ...allDepartments().map((d) => d.name)];
+onDepartmentsChanged(() => { SECTIONS.splice(0, SECTIONS.length, ...MODULE_SECTIONS, ...allDepartments().map((d) => d.name)); });
 
 function noDb(res: Response): boolean {
   if (!hasDb || !pool) { res.status(503).json({ success: false, error: "Database not configured" }); return true; }

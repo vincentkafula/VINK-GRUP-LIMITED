@@ -66,7 +66,7 @@ export function createContactService(deps: { db: Db; mail: EmailSender; env?: No
       return { ok: true, ref: newRef(), department: d.key, respondWithin: d.respondWithin };
     }
     const dept = departmentByKey(input.department);
-    if (!dept) return { ok: false, status: 400, error: "Choose who your message is for" };
+    if (!dept || dept.public === false || dept.active === false) return { ok: false, status: 400, error: "Choose who your message is for" };
     const name = oneLine(input.name, 100), email = oneLine(input.email, 254).toLowerCase(), phone = oneLine(input.phone, 30), subject = oneLine(input.subject, 150) || "General enquiry", message = clean(input.message, 5000);
     if (name.length < 2) return { ok: false, status: 400, error: "Enter your name" };
     if (!/^[^@\s<>,;]+@[^@\s<>,;]+\.[^@\s<>,;]{2,}$/.test(email)) return { ok: false, status: 400, error: "Enter a valid email address" };

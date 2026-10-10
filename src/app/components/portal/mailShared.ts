@@ -3,7 +3,7 @@ import { authFetch } from "../../services/apiClient";
 import type { MailFile } from "./MailAttachments";
 
 /** Types and the small client shared by the Department mail screens (MailPanel, MailMessage, MailCompose, MailSettings). */
-export interface Dept { key: string; name: string; address: string; open: number; drafts?: number; scheduled?: number }
+export interface Dept { key: string; name: string; address: string; open: number; drafts?: number; scheduled?: number; /** false: switched off by a Super Administrator (mail stays readable; nothing can be sent from it) */ active?: boolean }
 export interface Label { id: string; name: string; color: string }
 export interface Item { kind: "web" | "email"; id: string; department: string; fromName: string; fromEmail: string; subject: string; preview: string; status: string; at: string; ref?: string; starred?: boolean; folder?: string; snoozedUntil?: string | null; labels?: Label[]; spamReason?: string | null }
 export interface Draft { id: string; department: string; to: string; subject: string; body: string; bodyHtml?: string | null; replyKind: "web" | "email" | null; replyId: string | null; attachments: MailFile[]; updatedAt: string }

@@ -77,6 +77,7 @@ export function MailPanel() {
       : (() => {
         const cur = departments.find((d) => d.key === dept);
         const realDepts = departments.filter((d) => d.key !== "unrouted");
+        const writable = realDepts.filter((d) => d.active !== false);                       // a switched-off department cannot be written from
         const messages = msgs.state === "ready" ? msgs.data.messages ?? [] : [];
         const shown = messages.slice(page * PAGE, page * PAGE + PAGE);
         const total = box === "drafts" ? (drafts.state === "ready" ? (drafts.data.drafts ?? []).length : 0) : box === "scheduled" ? (scheduled.state === "ready" ? (scheduled.data.scheduled ?? []).length : 0) : messages.length;
@@ -95,7 +96,7 @@ export function MailPanel() {
                     {d.name}{d.open > 0 && <span className="ml-1.5 rounded-full px-1.5 text-[10px]" style={{ background: dept === d.key ? "#E3ECFF" : "rgba(255,255,255,0.22)", color: dept === d.key ? NAVY : "#fff" }}>{d.open}</span>}
                   </button>))}
               </div>
-              {dept && dept !== "unrouted" && cur && <p className="flex items-center gap-1.5 px-1 text-[11px] text-white/70"><Mail className="h-3.5 w-3.5" /> {cur.address}</p>}
+              {dept && dept !== "unrouted" && cur && <p className="flex items-center gap-1.5 px-1 text-[11px] text-white/70"><Mail className="h-3.5 w-3.5" /> {cur.address}{cur.active === false ? " (switched off)" : ""}</p>}
 
               <nav role="tablist" aria-label="Boxes" aria-orientation="vertical" className="flex gap-1 overflow-x-auto lg:flex-col lg:gap-0.5 lg:overflow-visible">
                 {BOXES.map(({ key, label: text, icon: Icon }) => {
@@ -149,7 +150,7 @@ export function MailPanel() {
                 : composing ? (
                   <section aria-label="Message" className="p-5">
                     <button type="button" onClick={back} aria-label="Back to the list" className="mb-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold text-[#4A5A78] hover:bg-[#E8EEF9]"><ArrowLeft className="h-4 w-4" /> Back</button>
-                    <Compose key={composing.key} call={call} departments={realDepts.length ? realDepts : departments} initial={dept} draft={composing.draft} onSent={(text) => { setComposing(null); if (text) setNotice(text); refresh(); }} onChanged={refresh} />
+                    <Compose key={composing.key} call={call} departments={writable.length ? writable : realDepts.length ? realDepts : departments} initial={dept} draft={composing.draft} onSent={(text) => { setComposing(null); if (text) setNotice(text); refresh(); }} onChanged={refresh} />
                   </section>)
                 : selected && box !== "sent" ? (
                   <section aria-label="Message" className="p-5">
