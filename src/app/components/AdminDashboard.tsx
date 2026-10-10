@@ -12,19 +12,20 @@ import {
 } from "lucide-react";
 import { adminApi, type Application, type AppStatus } from "../services/applicationsApi";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
+import { BRAND } from "../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
-const P = "#5C0A10";
-const GOLD = "#C9A84C";
+const P = BRAND.crimsonDeep;
+const GOLD = BRAND.gold;
 
 // ─── Status config ────────────────────────────────────────────────────────────
 
 const STATUS_CONFIG: Record<AppStatus, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
-  submitted:            { label: "Submitted",         color: "#F59E0B", bg: "var(--vk-warn-bg)", icon: <Clock className="w-3.5 h-3.5" /> },
-  under_review:         { label: "Under Review",      color: "#3B82F6", bg: "var(--vk-info-bg)", icon: <Eye className="w-3.5 h-3.5" /> },
-  approved:             { label: "Approved",          color: "#10B981", bg: "var(--vk-ok-bg)", icon: <CheckCircle className="w-3.5 h-3.5" /> },
-  declined:             { label: "Declined",          color: "#EF4444", bg: "var(--vk-bad-bg)", icon: <XCircle className="w-3.5 h-3.5" /> },
+  submitted:            { label: "Submitted",         color: BRAND.warn, bg: "var(--vk-warn-bg)", icon: <Clock className="w-3.5 h-3.5" /> },
+  under_review:         { label: "Under Review",      color: BRAND.info, bg: "var(--vk-info-bg)", icon: <Eye className="w-3.5 h-3.5" /> },
+  approved:             { label: "Approved",          color: BRAND.ok, bg: "var(--vk-ok-bg)", icon: <CheckCircle className="w-3.5 h-3.5" /> },
+  declined:             { label: "Declined",          color: BRAND.bad, bg: "var(--vk-bad-bg)", icon: <XCircle className="w-3.5 h-3.5" /> },
   more_info_requested:  { label: "More Info Needed",  color: "#34A853", bg: "var(--vk-surface-2)", icon: <AlertCircle className="w-3.5 h-3.5" /> },
 };
 
@@ -37,7 +38,7 @@ const TYPE_LABELS_TIER: Record<string, string> = {
 };
 
 const TYPE_COLORS_TIER: Record<string, string> = {
-  personal: "#8B0000", business: "#1565C0", corporate: "#5C0A10",
+  personal: BRAND.crimson, business: "#1565C0", corporate: BRAND.crimsonDeep,
 };
 
 const REVIEWERS = ["Sarah Mokoena", "Thabo Dlamini", "Priya Naidoo", "James van Berg", "Lindiwe Khumalo"];
@@ -188,7 +189,7 @@ function AppDetailDrawer({ app, onClose, onAction }: {
             ) : [...events].reverse().map((ev: Record<string,unknown>, i: number) => (
               <div key={i} className="flex items-start gap-3 p-3 rounded-xl border border-line">
                 <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-white text-xs font-bold"
-                  style={{ background: ev.action === "approved" ? "#10B981" : ev.action === "declined" ? "#EF4444" : P }}>
+                  style={{ background: ev.action === "approved" ? BRAND.ok : ev.action === "declined" ? BRAND.bad : P }}>
                   {String(ev.action ?? "?")[0].toUpperCase()}
                 </div>
                 <div>
@@ -215,7 +216,7 @@ function AppDetailDrawer({ app, onClose, onAction }: {
               <div className="flex gap-2">
                 <button onClick={() => { setShowDeclineForm(false); setDeclineReason(""); }} className="flex-1 py-2 rounded-xl text-xs font-bold text-fg-muted bg-surface border border-line">Cancel</button>
                 <button onClick={() => declineReason && doAction("decline")} disabled={!declineReason || acting === "decline"}
-                  className="flex-1 py-2 rounded-xl text-xs font-bold text-white disabled:opacity-40" style={{ background: "#EF4444" }}>
+                  className="flex-1 py-2 rounded-xl text-xs font-bold text-white disabled:opacity-40" style={{ background: BRAND.bad }}>
                   {acting === "decline" ? "Declining…" : "Confirm Decline"}
                 </button>
               </div>
@@ -411,7 +412,7 @@ export function AdminDashboard({ isOpen, onClose }: Props) {
               <span>{item.label}</span>
               {item.badge && (
                 <span className="ml-auto text-[10px] font-black text-white rounded-full w-5 h-5 flex items-center justify-center"
-                  style={{ background: "#EF4444" }}>{item.badge}</span>
+                  style={{ background: BRAND.bad }}>{item.badge}</span>
               )}
             </button>
           ))}
@@ -421,9 +422,9 @@ export function AdminDashboard({ isOpen, onClose }: Props) {
             <div className="mt-auto mx-1 mb-1 p-3 rounded-xl bg-surface-2 border border-line space-y-2">
               <p className="text-[10px] font-bold text-fg-subtle uppercase tracking-wide">Quick Stats</p>
               {[
-                { label: "Pending",     value: s.pendingCount,     color: "#F59E0B" },
-                { label: "Approved",    value: s.approvedCount,    color: "#10B981" },
-                { label: "Declined",    value: s.declinedCount,    color: "#EF4444" },
+                { label: "Pending",     value: s.pendingCount,     color: BRAND.warn },
+                { label: "Approved",    value: s.approvedCount,    color: BRAND.ok },
+                { label: "Declined",    value: s.declinedCount,    color: BRAND.bad },
                 { label: "Total",       value: s.totalApplications, color: "var(--vk-crimson-text)" },
               ].map(stat => (
                 <div key={stat.label} className="flex justify-between items-center">
@@ -457,10 +458,10 @@ export function AdminDashboard({ isOpen, onClose }: Props) {
                   <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                     {[
                       { label: "Total",       value: s?.totalApplications ?? 0,    color: "var(--vk-crimson-text)" },
-                      { label: "Pending",     value: s?.pendingCount ?? 0,         color: "#F59E0B" },
-                      { label: "Under Review",value: s?.underReviewCount ?? 0,     color: "#3B82F6" },
-                      { label: "Approved",    value: s?.approvedCount ?? 0,        color: "#10B981" },
-                      { label: "Declined",    value: s?.declinedCount ?? 0,        color: "#EF4444" },
+                      { label: "Pending",     value: s?.pendingCount ?? 0,         color: BRAND.warn },
+                      { label: "Under Review",value: s?.underReviewCount ?? 0,     color: BRAND.info },
+                      { label: "Approved",    value: s?.approvedCount ?? 0,        color: BRAND.ok },
+                      { label: "Declined",    value: s?.declinedCount ?? 0,        color: BRAND.bad },
                     ].map((kpi, i) => (
                       <div key={i} className="bg-surface rounded-2xl border border-line p-4 hover:shadow-md transition-shadow cursor-pointer"
                         onClick={() => { setFilterStatus(i === 0 ? "" : ["","pending","under_review","approved","declined"][i]); setView("applications"); }}>
@@ -526,7 +527,7 @@ export function AdminDashboard({ isOpen, onClose }: Props) {
                     </div>
                     <div className="bg-surface rounded-2xl border border-line p-5">
                       <p className="text-sm font-black text-fg mb-1">Newsletter Subscribers</p>
-                      <p className="text-3xl font-black" style={{ color: "#10B981" }}>{String(s?.newsletterSubscribers ?? 0)}</p>
+                      <p className="text-3xl font-black" style={{ color: BRAND.ok }}>{String(s?.newsletterSubscribers ?? 0)}</p>
                       <button onClick={() => setView("newsletter")} className="text-xs text-green-600 font-semibold mt-2 hover:underline">View all →</button>
                     </div>
                   </div>

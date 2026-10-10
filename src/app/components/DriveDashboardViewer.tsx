@@ -14,6 +14,7 @@ import {
 import { DeviceTerminalModal } from "./DeviceTerminalModal";
 import { connectLiveSocket } from "../services/liveSocket";
 import { isNativeTerminalAvailable, isTerminalReady } from "../services/p18qTerminal";
+import { BRAND } from "../brand";
 
 /**
  * Driver Dashboard -- built from the uploaded reference, a full 9-page
@@ -37,12 +38,12 @@ const NAVY_SOFT = "#121B3E";
 const BLUE = "#2F5BFF";
 
 const ACCENTS: Record<string, { bg: string; ic: string; line: string }> = {
-  power:   { bg: "bg-blue-50",    ic: "bg-blue-100 text-blue-600",       line: "#3B82F6" },
-  preview: { bg: "bg-emerald-50", ic: "bg-emerald-100 text-emerald-600", line: "#10B981" },
+  power:   { bg: "bg-blue-50",    ic: "bg-blue-100 text-blue-600",       line: BRAND.info },
+  preview: { bg: "bg-emerald-50", ic: "bg-emerald-100 text-emerald-600", line: BRAND.ok },
   stmt:    { bg: "bg-violet-50",  ic: "bg-violet-100 text-violet-600",   line: "#B04040" },
   pay:     { bg: "bg-orange-50",  ic: "bg-orange-100 text-orange-600",   line: "#F97316" },
   uif:     { bg: "bg-sky-50",     ic: "bg-sky-100 text-sky-600",         line: "#0EA5E9" },
-  tax:     { bg: "bg-amber-50",   ic: "bg-amber-100 text-amber-600",     line: "#F59E0B" },
+  tax:     { bg: "bg-amber-50",   ic: "bg-amber-100 text-amber-600",     line: BRAND.warn },
   assoc:   { bg: "bg-rose-50",    ic: "bg-rose-100 text-rose-600",       line: "#F43F5E" },
   contract:{ bg: "bg-indigo-50",  ic: "bg-indigo-100 text-indigo-600",   line: "#6366F1" },
 };
@@ -121,7 +122,7 @@ function calcPAYE(grossMonthly: number) {
 const ASSOCIATION_FEE = 450;
 
 // ─── Small shared UI pieces ─────────────────────────────────────────────
-function Sparkline({ color = "#3B82F6", seed = 1 }: { color?: string; seed?: number }) {
+function Sparkline({ color = BRAND.info, seed = 1 }: { color?: string; seed?: number }) {
   const points = useMemo(() => {
     let v = 20 + (seed * 7) % 15;
     const pts: number[] = [];
@@ -328,7 +329,7 @@ function DashboardView({ trips, gross, uif, paye, netPay, driverName }: { trips:
     return order.map(d => ({ day: d, total: Math.round(map[d]) }));
   }, [trips]);
 
-  const pieData = [{ name: "Card", value: cardTotal, color: "#3B82F6" }, { name: "Cash", value: cashTotal, color: "#F59E0B" }];
+  const pieData = [{ name: "Card", value: cardTotal, color: BRAND.info }, { name: "Cash", value: cashTotal, color: BRAND.warn }];
   const stats = [
     { icon: Power, accent: "power", label: "Turned On", value: "6d 14h", delta: 12.5, seed: 3 },
     { icon: Eye, accent: "preview", label: "Trips (Previews)", value: trips.length, delta: 8.3, seed: 7 },
@@ -423,7 +424,7 @@ function DashboardView({ trips, gross, uif, paye, netPay, driverName }: { trips:
             <div className="relative w-24 h-24">
               <svg viewBox="0 0 36 36" className="w-24 h-24 -rotate-90">
                 <circle cx="18" cy="18" r="16" fill="none" stroke="var(--vk-line)" strokeWidth="4" />
-                <circle cx="18" cy="18" r="16" fill="none" stroke="#10B981" strokeWidth="4" strokeDasharray="100" strokeDashoffset="16" strokeLinecap="round" />
+                <circle cx="18" cy="18" r="16" fill="none" stroke={BRAND.ok} strokeWidth="4" strokeDasharray="100" strokeDashoffset="16" strokeLinecap="round" />
               </svg>
               <div className="absolute inset-0 grid place-items-center"><div className="text-lg font-bold text-slate-800 leading-none">98.4%</div></div>
             </div>
@@ -689,8 +690,8 @@ function PreviewView({ trips, deviceOn }: { trips: Trip[]; deviceOn: boolean }) 
           <div style={{ width: "100%", height: 70 }}>
             <ResponsiveContainer>
               <AreaChart data={chartData} margin={{ top: 4, right: 0, left: 0, bottom: 0 }}>
-                <defs><linearGradient id="previewArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#10B981" stopOpacity={0.35} /><stop offset="100%" stopColor="#10B981" stopOpacity={0} /></linearGradient></defs>
-                <Area type="monotone" dataKey="total" stroke="#10B981" strokeWidth={2} fill="url(#previewArea)" isAnimationActive />
+                <defs><linearGradient id="previewArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={BRAND.ok} stopOpacity={0.35} /><stop offset="100%" stopColor={BRAND.ok} stopOpacity={0} /></linearGradient></defs>
+                <Area type="monotone" dataKey="total" stroke={BRAND.ok} strokeWidth={2} fill="url(#previewArea)" isAnimationActive />
                 <Tooltip formatter={(v: number) => R(v)} labelFormatter={() => ""} contentStyle={{ fontSize: 12, borderRadius: 8 }} />
               </AreaChart>
             </ResponsiveContainer>
@@ -836,8 +837,8 @@ function PayslipView({ gross, uif, paye, driverName }: { gross: number; uif: Ret
   const net = periodGross - periodUifEmp - periodTax - periodAssoc;
 
   const donut = [
-    { name: "Net pay", value: net, color: "#10B981" },
-    { name: "PAYE tax", value: periodTax, color: "#F59E0B" },
+    { name: "Net pay", value: net, color: BRAND.ok },
+    { name: "PAYE tax", value: periodTax, color: BRAND.warn },
     { name: "UIF", value: periodUifEmp, color: "#0EA5E9" },
     { name: "Association fee", value: periodAssoc, color: "#F43F5E" },
   ];
@@ -996,7 +997,7 @@ function TaxView({ paye, gross }: { paye: ReturnType<typeof calcPAYE>; gross: nu
                 <XAxis dataKey="m" tick={{ fontSize: 11, fill: "#94A3B8" }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 10, fill: "#94A3B8" }} axisLine={false} tickLine={false} width={36} />
                 <Tooltip formatter={(v: number) => R(v)} contentStyle={{ fontSize: 12, borderRadius: 8 }} />
-                <Line type="monotone" dataKey="total" stroke="#F59E0B" strokeWidth={2.5} dot={{ r: 3 }} />
+                <Line type="monotone" dataKey="total" stroke={BRAND.warn} strokeWidth={2.5} dot={{ r: 3 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>

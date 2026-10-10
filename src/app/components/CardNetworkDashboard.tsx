@@ -9,10 +9,11 @@ import {
   Shield, TrendingUp, BarChart3, Activity, Globe, AlertTriangle,
   Settings, Clock, DollarSign, Layers, ChevronRight,
 } from "lucide-react";
+import { BRAND } from "../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
-const P = "#5C0A10";
+const P = BRAND.crimsonDeep;
 const VISA_BLUE = "#1A1F71";
 const MC_RED = "#EB001B";
 const MC_ORANGE = "#F79E1B";
@@ -69,7 +70,7 @@ type EMVPath = "offline" | "online_fast" | "online_network";
 
 const EMV_PATHS: Record<EMVPath, { label: string; color: string; totalMs: string; steps: { id: number; name: string; desc: string; icon: string; duration: number }[] }> = {
   offline: {
-    label: "OFFLINE (EMV Offline Auth)", color: "#10B981", totalMs: "280–520ms",
+    label: "OFFLINE (EMV Offline Auth)", color: BRAND.ok, totalMs: "280–520ms",
     steps: [
       { id: 1, name: "NFC/Chip read",       desc: "ISO 14443 contactless — PAN, expiry, service code", icon: "📱", duration: 55 },
       { id: 2, name: "ARQC verify",         desc: "Offline cryptogram validated using issuer public key (on-device)", icon: "🔐", duration: 80 },
@@ -79,7 +80,7 @@ const EMV_PATHS: Record<EMVPath, { label: string; color: string; totalMs: string
     ],
   },
   online_fast: {
-    label: "ONLINE FAST (VINK Internal)", color: "#3B82F6", totalMs: "600–900ms",
+    label: "ONLINE FAST (VINK Internal)", color: BRAND.info, totalMs: "600–900ms",
     steps: [
       { id: 1, name: "NFC/Chip read",         desc: "ISO 14443 contactless read", icon: "📱", duration: 55 },
       { id: 2, name: "Online ARQC generate",  desc: "Card demands online authorization", icon: "🔐", duration: 80 },
@@ -90,7 +91,7 @@ const EMV_PATHS: Record<EMVPath, { label: string; color: string; totalMs: string
     ],
   },
   online_network: {
-    label: "NETWORK (Visa/MC Full Auth)", color: "#F59E0B", totalMs: "1.2–2.8s",
+    label: "NETWORK (Visa/MC Full Auth)", color: BRAND.warn, totalMs: "1.2–2.8s",
     steps: [
       { id: 1, name: "NFC/Chip read",         desc: "ISO 14443 contactless read", icon: "📱", duration: 55 },
       { id: 2, name: "Online ARQC generate",  desc: "Card demands full network authorization", icon: "🔐", duration: 80 },
@@ -132,12 +133,12 @@ function NetworkBadge({ network }: { network: string }) {
 
 function StatusBadge({ status }: { status: string }) {
   const cfg: Record<string, { color: string; bg: string }> = {
-    approved: { color: "#10B981", bg: "var(--vk-ok-bg)" },
-    declined: { color: "#EF4444", bg: "var(--vk-bad-bg)" },
-    settled:  { color: "#10B981", bg: "var(--vk-ok-bg)" },
-    pending:  { color: "#F59E0B", bg: "var(--vk-warn-bg)" },
-    in_progress: { color: "#3B82F6", bg: "var(--vk-info-bg)" },
-    active:   { color: "#10B981", bg: "var(--vk-ok-bg)" },
+    approved: { color: BRAND.ok, bg: "var(--vk-ok-bg)" },
+    declined: { color: BRAND.bad, bg: "var(--vk-bad-bg)" },
+    settled:  { color: BRAND.ok, bg: "var(--vk-ok-bg)" },
+    pending:  { color: BRAND.warn, bg: "var(--vk-warn-bg)" },
+    in_progress: { color: BRAND.info, bg: "var(--vk-info-bg)" },
+    active:   { color: BRAND.ok, bg: "var(--vk-ok-bg)" },
     inactive: { color: "var(--vk-fg-subtle)", bg: "var(--vk-surface-2)" },
   };
   const c = cfg[status] ?? cfg.pending;
@@ -255,7 +256,7 @@ function AFCSimulator() {
                 <div key={step.id} className="flex items-center gap-3 rounded-lg px-3 py-2 transition-all"
                   style={{ background: active ? pathConfig.color + "20" : done ? "#10B98110" : "transparent" }}>
                   <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-sm transition-all"
-                    style={{ background: done ? "#10B981" : active ? pathConfig.color : "var(--vk-fg)" }}>
+                    style={{ background: done ? BRAND.ok : active ? pathConfig.color : "var(--vk-fg)" }}>
                     {done ? <CheckCircle className="w-3 h-3 text-white" /> : <span className="text-[10px] text-white font-bold">{step.id}</span>}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -303,7 +304,7 @@ function AFCSimulator() {
         {[
           { label: "EMV Chip", sub: "ISO/IEC 7816", color: VISA_BLUE },
           { label: "NFC/Tap", sub: "ISO/IEC 14443", color: "var(--vk-crimson-text)" },
-          { label: "ISO 8583", sub: "Auth messages", color: "#10B981" },
+          { label: "ISO 8583", sub: "Auth messages", color: BRAND.ok },
         ].map((s, i) => (
           <div key={i} className="rounded-xl p-3 text-center border border-line bg-surface">
             <p className="text-xs font-black" style={{ color: s.color }}>{s.label}</p>
@@ -422,10 +423,10 @@ export function CardNetworkDashboard({ isOpen, onClose }: Props) {
           <div className="mt-auto mx-1 mb-1 p-3 rounded-xl bg-surface-2 border border-line space-y-2">
             <p className="text-[10px] font-bold text-fg-subtle uppercase tracking-wide">Network Status</p>
             {[
-              { label: "VisaNet",    color: "#10B981" },
-              { label: "Banknet",   color: "#10B981" },
-              { label: "BIN Server",color: "#10B981" },
-              { label: "HSM/Keys",  color: "#10B981" },
+              { label: "VisaNet",    color: BRAND.ok },
+              { label: "Banknet",   color: BRAND.ok },
+              { label: "BIN Server",color: BRAND.ok },
+              { label: "HSM/Keys",  color: BRAND.ok },
             ].map(s => (
               <div key={s.label} className="flex justify-between items-center">
                 <span className="text-[11px] text-fg-muted">{s.label}</span>
@@ -518,7 +519,7 @@ export function CardNetworkDashboard({ isOpen, onClose }: Props) {
                 {[
                   { label: "Total BINs Active",    value: BIN_RANGES.filter(b => b.status === "active").length.toString(), color: "var(--vk-crimson-text)" },
                   { label: "24h Auth Volume",      value: "R4.8M",    color: VISA_BLUE },
-                  { label: "Approval Rate",        value: "98.4%",    color: "#10B981" },
+                  { label: "Approval Rate",        value: "98.4%",    color: BRAND.ok },
                   { label: "Avg Auth Time",        value: "840ms",    color: MC_RED },
                 ].map((kpi, i) => (
                   <div key={i} className="bg-surface rounded-2xl border border-line p-4">
@@ -627,9 +628,9 @@ export function CardNetworkDashboard({ isOpen, onClose }: Props) {
               <h1 className="text-xl font-black text-fg">Settlement & Clearing</h1>
               <div className="grid sm:grid-cols-3 gap-4">
                 {[
-                  { label: "Total Settled (48h)", value: `R${(totalSettledVol/1000000).toFixed(1)}M`, color: "#10B981" },
+                  { label: "Total Settled (48h)", value: `R${(totalSettledVol/1000000).toFixed(1)}M`, color: BRAND.ok },
                   { label: "Interchange Earned",  value: `R${(totalInterchange/1000).toFixed(0)}K`, color: "var(--vk-crimson-text)" },
-                  { label: "Pending Settlement",  value: `R${((384500+248300)/1000).toFixed(0)}K`, color: "#F59E0B" },
+                  { label: "Pending Settlement",  value: `R${((384500+248300)/1000).toFixed(0)}K`, color: BRAND.warn },
                 ].map((kpi, i) => (
                   <div key={i} className="bg-surface rounded-2xl border border-line p-4">
                     <p className="text-3xl font-black" style={{ color: kpi.color }}>{kpi.value}</p>
@@ -679,10 +680,10 @@ export function CardNetworkDashboard({ isOpen, onClose }: Props) {
                 <div className="relative flex items-center gap-2 overflow-x-auto pb-2">
                   {[
                     { time: "00:00", label: "Batch closes", desc: "Day's transactions compiled", color: "var(--vk-crimson-text)" },
-                    { time: "01:00", label: "Net position", desc: "Interchange calculated", color: "#3B82F6" },
+                    { time: "01:00", label: "Net position", desc: "Interchange calculated", color: BRAND.info },
                     { time: "04:00", label: "VisaNet/Banknet", desc: "Clearing files exchanged", color: VISA_BLUE },
-                    { time: "08:00", label: "RTGS payment", desc: "Funds transferred SA Reserve Bank", color: "#10B981" },
-                    { time: "T+1",   label: "Funds available", desc: "Credited to VINK nostro account", color: "#10B981" },
+                    { time: "08:00", label: "RTGS payment", desc: "Funds transferred SA Reserve Bank", color: BRAND.ok },
+                    { time: "T+1",   label: "Funds available", desc: "Credited to VINK nostro account", color: BRAND.ok },
                   ].map((step, i) => (
                     <div key={i} className="flex items-center">
                       <div className="flex flex-col items-center min-w-[100px]">
@@ -761,8 +762,8 @@ export function CardNetworkDashboard({ isOpen, onClose }: Props) {
               <div className="grid sm:grid-cols-3 gap-4">
                 {[
                   { label: "Transactions Checked", value: "18,470", color: "var(--vk-crimson-text)" },
-                  { label: "Fraud Alerts (24h)", value: "23", color: "#F59E0B" },
-                  { label: "Blocked (24h)", value: "7", color: "#EF4444" },
+                  { label: "Fraud Alerts (24h)", value: "23", color: BRAND.warn },
+                  { label: "Blocked (24h)", value: "7", color: BRAND.bad },
                 ].map((kpi, i) => (
                   <div key={i} className="bg-surface rounded-2xl border border-line p-4">
                     <p className="text-3xl font-black" style={{ color: kpi.color }}>{kpi.value}</p>
@@ -787,7 +788,7 @@ export function CardNetworkDashboard({ isOpen, onClose }: Props) {
                   ].map((r, i) => (
                     <div key={i} className="flex items-start gap-3 p-3 rounded-xl border border-line hover:border-emerald-100 hover:bg-emerald-50 transition-all">
                       <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5"
-                        style={{ color: r.trigger === "Critical" ? "#EF4444" : r.trigger === "High" ? "#F59E0B" : r.trigger === "Medium" ? "#3B82F6" : "#10B981" }} />
+                        style={{ color: r.trigger === "Critical" ? BRAND.bad : r.trigger === "High" ? BRAND.warn : r.trigger === "Medium" ? BRAND.info : BRAND.ok }} />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <p className="text-sm font-bold text-fg">{r.rule}</p>

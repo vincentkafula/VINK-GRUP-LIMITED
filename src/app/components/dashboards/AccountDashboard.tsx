@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Hash, CreditCard, DollarSign, ArrowUpRight, ArrowDownRight, FileText, Bell, Settings, Home, TrendingUp, RefreshCw, Lock } from "lucide-react";
 import { DashboardShell, StatCard, Badge, Sparkline, SectionPanel, TableCard } from "./DashboardShell";
+import { BRAND } from "../../brand";
 
 const NAV = [
   { icon: <Home className="w-4 h-4" />, label: "Overview" },
@@ -41,17 +42,17 @@ export function AccountDashboard({ isOpen, onClose }: { isOpen: boolean; onClose
   return (
     <DashboardShell
       title="Account Dashboard" subtitle="Finance — Account Management"
-      accentColor="#10B981" gradient="from-emerald-600 to-teal-500"
+      accentColor={BRAND.ok} gradient="from-emerald-600 to-teal-500"
       navItems={NAV} activeNav={nav} onNavChange={setNav}
       onClose={onClose} userName="VINK Finance Admin"
     >
       <div className="p-5 space-y-5">
         <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-3">
-          <StatCard label="Main Balance" value="R52,840" icon={<DollarSign className="w-5 h-5" />} color="#10B981" trend="up" sub="ACC-001-284-VNK" />
-          <StatCard label="Available Credit" value="R96,940" icon={<CreditCard className="w-5 h-5" />} color="#3B82F6" />
-          <StatCard label="Monthly Income" value="R84,200" icon={<ArrowUpRight className="w-5 h-5" />} color="#10B981" trend="up" />
-          <StatCard label="Monthly Expenses" value="R31,840" icon={<ArrowDownRight className="w-5 h-5" />} color="#EF4444" trend="down" />
-          <StatCard label="Net Position" value="+R52,360" icon={<TrendingUp className="w-5 h-5" />} color="#F59E0B" trend="up" />
+          <StatCard label="Main Balance" value="R52,840" icon={<DollarSign className="w-5 h-5" />} color={BRAND.ok} trend="up" sub="ACC-001-284-VNK" />
+          <StatCard label="Available Credit" value="R96,940" icon={<CreditCard className="w-5 h-5" />} color={BRAND.info} />
+          <StatCard label="Monthly Income" value="R84,200" icon={<ArrowUpRight className="w-5 h-5" />} color={BRAND.ok} trend="up" />
+          <StatCard label="Monthly Expenses" value="R31,840" icon={<ArrowDownRight className="w-5 h-5" />} color={BRAND.bad} trend="down" />
+          <StatCard label="Net Position" value="+R52,360" icon={<TrendingUp className="w-5 h-5" />} color={BRAND.warn} trend="up" />
           <StatCard label="Pending Invoices" value="R14,200" icon={<FileText className="w-5 h-5" />} color="#34A853" />
         </div>
 
@@ -61,9 +62,9 @@ export function AccountDashboard({ isOpen, onClose }: { isOpen: boolean; onClose
             <div className="rounded-xl p-5" style={{ background: "var(--vk-surface)", border: "1px solid var(--vk-line)" }}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-bold text-fg">Account Balance (12 months)</h3>
-                <Badge text="+R24,400 YTD" color="#10B981" />
+                <Badge text="+R24,400 YTD" color={BRAND.ok} />
               </div>
-              <Sparkline values={BALANCE_CHART} color="#10B981" />
+              <Sparkline values={BALANCE_CHART} color={BRAND.ok} />
               <div className="flex justify-between text-[9px] mt-1" style={{ color: "var(--vk-fg-muted)" }}>
                 <span>Jan 2024</span><span>Jun</span><span>Dec 2024</span>
               </div>
@@ -72,16 +73,16 @@ export function AccountDashboard({ isOpen, onClose }: { isOpen: boolean; onClose
             {/* Transactions */}
             <TableCard
               title="Recent Transactions"
-              color="#10B981"
+              color={BRAND.ok}
               columns={["Description", "Category", "Amount", "Date", "Status"]}
               rows={TRANSACTIONS.map(t => [
                 t.desc,
-                <Badge text={t.category} color={t.category === "Income" ? "#10B981" : t.category === "Expense" ? "#EF4444" : t.category === "Payout" ? "#3B82F6" : "#F59E0B"} />,
-                <span style={{ color: t.amount > 0 ? "#10B981" : "#EF4444", fontWeight: "bold" }}>
+                <Badge text={t.category} color={t.category === "Income" ? BRAND.ok : t.category === "Expense" ? BRAND.bad : t.category === "Payout" ? BRAND.info : BRAND.warn} />,
+                <span style={{ color: t.amount > 0 ? BRAND.ok : BRAND.bad, fontWeight: "bold" }}>
                   {t.amount > 0 ? "+" : ""}{fmt(t.amount)}
                 </span>,
                 t.date,
-                <Badge text={t.status} color="#10B981" />,
+                <Badge text={t.status} color={BRAND.ok} />,
               ])}
             />
           </div>
@@ -117,10 +118,10 @@ export function AccountDashboard({ isOpen, onClose }: { isOpen: boolean; onClose
 
             <SectionPanel title="Spending by Category">
               {[
-                { cat: "Driver Payouts", pct: 62, color: "#3B82F6", val: "R19,740" },
-                { cat: "Insurance", pct: 16, color: "#EF4444", val: "R5,094" },
+                { cat: "Driver Payouts", pct: 62, color: BRAND.info, val: "R19,740" },
+                { cat: "Insurance", pct: 16, color: BRAND.bad, val: "R5,094" },
                 { cat: "Software", pct: 8, color: "#34A853", val: "R2,547" },
-                { cat: "MVNO Data", pct: 14, color: "#F59E0B", val: "R4,458" },
+                { cat: "MVNO Data", pct: 14, color: BRAND.warn, val: "R4,458" },
               ].map((s, i) => (
                 <div key={i} className="mb-3">
                   <div className="flex justify-between text-[11px] mb-1">
@@ -138,7 +139,7 @@ export function AccountDashboard({ isOpen, onClose }: { isOpen: boolean; onClose
               <div className="space-y-2">
                 {["Transfer Funds", "Pay Invoice", "Download Statement", "Schedule Payment"].map((a, i) => (
                   <button key={i} className="w-full py-2.5 rounded-xl text-xs font-semibold transition-all hover:opacity-90"
-                    style={{ background: "#252245", border: "1px solid #14532D", color: "#10B981" }}>
+                    style={{ background: "#252245", border: "1px solid #14532D", color: BRAND.ok }}>
                     {a}
                   </button>
                 ))}

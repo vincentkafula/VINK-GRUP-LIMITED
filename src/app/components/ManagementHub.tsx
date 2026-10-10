@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { getSession } from "../services/apiClient";
 import { SignInElsewhere } from "./SignInElsewhere";
+import { BRAND } from "../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
@@ -69,16 +70,16 @@ const ALL_NAV = [
 const NAVY   = "#0A0F1E";
 const DEEP   = "#111827";
 const SURF   = "#1E293B";
-const P      = "#5C0A10";
-const GOLD   = "#C9A84C";
-const GREEN  = "#10B981";
-const RED    = "#EF4444";
+const P      = BRAND.crimsonDeep;
+const GOLD   = BRAND.gold;
+const GREEN  = BRAND.ok;
+const RED    = BRAND.bad;
 const TEAL   = "#14B8A6";
 
 const ROLE_COLORS: Record<RoleId, string> = {
-  global_director:      "#8B0000",
+  global_director:      BRAND.crimson,
   continental_director: "#34A853",
-  regional_director:    "#3B82F6",
+  regional_director:    BRAND.info,
   country_director:     "#0891B2",
   state_director:       "#059669",
   branch_manager:       "#D97706",
@@ -281,7 +282,7 @@ function UsersScreen() {
                 <p className="text-white text-sm font-semibold">{u.name}</p>
                 <p className="text-gray-500 text-xs">{u.email}</p>
               </div>
-              <Badge text={u.role} color="#8B0000" />
+              <Badge text={u.role} color={BRAND.crimson} />
               <Badge text={u.status} color={statusColor(u.status)} />
               <p className="text-gray-600 text-[10px] w-16 text-right flex-shrink-0">{u.last}</p>
               <div className="flex gap-1">
@@ -392,7 +393,7 @@ function FinancialScreen({ user }: { user: MgmtUser }) {
             { cat: "EFT Transfers",    vol: "R38.4B", pct: 34, color: TEAL },
             { cat: "AFC Fare Taps",    vol: "R11.0B", pct: 10, color: GREEN },
             { cat: "Loan Disbursements",vol:"R8.2B",  pct: 7,  color: GOLD },
-            { cat: "FX Conversions",   vol: "R4.1B",  pct: 4,  color: "#3B82F6" },
+            { cat: "FX Conversions",   vol: "R4.1B",  pct: 4,  color: BRAND.info },
             { cat: "Other",            vol: "R3.0B",  pct: 3,  color: "#6B7280" },
           ].map(r => (
             <div key={r.cat}>

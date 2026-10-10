@@ -16,18 +16,19 @@ import {
   type AppStatus,
   type AppTier,
 } from "../services/applicationsApi";
+import { BRAND } from "../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
-const P = "#5C0A10";
-const GOLD = "#C9A84C";
+const P = BRAND.crimsonDeep;
+const GOLD = BRAND.gold;
 
 // ─── Status config ────────────────────────────────────────────────────────────
 const STATUS_CFG: Record<AppStatus, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
-  submitted:            { label: "Submitted",        color: "#F59E0B", bg: "var(--vk-warn-bg)", icon: <Clock className="w-3.5 h-3.5" /> },
-  under_review:         { label: "Under Review",     color: "#3B82F6", bg: "var(--vk-info-bg)", icon: <Eye className="w-3.5 h-3.5" /> },
-  approved:             { label: "Approved",         color: "#10B981", bg: "var(--vk-ok-bg)", icon: <CheckCircle className="w-3.5 h-3.5" /> },
-  declined:             { label: "Declined",         color: "#EF4444", bg: "var(--vk-bad-bg)", icon: <XCircle className="w-3.5 h-3.5" /> },
+  submitted:            { label: "Submitted",        color: BRAND.warn, bg: "var(--vk-warn-bg)", icon: <Clock className="w-3.5 h-3.5" /> },
+  under_review:         { label: "Under Review",     color: BRAND.info, bg: "var(--vk-info-bg)", icon: <Eye className="w-3.5 h-3.5" /> },
+  approved:             { label: "Approved",         color: BRAND.ok, bg: "var(--vk-ok-bg)", icon: <CheckCircle className="w-3.5 h-3.5" /> },
+  declined:             { label: "Declined",         color: BRAND.bad, bg: "var(--vk-bad-bg)", icon: <XCircle className="w-3.5 h-3.5" /> },
   more_info_requested:  { label: "More Info Needed", color: "#34A853", bg: "var(--vk-surface-2)", icon: <AlertTriangle className="w-3.5 h-3.5" /> },
 };
 
@@ -291,7 +292,7 @@ export function AdminApplicationsViewer({ isOpen, onClose }: Props) {
             {/* KPI row */}
             <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
               <StatCard icon={<FileText className="w-5 h-5" />} label="Total Applications" value={String(stats.totalApplications ?? 0)} color={P} />
-              <StatCard icon={<Clock className="w-5 h-5" />} label="Awaiting Review" value={String(stats.pendingReview ?? 0)} color="#F59E0B" sub="Status: submitted" />
+              <StatCard icon={<Clock className="w-5 h-5" />} label="Awaiting Review" value={String(stats.pendingReview ?? 0)} color={BRAND.warn} sub="Status: submitted" />
             </div>
 
             {/* By tier */}

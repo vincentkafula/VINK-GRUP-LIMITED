@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Wifi, WifiOff, X, Server } from "lucide-react";
 import { isDemoMode, setDemoMode } from "../services/demoMode";
+import { BRAND } from "../brand";
 
 interface DemoModeBannerProps {
   /** Dark variant for dark-bg dashboards (MVNO, Healing Apple) */
@@ -65,7 +66,7 @@ export function DemoModePill() {
 
   return (
     <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1.5 px-3 py-1.5 rounded-full shadow-lg"
-      style={{ background: "#F59E0B", boxShadow: "0 4px 12px rgba(245,158,11,0.4)" }}>
+      style={{ background: BRAND.warn, boxShadow: "0 4px 12px rgba(245,158,11,0.4)" }}>
       <WifiOff className="w-3 h-3 text-white" />
       <span className="text-[10px] font-bold text-white">DEMO MODE</span>
       <button onClick={() => setDismissed(true)} className="text-white/70 hover:text-white ml-0.5">

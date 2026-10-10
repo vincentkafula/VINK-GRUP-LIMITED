@@ -1,4 +1,5 @@
 import { memo } from "react";
+import { BRAND } from "../brand";
 
 interface Props { onOpenApps: () => void; }
 
@@ -12,7 +13,7 @@ const APPS = [
 ];
 
 export const AppShowcaseSection = memo(function AppShowcaseSection({ onOpenApps }: Props) {
-  const P = "#5C0A10";
+  const P = BRAND.crimsonDeep;
 
   return (
     <section className="py-16 sm:py-20" style={{ background: "#0A0A14" }}>
@@ -21,7 +22,7 @@ export const AppShowcaseSection = memo(function AppShowcaseSection({ onOpenApps 
         {/* Header */}
         <div className="text-center mb-10">
           <span className="inline-block text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full mb-4"
-            style={{ background: "rgba(245,166,35,.15)", color: "#C9A84C" }}>
+            style={{ background: "rgba(245,166,35,.15)", color: BRAND.gold }}>
             VINK Super App Ecosystem
           </span>
           <h2 className="text-2xl sm:text-3xl font-black text-white mb-3">

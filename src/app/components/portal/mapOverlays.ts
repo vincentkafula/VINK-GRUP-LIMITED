@@ -1,4 +1,5 @@
 import type { GMaps } from "../../services/googleMaps";
+import { BRAND } from "../../brand";
 
 export interface OverlayRoute { id: string; name: string; active: boolean; registration: string | null; points: { lat: number; lng: number }[] }
 export interface OverlayPosition { terminalSerial: string; registration: string | null; lat: number; lng: number; at: string | null }
@@ -7,7 +8,7 @@ export interface OverlayData { routes: OverlayRoute[]; positions: OverlayPositio
 /** Cape Town, the area in the platform's first rollout, used when there is nothing to show yet. */
 export const DEFAULT_CENTER = { lat: -33.9249, lng: 18.4241 };
 export const DEFAULT_ZOOM = 11;
-export const ROUTE_COLORS = ["#60A5FA", "#F59E0B", "#34D399", "#F472B6", "#C9A84C", "#F87171"];
+export const ROUTE_COLORS = ["#60A5FA", BRAND.warn, "#34D399", "#F472B6", BRAND.gold, "#F87171"];
 
 const when = (iso: string | null) => (iso ? new Date(iso).toLocaleString("en-ZA", { timeZone: "Africa/Johannesburg", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "unknown");
 

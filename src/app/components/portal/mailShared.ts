@@ -1,6 +1,7 @@
 import { API_BASE } from "../../services/config";
 import { authFetch } from "../../services/apiClient";
 import type { MailFile } from "./MailAttachments";
+import { BRAND } from "../../brand";
 
 /** Types and the small client shared by the Department mail screens (MailPanel, MailMessage, MailCompose, MailSettings). */
 export interface Dept { key: string; name: string; address: string; open: number; drafts?: number; scheduled?: number; /** false: switched off by a Super Administrator (mail stays readable; nothing can be sent from it) */ active?: boolean }
@@ -34,7 +35,7 @@ export function mailClient() {
 export const COLOR = "#2F6BFF";
 export const NAVY = "#0F2A52";
 export const NAVY_ACTIVE = "#24509E";
-const AVATARS = ["#2F6BFF", "#10B981", "#8B5CF6", "#EF4444", "#F59E0B", "#06B6D4", "#EC4899", "#64748B"];
+const AVATARS = ["#2F6BFF", BRAND.ok, "#8B5CF6", BRAND.bad, BRAND.warn, "#06B6D4", "#EC4899", "#64748B"];
 /** The same colour for the same person, every time. */
 export const avatarColor = (name: string) => { let h = 0; for (const c of name) h = (h * 31 + c.charCodeAt(0)) >>> 0; return AVATARS[h % AVATARS.length]; };
 export const initialOf = (name: string) => (name.trim().match(/[\p{L}\p{N}]/u)?.[0] ?? "?").toUpperCase();

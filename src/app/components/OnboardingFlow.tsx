@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { CheckCircle, ArrowRight, User, Shield, CreditCard, Smartphone, Star, X } from "lucide-react";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
+import { BRAND } from "../brand";
 
-const P = "#5C0A10";
-const GOLD = "#C9A84C";
+const P = BRAND.crimsonDeep;
+const GOLD = BRAND.gold;
 
 interface Props {
   isOpen: boolean;
@@ -91,7 +92,7 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
                 height: 8,
                 borderRadius: s.n === step ? 4 : "50%",
                 background: s.n < step
-                  ? (step === 1 ? "rgba(255,255,255,0.7)" : "#10B981")
+                  ? (step === 1 ? "rgba(255,255,255,0.7)" : BRAND.ok)
                   : s.n === step
                   ? (step === 1 ? "#fff" : P)
                   : (step === 1 ? "rgba(255,255,255,0.25)" : "var(--vk-line)"),

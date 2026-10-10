@@ -1,10 +1,11 @@
 import { X } from "lucide-react";
 import vinkLogo from "../../../imports/LOGO_FINAL.png";
 import { Footer } from "../Footer";
+import { BRAND } from "../../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; }
-const P = "#5C0A10";
-const GOLD = "#C9A84C";
+const P = BRAND.crimsonDeep;
+const GOLD = BRAND.gold;
 
 const OFFERS = [
   { badge: "Best Value", name: "VINK Everyday Cashback", detail: "3% cashback at supermarkets and spaza shops, 1.5% at fuel stations, 0.5% everywhere else." },

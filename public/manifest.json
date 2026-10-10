@@ -1,11 +1,11 @@
 {
-  "name": "VINK Banking & Transport",
-  "short_name": "VINK Bank",
+  "name": "VINK",
+  "short_name": "VINK",
   "description": "South Africa's integrated banking, transport, and travel super-application by VINK Group",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0F3D24",
-  "theme_color": "#0F3D24",
+  "background_color": "#FAF8F4",
+  "theme_color": "#FAF8F4",
   "orientation": "portrait-primary",
   "icons": [
     {

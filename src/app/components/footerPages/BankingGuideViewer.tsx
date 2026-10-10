@@ -1,10 +1,11 @@
 import { X } from "lucide-react";
 import vinkLogo from "../../../imports/LOGO_FINAL.png";
 import { Footer } from "../Footer";
+import { BRAND } from "../../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; }
-const P = "#5C0A10";
-const GOLD = "#C9A84C";
+const P = BRAND.crimsonDeep;
+const GOLD = BRAND.gold;
 
 const STEPS = [
   { n: "1", title: "Open your account", desc: "Apply online in minutes — a personal, business, or commuter card account. FICA verification happens digitally, no branch visit required." },

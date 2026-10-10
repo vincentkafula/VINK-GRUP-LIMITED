@@ -1,10 +1,11 @@
 import vinkLogoDark from "../../imports/LOGO_FINAL.png";
 import { PremiumIcon } from "./PremiumIcon";
+import { BRAND } from "../brand";
 
 const BG       = "#0c0e14";   // ink
 const DARK_BAR = "#07080c";
-const CARD_BG  = "#8b0000";   // crimson
-const LINK_HL  = "#c9a84c";   // gold
+const CARD_BG  = BRAND.crimson;   // crimson
+const LINK_HL  = BRAND.gold;   // gold
 const GOLD_SOFT = "#EBD592";  // headings and hovers
 
 const COLS = [

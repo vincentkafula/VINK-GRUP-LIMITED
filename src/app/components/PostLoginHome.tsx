@@ -9,6 +9,7 @@ import {
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { getSession } from "../services/apiClient";
 import { applicationsApi, type Application } from "../services/applicationsApi";
+import { BRAND } from "../brand";
 
 interface PostLoginHomeProps {
   isOpen: boolean;
@@ -21,24 +22,24 @@ interface PostLoginHomeProps {
 
 const MENU_ROWS = [
   [
-    { id: "login",    label: "Login",       icon: <LogIn className="w-6 h-6" />,           gradient: "from-[#8B0000] to-[#9333EA]", glow: "#8B0000" },
-    { id: "message",  label: "Message",     icon: <MessageSquare className="w-6 h-6" />,   gradient: "from-[#3B82F6] to-[#06B6D4]", glow: "#3B82F6" },
-    { id: "contact",  label: "Contact Us",  icon: <Phone className="w-6 h-6" />,           gradient: "from-[#10B981] to-[#059669]", glow: "#10B981" },
+    { id: "login",    label: "Login",       icon: <LogIn className="w-6 h-6" />,           gradient: "from-[#8B0000] to-[#9333EA]", glow: BRAND.crimson },
+    { id: "message",  label: "Message",     icon: <MessageSquare className="w-6 h-6" />,   gradient: "from-[#3B82F6] to-[#06B6D4]", glow: BRAND.info },
+    { id: "contact",  label: "Contact Us",  icon: <Phone className="w-6 h-6" />,           gradient: "from-[#10B981] to-[#059669]", glow: BRAND.ok },
   ],
   [
-    { id: "buy",      label: "Buy",         icon: <ShoppingCart className="w-6 h-6" />,    gradient: "from-[#EF4444] to-[#DC2626]", glow: "#EF4444" },
-    { id: "connect",  label: "Connect",     icon: <Wifi className="w-6 h-6" />,            gradient: "from-[#9B1C1C] to-[#9B1C1C]", glow: "#9B1C1C" },
+    { id: "buy",      label: "Buy",         icon: <ShoppingCart className="w-6 h-6" />,    gradient: "from-[#EF4444] to-[#DC2626]", glow: BRAND.bad },
+    { id: "connect",  label: "Connect",     icon: <Wifi className="w-6 h-6" />,            gradient: "from-[#9B1C1C] to-[#9B1C1C]", glow: BRAND.crimsonLight },
   ],
   [
     { id: "payments", label: "Payments",    icon: <CreditCard className="w-6 h-6" />,      gradient: "from-[#0EA5E9] to-[#0284C7]", glow: "#0EA5E9" },
-    { id: "transfer", label: "Transfer",    icon: <ArrowLeftRight className="w-6 h-6" />,  gradient: "from-[#8B0000] to-[#5C0A10]", glow: "#8B0000" },
+    { id: "transfer", label: "Transfer",    icon: <ArrowLeftRight className="w-6 h-6" />,  gradient: "from-[#8B0000] to-[#5C0A10]", glow: BRAND.crimson },
     { id: "cards",    label: "Cards",       icon: <Layers className="w-6 h-6" />,          gradient: "from-[#EC4899] to-[#BE185D]", glow: "#EC4899" },
   ],
   [
     { id: "device",   label: "Device",      icon: <Smartphone className="w-6 h-6" />,      gradient: "from-[#64748B] to-[#334155]", glow: "#64748B" },
   ],
   [
-    { id: "vinktv",    label: "VINK TV",      icon: <Tv className="w-6 h-6" />,              gradient: "from-[#9B1C1C] to-[#5C0A10]", glow: "#9B1C1C" },
+    { id: "vinktv",    label: "VINK TV",      icon: <Tv className="w-6 h-6" />,              gradient: "from-[#9B1C1C] to-[#5C0A10]", glow: BRAND.crimsonLight },
     { id: "cardless", label: "Cardless Cash",icon: <Banknote className="w-6 h-6" />,       gradient: "from-[#D97706] to-[#92400E]", glow: "#D97706" },
     { id: "elections",label: "Elections",   icon: <Vote className="w-6 h-6" />,            gradient: "from-[#0891B2] to-[#164E63]", glow: "#0891B2" },
   ],
@@ -50,7 +51,7 @@ const MENU_ROWS = [
   [
     { id: "forex",    label: "Forex",       icon: <DollarSign className="w-6 h-6" />,      gradient: "from-[#CA8A04] to-[#78350F]", glow: "#CA8A04" },
     { id: "settings", label: "Setting",     icon: <Settings className="w-6 h-6" />,        gradient: "from-[#475569] to-[#1E293B]", glow: "#475569" },
-    { id: "qr",       label: "QR Code",     icon: <QrCode className="w-6 h-6" />,          gradient: "from-[#8B0000] to-[#2E0B10]", glow: "#8B0000" },
+    { id: "qr",       label: "QR Code",     icon: <QrCode className="w-6 h-6" />,          gradient: "from-[#8B0000] to-[#2E0B10]", glow: BRAND.crimson },
   ],
 ];
 
@@ -304,7 +305,7 @@ export function PostLoginHome({ isOpen, onClose, onNavigate }: PostLoginHomeProp
                 onClick={() => setActiveTab(tab.key)}
                 className="flex flex-col items-center gap-1 px-3 py-1 rounded-xl transition-all"
                 style={{
-                  color: activeTab === tab.key ? "#C9A84C" : "rgba(255,255,255,0.32)",
+                  color: activeTab === tab.key ? BRAND.gold : "rgba(255,255,255,0.32)",
                   background: activeTab === tab.key ? "rgba(107,94,215,0.22)" : "transparent",
                 }}
               >

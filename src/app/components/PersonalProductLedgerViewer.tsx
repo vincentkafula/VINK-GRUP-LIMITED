@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { CATEGORY_CONFIG, PRODUCTS, type Product, type ProductCategory } from "./ProductSelectorViewer";
 import { Footer } from "./Footer";
+import { BRAND } from "../brand";
 
 interface Props {
   isOpen: boolean;
@@ -247,7 +248,7 @@ export function PersonalProductLedgerViewer({ isOpen, onClose, initialCategory, 
         <div className="absolute -left-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: "linear-gradient(180deg,#9B1C1C,#8B0000)", filter: "blur(60px)" }} />
         <div className="absolute -right-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: "linear-gradient(180deg,#8B0000,#9B1C1C)", filter: "blur(60px)" }} />
         <div className="relative max-w-6xl mx-auto px-8 py-14 sm:py-16">
-          <span className="inline-block text-[11px] font-bold tracking-[0.14em] uppercase mb-3" style={{ color: "#8B0000" }}>{copy.heroEyebrow}</span>
+          <span className="inline-block text-[11px] font-bold tracking-[0.14em] uppercase mb-3" style={{ color: BRAND.crimson }}>{copy.heroEyebrow}</span>
           <h1 className="text-3xl sm:text-4xl font-black leading-[1.1] text-fg whitespace-pre-line">{copy.heroTitle}</h1>
           <p className="text-fg-muted text-sm sm:text-base mt-4 max-w-lg">{copy.heroSubtitle}</p>
         </div>

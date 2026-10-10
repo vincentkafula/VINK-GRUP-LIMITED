@@ -26,6 +26,7 @@ import {
   type VehicleProfile, EMPTY_PROFILE, ASSOCIATION_ROUTE_ORIGINS,
   docStatus, DOC_STATUS_COLORS,
 } from "../../data/vehicleProfile";
+import { BRAND } from "../../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
@@ -313,13 +314,13 @@ export function AFCApp({ isOpen, onClose }: Props) {
 
   if (!isOpen) return null;
 
-  const P = "#5C0A10";
-  const GOLD = "#C9A84C";
+  const P = BRAND.crimsonDeep;
+  const GOLD = BRAND.gold;
   const stages = selectedRoute.baseFare < 500 && networkOnline ? OFFLINE_STAGES : ONLINE_STAGES;
   const isOfflinePath = selectedRoute.baseFare < 500 && networkOnline;
 
   const pathColor = (path: string) =>
-    path === "offline" ? "#10B981" : path === "online_fast" ? "#3B82F6" : "#F59E0B";
+    path === "offline" ? BRAND.ok : path === "online_fast" ? BRAND.info : BRAND.warn;
   const pathLabel = (path: string) =>
     path === "offline" ? "OFFLINE" : path === "online_fast" ? "ONLINE-FAST" : "ONLINE";
 
@@ -332,7 +333,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
         <div className="flex items-center justify-between px-5 py-2 text-white/70 text-xs flex-shrink-0" style={{ background: "#0A0A14" }}>
           <div className="flex items-center gap-3">
             <span className="font-bold text-white">{time}</span>
-            <span className="text-[10px] px-1.5 py-0.5 rounded font-bold" style={{ background: networkOnline ? "#10B981" + "30" : "#EF444430", color: networkOnline ? "#10B981" : "#EF4444" }}>
+            <span className="text-[10px] px-1.5 py-0.5 rounded font-bold" style={{ background: networkOnline ? BRAND.ok + "30" : "#EF444430", color: networkOnline ? BRAND.ok : BRAND.bad }}>
               {networkOnline ? "● ONLINE" : "● OFFLINE MODE"}
             </span>
             {pendingBatch > 0 && (
@@ -345,7 +346,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
             <span title="GPS active"><Navigation className="w-3 h-3 text-emerald-400" /></span>
             <Bluetooth className="w-3 h-3 text-emerald-400" />
             {networkOnline ? <Wifi className="w-3.5 h-3.5 text-green-400" /> : <WifiOff className="w-3.5 h-3.5 text-red-400" />}
-            <span className="text-[9px] font-bold" style={{ color: networkOnline ? "#10B981" : "#9CA3AF" }}>LTE</span>
+            <span className="text-[9px] font-bold" style={{ color: networkOnline ? BRAND.ok : "#9CA3AF" }}>LTE</span>
             <BatteryCharging className="w-3.5 h-3.5 text-green-400" />
             <span className="text-[10px]">87%</span>
           </div>
@@ -416,10 +417,10 @@ export function AFCApp({ isOpen, onClose }: Props) {
                 {/* Speed stats */}
                 <div className="grid grid-cols-4 gap-2">
                   {[
-                    { label: "Avg speed",    value: `${avgMs}ms`, color: avgMs < 500 ? "#10B981" : avgMs < 1000 ? "#3B82F6" : "#F59E0B" },
+                    { label: "Avg speed",    value: `${avgMs}ms`, color: avgMs < 500 ? BRAND.ok : avgMs < 1000 ? BRAND.info : BRAND.warn },
                     { label: "Today",        value: `R${todayEarnings.toFixed(0)}`, color: GOLD },
-                    { label: "Passengers",   value: passengerCount.toString(), color: "#3B82F6" },
-                    { label: "Batch queue",  value: pendingBatch.toString(), color: pendingBatch > 20 ? "#F59E0B" : "#10B981" },
+                    { label: "Passengers",   value: passengerCount.toString(), color: BRAND.info },
+                    { label: "Batch queue",  value: pendingBatch.toString(), color: pendingBatch > 20 ? BRAND.warn : BRAND.ok },
                   ].map((stat, i) => (
                     <div key={i} className="rounded-xl p-2 text-center" style={{ background: "#1A1A2E" }}>
                       <p className="font-black text-lg leading-none" style={{ color: stat.color }}>{stat.value}</p>
@@ -444,9 +445,9 @@ export function AFCApp({ isOpen, onClose }: Props) {
                   </div>
                   <div className="flex gap-3">
                     {[
-                      { label: "Offline (typical)", target: "<500ms", color: "#10B981" },
-                      { label: "Online-fast",        target: "<900ms", color: "#3B82F6" },
-                      { label: "Network auth",       target: "<3s",    color: "#F59E0B" },
+                      { label: "Offline (typical)", target: "<500ms", color: BRAND.ok },
+                      { label: "Online-fast",        target: "<900ms", color: BRAND.info },
+                      { label: "Network auth",       target: "<3s",    color: BRAND.warn },
                     ].map((s, i) => (
                       <div key={i} className="flex-1 rounded-lg p-2 text-center" style={{ background: s.color + "12" }}>
                         <p className="text-[8px] text-white/50 leading-tight">{s.label}</p>
@@ -469,9 +470,9 @@ export function AFCApp({ isOpen, onClose }: Props) {
                         <span className="text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ background: pathColor(t.path) + "20", color: pathColor(t.path) }}>
                           {pathLabel(t.path)}
                         </span>
-                        <span className="text-[10px] font-bold" style={{ color: t.ms < 500 ? "#10B981" : t.ms < 1000 ? "#3B82F6" : "#F59E0B" }}>{t.ms}ms</span>
+                        <span className="text-[10px] font-bold" style={{ color: t.ms < 500 ? BRAND.ok : t.ms < 1000 ? BRAND.info : BRAND.warn }}>{t.ms}ms</span>
                         <span className="text-white font-semibold text-sm">R{t.amount.toFixed(2)}</span>
-                        <div className="w-1.5 h-1.5 rounded-full" style={{ background: t.status === "approved" ? "#10B981" : "#EF4444" }} />
+                        <div className="w-1.5 h-1.5 rounded-full" style={{ background: t.status === "approved" ? BRAND.ok : BRAND.bad }} />
                       </div>
                     </div>
                   ))}
@@ -487,7 +488,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
                   <p className="text-white/50 text-xs">{`${selectedRoute.origin} → ${selectedRoute.destination}`}</p>
                   <p className="text-yellow-400 font-black text-3xl mt-0.5">R{selectedRoute.baseFare.toFixed(2)}</p>
                   <div className="flex items-center justify-center gap-2 mt-1">
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: isOfflinePath ? "#10B98120" : "#3B82F620", color: isOfflinePath ? "#10B981" : "#3B82F6" }}>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: isOfflinePath ? "#10B98120" : "#3B82F620", color: isOfflinePath ? BRAND.ok : BRAND.info }}>
                       {isOfflinePath ? "⚡ OFFLINE PATH — no network needed" : "🌐 ONLINE FAST PATH"}
                     </span>
                   </div>
@@ -550,7 +551,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
                         <div key={i} className="flex items-center gap-2 rounded-lg px-3 py-1.5"
                           style={{ background: active ? P + "20" : done ? "#10B98110" : "transparent" }}>
                           <div className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
-                            style={{ background: done ? "#10B981" : active ? P : "#374151" }}>
+                            style={{ background: done ? BRAND.ok : active ? P : "#374151" }}>
                             {done ? <CheckCircle className="w-2.5 h-2.5 text-white" />
                                   : <span className="text-[8px] text-white font-bold">{i + 1}</span>}
                           </div>
@@ -579,10 +580,10 @@ export function AFCApp({ isOpen, onClose }: Props) {
                 {/* Avg speed gauge */}
                 <div className="rounded-xl p-4 text-center" style={{ background: "#1A1A2E" }}>
                   <p className="text-white/50 text-[10px] uppercase tracking-wide mb-1">Average processing time</p>
-                  <p className="font-black text-4xl" style={{ color: avgMs < 500 ? "#10B981" : avgMs < 1000 ? "#3B82F6" : "#F59E0B" }}>{avgMs}ms</p>
+                  <p className="font-black text-4xl" style={{ color: avgMs < 500 ? BRAND.ok : avgMs < 1000 ? BRAND.info : BRAND.warn }}>{avgMs}ms</p>
                   <p className="text-white/40 text-[10px] mt-1">3-second guarantee: {avgMs < 3000 ? "✓ MET" : "⚠ EXCEEDED"}</p>
                   <div className="mt-3 h-2 rounded-full bg-white/10 overflow-hidden">
-                    <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(100, (avgMs / 3000) * 100)}%`, background: avgMs < 500 ? "#10B981" : avgMs < 1000 ? "#3B82F6" : "#F59E0B" }} />
+                    <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(100, (avgMs / 3000) * 100)}%`, background: avgMs < 500 ? BRAND.ok : avgMs < 1000 ? BRAND.info : BRAND.warn }} />
                   </div>
                   <div className="flex justify-between text-[9px] text-white/30 mt-1">
                     <span>0ms</span><span>500ms</span><span>1s</span><span>3s max</span>
@@ -593,9 +594,9 @@ export function AFCApp({ isOpen, onClose }: Props) {
                 <div className="rounded-xl p-4" style={{ background: "#1A1A2E" }}>
                   <p className="text-white/60 text-[10px] font-bold uppercase tracking-wide mb-3">Authorization paths today</p>
                   {[
-                    { path: "OFFLINE",       pct: 82, ms: "280–520ms", desc: "EMV offline crypto · No network · Batch sync", color: "#10B981" },
-                    { path: "ONLINE FAST",   pct: 15, ms: "600–900ms", desc: "VINK WebSocket · Internal auth", color: "#3B82F6" },
-                    { path: "VISA/MC NET",   pct: 3,  ms: "1.2–2.8s",  desc: "Full network auth · Fallback path", color: "#F59E0B" },
+                    { path: "OFFLINE",       pct: 82, ms: "280–520ms", desc: "EMV offline crypto · No network · Batch sync", color: BRAND.ok },
+                    { path: "ONLINE FAST",   pct: 15, ms: "600–900ms", desc: "VINK WebSocket · Internal auth", color: BRAND.info },
+                    { path: "VISA/MC NET",   pct: 3,  ms: "1.2–2.8s",  desc: "Full network auth · Fallback path", color: BRAND.warn },
                   ].map((p, i) => (
                     <div key={i} className="mb-3">
                       <div className="flex justify-between mb-1">
@@ -628,8 +629,8 @@ export function AFCApp({ isOpen, onClose }: Props) {
                         <span className="text-[9px] font-bold px-1.5 rounded" style={{ background: pathColor(t.path) + "20", color: pathColor(t.path) }}>
                           {pathLabel(t.path)}
                         </span>
-                        <span className="text-[11px] font-black" style={{ color: t.ms < 500 ? "#10B981" : t.ms < 1000 ? "#3B82F6" : "#F59E0B" }}>{t.ms}ms</span>
-                        <div className="w-1.5 h-1.5 rounded-full" style={{ background: t.status === "approved" ? "#10B981" : "#EF4444" }} />
+                        <span className="text-[11px] font-black" style={{ color: t.ms < 500 ? BRAND.ok : t.ms < 1000 ? BRAND.info : BRAND.warn }}>{t.ms}ms</span>
+                        <div className="w-1.5 h-1.5 rounded-full" style={{ background: t.status === "approved" ? BRAND.ok : BRAND.bad }} />
                       </div>
                     </div>
                   ))}
@@ -643,9 +644,9 @@ export function AFCApp({ isOpen, onClose }: Props) {
                 <p className="text-white font-black text-base">Today&apos;s Earnings</p>
                 <div className="grid grid-cols-2 gap-2">
                   {[
-                    { label: "Gross", value: `R${todayEarnings.toFixed(2)}`, color: "#10B981" },
+                    { label: "Gross", value: `R${todayEarnings.toFixed(2)}`, color: BRAND.ok },
                     { label: "Your 85%", value: `R${(todayEarnings * 0.85).toFixed(2)}`, color: GOLD },
-                    { label: "Association 5%", value: `R${(todayEarnings * 0.05).toFixed(2)}`, color: "#3B82F6" },
+                    { label: "Association 5%", value: `R${(todayEarnings * 0.05).toFixed(2)}`, color: BRAND.info },
                     { label: "Community 5%", value: `R${(todayEarnings * 0.05).toFixed(2)}`, color: "#34A853" },
                   ].map((s, i) => (
                     <div key={i} className="rounded-xl p-3" style={{ background: "#1A1A2E" }}>
@@ -753,7 +754,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
                 {/* Spec groups */}
                 {[
                   {
-                    title: "Processor & Memory", icon: <Cpu className="w-3.5 h-3.5" />, color: "#8B0000",
+                    title: "Processor & Memory", icon: <Cpu className="w-3.5 h-3.5" />, color: BRAND.crimson,
                     rows: [
                       ["OS",        P18Q_SPEC.processor.os],
                       ["CPU",       P18Q_SPEC.processor.cpu],
@@ -763,7 +764,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
                     ],
                   },
                   {
-                    title: "Display & Input", icon: <QrCode className="w-3.5 h-3.5" />, color: "#3B82F6",
+                    title: "Display & Input", icon: <QrCode className="w-3.5 h-3.5" />, color: BRAND.info,
                     rows: [
                       ["Screen",   P18Q_SPEC.display.size],
                       ["Keys",     P18Q_SPEC.display.keys],
@@ -781,7 +782,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
                     ],
                   },
                   {
-                    title: "Connectivity", icon: <Wifi className="w-3.5 h-3.5" />, color: "#10B981",
+                    title: "Connectivity", icon: <Wifi className="w-3.5 h-3.5" />, color: BRAND.ok,
                     rows: [
                       ["Mobile",  P18Q_SPEC.connectivity.mobile],
                       ["Local",   P18Q_SPEC.connectivity.local],
@@ -790,7 +791,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
                     ],
                   },
                   {
-                    title: "Ports & Power", icon: <BatteryCharging className="w-3.5 h-3.5" />, color: "#EF4444",
+                    title: "Ports & Power", icon: <BatteryCharging className="w-3.5 h-3.5" />, color: BRAND.bad,
                     rows: [
                       ["USB",     P18Q_SPEC.ports.usb],
                       ["Serial",  P18Q_SPEC.ports.serial],
@@ -872,7 +873,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
             </div>
             <button onClick={() => setScreen("setup")}
               className="w-full mt-3 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90"
-              style={{ background: "#C9A84C", color: "#0A0A14" }}>
+              style={{ background: BRAND.gold, color: "#0A0A14" }}>
               Register Device Now
             </button>
           </div>
@@ -1160,7 +1161,7 @@ function SetupScreen({ initial, onSave, onCancel, P, GOLD }: {
         {steps.map(s => (
           <div key={s.n} className="flex-1 text-center">
             <div className="h-1 rounded-full mb-1" style={{ background: step >= s.n ? GOLD : "#2D2A50" }} />
-            <p className="text-[8px] font-bold" style={{ color: step === s.n ? GOLD : step > s.n ? "#10B981" : "rgba(255,255,255,.3)" }}>
+            <p className="text-[8px] font-bold" style={{ color: step === s.n ? GOLD : step > s.n ? BRAND.ok : "rgba(255,255,255,.3)" }}>
               {step > s.n ? "✓" : s.n} {s.label}
             </p>
           </div>
@@ -1317,7 +1318,7 @@ function SetupScreen({ initial, onSave, onCancel, P, GOLD }: {
         ) : (
           <button onClick={() => onSave(form)}
             className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white"
-            style={{ background: "#10B981" }}>
+            style={{ background: BRAND.ok }}>
             ✓ Save Registration
           </button>
         )}

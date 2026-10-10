@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { Bell, X, Check, CheckCheck, Trash2, Settings, TrendingUp, Shield, CreditCard, Tag, AlertCircle, Plane, ChevronRight } from "lucide-react";
+import { BRAND } from "../brand";
 
-const P = "#5C0A10";
-const GOLD = "#C9A84C";
+const P = BRAND.crimsonDeep;
+const GOLD = BRAND.gold;
 
 type NotifType = "transaction" | "security" | "account" | "promotion" | "system" | "kyc" | "loan" | "travel";
 
@@ -31,14 +32,14 @@ const DEMO_NOTIFICATIONS: Notification[] = [
 ];
 
 const TYPE_COLORS: Record<NotifType, string> = {
-  transaction: "#10B981",
-  security: "#EF4444",
+  transaction: BRAND.ok,
+  security: BRAND.bad,
   account: P,
   promotion: GOLD,
   system: "#6B7280",
-  kyc: "#3B82F6",
+  kyc: BRAND.info,
   loan: "#34A853",
-  travel: "#F59E0B",
+  travel: BRAND.warn,
 };
 
 const TYPE_ICONS: Record<NotifType, React.ReactNode> = {
@@ -122,7 +123,7 @@ export function NotificationCenter({ className = "" }: Props) {
         {unreadCount > 0 && (
           <span
             className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] rounded-full flex items-center justify-center text-[10px] font-bold text-white"
-            style={{ background: "#EF4444" }}
+            style={{ background: BRAND.bad }}
           >
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
@@ -141,7 +142,7 @@ export function NotificationCenter({ className = "" }: Props) {
               <Bell className="w-4 h-4" style={{ color: GOLD }} />
               <span className="font-bold text-white text-sm">Notifications</span>
               {unreadCount > 0 && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold text-white" style={{ background: "#EF4444" }}>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold text-white" style={{ background: BRAND.bad }}>
                   {unreadCount} new
                 </span>
               )}

@@ -6,6 +6,7 @@ import {
 import siteHeroBg from "../../imports/assets/site-hero-bg.webp";
 import vinkBusinessTerminal from "../../imports/VinkBusinessTerminal.webp";
 import { Footer } from "./Footer";
+import { BRAND } from "../brand";
 
 interface Props {
   isOpen: boolean;
@@ -23,9 +24,9 @@ interface Props {
 // the homepage. Keeps this consistent with the page it sits next to in the
 // nav, rather than introducing a third, mismatched style. ─────────────────
 const INK   = "#0C0E14";
-const PLUM  = "#5C0A10";
-const VIOLET = "#8B0000";
-const GOLD  = "#C9A84C";
+const PLUM  = BRAND.crimsonDeep;
+const VIOLET = BRAND.crimson;
+const GOLD  = BRAND.gold;
 
 const SUB_NAV = [
   { label: "Start", item: "Start My Business" },

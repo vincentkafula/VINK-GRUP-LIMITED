@@ -18,13 +18,14 @@ import {
   TrendingUp, Users, Activity, AlertTriangle, Settings,
   RefreshCw, Zap, Shield, Radio, ChevronRight, BarChart3,
 } from "lucide-react";
+import { BRAND } from "../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
 // ─── Color + formatting ───────────────────────────────────────────────────────
-const P   = "#5C0A10";
-const GOLD = "#C9A84C";
-const GREEN = "#10B981";
+const P   = BRAND.crimsonDeep;
+const GOLD = BRAND.gold;
+const GREEN = BRAND.ok;
 const fmt = (n: number) => `R ${Number(n).toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const fmtM = (n: number) => n >= 1000 ? `R${(n/1000).toFixed(1)}K` : `R${n}`;
 
@@ -60,14 +61,14 @@ function SignalBars({ bars }: { bars: number }) {
     <div className="flex items-end gap-0.5">
       {[1,2,3,4].map(b => (
         <div key={b} className="w-1 rounded-sm transition-all"
-          style={{ height: `${b * 3 + 2}px`, background: b <= bars ? "#10B981" : "#E5E7EB" }} />
+          style={{ height: `${b * 3 + 2}px`, background: b <= bars ? BRAND.ok : "#E5E7EB" }} />
       ))}
     </div>
   );
 }
 
 function BatteryIcon({ pct }: { pct: number }) {
-  const color = pct > 50 ? "#10B981" : pct > 20 ? "#F59E0B" : "#EF4444";
+  const color = pct > 50 ? BRAND.ok : pct > 20 ? BRAND.warn : BRAND.bad;
   return (
     <div className="flex items-center gap-1">
       <div className="relative w-6 h-3.5 rounded-sm border-2" style={{ borderColor: color }}>
@@ -119,7 +120,7 @@ function AFCTerminal({ device, onTap }: { device: typeof DEVICES[0]; onTap: (tap
       {/* Device header */}
       <div className="px-4 py-3 flex items-center justify-between border-b border-white/5">
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: device.status === "online" ? GREEN : "#EF4444" }} />
+          <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: device.status === "online" ? GREEN : BRAND.bad }} />
           <span className="text-white text-xs font-bold">{device.ref}</span>
         </div>
         <div className="flex items-center gap-3">
@@ -142,7 +143,7 @@ function AFCTerminal({ device, onTap }: { device: typeof DEVICES[0]; onTap: (tap
           onClick={simulateTap}
           className="relative w-36 h-36 rounded-full flex flex-col items-center justify-center cursor-pointer select-none transition-all"
           style={{
-            background: tapState === "approved" ? GREEN : tapState === "declined" ? "#EF4444" : tapState === "processing" ? P : P + "20",
+            background: tapState === "approved" ? GREEN : tapState === "declined" ? BRAND.bad : tapState === "processing" ? P : P + "20",
             border: `3px solid ${tapState === "idle" ? P : tapState === "approved" ? GREEN : tapState === "declined" ? "#EF4444" : "#C9A84C"}`,
             boxShadow: tapState === "idle" && pulseRing
               ? `0 0 0 12px ${P}20, 0 0 0 24px ${P}10`
@@ -187,8 +188,8 @@ function AFCTerminal({ device, onTap }: { device: typeof DEVICES[0]; onTap: (tap
           <p className="text-white/40 text-[9px] uppercase tracking-widest mb-2">Revenue Split</p>
           {[
             { label: "Driver (85%)",       amount: +(lastTap.fare * 0.85).toFixed(2), color: GREEN },
-            { label: "Association (5%)",   amount: +(lastTap.fare * 0.05).toFixed(2), color: "#3B82F6" },
-            { label: "Neighbourhood (5%)", amount: +(lastTap.fare * 0.05).toFixed(2), color: "#F59E0B" },
+            { label: "Association (5%)",   amount: +(lastTap.fare * 0.05).toFixed(2), color: BRAND.info },
+            { label: "Neighbourhood (5%)", amount: +(lastTap.fare * 0.05).toFixed(2), color: BRAND.warn },
             { label: "Community Bank (5%)",amount: +(lastTap.fare * 0.05).toFixed(2), color: "#34A853" },
           ].map(s => (
             <div key={s.label} className="flex justify-between items-center">
@@ -294,10 +295,10 @@ export function AFCManagementDashboard({ isOpen, onClose }: Props) {
             <p className="text-[9px] text-white/30 uppercase tracking-widest px-1">Live Taps</p>
             {liveFeed.slice(0, 5).map((tap, i) => (
               <div key={i} className="flex items-center gap-2 px-2 py-1.5 rounded-lg" style={{ background: tap.result === "approved" ? GREEN + "15" : "#EF444415" }}>
-                <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: tap.result === "approved" ? GREEN : "#EF4444" }} />
+                <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: tap.result === "approved" ? GREEN : BRAND.bad }} />
                 <div className="min-w-0">
                   <p className="text-white/70 text-[9px] truncate">{tap.device}</p>
-                  <p className="text-[9px] font-bold" style={{ color: tap.result === "approved" ? GREEN : "#EF4444" }}>
+                  <p className="text-[9px] font-bold" style={{ color: tap.result === "approved" ? GREEN : BRAND.bad }}>
                     {tap.result === "approved" ? `+${fmt(tap.fare)}` : "Declined"}
                   </p>
                 </div>
@@ -327,7 +328,7 @@ export function AFCManagementDashboard({ isOpen, onClose }: Props) {
                   <div className="grid grid-cols-4 gap-3 mt-4">
                     {[
                       { pct: "85%", label: "Driver", color: GREEN },
-                      { pct: "5%",  label: "Association", color: "#3B82F6" },
+                      { pct: "5%",  label: "Association", color: BRAND.info },
                       { pct: "5%",  label: "Neighbourhood Watch", color: GOLD },
                       { pct: "5%",  label: "Community Bank Fund", color: "#34A853" },
                     ].map(s => (
@@ -346,7 +347,7 @@ export function AFCManagementDashboard({ isOpen, onClose }: Props) {
                   { label: "Online Devices",    value: `${totalOnline}/${DEVICES.length}`,       sub: "All routes active",   color: GREEN,    icon: <Radio className="w-5 h-5" /> },
                   { label: "Taps Today",        value: totalTodayTaps.toString(),                sub: "Passenger payments",  color: "var(--vk-crimson-text)",        icon: <Zap className="w-5 h-5" /> },
                   { label: "Revenue Today",     value: fmtM(totalTodayRev),                      sub: "Across all devices",  color: GOLD,     icon: <TrendingUp className="w-5 h-5" /> },
-                  { label: "Approval Rate",     value: `${approvalRate}%`,                       sub: "Tap success rate",    color: "#10B981", icon: <CheckCircle className="w-5 h-5" /> },
+                  { label: "Approval Rate",     value: `${approvalRate}%`,                       sub: "Tap success rate",    color: BRAND.ok, icon: <CheckCircle className="w-5 h-5" /> },
                 ].map(k => (
                   <div key={k.label} className="rounded-2xl p-4 flex items-center gap-3" style={{ background: "#1A1A2E" }}>
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-white" style={{ background: k.color + "30" }}>
@@ -370,7 +371,7 @@ export function AFCManagementDashboard({ isOpen, onClose }: Props) {
                     <div className="flex items-start justify-between mb-3">
                       <div>
                         <div className="flex items-center gap-2 mb-0.5">
-                          <div className="w-2 h-2 rounded-full" style={{ background: d.status === "online" ? GREEN : "#EF4444" }} />
+                          <div className="w-2 h-2 rounded-full" style={{ background: d.status === "online" ? GREEN : BRAND.bad }} />
                           <p className="text-white font-black text-sm">{d.ref}</p>
                         </div>
                         <p className="text-white/50 text-xs">{d.driver}</p>
@@ -414,7 +415,7 @@ export function AFCManagementDashboard({ isOpen, onClose }: Props) {
                       <div className="flex items-center gap-2 mb-0.5">
                         <p className="text-white font-black">{d.ref}</p>
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                          style={{ background: d.status === "online" ? GREEN + "20" : "#EF444420", color: d.status === "online" ? GREEN : "#EF4444" }}>
+                          style={{ background: d.status === "online" ? GREEN + "20" : "#EF444420", color: d.status === "online" ? GREEN : BRAND.bad }}>
                           {d.status.toUpperCase()}
                         </span>
                       </div>
@@ -497,7 +498,7 @@ export function AFCManagementDashboard({ isOpen, onClose }: Props) {
                           </div>
                         </div>
                         <div className="text-right flex-shrink-0">
-                          <p className="font-black text-sm" style={{ color: tap.result === "approved" ? GREEN : "#EF4444" }}>
+                          <p className="font-black text-sm" style={{ color: tap.result === "approved" ? GREEN : BRAND.bad }}>
                             {tap.result === "approved" ? fmt(tap.fare) : "DECLINED"}
                           </p>
                           <p className="text-white/30 text-[9px]">{tap.time}</p>
@@ -648,7 +649,7 @@ export function AFCManagementDashboard({ isOpen, onClose }: Props) {
                 <div className="space-y-2">
                   {[
                     { label: "Driver wallet",            amount: 11.90, pct: 85, color: GREEN },
-                    { label: "Taxi Association",         amount: 0.70,  pct: 5,  color: "#3B82F6" },
+                    { label: "Taxi Association",         amount: 0.70,  pct: 5,  color: BRAND.info },
                     { label: "Neighbourhood Watch",      amount: 0.70,  pct: 5,  color: GOLD },
                     { label: "Community Bank Fund",      amount: 0.70,  pct: 5,  color: "#34A853" },
                     { label: "VINK transaction fee",      amount: 0.50,  pct: 3.5, color: "var(--vk-crimson-text)", note: "Fixed R0.50 — not from fare" },

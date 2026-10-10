@@ -6,13 +6,14 @@ import {
   ArrowUpRight, AlertTriangle, Briefcase,
 } from "lucide-react";
 import { MobileAppOverlay, PhoneFrame } from "./PhoneFrame";
+import { BRAND } from "../../brand";
 
 type Screen = "onboarding" | "dashboard" | "payments" | "treasury" | "approvals" | "more";
 type Tier = "Foundation" | "Apex" | "Vertex" | "Nexus" | "Dominion" | "Legacy";
 type Role = "CEO" | "CFO" | "Finance Manager";
 
 const INK = "#1D1740";
-const PLUM = "#8B0000";
+const PLUM = BRAND.crimson;
 const GOLD = "#C6A15B";
 
 const TIER_INFO: Record<Tier, { order: number; icon: React.ReactNode; purpose: string; unlocks: string; gradient: string }> = {

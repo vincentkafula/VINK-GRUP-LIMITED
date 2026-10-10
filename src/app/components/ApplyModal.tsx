@@ -2,6 +2,7 @@ import { useState } from "react";
 import { X, Loader2, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 import { publicApi } from "../services/apiClient";
+import { BRAND } from "../brand";
 
 interface Props {
   isOpen: boolean;
@@ -11,7 +12,7 @@ interface Props {
   price?: string;
 }
 
-const P = "#5C0A10";
+const P = BRAND.crimsonDeep;
 
 const EMPLOYMENT_OPTIONS = ["Employed (Full-time)", "Employed (Part-time)", "Self-employed", "Business owner", "Pensioner", "Student", "Unemployed"];
 

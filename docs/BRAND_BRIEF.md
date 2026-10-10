@@ -66,3 +66,9 @@ A transport-native digital bank for South Africa: AFC tap-to-pay for taxis, wall
 - Light and dark themes both ship.
 - Used in a taxi context: glare, small validator screens, quick glances, and low literacy in places. Icons and numbers carry meaning.
 - Regulated: bank and card marks (Visa, SARB/FSCA wording) have their own usage rules.
+
+## 7. Already done in code (so the designer starts from a cleaner base)
+
+- `src/app/brand.ts` is now the single JavaScript palette (crimson, gold and status colours). About 480 hard-coded colour strings in 76 files now read from it. Change a colour there and `src/styles/tokens.css` together; `brand.test.ts` fails if they disagree.
+- App manifests (`manifest.json`, `manifest-admin.json`) now use the site page colour `#FAF8F4` instead of a separate green, and the app is named plainly "VINK".
+- Still to do after the designer's palette arrives: 19 large dashboard files still hold raw colours inside gradients and markup strings; they can be moved onto `BRAND` or the tokens in one pass. `theme.css` (template leftover) can be removed once the palette is final.

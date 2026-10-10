@@ -1,10 +1,11 @@
 import { X, TrendingUp } from "lucide-react";
 import vinkLogo from "../../../imports/LOGO_FINAL.png";
 import { Footer } from "../Footer";
+import { BRAND } from "../../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; }
-const P = "#5C0A10";
-const GOLD = "#C9A84C";
+const P = BRAND.crimsonDeep;
+const GOLD = BRAND.gold;
 
 const INDICES = [
   { name: "JSE All Share Index", region: "South Africa", desc: "The broadest measure of the Johannesburg Stock Exchange, tracking the country's largest listed companies." },

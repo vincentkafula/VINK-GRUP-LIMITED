@@ -1,5 +1,6 @@
 /** Reusable empty-state component for lists, search results, and API returns. */
 import type { ReactNode } from "react";
+import { BRAND } from "../brand";
 
 interface Props {
   icon?: ReactNode;
@@ -19,7 +20,7 @@ export function EmptyState({ icon, emoji, title, body, action }: Props) {
       {action && (
         <button onClick={action.onClick}
           className="mt-5 px-5 py-2.5 rounded-xl text-sm font-semibold text-white"
-          style={{ background: "#5C0A10" }}>
+          style={{ background: BRAND.crimsonDeep }}>
           {action.label}
         </button>
       )}

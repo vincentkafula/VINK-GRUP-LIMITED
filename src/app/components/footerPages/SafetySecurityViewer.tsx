@@ -1,9 +1,10 @@
 import { X, Shield, AlertTriangle, CheckCircle } from "lucide-react";
 import vinkLogo from "../../../imports/LOGO_FINAL.png";
 import { Footer } from "../Footer";
+import { BRAND } from "../../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; }
-const P = "#5C0A10";
+const P = BRAND.crimsonDeep;
 
 const HOW_VINK_PROTECTS = [
   { icon: "🔍", title: "Real-time fraud monitoring", desc: "Every transaction is monitored 24/7 by our fraud detection engine. Unusual activity is flagged within milliseconds." },
@@ -93,7 +94,7 @@ export function SafetySecurityViewer({ isOpen, onClose }: Props) {
             {STEPS.map((step, i) => (
               <div key={i} className="flex items-start gap-3">
                 <div className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mt-0.5"
-                  style={{ background: "#F59E0B" }}>{i + 1}</div>
+                  style={{ background: BRAND.warn }}>{i + 1}</div>
                 <p className="text-sm text-fg leading-relaxed">{step}</p>
               </div>
             ))}
@@ -104,7 +105,7 @@ export function SafetySecurityViewer({ isOpen, onClose }: Props) {
         <section className="grid sm:grid-cols-2 gap-4">
           <a href="tel:+27210070772"
             className="flex items-center gap-4 p-5 rounded-2xl text-white transition-all hover:opacity-90 no-underline"
-            style={{ background: "#EF4444" }}>
+            style={{ background: BRAND.bad }}>
             <CheckCircle className="w-8 h-8 flex-shrink-0" />
             <div>
               <p className="text-xs opacity-80 font-semibold uppercase">24h Fraud Line</p>

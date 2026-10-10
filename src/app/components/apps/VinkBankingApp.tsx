@@ -3,12 +3,13 @@ import { Home, Send, CreditCard, Clock, Star, Bell, ChevronRight, ArrowUpRight, 
 import { MobileAppOverlay, PhoneFrame } from "./PhoneFrame";
 import { globalBankingApi } from "../../services/applicationsApi";
 import { authApi, getSession, clearSession, type ApiUser } from "../../services/apiClient";
+import { BRAND } from "../../brand";
 
 type Screen = "onboarding" | "home" | "send" | "cards" | "history" | "rewards";
 type Tier = "Spark" | "Anchor" | "Momentum" | "Horizon" | "Summit" | "Legacy";
 
-const PURPLE = "#5C0A10";
-const GOLD = "#C9A84C";
+const PURPLE = BRAND.crimsonDeep;
+const GOLD = BRAND.gold;
 
 const TIER_INFO: Record<Tier, { order: number; icon: React.ReactNode; tagline: string; unlocks: string; balanceLabel: string; cardGradient: string }> = {
   Spark:    { order: 1, icon: <Sparkles className="w-5 h-5" />,     tagline: "Simple, clean entry banking — no clutter, no fees.",         unlocks: "Digital onboarding, payments, virtual card, bill pay",              balanceLabel: "Available Balance", cardGradient: `linear-gradient(135deg, ${PURPLE}, #175E38)` },
@@ -294,10 +295,10 @@ function HomeScreen({ tier, onSwitchTier, user }: { tier: Tier; onSwitchTier: ()
         <div className="w-56 shrink-0 rounded-2xl p-3.5" style={{ background: "#FFF1E6" }}>
           <div className="flex items-start justify-between">
             <p className="text-crimson-text text-[12.5px] font-bold leading-snug w-32">Pay taxi fares with one tap</p>
-            <Smartphone className="w-6 h-6" style={{ color: "#8B0000" }} />
+            <Smartphone className="w-6 h-6" style={{ color: BRAND.crimson }} />
           </div>
           <p className="text-crimson-text/70 text-[9.5px] mt-1.5">Fast. Secure. Convenient.</p>
-          <button className="mt-2.5 text-[10px] font-bold px-3 py-1.5 rounded-lg text-white" style={{ background: "#8B0000" }}>Learn More</button>
+          <button className="mt-2.5 text-[10px] font-bold px-3 py-1.5 rounded-lg text-white" style={{ background: BRAND.crimson }}>Learn More</button>
         </div>
       </div>
 
@@ -389,7 +390,7 @@ function HomeScreen({ tier, onSwitchTier, user }: { tier: Tier; onSwitchTier: ()
               <span className="text-xs font-semibold text-gray-800">Portfolio performance</span>
               <span className="text-xs font-bold text-green-600">+8.4% YTD</span>
             </div>
-            {[["Stocks & ETFs","45%","#5C0A10"],["Bonds & Treasury","25%","#B45309"],["Property","19%","#C9A84C"],["Private Equity","11%","#0369A1"]].map(([label,pct,color]) => (
+            {[["Stocks & ETFs","45%",BRAND.crimsonDeep],["Bonds & Treasury","25%","#B45309"],["Property","19%",BRAND.gold],["Private Equity","11%","#0369A1"]].map(([label,pct,color]) => (
               <div key={label} className="flex items-center gap-2 mb-1.5 last:mb-0">
                 <span className="w-16 text-[9px] text-gray-500 shrink-0">{label}</span>
                 <div className="flex-1 h-2 rounded-full bg-gray-100 overflow-hidden"><div className="h-full rounded-full" style={{ width: pct as string, background: color as string }} /></div>

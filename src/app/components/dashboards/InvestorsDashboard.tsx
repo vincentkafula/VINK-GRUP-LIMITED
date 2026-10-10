@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { TrendingUp, DollarSign, BarChart3, PieChart, FileText, Bell, Settings, Home, Users, Briefcase, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { DashboardShell, StatCard, Badge, Sparkline, SectionPanel, ProgressBar } from "./DashboardShell";
+import { BRAND } from "../../brand";
 
 const NAV = [
   { icon: <Home className="w-4 h-4" />, label: "Overview" },
@@ -16,10 +17,10 @@ const NAV = [
 
 const PORTFOLIO = [
   { name: "Mobile Network (MVNO)", value: 4200000, change: 12.4, alloc: 38, color: "#34A853" },
-  { name: "Vehicle Tracking Fleet", value: 2800000, change: 8.2, alloc: 25, color: "#EF4444" },
+  { name: "Vehicle Tracking Fleet", value: 2800000, change: 8.2, alloc: 25, color: BRAND.bad },
   { name: "Merchant Platform", value: 1900000, change: 5.6, alloc: 17, color: "#0EA5E9" },
-  { name: "Financial Services", value: 1400000, change: 9.8, alloc: 13, color: "#10B981" },
-  { name: "Authority Systems", value: 780000, change: -2.1, alloc: 7, color: "#F59E0B" },
+  { name: "Financial Services", value: 1400000, change: 9.8, alloc: 13, color: BRAND.ok },
+  { name: "Authority Systems", value: 780000, change: -2.1, alloc: 7, color: BRAND.warn },
 ];
 
 const REVENUE_CHART = [820000, 940000, 870000, 1100000, 980000, 1240000, 1380000, 1290000, 1450000, 1600000, 1520000, 1740000];
@@ -43,18 +44,18 @@ export function InvestorsDashboard({ isOpen, onClose }: { isOpen: boolean; onClo
   return (
     <DashboardShell
       title="Investors Dashboard" subtitle="Devices — Investment Account"
-      accentColor="#F59E0B" gradient="from-amber-600 to-amber-400"
+      accentColor={BRAND.warn} gradient="from-amber-600 to-amber-400"
       navItems={NAV} activeNav={nav} onNavChange={setNav}
       onClose={onClose} userName="Reginald Botha"
     >
       <div className="p-5 space-y-5">
         <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-3">
-          <StatCard label="Total Portfolio" value={fmt(totalValue)} icon={<Briefcase className="w-5 h-5" />} color="#F59E0B" trend="up" />
-          <StatCard label="YTD Return" value="+16.2%" icon={<TrendingUp className="w-5 h-5" />} color="#10B981" trend="up" sub="vs 8.4% benchmark" />
+          <StatCard label="Total Portfolio" value={fmt(totalValue)} icon={<Briefcase className="w-5 h-5" />} color={BRAND.warn} trend="up" />
+          <StatCard label="YTD Return" value="+16.2%" icon={<TrendingUp className="w-5 h-5" />} color={BRAND.ok} trend="up" sub="vs 8.4% benchmark" />
           <StatCard label="Annual Dividend" value="R486,000" icon={<DollarSign className="w-5 h-5" />} color="#34A853" trend="up" />
           <StatCard label="Dividend Yield" value="4.5%" icon={<BarChart3 className="w-5 h-5" />} color="#0EA5E9" />
-          <StatCard label="Investment Count" value="5 assets" icon={<PieChart className="w-5 h-5" />} color="#EF4444" />
-          <StatCard label="Shareholders" value="142" icon={<Users className="w-5 h-5" />} color="#F59E0B" trend="up" />
+          <StatCard label="Investment Count" value="5 assets" icon={<PieChart className="w-5 h-5" />} color={BRAND.bad} />
+          <StatCard label="Shareholders" value="142" icon={<Users className="w-5 h-5" />} color={BRAND.warn} trend="up" />
         </div>
 
         <div className="grid xl:grid-cols-3 gap-5">
@@ -91,9 +92,9 @@ export function InvestorsDashboard({ isOpen, onClose }: { isOpen: boolean; onClo
             <div className="rounded-xl p-5" style={{ background: "var(--vk-surface)", border: "1px solid var(--vk-line)" }}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-bold text-fg">Monthly Revenue</h3>
-                <Badge text="+16.2% YTD" color="#10B981" />
+                <Badge text="+16.2% YTD" color={BRAND.ok} />
               </div>
-              <Sparkline values={REVENUE_CHART.map(v => v / 10000)} color="#F59E0B" />
+              <Sparkline values={REVENUE_CHART.map(v => v / 10000)} color={BRAND.warn} />
               <div className="flex justify-between text-[9px] mt-1" style={{ color: "var(--vk-fg-muted)" }}>
                 <span>Jan 2024</span><span>Jun</span><span>Dec 2024</span>
               </div>
@@ -112,10 +113,10 @@ export function InvestorsDashboard({ isOpen, onClose }: { isOpen: boolean; onClo
                       <p className="text-[9px]" style={{ color: "var(--vk-fg-muted)" }}>Paid {d.paid}</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-xs font-bold" style={{ color: "#F59E0B" }}>{d.amount}</p>
+                      <p className="text-xs font-bold" style={{ color: BRAND.warn }}>{d.amount}</p>
                       <p className="text-[9px]" style={{ color: "var(--vk-fg-muted)" }}>Yield {d.yield}</p>
                     </div>
-                    <Badge text={d.status} color={d.status === "paid" ? "#10B981" : "#F59E0B"} />
+                    <Badge text={d.status} color={d.status === "paid" ? BRAND.ok : BRAND.warn} />
                   </div>
                 ))}
               </div>
@@ -124,13 +125,13 @@ export function InvestorsDashboard({ isOpen, onClose }: { isOpen: boolean; onClo
 
           <div className="space-y-4">
             <SectionPanel title="Return vs Benchmark">
-              <Sparkline values={RETURN_CHART} color="#10B981" />
+              <Sparkline values={RETURN_CHART} color={BRAND.ok} />
               <div className="flex justify-between text-[9px] mt-1" style={{ color: "var(--vk-fg-muted)" }}>
                 <span>Jan</span><span>Jun</span><span>Dec</span>
               </div>
               <div className="mt-3 grid grid-cols-2 gap-2">
                 <div className="text-center p-2 rounded-lg" style={{ background: "#252245" }}>
-                  <p className="text-base font-black" style={{ color: "#10B981" }}>16.2%</p>
+                  <p className="text-base font-black" style={{ color: BRAND.ok }}>16.2%</p>
                   <p className="text-[9px]" style={{ color: "var(--vk-fg-muted)" }}>Your Return</p>
                 </div>
                 <div className="text-center p-2 rounded-lg" style={{ background: "#252245" }}>

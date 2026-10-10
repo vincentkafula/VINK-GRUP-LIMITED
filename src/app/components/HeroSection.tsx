@@ -3,6 +3,7 @@ import { Pause, Play } from "lucide-react";
 import heroCardPhone from "../../imports/HeroCardPhone.webp";
 import heroGlobalSim from "../../imports/HeroGlobalSim.webp";
 import heroValidator from "../../imports/HeroValidator.webp";
+import { BRAND } from "../brand";
 
 type Side = "left" | "right" | "bottom";
 const FADE_DIR: Record<Side, string> = { left: "to right", right: "to left", bottom: "to top" };
@@ -15,10 +16,10 @@ const RAW_SLIDES = [
     image:   heroCardPhone,
     cropped: [] as Side[],     // sides where the artwork itself runs off its frame
     eyebrow: "VINK Card — Now in Your Pocket",
-    headline: <>All the benefits of Card,<br /><span className="relative inline-block"><span className="relative z-10">on your phone.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#C9A84C" }} /></span></>,
+    headline: <>All the benefits of Card,<br /><span className="relative inline-block"><span className="relative z-10">on your phone.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: BRAND.gold }} /></span></>,
     body: "Manage, track and enjoy exclusive benefits anytime, anywhere.",
     ctas: [
-      { label: "Start Now",  style: { background: "#9B1C1C", boxShadow: "0 6px 20px rgba(139,0,0,.4)" } },
+      { label: "Start Now",  style: { background: BRAND.crimsonLight, boxShadow: "0 6px 20px rgba(139,0,0,.4)" } },
       { label: "Learn more", style: { background: "rgba(255,255,255,.15)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,.25)" } },
     ],
     trust: [
@@ -31,7 +32,7 @@ const RAW_SLIDES = [
     image:   heroGlobalSim,
     cropped: [] as Side[],
     eyebrow: "VINK SIM — planned, launching June 2027",
-    headline: <>All the benefits of SIM,<br /><span className="relative inline-block"><span className="relative z-10">on your phone.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#C9A84C" }} /></span></>,
+    headline: <>All the benefits of SIM,<br /><span className="relative inline-block"><span className="relative z-10">on your phone.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: BRAND.gold }} /></span></>,
     body: "Stay connected anywhere in the world with reliable data, clear calls and seamless connectivity.",
     ctas: [
       { label: "Get Your SIM", style: { background: "#B91C1C", boxShadow: "0 6px 20px rgba(185,28,28,.4)" } },
@@ -48,7 +49,7 @@ const RAW_SLIDES = [
     cropped: [] as Side[],
     wide: true,                                   // a wide, complete cut-out (validator + the five channels): shown whole, in a larger frame
     eyebrow: "VINK AFC — Today's Market Multi-ticketing Validator",
-    headline: <>Multi-ticketing<br /><span className="relative inline-block"><span className="relative z-10">validator.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#C9A84C" }} /></span></>,
+    headline: <>Multi-ticketing<br /><span className="relative inline-block"><span className="relative z-10">validator.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: BRAND.gold }} /></span></>,
     body: "Smarter, faster and cashless payments for a seamless travel experience — multi-channel, integrated in one system.",
     ctas: [
       { label: "Experience Smart Travel →", style: { background: "#C9861F", boxShadow: "0 6px 20px rgba(201,134,31,.4)" } },

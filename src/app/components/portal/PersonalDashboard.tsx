@@ -4,11 +4,12 @@ import { User, CreditCard, MapPin, LifeBuoy, Coins } from "lucide-react";
 import { DashboardShell, SectionPanel, Badge } from "../dashboards/DashboardShell";
 import { portalClient, useLoad, Status, Empty, Field, ActionButton, inputCls, when } from "./ui";
 import { ScreenBoundary } from "./widgets";
+import { BRAND } from "../../brand";
 
 // The payments and banking dashboard is the same one customers use (online payments, in-person payments, banking, receipts).
 const ManshyaDashboard = lazy(() => import("../manshya/ManshyaDashboard").then((m) => ({ default: m.ManshyaDashboard })));
 
-const COLOR = "#8B0000";
+const COLOR = BRAND.crimson;
 const call = portalClient("personal");
 const NAV = [
   { icon: <User className="w-4 h-4" />, label: "Profile" },
@@ -78,7 +79,7 @@ function SupportScreen() {
       </SectionPanel>
       <Status load={l}>{({ requests }) => requests.length === 0 ? null : (
         <SectionPanel title="Your requests"><ul className="p-4 space-y-3">{requests.map((r) => (
-          <li key={r.id} className="text-sm text-fg"><div className="flex items-center gap-2"><b>{r.subject}</b><Badge text={r.status} color={r.status === "open" ? "#F59E0B" : "#10B981"} /><span className="text-xs text-fg-subtle">{when(r.at)}</span></div><p className="text-xs text-fg-muted mt-1 whitespace-pre-wrap">{r.message}</p></li>))}</ul></SectionPanel>
+          <li key={r.id} className="text-sm text-fg"><div className="flex items-center gap-2"><b>{r.subject}</b><Badge text={r.status} color={r.status === "open" ? BRAND.warn : BRAND.ok} /><span className="text-xs text-fg-subtle">{when(r.at)}</span></div><p className="text-xs text-fg-muted mt-1 whitespace-pre-wrap">{r.message}</p></li>))}</ul></SectionPanel>
       )}</Status>
     </>
   );

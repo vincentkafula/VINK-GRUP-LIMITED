@@ -1,9 +1,10 @@
 import { useState, useRef } from "react";
 import { X, User, Shield, CreditCard, Bell, Settings, LogOut, Camera, CheckCircle, Clock, AlertTriangle, ChevronRight, Eye, EyeOff, Edit3, Phone, Mail, MapPin, Calendar, FileText, Star, Smartphone, Globe } from "lucide-react";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
+import { BRAND } from "../brand";
 
-const P = "#5C0A10";
-const GOLD = "#C9A84C";
+const P = BRAND.crimsonDeep;
+const GOLD = BRAND.gold;
 
 interface Props {
   isOpen: boolean;
@@ -113,10 +114,10 @@ export function UserProfileViewer({ isOpen, onClose, onSignOut }: Props) {
           <div className="space-y-1.5">
             <div className="flex justify-between text-xs">
               <span className="text-white/50">KYC Verification</span>
-              <span className="font-semibold" style={{ color: kycPct === 100 ? "#10B981" : GOLD }}>{kycPct}%</span>
+              <span className="font-semibold" style={{ color: kycPct === 100 ? BRAND.ok : GOLD }}>{kycPct}%</span>
             </div>
             <div className="h-1.5 rounded-full bg-white/10">
-              <div className="h-full rounded-full transition-all duration-500" style={{ width: `${kycPct}%`, background: kycPct === 100 ? "#10B981" : GOLD }} />
+              <div className="h-full rounded-full transition-all duration-500" style={{ width: `${kycPct}%`, background: kycPct === 100 ? BRAND.ok : GOLD }} />
             </div>
             {kycPct < 100 && (
               <p className="text-[10px] text-white/40">Complete verification to unlock all products</p>
@@ -525,7 +526,7 @@ function Field({ label, value, edit = false, type = "text", icon, verified, onCh
           readOnly={!edit}
           onChange={e => onChange?.(e.target.value)}
           className="w-full px-3 py-2 rounded-xl border text-sm transition-all"
-          style={{ paddingLeft: icon ? "2rem" : undefined, borderColor: edit ? "#5C0A10" : "var(--vk-line)", background: edit ? "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" : "var(--vk-surface-2)", color: "var(--vk-fg)" }}
+          style={{ paddingLeft: icon ? "2rem" : undefined, borderColor: edit ? BRAND.crimsonDeep : "var(--vk-line)", background: edit ? "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" : "var(--vk-surface-2)", color: "var(--vk-fg)" }}
         />
         {verified && (
           <span className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -546,7 +547,7 @@ function LimitBar({ label, spent, limit }: { label: string; spent: number; limit
         <span className="font-semibold text-fg">R{spent.toLocaleString()} / R{limit.toLocaleString()}</span>
       </div>
       <div className="h-1.5 rounded-full bg-gray-200">
-        <div className="h-full rounded-full" style={{ width: `${pct}%`, background: pct > 80 ? "#EF4444" : pct > 60 ? GOLD : "#10B981" }} />
+        <div className="h-full rounded-full" style={{ width: `${pct}%`, background: pct > 80 ? BRAND.bad : pct > 60 ? GOLD : BRAND.ok }} />
       </div>
     </div>
   );

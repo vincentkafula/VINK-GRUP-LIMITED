@@ -3,11 +3,12 @@ import { Trash2, Bell } from "lucide-react";
 import { useLoad, Status, Empty, ActionButton, inputCls } from "./ui";
 import { MailEditor, isEmptyHtml, type EditorHandle } from "./MailEditor";
 import { COLOR, NOTIFY_KEY, notificationsOn, textToHtml, type Call, type Dept, type Label, type Template } from "./mailShared";
+import { BRAND } from "../../brand";
 
 /** Settings of Department mail, for one department at a time: signature, templates, labels, filters, out-of-office reply, and desktop notifications. */
 type Tab = "signature" | "templates" | "labels" | "filters" | "autoreply" | "notifications";
 const TABS: { key: Tab; label: string }[] = [{ key: "signature", label: "Signature" }, { key: "templates", label: "Templates" }, { key: "labels", label: "Labels" }, { key: "filters", label: "Filters" }, { key: "autoreply", label: "Out of office" }, { key: "notifications", label: "Notifications" }];
-const SWATCHES = ["#8B0000", "#DC2626", "#D97706", "#047857", "#0369A1", "#6D28D9", "#64748B"];
+const SWATCHES = [BRAND.crimson, "#DC2626", "#D97706", "#047857", "#0369A1", "#6D28D9", "#64748B"];
 const field = "block";
 const lbl = "text-xs font-bold text-fg";
 
