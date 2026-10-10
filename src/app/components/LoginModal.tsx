@@ -209,7 +209,8 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-6"
-      style={{ background: "rgba(10,8,30,0.85)", backdropFilter: "blur(8px)" }}
+      // the sign-in panel starts below the site header, so Personal, Business and Corporate stay visible (inner pages are offset by theme.css instead)
+      style={{ top: "var(--vk-header-h, 0px)", background: "rgba(10,8,30,0.85)", backdropFilter: "blur(8px)" }}
       onClick={onClose}
     >
       <div

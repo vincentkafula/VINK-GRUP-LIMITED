@@ -99,6 +99,7 @@ export function Header({ onHome, onDashboardSelect, onSubNavClick, onOpenProfile
   }, []);
 
   const handleNavClick = (item: NavItem) => {
+    setIsLoginModalOpen(false);          // choosing a section from the header leaves the sign-in panel
     if (item === "Personal") {
       setActiveNav(prev => (prev === "Personal" ? null : "Personal"));
       onSubNavClick?.("PersonalHome");
@@ -111,7 +112,7 @@ export function Header({ onHome, onDashboardSelect, onSubNavClick, onOpenProfile
       setActiveNav(null);
     }
   };
-  const goSub = (section: NavItem, item: string) => { onSubNavClick?.(subKey(section, item)); setActiveNav(null); setMobileOpen(false); };
+  const goSub = (section: NavItem, item: string) => { setIsLoginModalOpen(false); onSubNavClick?.(subKey(section, item)); setActiveNav(null); setMobileOpen(false); };
 
   const paletteItems = useMemo<PaletteItem[]>(() => [
     { id: "home", label: "Home", group: "Go to", icon: <Home className="size-4" />, run: () => { setActiveNav(null); onHome?.(); } },
@@ -139,7 +140,7 @@ export function Header({ onHome, onDashboardSelect, onSubNavClick, onOpenProfile
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between gap-3">
             <div className="flex items-center gap-2 sm:gap-6">
-              <a href="/" aria-label="VINK home" className="flex shrink-0 items-center" onClick={(e) => { e.preventDefault(); setActiveNav(null); onHome?.(); }}>
+              <a href="/" aria-label="VINK home" className="flex shrink-0 items-center" onClick={(e) => { e.preventDefault(); setActiveNav(null); setIsLoginModalOpen(false); onHome?.(); }}>
                 <BrandMark height={44} />
               </a>
 
