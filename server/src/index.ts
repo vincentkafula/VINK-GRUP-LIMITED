@@ -26,7 +26,8 @@ import bankTreasuryRouter from "./routes/bankTreasury.js";
 import bankComplianceRouter from "./routes/bankCompliance.js";
 import bankUsersRouter from "./routes/bankUsers.js";
 import geoCurrencyRouter from "./routes/geoCurrency.js";
-import rbacRouter from "./routes/rbac.js";
+import rbacRouter, { MODULE_SECTIONS } from "./routes/rbac.js";
+import { createDepartmentsRouter, loadCustomDepartments } from "./routes/departmentsRouter.js";
 import { setBroadcaster } from "./services/wsBroadcast.js";
 import applicationsRouter from "./routes/applicationsRouter.js";
 import otpRouter from "./routes/otpRouter.js";
@@ -191,6 +192,7 @@ app.use("/api/portal",        createPortalRouter(pool, bankDeps, {
   channels: (currency) => pooled.forCurrency(currency), crossBorder, tokens: tokenService ?? undefined,
   wallets: (userId) => { const b = moneyLedger.balance(walletLedgerAccount("ZMW", userId)); return b ? [{ currency: "ZMW", balanceCents: b }] : []; },
 }));
+if (pool) app.use("/api/admin/departments", requireAuth, requireRole("owner", "superadmin"), createDepartmentsRouter({ db: pool, moduleSections: MODULE_SECTIONS }));
 if (pool) app.use("/api/admin/money", requireAuth, requireRole("owner", "superadmin"), createMoneyAdminRouter({ db: pool, ledger: moneyLedger, reader: configReader, engine: moneyEngine ?? undefined, channels: channelAccounts, pooled, crossBorder }));
 if (pool) app.use("/api/admin/config", requireAuth, requireRole("owner", "superadmin"), createConfigAdminRouter({ db: pool, reader: configReader, readiness: async (cfg) => {
   const cur = cfg.currency.code, acc = pooled.forCurrency(cur);
@@ -393,6 +395,7 @@ async function boot() {
   if (hasDb) {
     try {
       await migrateAndSeed();
+      if (pool) await loadCustomDepartments(pool).then((l) => { if (l.length) console.log(`[departments] ${l.length} custom department(s) loaded`); }).catch((e) => console.error("[departments] could not load the custom departments (the built-in ones still work):", e instanceof Error ? e.message : e));
       if (pool) await seedBankLinks({ db: pool, ...bankDeps }).catch((e) => console.error("[seed] bank links failed (server continues):", e instanceof Error ? e.message : e));
       if (pool && manshya.payments.mode === "live") {
         // Real money starts only when every item on the go-live gate is satisfied (confirmed beforehand, in sandbox mode, on this database).

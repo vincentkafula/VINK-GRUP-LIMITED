@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { MailPanel } from "./portal/MailPanel";
 import { OpsPanel } from "./portal/OpsPanel";
+import { DepartmentsPanel } from "./portal/DepartmentsPanel";
 import { DEPARTMENTS, SECTION_ALIASES } from "../data/departments";
 import { rbacApi, jobsApi, getSession, getToken, type SectionApplication, type ManagerRecord, type AuditEntry, type JobApplication } from "../services/apiClient";
 
@@ -84,10 +85,11 @@ const BOTTOM_STATS = [
   { value: "24", label: "System Alerts", icon: <AlertTriangle className="w-5 h-5" />, iconBg: "var(--vk-bad-bg)", iconColor: "#DC2626", spark: [8, 6, 9, 5, 7, 4, 6, 3] },
 ];
 
-type View = "dashboard" | "applications" | "managers" | "audit" | "apply" | "jobApplications" | "mail" | "ops";
+type View = "dashboard" | "applications" | "managers" | "audit" | "apply" | "jobApplications" | "mail" | "ops" | "departments";
 
 /** Department mailboxes are sections too, named exactly like the department ("Sales", "Customer Support"...). */
-const DEPARTMENT_SECTIONS = DEPARTMENTS.map((d) => d.name);
+/** The built-in departments; the list the server sends (including departments a Super Administrator has made) replaces it once it has loaded. */
+const BUILT_IN_DEPARTMENT_SECTIONS = DEPARTMENTS.map((d) => d.name);
 
 /** A small trend-line sparkline, matching the mini charts on each stat
  *  card in the reference. Pure SVG, no charting library needed for
@@ -115,6 +117,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
   const isOwner = role === "owner" || role === "superadmin";
 
   const [mySections, setMySections] = useState<string[] | null>(null); // null = loading
+  const [DEPARTMENT_SECTIONS, setDepartmentSections] = useState<string[]>(BUILT_IN_DEPARTMENT_SECTIONS);
   const [pendingApps, setPendingApps] = useState<SectionApplication[]>([]);
   const [allApps, setAllApps] = useState<SectionApplication[]>([]);
   const [managers, setManagers] = useState<ManagerRecord[]>([]);
@@ -150,6 +153,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
       setSessionExpiredDetail({ path: isOwner ? "/api/rbac/applications?status=pending" : "/api/rbac/my-sections", hadToken: false, backendError: "No session found — please sign in again." });
       return;
     }
+    rbacApi.sections().then(r => { if (r.success && r.data && r.data.length) setDepartmentSections(r.data.filter(x => !Object.values(SIDEBAR_TO_SECTION).includes(x))); });          // includes the departments made by a Super Administrator
     if (isOwner) {
       rbacApi.applications("pending").then(r => { if (r.success) setPendingApps(r.data ?? []); });
     } else {
@@ -391,6 +395,13 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
                   style={view === "managers" ? { background: PURPLE, color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
                 >
                   <span className="flex items-center gap-2.5"><UserCog className="w-4 h-4" /> Managers</span>
+                </button>
+                <button
+                  onClick={() => goView("departments")}
+                  className="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors"
+                  style={view === "departments" ? { background: PURPLE, color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
+                >
+                  <span className="flex items-center gap-2.5"><Building2 className="w-4 h-4" /> Departments</span>
                 </button>
                 <button
                   onClick={() => goView("ops")}
@@ -657,6 +668,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
           {/* ── Audit Log (owner only) ── */}
           {view === "mail" && canUseMail && <MailPanel />}
           {view === "ops" && isOwner && <OpsPanel />}
+          {view === "departments" && isOwner && <DepartmentsPanel />}
 
           {view === "audit" && (
             <div>

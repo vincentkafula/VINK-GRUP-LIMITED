@@ -2,7 +2,7 @@ import { Router, json } from "express";
 import rateLimit from "express-rate-limit";
 import { h, fail, audit, isUuid, type Db } from "../portal/common.js";
 import type { ContactService } from "../services/contactService.js";
-import { DEPARTMENTS } from "../config/departments.js";
+import { publicDepartments } from "../config/departments.js";
 
 /**
  * POST /api/contact                       { department, name, email, phone?, subject?, message, website? }  a message to a VINK department (public)
@@ -17,7 +17,7 @@ import { DEPARTMENTS } from "../config/departments.js";
  */
 export function createContactRouter(svc: ContactService): Router {
   const router = Router();
-  router.get("/departments", (_req, res) => { res.json({ success: true, departments: DEPARTMENTS.map(({ key, name, address, purpose, respondWithin }) => ({ key, name, address, purpose, respondWithin })) }); });
+  router.get("/departments", (_req, res) => { res.json({ success: true, departments: publicDepartments().map(({ key, name, address, purpose, respondWithin }) => ({ key, name, address, purpose, respondWithin })) }); });
   router.post("/", rateLimit({ windowMs: 3600_000, max: 8, standardHeaders: true, legacyHeaders: false, message: { success: false, error: "You have sent several messages already. Please try again later, or email us directly." } }),
     json({ limit: "20kb" }), h(async (req, res) => {
       const r = await svc.submit((req.body ?? {}) as Record<string, unknown>);

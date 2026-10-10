@@ -7,7 +7,8 @@ import { toast } from "sonner";
 import vinkLogo from "../../../imports/LOGO_FINAL.png";
 import { publicApi } from "../../services/apiClient";
 import { Footer } from "../Footer";
-import { DEPARTMENTS, departmentByKey } from "../../data/departments";
+import { DEPARTMENTS, type Department } from "../../data/departments";
+import { API_BASE } from "../../services/config";
 
 interface Props { isOpen: boolean; onClose: () => void; initialTab?: TabId; }
 const P = "#5C0A10";
@@ -301,6 +302,14 @@ function FeedbackTab() {
     department: "support", bankingType: "Personal Banking", topic: TOPICS[0], message: "", website: "",
     name: "", surname: "", email: "", phone: "",
   });
+  // The departments the Contact page offers: the built-in ones at once, then the list the server has (it includes the public departments a Super Administrator has made).
+  const [departments, setDepartments] = useState<Department[]>(DEPARTMENTS);
+  const deptByKey = (key: string) => departments.find((d) => d.key === key);
+  useEffect(() => {
+    let live = true;
+    fetch(`${API_BASE}/api/contact/departments`).then((r) => (r.ok ? r.json() : null)).then((b: { departments?: Department[] } | null) => { if (live && b?.departments?.length) setDepartments(b.departments); }).catch(() => { /* the built-in list stays */ });
+    return () => { live = false; };
+  }, []);
   const [captchaCode, setCaptchaCode] = useState(genCode);
   const [captchaInput, setCaptchaInput] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -318,7 +327,7 @@ function FeedbackTab() {
       return;
     }
     setSubmitting(true);
-    const dept = departmentByKey(form.department);
+    const dept = deptByKey(form.department);
     const r = await publicApi.contact({
       department: form.department, name: `${form.name} ${form.surname}`.trim(), email: form.email, phone: form.phone || undefined,
       subject: form.topic, message: `Feedback for: ${form.bankingType}\n\n${form.message}`, website: form.website,
@@ -338,7 +347,7 @@ function FeedbackTab() {
         <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
         <h3 className="text-lg font-black text-fg mb-1">Message sent</h3>
         <p className="text-fg-muted text-sm">Your reference number is <strong style={{ color: "var(--vk-crimson-text)" }}>{submitted}</strong>.</p>
-        <p className="text-fg-muted text-sm mt-1">We sent a receipt to <strong className="text-fg">{form.email}</strong>. {departmentByKey(form.department)?.name ?? "VINK"} will reply within {departmentByKey(form.department)?.respondWithin ?? "1–2 business days"}.</p>
+        <p className="text-fg-muted text-sm mt-1">We sent a receipt to <strong className="text-fg">{form.email}</strong>. {deptByKey(form.department)?.name ?? "VINK"} will reply within {deptByKey(form.department)?.respondWithin ?? "1–2 business days"}.</p>
       </div>
     );
   }
@@ -365,9 +374,9 @@ function FeedbackTab() {
               <label htmlFor="contact-department" className="text-sm text-fg-muted block mb-1.5">Who is your message for?</label>
               <select id="contact-department" value={form.department} onChange={e => setForm(f => ({ ...f, department: e.target.value }))}
                 className="w-full border border-line rounded-lg px-4 py-3 text-sm outline-none focus:border-emerald-400 bg-surface text-fg">
-                {DEPARTMENTS.map(d => <option key={d.key} value={d.key}>{d.name} — {d.purpose}</option>)}
+                {departments.map(d => <option key={d.key} value={d.key}>{d.name} — {d.purpose}</option>)}
               </select>
-              <p className="text-xs text-fg-muted mt-1.5">Goes to <a href={`mailto:${departmentByKey(form.department)?.address}`} className="font-semibold" style={{ color: "var(--vk-crimson-text)" }}>{departmentByKey(form.department)?.address}</a>. You can also write to that address yourself.</p>
+              <p className="text-xs text-fg-muted mt-1.5">Goes to <a href={`mailto:${deptByKey(form.department)?.address}`} className="font-semibold" style={{ color: "var(--vk-crimson-text)" }}>{deptByKey(form.department)?.address}</a>. You can also write to that address yourself.</p>
             </div>
 
             <div>

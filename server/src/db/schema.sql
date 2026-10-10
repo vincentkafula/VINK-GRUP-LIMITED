@@ -1582,3 +1582,16 @@ CREATE TABLE IF NOT EXISTS mail_autoreply_log (
   sent_at    TIMESTAMPTZ NOT NULL,
   PRIMARY KEY (department, email)
 );
+
+-- Departments made by a Super Administrator (config/departments.ts has the built-in nine). The name is the section managers are approved for, so it is never changed.
+CREATE TABLE IF NOT EXISTS custom_departments (
+  key            TEXT PRIMARY KEY,
+  name           TEXT NOT NULL UNIQUE,
+  address        TEXT NOT NULL UNIQUE,
+  purpose        TEXT NOT NULL DEFAULT '',
+  respond_within TEXT NOT NULL DEFAULT '1–2 business days',
+  is_public      BOOLEAN NOT NULL DEFAULT false,
+  active         BOOLEAN NOT NULL DEFAULT true,
+  created_by     UUID REFERENCES users(id) ON DELETE SET NULL,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
