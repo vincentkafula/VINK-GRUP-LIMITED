@@ -190,6 +190,10 @@ describe("the WhatsApp routes", () => {
   it("tells the website whether chat is on, and gives the link for the button and QR code", async () => {
     expect(await (await fetch(`${url}/api/whatsapp/info`)).json()).toEqual({ success: true, enabled: true, number: "27821234567", link: "https://wa.me/27821234567?text=Hi%20VINK" });
   });
+  it("makes the QR code for the chat link as a PNG picture, and says there is none when chat is not on", async () => {
+    const r = await fetch(`${url}/api/whatsapp/qr.png`); expect(r.status).toBe(200); expect(r.headers.get("content-type")).toBe("image/png");
+    const bytes = new Uint8Array(await r.arrayBuffer()); expect([...bytes.slice(0, 4)]).toEqual([0x89, 0x50, 0x4e, 0x47]);
+  });
   it("lets staff list, read and answer chats, and only a Super Administrator send alerts", async () => {
     await hook(payload); const post = (p: string, b: unknown) => fetch(`${url}/api/admin/whatsapp${p}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(b) });
     const list = (await (await fetch(`${url}/api/admin/whatsapp/conversations`)).json()) as { conversations: { id: string; waId: string }[] }; expect(list.conversations[0].waId).toBe("27821112222");

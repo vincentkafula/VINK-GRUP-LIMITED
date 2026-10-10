@@ -35,6 +35,7 @@ const InvestorFleetDashboardViewer = lazy(() => import("./components/InvestorFle
 const TokenReader                 = lazy(() => import("./components/TokenReader").then(m => ({ default: m.TokenReader })));
 const ManagementPanelViewer       = lazy(() => import("./components/ManagementPanelViewer").then(m => ({ default: m.ManagementPanelViewer })));
 import { PersistentTopNav } from "./components/PersistentTopNav";
+import { WhatsAppButton } from "./components/WhatsAppChat";
 import { siteChrome } from "./sitePages";
 import { markPageBars } from "./pageBars";
 const PersonalAccountViewer       = lazy(() => import("./components/PersonalAccountViewer").then(m => ({ default: m.PersonalAccountViewer })));
@@ -616,6 +617,7 @@ export default function App() {
   return (
     <div className={`min-h-screen bg-transparent${showPersistentNav ? " has-persistent-nav" : ""}`}>
       <Toaster position="top-right" theme={theme.resolved} richColors closeButton duration={4000} />
+      <WhatsAppButton hidden={showManagementPanel || portal !== null || showLogin} />
 
       {showPersistentNav && (
         <PersistentTopNav active={activeSiteSection} onSelect={goToSection} onHome={goHome}

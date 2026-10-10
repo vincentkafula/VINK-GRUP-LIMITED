@@ -5,13 +5,15 @@ import {
   Building2, ShieldCheck, HeartHandshake, Users, Settings,
   ClipboardList, Menu, Search, Bell, ChevronDown, Plus, ArrowRight, TrendingUp,
   AlertTriangle, Monitor, CheckCircle2, CalendarDays, FileCheck2, UserCog, Loader2,
-  Check, X as XIcon, Lock, Mail, Activity,
+  Check, X as XIcon, Lock, Mail, Activity, Megaphone, MessageCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { MailPanel } from "./portal/MailPanel";
 import { OpsPanel } from "./portal/OpsPanel";
 import { DepartmentsPanel } from "./portal/DepartmentsPanel";
+import { SocialPanel } from "./portal/SocialPanel";
+import { WhatsAppPanel } from "./portal/WhatsAppPanel";
 import { DEPARTMENTS, SECTION_ALIASES } from "../data/departments";
 import { rbacApi, jobsApi, getSession, getToken, type SectionApplication, type ManagerRecord, type AuditEntry, type JobApplication } from "../services/apiClient";
 import { BRAND } from "../brand";
@@ -86,7 +88,10 @@ const BOTTOM_STATS = [
   { value: "24", label: "System Alerts", icon: <AlertTriangle className="w-5 h-5" />, iconBg: "var(--vk-bad-bg)", iconColor: "#DC2626", spark: [8, 6, 9, 5, 7, 4, 6, 3] },
 ];
 
-type View = "dashboard" | "applications" | "managers" | "audit" | "apply" | "jobApplications" | "mail" | "ops" | "departments";
+/** The section people are approved for to run the social media accounts. It is a module, not a department, so it has no mailbox. */
+const SOCIAL_SECTION = "Social Media Management";
+
+type View = "dashboard" | "applications" | "managers" | "audit" | "apply" | "jobApplications" | "mail" | "ops" | "departments" | "social" | "whatsapp";
 
 /** Department mailboxes are sections too, named exactly like the department ("Sales", "Customer Support"...). */
 /** The built-in departments; the list the server sends (including departments a Super Administrator has made) replaces it once it has loaded. */
@@ -154,7 +159,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
       setSessionExpiredDetail({ path: isOwner ? "/api/rbac/applications?status=pending" : "/api/rbac/my-sections", hadToken: false, backendError: "No session found — please sign in again." });
       return;
     }
-    rbacApi.sections().then(r => { if (r.success && r.data && r.data.length) setDepartmentSections(r.data.filter(x => !Object.values(SIDEBAR_TO_SECTION).includes(x))); });          // includes the departments made by a Super Administrator
+    rbacApi.sections().then(r => { if (r.success && r.data && r.data.length) setDepartmentSections(r.data.filter(x => !Object.values(SIDEBAR_TO_SECTION).includes(x) && x !== SOCIAL_SECTION)); });          // includes the departments made by a Super Administrator
     if (isOwner) {
       rbacApi.applications("pending").then(r => { if (r.success) setPendingApps(r.data ?? []); });
     } else {
@@ -318,6 +323,8 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
   const visibleTiles = isOwner ? MODULE_TILES : MODULE_TILES.filter(t => (mySections ?? []).includes(t.title));
   // Department mail: owners and superadmins see every department, a manager sees the departments they are approved for
   const canUseMail = isOwner || (mySections ?? []).some(s => DEPARTMENT_SECTIONS.includes(s) || s in SECTION_ALIASES);
+  // WhatsApp chats belong to the departments, so whoever can use department mail can answer them; the social accounts have their own section.
+  const canUseSocial = isOwner || (mySections ?? []).includes(SOCIAL_SECTION);
 
   return (
     <div data-theme-aware className="fixed inset-0 z-50 flex text-[14px]" style={{ fontFamily: "var(--font-sans)", background: "var(--vk-bg)" }}>
@@ -376,6 +383,24 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
                 style={view === "mail" ? { background: PURPLE, color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
               >
                 <Mail className="w-4 h-4" /> Department mail
+              </button>
+            )}
+            {canUseMail && (
+              <button
+                onClick={() => goView("whatsapp")}
+                className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-semibold mb-1"
+                style={view === "whatsapp" ? { background: PURPLE, color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
+              >
+                <MessageCircle className="w-4 h-4" /> WhatsApp
+              </button>
+            )}
+            {canUseSocial && (
+              <button
+                onClick={() => goView("social")}
+                className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-semibold mb-4"
+                style={view === "social" ? { background: PURPLE, color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
+              >
+                <Megaphone className="w-4 h-4" /> Social media
               </button>
             )}
 
@@ -668,6 +693,8 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
 
           {/* ── Audit Log (owner only) ── */}
           {view === "mail" && canUseMail && <MailPanel />}
+          {view === "whatsapp" && canUseMail && <WhatsAppPanel />}
+          {view === "social" && canUseSocial && <SocialPanel isSuper={isOwner} />}
           {view === "ops" && isOwner && <OpsPanel />}
           {view === "departments" && isOwner && <DepartmentsPanel />}
 
@@ -750,7 +777,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
                 <label className="text-xs font-bold text-fg">Section</label>
                 <select value={applySection} onChange={e => setApplySection(e.target.value)} className="w-full mt-1.5 mb-4 px-3 py-2.5 rounded-lg border border-line text-sm outline-none">
                   <option value="">Choose a section…</option>
-                  {[...Object.values(SIDEBAR_TO_SECTION), ...DEPARTMENT_SECTIONS].filter(s => !(mySections ?? []).includes(s)).map(s => <option key={s} value={s}>{s}{DEPARTMENT_SECTIONS.includes(s) ? " (department mail)" : ""}</option>)}
+                  {[...Object.values(SIDEBAR_TO_SECTION), SOCIAL_SECTION, ...DEPARTMENT_SECTIONS].filter(s => !(mySections ?? []).includes(s)).map(s => <option key={s} value={s}>{s}{DEPARTMENT_SECTIONS.includes(s) ? " (department mail)" : ""}</option>)}
                 </select>
                 <label className="text-xs font-bold text-fg">Why should you manage this section? (optional)</label>
                 <textarea value={applyMessage} onChange={e => setApplyMessage(e.target.value)} rows={3} className="w-full mt-1.5 mb-4 px-3 py-2.5 rounded-lg border border-line text-sm outline-none resize-none" placeholder="Relevant experience, role, or context for the Super Administrator..." />

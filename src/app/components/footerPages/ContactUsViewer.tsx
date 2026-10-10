@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import vinkLogo from "../../../imports/LOGO_FINAL.png";
 import { publicApi } from "../../services/apiClient";
 import { Footer } from "../Footer";
+import { WhatsAppCard } from "../WhatsAppChat";
 import { DEPARTMENTS, type Department } from "../../data/departments";
 import { API_BASE } from "../../services/config";
 import { BRAND } from "../../brand";
@@ -525,6 +526,7 @@ export function ContactUsViewer({ isOpen, onClose, initialTab }: Props) {
         </div>
       </div>
 
+      <WhatsAppCard />
       <Footer />
     </div>
   );

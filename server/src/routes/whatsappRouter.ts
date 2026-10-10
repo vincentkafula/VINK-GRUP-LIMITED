@@ -1,4 +1,5 @@
 import express, { Router, json, type Request } from "express";
+import { toBuffer } from "qrcode";
 import { h, fail, audit, isUuid, type Db } from "../portal/common.js";
 import { verifyWaSignature, waReady, type WaConfig } from "../services/whatsapp/cloud.js";
 import type { WhatsAppService } from "../services/whatsapp/whatsappService.js";
@@ -7,7 +8,7 @@ import type { WhatsAppService } from "../services/whatsapp/whatsappService.js";
  * WhatsApp, three routers:
  *   createWhatsAppWebhookRouter  /api/webhooks/whatsapp   Meta calls this. GET answers the set-up handshake (WHATSAPP_VERIFY_TOKEN); POST carries messages and delivery updates,
  *                                signed with the app secret (the raw body is needed to check it, so it is mounted before the JSON parser). A message with a bad signature is refused.
- *   createWhatsAppInfoRouter     /api/whatsapp/info       public: whether chat is on, and the link the website's button and QR code open
+ *   createWhatsAppInfoRouter     /api/whatsapp/info       public: whether chat is on, and the link the website's button and QR code open; /api/whatsapp/qr.png is the QR code itself
  *   createWhatsAppRouter         /api/admin/whatsapp      staff, behind sign-in; what a person sees depends on the departments they manage (the same as department mail)
  *      GET /summary · GET /conversations?department=&status= · GET /conversations/:id · POST /conversations/:id/reply { body }
  *      POST /conversations/:id/status { status } · POST /conversations/:id/department { department } · POST /notify { to, template, language?, params? } (Super Administrators)
@@ -36,6 +37,12 @@ export function createWhatsAppInfoRouter(d: { config: WaConfig }) {
     const on = waReady(d.config) && !!d.config.number;
     res.set("Cache-Control", "public, max-age=300").json({ success: true, enabled: on, number: on ? d.config.number : null, link: on ? `https://wa.me/${d.config.number}?text=${encodeURIComponent("Hi VINK")}` : null });
   });
+  /** The QR code for posters, taxi windows and the Contact page: scanning it opens a chat with VINK. */
+  router.get("/qr.png", h(async (_req, res) => {
+    if (!(waReady(d.config) && d.config.number)) { res.status(404).json({ success: false, error: "WhatsApp chat is not on" }); return; }
+    const png = await toBuffer(`https://wa.me/${d.config.number}?text=${encodeURIComponent("Hi VINK")}`, { width: 512, margin: 2, errorCorrectionLevel: "M" });
+    res.set({ "Content-Type": "image/png", "Cache-Control": "public, max-age=86400" }).send(png);
+  }));
   return router;
 }
 
