@@ -78,7 +78,7 @@ function mockApi() {
 beforeEach(() => { localStorage.clear(); localStorage.setItem("vink.mail.undoSeconds", "0"); host = document.createElement("div"); document.body.appendChild(host); root = createRoot(host); });
 afterEach(() => { act(() => root.unmount()); host.remove(); vi.unstubAllGlobals(); vi.useRealTimers(); });
 const settle = () => act(async () => { await new Promise((r) => setTimeout(r, 10)); });
-const render = async () => { await act(async () => { root.render(<MailPanel />); }); await settle(); await settle(); };
+const render = async (choose = true) => { await act(async () => { root.render(<MailPanel />); }); await settle(); await settle(); if (choose) { await act(async () => { (document.querySelector('[aria-label="Departments"] [role="tab"]') as HTMLButtonElement).click(); }); await settle(); await settle(); } };
 const click = async (el: Element | null | undefined) => { if (!el) throw new Error("nothing to click"); await act(async () => { (el as HTMLElement).click(); }); await settle(); await settle(); };
 const btn = (t: string) => [...document.querySelectorAll("button")].find((b) => b.textContent?.trim() === t || b.textContent?.includes(t) || b.getAttribute("aria-label") === t) as HTMLButtonElement | undefined;
 const exact = (t: string) => [...document.querySelectorAll("button")].find((b) => b.textContent?.trim() === t || b.getAttribute("aria-label") === t) as HTMLButtonElement | undefined;

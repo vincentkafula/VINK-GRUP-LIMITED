@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Mail, Send, Inbox, PenSquare, Star, FileText, ShieldAlert, Trash2, Search, AlarmClock, CalendarClock, Settings, X, RefreshCw, MoreVertical, HelpCircle, ChevronLeft, ChevronRight, ArrowLeft, Plus, Undo2, CircleCheck } from "lucide-react";
+import { Mail, Send, Inbox, PenSquare, Star, FileText, ShieldAlert, Trash2, Search, AlarmClock, CalendarClock, Settings, X, RefreshCw, MoreVertical, HelpCircle, ChevronLeft, ChevronRight, ArrowLeft, Plus, Undo2, Building2, CircleCheck } from "lucide-react";
 import { useLoad, Status, Empty, inputCls } from "./ui";
 import { getSession } from "../../services/apiClient";
 import { Message } from "./MailMessage";
@@ -38,7 +38,8 @@ export function MailPanel() {
   const [help, setHelp] = useState(false); const [more, setMore] = useState(false);
   const [addingLabel, setAddingLabel] = useState(false); const [labelName, setLabelName] = useState("");
   const list = depts.state === "ready" ? depts.data.departments : [];
-  useEffect(() => { if (!dept && list.length) setDept(list[0].key); }, [list.length]);          // eslint-disable-line react-hooks/exhaustive-deps
+  // A person who manages several departments chooses one first; with only one there is nothing to choose, so it opens.
+  useEffect(() => { if (!dept && list.length === 1) setDept(list[0].key); }, [list.length]);          // eslint-disable-line react-hooks/exhaustive-deps
 
   // New mail: look again every minute, and tell the person (if they asked to be told) when more messages are waiting than before.
   const lastTotal = useRef<number | null>(null);
@@ -57,6 +58,9 @@ export function MailPanel() {
   const goBox = (b: Box) => { setBox(b); setSelected(null); setComposing(null); setSettings(false); setChecked({}); setPage(0); };
   useEffect(() => { setPage(0); setChecked({}); }, [dept, applied, label, status]);
   const back = () => { setSelected(null); setComposing(null); refresh(); };
+  /** Opens one department's mail; every other department is out of the way until the person goes back to the list. */
+  const pick = (key: string) => { setDept(key); setBox("inbox"); setStatus("open"); setSelected(null); setComposing(null); setSettings(false); setLabel(""); setApplied(""); setQ(""); setChecked({}); setPage(0); };
+  const allDepartments = () => { setDept(""); setBox("inbox"); setSelected(null); setComposing(null); setSettings(false); setLabel(""); setApplied(""); setQ(""); setChecked({}); setPage(0); };
   const me = getSession();
 
   const tickedKeys = Object.keys(checked).filter((k) => checked[k]);
@@ -90,14 +94,22 @@ export function MailPanel() {
               <div className="flex items-center gap-3 px-1"><Mail className="h-9 w-9" strokeWidth={1.6} /><span className="text-2xl font-semibold tracking-tight">Mail</span></div>
               <button type="button" aria-label="New email" onClick={() => { setComposing({ key: Date.now() }); setSelected(null); setSettings(false); }} className="inline-flex w-fit items-center gap-3 rounded-full px-7 py-3 text-base font-semibold text-white shadow-lg hover:brightness-110" style={{ background: COLOR }}><PenSquare className="h-5 w-5" /> Compose</button>
 
-              <div role="tablist" aria-label="Departments" className="flex flex-wrap gap-1.5">
-                {departments.map((d) => (
-                  <button key={d.key} role="tab" aria-selected={dept === d.key} onClick={() => { setDept(d.key); setSelected(null); setComposing(null); setLabel(""); }} className="rounded-full px-3 py-1 text-xs font-semibold" style={dept === d.key ? { background: "#fff", color: NAVY } : { background: "rgba(255,255,255,0.12)", color: "#fff" }}>
-                    {d.name}{d.open > 0 && <span className="ml-1.5 rounded-full px-1.5 text-[10px]" style={{ background: dept === d.key ? "#E3ECFF" : "rgba(255,255,255,0.22)", color: dept === d.key ? NAVY : "#fff" }}>{d.open}</span>}
-                  </button>))}
-              </div>
-              {dept && dept !== "unrouted" && cur && <p className="flex items-center gap-1.5 px-1 text-[11px] text-white/70"><Mail className="h-3.5 w-3.5" /> {cur.address}{cur.active === false ? " (switched off)" : ""}</p>}
+              {!dept ? (
+                <div role="tablist" aria-label="Departments" aria-orientation="vertical" className="flex flex-col gap-0.5">
+                  <p className="px-3 pb-1 text-xs font-semibold uppercase tracking-wider text-white/55">Departments</p>
+                  {departments.map((d) => (
+                    <button key={d.key} role="tab" aria-selected={false} onClick={() => pick(d.key)} className="flex items-center gap-3 rounded-r-full rounded-l-xl px-3 py-2.5 text-left text-[15px] font-medium transition-colors hover:bg-white/10">
+                      <Building2 className="h-5 w-5 shrink-0 opacity-90" /><span className="flex-1">{d.name}</span>{d.open > 0 && <span className="rounded-full px-2 py-0.5 text-xs font-semibold" style={{ background: COLOR }}>{d.open}</span>}
+                    </button>))}
+                </div>
+              ) : (
+                <div>
+                  <button type="button" aria-label="All departments" onClick={allDepartments} className="mb-2 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold text-white/80 hover:bg-white/10"><ArrowLeft className="h-3.5 w-3.5" /> All departments</button>
+                  <p className="px-1 text-lg font-semibold leading-snug" aria-label="Department">{cur?.name ?? dept}</p>
+                  {dept !== "unrouted" && cur && <p className="mt-0.5 flex items-center gap-1.5 px-1 text-[11px] text-white/70"><Mail className="h-3.5 w-3.5" /> {cur.address}{cur.active === false ? " (switched off)" : ""}</p>}
+                </div>)}
 
+              {dept && (<>
               <nav role="tablist" aria-label="Boxes" aria-orientation="vertical" className="flex gap-1 overflow-x-auto lg:flex-col lg:gap-0.5 lg:overflow-visible">
                 {BOXES.map(({ key, label: text, icon: Icon }) => {
                   const n = key === "inbox" ? cur?.open : key === "drafts" ? cur?.drafts : key === "scheduled" ? cur?.scheduled : 0;
@@ -126,18 +138,19 @@ export function MailPanel() {
                     </button>))}
                 </div>
               </div>
+              </>)}
             </aside>
 
             {/* ── Main ────────────────────────────────────────────────────── */}
             <main className="min-w-0 flex-1 bg-white">
               <div className="flex items-center gap-3 border-b border-[#EEF1F6] px-4 py-3">
-                <form role="search" onSubmit={(e) => { e.preventDefault(); setApplied(q); setSelected(null); setComposing(null); setSettings(false); }} className="flex flex-1 items-center gap-2">
+                {dept ? <form role="search" onSubmit={(e) => { e.preventDefault(); setApplied(q); setSelected(null); setComposing(null); setSettings(false); }} className="flex flex-1 items-center gap-2">
                   <label className="relative flex-1"><span className="sr-only">Search mail</span>
                     <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#5B6B88]" />
                     <input aria-label="Search mail" value={q} onChange={(e) => { setQ(e.target.value); if (e.target.value === "") setApplied(""); }} placeholder="Search in mail…" className="w-full rounded-full border-0 bg-[#EAF0FB] py-3 pl-12 pr-4 text-[15px] text-[#1B2A44] placeholder-[#5B6B88] outline-none focus:bg-white focus:ring-2 focus:ring-[#2F6BFF]/40" /></label>
                   <button type="submit" className="rounded-full px-4 py-2.5 text-sm font-semibold text-white" style={{ background: COLOR }}>Search</button>
                   {searching && <button type="button" onClick={() => { setQ(""); setApplied(""); }} className="rounded-full px-3 py-2.5 text-sm font-semibold text-[#4A5A78] hover:bg-[#E8EEF9]">Clear</button>}
-                </form>
+                </form> : <p className="flex-1 px-2 text-sm text-[#5B6B88]">Choose a department to read its mail.</p>}
                 <button type="button" aria-label="Search help" aria-expanded={help} onClick={() => setHelp((v) => !v)} className={tool}><HelpCircle className="h-6 w-6" /></button>
                 <button type="button" aria-label="Mail settings" aria-pressed={settings} onClick={() => { setSettings((v) => !v); setSelected(null); setComposing(null); }} className={tool}><Settings className="h-6 w-6" /></button>
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white" style={{ background: avatarColor(me?.name ?? me?.username ?? "You") }} title={me?.name ?? me?.username ?? "You"} aria-label="Your account">{initialOf(me?.name ?? me?.username ?? "You")}</span>
@@ -156,6 +169,19 @@ export function MailPanel() {
                   <section aria-label="Message" className="p-5">
                     <button type="button" onClick={back} aria-label="Back to the list" className="mb-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold text-[#4A5A78] hover:bg-[#E8EEF9]"><ArrowLeft className="h-4 w-4" /> Back</button>
                     <Message key={selected.id} call={call} kind={selected.kind} id={selected.id} labels={labels} onChanged={refresh} onMoved={() => { setSelected(null); refresh(); }} onOpen={(k, i) => setSelected({ kind: k, id: i })} onLabelsChanged={reloadLabels} onNotice={setNotice} />
+                  </section>)
+                : !dept ? (
+                  <section aria-label="Choose a department" className="p-6">
+                    <h2 className="text-xl font-semibold text-[#1B2A44]">Choose a department</h2>
+                    <p className="mt-1 text-sm text-[#5B6B88]">Pick a department to open its mail. Each department has its own mailbox; the others stay out of the way.</p>
+                    <ul className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{departments.map((d) => (
+                      <li key={d.key}>
+                        <button type="button" onClick={() => pick(d.key)} aria-label={`Open ${d.name}`} className="flex h-full w-full flex-col rounded-2xl border border-[#DCE3F0] p-4 text-left transition-colors hover:border-[#2F6BFF] hover:bg-[#F6F9FF]">
+                          <span className="flex items-start justify-between gap-2"><span className="font-semibold text-[#1B2A44]">{d.name}</span>{d.open > 0 && <span className="rounded-full px-2 py-0.5 text-xs font-semibold text-white" style={{ background: COLOR }}>{d.open}</span>}</span>
+                          {d.address && <span className="mt-1 text-xs text-[#5B6B88]">{d.address}</span>}
+                          <span className="mt-3 text-xs font-semibold" style={{ color: COLOR }}>{d.open > 0 ? `${d.open} waiting` : "Open mail"}</span>
+                        </button>
+                      </li>))}</ul>
                   </section>)
                 : (
                   <section aria-label="Messages">
