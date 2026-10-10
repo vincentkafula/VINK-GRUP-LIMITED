@@ -24,21 +24,24 @@ function mockApi(opts: { departments?: unknown[]; messages?: unknown[] } = {}) {
 beforeEach(() => { localStorage.clear(); localStorage.setItem("vink.mail.undoSeconds", "0"); host = document.createElement("div"); document.body.appendChild(host); root = createRoot(host); });
 afterEach(() => { act(() => root.unmount()); host.remove(); vi.unstubAllGlobals(); });
 const settle = () => act(async () => { await new Promise((r) => setTimeout(r, 10)); });
-const render = async () => { await act(async () => { root.render(<MailPanel />); }); await settle(); await settle(); };
+const render = async (choose = true) => { await act(async () => { root.render(<MailPanel />); }); await settle(); await settle(); if (choose) { await act(async () => { (document.querySelector('[aria-label="Departments"] [role="tab"]') as HTMLButtonElement).click(); }); await settle(); await settle(); } };
 const btn = (t: string) => [...document.querySelectorAll("button")].find((b) => b.textContent?.includes(t) || b.getAttribute("aria-label") === t) as HTMLButtonElement | undefined;
 const type = async (el: HTMLElement | null, v: string) => { await act(async () => { if ((el as HTMLElement | null)?.getAttribute("contenteditable") === "true") { (el as HTMLElement).innerHTML = `<div>${v}</div>`; (el as HTMLElement).dispatchEvent(new Event("input", { bubbles: true })); return; } const e = el as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement; const proto = e.tagName === "TEXTAREA" ? HTMLTextAreaElement.prototype : e.tagName === "SELECT" ? HTMLSelectElement.prototype : HTMLInputElement.prototype; Object.getOwnPropertyDescriptor(proto, "value")!.set!.call(e, v); e.dispatchEvent(new Event(e.tagName === "SELECT" ? "change" : "input", { bubbles: true })); }); };
 
 describe("MailPanel", () => {
   it("shows only the departments the server returned, with the waiting count, and loads the first department's messages", async () => {
-    mockApi(); await render();
+    mockApi(); await render(false);
     expect([...document.querySelectorAll('[aria-label="Departments"] [role="tab"]')].map((t) => t.textContent)).toEqual(["Sales2", "Customer Support"]);
+    expect(document.querySelector('[aria-label="Boxes"]')).toBeNull(); expect(document.querySelector("section[aria-label='Messages']")).toBeNull();          // nothing of any department is shown until one is chosen
+    expect(calls.some((c) => c.url.includes("/api/mail/messages?"))).toBe(false); expect(host.textContent).toContain("Choose a department");
+    await act(async () => { (document.querySelector('[aria-label="Departments"] [role="tab"]') as HTMLButtonElement).click(); }); await settle(); await settle();
     expect(host.textContent).toContain("sales@vink.co.za");
     expect(calls.some((c) => c.url.includes("/api/mail/messages?department=sales&box=inbox&status=open"))).toBe(true);
     expect(host.textContent).toContain("Thandi Nkosi"); expect(host.textContent).toContain("from the website");
   });
 
   it("tells a person who manages no department how to get one", async () => {
-    mockApi({ departments: [] }); await render();
+    mockApi({ departments: [] }); await render(false);
     expect(host.textContent).toContain("do not manage any department mailbox"); expect(host.textContent).toContain("Apply for a Section");
     expect(document.querySelectorAll('[aria-label="Departments"] [role="tab"]')).toHaveLength(0);
   });
@@ -68,8 +71,8 @@ describe("MailPanel", () => {
   });
 
   it("switching department or box asks for that department's messages", async () => {
-    mockApi(); await render();
-    await act(async () => { (document.querySelectorAll('[aria-label="Departments"] [role="tab"]')[1] as HTMLButtonElement).click(); }); await settle();
+    mockApi(); await render(false);
+    await act(async () => { (document.querySelectorAll('[aria-label="Departments"] [role="tab"]')[1] as HTMLButtonElement).click(); }); await settle(); await settle();
     expect(calls.some((c) => c.url.includes("messages?department=support&box=inbox"))).toBe(true);
     await act(async () => { btn("Sent")!.click(); }); await settle();
     expect(calls.some((c) => c.url.includes("messages?department=support&box=sent"))).toBe(true);
