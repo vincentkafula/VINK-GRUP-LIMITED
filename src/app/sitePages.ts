@@ -5,8 +5,8 @@
  * open, so a visitor can always switch section, search, or go home. The list lives here, in one place, so a new page cannot be added without deciding whether it
  * gets the header (sitePages.test.ts fails if a page the website opens is in neither list).
  *
- * Left out on purpose: the signed-in tools (dashboards, the management panel, account tools such as Financial Reports, the field reader and the app previews).
- * They are applications with their own layout, not pages of the public site.
+ * The signed-in tools (dashboards, the management panel, account tools such as Financial Reports, the field reader and the app previews) show it too: every page
+ * of VINK has the header, so a person is never stranded inside a tool and can always switch section, search, or go home.
  */
 export type SiteSection = "Personal" | "Business" | "Corporate";
 
@@ -23,7 +23,7 @@ export const OTHER_SITE_PAGES: readonly string[] = [
   "showLegal", "showBranchLocator", "showSponsorship", "showBankingFees", "showBankingGuide", "showBankingChannels", "showExchangeRates", "showLatestOffers", "showMarketIndices", "showVinkBlog",
 ];
 
-/** Signed-in tools and previews, which keep their own layout. Listed so that every page the website can open is accounted for. */
+/** Signed-in tools and previews. They show the header like every other page; they are listed apart because they are applications, not pages of the public site. */
 export const APP_PAGES: readonly string[] = [
   "showPostLogin", "showUserProfile", "showOwners", "showInvestors", "showSuperAdmin", "showBanking", "showDriveDashboard", "showOwnerDashboard", "showTaxiAssociationDashboard",
   "showTerminalManagement", "showControlCentre", "showInvestorDashboard", "showManagementPanel", "showTokenReader", "showSIMApp", "showAFCApp", "showVinkBankingApp",
@@ -36,5 +36,5 @@ export interface SiteChrome { section: SiteSection | null; showNav: boolean }
 /** open: the page flags of the App, by name, true for the pages that are open. */
 export function siteChrome(open: Readonly<Record<string, boolean>>): SiteChrome {
   const section = (Object.keys(SECTION_PAGES) as SiteSection[]).find((s) => SECTION_PAGES[s].some((k) => open[k])) ?? null;
-  return { section, showNav: section !== null || OTHER_SITE_PAGES.some((k) => open[k]) };
+  return { section, showNav: section !== null || OTHER_SITE_PAGES.some((k) => open[k]) || APP_PAGES.some((k) => open[k]) };
 }

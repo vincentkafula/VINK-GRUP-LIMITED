@@ -18,9 +18,9 @@ describe("which pages show the Personal / Business / Corporate header", () => {
     for (const p of OTHER_SITE_PAGES) expect(siteChrome({ [p]: true }), p).toEqual({ section: null, showNav: true });
   });
 
-  it("does not show it on the home page, or on the signed-in tools that keep their own layout", () => {
+  it("does not show it on the home page (which has the header itself), but shows it on every signed-in tool too", () => {
     expect(siteChrome({})).toEqual({ section: null, showNav: false });
-    for (const p of APP_PAGES) expect(siteChrome({ [p]: true }), p).toEqual({ section: null, showNav: false });
+    for (const p of APP_PAGES) expect(siteChrome({ [p]: true }), p).toEqual({ section: null, showNav: true });
   });
 
   it("includes the pages that used to be missing: the Business landing page, the legal and information pages, and Exchange Rates", () => {
@@ -40,10 +40,13 @@ describe("which pages show the Personal / Business / Corporate header", () => {
   it("passes every public page to the header rule, and closes every one of them when the header's Close or a section button is used", () => {
     const call = /siteChrome\(\{([\s\S]*?)\}\);/.exec(app)![1];
     const passed = [...call.matchAll(/\b(show\w+|selectorOpen)\b/g)].map((m) => m[1]);
-    expect(sitePages.filter((p) => !passed.includes(p)), "public pages not passed to siteChrome").toEqual([]);
+    expect([...sitePages, ...APP_PAGES].filter((p) => !passed.includes(p)), "pages not passed to siteChrome").toEqual([]);
     const closers = /const sitePageClosers[\s\S]*?=\s*\{([\s\S]*?)\};/.exec(app)![1];
     const closed = [...closers.matchAll(/\b(show\w+|selectorOpen):/g)].map((m) => m[1]);
+    const appClosers = /const appPageClosers[\s\S]*?=\s*\{([\s\S]*?)\};/.exec(app)![1];
+    const appClosed = [...appClosers.matchAll(/\b(show\w+):/g)].map((m) => m[1]);
     expect(sitePages.filter((p) => !closed.includes(p)), "public pages the header cannot close").toEqual([]);
+    expect(APP_PAGES.filter((p) => !appClosed.includes(p)), "tools the header cannot close").toEqual([]);
   });
 });
 
