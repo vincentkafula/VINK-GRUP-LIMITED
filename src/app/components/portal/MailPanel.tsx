@@ -1,22 +1,25 @@
 import { useEffect, useRef, useState } from "react";
-import { Mail, Send, Inbox, PenSquare, Star, FileText, ShieldAlert, Trash2, Search, AlarmClock, CalendarClock, Settings, X } from "lucide-react";
-import { useLoad, Status, Empty, inputCls, when } from "./ui";
+import { Mail, Send, Inbox, PenSquare, Star, FileText, ShieldAlert, Trash2, Search, AlarmClock, CalendarClock, Settings, X, RefreshCw, MoreVertical, HelpCircle, ChevronLeft, ChevronRight, ArrowLeft, Plus, Undo2, CircleCheck } from "lucide-react";
+import { useLoad, Status, Empty, inputCls } from "./ui";
+import { getSession } from "../../services/apiClient";
 import { Message } from "./MailMessage";
 import { Compose } from "./MailCompose";
 import { MailSettings } from "./MailSettings";
-import { COLOR, STATUS_LABEL, mailClient, notifyIfMore, whenLong, type Box, type Dept, type Draft, type Item, type Label, type Scheduled } from "./mailShared";
+import { MailRow } from "./MailList";
+import { COLOR, NAVY, NAVY_ACTIVE, STATUS_LABEL, avatarColor, initialOf, mailClient, notifyIfMore, whenLong, type Box, type Dept, type Draft, type Item, type Label, type Scheduled } from "./mailShared";
 
 /**
- * Department mail for the management panel. An owner or superadmin sees every department; a department manager sees only the department(s) they have been
- * approved to manage. Boxes: Inbox, Starred, Snoozed, Drafts, Scheduled, Sent, Spam, Trash, a search over all of it, and Settings (signature, templates, labels,
- * filters, out-of-office reply, notifications). A reply goes out from the department's own address.
+ * Department mail, laid out like a webmail: a dark sidebar (Compose, the boxes with their counts, the labels), a search bar across the top, and a list of messages
+ * with tick boxes, stars and round sender initials. An owner or superadmin sees every department; a department manager sees only the department(s) they have been
+ * approved to manage. Boxes: Inbox, Starred, Snoozed, Sent, Drafts, Scheduled, Spam, Trash. A reply goes out from the department's own address.
  */
 const BOXES: { key: Box; label: string; icon: typeof Inbox }[] = [
-  { key: "inbox", label: "Inbox", icon: Inbox }, { key: "starred", label: "Starred", icon: Star }, { key: "snoozed", label: "Snoozed", icon: AlarmClock }, { key: "drafts", label: "Drafts", icon: FileText },
-  { key: "scheduled", label: "Scheduled", icon: CalendarClock }, { key: "sent", label: "Sent", icon: Send }, { key: "spam", label: "Spam", icon: ShieldAlert }, { key: "trash", label: "Trash", icon: Trash2 },
+  { key: "inbox", label: "Inbox", icon: Inbox }, { key: "starred", label: "Starred", icon: Star }, { key: "snoozed", label: "Snoozed", icon: AlarmClock }, { key: "sent", label: "Sent", icon: Send },
+  { key: "drafts", label: "Drafts", icon: FileText }, { key: "scheduled", label: "Scheduled", icon: CalendarClock }, { key: "spam", label: "Spam", icon: ShieldAlert }, { key: "trash", label: "Trash", icon: Trash2 },
 ];
 const EMPTY: Record<Box, string> = { inbox: "No messages here.", starred: "No starred messages. Star a message to find it here.", snoozed: "Nothing is snoozed. Snooze a message to hide it until you want it back.", drafts: "No drafts. An email you start writing is saved here as you type.", scheduled: "Nothing is waiting to be sent. Use Schedule send to write now and send later.", sent: "Nothing sent from this department yet.", spam: "Nothing in Spam.", trash: "Trash is empty." };
-const SEARCH_HELP = 'Search all mail. Try: from:pam   subject:invoice   label:urgent   has:attachment   is:starred   after:2026-10-01   "exact words"   -leaveout';
+const SEARCH_TIPS = ["from:pam", "to:sales", "subject:invoice", "label:urgent", "has:attachment", "is:starred", "is:open", "after:2026-10-01", "before:2026-10-31", "\"exact words\"", "-leaveout"];
+const PAGE = 25;
 
 export function MailPanel() {
   const call = mailClient();
@@ -30,6 +33,10 @@ export function MailPanel() {
   const [composing, setComposing] = useState<{ key: number; draft?: Draft } | null>(null);
   const [settings, setSettings] = useState(false);
   const [notice, setNotice] = useState("");
+  const [checked, setChecked] = useState<Record<string, boolean>>({});
+  const [page, setPage] = useState(0);
+  const [help, setHelp] = useState(false); const [more, setMore] = useState(false);
+  const [addingLabel, setAddingLabel] = useState(false); const [labelName, setLabelName] = useState("");
   const list = depts.state === "ready" ? depts.data.departments : [];
   useEffect(() => { if (!dept && list.length) setDept(list[0].key); }, [list.length]);          // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -47,107 +54,164 @@ export function MailPanel() {
   const [labelsLoad, reloadLabels] = useLoad<{ labels: Label[] }>(() => (dept && dept !== "unrouted" ? call(`/labels?department=${encodeURIComponent(dept)}`) : Promise.resolve({ data: { labels: [] } })), [dept]);
   const labels = labelsLoad.state === "ready" ? labelsLoad.data.labels ?? [] : [];
   const refresh = () => { reloadMsgs(); reloadDepts(); reloadDrafts(); reloadScheduled(); };
-  const goBox = (b: Box) => { setBox(b); setSelected(null); setComposing(null); setSettings(false); };
-  const realDepts = list.filter((d) => d.key !== "unrouted");
+  const goBox = (b: Box) => { setBox(b); setSelected(null); setComposing(null); setSettings(false); setChecked({}); setPage(0); };
+  useEffect(() => { setPage(0); setChecked({}); }, [dept, applied, label, status]);
+  const back = () => { setSelected(null); setComposing(null); refresh(); };
+  const me = getSession();
+
+  const tickedKeys = Object.keys(checked).filter((k) => checked[k]);
+  const bulk = async (path: string, body: unknown) => {
+    let failed = "";
+    for (const k of tickedKeys) { const [kind, id] = k.split(":"); const r = await call(`/messages/${kind}/${id}/${path}`, { method: "POST", body }); if ("error" in r) failed = r.error; }
+    setChecked({}); if (failed) setNotice(failed); refresh();
+  };
+  const star = async (m: Item) => { const r = await call(`/messages/${m.kind}/${m.id}/star`, { method: "POST", body: { starred: !m.starred } }); if ("error" in r) setNotice(r.error); reloadMsgs(); };
+  const makeLabel = async () => { if (!labelName.trim()) return; const r = await call("/labels", { method: "POST", body: { department: dept, name: labelName } }); if ("error" in r) { setNotice(r.error); return; } setLabelName(""); setAddingLabel(false); reloadLabels(); };
+
+  const tool = "inline-flex items-center justify-center rounded-full p-2 text-[#4A5A78] hover:bg-[#E8EEF9]";
+  const bulkBtn = "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-[#1B2A44] hover:bg-[#E8EEF9]";
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-black text-fg">Department mail</h1>
-          <p className="text-fg-muted text-sm">Messages sent to your department's address and from the website. Replies go out from the department's own address.</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <button onClick={() => { setSettings((v) => !v); setSelected(null); setComposing(null); }} aria-pressed={settings} aria-label="Mail settings" className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-bold border border-line text-fg hover:bg-surface-2"><Settings className="w-4 h-4" /> Settings</button>
-          <button onClick={() => { setComposing({ key: Date.now() }); setSelected(null); setSettings(false); }} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold text-white" style={{ background: COLOR }}><PenSquare className="w-4 h-4" /> New email</button>
-        </div>
-      </div>
-      {notice && <p role="status" className="flex items-center gap-2 text-sm rounded-lg px-3 py-2" style={{ background: "#ECFDF5", color: "#065F46", border: "1px solid #A7F3D0" }}>{notice}<button type="button" aria-label="Dismiss" onClick={() => setNotice("")} className="ml-auto"><X className="w-4 h-4" /></button></p>}
+    <Status load={depts}>{({ departments }) => departments.length === 0
+      ? <Empty>You do not manage any department mailbox yet. Apply for a department under "Apply for a Section"; a Super Administrator will review it.</Empty>
+      : (() => {
+        const cur = departments.find((d) => d.key === dept);
+        const realDepts = departments.filter((d) => d.key !== "unrouted");
+        const messages = msgs.state === "ready" ? msgs.data.messages ?? [] : [];
+        const shown = messages.slice(page * PAGE, page * PAGE + PAGE);
+        const total = box === "drafts" ? (drafts.state === "ready" ? (drafts.data.drafts ?? []).length : 0) : box === "scheduled" ? (scheduled.state === "ready" ? (scheduled.data.scheduled ?? []).length : 0) : messages.length;
+        const first = total === 0 ? 0 : page * PAGE + 1, last = Math.min(total, page * PAGE + PAGE);
+        const inList = !settings && !composing && !(selected && box !== "sent");
+        return (
+          <div className="overflow-hidden rounded-3xl border border-[#DCE3F0] bg-white shadow-[0_10px_40px_-18px_rgba(15,42,82,0.35)] lg:flex lg:min-h-[680px]">
+            {/* ── Sidebar ─────────────────────────────────────────────────── */}
+            <aside aria-label="Mailbox" className="flex shrink-0 flex-col gap-4 p-4 text-white lg:w-72" style={{ background: NAVY }}>
+              <div className="flex items-center gap-3 px-1"><Mail className="h-9 w-9" strokeWidth={1.6} /><span className="text-2xl font-semibold tracking-tight">Mail</span></div>
+              <button type="button" aria-label="New email" onClick={() => { setComposing({ key: Date.now() }); setSelected(null); setSettings(false); }} className="inline-flex w-fit items-center gap-3 rounded-full px-7 py-3 text-base font-semibold text-white shadow-lg hover:brightness-110" style={{ background: COLOR }}><PenSquare className="h-5 w-5" /> Compose</button>
 
-      <Status load={depts}>{({ departments }) => departments.length === 0
-        ? <Empty>You do not manage any department mailbox yet. Apply for a department under "Apply for a Section"; a Super Administrator will review it.</Empty>
-        : settings ? <MailSettings call={call} departments={departments.filter((d) => d.key !== "unrouted")} initial={dept} onChanged={reloadLabels} />
-        : (
-          <>
-            <div role="tablist" aria-label="Departments" className="flex gap-2 flex-wrap">
-              {departments.map((d) => (
-                <button key={d.key} role="tab" aria-selected={dept === d.key} onClick={() => { setDept(d.key); setSelected(null); setComposing(null); setLabel(""); }}
-                  className="px-3 py-1.5 rounded-full text-xs font-bold border" style={dept === d.key ? { background: COLOR, color: "#fff", borderColor: COLOR } : { color: "var(--vk-fg)", borderColor: "var(--vk-line)" }}>
-                  {d.name}{d.open > 0 && <span className="ml-1.5 px-1.5 rounded-full text-[10px]" style={{ background: dept === d.key ? "rgba(255,255,255,0.25)" : "#FDECE0", color: dept === d.key ? "#fff" : "#8B0000" }}>{d.open}</span>}
-                </button>))}
-            </div>
-            {dept && dept !== "unrouted" && <p className="text-xs text-fg-muted flex items-center gap-1.5"><Mail className="w-3.5 h-3.5" /> {departments.find((d) => d.key === dept)?.address}</p>}
+              <div role="tablist" aria-label="Departments" className="flex flex-wrap gap-1.5">
+                {departments.map((d) => (
+                  <button key={d.key} role="tab" aria-selected={dept === d.key} onClick={() => { setDept(d.key); setSelected(null); setComposing(null); setLabel(""); }} className="rounded-full px-3 py-1 text-xs font-semibold" style={dept === d.key ? { background: "#fff", color: NAVY } : { background: "rgba(255,255,255,0.12)", color: "#fff" }}>
+                    {d.name}{d.open > 0 && <span className="ml-1.5 rounded-full px-1.5 text-[10px]" style={{ background: dept === d.key ? "#E3ECFF" : "rgba(255,255,255,0.22)", color: dept === d.key ? NAVY : "#fff" }}>{d.open}</span>}
+                  </button>))}
+              </div>
+              {dept && dept !== "unrouted" && cur && <p className="flex items-center gap-1.5 px-1 text-[11px] text-white/70"><Mail className="h-3.5 w-3.5" /> {cur.address}</p>}
 
-            <form role="search" onSubmit={(e) => { e.preventDefault(); setApplied(q); setSelected(null); setComposing(null); }} className="flex gap-2">
-              <label className="relative flex-1"><span className="sr-only">Search mail</span>
-                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-fg-muted" />
-                <input aria-label="Search mail" value={q} onChange={(e) => { setQ(e.target.value); if (e.target.value === "") setApplied(""); }} placeholder="Search mail" title={SEARCH_HELP} className={inputCls + " !pl-9"} /></label>
-              <button type="submit" className="px-3 py-2 rounded-lg text-xs font-bold border border-line text-fg hover:bg-surface-2">Search</button>
-              {searching && <button type="button" onClick={() => { setQ(""); setApplied(""); }} className="px-3 py-2 rounded-lg text-xs font-bold border border-line text-fg-muted hover:bg-surface-2">Clear</button>}
-            </form>
-            {searching && <p className="text-[11px] text-fg-muted">Searching {box === "spam" || box === "trash" || box === "sent" ? BOXES.find((b) => b.key === box)!.label : "all mail"} for: {applied}</p>}
-            {labels.length > 0 && own && (
-              <div role="group" aria-label="Filter by label" className="flex flex-wrap items-center gap-1.5 text-[11px]">
-                <span className="text-fg-muted">Labels:</span>
-                {labels.map((l) => <button key={l.id} type="button" aria-pressed={label === l.id} onClick={() => setLabel(label === l.id ? "" : l.id)} className="rounded-full px-2 py-0.5 font-bold border" style={label === l.id ? { background: l.color, color: "#fff", borderColor: l.color } : { color: l.color, borderColor: l.color }}>{l.name}</button>)}
-              </div>)}
+              <nav role="tablist" aria-label="Boxes" aria-orientation="vertical" className="flex gap-1 overflow-x-auto lg:flex-col lg:gap-0.5 lg:overflow-visible">
+                {BOXES.map(({ key, label: text, icon: Icon }) => {
+                  const n = key === "inbox" ? cur?.open : key === "drafts" ? cur?.drafts : key === "scheduled" ? cur?.scheduled : 0;
+                  const on = box === key && !settings;
+                  return (
+                    <button key={key} role="tab" aria-selected={on} onClick={() => goBox(key)} className="flex shrink-0 items-center gap-2 rounded-full px-3 py-2 text-left text-sm font-medium transition-colors hover:bg-white/10 lg:gap-4 lg:rounded-l-xl lg:rounded-r-full lg:px-4 lg:py-2.5 lg:text-[15px]" style={on ? { background: NAVY_ACTIVE } : undefined}>
+                      <Icon className="h-5 w-5 shrink-0 opacity-90" fill={key === "starred" ? "currentColor" : "none"} /> <span className="flex-1">{text}</span>
+                      {n ? <span className="rounded-full px-2 py-0.5 text-xs font-semibold" style={{ background: key === "inbox" ? COLOR : "transparent", color: "#fff" }}>{n}</span> : null}
+                    </button>);
+                })}
+              </nav>
 
-            <div className="grid lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-4">
-              <section aria-label="Messages" className="rounded-xl border border-line bg-surface overflow-hidden">
-                <div role="tablist" aria-label="Boxes" className="flex items-center gap-1 p-2 border-b border-line text-xs flex-wrap">
-                  {BOXES.map(({ key, label: text, icon: Icon }) => {
-                    const cur = departments.find((d) => d.key === dept);
-                    const n = key === "inbox" ? cur?.open : key === "drafts" ? cur?.drafts : key === "scheduled" ? cur?.scheduled : 0;
-                    return (
-                      <button key={key} role="tab" aria-selected={box === key} onClick={() => goBox(key)} className="inline-flex items-center gap-1 px-2 py-1 rounded-md font-bold" style={box === key ? { background: COLOR, color: "#fff" } : { color: "var(--vk-fg)" }}>
-                        <Icon className="w-3.5 h-3.5" /> {text}{n ? <span className="text-[10px] opacity-80">({n})</span> : null}
-                      </button>);
-                  })}
-                  {box === "inbox" && !searching && (
-                    <select aria-label="Show" value={status} onChange={(e) => setStatus(e.target.value)} className={inputCls + " !w-auto !py-1 ml-auto"}>
-                      <option value="open">Open</option><option value="answered">Answered</option><option value="closed">Closed</option><option value="">All</option>
-                    </select>)}
+              <div className="mt-1 border-t border-white/15 pt-3">
+                <div className="flex items-center justify-between px-1"><span className="text-lg font-medium">Labels</span>
+                  <button type="button" aria-label="New label" aria-expanded={addingLabel} onClick={() => setAddingLabel((v) => !v)} className="rounded-full p-1 hover:bg-white/10"><Plus className="h-5 w-5" /></button></div>
+                {addingLabel && (
+                  <form onSubmit={(e) => { e.preventDefault(); void makeLabel(); }} className="mt-2 flex gap-1.5">
+                    <input aria-label="Label name" value={labelName} onChange={(e) => setLabelName(e.target.value)} maxLength={40} placeholder="Label name" className="min-w-0 flex-1 rounded-lg border-0 bg-white/15 px-3 py-1.5 text-sm text-white placeholder-white/50 outline-none focus:bg-white/25" />
+                    <button type="submit" className="rounded-lg px-3 text-sm font-semibold text-white" style={{ background: COLOR }}>Add</button>
+                  </form>)}
+                <div role="group" aria-label="Filter by label" className="mt-2 flex flex-wrap gap-1 lg:flex-col lg:gap-0.5">
+                  {labels.length === 0 && !addingLabel && <p className="px-3 py-1 text-xs text-white/60">No labels yet.</p>}
+                  {labels.map((l) => (
+                    <button key={l.id} type="button" aria-pressed={label === l.id} onClick={() => { setLabel(label === l.id ? "" : l.id); setSelected(null); setComposing(null); setSettings(false); if (!own) setBox("inbox"); }} className="flex items-center gap-2 rounded-full px-3 py-1.5 text-left text-sm hover:bg-white/10 lg:gap-4 lg:rounded-l-xl lg:rounded-r-full lg:py-2 lg:text-[15px]" style={label === l.id ? { background: NAVY_ACTIVE } : undefined}>
+                      <span className="h-5 w-5 shrink-0 rounded-md" style={{ background: l.color }} /> {l.name}
+                    </button>))}
                 </div>
-                {box === "drafts"
-                  ? <Status load={drafts}>{({ drafts: ds0 }) => { const ds = ds0 ?? []; return ds.length === 0 ? <div className="p-4"><Empty>{EMPTY.drafts}</Empty></div> : (
-                    <ul className="divide-y divide-line max-h-[60vh] overflow-y-auto">{ds.map((d) => (
-                      <li key={d.id}>
-                        <button onClick={() => { if (d.replyKind && d.replyId) { setBox("inbox"); setStatus(""); setSelected({ kind: d.replyKind, id: d.replyId }); setComposing(null); } else { setComposing({ key: Date.now(), draft: d }); setSelected(null); } }} className="w-full text-left p-3 hover:bg-surface-2">
-                          <p className="flex items-center justify-between gap-2 text-sm"><span className="font-semibold text-fg truncate">{d.replyId ? "Reply draft" : d.to || "(no recipient)"}</span><span className="text-[11px] text-fg-muted shrink-0">{when(d.updatedAt)}</span></p>
-                          <p className="text-xs text-fg truncate">{d.subject || "(no subject)"}</p>
-                          <p className="text-[11px] text-fg-muted truncate">{d.body.slice(0, 120)}</p>
-                        </button>
-                      </li>))}</ul>); }}</Status>
-                  : box === "scheduled"
-                  ? <Status load={scheduled}>{({ scheduled: ss0 }) => { const ss = ss0 ?? []; return ss.length === 0 ? <div className="p-4"><Empty>{EMPTY.scheduled}</Empty></div> : (
-                    <ul className="divide-y divide-line max-h-[60vh] overflow-y-auto">{ss.map((s) => (
-                      <li key={s.id} className="p-3 text-sm">
-                        <p className="flex items-center justify-between gap-2"><span className="font-semibold text-fg truncate">To {s.to}</span><span className="text-[11px] text-fg-muted shrink-0">{whenLong(new Date(s.sendAt))}</span></p>
-                        <p className="text-xs text-fg truncate">{s.subject}</p>
-                        <p className="text-[11px] text-fg-muted truncate">{s.preview}</p>
-                        <p className="mt-1 flex items-center gap-2 text-[10px] font-bold" style={{ color: s.status === "failed" ? "#DC2626" : "#B45309" }}>{s.status === "failed" ? `Not sent: ${s.error ?? "it could not be sent"}` : s.status === "sending" ? "Sending now" : `Waiting to be sent · written by ${s.by}`}
-                          {s.status !== "sending" && <button type="button" aria-label={`Cancel the email to ${s.to}`} onClick={async () => { await call(`/scheduled/${s.id}`, { method: "DELETE" }); refresh(); }} className="ml-auto underline text-fg">{s.status === "failed" ? "Remove" : "Cancel"}</button>}</p>
-                      </li>))}</ul>); }}</Status>
-                  : <Status load={msgs}>{({ messages: ms }) => { const messages = ms ?? []; return messages.length === 0 ? <div className="p-4"><Empty>{searching || label ? "Nothing matches." : EMPTY[box]}</Empty></div> : (
-                    <ul className="divide-y divide-line max-h-[60vh] overflow-y-auto">{messages.map((m) => (
-                      <li key={`${m.kind}-${m.id}`}>
-                        <button onClick={() => { setSelected({ kind: m.kind, id: m.id }); setComposing(null); }} className="w-full text-left p-3 hover:bg-surface-2" style={selected?.id === m.id ? { background: "var(--vk-surface-2, #f5f5f5)" } : undefined}>
-                          <p className="flex items-center justify-between gap-2 text-sm"><span className="font-semibold text-fg truncate">{m.starred && <Star className="w-3 h-3 inline mr-1 -mt-0.5" fill="#C9A84C" stroke="#C9A84C" aria-label="Starred" />}{m.fromName}</span><span className="text-[11px] text-fg-muted shrink-0">{when(m.at)}</span></p>
-                          <p className="text-xs text-fg truncate">{m.subject}</p>
-                          <p className="text-[11px] text-fg-muted truncate">{m.preview}</p>
-                          {m.labels && m.labels.length > 0 && <span className="mt-1 flex flex-wrap gap-1">{m.labels.map((l) => <span key={l.id} className="rounded-full px-1.5 py-px text-[9px] font-bold text-white" style={{ background: l.color }}>{l.name}</span>)}</span>}
-                          <p className="text-[10px] mt-1 font-bold" style={{ color: m.status === "open" ? "#B45309" : m.status === "failed" ? "#DC2626" : "#047857" }}>{STATUS_LABEL[m.status] ?? m.status}{m.kind === "web" && box !== "sent" ? " · from the website" : ""}{box === "snoozed" && m.snoozedUntil ? ` · back ${whenLong(new Date(m.snoozedUntil))}` : ""}{box === "spam" && m.spamReason ? ` · ${m.spamReason}` : ""}</p>
-                        </button>
-                      </li>))}</ul>); }}</Status>}
-              </section>
+              </div>
+            </aside>
 
-              <section aria-label="Message" className="rounded-xl border border-line bg-surface p-4 min-h-[16rem]">
-                {composing ? <Compose key={composing.key} call={call} departments={realDepts.length ? realDepts : departments.filter((d) => d.key !== "unrouted")} initial={dept} draft={composing.draft} onSent={(text) => { setComposing(null); if (text) setNotice(text); refresh(); }} onChanged={refresh} />
-                  : selected && box !== "sent" ? <Message key={selected.id} call={call} kind={selected.kind} id={selected.id} labels={labels} onChanged={refresh} onMoved={() => { setSelected(null); refresh(); }} onOpen={(k, i) => setSelected({ kind: k, id: i })} onLabelsChanged={reloadLabels} onNotice={setNotice} />
-                  : <Empty>{box === "sent" ? "Choose a message in the inbox to read it and answer it." : "Choose a message to read it, answer it, or write a new email."}</Empty>}
-              </section>
-            </div>
-          </>)}</Status>
-    </div>
+            {/* ── Main ────────────────────────────────────────────────────── */}
+            <main className="min-w-0 flex-1 bg-white">
+              <div className="flex items-center gap-3 border-b border-[#EEF1F6] px-4 py-3">
+                <form role="search" onSubmit={(e) => { e.preventDefault(); setApplied(q); setSelected(null); setComposing(null); setSettings(false); }} className="flex flex-1 items-center gap-2">
+                  <label className="relative flex-1"><span className="sr-only">Search mail</span>
+                    <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#5B6B88]" />
+                    <input aria-label="Search mail" value={q} onChange={(e) => { setQ(e.target.value); if (e.target.value === "") setApplied(""); }} placeholder="Search in mail…" className="w-full rounded-full border-0 bg-[#EAF0FB] py-3 pl-12 pr-4 text-[15px] text-[#1B2A44] placeholder-[#5B6B88] outline-none focus:bg-white focus:ring-2 focus:ring-[#2F6BFF]/40" /></label>
+                  <button type="submit" className="rounded-full px-4 py-2.5 text-sm font-semibold text-white" style={{ background: COLOR }}>Search</button>
+                  {searching && <button type="button" onClick={() => { setQ(""); setApplied(""); }} className="rounded-full px-3 py-2.5 text-sm font-semibold text-[#4A5A78] hover:bg-[#E8EEF9]">Clear</button>}
+                </form>
+                <button type="button" aria-label="Search help" aria-expanded={help} onClick={() => setHelp((v) => !v)} className={tool}><HelpCircle className="h-6 w-6" /></button>
+                <button type="button" aria-label="Mail settings" aria-pressed={settings} onClick={() => { setSettings((v) => !v); setSelected(null); setComposing(null); }} className={tool}><Settings className="h-6 w-6" /></button>
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white" style={{ background: avatarColor(me?.name ?? me?.username ?? "You") }} title={me?.name ?? me?.username ?? "You"} aria-label="Your account">{initialOf(me?.name ?? me?.username ?? "You")}</span>
+              </div>
+              {help && <div role="note" className="border-b border-[#EEF1F6] bg-[#F6F8FC] px-5 py-3 text-xs text-[#4A5A78]"><p className="font-semibold text-[#1B2A44]">Search all mail with:</p><p className="mt-1 flex flex-wrap gap-1.5">{SEARCH_TIPS.map((t) => <code key={t} className="rounded bg-white px-1.5 py-0.5 text-[#1B2A44] ring-1 ring-[#DCE3F0]">{t}</code>)}</p></div>}
+              {notice && <p role="status" className="mx-4 mt-3 flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm" style={{ background: "#ECFDF5", color: "#065F46", border: "1px solid #A7F3D0" }}><CircleCheck className="h-4 w-4 shrink-0" />{notice}<button type="button" aria-label="Dismiss" onClick={() => setNotice("")} className="ml-auto"><X className="h-4 w-4" /></button></p>}
+              {searching && inList && <p className="px-5 pt-3 text-xs text-[#5B6B88]">Searching {box === "spam" || box === "trash" || box === "sent" ? BOXES.find((b) => b.key === box)!.label : "all mail"} for: {applied}</p>}
+
+              {settings ? <div className="p-5"><MailSettings call={call} departments={realDepts} initial={dept} onChanged={reloadLabels} /></div>
+                : composing ? (
+                  <section aria-label="Message" className="p-5">
+                    <button type="button" onClick={back} aria-label="Back to the list" className="mb-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold text-[#4A5A78] hover:bg-[#E8EEF9]"><ArrowLeft className="h-4 w-4" /> Back</button>
+                    <Compose key={composing.key} call={call} departments={realDepts.length ? realDepts : departments} initial={dept} draft={composing.draft} onSent={(text) => { setComposing(null); if (text) setNotice(text); refresh(); }} onChanged={refresh} />
+                  </section>)
+                : selected && box !== "sent" ? (
+                  <section aria-label="Message" className="p-5">
+                    <button type="button" onClick={back} aria-label="Back to the list" className="mb-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold text-[#4A5A78] hover:bg-[#E8EEF9]"><ArrowLeft className="h-4 w-4" /> Back</button>
+                    <Message key={selected.id} call={call} kind={selected.kind} id={selected.id} labels={labels} onChanged={refresh} onMoved={() => { setSelected(null); refresh(); }} onOpen={(k, i) => setSelected({ kind: k, id: i })} onLabelsChanged={reloadLabels} onNotice={setNotice} />
+                  </section>)
+                : (
+                  <section aria-label="Messages">
+                    {/* toolbar: tick box, refresh, more … and the page counter */}
+                    <div className="flex items-center gap-1 border-b border-[#EEF1F6] px-4 py-2">
+                      {own && <input type="checkbox" aria-label="Select all" checked={shown.length > 0 && shown.every((m) => checked[`${m.kind}:${m.id}`])} onChange={(e) => setChecked(e.target.checked ? Object.fromEntries(shown.map((m) => [`${m.kind}:${m.id}`, true])) : {})} className="mr-2 h-4 w-4 rounded accent-[#2F6BFF]" />}
+                      {tickedKeys.length > 0 ? (
+                        <>
+                          <span className="mr-2 text-sm font-semibold text-[#1B2A44]">{tickedKeys.length} selected</span>
+                          {(box === "spam" || box === "trash") ? <button type="button" onClick={() => void bulk("folder", { folder: "inbox" })} className={bulkBtn}><Undo2 className="h-4 w-4" /> {box === "spam" ? "Not spam" : "Restore"}</button>
+                            : <><button type="button" onClick={() => void bulk("folder", { folder: "spam" })} className={bulkBtn}><ShieldAlert className="h-4 w-4" /> Report spam</button>
+                              <button type="button" onClick={() => void bulk("star", { starred: true })} className={bulkBtn}><Star className="h-4 w-4" /> Star</button>
+                              <button type="button" onClick={() => void bulk("status", { status: "closed" })} className={bulkBtn}><CircleCheck className="h-4 w-4" /> Mark closed</button></>}
+                          {box !== "trash" && <button type="button" onClick={() => void bulk("folder", { folder: "trash" })} className={bulkBtn}><Trash2 className="h-4 w-4" /> Delete</button>}
+                        </>
+                      ) : (
+                        <>
+                          <button type="button" aria-label="Refresh" onClick={refresh} className={tool}><RefreshCw className="h-[18px] w-[18px]" /></button>
+                          <span className="relative">
+                            <button type="button" aria-label="More" aria-expanded={more} onClick={() => setMore((v) => !v)} className={tool}><MoreVertical className="h-[18px] w-[18px]" /></button>
+                            {more && <div role="menu" className="absolute left-0 z-20 mt-1 w-44 rounded-xl border border-[#DCE3F0] bg-white py-1 text-sm shadow-lg">
+                              <button role="menuitem" type="button" onClick={() => { setMore(false); setChecked(Object.fromEntries(shown.map((m) => [`${m.kind}:${m.id}`, true]))); }} className="block w-full px-4 py-2 text-left hover:bg-[#F1F5FD]">Select all</button>
+                              <button role="menuitem" type="button" onClick={() => { setMore(false); setSettings(true); }} className="block w-full px-4 py-2 text-left hover:bg-[#F1F5FD]">Mail settings</button>
+                            </div>}
+                          </span>
+                        </>)}
+                      <span className="ml-auto flex items-center gap-1">
+                        {box === "inbox" && !searching && (
+                          <select aria-label="Show" value={status} onChange={(e) => setStatus(e.target.value)} className={inputCls + " !w-auto !rounded-full !py-1 !text-xs"}>
+                            <option value="open">Open</option><option value="answered">Answered</option><option value="closed">Closed</option><option value="">All</option>
+                          </select>)}
+                        <span className="px-2 text-sm text-[#4A5A78] tabular-nums">{first}–{last} of {total}</span>
+                        <button type="button" aria-label="Newer" disabled={page === 0} onClick={() => setPage((p) => p - 1)} className={tool + " disabled:opacity-30"}><ChevronLeft className="h-5 w-5" /></button>
+                        <button type="button" aria-label="Older" disabled={last >= total} onClick={() => setPage((p) => p + 1)} className={tool + " disabled:opacity-30"}><ChevronRight className="h-5 w-5" /></button>
+                      </span>
+                    </div>
+
+                    {box === "drafts"
+                      ? <Status load={drafts}>{({ drafts: ds0 }) => { const ds = ds0 ?? []; return ds.length === 0 ? <div className="p-6"><Empty>{EMPTY.drafts}</Empty></div> : (
+                        <ul className="max-h-[68vh] overflow-y-auto">{ds.slice(page * PAGE, page * PAGE + PAGE).map((d) => (
+                          <MailRow key={d.id} name={d.replyId ? "Reply draft" : d.to || "(no recipient)"} subject={d.subject || "(no subject)"} preview={d.body.slice(0, 140)} at={d.updatedAt} openLabel={`Open draft: ${d.subject || "(no subject)"}`}
+                            onOpen={() => { if (d.replyKind && d.replyId) { setBox("inbox"); setStatus(""); setSelected({ kind: d.replyKind, id: d.replyId }); setComposing(null); } else { setComposing({ key: Date.now(), draft: d }); setSelected(null); } }} />))}</ul>); }}</Status>
+                      : box === "scheduled"
+                      ? <Status load={scheduled}>{({ scheduled: ss0 }) => { const ss = ss0 ?? []; return ss.length === 0 ? <div className="p-6"><Empty>{EMPTY.scheduled}</Empty></div> : (
+                        <ul className="max-h-[68vh] overflow-y-auto">{ss.slice(page * PAGE, page * PAGE + PAGE).map((s) => (
+                          <MailRow key={s.id} name={`To ${s.to}`} subject={s.subject} preview={s.status === "failed" ? `Not sent: ${s.error ?? "it could not be sent"}` : s.status === "sending" ? "Sending now" : `Waiting to be sent · written by ${s.by}`} at={s.sendAt}
+                            note={<span>{whenLong(new Date(s.sendAt))}</span>}
+                            actions={s.status !== "sending" ? <button type="button" aria-label={`Cancel the email to ${s.to}`} onClick={async () => { await call(`/scheduled/${s.id}`, { method: "DELETE" }); refresh(); }} className="rounded-full px-3 py-1 text-xs font-semibold text-[#1B2A44] ring-1 ring-[#DCE3F0] hover:bg-[#E8EEF9]">{s.status === "failed" ? "Remove" : "Cancel"}</button> : undefined} />))}</ul>); }}</Status>
+                      : <Status load={msgs}>{({ messages: ms }) => { const all = ms ?? []; const rows = all.slice(page * PAGE, page * PAGE + PAGE); return all.length === 0 ? <div className="p-6"><Empty>{searching || label ? "Nothing matches." : EMPTY[box]}</Empty></div> : (
+                        <ul className="max-h-[68vh] overflow-y-auto">{rows.map((m) => (
+                          <MailRow key={`${m.kind}-${m.id}`} name={box === "sent" ? `To ${m.fromEmail}` : m.fromName} subject={m.subject} preview={m.preview} at={m.at} unread={m.status === "open" && box !== "sent"} starred={!!m.starred} labels={m.labels}
+                            checked={!!checked[`${m.kind}:${m.id}`]} onCheck={box === "sent" ? undefined : (on) => setChecked((c) => ({ ...c, [`${m.kind}:${m.id}`]: on }))} onStar={box === "sent" ? undefined : () => void star(m)}
+                            onOpen={box === "sent" ? undefined : () => { setSelected({ kind: m.kind, id: m.id }); setComposing(null); }}
+                            note={[STATUS_LABEL[m.status] && m.status !== "open" ? STATUS_LABEL[m.status] : "", m.kind === "web" && box !== "sent" ? "from the website" : "", box === "snoozed" && m.snoozedUntil ? `back ${whenLong(new Date(m.snoozedUntil))}` : "", box === "spam" && m.spamReason ? m.spamReason : ""].filter(Boolean).join(" · ") || undefined} />))}</ul>); }}</Status>}
+                  </section>)}
+            </main>
+          </div>);
+      })()}</Status>
   );
 }

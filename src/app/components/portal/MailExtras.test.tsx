@@ -97,8 +97,8 @@ describe("settings", () => {
     await click(btn("Mail settings"));
     expect([...document.querySelectorAll('[aria-label="Settings"] [role="tab"]')].map((t) => t.textContent)).toEqual(["Signature", "Templates", "Labels", "Filters", "Out of office", "Notifications"]);
     expect((q('select[aria-label="Settings for department"]') as HTMLSelectElement).value).toBe("sales");
-    expect(q('[aria-label="Boxes"]')).toBeNull();
-    await click(btn("Mail settings")); expect(q('[aria-label="Boxes"]')).toBeTruthy();
+    expect(q("section[aria-label='Messages']")).toBeNull(); expect(q('[aria-label="Boxes"]')).toBeTruthy();                 // the sidebar stays; the list gives way to the settings
+    await click(btn("Mail settings")); expect(q("section[aria-label='Messages']")).toBeTruthy();
   });
 
   it("edits the signature with a live preview, and saves it", async () => {
@@ -186,9 +186,9 @@ describe("labels in the mailbox", () => {
   it("shows labels on messages, filters the list by a label, and clears the filter", async () => {
     mockApi(); listItems = [item({ labels: [URGENT] })]; await render();
     expect(q("section[aria-label='Messages'] ul")!.textContent).toContain("Urgent");
-    const chip = q('[aria-label="Filter by label"] button[aria-pressed="false"]')!; expect(chip.textContent).toBe("Urgent");
+    const chip = q('[aria-label="Filter by label"] button[aria-pressed="false"]')!; expect(chip.textContent!.trim()).toBe("Urgent");
     await click(chip); expect(calls.some((c) => c.url.includes("messages?department=sales&box=inbox") && c.url.includes("&label=l1"))).toBe(true);
-    expect(q('[aria-label="Filter by label"] button[aria-pressed="true"]')!.textContent).toBe("Urgent");
+    expect(q('[aria-label="Filter by label"] button[aria-pressed="true"]')!.textContent!.trim()).toBe("Urgent");
     await click(q('[aria-label="Filter by label"] button[aria-pressed="true"]')); expect(calls.at(-1)!.url).not.toContain("label=l1");
   });
   it("puts a label on the open message and takes it off, saving each choice", async () => {
@@ -213,7 +213,7 @@ describe("snooze and spam notes", () => {
     await click([...document.querySelectorAll('[aria-label="Snooze until"] button')].find((b) => b.textContent?.startsWith("Tomorrow morning")));
     const until = body(sent(`/api/mail/messages/email/${A}/snooze`)[0]).until as string; const t = new Date(until);
     expect([t.getHours(), t.getMinutes()]).toEqual([8, 0]); expect(t.getTime()).toBeGreaterThan(Date.now());
-    expect(host.textContent).toContain("Choose a message to read it");
+    expect(q("section[aria-label='Message']")).toBeNull(); expect(q("section[aria-label='Messages']")).toBeTruthy();
   });
   it("snoozes until a date and time typed in, but not before one is chosen", async () => {
     mockApi(); await render(); await openFirst(); await click(exact("Snooze"));
@@ -256,7 +256,7 @@ describe("writing: templates, schedule send, scheduled box", () => {
     mockApi(); await render(); await openFirst(); await type(q('[aria-label="Your reply"][contenteditable]'), "Will do.");
     await click(exact("Schedule send")); await click([...document.querySelectorAll('[aria-label="Send later"] button')].find((x) => x.textContent?.startsWith("In 1 hour")));
     expect(body(sent("/api/mail/schedule")[0])).toMatchObject({ replyKind: "email", replyId: A, bodyHtml: "<div>Will do.</div>" }); expect(sent("/api/mail/schedule")).toHaveLength(1);
-    expect(host.textContent).toContain("Reply scheduled to send"); expect(host.textContent).toContain("Choose a message to read it");
+    expect(host.textContent).toContain("Reply scheduled to send"); expect(q("section[aria-label='Message']")).toBeNull();
   });
   it("shows what the server says when a time is refused, and keeps the email", async () => {
     mockApi(); await render(); await click(exact("New email")); await type(q('input[aria-label="To"]'), "a@b.co"); await type(q('[aria-label="Message"][contenteditable]'), "Hello there");
@@ -265,7 +265,7 @@ describe("writing: templates, schedule send, scheduled box", () => {
   });
   it("lists emails waiting to be sent, with their time, and cancels one", async () => {
     mockApi(); scheduled = [{ id: "s1", department: "sales", to: "buyer@example.com", subject: "Your quote", preview: "Quote attached.", sendAt: "2026-10-12T06:00:00Z", status: "pending", error: null, by: "sam", replyKind: null, replyId: null, attachments: 0 }, { id: "s2", department: "sales", to: "x@example.com", subject: "Late", preview: "p", sendAt: "2026-10-09T10:00:00Z", status: "failed", error: "The email could not be sent right now.", by: "olga", replyKind: null, replyId: null, attachments: 1 }];
-    await render(); expect(box("Scheduled").textContent).toContain("(2)"); await click(box("Scheduled"));
+    await render(); expect(box("Scheduled").textContent!.trim()).toBe("Scheduled2"); await click(box("Scheduled"));
     expect(calls.some((c) => c.url.includes("/api/mail/scheduled?department=sales"))).toBe(true);
     const t = q("section[aria-label='Messages'] ul")!.textContent!; expect(t).toContain("To buyer@example.com"); expect(t).toContain("Waiting to be sent · written by sam"); expect(t).toContain("Not sent: The email could not be sent right now.");
     await click(exact("Cancel the email to buyer@example.com")); expect(calls.some((c) => c.init?.method === "DELETE" && c.url.endsWith("/api/mail/scheduled/s1"))).toBe(true);
