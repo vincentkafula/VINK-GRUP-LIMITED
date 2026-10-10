@@ -23,8 +23,8 @@ function fakeMeta(opts: { fail?: Partial<Record<"facebook" | "instagram" | "thre
     if (u.includes("graph.facebook.com/v21.0/i1/media_publish")) return json({ id: "ig_post" });
     if (u.includes("graph.facebook.com/v21.0/i1/media")) return opts.fail?.instagram ? json({ error: { message: opts.fail.instagram } }, 400) : json({ id: "ig_container" });
     if (u.includes("graph.facebook.com/v21.0/ig_container")) return json({ status_code: igStatus.shift() ?? "FINISHED" });
-    if (u.includes("graph.threads.net/v21.0/t1/threads_publish")) return json({ id: "th_post" });
-    if (u.includes("graph.threads.net/v21.0/t1/threads")) return opts.fail?.threads ? json({ error: { message: opts.fail.threads } }, 400) : json({ id: "th_container" });
+    if (u.includes("graph.threads.net/v1.0/t1/threads_publish")) return json({ id: "th_post" });
+    if (u.includes("graph.threads.net/v1.0/t1/threads")) return opts.fail?.threads ? json({ error: { message: opts.fail.threads } }, 400) : json({ id: "th_container" });
     return json({ error: { message: "unexpected " + u } }, 404);
   });
   return { calls, fetchImpl: fetchImpl as unknown as typeof fetch };

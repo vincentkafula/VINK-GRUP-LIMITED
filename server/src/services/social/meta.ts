@@ -15,6 +15,7 @@ export interface PostContent { text: string; link?: string | null; imageUrl?: st
 
 export interface MetaConfig {
   graphVersion: string;
+  threadsVersion: string;
   facebook: { pageId: string; token: string } | null;
   instagram: { userId: string; token: string } | null;
   threads: { userId: string; token: string } | null;
@@ -25,6 +26,7 @@ export function metaConfigFromEnv(env: NodeJS.ProcessEnv = process.env): MetaCon
   const pageToken = v("FACEBOOK_PAGE_TOKEN");
   return {
     graphVersion: v("META_GRAPH_VERSION") || "v21.0",
+    threadsVersion: v("THREADS_API_VERSION") || "v1.0",
     facebook: v("FACEBOOK_PAGE_ID") && pageToken ? { pageId: v("FACEBOOK_PAGE_ID"), token: pageToken } : null,
     instagram: v("INSTAGRAM_USER_ID") && (v("INSTAGRAM_ACCESS_TOKEN") || pageToken) ? { userId: v("INSTAGRAM_USER_ID"), token: v("INSTAGRAM_ACCESS_TOKEN") || pageToken } : null,
     threads: v("THREADS_USER_ID") && v("THREADS_ACCESS_TOKEN") ? { userId: v("THREADS_USER_ID"), token: v("THREADS_ACCESS_TOKEN") } : null,
@@ -49,7 +51,8 @@ const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 export function createMetaClient(deps: { config: MetaConfig; fetchImpl?: typeof fetch; wait?: (ms: number) => Promise<void> }) {
   const { config } = deps, doFetch = deps.fetchImpl ?? fetch, wait = deps.wait ?? sleep;
-  const g = (host: string, path: string) => `https://${host}/${config.graphVersion}${path}`;
+  // Threads has its own address and version (v1.0); Facebook and Instagram use the Graph version.
+  const g = (host: string, path: string) => `https://${host}/${host === "graph.threads.net" ? (config.threadsVersion) : config.graphVersion}${path}`;
 
   async function call(url: string, params: Record<string, string>, token: string, method: "POST" | "GET" = "POST"): Promise<{ ok: true; body: Record<string, unknown> } | { ok: false; error: string }> {
     try {
