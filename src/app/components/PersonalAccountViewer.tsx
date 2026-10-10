@@ -7,6 +7,7 @@ import { PersonalAccountApplicationViewer } from "./PersonalAccountApplicationVi
 import { Footer } from "./Footer";
 import { getSession, clearSession } from "../services/apiClient";
 import { formatZAR, useCurrency, setCountryManually } from "../services/currencyStore";
+import { BRAND } from "../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; onNavigate: (category: "creditCard" | "loan" | "invest" | "rewards") => void; onOpenBankingApp?: () => void }
 
@@ -28,8 +29,8 @@ interface Account {
 }
 
 const SUB_NAV = ["Account", "Credit Card", "Loan", "Invest", "Rewards"];
-const GREEN = "#9B1C1C";
-const ORANGE = "#8B0000";
+const GREEN = BRAND.crimsonLight;
+const ORANGE = BRAND.crimson;
 
 const ACCOUNTS: Account[] = [
   {

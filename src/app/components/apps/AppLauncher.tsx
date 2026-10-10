@@ -8,6 +8,7 @@
 import { useState } from "react";
 import { X, Star, Download, ChevronRight, CheckCircle, Smartphone } from "lucide-react";
 import vinkLogo from "../../../imports/LOGO_FINAL.png";
+import { BRAND } from "../../brand";
 
 interface Props {
   isOpen: boolean;
@@ -30,7 +31,7 @@ const APPS = [
     gradient: "linear-gradient(135deg,#5C0A10,#C9A84C)",
     emoji: "🚌",
     badge: "P18Q Hardware",
-    badgeColor: "#C9A84C",
+    badgeColor: BRAND.gold,
     features: [
       "P18Q · Android 12 · Quad-Core 2.0 GHz · 7\" 720×1280",
       "ISO 14443 A/B NFC · Mifare · EMV L1 · Paywave · Paypass",
@@ -54,7 +55,7 @@ const APPS = [
     gradient: "linear-gradient(135deg,#065F46,#10B981)",
     emoji: "📍",
     badge: "iOS & Android",
-    badgeColor: "#10B981",
+    badgeColor: BRAND.ok,
     features: ["Live GPS tracking", "Geofence alerts", "Driver behaviour scoring", "SADC cross-border support", "Theft recovery triggers"],
   },
   {
@@ -71,7 +72,7 @@ const APPS = [
     gradient: "linear-gradient(135deg,#5C0A10,#C9A84C)",
     emoji: "💳",
     badge: "Most Downloaded",
-    badgeColor: "#EF4444",
+    badgeColor: BRAND.bad,
     features: ["Instant money transfers", "Card management & virtual cards", "ManshyaPoints rewards", "Bill payments & airtime", "Investment account access"],
   },
   {
@@ -88,7 +89,7 @@ const APPS = [
     gradient: "linear-gradient(135deg,#5C0A10,#C9A84C)",
     emoji: "💹",
     badge: "Operations",
-    badgeColor: "#5C0A10",
+    badgeColor: BRAND.crimsonDeep,
     features: [
       "Per-tap revenue split (Passenger R0.50 · Driver R0.50 · VINK R1.00)",
       "10% of VINK fee → device investor (R0.10/tap)",
@@ -110,7 +111,7 @@ export function AppLauncher({ isOpen, onClose, onLaunchApp }: Props) {
 
   if (!isOpen) return null;
 
-  const P = "#5C0A10";
+  const P = BRAND.crimsonDeep;
 
   if (selectedApp) {
     return (
@@ -141,7 +142,7 @@ export function AppLauncher({ isOpen, onClose, onLaunchApp }: Props) {
               <div className="flex items-center gap-2 mt-2">
                 <div className="flex gap-0.5">
                   {[1,2,3,4,5].map(s => (
-                    <Star key={s} className="w-3 h-3" fill={s <= Math.round(selectedApp.rating) ? "#C9A84C" : "transparent"} stroke="#C9A84C" />
+                    <Star key={s} className="w-3 h-3" fill={s <= Math.round(selectedApp.rating) ? BRAND.gold : "transparent"} stroke={BRAND.gold} />
                   ))}
                 </div>
                 <span className="text-white/50 text-xs">{selectedApp.rating} ({selectedApp.reviews} ratings)</span>
@@ -293,7 +294,7 @@ export function AppLauncher({ isOpen, onClose, onLaunchApp }: Props) {
                 <div className="flex items-center gap-3 mt-2">
                   <div className="flex gap-0.5">
                     {[1,2,3,4,5].map(s => (
-                      <Star key={s} className="w-2.5 h-2.5" fill={s <= Math.round(app.rating) ? "#C9A84C" : "transparent"} stroke="#C9A84C" />
+                      <Star key={s} className="w-2.5 h-2.5" fill={s <= Math.round(app.rating) ? BRAND.gold : "transparent"} stroke={BRAND.gold} />
                     ))}
                   </div>
                   <span className="text-white/40 text-[10px]">{app.rating}</span>

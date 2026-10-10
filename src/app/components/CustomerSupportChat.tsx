@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { MessageCircle, X, Send, Paperclip, Phone, Video, ChevronDown, Bot, User, Clock, CheckCheck, AlertCircle, Star } from "lucide-react";
+import { BRAND } from "../brand";
 
-const P = "#5C0A10";
-const GOLD = "#C9A84C";
+const P = BRAND.crimsonDeep;
+const GOLD = BRAND.gold;
 
 type MessageRole = "user" | "agent" | "bot" | "system";
 
@@ -52,12 +53,12 @@ const BOT_RESPONSES: Record<string, string> = {
 };
 
 const CATEGORIES = [
-  { label: "Account", color: "#3B82F6" },
+  { label: "Account", color: BRAND.info },
   { label: "Cards", color: "var(--vk-crimson-text)" },
   { label: "Loans", color: "#34A853" },
-  { label: "Travel", color: "#F59E0B" },
-  { label: "Technical", color: "#10B981" },
-  { label: "Complaint", color: "#EF4444" },
+  { label: "Travel", color: BRAND.warn },
+  { label: "Technical", color: BRAND.ok },
+  { label: "Complaint", color: BRAND.bad },
 ];
 
 type ChatView = "launcher" | "chat" | "new_ticket" | "my_tickets";
@@ -373,7 +374,7 @@ export function CustomerSupportChat() {
                 <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold flex-shrink-0"
                   style={{
                     background: t.status === "resolved" || t.status === "closed" ? "#10B98122" : `${GOLD}22`,
-                    color: t.status === "resolved" || t.status === "closed" ? "#10B981" : GOLD,
+                    color: t.status === "resolved" || t.status === "closed" ? BRAND.ok : GOLD,
                   }}>
                   {t.status.replace("_", " ")}
                 </span>

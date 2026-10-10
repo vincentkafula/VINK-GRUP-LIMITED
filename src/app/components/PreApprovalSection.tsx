@@ -2,6 +2,7 @@ import { useState } from "react";
 import { CheckCircle, CreditCard, TrendingUp, Clock, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 import { publicApi } from "../services/apiClient";
+import { BRAND } from "../brand";
 
 const STEPS = [
   { icon: <TrendingUp className="w-4 h-4"/>, label: "Answer 3 quick questions" },
@@ -9,7 +10,7 @@ const STEPS = [
   { icon: <CreditCard className="w-4 h-4"/>, label: "Apply with one tap" },
 ];
 
-const P = "#8B0000";
+const P = BRAND.crimson;
 
 interface CreditResult {
   score: number;
@@ -40,7 +41,7 @@ export function PreApprovalSection() {
     }
   };
 
-  const scoreColor = (s: number) => s >= 750 ? "#10B981" : s >= 650 ? "#3B82F6" : s >= 550 ? "#F59E0B" : "#EF4444";
+  const scoreColor = (s: number) => s >= 750 ? BRAND.ok : s >= 650 ? BRAND.info : s >= 550 ? BRAND.warn : BRAND.bad;
 
   return (
     <section className="py-10 sm:py-14" style={{ background: "var(--vk-surface-2)" }}>
@@ -76,7 +77,7 @@ export function PreApprovalSection() {
                 {result.eligible.map((e, i) => (
                   <div key={i} className="flex items-center gap-3 p-2.5 rounded-lg border"
                     style={{ borderColor: e.approved ? "var(--vk-ok-bg)" : "var(--vk-bad-bg)", background: e.approved ? "color-mix(in srgb, #F0FDF4 var(--vk-wash), var(--vk-surface))" : "color-mix(in srgb, #FFF5F5 var(--vk-wash), var(--vk-surface))" }}>
-                    <span style={{ color: e.approved ? "#10B981" : "#EF4444" }} className="text-base">{e.approved ? "✓" : "✗"}</span>
+                    <span style={{ color: e.approved ? BRAND.ok : BRAND.bad }} className="text-base">{e.approved ? "✓" : "✗"}</span>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-semibold text-fg">{e.product}</p>
                       <p className="text-[10px] text-fg-muted">{e.reason}</p>
@@ -109,7 +110,7 @@ export function PreApprovalSection() {
               <svg viewBox="0 0 40 40" className="w-7 h-7" fill="none">
                 <circle cx="20" cy="14" r="6" stroke={P} strokeWidth="2.2"/>
                 <path d="M8 36 C8 28 13 24 20 24 C27 24 32 28 32 36" stroke={P} strokeWidth="2.2" strokeLinecap="round"/>
-                <path d="M26 20 L28 22 L33 17" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M26 20 L28 22 L33 17" stroke={BRAND.ok} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
             <span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded mb-3"
@@ -151,10 +152,10 @@ export function PreApprovalSection() {
             <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform"
               style={{ background: "linear-gradient(135deg,color-mix(in srgb, #DBEAFE var(--vk-wash), var(--vk-surface)),#BFDBFE)" }}>
               <svg viewBox="0 0 40 40" className="w-7 h-7" fill="none">
-                <rect x="7" y="10" width="26" height="20" rx="3" stroke="#3B82F6" strokeWidth="2.2"/>
-                <line x1="7" y1="17" x2="33" y2="17" stroke="#3B82F6" strokeWidth="2"/>
-                <rect x="10" y="21" width="7" height="5" rx="1.5" fill="#3B82F6"/>
-                <rect x="21" y="21" width="10" height="5" rx="1.5" fill="#3B82F6" opacity="0.35"/>
+                <rect x="7" y="10" width="26" height="20" rx="3" stroke={BRAND.info} strokeWidth="2.2"/>
+                <line x1="7" y1="17" x2="33" y2="17" stroke={BRAND.info} strokeWidth="2"/>
+                <rect x="10" y="21" width="7" height="5" rx="1.5" fill={BRAND.info}/>
+                <rect x="21" y="21" width="10" height="5" rx="1.5" fill={BRAND.info} opacity="0.35"/>
               </svg>
             </div>
             <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded mb-3"

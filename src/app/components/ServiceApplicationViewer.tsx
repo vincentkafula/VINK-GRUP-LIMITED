@@ -21,6 +21,7 @@ import { applicationsApi, otpApi } from "../services/applicationsApi";
 import { useFormValidation, validators } from "../hooks/useFormValidation";
 import { InlineError } from "./ErrorBoundary";
 import { Footer } from "./Footer";
+import { BRAND } from "../brand";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type ServiceType = "invest" | "rewards" | "account";
@@ -64,7 +65,7 @@ const SERVICE_CONFIG: Record<ServiceType, {
     successBody:   "Your VINK finance account is active. Your VINK card will be delivered to your registered address within 5–7 business days.",
     accountLabel:  "Account number",
     accountPrefix: "VINK-ACC",
-    accentColor:   "#8B0000",
+    accentColor:   BRAND.crimson,
   },
 };
 

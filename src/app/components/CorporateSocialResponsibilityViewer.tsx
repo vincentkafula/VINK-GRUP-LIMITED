@@ -7,10 +7,11 @@ import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { Footer } from "./Footer";
 import { TABS, type Block, type Tab } from "./socialResponsibilityContent";
 import { usePageTitle } from "./ds";
+import { BRAND } from "../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; onNavigate: (item: string) => void; }
 
-const P = "#5C0A10";
+const P = BRAND.crimsonDeep;
 const CORPORATE_SUB_NAV = ["Account", "Solutions & Credit Cards", "Loan", "Social Responsibility"];
 
 /** Icon and one-line summary for each tab, keyed by the tab label. */
@@ -265,7 +266,7 @@ export function CorporateSocialResponsibilityViewer({ isOpen, onClose, onNavigat
           {sections.map((s) => (
             <section key={s.title} id={slug(s.title)} aria-labelledby={slug(s.title) + "-h"} className="scroll-mt-32 space-y-4 rounded-2xl border border-line bg-surface p-6 shadow-card">
               <h3 id={slug(s.title) + "-h"} className="flex items-center gap-3 text-lg font-bold text-fg">
-                <span aria-hidden="true" className="h-5 w-1 rounded-full" style={{ background: "#C9A84C" }} />
+                <span aria-hidden="true" className="h-5 w-1 rounded-full" style={{ background: BRAND.gold }} />
                 {s.title}
               </h3>
               {s.blocks.map((b, i) => <BlockView key={i} b={b} onClose={onClose} />)}
@@ -295,7 +296,7 @@ export function CorporateSocialResponsibilityViewer({ isOpen, onClose, onNavigat
               <p className="mt-1 text-sm text-white/80">Businesses, property owners, NGOs and community organisations: get in touch and work with us from day one.</p>
             </div>
             <div className="mt-4 flex flex-wrap gap-3 md:mt-0 md:flex-shrink-0">
-              <button type="button" onClick={() => { onClose(); contact("Register your interest"); }} className="inline-flex h-11 items-center rounded-full px-6 text-sm font-semibold" style={{ background: "#C9A84C", color: "#14161d" }}>Register your interest</button>
+              <button type="button" onClick={() => { onClose(); contact("Register your interest"); }} className="inline-flex h-11 items-center rounded-full px-6 text-sm font-semibold" style={{ background: BRAND.gold, color: "#14161d" }}>Register your interest</button>
               <button type="button" onClick={() => { onClose(); contact("Become a partner"); }} className="inline-flex h-11 items-center rounded-full border-2 border-white/60 px-6 text-sm font-semibold">Become a partner</button>
             </div>
           </div>

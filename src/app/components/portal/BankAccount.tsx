@@ -3,6 +3,7 @@ import { Landmark, Copy, Check, ShieldCheck, Clock, TriangleAlert, Plus, X } fro
 import { SectionPanel, TableCard, Badge } from "../dashboards/DashboardShell";
 import { portalClient, useLoad, Status, Empty, ActionButton, Field, inputCls, rand, when } from "./ui";
 import { businessProblem, type BankRole, type HolderType } from "./bankRules";
+import { BRAND } from "../../brand";
 
 /* ───────────── what the server returns ───────────── */
 export interface BankLink {
@@ -18,9 +19,9 @@ interface Tx { at: string; type: string; description: string; amount: number; ba
 const CHANGED = "vink:bank-changed";
 const announceChange = () => window.dispatchEvent(new Event(CHANGED));
 const STATUS: Record<BankLink["status"], { text: string; color: string; icon: typeof Check }> = {
-  verified: { text: "Verified", color: "#10B981", icon: ShieldCheck },
-  pending_review: { text: "Pending review", color: "#F59E0B", icon: Clock },
-  rejected: { text: "Rejected", color: "#EF4444", icon: TriangleAlert },
+  verified: { text: "Verified", color: BRAND.ok, icon: ShieldCheck },
+  pending_review: { text: "Pending review", color: BRAND.warn, icon: Clock },
+  rejected: { text: "Rejected", color: BRAND.bad, icon: TriangleAlert },
 };
 
 /** Loads this dashboard's bank info, and reloads whenever any bank component announces a change. */

@@ -7,6 +7,7 @@ import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { authApi } from "../services/apiClient";
 import { rbacApi } from "../services/apiClient";
 import { demoLogin } from "../services/demoMode";
+import { BRAND } from "../brand";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -322,7 +323,7 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
                       checked={remember}
                       onChange={(e) => setRemember(e.target.checked)}
                       className="w-3.5 h-3.5"
-                      style={{ accentColor: "#2E0B10" }}
+                      style={{ accentColor: BRAND.crimsonInk }}
                     />
                     Remember username
                   </label>
@@ -369,7 +370,7 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
         {/* ── Footer ── */}
         <div
           className="flex-shrink-0 px-6 py-3 flex flex-col sm:flex-row items-center justify-between gap-2"
-          style={{ background: "#2E0B10", borderTop: "1px solid rgba(255,255,255,0.08)" }}
+          style={{ background: BRAND.crimsonInk, borderTop: "1px solid rgba(255,255,255,0.08)" }}
         >
           <p className="text-white/40 text-[11px] text-center sm:text-left">
             © Vink Group. Registered financial services provider.

@@ -3,9 +3,10 @@ import { X, ArrowLeftRight, RefreshCw, TriangleAlert, Info } from "lucide-react"
 import vinkLogo from "../../../imports/LOGO_FINAL.png";
 import { Footer } from "../Footer";
 import { useLiveRates, convertAt, formatRate, formatMoney, currencyName, PRIORITY } from "../../services/liveRates";
+import { BRAND } from "../../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; }
-const GOLD = "#C9A84C";
+const GOLD = BRAND.gold;
 const GOLD_SOFT = "#EBD592";
 
 /** The currencies shown in the rate table, in this order, when the source has them. */

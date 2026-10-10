@@ -7,6 +7,7 @@ import { authApi } from "../services/apiClient";
 import { COUNTRIES, provincesForCountry, alpha2ForCountry, idDocumentTypesForCountry, NATIONALITIES, callingCodeForCountry } from "../data/countries";
 import { validatePostalCode, getCountryByCode, getPostalLabel } from "postal-code-checker";
 import { API_BASE } from "../services/config";
+import { BRAND } from "../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; onGoToDashboard?: () => void; /** The banking account the applicant picked before opening the form. */ initialAccountType?: string; }
 
@@ -465,7 +466,7 @@ function Step4({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () 
       <SectionHead title="Biometrics & Selfie" sub="Section 4 — Fingerprint and selfie confirmation required" />
 
       <div className="border-2 border-dashed rounded-2xl p-8 text-center transition-colors"
-        style={{ borderColor: fp ? "#10B981" : "var(--vk-line)", background: fp ? "color-mix(in srgb, #F0FDF4 var(--vk-wash), var(--vk-surface))" : "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" }}>
+        style={{ borderColor: fp ? BRAND.ok : "var(--vk-line)", background: fp ? "color-mix(in srgb, #F0FDF4 var(--vk-wash), var(--vk-surface))" : "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" }}>
         {!fp ? (
           <>
             <div className="text-5xl mb-3">👆</div>
@@ -487,7 +488,7 @@ function Step4({ onNext, onBack, updateForm }: { onNext: () => void; onBack: () 
       </div>
 
       <div className="border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-colors"
-        style={{ borderColor: selfie ? "#10B981" : "var(--vk-line)", background: selfie ? "color-mix(in srgb, #F0FDF4 var(--vk-wash), var(--vk-surface))" : "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" }}
+        style={{ borderColor: selfie ? BRAND.ok : "var(--vk-line)", background: selfie ? "color-mix(in srgb, #F0FDF4 var(--vk-wash), var(--vk-surface))" : "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" }}
         onClick={() => !selfie && fileRef.current?.click()}>
         {!selfie ? (
           <>
@@ -545,7 +546,7 @@ function Step5({ onNext, onBack, updateForm, idType }: { onNext: () => void; onB
         {DOCS.map(d => (
           <label key={d.key}
             className="flex items-center justify-between p-4 bg-surface border rounded-xl cursor-pointer hover:bg-emerald-50 transition-colors"
-            style={{ borderColor: uploaded[d.key] ? "#10B981" : "var(--vk-line)" }}>
+            style={{ borderColor: uploaded[d.key] ? BRAND.ok : "var(--vk-line)" }}>
             <div className="flex items-center gap-3">
               {uploaded[d.key]
                 ? <CheckCircle className="w-5 h-5 flex-shrink-0 text-green-500" />
@@ -685,7 +686,7 @@ function Step7({ onClose, onGoToDashboard, referenceNumber, accountNumber, login
 
       {/* Banking app login details */}
       {loginCreated ? (
-        <div className="border rounded-xl p-5 bg-surface" style={{ borderColor: "#10B981" }}>
+        <div className="border rounded-xl p-5 bg-surface" style={{ borderColor: BRAND.ok }}>
           <div className="flex items-center gap-2 mb-3">
             <CheckCircle className="w-4 h-4 text-green-500" />
             <p className="text-[10px] font-bold uppercase tracking-wider text-fg-muted">YOUR VINK BANKING APP LOGIN</p>
@@ -697,9 +698,9 @@ function Step7({ onClose, onGoToDashboard, referenceNumber, accountNumber, login
           </div>
         </div>
       ) : (
-        <div className="border rounded-xl p-5 bg-surface" style={{ borderColor: "#F59E0B" }}>
+        <div className="border rounded-xl p-5 bg-surface" style={{ borderColor: BRAND.warn }}>
           <div className="flex items-center gap-2 mb-2">
-            <AlertTriangle className="w-4 h-4" style={{ color: "#F59E0B" }} />
+            <AlertTriangle className="w-4 h-4" style={{ color: BRAND.warn }} />
             <p className="text-[10px] font-bold uppercase tracking-wider text-fg-muted">BANKING APP LOGIN</p>
           </div>
           <p className="text-xs text-fg-muted leading-relaxed">

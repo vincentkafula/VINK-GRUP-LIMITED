@@ -1,10 +1,11 @@
 import { X, Smartphone, Globe, MessageSquare, CreditCard } from "lucide-react";
 import vinkLogo from "../../../imports/LOGO_FINAL.png";
 import { Footer } from "../Footer";
+import { BRAND } from "../../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; }
-const P = "#5C0A10";
-const GOLD = "#C9A84C";
+const P = BRAND.crimsonDeep;
+const GOLD = BRAND.gold;
 
 const CHANNELS = [
   { icon: <Smartphone className="w-6 h-6" />, title: "VINK App", desc: "The primary way to manage your account — check your balance, view transactions in real time, freeze your card, and apply for new products. Available on iOS and Android at launch." },

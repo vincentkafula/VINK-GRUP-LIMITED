@@ -2,21 +2,22 @@ import { useState } from "react";
 import { X, FileText, Download, BarChart3 } from "lucide-react";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { Footer } from "./Footer";
+import { BRAND } from "../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
-const P  = "#5C0A10";
+const P  = BRAND.crimsonDeep;
 const PD = "#0C0E14";
-const GOLD = "#C9A84C";
+const GOLD = BRAND.gold;
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
 const SELLER_PILLS = ["Integrity", "Commitment", "Performance", "Loyalty", "Insight"];
 
 const KPI_CARDS = [
-  { label: "Addressable Market", value: "R11B", sub: "Estimated annual TAM across the national taxi network", color: "#10B981" },
-  { label: "Revenue Model", value: "Per-Tap", sub: "R0.50–R1.00 per transaction, scaling with network volume", color: "#3B82F6" },
-  { label: "Target Growth", value: "Multi-Year", sub: "Detailed year-by-year projections available on request", color: "#C9A84C" },
+  { label: "Addressable Market", value: "R11B", sub: "Estimated annual TAM across the national taxi network", color: BRAND.ok },
+  { label: "Revenue Model", value: "Per-Tap", sub: "R0.50–R1.00 per transaction, scaling with network volume", color: BRAND.info },
+  { label: "Target Growth", value: "Multi-Year", sub: "Detailed year-by-year projections available on request", color: BRAND.gold },
 ];
 
 const REASONS = [
@@ -57,10 +58,10 @@ const DOCS: { name: string; size: string; date: string }[] = [
 
 const BOARD_MEMBERS = [
   { name: "Vincent Kafula",       role: "Founder & Chief Executive Officer",    initial: "VK", color: "var(--vk-crimson-text)" },
-  { name: "Siyasanga Mahlulo",    role: "Chief Executive Officer (Operations)", initial: "SM", color: "#3B82F6" },
-  { name: "Thabo Dlamini",        role: "Chief Financial Officer",              initial: "TD", color: "#10B981" },
+  { name: "Siyasanga Mahlulo",    role: "Chief Executive Officer (Operations)", initial: "SM", color: BRAND.info },
+  { name: "Thabo Dlamini",        role: "Chief Financial Officer",              initial: "TD", color: BRAND.ok },
   { name: "Priya Naidoo",         role: "Chief Operating Officer",              initial: "PN", color: "#34A853" },
-  { name: "Lindiwe Mokoena",      role: "Independent Non-Exec Director",        initial: "LM", color: "#EF4444" },
+  { name: "Lindiwe Mokoena",      role: "Independent Non-Exec Director",        initial: "LM", color: BRAND.bad },
   { name: "Sipho Khumalo",        role: "Board Secretary & Compliance",         initial: "SK", color: "#06B6D4" },
 ];
 
@@ -70,11 +71,11 @@ const MINI_CHART = [1.44,1.62,1.55,1.80,2.10,1.95,2.30,2.45,2.20,2.50,2.38,2.60]
 
 const MANAGEMENT_TEAM = [
   { name: "Vincent Kafula",      title: "Founder & CEO",                       initial: "VK", color: "var(--vk-crimson-text)", province: "Cape Town, Western Cape" },
-  { name: "Siyasanga Mahlulo",   title: "Chief Executive Officer (Operations)",initial: "SM", color: "#3B82F6", province: "Cape Town, Western Cape" },
-  { name: "Thabo Dlamini",       title: "Chief Financial Officer",             initial: "TD", color: "#10B981", province: "Gauteng" },
+  { name: "Siyasanga Mahlulo",   title: "Chief Executive Officer (Operations)",initial: "SM", color: BRAND.info, province: "Cape Town, Western Cape" },
+  { name: "Thabo Dlamini",       title: "Chief Financial Officer",             initial: "TD", color: BRAND.ok, province: "Gauteng" },
   { name: "Priya Naidoo",        title: "Chief Operating Officer",             initial: "PN", color: "#34A853", province: "KwaZulu-Natal" },
-  { name: "James van der Berg",  title: "Chief Risk Officer",                  initial: "JV", color: "#F59E0B", province: "Western Cape" },
-  { name: "Lindiwe Mokoena",     title: "Chief People Officer",                initial: "LM", color: "#EF4444", province: "Gauteng" },
+  { name: "James van der Berg",  title: "Chief Risk Officer",                  initial: "JV", color: BRAND.warn, province: "Western Cape" },
+  { name: "Lindiwe Mokoena",     title: "Chief People Officer",                initial: "LM", color: BRAND.bad, province: "Gauteng" },
   { name: "Sipho Khumalo",       title: "Chief Technology Officer",            initial: "SK", color: "#06B6D4", province: "Gauteng" },
   { name: "Amahle Zulu",         title: "Chief Marketing Officer",             initial: "AZ", color: "#EC4899", province: "KwaZulu-Natal" },
 ];
@@ -83,11 +84,11 @@ const COMMITTEES = [
   {
     name: "AUDIT COMMITTEE",
     color: "#EDE7F6",
-    borderColor: "#C9A84C",
+    borderColor: BRAND.gold,
     members: [
-      { initial: "PD", name: "Pieter Du Plessis", role: "Chair",   province: "Western Cape",   color: "#C9A84C" },
-      { initial: "RS", name: "Reza Solomon",       role: "Member",  province: "KwaZulu-Natal",  color: "#C9A84C" },
-      { initial: "AM", name: "Amahle Mokoena",     role: "Member",  province: "Gauteng",         color: "#C9A84C" },
+      { initial: "PD", name: "Pieter Du Plessis", role: "Chair",   province: "Western Cape",   color: BRAND.gold },
+      { initial: "RS", name: "Reza Solomon",       role: "Member",  province: "KwaZulu-Natal",  color: BRAND.gold },
+      { initial: "AM", name: "Amahle Mokoena",     role: "Member",  province: "Gauteng",         color: BRAND.gold },
     ],
   },
   {
@@ -166,8 +167,8 @@ function Sparkline({ data }: { data: number[] }) {
   }).join(" ");
   return (
     <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
-      <polyline points={pts} fill="none" stroke="#3B82F6" strokeWidth="2" strokeLinejoin="round" />
-      <circle cx={pts.split(" ").pop()!.split(",")[0]} cy={pts.split(" ").pop()!.split(",")[1]} r="4" fill="#3B82F6" />
+      <polyline points={pts} fill="none" stroke={BRAND.info} strokeWidth="2" strokeLinejoin="round" />
+      <circle cx={pts.split(" ").pop()!.split(",")[0]} cy={pts.split(" ").pop()!.split(",")[1]} r="4" fill={BRAND.info} />
     </svg>
   );
 }
@@ -299,7 +300,7 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
             {INVESTOR_NEWS.map((n, i) => (
               <div key={i} className="bg-surface rounded-xl border border-line flex items-center gap-4 p-4 hover:shadow-sm transition-shadow cursor-pointer">
                 <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "var(--vk-bad-bg)" }}>
-                  <FileText className="w-5 h-5" style={{ color: "#EF4444" }} />
+                  <FileText className="w-5 h-5" style={{ color: BRAND.bad }} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-fg leading-snug">{n.title}</p>

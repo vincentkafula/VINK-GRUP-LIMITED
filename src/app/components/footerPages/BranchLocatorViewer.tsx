@@ -1,9 +1,10 @@
 import { X, MapPin, Clock, Phone } from "lucide-react";
 import vinkLogo from "../../../imports/LOGO_FINAL.png";
 import { Footer } from "../Footer";
+import { BRAND } from "../../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; }
-const P = "#5C0A10";
+const P = BRAND.crimsonDeep;
 
 const AGENT_NETWORKS = [
   { name: "Retail and spaza-shop agents (planned)", icon: "🏪", cover: "Western Cape first; locations announced before launch", services: "Card recharge and cash services, once we are live" },

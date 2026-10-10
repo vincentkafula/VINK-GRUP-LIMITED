@@ -14,12 +14,13 @@ import { OpsPanel } from "./portal/OpsPanel";
 import { DepartmentsPanel } from "./portal/DepartmentsPanel";
 import { DEPARTMENTS, SECTION_ALIASES } from "../data/departments";
 import { rbacApi, jobsApi, getSession, getToken, type SectionApplication, type ManagerRecord, type AuditEntry, type JobApplication } from "../services/apiClient";
+import { BRAND } from "../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; adminName?: string; adminRole?: string; role?: string }
 
-const GREEN = "#C9A84C";
-const ORANGE = "#8B0000";
-const PURPLE = "#8B0000";
+const GREEN = BRAND.gold;
+const ORANGE = BRAND.crimson;
+const PURPLE = BRAND.crimson;
 
 // One distinct, meaningful color per module rather than alternating between
 // two -- this is what actually makes a module grid read as "professional":
@@ -895,11 +896,11 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
 
 function JobStatusBadge({ status }: { status: string }) {
   const cfg: Record<string, { label: string; bg: string; color: string }> = {
-    submitted: { label: "New", bg: "var(--vk-warn-bg)", color: "#F59E0B" },
-    under_review: { label: "Under Review", bg: "var(--vk-info-bg)", color: "#3B82F6" },
-    interview: { label: "Interview", bg: "var(--vk-info-bg)", color: "#3B82F6" },
+    submitted: { label: "New", bg: "var(--vk-warn-bg)", color: BRAND.warn },
+    under_review: { label: "Under Review", bg: "var(--vk-info-bg)", color: BRAND.info },
+    interview: { label: "Interview", bg: "var(--vk-info-bg)", color: BRAND.info },
     offered: { label: "Approved", bg: "#E9F7EF", color: GREEN },
-    rejected: { label: "Rejected", bg: "var(--vk-bad-bg)", color: "#EF4444" },
+    rejected: { label: "Rejected", bg: "var(--vk-bad-bg)", color: BRAND.bad },
     withdrawn: { label: "Withdrawn", bg: "var(--vk-surface-2)", color: "var(--vk-fg-muted)" },
   };
   const c = cfg[status] ?? cfg.submitted;

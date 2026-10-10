@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { X, LayoutGrid, ShieldAlert, RefreshCw, Smartphone, Store, ShoppingCart, CheckCircle2, AlertTriangle, Receipt } from "lucide-react";
 import { getBankToken } from "../services/bankingApi";
+import { BRAND } from "../brand";
 
 /**
  * Single-pane-of-glass overview across every device fleet in the VINK
@@ -77,7 +78,7 @@ export function ControlCentreViewer({ isOpen, onClose, onOpenTerminalManagement 
       if (firstError) setError(firstError.error ?? "Could not load one or more fleets");
 
       setFleets([
-        summarize("Taxi AFC Terminals", Smartphone, "#2E0B10", taxiTerminals.data ?? [], taxiFaults.data ?? []),
+        summarize("Taxi AFC Terminals", Smartphone, BRAND.crimsonInk, taxiTerminals.data ?? [], taxiFaults.data ?? []),
         summarize("Retail Card Machines", Store, "#1E3A8A", retailTerminals.data ?? [], retailFaults.data ?? []),
         summarize("Till Devices", ShoppingCart, "#065F46", tillTerminals.data ?? [], tillFaults.data ?? []),
       ]);

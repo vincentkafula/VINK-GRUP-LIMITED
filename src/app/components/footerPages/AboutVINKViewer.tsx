@@ -6,11 +6,12 @@ import {
 import vinkLogo from "../../../imports/LOGO_FINAL.png";
 import { Footer } from "../Footer";
 import { usePageTitle } from "../ds";
+import { BRAND } from "../../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
-const P = "#5C0A10";
-const GOLD = "#C9A84C";
+const P = BRAND.crimsonDeep;
+const GOLD = BRAND.gold;
 
 const STATS = [
   { v: "15M", l: "daily taxi commuters in SA (the market)" },

@@ -1,10 +1,11 @@
 import { X, CheckCircle } from "lucide-react";
 import vinkLogo from "../../../imports/LOGO_FINAL.png";
 import { Footer } from "../Footer";
+import { BRAND } from "../../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; }
-const P = "#5C0A10";
-const GOLD = "#C9A84C";
+const P = BRAND.crimsonDeep;
+const GOLD = BRAND.gold;
 
 const REASONS = [
   { icon: "💳", title: "Lowest taxi fare fee in SA", desc: "Just R0.50 per transaction — no bank charges more in the taxi industry" },
@@ -75,7 +76,7 @@ export function SwitchToVINKViewer({ isOpen, onClose }: Props) {
               { t: "Salary redirect",              d: "One letter to your employer's payroll — VINK provides the template." },
             ].map((item, i) => (
               <div key={i} className="flex items-start gap-3 bg-surface rounded-xl p-4 border border-white/50">
-                <CheckCircle className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: "#10B981" }} />
+                <CheckCircle className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: BRAND.ok }} />
                 <div>
                   <p className="font-semibold text-fg text-sm">{item.t}</p>
                   <p className="text-fg-muted text-xs mt-0.5">{item.d}</p>

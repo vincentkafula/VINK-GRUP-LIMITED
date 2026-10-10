@@ -1,5 +1,6 @@
 import { X, Search, Phone, Mail, MessageCircle, ChevronRight, MapPin } from "lucide-react";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
+import { BRAND } from "../brand";
 
 // Every link here goes to the Contact Us page: the product pages behind these labels are not separate screens.
 const goContact = (onClose: () => void) => (e: { preventDefault: () => void }) => {
@@ -41,9 +42,9 @@ const LEGAL_LINKS = ["Privacy Policy", "Terms of Use", "Advertiser Disclosure", 
 
 const CONTACT_CHANNELS = [
   { icon: <Phone className="w-5 h-5" />, label: "Call Us", value: "0800 VINK (8465)", sub: "Mon–Fri 08:00–20:00 | Sat 09:00–14:00", color: "var(--vk-crimson-text)" },
-  { icon: <MessageCircle className="w-5 h-5" />, label: "Live Chat", value: "Chat on VINK App", sub: "Available 24/7", color: "#10B981" },
-  { icon: <Mail className="w-5 h-5" />, label: "Email Support", value: "support@vink.co.za", sub: "Reply within 1–2 business days", color: "#3B82F6" },
-  { icon: <MapPin className="w-5 h-5" />, label: "Visit Us", value: "8 Rose Street, Cape Town CBD", sub: "By appointment", color: "#F59E0B" },
+  { icon: <MessageCircle className="w-5 h-5" />, label: "Live Chat", value: "Chat on VINK App", sub: "Available 24/7", color: BRAND.ok },
+  { icon: <Mail className="w-5 h-5" />, label: "Email Support", value: "support@vink.co.za", sub: "Reply within 1–2 business days", color: BRAND.info },
+  { icon: <MapPin className="w-5 h-5" />, label: "Visit Us", value: "8 Rose Street, Cape Town CBD", sub: "By appointment", color: BRAND.warn },
 ];
 
 export function GetHelpModal({ isOpen, onClose }: GetHelpModalProps) {

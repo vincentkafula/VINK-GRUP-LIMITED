@@ -5,22 +5,23 @@ import {
   type AssociationLevel,
 } from "../data/taxiAssociations";
 import { Footer } from "./Footer";
+import { BRAND } from "../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
-const P    = "#5C0A10";
-const GOLD = "#C9A84C";
+const P    = BRAND.crimsonDeep;
+const GOLD = BRAND.gold;
 const NAVY = "#0A0F1E";
 
 const PROVINCE_COLORS: Record<string, string> = {
-  National:        "#8B0000",
-  Gauteng:         "#3B82F6",
+  National:        BRAND.crimson,
+  Gauteng:         BRAND.info,
   "KwaZulu-Natal": "#0891B2",
-  "Western Cape":  "#5C0A10",
+  "Western Cape":  BRAND.crimsonDeep,
   "Eastern Cape":  "#059669",
   Limpopo:         "#DC2626",
   Mpumalanga:      "#EA580C",
-  "North West":    "#C9A84C",
+  "North West":    BRAND.gold,
   "Free State":    "#CA8A04",
   "Northern Cape": "#9CA3AF",
 };
@@ -337,7 +338,7 @@ export function TaxiAssociationsViewer({ isOpen, onClose }: Props) {
                 {TAXI_ASSOCIATIONS.filter(a => a.level === "National").map((a, i) => (
                   <div key={i} className="p-4 rounded-xl" style={{ background: "#128A4315", border: "1px solid #128A4330" }}>
                     <div className="flex items-start gap-2">
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "#8B0000", color: "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" }}>
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: BRAND.crimson, color: "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" }}>
                         <Building2 className="w-4 h-4" />
                       </div>
                       <div>

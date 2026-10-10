@@ -1,3 +1,4 @@
+import { BRAND } from "../brand";
 // ─── Vehicle & Device Registration Types ─────────────────────────────────────
 
 export interface VehicleProfile {
@@ -64,9 +65,9 @@ export function docStatus(expiryStr: string): "valid" | "expiring" | "expired" |
 }
 
 export const DOC_STATUS_COLORS = {
-  valid:    { bg: "#10B981", label: "Valid" },
-  expiring: { bg: "#F59E0B", label: "Expiring" },
-  expired:  { bg: "#EF4444", label: "Expired" },
+  valid:    { bg: BRAND.ok, label: "Valid" },
+  expiring: { bg: BRAND.warn, label: "Expiring" },
+  expired:  { bg: BRAND.bad, label: "Expired" },
   missing:  { bg: "#6B7280", label: "Missing" },
 };
 

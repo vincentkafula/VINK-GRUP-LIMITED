@@ -1,11 +1,12 @@
 import { X, MapPin, Briefcase, Clock } from "lucide-react";
 import vinkLogo from "../../../imports/LOGO_FINAL.png";
 import { Footer } from "../Footer";
+import { BRAND } from "../../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
-const P = "#5C0A10";
-const GOLD = "#C9A84C";
+const P = BRAND.crimsonDeep;
+const GOLD = BRAND.gold;
 
 const BENEFITS = [
   { icon: "💰", title: "Competitive Salaries",     desc: "Market-rate salaries with annual performance reviews" },

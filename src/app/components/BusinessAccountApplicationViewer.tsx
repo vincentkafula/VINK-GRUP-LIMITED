@@ -4,11 +4,12 @@ import { toast } from "sonner";
 import { Footer } from "./Footer";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { applicationsApi } from "../services/applicationsApi";
+import { BRAND } from "../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; initialAccountType?: string; }
 
-const PURPLE = "#5C0A10";
-const GREEN  = "#10B981";
+const PURPLE = BRAND.crimsonDeep;
+const GREEN  = BRAND.ok;
 
 // ─── Step definitions ─────────────────────────────────────────────────────────
 const STEPS = [

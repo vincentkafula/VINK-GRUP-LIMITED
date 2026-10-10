@@ -3,11 +3,12 @@
  * Used by: BusinessLoanApplicationViewer, CreditCardApplicationViewer, CorporateLoanApplicationViewer
  */
 import { CheckCircle } from "lucide-react";
+import { BRAND } from "../brand";
 
-export const P     = "#5C0A10";
+export const P     = BRAND.crimsonDeep;
 export const PD    = "#0C0E14";
-export const GOLD  = "#C9A84C";
-export const GREEN = "#10B981";
+export const GOLD  = BRAND.gold;
+export const GREEN = BRAND.ok;
 
 // ── Shared CSS class strings ──────────────────────────────────────────────────
 
@@ -156,7 +157,7 @@ export function DocSlot({
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-xs font-semibold text-fg leading-snug">{label}</p>
-        <p className="text-[10px] mt-0.5 font-medium" style={{ color: uploaded ? GREEN : required ? "#EF4444" : "var(--vk-fg-muted)" }}>
+        <p className="text-[10px] mt-0.5 font-medium" style={{ color: uploaded ? GREEN : required ? BRAND.bad : "var(--vk-fg-muted)" }}>
           {uploaded ? "✓ Uploaded successfully" : required ? "Required" : "Optional"}
         </p>
       </div>

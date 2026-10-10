@@ -3,10 +3,11 @@ import { ArrowRight, ShieldCheck, Headphones, Sparkles, Flame, Crown, Gift, Glob
 import vinkGoldFeatureCard from "../../imports/VinkGoldFeatureCard.webp";
 import { Card3DViewer } from "./Card3DViewer";
 import { PremiumIcon } from "./PremiumIcon";
+import { BRAND } from "../brand";
 
 const PURPLE = "var(--vk-brand)";           // crimson in light, gold in dark
 const DEEP_PURPLE = "#0c0e14";                // ink: the chip always carries white text
-const GOLD = "#c9a84c";
+const GOLD = BRAND.gold;
 // The cards use the website's own background and text colours (so they follow the light and dark themes); only the icon medallions carry colour: gold metal on warm ink.
 const GOLD_METAL = "#D4AF5A";      // the medallions
 const INK = "#1A0D10";             // the warm dark each medallion is built on

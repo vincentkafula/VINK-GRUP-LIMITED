@@ -10,10 +10,11 @@ import {
   taxAssociationFees, computed, type AssocStat,
 } from "../data/taxiAssociationDashboardData";
 import { DeviceTerminalModal } from "./DeviceTerminalModal";
+import { BRAND } from "../brand";
 
 const NAVY = "#0B1330";
 const COLOR_MAP: Record<string, string> = {
-  blue: "#2563EB", green: "#059669", purple: "#9B1C1C", orange: "#EA580C", teal: "#0D9488",
+  blue: "#2563EB", green: "#059669", purple: BRAND.crimsonLight, orange: "#EA580C", teal: "#0D9488",
 };
 const STATUS_COLOR: Record<string, string> = {
   Active: "#059669", Maintenance: "#D97706", Inactive: "#9CA3AF", "On Trip": "#2563EB",

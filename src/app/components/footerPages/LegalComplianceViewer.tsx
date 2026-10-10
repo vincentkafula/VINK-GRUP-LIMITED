@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import vinkLogo from "../../../imports/LOGO_FINAL.png";
 import { Footer } from "../Footer";
+import { BRAND } from "../../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; initialTab?: string; }
-const P = "#5C0A10";
+const P = BRAND.crimsonDeep;
 
 const TABS = [
   { key: "privacy",    label: "Privacy Policy" },

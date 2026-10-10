@@ -7,6 +7,7 @@ import siteHeroBg from "../../imports/assets/site-hero-bg.webp";
 import vinkMastercardBlack from "../../imports/VinkHeroMastercardBlack.webp";
 import vinkVisaSignatureBlue from "../../imports/VinkHeroVisaSignatureBlue.webp";
 import { Footer } from "./Footer";
+import { BRAND } from "../brand";
 
 interface Props {
   isOpen: boolean;
@@ -19,9 +20,9 @@ interface Props {
 
 // ─── Design tokens ──────────────────────────────────────────────────────────
 const INK   = "#0C0E14";
-const PLUM  = "#5C0A10";
-const VIOLET = "#8B0000";
-const GOLD  = "#C9A84C";
+const PLUM  = BRAND.crimsonDeep;
+const VIOLET = BRAND.crimson;
+const GOLD  = BRAND.gold;
 
 const SUB_NAV = [
   { label: "Accounts", item: "Account" },

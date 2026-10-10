@@ -9,10 +9,11 @@ import { publicApi } from "../../services/apiClient";
 import { Footer } from "../Footer";
 import { DEPARTMENTS, type Department } from "../../data/departments";
 import { API_BASE } from "../../services/config";
+import { BRAND } from "../../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; initialTab?: TabId; }
-const P = "#5C0A10";
-const GOLD = "#C9A84C";
+const P = BRAND.crimsonDeep;
+const GOLD = BRAND.gold;
 
 type TabId = "connect" | "locate" | "feedback";
 const TABS: { id: TabId; label: string }[] = [
@@ -141,7 +142,7 @@ function DirectoryGrid() {
         return (
           <button key={i} onClick={() => setOpen(isOpen ? null : i)}
             className={`text-left rounded-xl bg-surface border transition-all overflow-hidden ${isOpen ? "shadow-md" : "hover:shadow-sm"}`}
-            style={{ borderColor: isOpen ? (it.urgent ? "#FCA5A5" : "#A7E8BD") : "var(--vk-line)", borderLeftWidth: 3, borderLeftColor: it.urgent ? "#EF4444" : P }}>
+            style={{ borderColor: isOpen ? (it.urgent ? "#FCA5A5" : "#A7E8BD") : "var(--vk-line)", borderLeftWidth: 3, borderLeftColor: it.urgent ? BRAND.bad : P }}>
             <div className="flex items-center gap-3 px-4 py-3.5">
               <span className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
                 style={{ background: it.urgent ? "var(--vk-bad-bg)" : "var(--vk-surface-2)", color: it.urgent ? "#DC2626" : P }}>{it.icon}</span>

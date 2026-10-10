@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { X, Smartphone, Plus, ShieldCheck, ShieldOff, ShieldAlert, Copy, CheckCircle2, RefreshCw } from "lucide-react";
 import { getBankToken } from "../services/bankingApi";
+import { BRAND } from "../brand";
 
 /**
  * Admin-facing terminal access control. This is the concrete answer to
@@ -199,12 +200,12 @@ export function TerminalManagementViewer({ isOpen, onClose }: Props) {
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} /> Refresh
             </button>
             {tab === "terminals" && (
-              <button onClick={() => setShowRegister(true)} className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-white text-[13px] font-bold" style={{ background: "#2E0B10" }}>
+              <button onClick={() => setShowRegister(true)} className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-white text-[13px] font-bold" style={{ background: BRAND.crimsonInk }}>
                 <Plus className="w-4 h-4" /> Register terminal
               </button>
             )}
             {tab === "releases" && (
-              <button onClick={() => setShowPublishRelease(true)} className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-white text-[13px] font-bold" style={{ background: "#2E0B10" }}>
+              <button onClick={() => setShowPublishRelease(true)} className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-white text-[13px] font-bold" style={{ background: BRAND.crimsonInk }}>
                 <Plus className="w-4 h-4" /> Publish release
               </button>
             )}
@@ -345,7 +346,7 @@ function RegisterTerminalModal({ onClose, onRegistered, token }: { onClose: () =
             {error && <p className="text-[12px] text-red-600 mt-3">{error}</p>}
             <div className="flex gap-2.5 mt-5">
               <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-line text-[13px] font-bold">Cancel</button>
-              <button onClick={handleRegister} disabled={!serial.trim()} className="flex-1 py-2.5 rounded-xl text-white text-[13px] font-bold disabled:opacity-40" style={{ background: "#2E0B10" }}>Register</button>
+              <button onClick={handleRegister} disabled={!serial.trim()} className="flex-1 py-2.5 rounded-xl text-white text-[13px] font-bold disabled:opacity-40" style={{ background: BRAND.crimsonInk }}>Register</button>
             </div>
           </>
         ) : (
@@ -364,7 +365,7 @@ function RegisterTerminalModal({ onClose, onRegistered, token }: { onClose: () =
                 </div>
               </div>
             </div>
-            <button onClick={onRegistered} className="w-full mt-5 py-2.5 rounded-xl text-white text-[13px] font-bold" style={{ background: "#2E0B10" }}>Done</button>
+            <button onClick={onRegistered} className="w-full mt-5 py-2.5 rounded-xl text-white text-[13px] font-bold" style={{ background: BRAND.crimsonInk }}>Done</button>
           </>
         )}
       </div>
@@ -440,7 +441,7 @@ function AssignOwnershipModal({ terminal, onClose, onSaved, token }: { terminal:
         {error && <p className="text-[12px] text-red-600 mt-3">{error}</p>}
         <div className="flex gap-2.5 mt-5">
           <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-line text-[13px] font-bold">Cancel</button>
-          <button onClick={handleSave} disabled={saving} className="flex-1 py-2.5 rounded-xl text-white text-[13px] font-bold disabled:opacity-50" style={{ background: "#2E0B10" }}>{saving ? "Saving..." : "Save"}</button>
+          <button onClick={handleSave} disabled={saving} className="flex-1 py-2.5 rounded-xl text-white text-[13px] font-bold disabled:opacity-50" style={{ background: BRAND.crimsonInk }}>{saving ? "Saving..." : "Save"}</button>
         </div>
       </div>
     </div>
@@ -508,7 +509,7 @@ function PublishReleaseModal({ onClose, onPublished, token }: { onClose: () => v
         {error && <p className="text-[12px] text-red-600 mt-3">{error}</p>}
         <div className="flex gap-2.5 mt-5">
           <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-line text-[13px] font-bold">Cancel</button>
-          <button onClick={handlePublish} disabled={saving || !version.trim() || !downloadUrl.trim()} className="flex-1 py-2.5 rounded-xl text-white text-[13px] font-bold disabled:opacity-50" style={{ background: "#2E0B10" }}>{saving ? "Publishing..." : "Publish"}</button>
+          <button onClick={handlePublish} disabled={saving || !version.trim() || !downloadUrl.trim()} className="flex-1 py-2.5 rounded-xl text-white text-[13px] font-bold disabled:opacity-50" style={{ background: BRAND.crimsonInk }}>{saving ? "Publishing..." : "Publish"}</button>
         </div>
       </div>
     </div>

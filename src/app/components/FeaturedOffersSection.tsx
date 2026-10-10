@@ -2,7 +2,7 @@ const OFFERS = [
   {
     name: "VINK Everyday Cashback", issuer: "VINK Standard",
     grad: "linear-gradient(135deg,#1A3A6E 0%,#8B0000 60%,#9B1C1C 100%)",
-    badge: "Best Value", badgeColor: "#10B981",
+    badge: "Best Value", badgeColor: BRAND.ok,
     highlight: "3% cashback at supermarkets and spaza shops",
     detail: "1.5% at fuel stations · 0.5% everywhere else",
     net: "visa",
@@ -10,7 +10,7 @@ const OFFERS = [
   {
     name: "VINK Rewards Gold", issuer: "VINK Premier",
     grad: "linear-gradient(135deg,#7A5C2A 0%,#C4922A 60%,#E6B85A 100%)",
-    badge: "Top Pick", badgeColor: "#F59E0B",
+    badge: "Top Pick", badgeColor: BRAND.warn,
     highlight: "Earn 2 ManshyaPoints per R10 on all spend",
     detail: "Redeem points for taxi fares, gym sessions, or airtime",
     net: "amex",
@@ -18,7 +18,7 @@ const OFFERS = [
   {
     name: "VINK Commuter Unlimited", issuer: "VINK Commuter",
     grad: "linear-gradient(135deg,#1B4D1B 0%,#2E7D32 60%,#4CAF50 100%)",
-    badge: "No Limits", badgeColor: "#3B82F6",
+    badge: "No Limits", badgeColor: BRAND.info,
     highlight: "Unlimited tap-and-go rides on any VINK-enabled taxi",
     detail: "Free card replacement · No minimum balance required",
     net: "mc",
@@ -26,6 +26,7 @@ const OFFERS = [
 ];
 
 import { memo } from "react";
+import { BRAND } from "../brand";
 
 export const FeaturedOffersSection = memo(function FeaturedOffersSection({ onCompareCards }: { onCompareCards?: () => void }) {
   return (

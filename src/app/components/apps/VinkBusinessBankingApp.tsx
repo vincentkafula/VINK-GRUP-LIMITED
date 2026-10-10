@@ -6,13 +6,14 @@ import {
   Receipt, QrCode, Banknote, Lock, Gift,
 } from "lucide-react";
 import { MobileAppOverlay, PhoneFrame } from "./PhoneFrame";
+import { BRAND } from "../../brand";
 
 type Screen = "onboarding" | "dashboard" | "payments" | "invoices" | "cards" | "more";
 type Tier = "Launch" | "Forge" | "Catalyst" | "Pinnacle" | "Empire" | "Sovereign";
 
 const INK = "#0C0E14";
-const GREEN = "#5C0A10";
-const GOLD = "#C9A84C";
+const GREEN = BRAND.crimsonDeep;
+const GOLD = BRAND.gold;
 
 const TIER_INFO: Record<Tier, {
   order: number; icon: React.ReactNode; tagline: string; bestFor: string[]; unlocks: string; gradient: string;
@@ -254,7 +255,7 @@ function DashboardScreen({ tier }: { tier: Tier }) {
               <span className="text-xs font-semibold text-gray-800">Investment portfolio</span>
               <span className="text-xs font-bold text-green-600">+9.1% YTD</span>
             </div>
-            {[["Money market funds","38%","#5C0A10"],["Government securities","27%","#B45309"],["Bonds","20%","#C9A84C"],["Private equity","15%","#0369A1"]].map(([label,pct,color]) => (
+            {[["Money market funds","38%",BRAND.crimsonDeep],["Government securities","27%","#B45309"],["Bonds","20%",BRAND.gold],["Private equity","15%","#0369A1"]].map(([label,pct,color]) => (
               <div key={label} className="flex items-center gap-2 mb-1.5 last:mb-0">
                 <span className="w-24 text-[9px] text-gray-500 shrink-0">{label}</span>
                 <div className="flex-1 h-2 rounded-full bg-gray-100 overflow-hidden"><div className="h-full rounded-full" style={{ width: pct as string, background: color as string }} /></div>
@@ -371,7 +372,7 @@ const INVOICES = [
 ];
 
 function InvoicesScreen() {
-  const statusColor: Record<string, string> = { Paid: "#10B981", Overdue: "#EF4444", Pending: "#F59E0B" };
+  const statusColor: Record<string, string> = { Paid: BRAND.ok, Overdue: BRAND.bad, Pending: BRAND.warn };
   return (
     <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F7F9F8" }}>
       <div className="px-4 py-3 flex-shrink-0 flex items-center justify-between" style={{ background: INK }}>
@@ -455,7 +456,7 @@ function MoreScreen({ tier }: { tier: Tier }) {
                 <tr key={row.label} className="border-t border-gray-100">
                   <td className="px-2 py-1.5 text-gray-600 whitespace-nowrap sticky left-0 bg-[#F7F9F8]">{row.label}</td>
                   {TIER_ORDER.map(t => (
-                    <td key={t} className="px-2 py-1.5 text-center font-semibold" style={{ color: row.values[t] === "✓" ? GREEN : row.values[t] === "—" ? "#D1D5DB" : "#F59E0B" }}>
+                    <td key={t} className="px-2 py-1.5 text-center font-semibold" style={{ color: row.values[t] === "✓" ? GREEN : row.values[t] === "—" ? "#D1D5DB" : BRAND.warn }}>
                       {row.values[t]}
                     </td>
                   ))}

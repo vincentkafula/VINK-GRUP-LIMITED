@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, Download, TriangleAlert } from "lucide-react
 import { authFetch } from "../../services/apiClient";
 import { API_BASE } from "../../services/config";
 import { inputCls } from "./ui";
+import { BRAND } from "../../brand";
 
 /* ───────────── dates (South African days, UTC+2 with no daylight saving) ───────────── */
 export const saToday = () => new Date(Date.now() + 2 * 3600_000).toISOString().slice(0, 10);
@@ -97,7 +98,7 @@ export function TrendChart({ days, color, label, money = true }: { days: { day: 
 
 export interface MapRoute { id: string; name: string; active: boolean; registration: string | null; terminalSerial: string; points: { lat: number; lng: number }[] }
 export interface MapPosition { terminalSerial: string; registration: string | null; lat: number; lng: number; at: string | null }
-const ROUTE_COLORS = ["#60A5FA", "#F59E0B", "#34D399", "#F472B6", "#C9A84C", "#F87171"];
+const ROUTE_COLORS = ["#60A5FA", BRAND.warn, "#34D399", "#F472B6", BRAND.gold, "#F87171"];
 
 /** Routes as lines and the last reported position of each vehicle as a dot, drawn to scale. There are no street tiles. */
 export function RouteMap({ routes, positions, color }: { routes: MapRoute[]; positions: MapPosition[]; color: string }) {
