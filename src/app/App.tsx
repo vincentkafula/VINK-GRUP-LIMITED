@@ -421,13 +421,15 @@ export default function App() {
   // Shown above every full-screen site page so switching sections never
   // requires backing out to the homepage first.
   // Every public page shows the header: the list of pages and the rule are in sitePages.ts (a test makes sure no page is left out).
-  const { section: activeSiteSection, showNav: showPersistentNav } = siteChrome({
+  const { section: activeSiteSection, showNav: siteNav } = siteChrome({
     showPersonalLanding, showPersonalAccount, showPersonalLedger, showCreditCard, showCreditCardApp, showLoan, showInvest, showRewards, showInvestApp, showRewardsApp, showAccountApp,
     showBusinessLanding, showStartBusiness, showBusinessAccountSelector, showBusinessAccounts, showBusinessLedger, showBusinessLoanApp, showManageBusiness,
     showCorporateLedger, showCorporateLoanApp, showCorporateCSR, showInvestorRelations,
     selectorOpen, showContactUs, showAboutVINK, showCareers, showSwitchToVINK, showSafetySecurity, showTaxiAssociations, showJobApp,
     showLegal, showBranchLocator, showSponsorship, showBankingFees, showBankingGuide, showBankingChannels, showExchangeRates, showLatestOffers, showMarketIndices, showVinkBlog,
   });
+  // The sign-in pages show the header too: the password-reset and verify-email links, and a role dashboard while nobody is signed in (its "Please sign in" screen).
+  const showPersistentNav = siteNav || authLink !== null || (portal !== null && !getSession());
 
   // Pages draw their own logo + X bar; under the site header that is a second logo, so mark those bars for theme.css to hide (pages mount lazily, hence the observer).
   useEffect(() => {
