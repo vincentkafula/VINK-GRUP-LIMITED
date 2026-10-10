@@ -170,7 +170,7 @@ describe("sending files from the panel", () => {
     expect(await files.discard(OTHER_SALES.userId, a.id)).toBe(false);
     expect(await files.discard(SALES.userId, a.id)).toBe(true);
     const b = await stage(SALES, "older.pdf");
-    clock = new Date("2026-10-11T10:00:00Z");
+    clock = new Date("2026-10-17T10:00:00Z");
     await stage(SALES, "new.pdf");
     expect(Number((await db.query(`SELECT COUNT(*) AS n FROM mail_files WHERE id = $1`, [b.id])).rows[0].n)).toBe(0);
   });

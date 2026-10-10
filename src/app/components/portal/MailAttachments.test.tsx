@@ -33,7 +33,7 @@ function mockApi() {
     return new Response(JSON.stringify(body), { status });
   }));
 }
-beforeEach(() => { localStorage.clear(); host = document.createElement("div"); document.body.appendChild(host); root = createRoot(host); });
+beforeEach(() => { localStorage.clear(); localStorage.setItem("vink.mail.undoSeconds", "0"); host = document.createElement("div"); document.body.appendChild(host); root = createRoot(host); });
 afterEach(() => { act(() => root.unmount()); host.remove(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 const settle = () => act(async () => { await new Promise((r) => setTimeout(r, 10)); });
 const btn = (t: string) => [...document.querySelectorAll("button")].find((b) => b.textContent?.includes(t) || b.getAttribute("aria-label")?.includes(t)) as HTMLButtonElement | undefined;
@@ -92,12 +92,12 @@ describe("attaching files to a reply", () => {
     expect(ups[0].init!.method).toBe("PUT"); expect((ups[0].init!.headers as Record<string, string>)["Content-Type"]).toBe("application/octet-stream");   // never the file's own type, which could be JSON
     expect(ups[0].url).toContain("name=Price%20list.pdf&type=application%2Fpdf");
     expect(host.textContent).toContain("Price list.pdf"); expect(host.textContent).toContain("terms.docx");
-    const ta = host.querySelector('textarea[aria-label="Your reply"]') as HTMLTextAreaElement;
-    await act(async () => { Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value")!.set!.call(ta, "Prices attached."); ta.dispatchEvent(new Event("input", { bubbles: true })); });
+    const ta = host.querySelector('[aria-label="Your reply"][contenteditable="true"]') as HTMLElement;
+    await act(async () => { ta.innerHTML = "<div>Prices attached.</div>"; ta.dispatchEvent(new Event("input", { bubbles: true })); });
     await act(async () => { btn("Send reply")!.click(); }); await settle();
     const post = calls.find((c) => c.url.endsWith("/reply"))!;
-    const sent = JSON.parse(String(post.init!.body)) as { body: string; attachmentIds: string[] };
-    expect(sent.body).toBe("Prices attached."); expect(sent.attachmentIds).toHaveLength(2); expect(new Set(sent.attachmentIds).size).toBe(2); expect(sent.attachmentIds.every((x) => x.startsWith("up-"))).toBe(true);
+    const sent = JSON.parse(String(post.init!.body)) as { bodyHtml: string; attachmentIds: string[] };
+    expect(sent.bodyHtml).toBe("<div>Prices attached.</div>"); expect(sent.attachmentIds).toHaveLength(2); expect(new Set(sent.attachmentIds).size).toBe(2); expect(sent.attachmentIds.every((x) => x.startsWith("up-"))).toBe(true);
     expect(host.textContent).not.toContain("Price list.pdf");                                        // sent: the list of files to attach is empty again
     expect(host.querySelector('input[type="file"]')).toBeTruthy();
   });

@@ -87,7 +87,7 @@ function mockApi(html: string | null) {
   }));
   Object.assign(URL, { createObjectURL: vi.fn(() => "blob:test"), revokeObjectURL: vi.fn() });
 }
-beforeEach(() => { localStorage.clear(); host = document.createElement("div"); document.body.appendChild(host); root = createRoot(host); });
+beforeEach(() => { localStorage.clear(); localStorage.setItem("vink.mail.undoSeconds", "0"); host = document.createElement("div"); document.body.appendChild(host); root = createRoot(host); });
 afterEach(() => { act(() => root.unmount()); host.remove(); vi.unstubAllGlobals(); });
 const settle = () => act(async () => { await new Promise((r) => setTimeout(r, 10)); });
 const open = async () => { await act(async () => { root.render(<MailPanel />); }); await settle(); await settle(); await act(async () => { (document.querySelector("ul button") as HTMLButtonElement).click(); }); await settle(); await settle(); await settle(); };
