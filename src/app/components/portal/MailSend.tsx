@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { inkOn } from "./ui";
 
 /**
  * Two behaviours of writing an email: Undo send (a few seconds in which a click on Send can still be taken back) and Autosave (the draft is saved as you type).
@@ -55,7 +56,7 @@ export function SendButton({ label, color, onSend, onBeforeSend }: { label: stri
   return (
     <span className="inline-flex items-center gap-2 flex-wrap">
       {left === null
-        ? <button type="button" disabled={busy} onClick={click} className="px-4 py-2 text-sm rounded-lg font-bold disabled:opacity-60" style={{ background: color, color: "#101010" }}>{busy ? "Sending…" : label}</button>
+        ? <button type="button" disabled={busy} onClick={click} className="px-4 py-2 text-sm rounded-lg font-bold disabled:opacity-60" style={{ background: color, color: inkOn(color) }}>{busy ? "Sending…" : label}</button>
         : <><span role="status" className="text-xs font-semibold text-fg">Sending in {left}…</span><button type="button" onClick={undo} className="px-3 py-1.5 text-xs rounded-lg font-bold border border-line text-fg hover:bg-surface-2">Undo</button></>}
       {msg && <span role={msg.ok ? "status" : "alert"} className={`text-xs ${msg.ok ? "text-ok" : "text-bad"}`}>{msg.text}</span>}
     </span>

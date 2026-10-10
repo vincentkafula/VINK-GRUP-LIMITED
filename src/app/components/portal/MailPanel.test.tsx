@@ -26,7 +26,7 @@ afterEach(() => { act(() => root.unmount()); host.remove(); vi.unstubAllGlobals(
 const settle = () => act(async () => { await new Promise((r) => setTimeout(r, 10)); });
 const render = async () => { await act(async () => { root.render(<MailPanel />); }); await settle(); await settle(); };
 const btn = (t: string) => [...document.querySelectorAll("button")].find((b) => b.textContent?.includes(t)) as HTMLButtonElement | undefined;
-const type = async (el: HTMLElement | null, v: string) => { await act(async () => { const e = el as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement; const proto = e.tagName === "TEXTAREA" ? HTMLTextAreaElement.prototype : e.tagName === "SELECT" ? HTMLSelectElement.prototype : HTMLInputElement.prototype; Object.getOwnPropertyDescriptor(proto, "value")!.set!.call(e, v); e.dispatchEvent(new Event(e.tagName === "SELECT" ? "change" : "input", { bubbles: true })); }); };
+const type = async (el: HTMLElement | null, v: string) => { await act(async () => { if ((el as HTMLElement | null)?.getAttribute("contenteditable") === "true") { (el as HTMLElement).innerHTML = `<div>${v}</div>`; (el as HTMLElement).dispatchEvent(new Event("input", { bubbles: true })); return; } const e = el as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement; const proto = e.tagName === "TEXTAREA" ? HTMLTextAreaElement.prototype : e.tagName === "SELECT" ? HTMLSelectElement.prototype : HTMLInputElement.prototype; Object.getOwnPropertyDescriptor(proto, "value")!.set!.call(e, v); e.dispatchEvent(new Event(e.tagName === "SELECT" ? "change" : "input", { bubbles: true })); }); };
 
 describe("MailPanel", () => {
   it("shows only the departments the server returned, with the waiting count, and loads the first department's messages", async () => {
@@ -48,10 +48,10 @@ describe("MailPanel", () => {
     await act(async () => { (document.querySelector("ul button") as HTMLButtonElement).click(); }); await settle(); await settle();
     expect(host.textContent).toContain("Please send me your price list."); expect(host.textContent).toContain("We will send it today.");
     expect(host.querySelector("script")).toBeNull();                                          // a script in a message is text, never markup
-    await type(host.querySelector('textarea[aria-label="Your reply"]'), "Prices are attached.");
+    await type(host.querySelector('[aria-label="Your reply"][contenteditable="true"]'), "Prices are attached.");
     await act(async () => { btn("Send reply")!.click(); }); await settle();
     const post = calls.find((c) => c.url.endsWith("/api/mail/messages/web/11111111-1111-1111-1111-111111111111/reply"))!;
-    expect(post.init!.method).toBe("POST"); expect(JSON.parse(String(post.init!.body))).toEqual({ body: "Prices are attached." });
+    expect(post.init!.method).toBe("POST"); expect(JSON.parse(String(post.init!.body))).toEqual({ bodyHtml: "<div>Prices are attached.</div>" });
   });
 
   it("writes a new email from a chosen department", async () => {
@@ -60,11 +60,11 @@ describe("MailPanel", () => {
     await type(host.querySelector('select[aria-label="From"]'), "support");
     await type(host.querySelector('input[aria-label="To"]'), "buyer@example.com");
     await type(host.querySelector('input[aria-label="Subject"]'), "Your quote");
-    await type(host.querySelector('textarea[aria-label="Message"]'), "Here is your quote.");
+    await type(host.querySelector('[aria-label="Message"][contenteditable="true"]'), "Here is your quote.");
     expect(btn("Send from support@vink.co.za")).toBeTruthy();
     await act(async () => { btn("Send from support@vink.co.za")!.click(); }); await settle();
     const post = calls.find((c) => c.url.endsWith("/api/mail/send"))!;
-    expect(JSON.parse(String(post.init!.body))).toEqual({ department: "support", to: "buyer@example.com", subject: "Your quote", body: "Here is your quote." });
+    expect(JSON.parse(String(post.init!.body))).toEqual({ department: "support", to: "buyer@example.com", subject: "Your quote", bodyHtml: "<div>Here is your quote.</div>" });
   });
 
   it("switching department or box asks for that department's messages", async () => {

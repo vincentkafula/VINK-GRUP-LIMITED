@@ -40,7 +40,7 @@ const render = async () => { await act(async () => { root.render(<MailPanel />);
 const btn = (t: string) => [...document.querySelectorAll("button")].find((b) => b.textContent?.includes(t) || b.getAttribute("aria-label") === t) as HTMLButtonElement | undefined;
 const box = (name: string) => [...document.querySelectorAll('[aria-label="Boxes"] [role="tab"]')].find((b) => b.textContent?.includes(name)) as HTMLButtonElement;
 const click = async (el: HTMLElement | undefined) => { await act(async () => { el!.click(); }); await settle(); await settle(); };
-const type = async (el: Element | null, v: string) => { await act(async () => { const e = el as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement; const proto = e.tagName === "TEXTAREA" ? HTMLTextAreaElement.prototype : e.tagName === "SELECT" ? HTMLSelectElement.prototype : HTMLInputElement.prototype; Object.getOwnPropertyDescriptor(proto, "value")!.set!.call(e, v); e.dispatchEvent(new Event(e.tagName === "SELECT" ? "change" : "input", { bubbles: true })); }); };
+const type = async (el: Element | null, v: string) => { await act(async () => { if ((el as HTMLElement | null)?.getAttribute("contenteditable") === "true") { (el as HTMLElement).innerHTML = `<div>${v}</div>`; (el as HTMLElement).dispatchEvent(new Event("input", { bubbles: true })); return; } const e = el as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement; const proto = e.tagName === "TEXTAREA" ? HTMLTextAreaElement.prototype : e.tagName === "SELECT" ? HTMLSelectElement.prototype : HTMLInputElement.prototype; Object.getOwnPropertyDescriptor(proto, "value")!.set!.call(e, v); e.dispatchEvent(new Event(e.tagName === "SELECT" ? "change" : "input", { bubbles: true })); }); };
 const openFirst = async () => { await click(document.querySelector("section[aria-label='Messages'] ul button") as HTMLElement); await settle(); };
 const posts = (suffix: string) => calls.filter((c) => c.url.endsWith(suffix) && c.init?.method === "POST");
 const body = (c: { init?: RequestInit }) => JSON.parse(String(c.init!.body));
@@ -48,7 +48,7 @@ const body = (c: { init?: RequestInit }) => JSON.parse(String(c.init!.body));
 describe("boxes", () => {
   it("has Inbox, Starred, Drafts, Sent, Spam and Trash, with the waiting and draft counts, and asks for the right box", async () => {
     mockApi(); await render();
-    expect([...document.querySelectorAll('[aria-label="Boxes"] [role="tab"]')].map((t) => t.textContent!.replace(/\s+/g, " ").trim())).toEqual(["Inbox(3)", "Starred", "Drafts(2)", "Sent", "Spam", "Trash"]);
+    expect([...document.querySelectorAll('[aria-label="Boxes"] [role="tab"]')].map((t) => t.textContent!.replace(/\s+/g, " ").trim())).toEqual(["Inbox(3)", "Starred", "Snoozed", "Drafts(2)", "Scheduled", "Sent", "Spam", "Trash"]);
     for (const [name, param] of [["Starred", "starred"], ["Spam", "spam"], ["Trash", "trash"], ["Sent", "sent"]] as const) {
       await click(box(name)); expect(calls.some((c) => c.url.includes(`messages?department=sales&box=${param}`)), name).toBe(true);
     }
@@ -74,7 +74,7 @@ describe("drafts box", () => {
     await click(items[0]);
     expect((host.querySelector('input[aria-label="To"]') as HTMLInputElement).value).toBe("buyer@example.com");
     expect((host.querySelector('input[aria-label="Subject"]') as HTMLInputElement).value).toBe("Your quote");
-    expect((host.querySelector('textarea[aria-label="Message"]') as HTMLTextAreaElement).value).toBe("Hello buyer");
+    expect(host.querySelector('[aria-label="Message"][contenteditable="true"]')!.textContent).toBe("Hello buyer");
     expect(host.textContent).toContain("Discard draft");
     await click((document.querySelectorAll("section[aria-label='Messages'] ul button")[1]) as HTMLElement);
     expect(calls.some((c) => c.url.endsWith(`/api/mail/messages/email/${A}`))).toBe(true);        // the message the reply belongs to
@@ -163,23 +163,23 @@ describe("autosaving drafts", () => {
   it("saves a new email as it is typed, then sends it with the draft id so the draft goes away", async () => {
     mockApi(); await render(); await click(btn("New email"));
     expect(calls.filter((c) => c.url.endsWith("/api/mail/drafts"))).toHaveLength(0);              // nothing typed, nothing saved
-    await type(host.querySelector('input[aria-label="To"]'), "buyer@example.com"); await type(host.querySelector('textarea[aria-label="Message"]'), "Hello");
+    await type(host.querySelector('input[aria-label="To"]'), "buyer@example.com"); await type(host.querySelector('[aria-label="Message"][contenteditable="true"]'), "Hello");
     expect(calls.filter((c) => c.url.endsWith("/api/mail/drafts"))).toHaveLength(0);              // not on every key
     await act(async () => { await new Promise((r) => setTimeout(r, 1700)); }); await settle();
     const saves = calls.filter((c) => c.url.endsWith("/api/mail/drafts"));
-    expect(saves).toHaveLength(1); expect(body(saves[0])).toMatchObject({ department: "sales", to: "buyer@example.com", body: "Hello" }); expect(body(saves[0])).not.toHaveProperty("id");
+    expect(saves).toHaveLength(1); expect(body(saves[0])).toMatchObject({ department: "sales", to: "buyer@example.com", bodyHtml: "<div>Hello</div>" }); expect(body(saves[0])).not.toHaveProperty("id");
     expect(host.textContent).toContain("Draft saved");
     await type(host.querySelector('input[aria-label="Subject"]'), "Quote");
     await act(async () => { await new Promise((r) => setTimeout(r, 1700)); }); await settle();
     const second = calls.filter((c) => c.url.endsWith("/api/mail/drafts"))[1];
     expect(body(second)).toMatchObject({ id: "new-draft-id", subject: "Quote" });                 // the same draft, updated
     await click(btn("Send from sales@vink.co.za"));
-    expect(body(posts("/send")[0])).toMatchObject({ department: "sales", to: "buyer@example.com", subject: "Quote", body: "Hello", draftId: "new-draft-id" });
+    expect(body(posts("/send")[0])).toMatchObject({ department: "sales", to: "buyer@example.com", subject: "Quote", bodyHtml: "<div>Hello</div>", draftId: "new-draft-id" });
   }, 15000);
 
   it("does not save the draft again after it was sent, even if the person typed just before sending", async () => {
     mockApi(); await render(); await click(btn("New email"));
-    await type(host.querySelector('input[aria-label="To"]'), "a@b.co"); await type(host.querySelector('input[aria-label="Subject"]'), "Hi"); await type(host.querySelector('textarea[aria-label="Message"]'), "Hello there");
+    await type(host.querySelector('input[aria-label="To"]'), "a@b.co"); await type(host.querySelector('input[aria-label="Subject"]'), "Hi"); await type(host.querySelector('[aria-label="Message"][contenteditable="true"]'), "Hello there");
     await click(btn("Send from sales@vink.co.za"));                                               // sent within the autosave delay
     await act(async () => { await new Promise((r) => setTimeout(r, 1800)); }); await settle();
     expect(posts("/send")).toHaveLength(1); expect(calls.filter((c) => c.url.endsWith("/api/mail/drafts"))).toHaveLength(0);
@@ -187,26 +187,26 @@ describe("autosaving drafts", () => {
 
   it("saves a reply as it is typed, and brings it back the next time the message is opened", async () => {
     mockApi(); await render(); await openFirst();
-    await type(host.querySelector('textarea[aria-label="Your reply"]'), "Dear Pam, here you go");
+    await type(host.querySelector('[aria-label="Your reply"][contenteditable="true"]'), "Dear Pam, here you go");
     await act(async () => { await new Promise((r) => setTimeout(r, 1700)); }); await settle();
     const save = calls.filter((c) => c.url.endsWith("/api/mail/drafts"))[0];
-    expect(body(save)).toMatchObject({ department: "sales", replyKind: "email", replyId: A, body: "Dear Pam, here you go" });
+    expect(body(save)).toMatchObject({ department: "sales", replyKind: "email", replyId: A, bodyHtml: "<div>Dear Pam, here you go</div>" });
     detail = { ...detail, draft: DRAFT_REPLY };
     await click(document.querySelectorAll("section[aria-label='Messages'] ul button")[1] as HTMLElement); await openFirst();
-    expect((host.querySelector('textarea[aria-label="Your reply"]') as HTMLTextAreaElement).value).toBe("Dear Pam, ");
+    expect(host.querySelector('[aria-label="Your reply"][contenteditable="true"]')!.textContent).toBe("Dear Pam, ");
   }, 10000);
 
   it("saves what was typed when the person leaves before the delay ends", async () => {
     mockApi(); await render(); await click(btn("New email"));
-    await type(host.querySelector('textarea[aria-label="Message"]'), "Do not lose me");
+    await type(host.querySelector('[aria-label="Message"][contenteditable="true"]'), "Do not lose me");
     await click(box("Sent"));                                                                      // leaves the editor
-    expect(body(calls.filter((c) => c.url.endsWith("/api/mail/drafts"))[0])).toMatchObject({ body: "Do not lose me" });
+    expect(body(calls.filter((c) => c.url.endsWith("/api/mail/drafts"))[0])).toMatchObject({ bodyHtml: "<div>Do not lose me</div>" });
   });
 
   it("says so when the draft could not be saved", async () => {
     mockApi(); await render(); await click(btn("New email"));
     vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ success: false, error: "no" }), { status: 500 })));
-    await type(host.querySelector('textarea[aria-label="Message"]'), "x");
+    await type(host.querySelector('[aria-label="Message"][contenteditable="true"]'), "x");
     await act(async () => { await new Promise((r) => setTimeout(r, 1700)); }); await settle();
     expect(host.textContent).toContain("Draft not saved");
   }, 10000);
@@ -216,14 +216,14 @@ describe("undo send", () => {
   it("counts down, lets the person undo, and sends when the time is up", async () => {
     mockApi(); localStorage.setItem("vink.mail.undoSeconds", "5");
     await render(); await click(btn("New email"));
-    await type(host.querySelector('input[aria-label="To"]'), "a@b.co"); await type(host.querySelector('input[aria-label="Subject"]'), "Hi"); await type(host.querySelector('textarea[aria-label="Message"]'), "Hello there");
+    await type(host.querySelector('input[aria-label="To"]'), "a@b.co"); await type(host.querySelector('input[aria-label="Subject"]'), "Hi"); await type(host.querySelector('[aria-label="Message"][contenteditable="true"]'), "Hello there");
     vi.useFakeTimers({ shouldAdvanceTime: false });
     await act(async () => { btn("Send from sales@vink.co.za")!.click(); });
     expect(host.textContent).toContain("Sending in 5…"); expect(posts("/send")).toHaveLength(0);
     await act(async () => { await vi.advanceTimersByTimeAsync(2000); }); expect(host.textContent).toContain("Sending in 3…");
     await act(async () => { btn("Undo")!.click(); });
     expect(host.textContent).toContain("Not sent. Your message is still here."); await act(async () => { await vi.advanceTimersByTimeAsync(10_000); }); expect(posts("/send")).toHaveLength(0);
-    expect((host.querySelector('textarea[aria-label="Message"]') as HTMLTextAreaElement).value).toBe("Hello there");
+    expect(host.querySelector('[aria-label="Message"][contenteditable="true"]')!.textContent).toBe("Hello there");
     await act(async () => { btn("Send from sales@vink.co.za")!.click(); });
     await act(async () => { await vi.advanceTimersByTimeAsync(5000); });
     expect(posts("/send")).toHaveLength(1);
@@ -232,11 +232,11 @@ describe("undo send", () => {
   it("sends at once, instead of losing the message, if the person leaves during the countdown", async () => {
     mockApi(); localStorage.setItem("vink.mail.undoSeconds", "10");
     await render(); await openFirst();
-    await type(host.querySelector('textarea[aria-label="Your reply"]'), "Thanks, done.");
+    await type(host.querySelector('[aria-label="Your reply"][contenteditable="true"]'), "Thanks, done.");
     await act(async () => { btn("Send reply")!.click(); });
     expect(posts("/reply")).toHaveLength(0);
     await click(box("Sent"));
-    expect(posts("/reply")).toHaveLength(1); expect(body(posts("/reply")[0])).toEqual({ body: "Thanks, done." });
+    expect(posts("/reply")).toHaveLength(1); expect(body(posts("/reply")[0])).toEqual({ bodyHtml: "<div>Thanks, done.</div>" });
   });
 
   it("can be switched off or changed, and the choice is remembered", async () => {
@@ -250,9 +250,9 @@ describe("undo send", () => {
 
   it("shows the server's error and keeps the message when sending fails", async () => {
     mockApi(); failSend = true; await render(); await click(btn("New email"));
-    await type(host.querySelector('input[aria-label="To"]'), "a@b.co"); await type(host.querySelector('input[aria-label="Subject"]'), "Hi"); await type(host.querySelector('textarea[aria-label="Message"]'), "Hello there");
+    await type(host.querySelector('input[aria-label="To"]'), "a@b.co"); await type(host.querySelector('input[aria-label="Subject"]'), "Hi"); await type(host.querySelector('[aria-label="Message"][contenteditable="true"]'), "Hello there");
     await click(btn("Send from sales@vink.co.za"));
     expect(host.querySelector('[role="alert"]')?.textContent).toContain("could not be sent");
-    expect((host.querySelector('textarea[aria-label="Message"]') as HTMLTextAreaElement).value).toBe("Hello there");
+    expect(host.querySelector('[aria-label="Message"][contenteditable="true"]')!.textContent).toBe("Hello there");
   });
 });
