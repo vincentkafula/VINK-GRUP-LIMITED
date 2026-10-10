@@ -618,12 +618,15 @@ export default function App() {
       <Toaster position="top-right" theme={theme.resolved} richColors closeButton duration={4000} />
 
       {showPersistentNav && (
-        <PersistentTopNav active={activeSiteSection} onSelect={goToSection} onHome={goHome} />
+        <PersistentTopNav active={activeSiteSection} onSelect={goToSection} onHome={goHome}
+          isLoggedIn={isLoggedIn} userName={userRole || undefined} onLogin={() => setShowLogin(true)}
+          onProfile={() => startTransition(() => { mount("postLogin"); setShowPostLogin(true); })} />
       )}
 
       {/* ── Homepage ────────────────────────────────────────────────────────── */}
       <ErrorBoundary>
         <Header
+          loginOpen={showLogin} onLoginOpenChange={setShowLogin}
           onHome={goHome}
           onDashboardSelect={(id) => {
             setIsLoggedIn(true);

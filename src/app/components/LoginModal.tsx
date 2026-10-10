@@ -3,7 +3,6 @@ import { useState, useRef, useEffect } from "react";
 import {
   X, Lock, Hash, TriangleAlert, HelpCircle, Loader2, ShieldAlert,
 } from "lucide-react";
-import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { authApi } from "../services/apiClient";
 import { rbacApi } from "../services/apiClient";
 import { demoLogin } from "../services/demoMode";
@@ -207,28 +206,16 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-6"
-      // the sign-in panel starts below the site header, so Personal, Business and Corporate stay visible (inner pages are offset by theme.css instead)
-      style={{ top: "var(--vk-header-h, 0px)", background: "rgba(10,8,30,0.85)", backdropFilter: "blur(8px)" }}
-      onClick={onClose}
-    >
+    // The sign-in is a full page like every other: the site header (Personal, Business, Corporate) is above it and theme.css starts the page below the header.
+    <div data-theme-aware className="fixed inset-0 z-50 flex flex-col overflow-y-auto" style={{ background: "var(--vk-bg)" }}>
       <div
         ref={panelRef}
-        className="relative w-full overflow-hidden flex flex-col"
-        style={{
-          maxWidth: 1040,
-          maxHeight: "96vh",
-          borderRadius: 16,
-          background: "color-mix(in srgb, #f3ece0 var(--vk-wash), var(--vk-surface))",
-          border: "1px solid rgba(15,61,36,0.15)",
-          boxShadow: "0 40px 100px rgba(0,0,0,0.6)",
-        }}
-        onClick={(e) => e.stopPropagation()}
+        className="relative w-full flex flex-1 flex-col"
+        style={{ background: "color-mix(in srgb, #f3ece0 var(--vk-wash), var(--vk-surface))" }}
       >
         {/* ── Top bar ── */}
         <div className="flex items-center justify-between px-6 py-4 flex-shrink-0" style={{ borderBottom: "1px solid #e8e0d3" }}>
-          <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-8 w-auto object-contain" />
+          <p className="text-[13px] font-semibold uppercase tracking-[2px] text-fg-muted">Sign in</p>
           <div className="flex items-center gap-3">
             <button className="hidden sm:flex items-center gap-1.5 text-[13px] rounded-full px-3.5 py-2 border border-[#e8e0d3] text-fg-muted hover:border-[#2E0B10] hover:text-fg transition-colors">
               <HelpCircle className="w-3.5 h-3.5" /> Need help signing in?

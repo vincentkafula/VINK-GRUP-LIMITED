@@ -16,11 +16,12 @@ const open = () => act(async () => { window.dispatchEvent(new Event("vink:open-l
 const panel = () => [...document.querySelectorAll<HTMLElement>(".fixed.inset-0")].find((e) => e.textContent!.includes("Need help signing in"));
 
 describe("the sign-in panel and the site header", () => {
-  it("starts below the header, so Personal, Business and Corporate stay visible and are not covered", async () => {
+  it("opens as a full page of its own, with no second logo, and leaves the site header to the App", async () => {
     await open();
-    expect(panel()).toBeTruthy(); expect(panel()!.style.top).toBe("var(--vk-header-h, 0px)");
-    const nav = host.querySelector('nav[aria-label="Primary"]')!;
-    expect([...nav.querySelectorAll("a")].map((a) => a.textContent)).toEqual(["Personal", "Business", "Corporate"]);
+    const p = panel()!; expect(p).toBeTruthy();
+    expect(p.style.background).toContain("var(--vk-bg)"); expect(p.className).toContain("overflow-y-auto");          // a page, not a dimmed dialog over the home page
+    expect(p.querySelector('img[alt="VINK"]')).toBeNull();                                                          // the logo is in the header, once
+    expect(p.textContent).toContain("Username"); expect(p.textContent).toContain("Password");
   });
 
   it("closes when a section is chosen from the header", async () => {

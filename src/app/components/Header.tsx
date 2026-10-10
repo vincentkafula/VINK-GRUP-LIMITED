@@ -15,6 +15,9 @@ interface HeaderProps {
 
   isLoggedIn?: boolean;
   userName?: string;
+  /** Whether the sign-in page is open, when the App decides (it shows the site header above the page). */
+  loginOpen?: boolean;
+  onLoginOpenChange?: (open: boolean) => void;
 }
 
 type NavItem = Section;
@@ -50,9 +53,12 @@ function isStaffMode() {
   return sessionStorage.getItem("vink_staff_mode") === "1";
 }
 
-export function Header({ onHome, onDashboardSelect, onSubNavClick, onOpenProfile, isLoggedIn = false, userName }: HeaderProps) {
+export function Header({ onHome, onDashboardSelect, onSubNavClick, onOpenProfile, isLoggedIn = false, userName, loginOpen, onLoginOpenChange }: HeaderProps) {
   const [isHelpModalOpen, setIsHelpModalOpen]   = useState(false);
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(isStaffMode());
+  // The sign-in page is open or closed by the App when it passes loginOpen (so the site header can be shown above it), otherwise by this header alone.
+  const [ownLoginOpen, setOwnLoginOpen] = useState(isStaffMode());
+  const isLoginModalOpen = loginOpen ?? ownLoginOpen;
+  const setIsLoginModalOpen = (open: boolean) => { setOwnLoginOpen(open); onLoginOpenChange?.(open); };
   const [mobileOpen, setMobileOpen]             = useState(false);
   // Over the top of the home page the header is transparent and sits on the hero's own background, so there is no seam between them. It turns
   // solid as soon as the page scrolls (or a menu opens), and its height is published as --vk-header-h so the hero can slide up underneath it.
