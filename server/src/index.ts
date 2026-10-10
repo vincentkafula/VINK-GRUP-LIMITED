@@ -76,6 +76,12 @@ import { createMoneyAdminRouter } from "./routes/moneyAdminRouter.js";
 import { createFieldCrypto } from "./portal/fieldCrypto.js";
 import { createConfigAdminRouter, createConfigReader } from "./config/configService.js";
 import { createInboundRouter } from "./inbound/router.js";
+import { createMetaClient, metaConfigFromEnv } from "./services/social/meta.js";
+import { createSocialService } from "./services/social/socialService.js";
+import { createSocialRouter } from "./routes/socialRouter.js";
+import { waConfigFromEnv, createWaClient } from "./services/whatsapp/cloud.js";
+import { createWhatsAppService } from "./services/whatsapp/whatsappService.js";
+import { createWhatsAppWebhookRouter, createWhatsAppInfoRouter, createWhatsAppRouter } from "./routes/whatsappRouter.js";
 import { PgInboundStore, MemoryInboundStore } from "./inbound/store.js";
 
 const PORT = Number(process.env.PORT) || 3001;
@@ -118,6 +124,20 @@ if (mailService && process.env.NODE_ENV !== "test") {
   const tick = () => mailService.sendDue().catch((e) => console.error("[mail] scheduled send failed:", e instanceof Error ? e.message : e));
   setTimeout(tick, 15_000).unref(); setInterval(tick, 30_000).unref();
 }
+
+// Posts to Facebook, Instagram and Threads, by hand or automatic (services/social). Scheduled and automatic posts are sent by a worker that runs every minute.
+const metaConfig = metaConfigFromEnv();
+const socialService = pool ? createSocialService({ db: pool, meta: createMetaClient({ config: metaConfig }), config: metaConfig }) : undefined;
+if (socialService && process.env.NODE_ENV !== "test") {
+  const tick = () => socialService.tick().catch((e) => console.error("[social] worker failed:", e instanceof Error ? e.message : e));
+  setTimeout(tick, 20_000).unref(); setInterval(tick, 60_000).unref();
+}
+
+// Customer chat on WhatsApp (services/whatsapp): Meta calls the webhook (raw body for its signature, so before the JSON parser); staff answer from the Management Panel.
+const waConfig = waConfigFromEnv();
+const whatsappService = pool && mailService ? createWhatsAppService({ db: pool, wa: createWaClient({ config: waConfig }), config: waConfig, departmentsFor: (u) => mailService.departmentsFor(u) }) : undefined;
+if (whatsappService) app.use("/api/webhooks/whatsapp", createWhatsAppWebhookRouter({ svc: whatsappService, config: waConfig }));
+app.use("/api/whatsapp", createWhatsAppInfoRouter({ config: waConfig }));
 
 // Incoming email from Resend (raw body for the signature check, so also before the JSON parser). Staff-only list endpoints.
 app.use("/api/inbound", createInboundRouter({
@@ -238,6 +258,8 @@ if (contactService) {
   // Department mail for the management panel: owners and superadmins see every department, a department manager sees only the department(s) they are approved for.
   app.use("/api/shared-files", createShareRouter(mailFiles!));          // public: the link is the secret, and it expires
   app.use("/api/mail", requireAuth, createMailRouter({ db: pool!, svc: mailService! }));
+  if (socialService) app.use("/api/admin/social", requireAuth, createSocialRouter({ db: pool!, svc: socialService }));
+  if (whatsappService) app.use("/api/admin/whatsapp", requireAuth, createWhatsAppRouter({ db: pool!, svc: whatsappService }));
 }
 app.use("/api/global",             globalBankingRouter);
 app.use("/api/financial",          financialReportsRouter);

@@ -20,6 +20,7 @@ export const MODULE_SECTIONS: readonly string[] = [
   "Bank Management", "Payment Management",
   "Company Registration Management",
   "Social Responsibility Management",
+  "Social Media Management",
 ];
 // A live list: when a Super Administrator makes (or switches off) a department it is rebuilt in place, so everything that checks it sees the change.
 export const SECTIONS: string[] = [...MODULE_SECTIONS, ...allDepartments().map((d) => d.name)];

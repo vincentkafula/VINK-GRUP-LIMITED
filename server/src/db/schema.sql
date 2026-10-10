@@ -1595,3 +1595,59 @@ CREATE TABLE IF NOT EXISTS custom_departments (
   created_by     UUID REFERENCES users(id) ON DELETE SET NULL,
   created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Social media: posts to Facebook, Instagram and Threads (services/social). A post is written once, goes out now or at scheduled_at, and keeps what each network answered.
+-- kind: manual | blog | offer | career | launch | product. auto_key makes an automatic post happen once (for example "launch-2027-01-05" or "product-123").
+CREATE TABLE IF NOT EXISTS social_posts (
+  id              UUID PRIMARY KEY,
+  kind            TEXT NOT NULL,
+  text            TEXT NOT NULL,
+  link            TEXT,
+  image_url       TEXT,
+  networks        TEXT NOT NULL,
+  status          TEXT NOT NULL CHECK (status IN ('scheduled','posting','posted','partial','failed','cancelled')),
+  scheduled_at    TIMESTAMPTZ NOT NULL,
+  results         TEXT NOT NULL DEFAULT '{}',
+  auto_key        TEXT UNIQUE,
+  created_by      UUID,
+  created_by_name TEXT NOT NULL,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  posted_at       TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS idx_social_posts_due ON social_posts(status, scheduled_at);
+CREATE TABLE IF NOT EXISTS social_settings (
+  key        TEXT PRIMARY KEY,
+  value      TEXT NOT NULL,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- WhatsApp: a conversation is one phone number (wa_id) talking to VINK; staff answer from the Management Panel (services/whatsapp).
+CREATE TABLE IF NOT EXISTS wa_conversations (
+  id              UUID PRIMARY KEY,
+  wa_id           TEXT NOT NULL UNIQUE,
+  name            TEXT NOT NULL DEFAULT '',
+  department      TEXT,
+  state           TEXT NOT NULL DEFAULT 'menu',
+  status          TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open','answered','closed')),
+  opted_in        BOOLEAN NOT NULL DEFAULT false,
+  last_inbound_at TIMESTAMPTZ,
+  last_at         TIMESTAMPTZ NOT NULL DEFAULT now(),
+  last_preview    TEXT NOT NULL DEFAULT '',
+  closed_notice_on TEXT,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_wa_conversations_dept ON wa_conversations(department, last_at DESC);
+CREATE TABLE IF NOT EXISTS wa_messages (
+  id              UUID PRIMARY KEY,
+  conversation_id UUID NOT NULL REFERENCES wa_conversations(id) ON DELETE CASCADE,
+  direction       TEXT NOT NULL CHECK (direction IN ('in','out')),
+  body            TEXT NOT NULL,
+  kind            TEXT NOT NULL DEFAULT 'text',
+  wa_message_id   TEXT UNIQUE,
+  status          TEXT NOT NULL DEFAULT 'sent',
+  error           TEXT,
+  by_user         UUID,
+  by_name         TEXT NOT NULL DEFAULT '',
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_wa_messages_conv ON wa_messages(conversation_id, created_at);
