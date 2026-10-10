@@ -18,7 +18,7 @@ export const MAX_FILES_PER_EMAIL = 5;
 export const MAX_TOTAL_BYTES = 60 * 1024 * 1024;         // all files of one email
 export const ATTACH_LIMIT_BYTES = 15 * 1024 * 1024;      // up to this much is attached; more than this goes as links
 export const LINK_DAYS = 7;
-const STAGED_HOURS = 24;
+const STAGED_HOURS = 24 * 7;
 const MAX_INBOUND_FETCH = 50 * 1024 * 1024;
 
 /** File types that run on a computer. They can still be downloaded, but the panel warns before they are opened. */
@@ -150,6 +150,18 @@ export function createMailFiles(deps: { db: Db; apiKey?: string; fetchImpl?: typ
     return { ok: true, value: { id, filename: fname, contentType: safeType(type), size: data.length, status: "stored", risky: isRiskyFile(fname), scan: v.status, scanDetail: v.detail, contentId: null } };
   }
 
+  /** Which of these ids are still this person's unsent uploads (a draft remembers ids; the files expire if the draft is left for a week). */
+  async function staged(userId: string, ids: unknown): Promise<FileInfo[]> {
+    if (!Array.isArray(ids)) return [];
+    const out: FileInfo[] = [];
+    for (const id of ids.slice(0, MAX_FILES_PER_EMAIL)) {
+      if (typeof id !== "string" || !/^[0-9a-f-]{36}$/i.test(id)) continue;
+      const r = (await db.query(`SELECT id, filename, content_type, size, status, scan_status, scan_detail, content_id FROM mail_files WHERE id = $1 AND kind = 'upload' AND uploaded_by = $2`, [id, userId])).rows[0];
+      if (r) out.push(info(r));
+    }
+    return out;
+  }
+
   async function discard(userId: string, fileId: string): Promise<boolean> {
     const r = await db.query(`DELETE FROM mail_files WHERE id = $1 AND kind = 'upload' AND uploaded_by = $2 RETURNING id`, [fileId, userId]);
     return r.rows.length > 0;
@@ -198,6 +210,6 @@ export function createMailFiles(deps: { db: Db; apiKey?: string; fetchImpl?: typ
   /** Resolves when the background fetches that are running have finished (used by tests and by shutdown). */
   const idle = async () => { while (background.size) await Promise.all([...background]); };
 
-  return { recordInbound, forEmail, meta, read, stage, discard, claim, planLinks, bindSent, byShareToken, idle };
+  return { recordInbound, forEmail, meta, read, stage, discard, claim, staged, planLinks, bindSent, byShareToken, idle };
 }
 export type MailFiles = ReturnType<typeof createMailFiles>;

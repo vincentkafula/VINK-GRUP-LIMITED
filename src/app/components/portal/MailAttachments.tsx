@@ -55,7 +55,7 @@ export function useAttachments() {
     try { await authFetch(`${API_BASE}/api/mail/uploads/${id}`, { method: "DELETE" }); } catch { /* it is thrown away after a day anyway */ }
   };
   const clear = () => { setFiles([]); setError(""); };
-  return { files, busy, error, total, add, remove, clear, ids: files.map((f) => f.id) };
+  return { files, busy, error, total, add, remove, clear, set: setFiles, ids: files.map((f) => f.id) };
 }
 export type Attachments = ReturnType<typeof useAttachments>;
 

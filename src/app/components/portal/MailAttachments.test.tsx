@@ -33,7 +33,7 @@ function mockApi() {
     return new Response(JSON.stringify(body), { status });
   }));
 }
-beforeEach(() => { localStorage.clear(); host = document.createElement("div"); document.body.appendChild(host); root = createRoot(host); });
+beforeEach(() => { localStorage.clear(); localStorage.setItem("vink.mail.undoSeconds", "0"); host = document.createElement("div"); document.body.appendChild(host); root = createRoot(host); });
 afterEach(() => { act(() => root.unmount()); host.remove(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 const settle = () => act(async () => { await new Promise((r) => setTimeout(r, 10)); });
 const btn = (t: string) => [...document.querySelectorAll("button")].find((b) => b.textContent?.includes(t) || b.getAttribute("aria-label")?.includes(t)) as HTMLButtonElement | undefined;

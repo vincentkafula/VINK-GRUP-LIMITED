@@ -108,11 +108,15 @@ app.use("/api/payments/issuer", createPaymentologyFastRouter({ tokens: tokenCard
 
 
 // Files in department mail: attachments of incoming email, files staff attach, and the expiring links for big ones (services/mailFiles.ts).
+const mailEmail = createEmailSender();
 const mailFiles = pool ? createMailFiles({ db: pool, apiKey: process.env.RESEND_API_KEY?.trim() || undefined, scanner: createScanner(process.env) }) : undefined;
+
+const mailService = pool ? createMailService({ db: pool, mail: mailEmail, files: mailFiles }) : undefined;
 
 // Incoming email from Resend (raw body for the signature check, so also before the JSON parser). Staff-only list endpoints.
 app.use("/api/inbound", createInboundRouter({
   files: mailFiles,
+  onStored: mailService ? (id) => mailService.fileNewEmail(id) : undefined,
   store: pool ? new PgInboundStore(pool) : new MemoryInboundStore(),
   webhookSecret: process.env.RESEND_WEBHOOK_SECRET?.trim() || undefined,
   apiKey: process.env.RESEND_API_KEY?.trim() || undefined,
@@ -226,7 +230,7 @@ if (contactService) {
   app.use("/api/admin/contact", requireAuth, requireRole("owner", "superadmin"), createContactAdminRouter({ db: pool!, svc: contactService }));
   // Department mail for the management panel: owners and superadmins see every department, a department manager sees only the department(s) they are approved for.
   app.use("/api/shared-files", createShareRouter(mailFiles!));          // public: the link is the secret, and it expires
-  app.use("/api/mail", requireAuth, createMailRouter({ db: pool!, svc: createMailService({ db: pool!, mail: createEmailSender(), files: mailFiles }) }));
+  app.use("/api/mail", requireAuth, createMailRouter({ db: pool!, svc: mailService! }));
 }
 app.use("/api/global",             globalBankingRouter);
 app.use("/api/financial",          financialReportsRouter);

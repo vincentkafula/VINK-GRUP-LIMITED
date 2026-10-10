@@ -1451,3 +1451,37 @@ ALTER TABLE mail_files ADD COLUMN IF NOT EXISTS scan_status TEXT NOT NULL DEFAUL
 ALTER TABLE mail_files ADD COLUMN IF NOT EXISTS scan_detail TEXT;
 ALTER TABLE mail_files ADD COLUMN IF NOT EXISTS scanned_at TIMESTAMPTZ;
 ALTER TABLE mail_files ADD COLUMN IF NOT EXISTS content_id TEXT;
+
+-- Department mail folders, stars, drafts and blocked senders (see services/mailService.ts). A message with no row in mail_flags is in the inbox and not starred.
+CREATE TABLE IF NOT EXISTS mail_flags (
+  kind        TEXT NOT NULL CHECK (kind IN ('web','email')),
+  message_id  UUID NOT NULL,
+  folder      TEXT NOT NULL DEFAULT 'inbox' CHECK (folder IN ('inbox','spam','trash')),
+  starred     BOOLEAN NOT NULL DEFAULT false,
+  updated_by  UUID REFERENCES users(id) ON DELETE SET NULL,
+  updated_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (kind, message_id)
+);
+-- Email from these addresses goes straight to Spam in that department.
+CREATE TABLE IF NOT EXISTS mail_blocked_senders (
+  department  TEXT NOT NULL,
+  email       TEXT NOT NULL,
+  blocked_by  UUID REFERENCES users(id) ON DELETE SET NULL,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (department, email)
+);
+-- A person's unfinished emails and replies. A reply draft has reply_kind/reply_id (one per person per message).
+CREATE TABLE IF NOT EXISTS mail_drafts (
+  id             UUID PRIMARY KEY,
+  user_id        UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  department     TEXT NOT NULL,
+  to_addr        TEXT NOT NULL DEFAULT '',
+  subject        TEXT NOT NULL DEFAULT '',
+  body           TEXT NOT NULL DEFAULT '',
+  reply_kind     TEXT,
+  reply_id       UUID,
+  attachment_ids TEXT[] NOT NULL DEFAULT '{}',
+  updated_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_mail_drafts_user ON mail_drafts(user_id, department, updated_at DESC);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_mail_drafts_reply ON mail_drafts(user_id, reply_kind, reply_id) WHERE reply_id IS NOT NULL;

@@ -17,6 +17,8 @@ export interface InboundDeps {
   webhookSecret?: string;
   /** Where the attachments of incoming email are recorded and fetched (see services/mailFiles.ts). Without it attachments are ignored. */
   files?: MailFiles;
+  /** Called once for each newly stored email (the mail service uses it to send mail from blocked senders to Spam). A failure here never loses the email. */
+  onStored?: (emailId: string) => Promise<void>;
   apiKey?: string;
   fetchImpl?: typeof fetch;
   now?: () => Date;
@@ -57,6 +59,10 @@ export function createInboundRouter(d: InboundDeps): Router {
       if (saved && d.files) {
         try { const row = await d.store.find(emailId); if (row) await d.files.recordInbound(row.id, emailId, row.department); }
         catch (e) { console.error(`[inbound] attachments of ${emailId} were not recorded:`, e instanceof Error ? e.message : e); }
+      }
+      if (saved && d.onStored) {
+        try { const row = await d.store.find(emailId); if (row) await d.onStored(row.id); }
+        catch (e) { console.error(`[inbound] filing of ${emailId} failed:`, e instanceof Error ? e.message : e); }
       }
       res.json({ success: true, stored: saved });
     } catch (e) {

@@ -21,7 +21,7 @@ function mockApi(opts: { departments?: unknown[]; messages?: unknown[] } = {}) {
     return new Response(JSON.stringify(body), { status });
   }));
 }
-beforeEach(() => { localStorage.clear(); host = document.createElement("div"); document.body.appendChild(host); root = createRoot(host); });
+beforeEach(() => { localStorage.clear(); localStorage.setItem("vink.mail.undoSeconds", "0"); host = document.createElement("div"); document.body.appendChild(host); root = createRoot(host); });
 afterEach(() => { act(() => root.unmount()); host.remove(); vi.unstubAllGlobals(); });
 const settle = () => act(async () => { await new Promise((r) => setTimeout(r, 10)); });
 const render = async () => { await act(async () => { root.render(<MailPanel />); }); await settle(); await settle(); };
@@ -31,7 +31,7 @@ const type = async (el: HTMLElement | null, v: string) => { await act(async () =
 describe("MailPanel", () => {
   it("shows only the departments the server returned, with the waiting count, and loads the first department's messages", async () => {
     mockApi(); await render();
-    expect([...document.querySelectorAll('[role="tab"]')].map((t) => t.textContent)).toEqual(["Sales2", "Customer Support"]);
+    expect([...document.querySelectorAll('[aria-label="Departments"] [role="tab"]')].map((t) => t.textContent)).toEqual(["Sales2", "Customer Support"]);
     expect(host.textContent).toContain("sales@vink.co.za");
     expect(calls.some((c) => c.url.includes("/api/mail/messages?department=sales&box=inbox&status=open"))).toBe(true);
     expect(host.textContent).toContain("Thandi Nkosi"); expect(host.textContent).toContain("from the website");
@@ -40,7 +40,7 @@ describe("MailPanel", () => {
   it("tells a person who manages no department how to get one", async () => {
     mockApi({ departments: [] }); await render();
     expect(host.textContent).toContain("do not manage any department mailbox"); expect(host.textContent).toContain("Apply for a Section");
-    expect(document.querySelectorAll('[role="tab"]')).toHaveLength(0);
+    expect(document.querySelectorAll('[aria-label="Departments"] [role="tab"]')).toHaveLength(0);
   });
 
   it("opens a message as plain text with the replies already sent, and sends a reply to the right message", async () => {
@@ -69,7 +69,7 @@ describe("MailPanel", () => {
 
   it("switching department or box asks for that department's messages", async () => {
     mockApi(); await render();
-    await act(async () => { (document.querySelectorAll('[role="tab"]')[1] as HTMLButtonElement).click(); }); await settle();
+    await act(async () => { (document.querySelectorAll('[aria-label="Departments"] [role="tab"]')[1] as HTMLButtonElement).click(); }); await settle();
     expect(calls.some((c) => c.url.includes("messages?department=support&box=inbox"))).toBe(true);
     await act(async () => { btn("Sent")!.click(); }); await settle();
     expect(calls.some((c) => c.url.includes("messages?department=support&box=sent"))).toBe(true);
