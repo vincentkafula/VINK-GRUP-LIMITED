@@ -3,7 +3,8 @@ import vinkLogo from "../../imports/LOGO_FINAL.png";
 
 /** Pieces shared by the home header and the strip that stays on top of inner pages, so the two always look and behave the same. */
 
-export const NOTICE_H = 32, BAR_H = 56;
+/** The header is the same height on every page: the notice, then a 64px bar and its 1px rule (the bar here includes the rule). theme.css offsets full-screen pages by NOTICE_H + BAR_H. */
+export const NOTICE_H = 32, BAR_H = 65;
 
 /** The pre-launch notice. It is a legal statement, so it stays on every page; only its length changes with the screen. */
 export function LaunchNotice() {
