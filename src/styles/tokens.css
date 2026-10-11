@@ -1,36 +1,47 @@
 /*
- * VINK design tokens: ink, crimson and gold (from the eagle crest).
+ * VINK design tokens: brand red #C8102E, dark navy #101828, white and cool light greys.
  *
  * One source for colour, type, radius and shadow. Light is the default; `.dark` on <html> switches the theme (see ThemeProvider).
  * Every text colour below is checked to meet WCAG 2.2 AA (4.5:1) on the surfaces it is meant for.
- *   light: text 17:1, muted 5.9:1, subtle 4.9:1 on the page; white on brand 10:1
- *   dark:  text 15.7:1, muted 8:1, subtle 5.9:1 on a surface; ink on gold 8.4:1
+ *   light: navy text 17:1, muted 7.4:1, subtle 4.8:1 on the page; white on brand red 5.9:1 (7.8 hover, 9.3 pressed)
+ *   dark:  text 17:1, muted 11:1, subtle 6.9:1 on a surface; white on brand red 5.9:1
+ * Red as a FILL is #C8102E on both themes. Red as TEXT or an icon: #C8102E on light surfaces (5.9:1), but on dark surfaces
+ * it is only 3.0:1, so --vk-crimson-text switches to the lighter tint #FF6B81 (6.5:1) there.
  * Components use the utilities (bg-surface, text-fg, text-fg-muted, border-line, bg-brand ...), not hex values.
+ * Status colours (ok / warn / bad / info) are deliberately NOT part of the brand and are left alone.
  */
 :root {
-  --vk-bg: #faf8f4;
+  --vk-bg: #f9fafb;
   --vk-surface: #ffffff;
-  --vk-surface-2: #f2efe8;
-  --vk-line: #e4dfd3;
-  --vk-line-strong: #cfc8b8;
-  --vk-fg: #14161d;
-  --vk-fg-muted: #5b6070;
-  --vk-fg-subtle: #6b7080;
+  --vk-surface-2: #f2f4f7;
+  --vk-line: #eaecf0;
+  --vk-line-strong: #d0d5dd;
+  --vk-fg: #101828;               /* dark navy: headings and body text */
+  --vk-fg-muted: #475467;
+  --vk-fg-subtle: #667085;
 
-  --vk-brand: #8b0000;            /* crimson: primary actions, links */
-  --vk-brand-hover: #720000;
-  --vk-brand-fg: #ffffff;
-  --vk-crimson-text: #6e0a12;     /* crimson used as TEXT or an icon colour on a surface: 9.6:1 on white */
-  --vk-gold: #c9a84c;             /* gold: highlights, focus accents */
-  --vk-gold-text: #8a6a12;        /* gold that is readable as text on light surfaces */
-  --vk-gold-fg: #14161d;
+  --vk-brand: #c8102e;            /* brand red: primary actions, links, active states, focus */
+  --vk-brand-hover: #a50f27;
+  --vk-brand-active: #8f1027;     /* pressed */
+  --vk-brand-fg: #ffffff;         /* text on a brand-red fill: 5.9:1 */
+  --vk-brand-soft: #fef2f4;       /* a very light red wash for selected rows and subtle highlights */
+  --vk-crimson-text: #c8102e;     /* red used as TEXT or an icon colour on a light surface: 5.9:1 on white */
+  --vk-navy: #101828;             /* dark navy for structural bars (headers, footers, sidebars) */
+  --vk-navy-2: #182230;           /* a step lighter, for an active or raised item on navy */
+
+  /* LEGACY ALIASES. "gold" used to be the brand accent; it now resolves to the brand red so any
+     component still using bg-gold / text-gold / var(--vk-gold) lands on-brand. New code should use
+     the brand tokens above. --vk-gold-fg is white, never dark, so text on the fill stays readable. */
+  --vk-gold: #c8102e;
+  --vk-gold-text: #c8102e;
+  --vk-gold-fg: #ffffff;
 
   --vk-ok: #17784a;      --vk-ok-bg: #e6f4ec;
   --vk-warn: #8f5b00;    --vk-warn-bg: #fbf1dc;
   --vk-bad: #b3202f;     --vk-bad-bg: #fbe8ea;
   --vk-info: #2457c5;    --vk-info-bg: #e8effc;
 
-  --vk-focus: #1d4ed8;
+  --vk-focus: #c8102e;
   --vk-overlay: rgba(12, 14, 20, 0.55);
 
   --vk-shadow-1: 0 1px 2px rgba(20, 22, 29, 0.06), 0 1px 1px rgba(20, 22, 29, 0.04);
@@ -53,22 +64,26 @@
 }
 
 .dark {
-  --vk-bg: #0c0e14;
-  --vk-surface: #141824;
-  --vk-surface-2: #1b2030;
-  --vk-line: #2a3045;
-  --vk-line-strong: #3a4260;
-  --vk-fg: #f3f1ec;
-  --vk-fg-muted: #a9afbf;
-  --vk-fg-subtle: #8e95a8;
+  --vk-bg: #0c111d;
+  --vk-surface: #101828;
+  --vk-surface-2: #182230;
+  --vk-line: #1d2939;
+  --vk-line-strong: #344054;
+  --vk-fg: #f9fafb;
+  --vk-fg-muted: #d0d5dd;
+  --vk-fg-subtle: #98a2b3;
 
-  --vk-brand: #c9a84c;            /* in the dark, gold carries the primary action */
-  --vk-brand-hover: #d8b95e;
-  --vk-brand-fg: #0c0e14;
-  --vk-crimson-text: #e8868d;     /* the same, lightened for dark surfaces: 6.9:1 on the dark surface */
-  --vk-gold: #c9a84c;
-  --vk-gold-text: #c9a84c;
-  --vk-gold-fg: #0c0e14;
+  --vk-brand: #c8102e;            /* the fill stays brand red in the dark; white text on it is 5.9:1 */
+  --vk-brand-hover: #a50f27;
+  --vk-brand-active: #8f1027;
+  --vk-brand-fg: #ffffff;
+  --vk-brand-soft: rgba(200, 16, 46, 0.14);
+  --vk-crimson-text: #ff6b81;     /* red as TEXT or an icon on a dark surface: 6.5:1 on #101828 (plain #c8102e is only 3.0:1) */
+  --vk-navy: #101828;
+  --vk-navy-2: #182230;
+  --vk-gold: #c8102e;             /* legacy alias, see the light theme */
+  --vk-gold-text: #ff6b81;
+  --vk-gold-fg: #ffffff;
 
   --vk-ok: #3dd598;      --vk-ok-bg: rgba(61, 213, 152, 0.12);
   --vk-warn: #f5b544;    --vk-warn-bg: rgba(245, 181, 68, 0.12);
@@ -76,7 +91,7 @@
   --vk-info: #7aa8ff;    --vk-info-bg: rgba(122, 168, 255, 0.12);
 
   --vk-wash: 13%;
-  --vk-focus: #8fb4ff;
+  --vk-focus: #ff6b81;
   --vk-overlay: rgba(0, 0, 0, 0.65);
 
   --vk-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
@@ -126,7 +141,11 @@
   --color-fg-subtle: var(--vk-fg-subtle);
   --color-brand: var(--vk-brand);
   --color-brand-hover: var(--vk-brand-hover);
+  --color-brand-active: var(--vk-brand-active);
   --color-brand-fg: var(--vk-brand-fg);
+  --color-brand-soft: var(--vk-brand-soft);
+  --color-navy: var(--vk-navy);
+  --color-navy-2: var(--vk-navy-2);
   --color-crimson-text: var(--vk-crimson-text);
   --color-gold: var(--vk-gold);
   --color-gold-text: var(--vk-gold-text);
@@ -181,11 +200,14 @@
 .skip-link:focus { top: 12px; }
 
 /*
- * Older pages colour text and icons with the brand crimson written straight into inline styles. On a dark surface that crimson is nearly invisible,
- * so in dark mode any inline TEXT colour that is one of the brand crimsons is shown in the lightened one. Fills and borders are not touched
+ * Older pages colour text and icons with the brand red written straight into inline styles. On a dark surface #c8102e is only 3.0:1,
+ * so in dark mode any inline TEXT colour that is one of the brand reds is shown in the lightened tint instead. Fills and borders are not touched
  * (the selectors match "color:" at the start of the style or after a semicolon, never "background-color:").
+ * Brand reds now: #c8102e = rgb(200,16,46), #a50f27 = rgb(165,15,39), #8f1027 = rgb(143,16,39). The pre-rebrand crimsons are kept in the list as a safety net.
  */
-.dark :is([style^="color: rgb(92, 10, 16)"], [style*="; color: rgb(92, 10, 16)"], [style^="color: rgb(139, 0, 0)"], [style*="; color: rgb(139, 0, 0)"],
+.dark :is([style^="color: rgb(200, 16, 46)"], [style*="; color: rgb(200, 16, 46)"], [style^="color: rgb(165, 15, 39)"], [style*="; color: rgb(165, 15, 39)"],
+          [style^="color: rgb(143, 16, 39)"], [style*="; color: rgb(143, 16, 39)"],
+          [style^="color: rgb(92, 10, 16)"], [style*="; color: rgb(92, 10, 16)"], [style^="color: rgb(139, 0, 0)"], [style*="; color: rgb(139, 0, 0)"],
           [style^="color: rgb(155, 28, 28)"], [style*="; color: rgb(155, 28, 28)"], [style^="color: rgb(176, 64, 64)"], [style*="; color: rgb(176, 64, 64)"]) {
   color: var(--vk-crimson-text) !important;
 }
@@ -196,10 +218,11 @@
  */
 .dark .fixed.inset-0[data-theme-light]:not([data-state]):not([data-theme]):not([data-overlay-ignore]) {
   color-scheme: light;
-  --vk-bg: #faf8f4; --vk-surface: #ffffff; --vk-surface-2: #f2efe8; --vk-line: #e4dfd3; --vk-line-strong: #cfc8b8;
-  --vk-fg: #14161d; --vk-fg-muted: #5b6070; --vk-fg-subtle: #6b7080;
-  --vk-brand: #8b0000; --vk-brand-hover: #720000; --vk-brand-fg: #ffffff; --vk-gold-text: #8a6a12; --vk-gold-fg: #14161d; --vk-crimson-text: #6e0a12;
+  --vk-bg: #f9fafb; --vk-surface: #ffffff; --vk-surface-2: #f2f4f7; --vk-line: #eaecf0; --vk-line-strong: #d0d5dd;
+  --vk-fg: #101828; --vk-fg-muted: #475467; --vk-fg-subtle: #667085;
+  --vk-brand: #c8102e; --vk-brand-hover: #a50f27; --vk-brand-active: #8f1027; --vk-brand-fg: #ffffff; --vk-brand-soft: #fef2f4;
+  --vk-crimson-text: #c8102e; --vk-gold: #c8102e; --vk-gold-text: #c8102e; --vk-gold-fg: #ffffff;
   --vk-ok: #17784a; --vk-ok-bg: #e6f4ec; --vk-warn: #8f5b00; --vk-warn-bg: #fbf1dc; --vk-bad: #b3202f; --vk-bad-bg: #fbe8ea; --vk-info: #2457c5; --vk-info-bg: #e8effc;
-  --vk-focus: #1d4ed8; --vk-shadow-1: 0 1px 2px rgba(20, 22, 29, 0.06), 0 1px 1px rgba(20, 22, 29, 0.04); --vk-shadow-2: 0 4px 12px -2px rgba(20, 22, 29, 0.10), 0 2px 4px -2px rgba(20, 22, 29, 0.06);
+  --vk-focus: #c8102e; --vk-shadow-1: 0 1px 2px rgba(20, 22, 29, 0.06), 0 1px 1px rgba(20, 22, 29, 0.04); --vk-shadow-2: 0 4px 12px -2px rgba(20, 22, 29, 0.10), 0 2px 4px -2px rgba(20, 22, 29, 0.06);
   background-color: var(--vk-bg); color: var(--vk-fg);
 }

@@ -11,7 +11,7 @@ import { BRAND } from "../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; onNavigate: (item: string) => void; }
 
-const P = BRAND.crimsonDeep;
+const P = BRAND.crimson;
 const CORPORATE_SUB_NAV = ["Account", "Solutions & Credit Cards", "Loan", "Social Responsibility"];
 
 /** Icon and one-line summary for each tab, keyed by the tab label. */
@@ -195,10 +195,10 @@ export function CorporateSocialResponsibilityViewer({ isOpen, onClose, onNavigat
       </div>
 
       {/* Hero */}
-      <header className="relative overflow-hidden text-white" style={{ background: "linear-gradient(135deg,#2E0B10 0%,#5C0A10 55%,#7a1018 100%)" }}>
-        <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-24 size-96 rounded-full opacity-20" style={{ background: "radial-gradient(circle,#C9A84C 0%,transparent 70%)" }} />
+      <header className="relative overflow-hidden text-white" style={{ background: "linear-gradient(135deg,#101828 0%,#8F1027 55%,#8F1027 100%)" }}>
+        <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-24 size-96 rounded-full opacity-20" style={{ background: "radial-gradient(circle,#C8102E 0%,transparent 70%)" }} />
         <div className="relative mx-auto max-w-6xl px-6 py-12 md:py-16">
-          <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/25 px-3 py-1 text-xs font-semibold uppercase tracking-widest" style={{ color: "#E8D9B0" }}>
+          <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/25 px-3 py-1 text-xs font-semibold uppercase tracking-widest" style={{ color: "#FFFFFF" }}>
             <Landmark className="size-3.5" aria-hidden="true" /> Social Responsibility
           </p>
           <h1 className="font-display text-3xl font-bold leading-tight md:text-5xl">Social Development</h1>
@@ -208,7 +208,7 @@ export function CorporateSocialResponsibilityViewer({ isOpen, onClose, onNavigat
           <dl className="mt-8 grid max-w-2xl grid-cols-2 gap-3 sm:grid-cols-4">
             {STATS.map((s) => (
               <div key={s.l} className="rounded-xl border border-white/15 bg-white/10 px-4 py-3">
-                <dd className="text-lg font-bold leading-tight" style={{ color: "#E8D9B0" }}>{s.v}</dd>
+                <dd className="text-lg font-bold leading-tight" style={{ color: "#FFFFFF" }}>{s.v}</dd>
                 <dt className="text-xs uppercase tracking-wider text-white/75">{s.l}</dt>
               </div>
             ))}
@@ -266,7 +266,7 @@ export function CorporateSocialResponsibilityViewer({ isOpen, onClose, onNavigat
           {sections.map((s) => (
             <section key={s.title} id={slug(s.title)} aria-labelledby={slug(s.title) + "-h"} className="scroll-mt-32 space-y-4 rounded-2xl border border-line bg-surface p-6 shadow-card">
               <h3 id={slug(s.title) + "-h"} className="flex items-center gap-3 text-lg font-bold text-fg">
-                <span aria-hidden="true" className="h-5 w-1 rounded-full" style={{ background: BRAND.gold }} />
+                <span aria-hidden="true" className="h-5 w-1 rounded-full" style={{ background: BRAND.crimson }} />
                 {s.title}
               </h3>
               {s.blocks.map((b, i) => <BlockView key={i} b={b} onClose={onClose} />)}
@@ -290,13 +290,13 @@ export function CorporateSocialResponsibilityViewer({ isOpen, onClose, onNavigat
           </div>
 
           {/* Closing call to action */}
-          <div className="rounded-2xl p-6 text-white md:flex md:items-center md:justify-between md:gap-6" style={{ background: "linear-gradient(135deg,#2E0B10,#5C0A10)" }}>
+          <div className="rounded-2xl p-6 text-white md:flex md:items-center md:justify-between md:gap-6" style={{ background: "linear-gradient(135deg,#101828,#8F1027)" }}>
             <div>
               <h3 className="text-lg font-bold">Be part of the launch</h3>
               <p className="mt-1 text-sm text-white/80">Businesses, property owners, NGOs and community organisations: get in touch and work with us from day one.</p>
             </div>
             <div className="mt-4 flex flex-wrap gap-3 md:mt-0 md:flex-shrink-0">
-              <button type="button" onClick={() => { onClose(); contact("Register your interest"); }} className="inline-flex h-11 items-center rounded-full px-6 text-sm font-semibold" style={{ background: BRAND.gold, color: "#14161d" }}>Register your interest</button>
+              <button type="button" onClick={() => { onClose(); contact("Register your interest"); }} className="inline-flex h-11 items-center rounded-full px-6 text-sm font-semibold" style={{ background: "#ffffff", color: BRAND.crimson }}>Register your interest</button>
               <button type="button" onClick={() => { onClose(); contact("Become a partner"); }} className="inline-flex h-11 items-center rounded-full border-2 border-white/60 px-6 text-sm font-semibold">Become a partner</button>
             </div>
           </div>

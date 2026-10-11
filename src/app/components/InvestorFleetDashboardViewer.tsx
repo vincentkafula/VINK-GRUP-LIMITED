@@ -30,7 +30,7 @@ import { DeviceTerminalModal } from "./DeviceTerminalModal";
 
 interface Props { isOpen: boolean; onClose: () => void; investorName?: string; onOpenRevenueDashboard?: () => void }
 
-const NAVY_900 = "#0b1130", NAVY_950 = "#080c22";
+const NAVY_900 = "#101828", NAVY_950 = "#080c22";
 const BLUE = "#2f5fed", PURPLE = "#7a5cf0", GREEN = "#17a869", ORANGE = "#f2790a", RED = "#e0463e";
 const R = (n: number) => "R " + Math.round(n).toLocaleString("en-ZA");
 const R2 = (n: number) => "R " + n.toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 });

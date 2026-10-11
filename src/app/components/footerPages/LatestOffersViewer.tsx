@@ -4,8 +4,7 @@ import { Footer } from "../Footer";
 import { BRAND } from "../../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; }
-const P = BRAND.crimsonDeep;
-const GOLD = BRAND.gold;
+const P = BRAND.crimson;
 
 const OFFERS = [
   { badge: "Best Value", name: "VINK Everyday Cashback", detail: "3% cashback at supermarkets and spaza shops, 1.5% at fuel stations, 0.5% everywhere else." },
@@ -26,7 +25,7 @@ export function LatestOffersViewer({ isOpen, onClose }: Props) {
       <div className="py-16 px-6 text-white" style={{ background: `linear-gradient(135deg,#0F172A,${P})` }}>
         <div className="max-w-4xl mx-auto">
           <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4"
-            style={{ background: "rgba(245,166,35,.2)", color: GOLD }}>Offers</span>
+            style={{ background: "rgba(255,255,255,.16)", color: "#ffffff" }}>Offers</span>
           <h1 className="text-4xl font-black mb-3">Latest Offers</h1>
           <p className="text-white/75 text-lg max-w-2xl leading-relaxed">
             A preview of the card offers and launch promotions VINK is preparing for June 2027.

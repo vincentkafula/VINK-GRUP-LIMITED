@@ -87,7 +87,7 @@ export function Card3DViewer({ isOpen, onClose, image, name, onApply }: Props) {
         {onApply && (
           <button onClick={() => { onClose(); onApply(); }}
             className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold text-white transition-transform hover:scale-[1.03]"
-            style={{ background: "linear-gradient(135deg,#5C0A10,#8B0000)" }}>
+            style={{ background: "linear-gradient(135deg,#8F1027,#C8102E)" }}>
             Apply for this card
           </button>
         )}

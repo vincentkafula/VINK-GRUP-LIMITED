@@ -36,7 +36,7 @@ export const ProtectionSection = memo(function ProtectionSection() {
             <ul className="grid grid-cols-1 min-[420px]:grid-cols-3 gap-3 mb-9 list-none p-0">
               {TRUST_ITEMS.map((t, i) => (
                 <li key={i} className="flex min-[420px]:flex-col md:flex-row items-center min-[420px]:text-center md:text-left gap-3 p-3 rounded-2xl border bg-surface text-fg text-[13px] font-semibold leading-snug shadow-card" style={{ borderColor: "color-mix(in srgb, var(--vk-gold) 40%, var(--vk-line))" }}>
-                  <PremiumIcon icon={t.Icon} accent="#D4AF5A" dark="#1A0D10" size={40} />
+                  <PremiumIcon icon={t.Icon} accent="#FF6B81" dark="#101828" size={40} />
                   <span>{t.label}</span>
                 </li>
               ))}

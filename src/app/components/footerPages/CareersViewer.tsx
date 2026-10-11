@@ -5,8 +5,7 @@ import { BRAND } from "../../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
-const P = BRAND.crimsonDeep;
-const GOLD = BRAND.gold;
+const P = BRAND.crimson;
 
 const BENEFITS = [
   { icon: "💰", title: "Competitive Salaries",     desc: "Market-rate salaries with annual performance reviews" },
@@ -48,10 +47,10 @@ export function CareersViewer({ isOpen, onClose }: Props) {
 
       {/* Hero */}
       <div className="py-20 px-6 text-white relative overflow-hidden"
-        style={{ background: `linear-gradient(135deg,#1B1837 0%,${P} 60%,#9B1C1C 100%)` }}>
+        style={{ background: `linear-gradient(135deg,#101828 0%,${P} 60%,#A50F27 100%)` }}>
         <div className="max-w-4xl mx-auto relative z-10">
           <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4"
-            style={{ background: "rgba(245,166,35,.2)", color: GOLD }}>Join the Team</span>
+            style={{ background: "rgba(255,255,255,.16)", color: "#ffffff" }}>Join the Team</span>
           <h1 className="text-4xl md:text-5xl font-black leading-tight mb-4">
             Build the Future of<br />African Payments.
           </h1>
@@ -130,7 +129,7 @@ export function CareersViewer({ isOpen, onClose }: Props) {
         </section>
 
         {/* Graduate Programme */}
-        <section className="rounded-2xl p-6 text-white" style={{ background: `linear-gradient(135deg,#1B1837,${P})` }}>
+        <section className="rounded-2xl p-6 text-white" style={{ background: `linear-gradient(135deg,#101828,${P})` }}>
           <h2 className="text-xl font-black mb-2">Graduate &amp; Internship Programme</h2>
           <p className="text-white/80 text-sm leading-relaxed mb-4">
             VINK offers a 12-month paid internship programme for recent graduates in Computer Science, Finance, Marketing, and Business Management. Applications open annually in January.

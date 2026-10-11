@@ -64,13 +64,13 @@ export function AuthLinkPage({ kind, isOpen, onClose }: { kind: "reset" | "verif
           <form onSubmit={submitReset} noValidate>
             <label className="block text-[12.5px] font-semibold text-fg mb-1.5" htmlFor="new-password">New password</label>
             <input id="new-password" type="password" autoComplete="new-password" autoFocus value={password} onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-lg border border-[#e8e0d3] px-3 py-2.5 text-[14.5px] mb-4" />
+              className="w-full rounded-lg border border-[#EAECF0] px-3 py-2.5 text-[14.5px] mb-4" />
             <label className="block text-[12.5px] font-semibold text-fg mb-1.5" htmlFor="confirm-password">Repeat the new password</label>
             <input id="confirm-password" type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)}
-              className="w-full rounded-lg border border-[#e8e0d3] px-3 py-2.5 text-[14.5px] mb-4" />
+              className="w-full rounded-lg border border-[#EAECF0] px-3 py-2.5 text-[14.5px] mb-4" />
             {message && <p role="alert" className="flex items-start gap-2 text-[13px] mb-4" style={{ color: "#b3261e" }}><TriangleAlert className="w-4 h-4 shrink-0 mt-0.5" />{message}</p>}
             <button type="submit" disabled={busy} className="w-full flex items-center justify-center gap-2 py-3 rounded-lg font-bold text-[14.5px] disabled:opacity-60"
-              style={{ background: "linear-gradient(135deg,#2E0B10,#0C0E14)", color: "#fdf3e7" }}>
+              style={{ background: "linear-gradient(135deg,#C8102E,#A50F27)", color: "#ffffff" }}>
               {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : null}{busy ? "Saving…" : "Save new password"}
             </button>
           </form>
@@ -79,14 +79,14 @@ export function AuthLinkPage({ kind, isOpen, onClose }: { kind: "reset" | "verif
         {state === "done" && (
           <>
             <p className="flex items-start gap-2 text-[14px] text-fg mb-5"><CheckCircle2 className="w-5 h-5 shrink-0" />{message}</p>
-            <button onClick={goSignIn} className="w-full py-3 rounded-lg font-bold text-[14.5px]" style={{ background: "linear-gradient(135deg,#2E0B10,#0C0E14)", color: "#fdf3e7" }}>Sign in</button>
+            <button onClick={goSignIn} className="w-full py-3 rounded-lg font-bold text-[14.5px]" style={{ background: "linear-gradient(135deg,#C8102E,#A50F27)", color: "#ffffff" }}>Sign in</button>
           </>
         )}
 
         {state === "error" && (
           <>
             <p role="alert" className="flex items-start gap-2 text-[14px] mb-5" style={{ color: "#b3261e" }}><TriangleAlert className="w-5 h-5 shrink-0" />{message}</p>
-            <button onClick={onClose} className="w-full py-3 rounded-lg font-bold text-[14.5px] border border-[#e8e0d3] text-fg">Back to the site</button>
+            <button onClick={onClose} className="w-full py-3 rounded-lg font-bold text-[14.5px] border border-[#EAECF0] text-fg">Back to the site</button>
           </>
         )}
 

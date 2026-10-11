@@ -16,7 +16,7 @@ import { BRAND } from "../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
-const P = BRAND.crimsonDeep;
+const P = BRAND.crimson;
 const GOLD = BRAND.gold;
 
 // ─── Status config ────────────────────────────────────────────────────────────
@@ -255,7 +255,7 @@ function AppDetailDrawer({ app, onClose, onAction }: {
               </button>
               <button onClick={() => setShowInfoForm(true)}
                 className="flex flex-col items-center gap-1.5 py-3 rounded-2xl text-xs font-black text-white transition-all hover:scale-[1.03] active:scale-[0.97]"
-                style={{ background: "linear-gradient(135deg,#9B1C1C,#9B1C1C)" }}>
+                style={{ background: "linear-gradient(135deg,#C8102E,#A50F27)" }}>
                 <MessageSquare className="w-5 h-5" />
                 More Info
               </button>

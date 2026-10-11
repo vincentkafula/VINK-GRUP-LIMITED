@@ -26,7 +26,7 @@ export function DeviceTerminalModal({ device, onClose }: { device: DeviceTermina
   return (
     <div className="fixed inset-0 z-[130] flex items-center justify-center p-5" style={{ background: "rgba(10,14,35,.6)" }} onClick={onClose}>
       <div className="bg-surface rounded-2xl w-full max-w-xl max-h-[88vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-        <div className="p-5 flex items-start justify-between" style={{ background: "linear-gradient(135deg,#0B1330,#1c2a5e)" }}>
+        <div className="p-5 flex items-start justify-between" style={{ background: "linear-gradient(135deg,#101828,#1c2a5e)" }}>
           <div>
             <p className="text-white font-black text-[17px]">{P18Q_SPEC.model}</p>
             <p className="text-white/50 text-[12px] mt-0.5">{P18Q_SPEC.category}</p>

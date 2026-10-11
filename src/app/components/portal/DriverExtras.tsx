@@ -4,7 +4,7 @@ import { SectionPanel, TableCard, Badge, StatCard } from "../dashboards/Dashboar
 import { portalClient, useLoad, Status, Empty, ActionButton, rand, when } from "./ui";
 import { CsvButton, Pager, RangeBar, TrendChart, rangeQuery, saToday, saShift, monthStart, type Range } from "./widgets";
 
-const COLOR = "#F59E0B";
+const COLOR = "#C8102E";
 const call = portalClient("driver");
 
 /** The original dashboard's "Turn on or off": switches this terminal. While it is off the terminal refuses fares. */

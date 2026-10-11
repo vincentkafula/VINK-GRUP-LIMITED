@@ -21,7 +21,7 @@ const PILLS = [
 export const RewardsSection = memo(function RewardsSection() {
   return (
     <section className="relative overflow-hidden py-14 sm:py-20"
-      style={{ background: "radial-gradient(ellipse at 50% 20%,#2E0B10 0%,#150A35 55%,#0D0620 100%)" }}>
+      style={{ background: "radial-gradient(ellipse at 50% 20%,#101828 0%,#150A35 55%,#0D0620 100%)" }}>
       <div className="relative max-w-3xl mx-auto px-4 sm:px-6 text-center">
         <img loading="lazy" decoding="async" src={rewardsIcon} alt="" aria-hidden="true"
           className="w-full max-w-xl mx-auto -mb-2" draggable={false} />

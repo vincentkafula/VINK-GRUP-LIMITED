@@ -6,8 +6,8 @@ import { BRAND } from "../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
-const P  = BRAND.crimsonDeep;
-const PD = "#0C0E14";
+const P  = BRAND.crimson;
+const PD = "#101828";
 const GOLD = BRAND.gold;
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
@@ -208,7 +208,7 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
       </div>
 
       {/* ── Hero banner ── */}
-      <div className="px-6 py-8" style={{ background: `linear-gradient(135deg,${PD} 0%,${P} 60%,#9B1C1C 100%)` }}>
+      <div className="px-6 py-8" style={{ background: `linear-gradient(135deg,${PD} 0%,${P} 60%,#A50F27 100%)` }}>
         <div className="max-w-5xl mx-auto">
           <p className="text-white/60 text-xs uppercase tracking-widest mb-1">VINK Finance · Corporate</p>
           <h1 className="text-3xl md:text-4xl font-black text-white mb-1">Investor Relations</h1>

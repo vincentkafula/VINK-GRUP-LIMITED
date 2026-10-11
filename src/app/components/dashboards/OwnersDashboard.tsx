@@ -63,7 +63,7 @@ export function OwnersDashboard({ isOpen, onClose }: { isOpen: boolean; onClose:
               </div>
               <div className="mt-3 grid grid-cols-3 gap-2">
                 {[{ label: "This Month", val: "R55,400", color: "#34A853" }, { label: "Last Month", val: "R49,400", color: "#6B7280" }, { label: "Annual", val: "R494,000", color: BRAND.warn }].map((s, i) => (
-                  <div key={i} className="text-center p-2.5 rounded-xl" style={{ background: "#252245" }}>
+                  <div key={i} className="text-center p-2.5 rounded-xl" style={{ background: "#182230" }}>
                     <p className="text-sm font-black" style={{ color: s.color }}>{s.val}</p>
                     <p className="text-[9px] mt-0.5" style={{ color: "var(--vk-fg-muted)" }}>{s.label}</p>
                   </div>

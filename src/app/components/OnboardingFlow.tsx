@@ -3,7 +3,7 @@ import { CheckCircle, ArrowRight, User, Shield, CreditCard, Smartphone, Star, X 
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { BRAND } from "../brand";
 
-const P = BRAND.crimsonDeep;
+const P = BRAND.crimson;
 const GOLD = BRAND.gold;
 
 interface Props {
@@ -61,7 +61,7 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 backdrop-blur-md p-4">
-      <div className="w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl" style={{ background: step === 1 ? `linear-gradient(135deg,${P},#9B1C1C)` : "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" }}>
+      <div className="w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl" style={{ background: step === 1 ? `linear-gradient(135deg,${P},#A50F27)` : "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" }}>
 
         {/* Progress bar */}
         <div className="h-1" style={{ background: "rgba(0,0,0,0.1)" }}>
@@ -265,7 +265,7 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
           {/* Step 6 — Done */}
           {step === 6 && (
             <div className="text-center space-y-5">
-              <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mx-auto" style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>🎉</div>
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mx-auto" style={{ background: `linear-gradient(135deg,${P},#A50F27)` }}>🎉</div>
               <div>
                 <h2 className="text-xl font-black text-fg">You're all set, {firstName || "welcome"}!</h2>
                 <p className="text-sm text-fg-muted mt-2">Your VINK account is being set up. You'll receive an email with your account details shortly.</p>
@@ -309,7 +309,7 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
             disabled={!canProceed()}
             className="flex-1 py-3 rounded-2xl text-sm font-bold text-white flex items-center justify-center gap-2 transition-all"
             style={{
-              background: !canProceed() ? "var(--vk-line)" : step === 1 ? "rgba(255,255,255,0.25)" : `linear-gradient(135deg,${P},#9B1C1C)`,
+              background: !canProceed() ? "var(--vk-line)" : step === 1 ? "rgba(255,255,255,0.25)" : `linear-gradient(135deg,${P},#A50F27)`,
               color: !canProceed() ? "#9CA3AF" : "#fff",
               border: step === 1 ? "2px solid rgba(255,255,255,0.4)" : "none",
             }}

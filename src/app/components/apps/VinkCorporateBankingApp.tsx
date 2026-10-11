@@ -12,9 +12,9 @@ type Screen = "onboarding" | "dashboard" | "payments" | "treasury" | "approvals"
 type Tier = "Foundation" | "Apex" | "Vertex" | "Nexus" | "Dominion" | "Legacy";
 type Role = "CEO" | "CFO" | "Finance Manager";
 
-const INK = "#1D1740";
+const INK = "#101828";
 const PLUM = BRAND.crimson;
-const GOLD = "#C6A15B";
+const GOLD = BRAND.crimsonOnDark;   // eyebrow text on the navy header
 
 const TIER_INFO: Record<Tier, { order: number; icon: React.ReactNode; purpose: string; unlocks: string; gradient: string }> = {
   Foundation: { order: 1, icon: <Sparkles className="w-5 h-5" />,  purpose: "Corporate banking essentials.",                          unlocks: "Accounts, payments, statements, corporate cards",         gradient: `linear-gradient(135deg,${PLUM},${INK})` },
@@ -22,7 +22,7 @@ const TIER_INFO: Record<Tier, { order: number; icon: React.ReactNode; purpose: s
   Vertex:     { order: 3, icon: <Users className="w-5 h-5" />,     purpose: "Manage multiple entities and automate governance.",        unlocks: "+ Multi-company management, approval workflows, ERP/API", gradient: `linear-gradient(135deg,#0369A1,${INK})` },
   Nexus:      { order: 4, icon: <Globe2 className="w-5 h-5" />,    purpose: "Expand globally with cross-border banking.",               unlocks: "+ Multi-currency, FX, SWIFT, trade finance",              gradient: `linear-gradient(135deg,#B45309,${INK})` },
   Dominion:   { order: 5, icon: <Shield className="w-5 h-5" />,    purpose: "Centralize enterprise treasury, risk and compliance.",     unlocks: "+ Enterprise treasury, fraud/AML center, unlimited cards", gradient: `linear-gradient(135deg,#065F46,${INK})` },
-  Legacy:     { order: 6, icon: <Landmark className="w-5 h-5" />,  purpose: "Institutional-grade banking and strategic advisory.",      unlocks: "+ Wealth management, family office, executive banking",   gradient: `linear-gradient(135deg,#2E0B10,#1E1B4B)` },
+  Legacy:     { order: 6, icon: <Landmark className="w-5 h-5" />,  purpose: "Institutional-grade banking and strategic advisory.",      unlocks: "+ Wealth management, family office, executive banking",   gradient: `linear-gradient(135deg,#101828,#182230)` },
 };
 const TIER_ORDER: Tier[] = ["Foundation", "Apex", "Vertex", "Nexus", "Dominion", "Legacy"];
 const ROLES: Role[] = ["CEO", "CFO", "Finance Manager"];
@@ -46,7 +46,7 @@ const FEATURE_ROWS: { label: string; values: Record<Tier, string> }[] = [
 function OnboardingScreen({ onSelect }: { onSelect: (tier: Tier) => void }) {
   const [picked, setPicked] = useState<Tier | null>(null);
   return (
-    <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F5F3FA" }}>
+    <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F9FAFB" }}>
       <div className="px-5 pt-8 pb-5 text-center" style={{ background: INK }}>
         <p className="text-xs font-bold tracking-widest" style={{ color: GOLD }}>VINK CORPORATE</p>
         <p className="text-white text-lg font-bold mt-2">One platform. Total financial control.</p>
@@ -82,7 +82,7 @@ function OnboardingScreen({ onSelect }: { onSelect: (tier: Tier) => void }) {
       </div>
       <div className="px-3 pb-4 flex-shrink-0">
         <button disabled={!picked} onClick={() => picked && onSelect(picked)}
-          className="w-full py-3 rounded-xl text-white text-sm font-bold disabled:opacity-40 transition-opacity" style={{ background: INK }}>
+          className="w-full py-3 rounded-xl text-white text-sm font-bold disabled:opacity-40 transition-opacity" style={{ background: BRAND.crimson }}>
           {picked ? `Continue with ${picked}` : "Choose an account to continue"}
         </button>
       </div>
@@ -93,7 +93,7 @@ function OnboardingScreen({ onSelect }: { onSelect: (tier: Tier) => void }) {
 function VerifyingScreen({ tier, onDone }: { tier: Tier; onDone: () => void }) {
   useState(() => { const id = setTimeout(onDone, 1300); return () => clearTimeout(id); });
   return (
-    <div className="flex flex-col items-center justify-center h-full gap-4" style={{ background: "#F5F3FA" }}>
+    <div className="flex flex-col items-center justify-center h-full gap-4" style={{ background: "#F9FAFB" }}>
       <Loader2 className="w-8 h-8 animate-spin" style={{ color: PLUM }} />
       <div className="text-center px-8">
         <p className="text-sm font-bold text-gray-900">Setting up {tier} Corporate</p>
@@ -132,7 +132,7 @@ function DashboardScreen({ tier }: { tier: Tier }) {
   const kpis = ROLE_KPIS[role];
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F5F3FA" }}>
+    <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F9FAFB" }}>
       <div className="px-4 py-3 flex-shrink-0" style={{ background: INK }}>
         <div className="flex items-center justify-between mb-2.5">
           <div>
@@ -145,7 +145,7 @@ function DashboardScreen({ tier }: { tier: Tier }) {
           {ROLES.map(r => (
             <button key={r} onClick={() => setRole(r)}
               className="px-2.5 py-1 rounded-full text-[9px] font-bold whitespace-nowrap"
-              style={{ background: role === r ? GOLD : "rgba(255,255,255,0.1)", color: role === r ? INK : "rgba(255,255,255,0.7)" }}>
+              style={{ background: role === r ? BRAND.crimson : "rgba(255,255,255,0.1)", color: role === r ? "#ffffff" : "rgba(255,255,255,0.7)" }}>
               {r}
             </button>
           ))}
@@ -275,7 +275,7 @@ function PaymentsScreen() {
   const [recipient, setRecipient] = useState("");
   const [sent, setSent] = useState(false);
   return (
-    <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F5F3FA" }}>
+    <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F9FAFB" }}>
       <div className="px-4 py-3 flex-shrink-0" style={{ background: INK }}><p className="text-white text-sm font-bold">Payments</p></div>
       {sent ? (
         <div className="flex-1 flex flex-col items-center justify-center gap-3 px-8 text-center">
@@ -304,7 +304,7 @@ function PaymentsScreen() {
               className="w-full mt-1 px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-emerald-500" />
           </div>
           <button disabled={!amount || !recipient} onClick={() => setSent(true)}
-            className="w-full py-3 rounded-xl text-white text-sm font-bold disabled:opacity-40" style={{ background: INK }}>
+            className="w-full py-3 rounded-xl text-white text-sm font-bold disabled:opacity-40" style={{ background: BRAND.crimson }}>
             Send R{amount || "0"}
           </button>
         </div>
@@ -316,7 +316,7 @@ function PaymentsScreen() {
 // ─── Treasury ─────────────────────────────────────────────────────────────
 function TreasuryScreen() {
   return (
-    <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F5F3FA" }}>
+    <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F9FAFB" }}>
       <div className="px-4 py-3 flex-shrink-0" style={{ background: INK }}><p className="text-white text-sm font-bold">Treasury</p></div>
       <div className="px-3 pt-4 space-y-3">
         <div className="rounded-2xl bg-white shadow-sm p-4">
@@ -347,7 +347,7 @@ const APPROVALS = [
 function ApprovalsScreen() {
   const [approved, setApproved] = useState<number[]>([]);
   return (
-    <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F5F3FA" }}>
+    <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F9FAFB" }}>
       <div className="px-4 py-3 flex-shrink-0" style={{ background: INK }}><p className="text-white text-sm font-bold">Approvals</p></div>
       <div className="px-3 pt-4">
         <div className="flex items-center gap-1 text-[9px] text-gray-500 mb-4 flex-wrap">
@@ -371,7 +371,7 @@ function ApprovalsScreen() {
               {approved.includes(i) ? (
                 <p className="text-[10px] font-semibold text-green-600 mt-2 flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Approved</p>
               ) : (
-                <button onClick={() => setApproved(p => [...p, i])} className="w-full mt-2.5 py-1.5 rounded-lg text-white text-[11px] font-bold" style={{ background: INK }}>
+                <button onClick={() => setApproved(p => [...p, i])} className="w-full mt-2.5 py-1.5 rounded-lg text-white text-[11px] font-bold" style={{ background: BRAND.crimson }}>
                   Approve
                 </button>
               )}
@@ -399,7 +399,7 @@ function MoreScreen({ tier }: { tier: Tier }) {
 
   if (showCompare) {
     return (
-      <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F5F3FA" }}>
+      <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F9FAFB" }}>
         <div className="px-4 py-3 flex-shrink-0 flex items-center gap-2" style={{ background: INK }}>
           <button onClick={() => setShowCompare(false)} className="text-white/70 text-xs">←</button>
           <p className="text-white text-sm font-bold">Feature progression</p>
@@ -408,14 +408,14 @@ function MoreScreen({ tier }: { tier: Tier }) {
           <table className="text-[9px] border-collapse">
             <thead>
               <tr>
-                <th className="text-left px-2 py-1.5 text-gray-500 font-medium sticky left-0 bg-[#F5F3FA]"></th>
+                <th className="text-left px-2 py-1.5 text-gray-500 font-medium sticky left-0 bg-[#F9FAFB]"></th>
                 {TIER_ORDER.map(t => <th key={t} className="px-2 py-1.5 font-bold text-gray-700 whitespace-nowrap">{t}</th>)}
               </tr>
             </thead>
             <tbody>
               {FEATURE_ROWS.map(row => (
                 <tr key={row.label} className="border-t border-gray-100">
-                  <td className="px-2 py-1.5 text-gray-600 whitespace-nowrap sticky left-0 bg-[#F5F3FA]">{row.label}</td>
+                  <td className="px-2 py-1.5 text-gray-600 whitespace-nowrap sticky left-0 bg-[#F9FAFB]">{row.label}</td>
                   {TIER_ORDER.map(t => (
                     <td key={t} className="px-2 py-1.5 text-center font-semibold whitespace-nowrap" style={{ color: row.values[t] === "✓" ? PLUM : row.values[t] === "—" ? "#D1D5DB" : "#B45309" }}>
                       {row.values[t]}
@@ -431,7 +431,7 @@ function MoreScreen({ tier }: { tier: Tier }) {
   }
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F5F3FA" }}>
+    <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F9FAFB" }}>
       <div className="px-4 py-3 flex-shrink-0" style={{ background: INK }}>
         <p className="text-white text-sm font-bold">More</p>
         <p className="text-white/50 text-[10px] mt-0.5">{tier} Corporate Account</p>
@@ -484,7 +484,7 @@ export function VinkCorporateBankingApp({ isOpen, onClose }: { isOpen: boolean; 
   const showTabs = screen !== "onboarding" && !verifying;
 
   return (
-    <MobileAppOverlay onClose={onClose} appName="VINK Corporate" bgColor="#F5F3FA">
+    <MobileAppOverlay onClose={onClose} appName="VINK Corporate" bgColor="#F9FAFB">
       <PhoneFrame statusBarColor={INK} statusBarTextLight>
         <div className="flex-1 overflow-hidden flex flex-col">
           {verifying ? (

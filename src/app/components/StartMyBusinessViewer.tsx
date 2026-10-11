@@ -66,15 +66,17 @@ export function StartMyBusinessViewer({ isOpen, onClose, onNavigate }: Props) {
       <style>{`
         
         .pav-root{
-          --pav-ink:        #8B0000;
+          --pav-ink:        #C8102E;   /* brand red: the primary button */
+          --pav-panel:      #101828;   /* dark navy: structural bars (sub-nav, footer) */
           --pav-ink-soft:   var(--vk-fg);
           --pav-paper:      var(--vk-bg);
           --pav-paper-dim:  var(--vk-surface-2);
-          --pav-gold:       #C9A84C;
+          --pav-gold:       #C8102E;   /* accent on light surfaces (focus ring): kept under its old name */
+          --pav-accent-on-ink: #FF6B81; /* the same accent on navy: plain red is only 3.0:1 there */
           --pav-gold-dim:   var(--vk-gold-text);
-          --pav-plum:       #9B1C1C;
-          --pav-text-on-ink: #EDE9FA;
-          --pav-text-muted-on-ink: #E8D9B0;
+          --pav-plum:       #A50F27;
+          --pav-text-on-ink: #FFFFFF;
+          --pav-text-muted-on-ink: #D0D5DD;
           --pav-text-body:  var(--vk-fg);
           --pav-text-muted: var(--vk-fg-muted);
           --pav-rule:       var(--vk-line);
@@ -85,6 +87,7 @@ export function StartMyBusinessViewer({ isOpen, onClose, onNavigate }: Props) {
           -webkit-font-smoothing: antialiased;
         }
         .pav-root :focus-visible{ outline:2px solid var(--pav-gold); outline-offset:3px; }
+          .pav-subnav :focus-visible, .pav-foot :focus-visible{ outline-color:var(--pav-accent-on-ink); }
         .pav-wrap{ max-width:1160px; margin:0 auto; padding:0 32px; }
 
         .pav-close{
@@ -96,7 +99,7 @@ export function StartMyBusinessViewer({ isOpen, onClose, onNavigate }: Props) {
         }
         .pav-close:hover{ background:rgba(29,23,64,0.85); }
 
-        .pav-subnav{ background:var(--pav-ink); border-bottom:1px solid var(--pav-rule-on-ink); }
+        .pav-subnav{ background:var(--pav-panel); border-bottom:1px solid var(--pav-rule-on-ink); }
         .pav-subnav-inner{
           display:flex; align-items:center; gap:4px; overflow-x:auto;
           padding:0 32px; max-width:1160px; margin:0 auto; height:46px;
@@ -108,7 +111,7 @@ export function StartMyBusinessViewer({ isOpen, onClose, onNavigate }: Props) {
           transition:color 0.15s ease, background 0.15s ease;
         }
         .pav-subnav-item:hover{ color:var(--pav-text-on-ink); }
-        .pav-subnav-item.active{ color:var(--pav-gold); background:rgba(198,161,91,0.12); font-weight:600; }
+        .pav-subnav-item.active{ color:#FFFFFF; background:var(--pav-ink); font-weight:600; }
 
         .pav-hero{ text-align:center; padding:44px 24px 8px; }
         .pav-hero h1{ font-family:var(--font-display); font-weight:500; font-size:clamp(26px,4vw,38px); margin:0 0 8px; letter-spacing:-0.01em; }
@@ -165,9 +168,9 @@ export function StartMyBusinessViewer({ isOpen, onClose, onNavigate }: Props) {
         .pav-tc h3{ font-family:var(--font-display); font-weight:500; font-size:19px; margin:0 0 10px; }
         .pav-tc p{ font-size:12.5px; color:var(--pav-text-muted); line-height:1.6; margin-bottom:18px; }
 
-        .pav-foot{ background:var(--pav-ink); color:var(--pav-text-muted-on-ink); padding:34px 0; font-size:12px; line-height:1.7; font-family:var(--font-mono); }
+        .pav-foot{ background:var(--pav-panel); color:var(--pav-text-muted-on-ink); padding:34px 0; font-size:12px; line-height:1.7; font-family:var(--font-mono); }
         .pav-foot .pav-wrap{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
-        .pav-foot strong{ color:var(--pav-gold); font-weight:600; }
+        .pav-foot strong{ color:var(--pav-accent-on-ink); font-weight:600; }
 
         @media (max-width:900px){
           .pav-grid{ grid-template-columns:1fr; }

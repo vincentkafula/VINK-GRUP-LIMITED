@@ -10,8 +10,7 @@ import { BRAND } from "../../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
-const P = BRAND.crimsonDeep;
-const GOLD = BRAND.gold;
+const P = BRAND.crimson;
 
 const STATS = [
   { v: "15M", l: "daily taxi commuters in SA (the market)" },
@@ -86,10 +85,10 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
       </div>
 
       {/* Hero */}
-      <header className="relative overflow-hidden px-6 py-14 text-white md:py-20" style={{ background: `linear-gradient(135deg,#2E0B10 0%,${P} 55%,#7a1018 100%)` }}>
-        <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-24 size-96 rounded-full opacity-20" style={{ background: `radial-gradient(circle,${GOLD} 0%,transparent 70%)` }} />
+      <header className="relative overflow-hidden px-6 py-14 text-white md:py-20" style={{ background: `linear-gradient(135deg,#101828 0%,${P} 55%,#8F1027 100%)` }}>
+        <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-24 size-96 rounded-full opacity-20" style={{ background: `radial-gradient(circle,#FFFFFF 0%,transparent 70%)` }} />
         <div className="relative mx-auto max-w-6xl">
-          <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/25 px-3 py-1 text-xs font-semibold uppercase tracking-widest" style={{ color: "#E8D9B0" }}>
+          <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/25 px-3 py-1 text-xs font-semibold uppercase tracking-widest" style={{ color: "#FFFFFF" }}>
             <MapPin className="size-3.5" aria-hidden="true" /> Est. Cape Town, 2018
           </p>
           <h1 className="font-display text-4xl font-bold leading-tight md:text-6xl">About VINK</h1>
@@ -100,7 +99,7 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
           <dl className="mt-8 grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-4">
             {STATS.map((s) => (
               <div key={s.l} className="rounded-xl border border-white/15 bg-white/10 px-4 py-3">
-                <dd className="text-xl font-bold leading-tight" style={{ color: "#E8D9B0" }}>{s.v}</dd>
+                <dd className="text-xl font-bold leading-tight" style={{ color: "#FFFFFF" }}>{s.v}</dd>
                 <dt className="text-xs uppercase tracking-wider text-white/75">{s.l}</dt>
               </div>
             ))}
@@ -138,8 +137,8 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
                 VINK began from a simple observation: sitting in a taxi, it is hard for drivers to collect fares and to give change, especially in the morning. Drivers also depend on each fare to buy fuel and keep working. We are building a system that pays them within seconds, works on every route, and serves everyone, not just people with traditional banking histories.
               </p>
             </div>
-            <aside className="rounded-2xl p-6 text-white" style={{ background: `linear-gradient(135deg,#2E0B10,${P})` }}>
-              <p className="text-3xl font-bold" style={{ color: "#E8D9B0" }}>R0.50</p>
+            <aside className="rounded-2xl p-6 text-white" style={{ background: `linear-gradient(135deg,#101828,${P})` }}>
+              <p className="text-3xl font-bold" style={{ color: "#FFFFFF" }}>R0.50</p>
               <p className="mt-1 text-sm font-semibold uppercase tracking-wider text-white/80">planned fee per taxi transaction</p>
               <p className="mt-3 text-sm leading-relaxed text-white/85">
                 Planned to be shared across the ecosystem that makes each transaction possible: the financing bank, the driver&apos;s taxi association, neighbourhood watch initiatives in the area served, and a portion retained to seed a future VINK community bank built for taxi drivers.
@@ -152,7 +151,7 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
         <section id="about-purpose" aria-labelledby="about-purpose-h" className="scroll-mt-32">
           <Heading id="about-purpose" eyebrow="Why we exist">Mission &amp; vision</Heading>
           <div className="grid gap-6 md:grid-cols-2">
-            <div className="rounded-2xl p-6 text-white" style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
+            <div className="rounded-2xl p-6 text-white" style={{ background: `linear-gradient(135deg,${P},#A50F27)` }}>
               <span className="mb-3 flex size-11 items-center justify-center rounded-xl bg-white/15 [&>svg]:size-6" aria-hidden="true"><Target /></span>
               <h3 className="mb-2 text-lg font-bold">Our mission</h3>
               <p className="text-sm leading-relaxed text-white/90">
@@ -201,16 +200,16 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
 
         {/* Giving back */}
         <section id="about-community" aria-labelledby="about-community-h" className="scroll-mt-32">
-          <div className="grid items-center gap-6 rounded-3xl p-8 text-white md:grid-cols-[minmax(0,2fr)_auto]" style={{ background: `linear-gradient(135deg,#2E0B10,${P})` }}>
+          <div className="grid items-center gap-6 rounded-3xl p-8 text-white md:grid-cols-[minmax(0,2fr)_auto]" style={{ background: `linear-gradient(135deg,#101828,${P})` }}>
             <div>
-              <p className="mb-1 text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "#E8D9B0" }}>Giving back</p>
+              <p className="mb-1 text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "#FFFFFF" }}>Giving back</p>
               <h2 id="about-community-h" className="text-2xl font-bold md:text-3xl">Social Development</h2>
               <p className="mt-3 max-w-2xl text-sm leading-relaxed text-white/85 md:text-base">
                 We plan to dedicate a portion of VINK&apos;s profits to programmes that help our cities become cleaner, safer, more inclusive and more economically vibrant. We are preparing to bring them to Cape Town, Johannesburg, Pretoria, Durban, Lusaka, Kitwe and Ndola, in partnership with local businesses, NGOs and non-profit organisations.
               </p>
             </div>
             <button type="button" onClick={() => { onClose(); go("Social Responsibility"); }}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-full px-6 text-sm font-semibold" style={{ background: GOLD, color: "#14161d" }}>
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-full px-6 text-sm font-semibold" style={{ background: "#ffffff", color: BRAND.crimson }}>
               Learn more <ArrowRight className="size-4" aria-hidden="true" />
             </button>
           </div>
@@ -233,7 +232,7 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
           <ol className="relative space-y-6 border-l-2 pl-8" style={{ borderColor: P }}>
             {MILESTONES.map((m) => (
               <li key={m.year} className="relative">
-                <span aria-hidden="true" className="absolute -left-[41px] top-1 flex size-5 items-center justify-center rounded-full border-2 border-surface" style={{ background: m.planned ? GOLD : P }} />
+                <span aria-hidden="true" className="absolute -left-[41px] top-1 flex size-5 items-center justify-center rounded-full border-2 border-surface" style={{ background: m.planned ? "#98A2B3" : P }} />
                 <span className="inline-block rounded-md bg-surface-2 px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-crimson-text">{m.year}</span>{m.planned && <span className="ml-2 text-[11px] font-semibold uppercase tracking-wider text-gold-text">Planned</span>}
                 <p className="mt-2 text-sm leading-relaxed md:text-base">{m.text}</p>
               </li>

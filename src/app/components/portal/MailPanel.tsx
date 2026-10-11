@@ -72,8 +72,8 @@ export function MailPanel() {
   const star = async (m: Item) => { const r = await call(`/messages/${m.kind}/${m.id}/star`, { method: "POST", body: { starred: !m.starred } }); if ("error" in r) setNotice(r.error); reloadMsgs(); };
   const makeLabel = async () => { if (!labelName.trim()) return; const r = await call("/labels", { method: "POST", body: { department: dept, name: labelName } }); if ("error" in r) { setNotice(r.error); return; } setLabelName(""); setAddingLabel(false); reloadLabels(); };
 
-  const tool = "inline-flex items-center justify-center rounded-full p-2 text-[#4A5A78] hover:bg-[#E8EEF9]";
-  const bulkBtn = "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-[#1B2A44] hover:bg-[#E8EEF9]";
+  const tool = "inline-flex items-center justify-center rounded-full p-2 text-[#475467] hover:bg-[#F2F4F7]";
+  const bulkBtn = "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-[#101828] hover:bg-[#F2F4F7]";
 
   return (
     <Status load={depts}>{({ departments }) => departments.length === 0
@@ -88,7 +88,7 @@ export function MailPanel() {
         const first = total === 0 ? 0 : page * PAGE + 1, last = Math.min(total, page * PAGE + PAGE);
         const inList = !settings && !composing && !(selected && box !== "sent");
         return (
-          <div className="overflow-hidden rounded-3xl border border-[#DCE3F0] bg-white shadow-[0_10px_40px_-18px_rgba(15,42,82,0.35)] lg:flex lg:min-h-[680px]">
+          <div className="overflow-hidden rounded-3xl border border-[#EAECF0] bg-white shadow-[0_10px_40px_-18px_rgba(15,42,82,0.35)] lg:flex lg:min-h-[680px]">
             {/* ── Sidebar ─────────────────────────────────────────────────── */}
             <aside aria-label="Mailbox" className="flex shrink-0 flex-col gap-4 p-4 text-white lg:w-72" style={{ background: NAVY }}>
               <div className="flex items-center gap-3 px-1"><Mail className="h-9 w-9" strokeWidth={1.6} /><span className="text-2xl font-semibold tracking-tight">Mail</span></div>
@@ -143,42 +143,42 @@ export function MailPanel() {
 
             {/* ── Main ────────────────────────────────────────────────────── */}
             <main className="min-w-0 flex-1 bg-white">
-              <div className="flex items-center gap-3 border-b border-[#EEF1F6] px-4 py-3">
+              <div className="flex items-center gap-3 border-b border-[#EAECF0] px-4 py-3">
                 {dept ? <form role="search" onSubmit={(e) => { e.preventDefault(); setApplied(q); setSelected(null); setComposing(null); setSettings(false); }} className="flex flex-1 items-center gap-2">
                   <label className="relative flex-1"><span className="sr-only">Search mail</span>
-                    <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#5B6B88]" />
-                    <input aria-label="Search mail" value={q} onChange={(e) => { setQ(e.target.value); if (e.target.value === "") setApplied(""); }} placeholder="Search in mail…" className="w-full rounded-full border-0 bg-[#EAF0FB] py-3 pl-12 pr-4 text-[15px] text-[#1B2A44] placeholder-[#5B6B88] outline-none focus:bg-white focus:ring-2 focus:ring-[#2F6BFF]/40" /></label>
+                    <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#667085]" />
+                    <input aria-label="Search mail" value={q} onChange={(e) => { setQ(e.target.value); if (e.target.value === "") setApplied(""); }} placeholder="Search in mail…" className="w-full rounded-full border-0 bg-[#F2F4F7] py-3 pl-12 pr-4 text-[15px] text-[#101828] placeholder-[#667085] outline-none focus:bg-white focus:ring-2 focus:ring-[#C8102E]/40" /></label>
                   <button type="submit" className="rounded-full px-4 py-2.5 text-sm font-semibold text-white" style={{ background: COLOR }}>Search</button>
-                  {searching && <button type="button" onClick={() => { setQ(""); setApplied(""); }} className="rounded-full px-3 py-2.5 text-sm font-semibold text-[#4A5A78] hover:bg-[#E8EEF9]">Clear</button>}
-                </form> : <p className="flex-1 px-2 text-sm text-[#5B6B88]">Choose a department to read its mail.</p>}
+                  {searching && <button type="button" onClick={() => { setQ(""); setApplied(""); }} className="rounded-full px-3 py-2.5 text-sm font-semibold text-[#475467] hover:bg-[#F2F4F7]">Clear</button>}
+                </form> : <p className="flex-1 px-2 text-sm text-[#667085]">Choose a department to read its mail.</p>}
                 <button type="button" aria-label="Search help" aria-expanded={help} onClick={() => setHelp((v) => !v)} className={tool}><HelpCircle className="h-6 w-6" /></button>
                 <button type="button" aria-label="Mail settings" aria-pressed={settings} onClick={() => { setSettings((v) => !v); setSelected(null); setComposing(null); }} className={tool}><Settings className="h-6 w-6" /></button>
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white" style={{ background: avatarColor(me?.name ?? me?.username ?? "You") }} title={me?.name ?? me?.username ?? "You"} aria-label="Your account">{initialOf(me?.name ?? me?.username ?? "You")}</span>
               </div>
-              {help && <div role="note" className="border-b border-[#EEF1F6] bg-[#F6F8FC] px-5 py-3 text-xs text-[#4A5A78]"><p className="font-semibold text-[#1B2A44]">Search all mail with:</p><p className="mt-1 flex flex-wrap gap-1.5">{SEARCH_TIPS.map((t) => <code key={t} className="rounded bg-white px-1.5 py-0.5 text-[#1B2A44] ring-1 ring-[#DCE3F0]">{t}</code>)}</p></div>}
+              {help && <div role="note" className="border-b border-[#EAECF0] bg-[#F9FAFB] px-5 py-3 text-xs text-[#475467]"><p className="font-semibold text-[#101828]">Search all mail with:</p><p className="mt-1 flex flex-wrap gap-1.5">{SEARCH_TIPS.map((t) => <code key={t} className="rounded bg-white px-1.5 py-0.5 text-[#101828] ring-1 ring-[#EAECF0]">{t}</code>)}</p></div>}
               {notice && <p role="status" className="mx-4 mt-3 flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm" style={{ background: "#ECFDF5", color: "#065F46", border: "1px solid #A7F3D0" }}><CircleCheck className="h-4 w-4 shrink-0" />{notice}<button type="button" aria-label="Dismiss" onClick={() => setNotice("")} className="ml-auto"><X className="h-4 w-4" /></button></p>}
-              {searching && inList && <p className="px-5 pt-3 text-xs text-[#5B6B88]">Searching {box === "spam" || box === "trash" || box === "sent" ? BOXES.find((b) => b.key === box)!.label : "all mail"} for: {applied}</p>}
+              {searching && inList && <p className="px-5 pt-3 text-xs text-[#667085]">Searching {box === "spam" || box === "trash" || box === "sent" ? BOXES.find((b) => b.key === box)!.label : "all mail"} for: {applied}</p>}
 
               {settings ? <div className="p-5"><MailSettings call={call} departments={realDepts} initial={dept} onChanged={reloadLabels} /></div>
                 : composing ? (
                   <section aria-label="Message" className="p-5">
-                    <button type="button" onClick={back} aria-label="Back to the list" className="mb-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold text-[#4A5A78] hover:bg-[#E8EEF9]"><ArrowLeft className="h-4 w-4" /> Back</button>
+                    <button type="button" onClick={back} aria-label="Back to the list" className="mb-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold text-[#475467] hover:bg-[#F2F4F7]"><ArrowLeft className="h-4 w-4" /> Back</button>
                     <Compose key={composing.key} call={call} departments={writable.length ? writable : realDepts.length ? realDepts : departments} initial={dept} draft={composing.draft} onSent={(text) => { setComposing(null); if (text) setNotice(text); refresh(); }} onChanged={refresh} />
                   </section>)
                 : selected && box !== "sent" ? (
                   <section aria-label="Message" className="p-5">
-                    <button type="button" onClick={back} aria-label="Back to the list" className="mb-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold text-[#4A5A78] hover:bg-[#E8EEF9]"><ArrowLeft className="h-4 w-4" /> Back</button>
+                    <button type="button" onClick={back} aria-label="Back to the list" className="mb-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold text-[#475467] hover:bg-[#F2F4F7]"><ArrowLeft className="h-4 w-4" /> Back</button>
                     <Message key={selected.id} call={call} kind={selected.kind} id={selected.id} labels={labels} onChanged={refresh} onMoved={() => { setSelected(null); refresh(); }} onOpen={(k, i) => setSelected({ kind: k, id: i })} onLabelsChanged={reloadLabels} onNotice={setNotice} />
                   </section>)
                 : !dept ? (
                   <section aria-label="Choose a department" className="p-6">
-                    <h2 className="text-xl font-semibold text-[#1B2A44]">Choose a department</h2>
-                    <p className="mt-1 text-sm text-[#5B6B88]">Pick a department to open its mail. Each department has its own mailbox; the others stay out of the way.</p>
+                    <h2 className="text-xl font-semibold text-[#101828]">Choose a department</h2>
+                    <p className="mt-1 text-sm text-[#667085]">Pick a department to open its mail. Each department has its own mailbox; the others stay out of the way.</p>
                     <ul className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{departments.map((d) => (
                       <li key={d.key}>
-                        <button type="button" onClick={() => pick(d.key)} aria-label={`Open ${d.name}`} className="flex h-full w-full flex-col rounded-2xl border border-[#DCE3F0] p-4 text-left transition-colors hover:border-[#2F6BFF] hover:bg-[#F6F9FF]">
-                          <span className="flex items-start justify-between gap-2"><span className="font-semibold text-[#1B2A44]">{d.name}</span>{d.open > 0 && <span className="rounded-full px-2 py-0.5 text-xs font-semibold text-white" style={{ background: COLOR }}>{d.open}</span>}</span>
-                          {d.address && <span className="mt-1 text-xs text-[#5B6B88]">{d.address}</span>}
+                        <button type="button" onClick={() => pick(d.key)} aria-label={`Open ${d.name}`} className="flex h-full w-full flex-col rounded-2xl border border-[#EAECF0] p-4 text-left transition-colors hover:border-[#C8102E] hover:bg-[#FEF2F4]">
+                          <span className="flex items-start justify-between gap-2"><span className="font-semibold text-[#101828]">{d.name}</span>{d.open > 0 && <span className="rounded-full px-2 py-0.5 text-xs font-semibold text-white" style={{ background: COLOR }}>{d.open}</span>}</span>
+                          {d.address && <span className="mt-1 text-xs text-[#667085]">{d.address}</span>}
                           <span className="mt-3 text-xs font-semibold" style={{ color: COLOR }}>{d.open > 0 ? `${d.open} waiting` : "Open mail"}</span>
                         </button>
                       </li>))}</ul>
@@ -186,11 +186,11 @@ export function MailPanel() {
                 : (
                   <section aria-label="Messages">
                     {/* toolbar: tick box, refresh, more … and the page counter */}
-                    <div className="flex items-center gap-1 border-b border-[#EEF1F6] px-4 py-2">
-                      {own && <input type="checkbox" aria-label="Select all" checked={shown.length > 0 && shown.every((m) => checked[`${m.kind}:${m.id}`])} onChange={(e) => setChecked(e.target.checked ? Object.fromEntries(shown.map((m) => [`${m.kind}:${m.id}`, true])) : {})} className="mr-2 h-4 w-4 rounded accent-[#2F6BFF]" />}
+                    <div className="flex items-center gap-1 border-b border-[#EAECF0] px-4 py-2">
+                      {own && <input type="checkbox" aria-label="Select all" checked={shown.length > 0 && shown.every((m) => checked[`${m.kind}:${m.id}`])} onChange={(e) => setChecked(e.target.checked ? Object.fromEntries(shown.map((m) => [`${m.kind}:${m.id}`, true])) : {})} className="mr-2 h-4 w-4 rounded accent-[#C8102E]" />}
                       {tickedKeys.length > 0 ? (
                         <>
-                          <span className="mr-2 text-sm font-semibold text-[#1B2A44]">{tickedKeys.length} selected</span>
+                          <span className="mr-2 text-sm font-semibold text-[#101828]">{tickedKeys.length} selected</span>
                           {(box === "spam" || box === "trash") ? <button type="button" onClick={() => void bulk("folder", { folder: "inbox" })} className={bulkBtn}><Undo2 className="h-4 w-4" /> {box === "spam" ? "Not spam" : "Restore"}</button>
                             : <><button type="button" onClick={() => void bulk("folder", { folder: "spam" })} className={bulkBtn}><ShieldAlert className="h-4 w-4" /> Report spam</button>
                               <button type="button" onClick={() => void bulk("star", { starred: true })} className={bulkBtn}><Star className="h-4 w-4" /> Star</button>
@@ -202,7 +202,7 @@ export function MailPanel() {
                           <button type="button" aria-label="Refresh" onClick={refresh} className={tool}><RefreshCw className="h-[18px] w-[18px]" /></button>
                           <span className="relative">
                             <button type="button" aria-label="More" aria-expanded={more} onClick={() => setMore((v) => !v)} className={tool}><MoreVertical className="h-[18px] w-[18px]" /></button>
-                            {more && <div role="menu" className="absolute left-0 z-20 mt-1 w-44 rounded-xl border border-[#DCE3F0] bg-white py-1 text-sm shadow-lg">
+                            {more && <div role="menu" className="absolute left-0 z-20 mt-1 w-44 rounded-xl border border-[#EAECF0] bg-white py-1 text-sm shadow-lg">
                               <button role="menuitem" type="button" onClick={() => { setMore(false); setChecked(Object.fromEntries(shown.map((m) => [`${m.kind}:${m.id}`, true]))); }} className="block w-full px-4 py-2 text-left hover:bg-[#F1F5FD]">Select all</button>
                               <button role="menuitem" type="button" onClick={() => { setMore(false); setSettings(true); }} className="block w-full px-4 py-2 text-left hover:bg-[#F1F5FD]">Mail settings</button>
                             </div>}
@@ -213,7 +213,7 @@ export function MailPanel() {
                           <select aria-label="Show" value={status} onChange={(e) => setStatus(e.target.value)} className={inputCls + " !w-auto !rounded-full !py-1 !text-xs"}>
                             <option value="open">Open</option><option value="answered">Answered</option><option value="closed">Closed</option><option value="">All</option>
                           </select>)}
-                        <span className="px-2 text-sm text-[#4A5A78] tabular-nums">{first}–{last} of {total}</span>
+                        <span className="px-2 text-sm text-[#475467] tabular-nums">{first}–{last} of {total}</span>
                         <button type="button" aria-label="Newer" disabled={page === 0} onClick={() => setPage((p) => p - 1)} className={tool + " disabled:opacity-30"}><ChevronLeft className="h-5 w-5" /></button>
                         <button type="button" aria-label="Older" disabled={last >= total} onClick={() => setPage((p) => p + 1)} className={tool + " disabled:opacity-30"}><ChevronRight className="h-5 w-5" /></button>
                       </span>
@@ -229,7 +229,7 @@ export function MailPanel() {
                         <ul className="max-h-[68vh] overflow-y-auto">{ss.slice(page * PAGE, page * PAGE + PAGE).map((s) => (
                           <MailRow key={s.id} name={`To ${s.to}`} subject={s.subject} preview={s.status === "failed" ? `Not sent: ${s.error ?? "it could not be sent"}` : s.status === "sending" ? "Sending now" : `Waiting to be sent · written by ${s.by}`} at={s.sendAt}
                             note={<span>{whenLong(new Date(s.sendAt))}</span>}
-                            actions={s.status !== "sending" ? <button type="button" aria-label={`Cancel the email to ${s.to}`} onClick={async () => { await call(`/scheduled/${s.id}`, { method: "DELETE" }); refresh(); }} className="rounded-full px-3 py-1 text-xs font-semibold text-[#1B2A44] ring-1 ring-[#DCE3F0] hover:bg-[#E8EEF9]">{s.status === "failed" ? "Remove" : "Cancel"}</button> : undefined} />))}</ul>); }}</Status>
+                            actions={s.status !== "sending" ? <button type="button" aria-label={`Cancel the email to ${s.to}`} onClick={async () => { await call(`/scheduled/${s.id}`, { method: "DELETE" }); refresh(); }} className="rounded-full px-3 py-1 text-xs font-semibold text-[#101828] ring-1 ring-[#EAECF0] hover:bg-[#F2F4F7]">{s.status === "failed" ? "Remove" : "Cancel"}</button> : undefined} />))}</ul>); }}</Status>
                       : <Status load={msgs}>{({ messages: ms }) => { const all = ms ?? []; const rows = all.slice(page * PAGE, page * PAGE + PAGE); return all.length === 0 ? <div className="p-6"><Empty>{searching || label ? "Nothing matches." : EMPTY[box]}</Empty></div> : (
                         <ul className="max-h-[68vh] overflow-y-auto">{rows.map((m) => (
                           <MailRow key={`${m.kind}-${m.id}`} name={box === "sent" ? `To ${m.fromEmail}` : m.fromName} subject={m.subject} preview={m.preview} at={m.at} unread={m.status === "open" && box !== "sent"} starred={!!m.starred} labels={m.labels}

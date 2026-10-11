@@ -16,19 +16,19 @@ interface Props {
 
 // ─── Tile definitions — icon, label, colour, target screen ───────────────────
 const TILES = [
-  { id: "login",        label: "Login",         bg: "#F2EFE8", fg: BRAND.gold, icon: LoginIcon },
+  { id: "login",        label: "Login",         bg: "#F2F4F7", fg: BRAND.crimson, icon: LoginIcon },
   { id: "message",      label: "Message",       bg: "#D1FAE5", fg: "#059669", icon: MessageIcon },
   { id: "contactus",    label: "Contact Us",    bg: "#FEF3C7", fg: "#D97706", icon: PhoneIcon },
   { id: "buy",          label: "Buy",           bg: "#DBEAFE", fg: "#2563EB", icon: CartIcon },
   { id: "connect",      label: "Connect",       bg: "#D1FAE5", fg: "#059669", icon: ConnectIcon },
   { id: "payments",     label: "Payments",      bg: "#FEF3C7", fg: "#D97706", icon: PayIcon },
-  { id: "transfer",     label: "Transfer",      bg: "#F2EFE8", fg: BRAND.gold, icon: TransferIcon },
+  { id: "transfer",     label: "Transfer",      bg: "#F2F4F7", fg: BRAND.crimson, icon: TransferIcon },
   { id: "cards",        label: "Cards",         bg: "#DBEAFE", fg: "#2563EB", icon: CardIcon },
   { id: "device",       label: "Device",        bg: "#D1FAE5", fg: "#059669", icon: DeviceIcon },
   { id: "guardme",      label: "Guard Me",      bg: "#FEE2E2", fg: "#DC2626", icon: ShieldIcon },
   { id: "insurance",    label: "Insurance",     bg: "#DBEAFE", fg: "#2563EB", icon: InsureIcon },
   { id: "vinktv",        label: "VINK TV",        bg: "#D1FAE5", fg: "#059669", icon: TVIcon },
-  { id: "cardlesscash", label: "Cardless Cash", bg: "#F2EFE8", fg: BRAND.gold, icon: CashIcon },
+  { id: "cardlesscash", label: "Cardless Cash", bg: "#F2F4F7", fg: BRAND.crimson, icon: CashIcon },
   { id: "elections",    label: "Elections",     bg: "#FEF3C7", fg: "#D97706", icon: ElectionIcon },
   { id: "scantopay",    label: "Scan to Pay",   bg: "#FEE2E2", fg: "#DC2626", icon: ScanIcon },
   { id: "restaurant",   label: "Restaurant",    bg: "#D1FAE5", fg: "#059669", icon: RestIcon },
@@ -140,7 +140,7 @@ export function VinkMobileApp({ isOpen, onClose, onNavigate }: Props) {
             {/* Featured banner */}
             <div
               className="rounded-2xl p-5 mb-5 relative overflow-hidden cursor-pointer"
-              style={{ background: "linear-gradient(135deg,#5C0A10 0%,#C9A84C 50%,#C9A84C 100%)", minHeight: 120 }}
+              style={{ background: "linear-gradient(135deg,#C8102E 0%,#A50F27 100%)", minHeight: 120 }}
               onClick={() => onNavigate("payments")}
             >
               <div className="absolute -top-6 -right-6 w-32 h-32 rounded-full opacity-20 bg-white pointer-events-none" />
@@ -185,26 +185,26 @@ export function VinkMobileApp({ isOpen, onClose, onNavigate }: Props) {
         {/* Bottom tab bar */}
         <div className="flex-shrink-0 bg-white border-t border-gray-100 px-4 py-3 flex items-center justify-around">
           <button onClick={() => setActiveTab("home")} className="flex flex-col items-center gap-0.5">
-            <Home className="w-5 h-5" style={{ color: activeTab === "home" ? BRAND.crimsonDeep : "#9CA3AF" }} />
-            <span className="text-[9px] font-semibold" style={{ color: activeTab === "home" ? BRAND.crimsonDeep : "#9CA3AF" }}>Home</span>
+            <Home className="w-5 h-5" style={{ color: activeTab === "home" ? BRAND.crimson : "#9CA3AF" }} />
+            <span className="text-[9px] font-semibold" style={{ color: activeTab === "home" ? BRAND.crimson : "#9CA3AF" }}>Home</span>
           </button>
           <button onClick={() => { setActiveTab("grid"); onNavigate("marketplace"); }} className="flex flex-col items-center gap-0.5">
-            <Grid className="w-5 h-5" style={{ color: activeTab === "grid" ? BRAND.crimsonDeep : "#9CA3AF" }} />
-            <span className="text-[9px] font-semibold" style={{ color: activeTab === "grid" ? BRAND.crimsonDeep : "#9CA3AF" }}>Apps</span>
+            <Grid className="w-5 h-5" style={{ color: activeTab === "grid" ? BRAND.crimson : "#9CA3AF" }} />
+            <span className="text-[9px] font-semibold" style={{ color: activeTab === "grid" ? BRAND.crimson : "#9CA3AF" }}>Apps</span>
           </button>
           {/* FAB */}
           <button onClick={() => onNavigate("scantopay")}
             className="w-12 h-12 rounded-full flex items-center justify-center text-white shadow-lg -mt-4"
-            style={{ background: BRAND.ok, boxShadow: "0 4px 14px rgba(16,185,129,0.5)" }}>
+            style={{ background: BRAND.crimson, boxShadow: "0 4px 14px rgba(200,16,46,0.45)" }}>
             <Plus className="w-6 h-6" />
           </button>
           <button onClick={() => { setActiveTab("mail"); onNavigate("message"); }} className="flex flex-col items-center gap-0.5">
-            <Mail className="w-5 h-5" style={{ color: activeTab === "mail" ? BRAND.crimsonDeep : "#9CA3AF" }} />
-            <span className="text-[9px] font-semibold" style={{ color: activeTab === "mail" ? BRAND.crimsonDeep : "#9CA3AF" }}>Messages</span>
+            <Mail className="w-5 h-5" style={{ color: activeTab === "mail" ? BRAND.crimson : "#9CA3AF" }} />
+            <span className="text-[9px] font-semibold" style={{ color: activeTab === "mail" ? BRAND.crimson : "#9CA3AF" }}>Messages</span>
           </button>
           <button onClick={() => { setActiveTab("profile"); onNavigate("login"); }} className="flex flex-col items-center gap-0.5">
-            <User className="w-5 h-5" style={{ color: activeTab === "profile" ? BRAND.crimsonDeep : "#9CA3AF" }} />
-            <span className="text-[9px] font-semibold" style={{ color: activeTab === "profile" ? BRAND.crimsonDeep : "#9CA3AF" }}>Profile</span>
+            <User className="w-5 h-5" style={{ color: activeTab === "profile" ? BRAND.crimson : "#9CA3AF" }} />
+            <span className="text-[9px] font-semibold" style={{ color: activeTab === "profile" ? BRAND.crimson : "#9CA3AF" }}>Profile</span>
           </button>
         </div>
 

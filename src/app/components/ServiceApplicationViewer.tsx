@@ -38,29 +38,29 @@ const SERVICE_CONFIG: Record<ServiceType, {
     tag:           "VINK Personal Banking · Investments",
     title:         "Investment Account Application",
     subtitle:      "Open a Tax-Free Savings Account, Fixed Deposit, Unit Trust, Retirement Annuity or Money Market — verified in minutes.",
-    gradient:      "linear-gradient(135deg,#0F4C81 0%,#1565C0 50%,#42A5F5 100%)",
+    gradient:      "linear-gradient(135deg,#C8102E 0%,#A50F27 55%,#8F1027 100%)",
     successTitle:  "Investment Account Opened!",
     successBody:   "Your investment account is active. Access it via the VINK app or web portal.",
     accountLabel:  "Investment account number",
     accountPrefix: "VINK-INV",
-    accentColor:   "#1565C0",
+    accentColor:   BRAND.crimson,
   },
   rewards: {
     tag:           "VINK Personal Banking · ManshyaPoints",
     title:         "ManshyaPoints Rewards Enrolment",
     subtitle:      "Enrol in ManshyaPoints to earn on every taxi ride, fuel purchase, grocery trip, and online spend.",
-    gradient:      "linear-gradient(135deg,#9B1C1C 0%,#FFB84D 50%,#FFCC80 100%)",
+    gradient:      "linear-gradient(135deg,#C8102E 0%,#A50F27 55%,#8F1027 100%)",
     successTitle:  "ManshyaPoints Account Created!",
     successBody:   "You have been enrolled in ManshyaPoints. Your welcome bonus of 5,000 points (worth R50) has been credited.",
     accountLabel:  "ManshyaPoints member number",
     accountPrefix: "VINK-RWD",
-    accentColor:   "#FFB84D",
+    accentColor:   BRAND.crimson,
   },
   account: {
     tag:           "VINK Personal Banking · Accounts",
     title:         "Bank Account Application",
     subtitle:      "Open your selected VINK account in minutes — FICA-verified and ready to use.",
-    gradient:      "linear-gradient(135deg,#1A237E 0%,#8B0000 55%,#9B1C1C 100%)",
+    gradient:      "linear-gradient(135deg,#C8102E 0%,#A50F27 55%,#8F1027 100%)",
     successTitle:  "Account Opened!",
     successBody:   "Your VINK finance account is active. Your VINK card will be delivered to your registered address within 5–7 business days.",
     accountLabel:  "Account number",
@@ -614,7 +614,7 @@ export function ServiceApplicationViewer({ isOpen, onClose, serviceType }: Props
             </div>
             <button onClick={onClose}
               className="w-full py-3.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 shadow-lg"
-              style={{ background: `linear-gradient(135deg,${CP},#9B1C1C)` }}>
+              style={{ background: `linear-gradient(135deg,${CP},#A50F27)` }}>
               Back to VINK
             </button>
           </div>

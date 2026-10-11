@@ -96,15 +96,17 @@ export function BusinessAccountSelectorViewer({ isOpen, onClose, onNavigate, onA
       <style>{`
         
         .pav-root{
-          --pav-ink:        #8B0000;
+          --pav-ink:        #C8102E;   /* brand red: the primary button */
+          --pav-panel:      #101828;   /* dark navy: structural bars (sub-nav, footer) */
           --pav-ink-soft:   var(--vk-fg);
           --pav-paper:      var(--vk-bg);
           --pav-paper-dim:  var(--vk-surface-2);
-          --pav-gold:       #C9A84C;
+          --pav-gold:       #C8102E;   /* accent on light surfaces (focus ring): kept under its old name */
+          --pav-accent-on-ink: #FF6B81; /* the same accent on navy: plain red is only 3.0:1 there */
           --pav-gold-dim:   var(--vk-gold-text);
-          --pav-plum:       #9B1C1C;
-          --pav-text-on-ink: #EDE9FA;
-          --pav-text-muted-on-ink: #E8D9B0;
+          --pav-plum:       #A50F27;
+          --pav-text-on-ink: #FFFFFF;
+          --pav-text-muted-on-ink: #D0D5DD;
           --pav-text-body:  var(--vk-fg);
           --pav-text-muted: var(--vk-fg-muted);
           --pav-rule:       var(--vk-line);
@@ -115,6 +117,7 @@ export function BusinessAccountSelectorViewer({ isOpen, onClose, onNavigate, onA
           -webkit-font-smoothing: antialiased;
         }
         .pav-root :focus-visible{ outline:2px solid var(--pav-gold); outline-offset:3px; }
+          .pav-subnav :focus-visible, .pav-foot :focus-visible{ outline-color:var(--pav-accent-on-ink); }
         .pav-wrap{ max-width:1160px; margin:0 auto; padding:0 32px; }
 
         .pav-close{
@@ -126,7 +129,7 @@ export function BusinessAccountSelectorViewer({ isOpen, onClose, onNavigate, onA
         }
         .pav-close:hover{ background:rgba(29,23,64,0.85); }
 
-        .pav-subnav{ background:var(--pav-ink); border-bottom:1px solid var(--pav-rule-on-ink); }
+        .pav-subnav{ background:var(--pav-panel); border-bottom:1px solid var(--pav-rule-on-ink); }
         .pav-subnav-inner{
           display:flex; align-items:center; gap:4px; overflow-x:auto;
           padding:0 32px; max-width:1160px; margin:0 auto; height:46px;
@@ -138,7 +141,7 @@ export function BusinessAccountSelectorViewer({ isOpen, onClose, onNavigate, onA
           transition:color 0.15s ease, background 0.15s ease;
         }
         .pav-subnav-item:hover{ color:var(--pav-text-on-ink); }
-        .pav-subnav-item.active{ color:var(--pav-gold); background:rgba(198,161,91,0.12); font-weight:600; }
+        .pav-subnav-item.active{ color:#FFFFFF; background:var(--pav-ink); font-weight:600; }
 
         .pav-ledger-head{ padding:32px 0 22px; }
         .pav-ledger-head h2{ font-family:var(--font-display); font-weight:500; font-size:22px; margin:0; }
@@ -165,9 +168,9 @@ export function BusinessAccountSelectorViewer({ isOpen, onClose, onNavigate, onA
         .pav-btn-secondary{ background:transparent; color:var(--vk-crimson-text); border-color:var(--pav-rule); }
         .pav-btn-secondary:hover{ background:var(--pav-paper-dim); border-color:var(--pav-gold-dim); }
 
-        .pav-foot{ background:var(--pav-ink); color:var(--pav-text-muted-on-ink); padding:34px 0; font-size:12px; line-height:1.7; font-family:var(--font-mono); }
+        .pav-foot{ background:var(--pav-panel); color:var(--pav-text-muted-on-ink); padding:34px 0; font-size:12px; line-height:1.7; font-family:var(--font-mono); }
         .pav-foot .pav-wrap{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
-        .pav-foot strong{ color:var(--pav-gold); font-weight:600; }
+        .pav-foot strong{ color:var(--pav-accent-on-ink); font-weight:600; }
 
         /* ── Account detail modal ── */
         .pav-detail-backdrop{ position:fixed; inset:0; z-index:70; background:rgba(29,23,64,0.55); display:flex; align-items:center; justify-content:center; padding:20px; }
@@ -207,8 +210,8 @@ export function BusinessAccountSelectorViewer({ isOpen, onClose, onNavigate, onA
       </nav>
 
       <div className="relative overflow-hidden" style={{ background: "linear-gradient(160deg,color-mix(in srgb, #FAFCFB var(--vk-wash), var(--vk-surface)) 0%,color-mix(in srgb, #F3F9F5 var(--vk-wash), var(--vk-surface)) 100%)" }}>
-        <div className="absolute -left-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: "linear-gradient(180deg,#9B1C1C,#8B0000)", filter: "blur(60px)" }} />
-        <div className="absolute -right-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: "linear-gradient(180deg,#8B0000,#9B1C1C)", filter: "blur(60px)" }} />
+        <div className="absolute -left-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: "linear-gradient(180deg,#A50F27,#C8102E)", filter: "blur(60px)" }} />
+        <div className="absolute -right-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: "linear-gradient(180deg,#C8102E,#A50F27)", filter: "blur(60px)" }} />
         <div className="relative max-w-6xl mx-auto px-8 py-14 sm:py-16">
           <span className="inline-block text-[11px] font-bold tracking-[0.14em] uppercase mb-3" style={{ color: BRAND.crimson }}>Business Banking</span>
           <h1 className="text-3xl sm:text-4xl font-black leading-[1.1] text-fg">Banking designed for<br />every South African business.</h1>

@@ -4,25 +4,25 @@ import { BRAND } from "../brand";
 interface Props { onOpenApps: () => void; }
 
 const APPS = [
-  { emoji: "🚌", name: "VINK AFC Terminal",  sub: "P18Q · Fare collection",         gradient: "linear-gradient(135deg,#5C0A10,#9B1C1C)", platform: "iOS · Android" },
+  { emoji: "🚌", name: "VINK AFC Terminal",  sub: "P18Q · Fare collection",         gradient: "linear-gradient(135deg,#8F1027,#A50F27)", platform: "iOS · Android" },
   { emoji: "📍", name: "VINK Fleet Tracker", sub: "Vehicle tracking",         gradient: "linear-gradient(135deg,#065F46,#10B981)", platform: "iOS · Android" },
-  { emoji: "💳", name: "VINK Banking",        sub: "Personal & business",      gradient: "linear-gradient(135deg,#5C0A10,#9B1C1C)", platform: "iOS · Android" },
+  { emoji: "💳", name: "VINK Banking",        sub: "Personal & business",      gradient: "linear-gradient(135deg,#8F1027,#A50F27)", platform: "iOS · Android" },
   { emoji: "🚗", name: "VINK Driver",         sub: "Earn · Drive · Get paid",  gradient: "linear-gradient(135deg,#0F172A,#14B8A6)", platform: "iOS · Android" },
   { emoji: "🚕", name: "VINK Ride",           sub: "Book rides · Earn as driver", gradient: "linear-gradient(135deg,#BE185D,#EC4899)", platform: "iOS · Android" },
   { emoji: "🍽️", name: "VINK Food",           sub: "Order food · Track delivery", gradient: "linear-gradient(135deg,#FF5722,#FF8A50)", platform: "iOS · Android" },
 ];
 
 export const AppShowcaseSection = memo(function AppShowcaseSection({ onOpenApps }: Props) {
-  const P = BRAND.crimsonDeep;
+  const P = BRAND.crimson;
 
   return (
-    <section className="py-16 sm:py-20" style={{ background: "#0A0A14" }}>
+    <section className="py-16 sm:py-20" style={{ background: "#0c111d" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Header */}
         <div className="text-center mb-10">
           <span className="inline-block text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full mb-4"
-            style={{ background: "rgba(245,166,35,.15)", color: BRAND.gold }}>
+            style={{ background: "rgba(200,16,46,.18)", color: BRAND.crimsonOnDark }}>
             VINK Super App Ecosystem
           </span>
           <h2 className="text-2xl sm:text-3xl font-black text-white mb-3">
@@ -58,7 +58,7 @@ export const AppShowcaseSection = memo(function AppShowcaseSection({ onOpenApps 
           <button
             onClick={onOpenApps}
             className="inline-flex items-center gap-3 px-8 py-4 rounded-2xl text-white font-black text-base transition-all hover:scale-105 active:scale-95 shadow-xl"
-            style={{ background: `linear-gradient(135deg,${P},#9B1C1C)`, boxShadow: `0 8px 32px ${P}50` }}
+            style={{ background: `linear-gradient(135deg,${P},#A50F27)`, boxShadow: `0 8px 32px ${P}50` }}
           >
             <span className="text-2xl">📲</span>
             Browse All Apps

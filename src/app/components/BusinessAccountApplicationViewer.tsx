@@ -8,7 +8,7 @@ import { BRAND } from "../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; initialAccountType?: string; }
 
-const PURPLE = BRAND.crimsonDeep;
+const PURPLE = BRAND.crimson;
 const GREEN  = BRAND.ok;
 
 // ─── Step definitions ─────────────────────────────────────────────────────────
@@ -622,7 +622,7 @@ export function BusinessAccountApplicationViewer({ isOpen, onClose, initialAccou
       <style>{`
         .field-label { display: block; font-size: 11px; font-weight: 600; color: #6B7280; margin-bottom: 4px; }
         .field-input { width: 100%; border: 1px solid color-mix(in srgb, #E5E7EB var(--vk-wash), var(--vk-surface)); border-radius: 10px; padding: 9px 14px; font-size: 13px; outline: none; background: color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface)); color: #111827; }
-        .field-input:focus { border-color: #5C0A10; }
+        .field-input:focus { border-color: #8F1027; }
       `}</style>
 
       <div className="fixed inset-0 z-50 flex flex-col bg-surface-2">

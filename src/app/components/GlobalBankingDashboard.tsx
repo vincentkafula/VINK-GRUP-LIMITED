@@ -38,7 +38,7 @@ const COLORS = {
 };
 
 const CARD_GRADIENTS: Record<string, string> = {
-  debit:        "linear-gradient(135deg,#5C0A10,#9B1C1C)",
+  debit:        "linear-gradient(135deg,#8F1027,#A50F27)",
   virtual:      "linear-gradient(135deg,#0F4C81,#2196F3)",
   business:     "linear-gradient(135deg,#1A1A1A,#4A4A4A)",
   "sub-account":"linear-gradient(135deg,#1B5E20,#4CAF50)",
@@ -235,7 +235,7 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
 
   if (!isOpen) return null;
 
-  const P = "#5C0A10";
+  const P = "#C8102E";
   const totalUsdEquiv = Object.entries(balances).reduce((s, [cur, amt]) => {
     const rates: Record<string,number> = { ZAR: 1/18.35, ZMW: 1/27.20, EUR: 1.086, USD: 1, CNY: 1/7.248 };
     return s + amt * (rates[cur] ?? 0);
@@ -297,7 +297,7 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
             <div className="space-y-6 max-w-5xl">
               {/* Unified account card */}
               <div className="rounded-2xl overflow-hidden shadow-xl"
-                style={{ background: `linear-gradient(135deg,${P} 0%,#0C0E14 40%,#9B1C1C 80%,#9B1C1C 100%)` }}>
+                style={{ background: `linear-gradient(135deg,${P} 0%,#101828 40%,#A50F27 80%,#A50F27 100%)` }}>
                 <div className="relative overflow-hidden px-6 py-5">
                   <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-white/5 pointer-events-none" />
                   <div className="absolute -bottom-8 -left-8 w-36 h-36 rounded-full bg-white/5 pointer-events-none" />
@@ -348,7 +348,7 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
                 {(() => {
                   const kpi = liveData.kpi as Record<string, number> | null;
                   return (<>
-                    <KpiCard label="24h Transactions" value={kpi ? String(kpi.txnCount24h ?? KPI.txnCount24h) : String(KPI.txnCount24h)} sub={liveConnected ? "Live — Supabase" : "Demo data"} icon={<Activity className="w-5 h-5" />} color="#5C0A10" />
+                    <KpiCard label="24h Transactions" value={kpi ? String(kpi.txnCount24h ?? KPI.txnCount24h) : String(KPI.txnCount24h)} sub={liveConnected ? "Live — Supabase" : "Demo data"} icon={<Activity className="w-5 h-5" />} color="#8F1027" />
                     <KpiCard label="Domestic Routing" value={`${kpi ? (kpi.domesticRoutingPct ?? KPI.domesticPct) : KPI.domesticPct}%`} sub="No cross-border fees" icon={<Globe className="w-5 h-5" />} color="#10B981" />
                     <KpiCard label="Interchange Earned" value={`R${fmtM(kpi ? (kpi.interchangeEarnedToday ?? KPI.interchangeToday) : KPI.interchangeToday)}`} sub="Today's card income" icon={<TrendingUp className="w-5 h-5" />} color="#C9A84C" />
                     <KpiCard label="Active Cards" value={String(kpi ? (kpi.activeCards ?? KPI.activeCards) : KPI.activeCards)} sub="Visa + Mastercard" icon={<DollarSign className="w-5 h-5" />} color="#3B82F6" />
@@ -431,7 +431,7 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
                     return (
                       <div key={String(t.id ?? i)} className="flex items-center gap-3 py-2 border-b border-gray-50 last:border-0">
                         <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 text-white"
-                          style={{ background: dir === "credit" ? "#10B981" : "#5C0A10" }}>
+                          style={{ background: dir === "credit" ? "#10B981" : "#8F1027" }}>
                           {dir === "credit" ? <ArrowDownLeft className="w-3.5 h-3.5" /> : <ArrowUpRight className="w-3.5 h-3.5" />}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -593,7 +593,7 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
                   </button>
                   <button onClick={doConvert} disabled={fxConverting}
                     className="flex-1 py-4 rounded-2xl text-base font-black text-white transition-all hover:opacity-90 shadow-lg flex items-center justify-center gap-2 disabled:opacity-60"
-                    style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
+                    style={{ background: `linear-gradient(135deg,${P},#A50F27)` }}>
                     {fxConverting ? <><div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />Converting…</> : `Convert ${fxFrom} → ${fxTo}`}
                   </button>
                 </div>
@@ -771,7 +771,7 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
                     </div>
                     <button onClick={doP2P} disabled={!p2pRef || !p2pAmt || p2pLoading}
                       className="w-full py-3 rounded-xl text-sm font-black text-white transition-all hover:opacity-90 shadow-md disabled:opacity-40 flex items-center justify-center gap-2"
-                      style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
+                      style={{ background: `linear-gradient(135deg,${P},#A50F27)` }}>
                       {p2pLoading ? <><div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />Sending…</> : "Send Instantly"}
                     </button>
                   </>
@@ -897,7 +897,7 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
               <SectionTitle><BarChart3 className="w-4 h-4" style={{ color: "var(--vk-crimson-text)" }} />Platform Analytics & Revenue</SectionTitle>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <KpiCard label="Total Accounts" value={KPI.totalAccounts.toLocaleString()} sub="Across 5 countries" icon={<Users className="w-5 h-5" />} color="#5C0A10" />
+                <KpiCard label="Total Accounts" value={KPI.totalAccounts.toLocaleString()} sub="Across 5 countries" icon={<Users className="w-5 h-5" />} color="#8F1027" />
                 <KpiCard label="Active Cards" value={KPI.activeCards.toLocaleString()} sub="Visa + Mastercard" icon={<CreditCard className="w-5 h-5" />} color="#3B82F6" />
                 <KpiCard label="FX Conversions" value={KPI.fxConversions24h.toString()} sub="Last 24 hours" icon={<RefreshCw className="w-5 h-5" />} color="#10B981" />
                 <KpiCard label="Domestic Routing" value={`${KPI.domesticPct}%`} sub="No cross-border fees" icon={<Globe className="w-5 h-5" />} color="#C9A84C" />

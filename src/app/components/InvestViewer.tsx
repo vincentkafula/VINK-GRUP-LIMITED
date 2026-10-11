@@ -4,9 +4,9 @@ import { Footer } from "./Footer";
 
 interface Props { isOpen: boolean; onClose: () => void }
 
-const BRAND      = "#5C0A10";
-const BRAND_DARK = "#2E0B10";
-const FEAT_BG    = "#5C0A10";
+const BRAND      = "#8F1027";
+const BRAND_DARK = "#101828";
+const FEAT_BG    = "#8F1027";
 const TOP_NAV    = ["Personal", "Business", "Corporate"];
 const BIZ_SUBNAV = ["Start my business", "Accounts", "Credit cards", "Loans", "Invest", "Manage my Business", "Get Help"];
 const ACTIVE_IDX = 4;

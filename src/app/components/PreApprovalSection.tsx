@@ -106,7 +106,7 @@ export function PreApprovalSection() {
             <div className="absolute top-0 right-0 w-32 h-32 rounded-full opacity-5 pointer-events-none"
               style={{ background: `radial-gradient(circle,${P},transparent)`, transform: "translate(30%,-30%)" }}/>
             <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform"
-              style={{ background: "linear-gradient(135deg,color-mix(in srgb, #F2EFE8 var(--vk-wash), var(--vk-surface)),color-mix(in srgb, #E4DFD3 var(--vk-wash), var(--vk-surface)))" }}>
+              style={{ background: "linear-gradient(135deg,color-mix(in srgb, #F2F4F7 var(--vk-wash), var(--vk-surface)),color-mix(in srgb, #EAECF0 var(--vk-wash), var(--vk-surface)))" }}>
               <svg viewBox="0 0 40 40" className="w-7 h-7" fill="none">
                 <circle cx="20" cy="14" r="6" stroke={P} strokeWidth="2.2"/>
                 <path d="M8 36 C8 28 13 24 20 24 C27 24 32 28 32 36" stroke={P} strokeWidth="2.2" strokeLinecap="round"/>
@@ -134,14 +134,14 @@ export function PreApprovalSection() {
                   className="w-full border border-line rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-400" placeholder="Monthly income (optional)" />
                 <button onClick={handleCreditCheck} disabled={loading}
                   className="w-full py-2.5 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-2 disabled:opacity-60"
-                  style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
+                  style={{ background: `linear-gradient(135deg,${P},#A50F27)` }}>
                   {loading ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Checking...</> : "Check My Score"}
                 </button>
               </div>
             ) : (
               <button onClick={() => setShowForm(true)}
                 className="w-full py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90"
-                style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
+                style={{ background: `linear-gradient(135deg,${P},#A50F27)` }}>
                 Check My Score
               </button>
             )}
@@ -175,7 +175,7 @@ export function PreApprovalSection() {
 
           {/* Card 3 — How it works */}
           <div className="rounded-2xl p-7 text-white relative overflow-hidden"
-            style={{ background: "linear-gradient(135deg,#5C0A10,#9B1C1C)" }}>
+            style={{ background: "linear-gradient(135deg,#8F1027,#A50F27)" }}>
             <h3 className="font-bold text-white text-base mb-1">Three Steps to Your Card</h3>
             <p className="text-white/70 text-sm mb-6">Getting started with VINK is simple, fast, and completely transparent.</p>
             <div className="space-y-4">

@@ -9,9 +9,9 @@ import { BRAND } from "../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
-const P    = BRAND.crimsonDeep;
+const P    = BRAND.crimson;
 const GOLD = BRAND.gold;
-const NAVY = "#0A0F1E";
+const NAVY = "#101828";
 
 const PROVINCE_COLORS: Record<string, string> = {
   National:        BRAND.crimson,

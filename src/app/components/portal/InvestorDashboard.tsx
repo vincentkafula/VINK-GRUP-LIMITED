@@ -6,7 +6,7 @@ import { DashboardShell, SectionPanel, StatCard, TableCard, Badge } from "../das
 import { portalClient, useLoad, Status, Empty, rand, when } from "./ui";
 import { CsvButton, Pager, RangeBar, ScreenBoundary, TrendChart, rangeQuery, saToday, saShift, monthStart, type Range } from "./widgets";
 
-const COLOR = "#14B8A6";
+const COLOR = "#C8102E";
 const call = portalClient("investor");
 const NAV = [
   { icon: <TrendingUp className="w-4 h-4" />, label: "Income" }, { icon: <RadioTower className="w-4 h-4" />, label: "Devices" },

@@ -18,7 +18,6 @@ import { BRAND } from "../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; adminName?: string; adminRole?: string; role?: string }
 
-const GREEN = BRAND.gold;
 const ORANGE = BRAND.crimson;
 const PURPLE = BRAND.crimson;
 
@@ -64,10 +63,10 @@ const SYSTEM_ITEMS = [
 ];
 
 const STATS = [
-  { label: "Total Institutions", value: "128", trend: "+12%", icon: <Landmark className="w-5 h-5" />, iconBg: "#EEEBFF", iconColor: PURPLE, trendColor: GREEN, spark: [4, 7, 5, 9, 6, 10, 8, 12, 9, 14] },
-  { label: "Total Transactions", value: "24,560", trend: "+18%", icon: <CreditCard className="w-5 h-5" />, iconBg: "#E6F0FF", iconColor: "#2563EB", trendColor: GREEN, spark: [6, 5, 8, 7, 11, 9, 13, 10, 15, 13] },
-  { label: "Active Users", value: "8,459", trend: "+9%", icon: <Users className="w-5 h-5" />, iconBg: "#E9F7EF", iconColor: GREEN, trendColor: GREEN, spark: [8, 9, 7, 10, 9, 12, 10, 13, 11, 14] },
-  { label: "Total Revenue", value: "R45.8M", trend: "+21%", icon: <TrendingUp className="w-5 h-5" />, iconBg: "#FDECE0", iconColor: ORANGE, trendColor: GREEN, spark: [5, 8, 6, 11, 8, 14, 10, 16, 12, 18] },
+  { label: "Total Institutions", value: "128", trend: "+12%", icon: <Landmark className="w-5 h-5" />, iconBg: "#EEEBFF", iconColor: PURPLE, trendColor: BRAND.ok, spark: [4, 7, 5, 9, 6, 10, 8, 12, 9, 14] },
+  { label: "Total Transactions", value: "24,560", trend: "+18%", icon: <CreditCard className="w-5 h-5" />, iconBg: "#E6F0FF", iconColor: "#2563EB", trendColor: BRAND.ok, spark: [6, 5, 8, 7, 11, 9, 13, 10, 15, 13] },
+  { label: "Active Users", value: "8,459", trend: "+9%", icon: <Users className="w-5 h-5" />, iconBg: "#E9F7EF", iconColor: BRAND.ok, trendColor: BRAND.ok, spark: [8, 9, 7, 10, 9, 12, 10, 13, 11, 14] },
+  { label: "Total Revenue", value: "R45.8M", trend: "+21%", icon: <TrendingUp className="w-5 h-5" />, iconBg: "#FDECE0", iconColor: ORANGE, trendColor: BRAND.ok, spark: [5, 8, 6, 11, 8, 14, 10, 16, 12, 18] },
 ];
 
 interface ModuleTile { title: string; displayTitle: string; desc: string; icon: React.ReactNode; iconBg: string; iconColor: string; }
@@ -80,7 +79,7 @@ const MODULE_TILES: ModuleTile[] = [
 
 const BOTTOM_STATS = [
   { value: "342", label: "Total Admins", icon: <Users className="w-5 h-5" />, iconBg: "#EEEBFF", iconColor: PURPLE, spark: [3, 5, 4, 6, 5, 7, 6, 8] },
-  { value: "98%", label: "System Uptime", icon: <ShieldCheck className="w-5 h-5" />, iconBg: "#E9F7EF", iconColor: GREEN, spark: [7, 8, 7, 9, 8, 9, 8, 9] },
+  { value: "98%", label: "System Uptime", icon: <ShieldCheck className="w-5 h-5" />, iconBg: "#E9F7EF", iconColor: BRAND.ok, spark: [7, 8, 7, 9, 8, 9, 8, 9] },
   { value: "1,245", label: "Active Sessions", icon: <Monitor className="w-5 h-5" />, iconBg: "#E6F0FF", iconColor: "#2563EB", spark: [4, 6, 5, 8, 6, 9, 7, 10] },
   { value: "12", label: "Pending Approvals", icon: <ClipboardList className="w-5 h-5" />, iconBg: "#FDECE0", iconColor: ORANGE, spark: [6, 5, 7, 4, 6, 3, 5, 4] },
   { value: "24", label: "System Alerts", icon: <AlertTriangle className="w-5 h-5" />, iconBg: "var(--vk-bad-bg)", iconColor: "#DC2626", spark: [8, 6, 9, 5, 7, 4, 6, 3] },
@@ -341,7 +340,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
                 <p><strong>Server said:</strong> {sessionExpiredDetail.backendError ?? "—"}</p>
               </div>
             )}
-            <button onClick={onClose} className="w-full py-2.5 rounded-xl text-sm font-bold text-white hover:opacity-90" style={{ background: GREEN }}>
+            <button onClick={onClose} className="w-full py-2.5 rounded-xl text-sm font-bold text-white hover:opacity-90" style={{ background: BRAND.crimson }}>
               Close
             </button>
           </div>
@@ -354,7 +353,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
           <div className="px-5 pt-6 pb-5">
             <div className="flex items-baseline gap-0.5">
               <img loading="lazy" decoding="async" src={vinkLogo} alt="" className="h-6 w-6 object-contain mr-1.5" />
-              <span className="font-black text-xl" style={{ color: GREEN }}>VINK</span>
+              <span className="font-black text-xl" style={{ color: BRAND.crimson }}>VINK</span>
             </div>
             <p className="text-[10px] font-bold tracking-[0.16em] text-white/40 mt-1">MANAGEMENT PANEL</p>
           </div>
@@ -434,7 +433,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
               <button
                 onClick={() => goView("apply")}
                 className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[13px] font-semibold mt-1 border border-dashed"
-                style={view === "apply" ? { background: GREEN, color: "#fff", borderColor: GREEN } : { color: GREEN, borderColor: "rgba(201,168,76,0.4)" }}
+                style={view === "apply" ? { background: BRAND.crimson, color: "#fff", borderColor: BRAND.crimson } : { color: BRAND.crimson, borderColor: "rgba(200,16,46,0.4)" }}
               >
                 <Plus className="w-4 h-4" /> Apply for a Section
               </button>
@@ -456,7 +455,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
 
           <div className="p-3 mt-2">
             <button onClick={onClose} className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg" style={{ background: "rgba(255,255,255,0.05)" }}>
-              <span className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0" style={{ background: GREEN }}>
+              <span className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0" style={{ background: BRAND.crimson }}>
                 {adminName.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
               </span>
               <span className="flex-1 min-w-0 text-left">
@@ -491,7 +490,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
               <Settings className="w-4.5 h-4.5 text-fg-muted" />
             </button>
             <button className="flex items-center gap-2.5 pl-2">
-              <span className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: GREEN }}>
+              <span className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: BRAND.crimson }}>
                 {adminName.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
               </span>
               <span className="text-left hidden sm:block">
@@ -547,7 +546,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
                 <Lock className="w-8 h-8 mx-auto text-gray-300 mb-3" />
                 <p className="text-sm font-bold text-fg">No sections assigned yet</p>
                 <p className="text-xs text-fg-muted mt-1 mb-4">Apply to manage a section — a Super Administrator will review your request.</p>
-                <button onClick={() => goView("apply")} className="px-4 py-2 rounded-lg text-xs font-bold text-white" style={{ background: GREEN }}>Apply for a Section</button>
+                <button onClick={() => goView("apply")} className="px-4 py-2 rounded-lg text-xs font-bold text-white" style={{ background: BRAND.crimson }}>Apply for a Section</button>
               </div>
             )}
             {visibleTiles.map(m => (
@@ -567,7 +566,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
               <span className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 bg-surface-2 text-fg-subtle"><Plus className="w-7 h-7" /></span>
               <p className="text-[15px] font-bold text-fg">Add New Module</p>
               <p className="text-xs text-fg-muted mt-2">Create a new management module for your platform.</p>
-              <span className="mt-4 flex items-center justify-center gap-1.5 py-2 px-4 rounded-lg text-xs font-bold" style={{ background: "var(--vk-ok-bg)", color: GREEN }}>
+              <span className="mt-4 flex items-center justify-center gap-1.5 py-2 px-4 rounded-lg text-xs font-bold" style={{ background: "var(--vk-ok-bg)", color: BRAND.ok }}>
                 Create Module <ArrowRight className="w-3 h-3" />
               </span>
             </button>
@@ -591,11 +590,11 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
             <div className="bg-surface rounded-2xl border border-line p-4 flex flex-col justify-center">
               <div className="flex items-center gap-2.5">
                 <span className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "var(--vk-ok-bg)" }}>
-                  <CheckCircle2 className="w-5 h-5" style={{ color: GREEN }} />
+                  <CheckCircle2 className="w-5 h-5" style={{ color: BRAND.ok }} />
                 </span>
                 <div className="min-w-0">
                   <p className="text-[13px] font-bold text-fg leading-tight">System Health</p>
-                  <p className="text-[11px] leading-tight" style={{ color: GREEN }}>All systems operational</p>
+                  <p className="text-[11px] leading-tight" style={{ color: BRAND.crimson }}>All systems operational</p>
                 </div>
               </div>
             </div>
@@ -616,18 +615,18 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
                     <div key={a.id} className="p-5 flex items-start justify-between gap-4 flex-wrap">
                       <div className="min-w-0">
                         <p className="text-sm font-bold text-fg">{a.name} <span className="text-fg-subtle font-normal">@{a.username}</span></p>
-                        <p className="text-xs mt-1"><span className="font-semibold" style={{ color: GREEN }}>{a.section}</span> · {new Date(a.created_at).toLocaleDateString()}</p>
+                        <p className="text-xs mt-1"><span className="font-semibold" style={{ color: BRAND.crimson }}>{a.section}</span> · {new Date(a.created_at).toLocaleDateString()}</p>
                         {a.message && <p className="text-xs text-fg-muted mt-2 italic">"{a.message}"</p>}
                         {a.status === "rejected" && a.rejection_reason && <p className="text-xs text-red-500 mt-2">Rejected: {a.rejection_reason}</p>}
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
                         {a.status === "pending" ? (
                           <>
-                            <button onClick={() => handleApprove(a.id)} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-white" style={{ background: GREEN }}><Check className="w-3.5 h-3.5" /> Approve</button>
+                            <button onClick={() => handleApprove(a.id)} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-white" style={{ background: BRAND.crimson }}><Check className="w-3.5 h-3.5" /> Approve</button>
                             <button onClick={() => handleReject(a.id)} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-red-600 border border-red-200"><XIcon className="w-3.5 h-3.5" /> Reject</button>
                           </>
                         ) : (
-                          <span className="text-[11px] font-bold px-2.5 py-1 rounded-full" style={a.status === "approved" ? { background: "var(--vk-ok-bg)", color: GREEN } : { background: "var(--vk-bad-bg)", color: "#DC2626" }}>
+                          <span className="text-[11px] font-bold px-2.5 py-1 rounded-full" style={a.status === "approved" ? { background: "var(--vk-ok-bg)", color: BRAND.ok } : { background: "var(--vk-bad-bg)", color: "#DC2626" }}>
                             {a.status === "approved" ? "Approved" : "Rejected"}
                           </span>
                         )}
@@ -653,7 +652,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
                       <p className="text-sm font-bold text-fg">{m.name} <span className="text-fg-subtle font-normal">@{m.username}</span></p>
                       <div className="flex flex-wrap gap-2 mt-3">
                         {m.sections.map(s => (
-                          <span key={s.section} className="flex items-center gap-1.5 text-[11px] font-semibold pl-2.5 pr-1.5 py-1 rounded-full" style={{ background: "var(--vk-ok-bg)", color: GREEN }}>
+                          <span key={s.section} className="flex items-center gap-1.5 text-[11px] font-semibold pl-2.5 pr-1.5 py-1 rounded-full" style={{ background: "var(--vk-ok-bg)", color: BRAND.ok }}>
                             {s.section}{s.position ? ` — ${s.position}` : ""}
                             <button onClick={() => handleRevoke(m.id, s.section)} className="w-4 h-4 rounded-full flex items-center justify-center hover:bg-black/10" title="Revoke"><XIcon className="w-2.5 h-2.5" /></button>
                           </span>
@@ -684,7 +683,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
                       <div>
                         <span className="font-bold text-fg">{a.actor_name}</span>{" "}
                         <span className="text-fg-muted">{a.action.replace(".", " ")}</span>{" "}
-                        {a.target && <span className="font-semibold" style={{ color: GREEN }}>{a.target}</span>}
+                        {a.target && <span className="font-semibold" style={{ color: BRAND.crimson }}>{a.target}</span>}
                       </div>
                       <span className="text-xs text-fg-subtle shrink-0">{new Date(a.created_at).toLocaleString()}</span>
                     </div>
@@ -754,7 +753,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
                 </select>
                 <label className="text-xs font-bold text-fg">Why should you manage this section? (optional)</label>
                 <textarea value={applyMessage} onChange={e => setApplyMessage(e.target.value)} rows={3} className="w-full mt-1.5 mb-4 px-3 py-2.5 rounded-lg border border-line text-sm outline-none resize-none" placeholder="Relevant experience, role, or context for the Super Administrator..." />
-                <button onClick={handleApply} disabled={applying} className="w-full py-2.5 rounded-lg text-sm font-bold text-white disabled:opacity-50" style={{ background: GREEN }}>
+                <button onClick={handleApply} disabled={applying} className="w-full py-2.5 rounded-lg text-sm font-bold text-white disabled:opacity-50" style={{ background: BRAND.crimson }}>
                   {applying ? "Submitting…" : "Submit Application"}
                 </button>
               </div>
@@ -788,7 +787,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
               <div className="flex items-center gap-2 flex-wrap">
                 <JobStatusBadge status={selectedJobApp.status} />
                 {selectedJobApp.roleGranted && (
-                  <span className="text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ background: "var(--vk-ok-bg)", color: GREEN }}>
+                  <span className="text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ background: "var(--vk-ok-bg)", color: BRAND.ok }}>
                     {jobDept} access granted
                   </span>
                 )}
@@ -878,7 +877,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
                       {nextSteps.map(step => (
                         <button key={step} disabled={jobActionBusy} onClick={() => handleJobStatusChange(selectedJobApp.referenceNumber, step)}
                           className={`py-2.5 rounded-lg text-xs font-bold disabled:opacity-50 ${LABELS[step]?.cls ?? "border border-line text-fg-muted hover:bg-surface-2"}`}
-                          style={step === "offered" ? { background: GREEN } : undefined}>
+                          style={step === "offered" ? { background: BRAND.crimson } : undefined}>
                           {jobActionBusy ? "…" : (LABELS[step]?.label ?? step)}
                         </button>
                       ))}
@@ -899,7 +898,7 @@ function JobStatusBadge({ status }: { status: string }) {
     submitted: { label: "New", bg: "var(--vk-warn-bg)", color: BRAND.warn },
     under_review: { label: "Under Review", bg: "var(--vk-info-bg)", color: BRAND.info },
     interview: { label: "Interview", bg: "var(--vk-info-bg)", color: BRAND.info },
-    offered: { label: "Approved", bg: "#E9F7EF", color: GREEN },
+    offered: { label: "Approved", bg: "#E9F7EF", color: BRAND.crimson },
     rejected: { label: "Rejected", bg: "var(--vk-bad-bg)", color: BRAND.bad },
     withdrawn: { label: "Withdrawn", bg: "var(--vk-surface-2)", color: "var(--vk-fg-muted)" },
   };

@@ -13,7 +13,7 @@ import { BRAND } from "../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
-const P = BRAND.crimsonDeep;
+const P = BRAND.crimson;
 const VISA_BLUE = "#1A1F71";
 const MC_RED = "#EB001B";
 const MC_ORANGE = "#F79E1B";
@@ -225,7 +225,7 @@ function AFCSimulator() {
         <div className="p-5 flex flex-col items-center gap-4">
           {/* Card visual */}
           <div className="relative w-48 h-28 rounded-xl flex items-end p-3"
-            style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
+            style={{ background: `linear-gradient(135deg,${P},#A50F27)` }}>
             <div className="absolute top-3 left-3 w-7 h-5 rounded bg-yellow-400/70" />
             <div className="absolute top-3 right-3">
               {currentStep >= 2 ? <NetworkBadge network="visa" /> : <span className="text-white/40 text-xs">VINK</span>}
@@ -449,7 +449,7 @@ export function CardNetworkDashboard({ isOpen, onClose }: Props) {
               {/* Network membership cards */}
               <div className="grid sm:grid-cols-2 gap-5">
                 {/* Visa */}
-                <div className="rounded-2xl overflow-hidden text-white shadow-lg" style={{ background: `linear-gradient(135deg,${VISA_BLUE},#2E0B10)` }}>
+                <div className="rounded-2xl overflow-hidden text-white shadow-lg" style={{ background: `linear-gradient(135deg,${VISA_BLUE},#101828)` }}>
                   <div className="p-5">
                     <div className="flex items-center justify-between mb-4">
                       <div className="bg-surface rounded px-3 py-1 text-[14px] font-black italic" style={{ color: VISA_BLUE }}>VISA</div>

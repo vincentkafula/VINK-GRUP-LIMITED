@@ -9,7 +9,7 @@ import { portalClient, useLoad, Status, Empty, ActionButton, outcome, inputCls, 
 import { MembersList, VehiclesList, RoutesManager, AssociationMap, DeparturesTrend, FinesLedger, AssociationStatements } from "./AssociationExtras";
 import { ScreenBoundary } from "./widgets";
 
-const COLOR = "#EF4444";
+const COLOR = "#C8102E";
 const call = portalClient("association");
 const ROLE: Record<string, string> = { vehicle_owner: "Vehicle owner", driver: "Driver", marshal: "Marshal" };
 

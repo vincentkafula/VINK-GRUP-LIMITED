@@ -67,10 +67,10 @@ const ALL_NAV = [
   { id: "developer",     label: "Developer Tools",    icon: <Code2 className="w-4 h-4" /> },
 ];
 
-const NAVY   = "#0A0F1E";
+const NAVY   = "#101828";
 const DEEP   = "#111827";
 const SURF   = "#1E293B";
-const P      = BRAND.crimsonDeep;
+const P      = BRAND.crimson;
 const GOLD   = BRAND.gold;
 const GREEN  = BRAND.ok;
 const RED    = BRAND.bad;
@@ -114,7 +114,7 @@ function Stat({ label, value, sub, color, icon }: { label: string; value: string
 function Section({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
     <div className="rounded-2xl overflow-hidden" style={{ background: SURF }}>
-      <div className="flex items-center justify-between px-5 py-3.5 border-b" style={{ borderColor: "#1E2A45" }}>
+      <div className="flex items-center justify-between px-5 py-3.5 border-b" style={{ borderColor: "#344054" }}>
         <p className="text-sm font-bold text-white">{title}</p>
         {action}
       </div>
@@ -206,7 +206,7 @@ function OverviewScreen({ user }: { user: MgmtUser }) {
                   </div>
                   <div className="flex gap-1.5">
                     <button className="px-3 py-1.5 rounded-lg text-[11px] font-bold text-white" style={{ background: GREEN }}>✓</button>
-                    <button className="px-3 py-1.5 rounded-lg text-[11px] font-bold" style={{ background: "#2D2A50", color: "#9CA3AF" }}>✕</button>
+                    <button className="px-3 py-1.5 rounded-lg text-[11px] font-bold" style={{ background: "#344054", color: "#9CA3AF" }}>✕</button>
                   </div>
                 </div>
               ))}
@@ -221,7 +221,7 @@ function OverviewScreen({ user }: { user: MgmtUser }) {
           {DEMO_USERS.map(u => (
             <div key={u.id}
               className={`flex items-center gap-2 px-3 py-2 rounded-xl border transition-all ${u.level >= user.level ? "opacity-100" : "opacity-25"}`}
-              style={{ background: u.id === user.id ? ROLE_COLORS[u.role] + "20" : DEEP, borderColor: u.id === user.id ? ROLE_COLORS[u.role] : "#1E2A45" }}>
+              style={{ background: u.id === user.id ? ROLE_COLORS[u.role] + "20" : DEEP, borderColor: u.id === user.id ? ROLE_COLORS[u.role] : "#344054" }}>
               <div className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[9px] font-black flex-shrink-0"
                 style={{ background: ROLE_COLORS[u.role] }}>
                 {u.avatar}
@@ -265,7 +265,7 @@ function UsersScreen() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search users…"
             className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm text-white outline-none"
-            style={{ background: SURF, border: "1px solid #1E2A45" }} />
+            style={{ background: SURF, border: "1px solid #344054" }} />
         </div>
         <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white" style={{ background: P }}>
           <Users className="w-4 h-4" />Create User
@@ -287,7 +287,7 @@ function UsersScreen() {
               <p className="text-gray-600 text-[10px] w-16 text-right flex-shrink-0">{u.last}</p>
               <div className="flex gap-1">
                 {["Edit","Reset","Suspend"].map(a => (
-                  <button key={a} className="px-2.5 py-1 rounded-lg text-[10px] font-semibold text-white/70 hover:text-white transition-colors" style={{ background: "#2D2A50" }}>{a}</button>
+                  <button key={a} className="px-2.5 py-1 rounded-lg text-[10px] font-semibold text-white/70 hover:text-white transition-colors" style={{ background: "#344054" }}>{a}</button>
                 ))}
               </div>
             </div>
@@ -336,7 +336,7 @@ function CustomersScreen({ user }: { user: MgmtUser }) {
               {user.level <= 6 && (
                 <div className="flex gap-1">
                   {["View","Edit"].map(a => (
-                    <button key={a} className="px-2.5 py-1 rounded-lg text-[10px] font-semibold text-white/70 hover:text-white transition-colors" style={{ background: "#2D2A50" }}>{a}</button>
+                    <button key={a} className="px-2.5 py-1 rounded-lg text-[10px] font-semibold text-white/70 hover:text-white transition-colors" style={{ background: "#344054" }}>{a}</button>
                   ))}
                 </div>
               )}
@@ -401,7 +401,7 @@ function FinancialScreen({ user }: { user: MgmtUser }) {
                 <span className="text-gray-400">{r.cat}</span>
                 <span className="font-bold" style={{ color: r.color }}>{r.vol}</span>
               </div>
-              <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "#1E2A45" }}>
+              <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "#344054" }}>
                 <div className="h-full rounded-full" style={{ width: `${r.pct}%`, background: r.color }} />
               </div>
             </div>
@@ -519,7 +519,7 @@ function SettingsScreen() {
         <Section key={g.label} title={g.label}>
           <div className="flex flex-wrap gap-2">
             {g.items.map(item => (
-              <button key={item} className="px-4 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white hover:bg-white/10 transition-all border" style={{ borderColor: "#2D2A50" }}>{item}</button>
+              <button key={item} className="px-4 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white hover:bg-white/10 transition-all border" style={{ borderColor: "#344054" }}>{item}</button>
             ))}
           </div>
         </Section>
@@ -550,7 +550,7 @@ function GenericScreen({ id, user }: { id: string; user: MgmtUser }) {
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {list.map((item, i) => (
             <button key={i} className="flex items-center gap-3 p-4 rounded-xl text-left hover:bg-white/5 transition-all border group"
-              style={{ background: DEEP, borderColor: "#2D2A50" }}>
+              style={{ background: DEEP, borderColor: "#344054" }}>
               <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform"
                 style={{ background: P + "25", color: "var(--vk-crimson-text)" }}>
                 {nav?.icon}
@@ -597,11 +597,11 @@ function DashboardShell({ user, onLogout }: { user: MgmtUser; onLogout: () => vo
     <div className="flex-1 flex overflow-hidden" style={{ background: NAVY }}>
       {/* Sidebar */}
       <div className={`flex-shrink-0 flex flex-col transition-all duration-200 border-r ${sidebarOpen ? "w-56" : "w-14"}`}
-        style={{ background: DEEP, borderColor: "#1E2A45" }}>
+        style={{ background: DEEP, borderColor: "#344054" }}>
         {/* Logo */}
-        <div className="flex items-center gap-3 px-4 py-4 border-b" style={{ borderColor: "#1E2A45" }}>
+        <div className="flex items-center gap-3 px-4 py-4 border-b" style={{ borderColor: "#344054" }}>
           <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-white font-black text-xs"
-            style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>V</div>
+            style={{ background: `linear-gradient(135deg,${P},#A50F27)` }}>V</div>
           {sidebarOpen && <p className="text-white font-black text-sm leading-tight">VINK<br /><span className="font-normal text-[10px] text-gray-400">Management Hub</span></p>}
         </div>
 
@@ -621,7 +621,7 @@ function DashboardShell({ user, onLogout }: { user: MgmtUser; onLogout: () => vo
         </nav>
 
         {/* User profile */}
-        <div className="border-t p-3" style={{ borderColor: "#1E2A45" }}>
+        <div className="border-t p-3" style={{ borderColor: "#344054" }}>
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-black flex-shrink-0"
               style={{ background: roleColor }}>{user.avatar}</div>
@@ -643,7 +643,7 @@ function DashboardShell({ user, onLogout }: { user: MgmtUser; onLogout: () => vo
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top bar */}
-        <div className="flex items-center gap-4 px-5 py-3 border-b flex-shrink-0" style={{ background: DEEP, borderColor: "#1E2A45" }}>
+        <div className="flex items-center gap-4 px-5 py-3 border-b flex-shrink-0" style={{ background: DEEP, borderColor: "#344054" }}>
           <button onClick={() => setSidebarOpen(s => !s)} className="text-gray-400 hover:text-white transition-colors">
             <Menu className="w-5 h-5" />
           </button>
@@ -702,7 +702,7 @@ export function ManagementHub({ isOpen, onClose }: Props) {
     <div className="fixed inset-0 z-50 flex flex-col" style={{ background: NAVY }}>
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-3 border-b flex-shrink-0"
-        style={{ background: DEEP, borderColor: "#1E2A45" }}>
+        style={{ background: DEEP, borderColor: "#344054" }}>
         <div className="flex items-center gap-2">
           <Shield className="w-5 h-5" style={{ color: "var(--vk-crimson-text)" }} />
           <p className="text-white font-black text-sm">VINK Management Hub</p>

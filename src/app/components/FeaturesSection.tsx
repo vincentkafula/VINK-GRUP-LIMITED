@@ -5,12 +5,12 @@ import { Card3DViewer } from "./Card3DViewer";
 import { PremiumIcon } from "./PremiumIcon";
 import { BRAND } from "../brand";
 
-const PURPLE = "var(--vk-brand)";           // crimson in light, gold in dark
-const DEEP_PURPLE = "#0c0e14";                // ink: the chip always carries white text
-const GOLD = BRAND.gold;
-// The cards use the website's own background and text colours (so they follow the light and dark themes); only the icon medallions carry colour: gold metal on warm ink.
-const GOLD_METAL = "#D4AF5A";      // the medallions
-const INK = "#1A0D10";             // the warm dark each medallion is built on
+const PURPLE = "var(--vk-brand)";           // brand red
+const DEEP_PURPLE = "#101828";                // ink: the chip always carries white text
+const GOLD = BRAND.crimson;
+// The cards use the website's own background and text colours (so they follow the light and dark themes); only the icon medallions carry colour: brand red on navy.
+const GOLD_METAL = "#FF6B81";      // the medallions (brand red, on-dark tint)
+const INK = "#101828";             // the navy each medallion is built on
 
 interface Benefit { icon: React.ComponentProps<typeof PremiumIcon>["icon"]; title: string; desc: string; featured: boolean; color: string; colorDark: string }
 
@@ -49,7 +49,7 @@ function BenefitCard({ b }: { b: Benefit }) {
         <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5" />
       </span>
       {b.featured && (
-        <span className="flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-full" style={{ background: GOLD, color: "#0c0e14", boxShadow: "0 2px 10px -2px rgba(201,168,76,0.6), inset 0 1px 0 rgba(255,255,255,0.45)" }}>
+        <span className="flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-full" style={{ background: GOLD, color: "#101828", boxShadow: "0 2px 10px -2px rgba(200,16,46,0.6), inset 0 1px 0 rgba(255,255,255,0.45)" }}>
           <Flame className="size-3" aria-hidden="true" />Most Popular
         </span>
       )}
@@ -92,7 +92,7 @@ export const FeaturesSection = memo(function FeaturesSection({ onExploreAll }: {
                 <span className="text-xs font-bold text-fg leading-tight">Secure<br />Transactions</span>
               </div>
               <div className="absolute -bottom-4 left-6 rounded-full px-4 py-2 shadow-lg flex items-center gap-1.5" style={{ background: DEEP_PURPLE }}>
-                <span className="text-white text-xs font-bold inline-flex items-center gap-1"><Sparkles className="size-3 text-[#e0c068]" aria-hidden="true" />Smart. Simple. Smarter.</span>
+                <span className="text-white text-xs font-bold inline-flex items-center gap-1"><Sparkles className="size-3 text-[#FF6B81]" aria-hidden="true" />Smart. Simple. Smarter.</span>
               </div>
             </div>
           </div>

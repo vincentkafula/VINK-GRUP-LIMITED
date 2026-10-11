@@ -4,7 +4,7 @@ import { Footer } from "../Footer";
 import { BRAND } from "../../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; }
-const P = BRAND.crimsonDeep;
+const P = BRAND.crimson;
 
 const HOW_VINK_PROTECTS = [
   { icon: "🔍", title: "Real-time fraud monitoring", desc: "Every transaction is monitored 24/7 by our fraud detection engine. Unusual activity is flagged within milliseconds." },

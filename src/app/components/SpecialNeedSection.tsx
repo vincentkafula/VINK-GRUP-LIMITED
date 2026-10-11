@@ -46,11 +46,11 @@ export const SpecialNeedSection = memo(function SpecialNeedSection() {
             </div>
             <div className="flex flex-wrap justify-center md:justify-start gap-3">
               <button className="px-7 py-3 rounded-xl text-sm font-bold text-white transition-all hover:scale-105 active:scale-95 shadow-lg"
-                style={{ background: "linear-gradient(135deg,#5C0A10,#9B1C1C)", boxShadow: "0 6px 20px rgba(139,0,0,.35)" }}>
+                style={{ background: "linear-gradient(135deg,#8F1027,#A50F27)", boxShadow: "0 6px 20px rgba(200,16,46,.35)" }}>
                 Find My Card
               </button>
               <button className="px-7 py-3 rounded-xl text-sm font-semibold transition-all hover:bg-emerald-50"
-                style={{ border: "1.5px solid #8B0000", color: "var(--vk-crimson-text)" }}>
+                style={{ border: "1.5px solid #C8102E", color: "var(--vk-crimson-text)" }}>
                 Talk to an Expert
               </button>
             </div>

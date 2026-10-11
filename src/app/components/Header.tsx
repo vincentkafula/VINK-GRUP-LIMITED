@@ -168,7 +168,7 @@ export function Header({ onHome, onDashboardSelect, onSubNavClick, onOpenProfile
 
               {isLoggedIn ? (
                 <>
-                  <div className="flex size-10 items-center justify-center rounded-full bg-[#0c0e14]"><NotificationCenter /></div>
+                  <div className="flex size-10 items-center justify-center rounded-full bg-[#101828]"><NotificationCenter /></div>
                   <button type="button" onClick={onOpenProfile} className="flex min-h-11 items-center gap-2 rounded-full border border-line py-1 pl-1.5 pr-3 transition-colors hover:bg-surface-2">
                     <span className="flex size-8 items-center justify-center rounded-full bg-brand text-xs font-bold text-brand-fg">{userName ? userName[0].toUpperCase() : <User className="size-4" aria-hidden="true" />}</span>
                     <span className="hidden text-sm font-medium text-fg sm:block">{userName ?? "Account"}</span>

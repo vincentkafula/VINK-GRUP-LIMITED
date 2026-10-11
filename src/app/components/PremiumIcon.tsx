@@ -9,7 +9,7 @@ import { useId, type ComponentType, type CSSProperties } from "react";
  */
 type IconType = ComponentType<{ className?: string; strokeWidth?: number | string; stroke?: string; style?: CSSProperties; "aria-hidden"?: boolean | "true" | "false" }>;
 
-export function PremiumIcon({ icon: Icon, accent, size = 72, dark = "#0B0614", className = "" }: { icon: IconType; accent: string; size?: number; dark?: string; className?: string }) {
+export function PremiumIcon({ icon: Icon, accent, size = 72, dark = "#101828", className = "" }: { icon: IconType; accent: string; size?: number; dark?: string; className?: string }) {
   const gid = useId().replace(/:/g, "");
   const radius = Math.round(size * 0.3);
   const inner = radius - 1.5;
@@ -21,7 +21,7 @@ export function PremiumIcon({ icon: Icon, accent, size = 72, dark = "#0B0614", c
       <span className="absolute inset-0 blur-xl opacity-40 transition-opacity duration-300 group-hover:opacity-70 group-hover/icon:opacity-70" style={{ background: accent, borderRadius: radius }} />
       {/* the metallic rim: bright at the top left, falling to dark, with a second catch of light at the bottom right */}
       <span className="absolute inset-0" style={{ borderRadius: radius, padding: 1.5, background: `linear-gradient(145deg, ${tint} 0%, ${accent} 30%, color-mix(in srgb, ${accent} 25%, ${dark}) 62%, color-mix(in srgb, ${accent} 70%, white) 100%)`, boxShadow: `0 10px 22px -8px color-mix(in srgb, ${accent} 70%, transparent), 0 2px 4px rgba(0,0,0,0.45)` }}>
-        <span className="relative block h-full w-full overflow-hidden" style={{ borderRadius: inner, background: `radial-gradient(120% 120% at 28% 12%, color-mix(in srgb, ${accent} 38%, ${dark}) 0%, ${dark} 58%, #05020B 100%)`, boxShadow: "inset 0 1px 1px rgba(255,255,255,0.28), inset 0 -8px 14px rgba(0,0,0,0.5)" }}>
+        <span className="relative block h-full w-full overflow-hidden" style={{ borderRadius: inner, background: `radial-gradient(120% 120% at 28% 12%, color-mix(in srgb, ${accent} 38%, ${dark}) 0%, ${dark} 58%, #0c111d 100%)`, boxShadow: "inset 0 1px 1px rgba(255,255,255,0.28), inset 0 -8px 14px rgba(0,0,0,0.5)" }}>
           {/* gloss across the top half */}
           <span className="absolute inset-x-[7%] top-[4%] h-[46%]" style={{ borderRadius: `${inner}px ${inner}px ${size}px ${size}px / ${inner}px ${inner}px 60% 60%`, background: "linear-gradient(180deg, rgba(255,255,255,0.26) 0%, rgba(255,255,255,0.04) 100%)" }} />
           {/* a slow sheen that crosses the medallion on hover */}

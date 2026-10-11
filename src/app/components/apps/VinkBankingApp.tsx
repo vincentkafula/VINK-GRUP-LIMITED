@@ -8,7 +8,7 @@ import { BRAND } from "../../brand";
 type Screen = "onboarding" | "home" | "send" | "cards" | "history" | "rewards";
 type Tier = "Spark" | "Anchor" | "Momentum" | "Horizon" | "Summit" | "Legacy";
 
-const PURPLE = BRAND.crimsonDeep;
+const PURPLE = BRAND.crimson;
 const GOLD = BRAND.gold;
 
 const TIER_INFO: Record<Tier, { order: number; icon: React.ReactNode; tagline: string; unlocks: string; balanceLabel: string; cardGradient: string }> = {
@@ -17,7 +17,7 @@ const TIER_INFO: Record<Tier, { order: number; icon: React.ReactNode; tagline: s
   Momentum: { order: 3, icon: <TrendingUp className="w-5 h-5" />,   tagline: "Every payment earns you something back.",                    unlocks: "+ Cashback, loyalty points, merchant offers, challenges",           balanceLabel: "Available Balance", cardGradient: `linear-gradient(135deg, #C9A84C, ${PURPLE})` },
   Horizon:  { order: 4, icon: <Mountain className="w-5 h-5" />,     tagline: "Built around reaching your savings goals faster.",          unlocks: "+ Goal-based savings, auto-save rules, AI coaching",                balanceLabel: "Available Balance", cardGradient: `linear-gradient(135deg, #0369A1, ${PURPLE})` },
   Summit:   { order: 5, icon: <Crown className="w-5 h-5" />,        tagline: "Premium banking with concierge-level service.",              unlocks: "+ Relationship manager, lounge access, multi-currency wallet",      balanceLabel: "Available Balance", cardGradient: `linear-gradient(135deg, #B45309, ${PURPLE})` },
-  Legacy:   { order: 6, icon: <Landmark className="w-5 h-5" />,     tagline: "Private banking and wealth management, for generations.",   unlocks: "+ Investments, net worth dashboard, estate planning",               balanceLabel: "Net Worth",         cardGradient: `linear-gradient(135deg, #1E1B4B, #2E0B10)` },
+  Legacy:   { order: 6, icon: <Landmark className="w-5 h-5" />,     tagline: "Private banking and wealth management, for generations.",   unlocks: "+ Investments, net worth dashboard, estate planning",               balanceLabel: "Net Worth",         cardGradient: `linear-gradient(135deg, #182230, #101828)` },
 };
 const TIER_ORDER: Tier[] = ["Spark", "Anchor", "Momentum", "Horizon", "Summit", "Legacy"];
 
@@ -66,10 +66,10 @@ function LoginScreen({ onAuthenticated }: { onAuthenticated: (user: ApiUser) => 
   };
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#FAF8F4" }}>
+    <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F9FAFB" }}>
       <div className="flex-1 flex flex-col justify-center px-6">
         <div className="text-center mb-8">
-          <p className="text-2xl font-black"><span style={{ color: PURPLE }}>VINK</span> <span style={{ color: GOLD }}>Bank</span></p>
+          <p className="text-2xl font-black"><span style={{ color: PURPLE }}>VINK</span> <span style={{ color: BRAND.navy }}>Bank</span></p>
           <p className="text-gray-400 text-xs mt-1">Banking that moves with you.</p>
         </div>
 
@@ -105,9 +105,9 @@ function OnboardingScreen({ onSelect }: { onSelect: (tier: Tier) => void }) {
   const [picked, setPicked] = useState<Tier | null>(null);
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#FAF8F4" }}>
+    <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F9FAFB" }}>
       <div className="px-5 pt-8 pb-5 text-center" style={{ background: PURPLE }}>
-        <p className="text-xs font-bold tracking-widest" style={{ color: GOLD }}>VINK FINANCE</p>
+        <p className="text-xs font-bold tracking-widest" style={{ color: "#ffffff" }}>VINK FINANCE</p>
         <p className="text-white text-lg font-bold mt-2">Which account do you want?</p>
         <p className="text-white/60 text-[11px] mt-1">Every tier keeps everything from the one before it.</p>
       </div>
@@ -163,7 +163,7 @@ function OnboardingScreen({ onSelect }: { onSelect: (tier: Tier) => void }) {
 function VerifyingScreen({ tier, onDone }: { tier: Tier; onDone: () => void }) {
   useState(() => { const id = setTimeout(onDone, 1400); return () => clearTimeout(id); });
   return (
-    <div className="flex flex-col items-center justify-center h-full gap-4" style={{ background: "#FAF8F4" }}>
+    <div className="flex flex-col items-center justify-center h-full gap-4" style={{ background: "#F9FAFB" }}>
       <Loader2 className="w-8 h-8 animate-spin" style={{ color: PURPLE }} />
       <div className="text-center px-8">
         <p className="text-sm font-bold text-gray-900">Setting up your {tier} Account</p>
@@ -179,7 +179,7 @@ function HomeScreen({ tier, onSwitchTier, user }: { tier: Tier; onSwitchTier: ()
   const balance = tier === "Legacy" ? "R4,218,600.00" : "R20,700.00";
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#FAF8F4" }}>
+    <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F9FAFB" }}>
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 flex-shrink-0" style={{ background: PURPLE }}>
         <div>
@@ -249,8 +249,8 @@ function HomeScreen({ tier, onSwitchTier, user }: { tier: Tier; onSwitchTier: ()
 
       {/* Summit+ concierge banner */}
       {unlockedFrom(5) && (
-        <div className="mx-3 mt-3 rounded-2xl p-3.5 flex items-center gap-3" style={{ background: "#1E1B4B" }}>
-          <span className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ background: GOLD }}><Crown className="w-4 h-4" style={{ color: "#1E1B4B" }} /></span>
+        <div className="mx-3 mt-3 rounded-2xl p-3.5 flex items-center gap-3" style={{ background: "#182230" }}>
+          <span className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ background: GOLD }}><Crown className="w-4 h-4" style={{ color: "#182230" }} /></span>
           <div className="flex-1 min-w-0">
             <p className="text-white text-xs font-bold">Priority Banker · Available now</p>
             <p className="text-white/50 text-[10px]">Live video banker · Airport lounge access · No queue support</p>
@@ -471,7 +471,7 @@ function SendScreen() {
 
   if (success) {
     return (
-      <div className="flex flex-col h-full items-center justify-center gap-5 px-6" style={{ background: "#FAF8F4" }}>
+      <div className="flex flex-col h-full items-center justify-center gap-5 px-6" style={{ background: "#F9FAFB" }}>
         <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ background: "#10B98122" }}>
           <CheckCircle className="w-10 h-10 text-green-500" />
         </div>
@@ -482,7 +482,7 @@ function SendScreen() {
         </div>
         <button onClick={() => { setSuccess(null); setAmount(""); setRecipient(""); setNote(""); }}
           className="w-full max-w-xs py-3.5 rounded-2xl font-bold text-sm text-white"
-          style={{ background: `linear-gradient(135deg,${PURPLE},#C9A84C)` }}>
+          style={{ background: `linear-gradient(135deg,${PURPLE},#A50F27)` }}>
           Send Another
         </button>
       </div>
@@ -490,7 +490,7 @@ function SendScreen() {
   }
 
   return (
-    <div className="flex flex-col h-full" style={{ background: "#FAF8F4" }}>
+    <div className="flex flex-col h-full" style={{ background: "#F9FAFB" }}>
       <div className="px-4 py-3 flex-shrink-0" style={{ background: PURPLE }}>
         <p className="text-white font-bold text-base">Send Money</p>
         <p className="text-white/60 text-xs">Transfer to any VINK account</p>
@@ -544,7 +544,7 @@ function SendScreen() {
             {RECENT_RECIPIENTS.map(({ initials, name, ref }) => (
               <button key={initials} onClick={() => setRecipient(ref)} className="flex flex-col items-center gap-1">
                 <div className="w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold text-white"
-                  style={{ background: `linear-gradient(135deg,${PURPLE},${GOLD})` }}>{initials}</div>
+                  style={{ background: `linear-gradient(135deg,${PURPLE},#A50F27)` }}>{initials}</div>
                 <span className="text-gray-500 text-[10px]">{name}</span>
               </button>
             ))}
@@ -560,7 +560,7 @@ function SendScreen() {
         {/* Send button */}
         <button onClick={handleSend} disabled={loading}
           className="w-full py-3.5 rounded-2xl font-bold text-sm text-white mt-2 shadow-lg transition-transform active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
-          style={{ background: `linear-gradient(135deg,${PURPLE},#C9A84C)` }}>
+          style={{ background: `linear-gradient(135deg,${PURPLE},#A50F27)` }}>
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
           {loading ? "Sending…" : "Send Now →"}
         </button>
@@ -572,7 +572,7 @@ function SendScreen() {
 function CardsScreen() {
   const [frozen, setFrozen] = useState(false);
   return (
-    <div className="flex flex-col h-full" style={{ background: "#FAF8F4" }}>
+    <div className="flex flex-col h-full" style={{ background: "#F9FAFB" }}>
       <div className="px-4 py-3 flex-shrink-0" style={{ background: PURPLE }}>
         <p className="text-white font-bold text-base">My Cards</p>
       </div>
@@ -581,7 +581,7 @@ function CardsScreen() {
         <div className="rounded-2xl p-5 shadow-xl" style={{ background: `linear-gradient(135deg, ${PURPLE}, #1E0A3C)` }}>
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-[10px] font-bold tracking-widest" style={{ color: GOLD }}>VINK</p>
+              <p className="text-[10px] font-bold tracking-widest" style={{ color: "#ffffff" }}>VINK</p>
               <p className="text-white/60 text-[9px] mt-0.5">Summit Account</p>
             </div>
             <div className="text-right">
@@ -657,7 +657,7 @@ function CardsScreen() {
             <p className="text-xs font-bold" style={{ color: PURPLE }}>R3,847 / R15,000</p>
           </div>
           <div className="w-full h-2 rounded-full bg-gray-100 overflow-hidden">
-            <div className="h-full rounded-full" style={{ width: "25.6%", background: `linear-gradient(90deg, ${PURPLE}, ${GOLD})` }} />
+            <div className="h-full rounded-full" style={{ width: "25.6%", background: `linear-gradient(90deg, ${PURPLE}, #A50F27)` }} />
           </div>
           <p className="text-gray-500 text-[10px] mt-1">R11,153 remaining this month</p>
         </div>
@@ -674,7 +674,7 @@ function HistoryScreen() {
     : [];
 
   return (
-    <div className="flex flex-col h-full" style={{ background: "#FAF8F4" }}>
+    <div className="flex flex-col h-full" style={{ background: "#F9FAFB" }}>
       <div className="px-4 py-3 flex-shrink-0" style={{ background: PURPLE }}>
         <p className="text-white font-bold text-base">Transaction History</p>
       </div>
@@ -731,7 +731,7 @@ function RewardsScreen() {
   const progress = (4230 / 7500) * 100;
 
   return (
-    <div className="flex flex-col h-full" style={{ background: "#FAF8F4" }}>
+    <div className="flex flex-col h-full" style={{ background: "#F9FAFB" }}>
       <div className="px-4 py-3 flex-shrink-0" style={{ background: PURPLE }}>
         <p className="text-white font-bold text-base">ManshyaPoints</p>
       </div>
@@ -739,7 +739,7 @@ function RewardsScreen() {
         {/* Balance */}
         <div
           className="rounded-2xl p-5 text-center shadow-xl"
-          style={{ background: `linear-gradient(135deg, ${PURPLE}, #2E0B10)` }}
+          style={{ background: `linear-gradient(135deg, ${PURPLE}, #101828)` }}
         >
           <p className="text-white/60 text-xs">Your Balance</p>
           <p className="text-5xl font-bold mt-1" style={{ color: GOLD }}>4,230</p>
@@ -872,7 +872,7 @@ export function VinkBankingApp({ isOpen, onClose, onOpenManagementPanel, onOpenA
   const showTabs = authUser !== null && screen !== "onboarding" && !verifying;
 
   return (
-    <MobileAppOverlay onClose={onClose} appName="VINK Finance" bgColor="#FAF8F4">
+    <MobileAppOverlay onClose={onClose} appName="VINK Finance" bgColor="#F9FAFB">
       <PhoneFrame statusBarColor={PURPLE} statusBarTextLight>
         <div className="flex-1 overflow-hidden flex flex-col">
           {!checkedSession ? (

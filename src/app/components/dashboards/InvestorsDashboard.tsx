@@ -130,11 +130,11 @@ export function InvestorsDashboard({ isOpen, onClose }: { isOpen: boolean; onClo
                 <span>Jan</span><span>Jun</span><span>Dec</span>
               </div>
               <div className="mt-3 grid grid-cols-2 gap-2">
-                <div className="text-center p-2 rounded-lg" style={{ background: "#252245" }}>
+                <div className="text-center p-2 rounded-lg" style={{ background: "#182230" }}>
                   <p className="text-base font-black" style={{ color: BRAND.ok }}>16.2%</p>
                   <p className="text-[9px]" style={{ color: "var(--vk-fg-muted)" }}>Your Return</p>
                 </div>
-                <div className="text-center p-2 rounded-lg" style={{ background: "#252245" }}>
+                <div className="text-center p-2 rounded-lg" style={{ background: "#182230" }}>
                   <p className="text-base font-black" style={{ color: "var(--vk-fg-muted)" }}>8.4%</p>
                   <p className="text-[9px]" style={{ color: "var(--vk-fg-muted)" }}>Benchmark</p>
                 </div>

@@ -4,8 +4,7 @@ import { Footer } from "../Footer";
 import { BRAND } from "../../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; }
-const P = BRAND.crimsonDeep;
-const GOLD = BRAND.gold;
+const P = BRAND.crimson;
 
 const THEMES = [
   { icon: "🚕", title: "Life on the Road", desc: "Real stories and practical money advice for taxi drivers, commuters, and the people who keep South Africa's transport economy moving." },
@@ -26,7 +25,7 @@ export function VinkBlogViewer({ isOpen, onClose }: Props) {
       <div className="py-16 px-6 text-white" style={{ background: `linear-gradient(135deg,#0F172A,${P})` }}>
         <div className="max-w-4xl mx-auto">
           <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4"
-            style={{ background: "rgba(245,166,35,.2)", color: GOLD }}>Coming Soon</span>
+            style={{ background: "rgba(255,255,255,.16)", color: "#ffffff" }}>Coming Soon</span>
           <h1 className="text-4xl font-black mb-3">The VINK Blog</h1>
           <p className="text-white/75 text-lg max-w-2xl leading-relaxed">
             Stories, insights, and practical guidance for the people VINK is built for.

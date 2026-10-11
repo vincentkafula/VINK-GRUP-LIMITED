@@ -5,8 +5,8 @@
 import { CheckCircle } from "lucide-react";
 import { BRAND } from "../brand";
 
-export const P     = BRAND.crimsonDeep;
-export const PD    = "#0C0E14";
+export const P     = BRAND.crimson;
+export const PD    = "#101828";
 export const GOLD  = BRAND.gold;
 export const GREEN = BRAND.ok;
 
@@ -55,7 +55,7 @@ export function StepTracker({ steps, current }: { steps: Step[]; current: number
                   className="w-9 h-9 rounded-full flex items-center justify-center font-black text-sm shadow-sm transition-all"
                   style={{
                     background: done   ? GREEN
-                              : active ? `linear-gradient(135deg,${P},#9B1C1C)`
+                              : active ? `linear-gradient(135deg,${P},#A50F27)`
                               : "var(--vk-line)",
                     color:   done || active ? "#fff" : "#9CA3AF",
                     boxShadow: active ? `0 4px 14px ${P}40` : "none",
@@ -91,7 +91,7 @@ export function ProgressBar({ value }: { value: number }) {
     <div className="h-1.5 rounded-full bg-surface-2 overflow-hidden">
       <div
         className="h-full rounded-full transition-all duration-700"
-        style={{ width: `${value}%`, background: `linear-gradient(90deg,${P},#9B1C1C)` }}
+        style={{ width: `${value}%`, background: `linear-gradient(90deg,${P},#A50F27)` }}
       />
     </div>
   );
@@ -115,7 +115,7 @@ export function FormCard({
       <div className="flex items-center gap-3 px-5 py-4"
         style={{ background: `linear-gradient(135deg,${stepColor ?? P}10,${stepColor ?? P}05)`, borderBottom: `1px solid ${stepColor ?? P}15` }}>
         <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 text-white font-black text-sm shadow-sm"
-          style={{ background: `linear-gradient(135deg,${stepColor ?? P},${stepColor ?? "#9B1C1C"})` }}>
+          style={{ background: `linear-gradient(135deg,${stepColor ?? P},${stepColor ?? "#A50F27"})` }}>
           {icon ?? stepN}
         </div>
         <div>
@@ -236,7 +236,7 @@ export function AppHero({
       <div className="absolute -top-16 -right-16 w-64 h-64 rounded-full opacity-10 pointer-events-none"
         style={{ background: "radial-gradient(circle,color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface)),transparent)" }} />
       <div className="absolute -bottom-12 -left-12 w-48 h-48 rounded-full opacity-10 pointer-events-none"
-        style={{ background: "radial-gradient(circle,#9B1C1C,transparent)" }} />
+        style={{ background: "radial-gradient(circle,#A50F27,transparent)" }} />
       <div className="max-w-2xl mx-auto relative z-10">
         <span className="inline-block text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full mb-3"
           style={{ background: "rgba(255,255,255,.15)", backdropFilter: "blur(8px)" }}>
@@ -271,7 +271,7 @@ export function NavButtons({
         <button onClick={onNext} disabled={disabled}
           className="inline-flex items-center gap-2 px-7 py-3 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
           style={{
-            background: disabled ? "#9CA3AF" : `linear-gradient(135deg,${P},#9B1C1C)`,
+            background: disabled ? "#9CA3AF" : `linear-gradient(135deg,${P},#A50F27)`,
             boxShadow:  disabled ? "none" : `0 6px 20px ${P}35`,
           }}>
           {nextLabel}

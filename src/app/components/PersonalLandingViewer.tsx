@@ -19,10 +19,9 @@ interface Props {
 }
 
 // ─── Design tokens ──────────────────────────────────────────────────────────
-const INK   = "#0C0E14";
-const PLUM  = BRAND.crimsonDeep;
+const INK   = "#101828";
+const PLUM  = BRAND.crimson;
 const VIOLET = BRAND.crimson;
-const GOLD  = BRAND.gold;
 
 const SUB_NAV = [
   { label: "Accounts", item: "Account" },
@@ -52,7 +51,7 @@ function CardGraphic() {
   return (
     <div className="relative select-none" style={{ width: 300, height: 240 }}>
       {/* ambient glow */}
-      <div className="absolute inset-0 rounded-[32px]" style={{ background: "radial-gradient(circle at 60% 40%, rgba(201,168,76,0.18), transparent 65%)" }} />
+      <div className="absolute inset-0 rounded-[32px]" style={{ background: "radial-gradient(circle at 60% 40%, rgba(200,16,46,0.18), transparent 65%)" }} />
 
       {/* back card: the black Mastercard, tilted left */}
       <img
@@ -79,7 +78,7 @@ function CardGraphic() {
       {/* floating contactless badge */}
       <div
         className="absolute flex items-center justify-center rounded-full shadow-lg"
-        style={{ width: 40, height: 40, bottom: 4, left: 0, background: GOLD }}
+        style={{ width: 40, height: 40, bottom: 4, left: 0, background: BRAND.crimson }}
       >
         <Wifi className="w-4 h-4 text-white rotate-90" />
       </div>
@@ -119,7 +118,7 @@ export function PersonalLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
                 >
                   {tab.label}
                   {i === 0 && (
-                    <span className="absolute left-0 right-0 -bottom-px h-[2px] rounded-full" style={{ background: GOLD }} />
+                    <span className="absolute left-0 right-0 -bottom-px h-[2px] rounded-full" style={{ background: BRAND.crimsonOnDark }} />
                   )}
                 </button>
               ))}
@@ -150,7 +149,7 @@ export function PersonalLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
       {/* ── Hero carousel ── */}
       <div
         className="relative overflow-hidden"
-        style={{ background: `linear-gradient(120deg, #14532D 0%, ${VIOLET} 58%, ${PLUM} 100%)` }}
+        style={{ background: `linear-gradient(120deg, #101828 0%, ${VIOLET} 58%, #A50F27 100%)` }}
       >
         <img loading="lazy" decoding="async" src={siteHeroBg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-[0.14] mix-blend-luminosity" />
         <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: "radial-gradient(rgba(255,255,255,0.9) 1px, transparent 1px)", backgroundSize: "22px 22px" }} />
@@ -172,8 +171,8 @@ export function PersonalLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 pb-10 flex flex-col lg:flex-row items-center gap-12">
           <div className="flex-1 max-w-lg">
-            <span className="inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.14em] uppercase mb-4" style={{ color: "#F0E4C4" }}>
-              <span className="w-5 h-px" style={{ background: GOLD }} /> {s.eyebrow}
+            <span className="inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.14em] uppercase mb-4" style={{ color: "#FFFFFF" }}>
+              <span className="w-5 h-px" style={{ background: "#ffffff" }} /> {s.eyebrow}
             </span>
             <h2
               className="text-white text-[32px] sm:text-[42px] font-medium leading-[1.08] whitespace-pre-line"
@@ -202,7 +201,7 @@ export function PersonalLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
               key={i}
               onClick={() => setSlide(i)}
               className="h-1.5 rounded-full transition-all"
-              style={{ width: slide === i ? 24 : 7, background: slide === i ? GOLD : "rgba(255,255,255,0.3)" }}
+              style={{ width: slide === i ? 24 : 7, background: slide === i ? "#ffffff" : "rgba(255,255,255,0.3)" }}
               aria-label={`Slide ${i + 1}`}
             />
           ))}
@@ -212,7 +211,7 @@ export function PersonalLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
       {/* ── Feature grid ── */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
         <div className="text-center mb-12">
-          <span className="inline-block text-[11px] font-semibold tracking-[0.16em] uppercase mb-3" style={{ color: GOLD }}>
+          <span className="inline-block text-[11px] font-semibold tracking-[0.16em] uppercase mb-3" style={{ color: BRAND.crimson }}>
             Why choose VINK
           </span>
           <h2 className="text-[26px] sm:text-[32px] font-medium tracking-tight" style={{ color: "var(--vk-fg)", fontFamily: "var(--font-display)" }}>
@@ -235,7 +234,7 @@ export function PersonalLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
                 >
                   {f.icon}
                 </span>
-                <span className="text-[10px] font-mono tracking-wide" style={{ color: GOLD }}>{f.folio}</span>
+                <span className="text-[10px] font-mono tracking-wide" style={{ color: BRAND.crimson }}>{f.folio}</span>
               </div>
               <span>
                 <span className="block text-[13.5px] font-bold" style={{ color: "var(--vk-fg)" }}>{f.title}</span>
@@ -256,7 +255,7 @@ export function PersonalLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
           <div className="absolute -right-10 -top-10 w-44 h-44 rounded-full" style={{ background: "rgba(255,255,255,0.05)" }} />
           <div className="relative flex items-center gap-4">
             <span className="w-12 h-12 rounded-full flex items-center justify-center shrink-0" style={{ background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.15)" }}>
-              <ShieldCheck className="w-5 h-5" style={{ color: GOLD }} />
+              <ShieldCheck className="w-5 h-5" style={{ color: BRAND.crimson }} />
             </span>
             <div>
               <p className="text-white font-semibold text-[15px]" style={{ fontFamily: "var(--font-display)" }}>Your security is our priority</p>

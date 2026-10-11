@@ -22,7 +22,7 @@ const STEPS = [
 ];
 
 const CARD_TYPES = [
-  { id: "standard", name: "VINK Standard Card", limit: "R5,000 – R25,000", fee: "R0/month", color: "linear-gradient(135deg,#8B0000,#9B1C1C)" },
+  { id: "standard", name: "VINK Standard Card", limit: "R5,000 – R25,000", fee: "R0/month", color: "linear-gradient(135deg,#C8102E,#A50F27)" },
   { id: "gold",     name: "VINK Gold Card",     limit: "R25,000 – R150,000", fee: "R85/month", color: "linear-gradient(135deg,#B8860B,#DAA520)" },
   { id: "platinum", name: "VINK Platinum Card", limit: "R150,000 – R500,000", fee: "R265/month", color: "linear-gradient(135deg,#374151,#6B7280)" },
 ];
@@ -270,7 +270,7 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
         tag="VINK Personal Banking · FICA · POCA Compliant"
         title="New Credit Card Application"
         subtitle="Choose your card, verify your identity, and get approved in minutes."
-        gradient="linear-gradient(135deg,#1A0D12 0%,#5C0A10 50%,#9B1C1C 100%)"
+        gradient="linear-gradient(135deg,#101828 0%,#8F1027 50%,#A50F27 100%)"
       />
 
       {/* ── Step content ── */}
@@ -587,7 +587,7 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
                   }
                 }}
                 className="w-full py-4 rounded-xl text-base font-black text-white transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed shadow-lg"
-                style={{ background: `linear-gradient(135deg,${CP},#9B1C1C)` }}>
+                style={{ background: `linear-gradient(135deg,${CP},#A50F27)` }}>
                 {submitting ? "Submitting..." : "Submit Application"}
               </button>
               {submitError && <p className="text-red-600 text-sm text-center mt-2">{submitError}</p>}
@@ -658,7 +658,7 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
 
             <button onClick={onClose}
               className="w-full py-3.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 shadow-lg"
-              style={{ background: `linear-gradient(135deg,${CP},#9B1C1C)` }}>
+              style={{ background: `linear-gradient(135deg,${CP},#A50F27)` }}>
               Back to VINK Banking
             </button>
           </div>

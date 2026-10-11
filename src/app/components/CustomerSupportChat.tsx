@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { MessageCircle, X, Send, Paperclip, Phone, Video, ChevronDown, Bot, User, Clock, CheckCheck, AlertCircle, Star } from "lucide-react";
 import { BRAND } from "../brand";
 
-const P = BRAND.crimsonDeep;
+const P = BRAND.crimson;
 const GOLD = BRAND.gold;
 
 type MessageRole = "user" | "agent" | "bot" | "system";
@@ -128,7 +128,7 @@ export function CustomerSupportChat() {
       <button
         onClick={open}
         className="fixed bottom-6 right-6 z-[300] flex items-center gap-2 px-4 py-3 rounded-2xl shadow-2xl text-white font-semibold text-sm transition-all hover:scale-105"
-        style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}
+        style={{ background: `linear-gradient(135deg,${P},#A50F27)` }}
       >
         <MessageCircle className="w-5 h-5" />
         Support
@@ -142,10 +142,10 @@ export function CustomerSupportChat() {
   return (
     <div
       className="fixed bottom-6 right-6 z-[300] flex flex-col rounded-2xl shadow-2xl overflow-hidden"
-      style={{ width: 380, height: 580, background: "#0A0A14", border: "1px solid rgba(255,255,255,0.1)" }}
+      style={{ width: 380, height: 580, background: "#0c111d", border: "1px solid rgba(255,255,255,0.1)" }}
     >
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10" style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10" style={{ background: `linear-gradient(135deg,${P},#A50F27)` }}>
         <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center text-lg">🎧</div>
         <div className="flex-1">
           <p className="text-white font-bold text-sm">VINK Support</p>
@@ -176,7 +176,7 @@ export function CustomerSupportChat() {
             className="flex-1 py-2 text-xs font-semibold capitalize transition-colors"
             style={{
               color: view === v ? "#fff" : "rgba(255,255,255,0.4)",
-              borderBottom: view === v ? `2px solid ${GOLD}` : "2px solid transparent",
+              borderBottom: view === v ? `2px solid ${BRAND.crimsonOnDark}` : "2px solid transparent",
               background: "transparent",
             }}
           >
@@ -203,7 +203,7 @@ export function CustomerSupportChat() {
                     </div>
                     <div className="max-w-[80%] rounded-2xl rounded-bl-sm px-3 py-2" style={{ background: "rgba(255,255,255,0.08)" }}>
                       <p className="text-xs text-white/90 leading-relaxed whitespace-pre-line"
-                        dangerouslySetInnerHTML={{ __html: msg.text.replace(/\*\*(.*?)\*\*/g, '<strong style="color:#C9A84C">$1</strong>') }}
+                        dangerouslySetInnerHTML={{ __html: msg.text.replace(/\*\*(.*?)\*\*/g, '<strong style="color:#FF6B81">$1</strong>') }}
                       />
                       <p className="text-[10px] text-white/30 mt-1">{msg.timestamp.toLocaleTimeString("en-ZA", { hour: "2-digit", minute: "2-digit" })}</p>
                     </div>

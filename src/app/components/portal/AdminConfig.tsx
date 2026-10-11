@@ -6,7 +6,7 @@ import { Badge } from "../dashboards/DashboardShell";
 import { useLoad, Status, Empty, ActionButton, inputCls, when } from "./ui";
 import { usePageTitle } from "../ds";
 
-const COLOR = "#38BDF8";
+const COLOR = "#C8102E";
 const STAFF = ["owner", "superadmin"];
 const STATUS_COLOR: Record<string, string> = { active: "#10B981", draft: "#94A3B8", pending_approval: "#F59E0B", approved: "#38BDF8", rejected: "#EF4444", retired: "#64748B" };
 const LIVE_PHRASE = "I_UNDERSTAND_THIS_MOVES_REAL_MONEY";

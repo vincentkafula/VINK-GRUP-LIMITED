@@ -59,7 +59,7 @@ function ServiceCard({ icon, title, description, link }: ServiceCardProps) {
   return (
     <a
       href={link}
-      className="group bg-surface border border-border rounded-xl p-6 hover:shadow-lg hover:border-[#8B0000] transition-all duration-300"
+      className="group bg-surface border border-border rounded-xl p-6 hover:shadow-lg hover:border-[#C8102E] transition-all duration-300"
     >
       <div className="text-crimson-text mb-4 group-hover:scale-110 transition-transform duration-300">
         {icon}

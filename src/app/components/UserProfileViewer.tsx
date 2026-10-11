@@ -3,7 +3,7 @@ import { X, User, Shield, CreditCard, Bell, Settings, LogOut, Camera, CheckCircl
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { BRAND } from "../brand";
 
-const P = BRAND.crimsonDeep;
+const P = BRAND.crimson;
 const GOLD = BRAND.gold;
 
 interface Props {
@@ -86,12 +86,12 @@ export function UserProfileViewer({ isOpen, onClose, onSignOut }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex bg-black/60 backdrop-blur-sm">
       {/* Sidebar */}
-      <div className="w-72 flex-shrink-0 flex flex-col" style={{ background: "#0A0A14", borderRight: "1px solid rgba(255,255,255,0.08)" }}>
+      <div className="w-72 flex-shrink-0 flex flex-col" style={{ background: "#0c111d", borderRight: "1px solid rgba(255,255,255,0.08)" }}>
         {/* Avatar & name */}
         <div className="p-6 border-b border-white/10">
           <div className="flex items-start gap-3 mb-4">
             <div className="relative">
-              <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-black text-white shadow-xl" style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-black text-white shadow-xl" style={{ background: `linear-gradient(135deg,${P},#A50F27)` }}>
                 {profile.firstName[0]}{profile.lastName[0]}
               </div>
               <button
@@ -114,10 +114,10 @@ export function UserProfileViewer({ isOpen, onClose, onSignOut }: Props) {
           <div className="space-y-1.5">
             <div className="flex justify-between text-xs">
               <span className="text-white/50">KYC Verification</span>
-              <span className="font-semibold" style={{ color: kycPct === 100 ? BRAND.ok : GOLD }}>{kycPct}%</span>
+              <span className="font-semibold" style={{ color: kycPct === 100 ? BRAND.ok : BRAND.crimson }}>{kycPct}%</span>
             </div>
             <div className="h-1.5 rounded-full bg-white/10">
-              <div className="h-full rounded-full transition-all duration-500" style={{ width: `${kycPct}%`, background: kycPct === 100 ? BRAND.ok : GOLD }} />
+              <div className="h-full rounded-full transition-all duration-500" style={{ width: `${kycPct}%`, background: kycPct === 100 ? BRAND.ok : BRAND.crimson }} />
             </div>
             {kycPct < 100 && (
               <p className="text-[10px] text-white/40">Complete verification to unlock all products</p>
@@ -266,7 +266,7 @@ export function UserProfileViewer({ isOpen, onClose, onSignOut }: Props) {
           {tab === "kyc" && (
             <div className="max-w-2xl space-y-6">
               {/* Progress */}
-              <div className="p-6 rounded-2xl" style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
+              <div className="p-6 rounded-2xl" style={{ background: `linear-gradient(135deg,${P},#A50F27)` }}>
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <p className="text-white/70 text-sm">Verification Level</p>
@@ -526,7 +526,7 @@ function Field({ label, value, edit = false, type = "text", icon, verified, onCh
           readOnly={!edit}
           onChange={e => onChange?.(e.target.value)}
           className="w-full px-3 py-2 rounded-xl border text-sm transition-all"
-          style={{ paddingLeft: icon ? "2rem" : undefined, borderColor: edit ? BRAND.crimsonDeep : "var(--vk-line)", background: edit ? "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" : "var(--vk-surface-2)", color: "var(--vk-fg)" }}
+          style={{ paddingLeft: icon ? "2rem" : undefined, borderColor: edit ? BRAND.crimson : "var(--vk-line)", background: edit ? "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" : "var(--vk-surface-2)", color: "var(--vk-fg)" }}
         />
         {verified && (
           <span className="absolute right-3 top-1/2 -translate-y-1/2">

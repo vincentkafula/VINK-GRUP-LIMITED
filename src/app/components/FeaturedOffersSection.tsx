@@ -1,7 +1,7 @@
 const OFFERS = [
   {
     name: "VINK Everyday Cashback", issuer: "VINK Standard",
-    grad: "linear-gradient(135deg,#1A3A6E 0%,#8B0000 60%,#9B1C1C 100%)",
+    grad: "linear-gradient(135deg,#101828 0%,#C8102E 60%,#A50F27 100%)",
     badge: "Best Value", badgeColor: BRAND.ok,
     highlight: "3% cashback at supermarkets and spaza shops",
     detail: "1.5% at fuel stations · 0.5% everywhere else",
@@ -73,7 +73,7 @@ export const FeaturedOffersSection = memo(function FeaturedOffersSection({ onCom
                 <p className="text-fg-muted text-xs mb-1">{o.detail}</p>
                 <p className="text-fg-muted text-[11px] mb-4">{o.issuer}</p>
                 <button className="w-full py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 group-hover:scale-[1.02]"
-                  style={{ background: "linear-gradient(135deg,#5C0A10,#9B1C1C)" }}>
+                  style={{ background: "linear-gradient(135deg,#8F1027,#A50F27)" }}>
                   Apply Today
                 </button>
               </div>

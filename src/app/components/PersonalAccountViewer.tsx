@@ -29,7 +29,7 @@ interface Account {
 }
 
 const SUB_NAV = ["Account", "Credit Card", "Loan", "Invest", "Rewards"];
-const GREEN = BRAND.crimsonLight;
+const GREEN = BRAND.crimsonHover;
 const ORANGE = BRAND.crimson;
 
 const ACCOUNTS: Account[] = [
@@ -306,7 +306,7 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate, onOpenBanki
 
           {/* Decorative app preview */}
           <div className="relative flex justify-center items-center h-64 sm:h-80">
-            <div className="w-40 h-64 rounded-[28px] shadow-2xl p-3 relative" style={{ background: `linear-gradient(160deg,${GREEN},#5C0A10)` }}>
+            <div className="w-40 h-64 rounded-[28px] shadow-2xl p-3 relative" style={{ background: `linear-gradient(160deg,${GREEN},#8F1027)` }}>
               <div className="w-full h-full rounded-2xl bg-white/10 flex flex-col p-3">
                 <span className="text-white/60 text-[9px] font-bold tracking-widest">VINK</span>
                 <p className="text-white text-lg font-black mt-2">R12,540.00</p>
