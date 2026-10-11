@@ -2,13 +2,14 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { Moon, Sun, Monitor } from "lucide-react";
 
 /**
- * Light, dark, or follow the device. The choice is remembered in this browser; "system" tracks the device live.
+ * Light, dark, or follow the device. A visitor who has not chosen sees the light theme (the brand's soft, light palette), whatever their device is set to; the choice is
+ * remembered in this browser, and "system" tracks the device live.
  * The theme is applied as a `dark` class on <html> (the tokens in styles/tokens.css do the rest).
  */
 export type ThemeChoice = "light" | "dark" | "system";
 const KEY = "vink-theme";
 
-const read = (): ThemeChoice => { try { const v = localStorage.getItem(KEY); return v === "light" || v === "dark" || v === "system" ? v : "system"; } catch { return "system"; } };
+const read = (): ThemeChoice => { try { const v = localStorage.getItem(KEY); return v === "light" || v === "dark" || v === "system" ? v : "light"; } catch { return "light"; } };
 const prefersDark = () => typeof window !== "undefined" && !!window.matchMedia?.("(prefers-color-scheme: dark)").matches;
 export const resolveTheme = (c: ThemeChoice): "light" | "dark" => (c === "system" ? (prefersDark() ? "dark" : "light") : c);
 
@@ -16,7 +17,7 @@ export function applyTheme(resolved: "light" | "dark"): void {
   const root = document.documentElement;
   root.classList.toggle("dark", resolved === "dark");
   root.style.colorScheme = resolved;
-  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", resolved === "dark" ? "#0c111d" : "#f9fafb");
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", resolved === "dark" ? "#0c111d" : "#ffffff");
 }
 
 interface Ctx { choice: ThemeChoice; resolved: "light" | "dark"; setChoice: (c: ThemeChoice) => void; cycle: () => void }

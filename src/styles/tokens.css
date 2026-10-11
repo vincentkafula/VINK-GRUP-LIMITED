@@ -1,9 +1,9 @@
 /*
- * VINK design tokens: brand red #C8102E, dark navy #101828, white and cool light greys.
+ * VINK design tokens: brand red #C8102E, white and soft light neutrals, with navy kept for structural bars.
  *
  * One source for colour, type, radius and shadow. Light is the default; `.dark` on <html> switches the theme (see ThemeProvider).
  * Every text colour below is checked to meet WCAG 2.2 AA (4.5:1) on the surfaces it is meant for.
- *   light: navy text 17:1, muted 7.4:1, subtle 4.8:1 on the page; white on brand red 5.9:1 (7.8 hover, 9.3 pressed)
+ *   light: #202124 text 16:1, #6B7280 secondary text 4.8:1 on white (4.6:1 on #F7F7F8); white on brand red 5.9:1 (7.8 hover, 9.3 pressed)
  *   dark:  text 17:1, muted 11:1, subtle 6.9:1 on a surface; white on brand red 5.9:1
  * Red as a FILL is #C8102E on both themes. Red as TEXT or an icon: #C8102E on light surfaces (5.9:1), but on dark surfaces
  * it is only 3.0:1, so --vk-crimson-text switches to the lighter tint #FF6B81 (6.5:1) there.
@@ -11,14 +11,16 @@
  * Status colours (ok / warn / bad / info) are deliberately NOT part of the brand and are left alone.
  */
 :root {
-  --vk-bg: #f9fafb;
+  /* The light surfaces: white is the main content background; sections alternate with --vk-surface-2 (cool) or --vk-warm (soft warm); cards are white. */
+  --vk-bg: #ffffff;
   --vk-surface: #ffffff;
-  --vk-surface-2: #f2f4f7;
-  --vk-line: #eaecf0;
+  --vk-surface-2: #f7f7f8;
+  --vk-warm: #faf8f7;
+  --vk-line: #e8e8ec;
   --vk-line-strong: #d0d5dd;
-  --vk-fg: #101828;               /* dark navy: headings and body text */
-  --vk-fg-muted: #475467;
-  --vk-fg-subtle: #667085;
+  --vk-fg: #202124;               /* headings and body text */
+  --vk-fg-muted: #6b7280;         /* secondary text, captions, supporting information */
+  --vk-fg-subtle: #6b7280;
 
   --vk-brand: #c8102e;            /* brand red: primary actions, links, active states, focus */
   --vk-brand-hover: #a50f27;
@@ -67,6 +69,7 @@
   --vk-bg: #0c111d;
   --vk-surface: #101828;
   --vk-surface-2: #182230;
+  --vk-warm: #0f1623;
   --vk-line: #1d2939;
   --vk-line-strong: #344054;
   --vk-fg: #f9fafb;
@@ -134,6 +137,7 @@
   --color-bg: var(--vk-bg);
   --color-surface: var(--vk-surface);
   --color-surface-2: var(--vk-surface-2);
+  --color-warm: var(--vk-warm);
   --color-line: var(--vk-line);
   --color-line-strong: var(--vk-line-strong);
   --color-fg: var(--vk-fg);
@@ -218,8 +222,8 @@
  */
 .dark .fixed.inset-0[data-theme-light]:not([data-state]):not([data-theme]):not([data-overlay-ignore]) {
   color-scheme: light;
-  --vk-bg: #f9fafb; --vk-surface: #ffffff; --vk-surface-2: #f2f4f7; --vk-line: #eaecf0; --vk-line-strong: #d0d5dd;
-  --vk-fg: #101828; --vk-fg-muted: #475467; --vk-fg-subtle: #667085;
+  --vk-bg: #ffffff; --vk-surface: #ffffff; --vk-surface-2: #f7f7f8; --vk-warm: #faf8f7; --vk-line: #e8e8ec; --vk-line-strong: #d0d5dd;
+  --vk-fg: #202124; --vk-fg-muted: #6b7280; --vk-fg-subtle: #6b7280;
   --vk-brand: #c8102e; --vk-brand-hover: #a50f27; --vk-brand-active: #8f1027; --vk-brand-fg: #ffffff; --vk-brand-soft: #fef2f4;
   --vk-crimson-text: #c8102e; --vk-gold: #c8102e; --vk-gold-text: #c8102e; --vk-gold-fg: #ffffff;
   --vk-ok: #17784a; --vk-ok-bg: #e6f4ec; --vk-warn: #8f5b00; --vk-warn-bg: #fbf1dc; --vk-bad: #b3202f; --vk-bad-bg: #fbe8ea; --vk-info: #2457c5; --vk-info-bg: #e8effc;

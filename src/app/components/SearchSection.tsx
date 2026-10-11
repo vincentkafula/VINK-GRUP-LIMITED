@@ -5,13 +5,13 @@ const BADGES = ["Instant Approval", "Tap & Go Payments", "Earn on Every Ride"];
 
 export function SearchSection({ onFindCard }: { onFindCard?: () => void }) {
   return (
-    <section aria-label="Find a card" className="dark border-b border-white/10 text-fg" style={{ background: "#182230" }}>
+    <section aria-label="Find a card" className="border-b border-line bg-surface-2 text-fg">
       <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
           <div className="flex flex-col items-center gap-4 sm:flex-row">
             <div className="text-center sm:text-left">
               <p className="text-sm font-semibold text-fg">
-                Find the card that fits <span className="text-gold-text">your journey.</span>
+                Find the card that fits <span className="text-brand">your journey.</span>
               </p>
               <p className="mt-0.5 text-xs text-fg-muted">
                 Checking your options takes 60 seconds and won&apos;t affect your credit score.
@@ -19,7 +19,7 @@ export function SearchSection({ onFindCard }: { onFindCard?: () => void }) {
             </div>
             <ul className="hidden items-center gap-2 md:flex">
               {BADGES.map((b) => (
-                <li key={b} className="rounded-full bg-gold/15 px-2.5 py-1 text-xs font-semibold text-gold-text">{b}</li>
+                <li key={b} className="rounded-full border border-line bg-surface px-2.5 py-1 text-xs font-semibold text-fg-muted">{b}</li>
               ))}
             </ul>
           </div>

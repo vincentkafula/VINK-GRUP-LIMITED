@@ -2,7 +2,8 @@ import { memo, useState } from "react";
 import { ArrowRight, ShieldCheck, Headphones, Sparkles, Flame, Crown, Gift, Globe, Smartphone, Banknote, ArrowLeftRight, Plane, BadgePercent, TrendingDown } from "lucide-react";
 import vinkGoldFeatureCard from "../../imports/VinkGoldFeatureCard.webp";
 import { Card3DViewer } from "./Card3DViewer";
-import { PremiumIcon } from "./PremiumIcon";
+import type { PremiumIcon } from "./PremiumIcon";
+import { SoftIcon } from "./SoftIcon";
 import { BRAND } from "../brand";
 
 const PURPLE = "var(--vk-brand)";           // brand red
@@ -36,11 +37,11 @@ function BenefitCard({ b }: { b: Benefit }) {
       className="group rounded-2xl p-4 flex flex-col transition-all duration-300 hover:-translate-y-1 relative overflow-hidden"
       style={{
         background: "var(--vk-bg)",                                                              // the website's own background colour, so the cards sit on the page instead of on dark panels
-        border: b.featured ? `1px solid ${b.color}` : "1px solid var(--vk-line)",
-        boxShadow: b.featured ? `0 12px 28px -14px color-mix(in srgb, ${b.color} 60%, transparent), 0 1px 2px rgba(0,0,0,0.06)` : "0 8px 22px -16px rgba(0,0,0,0.35), 0 1px 2px rgba(0,0,0,0.05)",
+        border: b.featured ? "1px solid var(--vk-brand)" : "1px solid var(--vk-line)",
+        boxShadow: b.featured ? "0 10px 24px -14px rgba(200,16,46,0.35)" : "var(--vk-shadow-1)",
       }}
     >
-      <PremiumIcon icon={b.icon} accent={b.color} dark={b.colorDark} size={72} className="mb-3 mx-auto sm:mx-0" />
+      <SoftIcon icon={b.icon} size={56} className="mb-3 mx-auto sm:mx-0" />
       <p className="text-base font-bold mb-1 text-center sm:text-left text-fg">{b.title}</p>
       <p className="text-[13px] leading-relaxed mb-3 text-fg-muted text-center sm:text-left">{b.desc}</p>
       <div className="mt-auto flex items-center justify-center sm:justify-between gap-2 flex-wrap">
@@ -107,7 +108,7 @@ export const FeaturesSection = memo(function FeaturesSection({ onExploreAll }: {
         <div className="mt-8 bg-surface rounded-2xl border border-line shadow-card px-6 py-5 grid grid-cols-2 lg:grid-cols-4 gap-6">
           {STATS.map(s => (
             <div key={s.label} className="group flex items-center gap-3">
-              <PremiumIcon icon={s.Icon} accent={s.color} size={48} />
+              <SoftIcon icon={s.Icon} size={44} />
               <div>
                 <p className="text-lg leading-tight" style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: s.text }}>{s.value}</p>
                 <p className="text-xs text-fg-muted leading-snug">{s.label}</p>

@@ -25,11 +25,12 @@ describe("brand colours", () => {
     expect(token(light, "vk-navy-2")).toBe(BRAND.navy2);
     expect(token(dark, "vk-crimson-text")).toBe(BRAND.crimsonOnDark);
   });
-  it("use exactly the brief's palette: red #C8102E / #A50F27 / #8F1027, navy #101828, #F9FAFB page, #EAECF0 lines", () => {
+  it("use exactly the brief's palette: red #C8102E (hover #A50F27, pressed #8F1027), white page, #F7F7F8 and #FAF8F7 alternate sections, #E8E8EC lines, #202124 and #6B7280 text", () => {
     expect([BRAND.crimson, BRAND.crimsonHover, BRAND.crimsonDeep, BRAND.navy]).toEqual(["#C8102E", "#A50F27", "#8F1027", "#101828"]);
-    expect(token(light, "vk-bg")).toBe("#F9FAFB");
-    expect(token(light, "vk-line")).toBe("#EAECF0");
-    expect(token(light, "vk-fg")).toBe("#101828");
+    expect(token(light, "vk-bg")).toBe("#FFFFFF"); expect(token(light, "vk-surface")).toBe("#FFFFFF");
+    expect(token(light, "vk-surface-2")).toBe("#F7F7F8"); expect(token(light, "vk-warm")).toBe("#FAF8F7");
+    expect(token(light, "vk-line")).toBe("#E8E8EC");
+    expect(token(light, "vk-fg")).toBe("#202124"); expect(token(light, "vk-fg-muted")).toBe("#6B7280");
   });
   it("keep the legacy 'gold' tokens aliased to the brand red, so nothing still using bg-gold / text-gold is off-brand", () => {
     expect(token(light, "vk-gold")).toBe(BRAND.crimson);
@@ -69,11 +70,13 @@ describe("accessible contrast (WCAG AA, 4.5:1 for text)", () => {
   });
 });
 
+it("text keeps AA contrast on the soft warm section background too", () => { for (const t of ["vk-fg", "vk-fg-muted", "vk-crimson-text"]) expect(contrast(token(light, t)!, token(light, "vk-warm")!), t).toBeGreaterThanOrEqual(4.5); });
+
 describe("app manifests", () => {
   it("use the site's page colour, not a separate brand colour", () => {
     for (const f of ["public/manifest.json", "public/manifest-admin.json"]) {
       const m = JSON.parse(readFileSync(f, "utf8"));
-      expect(m.theme_color.toLowerCase()).toBe("#f9fafb"); expect(m.background_color.toLowerCase()).toBe("#f9fafb");
+      expect(m.theme_color.toLowerCase()).toBe("#ffffff"); expect(m.background_color.toLowerCase()).toBe("#ffffff");
     }
   });
 });

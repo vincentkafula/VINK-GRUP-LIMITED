@@ -5,8 +5,8 @@
   "start_url": "/management-panel",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#F9FAFB",
-  "theme_color": "#F9FAFB",
+  "background_color": "#FFFFFF",
+  "theme_color": "#FFFFFF",
   "orientation": "any",
   "icons": [
     { "src": "/icons/icon-72x72.png", "sizes": "72x72", "type": "image/png", "purpose": "maskable any" },
