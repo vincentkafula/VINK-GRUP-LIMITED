@@ -2,8 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { Bell, X, Check, CheckCheck, Trash2, Settings, TrendingUp, Shield, CreditCard, Tag, AlertCircle, Plane, ChevronRight } from "lucide-react";
 import { BRAND } from "../brand";
 
-const P = BRAND.crimsonDeep;
-const GOLD = BRAND.gold;
+const P = BRAND.crimson;
+const GOLD = BRAND.crimsonOnDark;
 
 type NotifType = "transaction" | "security" | "account" | "promotion" | "system" | "kyc" | "loan" | "travel";
 
@@ -134,7 +134,7 @@ export function NotificationCenter({ className = "" }: Props) {
       {open && (
         <div
           className="absolute right-0 top-12 w-96 max-h-[85vh] flex flex-col rounded-2xl shadow-2xl overflow-hidden z-[200] border border-white/10"
-          style={{ background: "#0F0A1E" }}
+          style={{ background: "#101828" }}
         >
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">

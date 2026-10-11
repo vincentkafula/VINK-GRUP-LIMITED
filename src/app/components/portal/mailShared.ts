@@ -32,10 +32,10 @@ export function mailClient() {
 }
 
 /** The mailbox colours: a navy sidebar, blue for the main action and the open box, white and soft blue-grey elsewhere. */
-export const COLOR = "#2F6BFF";
-export const NAVY = "#0F2A52";
-export const NAVY_ACTIVE = "#24509E";
-const AVATARS = ["#2F6BFF", BRAND.ok, "#8B5CF6", BRAND.bad, BRAND.warn, "#06B6D4", "#EC4899", "#64748B"];
+export const COLOR = "#C8102E";
+export const NAVY = "#101828";
+export const NAVY_ACTIVE = "#C8102E";
+const AVATARS = ["#C8102E", BRAND.ok, "#8B5CF6", BRAND.bad, BRAND.warn, "#06B6D4", "#EC4899", "#64748B"];
 /** The same colour for the same person, every time. */
 export const avatarColor = (name: string) => { let h = 0; for (const c of name) h = (h * 31 + c.charCodeAt(0)) >>> 0; return AVATARS[h % AVATARS.length]; };
 export const initialOf = (name: string) => (name.trim().match(/[\p{L}\p{N}]/u)?.[0] ?? "?").toUpperCase();

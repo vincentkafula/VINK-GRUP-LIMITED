@@ -24,8 +24,7 @@ async function apiFetch(path: string, opts?: RequestInit): Promise<Response> {
 }
 
 const API = SUPABASE_BASE; // kept for reference
-const P = "#5C0A10";
-const GOLD = "#C9A84C";
+const P = "#C8102E";
 const GREEN = "#10B981";
 const RED = "#EF4444";
 
@@ -172,7 +171,7 @@ export function FinancialReportsViewer({ isOpen, onClose }: Props) {
             {/* Payslip document */}
             <div className="bg-surface rounded-2xl border border-line shadow-sm overflow-hidden print:shadow-none print:border-0">
               {/* Header band */}
-              <div className="px-8 py-5 text-white" style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
+              <div className="px-8 py-5 text-white" style={{ background: `linear-gradient(135deg,${P},#A50F27)` }}>
                 <div className="flex justify-between items-start flex-wrap gap-4">
                   <div>
                     <p className="text-xs font-bold uppercase tracking-widest opacity-70 mb-1">PAYSLIP</p>
@@ -232,13 +231,13 @@ export function FinancialReportsViewer({ isOpen, onClose }: Props) {
                 <StatRow label="Total Deductions" value={fmt(ps?.totalDeductions ?? 4630)} bold border color={RED} />
 
                 {/* Net pay */}
-                <div className="mt-4 p-4 rounded-2xl text-white" style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
+                <div className="mt-4 p-4 rounded-2xl text-white" style={{ background: `linear-gradient(135deg,${P},#A50F27)` }}>
                   <div className="flex justify-between items-center">
                     <div>
                       <p className="text-white/70 text-xs font-semibold uppercase tracking-wide">NET PAY</p>
                       <p className="text-white/60 text-xs mt-0.5">Paid to {ps?.bankName ?? "Standard Bank"} **** {String(ps?.bankAccount ?? "7890").slice(-4)}</p>
                     </div>
-                    <p className="text-3xl font-black" style={{ color: GOLD }}>
+                    <p className="text-3xl font-black" style={{ color: "#ffffff" }}>
                       {fmt(ps?.netPay ?? (Number(sm?.totalFares ?? 9800) - 4630))}
                     </p>
                   </div>
@@ -498,7 +497,7 @@ export function FinancialReportsViewer({ isOpen, onClose }: Props) {
               </div>
               <button onClick={addJournalEntry} disabled={!newEntry.description || (!newEntry.debit && !newEntry.credit)}
                 className="mt-4 w-full py-3 rounded-xl text-sm font-black text-white transition-all hover:opacity-90 disabled:opacity-40 flex items-center justify-center gap-2"
-                style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
+                style={{ background: `linear-gradient(135deg,${P},#A50F27)` }}>
                 {entryAdded ? <><CheckCircle className="w-4 h-4" />Entry Added!</> : <><Plus className="w-4 h-4" />Add to Journal</>}
               </button>
               <p className="text-[10px] text-fg-muted text-center mt-2">Card and cash fare entries are added automatically from the AFC app. Add fuel, maintenance, wages, and other items manually here.</p>

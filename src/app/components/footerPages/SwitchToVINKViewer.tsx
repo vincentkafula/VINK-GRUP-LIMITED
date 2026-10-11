@@ -4,8 +4,7 @@ import { Footer } from "../Footer";
 import { BRAND } from "../../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; }
-const P = BRAND.crimsonDeep;
-const GOLD = BRAND.gold;
+const P = BRAND.crimson;
 
 const REASONS = [
   { icon: "💳", title: "Lowest taxi fare fee in SA", desc: "Just R0.50 per transaction — no bank charges more in the taxi industry" },
@@ -39,10 +38,10 @@ export function SwitchToVINKViewer({ isOpen, onClose }: Props) {
       </div>
 
       {/* Hero */}
-      <div className="py-20 px-6 text-white" style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
+      <div className="py-20 px-6 text-white" style={{ background: "#C8102E" }}>
         <div className="max-w-4xl mx-auto">
           <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4"
-            style={{ background: "rgba(245,166,35,.2)", color: GOLD }}>Switch in 7–10 days</span>
+            style={{ background: "rgba(255,255,255,.16)", color: "#ffffff" }}>Switch in 7–10 days</span>
           <h1 className="text-4xl md:text-5xl font-black leading-tight mb-4">Make the Switch to VINK.</h1>
           <p className="text-white/80 text-lg max-w-xl leading-relaxed">
             It&apos;s easier than you think — and we do the heavy lifting. Most customers are fully switched within 7–10 business days.
@@ -117,12 +116,12 @@ export function SwitchToVINKViewer({ isOpen, onClose }: Props) {
         </section>
 
         {/* CTA */}
-        <section className="rounded-2xl p-8 text-center text-white" style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
+        <section className="rounded-2xl p-8 text-center text-white" style={{ background: `linear-gradient(135deg,${P},#A50F27)` }}>
           <h3 className="text-2xl font-black mb-2">Ready to Switch?</h3>
           <p className="text-white/75 text-sm mb-6">Open your account online in under 10 minutes. No branch visit required.</p>
           <div className="flex flex-wrap justify-center gap-3">
             <button className="px-7 py-3 rounded-xl text-sm font-bold transition-all hover:opacity-90"
-              style={{ background: GOLD, color: "var(--vk-fg)" }}>Open Account Online</button>
+              style={{ background: "#ffffff", color: BRAND.crimson }}>Open Account Online</button>
             <button className="px-7 py-3 rounded-xl text-sm font-bold text-white border border-white/30 hover:bg-white/10 transition-all">
               Visit Our Head Office
             </button>

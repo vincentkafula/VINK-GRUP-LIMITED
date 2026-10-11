@@ -137,7 +137,7 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
         tag="VINK Corporate Banking · Blended Finance Programme"
         title="Corporate Loan — Online Application"
         subtitle="Institutional-grade financing for growth, infrastructure, and working capital."
-        gradient={`linear-gradient(135deg,#0F172A 0%,${CP} 55%,#9B1C1C 100%)`}
+        gradient="#C8102E"
       />
 
       <div className="max-w-2xl mx-auto w-full px-5 py-8 space-y-5">
@@ -194,7 +194,7 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
                 disabled={!allEligible}
                 onClick={() => { setEligibilityConfirmed(true); setStep(2); }}
                 className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:scale-105 shadow-md disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
-                style={{ background: allEligible ? `linear-gradient(135deg,${CP},#9B1C1C)` : "#9CA3AF" }}>
+                style={{ background: allEligible ? `linear-gradient(135deg,${CP},#A50F27)` : "#9CA3AF" }}>
                 Confirm eligibility &amp; continue →
               </button>
             </div>
@@ -465,7 +465,7 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
                   }
                 }}
                 className="w-full py-4 rounded-xl text-base font-black text-white transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed shadow-lg mt-2"
-                style={{ background: agreed && reqDocsCount >= totalReq ? `linear-gradient(135deg,${CP},#9B1C1C)` : "#9CA3AF" }}>
+                style={{ background: agreed && reqDocsCount >= totalReq ? `linear-gradient(135deg,${CP},#A50F27)` : "#9CA3AF" }}>
                 {submitting ? "Submitting..." : reqDocsCount < totalReq
                   ? `Upload all required documents first (${reqDocsCount}/${totalReq})`
                   : "Submit Corporate Loan Application"}
@@ -517,7 +517,7 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
 
             <button onClick={onClose}
               className="w-full py-3.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 shadow-lg"
-              style={{ background: `linear-gradient(135deg,${CP},#9B1C1C)` }}>
+              style={{ background: `linear-gradient(135deg,${CP},#A50F27)` }}>
               Back to VINK Corporate Banking
             </button>
           </div>

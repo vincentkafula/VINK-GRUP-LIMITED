@@ -29,8 +29,8 @@ const TRANSACTIONS = [
 
 const BALANCE_CHART = [28400, 32100, 29800, 34500, 31200, 38900, 36400, 42100, 39800, 45200, 48400, 52800];
 const CARDS = [
-  { type: "VINK Business Visa", last4: "4521", limit: 50000, used: 18240, expiry: "09/28", color: "from-[#9B1C1C] to-[#8B0000]" },
-  { type: "VINK Platinum MC", last4: "8834", limit: 100000, used: 34820, expiry: "03/27", color: "from-[#9B1C1C] to-[#14532D]" },
+  { type: "VINK Business Visa", last4: "4521", limit: 50000, used: 18240, expiry: "09/28", color: "from-[#A50F27] to-[#C8102E]" },
+  { type: "VINK Platinum MC", last4: "8834", limit: 100000, used: 34820, expiry: "03/27", color: "from-[#A50F27] to-[#101828]" },
 ];
 
 const fmt = (n: number) => `R${Math.abs(n).toLocaleString()}`;
@@ -42,7 +42,7 @@ export function AccountDashboard({ isOpen, onClose }: { isOpen: boolean; onClose
   return (
     <DashboardShell
       title="Account Dashboard" subtitle="Finance — Account Management"
-      accentColor={BRAND.ok} gradient="from-emerald-600 to-teal-500"
+      accentColor="#C8102E" gradient="from-emerald-600 to-teal-500"
       navItems={NAV} activeNav={nav} onNavChange={setNav}
       onClose={onClose} userName="VINK Finance Admin"
     >
@@ -139,7 +139,7 @@ export function AccountDashboard({ isOpen, onClose }: { isOpen: boolean; onClose
               <div className="space-y-2">
                 {["Transfer Funds", "Pay Invoice", "Download Statement", "Schedule Payment"].map((a, i) => (
                   <button key={i} className="w-full py-2.5 rounded-xl text-xs font-semibold transition-all hover:opacity-90"
-                    style={{ background: "#252245", border: "1px solid #14532D", color: BRAND.ok }}>
+                    style={{ background: "#182230", border: "1px solid #101828", color: BRAND.ok }}>
                     {a}
                   </button>
                 ))}

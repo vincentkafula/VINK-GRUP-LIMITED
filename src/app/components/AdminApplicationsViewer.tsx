@@ -20,7 +20,7 @@ import { BRAND } from "../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
-const P = BRAND.crimsonDeep;
+const P = BRAND.crimson;
 const GOLD = BRAND.gold;
 
 // ─── Status config ────────────────────────────────────────────────────────────
@@ -183,7 +183,7 @@ function ApplicationDetail({ app, onClose, onStatusUpdate }: {
             />
             <button onClick={save} disabled={saving || !reason.trim() || newStatus === app.status}
               className="w-full py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-40"
-              style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
+              style={{ background: `linear-gradient(135deg,${P},#A50F27)` }}>
               {saving ? "Saving…" : "Save Changes"}
             </button>
           </div>

@@ -11,8 +11,8 @@ import { BRAND } from "../../brand";
 type Screen = "onboarding" | "dashboard" | "payments" | "invoices" | "cards" | "more";
 type Tier = "Launch" | "Forge" | "Catalyst" | "Pinnacle" | "Empire" | "Sovereign";
 
-const INK = "#0C0E14";
-const GREEN = BRAND.crimsonDeep;
+const INK = "#101828";
+const GREEN = BRAND.crimson;
 const GOLD = BRAND.gold;
 
 const TIER_INFO: Record<Tier, {
@@ -23,7 +23,7 @@ const TIER_INFO: Record<Tier, {
   Catalyst: { order: 3, icon: <Zap className="w-5 h-5" />,       tagline: "Accelerate Every Opportunity.",                      bestFor: ["Fast-growing companies", "E-commerce", "Logistics", "Agencies"],           unlocks: "+ Invoicing, AI cash flow, rewards, financing",              gradient: `linear-gradient(135deg,#C9A84C,${GREEN})` },
   Pinnacle: { order: 4, icon: <Mountain className="w-5 h-5" />,  tagline: "Business at Its Highest Level.",                     bestFor: ["Established businesses", "Manufacturers", "Construction", "Import & export"], unlocks: "+ Treasury, multi-currency, business intelligence",       gradient: `linear-gradient(135deg,#0369A1,${GREEN})` },
   Empire:   { order: 5, icon: <Crown className="w-5 h-5" />,     tagline: "Powering Businesses Without Limits.",                bestFor: ["Large enterprises", "National companies", "Corporate groups"],             unlocks: "+ Branch management, corporate cards, approval workflows",  gradient: `linear-gradient(135deg,#B45309,${GREEN})` },
-  Sovereign:{ order: 6, icon: <Landmark className="w-5 h-5" />,  tagline: "Private Corporate Banking for Industry Leaders.",    bestFor: ["Multinationals", "Investment companies", "Family offices", "Holding companies"], unlocks: "+ Wealth, private banking, global treasury, family office", gradient: `linear-gradient(135deg,#1E1B4B,#2E0B10)` },
+  Sovereign:{ order: 6, icon: <Landmark className="w-5 h-5" />,  tagline: "Private Corporate Banking for Industry Leaders.",    bestFor: ["Multinationals", "Investment companies", "Family offices", "Holding companies"], unlocks: "+ Wealth, private banking, global treasury, family office", gradient: `linear-gradient(135deg,#182230,#101828)` },
 };
 const TIER_ORDER: Tier[] = ["Launch", "Forge", "Catalyst", "Pinnacle", "Empire", "Sovereign"];
 
@@ -58,7 +58,7 @@ function OnboardingScreen({ onSelect }: { onSelect: (tier: Tier) => void }) {
   return (
     <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F7F9F8" }}>
       <div className="px-5 pt-8 pb-5 text-center" style={{ background: INK }}>
-        <p className="text-xs font-bold tracking-widest" style={{ color: GOLD }}>VINK BUSINESS</p>
+        <p className="text-xs font-bold tracking-widest" style={{ color: "#ffffff" }}>VINK BUSINESS</p>
         <p className="text-white text-lg font-bold mt-2">One app that grows with your business</p>
         <p className="text-white/60 text-[11px] mt-1">Unlock more powerful tools as you upgrade — never switch apps.</p>
       </div>
@@ -133,7 +133,7 @@ function DashboardScreen({ tier }: { tier: Tier }) {
     <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F7F9F8" }}>
       <div className="flex items-center justify-between px-4 py-3 flex-shrink-0" style={{ background: INK }}>
         <div>
-          <p className="text-xs font-bold tracking-widest" style={{ color: GOLD }}>VINK BUSINESS</p>
+          <p className="text-xs font-bold tracking-widest" style={{ color: "#ffffff" }}>VINK BUSINESS</p>
           <p className="text-white/70 text-[10px]">{tier} Business Account</p>
         </div>
         <button className="relative">
@@ -377,7 +377,7 @@ function InvoicesScreen() {
     <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F7F9F8" }}>
       <div className="px-4 py-3 flex-shrink-0 flex items-center justify-between" style={{ background: INK }}>
         <p className="text-white text-sm font-bold">Invoices</p>
-        <button className="text-[10px] font-bold px-2.5 py-1 rounded-full" style={{ background: GOLD, color: INK }}>+ New</button>
+        <button className="text-[10px] font-bold px-2.5 py-1 rounded-full" style={{ background: BRAND.crimson, color: "#ffffff" }}>+ New</button>
       </div>
       <div className="px-3 pt-4 space-y-2">
         {INVOICES.map(inv => (

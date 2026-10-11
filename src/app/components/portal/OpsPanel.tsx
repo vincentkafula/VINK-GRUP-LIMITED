@@ -27,7 +27,7 @@ function opsClient() {
   };
 }
 
-const COLOR = "#8B0000";
+const COLOR = "#C8102E";
 const RESULT_TEXT: Record<string, string> = {
   unknown_purchase: "VINK has no such purchase", amount_mismatch: "Amount differs from what VINK approved", declined_purchase: "VINK declined this purchase",
   refund_exceeds: "Refund is more than VINK reversed", currency_mismatch: "Currency differs", duplicate: "Repeated line",

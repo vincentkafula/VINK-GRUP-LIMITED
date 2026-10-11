@@ -24,9 +24,9 @@ export interface PricingViewerProps {
 }
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
-const BRAND     = "#8B0000";
-const BRAND_DARK = "#2E0B10";
-const FEAT_BG   = "#8B0000";
+const BRAND     = "#C8102E";
+const BRAND_DARK = "#101828";
+const FEAT_BG   = "#C8102E";
 
 const SUB_NAV_ITEMS = ["Account", "Credit Card", "Loan", "Invest", "Rewards"];
 
@@ -61,7 +61,7 @@ function Card({ card, onApply }: { card: PricingCard; onApply: (name: string, pr
           / Month
         </span>
       </div>
-      <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", color: card.featured ? "rgba(255,255,255,.8)" : "#C9A84C", marginBottom: 12 }}>
+      <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", color: card.featured ? "rgba(255,255,255,.8)" : "#C8102E", marginBottom: 12 }}>
         What you get
       </p>
       <ul style={{ listStyle: "none", flex: 1, display: "flex", flexDirection: "column", gap: 9, marginBottom: 24 }}>
@@ -96,7 +96,7 @@ function Card({ card, onApply }: { card: PricingCard; onApply: (name: string, pr
 // ─── Main ─────────────────────────────────────────────────────────────────────
 function AppDownloadCard() {
   const [open, setOpen] = useState(false);
-  const BRAND = "#5C0A10";
+  const BRAND = "#8F1027";
   return (
     <div style={{ borderRadius: 14, overflow: "hidden", border: "1px solid rgba(255,255,255,.15)" }}>
       {/* Trigger */}

@@ -56,7 +56,7 @@ export const MailEditor = forwardRef<EditorHandle, { value: string; onChange: (h
   const empty = isEmptyHtml(value);
 
   return (
-    <div className="rounded-lg border border-line bg-surface focus-within:ring-2 focus-within:ring-[#8B0000]/30">
+    <div className="rounded-lg border border-line bg-surface focus-within:ring-2 focus-within:ring-[#C8102E]/30">
       <div role="toolbar" aria-label="Formatting" className="flex items-center gap-0.5 border-b border-line px-1.5 py-1">
         {tool("Bold", <Bold className="w-4 h-4" />, () => exec("bold"))}
         {tool("Italic", <Italic className="w-4 h-4" />, () => exec("italic"))}
@@ -79,7 +79,7 @@ export const MailEditor = forwardRef<EditorHandle, { value: string; onChange: (h
             if (document.execCommand) document.execCommand("insertHTML", false, clean); else if (box.current) box.current.innerHTML += clean;
             emit();
           }}
-          className="px-3 py-2 text-sm text-fg outline-none overflow-y-auto [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_a]:underline [&_a]:text-[#8B0000]" style={{ minHeight, maxHeight: 420 }} />
+          className="px-3 py-2 text-sm text-fg outline-none overflow-y-auto [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_a]:underline [&_a]:text-[#C8102E]" style={{ minHeight, maxHeight: 420 }} />
       </div>
     </div>
   );

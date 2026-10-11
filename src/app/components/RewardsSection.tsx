@@ -21,14 +21,14 @@ const PILLS = [
 export const RewardsSection = memo(function RewardsSection() {
   return (
     <section className="relative overflow-hidden py-14 sm:py-20"
-      style={{ background: "radial-gradient(ellipse at 50% 20%,#2E0B10 0%,#150A35 55%,#0D0620 100%)" }}>
+      style={{ background: "radial-gradient(ellipse at 50% 20%,#101828 0%,#150A35 55%,#0D0620 100%)" }}>
       <div className="relative max-w-3xl mx-auto px-4 sm:px-6 text-center">
         <img loading="lazy" decoding="async" src={rewardsIcon} alt="" aria-hidden="true"
           className="w-full max-w-xl mx-auto -mb-2" draggable={false} />
 
         <h2 className="text-5xl sm:text-6xl mb-4"
           style={{
-            fontFamily: "'Fraunces', serif", fontWeight: 700,
+            fontFamily: "var(--font-display)", fontWeight: 700,
             backgroundImage: "linear-gradient(180deg,color-mix(in srgb, #FDE9A8 var(--vk-wash), var(--vk-surface)) 0%,#F5C842 35%,#C9861F 75%,#A66E15 100%)",
             WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent",
             filter: "drop-shadow(0 2px 1px rgba(0,0,0,0.4)) drop-shadow(0 1px 0 rgba(255,239,180,0.4))",

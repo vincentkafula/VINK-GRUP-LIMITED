@@ -23,10 +23,9 @@ interface Props {
 // this page type, rather than the newer purple palette used elsewhere on
 // the homepage. Keeps this consistent with the page it sits next to in the
 // nav, rather than introducing a third, mismatched style. ─────────────────
-const INK   = "#0C0E14";
-const PLUM  = BRAND.crimsonDeep;
+const INK   = "#101828";
+const PLUM  = BRAND.crimson;
 const VIOLET = BRAND.crimson;
-const GOLD  = BRAND.gold;
 
 const SUB_NAV = [
   { label: "Start", item: "Start My Business" },
@@ -79,7 +78,7 @@ export function BusinessLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
   const prev = () => setSlide(i => (i - 1 + SLIDES.length) % SLIDES.length);
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-surface" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-surface" style={{ fontFamily: "var(--font-sans)" }}>
       {/* ── Sub-nav (the site header above has the logo and the way home) ── */}
       <div className="sticky top-0 z-30 bg-surface/95 backdrop-blur border-b border-line">
         {/* Sub-nav */}
@@ -91,7 +90,7 @@ export function BusinessLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
                   className="relative whitespace-nowrap text-[13px] font-medium h-full flex items-center transition-colors"
                   style={{ color: i === 0 ? "#fff" : "rgba(255,255,255,0.62)" }}>
                   {tab.label}
-                  {i === 0 && <span className="absolute left-0 right-0 -bottom-px h-[2px] rounded-full" style={{ background: GOLD }} />}
+                  {i === 0 && <span className="absolute left-0 right-0 -bottom-px h-[2px] rounded-full" style={{ background: BRAND.crimsonOnDark }} />}
                 </button>
               ))}
             </nav>
@@ -103,7 +102,7 @@ export function BusinessLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
       <div className="border-b border-line">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7 sm:py-8 flex flex-col sm:flex-row items-center justify-between gap-5">
           <div>
-            <p className="text-lg sm:text-[21px] font-semibold tracking-tight" style={{ color: "var(--vk-fg)", fontFamily: "'Fraunces', serif" }}>
+            <p className="text-lg sm:text-[21px] font-semibold tracking-tight" style={{ color: "var(--vk-fg)", fontFamily: "var(--font-display)" }}>
               Let's find the business account that fits.
             </p>
             <p className="text-[13px] text-fg-muted mt-1.5">Taxi associations, fleets, fuel stations, retailers — built around how you work.</p>
@@ -117,7 +116,7 @@ export function BusinessLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
       </div>
 
       {/* ── Hero carousel ── */}
-      <div className="relative overflow-hidden" style={{ background: `linear-gradient(120deg, #14532D 0%, ${VIOLET} 58%, ${PLUM} 100%)` }}>
+      <div className="relative overflow-hidden" style={{ background: "#C8102E" }}>
         <img loading="lazy" decoding="async" src={siteHeroBg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-[0.14] mix-blend-luminosity" />
         <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: "radial-gradient(rgba(255,255,255,0.9) 1px, transparent 1px)", backgroundSize: "22px 22px" }} />
 
@@ -130,10 +129,10 @@ export function BusinessLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 pb-10 flex flex-col lg:flex-row items-center gap-12">
           <div className="flex-1 max-w-lg">
-            <span className="inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.14em] uppercase mb-4" style={{ color: "#F0E4C4" }}>
-              <span className="w-5 h-px" style={{ background: GOLD }} /> {s.eyebrow}
+            <span className="inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.14em] uppercase mb-4" style={{ color: "#FFFFFF" }}>
+              <span className="w-5 h-px" style={{ background: "#ffffff" }} /> {s.eyebrow}
             </span>
-            <h2 className="text-white text-[32px] sm:text-[42px] font-medium leading-[1.08] whitespace-pre-line" style={{ fontFamily: "'Fraunces', serif" }}>
+            <h2 className="text-white text-[32px] sm:text-[42px] font-medium leading-[1.08] whitespace-pre-line" style={{ fontFamily: "var(--font-display)" }}>
               {s.heading}
             </h2>
             <p className="text-white/70 text-[15px] leading-relaxed mt-5 max-w-sm">{s.body}</p>
@@ -153,7 +152,7 @@ export function BusinessLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
           {SLIDES.map((_, i) => (
             <button key={i} onClick={() => setSlide(i)}
               className="h-1.5 rounded-full transition-all"
-              style={{ width: slide === i ? 24 : 7, background: slide === i ? GOLD : "rgba(255,255,255,0.3)" }}
+              style={{ width: slide === i ? 24 : 7, background: slide === i ? "#ffffff" : "rgba(255,255,255,0.3)" }}
               aria-label={`Slide ${i + 1}`} />
           ))}
         </div>
@@ -162,10 +161,10 @@ export function BusinessLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
       {/* ── Feature grid ── */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
         <div className="text-center mb-12">
-          <span className="inline-block text-[11px] font-semibold tracking-[0.16em] uppercase mb-3" style={{ color: GOLD }}>
+          <span className="inline-block text-[11px] font-semibold tracking-[0.16em] uppercase mb-3" style={{ color: BRAND.crimson }}>
             Why choose VINK Business
           </span>
-          <h2 className="text-[26px] sm:text-[32px] font-medium tracking-tight" style={{ color: "var(--vk-fg)", fontFamily: "'Fraunces', serif" }}>
+          <h2 className="text-[26px] sm:text-[32px] font-medium tracking-tight" style={{ color: "var(--vk-fg)", fontFamily: "var(--font-display)" }}>
             Built for How Your Business Moves
           </h2>
           <p className="text-fg-muted text-sm mt-3 max-w-md mx-auto">From single taxi operators to multi-branch fleets, everything scales with you.</p>
@@ -179,7 +178,7 @@ export function BusinessLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
                 <span className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: "var(--vk-ok-bg)", color: "var(--vk-crimson-text)" }}>
                   {f.icon}
                 </span>
-                <span className="text-[10px] font-mono tracking-wide" style={{ color: GOLD }}>{f.folio}</span>
+                <span className="text-[10px] font-mono tracking-wide" style={{ color: BRAND.crimson }}>{f.folio}</span>
               </div>
               <span>
                 <span className="block text-[13.5px] font-bold" style={{ color: "var(--vk-fg)" }}>{f.title}</span>
@@ -198,10 +197,10 @@ export function BusinessLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
           <div className="absolute -right-10 -top-10 w-44 h-44 rounded-full" style={{ background: "rgba(255,255,255,0.05)" }} />
           <div className="relative flex items-center gap-4">
             <span className="w-12 h-12 rounded-full flex items-center justify-center shrink-0" style={{ background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.15)" }}>
-              <ShieldCheck className="w-5 h-5" style={{ color: GOLD }} />
+              <ShieldCheck className="w-5 h-5" style={{ color: BRAND.crimson }} />
             </span>
             <div>
-              <p className="text-white font-semibold text-[15px]" style={{ fontFamily: "'Fraunces', serif" }}>Your business is protected too</p>
+              <p className="text-white font-semibold text-[15px]" style={{ fontFamily: "var(--font-display)" }}>Your business is protected too</p>
               <p className="text-white/70 text-[13px] mt-1 max-w-sm">The same industry-leading security protecting personal accounts covers every business card and transfer.</p>
             </div>
           </div>

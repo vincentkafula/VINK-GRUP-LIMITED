@@ -9,7 +9,7 @@ import { ZoomImage } from "./ZoomImage";
 const CARDS = [
   {
     name: "VINK Commuter Card", sub: "Mastercard Standard",
-    grad: "linear-gradient(135deg,#C9A84C,#8B0000)", net: "mc", last4: "4521", expiry: "09/28",
+    grad: "linear-gradient(135deg,#C8102E,#8F1027)", net: "mc", last4: "4521", expiry: "09/28",
     tier: "Standard", benefit: "Tap to ride. Earn on every journey.",
     image: vinkBronzeCard,
     features: [
@@ -22,7 +22,7 @@ const CARDS = [
   },
   {
     name: "VINK Driver Card", sub: "Visa Premium",
-    grad: "linear-gradient(135deg,#9B1C1C,#065F46)", net: "visa", last4: "8834", expiry: "03/27",
+    grad: "linear-gradient(135deg,#A50F27,#101828)", net: "visa", last4: "8834", expiry: "03/27",
     tier: "Premium", benefit: "Your earnings. Your card. Your control.",
     image: vinkBlueVisaCard,
     features: [
@@ -67,7 +67,7 @@ function CardVisual({ card, active }: { card: typeof CARDS[0]; active: boolean }
   return (
     <div className="relative rounded-2xl text-white overflow-hidden flex-shrink-0 transition-all duration-500 ease-out select-none"
       style={{
-        width: "min(260px, 72vw)", height: 160, background: image ? "#1a1512" : card.grad,
+        width: "min(260px, 72vw)", height: 160, background: image ? "#101828" : card.grad,
         transform: active ? "translateY(-8px) scale(1.04)" : "scale(0.95)",
         opacity: active ? 1 : 0.72,
         boxShadow: active ? "0 20px 44px -10px rgba(0,0,0,0.45)" : "0 4px 14px -4px rgba(0,0,0,0.2)",

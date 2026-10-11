@@ -6,11 +6,11 @@ import { Footer } from "./Footer";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
-const NAVY = "#0B2545";
-const NAVY_2 = "#13315C";
-const NAVY_3 = "#1E4172";
-const GOLD = "#B8902E";
-const GOLD_LIGHT = "#E4C878";
+const NAVY = "#101828";
+const NAVY_2 = "#182230";
+const NAVY_3 = "#C8102E";   // the interactive accent (outline buttons, links, checkboxes): brand red
+const GOLD = "#C8102E";
+const GOLD_LIGHT = "#FF6B81";
 const MONO = "var(--font-mono)";
 const PAPER = "#EEF1F6";
 const INK = "#1B1F27";
@@ -287,7 +287,7 @@ export function JobApplicationViewer({ isOpen, onClose }: Props) {
               <p className="text-sm max-w-md mx-auto mb-7 leading-relaxed" style={{ color: "var(--vk-fg-muted)" }}>
                 Your application for <strong>{position}</strong> has been submitted. Your reference number is <span style={{ fontFamily: MONO }}>{refNum}</span> — keep this for your records. The hiring panel will contact you at <strong>{personal.email}</strong> regarding next steps.
               </p>
-              <button onClick={() => { resetAll(); }} className="px-7 py-2.5 rounded text-sm font-semibold text-white hover:opacity-90 transition-opacity" style={{ background: NAVY }}>
+              <button onClick={() => { resetAll(); }} className="px-7 py-2.5 rounded text-sm font-semibold text-white hover:opacity-90 transition-opacity" style={{ background: "#C8102E" }}>
                 Start a new application
               </button>
               <button onClick={onClose} className="block mx-auto mt-4 text-xs font-semibold" style={{ color: "var(--vk-fg-muted)" }}>Close</button>

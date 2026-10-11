@@ -12,9 +12,9 @@ import {
 import { DeviceTerminalModal } from "./DeviceTerminalModal";
 import { BRAND } from "../brand";
 
-const NAVY = "#0B1330";
+const NAVY = "#101828";
 const COLOR_MAP: Record<string, string> = {
-  blue: "#2563EB", green: "#059669", purple: BRAND.crimsonLight, orange: "#EA580C", teal: "#0D9488",
+  blue: "#2563EB", green: "#059669", purple: BRAND.crimsonHover, orange: "#EA580C", teal: "#0D9488",
 };
 const STATUS_COLOR: Record<string, string> = {
   Active: "#059669", Maintenance: "#D97706", Inactive: "#9CA3AF", "On Trip": "#2563EB",
@@ -268,7 +268,7 @@ export function TaxiAssociationDashboardViewer({ isOpen, onClose }: Props) {
                   <tbody>
                     {vehicles.map(v => (
                       <tr key={v.reg} className="border-b border-gray-50 last:border-0 hover:bg-surface-2/50">
-                        <td className="px-5 py-3 font-bold text-fg" style={{ fontFamily: "'JetBrains Mono',monospace" }}>{v.reg}</td>
+                        <td className="px-5 py-3 font-bold text-fg" style={{ fontFamily: "var(--font-mono)" }}>{v.reg}</td>
                         <td className="px-5 py-3 text-fg">{v.model}</td>
                         <td className="px-5 py-3 text-fg">{v.owner}</td>
                         <td className="px-5 py-3"><span className="px-2 py-1 rounded-full text-[11px] font-bold" style={{ background: STATUS_COLOR[v.status] + "1A", color: STATUS_COLOR[v.status] }}>{v.status}</span></td>

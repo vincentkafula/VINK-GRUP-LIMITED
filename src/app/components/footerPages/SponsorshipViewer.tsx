@@ -4,8 +4,7 @@ import { Footer } from "../Footer";
 import { BRAND } from "../../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; }
-const P = BRAND.crimsonDeep;
-const GOLD = BRAND.gold;
+const P = BRAND.crimson;
 
 const FOCUS_AREAS = [
   { icon: "🚌", title: "Transport Safety",          desc: "Taxi industry road safety campaigns, CCTV deployment, and community crime prevention initiatives." },
@@ -30,10 +29,10 @@ export function SponsorshipViewer({ isOpen, onClose }: Props) {
         <button onClick={onClose} className="p-2 rounded-full hover:bg-surface-2 transition-colors text-fg-muted"><X className="w-5 h-5" /></button>
       </div>
 
-      <div className="py-16 px-6 text-white" style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
+      <div className="py-16 px-6 text-white" style={{ background: "#C8102E" }}>
         <div className="max-w-4xl mx-auto">
           <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4"
-            style={{ background: "rgba(245,166,35,.2)", color: GOLD }}>Community Investment</span>
+            style={{ background: "rgba(255,255,255,.16)", color: "#ffffff" }}>Community Investment</span>
           <h1 className="text-4xl font-black mb-3">Sponsorship &amp; Community Investment</h1>
           <p className="text-white/80 text-lg max-w-2xl leading-relaxed">
             VINK sponsors programmes that uplift the communities our customers live and work in — with a focus on transport safety, youth education, township economic development, and sport.
@@ -86,12 +85,12 @@ export function SponsorshipViewer({ isOpen, onClose }: Props) {
           </div>
         </section>
 
-        <section className="rounded-2xl p-8 text-center text-white" style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
+        <section className="rounded-2xl p-8 text-center text-white" style={{ background: `linear-gradient(135deg,${P},#A50F27)` }}>
           <h3 className="text-xl font-black mb-2">Ready to Apply?</h3>
           <p className="text-white/75 text-sm mb-4">Send your proposal to our sponsorship team.</p>
           <a href="mailto:sponsorships@vink.co.za"
             className="inline-block px-7 py-3 rounded-xl text-sm font-bold transition-all hover:opacity-90"
-            style={{ background: GOLD, color: "var(--vk-fg)" }}>
+            style={{ background: "#ffffff", color: BRAND.crimson }}>
             sponsorships@vink.co.za
           </a>
         </section>

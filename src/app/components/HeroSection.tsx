@@ -16,10 +16,10 @@ const RAW_SLIDES = [
     image:   heroCardPhone,
     cropped: [] as Side[],     // sides where the artwork itself runs off its frame
     eyebrow: "VINK Card — Now in Your Pocket",
-    headline: <>All the benefits of Card,<br /><span className="relative inline-block"><span className="relative z-10">on your phone.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: BRAND.gold }} /></span></>,
+    headline: <>All the benefits of Card,<br /><span className="relative inline-block"><span className="relative z-10">on your phone.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#ffffff" }} /></span></>,
     body: "Manage, track and enjoy exclusive benefits anytime, anywhere.",
     ctas: [
-      { label: "Start Now",  style: { background: BRAND.crimsonLight, boxShadow: "0 6px 20px rgba(139,0,0,.4)" } },
+      { label: "Start Now",  style: { background: BRAND.crimsonHover, boxShadow: "0 6px 20px rgba(200,16,46,.4)" } },
       { label: "Learn more", style: { background: "rgba(255,255,255,.15)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,.25)" } },
     ],
     trust: [
@@ -32,7 +32,7 @@ const RAW_SLIDES = [
     image:   heroGlobalSim,
     cropped: [] as Side[],
     eyebrow: "VINK SIM — planned, launching June 2027",
-    headline: <>All the benefits of SIM,<br /><span className="relative inline-block"><span className="relative z-10">on your phone.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: BRAND.gold }} /></span></>,
+    headline: <>All the benefits of SIM,<br /><span className="relative inline-block"><span className="relative z-10">on your phone.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#ffffff" }} /></span></>,
     body: "Stay connected anywhere in the world with reliable data, clear calls and seamless connectivity.",
     ctas: [
       { label: "Get Your SIM", style: { background: "#B91C1C", boxShadow: "0 6px 20px rgba(185,28,28,.4)" } },
@@ -49,10 +49,10 @@ const RAW_SLIDES = [
     cropped: [] as Side[],
     wide: true,                                   // a wide, complete cut-out (validator + the five channels): shown whole, in a larger frame
     eyebrow: "VINK AFC — Today's Market Multi-ticketing Validator",
-    headline: <>Multi-ticketing<br /><span className="relative inline-block"><span className="relative z-10">validator.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: BRAND.gold }} /></span></>,
+    headline: <>Multi-ticketing<br /><span className="relative inline-block"><span className="relative z-10">validator.</span><span className="absolute bottom-1 left-0 w-full h-3 opacity-30 rounded" style={{ background: "#ffffff" }} /></span></>,
     body: "Smarter, faster and cashless payments for a seamless travel experience — multi-channel, integrated in one system.",
     ctas: [
-      { label: "Experience Smart Travel →", style: { background: "#C9861F", boxShadow: "0 6px 20px rgba(201,134,31,.4)" } },
+      { label: "Experience Smart Travel →", style: { background: "#ffffff", color: "#C8102E", boxShadow: "0 6px 20px rgba(0,0,0,.20)" } },
       { label: "See How It Works",          style: { background: "rgba(255,255,255,.15)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,.25)" } },
     ],
     trust: [
@@ -96,7 +96,7 @@ export function HeroSection({ onApplyClick }: { onApplyClick?: () => void }) {
 
   return (
     <section className="text-white overflow-hidden relative -mt-[var(--vk-header-h,97px)] pt-[var(--vk-header-h,97px)]" aria-roledescription="carousel" aria-label="Featured" onMouseEnter={() => setHold(true)} onMouseLeave={() => setHold(false)} onFocusCapture={() => setHold(true)} onBlurCapture={() => setHold(false)}
-      style={{ background: "linear-gradient(160deg,#0c0e14 0%,#150f16 38%,#2e0b10 74%,#4a0d14 100%)" }}>
+      style={{ background: "#C8102E" }}>
       {/* Signature motif — concentric "tap" rings, evoking the NFC contactless
           gesture that's central to how VINK actually works. Deliberately
           restrained: one quiet element per section rather than scattered
@@ -106,7 +106,7 @@ export function HeroSection({ onApplyClick }: { onApplyClick?: () => void }) {
         {[0, 1, 2, 3].map(i => (
           <div key={i} className="absolute inset-0 rounded-full"
             style={{
-              border: "1px solid rgba(245,166,35,0.14)",
+              border: "1px solid rgba(255,255,255,0.22)",
               transform: `scale(${1 - i * 0.19})`,
             }} />
         ))}
@@ -114,7 +114,7 @@ export function HeroSection({ onApplyClick }: { onApplyClick?: () => void }) {
       <div className="absolute top-0 right-0 w-96 h-96 rounded-full opacity-10 pointer-events-none"
         style={{ background: "radial-gradient(circle,#fff 0%,transparent 70%)", transform: "translate(30%,-30%)" }} />
       <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full opacity-10 pointer-events-none"
-        style={{ background: "radial-gradient(circle,#c9a84c 0%,transparent 70%)", transform: "translate(-40%,40%)" }} />
+        style={{ background: "radial-gradient(circle,#8F1027 0%,transparent 70%)", transform: "translate(-40%,40%)" }} />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 lg:py-14 relative z-10">
         <div className={"grid grid-cols-1 gap-10 items-center transition-[grid-template-columns] duration-500 " + (slide.wide ? "md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]" : "md:grid-cols-2")}>
@@ -126,12 +126,12 @@ export function HeroSection({ onApplyClick }: { onApplyClick?: () => void }) {
           >
             {/* Headline */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl leading-[1.05] mb-5"
-              style={{ fontFamily: "'Fraunces', serif", fontWeight: 600, letterSpacing: "-0.01em" }}>
+              style={{ fontFamily: "var(--font-display)", fontWeight: 600, letterSpacing: "-0.01em" }}>
               {slide.headline}
             </h1>
 
             {/* Body */}
-            <p className="text-white/75 text-base sm:text-lg mb-5 leading-relaxed max-w-md mx-auto md:mx-0">
+            <p className="text-white/90 text-base sm:text-lg mb-5 leading-relaxed max-w-md mx-auto md:mx-0">
               {slide.body}
             </p>
 
@@ -141,7 +141,7 @@ export function HeroSection({ onApplyClick }: { onApplyClick?: () => void }) {
                 <button key={i}
                   onClick={onApplyClick}
                   className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl text-sm font-bold text-white transition-all duration-300 ease-out hover:scale-[1.03] hover:-translate-y-0.5 active:scale-95 shadow-lg"
-                  style={{ letterSpacing: "0.01em", ...(i === 0 ? { background: "linear-gradient(180deg,#d9bb62,#c9a84c)", color: "#0c0e14", boxShadow: "0 6px 20px rgba(201,168,76,.35)" } : { background: "rgba(255,255,255,.12)", border: "1px solid rgba(255,255,255,.28)", color: "#ffffff" }) }}>
+                  style={{ letterSpacing: "0.01em", ...(i === 0 ? { background: "#ffffff", color: "#C8102E", boxShadow: "0 6px 20px rgba(0,0,0,.20)" } : { background: "rgba(255,255,255,.12)", border: "1px solid rgba(255,255,255,.28)", color: "#ffffff" }) }}>
                   {cta.label}
                 </button>
               ))}
@@ -151,8 +151,8 @@ export function HeroSection({ onApplyClick }: { onApplyClick?: () => void }) {
             <div className="flex justify-center md:justify-start gap-8">
               {slide.trust.map((t, i) => (
                 <div key={i} className="text-center md:text-left">
-                  <p className="text-xl" style={{ color: "#e0c068", fontFamily: "'JetBrains Mono', monospace", fontWeight: 700 }}>{t.value}</p>
-                  <p className="text-white/75 text-xs font-medium mt-0.5">{t.label}</p>
+                  <p className="text-xl" style={{ color: "#ffffff", fontFamily: "var(--font-mono)", fontWeight: 700 }}>{t.value}</p>
+                  <p className="text-white/90 text-xs font-medium mt-0.5">{t.label}</p>
                 </div>
               ))}
             </div>
@@ -161,7 +161,7 @@ export function HeroSection({ onApplyClick }: { onApplyClick?: () => void }) {
           {/* ── Image side ── */}
           <div className="relative flex flex-col items-center md:items-end">
             <div className="absolute inset-0 rounded-full opacity-20 blur-3xl pointer-events-none"
-              style={{ background: "radial-gradient(circle,#c9a84c,transparent)" }} />
+              style={{ background: "radial-gradient(circle,#ffffff,transparent)" }} />
             <img
               key={current}
               src={slide.image}
@@ -189,7 +189,7 @@ export function HeroSection({ onApplyClick }: { onApplyClick?: () => void }) {
                   aria-current={current === i ? "true" : undefined}
                   className="flex h-8 items-center justify-center px-1.5"
                 >
-                  <span className="block h-1.5 rounded-full transition-all duration-300" style={{ width: current === i ? 22 : 8, background: current === i ? "#e0c068" : "rgba(255,255,255,0.5)" }} />
+                  <span className="block h-1.5 rounded-full transition-all duration-300" style={{ width: current === i ? 22 : 8, background: current === i ? "#ffffff" : "rgba(255,255,255,0.5)" }} />
                 </button>
               ))}
               {!reduced && (

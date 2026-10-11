@@ -4,7 +4,7 @@ import { Footer } from "../Footer";
 import { BRAND } from "../../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; }
-const P = BRAND.crimsonDeep;
+const P = BRAND.crimson;
 
 const HOW_VINK_PROTECTS = [
   { icon: "🔍", title: "Real-time fraud monitoring", desc: "Every transaction is monitored 24/7 by our fraud detection engine. Unusual activity is flagged within milliseconds." },
@@ -44,7 +44,7 @@ export function SafetySecurityViewer({ isOpen, onClose }: Props) {
       </div>
 
       {/* Hero */}
-      <div className="py-14 px-6 text-white" style={{ background: "linear-gradient(135deg,#0F172A,#1E3A5F)" }}>
+      <div className="py-14 px-6 text-white" style={{ background: "#C8102E" }}>
         <div className="max-w-4xl mx-auto flex items-center gap-6">
           <Shield className="w-16 h-16 text-green-400 flex-shrink-0" />
           <div>

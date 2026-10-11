@@ -5,7 +5,7 @@ import { portalClient, useLoad, Status, Empty, ActionButton, inputCls, rand, day
 import { MapView } from "./MapView";
 import { CsvButton, Pager, RangeBar, TrendChart, useAutoRefresh, rangeQuery, saToday, saShift, monthStart, type MapPosition, type MapRoute, type Range } from "./widgets";
 
-const COLOR = "#EF4444";
+const COLOR = "#C8102E";
 const call = portalClient("association");
 const ROLE: Record<string, string> = { vehicle_owner: "Vehicle owner", driver: "Driver", marshal: "Marshal" };
 

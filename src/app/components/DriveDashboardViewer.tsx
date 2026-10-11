@@ -33,8 +33,8 @@ import { BRAND } from "../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; driverName?: string }
 
-const NAVY = "#0B1330";
-const NAVY_SOFT = "#121B3E";
+const NAVY = "#101828";
+const NAVY_SOFT = "#182230";
 const BLUE = "#2F5BFF";
 
 const ACCENTS: Record<string, { bg: string; ic: string; line: string }> = {
@@ -870,7 +870,7 @@ function PayslipView({ gross, uif, paye, driverName }: { gross: number; uif: Ret
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="bg-surface rounded-2xl border border-slate-200 overflow-hidden lg:col-span-2">
-          <div className="p-6 border-b border-dashed border-slate-200 flex items-center justify-between" style={{ background: "linear-gradient(135deg,#0B1330,#1c2a5e)" }}>
+          <div className="p-6 border-b border-dashed border-slate-200 flex items-center justify-between" style={{ background: "linear-gradient(135deg,#101828,#1c2a5e)" }}>
             <div><div className="text-white font-bold text-lg">Drive Payslip</div><div className="text-slate-300 text-xs mt-1">{period === "weekly" ? "Week of 05 – 11 May 2025" : "May 2025"}</div></div>
             <div className="text-right"><div className="text-white text-sm font-medium">{driverName}</div><div className="text-slate-300 text-xs">Driver ID: DRV-10024</div></div>
           </div>

@@ -23,7 +23,7 @@ import { BRAND } from "../brand";
 interface Props { isOpen: boolean; onClose: () => void; }
 
 // ─── Color + formatting ───────────────────────────────────────────────────────
-const P   = BRAND.crimsonDeep;
+const P   = BRAND.crimson;
 const GOLD = BRAND.gold;
 const GREEN = BRAND.ok;
 const fmt = (n: number) => `R ${Number(n).toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -116,7 +116,7 @@ function AFCTerminal({ device, onTap }: { device: typeof DEVICES[0]; onTap: (tap
   };
 
   return (
-    <div className="rounded-2xl overflow-hidden" style={{ background: "#0F0F1A", border: "1px solid #2D2A4A" }}>
+    <div className="rounded-2xl overflow-hidden" style={{ background: "#0F0F1A", border: "1px solid #344054" }}>
       {/* Device header */}
       <div className="px-4 py-3 flex items-center justify-between border-b border-white/5">
         <div className="flex items-center gap-2">
@@ -252,7 +252,7 @@ export function AFCManagementDashboard({ isOpen, onClose }: Props) {
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col" style={{ background: "#0A0A14" }}>
+    <div className="fixed inset-0 z-50 flex flex-col" style={{ background: "#0c111d" }}>
 
       {/* ── Top bar ── */}
       <div className="flex items-center justify-between px-5 py-3 border-b border-white/10 flex-shrink-0"
@@ -280,11 +280,11 @@ export function AFCManagementDashboard({ isOpen, onClose }: Props) {
       <div className="flex flex-1 min-h-0">
         {/* ── Sidebar ── */}
         <aside className="w-48 flex-shrink-0 border-r border-white/5 flex flex-col py-3 px-2 overflow-y-auto"
-          style={{ background: "#0A0A14" }}>
+          style={{ background: "#0c111d" }}>
           {NAV.map(item => (
             <button key={item.id} onClick={() => setScreen(item.id)}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left text-sm font-medium mb-0.5"
-              style={{ background: screen === item.id ? P + "30" : "transparent", color: screen === item.id ? GOLD : "rgba(255,255,255,.5)", fontWeight: screen === item.id ? 700 : 400 }}>
+              style={{ background: screen === item.id ? P + "30" : "transparent", color: screen === item.id ? BRAND.crimsonOnDark : "rgba(255,255,255,.5)", fontWeight: screen === item.id ? 700 : 400 }}>
               {item.icon}
               <span>{item.label}</span>
             </button>
@@ -309,13 +309,13 @@ export function AFCManagementDashboard({ isOpen, onClose }: Props) {
         </aside>
 
         {/* ── Main ── */}
-        <main className="flex-1 overflow-y-auto p-5" style={{ background: "#0A0A14" }}>
+        <main className="flex-1 overflow-y-auto p-5" style={{ background: "#0c111d" }}>
 
           {/* ══ OVERVIEW ══════════════════════════════════════════════════ */}
           {screen === "overview" && (
             <div className="space-y-5 max-w-5xl">
               {/* Hero concept card */}
-              <div className="rounded-2xl overflow-hidden" style={{ background: `linear-gradient(135deg,${P} 0%,#0C0E14 50%,#9B1C1C 100%)` }}>
+              <div className="rounded-2xl overflow-hidden" style={{ background: `linear-gradient(135deg,${P} 0%,#101828 50%,#A50F27 100%)` }}>
                 <div className="p-5 relative overflow-hidden">
                   <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white/5 pointer-events-none" />
                   <p className="text-white/60 text-[9px] uppercase tracking-widest mb-2">How It Works</p>
@@ -349,7 +349,7 @@ export function AFCManagementDashboard({ isOpen, onClose }: Props) {
                   { label: "Revenue Today",     value: fmtM(totalTodayRev),                      sub: "Across all devices",  color: GOLD,     icon: <TrendingUp className="w-5 h-5" /> },
                   { label: "Approval Rate",     value: `${approvalRate}%`,                       sub: "Tap success rate",    color: BRAND.ok, icon: <CheckCircle className="w-5 h-5" /> },
                 ].map(k => (
-                  <div key={k.label} className="rounded-2xl p-4 flex items-center gap-3" style={{ background: "#1A1A2E" }}>
+                  <div key={k.label} className="rounded-2xl p-4 flex items-center gap-3" style={{ background: "#182230" }}>
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-white" style={{ background: k.color + "30" }}>
                       <span style={{ color: k.color }}>{k.icon}</span>
                     </div>
@@ -366,7 +366,7 @@ export function AFCManagementDashboard({ isOpen, onClose }: Props) {
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {DEVICES.map(d => (
                   <div key={d.id} className="rounded-2xl p-4 cursor-pointer hover:border-emerald-600 transition-all"
-                    style={{ background: "#1A1A2E", border: `1px solid ${d.status === "online" ? "#2D2A4A" : "#4A1010"}` }}
+                    style={{ background: "#182230", border: `1px solid ${d.status === "online" ? "#344054" : "#4A1010"}` }}
                     onClick={() => { setSelectedDevice(d); setScreen("terminal"); }}>
                     <div className="flex items-start justify-between mb-3">
                       <div>
@@ -406,7 +406,7 @@ export function AFCManagementDashboard({ isOpen, onClose }: Props) {
               <p className="text-white font-black text-lg">Registered AFC Devices</p>
               <div className="space-y-3">
                 {DEVICES.map(d => (
-                  <div key={d.id} className="rounded-2xl p-4 flex items-center gap-4" style={{ background: "#1A1A2E", border: "1px solid #2D2A4A" }}>
+                  <div key={d.id} className="rounded-2xl p-4 flex items-center gap-4" style={{ background: "#182230", border: "1px solid #344054" }}>
                     <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 text-2xl"
                       style={{ background: d.status === "online" ? GREEN + "20" : "#EF444420" }}>
                       🚌
@@ -461,7 +461,7 @@ export function AFCManagementDashboard({ isOpen, onClose }: Props) {
                 {DEVICES.filter(d => d.status === "online").map(d => (
                   <button key={d.id} onClick={() => setSelectedDevice(d)}
                     className="flex-shrink-0 px-3 py-2 rounded-xl text-xs font-semibold transition-all"
-                    style={{ background: selectedDevice.id === d.id ? P : "#1A1A2E", color: selectedDevice.id === d.id ? "#fff" : "rgba(255,255,255,.5)", border: `1px solid ${selectedDevice.id === d.id ? P : "transparent"}` }}>
+                    style={{ background: selectedDevice.id === d.id ? P : "#182230", color: selectedDevice.id === d.id ? "#fff" : "rgba(255,255,255,.5)", border: `1px solid ${selectedDevice.id === d.id ? P : "transparent"}` }}>
                     {d.ref} · {d.driver.split(" ")[0]}
                   </button>
                 ))}
@@ -470,7 +470,7 @@ export function AFCManagementDashboard({ isOpen, onClose }: Props) {
                 {/* Terminal */}
                 <AFCTerminal device={selectedDevice} onTap={handleTap} />
                 {/* Live feed */}
-                <div className="rounded-2xl overflow-hidden" style={{ background: "#1A1A2E", border: "1px solid #2D2A4A" }}>
+                <div className="rounded-2xl overflow-hidden" style={{ background: "#182230", border: "1px solid #344054" }}>
                   <div className="px-4 py-3 border-b border-white/5 flex items-center justify-between">
                     <p className="text-white font-bold text-sm">Live Transaction Feed</p>
                     <Activity className="w-4 h-4 text-white/30 animate-pulse" />
@@ -529,14 +529,14 @@ export function AFCManagementDashboard({ isOpen, onClose }: Props) {
           {screen === "wallets" && (
             <div className="space-y-4 max-w-4xl">
               <p className="text-white font-black text-lg">Driver Wallets</p>
-              <div className="rounded-2xl p-4" style={{ background: "#1A1A2E" }}>
+              <div className="rounded-2xl p-4" style={{ background: "#182230" }}>
                 <p className="text-white/50 text-xs leading-relaxed">
                   Each driver has a VINK Driver Wallet linked to their AFC device via the device's reference number. When a passenger taps, 85% of the fare is credited instantly. Drivers can withdraw to any SA bank account or use the balance directly for fuel, groceries, and bill payments.
                 </p>
               </div>
               <div className="space-y-3">
                 {WALLETS.map((w, i) => (
-                  <div key={i} className="rounded-2xl p-5 flex items-center gap-4" style={{ background: "#1A1A2E", border: "1px solid #2D2A4A" }}>
+                  <div key={i} className="rounded-2xl p-5 flex items-center gap-4" style={{ background: "#182230", border: "1px solid #344054" }}>
                     <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-black text-lg flex-shrink-0"
                       style={{ background: `hsl(${i * 60}, 60%, 45%)` }}>
                       {w.driver.split(" ").map(n => n[0]).join("").slice(0, 2)}
@@ -584,7 +584,7 @@ export function AFCManagementDashboard({ isOpen, onClose }: Props) {
                   { name: "Cape Town → Stellenbosch",      fare: 45.00, peak: 50.00, devices: 0, km: 52, mins: 60 },
                   { name: "Lusaka → Kitwe (Zambia)",       fare: 95.00, peak: 110.00,devices: 0, km: 320, mins: 240 },
                 ].map((r, i) => (
-                  <div key={i} className="rounded-2xl p-4 flex items-center gap-4" style={{ background: "#1A1A2E", border: "1px solid #2D2A4A" }}>
+                  <div key={i} className="rounded-2xl p-4 flex items-center gap-4" style={{ background: "#182230", border: "1px solid #344054" }}>
                     <MapPin className="w-5 h-5 text-emerald-400 flex-shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-white font-bold">{r.name}</p>
@@ -615,7 +615,7 @@ export function AFCManagementDashboard({ isOpen, onClose }: Props) {
                   { label: "Driver Payouts", value: fmtM(totalTodayRev * 0.85), color: GREEN },
                   { label: "Community Fund", value: fmtM(totalTodayRev * 0.10), color: "#34A853" },
                 ].map(k => (
-                  <div key={k.label} className="rounded-2xl p-4 text-center" style={{ background: "#1A1A2E" }}>
+                  <div key={k.label} className="rounded-2xl p-4 text-center" style={{ background: "#182230" }}>
                     <p className="text-white/40 text-[10px]">{k.label}</p>
                     <p className="font-black text-2xl mt-1" style={{ color: k.color }}>{k.value}</p>
                     {k.note && <p className="text-white/30 text-[9px] mt-0.5">{k.note}</p>}
@@ -624,7 +624,7 @@ export function AFCManagementDashboard({ isOpen, onClose }: Props) {
               </div>
 
               {/* Revenue model */}
-              <div className="rounded-2xl p-5" style={{ background: "#1A1A2E" }}>
+              <div className="rounded-2xl p-5" style={{ background: "#182230" }}>
                 <p className="text-white font-black mb-4">VINK Revenue Model — AFC</p>
                 <div className="space-y-3">
                   {[
@@ -644,7 +644,7 @@ export function AFCManagementDashboard({ isOpen, onClose }: Props) {
               </div>
 
               {/* Per-tap breakdown */}
-              <div className="rounded-2xl p-5" style={{ background: "#1A1A2E" }}>
+              <div className="rounded-2xl p-5" style={{ background: "#182230" }}>
                 <p className="text-white font-black mb-4">Per-Tap Revenue Split (R14 example fare)</p>
                 <div className="space-y-2">
                   {[

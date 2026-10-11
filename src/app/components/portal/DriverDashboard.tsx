@@ -14,7 +14,7 @@ import {
   type DriverProfile, type DriverVehicle, type DriverRoute, type DriverTrip, type DriverEarnings, type DriverNotification,
 } from "./driverApi";
 
-const COLOR = "#F59E0B";
+const COLOR = "#C8102E";
 const NAV_BASE = [
   { icon: <User className="w-4 h-4" />, label: "Profile" },
   { icon: <Car className="w-4 h-4" />, label: "Vehicle & licence" },

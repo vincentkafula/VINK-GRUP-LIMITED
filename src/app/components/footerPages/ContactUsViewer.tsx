@@ -13,8 +13,7 @@ import { API_BASE } from "../../services/config";
 import { BRAND } from "../../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; initialTab?: TabId; }
-const P = BRAND.crimsonDeep;
-const GOLD = BRAND.gold;
+const P = BRAND.crimson;
 
 type TabId = "connect" | "locate" | "feedback";
 const TABS: { id: TabId; label: string }[] = [
@@ -435,7 +434,7 @@ function FeedbackTab() {
 
             <button onClick={handleSubmit} disabled={submitting}
               className="px-8 py-3 rounded-full text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-2"
-              style={{ background: `linear-gradient(135deg,${P},#9B1C1C)` }}>
+              style={{ background: `linear-gradient(135deg,${P},#A50F27)` }}>
               {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Sending...</> : "Send Message"}
             </button>
           </div>
@@ -515,7 +514,7 @@ export function ContactUsViewer({ isOpen, onClose, initialTab }: Props) {
           </div>
           <div className="rounded-xl p-5 text-white flex items-center justify-between gap-4" style={{ background: P }}>
             <div>
-              <p className="font-black text-sm flex items-center gap-2 mb-1"><Smartphone className="w-4 h-4" style={{ color: GOLD }} /> Get the VINK App</p>
+              <p className="font-black text-sm flex items-center gap-2 mb-1"><Smartphone className="w-4 h-4" style={{ color: "#ffffff" }} /> Get the VINK App</p>
               <p className="text-xs text-white/70">Banking, payments & cards — all in one app.</p>
             </div>
             <div className="flex flex-col gap-1.5 flex-shrink-0">

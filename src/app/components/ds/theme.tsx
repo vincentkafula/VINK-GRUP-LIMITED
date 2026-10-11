@@ -16,7 +16,7 @@ export function applyTheme(resolved: "light" | "dark"): void {
   const root = document.documentElement;
   root.classList.toggle("dark", resolved === "dark");
   root.style.colorScheme = resolved;
-  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", resolved === "dark" ? "#0c0e14" : "#faf8f4");
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", resolved === "dark" ? "#0c111d" : "#f9fafb");
 }
 
 interface Ctx { choice: ThemeChoice; resolved: "light" | "dark"; setChoice: (c: ThemeChoice) => void; cycle: () => void }

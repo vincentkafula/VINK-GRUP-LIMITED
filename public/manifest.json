@@ -4,8 +4,8 @@
   "description": "South Africa's integrated banking, transport, and travel super-application by VINK Group",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#FAF8F4",
-  "theme_color": "#FAF8F4",
+  "background_color": "#F9FAFB",
+  "theme_color": "#F9FAFB",
   "orientation": "portrait-primary",
   "icons": [
     {

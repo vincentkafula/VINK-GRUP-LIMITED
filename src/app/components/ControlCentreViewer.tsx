@@ -78,7 +78,7 @@ export function ControlCentreViewer({ isOpen, onClose, onOpenTerminalManagement 
       if (firstError) setError(firstError.error ?? "Could not load one or more fleets");
 
       setFleets([
-        summarize("Taxi AFC Terminals", Smartphone, BRAND.crimsonInk, taxiTerminals.data ?? [], taxiFaults.data ?? []),
+        summarize("Taxi AFC Terminals", Smartphone, BRAND.navy, taxiTerminals.data ?? [], taxiFaults.data ?? []),
         summarize("Retail Card Machines", Store, "#1E3A8A", retailTerminals.data ?? [], retailFaults.data ?? []),
         summarize("Till Devices", ShoppingCart, "#065F46", tillTerminals.data ?? [], tillFaults.data ?? []),
       ]);

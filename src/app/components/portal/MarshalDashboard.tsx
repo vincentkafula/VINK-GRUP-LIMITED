@@ -9,7 +9,7 @@ import { portalClient, useLoad, Status, Empty, Field, ActionButton, inputCls, wh
 import { LinksPanel } from "./LinksPanel";
 import { CsvButton, Pager, RangeBar, ScreenBoundary, TrendChart, rangeQuery, saToday, saShift, monthStart, useAutoRefresh, type Range } from "./widgets";
 
-const COLOR = "#3B82F6";
+const COLOR = "#C8102E";
 const call = portalClient("marshal");
 const NAV = [
   { icon: <ListOrdered className="w-4 h-4" />, label: "Ranks & queue" },

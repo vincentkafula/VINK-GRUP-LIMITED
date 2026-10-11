@@ -8,7 +8,7 @@ import { CopyButton, spaced, type BankLink } from "./BankAccount";
 import { Pager } from "./widgets";
 import { usePageTitle } from "../ds";
 
-const COLOR = "#38BDF8";
+const COLOR = "#C8102E";
 const STAFF = ["owner", "superadmin"];
 const ROLES: [string, string][] = [["", "All roles"], ["driver", "Drivers"], ["marshal", "Marshals"], ["association", "Associations"], ["investor", "Investors"], ["vehicle_owner", "Owners"]];
 const STATUS_COLOR: Record<string, string> = { verified: "#10B981", pending_review: "#F59E0B", rejected: "#EF4444" };

@@ -28,7 +28,7 @@ const APPS = [
     size: "24.7 MB",
     rating: 4.8,
     reviews: "2,847",
-    gradient: "linear-gradient(135deg,#5C0A10,#C9A84C)",
+    gradient: "linear-gradient(135deg,#C8102E,#8F1027)",
     emoji: "🚌",
     badge: "P18Q Hardware",
     badgeColor: BRAND.gold,
@@ -69,7 +69,7 @@ const APPS = [
     size: "42.8 MB",
     rating: 4.9,
     reviews: "15,842",
-    gradient: "linear-gradient(135deg,#5C0A10,#C9A84C)",
+    gradient: "linear-gradient(135deg,#C8102E,#8F1027)",
     emoji: "💳",
     badge: "Most Downloaded",
     badgeColor: BRAND.bad,
@@ -86,7 +86,7 @@ const APPS = [
     size: "Internal",
     rating: 5.0,
     reviews: "Internal",
-    gradient: "linear-gradient(135deg,#5C0A10,#C9A84C)",
+    gradient: "linear-gradient(135deg,#C8102E,#8F1027)",
     emoji: "💹",
     badge: "Operations",
     badgeColor: BRAND.crimsonDeep,
@@ -111,14 +111,14 @@ export function AppLauncher({ isOpen, onClose, onLaunchApp }: Props) {
 
   if (!isOpen) return null;
 
-  const P = BRAND.crimsonDeep;
+  const P = BRAND.crimson;
 
   if (selectedApp) {
     return (
-      <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-[#0A0A14]">
+      <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-[#0c111d]">
         {/* App detail header */}
         <div className="sticky top-0 z-10 flex items-center gap-3 px-4 py-3 border-b border-white/10"
-          style={{ background: "#0A0A14" }}>
+          style={{ background: "#0c111d" }}>
           <button onClick={() => setSelectedApp(null)} className="p-2 rounded-full hover:bg-white/10 text-white/70 transition-colors">
             <ChevronRight className="w-5 h-5 rotate-180" />
           </button>
@@ -155,7 +155,7 @@ export function AppLauncher({ isOpen, onClose, onLaunchApp }: Props) {
             <button
               onClick={() => { onLaunchApp(selectedApp.id); onClose(); }}
               className="flex-1 py-3 rounded-2xl text-sm font-black text-white transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg"
-              style={{ background: `linear-gradient(135deg,${P},#C9A84C)`, boxShadow: `0 6px 20px ${P}40` }}>
+              style={{ background: `linear-gradient(135deg,${P},#A50F27)`, boxShadow: `0 6px 20px ${P}40` }}>
               Open App
             </button>
             <button disabled className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 cursor-default"
@@ -214,11 +214,11 @@ export function AppLauncher({ isOpen, onClose, onLaunchApp }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto" style={{ background: "#0A0A14" }}>
+    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto" style={{ background: "#0c111d" }}>
 
       {/* Header */}
       <div className="sticky top-0 z-10 px-5 py-4 border-b border-white/10 flex items-center justify-between"
-        style={{ background: "#0A0A14" }}>
+        style={{ background: "#0c111d" }}>
         <div className="flex items-center gap-3">
           <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-8 w-auto object-contain" style={{ filter: "brightness(0) invert(1)" }} />
           <div>
@@ -232,7 +232,7 @@ export function AppLauncher({ isOpen, onClose, onLaunchApp }: Props) {
       </div>
 
       {/* Hero banner */}
-      <div className="px-5 py-6" style={{ background: "linear-gradient(135deg,#1A0D12 0%,#5C0A10 50%,#8B0000 100%)" }}>
+      <div className="px-5 py-6" style={{ background: "#C8102E" }}>
         <div className="max-w-lg mx-auto">
           <div className="flex items-center gap-2 mb-3">
             <Smartphone className="w-4 h-4 text-yellow-400" />
@@ -257,7 +257,7 @@ export function AppLauncher({ isOpen, onClose, onLaunchApp }: Props) {
 
       {/* Architecture note */}
       <div className="max-w-lg mx-auto w-full px-5 py-4">
-        <div className="rounded-xl p-3 flex items-start gap-3" style={{ background: "#F5A62315", border: "1px solid #F5A62330" }}>
+        <div className="rounded-xl p-3 flex items-start gap-3" style={{ background: "#C8102E1A", border: "1px solid #C8102E40" }}>
           <span className="text-lg flex-shrink-0">🔗</span>
           <p className="text-white/70 text-xs leading-relaxed">
             All 5 apps share a single Express/WebSocket backend. Users download each app separately from the App Store or Play Store. Authentication, wallets, and real-time events are unified across all apps via the VINK Central API.
@@ -312,7 +312,7 @@ export function AppLauncher({ isOpen, onClose, onLaunchApp }: Props) {
             <div className="flex items-center justify-between px-4 py-3 border-t border-white/5">
               <button onClick={() => { onLaunchApp(app.id); onClose(); }}
                 className="text-xs font-black px-4 py-2 rounded-xl text-white transition-all hover:scale-[1.03] active:scale-[0.97]"
-                style={{ background: `linear-gradient(135deg,${P},#C9A84C)` }}>
+                style={{ background: `linear-gradient(135deg,${P},#A50F27)` }}>
                 Open App
               </button>
               <div className="flex items-center gap-3">

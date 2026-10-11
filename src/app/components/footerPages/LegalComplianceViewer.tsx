@@ -5,7 +5,7 @@ import { Footer } from "../Footer";
 import { BRAND } from "../../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; initialTab?: string; }
-const P = BRAND.crimsonDeep;
+const P = BRAND.crimson;
 
 const TABS = [
   { key: "privacy",    label: "Privacy Policy" },
@@ -27,7 +27,7 @@ export function LegalComplianceViewer({ isOpen, onClose, initialTab }: Props) {
       </div>
 
       {/* Hero */}
-      <div className="py-12 px-6 text-white" style={{ background: `linear-gradient(135deg,${P},#0C0E14)` }}>
+      <div className="py-12 px-6 text-white" style={{ background: "#C8102E" }}>
         <div className="max-w-4xl mx-auto">
           <h1 className="text-3xl font-black mb-2">Legal &amp; Compliance</h1>
           <p className="text-white/70 text-sm">VINK — a division of Vink Group (Pty) Ltd. · Reg: 2018/079316/07</p>

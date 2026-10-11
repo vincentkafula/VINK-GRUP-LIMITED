@@ -53,10 +53,10 @@ export function GetHelpModal({ isOpen, onClose }: GetHelpModalProps) {
   return (
     <div
       className="fixed inset-0 z-50 flex flex-col overflow-y-auto"
-      style={{ background: "#14112B" }}
+      style={{ background: "#101828" }}
     >
       {/* ── Sticky top bar ── */}
-      <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b" style={{ background: "#14112B", borderColor: "#2D2A4A" }}>
+      <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b" style={{ background: "#101828", borderColor: "#344054" }}>
         <div className="flex items-center gap-3">
           <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="w-[140px] h-auto object-contain" />
           <span className="text-white/60 text-sm">Get Help &amp; Information</span>
@@ -71,7 +71,7 @@ export function GetHelpModal({ isOpen, onClose }: GetHelpModalProps) {
 
       <div className="flex-1">
         {/* ── Hero / Search ── */}
-        <div className="px-6 py-10 text-center border-b" style={{ background: "linear-gradient(135deg,#1E1B4B,#0C0E14)", borderColor: "#2D2A4A" }}>
+        <div className="px-6 py-10 text-center border-b" style={{ background: "linear-gradient(135deg,#182230,#101828)", borderColor: "#344054" }}>
           <h1 className="text-2xl md:text-3xl font-black text-white mb-2">How can we help you?</h1>
           <p className="text-white/55 text-sm mb-6">Search our knowledge base or browse topics below</p>
           <div className="flex items-center gap-3 max-w-xl mx-auto bg-white/10 rounded-2xl px-4 py-3 border border-white/15">
@@ -91,7 +91,7 @@ export function GetHelpModal({ isOpen, onClose }: GetHelpModalProps) {
         </div>
 
         {/* ── Contact channels ── */}
-        <div className="px-6 py-8 border-b" style={{ borderColor: "#2D2A4A" }}>
+        <div className="px-6 py-8 border-b" style={{ borderColor: "#344054" }}>
           <h2 className="text-white font-bold text-base mb-5">Contact Us</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {CONTACT_CHANNELS.map((c, i) => (
@@ -112,7 +112,7 @@ export function GetHelpModal({ isOpen, onClose }: GetHelpModalProps) {
         </div>
 
         {/* ── Footer link columns (same as site footer) ── */}
-        <div className="px-6 py-8 border-b" style={{ borderColor: "#2D2A4A" }}>
+        <div className="px-6 py-8 border-b" style={{ borderColor: "#344054" }}>
           <h2 className="text-white font-bold text-base mb-6">Browse Products &amp; Services</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6">
             {COLS.map((col) => (
@@ -134,7 +134,7 @@ export function GetHelpModal({ isOpen, onClose }: GetHelpModalProps) {
         </div>
 
         {/* ── App download + brand logos ── */}
-        <div className="px-6 py-8 border-b" style={{ borderColor: "#2D2A4A" }}>
+        <div className="px-6 py-8 border-b" style={{ borderColor: "#344054" }}>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             {/* App badges */}
             <div>

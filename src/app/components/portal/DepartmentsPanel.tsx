@@ -23,7 +23,7 @@ function client() {
   };
 }
 
-const COLOR = "#7C3AED";
+const COLOR = "#C8102E";
 const pill = (on: boolean, yes: string, no: string, good = true) => <span className="rounded-full px-2 py-0.5 text-[10px] font-bold" style={on ? { background: good ? "#DCFCE7" : "#FEF3C7", color: good ? "#166534" : "#92400E" } : { background: "#F1F5F9", color: "#475569" }}>{on ? yes : no}</span>;
 
 export function DepartmentsPanel() {
@@ -45,7 +45,7 @@ export function DepartmentsPanel() {
         <ul className="grid gap-3 md:grid-cols-2" aria-label="Departments">{departments.map((d) => (
           <li key={d.key} className="rounded-xl border border-line bg-surface p-4">
             <div className="flex items-start gap-3">
-              <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg" style={{ background: "#EEEBFF", color: COLOR }}><Building2 className="h-5 w-5" /></span>
+              <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg" style={{ background: "#FEF2F4", color: COLOR }}><Building2 className="h-5 w-5" /></span>
               <div className="min-w-0 flex-1">
                 <p className="font-bold text-fg">{d.name}</p>
                 <a href={`mailto:${d.address}`} className="flex items-center gap-1 text-xs text-fg-muted hover:underline"><Mail className="h-3 w-3" /> {d.address}</a>

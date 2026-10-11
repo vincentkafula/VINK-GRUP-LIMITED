@@ -65,7 +65,7 @@ export function AttachPicker({ att }: { att: Attachments }) {
   const [over, setOver] = useState(false);
   const drop = (e: DragEvent) => { e.preventDefault(); setOver(false); if (e.dataTransfer.files.length) void att.add(e.dataTransfer.files); };
   return (
-    <div onDragOver={(e) => { e.preventDefault(); setOver(true); }} onDragLeave={() => setOver(false)} onDrop={drop} className="rounded-lg p-2.5 space-y-2" style={{ border: `1px dashed ${over ? "#8B0000" : "var(--vk-line)"}`, background: over ? "rgba(139,0,0,0.04)" : "transparent" }}>
+    <div onDragOver={(e) => { e.preventDefault(); setOver(true); }} onDragLeave={() => setOver(false)} onDrop={drop} className="rounded-lg p-2.5 space-y-2" style={{ border: `1px dashed ${over ? "#C8102E" : "var(--vk-line)"}`, background: over ? "rgba(200,16,46,0.04)" : "transparent" }}>
       <div className="flex items-center gap-2 flex-wrap">
         <button type="button" onClick={() => input.current?.click()} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold border border-line text-fg hover:bg-surface-2"><Paperclip className="w-3.5 h-3.5" /> Attach files</button>
         <input ref={input} type="file" multiple aria-label="Attach files" className="hidden" onChange={(e) => { if (e.target.files?.length) void att.add(e.target.files); e.target.value = ""; }} />

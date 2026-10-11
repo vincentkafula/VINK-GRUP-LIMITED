@@ -141,7 +141,7 @@ function RouteSelector({ selectedRoute, routeSearch, setRouteSearch, routeZoneFi
           onChange={e => setRouteSearch(e.target.value)}
           placeholder="Search origin or destination…"
           className="w-full pl-8 pr-3 py-2 rounded-xl text-xs text-white placeholder-white/30 outline-none"
-          style={{ background: "#1A1A2E", border: "1px solid #2D2A50" }}
+          style={{ background: "#182230", border: "1px solid #344054" }}
         />
       </div>
 
@@ -149,13 +149,13 @@ function RouteSelector({ selectedRoute, routeSearch, setRouteSearch, routeZoneFi
       <div className="flex gap-1 flex-shrink-0 overflow-x-auto pb-0.5" style={{ scrollbarWidth: "none" }}>
         <button onClick={() => setRouteZoneFilter("all")}
           className="flex-shrink-0 px-2.5 py-1 rounded-full text-[9px] font-bold transition-all"
-          style={{ background: routeZoneFilter === "all" ? "#fff" : "#1A1A2E", color: routeZoneFilter === "all" ? "#0A0A14" : "rgba(255,255,255,.5)" }}>
+          style={{ background: routeZoneFilter === "all" ? "#fff" : "#182230", color: routeZoneFilter === "all" ? "#0c111d" : "rgba(255,255,255,.5)" }}>
           All
         </button>
         {ZONES.map(z => (
           <button key={z} onClick={() => setRouteZoneFilter(z === routeZoneFilter ? "all" : z)}
             className="flex-shrink-0 px-2.5 py-1 rounded-full text-[9px] font-bold transition-all"
-            style={{ background: routeZoneFilter === z ? ZONE_COLORS[z] : "#1A1A2E", color: routeZoneFilter === z ? "#fff" : "rgba(255,255,255,.5)" }}>
+            style={{ background: routeZoneFilter === z ? ZONE_COLORS[z] : "#182230", color: routeZoneFilter === z ? "#fff" : "rgba(255,255,255,.5)" }}>
             {z} · R{z === "Zone 1" ? 8 : z === "Zone 2" ? 12 : z === "Zone 3" ? 18 : z === "Zone 4" ? 25 : 35}
           </button>
         ))}
@@ -172,7 +172,7 @@ function RouteSelector({ selectedRoute, routeSearch, setRouteSearch, routeZoneFi
           return (
             <button key={route.id} onClick={() => onSelect(route)}
               className="w-full flex items-center gap-2.5 p-2.5 rounded-xl transition-all text-left"
-              style={{ background: isSelected ? P + "30" : "#1A1A2E", border: `1px solid ${isSelected ? P : "transparent"}` }}>
+              style={{ background: isSelected ? P + "30" : "#182230", border: `1px solid ${isSelected ? P : "transparent"}` }}>
               {/* Zone dot */}
               <div className="w-2 h-2 rounded-full flex-shrink-0 mt-0.5" style={{ background: zColor }} />
               <div className="flex-1 min-w-0">
@@ -314,8 +314,8 @@ export function AFCApp({ isOpen, onClose }: Props) {
 
   if (!isOpen) return null;
 
-  const P = BRAND.crimsonDeep;
-  const GOLD = BRAND.gold;
+  const P = BRAND.crimson;
+  const GOLD = BRAND.crimsonOnDark;   // accent text on the dark device UI: brand red, on-dark tint
   const stages = selectedRoute.baseFare < 500 && networkOnline ? OFFLINE_STAGES : ONLINE_STAGES;
   const isOfflinePath = selectedRoute.baseFare < 500 && networkOnline;
 
@@ -330,7 +330,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
         style={{ background: "#0F0F1A" }}>
 
         {/* Status bar */}
-        <div className="flex items-center justify-between px-5 py-2 text-white/70 text-xs flex-shrink-0" style={{ background: "#0A0A14" }}>
+        <div className="flex items-center justify-between px-5 py-2 text-white/70 text-xs flex-shrink-0" style={{ background: "#0c111d" }}>
           <div className="flex items-center gap-3">
             <span className="font-bold text-white">{time}</span>
             <span className="text-[10px] px-1.5 py-0.5 rounded font-bold" style={{ background: networkOnline ? BRAND.ok + "30" : "#EF444430", color: networkOnline ? BRAND.ok : BRAND.bad }}>
@@ -354,7 +354,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
 
         <div className="flex flex-1 min-h-0">
           {/* Sidebar */}
-          <div className="w-16 flex flex-col items-center py-3 gap-4 border-r border-white/5 flex-shrink-0" style={{ background: "#0A0A14" }}>
+          <div className="w-16 flex flex-col items-center py-3 gap-4 border-r border-white/5 flex-shrink-0" style={{ background: "#0c111d" }}>
             {[
               { id: "home",        icon: <Zap className="w-4 h-4" />,        label: "Home" },
               { id: "tap",         icon: <div className="w-4 h-4 rounded-full border-2 border-current flex items-center justify-center"><div className="w-1.5 h-1.5 rounded-full bg-current" /></div>, label: "Tap" },
@@ -396,7 +396,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
                   </div>
                   <div className="flex items-center gap-1">
                     {["CE","IK08","IP65"].map(c => (
-                      <span key={c} className="text-[7px] font-bold px-1 py-0.5 rounded" style={{ background: "#2D2A50", color: "#9CA3AF" }}>{c}</span>
+                      <span key={c} className="text-[7px] font-bold px-1 py-0.5 rounded" style={{ background: "#344054", color: "#9CA3AF" }}>{c}</span>
                     ))}
                   </div>
                 </div>
@@ -410,7 +410,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
                   </div>
                   <div className="text-right flex-shrink-0">
                     <p className="text-white/60 text-[9px]">Fare</p>
-                    <p className="text-yellow-400 font-black text-xl">R{selectedRoute.baseFare.toFixed(2)}</p>
+                    <p className="text-white font-black text-xl">R{selectedRoute.baseFare.toFixed(2)}</p>
                   </div>
                 </div>
 
@@ -422,7 +422,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
                     { label: "Passengers",   value: passengerCount.toString(), color: BRAND.info },
                     { label: "Batch queue",  value: pendingBatch.toString(), color: pendingBatch > 20 ? BRAND.warn : BRAND.ok },
                   ].map((stat, i) => (
-                    <div key={i} className="rounded-xl p-2 text-center" style={{ background: "#1A1A2E" }}>
+                    <div key={i} className="rounded-xl p-2 text-center" style={{ background: "#182230" }}>
                       <p className="font-black text-lg leading-none" style={{ color: stat.color }}>{stat.value}</p>
                       <p className="text-white/40 text-[9px] mt-0.5">{stat.label}</p>
                     </div>
@@ -432,13 +432,13 @@ export function AFCApp({ isOpen, onClose }: Props) {
                 {/* Big TAP button */}
                 <button onClick={() => setScreen("tap")}
                   className="w-full py-4 rounded-2xl font-black text-white text-base flex items-center justify-center gap-3 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-xl"
-                  style={{ background: `linear-gradient(135deg,${P},#C9A84C)`, boxShadow: `0 8px 32px ${P}50` }}>
+                  style={{ background: `linear-gradient(135deg,${P},#A50F27)`, boxShadow: `0 8px 32px ${P}50` }}>
                   <span className="text-2xl">📱</span>
                   TAP TO COLLECT FARE
                 </button>
 
                 {/* Speed indicator */}
-                <div className="rounded-xl p-3" style={{ background: "#1A1A2E" }}>
+                <div className="rounded-xl p-3" style={{ background: "#182230" }}>
                   <div className="flex items-center justify-between mb-2">
                     <p className="text-white/60 text-[10px] font-bold uppercase tracking-wide">Processing Speed Guarantee</p>
                     <span className="text-[10px] font-black text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full">✓ Sub-3s</span>
@@ -460,7 +460,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
                 {/* Recent taps */}
                 <div className="flex-1 overflow-y-auto space-y-1">
                   {tapHistory.slice(0, 5).map((t, i) => (
-                    <div key={i} className="flex items-center justify-between px-3 py-2 rounded-lg" style={{ background: "#1A1A2E" }}>
+                    <div key={i} className="flex items-center justify-between px-3 py-2 rounded-lg" style={{ background: "#182230" }}>
                       <div className="flex items-center gap-2">
                         <Clock className="w-3 h-3 text-white/30" />
                         <span className="text-white/50 text-[10px]">{t.time}</span>
@@ -486,7 +486,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
                 {/* Route info */}
                 <div className="text-center">
                   <p className="text-white/50 text-xs">{`${selectedRoute.origin} → ${selectedRoute.destination}`}</p>
-                  <p className="text-yellow-400 font-black text-3xl mt-0.5">R{selectedRoute.baseFare.toFixed(2)}</p>
+                  <p className="text-white font-black text-3xl mt-0.5">R{selectedRoute.baseFare.toFixed(2)}</p>
                   <div className="flex items-center justify-center gap-2 mt-1">
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: isOfflinePath ? "#10B98120" : "#3B82F620", color: isOfflinePath ? BRAND.ok : BRAND.info }}>
                       {isOfflinePath ? "⚡ OFFLINE PATH — no network needed" : "🌐 ONLINE FAST PATH"}
@@ -498,7 +498,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
                 <div onClick={!processing ? simulateTap : undefined}
                   className="relative w-44 h-44 rounded-full flex flex-col items-center justify-center cursor-pointer transition-all active:scale-95 select-none"
                   style={{
-                    background: processing ? P + "20" : result ? (result.ms ? "#10B98120" : "#EF444420") : "#1A1A2E",
+                    background: processing ? P + "20" : result ? (result.ms ? "#10B98120" : "#EF444420") : "#182230",
                     border: `3px solid ${processing ? P : result?.ms ? "#10B981" : result === null && !processing ? "#333" : "#EF4444"}`,
                     boxShadow: processing ? `0 0 40px ${P}40` : result?.ms ? "0 0 30px #10B98130" : "none",
                   }}>
@@ -578,7 +578,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
                 <p className="text-white font-black text-base">Speed Performance</p>
 
                 {/* Avg speed gauge */}
-                <div className="rounded-xl p-4 text-center" style={{ background: "#1A1A2E" }}>
+                <div className="rounded-xl p-4 text-center" style={{ background: "#182230" }}>
                   <p className="text-white/50 text-[10px] uppercase tracking-wide mb-1">Average processing time</p>
                   <p className="font-black text-4xl" style={{ color: avgMs < 500 ? BRAND.ok : avgMs < 1000 ? BRAND.info : BRAND.warn }}>{avgMs}ms</p>
                   <p className="text-white/40 text-[10px] mt-1">3-second guarantee: {avgMs < 3000 ? "✓ MET" : "⚠ EXCEEDED"}</p>
@@ -591,7 +591,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
                 </div>
 
                 {/* Path breakdown */}
-                <div className="rounded-xl p-4" style={{ background: "#1A1A2E" }}>
+                <div className="rounded-xl p-4" style={{ background: "#182230" }}>
                   <p className="text-white/60 text-[10px] font-bold uppercase tracking-wide mb-3">Authorization paths today</p>
                   {[
                     { path: "OFFLINE",       pct: 82, ms: "280–520ms", desc: "EMV offline crypto · No network · Batch sync", color: BRAND.ok },
@@ -615,7 +615,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
                 </div>
 
                 {/* Tap history with timing */}
-                <div className="rounded-xl overflow-hidden" style={{ background: "#1A1A2E" }}>
+                <div className="rounded-xl overflow-hidden" style={{ background: "#182230" }}>
                   <div className="px-3 py-2 border-b border-white/5">
                     <p className="text-white/60 text-[10px] font-bold uppercase">Recent taps</p>
                   </div>
@@ -649,13 +649,13 @@ export function AFCApp({ isOpen, onClose }: Props) {
                     { label: "Association 5%", value: `R${(todayEarnings * 0.05).toFixed(2)}`, color: BRAND.info },
                     { label: "Community 5%", value: `R${(todayEarnings * 0.05).toFixed(2)}`, color: "#34A853" },
                   ].map((s, i) => (
-                    <div key={i} className="rounded-xl p-3" style={{ background: "#1A1A2E" }}>
+                    <div key={i} className="rounded-xl p-3" style={{ background: "#182230" }}>
                       <p className="text-white/40 text-[9px]">{s.label}</p>
                       <p className="font-black text-lg mt-0.5" style={{ color: s.color }}>{s.value}</p>
                     </div>
                   ))}
                 </div>
-                <div className="rounded-xl p-3" style={{ background: "#1A1A2E" }}>
+                <div className="rounded-xl p-3" style={{ background: "#182230" }}>
                   <p className="text-white/50 text-[10px] mb-2">Pending batch sync ({pendingBatch} txns)</p>
                   <button onClick={() => { setPendingBatch(0); }}
                     className="w-full py-2 rounded-lg text-xs font-bold text-white transition-all" style={{ background: P }}>
@@ -687,7 +687,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
                   { label: "Offline mode",       sub: "Auth transactions without network (< R500 floor)",  toggle: offlineMode,    set: setOfflineMode },
                   { label: "4G LTE connection",  sub: networkOnline ? "Cell C LTE · Signal: strong" : "Disconnected — WiFi fallback active", toggle: networkOnline, set: setNetworkOnline },
                 ].map((s, i) => (
-                  <div key={i} className="flex items-start justify-between gap-3 p-3 rounded-xl" style={{ background: "#1A1A2E" }}>
+                  <div key={i} className="flex items-start justify-between gap-3 p-3 rounded-xl" style={{ background: "#182230" }}>
                     <div>
                       <p className="text-white text-sm font-semibold">{s.label}</p>
                       <p className="text-white/40 text-[10px] mt-0.5">{s.sub}</p>
@@ -712,7 +712,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
                   { label: "Certifications",   value: "CE · RoHS · IK08 · IP65" },
                   { label: "GPS",              value: "Built-in · Active" },
                 ].map((s, i) => (
-                  <div key={i} className="flex items-center justify-between px-3 py-2 rounded-xl" style={{ background: "#1A1A2E" }}>
+                  <div key={i} className="flex items-center justify-between px-3 py-2 rounded-xl" style={{ background: "#182230" }}>
                     <p className="text-white/50 text-[10px]">{s.label}</p>
                     <p className="text-white text-xs font-semibold">{s.value}</p>
                   </div>
@@ -729,7 +729,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
             {screen === "device" && (
               <div className="space-y-4">
                 {/* Header */}
-                <div className="rounded-xl p-4" style={{ background: "linear-gradient(135deg,#1A1A2E,#0D1A4A)" }}>
+                <div className="rounded-xl p-4" style={{ background: "linear-gradient(135deg,#182230,#0D1A4A)" }}>
                   <div className="flex items-start justify-between">
                     <div>
                       <p className="text-[10px] font-bold tracking-widest" style={{ color: GOLD }}>VINK AFC TERMINAL</p>
@@ -813,8 +813,8 @@ export function AFCApp({ isOpen, onClose }: Props) {
                     ],
                   },
                 ].map(group => (
-                  <div key={group.title} className="rounded-xl overflow-hidden" style={{ background: "#1A1A2E" }}>
-                    <div className="flex items-center gap-2 px-3 py-2.5 border-b" style={{ borderColor: "#2D2A50" }}>
+                  <div key={group.title} className="rounded-xl overflow-hidden" style={{ background: "#182230" }}>
+                    <div className="flex items-center gap-2 px-3 py-2.5 border-b" style={{ borderColor: "#344054" }}>
                       <div className="w-5 h-5 rounded flex items-center justify-center" style={{ background: group.color + "25", color: group.color }}>{group.icon}</div>
                       <p className="text-white text-[11px] font-bold">{group.title}</p>
                     </div>
@@ -829,7 +829,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
                   </div>
                 ))}
 
-                <button onClick={() => setScreen("settings")} className="w-full py-2.5 rounded-xl text-xs font-semibold text-white/60 border" style={{ borderColor: "#2D2A50" }}>
+                <button onClick={() => setScreen("settings")} className="w-full py-2.5 rounded-xl text-xs font-semibold text-white/60 border" style={{ borderColor: "#344054" }}>
                   ← Back to Settings
                 </button>
               </div>
@@ -873,7 +873,7 @@ export function AFCApp({ isOpen, onClose }: Props) {
             </div>
             <button onClick={() => setScreen("setup")}
               className="w-full mt-3 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90"
-              style={{ background: BRAND.gold, color: "#0A0A14" }}>
+              style={{ background: BRAND.crimson, color: "#ffffff" }}>
               Register Device Now
             </button>
           </div>
@@ -920,7 +920,7 @@ function AssociationsScreen({ P, GOLD }: { P: string; GOLD: string }) {
           value={search} onChange={e => setSearch(e.target.value)}
           placeholder="Search association…"
           className="w-full pl-7 pr-3 py-1.5 rounded-lg text-[11px] text-white placeholder-white/30 outline-none"
-          style={{ background: "#1A1A2E", border: "1px solid #2D2A50" }}
+          style={{ background: "#182230", border: "1px solid #344054" }}
         />
       </div>
 
@@ -928,13 +928,13 @@ function AssociationsScreen({ P, GOLD }: { P: string; GOLD: string }) {
       <div className="flex gap-1 flex-shrink-0 overflow-x-auto pb-0.5" style={{ scrollbarWidth: "none" }}>
         <button onClick={() => setProvince("all")}
           className="flex-shrink-0 px-2 py-0.5 rounded-full text-[9px] font-bold transition-all"
-          style={{ background: province === "all" ? "#fff" : "#1A1A2E", color: province === "all" ? "#0A0A14" : "rgba(255,255,255,.5)" }}>
+          style={{ background: province === "all" ? "#fff" : "#182230", color: province === "all" ? "#0c111d" : "rgba(255,255,255,.5)" }}>
           All
         </button>
         {PROVINCES.map(p => (
           <button key={p} onClick={() => setProvince(province === p ? "all" : p)}
             className="flex-shrink-0 px-2 py-0.5 rounded-full text-[9px] font-bold transition-all"
-            style={{ background: province === p ? P : "#1A1A2E", color: province === p ? "#fff" : "rgba(255,255,255,.5)" }}>
+            style={{ background: province === p ? P : "#182230", color: province === p ? "#fff" : "rgba(255,255,255,.5)" }}>
             {PROVINCE_EMOJIS[p] ?? "📍"} {p.length > 9 ? p.split(" ")[0] : p}
           </button>
         ))}
@@ -949,7 +949,7 @@ function AssociationsScreen({ P, GOLD }: { P: string; GOLD: string }) {
           const list = byProvince[prov];
           const isOpen = expanded === prov || province === prov;
           return (
-            <div key={prov} className="rounded-xl overflow-hidden" style={{ background: "#1A1A2E", border: "1px solid #2D2A50" }}>
+            <div key={prov} className="rounded-xl overflow-hidden" style={{ background: "#182230", border: "1px solid #344054" }}>
               {/* Province row */}
               <button onClick={() => setExpanded(isOpen && expanded === prov ? null : prov)}
                 className="w-full flex items-center gap-2 px-3 py-2 text-left">
@@ -1039,7 +1039,7 @@ function ProfileScreen({ profile, allowedRoutes, onSetup, P, GOLD }: {
       )}
 
       {/* Association */}
-      <div className="rounded-xl p-3" style={{ background: "#1A1A2E" }}>
+      <div className="rounded-xl p-3" style={{ background: "#182230" }}>
         <p className="text-white/40 text-[9px] font-bold uppercase tracking-wide mb-2">Association</p>
         <p className="text-white font-bold text-sm leading-snug">{profile.associationName}</p>
         <p className="text-white/40 text-[10px] mt-0.5">{profile.associationProvince} · {profile.associationLevel}</p>
@@ -1050,7 +1050,7 @@ function ProfileScreen({ profile, allowedRoutes, onSetup, P, GOLD }: {
       </div>
 
       {/* Vehicle */}
-      <div className="rounded-xl p-3" style={{ background: "#1A1A2E" }}>
+      <div className="rounded-xl p-3" style={{ background: "#182230" }}>
         <p className="text-white/40 text-[9px] font-bold uppercase tracking-wide mb-2 flex items-center gap-1.5"><Car className="w-3 h-3" />Vehicle</p>
         <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
           {[
@@ -1070,7 +1070,7 @@ function ProfileScreen({ profile, allowedRoutes, onSetup, P, GOLD }: {
       </div>
 
       {/* Documents */}
-      <div className="rounded-xl overflow-hidden" style={{ background: "#1A1A2E" }}>
+      <div className="rounded-xl overflow-hidden" style={{ background: "#182230" }}>
         <p className="text-white/40 text-[9px] font-bold uppercase tracking-wide px-3 pt-3 pb-2 flex items-center gap-1.5"><FileText className="w-3 h-3" />Documents</p>
         <div className="divide-y" style={{ borderColor: "#2D2A5040" }}>
           {docs.map((d,i) => {
@@ -1092,7 +1092,7 @@ function ProfileScreen({ profile, allowedRoutes, onSetup, P, GOLD }: {
       </div>
 
       {/* Owner */}
-      <div className="rounded-xl p-3" style={{ background: "#1A1A2E" }}>
+      <div className="rounded-xl p-3" style={{ background: "#182230" }}>
         <p className="text-white/40 text-[9px] font-bold uppercase tracking-wide mb-2 flex items-center gap-1.5"><User className="w-3 h-3" />Owner / Driver</p>
         <div className="space-y-1.5">
           {[
@@ -1110,7 +1110,7 @@ function ProfileScreen({ profile, allowedRoutes, onSetup, P, GOLD }: {
         </div>
       </div>
 
-      <button onClick={onSetup} className="w-full py-2.5 rounded-xl text-xs font-bold text-white border" style={{ borderColor: "#2D2A50", color: "rgba(255,255,255,0.6)" }}>
+      <button onClick={onSetup} className="w-full py-2.5 rounded-xl text-xs font-bold text-white border" style={{ borderColor: "#344054", color: "rgba(255,255,255,0.6)" }}>
         Edit Registration →
       </button>
     </div>
@@ -1149,7 +1149,7 @@ function SetupScreen({ initial, onSave, onCancel, P, GOLD }: {
         onChange={e => set(k, e.target.value)}
         placeholder={placeholder ?? label}
         className="w-full px-3 py-2 rounded-xl text-sm text-white placeholder-white/20 outline-none"
-        style={{ background: "#252245", border: "1px solid #14532D" }}
+        style={{ background: "#182230", border: "1px solid #101828" }}
       />
     </div>
   );
@@ -1160,7 +1160,7 @@ function SetupScreen({ initial, onSave, onCancel, P, GOLD }: {
       <div className="flex gap-1 flex-shrink-0">
         {steps.map(s => (
           <div key={s.n} className="flex-1 text-center">
-            <div className="h-1 rounded-full mb-1" style={{ background: step >= s.n ? GOLD : "#2D2A50" }} />
+            <div className="h-1 rounded-full mb-1" style={{ background: step >= s.n ? GOLD : "#344054" }} />
             <p className="text-[8px] font-bold" style={{ color: step === s.n ? GOLD : step > s.n ? BRAND.ok : "rgba(255,255,255,.3)" }}>
               {step > s.n ? "✓" : s.n} {s.label}
             </p>
@@ -1179,7 +1179,7 @@ function SetupScreen({ initial, onSave, onCancel, P, GOLD }: {
               <p className="text-white/50 text-[10px] font-semibold uppercase tracking-wide mb-1">Province</p>
               <select value={assocProvince} onChange={e => { setAssocProvince(e.target.value); set("associationProvince", e.target.value); set("associationName",""); }}
                 className="w-full px-3 py-2 rounded-xl text-sm text-white outline-none"
-                style={{ background: "#252245", border: "1px solid #14532D" }}>
+                style={{ background: "#182230", border: "1px solid #101828" }}>
                 <option value="">Choose province…</option>
                 {PROVINCES.map(p => <option key={p} value={p}>{PROVINCE_EMOJIS[p] ?? ""} {p}</option>)}
               </select>
@@ -1193,7 +1193,7 @@ function SetupScreen({ initial, onSave, onCancel, P, GOLD }: {
                     return (
                       <button key={a.name} onClick={() => { set("associationName", a.name); set("associationLevel", a.level); }}
                         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all"
-                        style={{ background: form.associationName === a.name ? P + "40" : "#1A1A2E", border: `1px solid ${form.associationName === a.name ? P : "transparent"}` }}>
+                        style={{ background: form.associationName === a.name ? P + "40" : "#182230", border: `1px solid ${form.associationName === a.name ? P : "transparent"}` }}>
                         <span className="text-lg">{PROVINCE_EMOJIS[a.province] ?? "📍"}</span>
                         <div className="flex-1 min-w-0">
                           <p className="text-white text-[11px] font-semibold leading-snug truncate">{a.name}</p>
@@ -1239,7 +1239,7 @@ function SetupScreen({ initial, onSave, onCancel, P, GOLD }: {
                 {(["minibus","bus","sedan","suv","other"] as const).map(t => (
                   <button key={t} onClick={() => set("vehicleType", t)}
                     className="py-1.5 rounded-lg text-[10px] font-bold capitalize transition-all"
-                    style={{ background: form.vehicleType === t ? P : "#1A1A2E", color: form.vehicleType === t ? "#fff" : "rgba(255,255,255,.5)" }}>
+                    style={{ background: form.vehicleType === t ? P : "#182230", color: form.vehicleType === t ? "#fff" : "rgba(255,255,255,.5)" }}>
                     {t}
                   </button>
                 ))}
@@ -1290,7 +1290,7 @@ function SetupScreen({ initial, onSave, onCancel, P, GOLD }: {
             <F label="Owner Phone Number" k="ownerPhone" placeholder="+27 82 000 0000" />
             <F label="Owner Email (optional)" k="ownerEmail" placeholder="owner@email.com" />
             <F label="Owner Address" k="ownerAddress" placeholder="Street, City, Province" />
-            <div className="h-px my-2" style={{ background: "#2D2A50" }} />
+            <div className="h-px my-2" style={{ background: "#344054" }} />
             <p className="text-white/40 text-[10px] uppercase tracking-wide font-bold">Driver (if different from owner)</p>
             <F label="Driver Full Name" k="driverName" placeholder="Leave blank if same as owner" />
             <F label="Driver SA ID Number" k="driverIdNumber" placeholder="13-digit SA ID" />
@@ -1306,7 +1306,7 @@ function SetupScreen({ initial, onSave, onCancel, P, GOLD }: {
       <div className="flex gap-2 flex-shrink-0">
         <button onClick={step === 1 ? onCancel : () => setStep(s => s - 1)}
           className="flex-1 py-2.5 rounded-xl text-xs font-bold border"
-          style={{ borderColor: "#2D2A50", color: "rgba(255,255,255,0.6)" }}>
+          style={{ borderColor: "#344054", color: "rgba(255,255,255,0.6)" }}>
           {step === 1 ? "Cancel" : "← Back"}
         </button>
         {step < 5 ? (

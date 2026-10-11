@@ -51,7 +51,7 @@ export function buildEmailDocument(html: string, opts: { cid?: Record<string, st
   const csp = `default-src 'none'; img-src blob: data:${opts.allowRemotePictures ? " https:" : ""}; style-src 'unsafe-inline'; font-src 'none'; base-uri 'none'; form-action 'none'`;
   const body = tpl.innerHTML;
   const doc = `<!doctype html><html><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="${csp}"><meta name="referrer" content="no-referrer"><base target="_blank">`
-    + `<style>html{background:#fff}body{margin:12px;font:14px/1.5 system-ui,Segoe UI,Arial,sans-serif;color:#111;background:#fff;overflow-wrap:anywhere}img{max-width:100%;height:auto}table{max-width:100%}a{color:#8B0000}</style></head><body>${body}</body></html>`;
+    + `<style>html{background:#fff}body{margin:12px;font:14px/1.5 system-ui,Segoe UI,Arial,sans-serif;color:#111;background:#fff;overflow-wrap:anywhere}img{max-width:100%;height:auto}table{max-width:100%}a{color:#C8102E}</style></head><body>${body}</body></html>`;
   return { doc, blockedPictures: blocked };
 }
 

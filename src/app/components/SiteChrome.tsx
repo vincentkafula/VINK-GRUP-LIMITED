@@ -9,9 +9,9 @@ export const NOTICE_H = 32, BAR_H = 65;
 /** The pre-launch notice. It is a legal statement, so it stays on every page; only its length changes with the screen. */
 export function LaunchNotice() {
   return (
-    <div role="note" className="flex items-center justify-center bg-[#0c0e14] px-3 text-center text-[11.5px] font-medium leading-none text-[#f3f1ec] sm:text-[13px]" style={{ height: NOTICE_H }}>
-      <span className="sm:hidden">Not yet in full operation · preview only · <span className="text-[#e0c068]">launch June 2027</span></span>
-      <span className="hidden sm:inline">VINK is not yet in full operation. All information on this site is a preview. <span className="font-semibold text-[#e0c068]">Full launch: June 2027.</span></span>
+    <div role="note" className="flex items-center justify-center bg-[#101828] px-3 text-center text-[11.5px] font-medium leading-none text-[#f9fafb] sm:text-[13px]" style={{ height: NOTICE_H }}>
+      <span className="sm:hidden">Not yet in full operation · preview only · <span className="text-[#ff6b81]">launch June 2027</span></span>
+      <span className="hidden sm:inline">VINK is not yet in full operation. All information on this site is a preview. <span className="font-semibold text-[#ff6b81]">Full launch: June 2027.</span></span>
     </div>
   );
 }

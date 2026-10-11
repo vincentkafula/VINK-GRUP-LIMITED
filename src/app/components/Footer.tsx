@@ -1,12 +1,11 @@
 import vinkLogoDark from "../../imports/LOGO_FINAL.png";
 import { PremiumIcon } from "./PremiumIcon";
-import { BRAND } from "../brand";
 
-const BG       = "#0c0e14";   // ink
-const DARK_BAR = "#07080c";
-const CARD_BG  = BRAND.crimson;   // crimson
-const LINK_HL  = BRAND.gold;   // gold
-const GOLD_SOFT = "#EBD592";  // headings and hovers
+const BG       = "#C8102E";   // brand red
+const DARK_BAR = "#C8102E";   // the legal bar: the same brand red as the rest of the footer; the white hairline above it separates it
+const CARD_BG  = "#A50F27";   // social button hover (the footer itself is already #C8102E)
+const LINK_HL  = "#FFFFFF";   // accents on the red footer are white (pink on red would be ~1.9:1)
+const GOLD_SOFT = "#FFFFFF";  // column headings and hovers
 
 const COLS = [
   {
@@ -118,7 +117,9 @@ function LinkColumn({ title, links, onLinkClick }: { title: string; links: strin
             <a
               href="#"
               onClick={(e) => { e.preventDefault(); onLinkClick?.(l); }}
-              className="block py-0.5 text-[15px] leading-[22px] text-white/75 no-underline transition-all duration-200 hover:translate-x-1 hover:text-[#EBD592] focus-visible:text-[#EBD592] focus-visible:outline-none focus-visible:underline"
+              /* Inline, not a class: the product pages wrap this footer in an unlayered `a { color: inherit }` rule that beats any Tailwind utility. */
+              style={{ color: "rgba(255,255,255,0.92)" }}
+              className="block py-0.5 text-[15px] leading-[22px] no-underline transition-all duration-200 hover:translate-x-1 hover:underline focus-visible:outline-none focus-visible:underline"
             >
               {l}
             </a>
@@ -142,17 +143,17 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
     window.dispatchEvent(new CustomEvent("vink:footer-link", { detail: { label } }));
   });
   return (
-    <footer style={{ background: `radial-gradient(900px 340px at 10% 0%, rgba(139,0,0,0.20), transparent 62%), radial-gradient(700px 300px at 95% 100%, rgba(201,168,76,0.07), transparent 60%), ${BG}`, position: "relative" }}>
-      {/* a thin gold light along the top edge */}
-      <div aria-hidden="true" style={{ height: 1, background: "linear-gradient(90deg,transparent,rgba(201,168,76,0.75) 50%,transparent)" }} />
+    <footer style={{ background: BG, position: "relative" }}>
+      {/* a thin red light along the top edge */}
+      <div aria-hidden="true" style={{ height: 1, background: "linear-gradient(90deg,transparent,rgba(255,255,255,0.45) 50%,transparent)" }} />
 
       {/* ── SECTION 1: Main columns ─────────────────────────────────────────── */}
       <div style={{ maxWidth: 1180, margin: "0 auto", padding: "76px 40px 64px" }}>
 
         {/* Top strip: logo + social */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 20, marginBottom: 56, paddingBottom: 36, borderBottom: "1px solid transparent", borderImage: "linear-gradient(90deg,rgba(201,168,76,0.45),rgba(255,255,255,0.10) 40%,rgba(255,255,255,0.04)) 1" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 20, marginBottom: 56, paddingBottom: 36, borderBottom: "1px solid transparent", borderImage: "linear-gradient(90deg,rgba(255,255,255,0.45),rgba(255,255,255,0.10) 40%,rgba(255,255,255,0.04)) 1" }}>
           {/* Dark logo on dark footer — 140px wide (brand guide: footer 120-160px) */}
-          <img src={vinkLogoDark} alt="VINK" loading="lazy" decoding="async" style={{ width: 124, height: "auto", objectFit: "contain", filter: "drop-shadow(0 6px 18px rgba(139,0,0,0.45))" }} />
+          <img src={vinkLogoDark} alt="VINK" loading="lazy" decoding="async" style={{ width: 124, height: "auto", objectFit: "contain", filter: "drop-shadow(0 6px 18px rgba(0,0,0,0.28))" }} />
 
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10 }}>
             <p style={{ color: GOLD_SOFT, fontSize: 12, fontWeight: 700, letterSpacing: "0.22em", textTransform: "uppercase", margin: 0 }}>
@@ -168,13 +169,13 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
                   style={{
                     width: 40, height: 40, borderRadius: "50%",
                     background: "linear-gradient(180deg,rgba(255,255,255,0.14),rgba(255,255,255,0.05))",
-                    border: "1px solid rgba(201,168,76,0.35)",
+                    border: "1px solid rgba(255,255,255,0.35)",
                     boxShadow: "inset 0 1px 0 rgba(255,255,255,0.14)",
                     display: "flex", alignItems: "center", justifyContent: "center",
                     transition: "background 0.2s, border-color 0.2s, transform 0.2s",
                   }}
                   onMouseEnter={(e) => { const a = e.currentTarget as HTMLAnchorElement; a.style.background = CARD_BG; a.style.borderColor = LINK_HL; a.style.transform = "translateY(-2px)"; }}
-                  onMouseLeave={(e) => { const a = e.currentTarget as HTMLAnchorElement; a.style.background = "linear-gradient(180deg,rgba(255,255,255,0.14),rgba(255,255,255,0.05))"; a.style.borderColor = "rgba(201,168,76,0.35)"; a.style.transform = "none"; }}
+                  onMouseLeave={(e) => { const a = e.currentTarget as HTMLAnchorElement; a.style.background = "linear-gradient(180deg,rgba(255,255,255,0.14),rgba(255,255,255,0.05))"; a.style.borderColor = "rgba(255,255,255,0.35)"; a.style.transform = "none"; }}
                 >
                   {s.icon}
                 </a>
@@ -203,7 +204,7 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
               display: "flex", alignItems: "center", gap: 12,
               background: "linear-gradient(180deg,#1a1a1a,#000)", borderRadius: 10,
               padding: "11px 18px",
-              border: "1px solid rgba(201,168,76,0.30)",
+              border: "1px solid rgba(255,255,255,0.30)",
               boxShadow: "inset 0 1px 0 rgba(255,255,255,0.10), 0 10px 24px -14px rgba(0,0,0,0.8)",
               opacity: 0.7,
             }}>
@@ -222,7 +223,7 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
               display: "flex", alignItems: "center", gap: 12,
               background: "linear-gradient(180deg,#1a1a1a,#000)", borderRadius: 10,
               padding: "11px 18px",
-              border: "1px solid rgba(201,168,76,0.30)",
+              border: "1px solid rgba(255,255,255,0.30)",
               boxShadow: "inset 0 1px 0 rgba(255,255,255,0.10), 0 10px 24px -14px rgba(0,0,0,0.8)",
               opacity: 0.7,
             }}>
@@ -245,15 +246,15 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
 
 
       {/* ── SECTION 3: Dark bottom bar ──────────────────────────────────────── */}
-      <div style={{ background: DARK_BAR, borderTop: "1px solid rgba(201,168,76,0.18)" }}>
+      <div style={{ background: DARK_BAR, borderTop: "1px solid rgba(255,255,255,0.18)" }}>
         <div style={{ maxWidth: 1180, margin: "0 auto", padding: "8px 40px 0" }}>
           {/* Legal links row */}
           <div style={{ minHeight: 56, padding: "14px 0 6px", display: "flex", alignItems: "center", justifyContent: "center", flexWrap: "wrap", gap: "6px 0" }}>
             {["Terms Of Use", "Banking Regulations", "Privacy Statement", "Security Centre"].map((item, i, arr) => (
               <span key={item} style={{ display: "flex", alignItems: "center" }}>
-                <a href="#" onClick={(e) => { e.preventDefault(); handleLinkClick(item); }} style={{ color: "rgba(255,255,255,0.75)", fontSize: 13, fontWeight: 700, letterSpacing: "0.02em", textDecoration: "none", padding: "0 14px", whiteSpace: "nowrap", transition: "color .2s" }}
+                <a href="#" onClick={(e) => { e.preventDefault(); handleLinkClick(item); }} style={{ color: "rgba(255,255,255,0.92)", fontSize: 13, fontWeight: 700, letterSpacing: "0.02em", textDecoration: "none", padding: "0 14px", whiteSpace: "nowrap", transition: "color .2s" }}
                   onMouseEnter={(e) => { (e.target as HTMLAnchorElement).style.color = GOLD_SOFT; }}
-                  onMouseLeave={(e) => { (e.target as HTMLAnchorElement).style.color = "rgba(255,255,255,0.75)"; }}
+                  onMouseLeave={(e) => { (e.target as HTMLAnchorElement).style.color = "rgba(255,255,255,0.92)"; }}
                 >
                   {item}
                 </a>
@@ -262,13 +263,13 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
                 )}
               </span>
             ))}
-            <span style={{ color: "rgba(255,255,255,0.62)", fontSize: 12.5, lineHeight: 1.65, padding: "10px 4px 0", textAlign: "center", flexBasis: "100%", maxWidth: 860 }}>
+            <span style={{ color: "rgba(255,255,255,0.92)", fontSize: 12.5, lineHeight: 1.65, padding: "10px 4px 0", textAlign: "center", flexBasis: "100%", maxWidth: 860 }}>
               VINK is a trading name of Vink Group (Pty) Ltd. VINK is not yet operational and is not yet authorised or registered to provide financial services; licensing and registrations will be completed before launch. Vink Group Reg. No. 2018/079316/07.
             </span>
           </div>
           {/* Copyright */}
           <div style={{ padding: "6px 0 24px", textAlign: "center" }}>
-            <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 12.5, margin: 0, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "4px 12px" }}>
+            <p style={{ color: "rgba(255,255,255,0.9)", fontSize: 12.5, margin: 0, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "4px 12px" }}>
               <span>United States – EIN: 37-2148609</span>
               <span aria-hidden="true" style={{ color: "rgba(255,255,255,0.25)" }}>|</span>
               <span>South Africa – Registration No: 2018/079316/07</span>

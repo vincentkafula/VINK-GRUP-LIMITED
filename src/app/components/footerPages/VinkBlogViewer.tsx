@@ -1,11 +1,8 @@
 import { X } from "lucide-react";
 import vinkLogo from "../../../imports/LOGO_FINAL.png";
 import { Footer } from "../Footer";
-import { BRAND } from "../../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; }
-const P = BRAND.crimsonDeep;
-const GOLD = BRAND.gold;
 
 const THEMES = [
   { icon: "🚕", title: "Life on the Road", desc: "Real stories and practical money advice for taxi drivers, commuters, and the people who keep South Africa's transport economy moving." },
@@ -23,10 +20,10 @@ export function VinkBlogViewer({ isOpen, onClose }: Props) {
         <button onClick={onClose} className="p-2 rounded-full hover:bg-surface-2 transition-colors text-fg-muted"><X className="w-5 h-5" /></button>
       </div>
 
-      <div className="py-16 px-6 text-white" style={{ background: `linear-gradient(135deg,#0F172A,${P})` }}>
+      <div className="py-16 px-6 text-white" style={{ background: "#C8102E" }}>
         <div className="max-w-4xl mx-auto">
           <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4"
-            style={{ background: "rgba(245,166,35,.2)", color: GOLD }}>Coming Soon</span>
+            style={{ background: "rgba(255,255,255,.16)", color: "#ffffff" }}>Coming Soon</span>
           <h1 className="text-4xl font-black mb-3">The VINK Blog</h1>
           <p className="text-white/75 text-lg max-w-2xl leading-relaxed">
             Stories, insights, and practical guidance for the people VINK is built for.
