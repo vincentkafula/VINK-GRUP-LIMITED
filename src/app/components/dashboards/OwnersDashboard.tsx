@@ -36,7 +36,7 @@ export function OwnersDashboard({ isOpen, onClose }: { isOpen: boolean; onClose:
   return (
     <DashboardShell
       title="Owner Dashboard" subtitle="Devices — Fleet Owner Account"
-      accentColor={BRAND.gold} gradient="from-emerald-700 to-emerald-500"
+      accentColor="#C8102E" gradient="from-emerald-700 to-emerald-500"
       navItems={NAV} activeNav={nav} onNavChange={setNav}
       onClose={onClose} userName="Victor Nkosi" alertCount={4}
     >

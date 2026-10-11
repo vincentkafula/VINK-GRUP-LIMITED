@@ -267,38 +267,38 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate, onOpenBanki
       </nav>
 
       {/* Hero */}
-      <div className="relative overflow-hidden" style={{ background: "linear-gradient(160deg,color-mix(in srgb, #FAFCFB var(--vk-wash), var(--vk-surface)) 0%,color-mix(in srgb, #F3F9F5 var(--vk-wash), var(--vk-surface)) 100%)" }}>
+      <div className="relative overflow-hidden" style={{ background: "#C8102E" }}>
         <div className="absolute -left-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: `linear-gradient(180deg,${GREEN},${ORANGE})`, filter: "blur(60px)" }} />
         <div className="absolute -right-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: `linear-gradient(180deg,${ORANGE},${GREEN})`, filter: "blur(60px)" }} />
 
         <div className="relative max-w-6xl mx-auto px-6 py-16 sm:py-20 grid lg:grid-cols-2 gap-10 items-center">
           <div>
-            <span className="inline-block text-[11px] font-bold tracking-[0.14em] uppercase mb-4" style={{ color: ORANGE }}>Personal Banking</span>
+            <span className="inline-block text-[11px] font-bold tracking-[0.14em] uppercase mb-4" style={{ color: "#ffffff" }}>Personal Banking</span>
             {authUser ? (
               <>
-                <h1 className="text-4xl sm:text-5xl font-black leading-[1.05] text-fg">
+                <h1 className="text-4xl sm:text-5xl font-black leading-[1.05] text-white">
                   Banking that<br />moves with you.
                 </h1>
-                <p className="text-fg-muted text-base mt-5 max-w-md">
+                <p className="text-white/90 text-base mt-5 max-w-md">
                   Pay. Save. Earn. All in one place, {authUser.name.split(" ")[0]}.
                 </p>
               </>
             ) : (
               <>
-                <h1 className="text-4xl sm:text-5xl font-black leading-[1.05] text-fg">
+                <h1 className="text-4xl sm:text-5xl font-black leading-[1.05] text-white">
                   Banking designed for<br />every South African.
                 </h1>
-                <p className="text-fg-muted text-base mt-5 max-w-md">
+                <p className="text-white/90 text-base mt-5 max-w-md">
                   Open an account in minutes and manage your money with the VINK app.
                 </p>
               </>
             )}
             <div className="flex flex-wrap items-center gap-3 mt-8">
               <button onClick={() => authUser ? onClose() : openApply()}
-                className="px-6 py-3 rounded-full text-white text-sm font-bold shadow-lg" style={{ background: ORANGE }}>
+                className="px-6 py-3 rounded-full text-white text-sm font-bold shadow-lg" style={{ background: "#ffffff", color: ORANGE }}>
                 {authUser ? "Explore Products" : "Open an Account"}
               </button>
-              <button className="px-6 py-3 rounded-full text-sm font-bold border-2" style={{ borderColor: GREEN, color: "var(--vk-crimson-text)" }}>
+              <button className="px-6 py-3 rounded-full text-sm font-bold border-2" style={{ borderColor: "rgba(255,255,255,0.75)", color: "#ffffff" }}>
                 Compare Accounts
               </button>
             </div>
@@ -317,7 +317,7 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate, onOpenBanki
                 </div>
               </div>
             </div>
-            <div className="absolute -right-4 bottom-6 w-24 h-16 rounded-2xl shadow-xl flex items-center justify-center" style={{ background: ORANGE }}>
+            <div className="absolute -right-4 bottom-6 w-24 h-16 rounded-2xl shadow-xl flex items-center justify-center" style={{ background: BRAND.navy }}>
               <UserCheck className="w-8 h-8 text-white" />
             </div>
           </div>

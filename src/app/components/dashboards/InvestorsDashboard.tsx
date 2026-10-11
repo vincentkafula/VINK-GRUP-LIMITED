@@ -44,7 +44,7 @@ export function InvestorsDashboard({ isOpen, onClose }: { isOpen: boolean; onClo
   return (
     <DashboardShell
       title="Investors Dashboard" subtitle="Devices — Investment Account"
-      accentColor={BRAND.warn} gradient="from-amber-600 to-amber-400"
+      accentColor="#C8102E" gradient="from-amber-600 to-amber-400"
       navItems={NAV} activeNav={nav} onNavChange={setNav}
       onClose={onClose} userName="Reginald Botha"
     >

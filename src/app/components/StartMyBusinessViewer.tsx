@@ -113,9 +113,9 @@ export function StartMyBusinessViewer({ isOpen, onClose, onNavigate }: Props) {
         .pav-subnav-item:hover{ color:var(--pav-text-on-ink); }
         .pav-subnav-item.active{ color:#FFFFFF; background:var(--pav-ink); font-weight:600; }
 
-        .pav-hero{ text-align:center; padding:44px 24px 8px; }
-        .pav-hero h1{ font-family:var(--font-display); font-weight:500; font-size:clamp(26px,4vw,38px); margin:0 0 8px; letter-spacing:-0.01em; }
-        .pav-hero p{ color:var(--pav-text-muted); font-size:14px; max-width:600px; margin:0 auto; }
+        .pav-hero{ text-align:center; padding:44px 24px 40px; background:#C8102E; color:#ffffff; }
+        .pav-hero h1{ color:#ffffff; font-family:var(--font-display); font-weight:600; font-size:clamp(26px,4vw,38px); margin:0 0 8px; letter-spacing:-0.01em; }
+        .pav-hero p{ color:rgba(255,255,255,0.92); font-size:14px; max-width:600px; margin:0 auto; }
 
         .pav-ledger-head{
           display:flex; justify-content:space-between; align-items:flex-end;
@@ -136,7 +136,7 @@ export function StartMyBusinessViewer({ isOpen, onClose, onNavigate }: Props) {
         .pav-badge{
           position:absolute; top:24px; right:26px;
           font-family:var(--font-mono); font-size:10px; font-weight:600;
-          color:#14161d; background:var(--pav-gold); padding:3px 9px; border-radius:2px;
+          color:#ffffff; background:var(--pav-gold); padding:3px 9px; border-radius:2px;
         }
         .pav-acct-name{ font-family:var(--font-display); font-weight:500; font-size:20px; margin:0 0 14px; letter-spacing:-0.01em; padding-right:70px; }
         .pav-features{ list-style:none; margin:0 0 16px; padding:0; display:flex; flex-direction:column; gap:6px; }

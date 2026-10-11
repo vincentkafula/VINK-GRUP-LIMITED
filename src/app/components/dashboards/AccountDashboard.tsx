@@ -42,7 +42,7 @@ export function AccountDashboard({ isOpen, onClose }: { isOpen: boolean; onClose
   return (
     <DashboardShell
       title="Account Dashboard" subtitle="Finance — Account Management"
-      accentColor={BRAND.ok} gradient="from-emerald-600 to-teal-500"
+      accentColor="#C8102E" gradient="from-emerald-600 to-teal-500"
       navItems={NAV} activeNav={nav} onNavChange={setNav}
       onClose={onClose} userName="VINK Finance Admin"
     >

@@ -49,7 +49,7 @@ function BenefitCard({ b }: { b: Benefit }) {
         <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5" />
       </span>
       {b.featured && (
-        <span className="flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-full" style={{ background: GOLD, color: "#101828", boxShadow: "0 2px 10px -2px rgba(200,16,46,0.6), inset 0 1px 0 rgba(255,255,255,0.45)" }}>
+        <span className="flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-full" style={{ background: GOLD, color: "#ffffff", boxShadow: "0 2px 10px -2px rgba(200,16,46,0.6), inset 0 1px 0 rgba(255,255,255,0.45)" }}>
           <Flame className="size-3" aria-hidden="true" />Most Popular
         </span>
       )}

@@ -1,10 +1,8 @@
 import { X } from "lucide-react";
 import vinkLogo from "../../../imports/LOGO_FINAL.png";
 import { Footer } from "../Footer";
-import { BRAND } from "../../brand";
 
 interface Props { isOpen: boolean; onClose: () => void; }
-const P = BRAND.crimson;
 
 const OFFERS = [
   { badge: "Best Value", name: "VINK Everyday Cashback", detail: "3% cashback at supermarkets and spaza shops, 1.5% at fuel stations, 0.5% everywhere else." },
@@ -22,7 +20,7 @@ export function LatestOffersViewer({ isOpen, onClose }: Props) {
         <button onClick={onClose} className="p-2 rounded-full hover:bg-surface-2 transition-colors text-fg-muted"><X className="w-5 h-5" /></button>
       </div>
 
-      <div className="py-16 px-6 text-white" style={{ background: `linear-gradient(135deg,#0F172A,${P})` }}>
+      <div className="py-16 px-6 text-white" style={{ background: "#C8102E" }}>
         <div className="max-w-4xl mx-auto">
           <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4"
             style={{ background: "rgba(255,255,255,.16)", color: "#ffffff" }}>Offers</span>

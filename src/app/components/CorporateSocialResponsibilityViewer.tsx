@@ -185,17 +185,17 @@ export function CorporateSocialResponsibilityViewer({ isOpen, onClose, onNavigat
             return (
               <button key={item} type="button" onClick={() => onNavigate(item)} aria-current={on ? "page" : undefined}
                 className="flex-shrink-0 cursor-pointer border-none bg-transparent px-3 py-3 text-xs transition-colors"
-                style={{ color: on ? "#fff" : "rgba(255,255,255,.75)", borderBottom: on ? "3px solid #fff" : "3px solid transparent", fontWeight: on ? 600 : 400 }}>
+                style={{ color: on ? "#fff" : "rgba(255,255,255,.92)", borderBottom: on ? "3px solid #fff" : "3px solid transparent", fontWeight: on ? 600 : 400 }}>
                 {item}
               </button>
             );
           })}
         </div>
-        <button type="button" onClick={() => { onClose(); contact("Get Help"); }} className="flex-shrink-0 rounded px-3 py-1.5 text-xs font-medium" style={{ color: "rgba(255,255,255,.85)" }}>Get Help</button>
+        <button type="button" onClick={() => { onClose(); contact("Get Help"); }} className="flex-shrink-0 rounded px-3 py-1.5 text-xs font-medium" style={{ color: "rgba(255,255,255,.95)" }}>Get Help</button>
       </div>
 
       {/* Hero */}
-      <header className="relative overflow-hidden text-white" style={{ background: "linear-gradient(135deg,#101828 0%,#8F1027 55%,#8F1027 100%)" }}>
+      <header className="relative overflow-hidden text-white" style={{ background: "#C8102E" }}>
         <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-24 size-96 rounded-full opacity-20" style={{ background: "radial-gradient(circle,#C8102E 0%,transparent 70%)" }} />
         <div className="relative mx-auto max-w-6xl px-6 py-12 md:py-16">
           <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/25 px-3 py-1 text-xs font-semibold uppercase tracking-widest" style={{ color: "#FFFFFF" }}>

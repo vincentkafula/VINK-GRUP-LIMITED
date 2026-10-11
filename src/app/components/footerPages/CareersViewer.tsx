@@ -47,7 +47,7 @@ export function CareersViewer({ isOpen, onClose }: Props) {
 
       {/* Hero */}
       <div className="py-20 px-6 text-white relative overflow-hidden"
-        style={{ background: `linear-gradient(135deg,#101828 0%,${P} 60%,#A50F27 100%)` }}>
+        style={{ background: "#C8102E" }}>
         <div className="max-w-4xl mx-auto relative z-10">
           <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4"
             style={{ background: "rgba(255,255,255,.16)", color: "#ffffff" }}>Join the Team</span>

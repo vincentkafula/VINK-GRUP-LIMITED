@@ -11,6 +11,7 @@ const button = cva(
       variant: {
         primary: "bg-brand text-brand-fg shadow-card hover:bg-brand-hover",
         secondary: "border border-line-strong bg-surface text-fg hover:bg-surface-2",
+        onBrand: "bg-white text-brand shadow-card hover:bg-white/90",   // for use ON a brand-red surface (hero, footer), where the primary red button would disappear
         ghost: "text-fg hover:bg-surface-2",
         danger: "bg-bad text-white hover:opacity-90",
         gold: "bg-gold text-gold-fg shadow-card hover:brightness-105",

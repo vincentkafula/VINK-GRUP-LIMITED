@@ -381,7 +381,7 @@ export function CorporateProductLedgerViewer({ isOpen, onClose, initialCategory,
         .pav-badge{
           position:absolute; top:24px; right:26px;
           font-family:var(--font-mono); font-size:10px; font-weight:600;
-          color:#14161d; background:var(--pav-gold); padding:3px 9px; border-radius:2px;
+          color:#ffffff; background:var(--pav-gold); padding:3px 9px; border-radius:2px;
         }
         .pav-acct-name{ font-family:var(--font-display); font-weight:500; font-size:20px; margin:0 0 14px; letter-spacing:-0.01em; padding-right:70px; }
         .pav-features{ list-style:none; margin:0 0 16px; padding:0; display:flex; flex-direction:column; gap:6px; }
@@ -458,14 +458,14 @@ export function CorporateProductLedgerViewer({ isOpen, onClose, initialCategory,
       </nav>
 
       {/* the same hero background as the Personal and Business pages */}
-      <div className="relative overflow-hidden" style={{ background: "linear-gradient(120deg, #101828 0%, #C8102E 58%, #8F1027 100%)" }}>
+      <div className="relative overflow-hidden" style={{ background: "#C8102E" }}>
         <img loading="lazy" decoding="async" src={siteHeroBg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-[0.14] mix-blend-luminosity" />
         <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: "radial-gradient(rgba(255,255,255,0.9) 1px, transparent 1px)", backgroundSize: "22px 22px" }} />
         <div className="relative max-w-6xl mx-auto px-8 py-14 sm:py-16 flex flex-col md:flex-row md:items-center md:justify-between gap-10">
           <div className="max-w-lg">
             <span className="inline-block text-[11px] font-bold tracking-[0.14em] uppercase mb-3" style={{ color: "#FFFFFF" }}>{copy.heroEyebrow}</span>
             <h1 className="text-3xl sm:text-4xl font-black leading-[1.1] text-white whitespace-pre-line">{copy.heroTitle}</h1>
-            <p className="text-white/70 text-sm sm:text-base mt-4 max-w-lg">{copy.heroSubtitle}</p>
+            <p className="text-white/90 text-sm sm:text-base mt-4 max-w-lg">{copy.heroSubtitle}</p>
           </div>
           {/* the cut-out has hard edges, so every side fades out */}
           <img src={vinkCorporateTrain} alt="" width={1100} height={734} decoding="async"

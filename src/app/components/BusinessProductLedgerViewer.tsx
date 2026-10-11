@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { Footer } from "./Footer";
-import { BRAND } from "../brand";
 
 type BizCategory = "creditCard" | "loan" | "invest";
 type NavItem = "Start My Business" | "Accounts" | "Credit Cards" | "Loans" | "Invest" | "Manage My Business";
@@ -219,7 +218,7 @@ export function BusinessProductLedgerViewer({ isOpen, onClose, initialCategory, 
         .pav-badge{
           position:absolute; top:24px; right:26px;
           font-family:var(--font-mono); font-size:10px; font-weight:600;
-          color:#14161d; background:var(--pav-gold); padding:3px 9px; border-radius:2px;
+          color:#ffffff; background:var(--pav-gold); padding:3px 9px; border-radius:2px;
         }
         .pav-acct-name{ font-family:var(--font-display); font-weight:500; font-size:21px; margin:0 0 14px; letter-spacing:-0.01em; padding-right:70px; }
         .pav-features{ list-style:none; margin:0 0 16px; padding:0; display:flex; flex-direction:column; gap:6px; }
@@ -300,13 +299,13 @@ export function BusinessProductLedgerViewer({ isOpen, onClose, initialCategory, 
         </div>
       </nav>
 
-      <div className="relative overflow-hidden" style={{ background: "linear-gradient(160deg,color-mix(in srgb, #FAFCFB var(--vk-wash), var(--vk-surface)) 0%,color-mix(in srgb, #F3F9F5 var(--vk-wash), var(--vk-surface)) 100%)" }}>
+      <div className="relative overflow-hidden" style={{ background: "#C8102E" }}>
         <div className="absolute -left-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: "linear-gradient(180deg,#A50F27,#C8102E)", filter: "blur(60px)" }} />
         <div className="absolute -right-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: "linear-gradient(180deg,#C8102E,#A50F27)", filter: "blur(60px)" }} />
         <div className="relative max-w-6xl mx-auto px-8 py-14 sm:py-16">
-          <span className="inline-block text-[11px] font-bold tracking-[0.14em] uppercase mb-3" style={{ color: BRAND.crimson }}>{copy.heroEyebrow}</span>
-          <h1 className="text-3xl sm:text-4xl font-black leading-[1.1] text-fg whitespace-pre-line">{copy.heroTitle}</h1>
-          <p className="text-fg-muted text-sm sm:text-base mt-4 max-w-lg">{copy.heroSubtitle}</p>
+          <span className="inline-block text-[11px] font-bold tracking-[0.14em] uppercase mb-3" style={{ color: "#ffffff" }}>{copy.heroEyebrow}</span>
+          <h1 className="text-3xl sm:text-4xl font-black leading-[1.1] text-white whitespace-pre-line">{copy.heroTitle}</h1>
+          <p className="text-white/90 text-sm sm:text-base mt-4 max-w-lg">{copy.heroSubtitle}</p>
         </div>
       </div>
 

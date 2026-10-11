@@ -235,25 +235,25 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
           {/* ── Left: promo panel ── */}
           <div
             className="relative overflow-hidden px-8 sm:px-12 py-10 flex flex-col justify-center"
-            style={{ background: "linear-gradient(160deg,#101828 0%,#182230 55%,#0c111d 100%)" }}
+            style={{ background: "#C8102E" }}
           >
             <div className="absolute -right-24 -bottom-24 w-[340px] h-[340px] rounded-full" style={{ border: "1px solid rgba(255,153,0,0.22)" }} />
             <div className="absolute -right-10 -top-28 w-[260px] h-[260px] rounded-full" style={{ border: "1px solid rgba(255,153,0,0.15)" }} />
 
             <div className="relative z-10 max-w-[420px]">
-              <p className="text-[#FF6B81] text-[12px] font-semibold tracking-[2.5px] uppercase mb-4">Sign in</p>
+              <p className="text-white text-[12px] font-semibold tracking-[2.5px] uppercase mb-4">Sign in</p>
               <h1 className="text-white text-[32px] sm:text-[38px] leading-[1.15] font-bold mb-5">
-                Welcome back to the tools that keep <span className="text-[#FF6B81]">VINK running</span>
+                Welcome back to the tools that keep <span className="text-white underline decoration-white/50 underline-offset-[6px]">VINK running</span>
               </h1>
-              <p className="text-[#d0d5dd] text-[15px] leading-[1.7] mb-8">
+              <p className="text-white/90 text-[15px] leading-[1.7] mb-8">
                 Customers get their VINK payments and banking dashboard.
                 Staff get the Management Panel and every section their role covers.
               </p>
               <div className="flex gap-8 flex-wrap">
                 {STATS.map((s) => (
-                  <div key={s.label} className="pl-3.5" style={{ borderLeft: "2px solid #FF6B81" }}>
+                  <div key={s.label} className="pl-3.5" style={{ borderLeft: "2px solid #ffffff" }}>
                     <strong className="block text-white text-[20px] font-bold">{s.value}</strong>
-                    <span className="text-[#D0D5DD] text-[11.5px]">{s.label}</span>
+                    <span className="text-white/90 text-[11.5px]">{s.label}</span>
                   </div>
                 ))}
               </div>
@@ -358,15 +358,15 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
         {/* ── Footer ── */}
         <div
           className="flex-shrink-0 px-6 py-3 flex flex-col sm:flex-row items-center justify-between gap-2"
-          style={{ background: BRAND.navy, borderTop: "1px solid rgba(255,255,255,0.08)" }}
+          style={{ background: "#C8102E", borderTop: "1px solid rgba(255,255,255,0.25)" }}
         >
-          <p className="text-white/40 text-[11px] text-center sm:text-left">
+          <p className="text-white/90 text-[11px] text-center sm:text-left">
             © Vink Group. Registered financial services provider.
           </p>
-          <div className="flex items-center gap-4 text-white/40 text-[11px]">
-            <button className="hover:text-white/70 transition-colors">Terms of use</button>
-            <button className="hover:text-white/70 transition-colors">Privacy statement</button>
-            <button className="hover:text-white/70 transition-colors">Security centre</button>
+          <div className="flex items-center gap-4 text-white/90 text-[11px]">
+            <button className="hover:text-white hover:underline transition-colors">Terms of use</button>
+            <button className="hover:text-white hover:underline transition-colors">Privacy statement</button>
+            <button className="hover:text-white hover:underline transition-colors">Security centre</button>
           </div>
         </div>
       </div>

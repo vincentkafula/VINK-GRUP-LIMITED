@@ -270,7 +270,7 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
         tag="VINK Personal Banking · FICA · POCA Compliant"
         title="New Credit Card Application"
         subtitle="Choose your card, verify your identity, and get approved in minutes."
-        gradient="linear-gradient(135deg,#101828 0%,#8F1027 50%,#A50F27 100%)"
+        gradient="#C8102E"
       />
 
       {/* ── Step content ── */}

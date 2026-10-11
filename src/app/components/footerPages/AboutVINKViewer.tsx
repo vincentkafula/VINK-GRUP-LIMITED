@@ -85,7 +85,7 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
       </div>
 
       {/* Hero */}
-      <header className="relative overflow-hidden px-6 py-14 text-white md:py-20" style={{ background: `linear-gradient(135deg,#101828 0%,${P} 55%,#8F1027 100%)` }}>
+      <header className="relative overflow-hidden px-6 py-14 text-white md:py-20" style={{ background: "#C8102E" }}>
         <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-24 size-96 rounded-full opacity-20" style={{ background: `radial-gradient(circle,#FFFFFF 0%,transparent 70%)` }} />
         <div className="relative mx-auto max-w-6xl">
           <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/25 px-3 py-1 text-xs font-semibold uppercase tracking-widest" style={{ color: "#FFFFFF" }}>

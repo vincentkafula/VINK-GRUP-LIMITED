@@ -116,7 +116,7 @@ export function BusinessLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
       </div>
 
       {/* ── Hero carousel ── */}
-      <div className="relative overflow-hidden" style={{ background: `linear-gradient(120deg, #101828 0%, ${VIOLET} 58%, #A50F27 100%)` }}>
+      <div className="relative overflow-hidden" style={{ background: "#C8102E" }}>
         <img loading="lazy" decoding="async" src={siteHeroBg} alt="" className="absolute inset-0 w-full h-full object-cover opacity-[0.14] mix-blend-luminosity" />
         <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: "radial-gradient(rgba(255,255,255,0.9) 1px, transparent 1px)", backgroundSize: "22px 22px" }} />
 

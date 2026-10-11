@@ -128,6 +128,9 @@ export function Header({ onHome, onDashboardSelect, onSubNavClick, onOpenProfile
     { id: "theme", label: `Theme: ${theme.choice === "light" ? "switch to dark" : theme.choice === "dark" ? "match my device" : "switch to light"}`, group: "Actions", keywords: ["dark", "light", "appearance"], run: theme.cycle },
   ], [isLoggedIn, theme.choice]);      // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Transparent over the top of the page, i.e. sitting on the hero, which is brand red: the Login button must not also be red there.
+  const overHero = atTop && !activeNav && !mobileOpen;
+
   return (
     <>
       <GetHelpModal isOpen={isHelpModalOpen} onClose={() => setIsHelpModalOpen(false)} />
@@ -140,7 +143,7 @@ export function Header({ onHome, onDashboardSelect, onSubNavClick, onOpenProfile
 
       <a href="#main" className="skip-link">Skip to content</a>
 
-      <header ref={headerRef} className={"sticky top-0 z-40 border-b transition-colors duration-200 " + (atTop && !activeNav && !mobileOpen ? "dark border-transparent bg-transparent text-fg" : "border-line bg-surface/90 backdrop-blur-md")}>
+      <header ref={headerRef} className={"sticky top-0 z-40 border-b transition-colors duration-200 " + (overHero ? "dark border-transparent bg-transparent text-fg" : "border-line bg-surface/90 backdrop-blur-md")}>
         <LaunchNotice />
 
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -176,7 +179,7 @@ export function Header({ onHome, onDashboardSelect, onSubNavClick, onOpenProfile
                   </button>
                 </>
               ) : (
-                <Button onClick={() => setIsLoginModalOpen(true)} size="md" className="px-4"><LogIn aria-hidden="true" />Login</Button>
+                <Button onClick={() => setIsLoginModalOpen(true)} variant={overHero ? "onBrand" : "primary"} size="md" className="px-4"><LogIn aria-hidden="true" />Login</Button>
               )}
 
               <button type="button" onClick={() => setMobileOpen(true)} aria-label="Open menu" aria-expanded={mobileOpen} aria-controls="mobile-menu"

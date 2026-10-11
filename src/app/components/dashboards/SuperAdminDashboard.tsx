@@ -59,7 +59,7 @@ export function SuperAdminDashboard({ isOpen, onClose }: { isOpen: boolean; onCl
   return (
     <DashboardShell
       title="Super Administrator" subtitle="Admin — Full System Control"
-      accentColor="#DC2626" gradient="from-red-700 to-rose-600"
+      accentColor="#C8102E" gradient="from-red-700 to-rose-600"
       navItems={NAV} activeNav={nav} onNavChange={setNav}
       onClose={onClose} liveConnected userName="superadmin" alertCount={6}
     >

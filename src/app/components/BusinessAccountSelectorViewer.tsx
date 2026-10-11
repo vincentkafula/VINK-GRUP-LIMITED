@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 import { Footer } from "./Footer";
-import { BRAND } from "../brand";
 
 type NavItem = "Start My Business" | "Accounts" | "Credit Cards" | "Loans" | "Invest" | "Manage My Business";
 
@@ -209,13 +208,13 @@ export function BusinessAccountSelectorViewer({ isOpen, onClose, onNavigate, onA
         </div>
       </nav>
 
-      <div className="relative overflow-hidden" style={{ background: "linear-gradient(160deg,color-mix(in srgb, #FAFCFB var(--vk-wash), var(--vk-surface)) 0%,color-mix(in srgb, #F3F9F5 var(--vk-wash), var(--vk-surface)) 100%)" }}>
+      <div className="relative overflow-hidden" style={{ background: "#C8102E" }}>
         <div className="absolute -left-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: "linear-gradient(180deg,#A50F27,#C8102E)", filter: "blur(60px)" }} />
         <div className="absolute -right-24 top-0 bottom-0 w-64 rounded-full opacity-40" style={{ background: "linear-gradient(180deg,#C8102E,#A50F27)", filter: "blur(60px)" }} />
         <div className="relative max-w-6xl mx-auto px-8 py-14 sm:py-16">
-          <span className="inline-block text-[11px] font-bold tracking-[0.14em] uppercase mb-3" style={{ color: BRAND.crimson }}>Business Banking</span>
-          <h1 className="text-3xl sm:text-4xl font-black leading-[1.1] text-fg">Banking designed for<br />every South African business.</h1>
-          <p className="text-fg-muted text-sm sm:text-base mt-4 max-w-lg">Open a business account in minutes and manage your finances with the VINK app.</p>
+          <span className="inline-block text-[11px] font-bold tracking-[0.14em] uppercase mb-3" style={{ color: "#ffffff" }}>Business Banking</span>
+          <h1 className="text-3xl sm:text-4xl font-black leading-[1.1] text-white">Banking designed for<br />every South African business.</h1>
+          <p className="text-white/90 text-sm sm:text-base mt-4 max-w-lg">Open a business account in minutes and manage your finances with the VINK app.</p>
         </div>
       </div>
 

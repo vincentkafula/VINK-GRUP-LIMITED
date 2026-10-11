@@ -232,7 +232,7 @@ export function AppLauncher({ isOpen, onClose, onLaunchApp }: Props) {
       </div>
 
       {/* Hero banner */}
-      <div className="px-5 py-6" style={{ background: "linear-gradient(135deg,#101828 0%,#8F1027 50%,#C8102E 100%)" }}>
+      <div className="px-5 py-6" style={{ background: "#C8102E" }}>
         <div className="max-w-lg mx-auto">
           <div className="flex items-center gap-2 mb-3">
             <Smartphone className="w-4 h-4 text-yellow-400" />

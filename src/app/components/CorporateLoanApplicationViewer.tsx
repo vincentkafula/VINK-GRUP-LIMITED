@@ -137,7 +137,7 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
         tag="VINK Corporate Banking · Blended Finance Programme"
         title="Corporate Loan — Online Application"
         subtitle="Institutional-grade financing for growth, infrastructure, and working capital."
-        gradient={`linear-gradient(135deg,#0F172A 0%,${CP} 55%,#A50F27 100%)`}
+        gradient="#C8102E"
       />
 
       <div className="max-w-2xl mx-auto w-full px-5 py-8 space-y-5">

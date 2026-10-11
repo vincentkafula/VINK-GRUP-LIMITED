@@ -72,25 +72,25 @@ export function ExchangeRatesViewer({ isOpen, onClose }: Props) {
       </div>
 
       {/* ── Hero ───────────────────────────────────────────────────────────── */}
-      <header className="relative overflow-hidden shrink-0 text-white" style={{ background: "radial-gradient(900px 420px at 85% -10%, rgba(200,16,46,0.22), transparent 60%), radial-gradient(800px 500px at 0% 100%, rgba(200,16,46,0.55), transparent 62%), linear-gradient(135deg,#0B0F1A 0%,#101828 55%,#3c1528 100%)" }}>
+      <header className="relative overflow-hidden shrink-0 text-white" style={{ background: "#C8102E" }}>
         <Grain opacity={0.09} />
         {/* concentric arcs and oversized currency glyphs: decoration only */}
         <svg aria-hidden="true" className="absolute -right-24 -top-24 w-[560px] h-[560px] pointer-events-none" viewBox="0 0 560 560" fill="none">
-          {[120, 180, 240, 300].map((r, i) => <circle key={r} cx="280" cy="280" r={r} stroke={GOLD} strokeOpacity={0.22 - i * 0.04} strokeWidth="1" strokeDasharray={i % 2 ? "2 7" : undefined} />)}
+          {[120, 180, 240, 300].map((r, i) => <circle key={r} cx="280" cy="280" r={r} stroke="#FFFFFF" strokeOpacity={0.22 - i * 0.04} strokeWidth="1" strokeDasharray={i % 2 ? "2 7" : undefined} />)}
         </svg>
         {[["R", "left-[4%] top-[14%] text-[9rem] -rotate-6"], ["$", "left-[44%] top-[2%] text-[7rem] rotate-6"], ["¥", "right-[10%] bottom-[18%] text-[8rem] -rotate-3"], ["€", "left-[28%] bottom-[2%] text-[6rem] rotate-3"]].map(([g, pos]) => (
-          <span key={g} aria-hidden="true" className={`absolute select-none pointer-events-none leading-none ${pos}`} style={{ fontFamily: "var(--font-display)", fontWeight: 700, color: GOLD, opacity: 0.07 }}>{g}</span>))}
-        <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-px" style={{ background: `linear-gradient(90deg,transparent,${GOLD},transparent)`, opacity: 0.7 }} />
+          <span key={g} aria-hidden="true" className={`absolute select-none pointer-events-none leading-none ${pos}`} style={{ fontFamily: "var(--font-display)", fontWeight: 700, color: "#FFFFFF", opacity: 0.10 }}>{g}</span>))}
+        <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-px" style={{ background: `linear-gradient(90deg,transparent,#FFFFFF,transparent)`, opacity: 0.7 }} />
 
         <div className="relative max-w-4xl mx-auto px-6 pt-16 pb-12 sm:pt-20">
           <div className="flex items-center gap-3 mb-5">
-            <span className="text-xs sm:text-[13px] font-bold uppercase tracking-[0.24em]" style={{ color: GOLD }}>Cross-Border</span>
-            <span aria-hidden="true" className="h-px w-14 sm:w-20" style={{ background: `linear-gradient(90deg,${GOLD},transparent)` }} />
+            <span className="text-xs sm:text-[13px] font-bold uppercase tracking-[0.24em]" style={{ color: "#FFFFFF" }}>Cross-Border</span>
+            <span aria-hidden="true" className="h-px w-14 sm:w-20" style={{ background: `linear-gradient(90deg,#FFFFFF,transparent)` }} />
           </div>
           <h1 className="text-[2.75rem] sm:text-6xl leading-[1.02] tracking-[-0.02em] mb-5" style={{ fontFamily: "var(--font-display)", fontWeight: 650 }}>
-            Exchange <span style={{ backgroundImage: "linear-gradient(180deg,#FFC2CB 0%,#FF6B81 55%,#E5384F 100%)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>Rates</span>
+            Exchange <span style={{ color: "#FFFFFF", textDecoration: "underline", textDecorationThickness: "3px", textUnderlineOffset: "8px", textDecorationColor: "rgba(255,255,255,0.45)" }}>Rates</span>
           </h1>
-          <p className="text-white/80 text-lg sm:text-xl max-w-2xl leading-[1.6]">
+          <p className="text-white/90 text-lg sm:text-xl max-w-2xl leading-[1.6]">
             Live market rates for the currencies our customers move between: the rand, the US dollar, the Zambian kwacha, the Chinese yuan and the rest of the region.
           </p>
 
@@ -144,8 +144,8 @@ export function ExchangeRatesViewer({ isOpen, onClose }: Props) {
                     <select aria-label="From currency" value={from} onChange={(e) => setFrom(e.target.value)} className={fieldCls + " mt-2"} style={fieldStyle}>{options}</select></label>
                   <button type="button" onClick={() => { setFrom(to); setTo(from); setTurns((t) => t + 1); }} aria-label="Swap the two currencies"
                     className="mx-auto w-12 h-12 rounded-full inline-flex items-center justify-center transition-transform duration-500 hover:scale-105 motion-reduce:transition-none"
-                    style={{ background: "linear-gradient(145deg,#F2D58A,#B88A20)", boxShadow: "0 10px 22px -8px rgba(200,16,46,0.7), inset 0 1px 0 rgba(255,255,255,0.5)", transform: `rotate(${turns * 180}deg)` }}>
-                    <ArrowLeftRight className="w-5 h-5 text-[#14161d]" aria-hidden="true" />
+                    style={{ background: "#C8102E", boxShadow: "0 10px 22px -8px rgba(200,16,46,0.7), inset 0 1px 0 rgba(255,255,255,0.5)", transform: `rotate(${turns * 180}deg)` }}>
+                    <ArrowLeftRight className="w-5 h-5 text-white" aria-hidden="true" />
                   </button>
                   <label className="block"><span className={label} style={{ color: GOLD_SOFT }}>To</span>
                     <select aria-label="To currency" value={to} onChange={(e) => setTo(e.target.value)} className={fieldCls + " mt-2"} style={fieldStyle}>{options}</select></label>

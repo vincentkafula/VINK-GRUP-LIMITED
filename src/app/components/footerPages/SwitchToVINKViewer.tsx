@@ -38,7 +38,7 @@ export function SwitchToVINKViewer({ isOpen, onClose }: Props) {
       </div>
 
       {/* Hero */}
-      <div className="py-20 px-6 text-white" style={{ background: `linear-gradient(135deg,${P},#A50F27)` }}>
+      <div className="py-20 px-6 text-white" style={{ background: "#C8102E" }}>
         <div className="max-w-4xl mx-auto">
           <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4"
             style={{ background: "rgba(255,255,255,.16)", color: "#ffffff" }}>Switch in 7–10 days</span>
