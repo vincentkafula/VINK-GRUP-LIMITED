@@ -28,7 +28,7 @@ export const BusinessPowerSection = memo(function BusinessPowerSection({ onSubNa
               <span aria-hidden="true" className="h-px w-12 sm:w-16" style={{ background: `linear-gradient(90deg,${GOLD},transparent)` }} />
             </div>
 
-            <h2 className="text-[2.5rem] sm:text-5xl xl:text-[3.5rem] leading-[1.05] text-white mb-7 tracking-[-0.015em]" style={{ fontFamily: "'Fraunces', serif", fontWeight: 600 }}>
+            <h2 className="text-[2.5rem] sm:text-5xl xl:text-[3.5rem] leading-[1.05] text-white mb-7 tracking-[-0.015em]" style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}>
               Cross-border payments{" "}
               <span style={{ backgroundImage: "linear-gradient(180deg,#F6E3A6 0%,#E0C068 45%,#B88A20 100%)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>shouldn&apos;t cost a fortune.</span>
             </h2>
@@ -42,7 +42,7 @@ export const BusinessPowerSection = memo(function BusinessPowerSection({ onSubNa
               <p className="text-white/75 text-base sm:text-[17px] leading-relaxed mb-3 text-center lg:text-left">
                 Once you qualify for a VINK card, every transaction — even cross-border transfers — is charged at local rates.
               </p>
-              <p className="text-white text-[1.65rem] sm:text-[2rem] leading-[1.25] text-center lg:text-left" style={{ fontFamily: "'Fraunces', serif", fontWeight: 500, letterSpacing: "-0.005em" }}>
+              <p className="text-white text-[1.65rem] sm:text-[2rem] leading-[1.25] text-center lg:text-left" style={{ fontFamily: "var(--font-display)", fontWeight: 500, letterSpacing: "-0.005em" }}>
                 No international fees. No hidden markups.{" "}
                 <span style={{ color: GOLD }}>Just local pricing</span>, wherever you send or spend.
               </p>
@@ -84,7 +84,7 @@ export const BusinessPowerSection = memo(function BusinessPowerSection({ onSubNa
                 style={{ background: "linear-gradient(160deg,rgba(255,255,255,.09),rgba(255,255,255,.03))", border: "1px solid rgba(224,192,104,.22)", boxShadow: "0 18px 36px -18px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.10)" }}>
                 <PremiumIcon icon={s.icon} accent="#D4AF5A" dark="#1A0D10" size={64} />
                 <div>
-                  <p className="text-3xl leading-none mb-2 text-white" style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 700 }}>{s.value}</p>
+                  <p className="text-3xl leading-none mb-2 text-white" style={{ fontFamily: "var(--font-mono)", fontWeight: 700 }}>{s.value}</p>
                   <p className="text-base font-semibold leading-tight" style={{ color: "#EBD592" }}>{s.label}</p>
                   <p className="text-sm text-white/70 mt-1.5 leading-snug">{s.sub}</p>
                 </div>

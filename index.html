@@ -31,6 +31,10 @@
     <meta name="twitter:description" content="A transport-native digital bank." />
     <meta name="twitter:image" content="/og-image.png" />
 
+    <!-- Inter (self-hosted variable font). Preload the main Latin face so text renders in Inter on first paint.
+         crossorigin is required for font preloads even when same-origin, or the browser fetches the file twice. -->
+    <link rel="preload" href="/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+
     <title>VINK</title>
 
     <!-- Favicons — plain ICO/PNG only. An SVG wrapping an embedded raster

@@ -126,7 +126,7 @@ export function HeroSection({ onApplyClick }: { onApplyClick?: () => void }) {
           >
             {/* Headline */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl leading-[1.05] mb-5"
-              style={{ fontFamily: "'Fraunces', serif", fontWeight: 600, letterSpacing: "-0.01em" }}>
+              style={{ fontFamily: "var(--font-display)", fontWeight: 600, letterSpacing: "-0.01em" }}>
               {slide.headline}
             </h1>
 
@@ -151,7 +151,7 @@ export function HeroSection({ onApplyClick }: { onApplyClick?: () => void }) {
             <div className="flex justify-center md:justify-start gap-8">
               {slide.trust.map((t, i) => (
                 <div key={i} className="text-center md:text-left">
-                  <p className="text-xl" style={{ color: "#e0c068", fontFamily: "'JetBrains Mono', monospace", fontWeight: 700 }}>{t.value}</p>
+                  <p className="text-xl" style={{ color: "#e0c068", fontFamily: "var(--font-mono)", fontWeight: 700 }}>{t.value}</p>
                   <p className="text-white/75 text-xs font-medium mt-0.5">{t.label}</p>
                 </div>
               ))}

@@ -218,7 +218,7 @@ export function OwnerFleetDashboardViewer({ isOpen, onClose }: Props) {
                   <tbody>
                     {vehicles.map(v => (
                       <tr key={v.reg} className="border-b border-gray-50 last:border-0 hover:bg-surface-2/50">
-                        <td className="px-5 py-3 font-bold text-fg" style={{ fontFamily: "'JetBrains Mono',monospace" }}>{v.reg}</td>
+                        <td className="px-5 py-3 font-bold text-fg" style={{ fontFamily: "var(--font-mono)" }}>{v.reg}</td>
                         <td className="px-5 py-3 text-fg">{v.model}</td>
                         <td className="px-5 py-3 text-fg-muted">{v.year}</td>
                         <td className="px-5 py-3"><span className="px-2 py-1 rounded-full text-[11px] font-bold" style={{ background: STATUS_COLOR[v.status] + "1A", color: STATUS_COLOR[v.status] }}>{v.status}</span></td>

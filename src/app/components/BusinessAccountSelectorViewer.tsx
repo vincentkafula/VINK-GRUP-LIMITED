@@ -132,7 +132,7 @@ export function BusinessAccountSelectorViewer({ isOpen, onClose, onNavigate, onA
           padding:0 32px; max-width:1160px; margin:0 auto; height:46px;
         }
         .pav-subnav-item{
-          font-family:var(--font-mono), monospace; font-size:12.5px; white-space:nowrap;
+          font-family:var(--font-mono); font-size:12.5px; white-space:nowrap;
           padding:8px 16px; border-radius:2px; text-decoration:none; cursor:pointer;
           color:var(--pav-text-muted-on-ink); background:transparent; border:none;
           transition:color 0.15s ease, background 0.15s ease;
@@ -141,8 +141,8 @@ export function BusinessAccountSelectorViewer({ isOpen, onClose, onNavigate, onA
         .pav-subnav-item.active{ color:var(--pav-gold); background:rgba(198,161,91,0.12); font-weight:600; }
 
         .pav-ledger-head{ padding:32px 0 22px; }
-        .pav-ledger-head h2{ font-family:'Fraunces', serif; font-weight:500; font-size:22px; margin:0; }
-        .pav-ledger-head p{ font-family:var(--font-mono), monospace; font-size:12px; color:var(--pav-text-muted); margin:6px 0 0; }
+        .pav-ledger-head h2{ font-family:var(--font-display); font-weight:500; font-size:22px; margin:0; }
+        .pav-ledger-head p{ font-family:var(--font-mono); font-size:12px; color:var(--pav-text-muted); margin:6px 0 0; }
 
         .pav-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:24px; margin-bottom:24px; }
         .pav-card{
@@ -151,8 +151,8 @@ export function BusinessAccountSelectorViewer({ isOpen, onClose, onNavigate, onA
           transition:box-shadow 0.2s ease, transform 0.2s ease;
         }
         .pav-card:hover{ box-shadow:0 12px 32px rgba(29,23,64,0.1); transform:translateY(-2px); }
-        .pav-folio{ font-family:var(--font-mono), monospace; font-size:11px; color:var(--pav-gold-dim); letter-spacing:0.04em; margin-bottom:14px; }
-        .pav-acct-name{ font-family:'Fraunces', serif; font-weight:500; font-size:20px; margin:0 0 10px; letter-spacing:-0.01em; }
+        .pav-folio{ font-family:var(--font-mono); font-size:11px; color:var(--pav-gold-dim); letter-spacing:0.04em; margin-bottom:14px; }
+        .pav-acct-name{ font-family:var(--font-display); font-weight:500; font-size:20px; margin:0 0 10px; letter-spacing:-0.01em; }
         .pav-acct-desc{ font-size:13.5px; color:var(--pav-text-muted); line-height:1.6; margin:0 0 22px; flex:1; }
         .pav-btn{
           display:inline-block; font-family:var(--font-sans), sans-serif; font-size:13.5px; font-weight:600;
@@ -165,7 +165,7 @@ export function BusinessAccountSelectorViewer({ isOpen, onClose, onNavigate, onA
         .pav-btn-secondary{ background:transparent; color:var(--vk-crimson-text); border-color:var(--pav-rule); }
         .pav-btn-secondary:hover{ background:var(--pav-paper-dim); border-color:var(--pav-gold-dim); }
 
-        .pav-foot{ background:var(--pav-ink); color:var(--pav-text-muted-on-ink); padding:34px 0; font-size:12px; line-height:1.7; font-family:var(--font-mono), monospace; }
+        .pav-foot{ background:var(--pav-ink); color:var(--pav-text-muted-on-ink); padding:34px 0; font-size:12px; line-height:1.7; font-family:var(--font-mono); }
         .pav-foot .pav-wrap{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
         .pav-foot strong{ color:var(--pav-gold); font-weight:600; }
 
@@ -174,9 +174,9 @@ export function BusinessAccountSelectorViewer({ isOpen, onClose, onNavigate, onA
         .pav-detail-card{ position:relative; background:var(--vk-surface); max-width:540px; width:100%; max-height:88vh; overflow-y:auto; border-radius:4px; padding:40px 36px 32px; box-shadow:0 30px 80px rgba(29,23,64,0.35); }
         .pav-detail-close{ position:absolute; top:16px; right:16px; width:32px; height:32px; border-radius:50%; background:var(--pav-paper); color:var(--vk-crimson-text); border:1px solid var(--pav-rule); display:flex; align-items:center; justify-content:center; cursor:pointer; }
         .pav-detail-close:hover{ background:var(--pav-paper-dim); }
-        .pav-detail-folio{ font-family:var(--font-mono), monospace; font-size:11px; color:var(--pav-gold-dim); letter-spacing:0.04em; margin-bottom:10px; }
-        .pav-detail-name{ font-family:'Fraunces', serif; font-weight:500; font-size:26px; margin:0 0 8px; letter-spacing:-0.01em; }
-        .pav-detail-tagline{ font-family:'Fraunces', serif; font-style:italic; font-size:15px; color:var(--pav-plum); margin:0 0 20px; }
+        .pav-detail-folio{ font-family:var(--font-mono); font-size:11px; color:var(--pav-gold-dim); letter-spacing:0.04em; margin-bottom:10px; }
+        .pav-detail-name{ font-family:var(--font-display); font-weight:500; font-size:26px; margin:0 0 8px; letter-spacing:-0.01em; }
+        .pav-detail-tagline{ font-family:var(--font-display); font-style:italic; font-size:15px; color:var(--pav-plum); margin:0 0 20px; }
         .pav-detail-desc{ font-size:13.5px; line-height:1.7; color:var(--pav-ink-soft); margin:0 0 26px; padding-bottom:26px; border-bottom:1px solid var(--pav-rule); }
         .pav-detail-features-head{ font-size:13px; font-weight:600; color:var(--vk-crimson-text); margin-bottom:12px; }
         .pav-detail-features{ list-style:none; margin:0 0 28px; padding:0; display:grid; grid-template-columns:1fr 1fr; gap:8px 16px; }

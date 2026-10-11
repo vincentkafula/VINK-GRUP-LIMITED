@@ -9,7 +9,7 @@
 }
 .mn[data-theme="dark"]{--bg:#080E22;--card:#111A36;--ink:#EAF0FF;--mute:#93A0C0;--line:#222D52;--soft:#182244;--side:#12285F;--dark:#0A1740;--chart:#86A6FF;--warn:#3A2D0E;--warnt:#F5C56B;--warnb:#6B5216}
 .mn *{box-sizing:border-box}
-.mn{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.55 'Plus Jakarta Sans',system-ui,sans-serif;font-variant-numeric:tabular-nums}
+.mn{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.55 var(--font-sans,Inter,system-ui,sans-serif);font-variant-numeric:tabular-nums}
 .mn svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 .mn .bar{background:var(--side);color:#fff;display:flex;align-items:stretch;height:72px;position:sticky;top:0;z-index:5}
 .mn .logo{width:264px;display:flex;align-items:center;padding-left:28px;font-weight:800;font-size:26px;letter-spacing:-1px;flex-shrink:0}
@@ -216,7 +216,7 @@
 }
 .mka[data-theme="dark"]{--bg:#080E22;--card:#111A36;--ink:#EAF0FF;--mute:#93A0C0;--line:#222D52;--side:#0F2458}
 .mka *{box-sizing:border-box}
-.mka{margin:0;background:var(--bg);color:var(--ink);font:400 14px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif}
+.mka{margin:0;background:var(--bg);color:var(--ink);font:400 14px/1.5 var(--font-sans,Inter,system-ui,sans-serif)}
 .mka header{background:var(--side);color:#fff;padding:14px 22px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
 .mka header b{font-size:18px;letter-spacing:-.5px}
 .mka header b i{color:var(--acc);font-style:normal}
@@ -269,7 +269,7 @@
 }
 .mkp[data-theme="dark"]{--bg:#080E22;--card:#111A36;--ink:#EAF0FF;--mute:#93A0C0;--line:#222D52}
 .mkp *{box-sizing:border-box}
-.mkp{margin:0;min-height:100vh;display:grid;place-items:center;padding:16px;background:var(--bg);color:var(--ink);font:400 15px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif}
+.mkp{margin:0;min-height:100vh;display:grid;place-items:center;padding:16px;background:var(--bg);color:var(--ink);font:400 15px/1.5 var(--font-sans,Inter,system-ui,sans-serif)}
 .mkp main{width:min(440px,100%);background:var(--card);border:1px solid var(--line);border-radius:22px;padding:28px}
 .mkp .logo{font-weight:800;font-size:20px;letter-spacing:-.8px}
 .mkp .logo i{color:var(--acc);font-style:normal}
@@ -287,5 +287,5 @@
 .mkp{position:fixed;inset:0;overflow:auto;z-index:70}
 
 /* TEST MODE banner (sandbox only) */
-.testmode{background:#B42318;color:#fff;text-align:center;font:700 12px/1 system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;padding:8px 12px}
+.testmode{background:#B42318;color:#fff;text-align:center;font:700 12px/1 var(--font-sans,Inter,system-ui,sans-serif);letter-spacing:.06em;text-transform:uppercase;padding:8px 12px}
 .mkp .testmode{position:fixed;left:0;right:0;top:0}

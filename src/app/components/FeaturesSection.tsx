@@ -109,7 +109,7 @@ export const FeaturesSection = memo(function FeaturesSection({ onExploreAll }: {
             <div key={s.label} className="group flex items-center gap-3">
               <PremiumIcon icon={s.Icon} accent={s.color} size={48} />
               <div>
-                <p className="text-lg leading-tight" style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, color: s.text }}>{s.value}</p>
+                <p className="text-lg leading-tight" style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: s.text }}>{s.value}</p>
                 <p className="text-xs text-fg-muted leading-snug">{s.label}</p>
               </div>
             </div>

@@ -187,7 +187,7 @@ export function BusinessProductLedgerViewer({ isOpen, onClose, initialCategory, 
           padding:0 32px; max-width:1160px; margin:0 auto; height:46px;
         }
         .pav-subnav-item{
-          font-family:var(--font-mono), monospace; font-size:12.5px; white-space:nowrap;
+          font-family:var(--font-mono); font-size:12.5px; white-space:nowrap;
           padding:8px 16px; border-radius:2px; text-decoration:none; cursor:pointer;
           color:var(--pav-text-muted-on-ink); background:transparent; border:none;
           transition:color 0.15s ease, background 0.15s ease;
@@ -199,8 +199,8 @@ export function BusinessProductLedgerViewer({ isOpen, onClose, initialCategory, 
           display:flex; justify-content:space-between; align-items:flex-end;
           padding:32px 0 22px;
         }
-        .pav-ledger-head h2{ font-family:'Fraunces', serif; font-weight:500; font-size:22px; margin:0; }
-        .pav-scale-note{ font-family:var(--font-mono), monospace; font-size:11.5px; color:var(--pav-text-muted); text-align:right; line-height:1.5; max-width:280px; }
+        .pav-ledger-head h2{ font-family:var(--font-display); font-weight:500; font-size:22px; margin:0; }
+        .pav-scale-note{ font-family:var(--font-mono); font-size:11.5px; color:var(--pav-text-muted); text-align:right; line-height:1.5; max-width:280px; }
 
         .pav-grid{
           display:grid; grid-template-columns:repeat(3, 1fr); gap:24px; margin-bottom:24px;
@@ -212,29 +212,29 @@ export function BusinessProductLedgerViewer({ isOpen, onClose, initialCategory, 
           transition:box-shadow 0.2s ease, transform 0.2s ease;
         }
         .pav-card:hover{ box-shadow:0 12px 32px rgba(29,23,64,0.1); transform:translateY(-2px); }
-        .pav-folio{ font-family:var(--font-mono), monospace; font-size:11px; color:var(--pav-gold-dim); letter-spacing:0.04em; margin-bottom:14px; }
+        .pav-folio{ font-family:var(--font-mono); font-size:11px; color:var(--pav-gold-dim); letter-spacing:0.04em; margin-bottom:14px; }
         .pav-badge{
           position:absolute; top:24px; right:26px;
-          font-family:var(--font-mono), monospace; font-size:10px; font-weight:600;
+          font-family:var(--font-mono); font-size:10px; font-weight:600;
           color:#14161d; background:var(--pav-gold); padding:3px 9px; border-radius:2px;
         }
-        .pav-acct-name{ font-family:'Fraunces', serif; font-weight:500; font-size:21px; margin:0 0 14px; letter-spacing:-0.01em; padding-right:70px; }
+        .pav-acct-name{ font-family:var(--font-display); font-weight:500; font-size:21px; margin:0 0 14px; letter-spacing:-0.01em; padding-right:70px; }
         .pav-features{ list-style:none; margin:0 0 16px; padding:0; display:flex; flex-direction:column; gap:6px; }
         .pav-features li{ font-size:12.3px; color:var(--pav-ink-soft); line-height:1.5; padding-left:15px; position:relative; }
         .pav-features li::before{ content:"—"; position:absolute; left:0; color:var(--pav-gold-dim); }
 
         .pav-gauge-block{ margin-bottom:18px; }
-        .pav-gauge-label{ font-family:var(--font-mono), monospace; font-size:11px; color:var(--pav-text-muted); display:flex; justify-content:space-between; margin-bottom:8px; gap:8px; }
+        .pav-gauge-label{ font-family:var(--font-mono); font-size:11px; color:var(--pav-text-muted); display:flex; justify-content:space-between; margin-bottom:8px; gap:8px; }
         .pav-gauge-label .pav-ceiling-val{ color:var(--vk-crimson-text); font-weight:600; }
         .pav-gauge{ position:relative; height:6px; background:var(--pav-paper-dim); border-radius:3px; overflow:visible; }
         .pav-gauge-fill{ position:absolute; top:0; left:0; height:100%; background:linear-gradient(90deg, var(--pav-plum), var(--pav-gold)); border-radius:3px; }
         .pav-gauge-marker{ position:absolute; top:50%; width:11px; height:11px; border-radius:50%; background:var(--pav-ink); border:2px solid var(--pav-gold); transform:translate(-50%,-50%); }
-        .pav-gauge-ticks{ display:flex; justify-content:space-between; margin-top:7px; font-family:var(--font-mono), monospace; font-size:10px; color:var(--pav-text-muted); }
+        .pav-gauge-ticks{ display:flex; justify-content:space-between; margin-top:7px; font-family:var(--font-mono); font-size:10px; color:var(--pav-text-muted); }
 
         .pav-price-block{ margin-top:auto; margin-bottom:16px; }
-        .pav-price{ font-family:var(--font-mono), monospace; font-weight:600; font-size:28px; color:var(--vk-crimson-text); line-height:1; }
+        .pav-price{ font-family:var(--font-mono); font-weight:600; font-size:28px; color:var(--vk-crimson-text); line-height:1; }
         .pav-price .pav-cur{ font-size:16px; vertical-align:top; margin-right:1px; }
-        .pav-price-sub{ font-size:11px; color:var(--pav-text-muted); margin:6px 0 0; font-family:var(--font-mono), monospace; letter-spacing:0.02em; }
+        .pav-price-sub{ font-size:11px; color:var(--pav-text-muted); margin:6px 0 0; font-family:var(--font-mono); letter-spacing:0.02em; }
         .pav-cta-group{ display:flex; flex-direction:row; gap:9px; }
         .pav-btn{
           display:inline-block; font-family:var(--font-sans), sans-serif; font-size:13.5px; font-weight:600;
@@ -252,9 +252,9 @@ export function BusinessProductLedgerViewer({ isOpen, onClose, initialCategory, 
         .pav-detail-card{ position:relative; background:var(--vk-surface); max-width:540px; width:100%; max-height:88vh; overflow-y:auto; border-radius:4px; padding:40px 36px 32px; box-shadow:0 30px 80px rgba(29,23,64,0.35); }
         .pav-detail-close{ position:absolute; top:16px; right:16px; width:32px; height:32px; border-radius:50%; background:var(--pav-paper); color:var(--vk-crimson-text); border:1px solid var(--pav-rule); display:flex; align-items:center; justify-content:center; cursor:pointer; }
         .pav-detail-close:hover{ background:var(--pav-paper-dim); }
-        .pav-detail-folio{ font-family:var(--font-mono), monospace; font-size:11px; color:var(--pav-gold-dim); letter-spacing:0.04em; margin-bottom:10px; }
-        .pav-detail-name{ font-family:'Fraunces', serif; font-weight:500; font-size:26px; margin:0 0 8px; letter-spacing:-0.01em; color:var(--vk-crimson-text); }
-        .pav-detail-tagline{ font-family:'Fraunces', serif; font-style:italic; font-size:15px; color:var(--pav-plum); margin:0 0 20px; }
+        .pav-detail-folio{ font-family:var(--font-mono); font-size:11px; color:var(--pav-gold-dim); letter-spacing:0.04em; margin-bottom:10px; }
+        .pav-detail-name{ font-family:var(--font-display); font-weight:500; font-size:26px; margin:0 0 8px; letter-spacing:-0.01em; color:var(--vk-crimson-text); }
+        .pav-detail-tagline{ font-family:var(--font-display); font-style:italic; font-size:15px; color:var(--pav-plum); margin:0 0 20px; }
         .pav-detail-desc{ font-size:13.5px; line-height:1.7; color:var(--pav-ink-soft); margin:0 0 26px; padding-bottom:26px; border-bottom:1px solid var(--pav-rule); }
         .pav-detail-features-head{ font-size:13px; font-weight:600; color:var(--vk-crimson-text); margin-bottom:12px; }
         .pav-detail-features{ list-style:none; margin:0 0 28px; padding:0; display:grid; grid-template-columns:1fr 1fr; gap:8px 16px; }
@@ -262,7 +262,7 @@ export function BusinessProductLedgerViewer({ isOpen, onClose, initialCategory, 
         .pav-detail-features li::before{ content:"✓"; position:absolute; left:0; color:var(--pav-gold-dim); font-weight:600; }
         @media (max-width:480px){ .pav-detail-features{ grid-template-columns:1fr; } }
 
-        .pav-foot{ background:var(--pav-ink); color:var(--pav-text-muted-on-ink); padding:34px 0; font-size:12px; line-height:1.7; font-family:var(--font-mono), monospace; }
+        .pav-foot{ background:var(--pav-ink); color:var(--pav-text-muted-on-ink); padding:34px 0; font-size:12px; line-height:1.7; font-family:var(--font-mono); }
         .pav-foot .pav-wrap{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
         .pav-foot strong{ color:var(--pav-gold); font-weight:600; }
 

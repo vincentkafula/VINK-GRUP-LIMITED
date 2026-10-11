@@ -79,7 +79,7 @@ export function BusinessLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
   const prev = () => setSlide(i => (i - 1 + SLIDES.length) % SLIDES.length);
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-surface" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-surface" style={{ fontFamily: "var(--font-sans)" }}>
       {/* ── Sub-nav (the site header above has the logo and the way home) ── */}
       <div className="sticky top-0 z-30 bg-surface/95 backdrop-blur border-b border-line">
         {/* Sub-nav */}
@@ -103,7 +103,7 @@ export function BusinessLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
       <div className="border-b border-line">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7 sm:py-8 flex flex-col sm:flex-row items-center justify-between gap-5">
           <div>
-            <p className="text-lg sm:text-[21px] font-semibold tracking-tight" style={{ color: "var(--vk-fg)", fontFamily: "'Fraunces', serif" }}>
+            <p className="text-lg sm:text-[21px] font-semibold tracking-tight" style={{ color: "var(--vk-fg)", fontFamily: "var(--font-display)" }}>
               Let's find the business account that fits.
             </p>
             <p className="text-[13px] text-fg-muted mt-1.5">Taxi associations, fleets, fuel stations, retailers — built around how you work.</p>
@@ -133,7 +133,7 @@ export function BusinessLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
             <span className="inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.14em] uppercase mb-4" style={{ color: "#F0E4C4" }}>
               <span className="w-5 h-px" style={{ background: GOLD }} /> {s.eyebrow}
             </span>
-            <h2 className="text-white text-[32px] sm:text-[42px] font-medium leading-[1.08] whitespace-pre-line" style={{ fontFamily: "'Fraunces', serif" }}>
+            <h2 className="text-white text-[32px] sm:text-[42px] font-medium leading-[1.08] whitespace-pre-line" style={{ fontFamily: "var(--font-display)" }}>
               {s.heading}
             </h2>
             <p className="text-white/70 text-[15px] leading-relaxed mt-5 max-w-sm">{s.body}</p>
@@ -165,7 +165,7 @@ export function BusinessLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
           <span className="inline-block text-[11px] font-semibold tracking-[0.16em] uppercase mb-3" style={{ color: GOLD }}>
             Why choose VINK Business
           </span>
-          <h2 className="text-[26px] sm:text-[32px] font-medium tracking-tight" style={{ color: "var(--vk-fg)", fontFamily: "'Fraunces', serif" }}>
+          <h2 className="text-[26px] sm:text-[32px] font-medium tracking-tight" style={{ color: "var(--vk-fg)", fontFamily: "var(--font-display)" }}>
             Built for How Your Business Moves
           </h2>
           <p className="text-fg-muted text-sm mt-3 max-w-md mx-auto">From single taxi operators to multi-branch fleets, everything scales with you.</p>
@@ -201,7 +201,7 @@ export function BusinessLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
               <ShieldCheck className="w-5 h-5" style={{ color: GOLD }} />
             </span>
             <div>
-              <p className="text-white font-semibold text-[15px]" style={{ fontFamily: "'Fraunces', serif" }}>Your business is protected too</p>
+              <p className="text-white font-semibold text-[15px]" style={{ fontFamily: "var(--font-display)" }}>Your business is protected too</p>
               <p className="text-white/70 text-[13px] mt-1 max-w-sm">The same industry-leading security protecting personal accounts covers every business card and transfer.</p>
             </div>
           </div>

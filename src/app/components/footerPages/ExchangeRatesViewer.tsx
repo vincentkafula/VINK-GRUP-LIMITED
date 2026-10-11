@@ -79,7 +79,7 @@ export function ExchangeRatesViewer({ isOpen, onClose }: Props) {
           {[120, 180, 240, 300].map((r, i) => <circle key={r} cx="280" cy="280" r={r} stroke={GOLD} strokeOpacity={0.22 - i * 0.04} strokeWidth="1" strokeDasharray={i % 2 ? "2 7" : undefined} />)}
         </svg>
         {[["R", "left-[4%] top-[14%] text-[9rem] -rotate-6"], ["$", "left-[44%] top-[2%] text-[7rem] rotate-6"], ["¥", "right-[10%] bottom-[18%] text-[8rem] -rotate-3"], ["€", "left-[28%] bottom-[2%] text-[6rem] rotate-3"]].map(([g, pos]) => (
-          <span key={g} aria-hidden="true" className={`absolute select-none pointer-events-none leading-none ${pos}`} style={{ fontFamily: "'Fraunces', serif", fontWeight: 700, color: GOLD, opacity: 0.07 }}>{g}</span>))}
+          <span key={g} aria-hidden="true" className={`absolute select-none pointer-events-none leading-none ${pos}`} style={{ fontFamily: "var(--font-display)", fontWeight: 700, color: GOLD, opacity: 0.07 }}>{g}</span>))}
         <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-px" style={{ background: `linear-gradient(90deg,transparent,${GOLD},transparent)`, opacity: 0.7 }} />
 
         <div className="relative max-w-4xl mx-auto px-6 pt-16 pb-12 sm:pt-20">
@@ -87,7 +87,7 @@ export function ExchangeRatesViewer({ isOpen, onClose }: Props) {
             <span className="text-xs sm:text-[13px] font-bold uppercase tracking-[0.24em]" style={{ color: GOLD }}>Cross-Border</span>
             <span aria-hidden="true" className="h-px w-14 sm:w-20" style={{ background: `linear-gradient(90deg,${GOLD},transparent)` }} />
           </div>
-          <h1 className="text-[2.75rem] sm:text-6xl leading-[1.02] tracking-[-0.02em] mb-5" style={{ fontFamily: "'Fraunces', serif", fontWeight: 650 }}>
+          <h1 className="text-[2.75rem] sm:text-6xl leading-[1.02] tracking-[-0.02em] mb-5" style={{ fontFamily: "var(--font-display)", fontWeight: 650 }}>
             Exchange <span style={{ backgroundImage: "linear-gradient(180deg,#F6E3A6 0%,#E0C068 45%,#B88A20 100%)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>Rates</span>
           </h1>
           <p className="text-white/80 text-lg sm:text-xl max-w-2xl leading-[1.6]">
@@ -121,7 +121,7 @@ export function ExchangeRatesViewer({ isOpen, onClose }: Props) {
           <Grain opacity={0.08} />
           <div className="relative">
             <div className="flex items-center gap-3 mb-2">
-              <h2 className="text-3xl font-semibold tracking-tight" style={{ fontFamily: "'Fraunces', serif" }}>Currency converter</h2>
+              <h2 className="text-3xl font-semibold tracking-tight" style={{ fontFamily: "var(--font-display)" }}>Currency converter</h2>
               <span aria-hidden="true" className="h-px flex-1 max-w-24" style={{ background: `linear-gradient(90deg,${GOLD},transparent)` }} />
             </div>
             <p className="text-white/70 text-sm sm:text-base mb-8">Convert between any two of {state.status === "ready" ? Object.keys(state.data.rates).length : "more than 150"} currencies at today&apos;s market rate.</p>
@@ -157,7 +157,7 @@ export function ExchangeRatesViewer({ isOpen, onClose }: Props) {
                     : (
                       <>
                         <p className="text-white/65 text-sm sm:text-base">{formatMoney(n, from)} =</p>
-                        <p className="mt-2 text-4xl sm:text-6xl leading-[1.05] tracking-[-0.02em] break-words" style={{ fontFamily: "'Fraunces', serif", fontWeight: 650 }}>
+                        <p className="mt-2 text-4xl sm:text-6xl leading-[1.05] tracking-[-0.02em] break-words" style={{ fontFamily: "var(--font-display)", fontWeight: 650 }}>
                           <span style={{ backgroundImage: "linear-gradient(180deg,#F6E3A6 0%,#E0C068 50%,#B88A20 100%)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>{formatMoney(conv.result, to)}</span>
                         </p>
                         {unit && (
@@ -181,7 +181,7 @@ export function ExchangeRatesViewer({ isOpen, onClose }: Props) {
         {state.status === "ready" && (
           <section aria-label="Rates against the rand">
             <div className="flex items-center gap-3 mb-2">
-              <h2 className="text-3xl font-semibold tracking-tight text-fg" style={{ fontFamily: "'Fraunces', serif" }}>Rates against the rand</h2>
+              <h2 className="text-3xl font-semibold tracking-tight text-fg" style={{ fontFamily: "var(--font-display)" }}>Rates against the rand</h2>
               <span aria-hidden="true" className="h-px flex-1 max-w-24" style={{ background: `linear-gradient(90deg,${GOLD},transparent)` }} />
             </div>
             <p className="text-fg-muted text-sm sm:text-base leading-relaxed mb-6 max-w-2xl">What one South African rand buys, and what one unit of each currency costs in rand, for the currencies we expect to serve first.</p>
@@ -216,7 +216,7 @@ export function ExchangeRatesViewer({ isOpen, onClose }: Props) {
         {/* ── Why this matters ───────────────────────────────────────────── */}
         <section className="relative rounded-3xl p-7 sm:p-9 border border-line bg-surface-2 overflow-hidden">
           <div aria-hidden="true" className="absolute left-0 top-6 bottom-6 w-[3px] rounded-full" style={{ background: `linear-gradient(180deg,${GOLD},transparent)` }} />
-          <h2 className="text-2xl font-semibold tracking-tight mb-3 text-fg" style={{ fontFamily: "'Fraunces', serif" }}>Why this matters</h2>
+          <h2 className="text-2xl font-semibold tracking-tight mb-3 text-fg" style={{ fontFamily: "var(--font-display)" }}>Why this matters</h2>
           <p className="text-fg-muted text-base leading-[1.75]">
             Traditional cross-border transfers in the region are slow and expensive, often eating a meaningful cut of the amount sent. VINK&apos;s ambition is to make moving money across borders as simple as tapping your card at a taxi validator, with transparent, local-rate pricing between {MARKETS.join(", ")} and the wider region once we launch.
           </p>

@@ -103,7 +103,7 @@ export function PersonalLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
   const prev = () => setSlide(i => (i - 1 + SLIDES.length) % SLIDES.length);
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-surface" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-surface" style={{ fontFamily: "var(--font-sans)" }}>
       {/* ── Sub-nav (the site header above has the logo and the way home) ── */}
       <div className="sticky top-0 z-30 bg-surface/95 backdrop-blur border-b border-line">
         {/* Sub-nav */}
@@ -132,7 +132,7 @@ export function PersonalLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
       <div className="border-b border-line">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7 sm:py-8 flex flex-col sm:flex-row items-center justify-between gap-5">
           <div>
-            <p className="text-lg sm:text-[21px] font-semibold tracking-tight" style={{ color: "var(--vk-fg)", fontFamily: "'Fraunces', serif" }}>
+            <p className="text-lg sm:text-[21px] font-semibold tracking-tight" style={{ color: "var(--vk-fg)", fontFamily: "var(--font-display)" }}>
               Let us find the card that suits you best.
             </p>
             <p className="text-[13px] text-fg-muted mt-1.5">Personalise your results in a few simple steps.</p>
@@ -177,7 +177,7 @@ export function PersonalLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
             </span>
             <h2
               className="text-white text-[32px] sm:text-[42px] font-medium leading-[1.08] whitespace-pre-line"
-              style={{ fontFamily: "'Fraunces', serif" }}
+              style={{ fontFamily: "var(--font-display)" }}
             >
               {s.heading}
             </h2>
@@ -215,7 +215,7 @@ export function PersonalLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
           <span className="inline-block text-[11px] font-semibold tracking-[0.16em] uppercase mb-3" style={{ color: GOLD }}>
             Why choose VINK
           </span>
-          <h2 className="text-[26px] sm:text-[32px] font-medium tracking-tight" style={{ color: "var(--vk-fg)", fontFamily: "'Fraunces', serif" }}>
+          <h2 className="text-[26px] sm:text-[32px] font-medium tracking-tight" style={{ color: "var(--vk-fg)", fontFamily: "var(--font-display)" }}>
             Card Features and Benefits
           </h2>
           <p className="text-fg-muted text-sm mt-3 max-w-md mx-auto">Explore the features that make our cards the perfect choice for you.</p>
@@ -259,7 +259,7 @@ export function PersonalLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
               <ShieldCheck className="w-5 h-5" style={{ color: GOLD }} />
             </span>
             <div>
-              <p className="text-white font-semibold text-[15px]" style={{ fontFamily: "'Fraunces', serif" }}>Your security is our priority</p>
+              <p className="text-white font-semibold text-[15px]" style={{ fontFamily: "var(--font-display)" }}>Your security is our priority</p>
               <p className="text-white/70 text-[13px] mt-1 max-w-sm">Bank with confidence. We use industry-leading security to protect your data and money.</p>
             </div>
           </div>
