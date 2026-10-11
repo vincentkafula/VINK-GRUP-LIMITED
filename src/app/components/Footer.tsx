@@ -1,8 +1,9 @@
 import vinkLogoDark from "../../imports/LOGO_FINAL.png";
 import { PremiumIcon } from "./PremiumIcon";
 
-const BG       = "#C8102E";   // brand red
-const DARK_BAR = "#C8102E";   // the legal bar: the same brand red as the rest of the footer; the white hairline above it separates it
+const BG       = "#C8102E";   // brand red: the middle of the footer, with the link columns
+const TOP_BG   = "#FFFFFF";   // the top band (logo and social buttons) is white
+const DARK_BAR = "#0B0B0C";   // the legal and business-information bar at the bottom: black
 const CARD_BG  = "#A50F27";   // social button hover (the footer itself is already #C8102E)
 const LINK_HL  = "#FFFFFF";   // accents on the red footer are white (pink on red would be ~1.9:1)
 const GOLD_SOFT = "#FFFFFF";  // column headings and hovers
@@ -143,20 +144,15 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
     window.dispatchEvent(new CustomEvent("vink:footer-link", { detail: { label } }));
   });
   return (
-    <footer style={{ background: BG, position: "relative" }}>
-      {/* a thin red light along the top edge */}
-      <div aria-hidden="true" style={{ height: 1, background: "linear-gradient(90deg,transparent,rgba(255,255,255,0.45) 50%,transparent)" }} />
-
-      {/* ── SECTION 1: Main columns ─────────────────────────────────────────── */}
-      <div style={{ maxWidth: 1180, margin: "0 auto", padding: "76px 40px 64px" }}>
-
-        {/* Top strip: logo + social */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 20, marginBottom: 56, paddingBottom: 36, borderBottom: "1px solid transparent", borderImage: "linear-gradient(90deg,rgba(255,255,255,0.45),rgba(255,255,255,0.10) 40%,rgba(255,255,255,0.04)) 1" }}>
-          {/* Dark logo on dark footer — 140px wide (brand guide: footer 120-160px) */}
-          <img src={vinkLogoDark} alt="VINK" loading="lazy" decoding="async" style={{ width: 124, height: "auto", objectFit: "contain", filter: "drop-shadow(0 6px 18px rgba(0,0,0,0.28))" }} />
+    <footer style={{ position: "relative" }}>
+      {/* ── SECTION 1: White top band: logo and social buttons ─────────────── */}
+      <div style={{ background: TOP_BG }}>
+        <div style={{ maxWidth: 1180, margin: "0 auto", padding: "32px 40px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 20 }}>
+          {/* The crest on the white top band (brand guide: footer 120-160px) */}
+          <img src={vinkLogoDark} alt="VINK" loading="lazy" decoding="async" style={{ width: 124, height: "auto", objectFit: "contain", filter: "none" }} />
 
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10 }}>
-            <p style={{ color: GOLD_SOFT, fontSize: 12, fontWeight: 700, letterSpacing: "0.22em", textTransform: "uppercase", margin: 0 }}>
+            <p style={{ color: "#202124", fontSize: 12, fontWeight: 700, letterSpacing: "0.22em", textTransform: "uppercase", margin: 0 }}>
               Follow Us
             </p>
             <div style={{ display: "flex", gap: 10 }}>
@@ -168,14 +164,13 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
                   aria-label={s.label}
                   style={{
                     width: 40, height: 40, borderRadius: "50%",
-                    background: "linear-gradient(180deg,rgba(255,255,255,0.14),rgba(255,255,255,0.05))",
-                    border: "1px solid rgba(255,255,255,0.35)",
-                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.14)",
+                    background: BG,
+                    border: "1px solid transparent",
                     display: "flex", alignItems: "center", justifyContent: "center",
                     transition: "background 0.2s, border-color 0.2s, transform 0.2s",
                   }}
-                  onMouseEnter={(e) => { const a = e.currentTarget as HTMLAnchorElement; a.style.background = CARD_BG; a.style.borderColor = LINK_HL; a.style.transform = "translateY(-2px)"; }}
-                  onMouseLeave={(e) => { const a = e.currentTarget as HTMLAnchorElement; a.style.background = "linear-gradient(180deg,rgba(255,255,255,0.14),rgba(255,255,255,0.05))"; a.style.borderColor = "rgba(255,255,255,0.35)"; a.style.transform = "none"; }}
+                  onMouseEnter={(e) => { const a = e.currentTarget as HTMLAnchorElement; a.style.background = CARD_BG; a.style.borderColor = "transparent"; a.style.transform = "translateY(-2px)"; }}
+                  onMouseLeave={(e) => { const a = e.currentTarget as HTMLAnchorElement; a.style.background = BG; a.style.borderColor = "transparent"; a.style.transform = "none"; }}
                 >
                   {s.icon}
                 </a>
@@ -183,8 +178,11 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Five link columns + download card */}
+      {/* ── SECTION 2: Red middle: the link columns ──────────────────────────── */}
+      <div style={{ background: BG }}>
+        <div style={{ maxWidth: 1180, margin: "0 auto", padding: "64px 40px" }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(168px, 1fr))", gap: "44px 36px" }}>
           {/* Useful Tools (merged with Column 1 label) */}
           <LinkColumn title="Useful Tools" links={COLS[0].links} onLinkClick={handleLinkClick} />
@@ -242,11 +240,11 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
             <LinkColumn title="Legal" links={COLS[3].links} onLinkClick={handleLinkClick} />
           </div>
         </div>
+        </div>
       </div>
 
-
-      {/* ── SECTION 3: Dark bottom bar ──────────────────────────────────────── */}
-      <div style={{ background: DARK_BAR, borderTop: "1px solid rgba(255,255,255,0.18)" }}>
+      {/* ── SECTION 3: Black bottom bar: legal links and the business registration details ── */}
+      <div style={{ background: DARK_BAR }}>
         <div style={{ maxWidth: 1180, margin: "0 auto", padding: "8px 40px 0" }}>
           {/* Legal links row */}
           <div style={{ minHeight: 56, padding: "14px 0 6px", display: "flex", alignItems: "center", justifyContent: "center", flexWrap: "wrap", gap: "6px 0" }}>
