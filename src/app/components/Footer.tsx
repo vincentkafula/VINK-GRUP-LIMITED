@@ -248,34 +248,31 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
 
       {/* ── SECTION 3: Black bottom bar: legal links and the business registration details ── */}
       <div style={{ background: DARK_BAR }}>
-        <div style={{ maxWidth: 1180, margin: "0 auto", padding: "8px 40px 0" }}>
-          {/* Legal links row */}
-          <div style={{ minHeight: 56, padding: "14px 0 6px", display: "flex", alignItems: "center", justifyContent: "center", flexWrap: "wrap", gap: "6px 0" }}>
-            {["Terms Of Use", "Banking Regulations", "Privacy Statement", "Security Centre"].map((item, i, arr) => (
-              <span key={item} style={{ display: "flex", alignItems: "center" }}>
-                <a href="#" onClick={(e) => { e.preventDefault(); handleLinkClick(item); }} style={{ color: "rgba(255,255,255,0.92)", fontSize: 13, fontWeight: 700, letterSpacing: "0.02em", textDecoration: "none", padding: "0 14px", whiteSpace: "nowrap", transition: "color .2s" }}
-                  onMouseEnter={(e) => { (e.target as HTMLAnchorElement).style.color = GOLD_SOFT; }}
-                  onMouseLeave={(e) => { (e.target as HTMLAnchorElement).style.color = "rgba(255,255,255,0.92)"; }}
-                >
+        <div style={{ maxWidth: 1180, margin: "0 auto", padding: "26px 40px 30px" }}>
+          {/* Copyright on the left, the legal links on the right */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "10px 24px" }}>
+            <p style={{ color: "rgba(255,255,255,0.92)", fontSize: 13, margin: 0 }}>© {new Date().getFullYear()} VINK. All rights reserved.</p>
+            <nav aria-label="Legal" style={{ display: "flex", flexWrap: "wrap", alignItems: "center" }}>
+              {["Terms Of Use", "Banking Regulations", "Privacy Statement", "Security Centre"].map((item, i) => (
+                <a key={item} href="#" onClick={(e) => { e.preventDefault(); handleLinkClick(item); }}
+                  style={{ color: "rgba(255,255,255,0.92)", fontSize: 13, fontWeight: 500, textDecoration: "none", padding: "0 14px", borderLeft: i === 0 ? "0" : "1px solid rgba(255,255,255,0.3)", paddingRight: i === 3 ? 0 : 14, whiteSpace: "nowrap", transition: "color .2s" }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.textDecoration = "underline"; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.textDecoration = "none"; }}>
                   {item}
                 </a>
-                {i < arr.length - 1 && (
-                  <span style={{ color: "rgba(255,255,255,0.2)", fontSize: 12 }}>|</span>
-                )}
-              </span>
-            ))}
-            <span style={{ color: "rgba(255,255,255,0.92)", fontSize: 12.5, lineHeight: 1.65, padding: "10px 4px 0", textAlign: "center", flexBasis: "100%", maxWidth: 860 }}>
-              VINK is a trading name of Vink Group (Pty) Ltd. VINK is not yet operational and is not yet authorised or registered to provide financial services; licensing and registrations will be completed before launch. Vink Group Reg. No. 2018/079316/07.
-            </span>
+              ))}
+            </nav>
           </div>
-          {/* Copyright */}
-          <div style={{ padding: "6px 0 24px", textAlign: "center" }}>
-            <p style={{ color: "rgba(255,255,255,0.9)", fontSize: 12.5, margin: "0 0 8px" }}>© {new Date().getFullYear()} VINK. All rights reserved.</p>
-            <p style={{ color: "rgba(255,255,255,0.9)", fontSize: 12.5, margin: 0, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "4px 12px" }}>
+          {/* The business information: what VINK is, and where it is registered */}
+          <div style={{ marginTop: 20, paddingTop: 18, borderTop: "1px solid rgba(255,255,255,0.14)" }}>
+            <p style={{ color: "rgba(255,255,255,0.78)", fontSize: 12.5, lineHeight: 1.7, margin: 0, maxWidth: 900 }}>
+              VINK is a trading name of Vink Group (Pty) Ltd. VINK is not yet operational and is not yet authorised or registered to provide financial services; licensing and registrations will be completed before launch. Vink Group Reg. No. 2018/079316/07.
+            </p>
+            <p style={{ color: "rgba(255,255,255,0.78)", fontSize: 12.5, margin: "10px 0 0", display: "flex", flexWrap: "wrap", gap: "4px 14px" }}>
               <span>United States – EIN: 37-2148609</span>
-              <span aria-hidden="true" style={{ color: "rgba(255,255,255,0.25)" }}>|</span>
+              <span aria-hidden="true" style={{ color: "rgba(255,255,255,0.3)" }}>|</span>
               <span>South Africa – Registration No: 2018/079316/07</span>
-              <span aria-hidden="true" style={{ color: "rgba(255,255,255,0.25)" }}>|</span>
+              <span aria-hidden="true" style={{ color: "rgba(255,255,255,0.3)" }}>|</span>
               <span>Zambia – Registration No: 120210020196</span>
             </p>
           </div>

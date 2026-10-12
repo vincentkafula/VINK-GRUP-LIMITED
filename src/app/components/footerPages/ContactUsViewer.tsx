@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Phone, Mail, MapPin, Clock, MessageCircle, Loader2, CheckCircle, ArrowRight, Headphones, Star, Heart, Lightbulb,
-  ChevronDown, Shield, Search, Building2, Smartphone, AlertTriangle, RefreshCw,
+  ChevronDown, Shield, Search, Building2, Smartphone, AlertTriangle, RefreshCw, Store,
 } from "lucide-react";
 import { toast } from "sonner";
 import { publicApi } from "../../services/apiClient";
@@ -10,6 +10,7 @@ import { WhatsAppCard, useWhatsAppInfo } from "../WhatsAppChat";
 import { DEPARTMENTS, type Department } from "../../data/departments";
 import { API_BASE } from "../../services/config";
 import { BRAND } from "../../brand";
+import "./contact.css";
 
 interface Props { isOpen: boolean; onClose: () => void; initialTab?: TabId; }
 const P = BRAND.crimson;
@@ -137,45 +138,46 @@ const CARE_HOURS = "Mon–Fri 08:00–17:00";
 const HEAD_OFFICE_ADDRESS = "State House Building, 8 Rose Street, Cape Town, South Africa";
 const mapSrc = (q: string) => `https://www.google.com/maps?q=${encodeURIComponent(q)}&output=embed`;
 const directionsHref = (q: string) => `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(q)}`;
+const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
 interface Row { icon: React.ReactNode; label: string; value: string; href?: string }
-interface AccItem { id: string; title: string; intro?: string; rows?: Row[]; bullets?: string[]; body?: React.ReactNode; urgent?: boolean }
+interface AccItem { id: string; title: string; tag?: string; intro?: string; rows?: Row[]; bullets?: string[]; link?: { label: string; onClick: () => void } }
 
-/** One list of expandable items, each opened and closed on its own; the open ones are announced to screen readers through aria-expanded. */
+/** Closed panels are inert, so their contents cannot be tabbed to or read while hidden, and they animate open and shut. */
+const inertWhen = (closed: boolean) => (closed ? ({ inert: "" } as Record<string, string>) : {});
+
 function Accordion({ items, label }: { items: AccItem[]; label: string }) {
   const [open, setOpen] = useState<Set<string>>(new Set());
   const toggle = (id: string) => setOpen((s) => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n; });
   return (
-    <div role="list" aria-label={label} className="overflow-hidden rounded-2xl border border-line bg-surface">
-      {items.map((it, i) => {
+    <div className="vc-acc" role="list" aria-label={label}>
+      {items.map((it) => {
         const isOpen = open.has(it.id);
         return (
-          <div key={it.id} role="listitem" className={i > 0 ? "border-t border-line" : ""}>
-            <h3>
-              <button type="button" id={`acc-btn-${it.id}`} aria-expanded={isOpen} aria-controls={`acc-panel-${it.id}`} onClick={() => toggle(it.id)}
-                className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition-colors hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-[-2px]" style={{ outlineColor: P }}>
-                <span className="flex items-center gap-3 text-[15px] font-semibold text-fg">
-                  {it.title}
-                  {it.urgent && <span className="rounded-full px-2 py-0.5 text-[10px] font-bold" style={{ background: "var(--vk-brand-soft)", color: "var(--vk-crimson-text)" }}>24/7</span>}
-                </span>
-                <ChevronDown aria-hidden="true" className={`h-4 w-4 shrink-0 text-fg-muted transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
+          <div key={it.id} role="listitem" className={`vc-acc__item${isOpen ? " is-open" : ""}`}>
+            <h3 className="vc-acc__head">
+              <button className="vc-acc__btn" type="button" id={`acc-btn-${it.id}`} aria-expanded={isOpen} aria-controls={`acc-panel-${it.id}`} onClick={() => toggle(it.id)}>
+                <span>{it.title}{it.tag && <span className="vc-acc__tag">{it.tag}</span>}</span>
+                <ChevronDown className="vc-icon vc-acc__chev" aria-hidden="true" />
               </button>
             </h3>
-            <div id={`acc-panel-${it.id}`} role="region" aria-labelledby={`acc-btn-${it.id}`} hidden={!isOpen} className="px-5 pb-5">
-              {it.intro && <p className="mb-3 max-w-2xl text-sm leading-relaxed text-fg-muted">{it.intro}</p>}
-              {it.rows && (
-                <ul className="space-y-2">
-                  {it.rows.map((r) => (
-                    <li key={r.label + r.value} className="flex items-center gap-3 rounded-xl bg-surface-2 px-4 py-3">
-                      <span aria-hidden="true" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg" style={{ background: "var(--vk-brand-soft)", color: "var(--vk-crimson-text)" }}>{r.icon}</span>
-                      <span className="min-w-0">
-                        <span className="block text-xs text-fg-muted">{r.label}</span>
-                        {r.href ? <a href={r.href} className="break-words text-sm font-semibold no-underline hover:underline" style={{ color: "var(--vk-crimson-text)" }}>{r.value}</a> : <span className="text-sm font-semibold text-fg">{r.value}</span>}
-                      </span>
-                    </li>))}
-                </ul>)}
-              {it.bullets && <ul className="list-disc space-y-1 pl-5 text-sm text-fg-muted marker:text-fg-subtle">{it.bullets.map((b) => <li key={b}>{b}</li>)}</ul>}
-              {it.body}
+            <div className="vc-acc__panel" id={`acc-panel-${it.id}`} role="region" aria-labelledby={`acc-btn-${it.id}`} data-open={isOpen} {...inertWhen(!isOpen)}>
+              <div className="vc-acc__clip"><div className="vc-acc__inner">
+                {it.intro && <p className="vc-acc__intro">{it.intro}</p>}
+                {it.rows && (
+                  <ul className="vc-acc-rows">
+                    {it.rows.map((r) => (
+                      <li key={r.label + r.value} className="vc-acc-row">
+                        <span className="vc-acc-row__icon" aria-hidden="true">{r.icon}</span>
+                        <span className="vc-acc-row__text">
+                          <span className="vc-acc-row__label">{r.label}</span>
+                          <span className="vc-acc-row__value">{r.href ? <a href={r.href}>{r.value}</a> : r.value}</span>
+                        </span>
+                      </li>))}
+                  </ul>)}
+                {it.bullets && <ul className="vc-acc__bullets">{it.bullets.map((b) => <li key={b}>{b}</li>)}</ul>}
+                {it.link && <p className="vc-acc__link"><button type="button" onClick={it.link.onClick}>{it.link.label} <ArrowRight className="vc-icon" aria-hidden="true" /></button></p>}
+              </div></div>
             </div>
           </div>);
       })}
@@ -184,8 +186,7 @@ function Accordion({ items, label }: { items: AccItem[]; label: string }) {
 }
 
 function FaqGrid() {
-  const items: AccItem[] = FAQS.map((f, i) => ({ id: `faq-${i}`, title: f.q, intro: f.a }));
-  return <Accordion items={items} label="Frequently asked questions" />;
+  return <Accordion items={FAQS.map((f, i) => ({ id: `faq-${i}`, title: f.q, intro: f.a }))} label="Frequently asked questions" />;
 }
 
 /** The departments the Contact page offers: the built-in ones at once, then the list the server has (it includes the public departments a Super Administrator has made). */
@@ -199,80 +200,62 @@ function useDepartments(): Department[] {
   return departments;
 }
 
-function SectionHead({ eyebrow, title, lead }: { eyebrow: string; title: string; lead?: string }) {
-  return (
-    <div className="mb-5">
-      <p className="text-xs font-bold uppercase tracking-[0.18em]" style={{ color: "var(--vk-crimson-text)" }}>{eyebrow}</p>
-      <h2 className="mt-1 text-2xl font-bold text-fg">{title}</h2>
-      {lead && <p className="mt-1.5 max-w-2xl text-sm text-fg-muted">{lead}</p>}
-    </div>
-  );
-}
-
 // ── Tab: Connect With Us ────────────────────────────────────────────────
 function ConnectTab({ goTo, departments }: { goTo: (t: TabId) => void; departments: Department[] }) {
   const wa = useWhatsAppInfo();
+  const ic = (I: typeof Phone) => <I className="vc-icon" aria-hidden="true" />;
   const services: AccItem[] = [
-    { id: "cards", title: "Lost or stolen cards", urgent: true, intro: "Call straight away to block your card and stop anyone else using it. You can also block it in the VINK app under Card Settings.",
-      rows: [{ icon: <Phone className="h-4 w-4" />, label: "Emergency card services (24/7)", value: "+27 (0)21 007 0772", href: "tel:+27210070772" }] },
-    { id: "fraud", title: "Report fraud", urgent: true, intro: "Think someone has accessed your account or you have been scammed? Contact the fraud team immediately. VINK will never ask for your PIN, password or OTP.",
-      rows: [{ icon: <AlertTriangle className="h-4 w-4" />, label: "Fraud hotline (24/7)", value: "+27 (0)61 461 5035", href: "tel:+27614615035" }] },
+    { id: "cards", title: "Lost and stolen cards", tag: "24/7", intro: "Call straight away to block your card and stop anyone else using it. You can also block it in the VINK app under Card Settings.",
+      rows: [{ icon: ic(Phone), label: "Emergency card services (24/7)", value: "+27 (0)21 007 0772", href: "tel:+27210070772" }] },
+    { id: "fraud", title: "Report fraud", tag: "24/7", intro: "Think someone has accessed your account or you have been scammed? Contact the fraud team immediately. VINK will never ask for your PIN, password or OTP.",
+      rows: [{ icon: ic(AlertTriangle), label: "Fraud hotline (24/7)", value: "+27 (0)61 461 5035", href: "tel:+27614615035" }] },
     { id: "digital", title: "Digital banking support", intro: "Help with the VINK app and online banking.",
-      rows: [{ icon: <Mail className="h-4 w-4" />, label: "Email", value: "support@vink.co.za", href: "mailto:support@vink.co.za" }, { icon: <Clock className="h-4 w-4" />, label: "Hours", value: "Business hours" }] },
+      rows: [{ icon: ic(Mail), label: "Email", value: "support@vink.co.za", href: "mailto:support@vink.co.za" }, { icon: ic(Clock), label: "Hours", value: "Business hours" }] },
     { id: "care", title: "General customer care", intro: "Questions about accounts, cards or anything else.",
-      rows: [{ icon: <Phone className="h-4 w-4" />, label: "Call us", value: CARE_PHONE.label, href: CARE_PHONE.href }, { icon: <Mail className="h-4 w-4" />, label: "Email", value: "info@vink.co.za", href: "mailto:info@vink.co.za" }, { icon: <Clock className="h-4 w-4" />, label: "Hours", value: CARE_HOURS }] },
-    { id: "message", title: "Send us a message", intro: "Use the form and we will get back to you as soon as possible. You will get a reference number straight away.",
-      body: <button type="button" onClick={() => goTo("feedback")} className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white" style={{ background: P }}>Open the message form <ArrowRight className="h-4 w-4" aria-hidden="true" /></button> },
+      rows: [{ icon: ic(Phone), label: "Call us", value: CARE_PHONE.label, href: CARE_PHONE.href }, { icon: ic(Mail), label: "Email", value: "info@vink.co.za", href: "mailto:info@vink.co.za" }, { icon: ic(Clock), label: "Hours", value: CARE_HOURS }] },
+    { id: "message", title: "Send us a message", intro: "Use the form and we will get back to you as soon as possible. You get a reference number straight away.", link: { label: "Send us your feedback online", onClick: () => goTo("feedback") } },
   ];
-  const areas: AccItem[] = DIRECTORY.filter((d) => !d.urgent).map((d) => ({ id: `area-${d.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`, title: d.title, bullets: d.items }));
   const mailboxes: AccItem[] = departments.map((d) => ({ id: `dept-${d.key}`, title: d.name, intro: d.purpose,
-    rows: [{ icon: <Mail className="h-4 w-4" />, label: "Email", value: d.address, href: `mailto:${d.address}` }, { icon: <Clock className="h-4 w-4" />, label: "We reply within", value: d.respondWithin }] }));
+    rows: [{ icon: ic(Mail), label: "Email", value: d.address, href: `mailto:${d.address}` }, { icon: ic(Clock), label: "We reply within", value: d.respondWithin }] }));
+  const areas: AccItem[] = DIRECTORY.filter((d) => !d.urgent).map((d) => ({ id: `area-${slug(d.title)}`, title: d.title, bullets: d.items }));
 
   return (
-    <div className="space-y-12">
-      <section aria-labelledby="by-service">
-        <SectionHead eyebrow="Contact details" title="Get in touch with us" lead="Choose the service you need and open it to see how to reach the right team." />
-        <span id="by-service" className="sr-only">Contact us by service</span>
+    <div className="vc-panel" id="panel-connect-body">
+      <div className="vc-acc-wrap">
+        <p className="vc-section-eyebrow">Contact details</p>
+        <h2 className="vc-section-title">Get in touch with us</h2>
+        <p className="vc-section-lead">Choose the service you need and open it to see how to reach the right team.</p>
         <Accordion items={services} label="Contact us by service" />
-      </section>
 
-      <section aria-labelledby="by-dept">
-        <SectionHead eyebrow="Departments" title="Write to a department" lead="Each department has its own mailbox. Your message goes straight to the people who can answer it." />
-        <span id="by-dept" className="sr-only">Write to a department</span>
+        <h2 className="vc-section-title vc-acc__group-title">Write to a department</h2>
+        <p className="vc-section-lead">Each department has its own mailbox. Your message goes straight to the people who can answer it.</p>
         <Accordion items={mailboxes} label="Departments" />
-      </section>
 
-      <section aria-labelledby="by-area">
-        <SectionHead eyebrow="Banking areas" title="Contact us by banking area" />
-        <span id="by-area" className="sr-only">Contact us by banking area</span>
+        <h2 className="vc-section-title vc-acc__group-title">Contact us by banking area</h2>
         <Accordion items={areas} label="Banking areas" />
-      </section>
+      </div>
 
-      <aside aria-label="Immediate assistance" className="grid gap-5 rounded-2xl border border-line bg-surface p-5 shadow-[0_1px_2px_rgba(16,24,40,0.04)] sm:p-6 lg:grid-cols-[1.2fr_1fr_auto] lg:items-center">
-        <div className="flex items-start gap-4">
-          <span aria-hidden="true" className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-white" style={{ background: P }}><Headphones className="h-6 w-6" /></span>
-          <div>
-            <h3 className="text-base font-bold text-fg">Need immediate assistance?</h3>
-            <p className="mt-1 text-sm text-fg-muted">Speak to one of our support agents about your account, cards or payments.</p>
-          </div>
+      <aside className="vc-assist" aria-label="Immediate assistance">
+        <div>
+          <span className="vc-assist__badge" aria-hidden="true"><Headphones className="vc-icon" /></span>
+          <span>
+            <h3>Need immediate assistance?</h3>
+            <p>Speak to one of our support agents for help with your account, transactions or any other banking needs.</p>
+          </span>
         </div>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-fg-muted">Call our support team</p>
-          <a href={CARE_PHONE.href} className="mt-0.5 block text-xl font-bold no-underline" style={{ color: "var(--vk-crimson-text)" }}>{CARE_PHONE.label}</a>
-          <p className="text-xs text-fg-muted">{CARE_HOURS}. Lost cards and fraud: 24/7.</p>
+          <span className="vc-assist__badge vc-assist__badge--sm" aria-hidden="true"><Phone className="vc-icon" /></span>
+          <span>
+            <h3>Call our support team</h3>
+            <a className="vc-phone" href={CARE_PHONE.href}>{CARE_PHONE.label}</a>
+            <span className="vc-avail">{CARE_HOURS}. Lost cards and fraud: 24/7</span>
+          </span>
         </div>
-        {wa?.enabled && wa.link
-          ? <a href={wa.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 rounded-full border border-line-strong px-5 py-2.5 text-sm font-semibold text-fg no-underline hover:bg-surface-2"><MessageCircle className="h-4 w-4" aria-hidden="true" />Chat with us</a>
-          : <button type="button" onClick={() => goTo("feedback")} className="inline-flex items-center justify-center gap-2 rounded-full border border-line-strong px-5 py-2.5 text-sm font-semibold text-fg hover:bg-surface-2"><MessageCircle className="h-4 w-4" aria-hidden="true" />Message us</button>}
-        <ul className="grid gap-2 sm:grid-cols-2 lg:col-span-3">
-          {EMERGENCY_CONTACTS.map((e) => (
-            <li key={e.service}>
-              <a href={e.href} className="flex items-center justify-between gap-3 rounded-xl bg-surface-2 px-4 py-3 no-underline transition-colors hover:bg-brand-soft">
-                <span><span className="block text-sm font-semibold text-fg">{e.service}</span><span className="text-xs text-fg-muted">{e.hours}</span></span>
-                <span className="text-xs font-bold" style={{ color: "var(--vk-crimson-text)" }}>{e.contact}</span>
-              </a>
-            </li>))}
-        </ul>
+        <div>
+          {wa?.enabled && wa.link
+            ? <a className="vc-btn vc-btn--outline" href={wa.link} target="_blank" rel="noopener noreferrer"><MessageCircle className="vc-icon" aria-hidden="true" />Chat with us</a>
+            : <button className="vc-btn vc-btn--outline" type="button" onClick={() => goTo("feedback")}><MessageCircle className="vc-icon" aria-hidden="true" />Message us</button>}
+        </div>
       </aside>
     </div>
   );
@@ -291,100 +274,87 @@ function LocateTab() {
   const hasMap = current?.type === "office";
 
   return (
-    <div className="space-y-12">
-      <section>
-        <SectionHead eyebrow="Find us" title="Locate a branch or agent" lead="VINK is a digital-first bank: full services at our Head Office, and everyday card services nationwide through our agent network." />
-        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
-          <div>
-            <div className="flex items-center gap-2 rounded-xl border border-line bg-surface px-4 py-2.5 focus-within:border-[color:var(--vk-brand)]">
-              <Search aria-hidden="true" className="h-4 w-4 shrink-0 text-fg-muted" />
-              <label className="sr-only" htmlFor="loc-search">Search locations</label>
-              <input id="loc-search" type="search" value={query} onChange={e => { setQuery(e.target.value); setSelected(0); }} className="flex-1 bg-transparent text-sm text-fg outline-none" placeholder="Search by city, suburb or name" autoComplete="off" />
-            </div>
-            <div role="group" aria-label="Filter by type" className="mt-3 flex flex-wrap gap-2">
-              {[["all", "All"], ["office", "Head Office"], ["agent", "Agents"]].map(([id, label]) => (
-                <button key={id} type="button" aria-pressed={filter === id} onClick={() => { setFilter(id as typeof filter); setSelected(0); }}
-                  className="rounded-full border px-4 py-1.5 text-xs font-semibold transition-colors"
-                  style={filter === id ? { background: P, borderColor: P, color: "#fff" } : { background: "var(--vk-surface)", borderColor: "var(--vk-line)", color: "var(--vk-fg-muted)" }}>{label}</button>
-              ))}
-            </div>
-            <ul aria-live="polite" className="mt-4 space-y-3">
-              {results.map((a, i) => (
-                <li key={a.name}>
-                  <button type="button" onClick={() => setSelected(i)} aria-current={current === a}
-                    className="flex w-full items-start gap-3 rounded-2xl border bg-surface p-4 text-left transition-shadow hover:shadow-sm"
-                    style={{ borderColor: current === a ? P : "var(--vk-line)" }}>
-                    <span aria-hidden="true" className="text-2xl">{a.icon}</span>
-                    <span>
-                      <span className="block text-sm font-bold text-fg">{a.name}</span>
-                      <span className="mt-0.5 block text-xs text-fg-muted">{a.cover}</span>
-                      <span className="mt-1 block text-xs text-fg-muted">{a.services}</span>
-                      <span className="mt-1.5 flex items-center gap-1 text-[11px] text-fg-muted"><Clock aria-hidden="true" className="h-3 w-3" />{a.hours}</span>
-                    </span>
-                  </button>
-                </li>))}
-              {results.length === 0 && <li className="rounded-2xl border border-dashed border-line py-10 text-center text-sm text-fg-muted">No locations match your search.</li>}
-            </ul>
-          </div>
+    <div className="vc-panel">
+      <p className="vc-section-eyebrow">Find us</p>
+      <h2 className="vc-section-title">Locate a branch or agent</h2>
+      <p className="vc-section-lead">VINK is a digital-first bank: full services at our Head Office, and everyday card services nationwide through our agent network.</p>
 
-          <div className="overflow-hidden rounded-2xl border border-line bg-surface">
-            {hasMap ? (<>
-              <iframe key={HEAD_OFFICE_ADDRESS} title="Map of the VINK Head Office" src={mapSrc(HEAD_OFFICE_ADDRESS)} loading="lazy" referrerPolicy="no-referrer-when-downgrade" className="h-[320px] w-full border-0 lg:h-[380px]" />
-              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line p-4">
-                <div className="min-w-0"><p className="text-sm font-bold text-fg">VINK Head Office</p><p className="text-xs text-fg-muted">{HEAD_OFFICE_ADDRESS}</p></div>
-                <a href={directionsHref(HEAD_OFFICE_ADDRESS)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full px-5 py-2 text-sm font-semibold text-white no-underline" style={{ background: P }}>Get directions <ArrowRight className="h-4 w-4" aria-hidden="true" /></a>
-              </div>
-            </>) : (
-              <div className="flex h-full min-h-[320px] flex-col items-center justify-center gap-2 p-8 text-center">
-                <MapPin aria-hidden="true" className="h-8 w-8" style={{ color: "var(--vk-crimson-text)" }} />
-                <p className="text-sm font-bold text-fg">Agent locations are announced before launch</p>
-                <p className="max-w-sm text-xs text-fg-muted">We start in the Western Cape. Choose the Head Office to see it on the map.</p>
-              </div>)}
+      <div className="vc-locator">
+        <div>
+          <div className="vc-search">
+            <Search className="vc-icon" aria-hidden="true" />
+            <label className="sr-only" htmlFor="loc-search">Search locations</label>
+            <input className="vc-input" id="loc-search" type="search" value={query} onChange={e => { setQuery(e.target.value); setSelected(0); }} placeholder="Search by city, suburb or name" autoComplete="off" />
           </div>
+          <div className="vc-chips" role="group" aria-label="Filter by type">
+            {[["all", "All"], ["office", "Head Office"], ["agent", "Agents"]].map(([id, label]) => (
+              <button key={id} className="vc-chip" type="button" aria-pressed={filter === id} onClick={() => { setFilter(id as typeof filter); setSelected(0); }}>{label}</button>))}
+          </div>
+          <ul className="vc-loc-list" aria-live="polite">
+            {results.map((a, i) => (
+              <li key={a.name}>
+                <button type="button" className="vc-loc" aria-current={current === a} onClick={() => setSelected(i)}>
+                  <span className="vc-loc__icon" aria-hidden="true">{a.type === "office" ? <Building2 className="vc-icon" /> : <Store className="vc-icon" />}</span>
+                  <span>
+                    <h3>{a.name}</h3>
+                    <p>{a.cover}</p>
+                    <p>{a.services}</p>
+                    <span className="vc-meta"><Clock className="vc-icon" aria-hidden="true" style={{ width: 13, height: 13 }} />{a.hours}</span>
+                  </span>
+                </button>
+              </li>))}
+            {results.length === 0 && <li className="vc-loc-empty">No locations match your search.</li>}
+          </ul>
         </div>
-      </section>
 
-      <section>
-        <SectionHead eyebrow="Before you visit" title="What to bring" />
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {BEFORE_YOU_VISIT.map((c) => (
-            <div key={c.title} className="rounded-2xl border border-line bg-surface p-4">
-              <p className="mb-2 text-sm font-bold text-fg">{c.title}</p>
-              <ul className="space-y-1.5">
-                {c.items.map((it) => (
-                  <li key={it} className="flex items-start gap-2 text-xs text-fg-muted">
-                    <CheckCircle aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 shrink-0" style={{ color: "var(--vk-crimson-text)" }} />{it}
-                  </li>))}
-              </ul>
-            </div>))}
+        <div className="vc-map">
+          {hasMap ? (<>
+            <iframe key={HEAD_OFFICE_ADDRESS} title="Map of the VINK Head Office" src={mapSrc(HEAD_OFFICE_ADDRESS)} loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
+            <div className="vc-map__bar">
+              <div><strong>VINK Head Office</strong><span>{HEAD_OFFICE_ADDRESS}</span></div>
+              <a className="vc-btn vc-btn--primary vc-btn--sm" href={directionsHref(HEAD_OFFICE_ADDRESS)} target="_blank" rel="noopener noreferrer">Get directions <ArrowRight className="vc-icon" aria-hidden="true" /></a>
+            </div>
+          </>) : (
+            <div className="vc-map__empty">
+              <MapPin className="vc-icon" aria-hidden="true" style={{ width: 32, height: 32, color: "var(--vk-crimson-text)" }} />
+              <strong>Agent locations are announced before launch</strong>
+              <span style={{ fontSize: 13, color: "var(--vk-fg-muted)", maxWidth: 320 }}>We start in the Western Cape. Choose the Head Office to see it on the map.</span>
+            </div>)}
         </div>
-      </section>
+      </div>
+
+      <p className="vc-section-eyebrow">Before you visit</p>
+      <h2 className="vc-section-title">What to bring</h2>
+      <div className="vc-bring" style={{ marginTop: 18 }}>
+        {BEFORE_YOU_VISIT.map((c) => (
+          <div key={c.title}>
+            <h3>{c.title}</h3>
+            <ul>{c.items.map((it) => <li key={it}><CheckCircle className="vc-icon" aria-hidden="true" />{it}</li>)}</ul>
+          </div>))}
+      </div>
     </div>
   );
 }
 
 // ── Tab: Send Us Your Feedback ──────────────────────────────────────────
 const FEEDBACK_KINDS = [
-  { id: "Compliment", icon: <Heart className="h-5 w-5" />, hint: "Something went well" },
-  { id: "Suggestion", icon: <Lightbulb className="h-5 w-5" />, hint: "An idea to improve" },
-  { id: "Complaint", icon: <AlertTriangle className="h-5 w-5" />, hint: "Something went wrong" },
+  { id: "Compliment", icon: <Heart className="vc-icon" aria-hidden="true" />, hint: "Something went well" },
+  { id: "Suggestion", icon: <Lightbulb className="vc-icon" aria-hidden="true" />, hint: "An idea to improve" },
+  { id: "Complaint", icon: <AlertTriangle className="vc-icon" aria-hidden="true" />, hint: "Something went wrong" },
 ] as const;
 const CHANNELS = ["Branch or agent", "VINK app", "Online banking", "Call centre", "Card or terminal", "Other"];
 const SUBJECTS = TOPICS.slice(3);        // the product areas; the type of feedback is chosen separately
 
 function StarRating({ value, onChange }: { value: number; onChange: (n: number) => void }) {
   return (
-    <div role="radiogroup" aria-label="Overall experience" className="flex items-center gap-1">
+    <div className="vc-rating" role="radiogroup" aria-label="Overall experience">
       {[1, 2, 3, 4, 5].map((n) => (
-        <button key={n} type="button" role="radio" aria-checked={value === n} aria-label={`${n} star${n === 1 ? "" : "s"}`} onClick={() => onChange(value === n ? 0 : n)}
-          className="rounded p-0.5 focus-visible:outline-2" style={{ outlineColor: P }}>
-          <Star aria-hidden="true" className="h-6 w-6" style={{ color: n <= value ? P : "var(--vk-line-strong)", fill: n <= value ? P : "none" }} />
+        <button key={n} type="button" role="radio" aria-checked={value === n} aria-label={`${n} star${n === 1 ? "" : "s"}`} className={n <= value ? "on" : ""} onClick={() => onChange(value === n ? 0 : n)}>
+          <Star className="vc-icon" aria-hidden="true" />
         </button>))}
     </div>
   );
 }
-
-const field = "w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-fg outline-none transition-colors placeholder:text-fg-subtle focus:border-[color:var(--vk-brand)]";
 
 function FeedbackTab({ departments }: { departments: Department[] }) {
   const [form, setForm] = useState({
@@ -426,118 +396,107 @@ function FeedbackTab({ departments }: { departments: Department[] }) {
 
   if (submitted) {
     return (
-      <div className="mx-auto max-w-lg rounded-2xl border border-line bg-surface p-10 text-center">
-        <CheckCircle aria-hidden="true" className="mx-auto mb-3 h-12 w-12" style={{ color: "var(--vk-ok)" }} />
-        <h2 className="mb-1 text-lg font-bold text-fg">Message sent</h2>
-        <p className="text-sm text-fg-muted">Your reference number is <strong style={{ color: "var(--vk-crimson-text)" }}>{submitted}</strong>.</p>
-        <p className="mt-1 text-sm text-fg-muted">We sent a receipt to <strong className="text-fg">{form.email}</strong>. {deptByKey(form.department)?.name ?? "VINK"} will reply within {deptByKey(form.department)?.respondWithin ?? "1–2 business days"}.</p>
+      <div className="vc-panel">
+        <div className="vc-card vc-done">
+          <CheckCircle className="vc-icon" aria-hidden="true" style={{ width: 48, height: 48, color: "var(--vk-ok)" }} />
+          <h2 className="vc-card__title" style={{ marginTop: 12 }}>Message sent</h2>
+          <p className="vc-card__lead" style={{ marginBottom: 6 }}>Your reference number is <strong style={{ color: "var(--vk-crimson-text)" }}>{submitted}</strong>.</p>
+          <p className="vc-card__lead" style={{ margin: 0 }}>We sent a receipt to <strong style={{ color: "var(--vc-ink-text, var(--vk-fg))" }}>{form.email}</strong>. {deptByKey(form.department)?.name ?? "VINK"} will reply within {deptByKey(form.department)?.respondWithin ?? "1–2 business days"}.</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-12">
-      <section className="grid gap-6 lg:grid-cols-[minmax(0,.8fr)_minmax(0,1.2fr)]">
-        <div className="space-y-4">
-          <SectionHead eyebrow="Your voice matters" title="Send us your feedback" lead="Tell us what we are doing well and where we can do better. Every message is read by a real person." />
-          <div className="flex items-start gap-3 rounded-2xl border border-line bg-surface p-4">
-            <span aria-hidden="true" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style={{ background: "var(--vk-brand-soft)", color: "var(--vk-crimson-text)" }}><AlertTriangle className="h-5 w-5" /></span>
-            <div><h3 className="text-sm font-bold text-fg">Need urgent help?</h3><p className="mt-1 text-xs text-fg-muted">For lost or stolen cards call <a href="tel:+27210070772" className="font-semibold no-underline" style={{ color: "var(--vk-crimson-text)" }}>+27 (0)21 007 0772</a>, available 24/7. To report fraud call <a href="tel:+27614615035" className="font-semibold no-underline" style={{ color: "var(--vk-crimson-text)" }}>+27 (0)61 461 5035</a>.</p></div>
+    <div className="vc-panel">
+      <div className="vc-panel-grid">
+        <div className="vc-side-card">
+          <div>
+            <p className="vc-section-eyebrow">Your voice matters</p>
+            <h2 className="vc-section-title">Send us your feedback</h2>
+            <p className="vc-section-lead" style={{ marginBottom: 0 }}>Tell us what we are doing well and where we can do better. Every message is read by a real person.</p>
           </div>
-          <div className="flex items-start gap-3 rounded-2xl border border-line bg-surface p-4">
-            <span aria-hidden="true" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style={{ background: "var(--vk-brand-soft)", color: "var(--vk-crimson-text)" }}><CheckCircle className="h-5 w-5" /></span>
-            <div><h3 className="text-sm font-bold text-fg">What happens next?</h3>
-              <ol className="mt-1 list-decimal space-y-1 pl-4 text-xs text-fg-muted"><li>Your enquiry is received immediately and you get a reference number.</li><li>A support consultant reviews your request.</li><li>You receive a response within 1–2 business days.</li></ol></div>
+          <div className="vc-tip">
+            <span className="vc-tip__icon" aria-hidden="true"><AlertTriangle className="vc-icon" /></span>
+            <div><h3>Need urgent help?</h3><p>For lost or stolen cards call <a href="tel:+27210070772">+27 (0)21 007 0772</a>, available 24/7. To report fraud call <a href="tel:+27614615035">+27 (0)61 461 5035</a>.</p></div>
+          </div>
+          <div className="vc-tip">
+            <span className="vc-tip__icon" aria-hidden="true"><CheckCircle className="vc-icon" /></span>
+            <div><h3>What happens next?</h3><ol><li>Your enquiry is received at once and you get a reference number.</li><li>A support consultant reviews your request.</li><li>You receive a response within 1–2 business days.</li></ol></div>
           </div>
         </div>
 
-        <form className="rounded-2xl border border-line bg-surface p-5 shadow-[0_1px_2px_rgba(16,24,40,0.04)] sm:p-7" onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} noValidate>
-          <h2 className="text-lg font-bold text-fg">Share your experience</h2>
-          <p className="mb-5 text-sm text-fg-muted">It only takes a minute.</p>
-          <div className="space-y-5">
-            <fieldset>
-              <legend className="mb-2 text-sm font-semibold text-fg">Type of feedback</legend>
-              <div className="grid gap-2 sm:grid-cols-3">
-                {FEEDBACK_KINDS.map((k) => (
-                  <label key={k.id} className="cursor-pointer">
-                    <input type="radio" name="kind" value={k.id} checked={form.kind === k.id} onChange={() => setForm(f => ({ ...f, kind: k.id }))} className="peer sr-only" />
-                    <span className="flex h-full flex-col items-start gap-1 rounded-xl border border-line bg-surface p-3 text-sm font-semibold text-fg transition-colors peer-checked:border-[color:var(--vk-brand)] peer-checked:bg-[color:var(--vk-brand-soft)] peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2" style={{ color: "var(--vk-fg)" }}>
-                      <span style={{ color: "var(--vk-crimson-text)" }}>{k.icon}</span>{k.id}<small className="text-xs font-normal text-fg-muted">{k.hint}</small>
-                    </span>
-                  </label>))}
-              </div>
+        <form className="vc-card" onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} noValidate>
+          <h2 className="vc-card__title">Share your experience</h2>
+          <p className="vc-card__lead">It only takes a minute.</p>
+          <div className="vc-form-grid">
+            <fieldset className="vc-field vc-field--full vc-fb-types">
+              <legend>Type of feedback <span className="vc-req" aria-hidden="true">*</span></legend>
+              {FEEDBACK_KINDS.map((k) => (
+                <label key={k.id} className="vc-fb-type">
+                  <input type="radio" name="kind" value={k.id} checked={form.kind === k.id} onChange={() => setForm(f => ({ ...f, kind: k.id }))} />
+                  <span>{k.icon}{k.id}<small>{k.hint}</small></span>
+                </label>))}
             </fieldset>
 
-            <div><span className="mb-1.5 block text-sm font-semibold text-fg">Overall experience</span><StarRating value={form.rating} onChange={(n) => setForm(f => ({ ...f, rating: n }))} /></div>
+            <div className="vc-field vc-field--full"><span id="rating-label" style={{ fontSize: 13, fontWeight: 500 }}>Overall experience</span><StarRating value={form.rating} onChange={(n) => setForm(f => ({ ...f, rating: n }))} /></div>
 
-            <div>
-              <span className="mb-1.5 block text-sm font-semibold text-fg">You are giving feedback for</span>
-              <div role="group" aria-label="Feedback for" className="flex flex-wrap gap-2">
-                {["Personal Banking", "Private or Business Banking"].map(t => (
-                  <button key={t} type="button" aria-pressed={form.bankingType === t} onClick={() => setForm(f => ({ ...f, bankingType: t }))}
-                    className="rounded-full border px-4 py-1.5 text-xs font-semibold transition-colors"
-                    style={form.bankingType === t ? { background: P, borderColor: P, color: "#fff" } : { background: "var(--vk-surface)", borderColor: "var(--vk-line)", color: "var(--vk-fg-muted)" }}>{t}</button>))}
-              </div>
+            <div className="vc-field vc-field--full">
+              <label htmlFor="contact-for">You are giving feedback for</label>
+              <select className="vc-select" id="contact-for" value={form.bankingType} onChange={e => setForm(f => ({ ...f, bankingType: e.target.value }))}>
+                {["Personal Banking", "Private or Business Banking"].map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
             </div>
 
-            <div>
-              <label htmlFor="contact-department" className="mb-1.5 block text-sm font-semibold text-fg">Who is your message for?</label>
-              <select id="contact-department" value={form.department} onChange={e => setForm(f => ({ ...f, department: e.target.value }))} className={field}>
+            <div className="vc-field vc-field--full">
+              <label htmlFor="contact-department">Who is your message for?</label>
+              <select className="vc-select" id="contact-department" value={form.department} onChange={e => setForm(f => ({ ...f, department: e.target.value }))}>
                 {departments.map(d => <option key={d.key} value={d.key}>{d.name} — {d.purpose}</option>)}
               </select>
-              <p className="mt-1.5 text-xs text-fg-muted">Goes to <a href={`mailto:${deptByKey(form.department)?.address}`} className="font-semibold" style={{ color: "var(--vk-crimson-text)" }}>{deptByKey(form.department)?.address}</a>. You can also write to that address yourself.</p>
+              <span className="vc-form-note">Goes to <a href={`mailto:${deptByKey(form.department)?.address}`} style={{ color: "var(--vk-crimson-text)", fontWeight: 600 }}>{deptByKey(form.department)?.address}</a>. You can also write to that address yourself.</span>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label htmlFor="contact-topic" className="mb-1.5 block text-sm font-semibold text-fg">What is it about?</label>
-                <select id="contact-topic" value={form.topic} onChange={e => setForm(f => ({ ...f, topic: e.target.value }))} className={field}>{SUBJECTS.map(t => <option key={t} value={t}>{t}</option>)}</select>
-              </div>
-              <div>
-                <label htmlFor="contact-channel" className="mb-1.5 block text-sm font-semibold text-fg">Where did this happen?</label>
-                <select id="contact-channel" value={form.channel} onChange={e => setForm(f => ({ ...f, channel: e.target.value }))} className={field}><option value="">Select an option</option>{CHANNELS.map(t => <option key={t} value={t}>{t}</option>)}</select>
-              </div>
+            <div className="vc-field">
+              <label htmlFor="contact-topic">What is it about?</label>
+              <select className="vc-select" id="contact-topic" value={form.topic} onChange={e => setForm(f => ({ ...f, topic: e.target.value }))}>{SUBJECTS.map(t => <option key={t} value={t}>{t}</option>)}</select>
+            </div>
+            <div className="vc-field">
+              <label htmlFor="contact-channel">Where did this happen?</label>
+              <select className="vc-select" id="contact-channel" value={form.channel} onChange={e => setForm(f => ({ ...f, channel: e.target.value }))}><option value="">Select an option</option>{CHANNELS.map(t => <option key={t} value={t}>{t}</option>)}</select>
             </div>
 
-            <div>
-              <label htmlFor="contact-message" className="mb-1.5 block text-sm font-semibold text-fg">Your message <span aria-hidden="true" style={{ color: P }}>*</span></label>
-              <textarea id="contact-message" value={form.message} onChange={e => setForm(f => ({ ...f, message: e.target.value }))} rows={5} placeholder="Tell us what happened…" className={`${field} resize-y`} />
-              <p className="mt-1 text-xs text-fg-muted">Please don't include card numbers or passwords.</p>
+            <div className="vc-field vc-field--full">
+              <label htmlFor="contact-message">Your message <span className="vc-req" aria-hidden="true">*</span></label>
+              <textarea className="vc-textarea" id="contact-message" rows={5} value={form.message} onChange={e => setForm(f => ({ ...f, message: e.target.value }))} placeholder="Tell us what happened…" />
+              <span className="vc-form-note">Please don't include card numbers or passwords.</span>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div><label htmlFor="contact-name" className="mb-1.5 block text-sm font-semibold text-fg">Name <span aria-hidden="true" style={{ color: P }}>*</span></label><input id="contact-name" autoComplete="given-name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className={field} /></div>
-              <div><label htmlFor="contact-surname" className="mb-1.5 block text-sm font-semibold text-fg">Surname <span aria-hidden="true" style={{ color: P }}>*</span></label><input id="contact-surname" autoComplete="family-name" value={form.surname} onChange={e => setForm(f => ({ ...f, surname: e.target.value }))} className={field} /></div>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div><label htmlFor="contact-email" className="mb-1.5 block text-sm font-semibold text-fg">Email address <span aria-hidden="true" style={{ color: P }}>*</span></label><input id="contact-email" type="email" autoComplete="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} className={field} /></div>
-              <div><label htmlFor="contact-phone" className="mb-1.5 block text-sm font-semibold text-fg">Phone number (optional)</label><input id="contact-phone" type="tel" autoComplete="tel" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} className={field} /></div>
-            </div>
+            <div className="vc-field"><label htmlFor="contact-name">Name <span className="vc-req" aria-hidden="true">*</span></label><input className="vc-input" id="contact-name" autoComplete="given-name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Enter your name" /></div>
+            <div className="vc-field"><label htmlFor="contact-surname">Surname <span className="vc-req" aria-hidden="true">*</span></label><input className="vc-input" id="contact-surname" autoComplete="family-name" value={form.surname} onChange={e => setForm(f => ({ ...f, surname: e.target.value }))} placeholder="Enter your surname" /></div>
+            <div className="vc-field"><label htmlFor="contact-email">Email address <span className="vc-req" aria-hidden="true">*</span></label><input className="vc-input" id="contact-email" type="email" autoComplete="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="Enter your email address" /></div>
+            <div className="vc-field"><label htmlFor="contact-phone">Phone number (optional)</label><input className="vc-input" id="contact-phone" type="tel" autoComplete="tel" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} placeholder="Enter your phone number" /></div>
 
             <div aria-hidden="true" style={{ position: "absolute", left: "-10000px", width: 1, height: 1, overflow: "hidden" }}>
               <label>Leave this empty<input tabIndex={-1} autoComplete="off" value={form.website} onChange={e => setForm(f => ({ ...f, website: e.target.value }))} /></label>
             </div>
 
-            <div>
-              <label htmlFor="contact-captcha" className="mb-1.5 block text-sm font-semibold text-fg">Enter the code shown below</label>
+            <div className="vc-field vc-field--full">
+              <label htmlFor="contact-captcha">Enter the code shown below</label>
               <CaptchaBox code={captchaCode} onRefresh={() => { setCaptchaCode(genCode()); setCaptchaInput(""); }} />
-              <input id="contact-captcha" value={captchaInput} onChange={e => setCaptchaInput(e.target.value)} className={`${field} mt-2 uppercase tracking-widest`} placeholder="Type the code" autoComplete="off" />
-            </div>
-
-            <div className="flex flex-wrap items-center gap-4">
-              <button type="submit" disabled={submitting} className="inline-flex items-center justify-center gap-2 rounded-full px-8 py-3 text-sm font-semibold text-white transition-colors hover:bg-[color:var(--vk-brand-hover)] disabled:opacity-60" style={{ background: P }}>
-                {submitting ? <><Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> Sending…</> : <>Send message <ArrowRight className="h-4 w-4" aria-hidden="true" /></>}
-              </button>
-              <p className="text-xs text-fg-muted">Never share your PIN, password or OTP with us.</p>
+              <input className="vc-input" id="contact-captcha" value={captchaInput} onChange={e => setCaptchaInput(e.target.value)} style={{ textTransform: "uppercase", letterSpacing: ".18em" }} placeholder="Type the code" autoComplete="off" />
             </div>
           </div>
+          <div className="vc-form-foot">
+            <button className="vc-btn vc-btn--primary" type="submit" disabled={submitting}>
+              {submitting ? <><Loader2 className="vc-icon animate-spin" aria-hidden="true" /> Sending…</> : <>Send message <ArrowRight className="vc-icon" aria-hidden="true" /></>}
+            </button>
+            <p className="vc-form-note">Never share your PIN, password or OTP with us.</p>
+          </div>
         </form>
-      </section>
+      </div>
 
-      <section>
-        <SectionHead eyebrow="Help" title="Frequently asked questions" />
-        <FaqGrid />
-      </section>
+      <h2 className="vc-section-title vc-faq-title">Frequently asked questions</h2>
+      <div className="vc-acc-wrap" style={{ marginInline: 0, maxWidth: "none" }}><FaqGrid /></div>
     </div>
   );
 }
@@ -559,49 +518,37 @@ export function ContactUsViewer({ isOpen, onClose, initialTab }: Props) {
   const current = TABS.find((t) => t.id === tab)!;
 
   return (
-    <div data-theme-aware className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-bg">
-      {/* Hero: the brand red, with the three things most people come for */}
-      <section aria-labelledby="contact-hero-title" className="text-white" style={{ background: P }}>
-        <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-14 sm:py-16 lg:grid-cols-[1.15fr_.85fr]">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/90">Contact us</p>
-            <h1 id="contact-hero-title" className="mt-3 text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl">Get the contact information you need</h1>
-            <p className="mt-4 max-w-xl text-base leading-relaxed text-white/90 sm:text-lg">We're here to help. Whether you have a question, need support or want to give feedback, our team is ready to assist you.</p>
-            <div className="mt-7 flex flex-wrap gap-3">
-              <a href={CARE_PHONE.href} className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold no-underline" style={{ color: P }}><Phone className="h-4 w-4" aria-hidden="true" />Call us</a>
-              <button type="button" onClick={() => go("locate")} className="inline-flex items-center gap-2 rounded-full border border-white/70 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/10"><MapPin className="h-4 w-4" aria-hidden="true" />Locate us</button>
-              <button type="button" onClick={() => go("feedback")} className="inline-flex items-center gap-2 rounded-full border border-white/70 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/10"><MessageCircle className="h-4 w-4" aria-hidden="true" />Send us your feedback</button>
+    <div data-theme-aware className="vc fixed inset-0 z-50 flex flex-col overflow-y-auto bg-bg">
+      {/* Hero: the brand red, copy on the left, the three things most people come for */}
+      <section className="vc-hero" aria-labelledby="contact-hero-title">
+        <div className="vc-container vc-hero__inner">
+          <div className="vc-hero__copy">
+            <p className="vc-eyebrow">Contact us</p>
+            <h1 id="contact-hero-title">Get the contact information you need</h1>
+            <p>We're here to help. Whether you have a question, need support or want to give feedback, our team is ready to assist you.</p>
+            <div className="vc-hero__links">
+              <a href={CARE_PHONE.href}><Phone className="vc-icon" aria-hidden="true" />Call us</a>
+              <button type="button" onClick={() => go("locate")}><MapPin className="vc-icon" aria-hidden="true" />Locate us</button>
+              <button type="button" onClick={() => go("feedback")}><MessageCircle className="vc-icon" aria-hidden="true" />Send us your feedback</button>
             </div>
           </div>
-          <div className="rounded-3xl border border-white/25 bg-white/10 p-6 backdrop-blur-sm">
-            <span aria-hidden="true" className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white" style={{ color: P }}><Headphones className="h-7 w-7" /></span>
-            <p className="mt-4 text-lg font-bold text-white">We're here for you</p>
-            <ul className="mt-3 space-y-2 text-sm text-white/95">
-              <li className="flex items-center gap-2"><Phone className="h-4 w-4 shrink-0" aria-hidden="true" /><span><a href={CARE_PHONE.href} className="font-semibold text-white no-underline">{CARE_PHONE.label}</a> · {CARE_HOURS}</span></li>
-              <li className="flex items-center gap-2"><Shield className="h-4 w-4 shrink-0" aria-hidden="true" /><span>Lost cards and fraud: 24/7</span></li>
-              <li className="flex items-center gap-2"><Mail className="h-4 w-4 shrink-0" aria-hidden="true" /><a href="mailto:info@vink.co.za" className="font-semibold text-white no-underline">info@vink.co.za</a></li>
-            </ul>
-          </div>
+          <div className="vc-hero__media" aria-hidden="true" />
         </div>
       </section>
 
       {/* Tabs: they stay at the top while the page scrolls */}
-      <div id="contact-tabs" className="sticky top-0 z-20 border-b border-line bg-surface/95 backdrop-blur">
-        <div className="mx-auto max-w-6xl px-5">
-          <div role="tablist" aria-label="Contact options" className="flex gap-1 overflow-x-auto">
+      <div className="vc-tabs-bar" id="contact-tabs">
+        <div className="vc-container">
+          <div className="vc-tabs" role="tablist" aria-label="Contact options">
             {TABS.map((t, i) => (
-              <button key={t.id} id={`tab-${t.id}`} role="tab" aria-selected={tab === t.id} aria-controls={`panel-${t.id}`} tabIndex={tab === t.id ? 0 : -1} onClick={() => setTab(t.id)} onKeyDown={(e) => onTabKey(e, i)}
-                className="shrink-0 whitespace-nowrap border-b-2 px-4 py-4 text-sm font-semibold transition-colors"
-                style={{ color: tab === t.id ? P : "var(--vk-fg-muted)", borderColor: tab === t.id ? P : "transparent" }}>
-                {t.label}
-              </button>))}
+              <button key={t.id} className="vc-tab" id={`tab-${t.id}`} role="tab" aria-selected={tab === t.id} aria-controls={`panel-${t.id}`} tabIndex={tab === t.id ? 0 : -1} onClick={() => setTab(t.id)} onKeyDown={(e) => onTabKey(e, i)}>{t.label}</button>))}
           </div>
         </div>
       </div>
 
-      <div className="mx-auto w-full max-w-6xl px-5 pb-16 pt-6">
-        <nav aria-label="Breadcrumb" className="mb-8 flex items-center gap-2 text-xs text-fg-muted">
-          <button type="button" onClick={onClose} className="font-semibold underline-offset-2 hover:underline" style={{ color: "var(--vk-crimson-text)" }}>Home</button>
+      <div className="vc-container">
+        <nav className="vc-crumbs" aria-label="Breadcrumb">
+          <button type="button" onClick={onClose}>Home</button>
           <span aria-hidden="true">/</span><span aria-current="page">Contact VINK Support{tab !== "connect" ? ` · ${current.label}` : ""}</span>
         </nav>
         <div id={`panel-${tab}`} role="tabpanel" aria-labelledby={`tab-${tab}`}>
@@ -612,29 +559,20 @@ export function ContactUsViewer({ isOpen, onClose, initialTab }: Props) {
       </div>
 
       {/* Head office, and the app */}
-      <div className="border-t border-line bg-surface-2">
-        <div className="mx-auto grid w-full max-w-6xl gap-4 px-5 py-8 sm:grid-cols-2">
-          <div className="flex items-start gap-4 rounded-2xl border border-line bg-surface p-5">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style={{ background: "var(--vk-brand-soft)", color: "var(--vk-crimson-text)" }}><Building2 aria-hidden="true" className="h-5 w-5" /></div>
+      <div className="vc-after">
+        <div className="vc-container vc-after__grid">
+          <div className="vc-after__card">
+            <span className="vc-after__icon" aria-hidden="true"><Building2 className="vc-icon" /></span>
             <div>
-              <p className="mb-1 text-[11px] font-bold uppercase tracking-wide text-fg-muted">Head Office</p>
-              <p className="text-sm font-bold text-fg">VINK Finance Limited</p>
-              <p className="mt-0.5 text-xs text-fg-muted">{HEAD_OFFICE_ADDRESS}</p>
-              <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
-                <a href="mailto:info@vink.co.za" className="text-xs font-semibold no-underline" style={{ color: "var(--vk-crimson-text)" }}>info@vink.co.za</a>
-                <span className="text-xs text-fg-muted">{CARE_HOURS}</span>
-              </div>
+              <h3>VINK Finance Limited</h3>
+              <p>Head Office · {HEAD_OFFICE_ADDRESS}</p>
+              <p><a href="mailto:info@vink.co.za" style={{ color: "var(--vk-crimson-text)", fontWeight: 600 }}>info@vink.co.za</a> · {CARE_HOURS}</p>
             </div>
           </div>
-          <div className="flex items-center justify-between gap-4 rounded-2xl border border-line bg-surface p-5">
-            <div>
-              <p className="mb-1 flex items-center gap-2 text-sm font-bold text-fg"><Smartphone aria-hidden="true" className="h-4 w-4" style={{ color: "var(--vk-crimson-text)" }} /> Get the VINK App</p>
-              <p className="text-xs text-fg-muted">Banking, payments and cards, all in one app. Coming soon.</p>
-            </div>
-            <div className="flex shrink-0 flex-col gap-1.5">
-              <span className="rounded-lg border border-line bg-surface-2 px-2.5 py-1 text-center text-[10px] font-bold text-fg-muted">App Store</span>
-              <span className="rounded-lg border border-line bg-surface-2 px-2.5 py-1 text-center text-[10px] font-bold text-fg-muted">Google Play</span>
-            </div>
+          <div className="vc-after__card">
+            <span className="vc-after__icon" aria-hidden="true"><Smartphone className="vc-icon" /></span>
+            <div><h3>Get the VINK App</h3><p>Banking, payments and cards, all in one app. Coming soon.</p></div>
+            <div className="vc-after__badges"><span>App Store</span><span>Google Play</span></div>
           </div>
         </div>
       </div>

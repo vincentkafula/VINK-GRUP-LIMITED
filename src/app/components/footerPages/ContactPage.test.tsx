@@ -27,17 +27,17 @@ const tab = (name: string) => [...host.querySelectorAll('[role="tab"]')].find((t
 describe("the Contact page hero and tabs", () => {
   it("opens with the red hero: the headline, the three quick links, and the support details", async () => {
     await render();
-    const hero = q("section[aria-labelledby='contact-hero-title']")!;
-    expect(hero.style.background).toMatch(/200, 16, 46|#c8102e/i); expect(hero.querySelector("h1")!.textContent).toBe("Get the contact information you need");
+    const hero = q("section.vc-hero")!;
+    expect(hero.getAttribute("aria-labelledby")).toBe("contact-hero-title"); expect(hero.querySelector("h1")!.textContent).toBe("Get the contact information you need");
     expect([...hero.querySelectorAll("a, button")].map((e) => e.textContent).filter((t) => ["Call us", "Locate us", "Send us your feedback"].includes(t!))).toEqual(["Call us", "Locate us", "Send us your feedback"]);
-    expect(hero.querySelector('a[href="tel:+27210095100"]')).toBeTruthy(); expect(hero.textContent).toContain("Lost cards and fraud: 24/7");
+    expect(hero.querySelector('a[href="tel:+27210095100"]')).toBeTruthy();
   });
   it("has three tabs that switch the panel, with the right roles, and the hero links go to their tabs", async () => {
     await render();
     expect([...host.querySelectorAll('[role="tab"]')].map((t) => t.textContent)).toEqual(["Connect With Us", "Locate Us", "Send Us Your Feedback"]);
     expect(tab("Connect With Us").getAttribute("aria-selected")).toBe("true"); expect(q('[role="tabpanel"]')!.getAttribute("aria-labelledby")).toBe("tab-connect");
     await click(tab("Locate Us")); expect(tab("Locate Us").getAttribute("aria-selected")).toBe("true"); expect(q('[role="tabpanel"]')!.textContent).toContain("Locate a branch or agent");
-    await click([...host.querySelectorAll("section[aria-labelledby='contact-hero-title'] button")].find((b) => b.textContent === "Send us your feedback"));
+    await click([...host.querySelectorAll("section.vc-hero button")].find((b) => b.textContent === "Send us your feedback"));
     expect(tab("Send Us Your Feedback").getAttribute("aria-selected")).toBe("true");
   });
   it("has a breadcrumb whose Home goes back to the home page", async () => {
@@ -48,11 +48,11 @@ describe("the Contact page hero and tabs", () => {
 describe("the Connect tab", () => {
   it("lists the services as items that open one by one, with the real numbers inside", async () => {
     await render();
-    const btn = q("#acc-btn-cards")!; expect(btn.getAttribute("aria-expanded")).toBe("false"); expect(q("#acc-panel-cards")!.hasAttribute("hidden")).toBe(true);
-    await click(btn); expect(btn.getAttribute("aria-expanded")).toBe("true"); expect(q("#acc-panel-cards")!.hidden).toBe(false);
+    const btn = q("#acc-btn-cards")!; expect(btn.getAttribute("aria-expanded")).toBe("false"); expect(q("#acc-panel-cards")!.hasAttribute("inert")).toBe(true);          // closed: nothing in it can be tabbed to
+    await click(btn); expect(btn.getAttribute("aria-expanded")).toBe("true"); expect(q("#acc-panel-cards")!.hasAttribute("inert")).toBe(false); expect(btn.closest(".vc-acc__item")!.classList.contains("is-open")).toBe(true);
     expect(q("#acc-panel-cards a[href='tel:+27210070772']")!.textContent).toBe("+27 (0)21 007 0772");
-    expect(q("#acc-panel-fraud")!.hidden).toBe(true);                                            // the others stay closed
-    await click(btn); expect(q("#acc-panel-cards")!.hidden).toBe(true);
+    expect(q("#acc-panel-fraud")!.hasAttribute("inert")).toBe(true);                                // the others stay closed
+    await click(btn); expect(q("#acc-panel-cards")!.hasAttribute("inert")).toBe(true);
   });
   it("offers each department's mailbox, and the banking areas", async () => {
     await render();
@@ -62,7 +62,7 @@ describe("the Connect tab", () => {
   it("has the immediate-assistance card with the support number, and falls back to the message form when WhatsApp is off", async () => {
     await render();
     const card = q('aside[aria-label="Immediate assistance"]')!; expect(card.textContent).toContain("Need immediate assistance?"); expect(card.querySelector("a[href='tel:+27210095100']")).toBeTruthy();
-    expect(card.textContent).toContain("Fraud Hotline"); await click([...card.querySelectorAll("button")].find((b) => b.textContent === "Message us")); expect(tab("Send Us Your Feedback").getAttribute("aria-selected")).toBe("true");
+    expect(card.textContent).toContain("Lost cards and fraud: 24/7"); await click([...card.querySelectorAll("button")].find((b) => b.textContent === "Message us")); expect(tab("Send Us Your Feedback").getAttribute("aria-selected")).toBe("true");
   });
 });
 
@@ -70,7 +70,7 @@ describe("the Locate tab", () => {
   it("filters the locations, shows the Head Office on a map with directions, and says agents are announced later", async () => {
     await render("locate");
     expect(q("iframe[title='Map of the VINK Head Office']")!.getAttribute("src")).toContain("8%20Rose%20Street"); expect(q("a[href*='/maps/dir/']")).toBeTruthy();
-    await click([...host.querySelectorAll('[role="group"] button')].find((b) => b.textContent === "Agents"));
+    await click([...host.querySelectorAll('.vc-chips button')].find((b) => b.textContent === "Agents"));
     expect(q("iframe")).toBeNull(); expect(host.textContent).toContain("Agent locations are announced before launch");
   });
 });
