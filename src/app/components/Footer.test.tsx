@@ -38,3 +38,14 @@ describe("Footer", () => {
     expect(labels).toEqual(["Careers"]);
   });
 });
+
+describe("Footer legal links", () => {
+  it("lists Terms of use, Banking regulations, Privacy Statement and Security Centre once each, in the Legal column on the red background, and not again in the black bar", () => {
+    const links = [...host.querySelectorAll("a")].map((a) => a.textContent!.trim().toLowerCase());
+    for (const t of ["terms of use", "banking regulations", "privacy statement", "security centre"]) expect(links.filter((l) => l === t), t).toHaveLength(1);
+    const legal = [...host.querySelectorAll("p")].find((p) => p.textContent === "Legal")!.closest("div")!.parentElement!;
+    expect(legal.textContent).toContain("Security Centre"); expect(legal.textContent).toContain("Legal and Compliance");
+    expect(host.querySelector('nav[aria-label="Legal"]')).toBeNull();
+    expect(host.textContent).toContain("All rights reserved"); expect(host.textContent).toContain("Registration No: 2018/079316/07");
+  });
+});

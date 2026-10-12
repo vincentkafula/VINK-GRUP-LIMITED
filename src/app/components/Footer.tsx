@@ -51,6 +51,7 @@ const COLS = [
       "Terms of use",
       "Banking regulations",
       "Privacy Statement",
+      "Security Centre",
     ],
   },
   {
@@ -249,20 +250,8 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
       {/* ── SECTION 3: Black bottom bar: legal links and the business registration details ── */}
       <div style={{ background: DARK_BAR }}>
         <div style={{ maxWidth: 1180, margin: "0 auto", padding: "26px 40px 30px" }}>
-          {/* Copyright on the left, the legal links on the right */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "10px 24px" }}>
-            <p style={{ color: "rgba(255,255,255,0.92)", fontSize: 13, margin: 0 }}>© {new Date().getFullYear()} VINK. All rights reserved.</p>
-            <nav aria-label="Legal" style={{ display: "flex", flexWrap: "wrap", alignItems: "center" }}>
-              {["Terms Of Use", "Banking Regulations", "Privacy Statement", "Security Centre"].map((item, i) => (
-                <a key={item} href="#" onClick={(e) => { e.preventDefault(); handleLinkClick(item); }}
-                  style={{ color: "rgba(255,255,255,0.92)", fontSize: 13, fontWeight: 500, textDecoration: "none", padding: "0 14px", borderLeft: i === 0 ? "0" : "1px solid rgba(255,255,255,0.3)", paddingRight: i === 3 ? 0 : 14, whiteSpace: "nowrap", transition: "color .2s" }}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.textDecoration = "underline"; }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.textDecoration = "none"; }}>
-                  {item}
-                </a>
-              ))}
-            </nav>
-          </div>
+          {/* The copyright. The legal links (terms, regulations, privacy, security) are in the Legal column above, once. */}
+          <p style={{ color: "rgba(255,255,255,0.92)", fontSize: 13, margin: 0 }}>© {new Date().getFullYear()} VINK. All rights reserved.</p>
           {/* The business information: what VINK is, and where it is registered */}
           <div style={{ marginTop: 20, paddingTop: 18, borderTop: "1px solid rgba(255,255,255,0.14)" }}>
             <p style={{ color: "rgba(255,255,255,0.78)", fontSize: 12.5, lineHeight: 1.7, margin: 0, maxWidth: 900 }}>
