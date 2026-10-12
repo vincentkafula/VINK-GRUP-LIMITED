@@ -8,7 +8,7 @@ import "./investor.css";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
-const MAIL = "info@vink.co.za";
+const MAIL = "investor.relations@vink.co.za";
 const PHONE = { label: "+27 (0)21 009 5100", href: "tel:+27210095100" };
 const ADDRESS = "State House Building, 8 Rose Street, Cape Town, South Africa";
 
@@ -193,7 +193,7 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
     const v = email.trim();
     if (!/^\S+@\S+\.\S+$/.test(v)) { setMsg("Please enter a valid email address."); return; }
     setBusy(true); setMsg("");
-    const r = await publicApi.contact({ department: "general", name: "Investor alerts sign-up", email: v, subject: "Investor alerts sign-up", message: `Please add ${v} to VINK's investor alerts: results, announcements and reports.`, website: "" });
+    const r = await publicApi.contact({ department: "investors", name: "Investor alerts sign-up", email: v, subject: "Investor alerts sign-up", message: `Please add ${v} to VINK's investor alerts: results, announcements and reports.`, website: "" });
     setBusy(false);
     if (r.success && r.data) { setMsg(`Thank you. We have your request (reference ${r.data.ref}) and sent a confirmation to ${v}.`); setEmail(""); }
     else setMsg(r.error ?? `We could not send your request. Please email ${MAIL}.`);

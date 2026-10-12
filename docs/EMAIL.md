@@ -14,6 +14,7 @@ One list, in two places that a test keeps identical: `server/src/config/departme
 | Careers | careers@vink.co.za | Jobs |
 | Internship Programme | intern@vink.co.za | Internships and graduate placements |
 | Sponsorships and Partnerships | sponsorships@vink.co.za | Proposals |
+| Investor Relations | investor.relations@vink.co.za | Investor enquiries and investor alerts (the Investor Relations page sends its alerts sign-up here) |
 | Media Relations | media@vink.co.za | Press |
 
 Adding a department means adding one line in both files (and creating the mailbox). Other addresses in the code (admin@, billing@, noc1@, owner@, treasury@ and the people on the management page) are internal accounts, not public departments.

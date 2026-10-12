@@ -73,7 +73,7 @@ describe("the Super Administrator's API", () => {
     await db.query(`INSERT INTO inbound_emails (resend_id, from_addr, to_addrs, subject, text_body, department) VALUES ('a','x <x@y.co>',$1,'s','t','sales')`, [["sales@vink.co.za"]]);
     await db.query(`INSERT INTO section_permissions (user_id, section) VALUES ($1,'Sales')`, [MANAGER.userId]);
     const r = await (await call("GET", "")).json() as { departments: { key: string; builtIn: boolean; messages: number; managers: number; public: boolean; active: boolean }[]; domain: string };
-    expect(r.domain).toBe(MAIL_DOMAIN); expect(r.departments).toHaveLength(9); expect(r.departments.every((d) => d.builtIn && d.public && d.active)).toBe(true);
+    expect(r.domain).toBe(MAIL_DOMAIN); expect(r.departments).toHaveLength(10); expect(r.departments.every((d) => d.builtIn && d.public && d.active)).toBe(true);
     expect(r.departments.find((d) => d.key === "sales")).toMatchObject({ messages: 1, managers: 1 }); expect(r.departments.find((d) => d.key === "media")).toMatchObject({ messages: 0, managers: 0 });
   });
 
@@ -82,7 +82,7 @@ describe("the Super Administrator's API", () => {
     expect(r.status).toBe(201); expect(r.body.department).toMatchObject({ key: "legal-affairs", name: "Legal Affairs", address: `legal@${MAIL_DOMAIN}`, builtIn: false, public: false, active: true, messages: 0, managers: 0 });
     expect((await db.query("SELECT key, name, address, is_public, active FROM custom_departments")).rows).toEqual([{ key: "legal-affairs", name: "Legal Affairs", address: `legal@${MAIL_DOMAIN}`, is_public: false, active: true }]);
     expect(allDepartments().map((d) => d.key)).toContain("legal-affairs"); expect(SECTIONS).toContain("Legal Affairs");
-    const list = await (await call("GET", "")).json() as { departments: { key: string }[] }; expect(list.departments).toHaveLength(10);
+    const list = await (await call("GET", "")).json() as { departments: { key: string }[] }; expect(list.departments).toHaveLength(11);
     const svc = createMailService({ db, mail: new ConsoleEmail() });
     expect((await svc.departmentsFor(ROOT)).map((d) => d.key)).toContain("legal-affairs");
     expect((await svc.departmentsFor(MANAGER)).map((d) => d.key)).not.toContain("legal-affairs");                       // a manager needs to be approved for the section first
@@ -151,7 +151,7 @@ describe("the Super Administrator's API", () => {
 
   it("is remembered: the departments are loaded again from the database at start-up", async () => {
     await make({ name: "HR Team", mailbox: "people", public: true }); await make({ name: "Legal Affairs", mailbox: "legal" });
-    setCustomDepartments([]); expect(allDepartments()).toHaveLength(9);
+    setCustomDepartments([]); expect(allDepartments()).toHaveLength(10);
     const loaded = await loadCustomDepartments(db); expect(loaded.map((d) => d.key)).toEqual(["hr-team", "legal-affairs"]);
     expect(departmentByKey("hr-team")).toMatchObject({ public: true, active: true, custom: true, address: `people@${MAIL_DOMAIN}` }); expect(departmentByKey("legal-affairs")).toMatchObject({ public: false });
     expect(SECTIONS).toEqual(expect.arrayContaining(["HR Team", "Legal Affairs"]));

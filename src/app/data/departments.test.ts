@@ -7,7 +7,7 @@ import { DEPARTMENTS, departmentByKey, emailOf } from "./departments";
 const PUBLIC_FILES = [
   "components/footerPages/ContactUsViewer.tsx", "components/footerPages/CareersViewer.tsx", "components/footerPages/SponsorshipViewer.tsx",
   "components/footerPages/LegalComplianceViewer.tsx", "components/footerPages/SafetySecurityViewer.tsx", "components/GetHelpModal.tsx",
-  "components/ErrorBoundary.tsx", "components/CustomerSupportChat.tsx", "components/PersonalAccountApplicationViewer.tsx",
+  "components/ErrorBoundary.tsx", "components/CustomerSupportChat.tsx", "components/PersonalAccountApplicationViewer.tsx", "components/InvestorRelationsViewer.tsx",
 ];
 
 describe("department email addresses", () => {

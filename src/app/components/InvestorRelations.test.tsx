@@ -40,14 +40,14 @@ describe("the Investor Relations page", () => {
     await click(host.querySelectorAll(".card")[2]); expect(q(".doc")!.textContent).toContain("120210020196"); expect(q(".doc")!.textContent).toContain("EIN 37-2148609");
     await click(q(".back")); await click(host.querySelectorAll(".card")[4]); expect(q(".doc")!.textContent).toContain("R4.5 Billion"); expect(q(".doc")!.textContent).toContain("60 months @ 7%");
     await click(q(".back")); await click(host.querySelectorAll(".card")[5]); expect(q(".doc")!.textContent).toContain("not yet in full operation");
-    await click(q(".back")); await click(host.querySelectorAll(".card")[0]); expect(q(".doc")!.textContent).toContain("Memorandum of Incorporation"); expect(q(".doc a[href^='mailto:info@vink.co.za']")).toBeTruthy(); expect(q(".doc")!.textContent).not.toContain("Download");
+    await click(q(".back")); await click(host.querySelectorAll(".card")[0]); expect(q(".doc")!.textContent).toContain("Memorandum of Incorporation"); expect(q(".doc a[href^='mailto:investor.relations@vink.co.za']")).toBeTruthy(); expect(q(".doc")!.textContent).not.toContain("Download");
   });
   it("links the capital and risk card to the governance pages", async () => {
     await render(); await click(host.querySelectorAll(".card")[3]); await click(q(".doc a[href='#governance']")); expect(q("h2.t")!.textContent).toBe("Our Board of Directors");
   });
-  it("has the contact band with VINK's own address, number and mailbox, and the Facebook page", async () => {
+  it("has the contact band with VINK's own address, number and the investor mailbox, and the Facebook page", async () => {
     await render(); const c = q(".contact")!;
-    expect(c.textContent).toContain("8 Rose Street, Cape Town"); expect(c.querySelector("a[href='tel:+27210095100']")).toBeTruthy(); expect(c.querySelector("a[href='mailto:info@vink.co.za']")).toBeTruthy();
+    expect(c.textContent).toContain("8 Rose Street, Cape Town"); expect(c.querySelector("a[href='tel:+27210095100']")).toBeTruthy(); expect(c.querySelector("a[href='mailto:investor.relations@vink.co.za']")).toBeTruthy(); expect(c.textContent).toContain("investor.relations@vink.co.za");
     expect(c.querySelector("a[href='https://www.facebook.com/vinkwaste/']")).toBeTruthy(); expect(c.textContent).not.toContain("Sandton"); expect(c.textContent).not.toContain("123 4567");
   });
   it("sends an investor-alerts request to VINK, with a reference, and does not pretend when the address is wrong or the server refuses", async () => {
@@ -57,7 +57,7 @@ describe("the Investor Relations page", () => {
     const submit = async () => { await act(async () => { form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true })); }); await wait(30); };
     await type("nope"); await submit(); expect(q(".sm")!.textContent).toBe("Please enter a valid email address."); expect(posted).toHaveLength(0);
     refuse = true; await type("ada@example.com"); await submit(); expect(q(".sm")!.textContent).toBe("Too many messages"); refuse = false;
-    await submit(); expect(posted).toHaveLength(2); expect(posted[1]).toMatchObject({ department: "general", email: "ada@example.com", subject: "Investor alerts sign-up" });
+    await submit(); expect(posted).toHaveLength(2); expect(posted[1]).toMatchObject({ department: "investors", email: "ada@example.com", subject: "Investor alerts sign-up" });
     expect(q(".sm")!.textContent).toContain("VK-77"); expect(q(".sm")!.textContent).toContain("ada@example.com"); expect(input.value).toBe("");
   });
 });

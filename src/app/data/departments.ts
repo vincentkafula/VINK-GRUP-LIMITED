@@ -20,6 +20,7 @@ export const DEPARTMENTS: Department[] = [
   { key: "careers", name: "Careers", address: "careers@vink.co.za", purpose: "Jobs at VINK", respondWithin: "1–2 business days" },
   { key: "internships", name: "Internship Programme", address: "intern@vink.co.za", purpose: "Internships and graduate placements", respondWithin: "1–2 business days" },
   { key: "sponsorships", name: "Sponsorships and Partnerships", address: "sponsorships@vink.co.za", purpose: "Sponsorship and partnership proposals", respondWithin: "1–2 business days" },
+  { key: "investors", name: "Investor Relations", address: "investor.relations@vink.co.za", purpose: "Investor enquiries and investor alerts", respondWithin: "1–2 business days" },
   { key: "media", name: "Media Relations", address: "media@vink.co.za", purpose: "Press and media requests", respondWithin: "1–2 business days" },
 ];
 

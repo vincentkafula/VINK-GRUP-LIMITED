@@ -2,7 +2,7 @@
  * VINK's departments and their email addresses: the one list the server uses to route a message sent from the website and an email that arrives.
  * The website has its own copy of the built-in ones (src/app/data/departments.ts) so its pages can show the addresses; departments.test.ts fails if the two lists differ.
  *
- * The nine below are built in. A Super Administrator can create more in the Management Panel (Departments): they are stored in the database (custom_departments),
+ * The ten below are built in. A Super Administrator can create more in the Management Panel (Departments): they are stored in the database (custom_departments),
  * loaded at start-up and after every change, and used everywhere the built-in ones are (routing, the mailbox, sections, and the Contact page when marked public).
  *
  * An address is only listed here if it is shown to the public. A department's mailbox is expected to exist on the company's mail system. When the people
@@ -33,6 +33,7 @@ export const DEPARTMENTS: Department[] = [
   { key: "careers", name: "Careers", address: "careers@vink.co.za", purpose: "Jobs at VINK", respondWithin: "1–2 business days" },
   { key: "internships", name: "Internship Programme", address: "intern@vink.co.za", purpose: "Internships and graduate placements", respondWithin: "1–2 business days" },
   { key: "sponsorships", name: "Sponsorships and Partnerships", address: "sponsorships@vink.co.za", purpose: "Sponsorship and partnership proposals", respondWithin: "1–2 business days" },
+  { key: "investors", name: "Investor Relations", address: "investor.relations@vink.co.za", purpose: "Investor enquiries and investor alerts", respondWithin: "1–2 business days" },
   { key: "media", name: "Media Relations", address: "media@vink.co.za", purpose: "Press and media requests", respondWithin: "1–2 business days" },
 ];
 
