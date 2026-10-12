@@ -1,60 +1,18 @@
-import { useState } from "react";
-import { X, FileText, Download, BarChart3, ShieldCheck, Compass, Users, ShieldAlert, Briefcase, Target, Trophy, TrendingUp, Rocket, type LucideIcon } from "lucide-react";
-import vinkLogo from "../../imports/LOGO_FINAL.png";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { ShieldCheck, Compass, Users, ShieldAlert, Briefcase, Target, type LucideIcon } from "lucide-react";
 import { Footer } from "./Footer";
-import { BRAND } from "../brand";
 import { PersonGrid } from "./GovernanceCards";
+import { CARD_ART, CARD_ICON } from "./investorArt";
+import { publicApi } from "../services/apiClient";
+import "./investor.css";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
-const P  = BRAND.crimson;
-const GOLD = BRAND.crimson;          // the accent lines are the brand red
+const MAIL = "info@vink.co.za";
+const PHONE = { label: "+27 (0)21 009 5100", href: "tel:+27210095100" };
+const ADDRESS = "State House Building, 8 Rose Street, Cape Town, South Africa";
 
-// ─── Data ─────────────────────────────────────────────────────────────────────
-
-const SELLER_PILLS = ["Integrity", "Commitment", "Performance", "Loyalty", "Insight"];
-
-const KPI_CARDS = [
-  { label: "Addressable Market", value: "R11B", sub: "Estimated annual TAM across the national taxi network", color: "#FFFFFF" },
-  { label: "Revenue Model", value: "Per-Tap", sub: "R0.50–R1.00 per transaction, scaling with network volume", color: "#FFFFFF" },
-  { label: "Target Growth", value: "Multi-Year", sub: "Detailed year-by-year projections available on request", color: "#FFFFFF" },
-];
-
-const REASONS = [
-  {
-    title: "Leader",
-    icon: Trophy,
-    text: "Vink is positioned to become a category leader in diversified financial services across Southern Africa, targeting core return metrics and market penetration that outperform existing peers.",
-  },
-  {
-    title: "Disciplined",
-    icon: TrendingUp,
-    text: "Vink's business plan is built on disciplined capital allocation and a diversified revenue base — banking, insurance, telecommunications and e-mobility — designed to cushion cyclical headwinds once operational.",
-  },
-  {
-    title: "High growth potential",
-    icon: Rocket,
-    text: "VINK Finance targets rapid adoption from launch, driven by accelerated digital uptake among underbanked commuters, cost efficiency built into the platform from day one, and a clear roadmap for strategic partnerships.",
-  },
-];
-
-const SHARE_ROWS = [
-  { label: "STATUS",             value: "Pre-launch — full operation June 2027" },
-  { label: "US REGISTRATION",    value: "EIN 37-2148609" },
-  { label: "SA REGISTRATION",    value: "2018/079316/07" },
-  { label: "ZAMBIA REGISTRATION", value: "120210020196" },
-  { label: "TARGET GROWTH",      value: "7.5% p.a." },
-  { label: "FUNDING SOUGHT",     value: "R4.5 Billion" },
-  { label: "FUNDING TERM",       value: "60 months @ 7%" },
-  { label: "ADDRESSABLE MARKET", value: "R11B / year (TAM)" },
-  { label: "TAX RATE",           value: "28%" },
-];
-
-const INVESTOR_NEWS: { date: string; title: string; type: string; color: string }[] = [];
-
-const DOCS: { name: string; size: string; date: string }[] = [
-  { name: "Memorandum of Incorporation",      size: "1.1 MB",  date: "2018" },
-];
+// ── The Board and the Executive Committee, and what each is responsible for ──
 
 /** The Board of Directors: ten people. Add `photo: "https://…"` to a person and the card shows the photo instead of the silhouette. */
 const BOARD_MEMBERS: { name: string; role: string; tag?: string; photo?: string }[] = [
@@ -106,265 +64,203 @@ const RESPONSIBILITIES: { group: string; title: string; icon: LucideIcon; text: 
   { group: "The Executive Committee", title: "Executing the strategy", icon: Target, text: "The Executive Committee executes the strategy and policies set by the Board of Directors." },
 ];
 
-// ─── Tiny sparkline ───────────────────────────────────────────────────────────
-function Sparkline({ data }: { data: number[] }) {
-  const min = Math.min(...data), max = Math.max(...data);
-  const W = 220, H = 60;
-  const pts = data.map((v, i) => {
-    const x = (i / (data.length - 1)) * W;
-    const y = H - ((v - min) / (max - min)) * (H - 8) - 4;
-    return `${x},${y}`;
-  }).join(" ");
+// ── The resources ───────────────────────────────────────────────────────
+
+const Rows = ({ rows }: { rows: [string, string][] }) => <dl className="rows">{rows.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>;
+const Mail = ({ subject, label = MAIL }: { subject?: string; label?: string }) => <a href={`mailto:${MAIL}${subject ? `?subject=${encodeURIComponent(subject)}` : ""}`}>{label}</a>;
+
+interface Resource { key: string; art: string; icon: string; cat: string; title: string; blurb: string; body: (go: (v: string) => void) => ReactNode }
+
+const RESOURCES: Resource[] = [
+  { key: "reports", art: "a", icon: "doc", cat: "Reports", title: "Annual reports", blurb: "View our latest annual reports and get a comprehensive look at our performance, strategy and governance.",
+    body: () => (<>
+      <h3>Annual reports</h3>
+      <p>VINK is not yet in full operation, so there is no annual report to publish yet. Our first annual report will be published here after our June 2027 launch.</p>
+      <h3>Corporate documents</h3>
+      <div className="file"><span className="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d={CARD_ICON.doc} /></svg></span><div><b>Memorandum of Incorporation</b><span>2018 · 1.1 MB</span></div><Mail subject="Memorandum of Incorporation" label="Request a copy" /></div></>) },
+  { key: "results", art: "b", icon: "bars", cat: "Reports", title: "Financial results", blurb: "Access the business plan and projections, and our interim and annual financial results once VINK is trading.",
+    body: () => (<>
+      <h3>Business plan and projections</h3>
+      <p>VINK is building South Africa's first transport-native digital bank, with a national rollout plan for 250,000+ AFC devices across the minibus taxi network.</p>
+      <div className="stats">
+        <div><b>R11B</b><span>Addressable market: estimated annual TAM across the national taxi network</span></div>
+        <div><b>Per-Tap</b><span>Revenue model: R0.50–R1.00 per transaction, scaling with network volume</span></div>
+        <div><b>7.5% p.a.</b><span>Target growth. Detailed year-by-year projections are available on request</span></div>
+      </div>
+      <h3>3 reasons to consider investing in VINK</h3>
+      <div className="reasons">
+        <div><h4>Leader</h4><p>VINK is positioned to become a category leader in diversified financial services across Southern Africa, targeting core return metrics and market penetration that outperform existing peers.</p></div>
+        <div><h4>Disciplined</h4><p>VINK's business plan is built on disciplined capital allocation and a diversified revenue base (banking, insurance, telecommunications and e-mobility), designed to cushion cyclical headwinds once operational.</p></div>
+        <div><h4>High growth potential</h4><p>VINK Finance targets rapid adoption from launch, driven by accelerated digital uptake among underbanked commuters, cost efficiency built into the platform from day one, and a clear roadmap for strategic partnerships.</p></div>
+      </div>
+      <h3>Financial results</h3>
+      <p>Interim and annual results will be published here once VINK begins to trade. Detailed projections: <Mail subject="Investor projections" />.</p></>) },
+  { key: "shareholders", art: "c", icon: "ppl", cat: "Information", title: "Shareholder and dividend information", blurb: "Find key information for our shareholders, including registration details and corporate status.",
+    body: () => (<>
+      <h3>Company information</h3>
+      <Rows rows={[["Status", "Pre-launch: full operation June 2027"], ["US registration", "EIN 37-2148609"], ["SA registration", "2018/079316/07"], ["Zambia registration", "120210020196"]]} />
+      <p>VINK is registered under CIPC number 2018/079316/07 as Vink Group (Pty) Ltd.</p>
+      <h3>Dividends</h3>
+      <p>VINK is not yet trading. Dividend information will be published here when it applies. For shareholder questions: <Mail subject="Shareholder enquiry" />.</p></>) },
+  { key: "capital", art: "d", icon: "shield", cat: "Reports", title: "Capital and risk management", blurb: "Learn more about our approach to capital, risk and performance management.",
+    body: (go) => (<>
+      <h3>Disciplined capital allocation</h3>
+      <p>VINK's business plan is built on disciplined capital allocation and a diversified revenue base (banking, insurance, telecommunications and e-mobility), designed to cushion cyclical headwinds once operational.</p>
+      <h3>Managing risk</h3>
+      <p>The Board ensures that the bank is prudently managed against the major risks inherent in business and banking, and monitors the Executive Management Team.</p>
+      <p><a href="#governance" onClick={(e) => { e.preventDefault(); go("governance"); }}>Meet the Board of Directors and the Executive Committee →</a></p></>) },
+  { key: "debt", art: "e", icon: "db", cat: "Investors", title: "Debt investors", blurb: "Access information for our debt investors, including the funding sought, its term and the market it serves.",
+    body: () => (<>
+      <h3>Funding</h3>
+      <Rows rows={[["Funding sought", "R4.5 Billion"], ["Funding term", "60 months @ 7%"], ["Addressable market", "R11B / year (TAM)"], ["Target growth", "7.5% p.a."], ["Tax rate", "28%"]]} />
+      <p>Presentations and key documents for debt investors are available on request: <Mail subject="Debt investor enquiry" />.</p></>) },
+  { key: "announcements", art: "f", icon: "trend", cat: "Reports", title: "Announcements and news", blurb: "View our latest announcements and regulatory updates as they are published.",
+    body: () => (<>
+      <h3>Investor news</h3>
+      <p>VINK is not yet in full operation. Investor news and quarterly updates will be published here as we approach our June 2027 launch.</p></>) },
+];
+
+// ── The page ────────────────────────────────────────────────────────────
+
+const arrow = <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>;
+
+function HeroArt() {
   return (
-    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
-      <polyline points={pts} fill="none" stroke={BRAND.info} strokeWidth="2" strokeLinejoin="round" />
-      <circle cx={pts.split(" ").pop()!.split(",")[0]} cy={pts.split(" ").pop()!.split(",")[1]} r="4" fill={BRAND.info} />
-    </svg>
+    <div className="art"><svg viewBox="0 0 640 300" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">
+      <defs>
+        <linearGradient id="vi-sk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#6d7aa6" /><stop offset="1" stopColor="#e8b8a8" /></linearGradient>
+        <linearGradient id="vi-fd" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stopColor="#c8102e" /><stop offset=".5" stopColor="#c8102e" stopOpacity="0" /></linearGradient>
+      </defs>
+      <rect x="200" width="440" height="300" fill="url(#vi-sk)" opacity=".85" />
+      <g fill="#2a3556" opacity=".55"><rect x="330" y="120" width="46" height="180" /><rect x="384" y="70" width="58" height="230" /><rect x="452" y="140" width="40" height="160" /><rect x="500" y="40" width="64" height="260" /><rect x="574" y="110" width="50" height="190" /></g>
+      <g fill="#fff" opacity=".25"><rect x="392" y="86" width="6" height="6" /><rect x="408" y="116" width="6" height="6" /><rect x="512" y="70" width="6" height="6" /><rect x="536" y="110" width="6" height="6" /><rect x="520" y="160" width="6" height="6" /></g>
+      <polyline className="draw" points="250,250 320,230 380,238 450,170 520,184 600,96" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" opacity=".9" />
+      <circle cx="600" cy="96" r="9" fill="#fff" /><circle cx="600" cy="96" r="18" fill="#fff" opacity=".25" />
+      <path d="M250 300L420 0h-60L180 300z" fill="#fff" opacity=".08" />
+      <rect width="640" height="300" fill="url(#vi-fd)" />
+    </svg></div>
   );
 }
 
-// ─── Section heading ──────────────────────────────────────────────────────────
-function SectionHeading({ children }: { children: React.ReactNode }) {
+const GOV_TABS = [{ key: "board", label: "Board of Directors", n: BOARD_MEMBERS.length }, { key: "executive", label: "Executive Committee", n: EXECUTIVE_COMMITTEE.length }, { key: "responsibilities", label: "Responsibilities", n: 0 }] as const;
+
+function Governance({ onBack }: { onBack: () => void }) {
+  const [tab, setTab] = useState<(typeof GOV_TABS)[number]["key"]>("board");
   return (
-    <h2 className="text-lg font-bold mb-5 pb-2 border-b-2" style={{ color: "var(--vk-fg)", borderColor: GOLD }}>
-      {children}
-    </h2>
+    <>
+      <button type="button" className="back" onClick={onBack}>← All investor resources</button>
+      <span className="k">Corporate governance</span>
+      <h2 className="t">{tab === "executive" ? "Our Executive Committee" : tab === "responsibilities" ? "Responsibilities" : "Our Board of Directors"}</h2>
+      <p className="intro">{tab === "executive" ? EXEC_INTRO : tab === "responsibilities" ? "What the Board and the Executive Committee are each responsible for." : BOARD_INTRO}</p>
+      <div className="tabs"><div role="tablist" aria-label="Corporate governance">
+        {GOV_TABS.map((t) => <button key={t.key} type="button" role="tab" aria-selected={tab === t.key} className={`tab${tab === t.key ? " on" : ""}`} onClick={() => setTab(t.key)}>{t.label}{t.n > 0 && <em>{t.n}</em>}</button>)}
+      </div></div>
+      {tab === "board" && <PersonGrid groupKey="board" noun="members of the Board" people={BOARD_MEMBERS} />}
+      {tab === "executive" && <PersonGrid groupKey="executive" noun="members of the Executive Committee" people={EXECUTIVE_COMMITTEE} />}
+      {tab === "responsibilities" && ["The Board", "The Executive Committee"].map((g) => (
+        <div key={g}>
+          <h3 className="grp">{g}</h3>
+          <div className="resp">{RESPONSIBILITIES.filter((r) => r.group === g).map((r) => (
+            <div key={r.title}><span className="ic"><r.icon size={20} aria-hidden="true" /></span><h4>{r.title}</h4><p>{r.text}</p></div>))}</div>
+        </div>))}
+    </>
   );
 }
 
-// ─── Main component ───────────────────────────────────────────────────────────
 export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
-  const [activePill, setActivePill] = useState(0);
-  const [govTab, setGovTab] = useState<"board" | "executive" | "responsibilities">("board");
+  const [view, setView] = useState("home");
+  const [shown, setShown] = useState(0);
+  const [email, setEmail] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState("");
+  const page = useRef<HTMLDivElement>(null);
+  const bar = useRef<HTMLElement>(null);
 
+  useEffect(() => {
+    if (!isOpen || view !== "home") return;
+    setShown(0);
+    const timers = RESOURCES.map((_, i) => window.setTimeout(() => setShown((n) => Math.max(n, i + 1)), 90 * (i % 3) + 40 * i));
+    return () => timers.forEach(window.clearTimeout);
+  }, [isOpen, view]);
   if (!isOpen) return null;
 
+  const onScroll = () => { const el = page.current, b = bar.current; if (!el || !b) return; const m = el.scrollHeight - el.clientHeight; b.style.width = `${m > 0 ? (el.scrollTop / m) * 100 : 0}%`; };
+  const go = (v: string) => { setView(v); page.current?.scrollTo?.({ top: 0 }); };
+  const toResources = () => document.getElementById("vi-cards")?.scrollIntoView?.({ behavior: "smooth", block: "start" });
+  const res = RESOURCES.find((r) => r.key === view);
+
+  async function subscribe() {
+    const v = email.trim();
+    if (!/^\S+@\S+\.\S+$/.test(v)) { setMsg("Please enter a valid email address."); return; }
+    setBusy(true); setMsg("");
+    const r = await publicApi.contact({ department: "general", name: "Investor alerts sign-up", email: v, subject: "Investor alerts sign-up", message: `Please add ${v} to VINK's investor alerts: results, announcements and reports.`, website: "" });
+    setBusy(false);
+    if (r.success && r.data) { setMsg(`Thank you. We have your request (reference ${r.data.ref}) and sent a confirmation to ${v}.`); setEmail(""); }
+    else setMsg(r.error ?? `We could not send your request. Please email ${MAIL}.`);
+  }
+
   return (
-    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto" style={{ background: "color-mix(in srgb, #f7f7fb var(--vk-wash), var(--vk-surface))" }}>
+    <div ref={page} onScroll={onScroll} data-theme-aware className="vi fixed inset-0 z-50 flex flex-col overflow-y-auto">
+      <i className="pg" ref={bar as React.RefObject<HTMLElement>} aria-hidden="true" />
 
-      {/* ── Top bar ── */}
-      <div className="sticky top-0 z-20 flex items-center justify-between px-4 py-3 bg-surface border-b shadow-sm" style={{ borderColor: "#e0e0e0" }}>
-        <div className="flex items-center gap-3">
-          <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
-          <div className="hidden sm:flex items-center gap-6 text-sm ml-4">
-            {["Personal", "Business", "Corporate"].map(n => (
-              <span key={n} className="text-fg-muted hover:text-fg cursor-pointer transition-colors">{n}</span>
-            ))}
+      <section className="hero">
+        <HeroArt />
+        <div className="wrap">
+          <span className="eyebrow"><i />Investor relations</span>
+          <h1>Information for our stakeholders</h1>
+          <p>VINK is building South Africa's first transport-native digital bank, with a national rollout plan for 250,000+ AFC devices across the minibus taxi network. Registered under CIPC number 2018/079316/07, VINK is building the financial infrastructure that 15 million daily commuters deserve.</p>
+          <div className="cta">
+            <button type="button" className="scroll" onClick={() => { go("home"); setTimeout(toResources, 50); }}><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6" /></svg></i>Scroll for more</button>
+            <span className="div" aria-hidden="true" />
+            <button type="button" className="ar" onClick={() => go("reports")}>Annual reports {arrow}</button>
+            <span className="div" aria-hidden="true" />
+            <button type="button" className="ar" onClick={() => go("governance")}>Corporate governance {arrow}</button>
           </div>
         </div>
-        <button onClick={onClose} className="p-2 rounded-full hover:bg-surface-2 transition-colors text-fg-muted">
-          <X className="w-5 h-5" />
-        </button>
-      </div>
+      </section>
 
-      {/* ── Hero banner ── */}
-      <div className="px-6 py-8" style={{ background: "#C8102E" }}>
-        <div className="max-w-5xl mx-auto">
-          <p className="text-white/60 text-xs uppercase tracking-widest mb-1">VINK Finance · Corporate</p>
-          <h1 className="text-3xl md:text-4xl font-black text-white mb-1">Investor Relations</h1>
-          <p className="text-white/70 text-sm mb-6">Business Plan &amp; Projections</p>
-          <p className="text-white/80 text-sm max-w-2xl leading-relaxed mb-6">
-            VINK is building South Africa's first transport-native digital bank, with a national rollout plan for 250,000+ AFC devices across the minibus taxi network. Registered under CIPC number 2018/079316/07, VINK is building the financial infrastructure that 15 million daily commuters deserve.
-          </p>
-
-          {/* KPI cards */}
-          <div className="grid grid-cols-3 gap-4 max-w-2xl">
-            {KPI_CARDS.map((k) => (
-              <div key={k.label} className="rounded-xl p-4 text-center" style={{ background: "rgba(255,255,255,.12)" }}>
-                <div className="text-3xl font-black mb-1" style={{ color: k.color }}>{k.value}</div>
-                <div className="text-white text-xs font-semibold">{k.label}</div>
-                <div className="text-white/50 text-[10px] mt-0.5">{k.sub}</div>
-              </div>
-            ))}
+      <main className="wrap sec" id="vi-cards">
+        {view === "home" && (<>
+          <div className="shead"><span className="k">Investor resources</span><h2>Everything you need to make informed decisions</h2><p>The business plan, shareholder information and announcements, all in one place. VINK is pre-launch, so these sections grow as we approach our June 2027 launch.</p></div>
+          <div className="grid">
+            {RESOURCES.map((r, i) => (
+              <button key={r.key} type="button" className={`card${shown > i ? " in" : ""}`} onClick={() => go(r.key)}>
+                <div className="im"><div className="art2"><svg viewBox="0 0 420 130" preserveAspectRatio="xMidYMid slice" aria-hidden="true" dangerouslySetInnerHTML={{ __html: CARD_ART[r.art] }} /></div>
+                  <span className="bd"><svg viewBox="0 0 24 24" aria-hidden="true"><path d={CARD_ICON[r.icon]} /></svg></span></div>
+                <div className="tx"><span className="cat">{r.cat}</span><h3>{r.title}</h3><p>{r.blurb}</p><span className="more">See more {arrow}</span><span className="idx">{String(i + 1).padStart(2, "0")}</span></div>
+              </button>))}
           </div>
+        </>)}
+
+        {res && (<>
+          <button type="button" className="back" onClick={() => go("home")}>← All investor resources</button>
+          <span className="k">{res.cat}</span>
+          <h2 className="t">{res.title}</h2>
+          <div className="doc">{res.body(go)}</div>
+        </>)}
+
+        {view === "governance" && <Governance onBack={() => go("home")} />}
+
+        <div className="contact">
+          <div className="ct"><span className="pin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z" /><circle cx="12" cy="10" r="2.5" /></svg></span>
+            <div><h4>Contact us</h4><p>{ADDRESS}<br /><b>Telephone:</b> <a href={PHONE.href}>{PHONE.label}</a><br /><b>Hours:</b> Mon–Fri 08:00–17:00</p></div></div>
+          <div className="ct soc"><span>Follow us on</span><div className="si">
+            <a href="https://www.facebook.com/vinkwaste/" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 8V6.5c0-.8.2-1.3 1.4-1.3H17V2.2C16.7 2.1 15.8 2 14.7 2 12.3 2 10.7 3.4 10.7 6v2H8v3.2h2.7V22H14V11.2h2.5L17 8z" /></svg></a>
+          </div></div>
+          <a className="ct enq" href={`mailto:${MAIL}`}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg><span className="ar2"><b>Investor enquiries</b><span>{MAIL}</span></span></a>
         </div>
-      </div>
+      </main>
 
-      <div className="max-w-5xl mx-auto w-full px-4 py-8 space-y-10">
+      <section className="sub"><div className="wrap in2">
+        <div><span className="k">Investor alerts</span><h2>Stay informed</h2><p>Ask to receive results, announcements and reports by email as soon as they are published.</p></div>
+        <form onSubmit={(e) => { e.preventDefault(); subscribe(); }} noValidate>
+          <div className="fl"><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Your email address" aria-label="Email address" autoComplete="email" /><button className="btn r" type="submit" disabled={busy}>{busy ? "Sending…" : "Subscribe"}</button></div>
+          <p className="sm" role="status" aria-live="polite">{msg}</p>
+        </form>
+      </div></section>
 
-        {/* ── Seller / category pills ── */}
-        <div>
-          <div className="flex flex-wrap gap-2 mb-6">
-            {SELLER_PILLS.map((p, i) => (
-              <button key={p} onClick={() => setActivePill(i)}
-                className="rounded-full px-5 py-1.5 text-sm font-medium transition-all border"
-                style={{ background: activePill === i ? P : "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))", color: activePill === i ? "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" : P, borderColor: P }}>
-                {p}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* ── 3 Reasons ── */}
-        <div>
-          <h2 className="text-xl font-black text-center mb-2" style={{ color: "var(--vk-fg)" }}>
-            3 Reasons to Consider Investing in VINK
-          </h2>
-          <p className="text-center text-sm text-fg-muted mb-6">Why sophisticated investors choose Vink</p>
-          <div className="grid sm:grid-cols-3 gap-5">
-            {REASONS.map((r) => (
-              <div key={r.title} className="bg-surface rounded-xl border border-line p-6 hover:shadow-md transition-shadow">
-                <span aria-hidden="true" className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl" style={{ background: "var(--vk-brand-soft)", color: "var(--vk-crimson-text)" }}><r.icon className="h-6 w-6" /></span>
-                <h3 className="text-base font-bold mb-2" style={{ color: "var(--vk-fg)" }}>{r.title}</h3>
-                <p className="text-sm text-fg-muted leading-relaxed">{r.text}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ── Share price ── */}
-        <div>
-          <SectionHeading>Our Share Price in Action</SectionHeading>
-          <div className="bg-surface rounded-xl border border-line p-5">
-            <div className="flex flex-col md:flex-row gap-6 items-start">
-              <div className="flex-shrink-0">
-                <div className="flex items-end gap-2 mb-1">
-                  <span className="text-4xl font-black" style={{ color: "var(--vk-fg)" }}>2.60</span>
-                  <span className="text-sm font-bold text-green-600 mb-1">+1.96% ▲</span>
-                </div>
-                <p className="text-xs text-fg-muted mb-4">ZAR · JSE · 15 Sep 2022</p>
-                <Sparkline data={MINI_CHART} />
-                <p className="text-[10px] text-fg-subtle mt-1">12-month price movement</p>
-              </div>
-              <div className="flex-1 grid grid-cols-2 gap-x-8 gap-y-2">
-                {SHARE_ROWS.map((r) => (
-                  <div key={r.label} className="flex justify-between border-b border-line py-1.5 text-xs">
-                    <span className="text-fg-muted font-medium">{r.label}</span>
-                    <span className="font-bold text-fg">{r.value}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ── Investor News ── */}
-        <div>
-          <SectionHeading>Investor News</SectionHeading>
-          {INVESTOR_NEWS.length === 0 ? (
-            <div className="bg-surface rounded-xl border border-line p-6 text-center">
-              <p className="text-sm text-fg-muted">VINK is not yet in full operation. Investor news and quarterly updates will be published here as we approach our June 2027 launch.</p>
-            </div>
-          ) : (
-          <div className="space-y-2">
-            {INVESTOR_NEWS.map((n, i) => (
-              <div key={i} className="bg-surface rounded-xl border border-line flex items-center gap-4 p-4 hover:shadow-sm transition-shadow cursor-pointer">
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "var(--vk-bad-bg)" }}>
-                  <FileText className="w-5 h-5" style={{ color: BRAND.bad }} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-fg leading-snug">{n.title}</p>
-                  <p className="text-xs text-fg-subtle mt-0.5">{n.date}</p>
-                </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <span className="text-[10px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded">{n.type}</span>
-                  <Download className="w-4 h-4 text-fg-subtle hover:text-fg transition-colors" />
-                </div>
-              </div>
-            ))}
-          </div>
-          )}
-        </div>
-
-        {/* ── Documents and Reports ── */}
-        <div>
-          <SectionHeading>Documents and Reports</SectionHeading>
-          <div className="bg-surface rounded-xl border border-line overflow-hidden">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-line" style={{ background: "var(--vk-surface-2)" }}>
-                  <th className="text-left px-5 py-3 text-xs font-bold uppercase tracking-wide" style={{ color: "var(--vk-fg)" }}>Document</th>
-                  <th className="text-left px-5 py-3 text-xs font-bold uppercase tracking-wide" style={{ color: "var(--vk-fg)" }}>Size</th>
-                  <th className="text-left px-5 py-3 text-xs font-bold uppercase tracking-wide" style={{ color: "var(--vk-fg)" }}>Date</th>
-                  <th className="px-5 py-3" />
-                </tr>
-              </thead>
-              <tbody>
-                {DOCS.map((d, i) => (
-                  <tr key={i} className="border-b border-line hover:bg-emerald-50 transition-colors">
-                    <td className="px-5 py-3 font-medium text-fg">{d.name}</td>
-                    <td className="px-5 py-3 text-fg-muted text-xs">{d.size}</td>
-                    <td className="px-5 py-3 text-fg-muted text-xs">{d.date}</td>
-                    <td className="px-5 py-3 text-right">
-                      <button className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors hover:opacity-90"
-                        style={{ background: P, color: "color-mix(in srgb, #fff var(--vk-wash), var(--vk-surface))" }}>
-                        <Download className="w-3 h-3" />
-                        Download
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* ── Corporate Governance — tabbed ── */}
-        <div>
-          <SectionHeading>Corporate Governance</SectionHeading>
-
-          {/* What the group is responsible for */}
-          <div className="bg-surface rounded-xl border border-line p-5 mb-5 text-sm text-fg leading-relaxed">
-            <div className="flex items-center gap-2 mb-2">
-              <BarChart3 className="w-4 h-4 flex-shrink-0" style={{ color: "var(--vk-crimson-text)" }} />
-              <span className="font-bold text-fg">{govTab === "executive" ? "The Executive Committee" : govTab === "responsibilities" ? "Responsibilities" : "The Board of Directors"}</span>
-            </div>
-            {govTab === "executive" ? EXEC_INTRO : govTab === "responsibilities" ? "What the Board and the Executive Committee are each responsible for." : BOARD_INTRO}
-          </div>
-
-          {/* Tab strip */}
-          <div className="flex gap-1 border-b border-line mb-6 overflow-x-auto">
-            {([
-              { key: "board",           label: "Board of Directors",   count: BOARD_MEMBERS.length },
-              { key: "executive",       label: "Executive Committee",  count: EXECUTIVE_COMMITTEE.length },
-              { key: "responsibilities", label: "Responsibilities",    count: 0 },
-            ] as const).map(tab => (
-              <button
-                key={tab.key}
-                onClick={() => setGovTab(tab.key)}
-                className="px-4 py-2.5 text-sm font-medium flex-shrink-0 transition-colors border-b-2 -mb-px"
-                style={{
-                  borderBottomColor: govTab === tab.key ? P : "transparent",
-                  color: govTab === tab.key ? P : "#6B7280",
-                  background: "transparent",
-                }}>
-                {tab.label}
-                {tab.count > 0 && <em className="ml-2 rounded-full px-2 py-0.5 text-[11px] font-bold not-italic" style={{ background: "var(--vk-brand-soft)", color: "var(--vk-crimson-text)" }}>{tab.count}</em>}
-              </button>
-            ))}
-          </div>
-
-          {/* ── Board of Directors ── */}
-          {govTab === "board" && <PersonGrid groupKey="board" noun="members of the Board" people={BOARD_MEMBERS} />}
-
-          {/* ── Executive Committee ── */}
-          {govTab === "executive" && <PersonGrid groupKey="executive" noun="members of the Executive Committee" people={EXECUTIVE_COMMITTEE} />}
-
-          {/* ── Responsibilities ── */}
-          {govTab === "responsibilities" && (
-            <div className="space-y-8">
-              {["The Board", "The Executive Committee"].map((g) => (
-                <div key={g}>
-                  <h3 className="mb-3 text-sm font-bold uppercase tracking-[0.12em] text-fg-muted">{g}</h3>
-                  <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {RESPONSIBILITIES.filter((r) => r.group === g).map((r) => (
-                      <div key={r.title} className="rounded-2xl border border-line bg-surface p-5 transition-shadow hover:shadow-md">
-                        <span aria-hidden="true" className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl" style={{ background: "var(--vk-brand-soft)", color: "var(--vk-crimson-text)" }}><r.icon className="h-5 w-5" /></span>
-                        <h4 className="mb-2 text-sm font-bold text-fg">{r.title}</h4>
-                        <p className="text-xs leading-relaxed text-fg-muted">{r.text}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-      </div>
-
+      <button type="button" onClick={onClose} className="sr-only">Back to the home page</button>
       <Footer />
-
     </div>
   );
 }
