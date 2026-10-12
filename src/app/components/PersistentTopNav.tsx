@@ -35,7 +35,7 @@ export function PersistentTopNav({ active, onSelect, onHome, isLoggedIn = false,
       <div className="border-b border-line bg-surface" style={{ height: BAR_H }}>
         <div className="mx-auto flex h-full max-w-7xl items-center gap-2 px-4 sm:gap-4 sm:px-6 lg:px-8">
           <a href="/" aria-label="VINK home" onClick={(e) => { e.preventDefault(); onHome(); }} className="flex shrink-0 items-center"><BrandMark height={44} /></a>
-          <span className="hidden h-5 w-px shrink-0 bg-line sm:block" aria-hidden="true" />
+          <span className="hidden h-6 w-px shrink-0 bg-fg-subtle/50 sm:block" aria-hidden="true" />
 
           <nav aria-label="Sections" className="flex items-center gap-1 overflow-x-auto scrollbar-none">
             {SECTIONS.map(({ label, href }) => (

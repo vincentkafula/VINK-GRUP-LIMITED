@@ -60,16 +60,8 @@ export function Header({ onHome, onDashboardSelect, onSubNavClick, onOpenProfile
   const isLoginModalOpen = loginOpen ?? ownLoginOpen;
   const setIsLoginModalOpen = (open: boolean) => { setOwnLoginOpen(open); onLoginOpenChange?.(open); };
   const [mobileOpen, setMobileOpen]             = useState(false);
-  // Over the top of the home page the header is transparent and sits on the hero's own background, so there is no seam between them. It turns
-  // solid as soon as the page scrolls (or a menu opens), and its height is published as --vk-header-h so the hero can slide up underneath it.
-  const [atTop, setAtTop] = useState(true);
+  // The header is the white bar on every page (the same as the strip over the inner pages). Its height is published as --vk-header-h, which the hero uses to start just below it.
   const headerRef = useRef<HTMLElement>(null);
-  useEffect(() => {
-    const onScroll = () => setAtTop(window.scrollY < 8);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
   useEffect(() => {
     const el = headerRef.current;
     if (!el || typeof ResizeObserver === "undefined") return;
@@ -128,9 +120,6 @@ export function Header({ onHome, onDashboardSelect, onSubNavClick, onOpenProfile
     { id: "theme", label: `Theme: ${theme.choice === "light" ? "switch to dark" : theme.choice === "dark" ? "match my device" : "switch to light"}`, group: "Actions", keywords: ["dark", "light", "appearance"], run: theme.cycle },
   ], [isLoggedIn, theme.choice]);      // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Transparent over the top of the page, i.e. sitting on the hero, which is brand red: the Login button must not also be red there.
-  const overHero = atTop && !activeNav && !mobileOpen;
-
   return (
     <>
       <GetHelpModal isOpen={isHelpModalOpen} onClose={() => setIsHelpModalOpen(false)} />
@@ -143,7 +132,7 @@ export function Header({ onHome, onDashboardSelect, onSubNavClick, onOpenProfile
 
       <a href="#main" className="skip-link">Skip to content</a>
 
-      <header ref={headerRef} className={"sticky top-0 z-40 border-b transition-colors duration-200 " + (overHero ? "dark border-transparent bg-transparent text-fg" : "border-line bg-surface/90 backdrop-blur-md")}>
+      <header ref={headerRef} className="sticky top-0 z-40 border-b border-line bg-surface">
         <LaunchNotice />
 
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -152,6 +141,7 @@ export function Header({ onHome, onDashboardSelect, onSubNavClick, onOpenProfile
               <a href="/" aria-label="VINK home" className="flex shrink-0 items-center" onClick={(e) => { e.preventDefault(); setActiveNav(null); setIsLoginModalOpen(false); onHome?.(); }}>
                 <BrandMark height={44} />
               </a>
+              <span className="hidden h-6 w-px shrink-0 bg-fg-subtle/50 sm:block" aria-hidden="true" />
 
               <nav aria-label="Primary" className="hidden items-center gap-1 md:flex">
                 {SECTIONS.map(({ label, href }) => (
@@ -179,7 +169,7 @@ export function Header({ onHome, onDashboardSelect, onSubNavClick, onOpenProfile
                   </button>
                 </>
               ) : (
-                <Button onClick={() => setIsLoginModalOpen(true)} variant={overHero ? "onBrand" : "primary"} size="md" className="px-4"><LogIn aria-hidden="true" />Login</Button>
+                <Button onClick={() => setIsLoginModalOpen(true)} size="md" className="px-4"><LogIn aria-hidden="true" />Login</Button>
               )}
 
               <button type="button" onClick={() => setMobileOpen(true)} aria-label="Open menu" aria-expanded={mobileOpen} aria-controls="mobile-menu"
