@@ -253,13 +253,13 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
       <div style={{ background: DARK_BAR }}>
         <div style={{ maxWidth: 1180, margin: "0 auto", padding: "26px 40px 30px" }}>
           {/* The copyright. The legal links (terms, regulations, privacy, security) are in the Legal column above, once. */}
-          <p style={{ color: "rgba(255,255,255,0.92)", fontSize: 13, margin: 0 }}>© {new Date().getFullYear()} VINK. All rights reserved.</p>
+          <p style={{ color: "rgba(255,255,255,0.92)", fontSize: 13, margin: 0, textAlign: "center" }}>© {new Date().getFullYear()} VINK. All rights reserved.</p>
           {/* The business information: what VINK is, and where it is registered */}
-          <div style={{ marginTop: 20, paddingTop: 18, borderTop: "1px solid rgba(255,255,255,0.14)" }}>
-            <p style={{ color: "rgba(255,255,255,0.78)", fontSize: 12.5, lineHeight: 1.7, margin: 0, maxWidth: 900 }}>
+          <div style={{ marginTop: 20, paddingTop: 18, borderTop: "1px solid rgba(255,255,255,0.14)", textAlign: "center" }}>
+            <p style={{ color: "rgba(255,255,255,0.78)", fontSize: 12.5, lineHeight: 1.7, margin: "0 auto", maxWidth: 900, textAlign: "center" }}>
               VINK is a trading name of Vink Group (Pty) Ltd. VINK is not yet operational and is not yet authorised or registered to provide financial services; licensing and registrations will be completed before launch. Vink Group Reg. No. 2018/079316/07.
             </p>
-            <p style={{ color: "rgba(255,255,255,0.78)", fontSize: 12.5, margin: "10px 0 0", display: "flex", flexWrap: "wrap", gap: "4px 14px" }}>
+            <p style={{ color: "rgba(255,255,255,0.78)", fontSize: 12.5, margin: "10px 0 0", display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "4px 14px" }}>
               <span>United States – EIN: 37-2148609</span>
               <span aria-hidden="true" style={{ color: "rgba(255,255,255,0.3)" }}>|</span>
               <span>South Africa – Registration No: 2018/079316/07</span>

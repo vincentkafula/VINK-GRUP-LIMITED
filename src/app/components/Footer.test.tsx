@@ -56,3 +56,13 @@ describe("Footer social links", () => {
     expect(fb.getAttribute("href")).toBe("https://www.facebook.com/vinkwaste/"); expect(fb.target).toBe("_blank"); expect(fb.rel).toContain("noopener");
   });
 });
+
+describe("Footer business information", () => {
+  it("is centred in the black bar: the copyright, the notice and the registration numbers", () => {
+    const notice = [...host.querySelectorAll("p")].find((p) => p.textContent!.startsWith("VINK is a trading name"))!;
+    const regs = [...host.querySelectorAll("p")].find((p) => p.textContent!.includes("EIN: 37-2148609"))!;
+    const copy = [...host.querySelectorAll("p")].find((p) => p.textContent!.includes("All rights reserved"))!;
+    expect(notice.style.textAlign).toBe("center"); expect(notice.style.margin).toContain("auto"); expect(regs.style.justifyContent).toBe("center"); expect(copy.style.textAlign).toBe("center");
+    expect((notice.parentElement as HTMLElement).style.textAlign).toBe("center");
+  });
+});
