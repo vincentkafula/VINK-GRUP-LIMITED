@@ -52,3 +52,13 @@ describe("FeaturesSection benefits", () => {
     expect(small).toHaveLength(4);
   });
 });
+
+describe("the gold card in 'Designed for the way you live'", () => {
+  it("magnifies where the mouse rolls over it, says so, and still opens the card when clicked", () => {
+    mount(<FeaturesSection />);
+    const btn = host.querySelector('button[aria-label="View the VINK Visa Signature card in 3D"]')!;
+    const zoom = btn.querySelector("[data-zoom]") as HTMLElement; expect(zoom).toBeTruthy(); expect(zoom.getAttribute("data-zoom")).toBe("off");
+    expect(btn.querySelector("img")!.getAttribute("alt")).toBe("VINK Visa Signature card");
+    expect(host.textContent).toContain("Roll over image to zoom in · click the card to open it"); expect(host.textContent).toContain("Tap the card to see it in 3D");
+  });
+});

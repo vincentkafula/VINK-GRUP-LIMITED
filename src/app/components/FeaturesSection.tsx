@@ -4,6 +4,7 @@ import vinkGoldFeatureCard from "../../imports/VinkGoldFeatureCard.webp";
 import { Card3DViewer } from "./Card3DViewer";
 import type { PremiumIcon } from "./PremiumIcon";
 import { SoftIcon } from "./SoftIcon";
+import { ZoomImage } from "./ZoomImage";
 import { BRAND } from "../brand";
 
 const PURPLE = "var(--vk-brand)";           // brand red
@@ -80,8 +81,10 @@ export const FeaturesSection = memo(function FeaturesSection({ onExploreAll }: {
             <div className="relative mt-8 max-w-sm">
               <div className="absolute -inset-6 rounded-full opacity-40" style={{ background: `radial-gradient(circle,${GOLD}33,transparent 70%)` }} />
               <button type="button" onClick={() => setShowCardViewer(true)} aria-label="View the VINK Visa Signature card in 3D" className="relative block w-full rounded-2xl">
-                <img src={vinkGoldFeatureCard} alt="VINK Visa Signature card" width={640} height={404} decoding="async" loading="lazy"
-                  className="w-full rounded-2xl shadow-overlay transition-transform duration-300 hover:scale-[1.02]" draggable={false} />
+                {/* Rolling the mouse over the card magnifies the part under it; a tap or a click opens it in 3D */}
+                <span className="relative block aspect-[640/404] w-full overflow-hidden rounded-2xl shadow-overlay">
+                  <ZoomImage src={vinkGoldFeatureCard} alt="VINK Visa Signature card" zoom={2.2} className="h-full w-full object-cover" />
+                </span>
               </button>
 
               <div className="absolute -top-4 right-2 bg-surface rounded-xl shadow-raised border border-line px-3 py-2 flex items-center gap-1.5">
@@ -96,6 +99,8 @@ export const FeaturesSection = memo(function FeaturesSection({ onExploreAll }: {
                 <span className="text-white text-xs font-bold inline-flex items-center gap-1"><Sparkles className="size-3 text-[#FF6B81]" aria-hidden="true" />Smart. Simple. Smarter.</span>
               </div>
             </div>
+            <p className="mt-9 hidden max-w-sm text-center text-xs font-medium text-fg-muted [@media(hover:hover)]:block">Roll over image to zoom in · click the card to open it</p>
+            <p className="mt-9 max-w-sm text-center text-xs font-medium text-fg-muted [@media(hover:hover)]:hidden">Tap the card to see it in 3D</p>
           </div>
 
           {/* Right: benefit cards */}
