@@ -9,8 +9,8 @@
       (function () {
         try {
           var c = localStorage.getItem("vink-theme");
-          // nothing saved means light: the dark theme is only for a visitor who chose it (or chose "match my device")
-          var dark = c === "dark" || (c === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+          // nothing saved means light: the dark theme is only for a visitor who chose it
+          var dark = c === "dark";
           if (dark) { document.documentElement.classList.add("dark"); document.documentElement.style.colorScheme = "dark"; document.querySelector('meta[name="theme-color"]').setAttribute("content", "#0c111d"); }
         } catch (e) {}
       })();

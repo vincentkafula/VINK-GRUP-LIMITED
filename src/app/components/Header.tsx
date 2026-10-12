@@ -117,7 +117,7 @@ export function Header({ onHome, onDashboardSelect, onSubNavClick, onOpenProfile
     ...SECTIONS.flatMap(({ label }) => SUBS[label].map((item) => ({ id: `${label}-${item}`, label: item, group: label, hint: label, keywords: [label], run: () => goSub(label, item) }))),
     { id: "help", label: "Get help", group: "Actions", icon: <LifeBuoy className="size-4" />, run: () => setIsHelpModalOpen(true) },
     ...(isLoggedIn ? [] : [{ id: "login", label: "Sign in", group: "Actions", icon: <LogIn className="size-4" />, run: () => setIsLoginModalOpen(true) }]),
-    { id: "theme", label: `Theme: ${theme.choice === "light" ? "switch to dark" : theme.choice === "dark" ? "match my device" : "switch to light"}`, group: "Actions", keywords: ["dark", "light", "appearance"], run: theme.cycle },
+    { id: "theme", label: `Theme: ${theme.choice === "light" ? "switch to dark" : "switch to light"}`, group: "Actions", keywords: ["dark", "light", "appearance"], run: theme.cycle },
   ], [isLoggedIn, theme.choice]);      // eslint-disable-line react-hooks/exhaustive-deps
 
   return (

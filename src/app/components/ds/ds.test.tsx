@@ -16,28 +16,27 @@ afterEach(() => { act(() => root.unmount()); host.remove(); });
 const render = (el: React.ReactElement) => act(async () => { root.render(el); });
 
 describe("theme", () => {
-  it("starts light for a visitor who has not chosen, cycles light, dark and device, applies the dark class, remembers the choice, and the button says what a press does", async () => {
+  it("starts light for a visitor who has not chosen, switches between light and dark only, applies the dark class, remembers the choice, and the button says what a press does", async () => {
     await render(<ThemeProvider><ThemeToggle /></ThemeProvider>);
     const btn = () => host.querySelector("button")!;
     expect(btn().getAttribute("aria-label")).toMatch(/Light theme.*Switch to: dark theme/); expect(document.documentElement.classList.contains("dark")).toBe(false);
     await act(async () => { btn().click(); });
     expect(localStorage.getItem("vink-theme")).toBe("dark"); expect(document.documentElement.classList.contains("dark")).toBe(true);
-    expect(btn().getAttribute("aria-label")).toMatch(/Dark theme.*Switch to: match my device/);
-    await act(async () => { btn().click(); });
-    expect(localStorage.getItem("vink-theme")).toBe("system");
+    expect(btn().getAttribute("aria-label")).toMatch(/Dark theme.*Switch to: light theme/);
     await act(async () => { btn().click(); });
     expect(localStorage.getItem("vink-theme")).toBe("light"); expect(document.documentElement.classList.contains("dark")).toBe(false);
+    expect(host.textContent).not.toMatch(/system|device/i); expect(btn().getAttribute("aria-label")).not.toMatch(/system|device/i);
   });
-  it("stays light on a device set to dark until the visitor chooses otherwise", async () => {
+  it("stays light on a device set to dark until the visitor chooses dark", async () => {
     window.matchMedia = ((q: string) => ({ matches: true, media: q, addEventListener() {}, removeEventListener() {} })) as never;
     await render(<ThemeProvider><ThemeToggle /></ThemeProvider>);
     expect(document.documentElement.classList.contains("dark")).toBe(false);
   });
-  it("follows the device when the visitor chose \"match my device\"", async () => {
+  it("reads a \"system\" choice saved by an earlier version as light, and never offers it again", async () => {
     window.matchMedia = ((q: string) => ({ matches: true, media: q, addEventListener() {}, removeEventListener() {} })) as never;
     localStorage.setItem("vink-theme", "system");
     await render(<ThemeProvider><ThemeToggle /></ThemeProvider>);
-    expect(document.documentElement.classList.contains("dark")).toBe(true);
+    expect(document.documentElement.classList.contains("dark")).toBe(false); expect(host.querySelector("button")!.getAttribute("aria-label")).toMatch(/Light theme.*Switch to: dark theme/);
   });
 });
 

@@ -39,7 +39,7 @@ P["s/display"] = async () => {
     }],
     content: (
       <>
-        {form([{ name: "theme", label: "Theme", type: "select", options: [["system", "Match my device"], ["light", "Light"], ["dark", "Dark"]] }], s.display)}
+        {form([{ name: "theme", label: "Theme", type: "select", options: [["light", "Light"], ["dark", "Dark"]] }], s.display)}
         <H2>Banking home screen</H2>
         {Object.entries(L).map(([k, l]) => <Sw key={k} on={!!s.home[k]} d={`hm|${k}|${!s.home[k]}`} label={l} />)}
       </>
