@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, FileText, Download, BarChart3 } from "lucide-react";
+import { X, FileText, Download, BarChart3, ShieldCheck, Compass, Users, ShieldAlert, Briefcase, Target, Trophy, TrendingUp, Rocket, type LucideIcon } from "lucide-react";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { Footer } from "./Footer";
 import { BRAND } from "../brand";
@@ -8,32 +8,32 @@ import { PersonGrid } from "./GovernanceCards";
 interface Props { isOpen: boolean; onClose: () => void; }
 
 const P  = BRAND.crimson;
-const GOLD = BRAND.gold;
+const GOLD = BRAND.crimson;          // the accent lines are the brand red
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
 const SELLER_PILLS = ["Integrity", "Commitment", "Performance", "Loyalty", "Insight"];
 
 const KPI_CARDS = [
-  { label: "Addressable Market", value: "R11B", sub: "Estimated annual TAM across the national taxi network", color: BRAND.ok },
-  { label: "Revenue Model", value: "Per-Tap", sub: "R0.50–R1.00 per transaction, scaling with network volume", color: BRAND.info },
-  { label: "Target Growth", value: "Multi-Year", sub: "Detailed year-by-year projections available on request", color: BRAND.gold },
+  { label: "Addressable Market", value: "R11B", sub: "Estimated annual TAM across the national taxi network", color: "#FFFFFF" },
+  { label: "Revenue Model", value: "Per-Tap", sub: "R0.50–R1.00 per transaction, scaling with network volume", color: "#FFFFFF" },
+  { label: "Target Growth", value: "Multi-Year", sub: "Detailed year-by-year projections available on request", color: "#FFFFFF" },
 ];
 
 const REASONS = [
   {
     title: "Leader",
-    icon: "🏆",
+    icon: Trophy,
     text: "Vink is positioned to become a category leader in diversified financial services across Southern Africa, targeting core return metrics and market penetration that outperform existing peers.",
   },
   {
     title: "Disciplined",
-    icon: "📈",
+    icon: TrendingUp,
     text: "Vink's business plan is built on disciplined capital allocation and a diversified revenue base — banking, insurance, telecommunications and e-mobility — designed to cushion cyclical headwinds once operational.",
   },
   {
     title: "High growth potential",
-    icon: "🚀",
+    icon: Rocket,
     text: "VINK Finance targets rapid adoption from launch, driven by accelerated digital uptake among underbanked commuters, cost efficiency built into the platform from day one, and a clear roadmap for strategic partnerships.",
   },
 ];
@@ -56,104 +56,54 @@ const DOCS: { name: string; size: string; date: string }[] = [
   { name: "Memorandum of Incorporation",      size: "1.1 MB",  date: "2018" },
 ];
 
-const BOARD_MEMBERS = [
-  { name: "Vincent Kafula",       role: "Founder & Chief Executive Officer",    initial: "VK", color: "var(--vk-crimson-text)" },
-  { name: "Siyasanga Mahlulo",    role: "Chief Executive Officer (Operations)", initial: "SM", color: BRAND.info },
-  { name: "Thabo Dlamini",        role: "Chief Financial Officer",              initial: "TD", color: BRAND.ok },
-  { name: "Priya Naidoo",         role: "Chief Operating Officer",              initial: "PN", color: "#34A853" },
-  { name: "Lindiwe Mokoena",      role: "Independent Non-Exec Director",        initial: "LM", color: BRAND.bad },
-  { name: "Sipho Khumalo",        role: "Board Secretary & Compliance",         initial: "SK", color: "#06B6D4" },
+/** The Board of Directors: ten people. Add `photo: "https://…"` to a person and the card shows the photo instead of the silhouette. */
+const BOARD_MEMBERS: { name: string; role: string; tag?: string; photo?: string }[] = [
+  { name: "Professor Oliver Saasa", role: "Chairperson", tag: "Chair" },
+  { name: "Regina Mulenga",         role: "Vice Chairperson" },
+  { name: "Cecilia Zimba",          role: "Non-Executive Director" },
+  { name: "David Musunga",          role: "Non-Executive Director" },
+  { name: "Deepak Malik",           role: "Non-Executive Director" },
+  { name: "Leslie Horne",           role: "Non-Executive Director" },
+  { name: "Michael Mbulo",          role: "Non-Executive Director" },
+  { name: "Musata Ndhlovu",         role: "Non-Executive Director" },
+  { name: "Owen Silavwe",           role: "Non-Executive Director" },
+  { name: "Robin Miller",           role: "Non-Executive Director" },
 ];
 
 const MINI_CHART = [1.44,1.62,1.55,1.80,2.10,1.95,2.30,2.45,2.20,2.50,2.38,2.60];
 
 // ─── Corporate Governance data ────────────────────────────────────────────────
 
-const MANAGEMENT_TEAM = [
-  { name: "Vincent Kafula",      title: "Founder & CEO",                       initial: "VK", color: "var(--vk-crimson-text)", province: "Cape Town, Western Cape" },
-  { name: "Siyasanga Mahlulo",   title: "Chief Executive Officer (Operations)",initial: "SM", color: BRAND.info, province: "Cape Town, Western Cape" },
-  { name: "Thabo Dlamini",       title: "Chief Financial Officer",             initial: "TD", color: BRAND.ok, province: "Gauteng" },
-  { name: "Priya Naidoo",        title: "Chief Operating Officer",             initial: "PN", color: "#34A853", province: "KwaZulu-Natal" },
-  { name: "James van der Berg",  title: "Chief Risk Officer",                  initial: "JV", color: BRAND.warn, province: "Western Cape" },
-  { name: "Lindiwe Mokoena",     title: "Chief People Officer",                initial: "LM", color: BRAND.bad, province: "Gauteng" },
-  { name: "Sipho Khumalo",       title: "Chief Technology Officer",            initial: "SK", color: "#06B6D4", province: "Gauteng" },
-  { name: "Amahle Zulu",         title: "Chief Marketing Officer",             initial: "AZ", color: "#EC4899", province: "KwaZulu-Natal" },
+/** The Executive Committee: fifteen people, led by the Chief Executive Officer. */
+const EXECUTIVE_COMMITTEE: { name: string; role: string; tag?: string; note?: string; photo?: string }[] = [
+  { name: "Mukwandi Chibesakunda",                 role: "Chief Executive Officer*", tag: "CEO", note: "*Non-Board Member" },
+  { name: "Kalaluka Itwi",                         role: "Chief Financial Officer" },
+  { name: "Chali Mwefyeni",                        role: "Chief Commercial Officer" },
+  { name: "Vincent Chuunga",                       role: "Chief Operations Officer" },
+  { name: "Kaluba Gloria Kaulung\u2019ombe-Inampasa", role: "Chief Legal Officer and Company Secretary" },
+  { name: "Kalengo S. Simukoko",                   role: "Chief Credit Risk Officer" },
+  { name: "Mutisunge Zulu",                        role: "Chief Credit Risk Officer" },
+  { name: "Wisdom Shangenta",                      role: "Chief Information Officer" },
+  { name: "Mwila Chibela",                         role: "Chief Digital Banking Officer" },
+  { name: "Nawa Themba Joel Samatebele",           role: "Chief Information Security Officer" },
+  { name: "Henry Kalubi",                          role: "Acting Chief Human Capital Officer" },
+  { name: "Chanda Chime Katongo",                  role: "Executive Head Client Solutions" },
+  { name: "Fredrick K. Mulenga",                   role: "Executive Head Treasury" },
+  { name: "Temba Nonde",                           role: "Executive Head Compliance and Financial Crimes" },
+  { name: "Eletina Phiri Bbuku",                   role: "Executive Head Internal Audit" },
 ];
 
-const COMMITTEES = [
-  {
-    name: "AUDIT COMMITTEE",
-    color: "#EDE7F6",
-    borderColor: BRAND.gold,
-    members: [
-      { initial: "PD", name: "Pieter Du Plessis", role: "Chair",   province: "Western Cape",   color: BRAND.gold },
-      { initial: "RS", name: "Reza Solomon",       role: "Member",  province: "KwaZulu-Natal",  color: BRAND.gold },
-      { initial: "AM", name: "Amahle Mokoena",     role: "Member",  province: "Gauteng",         color: BRAND.gold },
-    ],
-  },
-  {
-    name: "RISK COMMITTEE",
-    color: "var(--vk-warn-bg)",
-    borderColor: "#D97706",
-    members: [
-      { initial: "TN", name: "Thabo Nkosi",    role: "Chair",   province: "Gauteng",        color: "#D97706" },
-      { initial: "FN", name: "Fatima Naidoo",  role: "Member",  province: "KwaZulu-Natal",  color: "#D97706" },
-      { initial: "KD", name: "Kaginx Dlamini", role: "Member",  province: "North West",     color: "#D97706" },
-    ],
-  },
-  {
-    name: "REMUNERATION COMMITTEE",
-    color: "#DCFCE7",
-    borderColor: "#16A34A",
-    members: [
-      { initial: "LM", name: "Lerato Modise",    role: "Chair",   province: "KwaZulu-Natal",  color: "#16A34A" },
-      { initial: "ND", name: "Nandi Piot",        role: "Member",  province: "Free State",     color: "#16A34A" },
-      { initial: "BM", name: "Bongani Mthembu",  role: "Member",  province: "Eastern Cape",   color: "#16A34A" },
-    ],
-  },
-  {
-    name: "SOCIAL & ETHICS COMMITTEE",
-    color: "var(--vk-bad-bg)",
-    borderColor: "#DC2626",
-    members: [
-      { initial: "NZ", name: "Nomsa Zulu",    role: "Chair",   province: "Mpumalanga",   color: "#DC2626" },
-      { initial: "OB", name: "Olwethu Booi",  role: "Member",  province: "Eastern Cape", color: "#DC2626" },
-      { initial: "MK", name: "Mpho Khumalo",  role: "Member",  province: "North West",   color: "#DC2626" },
-    ],
-  },
-];
+/** What each group is responsible for, in the Board's own words. */
+const BOARD_INTRO = "The Board of Directors retains full and effective control of the bank and monitors the Executive Management Team. The Board is also responsible for direction, policies and strategies and all investment and divestment decisions. It also ensures that the bank meets its responsibilities towards all its stakeholders and that the bank is prudently managed against the major risks inherent in business and banking.";
+const EXEC_INTRO = "The Executive Committee, led by the Chief Executive Officer, is responsible for the day-to-day management of the bank and for executing the strategy and policies set by the Board of Directors.";
 
-const RESPONSIBILITIES = [
-  {
-    title: "Strategic Direction",
-    icon: "🎯",
-    text: "The Board is responsible for setting the strategic direction of Vink, approving major decisions and ensuring these are aligned with the long-term interests of shareholders and all stakeholders.",
-  },
-  {
-    title: "Financial Oversight",
-    icon: "💰",
-    text: "The Board oversees the integrity of financial reporting, internal controls, risk management systems and ensures compliance with statutory and regulatory requirements.",
-  },
-  {
-    title: "Executive Accountability",
-    icon: "👤",
-    text: "The Board appoints and evaluates the performance of the Chief Executive Officer and other executive directors, sets remuneration policy and approves material transactions.",
-  },
-  {
-    title: "Ethics & Governance",
-    icon: "⚖️",
-    text: "The Board fosters a culture of ethical conduct, oversees the company's Social & Ethics Committee and ensures adherence to the King IV Report on Corporate Governance.",
-  },
-  {
-    title: "Stakeholder Engagement",
-    icon: "🤝",
-    text: "The Board promotes open and transparent communication with shareholders, regulators, employees, customers and communities in which Vink operates.",
-  },
-  {
-    title: "Risk Management",
-    icon: "🛡️",
-    text: "The Board is accountable for determining the risk appetite of the group and for overseeing the identification, assessment and management of material risks.",
-  },
+const RESPONSIBILITIES: { group: string; title: string; icon: LucideIcon; text: string }[] = [
+  { group: "The Board", title: "Full and effective control", icon: ShieldCheck, text: "The Board retains full and effective control of the bank and monitors the Executive Management Team." },
+  { group: "The Board", title: "Direction and strategy", icon: Compass, text: "The Board is responsible for direction, policies and strategies, and for all investment and divestment decisions." },
+  { group: "The Board", title: "Stakeholders", icon: Users, text: "The Board ensures that the bank meets its responsibilities towards all its stakeholders." },
+  { group: "The Board", title: "Prudent management of risk", icon: ShieldAlert, text: "The Board ensures that the bank is prudently managed against the major risks inherent in business and banking." },
+  { group: "The Executive Committee", title: "Day-to-day management", icon: Briefcase, text: "The Executive Committee, led by the Chief Executive Officer, is responsible for the day-to-day management of the bank." },
+  { group: "The Executive Committee", title: "Executing the strategy", icon: Target, text: "The Executive Committee executes the strategy and policies set by the Board of Directors." },
 ];
 
 // ─── Tiny sparkline ───────────────────────────────────────────────────────────
@@ -185,7 +135,7 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
 // ─── Main component ───────────────────────────────────────────────────────────
 export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
   const [activePill, setActivePill] = useState(0);
-  const [govTab, setGovTab] = useState<"board" | "management" | "committees" | "responsibilities">("board");
+  const [govTab, setGovTab] = useState<"board" | "executive" | "responsibilities">("board");
 
   if (!isOpen) return null;
 
@@ -254,7 +204,7 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
           <div className="grid sm:grid-cols-3 gap-5">
             {REASONS.map((r) => (
               <div key={r.title} className="bg-surface rounded-xl border border-line p-6 hover:shadow-md transition-shadow">
-                <div className="text-4xl mb-3">{r.icon}</div>
+                <span aria-hidden="true" className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl" style={{ background: "var(--vk-brand-soft)", color: "var(--vk-crimson-text)" }}><r.icon className="h-6 w-6" /></span>
                 <h3 className="text-base font-bold mb-2" style={{ color: "var(--vk-fg)" }}>{r.title}</h3>
                 <p className="text-sm text-fg-muted leading-relaxed">{r.text}</p>
               </div>
@@ -353,22 +303,21 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
         <div>
           <SectionHeading>Corporate Governance</SectionHeading>
 
-          {/* Intro text (always visible, matches image) */}
+          {/* What the group is responsible for */}
           <div className="bg-surface rounded-xl border border-line p-5 mb-5 text-sm text-fg leading-relaxed">
             <div className="flex items-center gap-2 mb-2">
               <BarChart3 className="w-4 h-4 flex-shrink-0" style={{ color: "var(--vk-crimson-text)" }} />
-              <span className="font-bold text-fg">Vink is committed to the highest standards of corporate governance.</span>
+              <span className="font-bold text-fg">{govTab === "executive" ? "The Executive Committee" : govTab === "responsibilities" ? "Responsibilities" : "The Board of Directors"}</span>
             </div>
-            The Board of Directors is responsible for the overall governance of the company, including setting strategic direction, overseeing management, and ensuring accountability to stakeholders.
+            {govTab === "executive" ? EXEC_INTRO : govTab === "responsibilities" ? "What the Board and the Executive Committee are each responsible for." : BOARD_INTRO}
           </div>
 
           {/* Tab strip */}
           <div className="flex gap-1 border-b border-line mb-6 overflow-x-auto">
             {([
-              { key: "board",           label: "Board of Directors", count: BOARD_MEMBERS.length },
-              { key: "management",      label: "Management",         count: MANAGEMENT_TEAM.length },
-              { key: "committees",      label: "Board Committees",   count: COMMITTEES.length },
-              { key: "responsibilities", label: "Responsibilities",  count: 0 },
+              { key: "board",           label: "Board of Directors",   count: BOARD_MEMBERS.length },
+              { key: "executive",       label: "Executive Committee",  count: EXECUTIVE_COMMITTEE.length },
+              { key: "responsibilities", label: "Responsibilities",    count: 0 },
             ] as const).map(tab => (
               <button
                 key={tab.key}
@@ -386,49 +335,26 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
           </div>
 
           {/* ── Board of Directors ── */}
-          {govTab === "board" && <PersonGrid groupKey="board" noun="members of the Board" people={BOARD_MEMBERS.map((m, i) => ({ name: m.name, role: m.role, tag: i === 0 ? "Founder" : undefined }))} />}
+          {govTab === "board" && <PersonGrid groupKey="board" noun="members of the Board" people={BOARD_MEMBERS} />}
 
-          {/* ── Management ── */}
-          {govTab === "management" && <PersonGrid groupKey="management" noun="members of the Management Team" people={MANAGEMENT_TEAM.map((m, i) => ({ name: m.name, role: m.title, note: m.province, tag: i === 0 ? "Founder" : undefined }))} />}
-
-          {/* ── Board Committees ── */}
-          {govTab === "committees" && (
-            <div>
-              <h3 className="text-base font-bold text-center mb-5 text-fg">Board Committee Members</h3>
-              <div className="grid sm:grid-cols-2 gap-5">
-                {COMMITTEES.map((c) => (
-                  <div key={c.name} className="rounded-xl border-2 overflow-hidden" style={{ borderColor: c.borderColor }}>
-                    <div className="px-4 py-2.5 text-xs font-black uppercase tracking-wider" style={{ background: c.color, color: c.borderColor }}>
-                      {c.name}
-                    </div>
-                    <div className="bg-surface divide-y divide-line">
-                      {c.members.map((m) => (
-                        <div key={m.name} className="flex items-center gap-3 px-4 py-3">
-                          <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-black flex-shrink-0"
-                            style={{ background: m.color }}>
-                            {m.initial}
-                          </div>
-                          <div>
-                            <p className="text-sm font-semibold text-fg">{m.name}</p>
-                            <p className="text-[11px] text-fg-muted">{m.role} · {m.province}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          {/* ── Executive Committee ── */}
+          {govTab === "executive" && <PersonGrid groupKey="executive" noun="members of the Executive Committee" people={EXECUTIVE_COMMITTEE} />}
 
           {/* ── Responsibilities ── */}
           {govTab === "responsibilities" && (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {RESPONSIBILITIES.map((r) => (
-                <div key={r.title} className="bg-surface rounded-xl border border-line p-5 hover:shadow-md transition-shadow">
-                  <div className="text-3xl mb-3">{r.icon}</div>
-                  <h4 className="text-sm font-bold mb-2" style={{ color: "var(--vk-fg)" }}>{r.title}</h4>
-                  <p className="text-xs text-fg-muted leading-relaxed">{r.text}</p>
+            <div className="space-y-8">
+              {["The Board", "The Executive Committee"].map((g) => (
+                <div key={g}>
+                  <h3 className="mb-3 text-sm font-bold uppercase tracking-[0.12em] text-fg-muted">{g}</h3>
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {RESPONSIBILITIES.filter((r) => r.group === g).map((r) => (
+                      <div key={r.title} className="rounded-2xl border border-line bg-surface p-5 transition-shadow hover:shadow-md">
+                        <span aria-hidden="true" className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl" style={{ background: "var(--vk-brand-soft)", color: "var(--vk-crimson-text)" }}><r.icon className="h-5 w-5" /></span>
+                        <h4 className="mb-2 text-sm font-bold text-fg">{r.title}</h4>
+                        <p className="text-xs leading-relaxed text-fg-muted">{r.text}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>
