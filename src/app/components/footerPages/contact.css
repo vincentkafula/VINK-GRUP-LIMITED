@@ -55,7 +55,7 @@
 
 /* tabs */
 .vc .vc-tabs-bar { border-bottom: 1px solid var(--vc-line); background: var(--vk-surface); position: sticky; top: 0; z-index: 20; }
-.vc .vc-tabs { display: flex; gap: 40px; overflow-x: auto; scrollbar-width: none; }
+.vc .vc-tabs { display: flex; justify-content: center; justify-content: safe center; gap: 40px; overflow-x: auto; scrollbar-width: none; }
 .vc .vc-tabs::-webkit-scrollbar { display: none; }
 .vc .vc-tab { position: relative; padding: 18px 0 16px; border: 0; background: none; font-size: 16px; font-weight: 500; color: var(--vc-ink); white-space: nowrap; }
 .vc .vc-tab::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 3px; border-radius: 3px 3px 0 0; background: var(--vc-red); transform: scaleX(0); transition: transform .25s ease; }
