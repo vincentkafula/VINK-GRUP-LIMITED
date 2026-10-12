@@ -3,6 +3,7 @@ import { X, FileText, Download, BarChart3 } from "lucide-react";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { Footer } from "./Footer";
 import { BRAND } from "../brand";
+import { PersonGrid } from "./GovernanceCards";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
@@ -364,10 +365,10 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
           {/* Tab strip */}
           <div className="flex gap-1 border-b border-line mb-6 overflow-x-auto">
             {([
-              { key: "board",           label: "Board of Directors" },
-              { key: "management",      label: "Management" },
-              { key: "committees",      label: "Board Committees" },
-              { key: "responsibilities", label: "Responsibilities" },
+              { key: "board",           label: "Board of Directors", count: BOARD_MEMBERS.length },
+              { key: "management",      label: "Management",         count: MANAGEMENT_TEAM.length },
+              { key: "committees",      label: "Board Committees",   count: COMMITTEES.length },
+              { key: "responsibilities", label: "Responsibilities",  count: 0 },
             ] as const).map(tab => (
               <button
                 key={tab.key}
@@ -379,44 +380,16 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
                   background: "transparent",
                 }}>
                 {tab.label}
+                {tab.count > 0 && <em className="ml-2 rounded-full px-2 py-0.5 text-[11px] font-bold not-italic" style={{ background: "var(--vk-brand-soft)", color: "var(--vk-crimson-text)" }}>{tab.count}</em>}
               </button>
             ))}
           </div>
 
           {/* ── Board of Directors ── */}
-          {govTab === "board" && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {BOARD_MEMBERS.map((m) => (
-                <div key={m.name} className="flex flex-col items-center text-center rounded-xl p-5 bg-surface border border-line hover:shadow-md transition-shadow">
-                  <div className="w-14 h-14 rounded-full flex items-center justify-center text-white font-black text-lg mb-3"
-                    style={{ background: m.color }}>
-                    {m.initial}
-                  </div>
-                  <p className="text-xs font-bold text-fg leading-snug mb-1">{m.name}</p>
-                  <p className="text-[10px] text-fg-muted leading-tight">{m.role}</p>
-                </div>
-              ))}
-            </div>
-          )}
+          {govTab === "board" && <PersonGrid groupKey="board" noun="members of the Board" people={BOARD_MEMBERS.map((m, i) => ({ name: m.name, role: m.role, tag: i === 0 ? "Founder" : undefined }))} />}
 
           {/* ── Management ── */}
-          {govTab === "management" && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {MANAGEMENT_TEAM.map((m) => (
-                <div key={m.name} className="flex items-center gap-4 bg-surface rounded-xl border border-line p-4 hover:shadow-md transition-shadow">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-black text-base flex-shrink-0"
-                    style={{ background: m.color }}>
-                    {m.initial}
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-fg">{m.name}</p>
-                    <p className="text-xs font-medium mt-0.5" style={{ color: "var(--vk-crimson-text)" }}>{m.title}</p>
-                    <p className="text-[11px] text-fg-subtle mt-0.5">{m.province}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          {govTab === "management" && <PersonGrid groupKey="management" noun="members of the Management Team" people={MANAGEMENT_TEAM.map((m, i) => ({ name: m.name, role: m.title, note: m.province, tag: i === 0 ? "Founder" : undefined }))} />}
 
           {/* ── Board Committees ── */}
           {govTab === "committees" && (
