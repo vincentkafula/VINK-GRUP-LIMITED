@@ -49,3 +49,10 @@ describe("Footer legal links", () => {
     expect(host.textContent).toContain("All rights reserved"); expect(host.textContent).toContain("Registration No: 2018/079316/07");
   });
 });
+
+describe("Footer social links", () => {
+  it("links the Facebook button to VINK's Facebook page, in a new tab, safely", () => {
+    const fb = host.querySelector('a[aria-label="Facebook"]') as HTMLAnchorElement;
+    expect(fb.getAttribute("href")).toBe("https://www.facebook.com/vinkwaste/"); expect(fb.target).toBe("_blank"); expect(fb.rel).toContain("noopener");
+  });
+});
