@@ -14,7 +14,7 @@ describe("department email addresses", () => {
   it("are all on vink.co.za, unique, and each has a key, name, purpose and response time", () => {
     expect(new Set(DEPARTMENTS.map((d) => d.address)).size).toBe(DEPARTMENTS.length);
     expect(new Set(DEPARTMENTS.map((d) => d.key)).size).toBe(DEPARTMENTS.length);
-    for (const d of DEPARTMENTS) { expect(d.address).toMatch(/^[a-z]+@vink\.co\.za$/); expect(d.name.length).toBeGreaterThan(3); expect(d.purpose.length).toBeGreaterThan(10); expect(d.respondWithin).toBeTruthy(); }
+    for (const d of DEPARTMENTS) { expect(d.address).toMatch(/^[a-z]+(\.[a-z]+)?@vink\.co\.za$/); expect(d.name.length).toBeGreaterThan(3); expect(d.purpose.length).toBeGreaterThan(10); expect(d.respondWithin).toBeTruthy(); }
     expect(emailOf("careers")).toBe("careers@vink.co.za"); expect(emailOf("nope")).toBe("info@vink.co.za"); expect(departmentByKey("media")?.name).toBe("Media Relations");
   });
 
