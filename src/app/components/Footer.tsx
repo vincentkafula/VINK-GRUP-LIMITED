@@ -74,10 +74,10 @@ const SOCIALS = [
     ),
   },
   {
-    label: "Twitter",
+    label: "X",
     icon: (
       <svg viewBox="0 0 24 24" width="15" height="15" fill="white">
-        <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z" />
+        <path d="M17.8 3h3L14.2 10.5 22 21h-6.1l-4.8-6.3L5.6 21h-3l7.1-8.1L2.2 3h6.2l4.3 5.8zm-1 16.2h1.7L7.5 4.7H5.7z" />
       </svg>
     ),
   },
@@ -149,7 +149,10 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
       <div style={{ background: TOP_BG }}>
         <div style={{ maxWidth: 1180, margin: "0 auto", padding: "32px 40px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 20 }}>
           {/* The crest on the white top band (brand guide: footer 120-160px) */}
-          <img src={vinkLogoDark} alt="VINK" loading="lazy" decoding="async" style={{ width: 124, height: "auto", objectFit: "contain", filter: "none" }} />
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <img src={vinkLogoDark} alt="VINK" loading="lazy" decoding="async" style={{ width: 124, height: "auto", objectFit: "contain", filter: "none" }} />
+            <p style={{ color: "#6B7280", fontSize: 13.5, lineHeight: 1.5, margin: 0, maxWidth: 220, borderLeft: "1px solid #E8E8EC", paddingLeft: 16 }}>A transport-native digital bank, built for the people who ride, drive and own the taxis.</p>
+          </div>
 
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10 }}>
             <p style={{ color: "#202124", fontSize: 12, fontWeight: 700, letterSpacing: "0.22em", textTransform: "uppercase", margin: 0 }}>
@@ -267,6 +270,7 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
           </div>
           {/* Copyright */}
           <div style={{ padding: "6px 0 24px", textAlign: "center" }}>
+            <p style={{ color: "rgba(255,255,255,0.9)", fontSize: 12.5, margin: "0 0 8px" }}>© {new Date().getFullYear()} VINK. All rights reserved.</p>
             <p style={{ color: "rgba(255,255,255,0.9)", fontSize: 12.5, margin: 0, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "4px 12px" }}>
               <span>United States – EIN: 37-2148609</span>
               <span aria-hidden="true" style={{ color: "rgba(255,255,255,0.25)" }}>|</span>
