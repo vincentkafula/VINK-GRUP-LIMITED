@@ -2,10 +2,10 @@ import { render, screen } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
 import { AboutVINKViewer } from "./AboutVINKViewer";
 
-describe("About VINK page", () => {
+describe("About us page", () => {
   it("shows the company story, sections and head office", () => {
     render(<AboutVINKViewer isOpen onClose={() => {}} />);
-    expect(screen.getByRole("heading", { level: 1, name: "About VINK" })).toBeTruthy();
+    expect(screen.getByRole("heading", { level: 1, name: "About us" })).toBeTruthy();
     for (const h of ["Our story", "Mission & vision", "One network, many services", "Core values", "Social Development"]) {
       expect(screen.getByRole("heading", { name: h })).toBeTruthy();
     }

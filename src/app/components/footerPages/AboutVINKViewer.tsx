@@ -59,7 +59,7 @@ function Heading({ id, eyebrow, children }: { id: string; eyebrow: string; child
 
 export function AboutVINKViewer({ isOpen, onClose }: Props) {
   const scroller = useRef<HTMLDivElement>(null);
-  usePageTitle(isOpen ? "About VINK" : "");
+  usePageTitle(isOpen ? "About us" : "");
   useEffect(() => { if (isOpen && scroller.current) scroller.current.scrollTop = 0; }, [isOpen]);
   if (!isOpen) return null;
 
@@ -81,7 +81,7 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
           <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/25 px-3 py-1 text-xs font-semibold uppercase tracking-widest" style={{ color: "#FFFFFF" }}>
             <MapPin className="size-3.5" aria-hidden="true" /> Est. Cape Town, 2018
           </p>
-          <h1 className="font-display text-4xl font-bold leading-tight md:text-6xl">About VINK</h1>
+          <h1 className="font-display text-4xl font-bold leading-tight md:text-6xl">About us</h1>
           <p className="mt-2 text-lg font-medium text-white/90 md:text-xl">Vink Group (Pty) Ltd, trading as VINK</p>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-white/85 md:text-lg">
             We aim to be Southern Africa&apos;s first transport-native digital bank, built by an African native for the 15 million South Africans who board a minibus taxi every morning.

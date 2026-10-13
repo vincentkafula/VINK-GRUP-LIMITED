@@ -34,7 +34,7 @@ const COLS = [
   },
   {
     title: "Company",
-    links: ["About VINK", "Careers", "Press", "Blog", "Partner With Us", "Advertise", "Affiliate Program"],
+    links: ["About us", "Careers", "Press", "Blog", "Partner With Us", "Advertise", "Affiliate Program"],
   },
 ];
 

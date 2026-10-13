@@ -542,7 +542,7 @@ export default function App() {
 
   const handleFooterLink = (label: string) => {
     startTransition(() => {
-      if (label === "About VINK")                                 open("aboutVINK",          () => setShowAboutVINK(true));
+      if (label === "About us")                                 open("aboutVINK",          () => setShowAboutVINK(true));
       if (label === "Investor Relations")                        open("investorRelations",  () => setShowInvestorRelations(true));
       if (label === "Careers")                                   open("careers",            () => setShowCareers(true));
       if (label === "Contact Us")                                { setContactTab("connect"); open("contactUs", () => setShowContactUs(true)); }

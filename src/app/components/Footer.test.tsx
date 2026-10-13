@@ -24,7 +24,7 @@ describe("Footer", () => {
   });
 
   it("keeps every link and the legal bar, and no longer lists the lost-card numbers", () => {
-    for (const t of ["Latest Offers", "About VINK", "Personal Banking", "Contact Us", "Legal and Compliance", "Terms of use", "Banking regulations", "Privacy Statement"]) expect(host.textContent).toContain(t);
+    for (const t of ["Latest Offers", "About us", "Personal Banking", "Contact Us", "Legal and Compliance", "Terms of use", "Banking regulations", "Privacy Statement"]) expect(host.textContent).toContain(t);
     expect(host.textContent).not.toContain("Lost or stolen"); expect(host.querySelector('a[href^="tel:"]')).toBeNull();
     expect(host.textContent).toContain("Security Centre"); expect(host.textContent).toContain("not yet operational");
   });

@@ -25,7 +25,7 @@ const COLS = [
   {
     title: "Who We Are",
     links: [
-      "About VINK",
+      "About us",
       "Investor Relations",
       "Social Responsibility",
       "News",
