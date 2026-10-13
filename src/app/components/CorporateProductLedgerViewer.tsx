@@ -476,13 +476,13 @@ export function CorporateProductLedgerViewer({ isOpen, onClose, initialCategory,
 
       <section className="pav-ledger-section">
         <div className="pav-wrap">
-          <div className="pav-ledger-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: "12px" }}>
+          <div className="pav-ledger-head" style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", textAlign: "center", gap: "14px" }}>
             <div>
               <h2>{copy.heading}</h2>
               <p>{copy.tag}</p>
             </div>
             {category === "account" && (
-              <button onClick={onOpenApp} className="pav-btn pav-btn-primary" style={{ width: "auto", padding: "10px 20px", marginBottom: "2px" }}>
+              <button onClick={onOpenApp} className="pav-btn pav-btn-primary" style={{ width: "auto", padding: "10px 20px" }}>
                 Try the Corporate App
               </button>
             )}
