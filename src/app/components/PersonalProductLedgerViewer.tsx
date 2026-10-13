@@ -61,24 +61,6 @@ function ProductCard({
         </ul>
       )}
 
-      {showGauge && (
-        <div className="pav-gauge-block">
-          <div className="pav-gauge-label"><span>Fee</span><span className="pav-ceiling-val">{product.price} {product.priceLabel}</span></div>
-          <div className="pav-gauge" aria-label={`${product.price} ${product.priceLabel}`}>
-            <div className="pav-gauge-fill" style={{ width: `${pct}%` }} />
-            <div className="pav-gauge-marker" style={{ left: `${pct}%` }} />
-          </div>
-          <div className="pav-gauge-ticks"><span>R0</span><span>R{maxPrice}</span></div>
-        </div>
-      )}
-
-      <div className="pav-price-block">
-        <div className="pav-price">
-          {isRand && <span className="pav-cur">R</span>}
-          {isRand ? product.price.replace("R", "") : product.price}
-        </div>
-        <div className="pav-price-sub">{product.priceLabel}</div>
-      </div>
       <div className="pav-cta-group">
         <button className="pav-btn pav-btn-primary" onClick={onApply}>
           Apply now
@@ -265,7 +247,6 @@ export function PersonalProductLedgerViewer({ isOpen, onClose, initialCategory, 
               <h2>{copy.heading}</h2>
               <p style={{ font: "12px var(--font-mono),monospace", color: "var(--pav-text-muted)", margin: "6px 0 0" }}>{cfg.tag}</p>
             </div>
-            <div className="pav-scale-note">{copy.scaleNote}</div>
           </div>
 
           <div className="pav-grid">

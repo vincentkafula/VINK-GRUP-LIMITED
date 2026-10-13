@@ -165,12 +165,6 @@ function ProductCard({
       <div className="bg-surface p-4 space-y-3">
         <p className="text-xs text-fg-muted leading-snug">{product.tagline}</p>
 
-        {/* Price */}
-        <div>
-          <span className="text-2xl font-black text-fg">{product.price}</span>
-          <span className="text-xs text-fg-subtle ml-1">{product.priceLabel}</span>
-        </div>
-
         {/* Features */}
         <ul className="space-y-1.5">
           {product.features.slice(0, 4).map((f, i) => (

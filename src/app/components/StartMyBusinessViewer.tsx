@@ -35,18 +35,6 @@ function CountryCard({ c, folio, maxPrice, onApply, onMore }: { c: Country; foli
       <ul className="pav-features">
         {c.features.map((f) => <li key={f}>{f}</li>)}
       </ul>
-      <div className="pav-gauge-block">
-        <div className="pav-gauge-label"><span>Registration fee</span><span className="pav-ceiling-val">{c.price} once-off</span></div>
-        <div className="pav-gauge" aria-label={`${c.price} once-off registration fee`}>
-          <div className="pav-gauge-fill" style={{ width: `${pct}%` }} />
-          <div className="pav-gauge-marker" style={{ left: `${pct}%` }} />
-        </div>
-        <div className="pav-gauge-ticks"><span>R1,500</span><span>R{maxPrice.toLocaleString()}</span></div>
-      </div>
-      <div className="pav-price-block">
-        <div className="pav-price"><span className="pav-cur">R</span>{c.price.replace("R", "")}</div>
-        <div className="pav-price-sub">once-off registration fee</div>
-      </div>
       <div className="pav-cta-group">
         <button className="pav-btn pav-btn-primary" onClick={() => onApply(c.name)}>Apply now</button>
         <button className="pav-btn pav-btn-primary" onClick={onMore}>Tell me more</button>
@@ -213,7 +201,6 @@ export function StartMyBusinessViewer({ isOpen, onClose, onNavigate }: Props) {
               <h2>Register your business abroad</h2>
               <p style={{ font: "12px var(--font-mono),monospace", color: "var(--pav-text-muted)", margin: "6px 0 0" }}>Business Banking · Start My Business</p>
             </div>
-            <div className="pav-scale-note">Once-off registration fee shown on a shared scale, R1,500 → R{maxPrice.toLocaleString()}</div>
           </div>
 
           <div className="pav-grid">

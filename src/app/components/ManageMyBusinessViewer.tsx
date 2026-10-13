@@ -35,18 +35,6 @@ function ServiceCard({ s, folio, maxPrice, onApply, onMore }: { s: Service; foli
       <ul className="pav-features">
         {s.features.map((f) => <li key={f}>{f}</li>)}
       </ul>
-      <div className="pav-gauge-block">
-        <div className="pav-gauge-label"><span>Fee</span><span className="pav-ceiling-val">{s.price} / month</span></div>
-        <div className="pav-gauge" aria-label={`${s.price} per month`}>
-          <div className="pav-gauge-fill" style={{ width: `${pct}%` }} />
-          <div className="pav-gauge-marker" style={{ left: `${pct}%` }} />
-        </div>
-        <div className="pav-gauge-ticks"><span>R0</span><span>R{maxPrice}</span></div>
-      </div>
-      <div className="pav-price-block">
-        <div className="pav-price"><span className="pav-cur">R</span>{s.price.replace("R", "")}</div>
-        <div className="pav-price-sub">/ month</div>
-      </div>
       <div className="pav-cta-group">
         <button className="pav-btn pav-btn-primary" onClick={() => onApply(s.name)}>Apply now</button>
         <button className="pav-btn pav-btn-primary" onClick={onMore}>Tell me more</button>
@@ -206,7 +194,6 @@ export function ManageMyBusinessViewer({ isOpen, onClose, onNavigate }: Props) {
               <h2>All management services</h2>
               <p style={{ font: "12px var(--font-mono),monospace", color: "var(--pav-text-muted)", margin: "6px 0 0" }}>Business Banking · Manage My Business</p>
             </div>
-            <div className="pav-scale-note">Monthly fee shown on a shared scale, R0 → R{maxPrice}</div>
           </div>
 
           <div className="pav-grid">

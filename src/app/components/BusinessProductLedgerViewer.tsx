@@ -88,21 +88,6 @@ function ProductCard({
         {product.features.map((f) => <li key={f}>{f}</li>)}
       </ul>
 
-      {showGauge && (
-        <div className="pav-gauge-block">
-          <div className="pav-gauge-label"><span>Fee</span><span className="pav-ceiling-val">{product.price} / month</span></div>
-          <div className="pav-gauge" aria-label={`${product.price} per month`}>
-            <div className="pav-gauge-fill" style={{ width: `${pct}%` }} />
-            <div className="pav-gauge-marker" style={{ left: `${pct}%` }} />
-          </div>
-          <div className="pav-gauge-ticks"><span>R0</span><span>R{maxPrice}</span></div>
-        </div>
-      )}
-
-      <div className="pav-price-block">
-        <div className="pav-price"><span className="pav-cur">R</span>{product.price.replace("R", "")}</div>
-        <div className="pav-price-sub">/ month</div>
-      </div>
       <div className="pav-cta-group">
         <button className="pav-btn pav-btn-primary" onClick={onApply}>Apply now</button>
         <button className="pav-btn pav-btn-primary" onClick={() => product.tagline ? onDetails() : onApply()}>{detailsCta}</button>
@@ -286,7 +271,6 @@ export function BusinessProductLedgerViewer({ isOpen, onClose, initialCategory, 
               <h2>{copy.heading}</h2>
               <p style={{ font: "12px var(--font-mono),monospace", color: "var(--pav-text-muted)", margin: "6px 0 0" }}>{copy.tag}</p>
             </div>
-            <div className="pav-scale-note">{copy.scaleNote}</div>
           </div>
 
           <div className="pav-grid">
