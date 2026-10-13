@@ -1,7 +1,7 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import {
-  X, Scale, Handshake, Star, Rocket, Lightbulb, ShieldCheck, Target, Globe2, MapPin, Building2, CreditCard, Smartphone,
-  Wifi, Bus, Landmark, HeartHandshake, ArrowRight, Users,
+  X, Scale, Handshake, Star, Rocket, Lightbulb, ShieldCheck, Target, Globe2, MapPin, CreditCard, Smartphone,
+  Wifi, Bus, Landmark, HeartHandshake, ArrowRight,
 } from "lucide-react";
 import vinkLogo from "../../../imports/LOGO_FINAL.png";
 import { Footer } from "../Footer";
@@ -37,24 +37,12 @@ const VALUES: { icon: ReactNode; title: string; desc: string }[] = [
   { icon: <ShieldCheck />, title: "Anti-corruption", desc: "Zero tolerance. Always." },
 ];
 
-const MILESTONES: { year: string; text: string; planned?: boolean }[] = [
-  { year: "2018", text: "VINK incorporated in Cape Town (Reg: 2018/079316/07); development of the AFC payment system begins." },
-  { year: "2022", text: "We start presenting to taxi associations. CODETA agrees to work with VINK in February 2022, once our system is ready." },
-  { year: "2026", text: "Visa and Mastercard integration in sandbox. A sponsor bank (BIN sponsor) is needed before we can go live, and we are seeking one. An investor is willing to fund 15,000 devices for the Western Cape." },
-  { year: "Next", text: "SANTACO approval, which follows a working system, and a first route, Langa to Cape Town.", planned: true },
-  { year: "Jun 2027", text: "Planned launch: 15,000 devices in the Western Cape and cards for 15,000 drivers, 7,000 owners and 10,000 investors in the first year.", planned: true },
-  { year: "5 years", text: "Our goal: a national network of 250,000+ devices, then Zambia, fuel stations, gyms and the VINK Online Store.", planned: true },
-];
-
 const SECTIONS = [
   { id: "about-story", label: "Our story" },
   { id: "about-purpose", label: "Mission & vision" },
   { id: "about-what", label: "What we are building" },
   { id: "about-values", label: "Core values" },
   { id: "about-community", label: "Giving back" },
-  { id: "about-ownership", label: "Ownership" },
-  { id: "about-milestones", label: "Milestones" },
-  { id: "about-office", label: "Head office" },
 ];
 
 const go = (label: string) => window.dispatchEvent(new CustomEvent("vink:footer-link", { detail: { label } }));
@@ -217,54 +205,6 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
           </div>
         </section>
 
-        {/* Ownership */}
-        <section id="about-ownership" aria-labelledby="about-ownership-h" className="scroll-mt-32">
-          <Heading id="about-ownership" eyebrow="Ownership">BBBEE &amp; ownership</Heading>
-          <div className="mx-auto flex max-w-3xl flex-col items-center gap-4 rounded-3xl border border-line bg-surface-2 p-8 text-center">
-            <span className="flex size-14 flex-shrink-0 items-center justify-center rounded-2xl bg-brand text-brand-fg [&>svg]:size-7" aria-hidden="true"><Users /></span>
-            <p className="text-sm leading-relaxed md:text-base">
-              VINK is a <strong>100% black-owned business</strong>. The founder, Vincent Kafula, holds 80% of the shares. The remaining shares are held by South African co-shareholders and beneficiaries, including a 10% stake held in trust for a minor beneficiary, reflecting the founder&apos;s commitment to generational wealth building.
-            </p>
-          </div>
-        </section>
-
-        {/* Milestones */}
-        <section id="about-milestones" aria-labelledby="about-milestones-h" className="scroll-mt-32">
-          <Heading id="about-milestones" eyebrow="Our journey">Company milestones</Heading>
-          <div className="relative mx-auto max-w-2xl">
-            <span aria-hidden="true" className="absolute inset-y-0 left-1/2 w-0.5 -translate-x-1/2" style={{ background: P, opacity: 0.35 }} />
-            <ol className="relative space-y-8">
-              {MILESTONES.map((m) => (
-                <li key={m.year} className="relative flex flex-col items-center text-center">
-                  <span aria-hidden="true" className="relative z-10 mb-2 flex size-5 items-center justify-center rounded-full border-4 border-bg" style={{ background: m.planned ? "#98A2B3" : P }} />
-                  <div className="relative z-10 w-full rounded-2xl border border-line bg-surface p-5 shadow-card">
-                    <span className="inline-block rounded-md bg-surface-2 px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-crimson-text">{m.year}</span>{m.planned && <span className="ml-2 text-[11px] font-semibold uppercase tracking-wider text-gold-text">Planned</span>}
-                    <p className="mt-2 text-sm leading-relaxed md:text-base">{m.text}</p>
-                  </div>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </section>
-
-        {/* Head office */}
-        <section id="about-office" aria-labelledby="about-office-h" className="scroll-mt-32">
-          <Heading id="about-office" eyebrow="Find us">Head office</Heading>
-          <div className="mx-auto flex max-w-3xl flex-col items-center gap-6 rounded-3xl border border-line bg-surface p-8 text-center shadow-card">
-            <div className="flex flex-col items-center gap-4">
-              <span className="flex size-14 flex-shrink-0 items-center justify-center rounded-2xl bg-brand text-brand-fg [&>svg]:size-7" aria-hidden="true"><Building2 /></span>
-              <address className="not-italic">
-                <p className="font-semibold">8 Rose Street, Cape Town CBD</p>
-                <p className="text-sm text-fg-muted">State House Building, Cape Town, 8001</p>
-                <p className="mt-2 text-xs text-fg-muted">Registration: 2018/079316/07 · CIPC registered · South Africa</p>
-              </address>
-            </div>
-            <div className="flex flex-wrap justify-center gap-3">
-              <button type="button" onClick={() => { onClose(); go("Contact Us"); }} className="inline-flex h-11 items-center gap-2 rounded-full bg-brand px-6 text-sm font-semibold text-brand-fg hover:opacity-90">Contact us <ArrowRight className="size-4" aria-hidden="true" /></button>
-              <button type="button" onClick={() => { onClose(); go("Careers"); }} className="inline-flex h-11 items-center rounded-full border-2 border-brand px-6 text-sm font-semibold text-crimson-text hover:bg-surface-2">Careers</button>
-            </div>
-          </div>
-        </section>
       </main>
 
       <Footer />
