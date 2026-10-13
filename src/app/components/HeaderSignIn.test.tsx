@@ -30,3 +30,14 @@ describe("the sign-in panel and the site header", () => {
     expect(panel()).toBeUndefined();
   });
 });
+
+describe("Get help in the header", () => {
+  it("goes to the Contact Us page, the same page as the footer link, and opens no small box", async () => {
+    const heard: string[] = []; const on = (e: Event) => heard.push((e as CustomEvent).detail.label); window.addEventListener("vink:footer-link", on);
+    await act(async () => { ([...host.querySelectorAll('nav[aria-label="Primary"] a')].find((a) => a.textContent === "Business") as HTMLElement).click(); });
+    const help = [...host.querySelectorAll("button")].find((b) => b.textContent === "Get help") as HTMLElement; expect(help).toBeTruthy();
+    await act(async () => { help.click(); });
+    window.removeEventListener("vink:footer-link", on);
+    expect(heard).toEqual(["Contact Us"]); expect(document.querySelector(".fixed.inset-0")).toBeNull();
+  });
+});

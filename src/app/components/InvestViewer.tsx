@@ -79,7 +79,7 @@ export function InvestViewer({ isOpen, onClose }: Props) {
       {/* Business sub-nav */}
       <nav style={{ background: BRAND, display: "flex", padding: "0 32px", overflowX: "auto" }}>
         {BIZ_SUBNAV.map((item, i) => (
-          <a key={item} href="#" style={{ textDecoration: "none", color: i === ACTIVE_IDX ? "#fff" : "rgba(255,255,255,0.75)", fontSize: 13, padding: "13px 16px", whiteSpace: "nowrap", borderBottom: `3px solid ${i === ACTIVE_IDX ? "#fff" : "transparent"}`, fontWeight: i === ACTIVE_IDX ? 600 : 400 }}>{item}</a>
+          <a key={item} href="#" onClick={item === "Get Help" ? (e) => { e.preventDefault(); window.dispatchEvent(new CustomEvent("vink:footer-link", { detail: { label: "Contact Us" } })); } : undefined} style={{ textDecoration: "none", color: i === ACTIVE_IDX ? "#fff" : "rgba(255,255,255,0.75)", fontSize: 13, padding: "13px 16px", whiteSpace: "nowrap", borderBottom: `3px solid ${i === ACTIVE_IDX ? "#fff" : "transparent"}`, fontWeight: i === ACTIVE_IDX ? 600 : 400 }}>{item}</a>
         ))}
       </nav>
 

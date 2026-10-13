@@ -1,6 +1,5 @@
 import { Search, Menu, User, ChevronDown, LifeBuoy, LogIn, Briefcase, Building2, Home } from "lucide-react";
 import { useState, useEffect, useMemo, useRef } from "react";
-import { GetHelpModal } from "./GetHelpModal";
 import { LoginModal } from "./LoginModal";
 import { NotificationCenter } from "./NotificationCenter";
 import { BrandMark, AppLink, SECTIONS, navItemClass, type Section } from "./SiteChrome";
@@ -54,7 +53,6 @@ function isStaffMode() {
 }
 
 export function Header({ onHome, onDashboardSelect, onSubNavClick, onOpenProfile, isLoggedIn = false, userName, loginOpen, onLoginOpenChange }: HeaderProps) {
-  const [isHelpModalOpen, setIsHelpModalOpen]   = useState(false);
   // The sign-in page is open or closed by the App when it passes loginOpen (so the site header can be shown above it), otherwise by this header alone.
   const [ownLoginOpen, setOwnLoginOpen] = useState(isStaffMode());
   const isLoginModalOpen = loginOpen ?? ownLoginOpen;
@@ -72,6 +70,8 @@ export function Header({ onHome, onDashboardSelect, onSubNavClick, onOpenProfile
     return () => { ro.disconnect(); document.documentElement.style.removeProperty("--vk-header-h"); };
   }, []);
   const [activeNav, setActiveNav]               = useState<NavItem | null>(null);
+  /** "Get help" opens the Contact Us page, the same page as the footer's Contact Us link. */
+  const goContact = () => window.dispatchEvent(new CustomEvent("vink:footer-link", { detail: { label: "Contact Us" } }));
   const [paletteOpen, setPaletteOpen]           = useCommandPalette();
   const theme = useTheme();
 
@@ -115,14 +115,13 @@ export function Header({ onHome, onDashboardSelect, onSubNavClick, onOpenProfile
   const paletteItems = useMemo<PaletteItem[]>(() => [
     { id: "home", label: "Home", group: "Go to", icon: <Home className="size-4" />, run: () => { setActiveNav(null); onHome?.(); } },
     ...SECTIONS.flatMap(({ label }) => SUBS[label].map((item) => ({ id: `${label}-${item}`, label: item, group: label, hint: label, keywords: [label], run: () => goSub(label, item) }))),
-    { id: "help", label: "Get help", group: "Actions", icon: <LifeBuoy className="size-4" />, run: () => setIsHelpModalOpen(true) },
+    { id: "help", label: "Get help", group: "Actions", icon: <LifeBuoy className="size-4" />, run: goContact },
     ...(isLoggedIn ? [] : [{ id: "login", label: "Sign in", group: "Actions", icon: <LogIn className="size-4" />, run: () => setIsLoginModalOpen(true) }]),
     { id: "theme", label: `Theme: ${theme.choice === "light" ? "switch to dark" : "switch to light"}`, group: "Actions", keywords: ["dark", "light", "appearance"], run: theme.cycle },
   ], [isLoggedIn, theme.choice]);      // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <>
-      <GetHelpModal isOpen={isHelpModalOpen} onClose={() => setIsHelpModalOpen(false)} />
       <LoginModal
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
@@ -186,7 +185,7 @@ export function Header({ onHome, onDashboardSelect, onSubNavClick, onOpenProfile
                     <AppLink key={item} href={subHref(activeNav, item)} onNavigate={() => goSub(activeNav, item)} className="inline-flex min-h-10 items-center whitespace-nowrap rounded-full px-3.5 text-sm font-medium text-fg hover:bg-surface">{item}</AppLink>
                   ))}
                 </nav>
-                <button type="button" onClick={() => setIsHelpModalOpen(true)} className="ml-auto inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-sm font-medium text-fg-muted hover:bg-surface hover:text-fg"><LifeBuoy className="size-4" aria-hidden="true" />Get help</button>
+                <button type="button" onClick={goContact} className="ml-auto inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-sm font-medium text-fg-muted hover:bg-surface hover:text-fg"><LifeBuoy className="size-4" aria-hidden="true" />Get help</button>
               </div>
             </div>
           </div>
@@ -206,7 +205,7 @@ export function Header({ onHome, onDashboardSelect, onSubNavClick, onOpenProfile
               </ul>
             </details>
           ))}
-          <button type="button" onClick={() => { setMobileOpen(false); setIsHelpModalOpen(true); }} className="mt-1 flex min-h-12 items-center gap-3 rounded-vk-md px-3 text-base font-semibold text-fg hover:bg-surface-2"><LifeBuoy className="size-4 text-fg-muted" aria-hidden="true" />Get help</button>
+          <button type="button" onClick={() => { setMobileOpen(false); goContact(); }} className="mt-1 flex min-h-12 items-center gap-3 rounded-vk-md px-3 text-base font-semibold text-fg hover:bg-surface-2"><LifeBuoy className="size-4 text-fg-muted" aria-hidden="true" />Get help</button>
           {!isLoggedIn && <Button className="mx-3 mt-4" onClick={() => { setMobileOpen(false); setIsLoginModalOpen(true); }}><LogIn aria-hidden="true" />Login</Button>}
         </nav>
       </Sheet>

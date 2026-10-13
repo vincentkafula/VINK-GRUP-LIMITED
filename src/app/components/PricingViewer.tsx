@@ -179,7 +179,7 @@ export function PricingViewer({ isOpen, onClose, activeSubNav, heroTitle, heroSu
                 {item}
               </a>
             ))}
-            <a href="#" style={{ marginLeft: "auto", color: "rgba(255,255,255,.9)", fontSize: 13, fontWeight: 500, padding: "10px 16px", textDecoration: "none", whiteSpace: "nowrap" }}>
+            <a href="#" onClick={(e) => { e.preventDefault(); window.dispatchEvent(new CustomEvent("vink:footer-link", { detail: { label: "Contact Us" } })); }} style={{ marginLeft: "auto", color: "rgba(255,255,255,.9)", fontSize: 13, fontWeight: 500, padding: "10px 16px", textDecoration: "none", whiteSpace: "nowrap" }}>
               Get Help
             </a>
           </div>
