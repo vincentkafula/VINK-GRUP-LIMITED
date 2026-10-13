@@ -5,6 +5,7 @@ import { API_BASE } from "../../services/config";
 import { Badge } from "../dashboards/DashboardShell";
 import { useLoad, Status, Empty, ActionButton, inputCls, when } from "./ui";
 import { usePageTitle } from "../ds";
+import { openSignIn } from "../../services/signIn";
 
 const COLOR = "#C8102E";
 const STAFF = ["owner", "superadmin"];
@@ -42,7 +43,7 @@ function ConfigPage({ onClose, staff, meId }: { onClose: () => void; staff: bool
       <div className="max-w-6xl mx-auto p-4 sm:p-6 space-y-4">
         <div className="flex items-center justify-between"><h1 className="text-xl font-bold text-fg flex items-center gap-2"><SlidersHorizontal className="w-5 h-5" style={{ color: `color-mix(in srgb, ${COLOR} 62%, var(--vk-fg))` }} />Country configuration</h1>
           <button type="button" aria-label="Close" onClick={onClose} className="p-2 text-fg-muted"><X className="w-5 h-5" /></button></div>
-        {!staff ? <p role="alert" className="text-sm text-bad">This page is for administrators. Please sign in with a staff account.</p> : (
+        {!staff ? <div role="alert" className="space-y-3"><p className="text-sm text-bad">This page is for administrators. Please sign in with a staff account.</p><button type="button" onClick={() => openSignIn(onClose)} className="rounded-lg bg-brand px-4 py-2 text-sm font-bold text-brand-fg">Sign in</button></div> : (
           <Body country={country} setCountry={setCountry} tick={tick} refresh={refresh} meId={meId} />)}
       </div>
     </div>

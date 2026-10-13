@@ -7,6 +7,7 @@ import { api as rawApi, openBlob, MANSHYA_BASE } from "./api";
 import { ask, secret, toast, DialogHost, ToastHost } from "./dialogs";
 import { R, dt } from "./format";
 import { TestModeBanner } from "./TestModeBanner";
+import { openSignIn } from "../../services/signIn";
 
 /* Staff back office: applications, KYC, merchants, fraud, disputes, credit, claims, support, audit.
    Staff accounts only (owner / superadmin). The server enforces it; this screen just says so politely. */
@@ -82,6 +83,7 @@ export function ManshyaAdmin({ isOpen, onClose }: { isOpen: boolean; onClose: ()
           <div className="card">
             <h1>Staff sign-in required</h1>
             <p>The back office is for staff accounts. Sign in with a staff account to continue.</p>
+            <button className="btn p" onClick={() => openSignIn(onClose)}>Sign in</button>
           </div>
         )}
       </main>

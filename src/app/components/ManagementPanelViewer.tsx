@@ -17,6 +17,7 @@ import { WhatsAppPanel } from "./portal/WhatsAppPanel";
 import { DEPARTMENTS, SECTION_ALIASES } from "../data/departments";
 import { rbacApi, jobsApi, getSession, getToken, type SectionApplication, type ManagerRecord, type AuditEntry, type JobApplication } from "../services/apiClient";
 import { BRAND } from "../brand";
+import { openSignIn } from "../services/signIn";
 
 interface Props { isOpen: boolean; onClose: () => void; adminName?: string; adminRole?: string; role?: string }
 
@@ -339,7 +340,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
                 ? "You're not signed in"
                 : "Your session has expired"}
             </p>
-            <p className="text-sm text-fg-muted mb-4">Please sign in again from the main menu to continue.</p>
+            <p className="text-sm text-fg-muted mb-4">Please sign in again to continue.</p>
             {sessionExpiredDetail && (
               <div className="text-left text-[11px] font-mono bg-surface-2 rounded-lg p-3 mb-4 text-fg-muted break-words">
                 <p><strong>Endpoint:</strong> {sessionExpiredDetail.path}</p>
@@ -347,7 +348,10 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
                 <p><strong>Server said:</strong> {sessionExpiredDetail.backendError ?? "—"}</p>
               </div>
             )}
-            <button onClick={onClose} className="w-full py-2.5 rounded-xl text-sm font-bold text-white hover:opacity-90" style={{ background: BRAND.crimson }}>
+            <button onClick={() => openSignIn(onClose)} className="w-full py-2.5 rounded-xl text-sm font-bold text-white hover:opacity-90" style={{ background: BRAND.crimson }}>
+              Sign in
+            </button>
+            <button onClick={onClose} className="mt-2 w-full py-2.5 rounded-xl text-sm font-semibold text-fg-muted hover:bg-surface-2">
               Close
             </button>
           </div>

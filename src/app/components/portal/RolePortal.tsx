@@ -12,6 +12,7 @@ import { InvestorDashboard } from "./InvestorDashboard";
 const PersonalDashboard = lazy(() => import("./PersonalDashboard").then((m) => ({ default: m.PersonalDashboard })));   // pulls in the payments dashboard only when needed
 import { PORTALS, portalPathForRole, type PortalKey } from "./portalDefs";
 import { usePageTitle } from "../ds";
+import { openSignIn } from "../../services/signIn";
 
 /**
  * Shell for the role dashboards. The page itself is only a convenience: the real protection is on the server
@@ -50,7 +51,7 @@ export function RolePortal({ portal, isOpen, onClose }: { portal: PortalKey; isO
             {state === "error" && "We could not reach the server. Please try again."}
           </p>
           <div className="mt-6 flex flex-col gap-2">
-            {state === "signedOut" && <button className="py-2.5 rounded-lg font-bold text-sm bg-white text-black" onClick={() => { onClose(); window.dispatchEvent(new Event("vink:open-login")); }}>Sign in</button>}
+            {state === "signedOut" && <button className="py-2.5 rounded-lg font-bold text-sm bg-white text-black" onClick={() => openSignIn(onClose)}>Sign in</button>}
             {state === "denied" && own && <button className="py-2.5 rounded-lg font-bold text-sm bg-white text-black" onClick={() => { window.location.assign(own); }}>Go to my dashboard</button>}
             <button className="py-2.5 rounded-lg text-sm text-fg" onClick={onClose}>Back to the site</button>
           </div>

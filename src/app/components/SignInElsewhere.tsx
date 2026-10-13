@@ -1,4 +1,5 @@
 import { LogIn } from "lucide-react";
+import { openSignIn } from "../services/signIn";
 
 /**
  * Replaces what used to be a separate, independent login form in each of
@@ -23,14 +24,21 @@ export function SignInElsewhere({ onClose, label = "This area" }: { onClose: () 
       <div>
         <p className="text-base font-bold">Sign in required</p>
         <p className="text-sm mt-1 max-w-xs" style={{ color: "var(--vk-fg-muted)" }}>
-          {label} uses the same one sign-in as the rest of VINK. Use the <strong>Login</strong> button in the main menu, then come back here.
+          {label} uses the same one sign-in as the rest of VINK. Select <strong>Sign in</strong> to continue.
         </p>
       </div>
-      <button onClick={onClose}
-        className="px-6 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90"
-        style={{ background: "linear-gradient(135deg,#C8102E,#A50F27)" }}>
-        Close
-      </button>
+      <div className="flex flex-wrap items-center justify-center gap-3">
+        <button onClick={() => openSignIn(onClose)}
+          className="px-6 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90"
+          style={{ background: "linear-gradient(135deg,#C8102E,#A50F27)" }}>
+          Sign in
+        </button>
+        <button onClick={onClose}
+          className="px-6 py-2.5 rounded-xl text-sm font-bold transition-all hover:bg-white/10"
+          style={{ border: "1px solid rgba(255,255,255,0.35)", color: "#fff" }}>
+          Close
+        </button>
+      </div>
     </div>
   );
 }

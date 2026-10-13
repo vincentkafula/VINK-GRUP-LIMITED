@@ -8,6 +8,7 @@ import { COUNTRIES, provincesForCountry, alpha2ForCountry, idDocumentTypesForCou
 import { validatePostalCode, getCountryByCode, getPostalLabel } from "postal-code-checker";
 import { API_BASE } from "../services/config";
 import { BRAND } from "../brand";
+import { openSignIn } from "../services/signIn";
 
 interface Props { isOpen: boolean; onClose: () => void; onGoToDashboard?: () => void; /** The banking account the applicant picked before opening the form. */ initialAccountType?: string; }
 
@@ -705,7 +706,7 @@ function Step7({ onClose, onGoToDashboard, referenceNumber, accountNumber, login
           </div>
           <p className="text-xs text-fg-muted leading-relaxed">
             {loginError || "Your application was submitted, but we couldn't set up your banking app login automatically."}
-            {" "}If you already have a VINK account, log in with your existing details. Otherwise, contact our support team and quote your reference number above.
+            {" "}If you already have a VINK account, <button type="button" onClick={() => openSignIn(onClose)} className="font-semibold underline">sign in</button> with your existing details. Otherwise, contact our support team and quote your reference number above.
           </p>
         </div>
       )}
