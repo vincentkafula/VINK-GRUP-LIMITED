@@ -118,11 +118,11 @@ export function ManageMyBusinessViewer({ isOpen, onClose, onNavigate }: Props) {
         .pav-hero p{ color:rgba(255,255,255,0.92); font-size:14px; max-width:600px; margin:0 auto; }
 
         .pav-ledger-head{
-          display:flex; justify-content:space-between; align-items:flex-end;
+          display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; gap:12px;
           padding:32px 0 22px;
         }
         .pav-ledger-head h2{ font-family:var(--font-display); font-weight:500; font-size:22px; margin:0; }
-        .pav-scale-note{ font-family:var(--font-mono); font-size:11.5px; color:var(--pav-text-muted); text-align:right; line-height:1.5; max-width:280px; }
+        .pav-scale-note{ font-family:var(--font-mono); font-size:11.5px; color:var(--pav-text-muted); text-align:center; line-height:1.5; max-width:none; }
 
         .pav-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:24px; margin-bottom:24px; }
         .pav-card{
@@ -170,7 +170,7 @@ export function ManageMyBusinessViewer({ isOpen, onClose, onNavigate }: Props) {
 
         @media (max-width:900px){
           .pav-grid{ grid-template-columns:1fr; }
-          .pav-ledger-head{ flex-direction:column; align-items:flex-start; gap:10px; }
+          .pav-ledger-head{ align-items:center; gap:10px; }
           .pav-scale-note{ text-align:left; max-width:none; }
         }
         @media (prefers-reduced-motion:reduce){
