@@ -61,9 +61,10 @@ const go = (label: string) => window.dispatchEvent(new CustomEvent("vink:footer-
 
 function Heading({ id, eyebrow, children }: { id: string; eyebrow: string; children: ReactNode }) {
   return (
-    <div className="mb-6">
+    <div className="mb-8 text-center">
       <p className="mb-1 text-xs font-bold uppercase tracking-[0.16em] text-gold-text">{eyebrow}</p>
-      <h2 id={id + "-h"} className="text-2xl font-bold text-crimson-text md:text-3xl">{children}</h2>
+      <h2 id={id + "-h"} className="text-2xl font-bold text-crimson-text md:text-4xl">{children}</h2>
+      <span aria-hidden="true" className="mx-auto mt-3 block h-1 w-14 rounded-full" style={{ background: P }} />
     </div>
   );
 }
@@ -87,19 +88,20 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
       {/* Hero */}
       <header className="relative overflow-hidden px-6 py-14 text-white md:py-20" style={{ background: "#C8102E" }}>
         <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-24 size-96 rounded-full opacity-20" style={{ background: `radial-gradient(circle,#FFFFFF 0%,transparent 70%)` }} />
-        <div className="relative mx-auto max-w-6xl">
+        <div aria-hidden="true" className="pointer-events-none absolute -bottom-32 -left-24 size-96 rounded-full opacity-10" style={{ background: "radial-gradient(circle,#FFFFFF 0%,transparent 70%)" }} />
+        <div className="relative mx-auto flex max-w-6xl flex-col items-center text-center">
           <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/25 px-3 py-1 text-xs font-semibold uppercase tracking-widest" style={{ color: "#FFFFFF" }}>
             <MapPin className="size-3.5" aria-hidden="true" /> Est. Cape Town, 2018
           </p>
           <h1 className="font-display text-4xl font-bold leading-tight md:text-6xl">About VINK</h1>
           <p className="mt-2 text-lg font-medium text-white/90 md:text-xl">Vink Group (Pty) Ltd, trading as VINK</p>
-          <p className="mt-4 max-w-2xl text-base leading-relaxed text-white/85 md:text-lg">
+          <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-white/85 md:text-lg">
             We aim to be South Africa&apos;s first transport-native digital bank, built by a Cape Town native for the 15 million South Africans who board a minibus taxi every morning.
           </p>
-          <dl className="mt-8 grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-4">
+          <dl className="mx-auto mt-10 grid w-full max-w-4xl grid-cols-2 gap-3 text-center sm:grid-cols-4">
             {STATS.map((s) => (
-              <div key={s.l} className="rounded-xl border border-white/15 bg-white/10 px-4 py-3">
-                <dd className="text-xl font-bold leading-tight" style={{ color: "#FFFFFF" }}>{s.v}</dd>
+              <div key={s.l} className="rounded-2xl border border-white/20 bg-white/10 px-4 py-5 backdrop-blur-sm">
+                <dd className="text-2xl font-bold leading-tight md:text-3xl" style={{ color: "#FFFFFF" }}>{s.v}</dd>
                 <dt className="text-xs uppercase tracking-wider text-white/75">{s.l}</dt>
               </div>
             ))}
@@ -114,7 +116,7 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
 
       {/* Section menu */}
       <nav aria-label="On this page" className="sticky top-[57px] z-20 border-b border-line bg-surface/95 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-4 py-2">
+        <div className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-4 py-2 [justify-content:safe_center]">
           {SECTIONS.map((s) => (
             <button key={s.id} type="button" onClick={() => jump(s.id)}
               className="inline-flex h-10 flex-shrink-0 items-center rounded-full px-4 text-sm font-medium text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg">
@@ -124,12 +126,12 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
         </div>
       </nav>
 
-      <main className="mx-auto w-full max-w-6xl flex-1 space-y-16 px-6 py-12">
+      <main className="mx-auto w-full max-w-6xl flex-1 space-y-20 px-6 py-14">
         {/* Story */}
         <section id="about-story" aria-labelledby="about-story-h" className="scroll-mt-32">
           <Heading id="about-story" eyebrow="Who we are">Our story</Heading>
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-            <div className="space-y-4 rounded-2xl border border-line bg-surface p-6 shadow-card">
+          <div className="mx-auto flex max-w-4xl flex-col gap-6 text-center">
+            <div className="space-y-4 rounded-3xl border border-line bg-surface p-8 shadow-card md:p-10">
               <p className="leading-relaxed">
                 VINK was founded in 2018 in Cape Town by <strong>Vincent Kafula</strong>, a Cape Town native with deep roots in the public transport industry. Vincent saw a gap that no bank or fintech had filled: a payment system fast enough for the taxi industry, where 15 million South Africans board a minibus every single morning. He set out to build one.
               </p>
@@ -137,10 +139,10 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
                 VINK began from a simple observation: sitting in a taxi, it is hard for drivers to collect fares and to give change, especially in the morning. Drivers also depend on each fare to buy fuel and keep working. We are building a system that pays them within seconds, works on every route, and serves everyone, not just people with traditional banking histories.
               </p>
             </div>
-            <aside className="rounded-2xl p-6 text-white" style={{ background: `linear-gradient(135deg,#101828,${P})` }}>
-              <p className="text-3xl font-bold" style={{ color: "#FFFFFF" }}>R0.50</p>
+            <aside className="rounded-3xl p-8 text-center text-white md:p-10" style={{ background: `linear-gradient(135deg,#101828,${P})` }}>
+              <p className="text-5xl font-bold" style={{ color: "#FFFFFF" }}>R0.50</p>
               <p className="mt-1 text-sm font-semibold uppercase tracking-wider text-white/80">planned fee per taxi transaction</p>
-              <p className="mt-3 text-sm leading-relaxed text-white/85">
+              <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-white/85 md:text-base">
                 Planned to be shared across the ecosystem that makes each transaction possible: the financing bank, the driver&apos;s taxi association, neighbourhood watch initiatives in the area served, and a portion retained to seed a future VINK community bank built for taxi drivers.
               </p>
             </aside>
@@ -150,17 +152,17 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
         {/* Mission & vision */}
         <section id="about-purpose" aria-labelledby="about-purpose-h" className="scroll-mt-32">
           <Heading id="about-purpose" eyebrow="Why we exist">Mission &amp; vision</Heading>
-          <div className="grid gap-6 md:grid-cols-2">
-            <div className="rounded-2xl p-6 text-white" style={{ background: `linear-gradient(135deg,${P},#A50F27)` }}>
-              <span className="mb-3 flex size-11 items-center justify-center rounded-xl bg-white/15 [&>svg]:size-6" aria-hidden="true"><Target /></span>
-              <h3 className="mb-2 text-lg font-bold">Our mission</h3>
+          <div className="mx-auto grid max-w-5xl gap-6 text-center md:grid-cols-2">
+            <div className="rounded-3xl p-8 text-white shadow-card" style={{ background: `linear-gradient(135deg,${P},#A50F27)` }}>
+              <span className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-white/15 [&>svg]:size-7" aria-hidden="true"><Target /></span>
+              <h3 className="mb-2 text-xl font-bold">Our mission</h3>
               <p className="text-sm leading-relaxed text-white/90">
                 To develop integrated payment and financial services solutions for South Africa&apos;s public transport industry, empowering taxi operators, drivers and passengers with tools that are fast, affordable and built for their lives.
               </p>
             </div>
-            <div className="rounded-2xl border-2 border-brand bg-surface p-6">
-              <span className="mb-3 flex size-11 items-center justify-center rounded-xl bg-brand text-brand-fg [&>svg]:size-6" aria-hidden="true"><Globe2 /></span>
-              <h3 className="mb-2 text-lg font-bold text-crimson-text">Our vision</h3>
+            <div className="rounded-3xl border-2 border-brand bg-surface p-8 shadow-card">
+              <span className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-brand text-brand-fg [&>svg]:size-7" aria-hidden="true"><Globe2 /></span>
+              <h3 className="mb-2 text-xl font-bold text-crimson-text">Our vision</h3>
               <p className="text-sm leading-relaxed text-fg-muted">
                 To be the provider of high-value, high-quality and convergent AFC solutions to the taxi industry and public transport operators worldwide, and to build a pan-African financial services business that creates real economic opportunity in the communities we serve.
               </p>
@@ -173,8 +175,8 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
           <Heading id="about-what" eyebrow="What we are building">One network, many services</Heading>
           <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {WHAT_WE_DO.map((w) => (
-              <li key={w.title} className="rounded-2xl border border-line bg-surface p-5 shadow-card">
-                <span className="mb-3 flex size-10 items-center justify-center rounded-xl bg-surface-2 text-crimson-text [&>svg]:size-5" aria-hidden="true">{w.icon}</span>
+              <li key={w.title} className="rounded-2xl border border-line bg-surface p-6 text-center shadow-card transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
+                <span className="mx-auto mb-4 flex size-12 items-center justify-center rounded-2xl bg-brand text-brand-fg [&>svg]:size-6" aria-hidden="true">{w.icon}</span>
                 <h3 className="font-bold text-fg">{w.title}</h3>
                 <p className="mt-1 text-sm leading-relaxed text-fg-muted">{w.desc}</p>
               </li>
@@ -187,8 +189,8 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
           <Heading id="about-values" eyebrow="How we behave">Core values</Heading>
           <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {VALUES.map((v) => (
-              <li key={v.title} className="flex items-start gap-4 rounded-2xl border border-line bg-surface p-5 transition-shadow hover:shadow-md">
-                <span className="flex size-10 flex-shrink-0 items-center justify-center rounded-xl bg-brand text-brand-fg [&>svg]:size-5" aria-hidden="true">{v.icon}</span>
+              <li key={v.title} className="flex flex-col items-center gap-3 rounded-2xl border border-line bg-surface p-6 text-center transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
+                <span className="flex size-12 flex-shrink-0 items-center justify-center rounded-full bg-surface-2 text-crimson-text ring-2 ring-brand [&>svg]:size-6" aria-hidden="true">{v.icon}</span>
                 <div>
                   <h3 className="font-bold text-fg">{v.title}</h3>
                   <p className="mt-1 text-sm leading-relaxed text-fg-muted">{v.desc}</p>
@@ -200,11 +202,11 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
 
         {/* Giving back */}
         <section id="about-community" aria-labelledby="about-community-h" className="scroll-mt-32">
-          <div className="grid items-center gap-6 rounded-3xl p-8 text-white md:grid-cols-[minmax(0,2fr)_auto]" style={{ background: `linear-gradient(135deg,#101828,${P})` }}>
+          <div className="mx-auto flex max-w-4xl flex-col items-center gap-6 rounded-3xl p-8 text-center text-white md:p-12" style={{ background: `linear-gradient(135deg,#101828,${P})` }}>
             <div>
               <p className="mb-1 text-xs font-bold uppercase tracking-[0.16em]" style={{ color: "#FFFFFF" }}>Giving back</p>
               <h2 id="about-community-h" className="text-2xl font-bold md:text-3xl">Social Development</h2>
-              <p className="mt-3 max-w-2xl text-sm leading-relaxed text-white/85 md:text-base">
+              <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-white/85 md:text-base">
                 We plan to dedicate a portion of VINK&apos;s profits to programmes that help our cities become cleaner, safer, more inclusive and more economically vibrant. We are preparing to bring them to Cape Town, Johannesburg, Pretoria, Durban, Lusaka, Kitwe and Ndola, in partnership with local businesses, NGOs and non-profit organisations.
               </p>
             </div>
@@ -218,8 +220,8 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
         {/* Ownership */}
         <section id="about-ownership" aria-labelledby="about-ownership-h" className="scroll-mt-32">
           <Heading id="about-ownership" eyebrow="Ownership">BBBEE &amp; ownership</Heading>
-          <div className="flex gap-4 rounded-2xl border border-line bg-surface-2 p-6">
-            <span className="hidden size-11 flex-shrink-0 items-center justify-center rounded-xl bg-brand text-brand-fg sm:flex [&>svg]:size-6" aria-hidden="true"><Users /></span>
+          <div className="mx-auto flex max-w-3xl flex-col items-center gap-4 rounded-3xl border border-line bg-surface-2 p-8 text-center">
+            <span className="flex size-14 flex-shrink-0 items-center justify-center rounded-2xl bg-brand text-brand-fg [&>svg]:size-7" aria-hidden="true"><Users /></span>
             <p className="text-sm leading-relaxed md:text-base">
               VINK is a <strong>100% black-owned business</strong>. The founder, Vincent Kafula, holds 80% of the shares. The remaining shares are held by South African co-shareholders and beneficiaries, including a 10% stake held in trust for a minor beneficiary, reflecting the founder&apos;s commitment to generational wealth building.
             </p>
@@ -229,30 +231,35 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
         {/* Milestones */}
         <section id="about-milestones" aria-labelledby="about-milestones-h" className="scroll-mt-32">
           <Heading id="about-milestones" eyebrow="Our journey">Company milestones</Heading>
-          <ol className="relative space-y-6 border-l-2 pl-8" style={{ borderColor: P }}>
-            {MILESTONES.map((m) => (
-              <li key={m.year} className="relative">
-                <span aria-hidden="true" className="absolute -left-[41px] top-1 flex size-5 items-center justify-center rounded-full border-2 border-surface" style={{ background: m.planned ? "#98A2B3" : P }} />
-                <span className="inline-block rounded-md bg-surface-2 px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-crimson-text">{m.year}</span>{m.planned && <span className="ml-2 text-[11px] font-semibold uppercase tracking-wider text-gold-text">Planned</span>}
-                <p className="mt-2 text-sm leading-relaxed md:text-base">{m.text}</p>
-              </li>
-            ))}
-          </ol>
+          <div className="relative mx-auto max-w-2xl">
+            <span aria-hidden="true" className="absolute inset-y-0 left-1/2 w-0.5 -translate-x-1/2" style={{ background: P, opacity: 0.35 }} />
+            <ol className="relative space-y-8">
+              {MILESTONES.map((m) => (
+                <li key={m.year} className="relative flex flex-col items-center text-center">
+                  <span aria-hidden="true" className="relative z-10 mb-2 flex size-5 items-center justify-center rounded-full border-4 border-bg" style={{ background: m.planned ? "#98A2B3" : P }} />
+                  <div className="relative z-10 w-full rounded-2xl border border-line bg-surface p-5 shadow-card">
+                    <span className="inline-block rounded-md bg-surface-2 px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-crimson-text">{m.year}</span>{m.planned && <span className="ml-2 text-[11px] font-semibold uppercase tracking-wider text-gold-text">Planned</span>}
+                    <p className="mt-2 text-sm leading-relaxed md:text-base">{m.text}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </div>
         </section>
 
         {/* Head office */}
         <section id="about-office" aria-labelledby="about-office-h" className="scroll-mt-32">
           <Heading id="about-office" eyebrow="Find us">Head office</Heading>
-          <div className="grid gap-6 rounded-2xl border border-line bg-surface p-6 shadow-card md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
-            <div className="flex gap-4">
-              <span className="flex size-11 flex-shrink-0 items-center justify-center rounded-xl bg-surface-2 text-crimson-text [&>svg]:size-6" aria-hidden="true"><Building2 /></span>
+          <div className="mx-auto flex max-w-3xl flex-col items-center gap-6 rounded-3xl border border-line bg-surface p-8 text-center shadow-card">
+            <div className="flex flex-col items-center gap-4">
+              <span className="flex size-14 flex-shrink-0 items-center justify-center rounded-2xl bg-brand text-brand-fg [&>svg]:size-7" aria-hidden="true"><Building2 /></span>
               <address className="not-italic">
                 <p className="font-semibold">8 Rose Street, Cape Town CBD</p>
                 <p className="text-sm text-fg-muted">State House Building, Cape Town, 8001</p>
                 <p className="mt-2 text-xs text-fg-muted">Registration: 2018/079316/07 · CIPC registered · South Africa</p>
               </address>
             </div>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap justify-center gap-3">
               <button type="button" onClick={() => { onClose(); go("Contact Us"); }} className="inline-flex h-11 items-center gap-2 rounded-full bg-brand px-6 text-sm font-semibold text-brand-fg hover:opacity-90">Contact us <ArrowRight className="size-4" aria-hidden="true" /></button>
               <button type="button" onClick={() => { onClose(); go("Careers"); }} className="inline-flex h-11 items-center rounded-full border-2 border-brand px-6 text-sm font-semibold text-crimson-text hover:bg-surface-2">Careers</button>
             </div>
