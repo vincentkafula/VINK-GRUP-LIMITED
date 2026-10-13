@@ -91,3 +91,55 @@
   .vkp-card, .vkp-card::after, .vkp-card::before { transition: none; }
   .vkp-rise, .vkp-float { animation: none; }
 }
+
+/* ── The dark luxury look ─────────────────────────────────────────────────── */
+
+/* the deepest background: near-black navy */
+.vkp-ink { background: radial-gradient(120% 90% at 50% 0%, #131c33 0%, #0a0f1d 55%, #06090f 100%); color: #fff; }
+/* the crimson-dark background */
+.vkp-wine { background: linear-gradient(160deg, #1d0712 0%, #3b0b1a 45%, #0f1424 100%); color: #fff; }
+
+/* a glass tile with a light that follows the mouse (set by premiumFx.spot) */
+.vkp-spot {
+  position: relative; overflow: hidden; border-radius: 22px; isolation: isolate;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.025));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08) inset, 0 24px 40px -28px rgba(0, 0, 0, 0.9);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1), border-color 0.4s ease, box-shadow 0.4s ease;
+}
+.vkp-spot::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; opacity: 0; transition: opacity 0.35s ease; pointer-events: none;
+  background: radial-gradient(320px circle at var(--mx, 50%) var(--my, 0%), rgba(232, 64, 91, 0.34), transparent 65%);
+}
+.vkp-spot::after { /* a lit rim that appears with the light */
+  content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none; opacity: 0; transition: opacity 0.35s ease;
+  background: radial-gradient(220px circle at var(--mx, 50%) var(--my, 0%), rgba(255, 143, 163, 0.9), transparent 70%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude;
+}
+.vkp-spot:hover { transform: translateY(-6px); border-color: rgba(255, 255, 255, 0.18); box-shadow: 0 1px 0 rgba(255, 255, 255, 0.12) inset, 0 34px 54px -28px rgba(200, 16, 46, 0.55); }
+.vkp-spot:hover::before, .vkp-spot:hover::after { opacity: 1; }
+.vkp-spot-hot { background: linear-gradient(150deg, rgba(232, 64, 91, 0.95), rgba(200, 16, 46, 0.92) 50%, rgba(120, 8, 30, 0.95)); border-color: rgba(255, 255, 255, 0.25); }
+
+/* a light hairline for dividing dark bands */
+.vkp-hairline { height: 1px; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent); }
+
+/* big figures */
+.vkp-figure { font-family: var(--font-mono); font-weight: 700; letter-spacing: -0.02em; background: linear-gradient(180deg, #fff 30%, #ff8fa3); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+/* pulses that spread outward from a point */
+@keyframes vkp-ping { 0% { transform: scale(0.55); opacity: 0.55; } 100% { transform: scale(1.25); opacity: 0; } }
+.vkp-ping { animation: vkp-ping 3.6s cubic-bezier(0.2, 0.6, 0.3, 1) infinite; }
+@keyframes vkp-dash { to { stroke-dashoffset: -64; } }
+.vkp-dash { stroke-dasharray: 6 10; animation: vkp-dash 3.2s linear infinite; }
+@keyframes vkp-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+.vkp-blink { animation: vkp-blink 1.8s ease-in-out infinite; }
+
+/* the card stage in the light compare section */
+.vkp-stage { perspective: 1400px; }
+.vkp-reflect { -webkit-box-reflect: below 6px linear-gradient(transparent 62%, rgba(255, 255, 255, 0.22)); }
+
+@media (prefers-reduced-motion: reduce) {
+  .vkp-spot, .vkp-spot::before, .vkp-spot::after { transition: none; }
+  .vkp-ping, .vkp-dash, .vkp-blink { animation: none; }
+}

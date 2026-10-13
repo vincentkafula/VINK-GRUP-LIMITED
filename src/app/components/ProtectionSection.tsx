@@ -11,7 +11,8 @@ const TRUST_ITEMS = [
 
 export const ProtectionSection = memo(function ProtectionSection() {
   return (
-    <section className="vkp-dark vkp-grain relative overflow-hidden py-16 sm:py-24 lg:py-28">
+    <section className="vkp-dark vkp-wine vkp-grain relative overflow-hidden py-16 sm:py-24 lg:py-28">
+      <div aria-hidden="true" className="vkp-hairline absolute inset-x-0 top-0" />
       <div aria-hidden="true" className="vkp-dots" />
       <div aria-hidden="true" className="vkp-glow -left-20 top-1/4 h-96 w-96 opacity-40" style={{ background: "#c8102e" }} />
       <div aria-hidden="true" className="vkp-glow -right-24 bottom-0 h-80 w-80 opacity-20" style={{ background: "#ff6b81" }} />
@@ -21,6 +22,15 @@ export const ProtectionSection = memo(function ProtectionSection() {
             {/* the glow and the slow ring that the shield sits in */}
             <div aria-hidden="true" className="absolute inset-0 m-auto aspect-square w-[88%] max-w-md rounded-full opacity-70" style={{ background: "radial-gradient(circle,rgba(200,16,46,0.55),transparent 66%)" }} />
             <div aria-hidden="true" className="absolute inset-0 m-auto aspect-square w-[78%] max-w-[26rem] animate-[spin_50s_linear_infinite] rounded-full border border-dashed border-white/25 motion-reduce:animate-none" />
+            {[0, 1, 2].map((i) => <div key={i} aria-hidden="true" className="vkp-ping absolute inset-0 m-auto aspect-square w-[70%] max-w-[22rem] rounded-full border border-[#ff6b81]/50" style={{ animationDelay: `${i * 1.2}s` }} />)}
+            <div className="vkp-glass-dark absolute left-0 top-6 z-10 flex items-center gap-2.5 rounded-2xl px-3.5 py-2.5 shadow-xl sm:-left-2">
+              <span aria-hidden="true" className="vkp-blink size-2.5 rounded-full bg-emerald-400" style={{ boxShadow: "0 0 12px 2px rgba(52,211,153,0.7)" }} />
+              <span className="text-xs font-semibold text-white">Live monitoring · 24/7</span>
+            </div>
+            <div className="vkp-glass-dark absolute bottom-10 right-0 z-10 flex items-center gap-2.5 rounded-2xl px-3.5 py-2.5 shadow-xl sm:-right-2">
+              <span aria-hidden="true" className="vkp-tile size-8 rounded-lg"><Zap className="size-4" /></span>
+              <span className="text-xs font-semibold leading-tight text-white">Instant alert<br /><span className="text-white/60">before we act</span></span>
+            </div>
             <img src={protectionImage} alt="Your Money Always Protected — VINK security"
               className="vkp-float relative w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg object-contain drop-shadow-[0_30px_50px_rgba(0,0,0,0.55)]" draggable={false} loading="lazy" />
           </div>

@@ -129,16 +129,34 @@ export function CreditCardsSection({ onApply }: { onApply?: () => void }) {
         <p className="hidden [@media(hover:hover)]:block text-center text-xs font-medium text-fg-muted mb-5">Roll over image to zoom in · click a card to open it</p>
         <p className="text-center text-xs font-medium text-fg-muted mb-5 [@media(hover:hover)]:hidden">Tap a card to see it up close</p>
 
-        <div className="flex justify-center gap-5 sm:gap-8 flex-wrap mb-8 pt-3">
-          {CARDS.map((c, i) => (
-            <button type="button" key={i} onClick={() => { setActive(i); setViewerCard(c); }} aria-label={`View the ${c.name}`} aria-pressed={active === i} className="group flex flex-col items-center gap-3 rounded-2xl">
-              <span className="relative block">
-                <CardVisual card={c} active={active === i} />
-                <span aria-hidden="true" className="absolute -bottom-3 left-6 right-6 h-4 rounded-[50%] blur-lg transition-opacity duration-500" style={{ background: "rgba(16,24,40,0.55)", opacity: active === i ? 0.7 : 0.25 }} />
-              </span>
-              <span className={`mt-2 rounded-full px-3 py-1 text-xs font-semibold transition-colors duration-300 ${active === i ? "bg-brand text-brand-fg shadow-card" : "text-fg-muted group-hover:text-fg"}`}>{c.sub}</span>
-            </button>
-          ))}
+        {/* The stage: the cards fan out in perspective around the chosen one */}
+        <div className="vkp-stage relative mb-10 pt-6 pb-8">
+          <div aria-hidden="true" className="absolute inset-x-[8%] bottom-0 h-24 rounded-[50%] opacity-80 blur-2xl" style={{ background: "radial-gradient(ellipse,rgba(16,24,40,0.35),transparent 70%)" }} />
+          <div className="flex flex-wrap justify-center gap-5 sm:gap-8 md:flex-nowrap md:gap-0">
+            {CARDS.map((c, i) => {
+              const off = i - active;
+              return (
+                <button type="button" key={i} onClick={() => { setActive(i); setViewerCard(c); }} onMouseEnter={() => setActive(i)} onFocus={() => setActive(i)}
+                  aria-label={`View the ${c.name}`} aria-pressed={active === i}
+                  className="group flex flex-col items-center gap-3 rounded-2xl transition-transform duration-500 ease-out md:-mx-1 md:[transform:rotateY(var(--rot))]"
+                  style={{ ["--rot" as string]: `${Math.max(-1, Math.min(1, off)) * -16}deg`, zIndex: active === i ? 10 : 5 - Math.abs(off) } as React.CSSProperties}>
+                  <span className="relative block">
+                    <CardVisual card={c} active={active === i} />
+                    <span aria-hidden="true" className="absolute -bottom-3 left-6 right-6 h-4 rounded-[50%] blur-lg transition-opacity duration-500" style={{ background: "rgba(16,24,40,0.55)", opacity: active === i ? 0.7 : 0.25 }} />
+                  </span>
+                  <span className={`mt-2 rounded-full px-3 py-1 text-xs font-semibold transition-colors duration-300 ${active === i ? "bg-brand text-brand-fg shadow-card" : "text-fg-muted group-hover:text-fg"}`}>{c.sub}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* The chosen card, in words */}
+        <div key={active} className="vkp-rise mx-auto mb-8 flex max-w-2xl flex-col items-center gap-3 rounded-3xl border border-line bg-surface px-6 py-6 text-center shadow-card" style={{ boxShadow: "0 30px 60px -34px rgba(200,16,46,0.4)" }}>
+          <span className="rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-white" style={{ background: "linear-gradient(135deg,#e8405b,#c8102e 60%,#a50f27)" }}>{CARDS[active].tier}</span>
+          <p className="font-display text-2xl font-semibold text-fg">{CARDS[active].name}</p>
+          <p className="text-fg-muted">{CARDS[active].benefit}</p>
+          <button type="button" onClick={() => setViewerCard(CARDS[active])} className="mt-1 inline-flex h-11 items-center rounded-full border-2 border-brand px-6 text-sm font-semibold text-crimson-text transition-colors hover:bg-brand hover:text-brand-fg">View it up close</button>
         </div>
 
         <div className="flex justify-center gap-2">
