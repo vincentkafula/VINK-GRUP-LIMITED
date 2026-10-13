@@ -56,7 +56,7 @@ export function BankingChannelsViewer({ isOpen, onClose }: Props) {
         <section className="bg-surface-2 rounded-2xl p-6 border border-line">
           <h2 className="text-lg font-black mb-3" style={{ color: "var(--vk-crimson-text)" }}>Why So Many Channels?</h2>
           <p className="text-fg-muted text-sm leading-relaxed">
-            South Africa's transport economy runs on every kind of device, from the latest smartphone to a basic feature phone. Banking that only works in an app leaves people out. VINK is designed so that no matter what device you're carrying, you can still check your balance, see your transactions, and know your money is where it should be.
+            Southern Africa's transport economy runs on every kind of device, from the latest smartphone to a basic feature phone. Banking that only works in an app leaves people out. VINK is designed so that no matter what device you're carrying, you can still check your balance, see your transactions, and know your money is where it should be.
           </p>
         </section>
       </div>

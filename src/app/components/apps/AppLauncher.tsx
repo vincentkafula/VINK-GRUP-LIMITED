@@ -239,10 +239,10 @@ export function AppLauncher({ isOpen, onClose, onLaunchApp }: Props) {
             <span className="text-yellow-400 text-xs font-bold uppercase tracking-widest">Super App Ecosystem</span>
           </div>
           <h1 className="text-2xl font-black text-white leading-tight mb-2">
-            5 Apps. One System.<br />Built for South Africa.
+            5 Apps. One System.<br />Built for Southern Africa.
           </h1>
           <p className="text-white/60 text-sm leading-relaxed">
-            Each app operates independently, downloads separately, and connects to the same VINK backend — powering taxis, drivers, passengers, businesses, and fleet operators across South Africa.
+            Each app operates independently, downloads separately, and connects to the same VINK backend — powering taxis, drivers, passengers, businesses, and fleet operators across Southern Africa.
           </p>
           <div className="flex gap-3 mt-4">
             {APPS.map(app => (

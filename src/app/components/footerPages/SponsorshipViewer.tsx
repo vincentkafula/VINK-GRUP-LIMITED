@@ -8,7 +8,7 @@ const P = BRAND.crimson;
 
 const FOCUS_AREAS = [
   { icon: "🚌", title: "Transport Safety",          desc: "Taxi industry road safety campaigns, CCTV deployment, and community crime prevention initiatives." },
-  { icon: "🎓", title: "Youth Entrepreneurship",    desc: "Business skills workshops for young people in Western Cape townships — equipping the next generation of South African entrepreneurs." },
+  { icon: "🎓", title: "Youth Entrepreneurship",    desc: "Business skills workshops for young people in Western Cape townships — equipping the next generation of Southern African entrepreneurs." },
   { icon: "🏘️", title: "Community Safety",          desc: "Neighbourhood watch and CCID community safety initiatives. 5% of every VINK taxi transaction goes directly to neighbourhood watch in the area served." },
   { icon: "⚽", title: "Grassroots Sport",           desc: "Football leagues, athletics, and martial arts at community level — supporting healthy, active communities." },
 ];

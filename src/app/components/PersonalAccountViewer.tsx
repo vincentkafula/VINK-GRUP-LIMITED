@@ -286,7 +286,7 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate, onOpenBanki
             ) : (
               <>
                 <h1 className="text-4xl sm:text-5xl font-black leading-[1.05] text-white">
-                  Banking designed for<br />every South African.
+                  Banking designed for<br />every Southern African.
                 </h1>
                 <p className="text-white/90 text-base mt-5 max-w-md">
                   Open an account in minutes and manage your money with the VINK app.

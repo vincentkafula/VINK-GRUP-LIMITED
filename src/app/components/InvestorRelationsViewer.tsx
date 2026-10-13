@@ -81,7 +81,7 @@ const RESOURCES: Resource[] = [
   { key: "results", art: "b", icon: "bars", cat: "Reports", title: "Financial results", blurb: "Access the business plan and projections, and our interim and annual financial results once VINK is trading.",
     body: () => (<>
       <h3>Business plan and projections</h3>
-      <p>VINK is building South Africa's first transport-native digital bank, with a national rollout plan for 250,000+ AFC devices across the minibus taxi network.</p>
+      <p>VINK is building Southern Africa's first transport-native digital bank, with a national rollout plan for 250,000+ AFC devices across the minibus taxi network.</p>
       <div className="stats">
         <div><b>R11B</b><span>Addressable market: estimated annual TAM across the national taxi network</span></div>
         <div><b>Per-Tap</b><span>Revenue model: R0.50–R1.00 per transaction, scaling with network volume</span></div>
@@ -208,7 +208,7 @@ export function InvestorRelationsViewer({ isOpen, onClose }: Props) {
         <div className="wrap">
           <span className="eyebrow"><i />Investor relations</span>
           <h1>Information for our stakeholders</h1>
-          <p>VINK is building South Africa's first transport-native digital bank, with a national rollout plan for 250,000+ AFC devices across the minibus taxi network. Registered under CIPC number 2018/079316/07, VINK is building the financial infrastructure that 15 million daily commuters deserve.</p>
+          <p>VINK is building Southern Africa's first transport-native digital bank, with a national rollout plan for 250,000+ AFC devices across the minibus taxi network. Registered under CIPC number 2018/079316/07, VINK is building the financial infrastructure that 15 million daily commuters deserve.</p>
           <div className="cta">
             <button type="button" className="scroll" onClick={() => { go("home"); setTimeout(toResources, 50); }}><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6" /></svg></i>Scroll for more</button>
             <span className="div" aria-hidden="true" />

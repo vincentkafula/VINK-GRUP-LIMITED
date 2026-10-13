@@ -31,7 +31,7 @@ const WHAT_WE_DO: { icon: ReactNode; title: string; desc: string }[] = [
 const VALUES: { icon: ReactNode; title: string; desc: string }[] = [
   { icon: <Scale />, title: "Integrity", desc: "We keep our promises, always, without compromise." },
   { icon: <Handshake />, title: "Honesty", desc: "We are transparent with customers, partners and regulators." },
-  { icon: <Star />, title: "Customer excellence", desc: "We set the standard for service in South African fintech." },
+  { icon: <Star />, title: "Customer excellence", desc: "We set the standard for service in Southern African fintech." },
   { icon: <Rocket />, title: "Empowerment", desc: "We build wealth and opportunity for taxi drivers, commuters and township communities." },
   { icon: <Lightbulb />, title: "Innovation", desc: "We bring world-class technology to the people who need it most." },
   { icon: <ShieldCheck />, title: "Anti-corruption", desc: "Zero tolerance. Always." },
@@ -96,7 +96,7 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
           <h1 className="font-display text-4xl font-bold leading-tight md:text-6xl">About VINK</h1>
           <p className="mt-2 text-lg font-medium text-white/90 md:text-xl">Vink Group (Pty) Ltd, trading as VINK</p>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-white/85 md:text-lg">
-            We aim to be South Africa&apos;s first transport-native digital bank, built by a Cape Town native for the 15 million South Africans who board a minibus taxi every morning.
+            We aim to be Southern Africa&apos;s first transport-native digital bank, built by a Cape Town native for the 15 million South Africans who board a minibus taxi every morning.
           </p>
           <dl className="mx-auto mt-10 grid w-full max-w-4xl grid-cols-2 gap-3 text-center sm:grid-cols-4">
             {STATS.map((s) => (
@@ -157,7 +157,7 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
               <span className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-white/15 [&>svg]:size-7" aria-hidden="true"><Target /></span>
               <h3 className="mb-2 text-xl font-bold">Our mission</h3>
               <p className="text-sm leading-relaxed text-white/90">
-                To develop integrated payment and financial services solutions for South Africa&apos;s public transport industry, empowering taxi operators, drivers and passengers with tools that are fast, affordable and built for their lives.
+                To develop integrated payment and financial services solutions for Southern Africa&apos;s public transport industry, empowering taxi operators, drivers and passengers with tools that are fast, affordable and built for their lives.
               </p>
             </div>
             <div className="rounded-3xl border-2 border-brand bg-surface p-8 shadow-card">

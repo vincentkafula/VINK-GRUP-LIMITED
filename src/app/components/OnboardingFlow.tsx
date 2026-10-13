@@ -111,7 +111,7 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
               <div>
                 <h1 className="text-2xl font-black text-white">Welcome to VINK Banking</h1>
                 <p className="text-white/70 mt-2 text-sm leading-relaxed">
-                  South Africa's most complete financial super-app. Let's set up your account in under 3 minutes.
+                  Southern Africa's most complete financial super-app. Let's set up your account in under 3 minutes.
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-3 text-left">

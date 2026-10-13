@@ -5,7 +5,7 @@ import { Footer } from "../Footer";
 interface Props { isOpen: boolean; onClose: () => void; }
 
 const THEMES = [
-  { icon: "🚕", title: "Life on the Road", desc: "Real stories and practical money advice for taxi drivers, commuters, and the people who keep South Africa's transport economy moving." },
+  { icon: "🚕", title: "Life on the Road", desc: "Real stories and practical money advice for taxi drivers, commuters, and the people who keep Southern Africa's transport economy moving." },
   { icon: "💡", title: "Financial Inclusion", desc: "How digital payment infrastructure can reach people traditional banking has left out — the thinking behind why VINK exists." },
   { icon: "🏦", title: "Banking Explained", desc: "Plain-language breakdowns of how fees, credit, and rewards actually work, without the jargon." },
   { icon: "📈", title: "Business Growth", desc: "Guidance for taxi associations, spaza shop owners, and small operators on managing cash flow and growing sustainably." },

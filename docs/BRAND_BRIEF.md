@@ -4,7 +4,7 @@ What the product looks like today (from the code), where it is inconsistent, and
 
 ## 1. What VINK is
 
-A transport-native digital bank for South Africa: AFC tap-to-pay for taxis, wallet and cards, banking, loans, fleet tracking, taxi associations, investors, a public website, and a staff Management Panel with department mail. Audiences: passengers, drivers, taxi owners, associations, investors, businesses, staff.
+A transport-native digital bank for Southern Africa: AFC tap-to-pay for taxis, wallet and cards, banking, loans, fleet tracking, taxi associations, investors, a public website, and a staff Management Panel with department mail. Audiences: passengers, drivers, taxi owners, associations, investors, businesses, staff.
 
 ## 2. What exists now
 

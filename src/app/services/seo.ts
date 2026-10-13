@@ -15,7 +15,7 @@
  */
 
 const DEFAULT_TITLE = "VINK Finance";
-const DEFAULT_DESCRIPTION = "VINK — building a transport-native digital bank for South Africa. AFC payments, banking, fleet tracking and more in one platform. Launching June 2027.";
+const DEFAULT_DESCRIPTION = "VINK — building a transport-native digital bank for Southern Africa. AFC payments, banking, fleet tracking and more in one platform. Launching June 2027.";
 
 export function setPageMeta(title: string, description: string): () => void {
   const prevTitle = document.title;
@@ -33,8 +33,8 @@ export function setPageMeta(title: string, description: string): () => void {
 
 export const PAGE_META = {
   business: {
-    title: "Business Banking for South African Entrepreneurs | VINK",
-    description: "Open a business bank account built for taxi associations, fleet owners, fuel stations, and small businesses across South Africa. No monthly fees, fast settlements, employee cards, and cross-border payments at local rates.",
+    title: "Business Banking for Southern African Entrepreneurs | VINK",
+    description: "Open a business bank account built for taxi associations, fleet owners, fuel stations, and small businesses across Southern Africa. No monthly fees, fast settlements, employee cards, and cross-border payments at local rates.",
   },
   news: {
     title: "VINK News — World, Africa, Business & Technology Headlines",

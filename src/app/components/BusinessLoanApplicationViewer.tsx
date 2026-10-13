@@ -95,7 +95,7 @@ export function BusinessLoanApplicationViewer({ isOpen, onClose }: Props) {
       <AppHero
         tag="VINK Business Banking · Preview"
         title="Small Business Loan Application"
-        subtitle="Fast, transparent funding for South African businesses. Complete all 7 steps to receive your decision."
+        subtitle="Fast, transparent funding for Southern African businesses. Complete all 7 steps to receive your decision."
         gradient="#C8102E"
       />
 
