@@ -8,6 +8,7 @@ import vinkMastercardBlack from "../../imports/VinkHeroMastercardBlack.webp";
 import vinkVisaSignatureBlue from "../../imports/VinkHeroVisaSignatureBlue.webp";
 import { Footer } from "./Footer";
 import { BRAND } from "../brand";
+import { startApplication } from "../services/startApplication";
 
 interface Props {
   isOpen: boolean;
@@ -137,7 +138,7 @@ export function PersonalLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
             <p className="text-[13px] text-fg-muted mt-1.5">Personalise your results in a few simple steps.</p>
           </div>
           <button
-            onClick={onApplyClick}
+            onClick={startApplication}
             className="flex items-center gap-2 px-6 py-3 rounded-full text-white text-sm font-semibold shrink-0 shadow-[0_10px_24px_-8px_rgba(11,92,46,0.55)] hover:brightness-105 transition-all"
             style={{ background: `linear-gradient(135deg,${VIOLET},${PLUM})` }}
           >

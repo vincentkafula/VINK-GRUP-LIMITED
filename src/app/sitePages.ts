@@ -19,7 +19,7 @@ export const SECTION_PAGES: Record<SiteSection, readonly string[]> = {
 
 /** The other public pages: information, footer and application pages that belong to no one section. */
 export const OTHER_SITE_PAGES: readonly string[] = [
-  "selectorOpen", "showContactUs", "showAboutVINK", "showCareers", "showSwitchToVINK", "showSafetySecurity", "showTaxiAssociations", "showJobApp",
+  "selectorOpen", "showContactUs", "showAboutVINK", "showApplication", "showCareers", "showSwitchToVINK", "showSafetySecurity", "showTaxiAssociations", "showJobApp",
   "showLegal", "showBranchLocator", "showSponsorship", "showBankingFees", "showBankingGuide", "showBankingChannels", "showExchangeRates", "showLatestOffers", "showMarketIndices", "showVinkBlog",
 ];
 

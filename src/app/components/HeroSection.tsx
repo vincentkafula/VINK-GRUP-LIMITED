@@ -4,6 +4,7 @@ import heroCardPhone from "../../imports/HeroCardPhone.webp";
 import heroGlobalSim from "../../imports/HeroGlobalSim.webp";
 import heroValidator from "../../imports/HeroValidator.webp";
 import { BRAND } from "../brand";
+import { startApplication } from "../services/startApplication";
 
 type Side = "left" | "right" | "bottom";
 const FADE_DIR: Record<Side, string> = { left: "to right", right: "to left", bottom: "to top" };
@@ -141,7 +142,7 @@ export function HeroSection({ onApplyClick }: { onApplyClick?: () => void }) {
             <div className="flex flex-wrap justify-center md:justify-start gap-3 mb-7">
               {slide.ctas.map((cta, i) => (
                 <button key={i}
-                  onClick={onApplyClick}
+                  onClick={cta.label === "Start Now" ? startApplication : onApplyClick}
                   className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl text-sm font-bold text-white transition-all duration-300 ease-out hover:scale-[1.03] hover:-translate-y-0.5 active:scale-95 shadow-lg"
                   style={{ letterSpacing: "0.01em", ...(i === 0 ? { background: "linear-gradient(180deg,#ffffff,#f3f3f6)", color: "#C8102E", boxShadow: "0 14px 30px -10px rgba(60,0,12,.55), inset 0 1px 0 #fff" } : { background: "rgba(255,255,255,.12)", border: "1px solid rgba(255,255,255,.3)", color: "#ffffff", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" }) }}>
                   {cta.label}

@@ -7,6 +7,7 @@ import siteHeroBg from "../../imports/assets/site-hero-bg.webp";
 import vinkBusinessTerminal from "../../imports/VinkBusinessTerminal.webp";
 import { Footer } from "./Footer";
 import { BRAND } from "../brand";
+import { startApplication } from "../services/startApplication";
 
 interface Props {
   isOpen: boolean;
@@ -107,7 +108,7 @@ export function BusinessLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
             </p>
             <p className="text-[13px] text-fg-muted mt-1.5">Taxi associations, fleets, fuel stations, retailers — built around how you work.</p>
           </div>
-          <button onClick={onApplyClick}
+          <button onClick={startApplication}
             className="flex items-center gap-2 px-6 py-3 rounded-full text-white text-sm font-semibold shrink-0 shadow-[0_10px_24px_-8px_rgba(11,92,46,0.55)] hover:brightness-105 transition-all"
             style={{ background: `linear-gradient(135deg,${VIOLET},${PLUM})` }}>
             Start Now <ArrowRight className="w-4 h-4" />

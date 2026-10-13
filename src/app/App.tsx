@@ -73,6 +73,7 @@ const VinkBusinessBankingApp      = lazy(() => import("./components/apps/VinkBus
 const VinkCorporateBankingApp     = lazy(() => import("./components/apps/VinkCorporateBankingApp").then(m => ({ default: m.VinkCorporateBankingApp })));
 const VinkMobileApp               = lazy(() => import("./components/apps/VinkMobileApp").then(m => ({ default: m.VinkMobileApp })));
 const AppLauncher                 = lazy(() => import("./components/apps/AppLauncher").then(m => ({ default: m.AppLauncher })));
+const ApplicationFlowViewer = lazy(() => import("./components/ApplicationFlowViewer").then(m => ({ default: m.ApplicationFlowViewer })));
 const AboutVINKViewer              = lazy(() => import("./components/footerPages/AboutVINKViewer").then(m => ({ default: m.AboutVINKViewer })));
 const LegalComplianceViewer         = lazy(() => import("./components/footerPages/LegalComplianceViewer").then(m => ({ default: m.LegalComplianceViewer })));
 const CareersViewer               = lazy(() => import("./components/footerPages/CareersViewer").then(m => ({ default: m.CareersViewer })));
@@ -182,6 +183,7 @@ export default function App() {
 
   // ── Footer pages ──────────────────────────────────────────────────────────
   const [showAboutVINK, setShowAboutVINK]                     = useState(false);
+  const [showApplication, setShowApplication]                 = useState(false);
   const [showCareers, setShowCareers]                       = useState(false);
   const [showContactUs, setShowContactUs]                   = useState(false);
   const [showLegal, setShowLegal]                           = useState(false);
@@ -311,6 +313,12 @@ export default function App() {
     });
   };
 
+  useEffect(() => {
+    const open = () => startTransition(() => { mount("application"); setShowApplication(true); pushRoute("/apply"); });
+    window.addEventListener("vink:start-application", open);
+    return () => window.removeEventListener("vink:start-application", open);
+  }, [mount]);
+
   const openSelector = useCallback((cat: NonNullable<typeof selectorCategory>) => {
     startTransition(() => {
       mount("productSelector");
@@ -412,7 +420,7 @@ export default function App() {
 
   // Every public page, by name, with the function that closes it. Closing from the header (Close, or switching section) uses this list, the same pages
   // the header is shown for (sitePages.ts), so a page can never stay open underneath another.
-  const sitePageClosers: Record<string, (open: boolean) => void> = { showPersonalLanding: setShowPersonalLanding, showPersonalAccount: setShowPersonalAccount, showPersonalLedger: setShowPersonalLedger, showCreditCard: setShowCreditCard, showCreditCardApp: setShowCreditCardApp, showLoan: setShowLoan, showInvest: setShowInvest, showRewards: setShowRewards, showInvestApp: setShowInvestApp, showRewardsApp: setShowRewardsApp, showAccountApp: setShowAccountApp, showBusinessLanding: setShowBusinessLanding, showStartBusiness: setShowStartBusiness, showBusinessAccountSelector: setShowBusinessAccountSelector, showBusinessAccounts: setShowBusinessAccounts, showBusinessLedger: setShowBusinessLedger, showBusinessLoanApp: setShowBusinessLoanApp, showManageBusiness: setShowManageBusiness, showCorporateLedger: setShowCorporateLedger, showCorporateLoanApp: setShowCorporateLoanApp, showCorporateCSR: setShowCorporateCSR, showInvestorRelations: setShowInvestorRelations, selectorOpen: setSelectorOpen, showContactUs: setShowContactUs, showAboutVINK: setShowAboutVINK, showCareers: setShowCareers, showSwitchToVINK: setShowSwitchToVINK, showSafetySecurity: setShowSafetySecurity, showTaxiAssociations: setShowTaxiAssociations, showJobApp: setShowJobApp, showLegal: setShowLegal, showBranchLocator: setShowBranchLocator, showSponsorship: setShowSponsorship, showBankingFees: setShowBankingFees, showBankingGuide: setShowBankingGuide, showBankingChannels: setShowBankingChannels, showExchangeRates: setShowExchangeRates, showLatestOffers: setShowLatestOffers, showMarketIndices: setShowMarketIndices, showVinkBlog: setShowVinkBlog };
+  const sitePageClosers: Record<string, (open: boolean) => void> = { showPersonalLanding: setShowPersonalLanding, showPersonalAccount: setShowPersonalAccount, showPersonalLedger: setShowPersonalLedger, showCreditCard: setShowCreditCard, showCreditCardApp: setShowCreditCardApp, showLoan: setShowLoan, showInvest: setShowInvest, showRewards: setShowRewards, showInvestApp: setShowInvestApp, showRewardsApp: setShowRewardsApp, showAccountApp: setShowAccountApp, showBusinessLanding: setShowBusinessLanding, showStartBusiness: setShowStartBusiness, showBusinessAccountSelector: setShowBusinessAccountSelector, showBusinessAccounts: setShowBusinessAccounts, showBusinessLedger: setShowBusinessLedger, showBusinessLoanApp: setShowBusinessLoanApp, showManageBusiness: setShowManageBusiness, showCorporateLedger: setShowCorporateLedger, showCorporateLoanApp: setShowCorporateLoanApp, showCorporateCSR: setShowCorporateCSR, showInvestorRelations: setShowInvestorRelations, selectorOpen: setSelectorOpen, showContactUs: setShowContactUs, showAboutVINK: setShowAboutVINK, showApplication: setShowApplication, showCareers: setShowCareers, showSwitchToVINK: setShowSwitchToVINK, showSafetySecurity: setShowSafetySecurity, showTaxiAssociations: setShowTaxiAssociations, showJobApp: setShowJobApp, showLegal: setShowLegal, showBranchLocator: setShowBranchLocator, showSponsorship: setShowSponsorship, showBankingFees: setShowBankingFees, showBankingGuide: setShowBankingGuide, showBankingChannels: setShowBankingChannels, showExchangeRates: setShowExchangeRates, showLatestOffers: setShowLatestOffers, showMarketIndices: setShowMarketIndices, showVinkBlog: setShowVinkBlog };
   // The signed-in tools, which show the header as well, and are closed the same way.
   const appPageClosers: Record<string, (open: boolean) => void> = { showPostLogin: setShowPostLogin, showUserProfile: setShowUserProfile, showOwners: setShowOwners, showInvestors: setShowInvestors, showSuperAdmin: setShowSuperAdmin, showBanking: setShowBanking, showDriveDashboard: setShowDriveDashboard, showOwnerDashboard: setShowOwnerDashboard, showTaxiAssociationDashboard: setShowTaxiAssociationDashboard, showTerminalManagement: setShowTerminalManagement, showControlCentre: setShowControlCentre, showInvestorDashboard: setShowInvestorDashboard, showManagementPanel: setShowManagementPanel, showTokenReader: setShowTokenReader, showSIMApp: setShowSIMApp, showAFCApp: setShowAFCApp, showVinkBankingApp: setShowVinkBankingApp, showVinkBusinessBankingApp: setShowVinkBusinessBankingApp, showVinkCorporateBankingApp: setShowVinkCorporateBankingApp, showVinkMobileApp: setShowVinkMobileApp, showAppLauncher: setShowAppLauncher, showRevenueDashboard: setShowRevenueDashboard, showGlobalBanking: setShowGlobalBanking, showFinancialReports: setShowFinancialReports, showAdminDashboard: setShowAdminDashboard, showAFCDashboard: setShowAFCDashboard, showAdminApps: setShowAdminApps, showCardNetwork: setShowCardNetwork, showManagementHub: setShowManagementHub, showLogin: setShowLogin, showManshya: setShowManshya, showManshyaAdmin: setShowManshyaAdmin, showManshyaPay: setShowManshyaPay };
   const closeAllRoutedViewers = () => {
@@ -428,7 +436,7 @@ export default function App() {
     showPersonalLanding, showPersonalAccount, showPersonalLedger, showCreditCard, showCreditCardApp, showLoan, showInvest, showRewards, showInvestApp, showRewardsApp, showAccountApp,
     showBusinessLanding, showStartBusiness, showBusinessAccountSelector, showBusinessAccounts, showBusinessLedger, showBusinessLoanApp, showManageBusiness,
     showCorporateLedger, showCorporateLoanApp, showCorporateCSR, showInvestorRelations,
-    selectorOpen, showContactUs, showAboutVINK, showCareers, showSwitchToVINK, showSafetySecurity, showTaxiAssociations, showJobApp,
+    selectorOpen, showContactUs, showAboutVINK, showApplication, showCareers, showSwitchToVINK, showSafetySecurity, showTaxiAssociations, showJobApp,
     showLegal, showBranchLocator, showSponsorship, showBankingFees, showBankingGuide, showBankingChannels, showExchangeRates, showLatestOffers, showMarketIndices, showVinkBlog,
     showPostLogin, showUserProfile, showOwners, showInvestors, showSuperAdmin, showBanking, showDriveDashboard, showOwnerDashboard, showTaxiAssociationDashboard, showTerminalManagement, showControlCentre, showInvestorDashboard, showManagementPanel, showTokenReader, showSIMApp, showAFCApp, showVinkBankingApp, showVinkBusinessBankingApp, showVinkCorporateBankingApp, showVinkMobileApp, showAppLauncher, showRevenueDashboard, showGlobalBanking, showFinancialReports, showAdminDashboard, showAFCDashboard, showAdminApps, showCardNetwork, showManagementHub, showLogin, showManshya, showManshyaAdmin, showManshyaPay,
   });
@@ -501,6 +509,7 @@ export default function App() {
       return true;
     }
     if (path === "/contact-us") { mount("contactUs"); setShowContactUs(true); return true; }
+    if (path === "/apply") { mount("application"); setShowApplication(true); return true; }
     if (path === "/management-panel") { mount("managementPanel"); setShowManagementPanel(true); return true; }
     // The VINK card reader for a driver's phone: it signs in as the registered device, not as a user.
     if (path === "/reader") { mount("tokenReader"); setShowTokenReader(true); return true; }
@@ -750,6 +759,7 @@ export default function App() {
       }} /></Suspense>}
 
       {/* Footer pages */}
+      {has("application")         && <Suspense fallback={null}><ApplicationFlowViewer isOpen={showApplication} onClose={() => { setShowApplication(false); pushRoute("/"); }} /></Suspense>}
       {has("aboutVINK")           && <Suspense fallback={null}><AboutVINKViewer       isOpen={showAboutVINK}           onClose={() => setShowAboutVINK(false)} /></Suspense>}
       {has("careers")            && <Suspense fallback={null}><CareersViewer        isOpen={showCareers}            onClose={() => setShowCareers(false)} /></Suspense>}
       {has("contactUs")          && <Suspense fallback={null}><ContactUsViewer            isOpen={showContactUs}  onClose={() => { setShowContactUs(false); pushRoute("/"); }} initialTab={contactTab} /></Suspense>}
