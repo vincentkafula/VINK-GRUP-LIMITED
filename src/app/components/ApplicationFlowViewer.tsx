@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { ArrowLeft, ArrowRight, Camera, Check, CheckCircle2, CloudUpload, Plus, RefreshCw, ShieldCheck, X, Lock, Clock } from "lucide-react";
-import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { Footer } from "./Footer";
 import { usePageTitle } from "./ds";
 import { applicationsApi, otpApi, type AppTier } from "../services/applicationsApi";
@@ -327,8 +326,8 @@ export function ApplicationFlowViewer({ isOpen, onClose }: Props) {
           <span aria-hidden="true" className="absolute inset-x-0 top-0 h-[5px]" style={{ background: "linear-gradient(90deg,#7e0b1f,#c8182e 45%,#e5484f)" }} />
           <button type="button" onClick={onClose} aria-label="Close the application" className="absolute right-4 top-5 inline-flex size-9 items-center justify-center rounded-full text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg"><X className="size-4" aria-hidden="true" /></button>
 
-          <div className="flex items-center justify-center pt-9"><img src={vinkLogo} alt="VINK" className="h-10 w-auto object-contain" decoding="async" /></div>
-          {title && <h1 className="font-display mb-5 mt-4 text-center text-[28px] font-semibold leading-[1.15] tracking-[-0.01em]">{title}</h1>}
+          <div className="pt-12" />
+          {title && <h1 className="font-display mb-5 text-center text-[28px] font-semibold leading-[1.15] tracking-[-0.01em]">{title}</h1>}
           {at >= 0 && <Steps total={order.length} at={at} />}
 
           <div key={step} className="vkp-rise">
