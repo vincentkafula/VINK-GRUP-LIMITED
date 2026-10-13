@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { GetHelpModal } from "./GetHelpModal";
 import { LoginModal } from "./LoginModal";
 import { NotificationCenter } from "./NotificationCenter";
-import { LaunchNotice, BrandMark, AppLink, SECTIONS, navItemClass, type Section } from "./SiteChrome";
+import { BrandMark, AppLink, SECTIONS, navItemClass, type Section } from "./SiteChrome";
 import { ThemeToggle, useTheme, Sheet, Button } from "./ds";
 import { CommandPalette, useCommandPalette, type PaletteItem } from "./ds/CommandPalette";
 
@@ -133,8 +133,6 @@ export function Header({ onHome, onDashboardSelect, onSubNavClick, onOpenProfile
       <a href="#main" className="skip-link">Skip to content</a>
 
       <header ref={headerRef} className="sticky top-0 z-40 border-b border-line bg-surface">
-        <LaunchNotice />
-
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between gap-3">
             <div className="flex items-center gap-2 sm:gap-6">

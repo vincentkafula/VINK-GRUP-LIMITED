@@ -4,7 +4,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { createRoot, type Root } from "react-dom/client";
 import { act } from "react";
 import { PersistentTopNav } from "./PersistentTopNav";
-import { NOTICE_H, BAR_H } from "./SiteChrome";
+import { BAR_H } from "./SiteChrome";
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 let root: Root, host: HTMLElement;
@@ -15,9 +15,9 @@ beforeEach(() => {
 afterEach(() => { act(() => root.unmount()); host.remove(); vi.unstubAllGlobals(); });
 
 describe("the header on every page", () => {
-  it("is 97px tall: the notice and a 65px bar, which is the offset theme.css gives every full-screen page", () => {
-    expect(NOTICE_H + BAR_H).toBe(97);
-    expect(readFileSync("src/styles/theme.css", "utf8")).toContain("top: 97px !important");
+  it("is 65px tall, which is the offset theme.css gives every full-screen page", () => {
+    expect(BAR_H).toBe(65);
+    expect(readFileSync("src/styles/theme.css", "utf8")).toContain("top: 65px !important");
   });
 
   it("has the same buttons as the home page: sections, search, theme and Login, and Login opens the sign-in page", () => {

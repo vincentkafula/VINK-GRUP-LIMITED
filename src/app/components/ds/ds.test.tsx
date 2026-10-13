@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { createRoot, type Root } from "react-dom/client";
 import { act, useState } from "react";
 import { ThemeProvider, ThemeToggle, Button, TextField, Modal, EmptyState, ErrorState, SkeletonList } from "./index";
-import { AppLink, LaunchNotice } from "../SiteChrome";
+import { AppLink } from "../SiteChrome";
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 let root: Root, host: HTMLElement;
@@ -90,10 +90,5 @@ describe("site chrome", () => {
     const a = host.querySelector("a")!; expect(a.getAttribute("href")).toBe("/personal");
     await act(async () => { a.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, button: 0 })); }); expect(go).toHaveBeenCalledTimes(1);
     await act(async () => { a.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, button: 0, ctrlKey: true })); }); expect(go).toHaveBeenCalledTimes(1);
-  });
-  it("the launch notice keeps its full statement on large screens and a short one on phones", async () => {
-    await render(<LaunchNotice />);
-    expect(host.textContent).toContain("VINK is not yet in full operation. All information on this site is a preview."); expect(host.textContent).toContain("Full launch: June 2027."); expect(host.textContent).toContain("launch June 2027");
-    expect(host.querySelector("[role=note]")).toBeTruthy();
   });
 });

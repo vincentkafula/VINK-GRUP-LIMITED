@@ -1,5 +1,5 @@
 import { Search, LogIn, User, ChevronDown } from "lucide-react";
-import { LaunchNotice, BrandMark, AppLink, SECTIONS, navItemClass, NOTICE_H, BAR_H } from "./SiteChrome";
+import { BrandMark, AppLink, SECTIONS, navItemClass, BAR_H } from "./SiteChrome";
 import { ThemeToggle, Button } from "./ds";
 
 export type SiteSection = "Personal" | "Business" | "Corporate" | null;
@@ -24,14 +24,13 @@ interface Props {
  * There is no Close button: the logo is the way back to the home page.
  *
  * It is drawn exactly like the home page header (same height, logo size, spacing and buttons) so the header never moves or changes between pages.
- * Its height is a contract: notice + bar = 97px, and the rule in styles/theme.css
+ * Its height is a contract: the bar is 65px, and the rule in styles/theme.css
  * (.has-persistent-nav .fixed.inset-0) offsets every full-screen page by exactly that.
  * Search opens the same palette as the home header (it listens for "vink:open-search").
  */
 export function PersistentTopNav({ active, onSelect, onHome, isLoggedIn = false, userName, onLogin, onProfile }: Props) {
   return (
-    <div data-persistent-nav className="fixed inset-x-0 top-0 z-[100]" style={{ height: NOTICE_H + BAR_H }}>
-      <LaunchNotice />
+    <div data-persistent-nav className="fixed inset-x-0 top-0 z-[100]" style={{ height: BAR_H }}>
       <div className="border-b border-line bg-surface" style={{ height: BAR_H }}>
         <div className="mx-auto flex h-full max-w-7xl items-center gap-2 px-4 sm:gap-4 sm:px-6 lg:px-8">
           <a href="/" aria-label="VINK home" onClick={(e) => { e.preventDefault(); onHome(); }} className="flex shrink-0 items-center"><BrandMark height={44} /></a>
