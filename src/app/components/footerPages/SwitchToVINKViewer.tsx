@@ -7,7 +7,7 @@ interface Props { isOpen: boolean; onClose: () => void; }
 const P = BRAND.crimson;
 
 const REASONS = [
-  { icon: "💳", title: "Lowest taxi fare fee in SA", desc: "Just R0.50 per transaction — no bank charges more in the taxi industry" },
+  { icon: "💳", title: "Lowest taxi fare fee in Southern Africa", desc: "The lowest fee per transaction in the taxi industry — no bank charges less" },
   { icon: "⭐", title: "Earn ManshyaPoints on everything", desc: "Rides, fuel, groceries, gym, and online shopping — every rand earns" },
   { icon: "📶", title: "Free Wi-Fi on VINK taxis",     desc: "Stay connected on your commute — no data needed" },
   { icon: "🚫", title: "No hidden fees. Ever.",       desc: "What you see is what you pay — always transparent" },

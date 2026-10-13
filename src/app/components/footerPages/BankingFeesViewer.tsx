@@ -12,7 +12,7 @@ const ACCOUNT_FEES = [
 ];
 
 const TRANSACTION_FEES = [
-  { item: "Taxi fare tap (VINK Commuter Card)", fee: "R0.50 per transaction" },
+  { item: "Taxi fare tap (VINK Commuter Card)", fee: "Lowest in the industry" },
   { item: "Card purchases in South Africa", fee: "No fee" },
   { item: "ATM withdrawal at partner banks", fee: "Fee-free at listed partner ATMs; standard fee elsewhere" },
   { item: "Foreign transaction (SADC network)", fee: "Confirmed at launch — see Exchange Rates" },

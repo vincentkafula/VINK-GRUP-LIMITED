@@ -128,7 +128,7 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
               </p>
             </div>
             <aside className="rounded-3xl p-8 text-center text-white md:p-10" style={{ background: `linear-gradient(135deg,#101828,${P})` }}>
-              <p className="text-5xl font-bold" style={{ color: "#FFFFFF" }}>R0.50</p>
+              <p className="text-5xl font-bold" style={{ color: "#FFFFFF" }}>Lowest</p>
               <p className="mt-1 text-sm font-semibold uppercase tracking-wider text-white/80">planned fee per taxi transaction</p>
               <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-white/85 md:text-base">
                 Planned to be shared across the ecosystem that makes each transaction possible: the financing bank, the driver&apos;s taxi association, neighbourhood watch initiatives in the area served, and a portion retained to seed a future VINK community bank built for taxi drivers.
