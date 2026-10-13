@@ -22,7 +22,7 @@ interface BizProduct { name: string; price: string; features: string[]; featured
 // Real product data, unchanged — moved as-is out of the old
 // BusinessCreditCardViewer.tsx / BusinessLoansViewer.tsx into this shared
 // ledger-style page.
-const PRODUCTS: Record<BizCategory, BizProduct[]> = {
+export const PRODUCTS: Record<BizCategory, BizProduct[]> = {
   creditCard: [
     { name: "VentureLine",   price: "R0",  tagline: "A flexible line of credit designed to give growing businesses fast, on-demand access to working capital, without the friction of reapplying every time you need funds.", features: ["R50,000 credit limit", "1% cashback on all business spend", "Expense tracking dashboard", "Monthly PDF statements for accounting", "Up to 3 supplementary cards"] },
     { name: "GrowthBridge", price: "R0",  tagline: "Short-to-medium term financing built to bridge funding gaps during periods of expansion, seasonal demand, or transition.", features: ["R150,000 credit limit", "1.5% cashback", "Virtual card for online procurement", "Fraud alerts via SMS", "55-day interest-free period"] },

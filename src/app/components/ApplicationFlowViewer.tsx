@@ -4,6 +4,7 @@ import { Footer } from "./Footer";
 import { usePageTitle } from "./ds";
 import { applicationsApi, otpApi, type AppTier } from "../services/applicationsApi";
 import { openSignIn } from "../services/signIn";
+import { CATALOG, SEGMENTS, allProducts, productValue, splitProduct, type Segment } from "../data/productCatalog";
 
 /**
  * The application form that opens from "Start Now": register, take a photo (optional), confirm details, business and driver details, a phone code, done.
@@ -18,11 +19,6 @@ interface Director { key: number; fn: string; ln: string; idn: string; em: strin
 interface Draft extends Personal { ref: string }
 
 const COUNTRIES = ["South Africa", "Zambia", "Zimbabwe", "Botswana", "Namibia", "Mozambique", "Malawi", "Kenya", "Nigeria", "United Kingdom", "United States", "Other"];
-const NAMES: Record<string, string[]> = {
-  "Bank Account": ["Clear Access Account", "Savings Account", "Cheque Account"],
-  "Insurance": ["Life Insurance", "Funeral Cover", "Vehicle Insurance"],
-  "Loan": ["Personal Loan", "Vehicle Finance", "Business Loan"],
-};
 const EMPTY: Personal = { type: "Personal", acct: "", clear: "", country: "", idn: "", pass: "", fn: "", ln: "", em: "", cell: "", addr: "" };
 const DRAFT_KEY = "reg-draft";
 const LOCK_KEY = "vink-apply-lock";
@@ -56,17 +52,19 @@ function Field({ id, label, value, onChange, error, type = "text", placeholder, 
   );
 }
 
-function SelectField({ id, label, value, onChange, options, placeholder, error }: { id: string; label: string; value: string; onChange: (v: string) => void; options: string[]; placeholder?: string; error?: string }) {
+function SelectField({ id, label, value, onChange, options, groups, placeholder, error, hint }: { id: string; label: string; value: string; onChange: (v: string) => void; options?: string[]; groups?: { label: string; options: { value: string; label: string }[] }[]; placeholder?: string; error?: string; hint?: string }) {
   return (
     <div className="mb-4">
       <label htmlFor={id} className="mb-1.5 ml-5 block text-[12px] font-semibold uppercase tracking-[0.08em] text-fg-muted">{label}</label>
       <div className="relative">
         <select id={id} value={value} onChange={(e) => onChange(e.target.value)} aria-invalid={!!error} className={fieldCls(!!error) + (value ? "" : " text-fg-subtle")}>
           {placeholder !== undefined && <option value="">{placeholder}</option>}
-          {options.map((o) => <option key={o} value={o}>{o}</option>)}
+          {options?.map((o) => <option key={o} value={o}>{o}</option>)}
+          {groups?.map((g) => <optgroup key={g.label} label={g.label}>{g.options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}</optgroup>)}
         </select>
         <span aria-hidden="true" className="pointer-events-none absolute right-6 top-1/2 size-2 -translate-y-[70%] rotate-45 border-b-2 border-r-2 border-fg-muted" />
       </div>
+      {hint && !error && <p className="mt-1.5 ml-5 text-[12.5px] text-fg-muted">{hint}</p>}
       {error && <p role="alert" className="mt-1.5 ml-5 text-[12.5px] text-bad">{error}</p>}
     </div>
   );
@@ -161,7 +159,7 @@ export function ApplicationFlowViewer({ isOpen, onClose }: Props) {
   const name = cap((form.fn || "").trim()) || "there";
 
   const go = useCallback((s: Step) => { setErrs({}); setStep(s); scroller.current?.scrollTo?.({ top: 0 }); }, []);
-  const set = (k: keyof Personal) => (v: string) => { setForm((f) => { const n = { ...f, [k]: v }; if (k === "acct") n.clear = ""; return n; }); setErrs((e) => ({ ...e, [k]: "" })); };
+  const set = (k: keyof Personal) => (v: string) => { setForm((f) => { const n = { ...f, [k]: v }; if (k === "type") { n.acct = ""; n.clear = ""; } return n; }); setErrs((e) => ({ ...e, [k]: "" })); };
 
   // a saved draft on this device, for "Saved application"
   useEffect(() => {
@@ -173,8 +171,7 @@ export function ApplicationFlowViewer({ isOpen, onClose }: Props) {
   // ── validation ──
   const checkPersonal = () => {
     const e: Record<string, string> = {};
-    if (!form.acct) e.acct = "Select an account type";
-    if (!form.clear) e.clear = "Select an account name";
+    if (!form.clear) e.prod = "Select a product";
     if (!form.country) e.country = "Select your country of birth";
     if (!form.idn.trim()) e.idn = "Enter your identity number";
     if (!form.fn.trim()) e.fn = "Enter your first name";
@@ -301,10 +298,11 @@ export function ApplicationFlowViewer({ isOpen, onClose }: Props) {
 
   const personalFields = (
     <>
-      <Section>Account type selection</Section>
-      <SelectField id="a-type" label="I am applying as" value={form.type} onChange={set("type")} options={["Personal", "Business", "Corporate"]} />
-      <SelectField id="a-acct" label="Account" value={form.acct} onChange={set("acct")} options={Object.keys(NAMES)} placeholder="Account" error={errs.acct} />
-      <SelectField id="a-clear" label="Account name" value={form.clear} onChange={set("clear")} options={NAMES[form.acct] ?? []} placeholder="Account name" error={errs.clear} />
+      <Section>Product selection</Section>
+      <SelectField id="a-type" label="I am applying as" value={form.type} onChange={set("type")} options={[...SEGMENTS]} />
+      <SelectField id="a-prod" label="Product" value={form.acct && form.clear ? productValue(form.acct, form.clear) : ""} onChange={(v) => { const x = splitProduct(v); setForm((f) => ({ ...f, acct: x?.group ?? "", clear: x?.product ?? "" })); setErrs((e) => ({ ...e, prod: "" })); }}
+        groups={CATALOG[form.type as Segment].map((g) => ({ label: g.group, options: g.products.map((p) => ({ value: productValue(g.group, p), label: p })) }))} placeholder="Choose a product" error={errs.prod}
+        hint={`${allProducts(form.type as Segment).length} ${form.type} products to choose from`} />
       <Section>Personal information</Section>
       <SelectField id="a-country" label="Country of birth" value={form.country} onChange={set("country")} options={COUNTRIES} placeholder="Country of birth" error={errs.country} />
       <Field id="a-idn" label="Identity number" value={form.idn} onChange={set("idn")} error={errs.idn} mode="numeric" placeholder="Your identity number" />

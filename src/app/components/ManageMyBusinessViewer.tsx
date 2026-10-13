@@ -10,12 +10,12 @@ const SUB_NAV = ["Start My Business", "Accounts", "Credit Cards", "Loans", "Inve
 
 interface Service { name: string; price: string; featured?: boolean; features: string[] }
 
-const ROW1: Service[] = [
+export const ROW1: Service[] = [
   { name: "Quick Market Entry",      price: "R0",  features: ["VINK scopes your target market and handles regulatory registration", "Connect to banking infrastructure in a new city or country within 30 days", "CIPC registration support included"] },
   { name: "A People-First Approach", price: "R0",  features: ["HR setup, payroll processing, and employment contract templates", "SARS-registered payroll partner connections", "Compliant, timely salary runs"] },
   { name: "Reduce Costs",            price: "R85", features: ["Cost-optimisation audit for your business account and card spend", "Identify duplicated subscriptions and high-fee banking habits", "Recommended lower-cost alternatives provided"] },
 ];
-const ROW2: Service[] = [
+export const ROW2: Service[] = [
   { name: "Services in 185+ Countries", price: "R170", features: ["International expansion support from company registration to forex accounts", "Cross-border tax obligation navigation", "VINK network reaches 185+ countries"] },
   { name: "Unmatched Expertise",        price: "R265", featured: true, features: ["Dedicated business advisor reviews your financials quarterly", "Identifies growth opportunities across all VINK products", "Connects you to bridge loans, fleet insurance, and more", "Rolling monthly agreement — no lock-in"] },
   { name: "No Long-Term Commitments",   price: "R415", features: ["All VINK business management services on rolling monthly agreements", "No 12-month lock-ins", "Cancel, upgrade, or downgrade any time with 30 days' notice"] },

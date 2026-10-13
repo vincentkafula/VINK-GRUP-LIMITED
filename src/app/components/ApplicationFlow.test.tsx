@@ -4,6 +4,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { act } from "react";
 import { ApplicationFlowViewer } from "./ApplicationFlowViewer";
 import { startApplication } from "../services/startApplication";
+import { CATALOG, SEGMENTS, allProducts } from "../data/productCatalog";
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 let root: Root, host: HTMLElement, calls: { url: string; body: Record<string, unknown> }[], goodCode: string;
@@ -32,7 +33,7 @@ const setv = async (id: string, v: string) => {
 const heading = () => [...host.querySelectorAll("h1, h2")].pop()!.textContent;      // the step heading comes after the page title
 const text = () => host.textContent!;
 const fillPersonal = async (type = "Personal") => {
-  await setv("a-type", type); await setv("a-acct", "Bank Account"); await setv("a-clear", "Savings Account"); await setv("a-country", "South Africa");
+  await setv("a-type", type); await setv("a-prod", type === "Business" ? "Accounts::Launch Business Account" : "Accounts::Spark Account"); await setv("a-country", "South Africa");
   await setv("a-idn", "9001015009087"); await setv("a-fn", "thandi"); await setv("a-ln", "Mokoena"); await setv("a-em", "thandi@example.com"); await setv("a-cell", "0821234567"); await setv("a-addr", "12 Long Street, Cape Town");
 };
 const toDriver = async () => { await click("Start"); await click("New application"); await fillPersonal(); await click("Let's continue"); await click("Without facial"); await click("Let's continue"); };
@@ -62,13 +63,20 @@ describe("the application form that Start Now opens", () => {
 
   it("asks for every required detail, with a message under each empty field", async () => {
     await render(); await click("Start"); await click("New application"); await click("Let's continue");
-    for (const m of ["Select an account type", "Select an account name", "Select your country of birth", "Enter your identity number", "Enter your first name", "Enter your last name", "Enter a valid email address", "Enter a valid cell number", "Enter your residential address"]) expect(text()).toContain(m);
+    for (const m of ["Select a product", "Select your country of birth", "Enter your identity number", "Enter your first name", "Enter your last name", "Enter a valid email address", "Enter a valid cell number", "Enter your residential address"]) expect(text()).toContain(m);
     expect(heading()).toBe("Register");
   });
 
-  it("offers only the account names of the chosen account type", async () => {
-    await render(); await click("Start"); await click("New application"); await setv("a-acct", "Loan");
-    expect([...(host.querySelector("#a-clear") as HTMLSelectElement).options].map((o) => o.text)).toEqual(["Account name", "Personal Loan", "Vehicle Finance", "Business Loan"]);
+  it("lists every product of the section chosen, grouped as the product pages group them, and clears the choice when the section changes", async () => {
+    await render(); await click("Start"); await click("New application");
+    const groups = () => [...(host.querySelector("#a-prod") as HTMLSelectElement).querySelectorAll("optgroup")].map((g) => [g.label, [...g.querySelectorAll("option")].map((o) => o.text)] as const);
+    for (const seg of SEGMENTS) {
+      await setv("a-type", seg);
+      expect(groups()).toEqual(CATALOG[seg].map((g) => [g.group, g.products]));
+      expect(text()).toContain(`${allProducts(seg).length} ${seg} products to choose from`);
+    }
+    await setv("a-type", "Personal"); await setv("a-prod", "Credit cards::Pulse Card"); expect((host.querySelector("#a-prod") as HTMLSelectElement).value).toBe("Credit cards::Pulse Card");
+    await setv("a-type", "Corporate"); expect((host.querySelector("#a-prod") as HTMLSelectElement).value).toBe("");
   });
 
   it("takes a personal application through the camera choice, the driver details and the phone code, then submits it for real", async () => {
@@ -83,7 +91,7 @@ describe("the application form that Start Now opens", () => {
     await fillCode("481516"); await click("Verify now"); await wait(60);
     expect(text()).toContain("Congratulations"); expect(text()).toContain("PER-2026-000123"); expect(text()).toContain("1049 2201 8870");
     const sent = calls.find((c) => c.url.endsWith("/api/applications"))!.body as Record<string, unknown>;
-    expect(sent).toMatchObject({ tier: "personal", applicantName: "thandi Mokoena", applicantEmail: "thandi@example.com", applicantPhone: "0821234567", accountTypeRequested: "Bank Account: Savings Account" });
+    expect(sent).toMatchObject({ tier: "personal", applicantName: "thandi Mokoena", applicantEmail: "thandi@example.com", applicantPhone: "0821234567", accountTypeRequested: "Accounts: Spark Account" });
     expect(sent.tierData).toMatchObject({ phoneVerified: true, facialVerification: false, vehicleDocuments: ["vehicle-registration.pdf"] });
     expect(localStorage.getItem("reg-draft")).toBeNull();
     await click("Ok"); expect(text()).toContain("Hi Thandi"); expect(text()).toContain("coming soon");

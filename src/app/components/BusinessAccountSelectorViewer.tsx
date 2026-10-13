@@ -21,7 +21,7 @@ const SUB_NAV: NavItem[] = ["Start My Business", "Accounts", "Credit Cards", "Lo
 // No pricing/feature data exists for these anywhere in the codebase, so
 // descriptions are kept to honest, generic summaries rather than inventing
 // numbers.
-const ACCOUNTS: { name: string; desc: string; tagline: string; description: string; perfectFor: string[] }[] = [
+export const ACCOUNTS: { name: string; desc: string; tagline: string; description: string; perfectFor: string[] }[] = [
   {
     name: "Launch Business Account",
     desc: "For starting a new business — built for startups, freelancers and sole traders.",

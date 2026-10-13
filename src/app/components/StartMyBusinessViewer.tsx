@@ -10,12 +10,12 @@ const SUB_NAV = ["Start My Business", "Accounts", "Credit Cards", "Loans", "Inve
 
 interface Country { name: string; price: string; featured?: boolean; features: string[] }
 
-const ROW1: Country[] = [
+export const ROW1: Country[] = [
   { name: "South Africa", price: "R1,500", features: ["Register with CIPC; obtain tax clearance", "3–5 business days", "CIPC registration support, BEE affidavit, business account opening"] },
   { name: "Zambia",       price: "R3,500", features: ["Register with PACRA; obtain TPIN", "7–14 days", "Document preparation, PACRA liaison, cross-border banking setup"] },
   { name: "United States", price: "R7,500", features: ["Incorporate LLC in Delaware or Wyoming; obtain EIN from IRS", "5–10 days", "Registered agent, EIN application, US virtual address"] },
 ];
-const ROW2: Country[] = [
+export const ROW2: Country[] = [
   { name: "United Kingdom", price: "R5,500",  features: ["Register at Companies House; obtain UTR from HMRC", "1–3 business days", "UK registered office, Companies House filing, VAT registration guidance"] },
   { name: "Germany",        price: "R12,000", featured: true, features: ["Register GmbH with Handelsregister; notarised articles required", "2–4 weeks", "Notarisation guidance, trade register filing, IBAN-linked account"] },
   { name: "Canada",         price: "R6,500",  features: ["Register federally or provincially; obtain BN from CRA", "5–10 days", "Federal incorporation documents, BN application, CAD account"] },
