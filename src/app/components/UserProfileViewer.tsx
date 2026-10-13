@@ -485,8 +485,8 @@ export function UserProfileViewer({ isOpen, onClose, onSignOut }: Props) {
                 </div>
               </Section>
               <Section title="Appearance" icon={<Settings className="w-4 h-4" />}>
-                <div className="grid grid-cols-3 gap-3">
-                  {["Light", "Dark", "System"].map(theme => (
+                <div className="grid grid-cols-2 gap-3">
+                  {["Light", "Dark"].map(theme => (
                     <button key={theme} className="p-4 rounded-xl border-2 text-sm font-semibold transition-all" style={{ borderColor: theme === "Light" ? P : "var(--vk-line)", color: theme === "Light" ? P : "#374151", background: theme === "Light" ? `${P}08` : "transparent" }}>
                       {theme}
                     </button>

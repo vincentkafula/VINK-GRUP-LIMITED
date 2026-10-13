@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import {
   X, ChevronRight, CheckCircle2, Sparkles, Anchor as AnchorIcon, TrendingUp,
-  Sunrise, Mountain, Crown, ArrowRight, UserCheck, Globe2,
+  Sunrise, Mountain, Crown, ArrowRight, UserCheck,
 } from "lucide-react";
 import { PersonalAccountApplicationViewer } from "./PersonalAccountApplicationViewer";
 import { Footer } from "./Footer";
-import { getSession, clearSession } from "../services/apiClient";
-import { formatZAR, useCurrency, setCountryManually } from "../services/currencyStore";
+import { getSession } from "../services/apiClient";
+import { formatZAR, useCurrency } from "../services/currencyStore";
 import { BRAND } from "../brand";
 import { ProductDetailPage } from "./ProductDetailPage";
 
@@ -171,7 +171,6 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate, onOpenBanki
 
   if (!isOpen) return null;
   const openApply = (name?: string) => { setChosenAccount(name); setShowApplication(true); };
-  const handleSignOut = () => { clearSession(); setAuthUser(null); };
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-surface">
@@ -194,42 +193,6 @@ export function PersonalAccountViewer({ isOpen, onClose, onNavigate, onOpenBanki
               {item}
             </button>
           ))}
-          <div className="relative group ml-auto shrink-0">
-            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-semibold text-fg-muted hover:bg-surface-2">
-              <Globe2 className="w-3.5 h-3.5" /> {currency.country.code}
-            </button>
-            <div className="absolute right-0 top-full mt-0 w-64 bg-surface rounded-b shadow-2xl border border-line py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-30 max-h-80 overflow-y-auto">
-              <p className="px-3 pb-2 mb-1 border-b border-line text-[11px] text-fg-muted">
-                Fees shown in your local currency for reference. All accounts are billed in South African Rand.
-              </p>
-              {currency.countries.map(c => (
-                <button
-                  key={c.countryCode}
-                  onClick={() => setCountryManually(c.countryCode)}
-                  className="w-full text-left px-3 py-1.5 text-sm hover:bg-surface-2 flex items-center justify-between"
-                  style={{ color: currency.country.countryCode === c.countryCode ? GREEN : "var(--vk-fg)", fontWeight: currency.country.countryCode === c.countryCode ? 700 : 400 }}
-                >
-                  <span>{c.country ?? c.countryCode}</span>
-                  <span className="text-fg-muted text-xs">{c.code}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-          {authUser ? (
-            <div className="relative group shrink-0">
-              <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-semibold text-fg hover:bg-surface-2">
-                <span className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white" style={{ background: GREEN }}>{authUser.name.charAt(0)}</span>
-                {authUser.name.split(" ")[0]}
-              </button>
-              <div className="absolute right-0 top-full mt-0 w-40 bg-surface rounded-b shadow-2xl border border-line py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-30">
-                <button onClick={handleSignOut} className="w-full text-left px-3 py-1.5 text-sm hover:bg-surface-2 text-red-600">Sign out</button>
-              </div>
-            </div>
-          ) : (
-            <button onClick={() => openApply()} className="px-3.5 py-1.5 rounded-full text-[13px] font-semibold text-white shrink-0" style={{ background: GREEN }}>
-              Open an Account
-            </button>
-          )}
           <button onClick={onClose} className="p-2 rounded-full hover:bg-surface-2 transition-colors" aria-label="Close">
             <X className="w-4 h-4 text-fg-muted" />
           </button>

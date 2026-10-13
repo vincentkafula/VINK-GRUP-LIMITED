@@ -621,7 +621,7 @@ export default function App() {
 
       {showPersistentNav && (
         <PersistentTopNav active={activeSiteSection} onSelect={goToSection} onHome={goHome}
-          isLoggedIn={isLoggedIn} userName={userRole || undefined} onLogin={() => setShowLogin(true)}
+          isLoggedIn={isLoggedIn} onLogin={() => setShowLogin(true)}
           onProfile={() => startTransition(() => { mount("postLogin"); setShowPostLogin(true); })} />
       )}
 
@@ -638,7 +638,7 @@ export default function App() {
           onSubNavClick={handleSubNavClick}
           onOpenProfile={() => startTransition(() => { mount("postLogin"); setShowPostLogin(true); })}
           isLoggedIn={isLoggedIn}
-          userName={userRole || undefined}
+         
         />
       </ErrorBoundary>
 
