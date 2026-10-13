@@ -11,7 +11,7 @@ afterEach(() => { act(() => root.unmount()); host.remove(); vi.unstubAllGlobals(
 
 const render = async (cat: "account" | "solutions" | "loan") => { await act(async () => { root.render(<CorporateProductLedgerViewer isOpen onClose={() => {}} initialCategory={cat} onNavigate={() => {}} onOpenApp={() => {}} />); }); };
 const names = () => [...host.querySelectorAll(".pav-acct-name")].map((h) => h.textContent);
-const openDetails = async (i: number) => { await act(async () => { (host.querySelectorAll(".pav-btn-secondary")[i] as HTMLElement).click(); }); };
+const openDetails = async (i: number) => { await act(async () => { (host.querySelectorAll(".pav-cta-group .pav-btn:nth-child(2)")[i] as HTMLElement).click(); }); };
 
 describe("Corporate Banking pages", () => {
   it("keeps the names of the three pages", async () => {

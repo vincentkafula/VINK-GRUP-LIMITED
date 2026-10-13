@@ -75,7 +75,7 @@ function ProductCard({
       <div className="pav-cta-group">
         <button className="pav-btn pav-btn-primary" onClick={() => onApply(card.name)}>Apply now</button>
         <button
-          className="pav-btn pav-btn-secondary"
+          className="pav-btn pav-btn-primary"
           onClick={() => card.tagline ? onDetails(card, folio) : onApply(card.name)}
         >
           {detailsCta}
@@ -239,7 +239,8 @@ export function CorporateProductLedgerViewer({ isOpen, onClose, initialCategory,
         }
         .pav-btn-primary{ background:var(--pav-ink); color:var(--pav-text-on-ink); }
         .pav-btn-primary:hover{ background:var(--pav-plum); }
-        .pav-cta-group{ display:flex; flex-direction:column; gap:9px; margin-top:auto; }
+        .pav-cta-group{ display:flex; flex-direction:row; gap:10px; margin-top:auto; }
+        .pav-cta-group .pav-btn{ flex:1 1 0; min-width:0; padding:11px 10px; font-size:13px; line-height:1.25; display:flex; align-items:center; justify-content:center; }
         .pav-btn-secondary{ background:transparent; color:var(--vk-crimson-text); border-color:var(--pav-rule); }
         .pav-btn-secondary:hover{ background:var(--pav-paper-dim); border-color:var(--pav-gold-dim); }
 
