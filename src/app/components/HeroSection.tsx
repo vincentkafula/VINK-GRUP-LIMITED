@@ -95,13 +95,15 @@ export function HeroSection({ onApplyClick }: { onApplyClick?: () => void }) {
   const slide = SLIDES[current];
 
   return (
-    <section className="text-white overflow-hidden relative -mt-[var(--vk-header-h,65px)] pt-[var(--vk-header-h,65px)]" aria-roledescription="carousel" aria-label="Featured" onMouseEnter={() => setHold(true)} onMouseLeave={() => setHold(false)} onFocusCapture={() => setHold(true)} onBlurCapture={() => setHold(false)}
+    <section className="vkp-grain text-white overflow-hidden relative -mt-[var(--vk-header-h,65px)] pt-[var(--vk-header-h,65px)]" aria-roledescription="carousel" aria-label="Featured" onMouseEnter={() => setHold(true)} onMouseLeave={() => setHold(false)} onFocusCapture={() => setHold(true)} onBlurCapture={() => setHold(false)}
       style={{ background: "#C8102E" }}>
       {/* Signature motif — concentric "tap" rings, evoking the NFC contactless
           gesture that's central to how VINK actually works. Deliberately
           restrained: one quiet element per section rather than scattered
           decoration, positioned so it reads as ambient texture, not a focal
           point competing with the headline or product image. */}
+      <div aria-hidden="true" className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(60% 80% at 12% 0%, rgba(255,255,255,0.2), transparent 62%), radial-gradient(70% 95% at 100% 100%, rgba(112,6,26,0.6), transparent 62%)" }} />
+      <div aria-hidden="true" className="vkp-dots-on-red" />
       <div className="absolute -right-24 top-1/2 -translate-y-1/2 w-[560px] h-[560px] pointer-events-none hidden md:block" aria-hidden="true">
         {[0, 1, 2, 3].map(i => (
           <div key={i} className="absolute inset-0 rounded-full"
@@ -116,7 +118,7 @@ export function HeroSection({ onApplyClick }: { onApplyClick?: () => void }) {
       <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full opacity-10 pointer-events-none"
         style={{ background: "radial-gradient(circle,#8F1027 0%,transparent 70%)", transform: "translate(-40%,40%)" }} />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 lg:py-14 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-14 md:pt-12 md:pb-20 lg:pt-14 lg:pb-24 relative z-10">
         <div className={"grid grid-cols-1 gap-10 items-center transition-[grid-template-columns] duration-500 " + (slide.wide ? "md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]" : "md:grid-cols-2")}>
 
           {/* ── Text side — fades with the slide ── */}
@@ -126,7 +128,7 @@ export function HeroSection({ onApplyClick }: { onApplyClick?: () => void }) {
           >
             {/* Headline */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl leading-[1.05] mb-5"
-              style={{ fontFamily: "var(--font-display)", fontWeight: 600, letterSpacing: "-0.01em" }}>
+              style={{ fontFamily: "var(--font-display)", fontWeight: 600, letterSpacing: "-0.01em", textShadow: "0 2px 24px rgba(80,0,16,0.35)" }}>
               {slide.headline}
             </h1>
 
@@ -141,16 +143,16 @@ export function HeroSection({ onApplyClick }: { onApplyClick?: () => void }) {
                 <button key={i}
                   onClick={onApplyClick}
                   className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl text-sm font-bold text-white transition-all duration-300 ease-out hover:scale-[1.03] hover:-translate-y-0.5 active:scale-95 shadow-lg"
-                  style={{ letterSpacing: "0.01em", ...(i === 0 ? { background: "#ffffff", color: "#C8102E", boxShadow: "0 6px 20px rgba(0,0,0,.20)" } : { background: "rgba(255,255,255,.12)", border: "1px solid rgba(255,255,255,.28)", color: "#ffffff" }) }}>
+                  style={{ letterSpacing: "0.01em", ...(i === 0 ? { background: "linear-gradient(180deg,#ffffff,#f3f3f6)", color: "#C8102E", boxShadow: "0 14px 30px -10px rgba(60,0,12,.55), inset 0 1px 0 #fff" } : { background: "rgba(255,255,255,.12)", border: "1px solid rgba(255,255,255,.3)", color: "#ffffff", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" }) }}>
                   {cta.label}
                 </button>
               ))}
             </div>
 
             {/* Trust stats */}
-            <div className="flex justify-center md:justify-start gap-8">
+            <div className="vkp-glass-dark inline-flex max-w-full justify-center md:justify-start rounded-2xl px-2 py-3 sm:px-3">
               {slide.trust.map((t, i) => (
-                <div key={i} className="text-center md:text-left">
+                <div key={i} className={"text-center md:text-left px-4 sm:px-5 " + (i > 0 ? "border-l border-white/20" : "")}>
                   <p className="text-xl" style={{ color: "#ffffff", fontFamily: "var(--font-mono)", fontWeight: 700 }}>{t.value}</p>
                   <p className="text-white/90 text-xs font-medium mt-0.5">{t.label}</p>
                 </div>
@@ -160,13 +162,14 @@ export function HeroSection({ onApplyClick }: { onApplyClick?: () => void }) {
 
           {/* ── Image side ── */}
           <div className="relative flex flex-col items-center md:items-end">
-            <div className="absolute inset-0 rounded-full opacity-20 blur-3xl pointer-events-none"
-              style={{ background: "radial-gradient(circle,#ffffff,transparent)" }} />
+            <div className="absolute inset-0 rounded-full opacity-30 blur-3xl pointer-events-none"
+              style={{ background: "radial-gradient(circle,#ffffff,transparent 70%)" }} />
+            <div aria-hidden="true" className="absolute bottom-8 left-[12%] right-[12%] h-8 rounded-[50%] bg-black/40 blur-2xl pointer-events-none" />
             <img
               key={current}
               src={slide.image}
               alt={slide.wide ? "The VINK multi-ticketing validator reading a tapped card, with its five channels: NFC card payment, QR-code, balance inquiry, segmented charge and GPS location." : slide.eyebrow}
-              className={"relative z-10 w-full object-contain " + (slide.wide ? "max-w-3xl" : "max-w-sm sm:max-w-md md:max-w-lg max-h-[60vh]")}
+              className={"relative z-10 w-full object-contain drop-shadow-[0_28px_40px_rgba(70,0,14,0.45)] " + (slide.wide ? "max-w-3xl" : "max-w-sm sm:max-w-md md:max-w-lg max-h-[60vh]")}
               draggable={false}
               style={{
                 transition: "opacity 0.4s ease", opacity: fading ? 0 : 1,

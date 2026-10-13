@@ -13,6 +13,15 @@
 }
 .vkp-dark .vkp-dots { background-image: radial-gradient(rgba(255, 255, 255, 0.22) 1px, transparent 1.5px); }
 
+/* the same dots in white, for the red hero and footer */
+.vkp-dots-on-red {
+  position: absolute; inset: 0; pointer-events: none;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.28) 1px, transparent 1.5px);
+  background-size: 22px 22px;
+  -webkit-mask-image: radial-gradient(ellipse 85% 80% at 70% 40%, #000 15%, transparent 75%);
+  mask-image: radial-gradient(ellipse 85% 80% at 70% 40%, #000 15%, transparent 75%);
+}
+
 /* film grain: a very light noise that stops large colour areas looking flat */
 .vkp-grain { position: relative; isolation: isolate; }
 .vkp-grain::after {
@@ -68,6 +77,9 @@
 /* text filled with a brand gradient */
 .vkp-gradient-text { background: linear-gradient(100deg, #e8405b, #c8102e 60%, #a50f27); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .vkp-dark .vkp-gradient-text { background: linear-gradient(100deg, #ff8fa3, #ff6b81 60%, #f2455f); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+/* a thin lit edge along the top of a red or dark band */
+.vkp-edge-top::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 1px; z-index: 1; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent); }
 
 /* a slow entrance for the cards as the section appears */
 @keyframes vkp-rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }

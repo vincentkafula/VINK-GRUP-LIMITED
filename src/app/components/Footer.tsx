@@ -148,7 +148,7 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
   return (
     <footer style={{ position: "relative" }}>
       {/* ── SECTION 1: White top band: logo and social buttons ─────────────── */}
-      <div style={{ background: TOP_BG }}>
+      <div style={{ background: TOP_BG, borderBottom: "1px solid #ECECF0" }}>
         <div style={{ maxWidth: 1180, margin: "0 auto", padding: "32px 40px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 20 }}>
           {/* The crest on the white top band (brand guide: footer 120-160px) */}
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
@@ -170,13 +170,13 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
                   aria-label={s.label}
                   style={{
                     width: 40, height: 40, borderRadius: "50%",
-                    background: BG,
-                    border: "1px solid transparent",
+                    background: "linear-gradient(145deg,#e8405b," + BG + " 60%,#970f27)",
+                    border: "1px solid transparent", boxShadow: "0 10px 18px -10px rgba(200,16,46,0.8), inset 0 1px 0 rgba(255,255,255,0.35)",
                     display: "flex", alignItems: "center", justifyContent: "center",
                     transition: "background 0.2s, border-color 0.2s, transform 0.2s",
                   }}
                   onMouseEnter={(e) => { const a = e.currentTarget as HTMLAnchorElement; a.style.background = CARD_BG; a.style.borderColor = "transparent"; a.style.transform = "translateY(-2px)"; }}
-                  onMouseLeave={(e) => { const a = e.currentTarget as HTMLAnchorElement; a.style.background = BG; a.style.borderColor = "transparent"; a.style.transform = "none"; }}
+                  onMouseLeave={(e) => { const a = e.currentTarget as HTMLAnchorElement; a.style.background = "linear-gradient(145deg,#e8405b," + BG + " 60%,#970f27)"; a.style.borderColor = "transparent"; a.style.transform = "none"; }}
                 >
                   {s.icon}
                 </a>
@@ -187,8 +187,10 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
       </div>
 
       {/* ── SECTION 2: Red middle: the link columns ──────────────────────────── */}
-      <div style={{ background: BG }}>
-        <div style={{ maxWidth: 1180, margin: "0 auto", padding: "64px 40px" }}>
+      <div className="vkp-grain vkp-edge-top" style={{ background: BG, position: "relative", overflow: "hidden" }}>
+        <div aria-hidden="true" style={{ position: "absolute", inset: 0, pointerEvents: "none", background: "radial-gradient(55% 70% at 10% 0%, rgba(255,255,255,0.14), transparent 62%), radial-gradient(60% 80% at 100% 100%, rgba(90,4,20,0.5), transparent 62%)" }} />
+        <div aria-hidden="true" className="vkp-dots-on-red" />
+        <div style={{ maxWidth: 1180, margin: "0 auto", padding: "64px 40px", position: "relative", zIndex: 1 }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(168px, 1fr))", gap: "44px 36px" }}>
           {/* Useful Tools (merged with Column 1 label) */}
           <LinkColumn title="Useful Tools" links={COLS[0].links} onLinkClick={handleLinkClick} />
