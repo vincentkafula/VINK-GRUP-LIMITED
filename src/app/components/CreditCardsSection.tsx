@@ -67,10 +67,10 @@ function CardVisual({ card, active }: { card: typeof CARDS[0]; active: boolean }
   return (
     <div className="relative rounded-2xl text-white overflow-hidden flex-shrink-0 transition-all duration-500 ease-out select-none"
       style={{
-        width: "min(260px, 72vw)", height: 160, background: image ? "#101828" : card.grad,
-        transform: active ? "translateY(-8px) scale(1.04)" : "scale(0.95)",
-        opacity: active ? 1 : 0.72,
-        boxShadow: active ? "0 20px 44px -10px rgba(0,0,0,0.45)" : "0 4px 14px -4px rgba(0,0,0,0.2)",
+        width: "min(276px, 72vw)", height: 174, background: image ? "#101828" : card.grad,
+        transform: active ? "translateY(-12px) scale(1.05)" : "scale(0.94)",
+        opacity: active ? 1 : 0.7,
+        boxShadow: active ? "0 0 0 2px rgba(255,255,255,0.9), 0 0 0 4px rgba(200,16,46,0.55), 0 30px 54px -14px rgba(16,24,40,0.6)" : "0 6px 16px -6px rgba(16,24,40,0.3)",
       }}>
       {image ? (
         <ZoomImage src={image} alt={`${card.name} — physical card design`} className="w-full h-full object-cover" />
@@ -116,22 +116,27 @@ export function CreditCardsSection({ onApply }: { onApply?: () => void }) {
   const [viewerCard, setViewerCard] = useState<typeof CARDS[0] | null>(null);
 
   return (
-    <section className="py-10 sm:py-14 bg-surface-2">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-10">
-          <span className="inline-block text-xs font-bold uppercase tracking-[0.14em] px-3 py-1 rounded-full mb-3 bg-gold/15 text-gold-text">Compare Cards</span>
-          <h2 className="font-display text-2xl sm:text-3xl text-fg font-semibold">Choose Your Perfect VINK Card</h2>
-          <p className="mx-auto mt-3 inline-block rounded-full border border-line bg-surface px-3 py-1 text-xs font-medium text-fg-muted">Planned cards and benefits, available at our June 2027 launch.</p>
+    <section className="relative overflow-hidden py-14 sm:py-20" style={{ background: "linear-gradient(180deg,var(--vk-surface-2),var(--vk-bg) 85%)" }}>
+      <div aria-hidden="true" className="vkp-dots" />
+      <div aria-hidden="true" className="vkp-glow left-1/2 top-24 h-72 w-[34rem] max-w-full -translate-x-1/2 opacity-[0.14]" style={{ background: "#c8102e" }} />
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <span className="inline-block text-xs font-bold uppercase tracking-[0.14em] px-3.5 py-1.5 rounded-full mb-4 text-white" style={{ background: "linear-gradient(135deg,#e8405b,#c8102e 60%,#a50f27)", boxShadow: "0 10px 20px -10px rgba(200,16,46,0.8)" }}>Compare Cards</span>
+          <h2 className="font-display text-3xl sm:text-5xl tracking-[-0.015em] text-fg font-semibold">Choose Your Perfect <span className="vkp-gradient-text">VINK Card</span></h2>
+          <p className="vkp-chip mx-auto mt-4 inline-block rounded-full px-3.5 py-1.5 text-xs font-medium text-fg-muted">Planned cards and benefits, available at our June 2027 launch.</p>
         </div>
 
         <p className="hidden [@media(hover:hover)]:block text-center text-xs font-medium text-fg-muted mb-5">Roll over image to zoom in · click a card to open it</p>
         <p className="text-center text-xs font-medium text-fg-muted mb-5 [@media(hover:hover)]:hidden">Tap a card to see it up close</p>
 
-        <div className="flex justify-center gap-4 sm:gap-6 flex-wrap mb-6">
+        <div className="flex justify-center gap-5 sm:gap-8 flex-wrap mb-8 pt-3">
           {CARDS.map((c, i) => (
-            <button type="button" key={i} onClick={() => { setActive(i); setViewerCard(c); }} aria-label={`View the ${c.name}`} aria-pressed={active === i} className="flex flex-col items-center gap-2 rounded-2xl">
-              <CardVisual card={c} active={active === i} />
-              <span className="text-xs text-fg-muted font-medium">{c.sub}</span>
+            <button type="button" key={i} onClick={() => { setActive(i); setViewerCard(c); }} aria-label={`View the ${c.name}`} aria-pressed={active === i} className="group flex flex-col items-center gap-3 rounded-2xl">
+              <span className="relative block">
+                <CardVisual card={c} active={active === i} />
+                <span aria-hidden="true" className="absolute -bottom-3 left-6 right-6 h-4 rounded-[50%] blur-lg transition-opacity duration-500" style={{ background: "rgba(16,24,40,0.55)", opacity: active === i ? 0.7 : 0.25 }} />
+              </span>
+              <span className={`mt-2 rounded-full px-3 py-1 text-xs font-semibold transition-colors duration-300 ${active === i ? "bg-brand text-brand-fg shadow-card" : "text-fg-muted group-hover:text-fg"}`}>{c.sub}</span>
             </button>
           ))}
         </div>

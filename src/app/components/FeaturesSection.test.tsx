@@ -32,12 +32,12 @@ describe("PremiumIcon", () => {
 });
 
 describe("FeaturesSection benefits", () => {
-  it("shows the six benefits, each with a soft icon tile, and the Most Popular badge once without covering an icon", () => {
+  it("shows the six benefits, each with a gradient icon tile, and the Most Popular badge once without covering an icon", () => {
     mount(<FeaturesSection />);
     for (const t of ["Rewards", "Cash Back", "Balance Transfer", "Travel", "Zero Percent", "Low Interest"]) expect(host.textContent).toContain(t);
     expect(host.textContent).toContain("Earn points on every spend and redeem for exciting rewards and offers.");
     expect(host.textContent!.match(/Most Popular/g)).toHaveLength(1);
-    const medallions = [...host.querySelectorAll('span[aria-hidden="true"]')].filter((s) => s.querySelector("svg.lucide") && (s as HTMLElement).style.width === "56px");
+    const medallions = [...host.querySelectorAll('span[aria-hidden="true"].size-14')].filter((s) => s.querySelector("svg.lucide"));
     expect(medallions).toHaveLength(6);
     const popular = [...host.querySelectorAll("span")].find((s) => s.textContent === "Most Popular")!;
     expect(popular.closest("[aria-hidden='true']")).toBeNull();                                  // the badge is its own element, not inside an icon
@@ -45,10 +45,10 @@ describe("FeaturesSection benefits", () => {
     expect(host.querySelectorAll("img[src*='BenefitIcon']")).toHaveLength(0);                    // the old raster icons are gone
   });
 
-  it("gives the four figures in the strip the same soft icon tile", () => {
+  it("gives the four figures in the dark strip each a glass icon tile", () => {
     mount(<FeaturesSection />);
     for (const t of ["5X", "100+", "24/7"]) expect(host.textContent).toContain(t);
-    const small = [...host.querySelectorAll('span[aria-hidden="true"]')].filter((s) => s.querySelector("svg.lucide") && (s as HTMLElement).style.width === "44px");
+    const small = [...host.querySelectorAll('span[aria-hidden="true"].size-12')].filter((s) => s.querySelector("svg.lucide"));
     expect(small).toHaveLength(4);
   });
 });
