@@ -207,7 +207,7 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
 
   return (
     // The sign-in is a full page like every other: the site header (Personal, Business, Corporate) is above it and theme.css starts the page below the header.
-    <div data-theme-aware className="fixed inset-0 z-50 flex flex-col overflow-y-auto" style={{ background: "var(--vk-bg)" }}>
+    <div data-theme-aware className="fixed inset-0 z-[95] flex flex-col overflow-y-auto" style={{ background: "var(--vk-bg)" }}>
       <div
         ref={panelRef}
         className="relative w-full flex flex-1 flex-col"

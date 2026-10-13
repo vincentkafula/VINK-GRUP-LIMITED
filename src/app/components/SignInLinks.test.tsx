@@ -29,4 +29,8 @@ describe("every Sign in opens the main sign-in", () => {
     for (const f of ["components/ManagementPanelViewer.tsx", "components/manshya/ManshyaAdmin.tsx", "components/portal/AdminConfig.tsx", "components/portal/AdminBankLinks.tsx", "components/PersonalAccountApplicationViewer.tsx", "components/portal/RolePortal.tsx"])
       expect(readFileSync("src/app/" + f, "utf8"), f).toContain("openSignIn(");
   });
+  it("the sign-in page sits above the Personal, Business and Corporate pages (z-50) and below the header strip (z-[100]), so it is never hidden behind them", () => {
+    const m = readFileSync("src/app/components/LoginModal.tsx", "utf8").match(/fixed inset-0 z-\[(\d+)\] flex flex-col overflow-y-auto/);
+    expect(m).not.toBeNull(); const z = Number(m![1]); expect(z).toBeGreaterThan(50); expect(z).toBeLessThan(100);
+  });
 });
