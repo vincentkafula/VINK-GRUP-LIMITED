@@ -27,23 +27,23 @@ describe("Corporate Banking pages", () => {
   });
   it("opens the details of an account with its features, documents and steps", async () => {
     await render("account"); await openDetails(0);
-    const d = host.querySelector(".pav-detail-card")!.textContent!;
+    const d = host.querySelector("[data-product-detail]")!.textContent!;
     for (const t of ["Government Treasury Account", "Account features", "Documents required: government bodies", "Letter of request on official letterhead", "How to open an account", "Account activation"]) expect(d).toContain(t);
   });
   it("shows the contractor documents on the contractor account", async () => {
-    await render("account"); await openDetails(4); expect(host.querySelector(".pav-detail-card")!.textContent).toContain("Audited financial statements for the last two years");
+    await render("account"); await openDetails(4); expect(host.querySelector("[data-product-detail]")!.textContent).toContain("Audited financial statements for the last two years");
   });
   it("shows the credit facilities with their tenors, and the details with pricing and the notice", async () => {
     await render("solutions");
     expect(names()).toEqual(["Sovereign Term Loan", "Project Finance Facility", "Bridge Facility", "Equipment Term Loan", "Equipment Finance Lease", "Revolving Equipment Credit Line", "Guarantees and Performance Bonds"]);
     expect(host.textContent).toContain("7 to 15 years, with grace period");
-    await openDetails(0); const d = host.querySelector(".pav-detail-card")!.textContent!;
+    await openDetails(0); const d = host.querySelector("[data-product-detail]")!.textContent!;
     for (const t of ["Pricing", "reference rate plus a margin", "Security and credit support", "How to apply", "not an offer or commitment to lend"]) expect(d).toContain(t);
   });
   it("shows the sectors and the equipment programmes on the loan page", async () => {
     await render("loan");
     expect(names()).toEqual(["Road Development", "Railway Development", "Schools", "Hospitals and Clinics", "Universities", "Housing Development", "Agriculture", "Road Construction Machinery", "Housing Construction Machinery", "Agricultural Machinery"]);
-    await openDetails(7); const d = host.querySelector(".pav-detail-card")!.textContent!;
+    await openDetails(7); const d = host.querySelector("[data-product-detail]")!.textContent!;
     for (const t of ["5 to 10 years", "Financing structures", "Finance lease", "What every equipment facility includes", "Terms are indicative"]) expect(d).toContain(t);
   });
   it("does not carry the About us text or the bank-name placeholders", async () => {

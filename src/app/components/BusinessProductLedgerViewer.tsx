@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { Footer } from "./Footer";
+import { ProductDetailPage } from "./ProductDetailPage";
 
 type BizCategory = "creditCard" | "loan" | "invest";
 type NavItem = "Start My Business" | "Accounts" | "Credit Cards" | "Loans" | "Invest" | "Manage My Business";
@@ -105,25 +106,6 @@ function ProductCard({
       <div className="pav-cta-group">
         <button className="pav-btn pav-btn-primary" onClick={onApply}>Apply now</button>
         <button className="pav-btn pav-btn-primary" onClick={() => product.tagline ? onDetails() : onApply()}>{detailsCta}</button>
-      </div>
-    </div>
-  );
-}
-
-function ProductDetailModal({ product, folio, onClose, onApply }: { product: BizProduct; folio: string; onClose: () => void; onApply: () => void }) {
-  return (
-    <div className="pav-detail-backdrop" onClick={onClose}>
-      <div className="pav-detail-card" onClick={(e) => e.stopPropagation()}>
-        <button className="pav-detail-close" onClick={onClose} aria-label="Close"><X className="w-4 h-4" /></button>
-        <div className="pav-detail-folio">Folio No.&nbsp;{folio}</div>
-        <h3 className="pav-detail-name">{product.name}</h3>
-        {product.tagline && <p className="pav-detail-tagline">{product.tagline}</p>}
-        {product.description && <p className="pav-detail-desc">{product.description}</p>}
-        <div className="pav-detail-features-head">Key Features</div>
-        <ul className="pav-detail-features">
-          {product.features.map((f) => <li key={f}>{f}</li>)}
-        </ul>
-        <button className="pav-btn pav-btn-primary" onClick={onApply}>Apply now</button>
       </div>
     </div>
   );
@@ -251,19 +233,6 @@ export function BusinessProductLedgerViewer({ isOpen, onClose, initialCategory, 
         .pav-btn-secondary:hover{ background:var(--pav-paper-dim); border-color:var(--pav-gold-dim); }
 
         /* ── Product detail modal ── */
-        .pav-detail-backdrop{ position:fixed; inset:0; z-index:70; background:rgba(29,23,64,0.55); display:flex; align-items:center; justify-content:center; padding:20px; }
-        .pav-detail-card{ position:relative; background:var(--vk-surface); max-width:540px; width:100%; max-height:88vh; overflow-y:auto; border-radius:4px; padding:40px 36px 32px; box-shadow:0 30px 80px rgba(29,23,64,0.35); }
-        .pav-detail-close{ position:absolute; top:16px; right:16px; width:32px; height:32px; border-radius:50%; background:var(--pav-paper); color:var(--vk-crimson-text); border:1px solid var(--pav-rule); display:flex; align-items:center; justify-content:center; cursor:pointer; }
-        .pav-detail-close:hover{ background:var(--pav-paper-dim); }
-        .pav-detail-folio{ font-family:var(--font-mono); font-size:11px; color:var(--pav-gold-dim); letter-spacing:0.04em; margin-bottom:10px; }
-        .pav-detail-name{ font-family:var(--font-display); font-weight:500; font-size:26px; margin:0 0 8px; letter-spacing:-0.01em; color:var(--vk-crimson-text); }
-        .pav-detail-tagline{ font-family:var(--font-display); font-style:italic; font-size:15px; color:var(--pav-plum); margin:0 0 20px; }
-        .pav-detail-desc{ font-size:13.5px; line-height:1.7; color:var(--pav-ink-soft); margin:0 0 26px; padding-bottom:26px; border-bottom:1px solid var(--pav-rule); }
-        .pav-detail-features-head{ font-size:13px; font-weight:600; color:var(--vk-crimson-text); margin-bottom:12px; }
-        .pav-detail-features{ list-style:none; margin:0 0 28px; padding:0; display:grid; grid-template-columns:1fr 1fr; gap:8px 16px; }
-        .pav-detail-features li{ font-size:12.8px; color:var(--pav-ink-soft); line-height:1.5; padding-left:16px; position:relative; }
-        .pav-detail-features li::before{ content:"✓"; position:absolute; left:0; color:var(--pav-gold-dim); font-weight:600; }
-        @media (max-width:480px){ .pav-detail-features{ grid-template-columns:1fr; } }
 
         .pav-foot{ background:var(--pav-panel); color:var(--pav-text-muted-on-ink); padding:34px 0; font-size:12px; line-height:1.7; font-family:var(--font-mono); }
         .pav-foot .pav-wrap{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
@@ -336,10 +305,13 @@ export function BusinessProductLedgerViewer({ isOpen, onClose, initialCategory, 
       <Footer />
 
       {detailProduct && (
-        <ProductDetailModal
-          product={detailProduct.product}
-          folio={detailProduct.folio}
-          onClose={() => setDetailProduct(null)}
+        <ProductDetailPage
+          detail={{
+            eyebrow: copy.tag, name: detailProduct.product.name, tagline: detailProduct.product.tagline, overview: detailProduct.product.description, folio: detailProduct.folio,
+            featured: detailProduct.product.featured, price: { value: detailProduct.product.price, label: "per month" },
+            featuresHead: "Key features", features: detailProduct.product.features, backLabel: `Back to ${copy.heading.toLowerCase()}`,
+          }}
+          onBack={() => setDetailProduct(null)}
           onApply={() => { setDetailProduct(null); handleApply(); }}
         />
       )}

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { CATEGORY_CONFIG, PRODUCTS, type Product, type ProductCategory } from "./ProductSelectorViewer";
 import { Footer } from "./Footer";
+import { ProductDetailPage } from "./ProductDetailPage";
 
 interface Props {
   isOpen: boolean;
@@ -38,10 +39,10 @@ function parsePrice(price: string): number | null {
 }
 
 function ProductCard({
-  product, folio, maxPrice, detailsCta, onApply,
+  product, folio, maxPrice, detailsCta, onApply, onDetails,
 }: {
   product: Product; folio: string; maxPrice: number | null; detailsCta: string;
-  onApply: () => void;
+  onApply: () => void; onDetails: () => void;
 }) {
   const numericPrice = parsePrice(product.price);
   const showGauge = numericPrice !== null && maxPrice !== null && maxPrice > 0;
@@ -82,7 +83,7 @@ function ProductCard({
         <button className="pav-btn pav-btn-primary" onClick={onApply}>
           Apply now
         </button>
-        <button className="pav-btn pav-btn-primary" onClick={onApply}>
+        <button className="pav-btn pav-btn-primary" onClick={onDetails}>
           {detailsCta}
         </button>
       </div>
@@ -92,6 +93,7 @@ function ProductCard({
 
 export function PersonalProductLedgerViewer({ isOpen, onClose, initialCategory, onNavigateToAccount, onApply }: Props) {
   const [category, setCategory] = useState<ProductCategory>(initialCategory);
+  const [detailProduct, setDetailProduct] = useState<{ product: Product; folio: string } | null>(null);
 
   // Jump straight to whichever category was clicked, each time the viewer opens.
   useEffect(() => { if (isOpen) setCategory(initialCategory); }, [isOpen, initialCategory]);
@@ -268,18 +270,30 @@ export function PersonalProductLedgerViewer({ isOpen, onClose, initialCategory, 
 
           <div className="pav-grid">
             {products.slice(0, 3).map((p, i) => (
-              <ProductCard key={p.id} product={p} folio={String(i + 1).padStart(2, "0")} maxPrice={maxPrice} detailsCta={copy.detailsCta} onApply={handleApply} />
+              <ProductCard key={p.id} product={p} folio={String(i + 1).padStart(2, "0")} maxPrice={maxPrice} detailsCta={copy.detailsCta} onApply={handleApply} onDetails={() => setDetailProduct({ product: p, folio: String(i + 1).padStart(2, "0") })} />
             ))}
           </div>
           <div className="pav-grid">
             {products.slice(3, 6).map((p, i) => (
-              <ProductCard key={p.id} product={p} folio={String(i + 4).padStart(2, "0")} maxPrice={maxPrice} detailsCta={copy.detailsCta} onApply={handleApply} />
+              <ProductCard key={p.id} product={p} folio={String(i + 4).padStart(2, "0")} maxPrice={maxPrice} detailsCta={copy.detailsCta} onApply={handleApply} onDetails={() => setDetailProduct({ product: p, folio: String(i + 4).padStart(2, "0") })} />
             ))}
           </div>
         </div>
       </section>
 
       <Footer />
+
+      {detailProduct && (
+        <ProductDetailPage
+          detail={{
+            eyebrow: cfg.tag, name: detailProduct.product.name, tagline: detailProduct.product.tagline, folio: detailProduct.folio,
+            featured: detailProduct.product.featured, price: { value: detailProduct.product.price, label: detailProduct.product.priceLabel },
+            featuresHead: "Key features", features: detailProduct.product.features, backLabel: `Back to ${copy.heading.toLowerCase()}`,
+          }}
+          onBack={() => setDetailProduct(null)}
+          onApply={() => { setDetailProduct(null); handleApply(); }}
+        />
+      )}
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { X } from "lucide-react";
 import { ApplyModal } from "./ApplyModal";
 import { Footer } from "./Footer";
+import { ProductDetailPage } from "./ProductDetailPage";
 
 interface Props { isOpen: boolean; onClose: () => void; onNavigate: (item: string) => void }
 
@@ -24,7 +25,7 @@ function parsePrice(price: string): number {
   return parseInt(price.replace(/[R,]/g, ""), 10) || 0;
 }
 
-function ServiceCard({ s, folio, maxPrice, onApply }: { s: Service; folio: string; maxPrice: number; onApply: (service: string) => void }) {
+function ServiceCard({ s, folio, maxPrice, onApply, onMore }: { s: Service; folio: string; maxPrice: number; onApply: (service: string) => void; onMore: () => void }) {
   const pct = Math.max(4, (parsePrice(s.price) / maxPrice) * 100);
   return (
     <div className="pav-card">
@@ -48,7 +49,7 @@ function ServiceCard({ s, folio, maxPrice, onApply }: { s: Service; folio: strin
       </div>
       <div className="pav-cta-group">
         <button className="pav-btn pav-btn-primary" onClick={() => onApply(s.name)}>Apply now</button>
-        <button className="pav-btn pav-btn-primary" onClick={() => onApply(s.name)}>Tell me more</button>
+        <button className="pav-btn pav-btn-primary" onClick={onMore}>Tell me more</button>
       </div>
     </div>
   );
@@ -56,6 +57,7 @@ function ServiceCard({ s, folio, maxPrice, onApply }: { s: Service; folio: strin
 
 export function ManageMyBusinessViewer({ isOpen, onClose, onNavigate }: Props) {
   const [applyService, setApplyService] = useState<string | null>(null);
+  const [more, setMore] = useState<{ s: Service; folio: string } | null>(null);
   if (!isOpen) return null;
 
   const all = [...ROW1, ...ROW2];
@@ -208,15 +210,23 @@ export function ManageMyBusinessViewer({ isOpen, onClose, onNavigate }: Props) {
           </div>
 
           <div className="pav-grid">
-            {ROW1.map((s, i) => <ServiceCard key={s.name} s={s} folio={String(i + 1).padStart(2, "0")} maxPrice={maxPrice} onApply={setApplyService} />)}
+            {ROW1.map((s, i) => <ServiceCard key={s.name} s={s} folio={String(i + 1).padStart(2, "0")} maxPrice={maxPrice} onApply={setApplyService} onMore={() => setMore({ s, folio: String(i + 1).padStart(2, "0") })} />)}
           </div>
           <div className="pav-grid">
-            {ROW2.map((s, i) => <ServiceCard key={s.name} s={s} folio={String(i + 4).padStart(2, "0")} maxPrice={maxPrice} onApply={setApplyService} />)}
+            {ROW2.map((s, i) => <ServiceCard key={s.name} s={s} folio={String(i + 4).padStart(2, "0")} maxPrice={maxPrice} onApply={setApplyService} onMore={() => setMore({ s, folio: String(i + 4).padStart(2, "0") })} />)}
           </div>
         </div>
       </section>
 
       <Footer />
+
+      {more && (
+        <ProductDetailPage
+          detail={{ eyebrow: "Business Banking · Manage My Business", name: more.s.name, folio: more.folio, featured: more.s.featured, price: { value: more.s.price, label: "per month" }, featuresHead: "What is included", features: more.s.features, backLabel: "Back to all management services" }}
+          onBack={() => setMore(null)}
+          onApply={() => { const n = more.s.name; setMore(null); setApplyService(n); }}
+        />
+      )}
 
       {applyService && (
         <ApplyModal isOpen={!!applyService} onClose={() => setApplyService(null)} product={applyService} />

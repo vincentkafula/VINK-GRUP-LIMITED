@@ -8,6 +8,7 @@ import { Footer } from "./Footer";
 import { getSession, clearSession } from "../services/apiClient";
 import { formatZAR, useCurrency, setCountryManually } from "../services/currencyStore";
 import { BRAND } from "../brand";
+import { ProductDetailPage } from "./ProductDetailPage";
 
 interface Props { isOpen: boolean; onClose: () => void; onNavigate: (category: "creditCard" | "loan" | "invest" | "rewards") => void; onOpenBankingApp?: () => void }
 
@@ -142,48 +143,17 @@ function AccountCard({ acct, onApply, onDetails }: { acct: Account; onApply: (na
 function AccountDetailModal({ acct, onClose, onApply }: { acct: Account; onClose: () => void; onApply: (name: string, price: string) => void }) {
   const currency = useCurrency();
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center p-5" style={{ background: "rgba(15,30,20,0.55)" }} onClick={onClose}>
-      <div className="relative bg-surface max-w-lg w-full max-h-[88vh] overflow-y-auto rounded-2xl p-8 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-        <button onClick={onClose} className="absolute top-4 right-4 w-8 h-8 rounded-full bg-surface-2 border border-line flex items-center justify-center text-fg-muted hover:bg-surface-2" aria-label="Close">
-          <X className="w-4 h-4" />
-        </button>
-
-        <span className="w-12 h-12 rounded-full flex items-center justify-center mb-4" style={{ background: acct.iconBg, color: acct.iconColor }}>{acct.icon}</span>
-        <h3 className="text-2xl font-black mb-3" style={{ color: "var(--vk-crimson-text)" }}>{acct.name}</h3>
-        <blockquote className="italic text-fg-muted text-[15px] leading-relaxed mb-5 pl-4" style={{ borderLeft: `3px solid ${ORANGE}` }}>
-          &ldquo;{acct.marketingMessage}&rdquo;
-        </blockquote>
-
-        <div className="flex items-baseline gap-2 mb-5 pb-5 border-b border-line">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-fg-muted">Best for</span>
-          <span className="text-sm font-semibold text-fg">{acct.targetCustomer}</span>
-        </div>
-
-        <p className="text-sm font-bold text-fg mb-3">
-          {acct.inheritsFrom ? <>Everything in <span style={{ color: "var(--vk-crimson-text)" }}>{acct.inheritsFrom}</span>, plus:</> : "Exclusive mobile app features"}
-        </p>
-        <ul className="grid sm:grid-cols-2 gap-x-4 gap-y-2 mb-6">
-          {acct.appFeatures.map(f => (
-            <li key={f} className="flex items-start gap-2 text-[12.8px] text-fg-muted">
-              <CheckCircle2 className="w-3.5 h-3.5 shrink-0 mt-0.5" style={{ color: ORANGE }} />
-              <span>{f}</span>
-            </li>
-          ))}
-        </ul>
-
-        <div className="flex items-center justify-between pt-5 border-t border-line">
-          <div>
-            <div className="text-2xl font-black text-fg">{formatZAR(acct.priceZAR)}<span className="text-sm font-medium text-fg-muted">{acct.priceSub}</span></div>
-            {currency.country.code !== "ZAR" && (
-              <p className="text-[11px] text-fg-muted mt-1">Estimated in {currency.country.name} — you'll be billed {acct.price}{acct.priceSub} in South African Rand.</p>
-            )}
-          </div>
-          <button onClick={() => onApply(acct.name, acct.price)} className="px-7 py-3 rounded-full text-white text-sm font-bold" style={{ background: ORANGE }}>
-            Apply Now
-          </button>
-        </div>
-      </div>
-    </div>
+    <ProductDetailPage
+      detail={{
+        eyebrow: "Personal Banking · Accounts", name: acct.name, tagline: acct.marketingMessage,
+        price: { value: formatZAR(acct.priceZAR), label: acct.priceSub.replace(/^\s*\/?\s*/, "per ") },
+        extra: currency.country.code !== "ZAR" ? `Estimated in ${currency.country.name}. You'll be billed ${acct.price}${acct.priceSub} in South African Rand.` : undefined,
+        featuresHead: acct.inheritsFrom ? `Everything in ${acct.inheritsFrom}, plus` : "Exclusive mobile app features",
+        features: acct.appFeatures, idealHead: "Best for", idealFor: [acct.targetCustomer], backLabel: "Back to all personal accounts",
+      }}
+      onBack={onClose}
+      onApply={() => onApply(acct.name, acct.price)}
+    />
   );
 }
 

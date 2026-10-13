@@ -5,6 +5,7 @@ import { Footer } from "./Footer";
 import siteHeroBg from "../../imports/assets/site-hero-bg.webp";
 import vinkCorporateTrain from "../../imports/VinkCorporateTrain.webp";
 import { SECTIONS, type CardData, type CorpCategory } from "./corporateProducts";
+import { ProductDetailPage, type ProductDetail } from "./ProductDetailPage";
 
 type NavItem = "Account" | "Solutions & Credit Cards" | "Loan" | "Social Responsibility";
 
@@ -85,43 +86,16 @@ function ProductCard({
   );
 }
 
-function AccountDetailModal({ card, folio, onClose, onApply }: { card: CardData; folio: string; onClose: () => void; onApply: (name: string) => void }) {
-  return (
-    <div className="pav-detail-backdrop" onClick={onClose}>
-      <div className="pav-detail-card" onClick={(e) => e.stopPropagation()}>
-        <button className="pav-detail-close" onClick={onClose} aria-label="Close"><X className="w-4 h-4" /></button>
-        <div className="pav-detail-folio">Folio No.&nbsp;{folio}</div>
-        <h3 className="pav-detail-name">{card.name}</h3>
-        <p className="pav-detail-tagline">{card.tagline}</p>
-        <p className="pav-detail-desc">{card.overview}</p>
-        {card.stat && <p className="pav-detail-stat"><span>{card.stat.label}</span><strong>{card.stat.value}</strong></p>}
-        <div className="pav-detail-features-head">
-          {card.inheritsFrom ? <>Everything in <strong>{card.inheritsFrom}</strong>, plus:</> : "Key Benefits"}
-        </div>
-        <ul className="pav-detail-features">
-          {card.features.map((f) => <li key={f}>{f}</li>)}
-        </ul>
-        {card.idealFor && (
-          <>
-            <div className="pav-detail-features-head">Ideal For</div>
-            <ul className="pav-detail-features" style={{ marginBottom: 28 }}>
-              {card.idealFor.map((f) => <li key={f}>{f}</li>)}
-            </ul>
-          </>
-        )}
-        {card.groups?.map((g) => (
-          <div key={g.head}>
-            <div className="pav-detail-features-head">{g.head}</div>
-            {g.ordered
-              ? <ol className="pav-detail-list pav-detail-list-num">{g.items.map((i) => <li key={i}>{i}</li>)}</ol>
-              : <ul className="pav-detail-list">{g.items.map((i) => <li key={i}>{i}</li>)}</ul>}
-          </div>
-        ))}
-        {card.note && <p className="pav-detail-note">{card.note}</p>}
-        <button className="pav-btn pav-btn-primary" onClick={() => onApply(card.name)}>Apply now</button>
-      </div>
-    </div>
-  );
+/** What the full-page details of a corporate card show. */
+function toDetail(card: CardData, folio: string, copy: { heading: string; tag: string }): ProductDetail {
+  return {
+    eyebrow: copy.tag, name: card.name, tagline: card.tagline, overview: card.overview, folio, featured: card.featured,
+    price: card.price && !card.stat ? { value: card.price, label: "per month" } : undefined,
+    stat: card.stat,
+    featuresHead: card.inheritsFrom ? `Everything in ${card.inheritsFrom}, plus` : "Key benefits",
+    features: card.features, idealFor: card.idealFor, groups: card.groups, note: card.note,
+    backLabel: `Back to ${copy.heading.toLowerCase()}`,
+  };
 }
 
 export function CorporateProductLedgerViewer({ isOpen, onClose, initialCategory, onNavigate, onOpenApp }: Props) {
@@ -244,30 +218,7 @@ export function CorporateProductLedgerViewer({ isOpen, onClose, initialCategory,
         .pav-btn-secondary{ background:transparent; color:var(--vk-crimson-text); border-color:var(--pav-rule); }
         .pav-btn-secondary:hover{ background:var(--pav-paper-dim); border-color:var(--pav-gold-dim); }
 
-        /* ── Account detail modal ── */
-        .pav-detail-backdrop{ position:fixed; inset:0; z-index:70; background:rgba(29,23,64,0.55); display:flex; align-items:center; justify-content:center; padding:20px; }
-        .pav-detail-card{ position:relative; background:var(--vk-surface); max-width:640px; width:100%; max-height:calc(100vh - 150px); overflow-y:auto; border-radius:4px; padding:40px 36px 32px; box-shadow:0 30px 80px rgba(29,23,64,0.35); }
-        .pav-detail-close{ position:absolute; top:16px; right:16px; width:32px; height:32px; border-radius:50%; background:var(--pav-paper); color:var(--vk-crimson-text); border:1px solid var(--pav-rule); display:flex; align-items:center; justify-content:center; cursor:pointer; }
-        .pav-detail-close:hover{ background:var(--pav-paper-dim); }
-        .pav-detail-folio{ font-family:var(--font-mono); font-size:11px; color:var(--pav-gold-dim); letter-spacing:0.04em; margin-bottom:10px; }
-        .pav-detail-name{ font-family:var(--font-display); font-weight:500; font-size:26px; margin:0 0 8px; letter-spacing:-0.01em; color:var(--vk-crimson-text); }
-        .pav-detail-tagline{ font-family:var(--font-display); font-style:italic; font-size:15px; color:var(--pav-plum); margin:0 0 20px; }
-        .pav-detail-desc{ font-size:13.5px; line-height:1.7; color:var(--pav-ink-soft); margin:0 0 26px; padding-bottom:26px; border-bottom:1px solid var(--pav-rule); }
-        .pav-detail-features-head{ font-size:13px; font-weight:600; color:var(--vk-crimson-text); margin-bottom:12px; }
-        .pav-detail-features-head strong{ color:var(--pav-plum); }
-        .pav-detail-features{ list-style:none; margin:0 0 28px; padding:0; display:grid; grid-template-columns:1fr 1fr; gap:8px 16px; }
-        .pav-detail-features li{ font-size:12.8px; color:var(--pav-ink-soft); line-height:1.5; padding-left:16px; position:relative; }
-        .pav-detail-features li::before{ content:"✓"; position:absolute; left:0; color:var(--pav-gold-dim); font-weight:600; }
-        @media (max-width:480px){ .pav-detail-features{ grid-template-columns:1fr; } }
         .pav-price-text{ font-size:17px; line-height:1.3; }
-        .pav-detail-stat{ display:flex; flex-direction:column; gap:2px; margin:-8px 0 24px; font-size:12.5px; color:var(--pav-text-muted); }
-        .pav-detail-stat strong{ font-size:15px; color:var(--vk-crimson-text); }
-        .pav-detail-list{ list-style:none; margin:0 0 24px; padding:0; display:flex; flex-direction:column; gap:7px; counter-reset:pav-n; }
-        .pav-detail-list li{ font-size:12.8px; color:var(--pav-ink-soft); line-height:1.55; padding-left:18px; position:relative; }
-        .pav-detail-list li::before{ content:"—"; position:absolute; left:0; color:var(--pav-gold-dim); }
-        .pav-detail-list-num li{ counter-increment:pav-n; padding-left:24px; }
-        .pav-detail-list-num li::before{ content:counter(pav-n) "."; font-weight:600; }
-        .pav-detail-note{ font-size:11.5px; line-height:1.6; color:var(--pav-text-muted); margin:4px 0 24px; padding-top:16px; border-top:1px solid var(--pav-rule); }
 
         .pav-foot{ background:var(--pav-panel); color:var(--pav-text-muted-on-ink); padding:34px 0; font-size:12px; line-height:1.7; font-family:var(--font-mono); margin-top:24px; }
         .pav-foot .pav-wrap{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
@@ -351,11 +302,10 @@ export function CorporateProductLedgerViewer({ isOpen, onClose, initialCategory,
       )}
 
       {detailCard && (
-        <AccountDetailModal
-          card={detailCard.card}
-          folio={detailCard.folio}
-          onClose={() => setDetailCard(null)}
-          onApply={(name) => { setDetailCard(null); handleApply(name); }}
+        <ProductDetailPage
+          detail={toDetail(detailCard.card, detailCard.folio, copy)}
+          onBack={() => setDetailCard(null)}
+          onApply={() => { const n = detailCard.card.name; setDetailCard(null); handleApply(n); }}
         />
       )}
     </div>

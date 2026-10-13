@@ -2,6 +2,7 @@ import { useState } from "react";
 import { X } from "lucide-react";
 import { ApplyModal } from "./ApplyModal";
 import { Footer } from "./Footer";
+import { ProductDetailPage } from "./ProductDetailPage";
 
 interface Props { isOpen: boolean; onClose: () => void; onNavigate: (item: string) => void }
 
@@ -24,7 +25,7 @@ function parsePrice(price: string): number {
   return parseInt(price.replace(/[R,]/g, ""), 10);
 }
 
-function CountryCard({ c, folio, maxPrice, onApply }: { c: Country; folio: string; maxPrice: number; onApply: (country: string) => void }) {
+function CountryCard({ c, folio, maxPrice, onApply, onMore }: { c: Country; folio: string; maxPrice: number; onApply: (country: string) => void; onMore: () => void }) {
   const pct = Math.max(4, (parsePrice(c.price) / maxPrice) * 100);
   return (
     <div className="pav-card">
@@ -48,7 +49,7 @@ function CountryCard({ c, folio, maxPrice, onApply }: { c: Country; folio: strin
       </div>
       <div className="pav-cta-group">
         <button className="pav-btn pav-btn-primary" onClick={() => onApply(c.name)}>Apply now</button>
-        <button className="pav-btn pav-btn-primary" onClick={() => onApply(c.name)}>Tell me more</button>
+        <button className="pav-btn pav-btn-primary" onClick={onMore}>Tell me more</button>
       </div>
     </div>
   );
@@ -56,6 +57,7 @@ function CountryCard({ c, folio, maxPrice, onApply }: { c: Country; folio: strin
 
 export function StartMyBusinessViewer({ isOpen, onClose, onNavigate }: Props) {
   const [applyCountry, setApplyCountry] = useState<string | null>(null);
+  const [more, setMore] = useState<{ c: Country; folio: string } | null>(null);
   if (!isOpen) return null;
 
   const all = [...ROW1, ...ROW2];
@@ -215,10 +217,10 @@ export function StartMyBusinessViewer({ isOpen, onClose, onNavigate }: Props) {
           </div>
 
           <div className="pav-grid">
-            {ROW1.map((c, i) => <CountryCard key={c.name} c={c} folio={String(i + 1).padStart(2, "0")} maxPrice={maxPrice} onApply={setApplyCountry} />)}
+            {ROW1.map((c, i) => <CountryCard key={c.name} c={c} folio={String(i + 1).padStart(2, "0")} maxPrice={maxPrice} onApply={setApplyCountry} onMore={() => setMore({ c, folio: String(i + 1).padStart(2, "0") })} />)}
           </div>
           <div className="pav-grid">
-            {ROW2.map((c, i) => <CountryCard key={c.name} c={c} folio={String(i + 4).padStart(2, "0")} maxPrice={maxPrice} onApply={setApplyCountry} />)}
+            {ROW2.map((c, i) => <CountryCard key={c.name} c={c} folio={String(i + 4).padStart(2, "0")} maxPrice={maxPrice} onApply={setApplyCountry} onMore={() => setMore({ c, folio: String(i + 4).padStart(2, "0") })} />)}
           </div>
 
           <div className="pav-tc">
@@ -230,6 +232,14 @@ export function StartMyBusinessViewer({ isOpen, onClose, onNavigate }: Props) {
       </section>
 
       <Footer />
+
+      {more && (
+        <ProductDetailPage
+          detail={{ eyebrow: "Business Banking · Start My Business", name: `Register your business in ${more.c.name}`, folio: more.folio, featured: more.c.featured, price: { value: more.c.price, label: "once-off registration fee" }, featuresHead: "What is included", features: more.c.features, backLabel: "Back to all countries", applyLabel: "Start registration" }}
+          onBack={() => setMore(null)}
+          onApply={() => { const n = more.c.name; setMore(null); setApplyCountry(n); }}
+        />
+      )}
 
       {applyCountry && (
         <ApplyModal

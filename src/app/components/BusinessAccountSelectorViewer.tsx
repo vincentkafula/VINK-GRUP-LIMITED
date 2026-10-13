@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 import { Footer } from "./Footer";
+import { ProductDetailPage, type ProductDetail } from "./ProductDetailPage";
 
 type NavItem = "Start My Business" | "Accounts" | "Credit Cards" | "Loans" | "Invest" | "Manage My Business";
 
@@ -67,24 +68,10 @@ const ACCOUNTS: { name: string; desc: string; tagline: string; description: stri
 
 type BizAccount = (typeof ACCOUNTS)[number];
 
-function AccountDetailModal({ acct, folio, onClose, onApply }: { acct: BizAccount; folio: string; onClose: () => void; onApply: (name: string) => void }) {
-  return (
-    <div className="pav-detail-backdrop" onClick={onClose}>
-      <div className="pav-detail-card" onClick={(e) => e.stopPropagation()}>
-        <button className="pav-detail-close" onClick={onClose} aria-label="Close"><X className="w-4 h-4" /></button>
-        <div className="pav-detail-folio">Folio No.&nbsp;{folio}</div>
-        <h3 className="pav-detail-name">{acct.name}</h3>
-        <p className="pav-detail-tagline">{acct.tagline}</p>
-        <p className="pav-detail-desc">{acct.description}</p>
-        <div className="pav-detail-features-head">Perfect for:</div>
-        <ul className="pav-detail-features">
-          {acct.perfectFor.map((f) => <li key={f}>{f}</li>)}
-        </ul>
-        <button className="pav-btn" onClick={() => onApply(acct.name)}>Apply now</button>
-      </div>
-    </div>
-  );
-}
+const toDetail = (a: BizAccount, folio: string): ProductDetail => ({
+  eyebrow: "Business Banking · Accounts", name: a.name, tagline: a.tagline, overview: a.description, folio,
+  idealHead: "Perfect for", idealFor: a.perfectFor, backLabel: "Back to all business accounts",
+});
 
 export function BusinessAccountSelectorViewer({ isOpen, onClose, onNavigate, onApply, onOpenApp }: Props) {
   const [detailAccount, setDetailAccount] = useState<{ acct: BizAccount; folio: string } | null>(null);
@@ -172,20 +159,6 @@ export function BusinessAccountSelectorViewer({ isOpen, onClose, onNavigate, onA
         .pav-foot .pav-wrap{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
         .pav-foot strong{ color:var(--pav-accent-on-ink); font-weight:600; }
 
-        /* ── Account detail modal ── */
-        .pav-detail-backdrop{ position:fixed; inset:0; z-index:70; background:rgba(29,23,64,0.55); display:flex; align-items:center; justify-content:center; padding:20px; }
-        .pav-detail-card{ position:relative; background:var(--vk-surface); max-width:540px; width:100%; max-height:88vh; overflow-y:auto; border-radius:4px; padding:40px 36px 32px; box-shadow:0 30px 80px rgba(29,23,64,0.35); }
-        .pav-detail-close{ position:absolute; top:16px; right:16px; width:32px; height:32px; border-radius:50%; background:var(--pav-paper); color:var(--vk-crimson-text); border:1px solid var(--pav-rule); display:flex; align-items:center; justify-content:center; cursor:pointer; }
-        .pav-detail-close:hover{ background:var(--pav-paper-dim); }
-        .pav-detail-folio{ font-family:var(--font-mono); font-size:11px; color:var(--pav-gold-dim); letter-spacing:0.04em; margin-bottom:10px; }
-        .pav-detail-name{ font-family:var(--font-display); font-weight:500; font-size:26px; margin:0 0 8px; letter-spacing:-0.01em; }
-        .pav-detail-tagline{ font-family:var(--font-display); font-style:italic; font-size:15px; color:var(--pav-plum); margin:0 0 20px; }
-        .pav-detail-desc{ font-size:13.5px; line-height:1.7; color:var(--pav-ink-soft); margin:0 0 26px; padding-bottom:26px; border-bottom:1px solid var(--pav-rule); }
-        .pav-detail-features-head{ font-size:13px; font-weight:600; color:var(--vk-crimson-text); margin-bottom:12px; }
-        .pav-detail-features{ list-style:none; margin:0 0 28px; padding:0; display:grid; grid-template-columns:1fr 1fr; gap:8px 16px; }
-        .pav-detail-features li{ font-size:12.8px; color:var(--pav-ink-soft); line-height:1.5; padding-left:16px; position:relative; }
-        .pav-detail-features li::before{ content:"✓"; position:absolute; left:0; color:var(--pav-gold-dim); font-weight:600; }
-        @media (max-width:480px){ .pav-detail-features{ grid-template-columns:1fr; } }
 
         @media (max-width:900px){ .pav-grid{ grid-template-columns:1fr; } }
         @media (prefers-reduced-motion:reduce){ .pav-root *{ transition:none !important; } }
@@ -250,11 +223,10 @@ export function BusinessAccountSelectorViewer({ isOpen, onClose, onNavigate, onA
       <Footer />
 
       {detailAccount && (
-        <AccountDetailModal
-          acct={detailAccount.acct}
-          folio={detailAccount.folio}
-          onClose={() => setDetailAccount(null)}
-          onApply={(name) => { setDetailAccount(null); onApply(name); }}
+        <ProductDetailPage
+          detail={toDetail(detailAccount.acct, detailAccount.folio)}
+          onBack={() => setDetailAccount(null)}
+          onApply={() => { const n = detailAccount.acct.name; setDetailAccount(null); onApply(n); }}
         />
       )}
     </div>
