@@ -1,7 +1,7 @@
 /**
  * Every product a visitor can apply for, by section. The application form lists the products of the section the visitor picks (Personal, Business or
  * Corporate), grouped as the product pages group them. The names are the ones on the product pages; productCatalog.test.ts checks that this list still
- * matches those pages, so a product added to a page cannot be missing from the form.
+ * matches those pages, so a product added to a page cannot be missing from the form. (Insurance has no product page yet, so it is the one group the test does not compare.)
  */
 export type Segment = "Personal" | "Business" | "Corporate";
 export interface ProductGroup { group: string; products: string[] }
@@ -11,6 +11,7 @@ export const SEGMENTS: readonly Segment[] = ["Personal", "Business", "Corporate"
 export const CATALOG: Record<Segment, ProductGroup[]> = {
   Personal: [
     { group: "Accounts", products: ["Spark Account", "Anchor Account", "Momentum Account", "Horizon Account", "Summit Account", "Legacy Account"] },
+    { group: "Insurance", products: ["Life Insurance", "Funeral Cover", "Vehicle Insurance"] },
     { group: "Credit cards", products: ["Pulse Card", "Nova Card", "Orbit Card", "Elevate Card", "Apex Card", "Vertex Card"] },
     { group: "Loans", products: ["LifeAdvance", "FlexiLoan", "HorizonLoan", "SwiftCash", "DreamFund", "ElevateLoan"] },
     { group: "Investments", products: ["NovaWealth", "HorizonPlus", "ProsperNest", "InfinityGrowth", "Evergreen Portfolio", "LegacyBuilder"] },

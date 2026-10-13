@@ -4,7 +4,7 @@ import { Footer } from "./Footer";
 import { usePageTitle } from "./ds";
 import { applicationsApi, otpApi, type AppTier } from "../services/applicationsApi";
 import { openSignIn } from "../services/signIn";
-import { CATALOG, SEGMENTS, allProducts, productValue, splitProduct, type Segment } from "../data/productCatalog";
+import { CATALOG, SEGMENTS, type Segment } from "../data/productCatalog";
 
 /**
  * The application form that opens from "Start Now": register, take a photo (optional), confirm details, business and driver details, a phone code, done.
@@ -159,7 +159,7 @@ export function ApplicationFlowViewer({ isOpen, onClose }: Props) {
   const name = cap((form.fn || "").trim()) || "there";
 
   const go = useCallback((s: Step) => { setErrs({}); setStep(s); scroller.current?.scrollTo?.({ top: 0 }); }, []);
-  const set = (k: keyof Personal) => (v: string) => { setForm((f) => { const n = { ...f, [k]: v }; if (k === "type") { n.acct = ""; n.clear = ""; } return n; }); setErrs((e) => ({ ...e, [k]: "" })); };
+  const set = (k: keyof Personal) => (v: string) => { setForm((f) => { const n = { ...f, [k]: v }; if (k === "type") { n.acct = ""; n.clear = ""; } if (k === "acct") n.clear = ""; return n; }); setErrs((e) => ({ ...e, [k]: "" })); };
 
   // a saved draft on this device, for "Saved application"
   useEffect(() => {
@@ -171,7 +171,8 @@ export function ApplicationFlowViewer({ isOpen, onClose }: Props) {
   // ── validation ──
   const checkPersonal = () => {
     const e: Record<string, string> = {};
-    if (!form.clear) e.prod = "Select a product";
+    if (!form.acct) e.acct = "Select a category";
+    if (!form.clear) e.clear = "Select a product";
     if (!form.country) e.country = "Select your country of birth";
     if (!form.idn.trim()) e.idn = "Enter your identity number";
     if (!form.fn.trim()) e.fn = "Enter your first name";
@@ -300,9 +301,8 @@ export function ApplicationFlowViewer({ isOpen, onClose }: Props) {
     <>
       <Section>Product selection</Section>
       <SelectField id="a-type" label="I am applying as" value={form.type} onChange={set("type")} options={[...SEGMENTS]} />
-      <SelectField id="a-prod" label="Product" value={form.acct && form.clear ? productValue(form.acct, form.clear) : ""} onChange={(v) => { const x = splitProduct(v); setForm((f) => ({ ...f, acct: x?.group ?? "", clear: x?.product ?? "" })); setErrs((e) => ({ ...e, prod: "" })); }}
-        groups={CATALOG[form.type as Segment].map((g) => ({ label: g.group, options: g.products.map((p) => ({ value: productValue(g.group, p), label: p })) }))} placeholder="Choose a product" error={errs.prod}
-        hint={`${allProducts(form.type as Segment).length} ${form.type} products to choose from`} />
+      <SelectField id="a-acct" label="Category" value={form.acct} onChange={set("acct")} options={CATALOG[form.type as Segment].map((g) => g.group)} placeholder="Account, investment, loan…" error={errs.acct} />
+      <SelectField id="a-clear" label="Product" value={form.clear} onChange={set("clear")} options={CATALOG[form.type as Segment].find((g) => g.group === form.acct)?.products ?? []} placeholder={form.acct ? "Choose a product" : "Choose a category first"} error={errs.clear} />
       <Section>Personal information</Section>
       <SelectField id="a-country" label="Country of birth" value={form.country} onChange={set("country")} options={COUNTRIES} placeholder="Country of birth" error={errs.country} />
       <Field id="a-idn" label="Identity number" value={form.idn} onChange={set("idn")} error={errs.idn} mode="numeric" placeholder="Your identity number" />
@@ -332,8 +332,7 @@ export function ApplicationFlowViewer({ isOpen, onClose }: Props) {
             {step === "start" && (
               <section className="flex min-h-[56vh] flex-col justify-center text-center">
                 <span className="mx-auto mb-5 inline-flex size-16 items-center justify-center rounded-3xl text-white" style={{ background: "linear-gradient(145deg,#e8405b,#c8102e 55%,#970f27)", boxShadow: "0 18px 30px -14px rgba(200,16,46,0.8)" }}><ShieldCheck className="size-8" aria-hidden="true" /></span>
-                <h2 className="font-display text-[34px] font-semibold leading-tight tracking-[-0.01em]">VINK Application</h2>
-                <p className="mb-2 mt-3 text-[16px] text-fg-muted">Apply in a few simple steps.</p>
+                <p className="mb-2 text-[18px] text-fg-muted">Apply in a few simple steps.</p>
                 <ul className="mx-auto mt-4 grid gap-2 text-left text-[14px] text-fg-muted">
                   {["Takes about five minutes", "Your details stay private", "A one-time code confirms your phone"].map((t) => <li key={t} className="flex items-center gap-2"><CheckCircle2 className="size-4 shrink-0 text-crimson-text" aria-hidden="true" />{t}</li>)}
                 </ul>

@@ -4,7 +4,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { act } from "react";
 import { ApplicationFlowViewer } from "./ApplicationFlowViewer";
 import { startApplication } from "../services/startApplication";
-import { CATALOG, SEGMENTS, allProducts } from "../data/productCatalog";
+import { CATALOG, SEGMENTS } from "../data/productCatalog";
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 let root: Root, host: HTMLElement, calls: { url: string; body: Record<string, unknown> }[], goodCode: string;
@@ -33,7 +33,7 @@ const setv = async (id: string, v: string) => {
 const heading = () => [...host.querySelectorAll("h1, h2")].pop()!.textContent;      // the step heading comes after the page title
 const text = () => host.textContent!;
 const fillPersonal = async (type = "Personal") => {
-  await setv("a-type", type); await setv("a-prod", type === "Business" ? "Accounts::Launch Business Account" : "Accounts::Spark Account"); await setv("a-country", "South Africa");
+  await setv("a-type", type); await setv("a-acct", "Accounts"); await setv("a-clear", type === "Business" ? "Launch Business Account" : "Spark Account"); await setv("a-country", "South Africa");
   await setv("a-idn", "9001015009087"); await setv("a-fn", "thandi"); await setv("a-ln", "Mokoena"); await setv("a-em", "thandi@example.com"); await setv("a-cell", "0821234567"); await setv("a-addr", "12 Long Street, Cape Town");
 };
 const toDriver = async () => { await click("Start"); await click("New application"); await fillPersonal(); await click("Let's continue"); await click("Without facial"); await click("Let's continue"); };
@@ -56,27 +56,33 @@ describe("the application form that Start Now opens", () => {
   });
 
   it("starts on the welcome card, then offers a new or a saved application and the main sign-in", async () => {
-    await render(); expect(heading()).toBe("VINK Application"); expect(text()).toContain("Apply in a few simple steps.");
+    await render(); expect(text()).toContain("Apply in a few simple steps."); expect(text()).not.toContain("VINK Application");      // the welcome card has no title
     await click("Start"); expect(btn("New application")).toBeTruthy(); expect(btn("Saved application")).toBeTruthy();
     const asked = vi.fn(); window.addEventListener("vink:open-login", asked); await click("Login"); window.removeEventListener("vink:open-login", asked); expect(asked).toHaveBeenCalledTimes(1);
   });
 
   it("asks for every required detail, with a message under each empty field", async () => {
     await render(); await click("Start"); await click("New application"); await click("Let's continue");
-    for (const m of ["Select a product", "Select your country of birth", "Enter your identity number", "Enter your first name", "Enter your last name", "Enter a valid email address", "Enter a valid cell number", "Enter your residential address"]) expect(text()).toContain(m);
+    for (const m of ["Select a category", "Select a product", "Select your country of birth", "Enter your identity number", "Enter your first name", "Enter your last name", "Enter a valid email address", "Enter a valid cell number", "Enter your residential address"]) expect(text()).toContain(m);
     expect(heading()).toBe("Register");
   });
 
-  it("lists every product of the section chosen, grouped as the product pages group them, and clears the choice when the section changes", async () => {
+  it("asks first for Personal, Business or Corporate, then the category (account, insurance, investment…), then the product of that category", async () => {
     await render(); await click("Start"); await click("New application");
-    const groups = () => [...(host.querySelector("#a-prod") as HTMLSelectElement).querySelectorAll("optgroup")].map((g) => [g.label, [...g.querySelectorAll("option")].map((o) => o.text)] as const);
+    const opts = (id: string) => [...(host.querySelector("#" + id) as HTMLSelectElement).options].map((o) => o.text);
+    const order = [...host.querySelectorAll("select")].map((x) => x.id).slice(0, 3); expect(order).toEqual(["a-type", "a-acct", "a-clear"]);
+    expect(opts("a-type")).toEqual(["Personal", "Business", "Corporate"]);
     for (const seg of SEGMENTS) {
       await setv("a-type", seg);
-      expect(groups()).toEqual(CATALOG[seg].map((g) => [g.group, g.products]));
-      expect(text()).toContain(`${allProducts(seg).length} ${seg} products to choose from`);
+      expect(opts("a-acct")).toEqual(["Account, investment, loan…", ...CATALOG[seg].map((g) => g.group)]);
+      expect(opts("a-clear")).toEqual(["Choose a category first"]);
+      for (const g of CATALOG[seg]) { await setv("a-acct", g.group); expect(opts("a-clear")).toEqual(["Choose a product", ...g.products]); }
     }
-    await setv("a-type", "Personal"); await setv("a-prod", "Credit cards::Pulse Card"); expect((host.querySelector("#a-prod") as HTMLSelectElement).value).toBe("Credit cards::Pulse Card");
-    await setv("a-type", "Corporate"); expect((host.querySelector("#a-prod") as HTMLSelectElement).value).toBe("");
+    expect(opts("a-acct")).not.toContain("Insurance");                                          // Corporate has no insurance
+    await setv("a-type", "Personal"); expect(opts("a-acct")).toContain("Insurance");
+    await setv("a-acct", "Insurance"); expect(opts("a-clear")).toEqual(["Choose a product", "Life Insurance", "Funeral Cover", "Vehicle Insurance"]);
+    await setv("a-clear", "Funeral Cover"); await setv("a-acct", "Loans"); expect((host.querySelector("#a-clear") as HTMLSelectElement).value).toBe("");      // a new category clears the product
+    await setv("a-type", "Corporate"); expect((host.querySelector("#a-acct") as HTMLSelectElement).value).toBe("");
   });
 
   it("takes a personal application through the camera choice, the driver details and the phone code, then submits it for real", async () => {
