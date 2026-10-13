@@ -84,7 +84,7 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
           <h1 className="font-display text-4xl font-bold leading-tight md:text-6xl">About VINK</h1>
           <p className="mt-2 text-lg font-medium text-white/90 md:text-xl">Vink Group (Pty) Ltd, trading as VINK</p>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-white/85 md:text-lg">
-            We aim to be Southern Africa&apos;s first transport-native digital bank, built by a Cape Town native for the 15 million South Africans who board a minibus taxi every morning.
+            We aim to be Southern Africa&apos;s first transport-native digital bank, built by an African native for the 15 million South Africans who board a minibus taxi every morning.
           </p>
           <dl className="mx-auto mt-10 grid w-full max-w-4xl grid-cols-2 gap-3 text-center sm:grid-cols-4">
             {STATS.map((s) => (
@@ -121,7 +121,7 @@ export function AboutVINKViewer({ isOpen, onClose }: Props) {
           <div className="mx-auto flex max-w-4xl flex-col gap-6 text-center">
             <div className="space-y-4 rounded-3xl border border-line bg-surface p-8 shadow-card md:p-10">
               <p className="leading-relaxed">
-                VINK was founded in 2018 in Cape Town by <strong>Vincent Kafula</strong>, a Cape Town native with deep roots in the public transport industry. Vincent saw a gap that no bank or fintech had filled: a payment system fast enough for the taxi industry, where 15 million South Africans board a minibus every single morning. He set out to build one.
+                VINK was founded in 2018 in Cape Town by <strong>Vincent Kafula</strong>, an African native with deep roots in the public transport industry. Vincent saw a gap that no bank or fintech had filled: a payment system fast enough for the taxi industry, where 15 million South Africans board a minibus every single morning. He set out to build one.
               </p>
               <p className="leading-relaxed">
                 VINK began from a simple observation: sitting in a taxi, it is hard for drivers to collect fares and to give change, especially in the morning. Drivers also depend on each fare to buy fuel and keep working. We are building a system that pays them within seconds, works on every route, and serves everyone, not just people with traditional banking histories.
