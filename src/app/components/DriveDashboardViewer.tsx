@@ -1155,7 +1155,7 @@ export function DriveDashboardViewer({ isOpen, onClose, driverName = "Driver" }:
   };
 
   return (
-    <div className="fixed inset-0 z-[110] min-h-screen bg-bg flex" style={{ fontFamily: "var(--font-sans)" }}>
+    <div data-dashboard className="fixed inset-0 z-[110] min-h-screen bg-bg flex" style={{ fontFamily: "var(--font-sans)" }}>
       <GlobalStyles />
       <Sidebar view={view} setView={setView} mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} deviceOn={deviceOn} onClose={onClose} />
       <div className="flex-1 min-w-0 overflow-y-auto">

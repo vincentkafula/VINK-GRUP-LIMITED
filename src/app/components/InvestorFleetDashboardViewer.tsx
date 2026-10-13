@@ -245,7 +245,7 @@ export function InvestorFleetDashboardViewer({ isOpen, onClose, investorName = "
   const bsBalanced = Math.abs(f.totalAssets - (f.totalLiabilities + f.totalEquity)) < 1;
 
   return (
-    <div className="fixed inset-0 z-[110] flex bg-bg" style={{ fontFamily: "var(--font-sans)" }}>
+    <div data-dashboard className="fixed inset-0 z-[110] flex bg-bg" style={{ fontFamily: "var(--font-sans)" }}>
       {/* Sidebar */}
       <aside className="w-64 shrink-0 flex flex-col p-4 overflow-y-auto" style={{ background: `linear-gradient(190deg,${NAVY_900},${NAVY_950})` }}>
         <div className="flex items-center gap-2.5 px-2 pb-4">

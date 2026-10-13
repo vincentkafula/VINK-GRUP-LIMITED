@@ -550,7 +550,7 @@ function GenericScreen({ id, user }: { id: string; user: MgmtUser }) {
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {list.map((item, i) => (
             <button key={i} className="flex items-center gap-3 p-4 rounded-xl text-left hover:bg-white/5 transition-all border group"
-              style={{ background: DEEP, borderColor: "#344054" }}>
+              style={{ background: "rgba(60,0,10,0.32)", borderColor: "rgba(255,255,255,0.24)" }}>
               <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform"
                 style={{ background: P + "25", color: "var(--vk-crimson-text)" }}>
                 {nav?.icon}
@@ -594,7 +594,7 @@ function DashboardShell({ user, onLogout }: { user: MgmtUser; onLogout: () => vo
   const currentNav = ALL_NAV.find(n => n.id === activeScreen);
 
   return (
-    <div className="flex-1 flex overflow-hidden" style={{ background: NAVY }}>
+    <div className="flex-1 flex overflow-hidden" style={{ background: "transparent" }}>
       {/* Sidebar */}
       <div className={`flex-shrink-0 flex flex-col transition-all duration-200 border-r ${sidebarOpen ? "w-56" : "w-14"}`}
         style={{ background: DEEP, borderColor: "#344054" }}>
@@ -699,14 +699,14 @@ export function ManagementHub({ isOpen, onClose }: Props) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col" style={{ background: NAVY }}>
+    <div data-dashboard className="fixed inset-0 z-50 flex flex-col" style={{ background: NAVY }}>
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-3 border-b flex-shrink-0"
         style={{ background: DEEP, borderColor: "#344054" }}>
         <div className="flex items-center gap-2">
-          <Shield className="w-5 h-5" style={{ color: "var(--vk-crimson-text)" }} />
+          <Shield className="w-5 h-5 text-white" />
           <p className="text-white font-black text-sm">VINK Management Hub</p>
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full ml-1" style={{ background: RED + "25", color: RED }}>
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full ml-1" style={{ background: "rgba(255,255,255,0.22)", color: "#fff" }}>
             🔒 SECURE
           </span>
         </div>

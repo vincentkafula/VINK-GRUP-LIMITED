@@ -101,7 +101,7 @@ export function TaxiAssociationDashboardViewer({ isOpen, onClose }: Props) {
   });
 
   return (
-    <div className="fixed inset-0 z-[110] flex bg-surface-2">
+    <div data-dashboard className="fixed inset-0 z-[110] flex bg-surface-2">
       {/* Sidebar */}
       <aside className={`${sidebarOpen ? "w-64" : "w-0 overflow-hidden"} shrink-0 flex flex-col transition-all duration-200`} style={{ background: NAVY }}>
         <div className="flex items-center gap-2.5 px-5 py-5">

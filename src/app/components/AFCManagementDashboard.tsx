@@ -252,7 +252,7 @@ export function AFCManagementDashboard({ isOpen, onClose }: Props) {
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col" style={{ background: "#0c111d" }}>
+    <div data-dashboard className="fixed inset-0 z-50 flex flex-col" style={{ background: "#0c111d" }}>
 
       {/* ── Top bar ── */}
       <div className="flex items-center justify-between px-5 py-3 border-b border-white/10 flex-shrink-0"

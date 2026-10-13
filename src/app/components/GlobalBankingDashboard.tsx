@@ -242,7 +242,7 @@ export function GlobalBankingDashboard({ isOpen, onClose }: Props) {
   }, 0);
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-surface-2">
+    <div data-dashboard className="fixed inset-0 z-50 flex flex-col bg-surface-2">
 
       {/* ── Top bar ── */}
       <div className="flex items-center justify-between px-5 py-3 bg-surface border-b border-line shadow-sm flex-shrink-0 z-10">

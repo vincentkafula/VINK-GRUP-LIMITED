@@ -326,7 +326,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
   const canUseSocial = isOwner || (mySections ?? []).includes(SOCIAL_SECTION);
 
   return (
-    <div data-theme-aware className="fixed inset-0 z-50 flex text-[14px]" style={{ fontFamily: "var(--font-sans)", background: "var(--vk-bg)" }}>
+    <div data-theme-aware data-dashboard className="fixed inset-0 z-50 flex text-[14px]" style={{ fontFamily: "var(--font-sans)", background: "var(--vk-bg)" }}>
 
       {sessionExpired && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" style={{ background: "rgba(14,20,32,0.75)" }}>
@@ -355,12 +355,12 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
       )}
 
       {/* Sidebar */}
-      <aside className={`${sidebarOpen ? "w-64" : "w-0"} shrink-0 overflow-hidden transition-all duration-200 flex flex-col`} style={{ background: "#0E1420" }}>
+      <aside className={`${sidebarOpen ? "w-64" : "w-0"} shrink-0 overflow-hidden transition-all duration-200 flex flex-col`} style={{ background: "rgba(60,0,10,0.32)" }}>
         <div className="w-64 flex flex-col h-full">
           <div className="px-5 pt-6 pb-5">
             <div className="flex items-baseline gap-0.5">
               <img loading="lazy" decoding="async" src={vinkLogo} alt="" className="h-6 w-6 object-contain mr-1.5" />
-              <span className="font-black text-xl" style={{ color: BRAND.crimson }}>VINK</span>
+              <span className="font-black text-xl text-white">VINK</span>
             </div>
             <p className="text-[10px] font-bold tracking-[0.16em] text-white/40 mt-1">MANAGEMENT PANEL</p>
           </div>
@@ -370,7 +370,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
             <button
               onClick={() => goView("dashboard")}
               className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-semibold mb-4"
-              style={view === "dashboard" ? { background: PURPLE, color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
+              style={view === "dashboard" ? { background: "rgba(255,255,255,0.22)", color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
             >
               <LayoutGrid className="w-4 h-4" /> Dashboard
             </button>
@@ -379,7 +379,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
               <button
                 onClick={() => goView("mail")}
                 className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-semibold mb-4"
-                style={view === "mail" ? { background: PURPLE, color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
+                style={view === "mail" ? { background: "rgba(255,255,255,0.22)", color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
               >
                 <Mail className="w-4 h-4" /> Department mail
               </button>
@@ -388,7 +388,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
               <button
                 onClick={() => goView("whatsapp")}
                 className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-semibold mb-1"
-                style={view === "whatsapp" ? { background: PURPLE, color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
+                style={view === "whatsapp" ? { background: "rgba(255,255,255,0.22)", color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
               >
                 <MessageCircle className="w-4 h-4" /> WhatsApp
               </button>
@@ -397,7 +397,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
               <button
                 onClick={() => goView("social")}
                 className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-semibold mb-4"
-                style={view === "social" ? { background: PURPLE, color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
+                style={view === "social" ? { background: "rgba(255,255,255,0.22)", color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
               >
                 <Megaphone className="w-4 h-4" /> Social media
               </button>
@@ -409,7 +409,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
                 <button
                   onClick={() => goView("applications")}
                   className="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors"
-                  style={view === "applications" ? { background: PURPLE, color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
+                  style={view === "applications" ? { background: "rgba(255,255,255,0.22)", color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
                 >
                   <span className="flex items-center gap-2.5"><FileCheck2 className="w-4 h-4" /> Applications</span>
                   {pendingApps.length > 0 && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white" style={{ background: ORANGE }}>{pendingApps.length}</span>}
@@ -417,21 +417,21 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
                 <button
                   onClick={() => goView("managers")}
                   className="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors"
-                  style={view === "managers" ? { background: PURPLE, color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
+                  style={view === "managers" ? { background: "rgba(255,255,255,0.22)", color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
                 >
                   <span className="flex items-center gap-2.5"><UserCog className="w-4 h-4" /> Managers</span>
                 </button>
                 <button
                   onClick={() => goView("departments")}
                   className="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors"
-                  style={view === "departments" ? { background: PURPLE, color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
+                  style={view === "departments" ? { background: "rgba(255,255,255,0.22)", color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
                 >
                   <span className="flex items-center gap-2.5"><Building2 className="w-4 h-4" /> Departments</span>
                 </button>
                 <button
                   onClick={() => goView("ops")}
                   className="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors"
-                  style={view === "ops" ? { background: PURPLE, color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
+                  style={view === "ops" ? { background: "rgba(255,255,255,0.22)", color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
                 >
                   <span className="flex items-center gap-2.5"><Activity className="w-4 h-4" /> Operations</span>
                 </button>
@@ -458,7 +458,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
               <button
                 onClick={() => goView("apply")}
                 className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[13px] font-semibold mt-1 border border-dashed"
-                style={view === "apply" ? { background: BRAND.crimson, color: "#fff", borderColor: BRAND.crimson } : { color: BRAND.crimson, borderColor: "rgba(200,16,46,0.4)" }}
+                style={view === "apply" ? { background: "rgba(255,255,255,0.22)", color: "#fff", borderColor: "rgba(255,255,255,0.6)" } : { color: "#fff", borderColor: "rgba(255,255,255,0.5)" }}
               >
                 <Plus className="w-4 h-4" /> Apply for a Section
               </button>
@@ -470,7 +470,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
                 key={m.label}
                 onClick={() => m.label === "Audit Logs" && isOwner ? goView("audit") : (() => { setActiveItem(m.label); openModule(m.label); })()}
                 className="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors"
-                style={view === "audit" && m.label === "Audit Logs" ? { background: PURPLE, color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
+                style={view === "audit" && m.label === "Audit Logs" ? { background: "rgba(255,255,255,0.22)", color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
               >
                 <span className="flex items-center gap-2.5">{m.icon} {m.label}</span>
                 {!(m.label === "Audit Logs" && isOwner) && <Lock className="w-3.5 h-3.5 opacity-30" />}
@@ -480,12 +480,12 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
 
           <div className="p-3 mt-2">
             <button onClick={onClose} className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg" style={{ background: "rgba(255,255,255,0.05)" }}>
-              <span className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0" style={{ background: BRAND.crimson }}>
+              <span className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ background: "#fff", color: BRAND.crimson }}>
                 {adminName.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
               </span>
               <span className="flex-1 min-w-0 text-left">
                 <p className="text-[13px] font-semibold text-white truncate">{adminName}</p>
-                <p className="text-[11px] truncate" style={{ color: ORANGE }}>{adminRole}</p>
+                <p className="text-[11px] truncate text-white/75">{adminRole}</p>
               </span>
               <ChevronDown className="w-3.5 h-3.5 text-white/40 shrink-0" />
             </button>

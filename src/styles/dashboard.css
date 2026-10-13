@@ -1,0 +1,60 @@
+/*
+ * The red dashboards. Every dashboard frame carries data-dashboard: the page behind the content is the brand red, and everything that is a white card, table or chart
+ * panel on top of it keeps its normal colours. The text that sits straight on the red (the side menu, the top bar, page headings) turns white.
+ *
+ * It works through the theme tokens: inside a dashboard the text and line tokens become white-on-red, and any element that is itself a light surface
+ * (the .bg-surface family) gives the real values back, which are captured at the root as --vkd-*, so the light and the dark theme both stay correct on the cards.
+ */
+:root {
+  --vkd-fg: var(--vk-fg);
+  --vkd-fg-muted: var(--vk-fg-muted);
+  --vkd-fg-subtle: var(--vk-fg-subtle);
+  --vkd-line: var(--vk-line);
+  --vkd-line-strong: var(--vk-line-strong);
+}
+
+[data-dashboard] {
+  background: #c8102e !important;
+  color: #fff;
+  --vk-fg: #fff;
+  --vk-fg-muted: rgba(255, 255, 255, 0.88);
+  --vk-fg-subtle: rgba(255, 255, 255, 0.72);
+  --vk-line: rgba(255, 255, 255, 0.24);
+  --vk-line-strong: rgba(255, 255, 255, 0.42);
+}
+
+/* a white card, panel, table or chart on top of the red: normal text and lines again */
+[data-dashboard] :is(.bg-surface, .bg-surface-2, .bg-bg, .bg-white, .bg-card, .bg-popover) {
+  --vk-fg: var(--vkd-fg);
+  --vk-fg-muted: var(--vkd-fg-muted);
+  --vk-fg-subtle: var(--vkd-fg-subtle);
+  --vk-line: var(--vkd-line);
+  --vk-line-strong: var(--vkd-line-strong);
+  color: var(--vkd-fg);
+}
+
+/* the side menu and the top bar are part of the red frame, not cards */
+[data-dashboard] :is(aside, header, nav)[class*="bg-surface"],
+[data-dashboard] :is(aside, header, nav)[class*="bg-bg"] {
+  background: transparent !important;
+  --vk-fg: #fff;
+  --vk-fg-muted: rgba(255, 255, 255, 0.88);
+  --vk-fg-subtle: rgba(255, 255, 255, 0.72);
+  --vk-line: rgba(255, 255, 255, 0.24);
+  --vk-line-strong: rgba(255, 255, 255, 0.42);
+  color: #fff;
+}
+/* the menu and the bar sit on the red with a thin white line, and their hover and chips stay readable */
+[data-dashboard] aside { border-color: rgba(255, 255, 255, 0.24) !important; }
+[data-dashboard] :is(aside, header) :is(button, a):hover { background: rgba(255, 255, 255, 0.14) !important; color: #fff !important; }
+
+/* menu items that carry their own inline colours: white on the red, and the chosen one on a lighter pill */
+[data-dashboard] aside :is(button, a) { color: #fff !important; }
+[data-dashboard] aside :is(button, a)[style*="font-weight: 700"],
+[data-dashboard] aside :is(button, a)[style*="font-weight: 600"],
+[data-dashboard] aside :is(button, a)[aria-current]:not([aria-current="false"]),
+[data-dashboard] aside :is(button, a)[aria-selected="true"] { background: rgba(255, 255, 255, 0.22) !important; }
+[data-dashboard] aside :is(p, span, h1, h2, h3, label) { color: inherit; }
+
+/* every side menu is a deeper shade of the red, whatever dark colour it used before */
+[data-dashboard] aside { background: rgba(60, 0, 10, 0.32) !important; }

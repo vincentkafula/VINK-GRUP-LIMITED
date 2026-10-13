@@ -363,7 +363,7 @@ export function AdminDashboard({ isOpen, onClose }: Props) {
   } | null;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-surface-2">
+    <div data-dashboard className="fixed inset-0 z-50 flex flex-col bg-surface-2">
 
       {/* Toast */}
       {toast && (

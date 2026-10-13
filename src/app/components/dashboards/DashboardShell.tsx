@@ -76,7 +76,7 @@ export function DashboardShell({
   );
 
   return (
-    <div data-theme-aware className="fixed inset-0 z-50 flex bg-bg text-fg">
+    <div data-dashboard data-theme-aware className="fixed inset-0 z-50 flex bg-bg text-fg">
       {/* Side navigation: always on large screens, a drawer on small ones */}
       <aside className={`hidden shrink-0 flex-col border-r border-line bg-surface transition-[width] duration-200 lg:flex ${collapsed ? "w-[72px]" : "w-60"}`}>
         <div className="flex items-center gap-3 border-b border-line px-3.5 py-3.5">
@@ -91,7 +91,7 @@ export function DashboardShell({
             className="flex min-h-11 w-full items-center gap-3 rounded-vk-md px-3 text-sm font-medium text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg">
             {collapsed ? <PanelLeftOpen className="size-[18px]" aria-hidden="true" /> : <PanelLeftClose className="size-[18px]" aria-hidden="true" />}{!collapsed && "Collapse"}
           </button>
-          <button type="button" onClick={onClose} className="flex min-h-11 w-full items-center gap-3 rounded-vk-md px-3 text-sm font-medium text-bad transition-colors hover:bg-bad-bg">
+          <button type="button" onClick={onClose} className="flex min-h-11 w-full items-center gap-3 rounded-vk-md px-3 text-sm font-semibold text-white transition-colors hover:bg-white/15">
             <LogOut className="size-[18px] shrink-0" aria-hidden="true" />{!collapsed && "Exit dashboard"}
           </button>
         </div>
