@@ -4,8 +4,8 @@ import { ApplyModal } from "./ApplyModal";
 import { Footer } from "./Footer";
 import siteHeroBg from "../../imports/assets/site-hero-bg.webp";
 import vinkCorporateTrain from "../../imports/VinkCorporateTrain.webp";
+import { SECTIONS, type CardData, type CorpCategory } from "./corporateProducts";
 
-type CorpCategory = "account" | "solutions" | "loan";
 type NavItem = "Account" | "Solutions & Credit Cards" | "Loan" | "Social Responsibility";
 
 interface Props {
@@ -16,199 +16,13 @@ interface Props {
   onOpenApp: () => void;
 }
 
-interface CardData {
-  name: string; price: string; featured?: boolean; features: string[];
-  tagline?: string; overview?: string; idealFor?: string[]; inheritsFrom?: string;
-}
-interface Section { label: string; cards: CardData[] }
-
 const SUB_NAV: NavItem[] = ["Account", "Solutions & Credit Cards", "Loan", "Social Responsibility"];
 const CATEGORY_FOR_NAV: Partial<Record<NavItem, CorpCategory>> = { "Account": "account", "Solutions & Credit Cards": "solutions", "Loan": "loan" };
 
-// Real product data, unchanged — moved as-is out of the old
-// CorporateAccountViewer.tsx / CorporateSolutionsViewer.tsx /
-// CorporateLoanViewer.tsx into this shared ledger-style page.
-const SECTIONS: Record<CorpCategory, Section[]> = {
-  account: [
-  {
-    label: "Corporate Accounts",
-    cards: [
-      {
-        name: "Foundation Corporate", price: "R0", featured: false,
-        features: ["Corporate current account with multi-user access", "Secure domestic and international payments", "Bulk salary and supplier payments", "Cash flow dashboard"],
-        tagline: "Built on Strength.",
-        overview: "The Foundation Corporate Account is the ideal starting point for established organizations seeking secure, reliable, and efficient corporate banking. It provides the essential tools to manage day-to-day operations, streamline payments, and maintain complete visibility over corporate finances.",
-        idealFor: ["Established companies", "Non-profit organizations", "Educational institutions", "Government agencies", "Medium to large enterprises"],
-      },
-      {
-        name: "Apex Corporate", price: "R85", featured: false,
-        features: ["Higher transaction limits", "Advanced payroll processing", "Treasury management tools", "Multi-currency accounts", "Dedicated relationship manager"],
-        tagline: "Leading Business Forward.",
-        overview: "The Apex Corporate Account is designed for organizations experiencing growth and increasing financial complexity. With enhanced payment capabilities, treasury tools, and higher transaction limits, Apex helps businesses operate more efficiently while supporting strategic expansion.",
-        idealFor: ["National businesses", "Manufacturing companies", "Healthcare organizations", "Retail chains", "Regional corporations"],
-        inheritsFrom: "Foundation",
-      },
-      {
-        name: "Vertex Corporate", price: "R170", featured: false,
-        features: ["Multi-company account management", "Branch and subsidiary dashboards", "Multi-level payment approvals", "AI-powered financial insights", "ERP integration"],
-        tagline: "Where Strategy Meets Growth.",
-        overview: "The Vertex Corporate Account empowers organizations managing multiple business units, subsidiaries, or regional operations. It offers centralized financial control, intelligent reporting, and advanced approval workflows that simplify complex business structures.",
-        idealFor: ["Holding companies", "Franchise businesses", "Multi-branch organizations", "Logistics companies", "Corporate groups"],
-        inheritsFrom: "Apex",
-      },
-      {
-        name: "Nexus Corporate", price: "R265", featured: true,
-        features: ["Global multi-currency accounts", "Competitive foreign exchange rates", "Cross-border payments and international payroll", "SWIFT payment management", "Trade finance support"],
-        tagline: "Connecting Global Business.",
-        overview: "The Nexus Corporate Account is built for businesses operating across borders. With seamless international banking, foreign exchange services, and global treasury management, Nexus keeps your worldwide operations connected through a single banking platform.",
-        idealFor: ["Multinational corporations", "Exporters and importers", "International NGOs", "Global service providers", "International logistics companies"],
-        inheritsFrom: "Vertex",
-      },
-      {
-        name: "Dominion Corporate", price: "R415", featured: false,
-        features: ["Enterprise treasury management", "Automated liquidity optimization", "Unlimited corporate cards", "Executive financial dashboards", "Custom approval workflows"],
-        tagline: "Control Enterprise Finance.",
-        overview: "The Dominion Corporate Account delivers enterprise-grade banking for organizations managing significant financial operations. Designed for complex corporate structures, it combines advanced treasury services, governance controls, and powerful financial analytics into one secure platform.",
-        idealFor: ["Enterprise corporations", "Conglomerates", "Financial institutions", "National utility companies", "Large infrastructure organizations"],
-        inheritsFrom: "Nexus",
-      },
-      {
-        name: "Legacy Corporate", price: "R650", featured: false,
-        features: ["Executive relationship management", "Institutional investment services", "Private treasury solutions", "Global custody services", "Mergers and acquisitions support", "24/7 executive support"],
-        tagline: "Banking for Institutions That Shape the Future.",
-        overview: "The Legacy Corporate Account is our most prestigious banking solution, created for multinational corporations, institutional investors, sovereign entities, and family offices. Every client receives a fully customized banking experience supported by a dedicated team of specialists delivering strategic financial solutions on a global scale.",
-        idealFor: ["Multinational corporations", "Sovereign wealth entities", "Investment firms", "Private equity companies", "Family offices", "Global holding companies", "Institutional investors"],
-        inheritsFrom: "Dominion",
-      },
-    ],
-  },
-],
-  solutions: [
-  {
-    label: "Entry Credit Card Plans",
-    cards: [
-      { name: "VINK TitanCredit", price: "R0", featured: false, tagline: "Large-scale corporate credit facilities for established enterprises.", overview: "VINK TitanCredit provides large enterprises with substantial, flexible credit facilities designed to support major capital projects, expansion, and complex financing structures — backed by dedicated relationship management.", features: ["High-limit facilities structured for large corporate balance sheets", "Flexible drawdown and repayment structures", "Dedicated relationship and credit management team", "Facility structuring aligned to capital planning cycles"] },
-      { name: "VINK ApexCapital", price: "R0", featured: false, tagline: "Strategic financing for corporations and multinational businesses.", overview: "VINK ApexCapital delivers strategic financing solutions for corporations operating across multiple markets, supporting cross-border growth, acquisitions, and large-scale capital deployment.", features: ["Financing structured for multinational and cross-border operations", "Support for mergers, acquisitions, and strategic transactions", "Multi-currency facility options", "Advisory support from dedicated corporate finance specialists"], inheritsFrom: "TitanCredit" },
-      { name: "VINK EnterprisePrime", price: "R85", featured: false, tagline: "Premium revolving corporate credit solutions.", overview: "VINK EnterprisePrime offers premium revolving credit facilities that give corporations continuous access to capital for operational flexibility, without the need to renegotiate terms with every drawdown.", features: ["Revolving facility structure for ongoing capital access", "Competitive pricing for qualifying corporate clients", "Streamlined drawdown and repayment processes", "Facility limits that scale with corporate performance"], inheritsFrom: "ApexCapital" },
-    ],
-  },
-  {
-    label: "Premium Credit Card Plans",
-    cards: [
-      { name: "VINK QuantumCredit", price: "R170", featured: false, tagline: "Intelligent financing for innovation, expansion, and acquisitions.", overview: "VINK QuantumCredit is built for corporations pursuing innovation-led growth — offering intelligent, adaptable financing structures designed to support R&D, expansion, and acquisition strategies.", features: ["Financing structures tailored to innovation and growth strategies", "Support for acquisition and expansion-stage capital needs", "Data-driven credit structuring and portfolio insights", "Flexible terms aligned to strategic milestones"], inheritsFrom: "EnterprisePrime" },
-      { name: "VINK NexusFinance", price: "R265", featured: true, tagline: "Integrated corporate funding and liquidity solutions.", overview: "VINK NexusFinance brings together funding and liquidity management into a single integrated solution, helping corporations optimise capital structure while maintaining operational agility.", features: ["Integrated funding and liquidity management solutions", "Structured facilities aligned to treasury and cash flow needs", "Support for complex, multi-entity corporate structures", "Real-time visibility into facility usage and liquidity position"], inheritsFrom: "QuantumCredit" },
-      { name: "VINK SovereignLine", price: "R415", featured: false, tagline: "Executive-level credit facilities for major corporations and institutions.", overview: "VINK SovereignLine is our most exclusive corporate credit offering, providing executive-level facilities for major corporations, institutions, and sovereign-linked entities with the most demanding capital requirements.", features: ["Bespoke, executive-level facility structuring", "Designed for major corporations and institutional clients", "Highest available facility limits within the VINK portfolio", "Direct access to senior corporate banking leadership"], inheritsFrom: "NexusFinance" },
-    ],
-  },
-],
-  loan: [
-  {
-    label: "Infrastructure Construction Loans",
-    cards: [
-      {
-        name: "Road Construction",
-        price: "R0",
-        features: ["Annual turnover: R0 to R1,5 million"],
-      },
-      {
-        name: "School / University Construction",
-        price: "R0",
-        features: ["Annual turnover: R0 to R5 million"],
-      },
-      {
-        name: "Shopping Malls Construction",
-        price: "R85",
-        features: ["Annual turnover: R0 to R500 million"],
-      },
-    ],
-  },
-  {
-    label: "Development & Energy Loans",
-    cards: [
-      {
-        name: "Hospital Construction",
-        price: "R170",
-        features: [
-          "Annual turnover: R0 to R500 million",
-          "Free VINK Online Banking and NotifyMes",
-          "Suitable for all business segments and sectors",
-          "Shariah-compliant option available",
-          "Free Online Banking and NotifyMes",
-          "Suitable for all business segments and sectors",
-          "Shariah-compliant option available",
-        ],
-      },
-      {
-        name: "Hotels Construction",
-        price: "R265",
-        featured: true,
-        features: [
-          "Annual turnover: R0 to R500 million",
-          "35 electronic transactions",
-          "10 cash deposits/withdrawals at any VINK ATM (capped at R50,000 per month)",
-          "Suitable for all business segments and sectors",
-          "Free Online Banking and NotifyMes",
-          "Limited to Sole Proprietors",
-          "Shariah-compliant option available",
-        ],
-      },
-      {
-        name: "Solar Plant",
-        price: "R415",
-        features: [
-          "Annual turnover: R0 to R500 million",
-          "60 electronic transactions",
-          "15 cash deposits/withdrawals at any VINK ATM (capped at R100,000 per month)",
-          "Suitable for all business segments and sectors",
-          "Free Online Banking and NotifyMes",
-          "Suitable for all business segments and sectors",
-          "Shariah-compliant option available",
-        ],
-      },
-    ],
-  },
-  {
-    label: "Industry & Resources Loans",
-    cards: [
-      {
-        name: "Water Purification",
-        price: "R170",
-        features: [
-          "Annual turnover: R0 to R500 million",
-          "Free VINK Online Banking and NotifyMes",
-          "Suitable for all business segments and sectors",
-          "Shariah-compliant option available",
-        ],
-      },
-      {
-        name: "Mineral & Mining",
-        price: "R265",
-        features: [
-          "Annual turnover: R0 to R500 million",
-          "35 electronic transactions",
-          "10 cash deposits/withdrawals at any VINK ATM (capped at R50,000 per month)",
-          "Suitable for all business segments and sectors",
-        ],
-      },
-      {
-        name: "Manufacturing",
-        price: "R415",
-        features: [
-          "Annual turnover: R0 to R500 million",
-          "60 electronic transactions",
-          "15 cash deposits/withdrawals at any VINK ATM (capped at R100,000 per month)",
-          "Suitable for all business segments and sectors",
-        ],
-      },
-    ],
-  },
-],
-};
-
 const PAGE_COPY: Record<CorpCategory, { heading: string; tag: string; detailsCta: string; heroEyebrow: string; heroTitle: string; heroSubtitle: string }> = {
-  account:   { heading: "All corporate accounts",        tag: "Corporate Banking · Account",                 detailsCta: "See account details", heroEyebrow: "Corporate Banking", heroTitle: "Banking built for\norganizations that shape the future.", heroSubtitle: "From your first corporate account to institutional-grade treasury — one platform that grows with you." },
-  solutions: { heading: "All corporate credit solutions", tag: "Corporate Banking · Solutions & Credit Cards", detailsCta: "See card details", heroEyebrow: "Corporate Credit Solutions", heroTitle: "Credit built for\nenterprise-scale spending.", heroSubtitle: "Card programs and credit facilities designed around how your organization actually operates." },
-  loan:      { heading: "All corporate loans",            tag: "Corporate Banking · Loan",                    detailsCta: "See loan details", heroEyebrow: "Corporate Loans", heroTitle: "Capital that moves\nat enterprise speed.", heroSubtitle: "Structured financing and clear terms — access capital on the timeline your organization needs." },
+  account:   { heading: "All corporate accounts",        tag: "Corporate Banking · Account",                 detailsCta: "See account details", heroEyebrow: "Corporate Banking", heroTitle: "Banking built for\norganizations that shape the future.", heroSubtitle: "Treasury, project and escrow accounts for governments and the institutions that deliver public works." },
+  solutions: { heading: "All corporate credit solutions", tag: "Corporate Banking · Solutions & Credit Cards", detailsCta: "See card details", heroEyebrow: "Corporate Credit Solutions", heroTitle: "Credit built for\nenterprise-scale spending.", heroSubtitle: "Long-term credit for governments and public institutions, sized to your capital programme." },
+  loan:      { heading: "All corporate loans",            tag: "Corporate Banking · Loan",                    detailsCta: "See loan details", heroEyebrow: "Corporate Loans", heroTitle: "Capital that moves\nat enterprise speed.", heroSubtitle: "Finance for the roads, rail, schools, hospitals, housing and farms that build Africa, and the machinery to deliver them." },
 };
 
 function parsePrice(price: string): number | null {
@@ -223,7 +37,7 @@ function ProductCard({
   card: CardData; folio: string; maxPrice: number | null; detailsCta: string;
   onApply: (name: string) => void; onDetails: (card: CardData, folio: string) => void;
 }) {
-  const numericPrice = parsePrice(card.price);
+  const numericPrice = card.price ? parsePrice(card.price) : null;
   const showGauge = numericPrice !== null && maxPrice !== null && maxPrice > 0;
   const pct = showGauge ? Math.max(4, (numericPrice! / maxPrice!) * 100) : 0;
 
@@ -247,10 +61,17 @@ function ProductCard({
         </div>
       )}
 
-      <div className="pav-price-block">
-        <div className="pav-price"><span className="pav-cur">R</span>{card.price.replace("R", "")}</div>
-        <div className="pav-price-sub">/ month</div>
-      </div>
+      {card.stat ? (
+        <div className="pav-price-block">
+          <div className="pav-price pav-price-text">{card.stat.value}</div>
+          <div className="pav-price-sub">{card.stat.label}</div>
+        </div>
+      ) : card.price ? (
+        <div className="pav-price-block">
+          <div className="pav-price"><span className="pav-cur">R</span>{card.price.replace("R", "")}</div>
+          <div className="pav-price-sub">/ month</div>
+        </div>
+      ) : null}
       <div className="pav-cta-group">
         <button className="pav-btn pav-btn-primary" onClick={() => onApply(card.name)}>Apply now</button>
         <button
@@ -273,6 +94,7 @@ function AccountDetailModal({ card, folio, onClose, onApply }: { card: CardData;
         <h3 className="pav-detail-name">{card.name}</h3>
         <p className="pav-detail-tagline">{card.tagline}</p>
         <p className="pav-detail-desc">{card.overview}</p>
+        {card.stat && <p className="pav-detail-stat"><span>{card.stat.label}</span><strong>{card.stat.value}</strong></p>}
         <div className="pav-detail-features-head">
           {card.inheritsFrom ? <>Everything in <strong>{card.inheritsFrom}</strong>, plus:</> : "Key Benefits"}
         </div>
@@ -287,6 +109,15 @@ function AccountDetailModal({ card, folio, onClose, onApply }: { card: CardData;
             </ul>
           </>
         )}
+        {card.groups?.map((g) => (
+          <div key={g.head}>
+            <div className="pav-detail-features-head">{g.head}</div>
+            {g.ordered
+              ? <ol className="pav-detail-list pav-detail-list-num">{g.items.map((i) => <li key={i}>{i}</li>)}</ol>
+              : <ul className="pav-detail-list">{g.items.map((i) => <li key={i}>{i}</li>)}</ul>}
+          </div>
+        ))}
+        {card.note && <p className="pav-detail-note">{card.note}</p>}
         <button className="pav-btn pav-btn-primary" onClick={() => onApply(card.name)}>Apply now</button>
       </div>
     </div>
@@ -305,7 +136,7 @@ export function CorporateProductLedgerViewer({ isOpen, onClose, initialCategory,
   const sections = SECTIONS[category];
   const copy = PAGE_COPY[category];
   const allCards = sections.flatMap(s => s.cards);
-  const parsed = allCards.map(c => parsePrice(c.price)).filter((n): n is number => n !== null);
+  const parsed = allCards.map(c => (c.price ? parsePrice(c.price) : null)).filter((n): n is number => n !== null);
   const maxPrice = parsed.length ? Math.max(...parsed) : null;
   const handleApply = (name: string) => setApplyProduct(name);
   const activeLabel: NavItem = category === "account" ? "Account" : category === "solutions" ? "Solutions & Credit Cards" : "Loan";
@@ -414,7 +245,7 @@ export function CorporateProductLedgerViewer({ isOpen, onClose, initialCategory,
 
         /* ── Account detail modal ── */
         .pav-detail-backdrop{ position:fixed; inset:0; z-index:70; background:rgba(29,23,64,0.55); display:flex; align-items:center; justify-content:center; padding:20px; }
-        .pav-detail-card{ position:relative; background:var(--vk-surface); max-width:540px; width:100%; max-height:88vh; overflow-y:auto; border-radius:4px; padding:40px 36px 32px; box-shadow:0 30px 80px rgba(29,23,64,0.35); }
+        .pav-detail-card{ position:relative; background:var(--vk-surface); max-width:640px; width:100%; max-height:calc(100vh - 150px); overflow-y:auto; border-radius:4px; padding:40px 36px 32px; box-shadow:0 30px 80px rgba(29,23,64,0.35); }
         .pav-detail-close{ position:absolute; top:16px; right:16px; width:32px; height:32px; border-radius:50%; background:var(--pav-paper); color:var(--vk-crimson-text); border:1px solid var(--pav-rule); display:flex; align-items:center; justify-content:center; cursor:pointer; }
         .pav-detail-close:hover{ background:var(--pav-paper-dim); }
         .pav-detail-folio{ font-family:var(--font-mono); font-size:11px; color:var(--pav-gold-dim); letter-spacing:0.04em; margin-bottom:10px; }
@@ -427,6 +258,15 @@ export function CorporateProductLedgerViewer({ isOpen, onClose, initialCategory,
         .pav-detail-features li{ font-size:12.8px; color:var(--pav-ink-soft); line-height:1.5; padding-left:16px; position:relative; }
         .pav-detail-features li::before{ content:"✓"; position:absolute; left:0; color:var(--pav-gold-dim); font-weight:600; }
         @media (max-width:480px){ .pav-detail-features{ grid-template-columns:1fr; } }
+        .pav-price-text{ font-size:17px; line-height:1.3; }
+        .pav-detail-stat{ display:flex; flex-direction:column; gap:2px; margin:-8px 0 24px; font-size:12.5px; color:var(--pav-text-muted); }
+        .pav-detail-stat strong{ font-size:15px; color:var(--vk-crimson-text); }
+        .pav-detail-list{ list-style:none; margin:0 0 24px; padding:0; display:flex; flex-direction:column; gap:7px; counter-reset:pav-n; }
+        .pav-detail-list li{ font-size:12.8px; color:var(--pav-ink-soft); line-height:1.55; padding-left:18px; position:relative; }
+        .pav-detail-list li::before{ content:"—"; position:absolute; left:0; color:var(--pav-gold-dim); }
+        .pav-detail-list-num li{ counter-increment:pav-n; padding-left:24px; }
+        .pav-detail-list-num li::before{ content:counter(pav-n) "."; font-weight:600; }
+        .pav-detail-note{ font-size:11.5px; line-height:1.6; color:var(--pav-text-muted); margin:4px 0 24px; padding-top:16px; border-top:1px solid var(--pav-rule); }
 
         .pav-foot{ background:var(--pav-panel); color:var(--pav-text-muted-on-ink); padding:34px 0; font-size:12px; line-height:1.7; font-family:var(--font-mono); margin-top:24px; }
         .pav-foot .pav-wrap{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
