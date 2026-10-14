@@ -1,6 +1,7 @@
 const { openDb } = require('./db');
 const { buildLedger, A } = require('./ledger');
 const { buildEmitter } = require('./webhooks');
+const { buildRecon } = require('./reconcile');
 const buildServices = require('./services');
 const buildRouter = require('./routes');
 const buildAccount = require('./account');
@@ -139,11 +140,12 @@ function createManshya(options = {}) {
   hooks.payment = admin.onPayment;
   const statements = buildStatements({ db, core: services, config, online, mail });
   const p2 = buildPayments2({ db, ledger, core: services, rails, config, emit, notify: account.notify });
-  const routes3 = buildRoutes3({ admin, statements, p2, cards, extras, banking, credit, insurance, account, rails, config, core: services });
+  const recon = buildRecon({ db });
+  const routes3 = buildRoutes3({ recon, admin, statements, p2, cards, extras, banking, credit, insurance, account, rails, config, core: services });
   const routes2 = buildRoutes2({ core: services, account, online, catalog, banking, config });
 
   // Run this on a timer (every minute is fine): subscriptions, payout schedules, scheduled payments, auto-savings.
-  const runDue = async (at = new Date()) => ({ subscriptions: await online.runSubscriptions(at), webhooks: await baseEmit.retryDue(at), payout_schedules: await online.runPayoutSchedules(at), scheduled_payments: await banking.runScheduled(at), savings: banking.runSavings(at), interest: banking.accrueInterest(at), cash: p2.runCash(at), credit: credit.runDue(at), premiums: insurance.runPremiums(at) });
+  const runDue = async (at = new Date()) => ({ subscriptions: await online.runSubscriptions(at), webhooks: await baseEmit.retryDue(at), reconciliation: recon.runDaily(at), payout_schedules: await online.runPayoutSchedules(at), scheduled_payments: await banking.runScheduled(at), savings: banking.runSavings(at), interest: banking.accrueInterest(at), cash: p2.runCash(at), credit: credit.runDue(at), premiums: insurance.runPremiums(at) });
   const startScheduler = (ms = 60000) => { const t = setInterval(() => runDue().catch((e) => console.error('scheduler', e.message)), ms); t.unref(); return () => clearInterval(t); };
 
   const byKey = async (req) => {
@@ -154,6 +156,6 @@ function createManshya(options = {}) {
   };
   const authenticate = options.authenticate || byKey;
   const router = buildRouter({ db, events: baseEmit, services, gateways, config, authenticate, routes2, routes3 });
-  return { events: baseEmit, router, services, account, online, catalog, banking, admin, statements, payments2: p2, cards, extras, credit, insurance, mail, runDue, startScheduler, db, ledger, config, gateways, A, close: () => db.close() };
+  return { recon, events: baseEmit, router, services, account, online, catalog, banking, admin, statements, payments2: p2, cards, extras, credit, insurance, mail, runDue, startScheduler, db, ledger, config, gateways, A, close: () => db.close() };
 }
 module.exports = { createManshya, DEFAULTS };

@@ -3,7 +3,7 @@ const crypto = require('crypto');
 const { ApiError } = require('./util');
 
 // Phase-3 routes: back office, statements, instant and international payments, cards, rewards, support, buyer account, vehicle.
-module.exports = function buildRoutes3({ admin, statements, p2, cards, extras, banking, credit, insurance, account, rails, config, core }) {
+module.exports = function buildRoutes3({ recon, admin, statements, p2, cards, extras, banking, credit, insurance, account, rails, config, core }) {
   const wrap = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 
   // Raw-body routes (signature checked): money arriving from other banks.
@@ -37,6 +37,10 @@ module.exports = function buildRoutes3({ admin, statements, p2, cards, extras, b
     // Back-office roles: superadmin can do everything, compliance handles risk decisions, support answers customers.
     const role = (...rs) => (req, res, next) => (req.admin.role === 'superadmin' || rs.includes(req.admin.role) ? next() : next(new ApiError(403, 'forbidden', `This needs the ${rs[0]} role`)));
     const comp = role('compliance'), sup = role('support'), root = role('superadmin');
+    // daily reconciliation of the books
+    ar.get('/reconciliation/runs', w((req, res) => res.json(recon.list(Number(req.query.limit) || 30))));
+    ar.get('/reconciliation/runs/:id', w((req, res) => { const d = recon.detail(req.params.id); if (!d) throw new ApiError(404, 'not_found', 'No such run'); res.json(d); }));
+    ar.post('/reconciliation/run', root, w((req, res) => res.status(201).json(recon.run(new Date(), A(req)))));
     ar.get('/overview', w((req, res) => res.json(admin.overview())));
     ar.get('/merchants', w((req, res) => res.json(admin.listMerchants(req.query))));
     ar.get('/merchants/:id', w((req, res) => res.json(admin.getMerchant(req.params.id))));

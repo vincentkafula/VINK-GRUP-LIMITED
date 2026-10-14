@@ -11,7 +11,7 @@ import { BRAND } from "../../brand";
  * server has posted it to the ledger. Amounts travel as cents.
  */
 
-const PURPLE = BRAND.crimson;
+export const PURPLE = BRAND.crimson;
 type Screen = "home" | "send" | "cards" | "history" | "rewards";
 
 interface Account { id: string; name: string; number: string; kind: string; balance: number }
@@ -22,14 +22,14 @@ interface Line { date: string; kind: string; memo: string | null; amount: number
 
 export const rand = (cents: number) => (cents < 0 ? "-R " : "R ") + (Math.abs(cents) / 100).toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const toCents = (s: string) => Math.round(parseFloat(s.replace(",", ".")) * 100);
-const when = (iso: string) => new Date(iso).toLocaleDateString("en-ZA", { day: "numeric", month: "short" });
-const msg = (e: unknown) => (e instanceof ManshyaError || e instanceof Error ? e.message : "Something went wrong. Please try again.");
+export const when = (iso: string) => new Date(iso).toLocaleDateString("en-ZA", { day: "numeric", month: "short" });
+export const msg = (e: unknown) => (e instanceof ManshyaError || e instanceof Error ? e.message : "Something went wrong. Please try again.");
 
-const input = "w-full mb-2.5 px-3.5 py-3 rounded-xl border border-gray-200 text-sm outline-none bg-white";
-const primary = "w-full py-3.5 rounded-xl text-white text-sm font-bold disabled:opacity-50";
+export const input = "w-full mb-2.5 px-3.5 py-3 rounded-xl border border-gray-200 text-sm outline-none bg-white";
+export const primary = "w-full py-3.5 rounded-xl text-white text-sm font-bold disabled:opacity-50";
 
 /** Loads one thing and lets the screen retry it; the screen shows the error instead of stale or invented numbers. */
-function useLoad<T>(load: () => Promise<T>, deps: unknown[] = []) {
+export function useLoad<T>(load: () => Promise<T>, deps: unknown[] = []) {
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(true);
@@ -39,7 +39,7 @@ function useLoad<T>(load: () => Promise<T>, deps: unknown[] = []) {
   return { data, error, busy, reload: run };
 }
 
-function Problem({ error, retry }: { error: string; retry: () => void }) {
+export function Problem({ error, retry }: { error: string; retry: () => void }) {
   return (
     <div role="alert" className="m-4 rounded-xl bg-red-50 p-4 text-center text-xs text-red-700">
       <AlertTriangle className="mx-auto mb-2 h-5 w-5" aria-hidden="true" />
@@ -48,10 +48,10 @@ function Problem({ error, retry }: { error: string; retry: () => void }) {
     </div>
   );
 }
-const Spinner = () => <div className="flex flex-1 items-center justify-center py-16"><Loader2 className="h-6 w-6 animate-spin" style={{ color: PURPLE }} /></div>;
+export const Spinner = () => <div className="flex flex-1 items-center justify-center py-16"><Loader2 className="h-6 w-6 animate-spin" style={{ color: PURPLE }} /></div>;
 
 /* ───────────── sign in ───────────── */
-function LoginScreen({ onAuthenticated }: { onAuthenticated: (user: ApiUser) => void }) {
+export function LoginScreen({ onAuthenticated }: { onAuthenticated: (user: ApiUser) => void }) {
   const [mode, setMode] = useState<"signin" | "register">("signin");
   const [username, setUsername] = useState(""); const [password, setPassword] = useState("");
   const [name, setName] = useState(""); const [email, setEmail] = useState("");
@@ -239,7 +239,7 @@ function SendScreen({ initialAccountId }: { initialAccountId?: string }) {
 }
 
 /* ───────────── cards ───────────── */
-function CardsScreen() {
+export function CardsScreen() {
   const cards = useLoad(async () => (await api<{ data: Card[] }>("/bank/cards")).data);
   const accounts = useLoad(async () => (await api<{ data: Account[] }>("/bank/accounts")).data);
   const [busy, setBusy] = useState(""); const [err, setErr] = useState<string | null>(null);
