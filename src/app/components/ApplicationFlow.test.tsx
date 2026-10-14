@@ -99,6 +99,7 @@ describe("the application form that Start Now opens", () => {
     const sent = calls.find((c) => c.url.endsWith("/api/applications"))!.body as Record<string, unknown>;
     expect(sent).toMatchObject({ tier: "personal", applicantName: "thandi Mokoena", applicantEmail: "thandi@example.com", applicantPhone: "0821234567", accountTypeRequested: "Accounts: Spark Account" });
     expect(sent.tierData).toMatchObject({ phoneVerified: true, facialVerification: false, vehicleDocuments: ["vehicle-registration.pdf"] });
+    expect(sent.tierData).not.toHaveProperty("selfie");                                                     // skipping facial verification sends no photo
     expect(localStorage.getItem("reg-draft")).toBeNull();
     await click("Ok"); expect(text()).toContain("Hi Thandi"); expect(text()).toContain("coming soon");
   });
@@ -129,5 +130,22 @@ describe("the application form that Start Now opens", () => {
     await click("Start"); await click("Saved application");
     await setv("s-ref", ref); await setv("s-id", "123"); await click("Let's continue"); expect(text()).toContain("No saved application matches those details");
     await setv("s-id", "9001015009087"); await click("Let's continue"); expect(heading()).toBe("Register"); expect((host.querySelector("#a-fn") as HTMLInputElement).value).toBe("thandi");
+  });
+  it("a selfie taken in the camera step is sent with the application, and not sent when the applicant skips facial verification", async () => {
+    Object.defineProperty(navigator, "mediaDevices", { value: undefined, configurable: true });                // no camera here: the step offers a photo from the device
+    HTMLCanvasElement.prototype.getContext = vi.fn(() => ({ translate: vi.fn(), scale: vi.fn(), drawImage: vi.fn() })) as never;
+    HTMLCanvasElement.prototype.toDataURL = vi.fn(() => "data:image/jpeg;base64,SELFIE");
+    vi.stubGlobal("Image", class { onload: (() => void) | null = null; onerror: (() => void) | null = null; naturalWidth = 800; naturalHeight = 600; set src(_v: string) { setTimeout(() => this.onload?.(), 0); } });
+    await render(); await click("Start"); await click("New application"); await fillPersonal(); await click("Let's continue");
+    expect(text()).toContain("sent with your application");
+    await click("Continue with facial verification"); expect(heading()).toBe("Take a selfie");
+    const input = host.querySelector("#selfie-file") as HTMLInputElement;
+    Object.defineProperty(input, "files", { value: [new File(["x"], "me.jpg", { type: "image/jpeg" })], configurable: true });
+    await act(async () => { input.dispatchEvent(new Event("change", { bubbles: true })); }); await wait(60);
+    await click("Use this photo"); expect(heading()).toBe("Help us to securely find out about you");
+    await click("Let's continue"); await setv("v-phone", "0821234567"); await setv("v-lic", "DL-1"); await addFile("a.pdf"); await click("Let's continue"); await wait(60);
+    await fillCode("481516"); await click("Verify now"); await wait(60);
+    const sent = calls.find((c) => c.url.endsWith("/api/applications"))!.body as { tierData: Record<string, unknown> };
+    expect(sent.tierData).toMatchObject({ facialVerification: true, selfie: "data:image/jpeg;base64,SELFIE" });
   });
 });

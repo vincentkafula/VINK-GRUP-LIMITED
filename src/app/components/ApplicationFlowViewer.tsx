@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowRight, Camera, Check, CheckCircle2, CloudUpload, Plus, 
 import { Footer } from "./Footer";
 import { usePageTitle } from "./ds";
 import { applicationsApi, otpApi, type AppTier } from "../services/applicationsApi";
+import { SelfieCapture } from "./SelfieCapture";
 import { openSignIn } from "../services/signIn";
 import { CATALOG, SEGMENTS, type Segment } from "../data/productCatalog";
 
@@ -134,7 +135,6 @@ export function ApplicationFlowViewer({ isOpen, onClose }: Props) {
   const [lookup, setLookup] = useState({ ref: "", id: "" });
   const [lookupBad, setLookupBad] = useState(false);
   const [shot, setShot] = useState<string | null>(null);
-  const [camNote, setCamNote] = useState("");
   const [usedFace, setUsedFace] = useState(false);
   const [biz, setBiz] = useState({ name: "", reg: "" });
   const [bizFiles, setBizFiles] = useState<File[]>([]);
@@ -148,8 +148,6 @@ export function ApplicationFlowViewer({ isOpen, onClose }: Props) {
   const [demoCode, setDemoCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<{ ref: string; account: string } | null>(null);
-  const video = useRef<HTMLVideoElement>(null);
-  const stream = useRef<MediaStream | null>(null);
   const boxes = useRef<(HTMLInputElement | null)[]>([]);
   const dirKey = useRef(0);
 
@@ -214,25 +212,6 @@ export function ApplicationFlowViewer({ isOpen, onClose }: Props) {
     setErrs(e); if (!Object.keys(e).length) go("otp");
   };
 
-  // ── camera ──
-  const stopCam = useCallback(() => { stream.current?.getTracks().forEach((t) => t.stop()); stream.current = null; }, []);
-  const startCam = useCallback(async () => {
-    stopCam(); setShot(null); setCamNote("");
-    try {
-      const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-      stream.current = s; if (video.current) video.current.srcObject = s;
-    } catch { setCamNote("Your camera isn't available here, so a sample frame is shown. You can continue without a photo."); }
-  }, [stopCam]);
-  useEffect(() => { if (step === "face" && isOpen) void startCam(); else stopCam(); return stopCam; }, [step, isOpen, startCam, stopCam]);
-  const takePicture = () => {
-    const v = video.current;
-    if (stream.current && v && v.videoWidth) {
-      const c = document.createElement("canvas"); c.width = v.videoWidth; c.height = v.videoHeight;
-      const x = c.getContext("2d"); if (x) { x.translate(c.width, 0); x.scale(-1, 1); x.drawImage(v, 0, 0); setShot(c.toDataURL("image/jpeg", 0.85)); }
-    } else setShot("sample");
-    stopCam(); setUsedFace(true);
-  };
-
   // ── phone code ──
   const sendCode = useCallback(async (again = false) => {
     setOtp(Array(OTP_LENGTH).fill("")); setOtpMsg(again ? "Sending a new code…" : ""); setDemoCode("");
@@ -271,7 +250,7 @@ export function ApplicationFlowViewer({ isOpen, onClose }: Props) {
       tier, accountTypeRequested: `${form.acct}: ${form.clear}`, applicantName: `${form.fn.trim()} ${form.ln.trim()}`, applicantEmail: form.em.trim(), applicantPhone: drv.phone.trim(),
       tierData: {
         source: "start-now-form", draftReference: draft?.ref, countryOfBirth: form.country, identityNumber: form.idn.trim(), passportNumber: form.pass.trim() || undefined, cell: form.cell.trim(), address: form.addr.trim(),
-        facialVerification: usedFace, phoneVerified: true, driversLicense: drv.lic.trim(), vehicleDocuments: vehFiles.map((f) => f.name),
+        facialVerification: usedFace, ...(usedFace && shot ? { selfie: shot } : {}), phoneVerified: true, driversLicense: drv.lic.trim(), vehicleDocuments: vehFiles.map((f) => f.name),
         ...(isBiz ? { business: { name: biz.name.trim(), registrationNumber: biz.reg.trim(), documents: bizFiles.map((f) => f.name), directors: dirs.map((d) => ({ firstName: d.fn.trim(), lastName: d.ln.trim(), idNumber: d.idn.trim(), email: d.em.trim() })) } } : {}),
       },
     });
@@ -371,33 +350,19 @@ export function ApplicationFlowViewer({ isOpen, onClose }: Props) {
 
             {step === "cam" && (
               <section>
-                <Heading sub="You can complete your application quickly and easily using your device's camera for facial verification.">Permission to access your camera needed</Heading>
+                <Heading sub="You can complete your application quickly and easily using your device's camera for facial verification. Your photo is used only to confirm who you are, and is sent with your application.">Permission to access your camera needed</Heading>
                 {draft && <p className="-mt-2 mb-3 text-center text-[13.5px] text-fg-muted">Your saved application number: <b className="text-crimson-text">{draft.ref}</b></p>}
                 <div className="relative mx-auto my-6 flex aspect-[4/3] max-w-[300px] items-center justify-center rounded-[28px] bg-brand-soft" aria-hidden="true">
                   <Camera className="size-16 text-crimson-text" strokeWidth={1.3} />
                   <span className="absolute inset-3 rounded-[22px] border border-dashed border-[rgba(176,18,42,0.3)]" />
                 </div>
                 <Btn onClick={() => go("face")}>Continue with facial verification</Btn>
-                <Btn kind="tint" onClick={() => { setUsedFace(false); go("info"); }}>Without facial verification</Btn>
+                <Btn kind="tint" onClick={() => { setUsedFace(false); setShot(null); go("info"); }}>Without facial verification</Btn>
                 <LoginLine onLogin={login} />
               </section>
             )}
 
-            {step === "face" && (
-              <section>
-                <Heading sub="Centre your face in the frame, in good light.">Take a clear photo</Heading>
-                <div className="relative mb-4 aspect-square overflow-hidden rounded-3xl bg-surface-2 shadow-[0_18px_40px_-18px_rgba(120,10,30,0.35)]">
-                  {shot && shot !== "sample"
-                    ? <img src={shot} alt="Your photo" className="absolute inset-0 size-full object-cover" />
-                    : stream.current
-                      ? <video ref={video} autoPlay muted playsInline className="absolute inset-0 size-full -scale-x-100 object-cover" />
-                      : <div className="absolute inset-0 flex items-center justify-center bg-brand-soft"><Camera className="size-20 text-crimson-text/60" strokeWidth={1.2} aria-hidden="true" /></div>}
-                  <svg aria-hidden="true" className="pointer-events-none absolute inset-0 size-full" viewBox="0 0 100 100" fill="none" stroke="#fff" strokeWidth=".7"><path d="M27 22h12M27 22v13M73 22H61M73 22v13M27 80h12M27 80V67M73 80H61M73 80V67" /></svg>
-                </div>
-                {camNote && <p className="mb-2 text-center text-[13px] text-fg-muted">{camNote}</p>}
-                {!shot ? (<><Btn onClick={takePicture} className="mt-0">Take picture</Btn><Btn kind="tint" onClick={() => go("cam")}>Back</Btn></>) : (<><Btn kind="tint" onClick={() => void startCam()} className="mt-0"><RefreshCw className="size-4" aria-hidden="true" />Retake</Btn><Btn onClick={() => go("info")}>Let's continue</Btn></>)}
-              </section>
-            )}
+            {step === "face" && <SelfieCapture onUse={(p) => { setShot(p); setUsedFace(true); go("info"); }} onBack={() => go("cam")} />}
 
             {step === "info" && (
               <section>
