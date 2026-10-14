@@ -87,3 +87,31 @@ export const listTickets = (db: Db, q: { status?: "ISSUED" | "USED" | "VOID"; ta
 
 /** The public keys a validator needs to check tickets: the current one and any retired ones still in circulation. */
 export const ticketKeyList = (signer: Signer) => ({ version: signer.keyId * 1000 + signer.retired.length, keys: [{ id: signer.keyId, publicKey: signer.publicKey }, ...signer.retired.map((r) => ({ id: r.id, publicKey: r.publicKey }))] });
+
+/**
+ * Cancels a sold ticket that has not been used and gives the money back: the sale is reversed in the ledger (the clearing account is credited back, the ticket income reduced).
+ * The card still holds a genuine signature, so devices are told of the cancellation on their next sync and refuse it. A used ticket cannot be cancelled.
+ * Idempotent: cancelling a cancelled ticket returns it unchanged.
+ */
+export async function voidTicket(db: Db, actor: Actor, id: number, reason: string) {
+  if (!reason.trim() || reason.length > 200) throw badRequest("bad_reason", "Say why the ticket is cancelled (up to 200 characters)");
+  return db.$transaction(async (tx) => {
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${"ticket-void:" + id}, 0))`;
+    const t = await tx.ticket.findUnique({ where: { id } });
+    if (!t) throw notFound("Ticket");
+    if (t.status === "VOID") return { ticket: t, replay: true };
+    if (t.status === "USED") throw conflict("ticket_used", "This ticket has already been used and cannot be cancelled");
+    const journalId = await postJournal(tx, { kind: "TICKET_VOID", ref: String(t.id), memo: `Ticket ${t.id} cancelled: ${reason}`, lines: [{ account: clearing(t.method as Method), amount: t.price }, { account: "revenue:tickets", amount: -t.price }] });
+    const ticket = await tx.ticket.update({ where: { id }, data: { status: "VOID", voidedAt: new Date(), voidedBy: actor.id, voidReason: reason, voidJournalId: journalId } });
+    await audit(tx, actor, "ticket.void", String(t.id), { price: t.price, reason });
+    return { ticket, replay: false };
+  });
+}
+
+/** Cancelled tickets that could still be presented (not yet expired, with a day's slack), and a version that changes whenever the list does. */
+export async function voidedTicketList(db: Db) {
+  const rows = await db.ticket.findMany({ where: { status: "VOID", validUntil: { gt: new Date(Date.now() - 86400_000) } }, select: { id: true, voidedAt: true }, orderBy: { id: "asc" } });
+  const all = await db.ticket.aggregate({ where: { status: "VOID" }, _max: { voidedAt: true }, _count: true });
+  const version = all._count === 0 ? 0 : Math.floor((all._max.voidedAt?.getTime() ?? 0) / 1000) * 1000 + (all._count % 1000);
+  return { version, ids: rows.map((r) => r.id) };
+}

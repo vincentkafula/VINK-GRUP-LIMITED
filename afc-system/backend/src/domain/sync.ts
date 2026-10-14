@@ -7,6 +7,7 @@ import { currentFareVersion, publishedFareTable } from "./fares";
 import { cardAccount, cardBalance, postJournal, routeRevenue } from "./ledger";
 import type { FeedHub } from "./events";
 import { getVersion } from "./settings";
+import { voidedTicketList } from "./tickets";
 
 const uid = z.string().regex(/^[0-9a-f]{14}$/);
 export const txnSchema = z.object({
@@ -17,7 +18,7 @@ export const txnSchema = z.object({
   result: z.enum(["ok", "denied"]),
   kind: z.enum(["flat", "tap_in", "tap_out", "penalty_tap_in", "ticket"]).optional(),
   ticketId: z.number().int().min(1).optional(),
-  denyReason: z.enum(["UNKNOWN_ROUTE", "UNKNOWN_STOP", "DUPLICATE_TAP", "INSUFFICIENT_FUNDS", "CARD_BLOCKED", "INVALID_CARD", "READ_ERROR", "INVALID_TICKET", "TICKET_USED", "TICKET_EXPIRED", "TICKET_NOT_YET_VALID", "TICKET_WRONG_ROUTE"]).optional(),
+  denyReason: z.enum(["UNKNOWN_ROUTE", "UNKNOWN_STOP", "DUPLICATE_TAP", "INSUFFICIENT_FUNDS", "CARD_BLOCKED", "INVALID_CARD", "READ_ERROR", "INVALID_TICKET", "TICKET_USED", "TICKET_EXPIRED", "TICKET_NOT_YET_VALID", "TICKET_WRONG_ROUTE", "TICKET_VOID"]).optional(),
   routeId: z.number().int().min(0).max(65535),
   stopId: z.number().int().min(0).max(65535),
   fare: z.number().int().min(0).max(1_000_000),
@@ -38,6 +39,7 @@ export const syncSchema = z.object({
   fareTableVersion: z.number().int().min(0),
   profilesVersion: z.number().int().min(-1),
   ticketKeysVersion: z.number().int().min(0).optional(),
+  voidedVersion: z.number().int().min(0).optional(),
 });
 
 export interface SyncDeps { db: Db; hub?: FeedHub; autoBlockAt: number; now?: () => Date }
@@ -181,8 +183,10 @@ async function processOne(deps: SyncDeps, tx: Tx, tables: Map<number, FareTable 
 }
 
 /** What the device needs back: fresh copies of anything that changed since the versions it reports. */
-export async function syncExtras(db: Db, report: { hotlistVersion: number; fareTableVersion: number; profilesVersion: number; ticketKeysVersion?: number }, ticketKeys?: SyncResponse["ticketKeys"]): Promise<Pick<SyncResponse, "hotlist" | "fareTable" | "profiles" | "ticketKeys">> {
-  const out: Pick<SyncResponse, "hotlist" | "fareTable" | "profiles" | "ticketKeys"> = {};
+export async function syncExtras(db: Db, report: { hotlistVersion: number; fareTableVersion: number; profilesVersion: number; ticketKeysVersion?: number; voidedVersion?: number }, ticketKeys?: SyncResponse["ticketKeys"]): Promise<Pick<SyncResponse, "hotlist" | "fareTable" | "profiles" | "ticketKeys" | "voidedTickets">> {
+  const out: Pick<SyncResponse, "hotlist" | "fareTable" | "profiles" | "ticketKeys" | "voidedTickets"> = {};
+  const voided = await voidedTicketList(db);
+  if ((report.voidedVersion ?? 0) !== voided.version) out.voidedTickets = voided;
   if (ticketKeys && (report.ticketKeysVersion ?? 0) !== ticketKeys.version) out.ticketKeys = ticketKeys;
   const [hv, pv, fv] = await Promise.all([getVersion(db, "hotlistVersion"), getVersion(db, "profilesVersion"), currentFareVersion(db)]);
   if (report.hotlistVersion !== hv) {

@@ -149,3 +149,40 @@ describe("ticket keys reach devices, and tickets show up in reports", () => {
     expect(s.ticketSales).toBeGreaterThan(0); expect(s.ticketsSold).toBeGreaterThan(0);
   });
 });
+
+describe("cancelling a ticket", () => {
+  const sold = async (over: Record<string, unknown> = {}) => { const b = sale(over); const r = await h.api(agent, "POST", "/api/tickets", b); return { uid: b.cardUid, id: r.body.ticket.id as number, price: b.priceCents as number }; };
+
+  it("reverses the sale in the books, marks the ticket void, and keeps the books balanced", async () => {
+    const t = await sold({ priceCents: 3100 });
+    const r = await h.api(admin, "POST", `/api/tickets/${t.id}/void`, { reason: "Passenger changed their mind" });
+    expect(r.status).toBe(200); expect(r.body.ticket.status).toBe("VOID"); expect(r.body.replay).toBe(false);
+    const rows = await h.db.posting.findMany({ where: { journal: { kind: "TICKET_VOID", ref: String(t.id) } } });
+    expect(rows.map((p) => [p.account, p.amount]).sort()).toEqual([["clearing:cash", 3100], ["revenue:tickets", -3100]]);
+    const net = await h.db.posting.aggregate({ _sum: { amount: true } }); expect(net._sum.amount).toBe(0);
+  });
+  it("is safe to repeat: no second reversal", async () => {
+    const t = await sold();
+    await h.api(admin, "POST", `/api/tickets/${t.id}/void`, { reason: "x" });
+    const again = await h.api(admin, "POST", `/api/tickets/${t.id}/void`, { reason: "x" });
+    expect(again.status).toBe(200); expect(again.body.replay).toBe(true);
+    expect(await h.db.journal.count({ where: { kind: "TICKET_VOID", ref: String(t.id) } })).toBe(1);
+  });
+  it("refuses a ticket that was already used, and agents may not cancel", async () => {
+    const t = await sold(); await h.sync([use(t.id, t.uid)]);
+    const used = await h.api(admin, "POST", `/api/tickets/${t.id}/void`, { reason: "x" });
+    expect(used.status).toBe(409); expect(used.body.error.code).toBe("ticket_used");
+    const t2 = await sold();
+    expect((await h.api(agent, "POST", `/api/tickets/${t2.id}/void`, { reason: "x" })).status).toBe(403);
+    expect((await h.api(admin, "POST", `/api/tickets/${t2.id}/void`, {})).status).toBe(400);
+    expect((await h.api(admin, "POST", `/api/tickets/999999/void`, { reason: "x" })).status).toBe(404);
+  });
+  it("tells devices: the voided list changes version and holds the ticket until the device has it", async () => {
+    const before = await h.sync([], { versions: { voidedVersion: 0 } as never });
+    const t = await sold(); await h.api(admin, "POST", `/api/tickets/${t.id}/void`, { reason: "refund" });
+    const after = await h.sync([], { versions: { voidedVersion: before.body.voidedTickets?.version ?? 0 } as never });
+    expect(after.body.voidedTickets!.ids).toContain(t.id);
+    const same = await h.sync([], { versions: { voidedVersion: after.body.voidedTickets!.version } as never });
+    expect(same.body.voidedTickets).toBeUndefined();
+  });
+});

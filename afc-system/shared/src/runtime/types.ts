@@ -28,6 +28,7 @@ export interface TapStore {
   readonly profilesVersion: number;
   readonly fareTableVersion: number;
   readonly ticketKeysVersion: number;
+  readonly voidedVersion: number;
   readonly online: boolean;
   setOnline(v: boolean): void;
 
@@ -55,4 +56,6 @@ export interface TapStore {
   ticketUse(id: number): { completed: boolean } | undefined;
   startTicketUse(id: number): void;
   completeTicketUse(id: number): void;
+  setVoidedTickets(version: number, ids: number[]): void;
+  isVoided(id: number): boolean;
 }

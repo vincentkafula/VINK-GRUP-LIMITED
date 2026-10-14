@@ -281,6 +281,10 @@ model Ticket {
   usedAt      DateTime?
   usedDevice  String?
   journalId   String?
+  voidedAt    DateTime?
+  voidedBy    String?
+  voidReason  String?
+  voidJournalId String?
 
   @@unique([method, reference])
   @@index([cardUid])

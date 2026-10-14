@@ -58,6 +58,7 @@ export class TicketProcessor {
     if (!genuine) return deny("INVALID_TICKET", "Not a valid ticket");
 
     const now = this.now();
+    if (store.isVoided(t.ticketId)) return deny("TICKET_VOID", "Ticket cancelled", t.ticketId);
     if (t.routeId !== 0 && t.routeId !== routeId) return deny("TICKET_WRONG_ROUTE", "Wrong route", t.ticketId);
     if (now < t.validFrom) return deny("TICKET_NOT_YET_VALID", "Not valid yet", t.ticketId);
     if (now > t.validUntil) return deny("TICKET_EXPIRED", "Ticket expired", t.ticketId);

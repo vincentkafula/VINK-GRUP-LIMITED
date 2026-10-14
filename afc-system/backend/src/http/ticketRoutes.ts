@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { HttpError } from "../domain/errors";
-import { getTicket, issueTicket, listTickets, ticketKeyList } from "../domain/tickets";
+import { getTicket, issueTicket, listTickets, ticketKeyList, voidTicket } from "../domain/tickets";
 import { actorOf, requireRole, type Deps } from "./app";
 
 export async function ticketRoutes(app: FastifyInstance, { config, db }: Deps): Promise<void> {
@@ -24,6 +24,14 @@ export async function ticketRoutes(app: FastifyInstance, { config, db }: Deps): 
     return { tickets: await listTickets(db, q) };
   });
   app.get("/tickets/:id", { preHandler: read }, async (req) => ({ ticket: await getTicket(db, z.coerce.number().int().parse((req.params as { id: string }).id)) }));
+
+  /** Cancel an unused ticket and refund the sale. Operators only: it moves money. */
+  app.post("/tickets/:id/void", { preHandler: requireRole("OPERATOR") }, async (req) => {
+    const id = z.coerce.number().int().parse((req.params as { id: string }).id);
+    const { reason } = z.object({ reason: z.string().min(1).max(200) }).parse(req.body);
+    const r = await voidTicket(db, actorOf(req), id, reason);
+    return { ticket: r.ticket, replay: r.replay };
+  });
 
   /** The public key(s) that check tickets. Safe to publish: they can verify a ticket but never make one. */
   app.get("/tickets-public-keys", { preHandler: read }, async () => ticketKeyList(signer()));

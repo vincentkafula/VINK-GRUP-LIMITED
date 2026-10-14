@@ -31,7 +31,7 @@ export interface SyncTransaction {
   offline: boolean;
 }
 
-export type TicketDenyReason = "INVALID_TICKET" | "TICKET_USED" | "TICKET_EXPIRED" | "TICKET_NOT_YET_VALID" | "TICKET_WRONG_ROUTE";
+export type TicketDenyReason = "INVALID_TICKET" | "TICKET_USED" | "TICKET_EXPIRED" | "TICKET_NOT_YET_VALID" | "TICKET_WRONG_ROUTE" | "TICKET_VOID";
 
 export interface SyncRequest {
   deviceId: string;
@@ -41,6 +41,8 @@ export interface SyncRequest {
   profilesVersion: number;
   /** Highest ticket-signing key id the device knows (0 = none). */
   ticketKeysVersion?: number;
+  /** Version of the voided-tickets list the device holds (0 = none). */
+  voidedVersion?: number;
 }
 
 export interface SyncRejection { id: string; reason: string }
@@ -55,6 +57,8 @@ export interface SyncResponse {
   profiles?: { version: number; cards: { uid: string; category: Category }[] };
   /** Public keys that check ticket signatures. A validator can verify a ticket with these but can never make one. */
   ticketKeys?: { version: number; keys: { id: number; publicKey: string }[] };
+  /** Tickets that were sold and then cancelled (refunded): a device refuses them even though the card still holds a genuine signature. */
+  voidedTickets?: { version: number; ids: number[] };
 }
 
 /* ───────── request signing ───────── */

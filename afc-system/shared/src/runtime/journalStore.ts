@@ -47,6 +47,7 @@ const COMPACT_AFTER = 1500;
 export class JournalStore implements TapStore {
   private s = empty();
   private hot = new Set<string>();
+  private voided = new Set<number>();
   private buffer: string[] = [];
   private lines = 0;
   private flushing: Promise<void> = Promise.resolve();
@@ -63,6 +64,7 @@ export class JournalStore implements TapStore {
       else if (Array.isArray(parsed)) st.apply(parsed as Op);
       st.lines++;
     }
+    st.voided = new Set(JSON.parse(st.s.meta.voided ?? "[]") as number[]);
     return st;
   }
 
@@ -109,6 +111,7 @@ export class JournalStore implements TapStore {
   get profilesVersion() { return this.num("profilesVersion", -1); }
   get fareTableVersion() { return this.num("fareTableVersion", 0); }
   get ticketKeysVersion() { return this.num("ticketKeysVersion", 0); }
+  get voidedVersion() { return this.num("voidedVersion", 0); }
   get online() { return this.s.meta.online !== "0"; }
   setOnline(v: boolean) { if (this.online !== v) this.setMeta("online", v ? "1" : "0"); }
 
@@ -141,4 +144,6 @@ export class JournalStore implements TapStore {
   ticketUse(id: number) { const u = this.s.ticketUses[id]; return u ? { completed: u.completed } : undefined; }
   startTicketUse(id: number) { this.log(["tuse", id, this.s.ticketUses[id]?.completed ?? false, this.now()]); }
   completeTicketUse(id: number) { this.log(["tuse", id, true, this.now()]); }
+  setVoidedTickets(version: number, ids: number[]) { this.setMeta("voided", JSON.stringify(ids)); this.setMeta("voidedVersion", String(version)); this.voided = new Set(ids); }
+  isVoided(id: number) { return this.voided.has(id); }
 }

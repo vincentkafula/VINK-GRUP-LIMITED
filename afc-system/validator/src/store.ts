@@ -88,6 +88,9 @@ export class Store implements TapStore {
   categoryOf(uid: string): Category { return ((this.db.prepare("SELECT category FROM profiles WHERE uid = ?").get(uid) as { category: Category } | undefined)?.category) ?? "adult"; }
 
   /* single-trip tickets: the public keys that check them, and the tickets this device has used up */
+  get voidedVersion(): number { return this.num("voidedVersion", 0); }
+  setVoidedTickets(version: number, ids: number[]): void { this.setMeta("voided", JSON.stringify(ids)); this.setMeta("voidedVersion", String(version)); }
+  isVoided(id: number): boolean { const v = this.getMeta("voided"); return v ? (JSON.parse(v) as number[]).includes(id) : false; }
   get ticketKeysVersion(): number { return this.num("ticketKeysVersion", 0); }
   setTicketKeys(version: number, keys: { id: number; publicKey: string }[]): void { this.setMeta("ticketKeys", JSON.stringify(keys)); this.setMeta("ticketKeysVersion", String(version)); }
   ticketKeys(): Map<number, string> { const v = this.getMeta("ticketKeys"); return new Map(v ? (JSON.parse(v) as { id: number; publicKey: string }[]).map((k) => [k.id, k.publicKey]) : []); }

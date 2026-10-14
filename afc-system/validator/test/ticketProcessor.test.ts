@@ -125,3 +125,15 @@ describe("offline", () => {
     expect(store.pending()[0].offline).toBe(true);
   });
 });
+
+describe("cancelled tickets", () => {
+  it("a genuine ticket the server cancelled is refused and left unused", async () => {
+    const { card, t } = await ticketCard();
+    store.setVoidedTickets(7, [t.ticketId]);
+    const out = await proc.handle(card);
+    expect(out).toMatchObject({ status: "denied", reason: "TICKET_VOID" });
+    expect(fb.lines).toEqual(["NO  Ticket cancelled"]);
+    expect((await readTicket(card)).used).toBeNull();
+    expect(store.pending()[0]).toMatchObject({ result: "denied", denyReason: "TICKET_VOID", ticketId: t.ticketId });
+  });
+});
