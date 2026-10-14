@@ -4,6 +4,21 @@ import { hasDb, pool } from "../db/pool.js";
 import { adminUsers } from "../data/adminUsers.js";
 import { customerAccess, backOfficeAccess } from "./access.js";
 import { resolvePaymentsConfig, coreMode } from "../payments/config.js";
+import { createEmailSender } from "../auth/email.js";
+
+/**
+ * The VINK engine's outgoing mail (statements, notifications, reconciliation alerts) goes through the same sender as sign-in emails:
+ * Resend when RESEND_API_KEY and EMAIL_FROM are set, printed to the log in development, refused loudly in production without them.
+ */
+export function engineMailer(sender = createEmailSender()) {
+  const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return {
+    async send(m: { to: string; subject: string; text: string; attachments?: { filename: string; content: Buffer }[] }) {
+      await sender.send({ to: m.to, subject: m.subject, text: m.text, html: `<div style="font-family:sans-serif;white-space:pre-wrap">${esc(m.text)}</div>`, attachments: m.attachments });
+      return { id: "sent" };
+    },
+  };
+}
 
 // The payments/banking core is plain CommonJS (see core/). Typed loosely on purpose.
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -47,6 +62,7 @@ export function createManshyaModule() {
     dbPath,
     paymentsMode: payments.mode,
     config: { mode: coreMode(payments.mode) },
+    mailer: engineMailer(),
 
     authenticate: async (req: { get(h: string): string | undefined }) => {
       const a = customerAccess(req.get("authorization"));
