@@ -157,9 +157,9 @@ export async function addSupportMessage(ticketId: string, message: string, sende
   });
 }
 
-// ─── ManshyaPoints Helpers ───────────────────────────────────────────────────────
+// ─── VINK Points Helpers ───────────────────────────────────────────────────────
 
-export async function getManshyaPoints(profileId: string) {
+export async function getVinkPoints(profileId: string) {
   return supabase.from("vinkpoints").select("*").eq("profile_id", profileId).single();
 }
 

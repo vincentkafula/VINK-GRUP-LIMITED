@@ -286,7 +286,7 @@ export function OnboardingFlow({ isOpen, onClose, onComplete }: Props) {
               <div className="p-4 rounded-2xl" style={{ background: `${GOLD}12`, border: `1px solid ${GOLD}33` }}>
                 <div className="flex items-center gap-2">
                   <Star className="w-4 h-4" style={{ color: GOLD }} />
-                  <p className="text-sm font-semibold text-fg">Welcome bonus: <span style={{ color: GOLD }}>500 ManshyaPoints</span> added to your account!</p>
+                  <p className="text-sm font-semibold text-fg">Welcome bonus: <span style={{ color: GOLD }}>500 VINK Points</span> added to your account!</p>
                 </div>
               </div>
             </div>

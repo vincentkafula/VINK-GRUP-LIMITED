@@ -78,7 +78,7 @@ export function ManshyaPay({ isOpen, onClose }: { isOpen: boolean; onClose: () =
     <div className="mkp" role="dialog" aria-modal="true" aria-label="Pay securely">
       <TestModeBanner />
       <main>
-        <div className="logo">manshya<i>.</i></div>
+        <div className="logo">vink<i>.</i></div>
         {phase.t === "loading" && <p>Loading...</p>}
         {phase.t === "missing" && <><h1>Link not found</h1><p>Check the link you were sent, or ask the business for a new one.</p></>}
         {phase.t === "dealt" && <><h1>Already dealt with</h1><p>This payment request is {phase.status}.</p></>}

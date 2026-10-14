@@ -289,7 +289,7 @@ function HomeScreen({ tier, onSwitchTier, user }: { tier: Tier; onSwitchTier: ()
             <p className="text-white text-[12.5px] font-bold leading-snug w-32">Earn more with VINK Rewards</p>
             <Gift className="w-6 h-6" style={{ color: GOLD }} />
           </div>
-          <p className="text-white/60 text-[9.5px] mt-1.5">Spend, earn and redeem ManshyaPoints on every transaction.</p>
+          <p className="text-white/60 text-[9.5px] mt-1.5">Spend, earn and redeem VINK Points on every transaction.</p>
           <button className="mt-2.5 text-[10px] font-bold px-3 py-1.5 rounded-lg" style={{ background: GOLD, color: PURPLE }}>Learn More</button>
         </div>
         <div className="w-56 shrink-0 rounded-2xl p-3.5" style={{ background: "#FFF1E6" }}>
@@ -430,7 +430,7 @@ function HomeScreen({ tier, onSwitchTier, user }: { tier: Tier; onSwitchTier: ()
         <span className="text-2xl">🎁</span>
         <div>
           <p className="text-xs font-bold" style={{ color: PURPLE }}>Free Wi-Fi on VINK taxis!</p>
-          <p className="text-gray-500 text-[10px]">Earn 2× ManshyaPoints on taxi rides this week</p>
+          <p className="text-gray-500 text-[10px]">Earn 2× VINK Points on taxi rides this week</p>
         </div>
       </div>
     </div>
@@ -733,7 +733,7 @@ function RewardsScreen() {
   return (
     <div className="flex flex-col h-full" style={{ background: "#F9FAFB" }}>
       <div className="px-4 py-3 flex-shrink-0" style={{ background: PURPLE }}>
-        <p className="text-white font-bold text-base">ManshyaPoints</p>
+        <p className="text-white font-bold text-base">VINK Points</p>
       </div>
       <div className="flex-1 overflow-y-auto px-3 py-4 space-y-4">
         {/* Balance */}

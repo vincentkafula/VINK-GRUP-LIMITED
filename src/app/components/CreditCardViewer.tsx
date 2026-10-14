@@ -34,7 +34,7 @@ const ROW2 = [
       "3% cashback on international spend",
       "Personal concierge 24/7",
       "Global medical emergency evacuation",
-      "Earn up to 120,000 ManshyaPoints annually",
+      "Earn up to 120,000 VINK Points annually",
       "Virtual card for online security",
     ],
   },

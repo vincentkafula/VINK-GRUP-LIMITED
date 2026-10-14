@@ -8,7 +8,7 @@ import type { AuthPayload } from "../types/auth.js";
  * - The merchant/banking dashboard is for CUSTOMER accounts only. Staff
  *   roles (owner, superadmin, ...) have their own panels and are refused
  *   here even with a perfectly valid token.
- * - The back office (/api/manshya/admin) is the opposite: staff only
+ * - The back office (/api/vink/admin) is the opposite: staff only
  *   (owner or superadmin), never customers.
  */
 export const CUSTOMER_ROLE = "customer";

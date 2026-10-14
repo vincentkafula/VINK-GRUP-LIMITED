@@ -62,7 +62,7 @@ const APPS = [
     id: "banking",
     name: "VINK Banking",
     subtitle: "Personal & Business Banking",
-    description: "Your full VINK finance account in your pocket. Send money, manage cards, earn ManshyaPoints, pay utility bills, and access all your financial products — available 24/7 on iOS and Android.",
+    description: "Your full VINK finance account in your pocket. Send money, manage cards, earn VINK Points, pay utility bills, and access all your financial products — available 24/7 on iOS and Android.",
     platform: ["iOS", "Android"],
     category: "Banking & Finance",
     version: "v5.1.3",
@@ -73,7 +73,7 @@ const APPS = [
     emoji: "💳",
     badge: "Most Downloaded",
     badgeColor: BRAND.bad,
-    features: ["Instant money transfers", "Card management & virtual cards", "ManshyaPoints rewards", "Bill payments & airtime", "Investment account access"],
+    features: ["Instant money transfers", "Card management & virtual cards", "VINK Points rewards", "Bill payments & airtime", "Investment account access"],
   },
   {
     id: "revenue",

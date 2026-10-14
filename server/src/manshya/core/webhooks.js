@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 const { rid, now } = require('./util');
 
-// Signed outbound webhooks: header `X-Manshya-Signature: t=<unix>,v1=<hmac_sha256(secret, t + "." + body)>`
+// Signed outbound webhooks: header `X-VINK-Signature: t=<unix>,v1=<hmac_sha256(secret, t + "." + body)>`
 function buildEmitter(db) {
   async function deliver(evt, attempt = 1) {
     const m = db.prepare('SELECT webhook_url,webhook_secret FROM merchants WHERE id=?').get(evt.merchant_id);
@@ -12,7 +12,7 @@ function buildEmitter(db) {
     try {
       const r = await fetch(m.webhook_url, {
         method: 'POST', redirect: 'error', signal: AbortSignal.timeout(8000), body,
-        headers: { 'content-type': 'application/json', 'x-manshya-signature': `t=${t},v1=${v1}` },
+        headers: { 'content-type': 'application/json', 'x-vink-signature': `t=${t},v1=${v1}` },
       });
       if (!r.ok) throw new Error('HTTP ' + r.status);
       db.prepare('UPDATE events SET delivered=1,attempts=? WHERE id=?').run(attempt, evt.id);

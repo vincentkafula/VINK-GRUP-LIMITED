@@ -12,7 +12,7 @@ const { createManshya } = require("./core");
 const { ApiError } = require("./core/util");
 
 /**
- * Builds the VINK module and returns its Express router, to be mounted at /api/manshya.
+ * Builds the VINK module and returns its Express router, to be mounted at /api/vink.
  *
  * Sign-in is the app's own login (POST /api/auth/login -> JWT). This only decides who
  * gets in: customer accounts reach the merchant/banking API (one merchant per customer,

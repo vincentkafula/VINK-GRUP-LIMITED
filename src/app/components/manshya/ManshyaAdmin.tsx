@@ -74,7 +74,7 @@ export function ManshyaAdmin({ isOpen, onClose }: { isOpen: boolean; onClose: ()
     <div className="mka" role="dialog" aria-modal="true" aria-label="VINK back office">
       <TestModeBanner />
       <header>
-        <b>manshya<i>.</i> back office</b>
+        <b>vink<i>.</i> back office</b>
         {allowed && <nav>{(Object.keys(TABS) as Tab[]).map((k) => <button key={k} className={tab === k ? "on" : ""} onClick={() => setTab(k)}>{TABS[k]}</button>)}</nav>}
         <button className="lnk" style={{ color: "#fff", marginLeft: "auto" }} onClick={onClose}>Close</button>
       </header>

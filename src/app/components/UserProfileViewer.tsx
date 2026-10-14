@@ -35,7 +35,7 @@ const NOTIF_PREFS = [
   { key: "security", label: "Security alerts", desc: "Login attempts, password changes, suspicious activity", enabled: true },
   { key: "kyc", label: "KYC & compliance", desc: "Document expiry, verification status changes", enabled: true },
   { key: "loans", label: "Loan updates", desc: "Application status, repayment reminders", enabled: true },
-  { key: "promotions", label: "Promotions & offers", desc: "Special deals, ManshyaPoints bonuses", enabled: false },
+  { key: "promotions", label: "Promotions & offers", desc: "Special deals, VINK Points bonuses", enabled: false },
   { key: "travel", label: "Club travel", desc: "Booking confirmations, seat availability alerts", enabled: true },
   { key: "statements", label: "Monthly statements", desc: "When your statement is ready to download", enabled: true },
 ];
@@ -124,11 +124,11 @@ export function UserProfileViewer({ isOpen, onClose, onSignOut }: Props) {
             )}
           </div>
 
-          {/* ManshyaPoints */}
+          {/* VINK Points */}
           <div className="mt-4 p-3 rounded-xl flex items-center gap-3" style={{ background: `${P}22`, border: `1px solid ${P}44` }}>
             <Star className="w-5 h-5" style={{ color: GOLD }} />
             <div>
-              <p className="text-xs text-white/50">ManshyaPoints Balance</p>
+              <p className="text-xs text-white/50">VINK Points Balance</p>
               <p className="text-base font-black" style={{ color: GOLD }}>{profile.vinkPoints.toLocaleString()} pts</p>
             </div>
           </div>
@@ -256,7 +256,7 @@ export function UserProfileViewer({ isOpen, onClose, onSignOut }: Props) {
                       Copy
                     </button>
                   </div>
-                  <p className="text-xs text-fg-subtle mt-1">Earn 500 ManshyaPoints for every friend who joins</p>
+                  <p className="text-xs text-fg-subtle mt-1">Earn 500 VINK Points for every friend who joins</p>
                 </div>
               </Section>
             </div>

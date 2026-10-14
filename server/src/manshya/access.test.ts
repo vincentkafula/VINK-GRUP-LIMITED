@@ -44,9 +44,9 @@ describe("manshya HTTP access", () => {
     const mn = createManshyaModule();
     close = () => mn.db.close();
     const app = express();
-    app.use("/api/manshya", mn.router);
+    app.use("/api/vink", mn.router);
     server = await new Promise<Server>((ok) => { const s = app.listen(0, "127.0.0.1", () => ok(s)); });
-    base = `http://127.0.0.1:${(server.address() as { port: number }).port}/api/manshya`;
+    base = `http://127.0.0.1:${(server.address() as { port: number }).port}/api/vink`;
   });
   afterAll(() => { server.close(); close(); });
 

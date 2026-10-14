@@ -40,8 +40,8 @@ describe("ManshyaDashboard access", () => {
     asUser("customer");
     render(<ManshyaDashboard isOpen onClose={() => {}} />);
     expect(await screen.findByText(/Welcome back, Test/)).toBeInTheDocument();
-    expect(screen.getByText("manshya pay")).toBeInTheDocument();
-    await waitFor(() => expect(calls.some((c) => c.endsWith("/api/manshya/me"))).toBe(true));
+    expect(screen.getByText("VINK Pay")).toBeInTheDocument();
+    await waitFor(() => expect(calls.some((c) => c.endsWith("/api/vink/me"))).toBe(true));
   });
 
   it.each(["owner", "superadmin", "noc_engineer", "billing_admin", "seller"])("a %s account is turned away without any API call", (role) => {
@@ -81,6 +81,6 @@ describe("ManshyaAdmin access", () => {
     asUser("superadmin");
     render(<ManshyaAdmin isOpen onClose={() => {}} />);
     expect(screen.queryByText("Staff sign-in required")).not.toBeInTheDocument();
-    await waitFor(() => expect(calls.some((c) => c.endsWith("/api/manshya/admin/overview"))).toBe(true));
+    await waitFor(() => expect(calls.some((c) => c.endsWith("/api/vink/admin/overview"))).toBe(true));
   });
 });

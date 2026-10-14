@@ -11,7 +11,7 @@ const OFFERS = [
     name: "VINK Rewards Gold", issuer: "VINK Premier",
     grad: "linear-gradient(135deg,#7A5C2A 0%,#C4922A 60%,#E6B85A 100%)",
     badge: "Top Pick", badgeColor: BRAND.warn,
-    highlight: "Earn 2 ManshyaPoints per R10 on all spend",
+    highlight: "Earn 2 VINK Points per R10 on all spend",
     detail: "Redeem points for taxi fares, gym sessions, or airtime",
     net: "amex",
   },

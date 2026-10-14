@@ -106,7 +106,7 @@ app.use("/api", rateLimit({ windowMs: 60_000, max: 300, standardHeaders: true, l
 // its own body limits. Access is by login: customers get the dashboard API, staff the
 // back office (see manshya/access.ts).
 const manshya = createManshyaModule();
-app.use("/api/manshya", manshya.router);
+app.use("/api/vink", manshya.router);
 // Card issuer-processor real-time authorisations (raw body needed for the signature, so also before the JSON parser).
 // VINK token cards are decided by the token service, which is created further down; the issuer endpoint asks it through this bridge when a request arrives.
 const tokenCardsBridge: TokenCardAuthoriser = { authorise: async (a) => (tokenService ? tokenService.authoriseCardSpend(a) : null), reverse: async (a) => (tokenService ? tokenService.reverseCardSpend(a) : null), isActive: async (p, c) => (tokenService ? tokenService.cardIsActive(p, c) : null) };
@@ -383,7 +383,7 @@ app.get("/api", (_req, res) => {
       "/api/afc/*               — AFC device fleet management",
       "/api/payments/issuer/*   — card issuer-processor real-time authorisation webhook",
       "/api/payments/sandbox/*  — staff-only sandbox card-servicing tools (404 in live mode)",
-      "/api/manshya/*           — VINK payments & banking (customer accounts); /api/manshya/admin/* is the staff back office",
+      "/api/vink/*           — VINK payments & banking (customer accounts); /api/vink/admin/* is the staff back office",
       "WS     ws://localhost:3001/ws  (events: terminal.tap_received, terminal.fault_reported, route.violation, retail.transaction_received, retail.fault_reported)",
     ],
   });

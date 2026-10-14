@@ -1,6 +1,6 @@
 # VINK payments and banking (server module)
 
-A pluggable payments and banking backend: online payments, in-person (card machine) payments and business banking share one double-entry ledger. It runs inside this Express server, mounted at `/api/manshya`, and is used by the React screens in `src/app/components/manshya/`.
+A pluggable payments and banking backend: online payments, in-person (card machine) payments and business banking share one double-entry ledger. It runs inside this Express server, mounted at `/api/vink`, and is used by the React screens in `src/app/components/manshya/`.
 
 **Status:** a working, tested core with mock payment gateway and bank rail adapters. It does not move real money until you plug in licensed providers (see "Before going live").
 
@@ -10,11 +10,11 @@ Sign-in is the app's normal login (`POST /api/auth/login` returns a JWT). The mo
 
 | Area | Who | Anyone else |
 |---|---|---|
-| `/api/manshya/*` (dashboard API) | accounts with role **`customer`** | staff roles get `403 customer_only`, signed-out requests get `401` |
-| `/api/manshya/admin/*` (back office) | roles **`owner`** and **`superadmin`** | customers get `403 staff_only`; `mka_...` admin API keys still work |
-| `/api/manshya/public/*`, `/health`, gateway webhooks | anyone (rate limited; webhooks are signature-checked) | |
+| `/api/vink/*` (dashboard API) | accounts with role **`customer`** | staff roles get `403 customer_only`, signed-out requests get `401` |
+| `/api/vink/admin/*` (back office) | roles **`owner`** and **`superadmin`** | customers get `403 staff_only`; `mka_...` admin API keys still work |
+| `/api/vink/public/*`, `/health`, gateway webhooks | anyone (rate limited; webhooks are signature-checked) | |
 
-Each customer gets their own merchant account, created the first time they open the dashboard and keyed by their user id, so customers can never see each other's data. The frontend routes a customer to `/manshya` after sign-in, and the dashboard shows a "customer sign-in required" screen to anyone else; the server enforces the same rule regardless of the screen.
+Each customer gets their own merchant account, created the first time they open the dashboard and keyed by their user id, so customers can never see each other's data. The frontend routes a customer to `/dashboard` after sign-in, and the dashboard shows a "customer sign-in required" screen to anyone else; the server enforces the same rule regardless of the screen.
 
 `Authorization: Bearer mk_...` API keys (created under Settings, Developer settings) also work for server-to-server calls.
 
@@ -80,7 +80,7 @@ The module is plain CommonJS under `core/` (`allowJs`); `mount.ts` wires it to t
 | Cards | `/bank/cards` (+ `/activate`, `/block`, `/wallets`, `GET /transactions`) · sandbox `POST /bank/cards/:id/authorize` |
 | Other | `/rewards` · `/support/*` (tickets, FAQs, branches and ATMs, report fraud) · `/buyer/*` (verified-email buyer account) · `/vehicle/*` · `/disputes` |
 
-**Pages.** The React screens live in `src/app/components/manshya/` (frontend): `ManshyaDashboard` (customers, `/manshya`), `ManshyaAdmin` (staff back office, `/manshya-admin`) and `ManshyaPay` (public hosted checkout, `/pay?r=TOKEN` for a payment request or `/pay?b=TOKEN` for a payment button).
+**Pages.** The React screens live in `src/app/components/manshya/` (frontend): `ManshyaDashboard` (customers, `/dashboard`), `ManshyaAdmin` (staff back office, `/back-office`) and `ManshyaPay` (public hosted checkout, `/pay?r=TOKEN` for a payment request or `/pay?b=TOKEN` for a payment button).
 
 **Adapters** you replace for production: `gateways` (card and EFT gateway), `rails` (`send`, `sendInternational`, `verifyInbound`), `bills` (prepaid and bill providers), `vehicle` (licensing), `mailer` (email). Cards need an issuer processor that calls `cards.authorize()` from its authorisation webhook.
 
@@ -112,7 +112,7 @@ Card details must never reach this server. Use the provider's hosted fields or t
 
 ## Outbound webhooks
 
-`payment.paid`, `payment.failed`, `payment.refunded`, `payout.created`, `payout.failed`, `transfer.created`, `transfer.failed`. Each request carries `X-Manshya-Signature: t=<unix>,v1=<hmac_sha256(secret, t + "." + body)>`. Verify it and reject old timestamps. Failed deliveries retry up to 5 times with backoff.
+`payment.paid`, `payment.failed`, `payment.refunded`, `payout.created`, `payout.failed`, `transfer.created`, `transfer.failed`. Each request carries `X-VINK-Signature: t=<unix>,v1=<hmac_sha256(secret, t + "." + body)>`. Verify it and reject old timestamps. Failed deliveries retry up to 5 times with backoff.
 
 ## Before going live
 

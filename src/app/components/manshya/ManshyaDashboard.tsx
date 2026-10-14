@@ -89,7 +89,7 @@ export function ManshyaDashboard({ isOpen, onClose, onSignOut }: Props) {
       <div className="mn" data-theme={theme} role="dialog" aria-modal="true" aria-label="VINK sign-in required">
         <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", padding: 16 }}>
           <div className="card" style={{ maxWidth: 440 }}>
-            <div className="logo" style={{ width: "auto", padding: 0, color: "var(--side)", marginBottom: 10 }}>manshya<i>.</i></div>
+            <div className="logo" style={{ width: "auto", padding: 0, color: "var(--side)", marginBottom: 10 }}>vink<i>.</i></div>
             <h2>Customer sign-in required</h2>
             <p style={{ color: "var(--mute)" }}>{message}</p>
             <div className="dact">
@@ -119,16 +119,16 @@ export function ManshyaDashboard({ isOpen, onClose, onSignOut }: Props) {
   };
 
   const firstName = (session?.name || me?.name || "").split(/\s+/)[0] || "there";
-  // The Banking tab is kept, but without the "manshya finance" product name.
+  // The Banking tab is kept, but without a separate "finance" product name.
   const tabs: [Mode, string, string, string][] = [
-    ["online", "Online payments", "cart", "manshya pay"], ["pos", "In-person payments", "dev", "manshya tap"], ["bank", "Banking", "bank", "My banking"],
+    ["online", "Online payments", "cart", "VINK Pay"], ["pos", "In-person payments", "dev", "VINK Tap"], ["bank", "Banking", "bank", "My banking"],
   ];
 
   return (
     <div className="mn" data-mode={mode} data-page={page === "home" ? undefined : page} data-theme={theme} role="dialog" aria-modal="true" aria-label="VINK business dashboard">
       <TestModeBanner />
       <div className="bar">
-        <div className="logo">manshya<i>.</i></div>
+        <div className="logo">vink<i>.</i></div>
         <div className="tabs" role="group" aria-label="Payment type">
           {tabs.map(([m, small, icon, label]) => (
             <button key={m} className={mode === m ? "on" : ""} onClick={() => switchMode(m)}>

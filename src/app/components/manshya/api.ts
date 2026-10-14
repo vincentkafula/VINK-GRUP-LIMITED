@@ -6,7 +6,7 @@
 import { API_BASE } from "../../services/config";
 import { authFetch } from "../../services/authSession";
 
-export const MANSHYA_BASE = `${API_BASE}/api/manshya`;
+export const MANSHYA_BASE = `${API_BASE}/api/vink`;
 
 export class ManshyaError extends Error {
   status: number;

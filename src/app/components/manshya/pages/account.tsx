@@ -117,7 +117,7 @@ P["s/dev"] = async () => {
           const v = await ask("Webhook URL", [{ name: "url", label: "https:// address that receives events" }], "Save");
           if (!v) return;
           const r = await api("/webhook", { method: "PUT", body: v });
-          await secret("Webhook signing secret", r.secret, "Use it to check the X-Manshya-Signature header. It cannot be shown again.");
+          await secret("Webhook signing secret", r.secret, "Use it to check the X-VINK-Signature header. It cannot be shown again.");
         },
       },
     ],

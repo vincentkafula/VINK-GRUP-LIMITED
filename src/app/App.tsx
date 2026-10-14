@@ -253,8 +253,8 @@ export default function App() {
       else if (id === "account")           { mount("postLogin");        setShowPostLogin(true); }
       else if (id === "managementPanel")   { mount("managementPanel");  setShowManagementPanel(true); pushRoute("/management-panel"); }
       else if (id.startsWith("portal:") && id.slice(7) in PORTALS) { mount("portal"); setPortal(id.slice(7) as PortalKey); pushRoute("/portal/" + id.slice(7)); }
-      else if (id === "manshya")           { mount("manshya");          setShowManshya(true); pushRoute("/manshya"); }
-      else if (id === "manshyaAdmin")      { mount("manshyaAdmin");     setShowManshyaAdmin(true); pushRoute("/manshya-admin"); }
+      else if (id === "manshya")           { mount("manshya");          setShowManshya(true); pushRoute("/dashboard"); }
+      else if (id === "manshyaAdmin")      { mount("manshyaAdmin");     setShowManshyaAdmin(true); pushRoute("/back-office"); }
       else if (id === "adminBankingPanel") { mount("banking");          setShowBanking(true); }
       else if (id === "appLauncher")       { mount("appLauncher");      setShowAppLauncher(true); }
       else if (id === "afcApp")            { mount("afcApp");           setShowAFCApp(true); }
@@ -522,8 +522,8 @@ export default function App() {
     if (seg[0] === "portal" && seg[1] && seg[1] in PORTALS) { mount("portal"); setPortal(seg[1] as PortalKey); return true; }
     if (path === "/reset-password") { mount("authLink"); setAuthLink("reset");  return true; }
     if (path === "/verify-email")   { mount("authLink"); setAuthLink("verify"); return true; }
-    if (path === "/manshya")       { mount("manshya");      setShowManshya(true);      return true; }
-    if (path === "/manshya-admin") { mount("manshyaAdmin"); setShowManshyaAdmin(true); return true; }
+    if (path === "/dashboard")       { mount("manshya");      setShowManshya(true);      return true; }
+    if (path === "/back-office") { mount("manshyaAdmin"); setShowManshyaAdmin(true); return true; }
     if (path === "/pay")           { mount("manshyaPay");   setShowManshyaPay(true);   return true; }
     return false;
   };
