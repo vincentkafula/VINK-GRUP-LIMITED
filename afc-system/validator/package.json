@@ -5,8 +5,8 @@
   "type": "module",
   "engines": { "node": ">=22.13" },
   "scripts": {
-    "start": "tsx src/main.ts",
-    "sim": "tsx src/main.ts --sim"
+    "start": "tsx --env-file-if-exists=.env src/main.ts",
+    "sim": "tsx --env-file-if-exists=.env src/main.ts --sim"
   },
   "dependencies": {
     "@afc/shared": "*",

@@ -13,3 +13,4 @@ export * from "./fare/types";
 export * from "./fare/engine";
 export * from "./fare/sample";
 export * from "./sync";
+export * from "./desfire/selftest";

@@ -1,0 +1,47 @@
+# One command to run the server side:   docker compose up --build
+# Copy .env.example to .env first and fill in the secrets. The stack refuses to start without them.
+#   db         PostgreSQL 16 (data in a named volume)
+#   backend    the API on :4000 (applies database migrations on start)
+#   dashboard  the staff web app on :3000
+# Validators (the devices on the vehicles) are NOT part of this file: they run on their own hardware (see README).
+# First run only:  docker compose run --rm backend npx tsx prisma/seed.ts     (sample data + staff accounts + one demo device)
+name: afc
+
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: afc
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: afc
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck: { test: ["CMD-SHELL", "pg_isready -U afc -d afc"], interval: 5s, timeout: 5s, retries: 10 }
+
+  backend:
+    build: { context: ., dockerfile: backend/Dockerfile }
+    restart: unless-stopped
+    depends_on: { db: { condition: service_healthy } }
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_URL: postgresql://afc:${POSTGRES_PASSWORD}@db:5432/afc
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env (32+ random characters)}
+      DEVICE_KEY_MASTER: ${DEVICE_KEY_MASTER:?Set DEVICE_KEY_MASTER in .env (64 hex characters)}
+      CORS_ORIGIN: ${DASHBOARD_URL:-http://localhost:3000}
+      MOBILE_MONEY_WEBHOOK_SECRET: ${MOBILE_MONEY_WEBHOOK_SECRET:-}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-}
+    ports: ["4000:4000"]
+    healthcheck: { test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"], interval: 15s, timeout: 5s, retries: 5, start_period: 30s }
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: dashboard/Dockerfile
+      args: { NEXT_PUBLIC_API_URL: "${API_PUBLIC_URL:-http://localhost:4000}" }
+    restart: unless-stopped
+    depends_on: [backend]
+    ports: ["3000:3000"]
+
+volumes:
+  pgdata:
