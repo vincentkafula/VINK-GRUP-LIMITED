@@ -11,6 +11,14 @@ export interface UserRecord {
   email: string;
   emailVerified: boolean;
   lastLogin: Date | null;
+  /** Sign-in protection: failed attempts in a row, and when a lock ends. */
+  failedLogins?: number;
+  lockedUntil?: Date | null;
+  /** Second factor (TOTP): the secret is stored encrypted; recovery codes only as hashes. */
+  mfaEnabled?: boolean;
+  mfaSecretEnc?: string | null;
+  mfaLastStep?: number;
+  mfaRecovery?: string[];
 }
 
 export interface RefreshRecord {
@@ -36,6 +44,20 @@ export interface AuthStore {
   setPasswordHash(userId: string, passwordHash: string): Promise<void>;
   setEmailVerified(userId: string): Promise<void>;
   touchLastLogin(userId: string, at: Date): Promise<void>;
+
+  /* brute-force protection */
+  /** Counts a failed attempt; locks the account for `lockMs` once `max` have failed in a row. */
+  recordLoginFailure(userId: string, at: Date, max: number, lockMs: number): Promise<{ failed: number; lockedUntil: Date | null }>;
+  clearLoginFailures(userId: string): Promise<void>;
+
+  /* second factor */
+  setMfaPending(userId: string, secretEnc: string): Promise<void>;
+  enableMfa(userId: string, recoveryHashes: string[], step: number): Promise<void>;
+  disableMfa(userId: string): Promise<void>;
+  /** Atomically accepts a time step only if it is newer than the last one used, so a code works once. */
+  useMfaStep(userId: string, step: number): Promise<boolean>;
+  /** Atomically spends a recovery code. */
+  consumeRecovery(userId: string, hash: string): Promise<boolean>;
 
   /* refresh tokens (rotating, grouped in families so theft can revoke the whole chain) */
   insertRefresh(r: Omit<RefreshRecord, "revokedAt" | "replacedBy">, meta?: { userAgent?: string; ip?: string }): Promise<void>;
@@ -76,6 +98,22 @@ export class MemoryAuthStore implements AuthStore {
   async setEmailVerified(userId: string) { const u = this.users.get(userId); if (u) u.emailVerified = true; }
   async touchLastLogin(userId: string, at: Date) { const u = this.users.get(userId); if (u) u.lastLogin = at; }
 
+  async recordLoginFailure(userId: string, at: Date, max: number, lockMs: number) {
+    const u = this.users.get(userId); if (!u) return { failed: 0, lockedUntil: null };
+    u.failedLogins = (u.failedLogins ?? 0) + 1;
+    if (u.failedLogins >= max) { u.lockedUntil = new Date(at.getTime() + lockMs); u.failedLogins = 0; }
+    return { failed: u.failedLogins, lockedUntil: u.lockedUntil ?? null };
+  }
+  async clearLoginFailures(userId: string) { const u = this.users.get(userId); if (u) { u.failedLogins = 0; u.lockedUntil = null; } }
+  async setMfaPending(userId: string, secretEnc: string) { const u = this.users.get(userId); if (u) { u.mfaSecretEnc = secretEnc; u.mfaEnabled = false; } }
+  async enableMfa(userId: string, recoveryHashes: string[], step: number) { const u = this.users.get(userId); if (u) { u.mfaEnabled = true; u.mfaRecovery = recoveryHashes; u.mfaLastStep = step; } }
+  async disableMfa(userId: string) { const u = this.users.get(userId); if (u) { u.mfaEnabled = false; u.mfaSecretEnc = null; u.mfaRecovery = []; u.mfaLastStep = 0; } }
+  async useMfaStep(userId: string, step: number) { const u = this.users.get(userId); if (!u || step <= (u.mfaLastStep ?? 0)) return false; u.mfaLastStep = step; return true; }
+  async consumeRecovery(userId: string, hash: string) {
+    const u = this.users.get(userId); const i = u?.mfaRecovery?.indexOf(hash) ?? -1;
+    if (!u || i < 0) return false; u.mfaRecovery!.splice(i, 1); return true;
+  }
+
   async insertRefresh(r: Omit<RefreshRecord, "revokedAt" | "replacedBy">) { this.refresh.set(r.id, { ...r, revokedAt: null, replacedBy: null }); }
   async findRefreshByHash(tokenHash: string) { return [...this.refresh.values()].find((r) => r.tokenHash === tokenHash) ?? null; }
   async markRotated(id: string, replacedBy: string, at: Date) {
@@ -109,6 +147,8 @@ interface Queryable { query(text: string, params?: unknown[]): Promise<{ rows: a
 const toUser = (r: any): UserRecord => ({   // eslint-disable-line @typescript-eslint/no-explicit-any
   id: r.id, username: r.username, passwordHash: r.password_hash, role: r.role, name: r.name, email: r.email,
   emailVerified: r.email_verified !== false, lastLogin: r.last_login ? new Date(r.last_login) : null,
+  failedLogins: Number(r.failed_logins ?? 0), lockedUntil: r.locked_until ? new Date(r.locked_until) : null,
+  mfaEnabled: r.mfa_enabled === true, mfaSecretEnc: r.mfa_secret ?? null, mfaLastStep: Number(r.mfa_last_step ?? 0), mfaRecovery: r.mfa_recovery ?? [],
 });
 const toRefresh = (r: any): RefreshRecord => ({   // eslint-disable-line @typescript-eslint/no-explicit-any
   id: r.id, userId: r.user_id, familyId: r.family_id, tokenHash: r.token_hash, expiresAt: new Date(r.expires_at),
@@ -135,6 +175,21 @@ export class PgAuthStore implements AuthStore {
   async setPasswordHash(userId: string, passwordHash: string) { await this.db.query("UPDATE users SET password_hash = $2 WHERE id = $1", [userId, passwordHash]); }
   async setEmailVerified(userId: string) { await this.db.query("UPDATE users SET email_verified = true WHERE id = $1", [userId]); }
   async touchLastLogin(userId: string, at: Date) { await this.db.query("UPDATE users SET last_login = $2 WHERE id = $1", [userId, at]); }
+
+  async recordLoginFailure(userId: string, at: Date, max: number, lockMs: number) {
+    const { rows } = await this.db.query(
+      `UPDATE users SET
+         locked_until = CASE WHEN failed_logins + 1 >= $3 THEN $2::timestamptz + ($4 || ' milliseconds')::interval ELSE locked_until END,
+         failed_logins = CASE WHEN failed_logins + 1 >= $3 THEN 0 ELSE failed_logins + 1 END
+       WHERE id = $1 RETURNING failed_logins, locked_until`, [userId, at, max, String(lockMs)]);
+    return rows[0] ? { failed: Number(rows[0].failed_logins), lockedUntil: rows[0].locked_until ? new Date(rows[0].locked_until) : null } : { failed: 0, lockedUntil: null };
+  }
+  async clearLoginFailures(userId: string) { await this.db.query("UPDATE users SET failed_logins = 0, locked_until = NULL WHERE id = $1 AND (failed_logins <> 0 OR locked_until IS NOT NULL)", [userId]); }
+  async setMfaPending(userId: string, secretEnc: string) { await this.db.query("UPDATE users SET mfa_secret = $2, mfa_enabled = false WHERE id = $1", [userId, secretEnc]); }
+  async enableMfa(userId: string, recoveryHashes: string[], step: number) { await this.db.query("UPDATE users SET mfa_enabled = true, mfa_recovery = $2, mfa_last_step = $3 WHERE id = $1", [userId, recoveryHashes, step]); }
+  async disableMfa(userId: string) { await this.db.query("UPDATE users SET mfa_enabled = false, mfa_secret = NULL, mfa_recovery = '{}', mfa_last_step = 0 WHERE id = $1", [userId]); }
+  async useMfaStep(userId: string, step: number) { const r = await this.db.query("UPDATE users SET mfa_last_step = $2 WHERE id = $1 AND mfa_last_step < $2", [userId, step]); return r.rowCount === 1; }
+  async consumeRecovery(userId: string, hash: string) { const r = await this.db.query("UPDATE users SET mfa_recovery = array_remove(mfa_recovery, $2) WHERE id = $1 AND $2 = ANY(mfa_recovery)", [userId, hash]); return r.rowCount === 1; }
 
   async insertRefresh(r: Omit<RefreshRecord, "revokedAt" | "replacedBy">, meta: { userAgent?: string; ip?: string } = {}) {
     await this.db.query(

@@ -190,6 +190,10 @@ function openDb({ db, dbPath = ':memory:', mode = 'sandbox' } = {}) {
   const addCol = (t, c, def) => {
     if (!conn.prepare(`PRAGMA table_info(${t})`).all().some((r) => r.name === c)) conn.exec(`ALTER TABLE ${t} ADD COLUMN ${c} ${def}`);
   };
+  addCol('events', 'next_attempt_at', 'TEXT');
+  addCol('events', 'last_error', 'TEXT');
+  addCol('events', 'dead', 'INTEGER NOT NULL DEFAULT 0');
+  addCol('events', 'delivered_at', 'TEXT');
   addCol('merchants', 'settings', "TEXT NOT NULL DEFAULT '{}'");
   addCol('merchants', 'profile', "TEXT NOT NULL DEFAULT '{}'");
   addCol('api_keys', 'role', "TEXT NOT NULL DEFAULT 'admin'");

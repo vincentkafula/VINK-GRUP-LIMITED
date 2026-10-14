@@ -29,7 +29,7 @@ function validateWebhookUrl(raw, config) {
   return u.toString();
 }
 
-module.exports = function buildRouter({ db, services: s, gateways, config, authenticate, routes2, routes3 }) {
+module.exports = function buildRouter({ db, events, services: s, gateways, config, authenticate, routes2, routes3 }) {
   const r = express.Router();
   const ipKey = (req) => 'ip:' + req.ip;
 
@@ -160,6 +160,14 @@ module.exports = function buildRouter({ db, services: s, gateways, config, authe
   r.delete('/webhook', wrap((req, res) => {
     db.prepare('UPDATE merchants SET webhook_url=NULL,webhook_secret=NULL WHERE id=?').run(M(req).id);
     res.json({ ok: true });
+  }));
+
+  // webhook deliveries: see what was sent, what is failing, and replay a dead letter
+  r.get('/events', wrap((req, res) => res.json({ data: events.list(M(req).id, String(req.query.status || 'all'), Number(req.query.limit) || 50) })));
+  r.post('/events/:id/replay', need('admin'), wrap(async (req, res) => {
+    const outcome = await events.replay(M(req).id, req.params.id);
+    if (!outcome) throw new ApiError(404, 'event_not_found', 'No such event');
+    res.json({ id: req.params.id, outcome });
   }));
 
   routes2.mountPrivate(r, { wrap, idem, need });

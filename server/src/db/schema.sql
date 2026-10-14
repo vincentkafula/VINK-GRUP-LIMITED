@@ -748,6 +748,14 @@ CREATE INDEX IF NOT EXISTS idx_retail_device_faults_unresolved ON retail_device_
 -- Existing users are treated as already verified; only accounts created after this migration start unverified.
 ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN NOT NULL DEFAULT true;
 
+-- Sign-in protection (lock after repeated failures) and the second factor (TOTP). The secret is stored encrypted, recovery codes only as hashes.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS failed_logins INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS locked_until TIMESTAMPTZ;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS mfa_enabled BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS mfa_secret TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS mfa_last_step BIGINT NOT NULL DEFAULT 0;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS mfa_recovery TEXT[] NOT NULL DEFAULT '{}';
+
 -- Rotating refresh tokens. Only a hash is stored. A "family" is the chain of tokens issued from one sign-in, so presenting an
 -- old (already-rotated) token can revoke the whole chain.
 CREATE TABLE IF NOT EXISTS refresh_tokens (

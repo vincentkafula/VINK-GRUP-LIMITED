@@ -98,6 +98,9 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
   // Pre-filled only in local development (see DEFAULT_CUSTOMER). A remembered username still wins.
   const [userNumber, setUserNumber] = useState(DEFAULT_CUSTOMER.username);
   const [password, setPassword] = useState(DEFAULT_CUSTOMER.password);
+  // asked for only when the server says this account uses two-factor sign-in
+  const [needCode, setNeedCode] = useState(false);
+  const [mfaCode, setMfaCode] = useState("");
   const [pwHidden, setPwHidden] = useState(true);
   const [remember, setRemember] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -125,7 +128,7 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
   const handleForgot = async (e: React.FormEvent) => {
     e.preventDefault();
     const email = forgotEmail.trim();
-    if (!/^[^s@]+@[^s@]+.[^s@]{2,}$/.test(email)) { setError("Enter the email address on your account."); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { setError("Enter the email address on your account."); return; }
     setLoading(true); setError(null);
     const r = await authApi.forgotPassword(email);
     setLoading(false);
@@ -144,17 +147,22 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
     setLoading(true);
     setError(null);
 
-    let result = await authApi.login(userNumber.trim(), password);
+    let result = await authApi.login(userNumber.trim(), password, needCode ? mfaCode.trim() : undefined);
 
     // A network blip shouldn't be treated as proof this is a customer
     // account — retry before giving up, the same way the health check does.
     if (!result.success && result.error?.toLowerCase().includes("demo mode")) {
       await new Promise(r => setTimeout(r, 1200));
-      result = await authApi.login(userNumber.trim(), password);
+      result = await authApi.login(userNumber.trim(), password, needCode ? mfaCode.trim() : undefined);
+    }
+
+    if (!result.success && (result as { code?: string }).code === "mfa_required") {
+      setLoading(false); setNeedCode(true); setError(null);
+      return;
     }
 
     if (result.success) {
-      setLoading(false);
+      setLoading(false); setNeedCode(false); setMfaCode("");
       if (remember) localStorage.setItem(REMEMBER_KEY, userNumber.trim());
       else localStorage.removeItem(REMEMBER_KEY);
       onClose();
@@ -303,6 +311,12 @@ export function LoginModal({ isOpen, onClose, onSelectDashboard }: LoginModalPro
                   masked={pwHidden}
                   onToggleMask={() => setPwHidden((v) => !v)}
                 />
+                {needCode && (
+                  <>
+                    <FormField id="vink-mfa-code" icon={<Lock className="w-4 h-4" />} label="Authenticator code" value={mfaCode} onChange={setMfaCode} autoFocus />
+                    <p className="-mt-2 mb-4 text-[12.5px] text-fg-muted">Enter the 6-digit code from your authenticator app, or one of your recovery codes.</p>
+                  </>
+                )}
 
                 <div className="flex items-center justify-between mb-6 text-[13px]">
                   <label className="flex items-center gap-1.5 text-fg-muted cursor-pointer">

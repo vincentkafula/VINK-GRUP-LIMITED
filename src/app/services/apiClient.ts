@@ -191,8 +191,12 @@ function storeAuth(r: ApiResponse<{ token: string; user: object }>) {
 }
 
 export const authApi = {
-  login: async (username: string, password: string) =>
-    storeAuth(normalizeAuthResponse(await api.post<{ token: string; user: object }>("/api/auth/login", { username, password }))),
+  /** `code` is the 6-digit authenticator code (or a recovery code) for accounts with two-factor sign-in; the server answers code "mfa_required" when it is needed. */
+  login: async (username: string, password: string, code?: string) =>
+    storeAuth(normalizeAuthResponse(await api.post<{ token: string; user: object }>("/api/auth/login", code ? { username, password, code } : { username, password }))),
+  mfaSetup: () => api.post<{ secret: string; otpauthUri: string }>("/api/auth/mfa/setup", {}, true),
+  mfaEnable: (code: string) => api.post<{ recoveryCodes: string[] }>("/api/auth/mfa/enable", { code }, true),
+  mfaDisable: (password: string, code: string) => api.post<null>("/api/auth/mfa/disable", { password, code }, true),
   register: async (body: { username: string; password: string; name: string; email: string; role?: "customer" | "seller" }) =>
     storeAuth(normalizeAuthResponse(await api.post<{ token: string; user: object }>("/api/auth/register", body))),
   me: () => api.get("/api/auth/me", true),

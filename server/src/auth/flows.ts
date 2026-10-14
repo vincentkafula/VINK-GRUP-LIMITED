@@ -68,6 +68,7 @@ export class AuthFlows {
     const user = await this.store.findUserById(userId);
     if (!user) throw new FlowError("invalid_token", "This link is invalid or has expired.");
     await this.store.setPasswordHash(user.id, await bcrypt.hash(newPassword.trim(), BCRYPT_ROUNDS));
+    await this.store.clearLoginFailures(user.id);   // a reset also lifts a lock
     await this.store.invalidateEmailTokens(user.id, "reset", this.now());
     await this.sessions.logoutEverywhere(user.id);
   }

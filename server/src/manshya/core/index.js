@@ -143,7 +143,7 @@ function createManshya(options = {}) {
   const routes2 = buildRoutes2({ core: services, account, online, catalog, banking, config });
 
   // Run this on a timer (every minute is fine): subscriptions, payout schedules, scheduled payments, auto-savings.
-  const runDue = async (at = new Date()) => ({ subscriptions: await online.runSubscriptions(at), payout_schedules: await online.runPayoutSchedules(at), scheduled_payments: await banking.runScheduled(at), savings: banking.runSavings(at), interest: banking.accrueInterest(at), cash: p2.runCash(at), credit: credit.runDue(at), premiums: insurance.runPremiums(at) });
+  const runDue = async (at = new Date()) => ({ subscriptions: await online.runSubscriptions(at), webhooks: await baseEmit.retryDue(at), payout_schedules: await online.runPayoutSchedules(at), scheduled_payments: await banking.runScheduled(at), savings: banking.runSavings(at), interest: banking.accrueInterest(at), cash: p2.runCash(at), credit: credit.runDue(at), premiums: insurance.runPremiums(at) });
   const startScheduler = (ms = 60000) => { const t = setInterval(() => runDue().catch((e) => console.error('scheduler', e.message)), ms); t.unref(); return () => clearInterval(t); };
 
   const byKey = async (req) => {
@@ -153,7 +153,7 @@ function createManshya(options = {}) {
     return row ? { merchantId: row.merchant_id, role: row.role, actor: 'key:…' + row.hint } : null;
   };
   const authenticate = options.authenticate || byKey;
-  const router = buildRouter({ db, services, gateways, config, authenticate, routes2, routes3 });
-  return { router, services, account, online, catalog, banking, admin, statements, payments2: p2, cards, extras, credit, insurance, mail, runDue, startScheduler, db, ledger, config, gateways, A, close: () => db.close() };
+  const router = buildRouter({ db, events: baseEmit, services, gateways, config, authenticate, routes2, routes3 });
+  return { events: baseEmit, router, services, account, online, catalog, banking, admin, statements, payments2: p2, cards, extras, credit, insurance, mail, runDue, startScheduler, db, ledger, config, gateways, A, close: () => db.close() };
 }
 module.exports = { createManshya, DEFAULTS };
