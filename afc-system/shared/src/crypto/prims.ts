@@ -19,3 +19,6 @@ export function timingSafeEqual(a: Uint8Array, b: Uint8Array): boolean {
 const buf = (u: Uint8Array) => Buffer.from(u.buffer, u.byteOffset, u.byteLength);
 export const sha256 = (data: string | Uint8Array): Buffer => buf(nobleSha256(typeof data === "string" ? Buffer.from(data, "utf8") : data));
 export const hmacSha256 = (key: Uint8Array, data: string | Uint8Array): Buffer => buf(hmac(nobleSha256, key, typeof data === "string" ? Buffer.from(data, "utf8") : data));
+
+/** A random UUID (v4). */
+export const uuid = (): string => globalThis.crypto.randomUUID();

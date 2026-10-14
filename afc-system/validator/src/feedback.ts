@@ -1,16 +1,9 @@
 import { spawn } from "node:child_process";
+import type { Feedback } from "@afc/shared";
 
-/**
- * What the passenger sees and hears. Green light and one beep for success; red light and two beeps for a refusal; a short message
- * and the balance for a small display. `console` is for development; `gpio` drives a buzzer and a red/green LED on a Raspberry Pi.
- */
-export interface Feedback {
-  success(message: string): void;
-  fail(message: string): void;
-  /** Card detected, working on it. */
-  busy(): void;
-}
+export type { Feedback };
 
+/** Green light and one beep for success; red light and two beeps for a refusal. `console` is for development; `gpio` drives a buzzer and a red/green LED on a Raspberry Pi. */
 export class ConsoleFeedback implements Feedback {
   lines: string[] = [];
   constructor(private readonly out: (s: string) => void = (s) => console.log(s), private readonly colour = process.stdout.isTTY) {}

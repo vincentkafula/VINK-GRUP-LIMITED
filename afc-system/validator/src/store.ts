@@ -1,6 +1,6 @@
 import { createRequire } from "node:module";
 import type { DatabaseSync as Db } from "node:sqlite";
-import type { Category, FareTable, SyncTransaction } from "@afc/shared";
+import type { Category, FareTable, Intent, SyncTransaction, TapStore } from "@afc/shared";
 
 /**
  * The validator's own memory, in SQLite (WAL, so a power cut loses at most the last write, never the file):
@@ -9,12 +9,11 @@ import type { Category, FareTable, SyncTransaction } from "@afc/shared";
  *   meta      sequence number, versions of the hotlist / profiles / fare table, last sync result
  *   hotlist, profiles, fare table copies from the server
  */
-export interface Intent { uid: string; txnId: string; expectedCounter: number; balanceBefore: number; fare: number; txn: SyncTransaction; createdAt: number }
 
 // loaded with require so bundlers/test runners that do not know the newer built-in module leave it alone
 const { DatabaseSync } = createRequire(import.meta.url)("node:sqlite") as typeof import("node:sqlite");
 
-export class Store {
+export class Store implements TapStore {
   private readonly db: Db;
   constructor(path = ":memory:") {
     this.db = new DatabaseSync(path);
@@ -30,6 +29,8 @@ export class Store {
     `);
   }
   close(): void { this.db.close(); }
+  /** SQLite writes with fsync on every statement (WAL, synchronous=FULL), so everything written is already durable. */
+  async durable(): Promise<void> { /* nothing to wait for */ }
 
   /* meta */
   getMeta(key: string): string | undefined { return (this.db.prepare("SELECT value FROM meta WHERE key = ?").get(key) as { value: string } | undefined)?.value; }
