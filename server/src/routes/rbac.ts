@@ -14,11 +14,10 @@ const SUPER_ADMIN_ROLES = ["owner", "superadmin"] as const;
 
 const router: ReturnType<typeof Router> = Router();
 
-// The four management modules, then one section per department mailbox (named exactly like the department, for example "Sales"): a department manager is
+// The three management modules, then one section per department mailbox (named exactly like the department, for example "Sales"): a department manager is
 // someone approved for that section, either from an application to manage it or from an approved job application for the department.
 export const MODULE_SECTIONS: readonly string[] = [
   "Bank Management", "Payment Management",
-  "Company Registration Management",
   "Social Responsibility Management",
   "Social Media Management",
 ];

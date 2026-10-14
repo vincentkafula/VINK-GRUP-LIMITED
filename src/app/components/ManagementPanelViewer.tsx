@@ -34,8 +34,6 @@ const PURPLE = BRAND.crimson;
 const MODULE_COLORS: Record<string, { bg: string; color: string }> = {
   "Bank Management":                   { bg: "#EEEBFF", color: "#6D5DFC" },
   "Payment Management":                { bg: "#E6F0FF", color: "#2563EB" },
-  "Company Registration":              { bg: "#CCFBF1", color: "#0D9488" },
-  "Company Registration Management":   { bg: "#CCFBF1", color: "#0D9488" },
   "Social Responsibility":             { bg: "#FCE7F3", color: "#DB2777" },
   "Social Responsibility Management":  { bg: "#FCE7F3", color: "#DB2777" },
 };
@@ -43,7 +41,6 @@ const MODULE_COLORS: Record<string, { bg: string; color: string }> = {
 const SIDEBAR_MODULES = [
   { label: "Bank", icon: <Landmark className="w-4 h-4" /> },
   { label: "Payment", icon: <CreditCard className="w-4 h-4" /> },
-  { label: "Company Registration", icon: <Building2 className="w-4 h-4" /> },
   { label: "Social Responsibility", icon: <HeartHandshake className="w-4 h-4" /> },
 ];
 
@@ -55,7 +52,6 @@ const SIDEBAR_MODULES = [
 const SIDEBAR_TO_SECTION: Record<string, string> = {
   "Bank": "Bank Management",
   "Payment": "Payment Management",
-  "Company Registration": "Company Registration Management",
   "Social Responsibility": "Social Responsibility Management",
 };
 
@@ -76,7 +72,6 @@ interface ModuleTile { title: string; displayTitle: string; desc: string; icon: 
 const MODULE_TILES: ModuleTile[] = [
   { title: "Bank Management", displayTitle: "Bank", desc: "Manage bank accounts, branches, services and banking operations.", icon: <Landmark className="w-7 h-7" />, iconBg: MODULE_COLORS["Bank Management"].bg, iconColor: MODULE_COLORS["Bank Management"].color },
   { title: "Payment Management", displayTitle: "Payment", desc: "Manage payments, settlements, refunds and transaction rules.", icon: <CreditCard className="w-7 h-7" />, iconBg: MODULE_COLORS["Payment Management"].bg, iconColor: MODULE_COLORS["Payment Management"].color },
-  { title: "Company Registration Management", displayTitle: "Company Registration", desc: "Manage company registrations, verifications and compliance.", icon: <Building2 className="w-7 h-7" />, iconBg: MODULE_COLORS["Company Registration Management"].bg, iconColor: MODULE_COLORS["Company Registration Management"].color },
   { title: "Social Responsibility Management", displayTitle: "Social Responsibility", desc: "Manage CSR initiatives, donations, projects and community impact.", icon: <HeartHandshake className="w-7 h-7" />, iconBg: MODULE_COLORS["Social Responsibility Management"].bg, iconColor: MODULE_COLORS["Social Responsibility Management"].color },
 ];
 

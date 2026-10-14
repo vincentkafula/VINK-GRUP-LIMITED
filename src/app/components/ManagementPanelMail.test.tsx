@@ -80,7 +80,7 @@ describe("Management Panel: department mail", () => {
   });
 
   it("offers a department made by a Super Administrator as a section to apply for, and opens its mailbox to a manager approved for it", async () => {
-    allSections = ["Bank Management", "Payment Management", "Company Registration Management", "Social Responsibility Management", "Sales", "Legal Affairs"];
+    allSections = ["Bank Management", "Payment Management", "Social Responsibility Management", "Sales", "Legal Affairs"];
     sections = ["Legal Affairs"]; await open("customer");
     expect(btn("Department mail")).toBeTruthy();                                                   // approved for a department that is not built in
     await act(async () => { btn("Apply for a Section")!.click(); }); await settle();
