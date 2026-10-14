@@ -28,12 +28,14 @@ afc-system/
 
 ## What is real and what is a stand-in
 
-**Verified by tests in this repository (`npm test`: 191 tests):**
+**Verified by tests in this repository (`npm test`: about 210 tests):**
 - AES-CMAC against the RFC 4493 vectors, key diversification against NXP's published AN10922 example.
 - The whole card protocol (authenticate, MACed debit/credit, commit/abort, change key) between the reader code and a **software card**, including a card pulled away mid-transaction and a reply lost after a commit.
 - The fare engine, the ledger (enforced by Postgres triggers: append-only, balanced, no negative card balance), top-up idempotency, signed device sync with replay protection, anomaly detection, reports, the live feed. These run against a **real PostgreSQL** (an embedded one, started by the tests).
 - Validator and server together over HTTP (offline taps, lost replies, hotlist, forged replies, cloned-card detection).
 - **Single-trip Ultralight tickets**: signature check (Ed25519, bound to the card's UID), password-protected writes, one-use enforcement on the card, on the device and on the server, copy detection, tickets pulled away mid-write. Against a software Ultralight with the real chip's password rules.
+- **Cancelling a ticket** (void/refund): the sale is reversed in the books, the ticket is marked void, devices are told at their next sync and refuse it; a used ticket cannot be cancelled.
+- **Ultralight C tickets** and the **P18Q terminal flow** (journal store, plugin contract, Keystore key provider) against software cards and a fake plugin; see docs/DEVICE.md.
 - Sealed key files (wrong passphrase, tampering, per-station subsets) and the mobile-money adapter slot (two differently shaped callbacks).
 
 **NOT verified here, and you must verify before going live:**
@@ -41,8 +43,9 @@ afc-system/
 2. The PC/SC reader glue (`nfc-pcsc`), the Raspberry Pi GPIO feedback and the Docker images were written but not run on real hardware or Docker in this environment.
 3. **Mobile money**: the callback is verified through an adapter (`backend/src/domain/mobileMoney.ts`). Two adapters ship: the small signed format used by the tests, and one illustrating a differently shaped provider. **Neither is a real provider.** Writing the adapter for yours (MTN MoMo, Airtel Money, ...) is a short, testable job once you have their callback documentation and a sandbox account.
 4. **Hardware-backed key custody.** Sealed key files (passphrase-encrypted, one file per kind of station) are built and tested: they keep master keys out of environment variables and out of plain files. A **KMS/HSM/NXP SAM** still needs your module behind `ExternalKeyProvider`: a SAM keeps keys out of process memory entirely, which a software file cannot.
-5. **Ultralight on a real reader.** The ticket logic is tested against a software chip; the pseudo-APDUs that read and write pages through an ACR122U/ACR1252U (and the password command through the reader's pass-through) come from the reader's manual and were not run on hardware. Bench-test one ticket write and read before relying on them.
-6. **Not built, on purpose:** EV2/EV3 "secure messaging" (the newer channel; it needs an authenticated test against real cards, and writing it from memory would give a false sense of safety, so the code uses the EV1-compatible AES mode that EV2/EV3 cards also speak), LRP, and cards configured with **random UIDs** (they hide the UID the per-card keys are derived from; turn that feature off, or tell me and I will derive keys from a card serial stored in a free-read file). Ticket void/refund is also not built.
+5. **The P18Q plugin (`AfcDevicePlugin.java`).** Compiles against the vendor SDK and its CMAC is checked against RFC 4493, but no `BasicOper` call has run on a unit: follow the bench list in docs/DEVICE.md. Ultralight C keys and the Android Keystore key custody are in the same position. A SAM (secure access module) is not built.
+5b. **Ultralight on a real reader.** The ticket logic is tested against a software chip; the pseudo-APDUs that read and write pages through an ACR122U/ACR1252U (and the password command through the reader's pass-through) come from the reader's manual and were not run on hardware. Bench-test one ticket write and read before relying on them.
+6. **Not built, on purpose:** EV2/EV3 "secure messaging" (the newer channel; it needs an authenticated test against real cards, and writing it from memory would give a false sense of safety, so the code uses the EV1-compatible AES mode that EV2/EV3 cards also speak), LRP, and cards configured with **random UIDs** (they hide the UID the per-card keys are derived from; turn that feature off, or tell me and I will derive keys from a card serial stored in a free-read file). 
 
 ## Quick start, no hardware (about 5 minutes)
 

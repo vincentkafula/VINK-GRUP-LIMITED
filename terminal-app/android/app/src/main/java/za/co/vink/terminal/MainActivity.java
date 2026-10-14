@@ -7,6 +7,7 @@ public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(P18QTerminalPlugin.class);
+        registerPlugin(AfcDevicePlugin.class);
         super.onCreate(savedInstanceState);
     }
 }

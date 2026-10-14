@@ -14,7 +14,11 @@
     "@capacitor/core": "^8.5.0",
     "lucide-react": "0.487.0",
     "react": "18.3.1",
-    "react-dom": "18.3.1"
+    "react-dom": "18.3.1",
+    "buffer": "^6.0.3",
+    "@noble/ciphers": "^2.4.0",
+    "@noble/curves": "^2.4.0",
+    "@noble/hashes": "^2.4.0"
   },
   "devDependencies": {
     "@capacitor/assets": "^3.0.5",

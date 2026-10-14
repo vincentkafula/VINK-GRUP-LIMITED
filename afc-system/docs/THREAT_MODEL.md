@@ -25,6 +25,9 @@ What the design defends against, how, and what risk is left. "Held" means the pr
 
 ## Weak points of this implementation to be aware of
 
+- On the P18Q the master keys are imported into the Android Keystore from a provisioning screen: the key passes through the app once, and the Keystore may be software-backed on a given unit (`keyStatus()`). Code that takes over the app can still ask for card keys. A SAM would be stronger and is not built.
+- Ultralight C has no configuration lock bit; its AUTH pages are protected by the same key as the ticket pages, so the protection is exactly as strong as that per-card key.
+
 - The card protocol is implemented from NXP's documents and tested against a software card written by the same author, plus published test vectors for the primitives. Run the self-test on real cards before relying on it.
 - The EV1-compatible AES channel is used, not EV2/EV3 secure messaging. It is sound but older.
 - Staff tokens live in `sessionStorage` (cleared when the tab closes). An XSS bug in the dashboard would expose them; the dashboard has no HTML injection paths today, but keep it that way.

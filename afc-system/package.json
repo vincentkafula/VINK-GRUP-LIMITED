@@ -8,6 +8,7 @@
     "shared",
     "backend",
     "validator",
+    "terminal",
     "dashboard"
   ],
   "scripts": {

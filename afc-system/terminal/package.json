@@ -1,0 +1,10 @@
+{
+  "name": "@afc/terminal",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "The AFC tap flow on the P18Q: bridge to the Decard-SDK Capacitor plugin (AfcDevicePlugin.java), journal store, Keystore key provider",
+  "dependencies": {
+    "@afc/shared": "*"
+  }
+}
