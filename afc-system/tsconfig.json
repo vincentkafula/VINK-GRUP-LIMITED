@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.base.json",
+  "include": ["shared/src", "shared/test", "backend/src", "backend/test", "validator/src", "validator/test", "scripts"],
+  "compilerOptions": { "noEmit": true }
+}

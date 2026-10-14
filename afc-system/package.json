@@ -1,0 +1,24 @@
+{
+  "name": "afc-system",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Automatic Fare Collection: MIFARE DESFire fare cards, validator, backend and dashboard",
+  "type": "module",
+  "workspaces": ["shared", "backend", "validator", "dashboard"],
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "backend": "npm run dev -w backend",
+    "validator": "npm run start -w validator",
+    "validator:sim": "npm run sim -w validator",
+    "dashboard": "npm run dev -w dashboard",
+    "personalize": "tsx scripts/personalize.ts",
+    "selftest": "tsx scripts/selftest.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.9"
+  }
+}
