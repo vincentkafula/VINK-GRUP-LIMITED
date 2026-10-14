@@ -62,3 +62,9 @@ Written 14 October 2026 after reading the code in `server/src` (auth, portal, `m
 | Seven dashboards with no API calls and no way to open them (AFC Management, Card Network, Management Hub), or only from a role switcher in the bank panel (Driver, Owner, Taxi Association, Investor). | Deleted; the role switcher opens the real portals (`/portal/driver`, `owner`, `association`, `investor`). |
 
 Still open: the phone-app previews (Banking, Business, Corporate, Mobile) are static designs, not connected to accounts. Connecting them to the signed-in VINK dashboard endpoints is the next rewiring job; Revenue/AFC levy and the NOC/MVNO panels read from their own APIs and need a data-source review.
+
+## 6. Stage 3 (14 October 2026): the personal banking app is real
+
+`VinkBankingApp` was rewritten on the customer's own VINK accounts (`/api/vink`): balances and total, open an account, send to a saved recipient / another VINK account / own account (idempotency key on every send, reported as sent only after the ledger posts it), add recipients, statement history, cards (order, activate, block-and-replace), cashback balance and redeem. The old tier "verification" flow, fixed balances and invented transactions are gone. When the API cannot be reached it shows an error, not numbers. Non-customer accounts are told the app is for customers.
+
+Still static previews: Business, Corporate and Mobile phone apps (they carry the "Preview with sample data" strip). Cards remain in test mode until a BIN sponsor / issuer is connected.

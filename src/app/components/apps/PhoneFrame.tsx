@@ -42,8 +42,10 @@ export function PhoneFrame({ children, statusBarColor = "#fff", statusBarTextLig
 }
 
 /** Full-screen mobile overlay — wraps PhoneFrame in a fixed overlay */
-export function MobileAppOverlay({ children, onClose, appName, bgColor = "#fff" }: {
+export function MobileAppOverlay({ children, onClose, appName, bgColor = "#fff", live = false }: {
   children: React.ReactNode; onClose: () => void; appName: string; bgColor?: string;
+  /** True for an app that runs on the customer's real accounts: it needs no "preview" notice. */
+  live?: boolean;
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.7)" }}>
@@ -62,10 +64,10 @@ export function MobileAppOverlay({ children, onClose, appName, bgColor = "#fff" 
         </div>
       </div>
       {/* These phone screens are previews with sample figures; say so, and point to the real thing */}
-      <div role="note" data-preview-notice className="absolute bottom-3 left-1/2 z-30 flex w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 items-center justify-between gap-3 rounded-full bg-black/80 px-4 py-2 text-[12px] text-white backdrop-blur">
+      {!live && <div role="note" data-preview-notice className="absolute bottom-3 left-1/2 z-30 flex w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 items-center justify-between gap-3 rounded-full bg-black/80 px-4 py-2 text-[12px] text-white backdrop-blur">
         <span>Preview with sample data. No money moves here.</span>
         <button type="button" onClick={() => openSignIn(onClose)} className="shrink-0 rounded-full bg-white px-3 py-1 font-bold text-black">Sign in</button>
-      </div>
+      </div>}
       {/* Close button outside frame */}
       <button onClick={onClose}
         className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/20 backdrop-blur flex items-center justify-center text-white hover:bg-white/30 transition-colors">

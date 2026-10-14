@@ -1,906 +1,379 @@
-import { useState, useEffect } from "react";
-import { Home, Send, CreditCard, Clock, Star, Bell, ChevronRight, ArrowUpRight, ArrowDownLeft, Zap, Smartphone, ShoppingCart, Gift, CheckCircle, AlertTriangle, Loader2, Sparkles, Anchor as AnchorIcon, TrendingUp, Mountain, Crown, Landmark, Target, Wallet, PiggyBank, Award, Eye, EyeOff, ShieldCheck, Menu, QrCode, Banknote, User, MoreHorizontal, RefreshCw, CircleDollarSign } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { Home, Send, CreditCard, Clock, Star, Loader2, Eye, EyeOff, ShieldCheck, CheckCircle, AlertTriangle, ArrowUpRight, ArrowDownLeft, Plus, Lock, RefreshCw } from "lucide-react";
 import { MobileAppOverlay, PhoneFrame } from "./PhoneFrame";
 import { authApi, getSession, clearSession, type ApiUser } from "../../services/apiClient";
+import { api, ManshyaError } from "../manshya/api";
 import { BRAND } from "../../brand";
 
-type Screen = "onboarding" | "home" | "send" | "cards" | "history" | "rewards";
-type Tier = "Spark" | "Anchor" | "Momentum" | "Horizon" | "Summit" | "Legacy";
+/**
+ * The personal banking app. Everything on every screen comes from the signed-in customer's own VINK accounts: balances, transfers,
+ * saved recipients, statement lines, cards and cashback. Nothing here is sample data, and a transfer is only reported as done when the
+ * server has posted it to the ledger. Amounts travel as cents.
+ */
 
 const PURPLE = BRAND.crimson;
-const GOLD = BRAND.gold;
+type Screen = "home" | "send" | "cards" | "history" | "rewards";
 
-const TIER_INFO: Record<Tier, { order: number; icon: React.ReactNode; tagline: string; unlocks: string; balanceLabel: string; cardGradient: string }> = {
-  Spark:    { order: 1, icon: <Sparkles className="w-5 h-5" />,     tagline: "Simple, clean entry banking — no clutter, no fees.",         unlocks: "Digital onboarding, payments, virtual card, bill pay",              balanceLabel: "Available Balance", cardGradient: `linear-gradient(135deg, ${PURPLE}, #175E38)` },
-  Anchor:   { order: 2, icon: <AnchorIcon className="w-5 h-5" />,   tagline: "Everyday banking with budgets and money management.",       unlocks: "+ Smart budgets, subscription detection, scheduled payments",       balanceLabel: "Available Balance", cardGradient: `linear-gradient(135deg, ${PURPLE}, #175E38)` },
-  Momentum: { order: 3, icon: <TrendingUp className="w-5 h-5" />,   tagline: "Every payment earns you something back.",                    unlocks: "+ Cashback, loyalty points, merchant offers, challenges",           balanceLabel: "Available Balance", cardGradient: `linear-gradient(135deg, #C9A84C, ${PURPLE})` },
-  Horizon:  { order: 4, icon: <Mountain className="w-5 h-5" />,     tagline: "Built around reaching your savings goals faster.",          unlocks: "+ Goal-based savings, auto-save rules, AI coaching",                balanceLabel: "Available Balance", cardGradient: `linear-gradient(135deg, #0369A1, ${PURPLE})` },
-  Summit:   { order: 5, icon: <Crown className="w-5 h-5" />,        tagline: "Premium banking with concierge-level service.",              unlocks: "+ Relationship manager, lounge access, multi-currency wallet",      balanceLabel: "Available Balance", cardGradient: `linear-gradient(135deg, #B45309, ${PURPLE})` },
-  Legacy:   { order: 6, icon: <Landmark className="w-5 h-5" />,     tagline: "Private banking and wealth management, for generations.",   unlocks: "+ Investments, net worth dashboard, estate planning",               balanceLabel: "Net Worth",         cardGradient: `linear-gradient(135deg, #182230, #101828)` },
-};
-const TIER_ORDER: Tier[] = ["Spark", "Anchor", "Momentum", "Horizon", "Summit", "Legacy"];
+interface Account { id: string; name: string; number: string; kind: string; balance: number }
+interface Beneficiary { id: string; name: string; bank: string; account_number: string; branch_code: string | null }
+interface Transfer { id: string; from_account: string; kind: string; to_ref: string; amount: number; reference: string | null; status: string; category: string | null; created_at: string }
+interface Card { id: string; account_id: string; brand: string; last4: string; limit: number; status: string; kind?: string }
+interface Line { date: string; kind: string; memo: string | null; amount: number; balance: number }
 
-const TRANSACTIONS = [
-  { emoji: "🛒", name: "Shoprite Claremont",       amount: -284.50,  date: "Today",    cat: "Grocery" },
-  { emoji: "💰", name: "Salary — VINK Corp",         amount: 18500.00, date: "Today",    cat: "Income" },
-  { emoji: "⛽", name: "Shell Garage Observatory",  amount: -650.00,  date: "Yesterday",cat: "Fuel" },
-  { emoji: "🏋️", name: "Planet Fitness",            amount: -299.00,  date: "18 Jun",   cat: "Health" },
-  { emoji: "📺", name: "Netflix",                   amount: -199.00,  date: "17 Jun",   cat: "Entertainment" },
-  { emoji: "🏥", name: "Netcare Life Healthcare",   amount: -1200.00, date: "16 Jun",   cat: "Medical" },
-  { emoji: "🍕", name: "Steers",                    amount: -89.00,   date: "15 Jun",   cat: "Food" },
-  { emoji: "💳", name: "Refund — Takealot",         amount: 340.00,   date: "14 Jun",   cat: "Refund" },
-  { emoji: "📱", name: "MTN Airtime",               amount: -50.00,   date: "14 Jun",   cat: "Airtime" },
-  { emoji: "🚕", name: "VINK Taxi Fare",            amount: -68.00,   date: "13 Jun",   cat: "Transport" },
-  { emoji: "🏢", name: "City of Cape Town — Rates", amount: -1440.00, date: "12 Jun",   cat: "Municipal" },
-  { emoji: "☕", name: "Truth Coffee Roasting",     amount: -42.00,   date: "11 Jun",   cat: "Food" },
-];
+export const rand = (cents: number) => (cents < 0 ? "-R " : "R ") + (Math.abs(cents) / 100).toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const toCents = (s: string) => Math.round(parseFloat(s.replace(",", ".")) * 100);
+const when = (iso: string) => new Date(iso).toLocaleDateString("en-ZA", { day: "numeric", month: "short" });
+const msg = (e: unknown) => (e instanceof ManshyaError || e instanceof Error ? e.message : "Something went wrong. Please try again.");
 
-const REWARDS_HISTORY = [
-  { event: "Taxi Fare — VINK Ride",       pts: "+68",  date: "Today" },
-  { event: "Shoprite Purchase",            pts: "+28",  date: "Today" },
-  { event: "Monthly Salary Deposit",       pts: "+185", date: "Yesterday" },
-  { event: "Shell Fuel Purchase",          pts: "+65",  date: "18 Jun" },
-  { event: "Airtime Purchase",             pts: "+5",   date: "14 Jun" },
-];
+const input = "w-full mb-2.5 px-3.5 py-3 rounded-xl border border-gray-200 text-sm outline-none bg-white";
+const primary = "w-full py-3.5 rounded-xl text-white text-sm font-bold disabled:opacity-50";
 
+/** Loads one thing and lets the screen retry it; the screen shows the error instead of stale or invented numbers. */
+function useLoad<T>(load: () => Promise<T>, deps: unknown[] = []) {
+  const [data, setData] = useState<T | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(true);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const run = useCallback(async () => { setBusy(true); setError(null); try { setData(await load()); } catch (e) { setError(msg(e)); } finally { setBusy(false); } }, deps);
+  useEffect(() => { void run(); }, [run]);
+  return { data, error, busy, reload: run };
+}
+
+function Problem({ error, retry }: { error: string; retry: () => void }) {
+  return (
+    <div role="alert" className="m-4 rounded-xl bg-red-50 p-4 text-center text-xs text-red-700">
+      <AlertTriangle className="mx-auto mb-2 h-5 w-5" aria-hidden="true" />
+      <p>{error}</p>
+      <button onClick={retry} className="mt-3 inline-flex items-center gap-1 rounded-full bg-white px-3 py-1.5 font-bold text-red-700"><RefreshCw className="h-3 w-3" />Try again</button>
+    </div>
+  );
+}
+const Spinner = () => <div className="flex flex-1 items-center justify-center py-16"><Loader2 className="h-6 w-6 animate-spin" style={{ color: PURPLE }} /></div>;
+
+/* ───────────── sign in ───────────── */
 function LoginScreen({ onAuthenticated }: { onAuthenticated: (user: ApiUser) => void }) {
   const [mode, setMode] = useState<"signin" | "register">("signin");
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [username, setUsername] = useState(""); const [password, setPassword] = useState("");
+  const [name, setName] = useState(""); const [email, setEmail] = useState("");
+  const [code, setCode] = useState(""); const [needCode, setNeedCode] = useState(false);
+  const [loading, setLoading] = useState(false); const [error, setError] = useState<string | null>(null);
 
   const submit = async () => {
     setError(null);
     if (!username || !password || (mode === "register" && (!name || !email))) { setError("Fill in all fields."); return; }
     setLoading(true);
-    const r = mode === "signin"
-      ? await authApi.login(username, password)
-      : await authApi.register({ username, password, name, email });
+    const r = mode === "signin" ? await authApi.login(username, password, needCode ? code.trim() : undefined) : await authApi.register({ username, password, name, email });
     setLoading(false);
-    if (r.success && r.data) { onAuthenticated((r.data as { user: ApiUser }).user); }
-    else setError((r as { error?: string }).error ?? "Something went wrong. Please try again.");
+    if (r.success && r.data) { onAuthenticated((r.data as { user: ApiUser }).user); return; }
+    if ((r as { code?: string }).code === "mfa_required") { setNeedCode(true); return; }
+    setError((r as { error?: string }).error ?? "Something went wrong. Please try again.");
   };
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F9FAFB" }}>
-      <div className="flex-1 flex flex-col justify-center px-6">
-        <div className="text-center mb-8">
+    <div className="flex h-full flex-col overflow-y-auto" style={{ background: "#F9FAFB" }}>
+      <div className="flex flex-1 flex-col justify-center px-6">
+        <div className="mb-8 text-center">
           <p className="text-2xl font-black"><span style={{ color: PURPLE }}>VINK</span> <span style={{ color: BRAND.navy }}>Bank</span></p>
-          <p className="text-gray-400 text-xs mt-1">Banking that moves with you.</p>
+          <p className="mt-1 text-xs text-gray-400">Banking that moves with you.</p>
         </div>
-
-        {error && <div className="mb-3 px-3 py-2 rounded-lg bg-red-50 text-red-600 text-xs font-medium">{error}</div>}
-
-        {mode === "register" && (
-          <>
-            <input value={name} onChange={e => setName(e.target.value)} placeholder="Full name"
-              className="w-full mb-2.5 px-3.5 py-3 rounded-xl border border-gray-200 text-sm outline-none" style={{ borderColor: "#E5E7EB" }} />
-            <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" type="email"
-              className="w-full mb-2.5 px-3.5 py-3 rounded-xl border border-gray-200 text-sm outline-none" />
-          </>
-        )}
-        <input value={username} onChange={e => setUsername(e.target.value)} placeholder="Username"
-          className="w-full mb-2.5 px-3.5 py-3 rounded-xl border border-gray-200 text-sm outline-none" />
-        <input value={password} onChange={e => setPassword(e.target.value)} placeholder="Password" type="password"
-          className="w-full mb-4 px-3.5 py-3 rounded-xl border border-gray-200 text-sm outline-none" />
-
-        <button onClick={submit} disabled={loading} className="w-full py-3.5 rounded-xl text-white text-sm font-bold disabled:opacity-50" style={{ background: PURPLE }}>
-          {loading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : mode === "signin" ? "Sign In" : "Create Account"}
+        {error && <div role="alert" className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-600">{error}</div>}
+        {mode === "register" && (<>
+          <input aria-label="Full name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" className={input} />
+          <input aria-label="Email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" type="email" className={input} />
+        </>)}
+        <input aria-label="Username" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Username" className={input} />
+        <input aria-label="Password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" type="password" className={input} />
+        {needCode && <input aria-label="Authenticator code" value={code} onChange={(e) => setCode(e.target.value)} placeholder="6-digit authenticator code" inputMode="numeric" className={input} />}
+        <button onClick={submit} disabled={loading} className={primary + " mt-1.5"} style={{ background: PURPLE }}>
+          {loading ? <Loader2 className="mx-auto h-4 w-4 animate-spin" /> : mode === "signin" ? "Sign In" : "Create Account"}
         </button>
-
-        <button onClick={() => { setMode(m => m === "signin" ? "register" : "signin"); setError(null); }} className="text-center text-xs font-semibold mt-4" style={{ color: PURPLE }}>
+        <button onClick={() => { setMode((m) => (m === "signin" ? "register" : "signin")); setError(null); }} className="mt-4 text-center text-xs font-semibold" style={{ color: PURPLE }}>
           {mode === "signin" ? "New here? Create an account" : "Already have an account? Sign in"}
         </button>
       </div>
-      <p className="text-center text-[10px] text-gray-300 pb-6">Same account works on vink.co.za and the VINK app.</p>
+      <p className="pb-6 text-center text-[10px] text-gray-400">Same account works on vink.co.za and the VINK app.</p>
     </div>
   );
 }
 
-function OnboardingScreen({ onSelect }: { onSelect: (tier: Tier) => void }) {
-  const [picked, setPicked] = useState<Tier | null>(null);
-
+/* ───────────── home ───────────── */
+function OpenAccount({ onDone }: { onDone: () => void }) {
+  const [name, setName] = useState("Everyday account"); const [kind, setKind] = useState<"current" | "savings">("current");
+  const [busy, setBusy] = useState(false); const [err, setErr] = useState<string | null>(null);
+  const open = async () => { setBusy(true); setErr(null); try { await api("/bank/accounts", { method: "POST", body: { name, kind } }); onDone(); } catch (e) { setErr(msg(e)); } finally { setBusy(false); } };
   return (
-    <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F9FAFB" }}>
-      <div className="px-5 pt-8 pb-5 text-center" style={{ background: PURPLE }}>
-        <p className="text-xs font-bold tracking-widest" style={{ color: "#ffffff" }}>VINK FINANCE</p>
-        <p className="text-white text-lg font-bold mt-2">Which account do you want?</p>
-        <p className="text-white/60 text-[11px] mt-1">Every tier keeps everything from the one before it.</p>
-      </div>
-
-      <div className="flex-1 px-3 pt-4 pb-3 space-y-2.5">
-        {TIER_ORDER.map(t => {
-          const info = TIER_INFO[t];
-          const active = picked === t;
-          return (
-            <button
-              key={t}
-              onClick={() => setPicked(t)}
-              className="w-full text-left rounded-2xl p-3.5 transition-all"
-              style={{ background: active ? `${PURPLE}0D` : "#fff", border: `1.5px solid ${active ? PURPLE : "#EEE"}`, boxShadow: active ? `0 4px 14px ${PURPLE}22` : "none" }}
-            >
-              <div className="flex items-center gap-3">
-                <span className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: active ? PURPLE : "#F3F4F6", color: active ? "#fff" : "#6B7280" }}>
-                  {info.icon}
-                </span>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <p className="text-sm font-bold text-gray-900">{t}</p>
-                    <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "#F3F4F6", color: "#9CA3AF" }}>TIER {info.order}</span>
-                  </div>
-                  <p className="text-gray-500 text-[10.5px] mt-0.5 leading-snug">{info.tagline}</p>
-                </div>
-                {active && <CheckCircle className="w-4 h-4 shrink-0" style={{ color: PURPLE }} />}
-              </div>
-              {active && (
-                <p className="text-[10px] mt-2.5 pt-2.5 border-t leading-relaxed" style={{ borderColor: `${PURPLE}22`, color: PURPLE }}>
-                  <strong>Unlocks:</strong> {info.unlocks}
-                </p>
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="px-3 pb-4 flex-shrink-0">
-        <button
-          disabled={!picked}
-          onClick={() => picked && onSelect(picked)}
-          className="w-full py-3 rounded-xl text-white text-sm font-bold disabled:opacity-40 transition-opacity"
-          style={{ background: PURPLE }}
-        >
-          {picked ? `Continue with ${picked}` : "Choose an account to continue"}
-        </button>
-      </div>
+    <div className="mx-3 mt-3 rounded-2xl bg-white p-4 shadow-sm">
+      <p className="mb-2 text-sm font-bold text-gray-900">Open an account</p>
+      <input aria-label="Account name" value={name} onChange={(e) => setName(e.target.value)} className={input} />
+      <select aria-label="Account type" value={kind} onChange={(e) => setKind(e.target.value as "current" | "savings")} className={input}><option value="current">Current</option><option value="savings">Savings</option></select>
+      {err && <p role="alert" className="mb-2 text-xs text-red-600">{err}</p>}
+      <button onClick={open} disabled={busy || !name.trim()} className={primary} style={{ background: PURPLE }}><Plus className="mr-1 inline h-4 w-4" />Open account</button>
     </div>
   );
 }
 
-function VerifyingScreen({ tier, onDone }: { tier: Tier; onDone: () => void }) {
-  useState(() => { const id = setTimeout(onDone, 1400); return () => clearTimeout(id); });
+function HomeScreen({ user, go }: { user: ApiUser; go: (s: Screen) => void }) {
+  const accounts = useLoad(async () => (await api<{ data: Account[] }>("/bank/accounts")).data);
+  const transfers = useLoad(async () => (await api<{ data: Transfer[] }>("/bank/transfers")).data);
+  const [hide, setHide] = useState(false);
+  const list = accounts.data ?? [];
+  const total = list.reduce((s, a) => s + a.balance, 0);
   return (
-    <div className="flex flex-col items-center justify-center h-full gap-4" style={{ background: "#F9FAFB" }}>
-      <Loader2 className="w-8 h-8 animate-spin" style={{ color: PURPLE }} />
-      <div className="text-center px-8">
-        <p className="text-sm font-bold text-gray-900">Setting up your {tier} Account</p>
-        <p className="text-gray-400 text-[11px] mt-1">Verifying identity and activating your features...</p>
+    <div className="flex h-full flex-col overflow-y-auto" style={{ background: "#F9FAFB" }}>
+      <div className="flex flex-shrink-0 items-center justify-between px-4 py-3" style={{ background: PURPLE }}>
+        <div><p className="text-[10px] text-white/60">Hello,</p><p className="text-sm font-bold text-white">{user.name}</p></div>
+        <span className="flex items-center gap-1 rounded-full bg-white/10 px-2 py-1 text-[9px] font-semibold text-white/80"><ShieldCheck className="h-3 w-3" />Secure</span>
       </div>
+      {accounts.busy && !accounts.data ? <Spinner /> : accounts.error ? <Problem error={accounts.error} retry={accounts.reload} /> : (<>
+        <div className="px-4 pb-1 pt-4">
+          <div className="flex items-center gap-1.5"><p className="text-[10px] font-medium text-gray-500">Total balance</p>
+            <button aria-label={hide ? "Show balance" : "Hide balance"} onClick={() => setHide((h) => !h)}>{hide ? <EyeOff className="h-3 w-3 text-gray-500" /> : <Eye className="h-3 w-3 text-gray-500" />}</button></div>
+          <p className="mt-0.5 text-2xl font-black text-gray-900" data-total>{hide ? "••••••" : rand(total)}</p>
+        </div>
+        {list.length === 0 ? <OpenAccount onDone={accounts.reload} /> : (
+          <div className="mx-3 mt-2 space-y-2">
+            {list.map((a) => (
+              <div key={a.id} className="rounded-2xl p-4 text-white shadow-lg" style={{ background: `linear-gradient(135deg, ${PURPLE}, #5b0a18)` }}>
+                <p className="text-[11px] capitalize text-white/70">{a.name} · {a.kind}</p>
+                <p className="mt-1 text-xl font-black">{hide ? "••••••" : rand(a.balance)}</p>
+                <p className="mt-1 font-mono text-[11px] text-white/70">Account {a.number}</p>
+              </div>))}
+          </div>)}
+        <div className="mx-3 mt-3 grid grid-cols-4 gap-2">
+          {([["send", "Send", Send], ["cards", "Cards", CreditCard], ["history", "History", Clock], ["rewards", "Rewards", Star]] as const).map(([id, label, Icon]) => (
+            <button key={id} onClick={() => go(id)} className="flex flex-col items-center gap-1 rounded-xl bg-white py-3 text-[10px] font-semibold text-gray-700 shadow-sm"><Icon className="h-5 w-5" style={{ color: PURPLE }} />{label}</button>))}
+        </div>
+        <p className="px-4 pb-1 pt-4 text-xs font-bold text-gray-900">Recent activity</p>
+        {transfers.error ? <Problem error={transfers.error} retry={transfers.reload} /> : (transfers.data ?? []).length === 0
+          ? <p className="px-4 text-xs text-gray-500">No transfers yet.</p>
+          : <TransferList items={(transfers.data ?? []).slice(0, 5)} />}
+      </>)}
     </div>
   );
 }
-function HomeScreen({ tier, onSwitchTier, user }: { tier: Tier; onSwitchTier: () => void; user: ApiUser }) {
-  const info = TIER_INFO[tier];
-  const unlockedFrom = (min: number) => info.order >= min;
-  const [hideBalance, setHideBalance] = useState(false);
-  const balance = tier === "Legacy" ? "R4,218,600.00" : "R20,700.00";
 
+function TransferList({ items }: { items: Transfer[] }) {
   return (
-    <div className="flex flex-col h-full overflow-y-auto" style={{ background: "#F9FAFB" }}>
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 flex-shrink-0" style={{ background: PURPLE }}>
-        <div>
-          <p className="text-white/60 text-[10px]">Hello,</p>
-          <p className="text-white text-sm font-bold">{user.name}</p>
-        </div>
-        <div className="flex items-center gap-2.5">
-          <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-white/10 text-white/80 text-[9px] font-semibold">
-            <ShieldCheck className="w-3 h-3" /> Secure
-          </span>
-          <button className="relative">
-            <Bell className="w-5 h-5 text-white/80" />
-            <div className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-red-400" />
-          </button>
-          <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center border border-white/30">
-            <span className="text-white text-xs font-bold">{user.name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Total balance */}
-      <div className="px-4 pt-4 pb-1">
-        <div className="flex items-center gap-1.5">
-          <p className="text-gray-400 text-[10px] font-medium">Total Balance</p>
-          <button onClick={() => setHideBalance(h => !h)}>{hideBalance ? <EyeOff className="w-3 h-3 text-gray-400" /> : <Eye className="w-3 h-3 text-gray-400" />}</button>
-        </div>
-        <p className="text-2xl font-black text-gray-900 mt-0.5">{hideBalance ? "••••••" : balance}</p>
-      </div>
-
-      {/* Balance card */}
-      <div className="mx-3 mt-2 rounded-2xl p-5 shadow-xl" style={{ background: info.cardGradient }}>
-        <button onClick={onSwitchTier} className="flex items-center gap-1 text-white/60 text-xs hover:text-white/90 transition-colors">
-          VINK {tier} Account <ChevronRight className="w-3 h-3" />
-        </button>
-        {tier === "Legacy" ? (
-          <>
-            <p className="text-white/50 text-[9px] mt-2 uppercase tracking-wider">Net Worth</p>
-            <p className="text-white text-[28px] font-bold tracking-tight mt-0.5">R4,218,600.00</p>
-            <div className="flex items-center gap-4 mt-2">
-              <div><p className="text-white/50 text-[8px]">Investments</p><p className="text-white text-[11px] font-bold">R3.1m</p></div>
-              <div><p className="text-white/50 text-[8px]">Cash</p><p className="text-white text-[11px] font-bold">R640k</p></div>
-              <div><p className="text-white/50 text-[8px]">Property</p><p className="text-white text-[11px] font-bold">R478k</p></div>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="flex items-center justify-between mt-1">
-              <p className="text-white text-[15px] font-bold tracking-tight">VINK</p>
-              <ShieldCheck className="w-4 h-4 text-white/70" />
-            </div>
-            <p className="text-white/50 text-xs mt-3 font-mono">**** **** **** 8061</p>
-            <p className="text-white/70 text-[11px] mt-1">{user.name}</p>
-          </>
-        )}
-        {unlockedFrom(3) && tier !== "Legacy" && (
-          <div className="flex items-center justify-between mt-4">
-            <div>
-              <p className="text-white/50 text-[9px]">VINKPOINTS</p>
-              <p className="font-bold text-xs" style={{ color: GOLD }}>4,230 pts · R42.30</p>
-            </div>
-            <div className="px-3 py-1 rounded-full text-[10px] font-bold" style={{ background: GOLD, color: PURPLE }}>
-              GOLD
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Summit+ concierge banner */}
-      {unlockedFrom(5) && (
-        <div className="mx-3 mt-3 rounded-2xl p-3.5 flex items-center gap-3" style={{ background: "#182230" }}>
-          <span className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ background: GOLD }}><Crown className="w-4 h-4" style={{ color: "#182230" }} /></span>
-          <div className="flex-1 min-w-0">
-            <p className="text-white text-xs font-bold">Priority Banker · Available now</p>
-            <p className="text-white/50 text-[10px]">Live video banker · Airport lounge access · No queue support</p>
-          </div>
-          <ChevronRight className="w-4 h-4 text-white/40 shrink-0" />
-        </div>
-      )}
-
-      {/* Quick actions */}
-      <div className="px-3 pt-4">
-        <div className="grid grid-cols-4 gap-y-3">
-          {[
-            ["Make\nPayment", <Send className="w-4 h-4" key="s" />],
-            ["Transfer\nFunds", <RefreshCw className="w-4 h-4" key="t" />],
-            ["Scan to\nPay", <QrCode className="w-4 h-4" key="q" />],
-            ["Buy\nAirtime", <Smartphone className="w-4 h-4" key="a" />],
-            ["Cardless Cash\nWithdrawal", <Banknote className="w-4 h-4" key="c" />],
-            ["Me", <User className="w-4 h-4" key="m" />],
-            ["Cards", <CreditCard className="w-4 h-4" key="cc" />],
-            ["More", <MoreHorizontal className="w-4 h-4" key="mo" />],
-          ].map(([label, icon]) => (
-            <div key={label as string} className="flex flex-col items-center gap-1.5">
-              <div className="w-11 h-11 rounded-2xl flex items-center justify-center shadow-sm" style={{ background: `${PURPLE}11`, border: `1.5px solid ${PURPLE}33`, color: PURPLE }}>
-                {icon}
-              </div>
-              <span className="text-gray-500 text-[8.5px] font-medium text-center leading-tight whitespace-pre-line">{label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Promo carousel */}
-      <div className="px-3 pt-4 flex gap-2.5 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
-        <div className="w-56 shrink-0 rounded-2xl p-3.5" style={{ background: PURPLE }}>
-          <div className="flex items-start justify-between">
-            <p className="text-white text-[12.5px] font-bold leading-snug w-32">Earn more with VINK Rewards</p>
-            <Gift className="w-6 h-6" style={{ color: GOLD }} />
-          </div>
-          <p className="text-white/60 text-[9.5px] mt-1.5">Spend, earn and redeem VINK Points on every transaction.</p>
-          <button className="mt-2.5 text-[10px] font-bold px-3 py-1.5 rounded-lg" style={{ background: GOLD, color: PURPLE }}>Learn More</button>
-        </div>
-        <div className="w-56 shrink-0 rounded-2xl p-3.5" style={{ background: "#FFF1E6" }}>
-          <div className="flex items-start justify-between">
-            <p className="text-crimson-text text-[12.5px] font-bold leading-snug w-32">Pay taxi fares with one tap</p>
-            <Smartphone className="w-6 h-6" style={{ color: BRAND.crimson }} />
-          </div>
-          <p className="text-crimson-text/70 text-[9.5px] mt-1.5">Fast. Secure. Convenient.</p>
-          <button className="mt-2.5 text-[10px] font-bold px-3 py-1.5 rounded-lg text-white" style={{ background: BRAND.crimson }}>Learn More</button>
-        </div>
-      </div>
-
-      {/* Anchor+ budget snapshot */}
-      {unlockedFrom(2) && (
-        <div className="px-3 pt-4">
-          <p className="text-gray-500 text-[10px] font-semibold uppercase tracking-wider mb-2">This Month's Budget</p>
-          <div className="rounded-2xl bg-white shadow-sm p-3.5">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-gray-800 text-xs font-semibold">R2,340 of R4,000 spent</span>
-              <span className="text-[10px] font-bold" style={{ color: PURPLE }}>58%</span>
-            </div>
-            <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden"><div className="h-full rounded-full" style={{ width: "58%", background: PURPLE }} /></div>
-            <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-50">
-              <Bell className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-              <p className="text-[10px] text-gray-500">3 subscriptions detected: Netflix, Spotify, Amazon Prime — R458/mo</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Momentum+ rewards & gamification */}
-      {unlockedFrom(3) && (
-        <div className="px-3 pt-4">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-gray-500 text-[10px] font-semibold uppercase tracking-wider">Rewards</p>
-            <button className="text-[10px] font-semibold" style={{ color: PURPLE }}>Points marketplace</button>
-          </div>
-          <div className="rounded-2xl p-3.5" style={{ background: `linear-gradient(135deg,${GOLD}22,${GOLD}0D)`, border: `1px solid ${GOLD}44` }}>
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-1.5"><Award className="w-4 h-4" style={{ color: GOLD }} /><span className="text-xs font-bold text-gray-800">Gold Tier</span></div>
-              <span className="text-[10px] text-gray-500">720 pts to Platinum</span>
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              {[["🍕","Restaurant","10% off"],["⛽","Fuel","R0.50/L back"],["✈️","Travel","2× points"]].map(([e,l,v]) => (
-                <div key={l} className="bg-white rounded-xl p-2 text-center">
-                  <p className="text-base">{e}</p>
-                  <p className="text-[9px] font-semibold text-gray-700 mt-0.5">{l}</p>
-                  <p className="text-[8px] text-gray-500">{v}</p>
-                </div>
-              ))}
-            </div>
-            <div className="flex items-center gap-2 mt-2.5 text-[10px] text-gray-600"><Zap className="w-3 h-3" style={{ color: GOLD }} /> Weekly challenge: Save R100 more → +150 pts</div>
-          </div>
-        </div>
-      )}
-
-      {/* Horizon+ savings goals */}
-      {unlockedFrom(4) && (
-        <div className="px-3 pt-4">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-gray-500 text-[10px] font-semibold uppercase tracking-wider">Savings Goals</p>
-            <button className="text-[10px] font-semibold" style={{ color: PURPLE }}>+ New goal</button>
-          </div>
-          <div className="space-y-2">
-            {[
-              { emoji: "🏖️", name: "Cape Town Getaway", saved: 8400, target: 15000 },
-              { emoji: "🚗", name: "New Car Deposit", saved: 32000, target: 60000 },
-            ].map(g => (
-              <div key={g.name} className="rounded-2xl bg-white shadow-sm p-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-lg">{g.emoji}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-gray-800">{g.name}</p>
-                    <p className="text-[9px] text-gray-500">R{g.saved.toLocaleString()} of R{g.target.toLocaleString()}</p>
-                  </div>
-                  <span className="text-[10px] font-bold" style={{ color: PURPLE }}>{Math.round(g.saved / g.target * 100)}%</span>
-                </div>
-                <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden"><div className="h-full rounded-full" style={{ width: `${g.saved / g.target * 100}%`, background: PURPLE }} /></div>
-              </div>
-            ))}
-            <div className="rounded-2xl p-2.5 flex items-center gap-2" style={{ background: `${PURPLE}0D` }}>
-              <Target className="w-3.5 h-3.5 shrink-0" style={{ color: PURPLE }} />
-              <p className="text-[10px]" style={{ color: PURPLE }}>Save R25 more weekly to reach your getaway goal 8 months earlier.</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Legacy investments */}
-      {unlockedFrom(6) && (
-        <div className="px-3 pt-4">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-gray-500 text-[10px] font-semibold uppercase tracking-wider">Portfolio</p>
-            <button className="text-[10px] font-semibold" style={{ color: PURPLE }}>Full report</button>
-          </div>
-          <div className="rounded-2xl bg-white shadow-sm p-3.5">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-semibold text-gray-800">Portfolio performance</span>
-              <span className="text-xs font-bold text-green-600">+8.4% YTD</span>
-            </div>
-            {[["Stocks & ETFs","45%",BRAND.crimsonDeep],["Bonds & Treasury","25%","#B45309"],["Property","19%",BRAND.gold],["Private Equity","11%","#0369A1"]].map(([label,pct,color]) => (
-              <div key={label} className="flex items-center gap-2 mb-1.5 last:mb-0">
-                <span className="w-16 text-[9px] text-gray-500 shrink-0">{label}</span>
-                <div className="flex-1 h-2 rounded-full bg-gray-100 overflow-hidden"><div className="h-full rounded-full" style={{ width: pct as string, background: color as string }} /></div>
-                <span className="w-8 text-[9px] font-semibold text-gray-700 text-right">{pct}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Recent transactions */}
-      <div className="px-3 pt-4">
-        <div className="flex items-center justify-between mb-2">
-          <p className="text-gray-500 text-[10px] font-semibold uppercase tracking-wider">Recent</p>
-          <button className="text-[10px] font-semibold" style={{ color: PURPLE }}>See all</button>
-        </div>
-        <div className="rounded-2xl overflow-hidden bg-white shadow-sm">
-          {TRANSACTIONS.slice(0, 5).map((t, i) => (
-            <div key={i} className={`flex items-center gap-3 px-3 py-2.5 ${i > 0 ? "border-t border-gray-100" : ""}`}>
-              <div className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center text-base flex-shrink-0">
-                {t.emoji}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-gray-800 text-xs font-medium truncate">{t.name}</p>
-                <p className="text-gray-500 text-[10px]">{t.date}</p>
-              </div>
-              <span className={`text-xs font-bold flex-shrink-0 ${t.amount > 0 ? "text-green-600" : "text-gray-700"}`}>
-                {t.amount > 0 ? "+" : ""}R{Math.abs(t.amount).toFixed(2)}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Promo */}
-      <div className="mx-3 mt-3 mb-4 rounded-2xl p-3 flex items-center gap-3" style={{ background: `${GOLD}22`, border: `1px solid ${GOLD}55` }}>
-        <span className="text-2xl">🎁</span>
-        <div>
-          <p className="text-xs font-bold" style={{ color: PURPLE }}>Free Wi-Fi on VINK taxis!</p>
-          <p className="text-gray-500 text-[10px]">Earn 2× VINK Points on taxi rides this week</p>
-        </div>
-      </div>
+    <div className="mx-3 mb-4 divide-y divide-gray-100 rounded-2xl bg-white shadow-sm">
+      {items.map((t) => (
+        <div key={t.id} className="flex items-center gap-3 px-3 py-2.5">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100"><ArrowUpRight className="h-4 w-4 text-gray-600" /></span>
+          <div className="min-w-0 flex-1"><p className="truncate text-xs font-semibold text-gray-900">{t.reference || t.category || "Transfer"}</p><p className="text-[10px] text-gray-500">{when(t.created_at)} · {t.status}</p></div>
+          <p className="text-xs font-bold text-gray-900">-{rand(t.amount)}</p>
+        </div>))}
     </div>
   );
 }
 
-const RECENT_RECIPIENTS = [
-  { initials: "SD", name: "Sipho D.",    ref: "VINK-GBL-2024-00002" },
-  { initials: "LM", name: "Lindiwe M.", ref: "VINK-GBL-2024-00003" },
-  { initials: "BZ", name: "Busisiwe Z.", ref: "VINK-GBL-2024-00004" },
-];
+/* ───────────── send ───────────── */
+function SendScreen({ initialAccountId }: { initialAccountId?: string }) {
+  const accounts = useLoad(async () => (await api<{ data: Account[] }>("/bank/accounts")).data);
+  const bens = useLoad(async () => (await api<{ data: Beneficiary[] }>("/bank/beneficiaries")).data);
+  const [to, setTo] = useState<"own" | "internal" | "beneficiary">("beneficiary");
+  const [from, setFrom] = useState(initialAccountId ?? ""); const [toAcc, setToAcc] = useState(""); const [number, setNumber] = useState(""); const [ben, setBen] = useState("");
+  const [amount, setAmount] = useState(""); const [reference, setReference] = useState("");
+  const [addOpen, setAddOpen] = useState(false); const [nb, setNb] = useState({ name: "", bank: "", accountNumber: "", branchCode: "" });
+  const [busy, setBusy] = useState(false); const [error, setError] = useState<string | null>(null); const [done, setDone] = useState<Transfer | null>(null);
+  const list = accounts.data ?? [];
+  const source = from || list[0]?.id || "";
 
-function SendScreen() {
-  const [recipient, setRecipient] = useState("");
-  const [amount, setAmount] = useState("");
-  const [note, setNote] = useState("");
-  const [rail, setRail] = useState<"Instant"|"Standard"|"International">("Instant");
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState<{ ref: string; amount: string } | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleSend = async () => {
-    if (!recipient.trim() || !amount || Number(amount) <= 0) {
-      setError("Please enter a recipient and amount."); return;
-    }
-    // This screen is a preview with sample figures: it never moves money or reports a transfer that did not happen.
-    setError("This is a preview with sample data, so no money was sent. Sign in to your VINK dashboard to send money.");
+  const addBen = async () => {
+    setError(null); setBusy(true);
+    try { const b = await api<Beneficiary>("/bank/beneficiaries", { method: "POST", body: { ...nb, branchCode: nb.branchCode || undefined } }); await bens.reload(); setBen(b.id); setAddOpen(false); setNb({ name: "", bank: "", accountNumber: "", branchCode: "" }); }
+    catch (e) { setError(msg(e)); } finally { setBusy(false); }
+  };
+  const send = async () => {
+    setError(null);
+    const cents = toCents(amount);
+    if (!source) { setError("Open an account first."); return; }
+    if (!Number.isFinite(cents) || cents < 100) { setError("Enter an amount of at least R 1.00."); return; }
+    const body: Record<string, unknown> = { type: to, fromAccountId: source, amount: cents, reference: reference.trim() || undefined };
+    if (to === "own") { if (!toAcc) { setError("Choose the account to send to."); return; } body.toAccountId = toAcc; }
+    if (to === "internal") { if (!number.trim()) { setError("Enter the account number."); return; } body.accountNumber = number.trim(); }
+    if (to === "beneficiary") { if (!ben) { setError("Choose or add a recipient."); return; } body.beneficiaryId = ben; }
+    setBusy(true);
+    try { setDone(await api<Transfer>("/bank/transfers", { method: "POST", body, idem: true })); await accounts.reload(); }
+    catch (e) { setError(msg(e)); } finally { setBusy(false); }
   };
 
-  if (success) {
-    return (
-      <div className="flex flex-col h-full items-center justify-center gap-5 px-6" style={{ background: "#F9FAFB" }}>
-        <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ background: "#10B98122" }}>
-          <CheckCircle className="w-10 h-10 text-green-500" />
-        </div>
-        <div className="text-center">
-          <p className="text-2xl font-black" style={{ color: PURPLE }}>R{Number(success.amount).toFixed(2)}</p>
-          <p className="text-sm font-semibold text-gray-700 mt-1">Sent successfully!</p>
-          <p className="text-xs text-gray-500 mt-1 font-mono">{success.ref}</p>
-        </div>
-        <button onClick={() => { setSuccess(null); setAmount(""); setRecipient(""); setNote(""); }}
-          className="w-full max-w-xs py-3.5 rounded-2xl font-bold text-sm text-white"
-          style={{ background: `linear-gradient(135deg,${PURPLE},#A50F27)` }}>
-          Send Another
-        </button>
-      </div>
-    );
-  }
+  if (done) return (
+    <div className="flex h-full flex-col items-center justify-center gap-4 px-6 text-center" style={{ background: "#F9FAFB" }}>
+      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-green-100"><CheckCircle className="h-10 w-10 text-green-600" /></div>
+      <p className="text-2xl font-black" style={{ color: PURPLE }}>{rand(done.amount)}</p>
+      <p className="text-sm font-semibold text-gray-700">{done.status === "completed" ? "Sent" : "On its way"}</p>
+      <p className="text-[11px] text-gray-500">Reference {done.id}</p>
+      <button onClick={() => { setDone(null); setAmount(""); setReference(""); }} className={primary} style={{ background: PURPLE }}>Send another</button>
+    </div>);
 
   return (
-    <div className="flex flex-col h-full" style={{ background: "#F9FAFB" }}>
-      <div className="px-4 py-3 flex-shrink-0" style={{ background: PURPLE }}>
-        <p className="text-white font-bold text-base">Send Money</p>
-        <p className="text-white/60 text-xs">Transfer to any VINK account</p>
-      </div>
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-        {/* Recipient */}
-        <div>
-          <label className="text-gray-500 text-xs font-semibold">To (VINK Reference or Phone)</label>
-          <input type="text" value={recipient} onChange={e => setRecipient(e.target.value)}
-            placeholder="VINK-GBL-2024-XXXXX or 082 555 1234"
-            className="w-full mt-1.5 px-3 py-2.5 rounded-xl text-sm bg-white border text-gray-800 outline-none"
-            style={{ borderColor: `${PURPLE}33` }} />
+    <div className="flex h-full flex-col overflow-y-auto px-4 pb-6" style={{ background: "#F9FAFB" }}>
+      <h2 className="pb-2 pt-4 text-base font-black text-gray-900">Send money</h2>
+      {accounts.error && <Problem error={accounts.error} retry={accounts.reload} />}
+      {accounts.busy && !accounts.data ? <Spinner /> : list.length === 0 ? <p className="text-xs text-gray-600">Open an account on the Home tab before sending money.</p> : (<>
+        <label className="mb-1 text-[11px] font-semibold text-gray-600" htmlFor="from-acc">From</label>
+        <select id="from-acc" value={source} onChange={(e) => setFrom(e.target.value)} className={input}>{list.map((a) => <option key={a.id} value={a.id}>{a.name} · {rand(a.balance)}</option>)}</select>
+        <div className="mb-3 grid grid-cols-3 gap-1 rounded-xl bg-gray-100 p-1 text-[11px] font-semibold" role="tablist">
+          {([["beneficiary", "Saved recipient"], ["internal", "VINK account"], ["own", "My accounts"]] as const).map(([k, l]) => (
+            <button key={k} role="tab" aria-selected={to === k} onClick={() => setTo(k)} className={`rounded-lg py-2 ${to === k ? "bg-white shadow-sm" : "text-gray-600"}`}>{l}</button>))}
         </div>
-        {/* Amount */}
-        <div className="text-center py-4">
-          <p className="text-gray-500 text-xs mb-1">Amount (ZAR)</p>
-          <div className="flex items-center justify-center gap-1">
-            <span className="text-2xl font-bold" style={{ color: PURPLE }}>R</span>
-            <input type="number" value={amount} onChange={e => setAmount(e.target.value)} placeholder="0.00"
-              className="text-4xl font-bold text-center bg-transparent outline-none w-36" style={{ color: PURPLE }} />
-          </div>
-          <p className="text-gray-500 text-[10px] mt-1">Available: R12,847.50</p>
-        </div>
-        {/* Note */}
-        <div>
-          <label className="text-gray-500 text-xs font-semibold">Reference (optional)</label>
-          <input type="text" value={note} onChange={e => setNote(e.target.value)} placeholder="e.g. Rent, Loan repayment"
-            className="w-full mt-1.5 px-3 py-2.5 rounded-xl text-sm bg-white border text-gray-800 outline-none"
-            style={{ borderColor: `${PURPLE}33` }} />
-        </div>
-        {/* Rail selector */}
-        <div>
-          <label className="text-gray-500 text-xs font-semibold">Transfer Type</label>
-          <div className="flex gap-1 mt-1.5 p-1 rounded-xl bg-white border" style={{ borderColor: `${PURPLE}22` }}>
-            {(["Instant","Standard","International"] as const).map(r => (
-              <button key={r} onClick={() => setRail(r)}
-                className="flex-1 py-1.5 rounded-lg text-[11px] font-semibold transition-colors"
-                style={{ background: rail === r ? PURPLE : "transparent", color: rail === r ? "#fff" : PURPLE }}>
-                {r}
-              </button>
-            ))}
-          </div>
-          <p className="text-gray-500 text-[10px] mt-1 text-center">
-            {rail === "Instant" ? "Arrives within seconds · Fee: R2.50" : rail === "Standard" ? "Arrives same day · Free" : "3–5 business days · Fee: R45"}
-          </p>
-        </div>
-        {/* Quick recipients */}
-        <div>
-          <p className="text-gray-500 text-xs font-semibold mb-2">Recent Recipients</p>
-          <div className="flex gap-4">
-            {RECENT_RECIPIENTS.map(({ initials, name, ref }) => (
-              <button key={initials} onClick={() => setRecipient(ref)} className="flex flex-col items-center gap-1">
-                <div className="w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold text-white"
-                  style={{ background: `linear-gradient(135deg,${PURPLE},#A50F27)` }}>{initials}</div>
-                <span className="text-gray-500 text-[10px]">{name}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-        {/* Error */}
-        {error && (
-          <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-red-50 border border-red-200">
-            <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />
-            <p className="text-xs text-red-700 font-medium">{error}</p>
-          </div>
-        )}
-        {/* Send button */}
-        <button onClick={handleSend} disabled={loading}
-          className="w-full py-3.5 rounded-2xl font-bold text-sm text-white mt-2 shadow-lg transition-transform active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
-          style={{ background: `linear-gradient(135deg,${PURPLE},#A50F27)` }}>
-          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-          {loading ? "Sending…" : "Send Now →"}
-        </button>
-      </div>
+        {to === "own" && <select aria-label="To account" value={toAcc} onChange={(e) => setToAcc(e.target.value)} className={input}><option value="">Choose account</option>{list.filter((a) => a.id !== source).map((a) => <option key={a.id} value={a.id}>{a.name} · {a.number}</option>)}</select>}
+        {to === "internal" && <input aria-label="Account number" value={number} onChange={(e) => setNumber(e.target.value)} placeholder="VINK account number" inputMode="numeric" className={input} />}
+        {to === "beneficiary" && (<>
+          <select aria-label="Recipient" value={ben} onChange={(e) => setBen(e.target.value)} className={input}><option value="">Choose recipient</option>{(bens.data ?? []).map((b) => <option key={b.id} value={b.id}>{b.name} · {b.bank} {b.account_number}</option>)}</select>
+          <button onClick={() => setAddOpen((o) => !o)} className="mb-2.5 text-[11px] font-bold" style={{ color: PURPLE }}>{addOpen ? "Cancel" : "+ Add a recipient"}</button>
+          {addOpen && (<div className="mb-3 rounded-xl bg-white p-3 shadow-sm">
+            <input aria-label="Recipient name" value={nb.name} onChange={(e) => setNb({ ...nb, name: e.target.value })} placeholder="Name" className={input} />
+            <input aria-label="Recipient bank" value={nb.bank} onChange={(e) => setNb({ ...nb, bank: e.target.value })} placeholder="Bank" className={input} />
+            <input aria-label="Recipient account number" value={nb.accountNumber} onChange={(e) => setNb({ ...nb, accountNumber: e.target.value })} placeholder="Account number" inputMode="numeric" className={input} />
+            <input aria-label="Branch code" value={nb.branchCode} onChange={(e) => setNb({ ...nb, branchCode: e.target.value })} placeholder="Branch code (6 digits, optional)" inputMode="numeric" className={input} />
+            <button onClick={addBen} disabled={busy} className={primary} style={{ background: PURPLE }}>Save recipient</button></div>)}
+        </>)}
+        <input aria-label="Amount in rand" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Amount (R)" inputMode="decimal" className={input} />
+        <input aria-label="Reference" value={reference} onChange={(e) => setReference(e.target.value)} placeholder="Reference (optional)" maxLength={35} className={input} />
+        {error && <p role="alert" className="mb-2 text-xs font-medium text-red-600">{error}</p>}
+        <button onClick={send} disabled={busy} className={primary} style={{ background: PURPLE }}>{busy ? <Loader2 className="mx-auto h-4 w-4 animate-spin" /> : "Send now"}</button>
+        <p className="mt-3 text-center text-[10px] text-gray-500">Payments to other banks show as "processing" until the bank confirms them.</p>
+      </>)}
     </div>
   );
 }
 
+/* ───────────── cards ───────────── */
 function CardsScreen() {
-  const [frozen, setFrozen] = useState(false);
+  const cards = useLoad(async () => (await api<{ data: Card[] }>("/bank/cards")).data);
+  const accounts = useLoad(async () => (await api<{ data: Account[] }>("/bank/accounts")).data);
+  const [busy, setBusy] = useState(""); const [err, setErr] = useState<string | null>(null);
+  const act = async (key: string, fn: () => Promise<unknown>) => { setBusy(key); setErr(null); try { await fn(); await cards.reload(); } catch (e) { setErr(msg(e)); } finally { setBusy(""); } };
+  const first = accounts.data?.[0];
   return (
-    <div className="flex flex-col h-full" style={{ background: "#F9FAFB" }}>
-      <div className="px-4 py-3 flex-shrink-0" style={{ background: PURPLE }}>
-        <p className="text-white font-bold text-base">My Cards</p>
-      </div>
-      <div className="flex-1 overflow-y-auto px-3 py-4 space-y-4">
-        {/* Physical card */}
-        <div className="rounded-2xl p-5 shadow-xl" style={{ background: `linear-gradient(135deg, ${PURPLE}, #1E0A3C)` }}>
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-[10px] font-bold tracking-widest" style={{ color: "#ffffff" }}>VINK</p>
-              <p className="text-white/60 text-[9px] mt-0.5">Summit Account</p>
+    <div className="flex h-full flex-col overflow-y-auto px-4 pb-6" style={{ background: "#F9FAFB" }}>
+      <h2 className="pb-2 pt-4 text-base font-black text-gray-900">Cards</h2>
+      {cards.error && <Problem error={cards.error} retry={cards.reload} />}
+      {cards.busy && !cards.data ? <Spinner /> : (<>
+        {(cards.data ?? []).length === 0 && <p className="mb-3 text-xs text-gray-600">You have no cards yet.</p>}
+        {(cards.data ?? []).map((c) => (
+          <div key={c.id} className="mb-3 rounded-2xl p-4 text-white shadow-lg" style={{ background: c.status === "blocked" ? "#6b7280" : `linear-gradient(135deg, ${PURPLE}, #5b0a18)` }}>
+            <p className="text-[11px] capitalize text-white/70">{c.brand} · {c.kind ?? "debit"}</p>
+            <p className="mt-2 font-mono text-lg tracking-widest">•••• •••• •••• {c.last4}</p>
+            <p className="mt-2 text-[11px] capitalize text-white/80">{c.status === "inactive" ? "Not activated yet" : c.status} · limit {rand(c.limit)}</p>
+            <div className="mt-3 flex gap-2">
+              {c.status === "inactive" && <button disabled={!!busy} onClick={() => act(c.id, () => api(`/bank/cards/${c.id}/activate`, { method: "POST", body: {} }))} className="rounded-full bg-white px-3 py-1.5 text-[11px] font-bold text-black">Activate</button>}
+              {c.status !== "blocked" && <button disabled={!!busy} onClick={() => act(c.id, () => api(`/bank/cards/${c.id}/block`, { method: "POST", body: { reason: "lost" } }))} className="rounded-full bg-white/20 px-3 py-1.5 text-[11px] font-bold"><Lock className="mr-1 inline h-3 w-3" />Block (lost)</button>}
             </div>
-            <div className="text-right">
-              <p className="text-white/40 text-[9px]">VISA</p>
-              <div className="flex gap-0.5 mt-0.5">
-                <div className="w-4 h-4 rounded-full bg-red-400 opacity-80" />
-                <div className="w-4 h-4 rounded-full bg-amber-400 opacity-80 -ml-1.5" />
-              </div>
-            </div>
-          </div>
-          <p className="text-white text-sm font-mono tracking-widest mt-4">4520  ****  ****  3421</p>
-          <div className="flex gap-6 mt-2">
-            <div>
-              <p className="text-white/40 text-[9px]">EXPIRES</p>
-              <p className="text-white text-xs">08/28</p>
-            </div>
-            <div>
-              <p className="text-white/40 text-[9px]">CARDHOLDER</p>
-              <p className="text-white text-xs">THABO NKOSI</p>
-            </div>
-          </div>
-          {frozen && (
-            <div className="absolute inset-0 rounded-2xl flex items-center justify-center" style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)" }}>
-              <div className="text-center">
-                <span className="text-3xl">🔒</span>
-                <p className="text-white font-bold text-sm mt-1">Card Frozen</p>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Virtual card */}
-        <div className="rounded-2xl p-5 shadow-lg" style={{ background: `linear-gradient(135deg, #C9A84C, #E8830A)` }}>
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-[10px] font-bold tracking-widest text-white/80">VINK VIRTUAL</p>
-              <p className="text-white/60 text-[9px] mt-0.5">Online Purchases</p>
-            </div>
-            <span className="text-white text-[10px] font-bold border border-white/40 px-1.5 py-0.5 rounded-full">VIRTUAL</span>
-          </div>
-          <p className="text-white text-sm font-mono tracking-widest mt-4">8834  ****  ****  9012</p>
-          <div className="flex gap-6 mt-2">
-            <div>
-              <p className="text-white/60 text-[9px]">EXPIRES</p>
-              <p className="text-white text-xs">12/26</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Controls */}
-        <div className="grid grid-cols-4 gap-2">
-          {[
-            ["🔒", frozen ? "Unfreeze" : "Freeze", () => setFrozen(!frozen)],
-            ["📊", "Limits",   () => {}],
-            ["🚫", "Report",   () => {}],
-            ["💳", "New Virtual",() => {}],
-          ].map(([icon, label, fn]) => (
-            <button
-              key={label as string}
-              onClick={fn as () => void}
-              className="flex flex-col items-center gap-1 py-3 rounded-xl bg-white shadow-sm active:scale-95 transition-transform"
-            >
-              <span className="text-base">{icon as string}</span>
-              <span className="text-[9px] text-gray-500 font-medium text-center leading-tight">{label as string}</span>
-            </button>
-          ))}
-        </div>
-
-        {/* Spend bar */}
-        <div className="rounded-2xl p-4 bg-white shadow-sm">
-          <div className="flex justify-between mb-1">
-            <p className="text-gray-700 text-xs font-semibold">Monthly Spend</p>
-            <p className="text-xs font-bold" style={{ color: PURPLE }}>R3,847 / R15,000</p>
-          </div>
-          <div className="w-full h-2 rounded-full bg-gray-100 overflow-hidden">
-            <div className="h-full rounded-full" style={{ width: "25.6%", background: `linear-gradient(90deg, ${PURPLE}, #A50F27)` }} />
-          </div>
-          <p className="text-gray-500 text-[10px] mt-1">R11,153 remaining this month</p>
-        </div>
-      </div>
+          </div>))}
+        {err && <p role="alert" className="mb-2 text-xs text-red-600">{err}</p>}
+        {first ? <button disabled={!!busy} onClick={() => act("new", () => api("/bank/cards", { method: "POST", body: { accountId: first.id, kind: "debit" } }))} className={primary} style={{ background: PURPLE }}>Order a debit card</button>
+          : <p className="text-xs text-gray-600">Open an account on the Home tab to order a card.</p>}
+        <p className="mt-3 text-center text-[10px] text-gray-500">A blocked card is replaced automatically with a new one to activate.</p>
+      </>)}
     </div>
   );
 }
 
+/* ───────────── history ───────────── */
 function HistoryScreen() {
-  const [filter, setFilter] = useState<"All"|"Debits"|"Credits"|"Pending">("All");
-  const filtered = filter === "All" ? TRANSACTIONS
-    : filter === "Credits" ? TRANSACTIONS.filter(t => t.amount > 0)
-    : filter === "Debits" ? TRANSACTIONS.filter(t => t.amount < 0)
-    : [];
-
+  const accounts = useLoad(async () => (await api<{ data: Account[] }>("/bank/accounts")).data);
+  const [sel, setSel] = useState("");
+  const id = sel || accounts.data?.[0]?.id || "";
+  const lines = useLoad(async () => (id ? (await api<{ data: Line[] }>(`/bank/accounts/${id}/statement?limit=50`)).data : []), [id]);
   return (
-    <div className="flex flex-col h-full" style={{ background: "#F9FAFB" }}>
-      <div className="px-4 py-3 flex-shrink-0" style={{ background: PURPLE }}>
-        <p className="text-white font-bold text-base">Transaction History</p>
-      </div>
-      {/* Filter tabs */}
-      <div className="flex gap-1 px-3 py-2 flex-shrink-0 bg-white shadow-sm">
-        {(["All","Debits","Credits","Pending"] as const).map(f => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className="flex-1 py-1.5 rounded-lg text-[11px] font-semibold transition-colors"
-            style={{ background: filter === f ? PURPLE : `${PURPLE}11`, color: filter === f ? "#fff" : PURPLE }}
-          >
-            {f}
-          </button>
-        ))}
-      </div>
-      <div className="flex-1 overflow-y-auto px-3 py-2">
-        <div className="rounded-2xl overflow-hidden bg-white shadow-sm">
-          {(filtered.length === 0 ? [{ emoji: "⏳", name: "No pending transactions", amount: 0, date: "—", cat: "—" }] : filtered).map((t, i) => (
-            <div key={i} className={`flex items-center gap-3 px-3 py-2.5 ${i > 0 ? "border-t border-gray-100" : ""}`}>
-              <div className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center text-base flex-shrink-0">
-                {t.emoji}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-gray-800 text-xs font-medium truncate">{t.name}</p>
-                <div className="flex items-center gap-1.5">
-                  <p className="text-gray-500 text-[10px]">{t.date}</p>
-                  <span className="text-[9px] px-1 py-0.5 rounded" style={{ background: `${PURPLE}11`, color: PURPLE }}>
-                    {t.cat}
-                  </span>
-                </div>
-              </div>
-              {t.amount !== 0 && (
-                <span className={`text-xs font-bold flex-shrink-0 ${t.amount > 0 ? "text-green-600" : "text-gray-700"}`}>
-                  {t.amount > 0 ? "+" : ""}R{Math.abs(t.amount).toFixed(2)}
-                </span>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
+    <div className="flex h-full flex-col overflow-y-auto pb-6" style={{ background: "#F9FAFB" }}>
+      <h2 className="px-4 pb-2 pt-4 text-base font-black text-gray-900">History</h2>
+      {accounts.error && <Problem error={accounts.error} retry={accounts.reload} />}
+      {(accounts.data ?? []).length > 1 && <select aria-label="Account" value={id} onChange={(e) => setSel(e.target.value)} className={input + " mx-4 !w-[calc(100%-2rem)]"}>{accounts.data!.map((a) => <option key={a.id} value={a.id}>{a.name} · {a.number}</option>)}</select>}
+      {lines.error ? <Problem error={lines.error} retry={lines.reload} /> : (lines.busy && !lines.data) || accounts.busy ? <Spinner /> : (lines.data ?? []).length === 0
+        ? <p className="px-4 text-xs text-gray-600">{id ? "No activity on this account yet." : "Open an account on the Home tab to see its history."}</p>
+        : (<div className="mx-3 divide-y divide-gray-100 rounded-2xl bg-white shadow-sm">
+          {(lines.data ?? []).map((l, i) => (
+            <div key={i} className="flex items-center gap-3 px-3 py-2.5">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100">{l.amount < 0 ? <ArrowUpRight className="h-4 w-4 text-gray-600" /> : <ArrowDownLeft className="h-4 w-4 text-green-600" />}</span>
+              <div className="min-w-0 flex-1"><p className="truncate text-xs font-semibold text-gray-900">{l.memo || l.kind}</p><p className="text-[10px] text-gray-500">{when(l.date)} · balance {rand(l.balance)}</p></div>
+              <p className={`text-xs font-bold ${l.amount < 0 ? "text-gray-900" : "text-green-700"}`}>{l.amount > 0 ? "+" : ""}{rand(l.amount)}</p>
+            </div>))}
+        </div>)}
     </div>
   );
 }
 
+/* ───────────── rewards ───────────── */
 function RewardsScreen() {
-  const REDEEM = [
-    ["🚕", "Taxi Fare",  "500 pts"],
-    ["📱", "Airtime",    "100 pts"],
-    ["🛒", "Grocery",   "300 pts"],
-    ["💵", "Cash",      "1000 pts"],
-    ["⛽", "Fuel",      "400 pts"],
-  ];
-  const progress = (4230 / 7500) * 100;
-
+  const rewards = useLoad(async () => api<{ balance: number; history: { memo: string; amount: number; created_at: string }[] }>("/rewards"));
+  const accounts = useLoad(async () => (await api<{ data: Account[] }>("/bank/accounts")).data);
+  const [busy, setBusy] = useState(false); const [note, setNote] = useState<string | null>(null);
+  const first = accounts.data?.[0];
+  const redeem = async () => {
+    if (!first) return; setBusy(true); setNote(null);
+    try { const r = await api<{ redeemed: number }>("/rewards/redeem", { method: "POST", body: { accountId: first.id } }); setNote(`${rand(r.redeemed)} was added to ${first.name}.`); await rewards.reload(); }
+    catch (e) { setNote(msg(e)); } finally { setBusy(false); }
+  };
   return (
-    <div className="flex flex-col h-full" style={{ background: "#F9FAFB" }}>
-      <div className="px-4 py-3 flex-shrink-0" style={{ background: PURPLE }}>
-        <p className="text-white font-bold text-base">VINK Points</p>
-      </div>
-      <div className="flex-1 overflow-y-auto px-3 py-4 space-y-4">
-        {/* Balance */}
-        <div
-          className="rounded-2xl p-5 text-center shadow-xl"
-          style={{ background: `linear-gradient(135deg, ${PURPLE}, #101828)` }}
-        >
-          <p className="text-white/60 text-xs">Your Balance</p>
-          <p className="text-5xl font-bold mt-1" style={{ color: GOLD }}>4,230</p>
-          <p className="text-white/60 text-xs">pts = R42.30 value</p>
-
-          <div className="mt-4">
-            <div className="flex justify-between text-[10px] mb-1">
-              <span className="text-white/60">Gold Member</span>
-              <span style={{ color: GOLD }}>4,230 / 7,500 → Platinum</span>
-            </div>
-            <div className="w-full h-2 rounded-full bg-white/20">
-              <div className="h-full rounded-full" style={{ width: `${progress}%`, background: `linear-gradient(90deg, ${GOLD}, #FFD700)` }} />
-            </div>
-          </div>
+    <div className="flex h-full flex-col overflow-y-auto pb-6" style={{ background: "#F9FAFB" }}>
+      <h2 className="px-4 pb-2 pt-4 text-base font-black text-gray-900">Cashback</h2>
+      {rewards.error ? <Problem error={rewards.error} retry={rewards.reload} /> : rewards.busy && !rewards.data ? <Spinner /> : (<>
+        <div className="mx-3 rounded-2xl p-5 text-white shadow-lg" style={{ background: `linear-gradient(135deg, ${PURPLE}, #5b0a18)` }}>
+          <p className="text-[11px] text-white/70">Cashback balance</p><p className="mt-1 text-2xl font-black">{rand(rewards.data?.balance ?? 0)}</p>
         </div>
-
-        {/* Redeem */}
-        <div>
-          <p className="text-gray-500 text-[10px] font-semibold uppercase tracking-wider mb-2">Redeem Points</p>
-          <div className="grid grid-cols-3 gap-2">
-            {REDEEM.map(([icon, label, pts]) => (
-              <button
-                key={label}
-                className="flex flex-col items-center gap-1 py-3 rounded-xl bg-white shadow-sm active:scale-95 transition-transform"
-              >
-                <span className="text-xl">{icon}</span>
-                <span className="text-gray-700 text-[10px] font-semibold">{label}</span>
-                <span className="text-[9px] font-bold" style={{ color: GOLD }}>{pts}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* History */}
-        <div>
-          <p className="text-gray-500 text-[10px] font-semibold uppercase tracking-wider mb-2">Points Earned</p>
-          <div className="rounded-2xl overflow-hidden bg-white shadow-sm">
-            {REWARDS_HISTORY.map((r, i) => (
-              <div key={i} className={`flex items-center gap-3 px-3 py-2.5 ${i > 0 ? "border-t border-gray-100" : ""}`}>
-                <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: `${GOLD}22` }}>
-                  <Star className="w-3.5 h-3.5" style={{ color: GOLD }} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-gray-800 text-xs font-medium truncate">{r.event}</p>
-                  <p className="text-gray-500 text-[10px]">{r.date}</p>
-                </div>
-                <span className="text-xs font-bold text-green-600">{r.pts}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+        <div className="px-3 pt-3"><button onClick={redeem} disabled={busy || !first || (rewards.data?.balance ?? 0) <= 0} className={primary} style={{ background: PURPLE }}>Add to my account</button>
+          {note && <p role="status" className="mt-2 text-center text-xs text-gray-700">{note}</p>}</div>
+        <p className="px-4 pb-1 pt-4 text-xs font-bold text-gray-900">History</p>
+        {(rewards.data?.history ?? []).length === 0 ? <p className="px-4 text-xs text-gray-600">Cashback you earn will show here.</p> : (
+          <div className="mx-3 divide-y divide-gray-100 rounded-2xl bg-white shadow-sm">
+            {rewards.data!.history.map((h, i) => (<div key={i} className="flex items-center justify-between px-3 py-2.5"><div><p className="text-xs font-semibold text-gray-900">{h.memo}</p><p className="text-[10px] text-gray-500">{when(h.created_at)}</p></div><p className={`text-xs font-bold ${h.amount < 0 ? "text-gray-900" : "text-green-700"}`}>{h.amount > 0 ? "+" : ""}{rand(h.amount)}</p></div>))}
+          </div>)}
+      </>)}
     </div>
   );
 }
 
+/* ───────────── the app ───────────── */
 export function VinkBankingApp({ isOpen, onClose, onOpenManagementPanel, onOpenAdminPanel, initialScreen }: { isOpen: boolean; onClose: () => void; onOpenManagementPanel?: () => void; onOpenAdminPanel?: () => void; initialScreen?: Screen }) {
-  const [screen, setScreen] = useState<Screen>("onboarding");
-  const [tier, setTier] = useState<Tier>("Spark");
-  const [verifying, setVerifying] = useState(false);
-  const [pendingTier, setPendingTier] = useState<Tier>("Spark");
+  const [screen, setScreen] = useState<Screen>(initialScreen ?? "home");
   const [authUser, setAuthUser] = useState<ApiUser | null>(null);
-  const [checkedSession, setCheckedSession] = useState(false);
+  const [checked, setChecked] = useState(false);
 
   useEffect(() => {
-    const session = getSession();
-    if (session && session.username !== "superadmin" && session.username !== "admin") {
-      // The intended case this restore handles: signed in via the main
-      // site's Login button first, then opened this app -- shouldn't need
-      // to sign in again just because this is a separate in-app "screen".
-      setAuthUser(session);
-      // Real bug fixed here: this never actually skipped onboarding for
-      // an already-authenticated user before -- screen stayed at its
-      // "onboarding" default regardless of whether a real session was
-      // just restored, so a customer who'd just registered and clicked
-      // through from the real dashboard would see the tier-selection
-      // screen again every time, as if they'd never signed up.
-      // initialScreen (set by whichever dashboard tile opened this app,
-      // e.g. "send" for the Transfer tile) only takes effect here, once
-      // a real session is confirmed -- never as a way to skip
-      // authentication for someone who isn't actually logged in.
-      setScreen(initialScreen ?? "home");
-    } else if (session) {
-      // A restored admin/superadmin session auto-redirecting here on every
-      // mount is exactly what broke testing both accounts: whichever one
-      // logged in first would win every subsequent visit, since this ran
-      // before the login screen ever rendered -- there was no way to reach
-      // it to try the other account's credentials. Clearing the stale
-      // session here (rather than restoring and redirecting) means the
-      // login screen always shows fresh for these two accounts, and only
-      // an explicit, current login decides which dashboard opens.
-      clearSession();
-    }
-    setCheckedSession(true);
-  }, []);
+    const s = getSession();
+    if (s && s.username !== "superadmin" && s.username !== "admin") { setAuthUser(s); setScreen(initialScreen ?? "home"); }
+    else if (s) clearSession();        // a staff session is never carried into the customer app
+    setChecked(true);
+  }, [initialScreen]);
 
   if (!isOpen) return null;
 
-  const handleTierSelected = (t: Tier) => {
-    setPendingTier(t);
-    setVerifying(true);
-  };
-  const handleVerified = () => {
-    setTier(pendingTier);
-    setVerifying(false);
-    setScreen("home");
-  };
   const handleAuthenticated = (user: ApiUser) => {
-    setAuthUser(user);
-    if (user.username === "superadmin" && onOpenManagementPanel) {
-      onClose();
-      onOpenManagementPanel();
-      return;
-    }
-    if (user.username === "admin" && onOpenAdminPanel) {
-      onClose();
-      onOpenAdminPanel();
-      return;
-    }
-    setScreen("onboarding");
+    if (user.username === "superadmin" && onOpenManagementPanel) { onClose(); onOpenManagementPanel(); return; }
+    if (user.username === "admin" && onOpenAdminPanel) { onClose(); onOpenAdminPanel(); return; }
+    setAuthUser(user); setScreen("home");
   };
+  const isCustomer = authUser?.role === "customer";
 
   const TABS: { id: Screen; label: string; icon: React.ReactNode }[] = [
-    { id: "home",    label: "Home",    icon: <Home className="w-5 h-5" /> },
-    { id: "send",    label: "Send",    icon: <Send className="w-5 h-5" /> },
-    { id: "cards",   label: "Cards",   icon: <CreditCard className="w-5 h-5" /> },
-    { id: "history", label: "History", icon: <Clock className="w-5 h-5" /> },
-    { id: "rewards", label: "Rewards", icon: <Star className="w-5 h-5" /> },
+    { id: "home", label: "Home", icon: <Home className="h-5 w-5" /> }, { id: "send", label: "Send", icon: <Send className="h-5 w-5" /> },
+    { id: "cards", label: "Cards", icon: <CreditCard className="h-5 w-5" /> }, { id: "history", label: "History", icon: <Clock className="h-5 w-5" /> },
+    { id: "rewards", label: "Rewards", icon: <Star className="h-5 w-5" /> },
   ];
-  const showTabs = authUser !== null && screen !== "onboarding" && !verifying;
 
   return (
-    <MobileAppOverlay onClose={onClose} appName="VINK Finance" bgColor="#F9FAFB">
+    <MobileAppOverlay onClose={onClose} appName="VINK Bank" bgColor="#F9FAFB" live>
       <PhoneFrame statusBarColor={PURPLE} statusBarTextLight>
-        <div className="flex-1 overflow-hidden flex flex-col">
-          {!checkedSession ? (
-            <div className="flex-1 flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin" style={{ color: PURPLE }} /></div>
-          ) : !authUser ? (
-            <LoginScreen onAuthenticated={handleAuthenticated} />
-          ) : verifying ? (
-            <VerifyingScreen tier={pendingTier} onDone={handleVerified} />
-          ) : (
-            <>
-              {screen === "onboarding" && <OnboardingScreen onSelect={handleTierSelected} />}
-              {screen === "home"    && <HomeScreen tier={tier} onSwitchTier={() => setScreen("onboarding")} user={authUser} />}
-              {screen === "send"    && <SendScreen />}
-              {screen === "cards"   && <CardsScreen />}
-              {screen === "history" && <HistoryScreen />}
-              {screen === "rewards" && <RewardsScreen />}
-            </>
-          )}
+        <div className="flex flex-1 flex-col overflow-hidden">
+          {!checked ? <Spinner /> : !authUser ? <LoginScreen onAuthenticated={handleAuthenticated} /> : !isCustomer ? (
+            <div className="flex flex-1 items-center justify-center px-8 text-center text-xs text-gray-600">This app is for personal customer accounts. Staff and portal accounts use their own dashboards.</div>
+          ) : (<>
+            {screen === "home" && <HomeScreen user={authUser} go={setScreen} />}
+            {screen === "send" && <SendScreen />}
+            {screen === "cards" && <CardsScreen />}
+            {screen === "history" && <HistoryScreen />}
+            {screen === "rewards" && <RewardsScreen />}
+          </>)}
         </div>
-        {/* Bottom tab bar */}
-        {showTabs && (
-          <div className="flex-shrink-0 flex items-center border-t bg-white" style={{ borderColor: `${PURPLE}22` }}>
-            {TABS.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setScreen(tab.id)}
-                className="flex-1 flex flex-col items-center gap-0.5 py-2 relative transition-colors"
-                style={{ color: screen === tab.id ? PURPLE : "#9CA3AF" }}
-              >
-                {tab.icon}
-                <span className="text-[9px] font-semibold">{tab.label}</span>
-                {screen === tab.id && (
-                  <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded-full" style={{ background: PURPLE }} />
-                )}
-              </button>
-            ))}
-          </div>
-        )}
+        {authUser && isCustomer && (
+          <div className="flex flex-shrink-0 items-center border-t bg-white" style={{ borderColor: `${PURPLE}22` }}>
+            {TABS.map((t) => (
+              <button key={t.id} onClick={() => setScreen(t.id)} className="relative flex flex-1 flex-col items-center gap-0.5 py-2" style={{ color: screen === t.id ? PURPLE : "#6B7280" }}>
+                {t.icon}<span className="text-[9px] font-semibold">{t.label}</span>
+              </button>))}
+          </div>)}
       </PhoneFrame>
     </MobileAppOverlay>
   );
