@@ -14,3 +14,6 @@ export * from "./fare/engine";
 export * from "./fare/sample";
 export * from "./sync";
 export * from "./desfire/selftest";
+export * from "./keyfile";
+export * from "./ticket/ultralight";
+export * from "./ticket/ticket";

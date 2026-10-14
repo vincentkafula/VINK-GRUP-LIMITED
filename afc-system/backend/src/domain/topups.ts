@@ -37,14 +37,18 @@ export async function createTopupOrder(db: Db, actor: Actor, i: TopupInput, hub?
   const before = await replayOf(db, i);
   if (before) return { topup: before, replay: true };
   try {
-    const topup = await db.$transaction(async (tx) => {
+    const result = await db.$transaction(async (tx) => {
+      // requests with the same reference are handled one at a time, so a concurrent repeat sees the first one's order
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${"topup:" + i.method + ":" + i.reference}, 0))`;
+      const done = await tx.topup.findUnique({ where: { method_reference: { method: i.method, reference: i.reference } } });
+      if (done) { if (done.cardUid !== i.cardUid || done.amount !== i.amount) throw conflict("reference_reused", "That reference was already used for a different top-up"); return { topup: done, replay: true }; }
       await checkCardAndLimits(tx, i);
       const t = await tx.topup.create({ data: { cardUid: i.cardUid, amount: i.amount, method: i.method, reference: i.reference, deviceId: i.deviceId, createdBy: actor.id } });
       const j = await postJournal(tx, { kind: "TOPUP_PAID", ref: t.id, memo: `${i.method} ${i.reference}`, lines: [{ account: "prepaid:pending", amount: i.amount }, { account: clearing(i.method), amount: -i.amount }] });
       await audit(tx, actor, "topup.order", t.id, { cardUid: i.cardUid, amount: i.amount, method: i.method });
-      return tx.topup.update({ where: { id: t.id }, data: { paidJournalId: j } });
+      return { topup: await tx.topup.update({ where: { id: t.id }, data: { paidJournalId: j } }), replay: false };
     });
-    return { topup, replay: false };
+    return result;
   } catch (e) {
     if (isUniqueViolation(e)) { const again = await replayOf(db, i); if (again) return { topup: again, replay: true }; }
     throw e;

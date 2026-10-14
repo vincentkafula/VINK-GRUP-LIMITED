@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { BALANCE_MAX, CATEGORIES, DesfireSession, DevKeyProvider, SimulatedDesfireCard, personalizeCard, type Category, type KeyProvider } from "@afc/shared";
+import { BALANCE_MAX, CATEGORIES, DesfireSession, DevKeyProvider, SimulatedDesfireCard, keyProviderFromEnv, personalizeCard, type Category, type KeyProvider } from "@afc/shared";
 import { PcscReader } from "../validator/src/readers";
 
 /**
@@ -26,14 +26,13 @@ const category = (opt("category") ?? "adult") as Category;
 if (!Number.isInteger(balance) || balance < 0 || balance > BALANCE_MAX) throw new Error(`--balance is in cents, 0 to ${BALANCE_MAX}`);
 if (!CATEGORIES.includes(category)) throw new Error(`--category must be one of ${CATEGORIES.join(", ")}`);
 
-function keys(): KeyProvider {
+async function keys(): Promise<KeyProvider> {
   // Production: return new ExternalKeyProvider(async (role, input) => yourKmsOrSam.diversify(role, input));
   if (flag("sim") && !process.env.AFC_MASTER_KEY_DEBIT) {
     console.log("[sim] no master keys in the environment: using random ones for this run only");
     return new DevKeyProvider({ PICC: randomBytes(16), ADMIN: randomBytes(16), DEBIT: randomBytes(16), CREDIT: randomBytes(16) });
   }
-  const k = DevKeyProvider.fromEnv();
-  return k;
+  return keyProviderFromEnv();
 }
 
 async function register(uid: string) {
@@ -57,7 +56,7 @@ async function personalise(uid: Buffer, transport: ConstructorParameters<typeof 
   await register(r.uid);
 }
 
-const k = keys();
+const k = await keys();
 if (flag("sim")) {
   const uid = Buffer.concat([Buffer.from([0x04]), randomBytes(6)]);
   await personalise(uid, new SimulatedDesfireCard({ uid }), k);
@@ -67,6 +66,7 @@ if (flag("sim")) {
   console.log("Tap a blank DESFire card on the reader ...");
   let done = false;
   await reader.start(async ({ uid, transceiver }) => {
+    if (!transceiver) { console.log("That is an Ultralight ticket card. Tap a blank DESFire fare card."); return; }
     if (done) return; done = true;
     try { await personalise(uid, transceiver, k); process.exitCode = 0; }
     catch (e) { console.error("Personalisation failed:", e instanceof Error ? e.message : e, "\nThe card may be partly written. Run the self-test, then retry with --reformat (and --piccKey if the card master key is no longer the factory one)."); process.exitCode = 1; }

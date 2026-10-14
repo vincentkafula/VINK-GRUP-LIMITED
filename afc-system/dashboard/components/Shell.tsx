@@ -9,6 +9,7 @@ const NAV: { href: string; label: string; roles: Role[] | "all" }[] = [
   { href: "/", label: "Overview", roles: ["VIEWER", "OPERATOR"] },
   { href: "/cards", label: "Cards", roles: "all" },
   { href: "/topups", label: "Top-ups", roles: ["AGENT", "OPERATOR", "VIEWER"] },
+  { href: "/tickets", label: "Tickets", roles: ["AGENT", "OPERATOR", "VIEWER"] },
   { href: "/fares", label: "Fares & routes", roles: ["VIEWER", "OPERATOR"] },
   { href: "/devices", label: "Devices", roles: ["VIEWER", "OPERATOR"] },
   { href: "/reports", label: "Reports", roles: ["VIEWER", "OPERATOR"] },

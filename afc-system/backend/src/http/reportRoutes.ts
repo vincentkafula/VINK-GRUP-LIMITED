@@ -1,6 +1,6 @@
 import type { FastifyInstance, FastifyReply } from "fastify";
 import { z } from "zod";
-import { failedTapsReport, parseRange, revenueReport, summary, toCsv, topupReport } from "../domain/reports";
+import { failedTapsReport, parseRange, revenueReport, summary, ticketReport, toCsv, topupReport } from "../domain/reports";
 import { operatorScope, requireRole, type Deps } from "./app";
 
 export async function reportRoutes(app: FastifyInstance, { db }: Deps): Promise<void> {
@@ -32,6 +32,13 @@ export async function reportRoutes(app: FastifyInstance, { db }: Deps): Promise<
     const q = range.parse(req.query);
     const rep = await topupReport(db, parseRange(q.from, q.to));
     if (q.format === "csv") return csv(reply, "topups.csv", toCsv(rep.rows.map((r) => ({ method: r.method, count: r.count, total_rand: (r.total / 100).toFixed(2) })), ["method", "count", "total_rand"]));
+    return rep;
+  });
+
+  app.get("/reports/tickets", { preHandler: read }, async (req, reply) => {
+    const q = range.parse(req.query);
+    const rep = await ticketReport(db, parseRange(q.from, q.to));
+    if (q.format === "csv") return csv(reply, "tickets.csv", toCsv(rep.rows.map((r) => ({ day: r.day, sold: r.sold, used: r.used, amount_rand: (r.amount / 100).toFixed(2) })), ["day", "sold", "used", "amount_rand"]));
     return rep;
   });
 

@@ -9,3 +9,6 @@ dist/
 secrets/
 .pgdata/
 validator.db*
+*.sealed
+keys/
+ticket-signing.key

@@ -30,6 +30,7 @@ if (args.includes("--reader")) {
   const reader = new PcscReader();
   let ran = false;
   await reader.start(async ({ uid, transceiver }) => {
+    if (!transceiver) { console.log("That is an Ultralight card. Tap a spare DESFire card."); return; }
     if (ran) return; ran = true;
     console.log(`Card UID ${uid.toString("hex")}`);
     for (const r of await runProtocolSelfTest(transceiver, piccKey)) line(r.ok, r.name, r.detail);

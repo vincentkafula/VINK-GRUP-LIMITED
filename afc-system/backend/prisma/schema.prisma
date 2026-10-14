@@ -53,6 +53,12 @@ enum TopupMethod {
   ADMIN
 }
 
+enum TicketStatus {
+  ISSUED
+  USED
+  VOID
+}
+
 enum TopupStatus {
   PENDING_LOAD
   LOADED
@@ -204,6 +210,7 @@ model Txn {
   fareTableVersion Int
   offline          Boolean
   journalId        String?
+  ticketId         Int?
 
   @@index([tappedAt])
   @@index([cardUid, cardCounter])
@@ -254,6 +261,30 @@ model Topup {
 
   @@unique([method, reference])
   @@index([cardUid, status])
+}
+
+/// A single-trip ticket on an Ultralight card. The ticket number is what the card carries; the signature that proves it genuine is made at sale.
+model Ticket {
+  id          Int          @id @default(autoincrement())
+  cardUid     String
+  routeId     Int
+  price       Int
+  keyId       Int
+  validFrom   DateTime
+  validUntil  DateTime
+  status      TicketStatus @default(ISSUED)
+  method      TopupMethod
+  /// Receipt number. With the method it is unique, so re-sending a sale cannot sell (or charge) twice.
+  reference   String
+  issuedBy    String?
+  issuedAt    DateTime     @default(now())
+  usedAt      DateTime?
+  usedDevice  String?
+  journalId   String?
+
+  @@unique([method, reference])
+  @@index([cardUid])
+  @@index([status, validUntil])
 }
 
 model Anomaly {

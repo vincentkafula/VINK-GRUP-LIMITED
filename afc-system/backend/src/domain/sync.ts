@@ -15,8 +15,9 @@ export const txnSchema = z.object({
   deviceSeq: z.number().int().min(0),
   cardUid: uid,
   result: z.enum(["ok", "denied"]),
-  kind: z.enum(["flat", "tap_in", "tap_out", "penalty_tap_in"]).optional(),
-  denyReason: z.enum(["UNKNOWN_ROUTE", "UNKNOWN_STOP", "DUPLICATE_TAP", "INSUFFICIENT_FUNDS", "CARD_BLOCKED", "INVALID_CARD", "READ_ERROR"]).optional(),
+  kind: z.enum(["flat", "tap_in", "tap_out", "penalty_tap_in", "ticket"]).optional(),
+  ticketId: z.number().int().min(1).optional(),
+  denyReason: z.enum(["UNKNOWN_ROUTE", "UNKNOWN_STOP", "DUPLICATE_TAP", "INSUFFICIENT_FUNDS", "CARD_BLOCKED", "INVALID_CARD", "READ_ERROR", "INVALID_TICKET", "TICKET_USED", "TICKET_EXPIRED", "TICKET_NOT_YET_VALID", "TICKET_WRONG_ROUTE"]).optional(),
   routeId: z.number().int().min(0).max(65535),
   stopId: z.number().int().min(0).max(65535),
   fare: z.number().int().min(0).max(1_000_000),
@@ -36,6 +37,7 @@ export const syncSchema = z.object({
   hotlistVersion: z.number().int().min(-1),
   fareTableVersion: z.number().int().min(0),
   profilesVersion: z.number().int().min(-1),
+  ticketKeysVersion: z.number().int().min(0).optional(),
 });
 
 export interface SyncDeps { db: Db; hub?: FeedHub; autoBlockAt: number; now?: () => Date }
@@ -103,14 +105,30 @@ async function processOne(deps: SyncDeps, tx: Tx, tables: Map<number, FareTable 
     data: {
       id: t.id, deviceId: t.deviceId, deviceSeq: t.deviceSeq, cardUid: t.cardUid, result: t.result, kind: t.kind, denyReason: t.denyReason,
       routeId: t.routeId, stopId: t.stopId, fare: t.fare, penalty: t.penalty, balanceBefore: t.balanceBefore, balanceAfter: t.balanceAfter,
-      cardCounter: t.cardCounter, category: t.category, tappedAt, fareTableVersion: t.fareTableVersion, offline: t.offline,
+      cardCounter: t.cardCounter, category: t.category, tappedAt, fareTableVersion: t.fareTableVersion, offline: t.offline, ticketId: t.ticketId,
     },
   });
 
   if (t.result === "denied") {
     if (t.denyReason === "INVALID_CARD") await raiseAnomaly(tx, deps.hub, { kind: "CARD_AUTH_FAILED", severity: "MEDIUM", cardUid: t.cardUid, deviceId: t.deviceId, txnId: t.id, detail: "A card was presented that did not pass the key check" }, deps.autoBlockAt);
+    if (t.denyReason === "INVALID_TICKET") await raiseAnomaly(tx, deps.hub, { kind: "TICKET_INVALID_PRESENTED", severity: "MEDIUM", cardUid: t.cardUid, deviceId: t.deviceId, txnId: t.id, detail: "A ticket was presented that failed the signature check (forged, altered, or copied to another card)" }, deps.autoBlockAt);
+    if (t.denyReason === "TICKET_USED") await raiseAnomaly(tx, deps.hub, { kind: "TICKET_REUSE_ATTEMPT", severity: "LOW", cardUid: t.cardUid, deviceId: t.deviceId, txnId: t.id, detail: "A used ticket was presented again" }, deps.autoBlockAt);
     if (t.denyReason === "CARD_BLOCKED") await raiseAnomaly(tx, deps.hub, { kind: "BLOCKED_CARD_PRESENTED", severity: "LOW", cardUid: t.cardUid, deviceId: t.deviceId, txnId: t.id, detail: "A blocked card was presented" }, deps.autoBlockAt);
     deps.hub?.publish({ type: "tap", at: tappedAt.toISOString(), deviceId: t.deviceId, cardUid: t.cardUid, result: "denied", denyReason: t.denyReason, routeId: t.routeId, stopId: t.stopId, fare: 0, balanceAfter: t.balanceAfter, offline: t.offline });
+    return "accepted";
+  }
+
+  // ───── a single-trip ticket was used: its fare was booked when it was sold, so the only thing to do here is to use it up, once ─────
+  if (t.kind === "ticket") {
+    const raiseT = (kind: string, detail: string) => raiseAnomaly(tx, deps.hub, { kind, severity: "HIGH", cardUid: t.cardUid, deviceId: t.deviceId, txnId: t.id, detail }, deps.autoBlockAt);
+    const ticket = t.ticketId ? await tx.ticket.findUnique({ where: { id: t.ticketId } }) : null;
+    if (!ticket) await raiseT("UNKNOWN_TICKET", `A device used ticket ${t.ticketId ?? "?"}, which was never sold`);
+    else if (ticket.cardUid !== t.cardUid) await raiseT("TICKET_UID_MISMATCH", `Ticket ${ticket.id} was sold for another card`);
+    else {
+      const used = await tx.ticket.updateMany({ where: { id: ticket.id, status: "ISSUED" }, data: { status: "USED", usedAt: tappedAt, usedDevice: t.deviceId } });
+      if (used.count === 0) await raiseT("DUPLICATE_TICKET", `Ticket ${ticket.id} was already ${ticket.status === "USED" ? "used on " + (ticket.usedDevice ?? "a device") : ticket.status.toLowerCase()}: a copied ticket or a replayed record`);
+    }
+    deps.hub?.publish({ type: "tap", at: tappedAt.toISOString(), deviceId: t.deviceId, cardUid: t.cardUid, result: "ok", kind: "ticket", routeId: t.routeId, stopId: t.stopId, fare: 0, balanceAfter: 0, offline: t.offline });
     return "accepted";
   }
 
@@ -163,8 +181,9 @@ async function processOne(deps: SyncDeps, tx: Tx, tables: Map<number, FareTable 
 }
 
 /** What the device needs back: fresh copies of anything that changed since the versions it reports. */
-export async function syncExtras(db: Db, report: { hotlistVersion: number; fareTableVersion: number; profilesVersion: number }): Promise<Pick<SyncResponse, "hotlist" | "fareTable" | "profiles">> {
-  const out: Pick<SyncResponse, "hotlist" | "fareTable" | "profiles"> = {};
+export async function syncExtras(db: Db, report: { hotlistVersion: number; fareTableVersion: number; profilesVersion: number; ticketKeysVersion?: number }, ticketKeys?: SyncResponse["ticketKeys"]): Promise<Pick<SyncResponse, "hotlist" | "fareTable" | "profiles" | "ticketKeys">> {
+  const out: Pick<SyncResponse, "hotlist" | "fareTable" | "profiles" | "ticketKeys"> = {};
+  if (ticketKeys && (report.ticketKeysVersion ?? 0) !== ticketKeys.version) out.ticketKeys = ticketKeys;
   const [hv, pv, fv] = await Promise.all([getVersion(db, "hotlistVersion"), getVersion(db, "profilesVersion"), currentFareVersion(db)]);
   if (report.hotlistVersion !== hv) {
     const cards = await db.card.findMany({ where: { status: { in: ["BLOCKED", "LOST", "EXPIRED"] } }, select: { uid: true } });

@@ -26,6 +26,7 @@ export class Store {
       CREATE TABLE IF NOT EXISTS intents(uid TEXT PRIMARY KEY, txn_id TEXT NOT NULL, expected_counter INTEGER NOT NULL, payload TEXT NOT NULL, created_at INTEGER NOT NULL);
       CREATE TABLE IF NOT EXISTS hotlist(uid TEXT PRIMARY KEY);
       CREATE TABLE IF NOT EXISTS profiles(uid TEXT PRIMARY KEY, category TEXT NOT NULL);
+      CREATE TABLE IF NOT EXISTS ticket_uses(id INTEGER PRIMARY KEY, completed INTEGER NOT NULL, at INTEGER NOT NULL);
     `);
   }
   close(): void { this.db.close(); }
@@ -84,6 +85,15 @@ export class Store {
     catch (e) { this.db.exec("ROLLBACK"); throw e; }
   }
   categoryOf(uid: string): Category { return ((this.db.prepare("SELECT category FROM profiles WHERE uid = ?").get(uid) as { category: Category } | undefined)?.category) ?? "adult"; }
+
+  /* single-trip tickets: the public keys that check them, and the tickets this device has used up */
+  get ticketKeysVersion(): number { return this.num("ticketKeysVersion", 0); }
+  setTicketKeys(version: number, keys: { id: number; publicKey: string }[]): void { this.setMeta("ticketKeys", JSON.stringify(keys)); this.setMeta("ticketKeysVersion", String(version)); }
+  ticketKeys(): Map<number, string> { const v = this.getMeta("ticketKeys"); return new Map(v ? (JSON.parse(v) as { id: number; publicKey: string }[]).map((k) => [k.id, k.publicKey]) : []); }
+  /** completed = 0 means a use was started but the card was never confirmed marked (it may have been pulled away); 1 = used here. */
+  ticketUse(id: number): { completed: boolean } | undefined { const r = this.db.prepare("SELECT completed FROM ticket_uses WHERE id = ?").get(id) as { completed: number } | undefined; return r ? { completed: r.completed === 1 } : undefined; }
+  startTicketUse(id: number): void { this.db.prepare("INSERT INTO ticket_uses(id, completed, at) VALUES(?, 0, ?) ON CONFLICT(id) DO UPDATE SET at = excluded.at").run(id, Date.now()); }
+  completeTicketUse(id: number): void { this.db.prepare("UPDATE ticket_uses SET completed = 1 WHERE id = ?").run(id); }
 
   setFareTable(t: FareTable): void { this.setMeta("fareTable", JSON.stringify(t)); this.setMeta("fareTableVersion", String(t.version)); }
   fareTable(): FareTable | undefined { const v = this.getMeta("fareTable"); return v ? (JSON.parse(v) as FareTable) : undefined; }

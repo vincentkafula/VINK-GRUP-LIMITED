@@ -23,7 +23,7 @@ export class SyncClient {
     const f = this.o.fetchImpl ?? fetch;
     try {
       const batch = store.pending(this.o.batchSize ?? 200);
-      const body: SyncRequest = { deviceId: this.o.deviceId, batch, hotlistVersion: store.hotlistVersion, fareTableVersion: store.fareTableVersion, profilesVersion: store.profilesVersion };
+      const body: SyncRequest = { deviceId: this.o.deviceId, batch, hotlistVersion: store.hotlistVersion, fareTableVersion: store.fareTableVersion, profilesVersion: store.profilesVersion, ticketKeysVersion: store.ticketKeysVersion };
       const raw = JSON.stringify(body);
       const ts = Math.floor(Date.now() / 1000), nonce = randomUUID();
       const res = await f(`${this.o.serverUrl}/api/device/sync`, {
@@ -46,6 +46,7 @@ export class SyncClient {
       if (r.hotlist) { store.setHotlist(r.hotlist.version, r.hotlist.uids); updated.push("hotlist"); }
       if (r.profiles) { store.setProfiles(r.profiles.version, r.profiles.cards); updated.push("profiles"); }
       if (r.fareTable) { store.setFareTable(r.fareTable); updated.push("fares"); }
+      if (r.ticketKeys) { store.setTicketKeys(r.ticketKeys.version, r.ticketKeys.keys); updated.push("ticket keys"); }
       store.setOnline(true);
       store.setMeta("lastSyncAt", new Date().toISOString());
       store.trimSent();

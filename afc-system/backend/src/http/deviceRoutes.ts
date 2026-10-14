@@ -4,6 +4,7 @@ import { z } from "zod";
 import { isUniqueViolation } from "../db";
 import { listDevices, registerDevice, revokeDevice, rotateDeviceSecret } from "../domain/devices";
 import { processBatch, syncExtras, syncSchema } from "../domain/sync";
+import { ticketKeyList } from "../domain/tickets";
 import { actorOf, requireRole, type Deps } from "./app";
 
 export async function deviceRoutes(app: FastifyInstance, deps: Deps): Promise<void> {
@@ -51,7 +52,7 @@ export async function deviceRoutes(app: FastifyInstance, deps: Deps): Promise<vo
       const body = syncSchema.parse(JSON.parse(raw));
       if (body.deviceId !== deviceId) return deny(reply, "device id mismatch");
       const result = await processBatch({ db, hub, autoBlockAt: config.autoBlockHighAnomalies }, deviceId, body.batch);
-      const extras = await syncExtras(db, body);
+      const extras = await syncExtras(db, body, config.ticketSigner ? ticketKeyList(config.ticketSigner) : undefined);
       const fv = extras.fareTable?.version ?? body.fareTableVersion;
       if (fv !== device.fareVersion) await db.device.update({ where: { id: deviceId }, data: { fareVersion: fv } });
 

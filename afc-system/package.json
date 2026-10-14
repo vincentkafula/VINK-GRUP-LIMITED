@@ -4,7 +4,12 @@
   "version": "0.1.0",
   "description": "Automatic Fare Collection: MIFARE DESFire fare cards, validator, backend and dashboard",
   "type": "module",
-  "workspaces": ["shared", "backend", "validator", "dashboard"],
+  "workspaces": [
+    "shared",
+    "backend",
+    "validator",
+    "dashboard"
+  ],
   "scripts": {
     "test": "vitest run",
     "typecheck": "tsc --noEmit -p tsconfig.json",
@@ -13,7 +18,9 @@
     "validator:sim": "npm run sim -w validator",
     "dashboard": "npm run dev -w dashboard",
     "personalize": "tsx scripts/personalize.ts",
-    "selftest": "tsx scripts/selftest.ts"
+    "selftest": "tsx scripts/selftest.ts",
+    "keys": "tsx scripts/keys.ts",
+    "tickets": "tsx scripts/ticket.ts"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",

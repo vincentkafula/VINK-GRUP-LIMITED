@@ -12,9 +12,9 @@ import { SYSTEM_IDENTIFIER, AFC_AID } from "./desfire/layout";
  * Roles: PICC (the card's own master key), ADMIN/DEBIT/CREDIT (application keys 0/1/2). Each role has its OWN master key, so a validator
  * (which holds only DEBIT) cannot derive the key that adds money, and a top-up terminal (CREDIT) cannot derive the spending key.
  */
-export type CardKeyRole = "PICC" | "ADMIN" | "DEBIT" | "CREDIT";
-export const CARD_KEY_ROLES: CardKeyRole[] = ["PICC", "ADMIN", "DEBIT", "CREDIT"];
-const ROLE_BYTE: Record<CardKeyRole, number> = { PICC: 0x50, ADMIN: 0x41, DEBIT: 0x44, CREDIT: 0x43 };
+export type CardKeyRole = "PICC" | "ADMIN" | "DEBIT" | "CREDIT" | "TICKET";
+export const CARD_KEY_ROLES: CardKeyRole[] = ["PICC", "ADMIN", "DEBIT", "CREDIT", "TICKET"];
+export const ROLE_BYTE: Record<CardKeyRole, number> = { PICC: 0x50, ADMIN: 0x41, DEBIT: 0x44, CREDIT: 0x43, TICKET: 0x54 };
 
 export interface KeyProvider {
   readonly name: string;

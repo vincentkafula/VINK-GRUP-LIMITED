@@ -28,18 +28,21 @@ afc-system/
 
 ## What is real and what is a stand-in
 
-**Verified by tests in this repository (`npm test`: 136 tests):**
+**Verified by tests in this repository (`npm test`: 191 tests):**
 - AES-CMAC against the RFC 4493 vectors, key diversification against NXP's published AN10922 example.
 - The whole card protocol (authenticate, MACed debit/credit, commit/abort, change key) between the reader code and a **software card**, including a card pulled away mid-transaction and a reply lost after a commit.
 - The fare engine, the ledger (enforced by Postgres triggers: append-only, balanced, no negative card balance), top-up idempotency, signed device sync with replay protection, anomaly detection, reports, the live feed. These run against a **real PostgreSQL** (an embedded one, started by the tests).
 - Validator and server together over HTTP (offline taps, lost replies, hotlist, forged replies, cloned-card detection).
+- **Single-trip Ultralight tickets**: signature check (Ed25519, bound to the card's UID), password-protected writes, one-use enforcement on the card, on the device and on the server, copy detection, tickets pulled away mid-write. Against a software Ultralight with the real chip's password rules.
+- Sealed key files (wrong passphrase, tampering, per-station subsets) and the mobile-money adapter slot (two differently shaped callbacks).
 
 **NOT verified here, and you must verify before going live:**
 1. **The card protocol against a real DESFire card.** I had no hardware. The reader code follows NXP's datasheets and is exercised against a card simulator I also wrote, so a shared misunderstanding would not show. Run `npm run selftest -- --reader` on a **spare** card first (see below). If any step fails on the real card, do not personalise real cards.
 2. The PC/SC reader glue (`nfc-pcsc`), the Raspberry Pi GPIO feedback and the Docker images were written but not run on real hardware or Docker in this environment.
-3. **Mobile money** is a signed, idempotent placeholder webhook, not an integration with a provider.
-4. **Production key custody (KMS / HSM / NXP SAM)** is an interface (`ExternalKeyProvider`) with the contract documented; you plug your module in.
-5. Not implemented: EV2/EV3 "secure messaging" (the newer, stronger channel; the code uses the EV1-compatible AES mode that EV2/EV3 cards also speak), LRP, cards with **random UIDs** (turn that feature off when you configure the cards), MIFARE Ultralight single-trip tickets (the data model has the type; the reader code does not read them yet).
+3. **Mobile money**: the callback is verified through an adapter (`backend/src/domain/mobileMoney.ts`). Two adapters ship: the small signed format used by the tests, and one illustrating a differently shaped provider. **Neither is a real provider.** Writing the adapter for yours (MTN MoMo, Airtel Money, ...) is a short, testable job once you have their callback documentation and a sandbox account.
+4. **Hardware-backed key custody.** Sealed key files (passphrase-encrypted, one file per kind of station) are built and tested: they keep master keys out of environment variables and out of plain files. A **KMS/HSM/NXP SAM** still needs your module behind `ExternalKeyProvider`: a SAM keeps keys out of process memory entirely, which a software file cannot.
+5. **Ultralight on a real reader.** The ticket logic is tested against a software chip; the pseudo-APDUs that read and write pages through an ACR122U/ACR1252U (and the password command through the reader's pass-through) come from the reader's manual and were not run on hardware. Bench-test one ticket write and read before relying on them.
+6. **Not built, on purpose:** EV2/EV3 "secure messaging" (the newer channel; it needs an authenticated test against real cards, and writing it from memory would give a false sense of safety, so the code uses the EV1-compatible AES mode that EV2/EV3 cards also speak), LRP, and cards configured with **random UIDs** (they hide the UID the per-card keys are derived from; turn that feature off, or tell me and I will derive keys from a card serial stored in a free-read file). Ticket void/refund is also not built.
 
 ## Quick start, no hardware (about 5 minutes)
 
@@ -88,9 +91,10 @@ Put the API and dashboard behind HTTPS (a reverse proxy such as Caddy or nginx).
 - Tell the validator where it is: the vehicle's console or GPS posts the stop to `http://127.0.0.1:7070/stop` with `{"stopId":101}`; `GET /status` shows the queue and versions.
 
 ### Keys (read this before issuing a real card)
-- There are four **master keys**, 16 random bytes each: `PICC` (the card's own master key), `ADMIN`, `DEBIT`, `CREDIT`. Each card gets its **own** keys, derived from the masters with its UID (AES-CMAC, NXP AN10922), so a key read from one card tells an attacker nothing about another.
-- **Who holds what:** validators hold only `DEBIT`. Top-up terminals hold only `CREDIT`. Only the personalisation station holds all four. A stolen validator can take fares but can never add money.
+- There are five **master keys**, 16 random bytes each: `PICC` (the card's own master key), `ADMIN`, `DEBIT`, `CREDIT`, and `TICKET` (derives each Ultralight ticket card's write password). Each card gets its **own** keys, derived from the masters with its UID (AES-CMAC, NXP AN10922), so a key read from one card tells an attacker nothing about another.
+- **Who holds what:** validators hold only `DEBIT` and `TICKET`. Top-up terminals hold only `CREDIT`. Only the personalisation station holds all of them. A stolen validator can take fares but can never add money.
 - **Never** put master keys in source code, a committed file or the database. For development they come from `AFC_MASTER_KEY_*` environment variables (`DevKeyProvider`, which refuses to start in production). For production implement `ExternalKeyProvider` (`shared/src/keys.ts`) against your KMS, HSM or an **NXP SAM AV3**: it receives `01 || UID || AID || systemId || role` and returns the 16-byte card key. With a SAM the master key never leaves the chip.
+- **Sealed key files (the step up from environment variables).** `npm run keys -- generate --dir ./keys` makes the master keys (never printed) and writes passphrase-encrypted files: `all.sealed` (for your safe and the personalisation station), `validator.sealed` (DEBIT + TICKET), `topup.sealed` (CREDIT). Re-seal a station's file with its own passphrase using `keys reseal`, and `keys check <file>` lists the roles with fingerprints so you can confirm a backup matches. Programs read `AFC_KEY_FILE` plus `AFC_KEY_PASSPHRASE_FILE` (a path to a systemd credential or mounted secret). The files are encrypted with scrypt + AES-256-GCM; the role list is authenticated, so a file cannot be quietly swapped for another. **Back up `all.sealed` and its passphrase in two different places.**
 - **Know the trade-off:** a validator that derives card keys in software holds the `DEBIT` master in memory, so stealing one validator exposes every card's spending key. A SAM removes that; budget for one per validator for a serious deployment.
 
 ### Prepare a card
@@ -104,6 +108,17 @@ export AFC_API_URL=https://api.example.com AFC_API_TOKEN=<a staff sign-in token>
 npm run personalize -- --balance 0 --holder "Thandi Mokoena" --category adult --yes
 ```
 `personalize` creates the fare application, sets the per-card keys, reads the balance back to prove it, and registers the card with the server (so the books match the card from day one). With `--sim` it does everything against a software card. **Assumption to check:** a blank EV2/EV3 card ships with an AES card master key of 16 zero bytes. If your supplier delivers DES or a different key, set the AES key once with NXP's tooling, then pass `--piccKey`.
+
+### Single-trip tickets (Ultralight)
+
+For passengers without a fare card: a cheap MIFARE Ultralight EV1 (MF0UL21) or NTAG213/215 card sold at the counter, good for one trip within a time window.
+
+- **On the card:** 16 bytes of ticket data (route or "any", ticket number, valid from/until), a 64-byte Ed25519 signature over the data **and the card's UID**, and a "used" record.
+- **Why validators cannot mint tickets:** they hold only the *public* key, delivered by the server at sync. The private key stays on the server (`TICKET_SIGNING_KEY`).
+- **Why a phone cannot reset a ticket:** writes need a per-card password (derived from the `TICKET` master key), set at the counter, with the configuration locked and five wrong tries locking the card.
+- **Sell one:** `npm run tickets -- keygen` once (put the private key in your secret store as `TICKET_SIGNING_KEY`, with `TICKET_KEY_ID`), then at the counter `npm run tickets -- issue --route 1 --minutes 120 --price 1500 --method CASH --reference RC-1001` and tap a blank card (`--sim` for a software card). The sale is booked in the ledger (cash received, income earned), keyed on the receipt number so it can never be sold or charged twice.
+- **Use one:** the validator checks the signature, route, dates, the card's own "used" record and this device's record, then writes "used" and reports it. Offline works.
+- **The honest limit:** Ultralight has no card-side cryptography, so a *full copy* of an unused ticket onto a special card with the same UID can be used once per device that has not heard about the other copy. This device refuses a copy of a ticket it has already accepted; the server flags the same ticket number used twice (HIGH alert; three serious flags block the card). Keep tickets short-lived and cheap; do not sell high-value passes on Ultralight (use DESFire cards for those).
 
 ## How a tap stays safe
 
@@ -130,16 +145,19 @@ Top-ups: money received is recorded (cash or mobile money) and sits in `prepaid:
 | backend | `DEVICE_KEY_MASTER` | 64 hex characters; device signing secrets are derived from it (required in production) |
 | backend | `CORS_ORIGIN` | the dashboard's address |
 | backend | `MOBILE_MONEY_WEBHOOK_SECRET` | enables `POST /api/webhooks/mobile-money` (HMAC-SHA256 over the raw body in `x-signature`) |
+| backend | `TICKET_SIGNING_KEY`, `TICKET_KEY_ID`, `TICKET_RETIRED_KEYS` | the Ed25519 key that signs tickets (base64 PKCS8), its number, and old public keys still accepted as `id:hex,id:hex`. Without a key, ticket endpoints answer 503 (development derives one from `JWT_SECRET`) |
+| backend | `MOBILE_MONEY_PROVIDER` | which adapter reads the provider's callbacks (`generic`, `example`, or yours) |
 | backend | `AUTO_BLOCK_HIGH_ANOMALIES`, `LOGIN_MAX_FAILURES`, `LOGIN_LOCK_MINUTES`, `LOGIN_RATE_LIMIT` | see `backend/.env.example` |
 | dashboard | `NEXT_PUBLIC_API_URL` | where the browser reaches the API (build time) |
 | validator | `DEVICE_ID`, `DEVICE_SECRET`, `SERVER_URL`, `ROUTE_ID`, `STOP_ID`, `SQLITE_PATH`, `SYNC_INTERVAL_SECONDS`, `FEEDBACK`, `CONTROL_PORT` | see `validator/.env.example` |
-| validator / scripts | `AFC_MASTER_KEY_PICC/ADMIN/DEBIT/CREDIT` | development key provider (32 hex each) |
+| validator / scripts | `AFC_KEY_FILE`, `AFC_KEY_PASSPHRASE_FILE` | a sealed key file and the path to its passphrase (production) |
+| validator / scripts | `AFC_MASTER_KEY_PICC/ADMIN/DEBIT/CREDIT/TICKET` | development key provider (32 hex each) |
 | personalize | `AFC_API_URL`, `AFC_API_TOKEN` | register cards while personalising |
 
 ## Tests
 
 ```bash
-npm test            # 136 tests; the backend ones start an embedded Postgres, so the first run is slower
+npm test            # 191 tests; the backend ones start an embedded Postgres, so the first run is slower
 npm run typecheck
 npm run selftest    # test vectors + the card protocol against the simulator
 ```

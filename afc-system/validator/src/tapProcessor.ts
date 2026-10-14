@@ -22,7 +22,7 @@ export interface TapDeps {
   now?: () => number;                   // epoch seconds
 }
 
-const deviceTagOf = (id: string) => { let h = 0; for (const c of id) h = (h * 31 + c.charCodeAt(0)) & 0xffff; return h; };
+export const deviceTagOf = (id: string) => { let h = 0; for (const c of id) h = (h * 31 + c.charCodeAt(0)) & 0xffff; return h; };
 
 /**
  * One card tap, start to finish. The order of the steps is what keeps money safe:

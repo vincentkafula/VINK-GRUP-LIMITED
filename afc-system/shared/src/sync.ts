@@ -10,8 +10,11 @@ export interface SyncTransaction {
   deviceSeq: number;
   cardUid: string;
   result: "ok" | "denied";
-  kind?: TapKind;
-  denyReason?: DenyReason | "CARD_BLOCKED" | "INVALID_CARD" | "READ_ERROR";
+  /** 'ticket' = a single-trip Ultralight ticket was used (the fare was paid when it was sold). */
+  kind?: TapKind | "ticket";
+  denyReason?: DenyReason | "CARD_BLOCKED" | "INVALID_CARD" | "READ_ERROR" | TicketDenyReason;
+  /** For a ticket: its number. */
+  ticketId?: number;
   routeId: number;
   stopId: number;
   /** Cents taken from the card in this tap (penalty included). */
@@ -28,12 +31,16 @@ export interface SyncTransaction {
   offline: boolean;
 }
 
+export type TicketDenyReason = "INVALID_TICKET" | "TICKET_USED" | "TICKET_EXPIRED" | "TICKET_NOT_YET_VALID" | "TICKET_WRONG_ROUTE";
+
 export interface SyncRequest {
   deviceId: string;
   batch: SyncTransaction[];
   hotlistVersion: number;
   fareTableVersion: number;
   profilesVersion: number;
+  /** Highest ticket-signing key id the device knows (0 = none). */
+  ticketKeysVersion?: number;
 }
 
 export interface SyncRejection { id: string; reason: string }
@@ -46,6 +53,8 @@ export interface SyncResponse {
   hotlist?: { version: number; uids: string[] };
   fareTable?: FareTable;
   profiles?: { version: number; cards: { uid: string; category: Category }[] };
+  /** Public keys that check ticket signatures. A validator can verify a ticket with these but can never make one. */
+  ticketKeys?: { version: number; keys: { id: number; publicKey: string }[] };
 }
 
 /* ───────── request signing ───────── */

@@ -62,10 +62,20 @@ export async function topupReport(db: Db, r: Range) {
   return { rows: rows.map((x) => ({ method: x.method, count: num(x.n), total: num(x.total) })) };
 }
 
+/** Tickets sold (money in) and used, by day. */
+export async function ticketReport(db: Db, r: Range) {
+  const rows = await db.$queryRaw<{ day: string; sold: bigint; amount: bigint; used: bigint }[]>`
+    SELECT to_char(date_trunc('day', t."issuedAt" AT TIME ZONE ${TZ}), 'YYYY-MM-DD') AS day, COUNT(*) AS sold, COALESCE(SUM(t.price), 0) AS amount,
+           COUNT(*) FILTER (WHERE t.status = 'USED') AS used
+    FROM "Ticket" t WHERE t.status <> 'VOID' AND t."issuedAt" >= ${r.from} AND t."issuedAt" < ${r.to} GROUP BY 1 ORDER BY 1`;
+  const out = rows.map((x) => ({ day: x.day, sold: num(x.sold), amount: num(x.amount), used: num(x.used) }));
+  return { from: r.from.toISOString(), to: r.to.toISOString(), totals: { sold: out.reduce((s, x) => s + x.sold, 0), amount: out.reduce((s, x) => s + x.amount, 0), used: out.reduce((s, x) => s + x.used, 0) }, rows: out };
+}
+
 /** The numbers on the dashboard's front page. */
 export async function summary(db: Db, operatorId?: number) {
   const now = new Date(), dayAgo = new Date(now.getTime() - 86400_000);
-  const [today, week, topups, failed, anomalies, devices, blocked] = await Promise.all([
+  const [today, week, topups, failed, anomalies, devices, blocked, tickets] = await Promise.all([
     revenueReport(db, { from: dayAgo, to: now }, "day", operatorId),
     revenueReport(db, parseRange(undefined, undefined), "day", operatorId),
     topupReport(db, { from: dayAgo, to: now }),
@@ -73,10 +83,11 @@ export async function summary(db: Db, operatorId?: number) {
     db.anomaly.count({ where: { resolvedAt: null, severity: { in: ["MEDIUM", "HIGH"] } } }),
     db.device.findMany({ select: { id: true, status: true, lastSeenAt: true } }),
     db.card.count({ where: { status: { in: ["BLOCKED", "LOST"] } } }),
+    ticketReport(db, { from: dayAgo, to: now }),
   ]);
   const online = devices.filter((d) => d.status === "ACTIVE" && d.lastSeenAt && now.getTime() - d.lastSeenAt.getTime() < 15 * 60_000).length;
   return {
-    last24h: { revenue: today.totals.revenue, trips: today.totals.trips, failedTaps: failed.rows.reduce((s, x) => s + x.count, 0), topups: topups.rows.reduce((s, x) => s + x.total, 0) },
+    last24h: { revenue: today.totals.revenue, trips: today.totals.trips, failedTaps: failed.rows.reduce((s, x) => s + x.count, 0), topups: topups.rows.reduce((s, x) => s + x.total, 0), ticketSales: tickets.totals.amount, ticketsSold: tickets.totals.sold },
     last7d: week.rows.map((x) => ({ day: x.key, revenue: x.revenue, trips: x.trips })),
     openAnomalies: anomalies, devices: { total: devices.length, online }, blockedCards: blocked,
   };

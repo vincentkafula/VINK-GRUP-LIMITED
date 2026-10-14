@@ -1,31 +1,32 @@
 import { createServer } from "node:http";
-import { DevKeyProvider, sampleFareTable, topUpCard, DesfireSession, type KeyProvider } from "@afc/shared";
+import { DevKeyProvider, sampleFareTable, topUpCard, DesfireSession, keyProviderFromEnv, type KeyProvider } from "@afc/shared";
 import { loadConfig } from "./config";
 import { ConsoleFeedback, GpioFeedback } from "./feedback";
 import { PcscReader, SimulatedReader, type CardEvent } from "./readers";
 import { Store } from "./store";
 import { SyncClient } from "./syncClient";
 import { TapProcessor } from "./tapProcessor";
+import { TicketProcessor } from "./ticketProcessor";
 
 /**
  * Validator entry point.
  *   npm run validator        real reader (PC/SC), keys from the environment or a key service
  *   npm run validator:sim    simulated reader and demo cards, no hardware
- * Keys: the validator needs ONLY the DEBIT master key (AFC_MASTER_KEY_DEBIT) in development. In production plug an ExternalKeyProvider
- * (KMS / HSM / NXP SAM) into `keyProvider()` below so the key never sits in this process's environment.
+ * Keys: a validator needs only the DEBIT and TICKET master keys (see `npm run keys`).
  */
 if (process.argv.includes("--sim")) process.env.SIMULATOR = "1";
 const cfg = loadConfig();
 const store = new Store(cfg.sqlitePath);
 let stopId = cfg.stopId;
 
-function keyProvider(): KeyProvider {
-  // Production: return new ExternalKeyProvider(async (role, input) => yourSamOrKms.diversify(role, input));
-  return DevKeyProvider.fromEnv();
-}
+// A sealed key file (AFC_KEY_FILE + a passphrase from a secret store) if configured, otherwise the development environment variables.
+// Production with hardware custody: return new ExternalKeyProvider(async (role, input) => yourSamOrKms.diversify(role, input)) here instead.
+const keys: KeyProvider = await keyProviderFromEnv();
 
 const feedback = cfg.feedback === "gpio" ? new GpioFeedback() : new ConsoleFeedback();
-const processor = new TapProcessor({ keys: keyProvider(), store, feedback, deviceId: cfg.deviceId, place: () => ({ routeId: cfg.routeId, stopId }) });
+const processor = new TapProcessor({ keys, store, feedback, deviceId: cfg.deviceId, place: () => ({ routeId: cfg.routeId, stopId }) });
+
+const tickets = new TicketProcessor({ keys, store, feedback, deviceId: cfg.deviceId, place: () => ({ routeId: cfg.routeId, stopId }) });
 
 const secret = cfg.deviceSecret;
 const sync = secret ? new SyncClient({ serverUrl: cfg.serverUrl, deviceId: cfg.deviceId, secret, store }) : undefined;
@@ -43,7 +44,7 @@ const runSync = async () => {
 };
 
 const onCard = async (c: CardEvent) => {
-  const out = await processor.handle(c.uid, c.transceiver);
+  const out = c.ultralight ? await tickets.handle(c.ultralight) : await processor.handle(c.uid, c.transceiver!);
   if (out.status === "charged" || out.status === "already_paid" || out.status === "denied") void runSync();
 };
 

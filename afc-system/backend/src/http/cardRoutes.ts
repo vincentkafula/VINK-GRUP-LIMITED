@@ -1,9 +1,9 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
 import type { FastifyInstance } from "fastify";
 import { CATEGORIES } from "@afc/shared";
 import { z } from "zod";
 import { cardHistory, cardView, listCards, normaliseUid, registerCard, setCardCategory, setCardStatus, UID_PATTERN } from "../domain/cards";
 import { badRequest, HttpError } from "../domain/errors";
+import { ADAPTERS } from "../domain/mobileMoney";
 import { cancelTopup, confirmLoad, createTopupOrder, directLoad, handleMobileMoneyEvent, pendingLoads } from "../domain/topups";
 import { actorOf, requireRole, type Deps } from "./app";
 
@@ -81,12 +81,10 @@ export async function cardRoutes(app: FastifyInstance, { config, db, hub }: Deps
     hook.addContentTypeParser("application/json", { parseAs: "string", bodyLimit: 64_000 }, (_req, body, done) => done(null, body));
     hook.post("/webhooks/mobile-money", { config: { rateLimit: { max: 120, timeWindow: "1 minute" } } }, async (req, reply) => {
       const secret = config.mobileMoneyWebhookSecret;
-      if (!secret) return reply.code(404).send({ error: { code: "not_found", message: "Not enabled" } });
-      const raw = String(req.body ?? "");
-      const given = Buffer.from(String(req.headers["x-signature"] ?? ""), "hex");
-      const want = createHmac("sha256", secret).update(raw).digest();
-      if (given.length !== want.length || !timingSafeEqual(given, want)) return reply.code(401).send({ error: { code: "bad_signature", message: "Signature does not match" } });
-      const e = z.object({ reference: z.string().min(1).max(80), cardUid: z.string(), amount: z.number().int(), status: z.enum(["SUCCESS", "FAILED"]) }).parse(JSON.parse(raw));
+      const adapter = ADAPTERS[config.mobileMoneyProvider];
+      if (!secret || !adapter) return reply.code(404).send({ error: { code: "not_found", message: "Not enabled" } });
+      const e = adapter.parse({ headers: req.headers, rawBody: String(req.body ?? ""), secret });
+      if (!e) return reply.code(401).send({ error: { code: "bad_signature", message: "The callback could not be verified" } });
       const r = await handleMobileMoneyEvent(db, { ...e, cardUid: uidParam(e.cardUid) }, hub);
       return { received: true, ...r };
     });

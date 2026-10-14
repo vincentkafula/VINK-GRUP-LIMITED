@@ -18,6 +18,7 @@ import { deviceRoutes } from "./deviceRoutes";
 import { fareRoutes } from "./fareRoutes";
 import { feedRoutes } from "./feedRoutes";
 import { reportRoutes } from "./reportRoutes";
+import { ticketRoutes } from "./ticketRoutes";
 
 export type Role = "ADMIN" | "OPERATOR" | "AGENT" | "VIEWER";
 export interface JwtUser { sub: string; email: string; role: Role; operatorId?: number }
@@ -70,6 +71,7 @@ export async function buildApp(deps: Omit<Deps, "hub"> & { hub?: FeedHub }, opts
   await app.register(async (api) => fareRoutes(api, d), { prefix: "/api" });
   await app.register(async (api) => deviceRoutes(api, d), { prefix: "/api" });
   await app.register(async (api) => reportRoutes(api, d), { prefix: "/api" });
+  await app.register(async (api) => ticketRoutes(api, d), { prefix: "/api" });
   await app.register(async (api) => feedRoutes(api, d), { prefix: "/api" });
   return app;
 }

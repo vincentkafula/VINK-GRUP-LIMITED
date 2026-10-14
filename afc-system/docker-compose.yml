@@ -30,6 +30,9 @@ services:
       DEVICE_KEY_MASTER: ${DEVICE_KEY_MASTER:?Set DEVICE_KEY_MASTER in .env (64 hex characters)}
       CORS_ORIGIN: ${DASHBOARD_URL:-http://localhost:3000}
       MOBILE_MONEY_WEBHOOK_SECRET: ${MOBILE_MONEY_WEBHOOK_SECRET:-}
+      MOBILE_MONEY_PROVIDER: ${MOBILE_MONEY_PROVIDER:-generic}
+      TICKET_SIGNING_KEY: ${TICKET_SIGNING_KEY:-}
+      TICKET_KEY_ID: ${TICKET_KEY_ID:-1}
       SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-}
     ports: ["4000:4000"]
     healthcheck: { test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"], interval: 15s, timeout: 5s, retries: 5, start_period: 30s }
