@@ -120,6 +120,10 @@ CREATE TABLE IF NOT EXISTS recon_runs(
   id TEXT PRIMARY KEY, ran_at TEXT NOT NULL, ran_by TEXT NOT NULL, ok INTEGER NOT NULL, exceptions INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS recon_exceptions(
   id INTEGER PRIMARY KEY AUTOINCREMENT, run_id TEXT NOT NULL REFERENCES recon_runs(id), check_name TEXT NOT NULL, ref TEXT, detail TEXT NOT NULL, merchant_id TEXT);
+CREATE TABLE IF NOT EXISTS recon_settlements(
+  id TEXT PRIMARY KEY, imported_at TEXT NOT NULL, imported_by TEXT NOT NULL, kind TEXT NOT NULL, source TEXT, file_hash TEXT NOT NULL UNIQUE, summary TEXT NOT NULL, problems INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS recon_settlement_items(
+  id INTEGER PRIMARY KEY AUTOINCREMENT, settlement_id TEXT NOT NULL REFERENCES recon_settlements(id), bucket TEXT NOT NULL, ref TEXT, file_amount INTEGER, our_amount INTEGER, detail TEXT, merchant_id TEXT);
 CREATE TABLE IF NOT EXISTS kv(key TEXT PRIMARY KEY, value TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS admin_keys(hash TEXT PRIMARY KEY, label TEXT, hint TEXT, revoked INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS applications(

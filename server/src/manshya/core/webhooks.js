@@ -69,6 +69,11 @@ function buildEmitter(db, { fetchImpl = (...a) => fetch(...a), clock = () => Dat
     return db.prepare(`SELECT id,type,created_at,delivered,dead,attempts,next_attempt_at,last_error,delivered_at FROM events WHERE merchant_id=? ${where} ORDER BY created_at DESC LIMIT ?`).all(merchantId, Math.min(Math.max(limit | 0, 1), 200));
   };
 
+  /** Every merchant's events that gave up (for the back office). */
+  emit.listDead = (limit = 100) => db.prepare('SELECT e.id,e.merchant_id,m.name merchant,e.type,e.created_at,e.attempts,e.last_error FROM events e LEFT JOIN merchants m ON m.id=e.merchant_id WHERE e.dead=1 ORDER BY e.created_at DESC LIMIT ?').all(Math.min(Math.max(limit | 0, 1), 500));
+  /** Back-office replay of any merchant's event. */
+  emit.replayAny = async (id) => { const e = db.prepare('SELECT merchant_id FROM events WHERE id=?').get(id); return e ? emit.replay(e.merchant_id, id) : null; };
+
   /** Sends an event again from the start (a dead letter, or one that was never delivered). Returns the outcome, or null if it is not theirs. */
   emit.replay = async (merchantId, id) => {
     const e = db.prepare('SELECT * FROM events WHERE id=? AND merchant_id=?').get(id, merchantId);

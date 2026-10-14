@@ -97,7 +97,8 @@ P["s/buttons"] = async () => {
 };
 
 P["s/dev"] = async () => {
-  const [k, me] = await Promise.all([api("/account/api-keys"), api("/me")]);
+  const [k, me, ev] = await Promise.all([api("/account/api-keys"), api("/me"), api("/events?limit=20").catch(() => ({ data: [] }))]);
+  const state = (e: any) => (e.delivered ? "delivered" : e.dead ? "gave up" : e.attempts ? "retrying" : "sending");
   return {
     title: "Developer settings", sub: "API keys and webhooks for connecting your own systems.",
     actions: [
@@ -128,9 +129,22 @@ P["s/dev"] = async () => {
           { h: "Label", f: (r: any) => r.label }, { h: "Access", f: (r: any) => r.role }, { h: "Key", f: (r: any) => r.hint }, { h: "Created", f: (r: any) => dt(r.created_at) },
           { h: "Status", f: (r: any) => tag(r.revoked ? "cancelled" : "active") }, { h: "", f: (r: any) => (r.revoked ? null : btn("Revoke", "rv|" + r.id, "d")) },
         ], k.data)}
+        {me.webhook_url && (
+          <>
+            {note("Webhook deliveries. A failed delivery is tried again automatically (after 30 seconds, then 1, 2, 4 minutes and so on, up to 8 tries). After that it shows as gave up and you can send it again. The same event can arrive twice, so use its id to ignore repeats.")}
+            {table([
+              { h: "Event", f: (r: any) => r.type }, { h: "When", f: (r: any) => dt(r.created_at) }, { h: "Status", f: (r: any) => tag(state(r) === "delivered" ? "active" : state(r) === "gave up" ? "rejected" : state(r)) },
+              { h: "Tries", r: true, f: (r: any) => r.attempts }, { h: "Last error", f: (r: any) => r.last_error || "—" },
+              { h: "", f: (r: any) => (r.delivered ? null : btn("Send again", "rp|" + r.id)) },
+            ], ev.data)}
+          </>
+        )}
       </>
     ),
-    on: { rv: async (id) => { await api("/account/api-keys/" + id, { method: "DELETE" }); toast("Key revoked"); } },
+    on: {
+      rv: async (id) => { await api("/account/api-keys/" + id, { method: "DELETE" }); toast("Key revoked"); },
+      rp: async (id) => { const r = await api(`/events/${id}/replay`, { method: "POST", body: {} }); toast(r.outcome === "delivered" ? "Delivered" : "Not delivered: " + r.outcome); },
+    },
   };
 };
 

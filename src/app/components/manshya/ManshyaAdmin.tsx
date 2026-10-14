@@ -39,7 +39,7 @@ const confirm = async (title: string, cta: string) => !!(await ask(title, [], ct
 
 const TABS = {
   overview: "Overview", applications: "Applications", kyc: "KYC queue", merchants: "Merchants", transactions: "Transactions", fraud: "Fraud flags",
-  disputes: "Disputes", credit: "Credit", claims: "Insurance claims", support: "Support", audit: "Audit log",
+  disputes: "Disputes", credit: "Credit", claims: "Insurance claims", support: "Support", reconciliation: "Reconciliation", audit: "Audit log",
 } as const;
 type Tab = keyof typeof TABS;
 
@@ -308,6 +308,72 @@ const PAGES: Record<Tab, (c: Ctx) => Promise<ReactNode>> = {
         <Table empty="No tickets." rows={d.data} cols={[
           { h: "Updated", f: (r: any) => dt(r.updated_at) }, { h: "Merchant", f: (r: any) => r.merchant }, { h: "Category", f: (r: any) => r.category }, { h: "Subject", f: (r: any) => r.subject },
           { h: "Status", f: (r: any) => tag(r.status) }, { h: "", f: (r: any) => <Lk onClick={reply(r.id)}>Reply</Lk> },
+        ]} />
+      </>
+    );
+  },
+
+  /* The daily check of the books, provider/bank settlement files, and webhooks that gave up. `mq` doubles as the run being shown. */
+  async reconciliation({ act, mq, setMq }) {
+    const [runs, settlements, dead] = await Promise.all([api("/reconciliation/runs?limit=30"), api("/reconciliation/settlements?limit=10"), api("/webhooks/dead")]);
+    const shown = mq && runs.data.some((r: any) => r.id === mq) ? mq : runs.data[0]?.id;
+    const run = shown ? await api("/reconciliation/runs/" + shown) : null;
+    const last = runs.data[0];
+    const runNow = act(async () => { const r = await api("/reconciliation/run", { method: "POST", body: {} }); setMq(r.id); toast(r.ok ? "The books reconcile." : `${r.exceptions} exception(s) found.`); });
+    const importFile = act(async () => {
+      const v = await ask("Import a settlement file", [
+        { name: "kind", label: "Whose file is it?", type: "select", options: [["acquirer", "Card / EFT provider (payments settled to us)"], ["bank", "Bank (payouts and transfers we sent)"]] },
+        { name: "source", label: "Name of the provider or bank", required: false },
+        { name: "csv", label: "Paste the file (CSV with a header row)", type: "textarea" },
+        { name: "reference", label: "Reference column name (leave empty if it is gateway_ref, reference or ref)", required: false },
+        { name: "amount", label: "Amount column name (leave empty if it is amount)", required: false },
+        { name: "unit", label: "Amounts are in", type: "select", options: [["rand", "Rand, like 125.50"], ["cents", "Cents, like 12550"]] },
+      ], "Compare");
+      if (!v) return;
+      const columns: Record<string, string> = {};
+      if (v.reference) columns.ref = v.reference; if (v.amount) columns.amount = v.amount;
+      const r = await api("/reconciliation/settlements", { method: "POST", body: { kind: v.kind, csv: v.csv, source: v.source, columns, amountUnit: v.unit } });
+      toast(r.ok ? `All ${r.summary.matched} lines match.` : `${r.items.length} difference(s) found.`);
+    });
+    const replay = (id: string) => act(async () => { const r = await api(`/webhooks/${id}/replay`, { method: "POST", body: {} }); toast("Replay: " + r.outcome); });
+    const ok = (b: boolean) => <span className={`tag ${b ? "g" : "r"}`}>{b ? "all clear" : "needs attention"}</span>;
+    return (
+      <>
+        <h1>Reconciliation</h1>
+        <Kpis items={[["Last check", last ? dt(last.ran_at) : "never"], ["Result", last ? (last.ok ? "All clear" : `${last.exceptions} exception(s)`) : "—"], ["Webhooks given up", dead.data.length], ["Imports needing attention", settlements.data.filter((s: any) => !s.ok).length]]} />
+        <div style={{ margin: "0 0 14px", display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <button className="btn p" onClick={runNow}>Check the books now</button>
+          <button className="btn" onClick={importFile}>Import a settlement file</button>
+        </div>
+        <p style={{ margin: "0 0 14px", fontSize: 13 }}>The books are checked automatically once a day. Problems are emailed to the operations address (RECON_ALERT_EMAIL) the first time they appear.</p>
+
+        <h1>{run ? `Check of ${dt(run.ran_at)}` : "No check has run yet"}</h1>
+        <Table empty="Nothing found: every posting matches its record." rows={run?.items ?? []} cols={[
+          { h: "Check", f: (r: any) => <span className={`tag ${r.check === "webhook_dead_letters" ? "" : "r"}`}>{String(r.check).replace(/_/g, " ")}</span> },
+          { h: "Reference", f: (r: any) => r.ref || "—" }, { h: "What was found", f: (r: any) => r.detail }, { h: "Merchant", f: (r: any) => r.merchant_id || "—" },
+        ]} />
+
+        <h1>Earlier checks</h1>
+        <Table empty="No checks yet." rows={runs.data} cols={[
+          { h: "When", f: (r: any) => dt(r.ran_at) }, { h: "Started by", f: (r: any) => r.ran_by }, { h: "Result", f: (r: any) => ok(r.ok) },
+          { h: "Exceptions", r: true, f: (r: any) => r.exceptions }, { h: "", f: (r: any) => (r.id === shown ? "showing" : <Lk onClick={() => setMq(r.id)}>Show</Lk>) },
+        ]} />
+
+        <h1>Settlement files</h1>
+        <Table empty="No files imported yet." rows={settlements.data} cols={[
+          { h: "Imported", f: (r: any) => dt(r.imported_at) }, { h: "Kind", f: (r: any) => (r.kind === "bank" ? "Bank" : "Provider") }, { h: "Source", f: (r: any) => r.source || "—" },
+          { h: "Lines", r: true, f: (r: any) => r.summary.rows }, { h: "Matched", r: true, f: (r: any) => r.summary.matched },
+          { h: "Differences", r: true, f: (r: any) => r.problems }, { h: "Result", f: (r: any) => ok(r.ok) },
+          { h: "", f: (r: any) => <Lk onClick={act(async () => {
+            const d = await api("/reconciliation/settlements/" + r.id);
+            await secret(`Differences in the ${d.source || d.kind} file`, d.items.map((i: any) => `${i.bucket.replace(/_/g, " ")}: ${i.ref} — ${i.detail}`).join("\n") || "No differences.", `${d.items.length} item(s). Amounts are in cents.`);
+          })}>Details</Lk> },
+        ]} />
+
+        <h1>Webhooks that gave up</h1>
+        <Table empty="Every webhook has been delivered." rows={dead.data} cols={[
+          { h: "Merchant", f: (r: any) => r.merchant || r.merchant_id }, { h: "Event", f: (r: any) => r.type }, { h: "When", f: (r: any) => dt(r.created_at) },
+          { h: "Tries", r: true, f: (r: any) => r.attempts }, { h: "Last error", f: (r: any) => r.last_error || "—" }, { h: "", f: (r: any) => <Lk onClick={replay(r.id)}>Replay</Lk> },
         ]} />
       </>
     );

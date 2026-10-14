@@ -52,6 +52,9 @@ module.exports = function buildRouter({ db, events, services: s, gateways, confi
 
   // JSON bodies are capped at 100 KB, except document uploads (3 MB, and limited per IP before the body is read).
   const json100 = express.json({ limit: '100kb' }), json3m = express.json({ limit: '3mb' }), uploadLimit = limiter(20, 60000, ipKey);
+  // A staff member pasting a settlement file can exceed 100 KB; that one route accepts up to 3 MB (the route itself needs admin sign-in; the CSV is capped again in reconcile.js).
+  const bigBody = (req) => req.method === 'POST' && req.path === '/admin/reconciliation/settlements';
+  r.use((req, res, next) => (bigBody(req) ? uploadLimit(req, res, () => json3m(req, res, next)) : next()));   // limited per IP before the body is read, like document uploads
   r.use((req, res, next) => (req.method === 'POST' && req.path === '/account/documents/upload' ? uploadLimit(req, res, () => json3m(req, res, next)) : json100(req, res, next)));
   r.get('/public/payment-requests/:token', limiter(60, 60000, ipKey), wrap((req, res) => res.json(s.getRequestByToken(req.params.token))));
   r.post('/public/payment-requests/:token/pay', limiter(20, 60000, ipKey), wrap(async (req, res) => res.json(await s.payRequest(req.params.token, req.body))));

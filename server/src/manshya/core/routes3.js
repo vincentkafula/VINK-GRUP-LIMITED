@@ -3,7 +3,7 @@ const crypto = require('crypto');
 const { ApiError } = require('./util');
 
 // Phase-3 routes: back office, statements, instant and international payments, cards, rewards, support, buyer account, vehicle.
-module.exports = function buildRoutes3({ recon, admin, statements, p2, cards, extras, banking, credit, insurance, account, rails, config, core }) {
+module.exports = function buildRoutes3({ recon, events, admin, statements, p2, cards, extras, banking, credit, insurance, account, rails, config, core }) {
   const wrap = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 
   // Raw-body routes (signature checked): money arriving from other banks.
@@ -41,6 +41,11 @@ module.exports = function buildRoutes3({ recon, admin, statements, p2, cards, ex
     ar.get('/reconciliation/runs', w((req, res) => res.json(recon.list(Number(req.query.limit) || 30))));
     ar.get('/reconciliation/runs/:id', w((req, res) => { const d = recon.detail(req.params.id); if (!d) throw new ApiError(404, 'not_found', 'No such run'); res.json(d); }));
     ar.post('/reconciliation/run', root, w((req, res) => res.status(201).json(recon.run(new Date(), A(req)))));
+    ar.get('/reconciliation/settlements', w((req, res) => res.json(recon.listSettlements(Number(req.query.limit) || 30))));
+    ar.get('/reconciliation/settlements/:id', w((req, res) => { const d = recon.settlementDetail(req.params.id); if (!d) throw new ApiError(404, 'not_found', 'No such import'); res.json(d); }));
+    ar.post('/reconciliation/settlements', root, w((req, res) => res.status(201).json(recon.matchSettlement(req.body, A(req)))));
+    ar.get('/webhooks/dead', w((req, res) => res.json({ data: events.listDead(Number(req.query.limit) || 100) })));
+    ar.post('/webhooks/:id/replay', root, w(async (req, res) => { const outcome = await events.replayAny(req.params.id); if (!outcome) throw new ApiError(404, 'not_found', 'No such event'); res.json({ id: req.params.id, outcome }); }));
     ar.get('/overview', w((req, res) => res.json(admin.overview())));
     ar.get('/merchants', w((req, res) => res.json(admin.listMerchants(req.query))));
     ar.get('/merchants/:id', w((req, res) => res.json(admin.getMerchant(req.params.id))));

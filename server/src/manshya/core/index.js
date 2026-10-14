@@ -140,8 +140,9 @@ function createManshya(options = {}) {
   hooks.payment = admin.onPayment;
   const statements = buildStatements({ db, core: services, config, online, mail });
   const p2 = buildPayments2({ db, ledger, core: services, rails, config, emit, notify: account.notify });
-  const recon = buildRecon({ db });
-  const routes3 = buildRoutes3({ recon, admin, statements, p2, cards, extras, banking, credit, insurance, account, rails, config, core: services });
+  const alertTo = options.reconAlertEmail || process.env.RECON_ALERT_EMAIL;
+  const recon = buildRecon({ db, notify: (subject, body) => { if (alertTo) Promise.resolve(mailer.send({ to: alertTo, subject, text: body })).catch(() => {}); else console.error('[reconciliation] ' + subject + ' (set RECON_ALERT_EMAIL to be emailed)'); } });
+  const routes3 = buildRoutes3({ recon, events: baseEmit, admin, statements, p2, cards, extras, banking, credit, insurance, account, rails, config, core: services });
   const routes2 = buildRoutes2({ core: services, account, online, catalog, banking, config });
 
   // Run this on a timer (every minute is fine): subscriptions, payout schedules, scheduled payments, auto-savings.
