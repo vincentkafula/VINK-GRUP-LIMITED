@@ -47,3 +47,11 @@ export function sampleFareTable(version = 1): FareTable {
     ],
   };
 }
+
+/** Demo cards used by the seed data and the simulator. The simulator personalises these UIDs with these balances so both sides agree. */
+export const SAMPLE_CARDS = [
+  { uid: "04a1b2c3d4e5f6", holder: "Thandi Mokoena", category: "adult" as const, balance: 10000 },
+  { uid: "04a1b2c3d4e5f7", holder: "Sipho Dlamini (student)", category: "student" as const, balance: 5000 },
+  { uid: "04a1b2c3d4e5f8", holder: "Mama Joyce (senior)", category: "senior" as const, balance: 3000 },
+  { uid: "04a1b2c3d4e5f9", holder: "Low balance demo", category: "adult" as const, balance: 500 },
+];

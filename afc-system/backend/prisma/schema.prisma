@@ -1,0 +1,290 @@
+// AFC database. Money is whole cents (Int). The ledger (Journal + Posting) is append-only and always balanced:
+// both are enforced by database triggers in the migration "ledger_integrity", not just by application code.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  OPERATOR
+  AGENT
+  VIEWER
+}
+
+enum CardStatus {
+  ACTIVE
+  BLOCKED
+  LOST
+  EXPIRED
+}
+
+enum CardType {
+  DESFIRE
+  ULTRALIGHT_TICKET
+}
+
+enum Category {
+  adult
+  student
+  senior
+  child
+  staff
+}
+
+enum FareMode {
+  FLAT
+  ZONE
+}
+
+enum DeviceStatus {
+  ACTIVE
+  REVOKED
+}
+
+enum TopupMethod {
+  CASH
+  MOBILE_MONEY
+  ADMIN
+}
+
+enum TopupStatus {
+  PENDING_LOAD
+  LOADED
+  CANCELLED
+}
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  role         Role
+  operatorId   Int?
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  failedLogins Int      @default(0)
+  lockedUntil  DateTime?
+}
+
+model Operator {
+  id     Int     @id
+  name   String
+  routes Route[]
+}
+
+model Route {
+  id                   Int        @id
+  code                 String     @unique
+  name                 String
+  operatorId           Int
+  operator             Operator   @relation(fields: [operatorId], references: [id])
+  mode                 FareMode
+  flatAmount           Int?
+  minFare              Int        @default(0)
+  maxFare              Int        @default(0)
+  apbSeconds           Int        @default(120)
+  tapOutTimeoutSeconds Int        @default(14400)
+  active               Boolean    @default(true)
+  stops                Stop[]
+  zoneFares            ZoneFare[]
+}
+
+model Stop {
+  id      Int    @id
+  routeId Int
+  route   Route  @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  name    String
+  zone    Int
+  seq     Int
+
+  @@index([routeId])
+}
+
+model ZoneFare {
+  id       Int   @id @default(autoincrement())
+  routeId  Int
+  route    Route @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  fromZone Int
+  toZone   Int
+  amount   Int
+
+  @@unique([routeId, fromZone, toZone])
+}
+
+model TimeRule {
+  id           Int    @id @default(autoincrement())
+  name         String
+  days         Int[]
+  startMinute  Int
+  endMinute    Int
+  multiplierBp Int
+}
+
+model DiscountRule {
+  category   Category @id
+  discountBp Int
+}
+
+/// Each publish freezes a copy of the fare table; devices are told which version they hold, and the server can re-check a device's reported fare against it.
+model FareTableVersion {
+  version     Int      @id
+  json        Json
+  publishedAt DateTime @default(now())
+  publishedBy String?
+}
+
+model Device {
+  id          String       @id
+  name        String
+  routeId     Int?
+  status      DeviceStatus @default(ACTIVE)
+  /// Bumping this makes the device's old signing secret useless (revocation / key rotation).
+  rotation    Int          @default(1)
+  lastSeenAt  DateTime?
+  lastSeq     Int          @default(0)
+  fareVersion Int          @default(0)
+  createdAt   DateTime     @default(now())
+  txns        Txn[]
+}
+
+model DeviceNonce {
+  deviceId  String
+  nonce     String
+  expiresAt DateTime
+
+  @@id([deviceId, nonce])
+  @@index([expiresAt])
+}
+
+model Card {
+  uid           String     @id
+  type          CardType   @default(DESFIRE)
+  status        CardStatus @default(ACTIVE)
+  holderName    String?
+  holderRef     String?
+  category      Category   @default(adult)
+  issuedAt      DateTime   @default(now())
+  issuedBy      String?
+  blockedReason String?
+  /// Highest tap counter the server has seen from the card; used to spot clones and lost transactions.
+  lastCounter   Int        @default(0)
+  lastTapAt     DateTime?
+  txns          Txn[]
+
+  @@index([status])
+}
+
+/// One tap reported by a validator. The id is the device's idempotency key.
+model Txn {
+  id               String   @id
+  deviceId         String
+  device           Device   @relation(fields: [deviceId], references: [id])
+  deviceSeq        Int
+  cardUid          String
+  card             Card?    @relation(fields: [cardUid], references: [uid])
+  result           String
+  kind             String?
+  denyReason       String?
+  routeId          Int
+  stopId           Int
+  fare             Int
+  penalty          Int
+  balanceBefore    Int
+  balanceAfter     Int
+  cardCounter      Int
+  category         Category
+  tappedAt         DateTime
+  receivedAt       DateTime @default(now())
+  fareTableVersion Int
+  offline          Boolean
+  journalId        String?
+
+  @@index([tappedAt])
+  @@index([cardUid, cardCounter])
+  @@index([deviceId, deviceSeq])
+  @@index([routeId, tappedAt])
+}
+
+model Journal {
+  id        String    @id @default(cuid())
+  kind      String
+  ref       String?
+  memo      String?
+  createdAt DateTime  @default(now())
+  postings  Posting[]
+
+  @@index([ref])
+}
+
+model Posting {
+  id           BigInt  @id @default(autoincrement())
+  journalId    String
+  journal      Journal @relation(fields: [journalId], references: [id])
+  /// card:<uid>, revenue:route:<id>, prepaid:pending, clearing:cash, clearing:mobile_money, adjustment
+  account      String
+  amount       Int
+  /// Running balance of this account after this posting (cards only; makes statements and checks cheap).
+  balanceAfter Int?
+  createdAt    DateTime @default(now())
+
+  @@index([account, id])
+  @@index([journalId])
+}
+
+model Topup {
+  id         String      @id @default(cuid())
+  cardUid    String
+  amount     Int
+  method     TopupMethod
+  status     TopupStatus @default(PENDING_LOAD)
+  /// Mobile-money transaction id / receipt number. With the method it is unique, so a retried webhook cannot credit twice.
+  reference  String
+  createdBy  String?
+  deviceId   String?
+  createdAt  DateTime    @default(now())
+  loadedAt   DateTime?
+  paidJournalId   String?
+  loadedJournalId String?
+
+  @@unique([method, reference])
+  @@index([cardUid, status])
+}
+
+model Anomaly {
+  id         String    @id @default(cuid())
+  kind       String
+  severity   String
+  cardUid    String?
+  deviceId   String?
+  txnId      String?
+  detail     String
+  createdAt  DateTime  @default(now())
+  resolvedAt DateTime?
+
+  @@index([cardUid, createdAt])
+  @@index([resolvedAt, severity])
+}
+
+model AuditLog {
+  id         BigInt   @id @default(autoincrement())
+  at         DateTime @default(now())
+  actorId    String?
+  actorEmail String
+  action     String
+  target     String?
+  detail     Json?
+  ip         String?
+
+  @@index([at])
+}
+
+model Setting {
+  key   String @id
+  value Int
+}
