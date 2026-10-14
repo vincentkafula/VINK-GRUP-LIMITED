@@ -1,4 +1,5 @@
-import { encodeTicket, signTicket } from "@afc/shared";
+import { encodeTicket } from "@afc/shared";
+import { signTicket } from "@afc/shared/node";
 import type { Config } from "../config";
 import type { Db } from "../db";
 import { isUniqueViolation } from "../db";

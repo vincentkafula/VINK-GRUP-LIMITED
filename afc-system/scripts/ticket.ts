@@ -1,6 +1,7 @@
 import { randomBytes, randomUUID } from "node:crypto";
 import { chmodSync, writeFileSync } from "node:fs";
-import { SimulatedUltralight, generateTicketKeyPair, keyProviderFromEnv, readTicket, verifyTicket, publicKeyFromHex, writeTicket } from "@afc/shared";
+import { SimulatedUltralight, readTicket, verifyTicket, publicKeyFromHex, writeTicket } from "@afc/shared";
+import { generateTicketKeyPair, keyProviderFromEnv } from "@afc/shared/node";
 import { PcscReader } from "../validator/src/readers";
 
 /**

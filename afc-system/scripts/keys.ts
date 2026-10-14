@@ -1,7 +1,8 @@
 import { randomBytes } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync, chmodSync, existsSync } from "node:fs";
 import { join } from "node:path";
-import { CARD_KEY_ROLES, keyFingerprint, passphraseFromEnv, sealKeys, unsealKeys, type CardKeyRole, type SealedFile } from "@afc/shared";
+import { CARD_KEY_ROLES, type CardKeyRole } from "@afc/shared";
+import { keyFingerprint, passphraseFromEnv, sealKeys, unsealKeys, type SealedFile } from "@afc/shared/node";
 
 /**
  * Master-key tooling. Keys are generated here, sealed with a passphrase, and never printed.

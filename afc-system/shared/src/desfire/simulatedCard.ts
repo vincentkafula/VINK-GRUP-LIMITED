@@ -1,4 +1,4 @@
-import { randomBytes, timingSafeEqual } from "node:crypto";
+import { randomBytes, timingSafeEqual } from "../crypto/prims";
 import { aesCbcDecrypt, aesCbcEncrypt } from "../crypto/aes";
 import { aesCmac } from "../crypto/cmac";
 import { ACCESS, CMD, COMM, STATUS } from "./constants";

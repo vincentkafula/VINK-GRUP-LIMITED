@@ -1,5 +1,5 @@
 import { createHmac, randomBytes, type KeyObject } from "node:crypto";
-import { privateKeyFromBase64, privateKeyFromSeed, publicKeyHexOf } from "@afc/shared";
+import { privateKeyFromBase64, privateKeyFromSeed, publicKeyHexOf } from "@afc/shared/node";
 import { z } from "zod";
 
 /**

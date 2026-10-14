@@ -3,7 +3,8 @@ import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { DevKeyProvider, keyFingerprint, keyProviderFromEnv, SealedKeyProvider, sealKeys, unsealKeys, type SealedFile } from "../src";
+import { DevKeyProvider } from "../src";
+import { keyFingerprint, keyProviderFromEnv, SealedKeyProvider, sealKeys, unsealKeys, type SealedFile } from "../src/node";
 
 const masters = () => ({ PICC: randomBytes(16), ADMIN: randomBytes(16), DEBIT: randomBytes(16), CREDIT: randomBytes(16), TICKET: randomBytes(16) });
 const PASS = "correct horse battery staple";

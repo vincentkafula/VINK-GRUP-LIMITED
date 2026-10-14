@@ -1,5 +1,6 @@
 import { randomBytes } from "node:crypto";
-import { BALANCE_MAX, CATEGORIES, DesfireSession, DevKeyProvider, SimulatedDesfireCard, keyProviderFromEnv, personalizeCard, type Category, type KeyProvider } from "@afc/shared";
+import { BALANCE_MAX, CATEGORIES, DesfireSession, DevKeyProvider, SimulatedDesfireCard, personalizeCard, type Category, type KeyProvider } from "@afc/shared";
+import { keyProviderFromEnv } from "@afc/shared/node";
 import { PcscReader } from "../validator/src/readers";
 
 /**

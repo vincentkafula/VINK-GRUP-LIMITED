@@ -1,0 +1,23 @@
+import { it, expect } from "vitest";
+import { ecb, cbc } from "@noble/ciphers/aes.js";
+import { sha256 } from "@noble/hashes/sha2.js";
+import { hmac } from "@noble/hashes/hmac.js";
+import { ed25519 } from "@noble/curves/ed25519.js";
+import { createCipheriv, createHmac, createHash, generateKeyPairSync, sign } from "node:crypto";
+it("noble matches node", () => {
+  const key = Buffer.alloc(16, 7), blk = Buffer.alloc(16, 3), iv = Buffer.alloc(16, 9);
+  const c = createCipheriv("aes-128-ecb", key, null); c.setAutoPadding(false);
+  expect(Buffer.from(ecb(key, { disablePadding: true }).encrypt(blk)).equals(Buffer.concat([c.update(blk), c.final()]))).toBe(true);
+  const d = createCipheriv("aes-128-cbc", key, iv); d.setAutoPadding(false);
+  const two = Buffer.alloc(32, 5);
+  const ref = Buffer.concat([d.update(two), d.final()]);
+  const mine = Buffer.from(cbc(key, iv, { disablePadding: true }).encrypt(two));
+  expect(mine.equals(ref)).toBe(true);
+  expect(Buffer.from(cbc(key, iv, { disablePadding: true }).decrypt(mine)).equals(two)).toBe(true);
+  expect(Buffer.from(sha256(Buffer.from("abc"))).toString("hex")).toBe(createHash("sha256").update("abc").digest("hex"));
+  expect(Buffer.from(hmac(sha256, key, Buffer.from("m"))).toString("hex")).toBe(createHmac("sha256", key).update("m").digest("hex"));
+  const kp = generateKeyPairSync("ed25519"); const raw = kp.publicKey.export({ format: "der", type: "spki" }).subarray(12);
+  const sig = sign(null, Buffer.from("hello"), kp.privateKey);
+  expect(ed25519.verify(sig, Buffer.from("hello"), raw)).toBe(true);
+  expect(ed25519.verify(sig, Buffer.from("hellp"), raw)).toBe(false);
+});

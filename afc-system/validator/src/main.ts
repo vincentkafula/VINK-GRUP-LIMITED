@@ -1,5 +1,6 @@
 import { createServer } from "node:http";
-import { DevKeyProvider, sampleFareTable, topUpCard, DesfireSession, keyProviderFromEnv, type KeyProvider } from "@afc/shared";
+import { DevKeyProvider, sampleFareTable, topUpCard, DesfireSession, type KeyProvider } from "@afc/shared";
+import { keyProviderFromEnv } from "@afc/shared/node";
 import { loadConfig } from "./config";
 import { ConsoleFeedback, GpioFeedback } from "./feedback";
 import { PcscReader, SimulatedReader, type CardEvent } from "./readers";

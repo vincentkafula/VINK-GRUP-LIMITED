@@ -1,4 +1,4 @@
-import { createPrivateKey, createPublicKey, generateKeyPairSync, sign, verify, type KeyObject } from "node:crypto";
+import { ed25519 } from "@noble/curves/ed25519.js";
 import type { KeyProvider } from "../keys";
 import { UL21, UltralightError, type UltralightIo } from "./ultralight";
 
@@ -31,22 +31,13 @@ export function decodeTicket(b: Buffer): TicketData | null {
 
 const message = (data: Buffer, uid: Buffer) => Buffer.concat([MAGIC, data, uid]);
 
-/* ───────── keys (Ed25519) ───────── */
-const SPKI = Buffer.from("302a300506032b6570032100", "hex");
-const PKCS8 = Buffer.from("302e020100300506032b657004220420", "hex");
-
-export function generateTicketKeyPair(): { privateKeyBase64: string; publicKeyHex: string } {
-  const { privateKey, publicKey } = generateKeyPairSync("ed25519");
-  return { privateKeyBase64: privateKey.export({ format: "der", type: "pkcs8" }).toString("base64"), publicKeyHex: publicKey.export({ format: "der", type: "spki" }).subarray(SPKI.length).toString("hex") };
-}
-export const privateKeyFromBase64 = (b64: string): KeyObject => createPrivateKey({ key: Buffer.from(b64, "base64"), format: "der", type: "pkcs8" });
-/** A private key from a 32-byte seed (development: derive it from a secret so it survives restarts). */
-export const privateKeyFromSeed = (seed: Buffer): KeyObject => createPrivateKey({ key: Buffer.concat([PKCS8, seed]), format: "der", type: "pkcs8" });
-export const publicKeyFromHex = (hex: string): KeyObject => createPublicKey({ key: Buffer.concat([SPKI, Buffer.from(hex, "hex")]), format: "der", type: "spki" });
-export const publicKeyHexOf = (priv: KeyObject): string => createPublicKey(priv).export({ format: "der", type: "spki" }).subarray(SPKI.length).toString("hex");
-
-export const signTicket = (priv: KeyObject, data: Buffer, uid: Buffer): Buffer => sign(null, message(data, uid), priv);
-export const verifyTicket = (pub: KeyObject, data: Buffer, sig: Buffer, uid: Buffer): boolean => sig.length === 64 && verify(null, message(data, uid), pub, sig);
+/* ───────── checking a signature (portable: runs on a validator, in a web view, anywhere) ───────── */
+/** The raw 32-byte Ed25519 public key from its hex form. */
+export const publicKeyFromHex = (hex: string): Uint8Array => { const b = Buffer.from(hex, "hex"); if (b.length !== 32) throw new Error("An Ed25519 public key is 32 bytes"); return b; };
+export const verifyTicket = (publicKey: Uint8Array, data: Buffer, sig: Buffer, uid: Buffer): boolean => {
+  if (sig.length !== 64) return false;
+  try { return ed25519.verify(sig, message(data, uid), publicKey); } catch { return false; }
+};
 
 /* ───────── the card's write password, from the TICKET master key ───────── */
 export async function ticketPassword(keys: KeyProvider, uid: Buffer): Promise<{ pwd: Buffer; pack: Buffer }> {

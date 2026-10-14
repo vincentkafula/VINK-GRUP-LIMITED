@@ -1,9 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { describe, expect, it } from "vitest";
-import {
-  DevKeyProvider, SimulatedUltralight, UL21, UltralightError, decodeTicket, encodeTicket, generateTicketKeyPair, markTicketUsed, privateKeyFromBase64, privateKeyFromSeed,
-  publicKeyFromHex, publicKeyHexOf, readTicket, signTicket, ticketPassword, verifyTicket, writeTicket, TICKET,
-} from "../src";
+import { DevKeyProvider, SimulatedUltralight, UL21, UltralightError, decodeTicket, encodeTicket, markTicketUsed, publicKeyFromHex, readTicket, ticketPassword, verifyTicket, writeTicket, TICKET } from "../src";
+import { generateTicketKeyPair, privateKeyFromBase64, privateKeyFromSeed, publicKeyHexOf, signTicket } from "../src/node";
 
 const keys = () => new DevKeyProvider({ TICKET: randomBytes(16) });
 const uidA = Buffer.from("04a0b1c2d3e4f5", "hex"), uidB = Buffer.from("04a0b1c2d3e4f6", "hex");

@@ -1,4 +1,4 @@
-import { createHash, createHmac, timingSafeEqual } from "node:crypto";
+import { hmacSha256, sha256, timingSafeEqual } from "./crypto/prims";
 import type { Category, FareTable } from "./fare/types";
 import type { TapKind, DenyReason } from "./fare/engine";
 
@@ -59,11 +59,11 @@ export interface SyncResponse {
 
 /* ───────── request signing ───────── */
 
-export const sha256Hex = (data: string | Buffer): string => createHash("sha256").update(data).digest("hex");
+export const sha256Hex = (data: string | Buffer): string => sha256(data).toString("hex");
 
 /** HMAC-SHA256 over `timestamp.nonce.sha256(body)`: binds the signature to this exact body and moment. */
 export function signRequest(secret: Buffer, timestamp: number, nonce: string, body: string): string {
-  return createHmac("sha256", secret).update(`${timestamp}.${nonce}.${sha256Hex(body)}`).digest("hex");
+  return hmacSha256(secret, `${timestamp}.${nonce}.${sha256Hex(body)}`).toString("hex");
 }
 
 export function verifySignature(secret: Buffer, timestamp: number, nonce: string, body: string, signature: string): boolean {
@@ -77,6 +77,6 @@ export function verifySignature(secret: Buffer, timestamp: number, nonce: string
  * revoking a device (or a stolen one) means bumping its rotation number, which makes the old secret useless.
  */
 export const deviceSecret = (master: Buffer, deviceId: string, rotation: number): Buffer =>
-  createHmac("sha256", master).update(`afc-device|${deviceId}|${rotation}`).digest();
+  hmacSha256(master, `afc-device|${deviceId}|${rotation}`);
 
 export const MAX_CLOCK_SKEW_SECONDS = 300;

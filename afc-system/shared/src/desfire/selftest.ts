@@ -1,4 +1,4 @@
-import { randomBytes } from "node:crypto";
+import { randomBytes } from "../crypto/prims";
 import { COMM } from "./constants";
 import { accessBytes } from "./layout";
 import { DesfireSession, type Transceiver } from "./session";

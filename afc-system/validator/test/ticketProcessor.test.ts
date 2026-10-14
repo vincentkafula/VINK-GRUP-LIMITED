@@ -1,6 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { beforeEach, describe, expect, it } from "vitest";
-import { DevKeyProvider, SimulatedUltralight, encodeTicket, generateTicketKeyPair, privateKeyFromBase64, readTicket, signTicket, writeTicket, type TicketData } from "@afc/shared";
+import { DevKeyProvider, SimulatedUltralight, encodeTicket, readTicket, writeTicket, type TicketData } from "@afc/shared";
+import { generateTicketKeyPair, privateKeyFromBase64, signTicket } from "@afc/shared/node";
 import { ConsoleFeedback } from "../src/feedback";
 import { Store } from "../src/store";
 import { TicketProcessor } from "../src/ticketProcessor";
