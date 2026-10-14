@@ -1,6 +1,6 @@
 import { ed25519 } from "@noble/curves/ed25519.js";
 import type { KeyProvider } from "../keys";
-import { UL21, UltralightError, type UltralightIo } from "./ultralight";
+import { UL21, ULC, UltralightError, isUlc, type UlcIo, type UltralightIo } from "./ultralight";
 
 /**
  * Single-trip tickets on MIFARE Ultralight.
@@ -68,6 +68,7 @@ const pageWrite = async (io: UltralightIo, first: number, bytes: Buffer) => { fo
  */
 export async function writeTicket(io: UltralightIo, keys: KeyProvider, data: Buffer, signature: Buffer): Promise<void> {
   if (data.length !== 16 || signature.length !== 64) throw new Error("ticket data or signature has the wrong size");
+  if (isUlc(io)) return writeTicketUlc(io, keys, data, signature);
   const uid = await io.uid();
   const { pwd, pack } = await ticketPassword(keys, uid);
   const cfg0 = (await io.read(UL21.CFG0)).subarray(0, 4);
@@ -102,12 +103,48 @@ export async function writeTicket(io: UltralightIo, keys: KeyProvider, data: Buf
  */
 export async function markTicketUsed(io: UltralightIo, keys: KeyProvider, nowSeconds: number, deviceTag: number): Promise<void> {
   const uid = await io.uid();
-  const { pwd, pack } = await ticketPassword(keys, uid);
-  const got = await io.pwdAuth(pwd);
-  if (!got.equals(pack)) throw new UltralightError("not our card");
+  if (isUlc(io)) await io.ulcAuth(await ticketUlcKey(keys, uid));
+  else {
+    const { pwd, pack } = await ticketPassword(keys, uid);
+    const got = await io.pwdAuth(pwd);
+    if (!got.equals(pack)) throw new UltralightError("not our card");
+  }
   const t = Buffer.alloc(4); t.writeUInt32LE(nowSeconds >>> 0);
   await io.write(TICKET.USED + 1, t);
   await io.write(TICKET.USED, Buffer.from([0x55, deviceTag & 0xff, (deviceTag >> 8) & 0xff, 0]));
   const back = await readTicket(io);
   if (!back.used) throw new UltralightError("the used record did not stick");
+}
+
+/** The Ultralight C key: 16 bytes from the TICKET master key. A two-key 3DES key whose halves match (ignoring parity bits) is really single DES, so that is never used. */
+export async function ticketUlcKey(keys: KeyProvider, uid: Buffer): Promise<Buffer> {
+  const k = Buffer.from(await keys.cardKey(uid, "TICKET"));
+  if (k.length !== 16) throw new Error("The ticket key must be 16 bytes");
+  if (k.subarray(0, 8).every((b, i) => ((b ^ k[8 + i]) & 0xfe) === 0)) k[8] ^= 0x02;
+  return k;
+}
+
+/**
+ * Ultralight C version of writeTicket. A fresh card (AUTH0 = 0x30) is written, given its key (pages 44-47), then AUTH1 = 1 (reads free, writes need the key) and AUTH0 = 4.
+ * Unlike the EV1 there is no configuration lock bit, but the AUTH pages are themselves above AUTH0, so only the key holder can change them. Read back and compared.
+ */
+async function writeTicketUlc(io: UlcIo, keys: KeyProvider, data: Buffer, signature: Buffer): Promise<void> {
+  const uid = await io.uid();
+  const key = await ticketUlcKey(keys, uid);
+  const auth0 = (await io.read(ULC.AUTH0)).subarray(0, 4);
+  const payload = Buffer.concat([data, signature, Buffer.alloc(8)]);
+  if (auth0[0] <= TICKET.DATA) {
+    await io.ulcAuth(key).catch(() => { throw new Error("This card holds a ticket from somewhere else (its key is not ours)"); });
+    await pageWrite(io, TICKET.DATA, payload);
+  } else {
+    await pageWrite(io, TICKET.DATA, payload);
+    await io.ulcSetKey(key);
+    await io.write(ULC.AUTH1, Buffer.from([0x01, 0, 0, 0]));
+    await io.write(ULC.AUTH0, Buffer.from([TICKET.DATA, 0, 0, 0]));
+  }
+  const back = await readTicket(io);
+  if (!back.data.equals(data) || !back.signature.equals(signature) || back.used) throw new Error("The card did not hold what was written");
+  const c = await io.read(ULC.AUTH0);
+  if (c[0] !== TICKET.DATA) throw new Error("The card did not accept write protection (AUTH0)");
+  await io.ulcAuth(key);                                           // and the key we set is the key it answers to
 }

@@ -12,7 +12,25 @@ export interface UltralightIo {
   write(page: number, data: Buffer): Promise<void>;
   /** Password authentication; returns the 2-byte acknowledge. Throws UltralightError when the card refuses. */
   pwdAuth(pwd: Buffer): Promise<Buffer>;
+  /** Which chip this is. Absent = Ultralight EV1 (password). "ulc" = Ultralight C (3DES key; see UlcIo). */
+  readonly chip?: "ev1" | "ulc";
 }
+
+/**
+ * Ultralight C has no 32-bit password: it has a 16-byte two-key 3DES key. The reader does the authentication (on the P18Q the SDK call dc_auth_ulc_hex), so
+ * this interface just asks for it. Writing the key to the card is a separate operation because the key pages (44-47) can be written but never read.
+ */
+export interface UlcIo extends UltralightIo {
+  readonly chip: "ulc";
+  /** 3DES mutual authentication with the 16-byte key. Throws UltralightError when the card refuses. */
+  ulcAuth(key: Buffer): Promise<void>;
+  /** Writes the key into pages 44-47. Needs authentication first once the card is protected. */
+  ulcSetKey(key: Buffer): Promise<void>;
+}
+export const isUlc = (io: UltralightIo): io is UlcIo => io.chip === "ulc";
+
+/** MF0ICU2 (Ultralight C) page map: 48 pages, user memory 4-39, lock bytes 40-41, AUTH0 = byte 0 of page 42, AUTH1 = byte 0 of page 43 (bit 0: 1 = writes only), key 44-47. */
+export const ULC = { USER_FIRST: 4, USER_LAST: 39, AUTH0: 42, AUTH1: 43, KEY: 44, PAGES: 48 } as const;
 
 export class UltralightError extends Error { constructor(message: string, public readonly kind: "nak" | "locked" | "io" = "nak") { super(message); } }
 
@@ -94,4 +112,64 @@ export class SimulatedUltralight implements UltralightIo {
   get protectedFrom(): number { return this.auth0; }
   get configLocked(): boolean { return this.cfgLocked; }
   get passwordTries(): number { return this.fails; }
+}
+
+/**
+ * A software Ultralight C: blank cards are open (AUTH0 = 0x30 = nothing protected); with AUTH0 set, pages from AUTH0 up can only be written after a correct 3DES
+ * authentication; with AUTH1 bit 0 = 1 reads stay free; key pages never read back. The key's byte order on the real chip is handled by the reader's
+ * SDK, so here the key is simply held as given. Used for tests and for running the system without hardware.
+ */
+export class SimulatedUltralightC implements UlcIo {
+  readonly chip = "ulc" as const;
+  private pages: Buffer[];
+  private authed = false;
+  readonly serial: Buffer;
+  /** Test hook: the card leaves the field after this many more write commands. */
+  tearAfterWrites: number | null = null;
+  constructor(uid: Buffer = Buffer.from("04c0ffee112233", "hex")) {
+    if (uid.length !== 7) throw new Error("UID must be 7 bytes");
+    this.serial = uid;
+    this.pages = Array.from({ length: ULC.PAGES }, () => Buffer.alloc(4));
+    this.pages[0] = Buffer.from([uid[0], uid[1], uid[2], uid[0] ^ uid[1] ^ uid[2] ^ 0x88]);
+    this.pages[1] = Buffer.from([uid[3], uid[4], uid[5], uid[6]]);
+    this.pages[ULC.AUTH0] = Buffer.from([0x30, 0, 0, 0]);
+    this.pages[ULC.AUTH1] = Buffer.from([0x01, 0, 0, 0]);
+  }
+  removeFromField(): void { this.authed = false; }
+  private get auth0() { return this.pages[ULC.AUTH0][0]; }
+  private get readsProtected() { return (this.pages[ULC.AUTH1][0] & 1) === 0; }
+  private isProtected(page: number) { return page >= this.auth0 && !this.authed; }
+  private key(): Buffer { return Buffer.concat(this.pages.slice(ULC.KEY, ULC.PAGES)); }
+
+  async uid(): Promise<Buffer> { return Buffer.from(this.serial); }
+  async read(page: number): Promise<Buffer> {
+    if (page < 0 || page >= ULC.PAGES) throw new UltralightError("page out of range");
+    const out: Buffer[] = [];
+    for (let i = 0; i < 4; i++) {
+      const p = (page + i) % ULC.PAGES;
+      if (p >= ULC.KEY) out.push(Buffer.alloc(4));                    // key pages never read back
+      else if (this.readsProtected && this.isProtected(p)) throw new UltralightError("read refused: authenticate first");
+      else out.push(this.pages[p]);
+    }
+    return Buffer.concat(out);
+  }
+  async write(page: number, data: Buffer): Promise<void> {
+    if (data.length !== 4) throw new UltralightError("a write is exactly one page (4 bytes)");
+    if (this.tearAfterWrites !== null) { if (this.tearAfterWrites-- <= 0) { this.tearAfterWrites = null; this.authed = false; throw new UltralightError("the card left the field", "io"); } }
+    if (page < ULC.USER_FIRST || page >= ULC.PAGES) throw new UltralightError("that page cannot be written");
+    if (this.isProtected(page)) throw new UltralightError("write refused: authenticate first");
+    this.pages[page] = Buffer.from(data);
+  }
+  async pwdAuth(): Promise<Buffer> { throw new UltralightError("this card has no password: it is an Ultralight C (use the 3DES key)"); }
+  async ulcAuth(key: Buffer): Promise<void> {
+    if (key.length !== 16) throw new UltralightError("a key is 16 bytes");
+    if (!key.equals(this.key())) { this.authed = false; throw new UltralightError("wrong key"); }
+    this.authed = true;
+  }
+  async ulcSetKey(key: Buffer): Promise<void> {
+    if (key.length !== 16) throw new UltralightError("a key is 16 bytes");
+    for (let i = 0; i < 4; i++) await this.write(ULC.KEY + i, key.subarray(i * 4, i * 4 + 4));
+  }
+  dump(first = 0, last = ULC.PAGES - 1): Buffer { return Buffer.concat(this.pages.slice(first, last + 1)); }
+  get protectedFrom(): number { return this.auth0; }
 }
