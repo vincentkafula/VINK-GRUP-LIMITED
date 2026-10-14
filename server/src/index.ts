@@ -35,7 +35,6 @@ import jobsRouter from "./routes/jobsRouter.js";
 import mastercardRouter from "./routes/mastercard.js";
 import visaRouter from "./routes/visa.js";
 import publicRouter from "./routes/public.js";
-import globalBankingRouter from "./routes/globalBanking.js";
 import financialReportsRouter from "./routes/financialReports.js";
 import levySystemRouter from "./routes/levySystem.js";
 import afcRouter from "./routes/afc.js";
@@ -261,7 +260,6 @@ if (contactService) {
   if (socialService) app.use("/api/admin/social", requireAuth, createSocialRouter({ db: pool!, svc: socialService }));
   if (whatsappService) app.use("/api/admin/whatsapp", requireAuth, createWhatsAppRouter({ db: pool!, svc: whatsappService }));
 }
-app.use("/api/global",             globalBankingRouter);
 app.use("/api/financial",          financialReportsRouter);
 app.use("/api/levy",              levySystemRouter);
 app.use("/api/afc",                afcRouter);
@@ -377,7 +375,6 @@ app.get("/api", (_req, res) => {
       "/api/otp/*               — one-time-passcode verification",
       "/api/jobs/*              — job applications (HR)",
       "/api/public/*            — public contact form, newsletter signup, account applications",
-      "/api/global/*            — multi-currency global banking",
       "/api/financial/*         — financial reports",
       "/api/levy/*              — AFC trip levy, driver/owner/investor/marshall revenue split",
       "/api/afc/*               — AFC device fleet management",

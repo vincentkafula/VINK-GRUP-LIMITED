@@ -26,12 +26,8 @@ const OwnersDashboard             = lazy(() => import("./components/dashboards/O
 const InvestorsDashboard          = lazy(() => import("./components/dashboards/InvestorsDashboard").then(m => ({ default: m.InvestorsDashboard })));
 const SuperAdminDashboard         = lazy(() => import("./components/dashboards/SuperAdminDashboard").then(m => ({ default: m.SuperAdminDashboard })));
 const BankingDashboard            = lazy(() => import("./components/BankingDashboard").then(m => ({ default: m.BankingDashboard })));
-const DriveDashboardViewer        = lazy(() => import("./components/DriveDashboardViewer").then(m => ({ default: m.DriveDashboardViewer })));
-const OwnerFleetDashboardViewer   = lazy(() => import("./components/OwnerFleetDashboardViewer").then(m => ({ default: m.OwnerFleetDashboardViewer })));
-const TaxiAssociationDashboardViewer = lazy(() => import("./components/TaxiAssociationDashboardViewer").then(m => ({ default: m.TaxiAssociationDashboardViewer })));
 const TerminalManagementViewer = lazy(() => import("./components/TerminalManagementViewer").then(m => ({ default: m.TerminalManagementViewer })));
 const ControlCentreViewer = lazy(() => import("./components/ControlCentreViewer").then(m => ({ default: m.ControlCentreViewer })));
-const InvestorFleetDashboardViewer = lazy(() => import("./components/InvestorFleetDashboardViewer").then(m => ({ default: m.InvestorFleetDashboardViewer })));
 const TokenReader                 = lazy(() => import("./components/TokenReader").then(m => ({ default: m.TokenReader })));
 const ManagementPanelViewer       = lazy(() => import("./components/ManagementPanelViewer").then(m => ({ default: m.ManagementPanelViewer })));
 import { PersistentTopNav } from "./components/PersistentTopNav";
@@ -60,11 +56,8 @@ const CorporateProductLedgerViewer = lazy(() => import("./components/CorporatePr
 const CorporateLoanApplicationViewer = lazy(() => import("./components/CorporateLoanApplicationViewer").then(m => ({ default: m.CorporateLoanApplicationViewer })));
 const CorporateSocialResponsibilityViewer = lazy(() => import("./components/CorporateSocialResponsibilityViewer").then(m => ({ default: m.CorporateSocialResponsibilityViewer })));
 const InvestorRelationsViewer     = lazy(() => import("./components/InvestorRelationsViewer").then(m => ({ default: m.InvestorRelationsViewer })));
-const GlobalBankingDashboard      = lazy(() => import("./components/GlobalBankingDashboard").then(m => ({ default: m.GlobalBankingDashboard })));
 const FinancialReportsViewer      = lazy(() => import("./components/FinancialReportsViewer").then(m => ({ default: m.FinancialReportsViewer })));
 const AdminDashboard              = lazy(() => import("./components/AdminDashboard").then(m => ({ default: m.AdminDashboard })));
-const CardNetworkDashboard        = lazy(() => import("./components/CardNetworkDashboard").then(m => ({ default: m.CardNetworkDashboard })));
-const AFCManagementDashboard      = lazy(() => import("./components/AFCManagementDashboard").then(m => ({ default: m.AFCManagementDashboard })));
 const AdminApplicationsViewer     = lazy(() => import("./components/AdminApplicationsViewer").then(m => ({ default: m.AdminApplicationsViewer })));
 const RevenueDashboard            = lazy(() => import("./components/RevenueDashboard").then(m => ({ default: m.RevenueDashboard })));
 const AFCApp                      = lazy(() => import("./components/apps/AFCApp").then(m => ({ default: m.AFCApp })));
@@ -97,7 +90,6 @@ const AuthLinkPage                 = lazy(() => import("./components/AuthLinkPag
 const ManshyaDashboard            = lazy(() => import("./components/manshya/ManshyaDashboard").then(m => ({ default: m.ManshyaDashboard })));
 const ManshyaAdmin                = lazy(() => import("./components/manshya/ManshyaAdmin").then(m => ({ default: m.ManshyaAdmin })));
 const ManshyaPay                  = lazy(() => import("./components/manshya/ManshyaPay").then(m => ({ default: m.ManshyaPay })));
-const ManagementHub                = lazy(() => import("./components/ManagementHub").then(m => ({ default: m.ManagementHub })));
 
 export default function App() {
   const theme = useTheme();
@@ -116,12 +108,8 @@ export default function App() {
   const [showInvestors, setShowInvestors]                   = useState(false);
   const [showSuperAdmin, setShowSuperAdmin]                 = useState(false);
   const [showBanking, setShowBanking]                       = useState(false);
-  const [showDriveDashboard, setShowDriveDashboard]          = useState(false);
-  const [showOwnerDashboard, setShowOwnerDashboard]          = useState(false);
-  const [showTaxiAssociationDashboard, setShowTaxiAssociationDashboard] = useState(false);
   const [showTerminalManagement, setShowTerminalManagement] = useState(false);
   const [showControlCentre, setShowControlCentre] = useState(false);
-  const [showInvestorDashboard, setShowInvestorDashboard] = useState(false);
   const [showManagementPanel, setShowManagementPanel]       = useState(false);
   const [showTokenReader, setShowTokenReader]                 = useState(false);
   const [showSIMApp, setShowSIMApp]                         = useState(false);
@@ -173,12 +161,9 @@ export default function App() {
   const [showCorporateCSR, setShowCorporateCSR]             = useState(false);
 
   // ── Operations / Admin ────────────────────────────────────────────────────
-  const [showGlobalBanking, setShowGlobalBanking]           = useState(false);
   const [showFinancialReports, setShowFinancialReports]     = useState(false);
   const [showAdminDashboard, setShowAdminDashboard]         = useState(false);
-  const [showAFCDashboard, setShowAFCDashboard]             = useState(false);
   const [showAdminApps, setShowAdminApps]                   = useState(false);
-  const [showCardNetwork, setShowCardNetwork]               = useState(false);
   const [showInvestorRelations, setShowInvestorRelations]   = useState(false);
 
   // ── Footer pages ──────────────────────────────────────────────────────────
@@ -203,7 +188,6 @@ export default function App() {
 
   // ── Login state ───────────────────────────────────────────────────────────
   const [isLoggedIn, setIsLoggedIn]                         = useState(false);
-  const [showManagementHub, setShowManagementHub]           = useState(false);
   const [showTaxiAssociations, setShowTaxiAssociations]     = useState(false);
   const [userRole, setUserRole]                             = useState<string>("personal");
   const [showLogin, setShowLogin]                           = useState(false);
@@ -239,15 +223,11 @@ export default function App() {
   const handleDashboardSelect = (id: string) => {
     startTransition(() => {
       if      (id === "vinkapp")           { mount("vinkMobileApp");    setShowVinkMobileApp(true); }
-      else if (id === "globalbanking")     { mount("globalBanking");    setShowGlobalBanking(true); }
       else if (id === "financialreports")  { mount("financialReports"); setShowFinancialReports(true); }
-      else if (id === "afc")               { mount("afcDashboard");     setShowAFCDashboard(true); }
       else if (id === "admin")             { mount("adminDashboard");   setShowAdminDashboard(true); }
-      else if (id === "cardnetwork")       { mount("cardNetwork");      setShowCardNetwork(true); }
       else if (id === "owner")             { mount("owners");           setShowOwners(true); }
       else if (id === "investor")          { mount("investors");        setShowInvestors(true); }
       else if (id === "superadmin")        { mount("superAdmin");       setShowSuperAdmin(true); }
-      else if (id === "devices")           { mount("afcDashboard");     setShowAFCDashboard(true); }
       else if (id === "finance")           { mount("financialReports"); setShowFinancialReports(true); }
       else if (id === "business")          { mount("banking");          setShowBanking(true); }
       else if (id === "account")           { mount("postLogin");        setShowPostLogin(true); }
@@ -422,7 +402,7 @@ export default function App() {
   // the header is shown for (sitePages.ts), so a page can never stay open underneath another.
   const sitePageClosers: Record<string, (open: boolean) => void> = { showPersonalLanding: setShowPersonalLanding, showPersonalAccount: setShowPersonalAccount, showPersonalLedger: setShowPersonalLedger, showCreditCard: setShowCreditCard, showCreditCardApp: setShowCreditCardApp, showLoan: setShowLoan, showInvest: setShowInvest, showRewards: setShowRewards, showInvestApp: setShowInvestApp, showRewardsApp: setShowRewardsApp, showAccountApp: setShowAccountApp, showBusinessLanding: setShowBusinessLanding, showStartBusiness: setShowStartBusiness, showBusinessAccountSelector: setShowBusinessAccountSelector, showBusinessAccounts: setShowBusinessAccounts, showBusinessLedger: setShowBusinessLedger, showBusinessLoanApp: setShowBusinessLoanApp, showManageBusiness: setShowManageBusiness, showCorporateLedger: setShowCorporateLedger, showCorporateLoanApp: setShowCorporateLoanApp, showCorporateCSR: setShowCorporateCSR, showInvestorRelations: setShowInvestorRelations, selectorOpen: setSelectorOpen, showContactUs: setShowContactUs, showAboutVINK: setShowAboutVINK, showApplication: setShowApplication, showCareers: setShowCareers, showSwitchToVINK: setShowSwitchToVINK, showSafetySecurity: setShowSafetySecurity, showTaxiAssociations: setShowTaxiAssociations, showJobApp: setShowJobApp, showLegal: setShowLegal, showBranchLocator: setShowBranchLocator, showSponsorship: setShowSponsorship, showBankingFees: setShowBankingFees, showBankingGuide: setShowBankingGuide, showBankingChannels: setShowBankingChannels, showExchangeRates: setShowExchangeRates, showLatestOffers: setShowLatestOffers, showMarketIndices: setShowMarketIndices, showVinkBlog: setShowVinkBlog };
   // The signed-in tools, which show the header as well, and are closed the same way.
-  const appPageClosers: Record<string, (open: boolean) => void> = { showPostLogin: setShowPostLogin, showUserProfile: setShowUserProfile, showOwners: setShowOwners, showInvestors: setShowInvestors, showSuperAdmin: setShowSuperAdmin, showBanking: setShowBanking, showDriveDashboard: setShowDriveDashboard, showOwnerDashboard: setShowOwnerDashboard, showTaxiAssociationDashboard: setShowTaxiAssociationDashboard, showTerminalManagement: setShowTerminalManagement, showControlCentre: setShowControlCentre, showInvestorDashboard: setShowInvestorDashboard, showManagementPanel: setShowManagementPanel, showTokenReader: setShowTokenReader, showSIMApp: setShowSIMApp, showAFCApp: setShowAFCApp, showVinkBankingApp: setShowVinkBankingApp, showVinkBusinessBankingApp: setShowVinkBusinessBankingApp, showVinkCorporateBankingApp: setShowVinkCorporateBankingApp, showVinkMobileApp: setShowVinkMobileApp, showAppLauncher: setShowAppLauncher, showRevenueDashboard: setShowRevenueDashboard, showGlobalBanking: setShowGlobalBanking, showFinancialReports: setShowFinancialReports, showAdminDashboard: setShowAdminDashboard, showAFCDashboard: setShowAFCDashboard, showAdminApps: setShowAdminApps, showCardNetwork: setShowCardNetwork, showManagementHub: setShowManagementHub, showLogin: setShowLogin, showManshya: setShowManshya, showManshyaAdmin: setShowManshyaAdmin, showManshyaPay: setShowManshyaPay };
+  const appPageClosers: Record<string, (open: boolean) => void> = { showPostLogin: setShowPostLogin, showUserProfile: setShowUserProfile, showOwners: setShowOwners, showInvestors: setShowInvestors, showSuperAdmin: setShowSuperAdmin, showBanking: setShowBanking, showTerminalManagement: setShowTerminalManagement, showControlCentre: setShowControlCentre, showManagementPanel: setShowManagementPanel, showTokenReader: setShowTokenReader, showSIMApp: setShowSIMApp, showAFCApp: setShowAFCApp, showVinkBankingApp: setShowVinkBankingApp, showVinkBusinessBankingApp: setShowVinkBusinessBankingApp, showVinkCorporateBankingApp: setShowVinkCorporateBankingApp, showVinkMobileApp: setShowVinkMobileApp, showAppLauncher: setShowAppLauncher, showRevenueDashboard: setShowRevenueDashboard, showFinancialReports: setShowFinancialReports, showAdminDashboard: setShowAdminDashboard, showAdminApps: setShowAdminApps, showLogin: setShowLogin, showManshya: setShowManshya, showManshyaAdmin: setShowManshyaAdmin, showManshyaPay: setShowManshyaPay };
   const closeAllRoutedViewers = () => {
     for (const set of [...Object.values(sitePageClosers), ...Object.values(appPageClosers)]) set(false);
     setShowManshya(false); setShowManshyaAdmin(false); setShowManshyaPay(false); setAuthLink(null); setPortal(null); setAdminBank(false);
@@ -438,7 +418,7 @@ export default function App() {
     showCorporateLedger, showCorporateLoanApp, showCorporateCSR, showInvestorRelations,
     selectorOpen, showContactUs, showAboutVINK, showApplication, showCareers, showSwitchToVINK, showSafetySecurity, showTaxiAssociations, showJobApp,
     showLegal, showBranchLocator, showSponsorship, showBankingFees, showBankingGuide, showBankingChannels, showExchangeRates, showLatestOffers, showMarketIndices, showVinkBlog,
-    showPostLogin, showUserProfile, showOwners, showInvestors, showSuperAdmin, showBanking, showDriveDashboard, showOwnerDashboard, showTaxiAssociationDashboard, showTerminalManagement, showControlCentre, showInvestorDashboard, showManagementPanel, showTokenReader, showSIMApp, showAFCApp, showVinkBankingApp, showVinkBusinessBankingApp, showVinkCorporateBankingApp, showVinkMobileApp, showAppLauncher, showRevenueDashboard, showGlobalBanking, showFinancialReports, showAdminDashboard, showAFCDashboard, showAdminApps, showCardNetwork, showManagementHub, showLogin, showManshya, showManshyaAdmin, showManshyaPay,
+    showPostLogin, showUserProfile, showOwners, showInvestors, showSuperAdmin, showBanking, showTerminalManagement, showControlCentre, showManagementPanel, showTokenReader, showSIMApp, showAFCApp, showVinkBankingApp, showVinkBusinessBankingApp, showVinkCorporateBankingApp, showVinkMobileApp, showAppLauncher, showRevenueDashboard, showFinancialReports, showAdminDashboard, showAdminApps, showLogin, showManshya, showManshyaAdmin, showManshyaPay,
   });
   // The sign-in pages show the header too: the password-reset and verify-email links, and a role dashboard while nobody is signed in (its "Please sign in" screen).
   const showPersistentNav = siteNav || authLink !== null || (portal !== null && !getSession());
@@ -685,13 +665,9 @@ export default function App() {
       {has("owners")          && <Suspense fallback={null}><OwnersDashboard        isOpen={showOwners}          onClose={() => setShowOwners(false)} /></Suspense>}
       {has("investors")       && <Suspense fallback={null}><InvestorsDashboard     isOpen={showInvestors}       onClose={() => setShowInvestors(false)} /></Suspense>}
       {has("superAdmin")      && <Suspense fallback={null}><SuperAdminDashboard    isOpen={showSuperAdmin}      onClose={() => setShowSuperAdmin(false)} /></Suspense>}
-      {has("banking")         && <Suspense fallback={null}><BankingDashboard       isOpen={showBanking}         onClose={() => setShowBanking(false)} onOpenDriveDashboard={() => { mount("driveDashboard"); setShowDriveDashboard(true); }} onOpenOwnerDashboard={() => { mount("ownerDashboard"); setShowOwnerDashboard(true); }} onOpenTaxiAssociationDashboard={() => { mount("taxiAssociationDashboard"); setShowTaxiAssociationDashboard(true); }} onOpenInvestorDashboard={() => { mount("investorDashboard"); setShowInvestorDashboard(true); }} onOpenTerminalManagement={() => { mount("terminalManagement"); setShowTerminalManagement(true); }} onOpenControlCentre={() => { mount("controlCentre"); setShowControlCentre(true); }} onOpenAppLauncher={() => { mount("appLauncher"); setShowAppLauncher(true); }} /></Suspense>}
+      {has("banking")         && <Suspense fallback={null}><BankingDashboard       isOpen={showBanking}         onClose={() => setShowBanking(false)} onOpenDriveDashboard={() => handleDashboardSelect("portal:driver")} onOpenOwnerDashboard={() => handleDashboardSelect("portal:owner")} onOpenTaxiAssociationDashboard={() => handleDashboardSelect("portal:association")} onOpenInvestorDashboard={() => handleDashboardSelect("portal:investor")} onOpenTerminalManagement={() => { mount("terminalManagement"); setShowTerminalManagement(true); }} onOpenControlCentre={() => { mount("controlCentre"); setShowControlCentre(true); }} onOpenAppLauncher={() => { mount("appLauncher"); setShowAppLauncher(true); }} /></Suspense>}
       {has("controlCentre") && <Suspense fallback={null}><ControlCentreViewer isOpen={showControlCentre} onClose={() => setShowControlCentre(false)} onOpenTerminalManagement={() => { mount("terminalManagement"); setShowControlCentre(false); setShowTerminalManagement(true); }} /></Suspense>}
       {has("terminalManagement") && <Suspense fallback={null}><TerminalManagementViewer isOpen={showTerminalManagement} onClose={() => setShowTerminalManagement(false)} /></Suspense>}
-      {has("driveDashboard")  && <Suspense fallback={null}><DriveDashboardViewer   isOpen={showDriveDashboard}  onClose={() => setShowDriveDashboard(false)} driverName={getSession()?.name} /></Suspense>}
-      {has("ownerDashboard")  && <Suspense fallback={null}><OwnerFleetDashboardViewer isOpen={showOwnerDashboard} onClose={() => setShowOwnerDashboard(false)} /></Suspense>}
-      {has("taxiAssociationDashboard") && <Suspense fallback={null}><TaxiAssociationDashboardViewer isOpen={showTaxiAssociationDashboard} onClose={() => setShowTaxiAssociationDashboard(false)} /></Suspense>}
-      {has("investorDashboard") && <Suspense fallback={null}><InvestorFleetDashboardViewer isOpen={showInvestorDashboard} onClose={() => setShowInvestorDashboard(false)} investorName={getSession()?.name} onOpenRevenueDashboard={() => { mount("revenueDash"); setShowRevenueDashboard(true); }} /></Suspense>}
       {has("adminConfig")     && adminConfig && <Suspense fallback={null}><AdminConfig isOpen onClose={() => { setAdminConfig(false); pushRoute("/"); }} /></Suspense>}
       {has("adminBank")       && adminBank && <Suspense fallback={null}><AdminBankLinks isOpen onClose={() => { setAdminBank(false); pushRoute("/"); }} /></Suspense>}
       {has("portal")          && portal && <Suspense fallback={null}><RolePortal portal={portal} isOpen onClose={() => { setPortal(null); pushRoute("/"); }} /></Suspense>}
@@ -734,12 +710,9 @@ export default function App() {
       {has("corpCSR")            && <Suspense fallback={null}><CorporateSocialResponsibilityViewer isOpen={showCorporateCSR} onClose={() => { setShowCorporateCSR(false); pushRoute("/"); }} onNavigate={(item) => navigateCorporateItem(item)} /></Suspense>}
 
       {/* Operations */}
-      {has("globalBanking")      && <Suspense fallback={null}><GlobalBankingDashboard      isOpen={showGlobalBanking}       onClose={() => setShowGlobalBanking(false)} /></Suspense>}
       {has("financialReports")   && <Suspense fallback={null}><FinancialReportsViewer      isOpen={showFinancialReports}    onClose={() => setShowFinancialReports(false)} /></Suspense>}
       {has("adminDashboard")     && <Suspense fallback={null}><AdminDashboard             isOpen={showAdminDashboard}      onClose={() => setShowAdminDashboard(false)} /></Suspense>}
-      {has("afcDashboard")       && <Suspense fallback={null}><AFCManagementDashboard     isOpen={showAFCDashboard}        onClose={() => setShowAFCDashboard(false)} /></Suspense>}
       {has("adminApps")          && <Suspense fallback={null}><AdminApplicationsViewer    isOpen={showAdminApps}           onClose={() => setShowAdminApps(false)} /></Suspense>}
-      {has("cardNetwork")        && <Suspense fallback={null}><CardNetworkDashboard       isOpen={showCardNetwork}         onClose={() => setShowCardNetwork(false)} /></Suspense>}
       {has("investorRelations")  && <Suspense fallback={null}><InvestorRelationsViewer    isOpen={showInvestorRelations}   onClose={() => setShowInvestorRelations(false)} /></Suspense>}
 
       {/* Mobile apps */}
@@ -774,7 +747,6 @@ export default function App() {
       {has("latestOffers")        && <Suspense fallback={null}><LatestOffersViewer          isOpen={showLatestOffers} onClose={() => setShowLatestOffers(false)} /></Suspense>}
       {has("marketIndices")       && <Suspense fallback={null}><MarketIndicesViewer         isOpen={showMarketIndices} onClose={() => setShowMarketIndices(false)} /></Suspense>}
       {has("vinkBlog")            && <Suspense fallback={null}><VinkBlogViewer              isOpen={showVinkBlog} onClose={() => setShowVinkBlog(false)} /></Suspense>}
-      {has("managementHub")      && <Suspense fallback={null}><ManagementHub              isOpen={showManagementHub}       onClose={() => setShowManagementHub(false)} /></Suspense>}
       {has("taxiAssociations")   && <Suspense fallback={null}><TaxiAssociationsViewer       isOpen={showTaxiAssociations} onClose={() => setShowTaxiAssociations(false)} /></Suspense>}
       {has("jobapp")             && <Suspense fallback={null}><JobApplicationViewer         isOpen={showJobApp}          onClose={() => setShowJobApp(false)} /></Suspense>}
     </div>

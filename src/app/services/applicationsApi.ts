@@ -237,63 +237,6 @@ export const adminApi = {
   }>("/admin/stats"),
 };
 
-// ─── Global Banking API ───────────────────────────────────────────────────────
-
-export const globalBankingApi = {
-  /** Get platform KPI snapshot. */
-  kpi: () => request("/global/kpi"),
-
-  /** List nostro accounts (all 5 countries). */
-  nostro: () => request("/global/nostro"),
-
-  /** Get live FX rates. */
-  fxRates: () => request("/global/fx/rates"),
-
-  /** Get FX conversion quote. */
-  fxQuote: (fromCurrency: string, toCurrency: string, amount: number) =>
-    request("/global/fx/quote", { method: "POST", body: JSON.stringify({ fromCurrency, toCurrency, amount }) }),
-
-  /** Execute FX conversion. */
-  fxConvert: (accountId: string, fromCurrency: string, toCurrency: string, fromAmount: number) =>
-    request("/global/fx/convert", { method: "POST", body: JSON.stringify({ accountId, fromCurrency, toCurrency, fromAmount }) }),
-
-  /** FX conversion history. */
-  fxHistory: () => request("/global/fx/history"),
-
-  /** List unified accounts. */
-  listAccounts: () => request("/global/accounts"),
-
-  /** Get single account. */
-  getAccount: (id: string) => request(`/global/accounts/${id}`),
-
-  /** Lookup account by reference number. */
-  lookupByRef: (referenceNumber: string) =>
-    request("/global/accounts/lookup", { method: "POST", body: JSON.stringify({ referenceNumber }) }),
-
-  /** List cards (optionally filtered by accountId). */
-  listCards: (accountId?: string) =>
-    request(`/global/cards${accountId ? `?accountId=${accountId}` : ""}`),
-
-  /** Freeze / unfreeze a card. */
-  toggleFreeze: (cardId: string) =>
-    request(`/global/cards/${cardId}/freeze`, { method: "PATCH" }),
-
-  /** Update card limits. */
-  updateLimits: (cardId: string, limits: { dailyLimit?: number; monthlyLimit?: number; atmEnabled?: boolean; onlineEnabled?: boolean; internationalEnabled?: boolean }) =>
-    request(`/global/cards/${cardId}/limits`, { method: "PATCH", body: JSON.stringify(limits) }),
-
-  /** List transactions (optionally filtered by accountId). */
-  listTransactions: (accountId?: string) =>
-    request(`/global/transactions${accountId ? `?accountId=${accountId}` : ""}`),
-
-  /** Execute P2P transfer. */
-  p2pTransfer: (senderAccountId: string, recipientReferenceNumber: string, amount: number, currency: string, note?: string) =>
-    request("/global/p2p", { method: "POST", body: JSON.stringify({ senderAccountId, recipientReferenceNumber, amount, currency, note }) }),
-
-  /** List P2P transfers. */
-  listP2P: () => request("/global/p2p"),
-};
-
 // ─── Contact & Newsletter ─────────────────────────────────────────────────────
 
 export const publicApi = {

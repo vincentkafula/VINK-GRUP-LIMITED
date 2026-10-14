@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Home, Send, CreditCard, Clock, Star, Bell, ChevronRight, ArrowUpRight, ArrowDownLeft, Zap, Smartphone, ShoppingCart, Gift, CheckCircle, AlertTriangle, Loader2, Sparkles, Anchor as AnchorIcon, TrendingUp, Mountain, Crown, Landmark, Target, Wallet, PiggyBank, Award, Eye, EyeOff, ShieldCheck, Menu, QrCode, Banknote, User, MoreHorizontal, RefreshCw, CircleDollarSign } from "lucide-react";
 import { MobileAppOverlay, PhoneFrame } from "./PhoneFrame";
-import { globalBankingApi } from "../../services/applicationsApi";
 import { authApi, getSession, clearSession, type ApiUser } from "../../services/apiClient";
 import { BRAND } from "../../brand";
 
@@ -456,17 +455,8 @@ function SendScreen() {
     if (!recipient.trim() || !amount || Number(amount) <= 0) {
       setError("Please enter a recipient and amount."); return;
     }
-    if (Number(amount) > 12847.50) {
-      setError("Amount exceeds available balance of R12,847.50."); return;
-    }
-    setError(null); setLoading(true);
-    const r = await globalBankingApi.p2pTransfer("acc-001", recipient.trim(), Number(amount), "ZAR", note || undefined);
-    setLoading(false);
-    if (r.success) {
-      setSuccess({ ref: (r.data as { id?: string } | undefined)?.id ?? "TXN-" + Date.now(), amount });
-    } else {
-      setError(r.error ?? "Transfer failed. Please try again.");
-    }
+    // This screen is a preview with sample figures: it never moves money or reports a transfer that did not happen.
+    setError("This is a preview with sample data, so no money was sent. Sign in to your VINK dashboard to send money.");
   };
 
   if (success) {

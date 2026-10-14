@@ -25,10 +25,10 @@ export const OTHER_SITE_PAGES: readonly string[] = [
 
 /** Signed-in tools and previews. They show the header like every other page; they are listed apart because they are applications, not pages of the public site. */
 export const APP_PAGES: readonly string[] = [
-  "showPostLogin", "showUserProfile", "showOwners", "showInvestors", "showSuperAdmin", "showBanking", "showDriveDashboard", "showOwnerDashboard", "showTaxiAssociationDashboard",
-  "showTerminalManagement", "showControlCentre", "showInvestorDashboard", "showManagementPanel", "showTokenReader", "showSIMApp", "showAFCApp", "showVinkBankingApp",
-  "showVinkBusinessBankingApp", "showVinkCorporateBankingApp", "showVinkMobileApp", "showAppLauncher", "showRevenueDashboard", "showGlobalBanking", "showFinancialReports",
-  "showAdminDashboard", "showAFCDashboard", "showAdminApps", "showCardNetwork", "showManagementHub", "showLogin", "showManshya", "showManshyaAdmin", "showManshyaPay",
+  "showPostLogin", "showUserProfile", "showOwners", "showInvestors", "showSuperAdmin", "showBanking", 
+  "showTerminalManagement", "showControlCentre", "showManagementPanel", "showTokenReader", "showSIMApp", "showAFCApp", "showVinkBankingApp",
+  "showVinkBusinessBankingApp", "showVinkCorporateBankingApp", "showVinkMobileApp", "showAppLauncher", "showRevenueDashboard", "showFinancialReports",
+  "showAdminDashboard", "showAdminApps", "showLogin", "showManshya", "showManshyaAdmin", "showManshyaPay",
 ];
 
 export interface SiteChrome { section: SiteSection | null; showNav: boolean }

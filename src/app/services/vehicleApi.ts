@@ -1,3 +1,4 @@
+import { DEMO_ALLOWED } from "./demoPolicy";
 import { isDemoMode, setDemoMode, DEMO_TOKEN, vehicleMock } from "./demoMode";
 import { getToken, connectLiveFeed } from "./mvnoApi";
 
@@ -15,6 +16,7 @@ async function apiFetch<T>(path: string, opts: RequestInit = {}): Promise<T> {
     return json;
   } catch (err) {
     if (err instanceof TypeError || (err instanceof Error && err.message.includes("fetch"))) {
+      if (!DEMO_ALLOWED) throw err;
       setDemoMode(true);
       return vehicleDemoResponse(path, opts) as T;
     }

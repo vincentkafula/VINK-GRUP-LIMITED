@@ -4,9 +4,9 @@ import path from "node:path";
 
 const root = path.resolve(__dirname, "..");
 const FRAMES = [
-  "dashboards/DashboardShell.tsx", "ManagementPanelViewer.tsx", "ManagementHub.tsx", "BankingDashboard.tsx", "AdminDashboard.tsx", "RevenueDashboard.tsx",
-  "GlobalBankingDashboard.tsx", "CardNetworkDashboard.tsx", "AFCManagementDashboard.tsx", "DriveDashboardViewer.tsx", "OwnerFleetDashboardViewer.tsx",
-  "InvestorFleetDashboardViewer.tsx", "TaxiAssociationDashboardViewer.tsx",
+  "dashboards/DashboardShell.tsx", "ManagementPanelViewer.tsx", "BankingDashboard.tsx", "AdminDashboard.tsx", "RevenueDashboard.tsx",
+  
+  
 ];
 
 describe("the red dashboards", () => {

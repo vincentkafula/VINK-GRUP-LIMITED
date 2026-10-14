@@ -4,6 +4,7 @@
  * or full-screen on actual mobile viewports.
  */
 import { Battery, Wifi, Signal } from "lucide-react";
+import { openSignIn } from "../../services/signIn";
 
 interface Props {
   children: React.ReactNode;
@@ -59,6 +60,11 @@ export function MobileAppOverlay({ children, onClose, appName, bgColor = "#fff" 
         <div className="h-full pt-6">
           {children}
         </div>
+      </div>
+      {/* These phone screens are previews with sample figures; say so, and point to the real thing */}
+      <div role="note" data-preview-notice className="absolute bottom-3 left-1/2 z-30 flex w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 items-center justify-between gap-3 rounded-full bg-black/80 px-4 py-2 text-[12px] text-white backdrop-blur">
+        <span>Preview with sample data. No money moves here.</span>
+        <button type="button" onClick={() => openSignIn(onClose)} className="shrink-0 rounded-full bg-white px-3 py-1 font-bold text-black">Sign in</button>
       </div>
       {/* Close button outside frame */}
       <button onClick={onClose}

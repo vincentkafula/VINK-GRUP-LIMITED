@@ -1,3 +1,4 @@
+import { DEMO_ALLOWED } from "./demoPolicy";
 import { isDemoMode, setDemoMode, demoLogin, DEMO_TOKEN, bankMock } from "./demoMode";
 
 import { API_BASE as BASE } from "./config";
@@ -17,6 +18,7 @@ async function api<T>(path: string, opts: RequestInit = {}): Promise<T> {
     return j;
   } catch (err) {
     if (err instanceof TypeError || (err instanceof Error && err.message.includes("fetch"))) {
+      if (!DEMO_ALLOWED) throw err;
       setDemoMode(true);
       return bankDemoResponse(path, opts) as T;
     }
@@ -67,7 +69,8 @@ export const bankAuth = {
       return await api<{ success: boolean; token: string; user: { id: string; username: string; name: string; role: string } }>(
         "/api/auth/login", { method: "POST", body: JSON.stringify({ username, password }) }
       );
-    } catch {
+    } catch (err) {
+      if (!DEMO_ALLOWED) throw err;
       setDemoMode(true);
       const res = demoLogin(username);
       setBankToken(res.token);

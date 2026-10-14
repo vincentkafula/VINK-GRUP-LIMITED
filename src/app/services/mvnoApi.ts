@@ -1,3 +1,4 @@
+import { DEMO_ALLOWED } from "./demoPolicy";
 import { isDemoMode, setDemoMode, demoLogin, DEMO_TOKEN, mvnoMock } from "./demoMode";
 import { API_BASE as BASE, API_BASE_WS as WS_URL } from "./config";
 
@@ -18,6 +19,7 @@ async function apiFetch<T>(path: string, opts: RequestInit = {}): Promise<T> {
     return json;
   } catch (err) {
     if (err instanceof TypeError || (err instanceof Error && err.message.includes("fetch"))) {
+      if (!DEMO_ALLOWED) throw err;
       setDemoMode(true);
       return demoResponse(path, opts) as T;
     }
@@ -68,7 +70,8 @@ export const auth = {
       return await apiFetch<{ success: boolean; token: string; user: { id: string; username: string; name: string; role: string } }>(
         "/api/auth/login", { method: "POST", body: JSON.stringify({ username, password }) }
       );
-    } catch {
+    } catch (err) {
+      if (!DEMO_ALLOWED) throw err;
       setDemoMode(true);
       const res = demoLogin(username);
       setToken(res.token);

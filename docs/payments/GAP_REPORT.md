@@ -51,3 +51,14 @@ Written 14 October 2026 after reading the code in `server/src` (auth, portal, `m
 3. KYC and SMS providers connected.
 4. Staff MFA on (`AUTH_REQUIRE_STAFF_MFA=true`) and every staff account enrolled.
 5. External penetration test and PCI attestation from the PSP.
+
+## 5. Stage 2 (14 October 2026): sample-data dashboards
+
+| Finding | Action |
+|---|---|
+| On any network failure the app silently switched to "demo mode": invented balances and a fake `superadmin` sign-in, on the live site. | Demo data is now off unless the build is a development build or has `VITE_ALLOW_DEMO=true`. A failed request shows an error. A leftover demo flag in a browser is cleared. |
+| `/api/global` (open to anyone, no sign-in): a simulator of cards, KYC, AML and transfers with invented partner banks and a personal name; plus its dashboard. | Removed (server routes, store, types; client dashboard and API). |
+| Phone-app screens showed a fixed balance and reported "Sent successfully" with no money moving. | Every phone app now carries "Preview with sample data. No money moves here" with a Sign in button; the send button no longer reports a transfer. |
+| Seven dashboards with no API calls and no way to open them (AFC Management, Card Network, Management Hub), or only from a role switcher in the bank panel (Driver, Owner, Taxi Association, Investor). | Deleted; the role switcher opens the real portals (`/portal/driver`, `owner`, `association`, `investor`). |
+
+Still open: the phone-app previews (Banking, Business, Corporate, Mobile) are static designs, not connected to accounts. Connecting them to the signed-in VINK dashboard endpoints is the next rewiring job; Revenue/AFC levy and the NOC/MVNO panels read from their own APIs and need a data-source review.

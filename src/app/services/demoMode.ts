@@ -1,11 +1,12 @@
+import { DEMO_ALLOWED } from "./demoPolicy";
 // ─── Demo Mode ────────────────────────────────────────────────────────────────
 // When the backend at localhost:3001 is unreachable, all API services fall back
 // to this module so every dashboard works without running the server.
 
 export const DEMO_TOKEN = "demo." + btoa(JSON.stringify({ userId: "demo-001", username: "superadmin", role: "superadmin" })) + ".demo";
 
-export const isDemoMode  = () => localStorage.getItem("vink_demo") === "1";
-export const setDemoMode = (v: boolean) => { if (v) localStorage.setItem("vink_demo","1"); else localStorage.removeItem("vink_demo"); };
+export const isDemoMode  = () => DEMO_ALLOWED && localStorage.getItem("vink_demo") === "1";
+export const setDemoMode = (v: boolean) => { if (v && !DEMO_ALLOWED) return; if (v) localStorage.setItem("vink_demo","1"); else localStorage.removeItem("vink_demo"); };
 
 // ─── Fake login ───────────────────────────────────────────────────────────────
 export const DEMO_USERS: Record<string, { token: string; user: { id: string; username: string; name: string; role: string } }> = {

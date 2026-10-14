@@ -1,3 +1,4 @@
+import { DEMO_ALLOWED } from "./demoPolicy";
 // ─── VINK Central API Client ───────────────────────────────────────────────────
 // Single source of truth for all backend calls. Falls back to demo mode when
 // the server is unreachable.
@@ -12,8 +13,8 @@ const DEMO_KEY  = "vink_demo";
 export { getToken, authFetch, bootstrapSession, refreshSession };
 export function setToken(t: string)        { setAuth({ token: t, mode: "legacy" }); }
 export function clearToken()               { clearAuth(); }
-export function isDemoMode(): boolean      { return localStorage.getItem(DEMO_KEY) === "1"; }
-export function setDemoMode(on: boolean)   { if (on) localStorage.setItem(DEMO_KEY, "1"); else localStorage.removeItem(DEMO_KEY); }
+export function isDemoMode(): boolean      { return DEMO_ALLOWED && localStorage.getItem(DEMO_KEY) === "1"; }
+export function setDemoMode(on: boolean)   { if (on && !DEMO_ALLOWED) return; if (on) localStorage.setItem(DEMO_KEY, "1"); else localStorage.removeItem(DEMO_KEY); }
 
 // ─── Logged-in user (stored after login) ─────────────────────────────────────
 const SESSION_KEY = "vink_session";
@@ -105,7 +106,7 @@ async function request<T>(
     }
     if (err instanceof TypeError && err.message.includes("fetch")) {
       setDemoMode(true);
-      return { success: false, error: "Server unreachable — running in demo mode." };
+      return { success: false, error: DEMO_ALLOWED ? "Server unreachable — running in demo mode." : "We can't reach the server. Check your connection and try again." };
     }
     return { success: false, error: "An unexpected error occurred." };
   } finally {
