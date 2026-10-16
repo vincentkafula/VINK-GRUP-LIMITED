@@ -31,7 +31,6 @@ const COLS = [
       "News",
       "Sponsorship",
       "Careers",
-      "Job Application",
     ],
   },
   {

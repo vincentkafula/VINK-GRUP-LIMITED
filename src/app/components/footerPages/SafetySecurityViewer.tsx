@@ -49,7 +49,7 @@ export function SafetySecurityViewer({ isOpen, onClose }: Props) {
           <Shield className="w-16 h-16 text-green-400 flex-shrink-0" />
           <div>
             <h1 className="text-4xl font-black mb-2">Safety &amp; Security</h1>
-            <p className="text-white/70 text-base max-w-xl">How VINK protects your money, your data, and your identity — and what to do if something goes wrong.</p>
+            <p className="text-white/90 text-base max-w-xl">How VINK protects your money, your data, and your identity — and what to do if something goes wrong.</p>
           </div>
         </div>
       </div>

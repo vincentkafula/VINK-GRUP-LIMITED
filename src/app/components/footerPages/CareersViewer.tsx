@@ -3,7 +3,7 @@ import vinkLogo from "../../../imports/LOGO_FINAL.png";
 import { Footer } from "../Footer";
 import { BRAND } from "../../brand";
 
-interface Props { isOpen: boolean; onClose: () => void; }
+interface Props { isOpen: boolean; onClose: () => void; /** Opens the job application form. The form is reached from here, not from the footer. */ onApply?: () => void; }
 
 const P = BRAND.crimson;
 
@@ -36,7 +36,7 @@ const STEPS = [
   "Interview process: one screening call + one in-person or video panel",
 ];
 
-export function CareersViewer({ isOpen, onClose }: Props) {
+export function CareersViewer({ isOpen, onClose, onApply }: Props) {
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-surface">
@@ -46,7 +46,7 @@ export function CareersViewer({ isOpen, onClose }: Props) {
       </div>
 
       {/* Hero */}
-      <div className="py-20 px-6 text-white relative overflow-hidden"
+      <div className="shrink-0 py-20 px-6 text-white relative overflow-hidden"
         style={{ background: "#C8102E" }}>
         <div className="max-w-4xl mx-auto relative z-10">
           <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4"
@@ -54,7 +54,7 @@ export function CareersViewer({ isOpen, onClose }: Props) {
           <h1 className="text-4xl md:text-5xl font-black leading-tight mb-4">
             Build the Future of<br />African Payments.
           </h1>
-          <p className="text-white/80 text-lg max-w-2xl leading-relaxed">
+          <p className="text-white/90 text-lg max-w-2xl leading-relaxed">
             At VINK, you&apos;re not just building software — you&apos;re helping build the financial infrastructure for the 15 million South Africans who take a taxi every day. We launch in June 2027.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
@@ -103,8 +103,8 @@ export function CareersViewer({ isOpen, onClose }: Props) {
                     <span className="flex items-center gap-1 text-xs text-fg-muted"><Clock className="w-3 h-3" />{r.type}</span>
                   </div>
                 </div>
-                <button className="flex-shrink-0 text-xs font-bold px-4 py-2 rounded-lg text-white transition-all hover:opacity-90"
-                  style={{ background: P }}>Apply</button>
+                <button type="button" onClick={onApply} aria-label={`Apply now for ${r.title}`} className="flex-shrink-0 text-xs font-bold px-4 py-2 rounded-lg text-white transition-all hover:opacity-90"
+                  style={{ background: P }}>Apply now</button>
               </div>
             ))}
           </div>
@@ -131,7 +131,7 @@ export function CareersViewer({ isOpen, onClose }: Props) {
         {/* Graduate Programme */}
         <section className="rounded-2xl p-6 text-white" style={{ background: `linear-gradient(135deg,#101828,${P})` }}>
           <h2 className="text-xl font-black mb-2">Graduate &amp; Internship Programme</h2>
-          <p className="text-white/80 text-sm leading-relaxed mb-4">
+          <p className="text-white/90 text-sm leading-relaxed mb-4">
             VINK offers a 12-month paid internship programme for recent graduates in Computer Science, Finance, Marketing, and Business Management. Applications open annually in January.
           </p>
           <a href="mailto:intern@vink.co.za" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-surface transition-all hover:opacity-90"

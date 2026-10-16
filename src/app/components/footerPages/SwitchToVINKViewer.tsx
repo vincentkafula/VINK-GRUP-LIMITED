@@ -43,7 +43,7 @@ export function SwitchToVINKViewer({ isOpen, onClose }: Props) {
           <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4"
             style={{ background: "rgba(255,255,255,.16)", color: "#ffffff" }}>Switch in 7–10 days</span>
           <h1 className="text-4xl md:text-5xl font-black leading-tight mb-4">Make the Switch to VINK.</h1>
-          <p className="text-white/80 text-lg max-w-xl leading-relaxed">
+          <p className="text-white/90 text-lg max-w-xl leading-relaxed">
             It&apos;s easier than you think — and we do the heavy lifting. Most customers are fully switched within 7–10 business days.
           </p>
         </div>
@@ -118,7 +118,7 @@ export function SwitchToVINKViewer({ isOpen, onClose }: Props) {
         {/* CTA */}
         <section className="rounded-2xl p-8 text-center text-white" style={{ background: `linear-gradient(135deg,${P},#A50F27)` }}>
           <h3 className="text-2xl font-black mb-2">Ready to Switch?</h3>
-          <p className="text-white/75 text-sm mb-6">Open your account online in under 10 minutes. No branch visit required.</p>
+          <p className="text-white/90 text-sm mb-6">Open your account online in under 10 minutes. No branch visit required.</p>
           <div className="flex flex-wrap justify-center gap-3">
             <button className="px-7 py-3 rounded-xl text-sm font-bold transition-all hover:opacity-90"
               style={{ background: "#ffffff", color: BRAND.crimson }}>Open Account Online</button>
@@ -126,7 +126,7 @@ export function SwitchToVINKViewer({ isOpen, onClose }: Props) {
               Visit Our Head Office
             </button>
           </div>
-          <p className="text-white/50 text-xs mt-4">8 Rose Street, Cape Town CBD · Mon–Fri 08:00–17:00</p>
+          <p className="text-white/90 text-xs mt-4">8 Rose Street, Cape Town CBD · Mon–Fri 08:00–17:00</p>
         </section>
       </div>
 

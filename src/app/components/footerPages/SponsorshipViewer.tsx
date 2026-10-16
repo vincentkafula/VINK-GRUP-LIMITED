@@ -34,7 +34,7 @@ export function SponsorshipViewer({ isOpen, onClose }: Props) {
           <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4"
             style={{ background: "rgba(255,255,255,.16)", color: "#ffffff" }}>Community Investment</span>
           <h1 className="text-4xl font-black mb-3">Sponsorship &amp; Community Investment</h1>
-          <p className="text-white/80 text-lg max-w-2xl leading-relaxed">
+          <p className="text-white/90 text-lg max-w-2xl leading-relaxed">
             VINK sponsors programmes that uplift the communities our customers live and work in — with a focus on transport safety, youth education, township economic development, and sport.
           </p>
         </div>
@@ -87,7 +87,7 @@ export function SponsorshipViewer({ isOpen, onClose }: Props) {
 
         <section className="rounded-2xl p-8 text-center text-white" style={{ background: `linear-gradient(135deg,${P},#A50F27)` }}>
           <h3 className="text-xl font-black mb-2">Ready to Apply?</h3>
-          <p className="text-white/75 text-sm mb-4">Send your proposal to our sponsorship team.</p>
+          <p className="text-white/90 text-sm mb-4">Send your proposal to our sponsorship team.</p>
           <a href="mailto:sponsorships@vink.co.za"
             className="inline-block px-7 py-3 rounded-xl text-sm font-bold transition-all hover:opacity-90"
             style={{ background: "#ffffff", color: BRAND.crimson }}>

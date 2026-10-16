@@ -32,7 +32,7 @@ export function BankingFeesViewer({ isOpen, onClose }: Props) {
           <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4"
             style={{ background: "rgba(255,255,255,.16)", color: "#ffffff" }}>Pricing</span>
           <h1 className="text-4xl font-black mb-3">Banking Rates &amp; Fees</h1>
-          <p className="text-white/75 text-lg max-w-2xl leading-relaxed">
+          <p className="text-white/90 text-lg max-w-2xl leading-relaxed">
             A clear, upfront look at what VINK products cost — and what stays free.
           </p>
         </div>

@@ -181,7 +181,7 @@ export function PersonalLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
             >
               {s.heading}
             </h2>
-            <p className="text-white/70 text-[15px] leading-relaxed mt-5 max-w-sm">{s.body}</p>
+            <p className="text-white/90 text-[15px] leading-relaxed mt-5 max-w-sm">{s.body}</p>
             <button
               onClick={onApplyClick}
               className="mt-7 flex items-center gap-2 px-6 py-3 rounded-xl text-white text-sm font-semibold shadow-lg hover:brightness-110 transition-all"
@@ -260,7 +260,7 @@ export function PersonalLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
             </span>
             <div>
               <p className="text-white font-semibold text-[15px]" style={{ fontFamily: "var(--font-display)" }}>Your security is our priority</p>
-              <p className="text-white/70 text-[13px] mt-1 max-w-sm">Bank with confidence. We use industry-leading security to protect your data and money.</p>
+              <p className="text-white/90 text-[13px] mt-1 max-w-sm">Bank with confidence. We use industry-leading security to protect your data and money.</p>
             </div>
           </div>
           <button

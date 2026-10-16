@@ -34,7 +34,7 @@ export function BankingGuideViewer({ isOpen, onClose }: Props) {
           <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4"
             style={{ background: "rgba(255,255,255,.16)", color: "#ffffff" }}>Getting Started</span>
           <h1 className="text-4xl font-black mb-3">A Guide to Help You Bank</h1>
-          <p className="text-white/75 text-lg max-w-2xl leading-relaxed">
+          <p className="text-white/90 text-lg max-w-2xl leading-relaxed">
             Everything you need to know to get comfortable with VINK, from opening your account to using your card every day.
           </p>
         </div>

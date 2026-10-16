@@ -538,7 +538,6 @@ export default function App() {
       if (label === "Send your feedback")                        { setContactTab("feedback"); open("contactUs", () => setShowContactUs(true)); }
       if (label === "Switch to VINK")                             open("switchToVINK",        () => setShowSwitchToVINK(true));
       if (label === "Business debit order switching")            open("switchToVINK",        () => setShowSwitchToVINK(true));
-      if (label === "Job Application")                            open("jobapp",             () => setShowJobApp(true));
       if (label === "Get Help & Information")                    { setContactTab("connect"); open("contactUs", () => setShowContactUs(true)); }
       if (label === "Message Us")                                { setContactTab("connect"); open("contactUs", () => setShowContactUs(true)); }
       if (label === "Legal and Compliance")                      { setLegalTab("compliance"); open("legal", () => setShowLegal(true)); }
@@ -734,7 +733,7 @@ export default function App() {
       {/* Footer pages */}
       {has("application")         && <Suspense fallback={null}><ApplicationFlowViewer isOpen={showApplication} onClose={() => { setShowApplication(false); pushRoute("/"); }} /></Suspense>}
       {has("aboutVINK")           && <Suspense fallback={null}><AboutVINKViewer       isOpen={showAboutVINK}           onClose={() => setShowAboutVINK(false)} /></Suspense>}
-      {has("careers")            && <Suspense fallback={null}><CareersViewer        isOpen={showCareers}            onClose={() => setShowCareers(false)} /></Suspense>}
+      {has("careers")            && <Suspense fallback={null}><CareersViewer        isOpen={showCareers}            onClose={() => setShowCareers(false)} onApply={() => { setShowCareers(false); open("jobapp", () => setShowJobApp(true)); }} /></Suspense>}
       {has("contactUs")          && <Suspense fallback={null}><ContactUsViewer            isOpen={showContactUs}  onClose={() => { setShowContactUs(false); pushRoute("/"); }} initialTab={contactTab} /></Suspense>}
       {has("legal")              && <Suspense fallback={null}><LegalComplianceViewer      isOpen={showLegal}      onClose={() => setShowLegal(false)} initialTab={legalTab} /></Suspense>}
       {has("switchToVINK")        && <Suspense fallback={null}><SwitchToVINKViewer          isOpen={showSwitchToVINK} onClose={() => setShowSwitchToVINK(false)} /></Suspense>}

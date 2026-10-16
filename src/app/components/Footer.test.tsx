@@ -29,6 +29,13 @@ describe("Footer", () => {
     expect(host.textContent).toContain("Security Centre"); expect(host.textContent).toContain("not yet operational");
   });
 
+  it("lists Careers but not a separate Job Application link: the form is reached through Apply now on each role", () => {
+    const links = [...host.querySelectorAll("a")].map((a) => a.textContent);
+    expect(links).toContain("Careers");
+    expect(links).not.toContain("Job Application");
+    expect(host.textContent).not.toContain("Job Application");
+  });
+
   it("passes a clicked link's label to the page", () => {
     const labels: string[] = [];
     const h = (e: Event) => labels.push((e as CustomEvent).detail.label);

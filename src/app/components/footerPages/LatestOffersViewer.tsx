@@ -25,7 +25,7 @@ export function LatestOffersViewer({ isOpen, onClose }: Props) {
           <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4"
             style={{ background: "rgba(255,255,255,.16)", color: "#ffffff" }}>Offers</span>
           <h1 className="text-4xl font-black mb-3">Latest Offers</h1>
-          <p className="text-white/75 text-lg max-w-2xl leading-relaxed">
+          <p className="text-white/90 text-lg max-w-2xl leading-relaxed">
             A preview of the card offers and launch promotions VINK is preparing for June 2027.
           </p>
         </div>

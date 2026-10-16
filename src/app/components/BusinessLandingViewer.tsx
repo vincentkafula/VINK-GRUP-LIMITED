@@ -136,7 +136,7 @@ export function BusinessLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
             <h2 className="text-white text-[32px] sm:text-[42px] font-medium leading-[1.08] whitespace-pre-line" style={{ fontFamily: "var(--font-display)" }}>
               {s.heading}
             </h2>
-            <p className="text-white/70 text-[15px] leading-relaxed mt-5 max-w-sm">{s.body}</p>
+            <p className="text-white/90 text-[15px] leading-relaxed mt-5 max-w-sm">{s.body}</p>
             <button onClick={onApplyClick}
               className="mt-7 flex items-center gap-2 px-6 py-3 rounded-xl text-white text-sm font-semibold shadow-lg hover:brightness-110 transition-all"
               style={{ background: INK, border: "1px solid rgba(255,255,255,0.1)" }}>
@@ -202,7 +202,7 @@ export function BusinessLandingViewer({ isOpen, onClose, onNavigate, onApplyClic
             </span>
             <div>
               <p className="text-white font-semibold text-[15px]" style={{ fontFamily: "var(--font-display)" }}>Your business is protected too</p>
-              <p className="text-white/70 text-[13px] mt-1 max-w-sm">The same industry-leading security protecting personal accounts covers every business card and transfer.</p>
+              <p className="text-white/90 text-[13px] mt-1 max-w-sm">The same industry-leading security protecting personal accounts covers every business card and transfer.</p>
             </div>
           </div>
           <button onClick={onSecurityClick}

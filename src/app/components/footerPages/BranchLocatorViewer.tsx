@@ -22,7 +22,7 @@ export function BranchLocatorViewer({ isOpen, onClose }: Props) {
       <div className="py-12 px-6 text-white" style={{ background: "#C8102E" }}>
         <div className="max-w-4xl mx-auto">
           <h1 className="text-3xl font-black mb-2">Find a VINK Service Point</h1>
-          <p className="text-white/70 text-sm">VINK is a digital-first bank. Full banking services are available at our Head Office and through our national agent network.</p>
+          <p className="text-white/90 text-sm">VINK is a digital-first bank. Full banking services are available at our Head Office and through our national agent network.</p>
         </div>
       </div>
 
