@@ -7,6 +7,7 @@ import { Footer } from "../Footer";
 import { Accordion, type AccItem } from "./Accordion";
 import { departmentByKey } from "../../data/departments";
 import "./contact.css";
+import "./page-kit.css";
 import "./careers.css";
 
 interface Props { isOpen: boolean; onClose: () => void; /** Opens the job application form. The form is reached from here, not from the footer. */ onApply?: () => void; }
@@ -126,7 +127,7 @@ function RolesTab({ onApply }: { onApply?: () => void }) {
         </div>
       )}
 
-      <aside className="vc-assist vk-cr-assist" aria-label="Can't see the right role?">
+      <aside className="vc-assist vx-assist" aria-label="Can't see the right role?">
         <div>
           <span className="vc-assist__badge" aria-hidden="true"><Briefcase className="vc-icon" /></span>
           <span>
@@ -194,15 +195,15 @@ function WhyTab({ goTo }: { goTo: (t: TabId) => void }) {
       <p className="vc-section-eyebrow">Why work at VINK</p>
       <h2 className="vc-section-title">Why Work at VINK?</h2>
       <p className="vc-section-lead">You&apos;re helping build the financial infrastructure for the 15 million South Africans who take a taxi every day.</p>
-      <ul className="vk-cr-benefits">
+      <ul className="vx-cards">
         {BENEFITS.map(({ icon: Icon, title, desc }) => (
-          <li key={title} className="vk-cr-benefit">
-            <span className="vk-cr-benefit__icon" aria-hidden="true"><Icon className="vc-icon" /></span>
+          <li key={title} className="vx-card">
+            <span className="vx-card__icon" aria-hidden="true"><Icon className="vc-icon" /></span>
             <h3>{title}</h3>
             <p>{desc}</p>
           </li>))}
       </ul>
-      <div className="vk-cr-cta">
+      <div className="vx-cta">
         <button type="button" className="vc-btn vc-btn--primary" onClick={() => goTo("roles")}>See open roles<ArrowRight className="vc-icon" aria-hidden="true" /></button>
         <p>{ROLES.length} {plural(ROLES.length, "role", "roles")} open in {LOCATIONS.join(" and ")}.</p>
       </div>
@@ -248,9 +249,9 @@ function HireTab({ goTo, onApply }: { goTo: (t: TabId) => void; onApply?: () => 
         <div className="vc-card">
           <h2 className="vc-card__title">What happens next</h2>
           <p className="vc-card__lead">From your first click to your interview.</p>
-          <ol className="vk-cr-steps">
+          <ol className="vx-steps">
             {STEPS.map((step, i) => (
-              <li key={step} className="vk-cr-step"><span className="vk-cr-step__n" aria-hidden="true">{i + 1}</span><p>{step}</p></li>))}
+              <li key={step} className="vx-step"><span className="vx-step__n" aria-hidden="true">{i + 1}</span><p>{step}</p></li>))}
           </ol>
         </div>
       </div>
@@ -283,7 +284,7 @@ export function CareersViewer({ isOpen, onClose, onApply }: Props) {
         <div className="vc-container vc-hero__inner">
           <div className="vc-hero__copy">
             <p className="vc-eyebrow">Careers at VINK</p>
-            <h1 id="careers-hero-title" className="vk-cr-h1">Build the Future of African Payments.</h1>
+            <h1 id="careers-hero-title">Build the Future of African Payments.</h1>
             <p>At VINK, you&apos;re not just building software — you&apos;re helping build the financial infrastructure for the 15 million South Africans who take a taxi every day. We launch in June 2027.</p>
             <div className="vc-hero__links">
               <button type="button" onClick={() => go("roles")}><Briefcase className="vc-icon" aria-hidden="true" />Browse open roles</button>
@@ -291,8 +292,8 @@ export function CareersViewer({ isOpen, onClose, onApply }: Props) {
               <button type="button" onClick={() => go("hire")}><ListChecks className="vc-icon" aria-hidden="true" />How we hire</button>
             </div>
           </div>
-          <div className="vk-cr-media">
-            <ul className="vk-cr-stats" aria-label="VINK careers at a glance">
+          <div className="vx-media">
+            <ul className="vx-stats" aria-label="VINK careers at a glance">
               <li><Rocket className="vc-icon" aria-hidden="true" /><strong>{ROLES.length}</strong><span>Open {plural(ROLES.length, "role", "roles")}</span></li>
               <li><MapPin className="vc-icon" aria-hidden="true" /><strong>Cape Town</strong><span>South Africa</span></li>
               <li><Globe2 className="vc-icon" aria-hidden="true" /><strong>100%</strong><span>Black-Owned</span></li>

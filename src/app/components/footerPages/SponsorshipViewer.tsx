@@ -1,99 +1,239 @@
-import { X } from "lucide-react";
-import vinkLogo from "../../../imports/LOGO_FINAL.png";
+import { useState } from "react";
+import {
+  Bus, GraduationCap, ShieldCheck, Trophy, HeartHandshake, Users, FileText, Wallet, CalendarDays, MapPin, Mail, ArrowRight, Check, Target,
+} from "lucide-react";
 import { Footer } from "../Footer";
-import { BRAND } from "../../brand";
+import { Accordion, type AccItem } from "./Accordion";
+import { departmentByKey } from "../../data/departments";
+import "./contact.css";
+import "./page-kit.css";
 
 interface Props { isOpen: boolean; onClose: () => void; }
-const P = BRAND.crimson;
+
+type TabId = "focus" | "eligibility" | "apply";
 
 const FOCUS_AREAS = [
-  { icon: "🚌", title: "Transport Safety",          desc: "Taxi industry road safety campaigns, CCTV deployment, and community crime prevention initiatives." },
-  { icon: "🎓", title: "Youth Entrepreneurship",    desc: "Business skills workshops for young people in Western Cape townships — equipping the next generation of Southern African entrepreneurs." },
-  { icon: "🏘️", title: "Community Safety",          desc: "Neighbourhood watch and CCID community safety initiatives. 5% of every VINK taxi transaction goes directly to neighbourhood watch in the area served." },
-  { icon: "⚽", title: "Grassroots Sport",           desc: "Football leagues, athletics, and martial arts at community level — supporting healthy, active communities." },
+  { icon: Bus,            title: "Transport Safety",       desc: "Taxi industry road safety campaigns, CCTV deployment, and community crime prevention initiatives." },
+  { icon: GraduationCap,  title: "Youth Entrepreneurship", desc: "Business skills workshops for young people in Western Cape townships — equipping the next generation of Southern African entrepreneurs." },
+  { icon: ShieldCheck,    title: "Community Safety",       desc: "Neighbourhood watch and CCID community safety initiatives. 5% of every VINK taxi transaction goes directly to neighbourhood watch in the area served." },
+  { icon: Trophy,         title: "Grassroots Sport",       desc: "Football leagues, athletics, and martial arts at community level — supporting healthy, active communities." },
 ];
 
 const ELIGIBILITY = [
-  "Non-profit organisations, community sport teams, school programmes, or community events",
-  "Priority given to Western Cape applicants; national applications considered",
-  "Clear community benefit aligned with VINK values required",
-  "Minimum request: R5,000 · Maximum: R500,000 per application",
+  { icon: Users,          label: "Who can apply",     value: "Non-profit organisations, community sport teams, school programmes, or community events" },
+  { icon: MapPin,         label: "Where",             value: "Priority given to Western Cape applicants; national applications considered" },
+  { icon: HeartHandshake, label: "Community benefit", value: "Clear community benefit aligned with VINK values required" },
+  { icon: Wallet,         label: "Request size",      value: "Minimum request: R5,000 · Maximum: R500,000 per application" },
 ];
 
-export function SponsorshipViewer({ isOpen, onClose }: Props) {
-  if (!isOpen) return null;
-  return (
-    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-surface">
-      <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-3 bg-surface border-b border-line shadow-sm">
-        <img loading="lazy" decoding="async" src={vinkLogo} alt="VINK" className="h-9 w-auto object-contain" />
-        <button onClick={onClose} className="p-2 rounded-full hover:bg-surface-2 transition-colors text-fg-muted"><X className="w-5 h-5" /></button>
-      </div>
+const PROPOSAL = [
+  "Organisation background and mission",
+  "Event or programme details and dates",
+  "Requested amount",
+  "Expected community reach and impact",
+  "Proof of NPO or community organisation registration",
+];
 
-      <div className="py-16 px-6 text-white" style={{ background: "#C8102E" }}>
-        <div className="max-w-4xl mx-auto">
-          <span className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4"
-            style={{ background: "rgba(255,255,255,.16)", color: "#ffffff" }}>Community Investment</span>
-          <h1 className="text-4xl font-black mb-3">Sponsorship &amp; Community Investment</h1>
-          <p className="text-white/90 text-lg max-w-2xl leading-relaxed">
-            VINK sponsors programmes that uplift the communities our customers live and work in — with a focus on transport safety, youth education, township economic development, and sport.
-          </p>
+const TABS: { id: TabId; label: string }[] = [
+  { id: "focus",       label: "Focus areas" },
+  { id: "eligibility", label: "Who can apply" },
+  { id: "apply",       label: "How to apply" },
+];
+
+const DEPT = departmentByKey("sponsorships");
+const EMAIL = DEPT?.address ?? "sponsorships@vink.co.za";
+const REPLY = DEPT?.respondWithin ?? "1–2 business days";
+
+// ── Focus areas ────────────────────────────────────────────────────────────
+function FocusTab({ goTo }: { goTo: (t: TabId) => void }) {
+  return (
+    <div className="vc-panel">
+      <p className="vc-section-eyebrow">Our focus areas</p>
+      <h2 className="vc-section-title">Where we invest</h2>
+      <p className="vc-section-lead">VINK sponsors programmes that uplift the communities our customers live and work in.</p>
+      <ul className="vx-cards vx-cards--2">
+        {FOCUS_AREAS.map(({ icon: Icon, title, desc }) => (
+          <li key={title} className="vx-card">
+            <span className="vx-card__icon" aria-hidden="true"><Icon className="vc-icon" /></span>
+            <h3>{title}</h3>
+            <p>{desc}</p>
+          </li>))}
+      </ul>
+      <div className="vx-cta">
+        <button type="button" className="vc-btn vc-btn--primary" onClick={() => goTo("apply")}>How to apply<ArrowRight className="vc-icon" aria-hidden="true" /></button>
+        <p>Proposals are sent to <a href={`mailto:${EMAIL}`} style={{ color: "var(--vk-crimson-text)", fontWeight: 600 }}>{EMAIL}</a>.</p>
+      </div>
+    </div>
+  );
+}
+
+// ── Who can apply ──────────────────────────────────────────────────────────
+function EligibilityTab({ goTo }: { goTo: (t: TabId) => void }) {
+  return (
+    <div className="vc-panel">
+      <div className="vc-panel-grid">
+        <div className="vc-side-card">
+          <div>
+            <p className="vc-section-eyebrow">Eligibility</p>
+            <h2 className="vc-section-title">Who can apply</h2>
+            <p className="vc-section-lead">The criteria below apply to every application.</p>
+          </div>
+          <div>
+            <button type="button" className="vc-btn vc-btn--primary" onClick={() => goTo("apply")}>How to apply<ArrowRight className="vc-icon" aria-hidden="true" /></button>
+          </div>
+        </div>
+        <div className="vc-card">
+          <h2 className="vc-card__title">Eligibility criteria</h2>
+          <p className="vc-card__lead">Check these before you write your proposal.</p>
+          <ul className="vc-acc-rows">
+            {ELIGIBILITY.map((e) => (
+              <li key={e.label} className="vc-acc-row">
+                <span className="vc-acc-row__icon" aria-hidden="true"><e.icon className="vc-icon" /></span>
+                <span className="vc-acc-row__text"><span className="vc-acc-row__label">{e.label}</span><span className="vc-acc-row__value">{e.value}</span></span>
+              </li>))}
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── How to apply ───────────────────────────────────────────────────────────
+function ApplyTab({ goTo }: { goTo: (t: TabId) => void }) {
+  const faqs: AccItem[] = [
+    { id: "faq-amount", title: "How much can I ask for?", intro: "Minimum request: R5,000 · Maximum: R500,000 per application." },
+    { id: "faq-region", title: "Do you only support the Western Cape?", intro: "Priority is given to Western Cape applicants; national applications are considered." },
+    { id: "faq-who", title: "Who can apply?", intro: "Non-profit organisations, community sport teams, school programmes, or community events.", link: { label: "See every criterion", onClick: () => goTo("eligibility") } },
+    { id: "faq-review", title: "How often are applications reviewed?", intro: "VINK reviews applications on a quarterly basis." },
+    { id: "faq-hear", title: "When will I hear back?", intro: "Successful applicants will be contacted within 6 weeks of the review date." },
+  ];
+  const steps = [
+    <>Email your proposal to <a href={`mailto:${EMAIL}`} style={{ color: "var(--vk-crimson-text)", fontWeight: 600 }}>{EMAIL}</a></>,
+    "VINK reviews applications on a quarterly basis",
+    "Successful applicants will be contacted within 6 weeks of the review date",
+  ];
+  return (
+    <div className="vc-panel">
+      <div className="vc-panel-grid">
+        <div className="vc-side-card">
+          <div>
+            <p className="vc-section-eyebrow">How to apply</p>
+            <h2 className="vc-section-title">Send us a proposal</h2>
+            <p className="vc-section-lead">Submit a sponsorship proposal to {EMAIL}.</p>
+          </div>
+          <div>
+            <a className="vc-btn vc-btn--primary" href={`mailto:${EMAIL}`}><Mail className="vc-icon" aria-hidden="true" />Email {EMAIL}</a>
+          </div>
+        </div>
+        <div className="vc-card">
+          <h2 className="vc-card__title">Include in your proposal</h2>
+          <p className="vc-card__lead">Five things every proposal needs.</p>
+          <ul className="vc-acc-rows">
+            {PROPOSAL.map((item) => (
+              <li key={item} className="vc-acc-row">
+                <span className="vc-acc-row__icon" aria-hidden="true"><Check className="vc-icon" /></span>
+                <span className="vc-acc-row__text"><span className="vc-acc-row__value">{item}</span></span>
+              </li>))}
+          </ul>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto w-full px-5 py-10 space-y-12">
-        <section>
-          <h2 className="text-2xl font-black mb-6" style={{ color: "var(--vk-crimson-text)" }}>Our Focus Areas</h2>
-          <div className="grid sm:grid-cols-2 gap-5">
-            {FOCUS_AREAS.map((f, i) => (
-              <div key={i} className="flex items-start gap-4 p-5 bg-surface rounded-xl border border-line hover:shadow-md transition-shadow">
-                <span className="text-3xl flex-shrink-0">{f.icon}</span>
-                <div>
-                  <p className="font-bold text-fg mb-1">{f.title}</p>
-                  <p className="text-fg-muted text-sm leading-relaxed">{f.desc}</p>
-                </div>
-              </div>
-            ))}
+      <div className="vc-card vx-below">
+        <h2 className="vc-card__title">What happens next</h2>
+        <p className="vc-card__lead">From sending your proposal to hearing from us.</p>
+        <ol className="vx-steps">
+          {steps.map((step, i) => (
+            <li key={i} className="vx-step"><span className="vx-step__n" aria-hidden="true">{i + 1}</span><p>{step}</p></li>))}
+        </ol>
+      </div>
+
+      <h2 className="vc-section-title vc-faq-title">Frequently asked questions</h2>
+      <div className="vc-acc-wrap" style={{ marginInline: 0, maxWidth: "none" }}><Accordion items={faqs} label="Sponsorship frequently asked questions" /></div>
+
+      <aside className="vc-assist vx-assist" aria-label="Ready to apply?">
+        <div>
+          <span className="vc-assist__badge" aria-hidden="true"><HeartHandshake className="vc-icon" /></span>
+          <span>
+            <h3>Ready to apply?</h3>
+            <p>Send your proposal to our sponsorship team.</p>
+          </span>
+        </div>
+        <div>
+          <span className="vc-assist__badge vc-assist__badge--sm" aria-hidden="true"><Mail className="vc-icon" /></span>
+          <span>
+            <h3>{DEPT?.name ?? "Sponsorships and Partnerships"}</h3>
+            <a className="vc-phone" href={`mailto:${EMAIL}`}>{EMAIL}</a>
+            <span className="vc-avail">Replies within {REPLY}</span>
+          </span>
+        </div>
+        <div>
+          <a className="vc-btn vc-btn--outline" href={`mailto:${EMAIL}`}>Send a proposal</a>
+        </div>
+      </aside>
+    </div>
+  );
+}
+
+// ── Main component ─────────────────────────────────────────────────────────
+export function SponsorshipViewer({ isOpen, onClose }: Props) {
+  const [tab, setTab] = useState<TabId>("focus");
+  if (!isOpen) return null;
+
+  const go = (t: TabId) => { setTab(t); document.getElementById("sponsorship-tabs")?.scrollIntoView?.({ behavior: "smooth", block: "start" }); };
+  const onTabKey = (e: React.KeyboardEvent, i: number) => {
+    const last = TABS.length - 1;
+    const to = e.key === "ArrowRight" ? (i + 1) % TABS.length : e.key === "ArrowLeft" ? (i + last) % TABS.length : e.key === "Home" ? 0 : e.key === "End" ? last : -1;
+    if (to < 0) return;
+    e.preventDefault();
+    setTab(TABS[to].id); document.getElementById(`sponsorship-tab-${TABS[to].id}`)?.focus();
+  };
+  const current = TABS.find((t) => t.id === tab)!;
+
+  return (
+    <div data-theme-aware className="vc fixed inset-0 z-50 flex flex-col overflow-y-auto bg-bg">
+      {/* Hero: the brand red, copy on the left, the three places most people go, and the numbers on the right */}
+      <section className="vc-hero" aria-labelledby="sponsorship-hero-title">
+        <div className="vc-container vc-hero__inner">
+          <div className="vc-hero__copy">
+            <p className="vc-eyebrow">Community Investment</p>
+            <h1 id="sponsorship-hero-title" className="vx-h1--wide">Sponsorship &amp; Community Investment</h1>
+            <p>VINK sponsors programmes that uplift the communities our customers live and work in — with a focus on transport safety, youth education, township economic development, and sport.</p>
+            <div className="vc-hero__links">
+              <button type="button" onClick={() => go("focus")}><HeartHandshake className="vc-icon" aria-hidden="true" />Our focus areas</button>
+              <button type="button" onClick={() => go("eligibility")}><Users className="vc-icon" aria-hidden="true" />Who can apply</button>
+              <button type="button" onClick={() => go("apply")}><FileText className="vc-icon" aria-hidden="true" />How to apply</button>
+            </div>
           </div>
-        </section>
-
-        <section className="rounded-2xl p-6" style={{ background: "var(--vk-surface-2)" }}>
-          <h2 className="text-xl font-black mb-4" style={{ color: "var(--vk-crimson-text)" }}>Eligibility Criteria</h2>
-          <ul className="space-y-3">
-            {ELIGIBILITY.map((item, i) => (
-              <li key={i} className="flex items-start gap-3">
-                <span className="mt-0.5 w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xs"
-                  style={{ background: P }}>✓</span>
-                <p className="text-fg text-sm">{item}</p>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <section>
-          <h2 className="text-2xl font-black mb-4" style={{ color: "var(--vk-crimson-text)" }}>How to Apply</h2>
-          <div className="bg-surface rounded-2xl border border-line p-6 space-y-3 text-sm text-fg">
-            <p>Submit a sponsorship proposal to <a href="mailto:sponsorships@vink.co.za" className="font-bold" style={{ color: "var(--vk-crimson-text)" }}>sponsorships@vink.co.za</a>.</p>
-            <p><strong>Include in your proposal:</strong></p>
-            <ul className="list-disc pl-5 space-y-1 text-fg-muted">
-              <li>Organisation background and mission</li>
-              <li>Event or programme details and dates</li>
-              <li>Requested amount</li>
-              <li>Expected community reach and impact</li>
-              <li>Proof of NPO or community organisation registration</li>
+          <div className="vx-media">
+            <ul className="vx-stats" aria-label="Sponsorship at a glance">
+              <li><Target className="vc-icon" aria-hidden="true" /><strong>{FOCUS_AREAS.length}</strong><span>Focus areas</span></li>
+              <li><Wallet className="vc-icon" aria-hidden="true" /><strong>R500,000</strong><span>Maximum request</span></li>
+              <li><CalendarDays className="vc-icon" aria-hidden="true" /><strong>Quarterly</strong><span>Review cycle</span></li>
             </ul>
-            <p>VINK reviews applications on a <strong>quarterly basis</strong>. Successful applicants will be contacted within 6 weeks of the review date.</p>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <section className="rounded-2xl p-8 text-center text-white" style={{ background: `linear-gradient(135deg,${P},#A50F27)` }}>
-          <h3 className="text-xl font-black mb-2">Ready to Apply?</h3>
-          <p className="text-white/90 text-sm mb-4">Send your proposal to our sponsorship team.</p>
-          <a href="mailto:sponsorships@vink.co.za"
-            className="inline-block px-7 py-3 rounded-xl text-sm font-bold transition-all hover:opacity-90"
-            style={{ background: "#ffffff", color: BRAND.crimson }}>
-            sponsorships@vink.co.za
-          </a>
-        </section>
+      {/* Tabs: they stay at the top while the page scrolls */}
+      <div className="vc-tabs-bar" id="sponsorship-tabs">
+        <div className="vc-container">
+          <div className="vc-tabs" role="tablist" aria-label="Sponsorship sections">
+            {TABS.map((t, i) => (
+              <button key={t.id} className="vc-tab" id={`sponsorship-tab-${t.id}`} role="tab" aria-selected={tab === t.id} aria-controls={`sponsorship-panel-${t.id}`} tabIndex={tab === t.id ? 0 : -1} onClick={() => setTab(t.id)} onKeyDown={(e) => onTabKey(e, i)}>{t.label}</button>))}
+          </div>
+        </div>
+      </div>
+
+      <div className="vc-container">
+        <nav className="vc-crumbs" aria-label="Breadcrumb">
+          <button type="button" onClick={onClose}>Home</button>
+          <span aria-hidden="true">/</span><span aria-current="page">Sponsorship{tab !== "focus" ? ` · ${current.label}` : ""}</span>
+        </nav>
+        <div id={`sponsorship-panel-${tab}`} role="tabpanel" aria-labelledby={`sponsorship-tab-${tab}`}>
+          {tab === "focus"       && <FocusTab goTo={go} />}
+          {tab === "eligibility" && <EligibilityTab goTo={go} />}
+          {tab === "apply"       && <ApplyTab goTo={go} />}
+        </div>
       </div>
 
       <Footer />

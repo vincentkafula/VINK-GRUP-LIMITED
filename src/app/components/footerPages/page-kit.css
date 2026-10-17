@@ -1,0 +1,58 @@
+/*
+ * Shared building blocks for VINK's content pages (Careers, Sponsorship, ...).
+ * They sit on the Contact design system (contact.css: .vc-hero, .vc-tabs-bar, .vc-crumbs, .vc-section-*, .vc-chip, .vc-acc,
+ * .vc-assist, .vc-side-card, .vc-card, .vc-btn ...) and add only what that system does not have. Prefix: vx-.
+ * Everything is built on the same tokens, so it follows light/dark.
+ */
+
+/* ── hero: a wider headline and a column of stat tiles ──────────────────────────────── */
+/* contact.css caps the hero headline at 16ch (.vc-hero h1). A long title can opt out: the selector names the hero so it outranks that rule. */
+.vc .vc-hero .vx-h1--wide { max-width: 26ch; }
+.vc .vx-media { display: flex; align-items: center; justify-content: flex-end; padding: 28px 0; }
+.vc .vx-stats { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; width: min(100%, 470px); }
+.vc .vx-stats li { display: flex; flex-direction: column; gap: 4px; padding: 16px 14px; border-radius: 16px; background: rgba(255, 255, 255, .14); border: 1px solid rgba(255, 255, 255, .3); backdrop-filter: blur(4px); }
+.vc .vx-stats .vc-icon { width: 20px; height: 20px; margin-bottom: 6px; color: #fff; }
+.vc .vx-stats strong { font-size: 20px; font-weight: 800; letter-spacing: -.01em; line-height: 1.1; color: #fff; }
+.vc .vx-stats span { font-size: 12.5px; line-height: 1.3; color: rgba(255, 255, 255, .94); }
+
+/* ── icon cards: a title and a sentence under a round icon ──────────────────────────── */
+.vc .vx-cards { list-style: none; margin: 0 0 28px; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.vc .vx-cards--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.vc .vx-card { height: 100%; display: flex; flex-direction: column; gap: 10px; padding: 22px; border: 1px solid var(--vc-line); border-radius: 16px; background: var(--vk-surface); }
+.vc .vx-card__icon { width: 46px; height: 46px; display: grid; place-items: center; border-radius: 50%; background: var(--vc-red-soft); color: var(--vk-crimson-text); }
+.vc .vx-card__icon .vc-icon { width: 22px; height: 22px; }
+.vc .vx-card h3 { margin: 0; font-size: 16px; font-weight: 700; color: var(--vc-ink); }
+.vc .vx-card p { margin: 0; font-size: 14px; color: var(--vc-ink-2); }
+.vc .vx-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 20px; margin-bottom: 8px; }
+.vc .vx-cta p { margin: 0; font-size: 14.5px; color: var(--vc-ink-2); }
+
+.vc .vx-below { margin-top: 28px; }
+
+/* ── step timeline ──────────────────────────────────────────────────────────────────── */
+.vc .vx-steps { list-style: none; margin: 0; padding: 0; }
+.vc .vx-step { position: relative; display: flex; gap: 16px; padding-bottom: 26px; }
+.vc .vx-step:last-child { padding-bottom: 0; }
+.vc .vx-step::before { content: ""; position: absolute; left: 19px; top: 42px; bottom: 2px; width: 2px; background: var(--vc-line); }
+.vc .vx-step:last-child::before { display: none; }
+.vc .vx-step__n { flex: none; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; background: var(--vc-red); color: #fff; font-size: 15px; font-weight: 800; box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--vc-red) 55%, transparent); }
+.vc .vx-step p { margin: 0; padding-top: 8px; font-size: 15px; font-weight: 500; line-height: 1.45; color: var(--vc-ink); }
+
+/* ── the "need help?" band: a wider middle column so a mailbox and its reply time do not wrap ── */
+.vc .vc-assist.vx-assist { grid-template-columns: 1.15fr 1.2fr auto; max-width: 1040px; }
+.vc .vx-assist h3, .vc .vx-assist .vc-avail { white-space: nowrap; }
+
+@media (max-width: 1040px) {
+  .vc .vc-assist.vx-assist { grid-template-columns: 1fr; }
+  .vc .vx-assist h3, .vc .vx-assist .vc-avail { white-space: normal; }
+  .vc .vx-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 860px) {
+  .vc .vx-media { justify-content: flex-start; padding: 0 0 28px; }
+  .vc .vx-stats { width: 100%; }
+}
+@media (max-width: 560px) {
+  .vc .vx-cards, .vc .vx-cards--2 { grid-template-columns: 1fr; }
+  .vc .vx-stats { grid-template-columns: 1fr; }
+  .vc .vx-stats li { flex-direction: row; align-items: center; gap: 12px; padding: 12px 14px; }
+  .vc .vx-stats .vc-icon { margin-bottom: 0; }
+}
