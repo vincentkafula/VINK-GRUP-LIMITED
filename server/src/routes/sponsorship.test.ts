@@ -9,7 +9,7 @@ import type { Db } from "../portal/driverRoutes.js";
 import { ConsoleEmail, type EmailMessage, type EmailSender } from "../auth/email.js";
 import { EICAR } from "../services/fileScan.js";
 import { createSponsorshipService, TRANSITIONS, type SponsorshipService, type UploadedFile } from "../services/sponsorshipService.js";
-import { createSponsorshipRouter, createSponsorshipAdminRouter } from "./sponsorshipRouter.js";
+import { createSponsorship } from "./sponsorshipRouter.js";
 import { documentSlots, checkAnswers, FILE_RULES, STATUSES, CATEGORIES, ORG_TYPES } from "../config/sponsorship.js";
 
 let db: Db, mail: ConsoleEmail, svc: SponsorshipService, clock = new Date("2026-10-09T10:00:00Z");
@@ -340,9 +340,10 @@ describe("the routes", () => {
   let server: Server, url = "";
   beforeEach(async () => {
     const app = express();
-    app.use("/api/sponsorship", createSponsorshipRouter(svc));
+    const sys = createSponsorship({ db, mail, env: {} as NodeJS.ProcessEnv, now: () => clock });          // the whole system, built the way server start-up builds it
+    app.use("/api/sponsorship", sys.publicRouter);
     app.use((req, _r, next) => { req.user = { userId: "00000000-0000-0000-0000-000000000090", username: "admin", role: "superadmin" }; next(); });
-    app.use("/admin", createSponsorshipAdminRouter({ db, svc }));
+    app.use("/admin", sys.adminRouter);
     await new Promise<void>((ok) => { server = app.listen(0, "127.0.0.1", ok); });
     url = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
   });

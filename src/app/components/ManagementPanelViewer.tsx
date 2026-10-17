@@ -14,6 +14,7 @@ import { OpsPanel } from "./portal/OpsPanel";
 import { DepartmentsPanel } from "./portal/DepartmentsPanel";
 import { SocialPanel } from "./portal/SocialPanel";
 import { WhatsAppPanel } from "./portal/WhatsAppPanel";
+import { SponsorshipPanel } from "./portal/SponsorshipPanel";
 import { DEPARTMENTS, SECTION_ALIASES } from "../data/departments";
 import { rbacApi, jobsApi, getSession, getToken, type SectionApplication, type ManagerRecord, type AuditEntry, type JobApplication } from "../services/apiClient";
 import { BRAND } from "../brand";
@@ -85,8 +86,10 @@ const BOTTOM_STATS = [
 
 /** The section people are approved for to run the social media accounts. It is a module, not a department, so it has no mailbox. */
 const SOCIAL_SECTION = "Social Media Management";
+/** The section whose people work on sponsorships: the name of the "Sponsorships and Partnerships" department, so approving someone for that department opens this screen. */
+const SPONSORSHIP_SECTION = DEPARTMENTS.find((d) => d.key === "sponsorships")?.name ?? "Sponsorships and Partnerships";
 
-type View = "dashboard" | "applications" | "managers" | "audit" | "apply" | "jobApplications" | "mail" | "ops" | "departments" | "social" | "whatsapp";
+type View = "dashboard" | "applications" | "managers" | "audit" | "apply" | "jobApplications" | "mail" | "ops" | "departments" | "social" | "whatsapp" | "sponsorship";
 
 /** Department mailboxes are sections too, named exactly like the department ("Sales", "Customer Support"...). */
 /** The built-in departments; the list the server sends (including departments a Super Administrator has made) replaces it once it has loaded. */
@@ -320,6 +323,8 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
   const canUseMail = isOwner || (mySections ?? []).some(s => DEPARTMENT_SECTIONS.includes(s) || s in SECTION_ALIASES);
   // WhatsApp chats belong to the departments, so whoever can use department mail can answer them; the social accounts have their own section.
   const canUseSocial = isOwner || (mySections ?? []).includes(SOCIAL_SECTION);
+  // Sponsorships: Super Administrators, and people approved for the Sponsorships and Partnerships section (the server checks it again).
+  const canUseSponsorship = isOwner || (mySections ?? []).includes(SPONSORSHIP_SECTION);
 
   return (
     <div data-theme-aware data-dashboard className="fixed inset-0 z-50 flex text-[14px]" style={{ fontFamily: "var(--font-sans)", background: "var(--vk-bg)" }}>
@@ -395,10 +400,19 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
             {canUseSocial && (
               <button
                 onClick={() => goView("social")}
-                className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-semibold mb-4"
+                className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-semibold mb-1"
                 style={view === "social" ? { background: "rgba(255,255,255,0.22)", color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
               >
                 <Megaphone className="w-4 h-4" /> Social media
+              </button>
+            )}
+            {canUseSponsorship && (
+              <button
+                onClick={() => goView("sponsorship")}
+                className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-semibold mb-4"
+                style={view === "sponsorship" ? { background: "rgba(255,255,255,0.22)", color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
+              >
+                <HeartHandshake className="w-4 h-4" /> Sponsorships
               </button>
             )}
 
@@ -693,6 +707,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
           {view === "mail" && canUseMail && <MailPanel />}
           {view === "whatsapp" && canUseMail && <WhatsAppPanel />}
           {view === "social" && canUseSocial && <SocialPanel isSuper={isOwner} />}
+          {view === "sponsorship" && canUseSponsorship && <SponsorshipPanel />}
           {view === "ops" && isOwner && <OpsPanel />}
           {view === "departments" && isOwner && <DepartmentsPanel />}
 

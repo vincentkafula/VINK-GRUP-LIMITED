@@ -16,6 +16,7 @@ vi.mock("../services/apiClient", async (orig) => {
 vi.mock("./portal/MailPanel", () => ({ MailPanel: () => <div>MAIL PANEL</div> }));
 vi.mock("./portal/OpsPanel", () => ({ OpsPanel: () => <div>OPS PANEL</div> }));
 vi.mock("./portal/DepartmentsPanel", () => ({ DepartmentsPanel: () => <div>DEPARTMENTS PANEL</div> }));
+vi.mock("./portal/SponsorshipPanel", () => ({ SponsorshipPanel: () => <div>SPONSORSHIP PANEL</div> }));
 
 import { ManagementPanelViewer } from "./ManagementPanelViewer";
 
@@ -89,5 +90,28 @@ describe("Management Panel: department mail", () => {
     act(() => root.unmount()); host.remove(); host = document.createElement("div"); document.body.appendChild(host); root = createRoot(host);
     sections = []; await open("customer"); await act(async () => { btn("Apply for a Section")!.click(); }); await settle();
     expect([...document.querySelectorAll("select option")].map((o) => o.textContent)).toContain("Legal Affairs (department mail)");
+  });
+});
+
+describe("Management Panel: sponsorships", () => {
+  it("is there for a superadmin and for an owner, and opens the sponsorship screen", async () => {
+    for (const role of ["superadmin", "owner"]) {
+      act(() => root.unmount()); host.remove(); host = document.createElement("div"); document.body.appendChild(host); root = createRoot(host);
+      await open(role);
+      expect(btn("Sponsorships")).toBeTruthy();
+      await act(async () => { btn("Sponsorships")!.click(); }); await settle();
+      expect(host.textContent).toContain("SPONSORSHIP PANEL");
+    }
+  });
+  it("is there for a manager approved for Sponsorships and Partnerships, and for nobody else", async () => {
+    sections = ["Sponsorships and Partnerships"]; await open("customer");
+    expect(btn("Sponsorships")).toBeTruthy();
+    await act(async () => { btn("Sponsorships")!.click(); }); await settle();
+    expect(host.textContent).toContain("SPONSORSHIP PANEL");
+    for (const other of [["Sales"], ["Social Media Management"], ["Bank Management"], []]) {
+      act(() => root.unmount()); host.remove(); host = document.createElement("div"); document.body.appendChild(host); root = createRoot(host);
+      sections = other; await open("customer");
+      expect(btn("Sponsorships"), `sections: ${other.join(", ") || "none"}`).toBeUndefined();
+    }
   });
 });

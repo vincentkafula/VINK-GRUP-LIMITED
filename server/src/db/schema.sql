@@ -1472,6 +1472,95 @@ CREATE TABLE IF NOT EXISTS sponsorship_status_history (
   created_at        TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_sponsorship_history ON sponsorship_status_history(application_id, created_at);
+
+-- ─── Sponsorship: review, awards and follow-up ──────────────────────────────
+-- Added after the application itself (so these are ALTERs: the tables above are already on live databases). A reviewer scores an application, staff award an
+-- amount, an agreement is sent and marked signed, milestones and payments are recorded, and the applicant can answer a question and send a final report.
+ALTER TABLE sponsorship_applications ADD COLUMN IF NOT EXISTS assigned_to UUID REFERENCES users(id) ON DELETE SET NULL;
+ALTER TABLE sponsorship_documents ADD COLUMN IF NOT EXISTS source_id UUID;       -- the reply or report a file came with (null: the application itself)
+CREATE INDEX IF NOT EXISTS idx_sponsorship_docs_source ON sponsorship_documents(source_id);
+CREATE TABLE IF NOT EXISTS sponsorship_settings (
+  key         TEXT PRIMARY KEY,                         -- 'weights' (how much each review criterion counts) or 'approval_limit_zar'
+  value       JSONB NOT NULL,
+  updated_by  TEXT,
+  updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS sponsorship_scores (
+  id             UUID PRIMARY KEY,
+  application_id UUID NOT NULL REFERENCES sponsorship_applications(id) ON DELETE CASCADE,
+  reviewer_id    TEXT NOT NULL,
+  reviewer_name  TEXT NOT NULL,
+  scores         JSONB NOT NULL,                        -- { criterion: 0..5 }
+  comment        TEXT,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (application_id, reviewer_id)                  -- one set of scores per reviewer; scoring again replaces it
+);
+CREATE TABLE IF NOT EXISTS sponsorship_awards (
+  id                  UUID PRIMARY KEY,
+  application_id      UUID NOT NULL UNIQUE REFERENCES sponsorship_applications(id) ON DELETE CASCADE,
+  amount              NUMERIC(14,2) NOT NULL CHECK (amount > 0),
+  currency            TEXT NOT NULL,
+  amount_zar          NUMERIC(14,2),
+  conditions          TEXT,
+  stage               TEXT NOT NULL DEFAULT 'agreement_pending' CHECK (stage IN ('agreement_pending','active','completed')),
+  agreement_sent_at   TIMESTAMPTZ,
+  agreement_signed_at TIMESTAMPTZ,
+  signed_on           TEXT,                               -- a calendar day as YYYY-MM-DD (text, so no time zone can shift it)
+  paid_total          NUMERIC(14,2) NOT NULL DEFAULT 0 CHECK (paid_total >= 0),   -- what has been paid out: the gate that stops two people paying more than the award at once
+  agreement_note      TEXT,
+  created_by          TEXT,
+  created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at          TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE sponsorship_awards ADD COLUMN IF NOT EXISTS paid_total NUMERIC(14,2) NOT NULL DEFAULT 0 CHECK (paid_total >= 0);   -- for a database that already has the table
+CREATE TABLE IF NOT EXISTS sponsorship_milestones (
+  id        UUID PRIMARY KEY,
+  award_id  UUID NOT NULL REFERENCES sponsorship_awards(id) ON DELETE CASCADE,
+  title     TEXT NOT NULL,
+  due_date  TEXT,                                       -- YYYY-MM-DD
+  status    TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','done')),
+  done_at   TIMESTAMPTZ,
+  note      TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS sponsorship_payments (
+  id          UUID PRIMARY KEY,
+  award_id    UUID NOT NULL REFERENCES sponsorship_awards(id) ON DELETE CASCADE,
+  kind        TEXT NOT NULL CHECK (kind IN ('cash','in_kind')),
+  amount      NUMERIC(14,2) NOT NULL CHECK (amount > 0),
+  paid_on     TEXT NOT NULL,                            -- YYYY-MM-DD
+  reference   TEXT,
+  note        TEXT,
+  recorded_by TEXT NOT NULL,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS sponsorship_replies (
+  id             UUID PRIMARY KEY,
+  application_id UUID NOT NULL REFERENCES sponsorship_applications(id) ON DELETE CASCADE,
+  message        TEXT NOT NULL,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS sponsorship_reports (
+  id                UUID PRIMARY KEY,
+  application_id    UUID NOT NULL REFERENCES sponsorship_applications(id) ON DELETE CASCADE,
+  beneficiaries     INTEGER NOT NULL,
+  summary           TEXT NOT NULL,
+  outcomes          TEXT NOT NULL,
+  benefits_delivered JSONB NOT NULL DEFAULT '{}',       -- { benefitId: what was delivered }
+  spent             NUMERIC(14,2) NOT NULL,
+  expenditure_notes TEXT,
+  challenges        TEXT,
+  status            TEXT NOT NULL DEFAULT 'submitted' CHECK (status IN ('submitted','accepted','returned')),
+  review_note       TEXT,
+  reviewed_by       TEXT,
+  reviewed_at       TIMESTAMPTZ,
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_sponsorship_scores_app ON sponsorship_scores(application_id);
+CREATE INDEX IF NOT EXISTS idx_sponsorship_reports_app ON sponsorship_reports(application_id, created_at);
+-- one final report is open (submitted) or settled (accepted) at a time: two arriving together leave one. A returned report does not count, so it can be sent again.
+CREATE UNIQUE INDEX IF NOT EXISTS uq_sponsorship_report_open ON sponsorship_reports(application_id) WHERE status IN ('submitted','accepted');
 ALTER TABLE inbound_emails ADD COLUMN IF NOT EXISTS department TEXT;
 
 -- Staff mail: incoming email gets a status like website messages do, and everything staff send from a department is recorded (see services/mailService.ts).

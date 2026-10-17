@@ -3,11 +3,13 @@ import type { Db } from "../portal/driverRoutes.js";
 import type { EmailSender } from "../auth/email.js";
 import { departmentByKey, notifyTargets, type Department } from "../config/departments.js";
 import { createScanner, type FileScanner } from "./fileScan.js";
+import { clean, oneLine, esc, newRef, round2, money, labelOf, asJson, toRand, checkUploads, storeDocuments, type UploadedFile } from "./sponsorshipUtil.js";
 import { saDay } from "../portal/common.js";
 import {
-  ORG_TYPES, CATEGORIES, BENEFITS, LIMITS_ZAR, DEFAULT_COUNTRY, FILE_RULES, STATUS_LABELS, ALL_DOCUMENT_IDS, documentSlots, checkAnswers, type Answers, type Errors, type StatusId,
+  ORG_TYPES, CATEGORIES, BENEFITS, LIMITS_ZAR, DEFAULT_COUNTRY, STATUS_LABELS, documentSlots, checkAnswers, type Answers, type Errors, type StatusId,
 } from "../config/sponsorship.js";
 export type { Errors } from "../config/sponsorship.js";
+export type { UploadedFile } from "./sponsorshipUtil.js";
 
 /**
  * The online sponsorship application.
@@ -19,7 +21,6 @@ export type { Errors } from "../config/sponsorship.js";
  *
  * Every rule lives here, on the server: the form checks the same things only so people find out before they press Submit.
  */
-const REF_ALPHABET = "ABCDEFGHJKMNPQRSTVWXYZ23456789";
 const MAX_TRIES = 12;
 const ATTACH_LIMIT_BYTES = 25 * 1024 * 1024;     // a mailbox rejects much more; bigger applications are emailed without the files (they stay stored)
 const DEPARTMENT_KEY = "sponsorships";
@@ -34,32 +35,6 @@ export const TRANSITIONS: Record<StatusId, StatusId[]> = {
   declined: ["under_review"],
 };
 
-const clean = (v: unknown, max: number) => (typeof v === "string" ? v.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, "").trim().slice(0, max) : "");
-const oneLine = (v: unknown, max: number) => clean(v, max).replace(/[\r\n\t]+/g, " ");
-const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
-const newRef = () => "SP-" + Array.from(crypto.randomBytes(6), (b) => REF_ALPHABET[b % REF_ALPHABET.length]).join("");
-const round2 = (n: number) => Math.round(n * 100) / 100;
-const money = (n: number, cur: string) => `${cur} ${n.toLocaleString("en-ZA", { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
-const labelOf = <T extends { id: string; label: string }>(list: readonly T[], id: string) => list.find((x) => x.id === id)?.label ?? id;
-
-const MIME: Record<string, string> = { ".pdf": "application/pdf", ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document", ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png" };
-
-/** What a file's first bytes say it is, so a program renamed "budget.pdf" is not taken for a PDF. */
-function matchesType(ext: string, b: Buffer): boolean {
-  if (ext === ".pdf") return b.length > 5 && b.subarray(0, 5).toString("latin1") === "%PDF-";
-  if (ext === ".docx" || ext === ".xlsx") return b.length > 4 && b[0] === 0x50 && b[1] === 0x4b && b[2] === 0x03 && b[3] === 0x04;
-  if (ext === ".jpg" || ext === ".jpeg") return b.length > 3 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff;
-  if (ext === ".png") return b.length > 8 && b.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
-  return false;
-}
-const safeName = (n: string) => {
-  const base = n.split(/[\\/]/).pop() ?? "";
-  const cleaned = base.replace(/[\u0000-\u001f\u007f<>:"|?*]+/g, "").replace(/\s+/g, " ").trim().slice(-120);
-  return cleaned || "document";
-};
-const extOf = (n: string) => { const m = /\.[A-Za-z0-9]{1,5}$/.exec(n); return m ? m[0].toLowerCase() : ""; };
-
-export interface UploadedFile { kind: string; filename: string; data: Buffer }
 export interface ScreeningNote { level: "info" | "review"; note: string }
 export type SubmitResult =
   | { ok: true; ref: string; respondWithin: string; duplicate?: boolean }
@@ -73,39 +48,12 @@ export function createSponsorshipService(deps: { db: Db; mail: EmailSender; scan
   const scanner = deps.scanner ?? createScanner(env);
   const attachLimit = deps.attachLimitBytes ?? ATTACH_LIMIT_BYTES;
   const dept = (): Department => departmentByKey(DEPARTMENT_KEY)!;
-  const asJson = <T,>(v: unknown): T => (typeof v === "string" ? JSON.parse(v) : v) as T;
 
-  /** The requested amount in rand, from VINK's stored rate (how many of the currency one rand buys). null when there is no rate. */
-  async function toRand(amount: number, currency: string): Promise<{ zar: number; rate: number | null } | null> {
-    if (currency === "ZAR") return { zar: amount, rate: null };
-    const r = (await db.query(`SELECT rate FROM fx_rates WHERE pair = $1`, [`ZAR-${currency}`])).rows[0];
-    const rate = r ? Number(r.rate) : 0;
-    return rate > 0 ? { zar: round2(amount / rate), rate } : null;
-  }
-
-  async function checkFiles(files: UploadedFile[], orgType: string, category: string): Promise<{ errors: Errors; ok: Array<UploadedFile & { name: string; mime: string; scan: { status: string; detail: string } }> }> {
-    const errors: Errors = {}; const ok: Array<UploadedFile & { name: string; mime: string; scan: { status: string; detail: string } }> = [];
-    const slots = documentSlots(orgType, category); const allowed = new Set(slots.map((s) => s.id));
-    if (files.length > FILE_RULES.maxFiles) errors.documents = `Attach at most ${FILE_RULES.maxFiles} files`;
-    else if (files.reduce((s, f) => s + f.data.length, 0) > FILE_RULES.maxTotalBytes) errors.documents = `The files together are larger than ${FILE_RULES.maxTotalBytes / 1024 / 1024} MB`;
-    for (const f of files) {
-      if (errors.documents) break;
-      const name = safeName(f.filename), ext = extOf(name);
-      if (!(ALL_DOCUMENT_IDS as readonly string[]).includes(f.kind) || !allowed.has(f.kind)) { errors.documents = `"${name}" was attached to a document that this application does not ask for`; break; }
-      if (!(FILE_RULES.extensions as readonly string[]).includes(ext)) { errors.documents = `"${name}" is not an accepted file type. Use PDF, DOCX, XLSX, JPG or PNG`; break; }
-      if (f.data.length === 0) { errors.documents = `"${name}" is empty`; break; }
-      if (f.data.length > FILE_RULES.maxBytes) { errors.documents = `"${name}" is larger than ${FILE_RULES.maxBytes / 1024 / 1024} MB`; break; }
-      if (!matchesType(ext, f.data)) { errors.documents = `"${name}" is not really a ${ext.slice(1).toUpperCase()} file`; break; }
-      const scan = await scanner.scan(f.data, name);
-      if (scan.status === "infected" || scan.status === "suspicious") { errors.documents = `"${name}" was refused: ${scan.detail}`; break; }
-      ok.push({ ...f, name, mime: MIME[ext], scan: { status: scan.status === "clean" ? "clean" : "unscanned", detail: scan.detail } });
-    }
-    if (!errors.documents) {
-      const missing = slots.filter((s) => s.required && !ok.some((f) => f.kind === s.id)).map((s) => s.label);
-      if (missing.length) errors.documents = `Attach the required documents: ${missing.join("; ")}`;
-    }
-    return { errors, ok };
-  }
+  /** Every file is checked once, against the documents this organisation type and category ask for. */
+  const checkFiles = (files: UploadedFile[], orgType: string, category: string) => {
+    const slots = documentSlots(orgType, category);
+    return checkUploads(files, { allowed: new Set(slots.map((x) => x.id)), required: slots.filter((x) => x.required), scanner });
+  };
 
   /** Notes for the sponsorship team only: where this application sits against the published criteria. The applicant is never shown these. */
   function screen(d: Answers, zar: { zar: number } | null, scanned: { status: string }[]): ScreeningNote[] {
@@ -187,7 +135,7 @@ export function createSponsorshipService(deps: { db: Db; mail: EmailSender; scan
     if (fileCheck) Object.assign(errors, fileCheck.errors);
     let zar: { zar: number; rate: number | null } | null = null;
     if (!errors.amountRequested && !errors.currency && d.amountRequested > 0) {
-      zar = await toRand(d.amountRequested, d.currency);
+      zar = await toRand(db, d.amountRequested, d.currency);
       if (zar && (zar.zar < LIMITS_ZAR.min || zar.zar > LIMITS_ZAR.max)) errors.amountRequested = `Requests must be between R${LIMITS_ZAR.min.toLocaleString("en-ZA")} and R${LIMITS_ZAR.max.toLocaleString("en-ZA")} per application${d.currency === "ZAR" ? "" : `. Your request is about ${money(zar.zar, "ZAR")}`}`;
     }
     if (Object.keys(errors).length) return { ok: false, status: 400, error: errors.documents ?? "Please correct the highlighted answers", fields: errors };
@@ -207,8 +155,7 @@ export function createSponsorshipService(deps: { db: Db; mail: EmailSender; scan
       } catch (e) { if (i >= 3 || !/unique|duplicate/i.test(String((e as Error).message))) throw e; ref = newRef(); }
     }
     try {
-      for (const f of checked) await db.query(`INSERT INTO sponsorship_documents (id, application_id, kind, filename, mime, size_bytes, sha256, scan_status, scan_detail, data_b64) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
-        [crypto.randomUUID(), id, f.kind, f.name, f.mime, f.data.length, crypto.createHash("sha256").update(f.data).digest("hex"), f.scan.status, f.scan.detail, f.data.toString("base64")]);
+      await storeDocuments(db, id, checked);
       await db.query(`INSERT INTO sponsorship_status_history (id, application_id, from_status, to_status, reason, applicant_message, changed_by, created_at) VALUES ($1,$2,NULL,'submitted','Application submitted',NULL,NULL,$3)`, [crypto.randomUUID(), id, now()]);
     } catch (e) {
       await db.query(`DELETE FROM sponsorship_applications WHERE id = $1`, [id]).catch(() => undefined);   // never leave an application whose documents did not all save
@@ -232,33 +179,50 @@ export function createSponsorshipService(deps: { db: Db; mail: EmailSender; scan
     };
   }
 
+  /** The applicant's own application, found by the reference and email they were given: the key to everything an applicant may do. */
+  async function forApplicant(ref: unknown, email: unknown) {
+    const r = oneLine(ref, 20).toUpperCase(), e = oneLine(email, 254).toLowerCase();
+    if (!/^SP-[A-Z2-9]{6}$/.test(r) || !e) return null;
+    const row = (await db.query(`SELECT id, ref, status, applicant_name, organisation, project_title, email, details FROM sponsorship_applications WHERE ref = $1 AND email = $2`, [r, e])).rows[0];
+    if (!row) return null;
+    const d = asJson<{ benefits?: string[] }>(row.details);
+    return { id: String(row.id), ref: String(row.ref), status: String(row.status) as StatusId, applicantName: String(row.applicant_name), organisation: String(row.organisation), project: String(row.project_title), email: String(row.email), benefits: Array.isArray(d.benefits) ? d.benefits : [] };
+  }
+
   // ── staff ───────────────────────────────────────────────────────────────
   const listView = (r: Record<string, unknown>) => ({
     ref: String(r.ref), status: String(r.status), statusLabel: STATUS_LABELS[r.status as StatusId] ?? String(r.status), applicantName: String(r.applicant_name), organisation: String(r.organisation), orgType: String(r.org_type), email: String(r.email),
     category: String(r.category), projectTitle: String(r.project_title), country: String(r.country), province: r.province ? String(r.province) : null, currency: String(r.currency), amountRequested: Number(r.amount_requested),
-    amountZar: r.amount_zar === null || r.amount_zar === undefined ? null : Number(r.amount_zar), delivered: !!r.notified_at, createdAt: new Date(r.created_at as string).toISOString(), updatedAt: new Date(r.updated_at as string).toISOString(),
+    amountZar: r.amount_zar === null || r.amount_zar === undefined ? null : Number(r.amount_zar), assignedTo: r.assigned_to ? String(r.assigned_to) : null, assignedName: r.assigned_name ? String(r.assigned_name) : null, replied: r.replied === true || r.replied === "t" || r.replied === 1, delivered: !!r.notified_at, createdAt: new Date(r.created_at as string).toISOString(), updatedAt: new Date(r.updated_at as string).toISOString(),
   });
 
-  async function list(f: { status?: string; q?: string; limit?: number; offset?: number } = {}) {
+  /** Newest first. "assigned" is a person's id, or "none" for applications nobody has taken on. */
+  async function list(f: { status?: string; q?: string; assigned?: string; limit?: number; offset?: number } = {}) {
     const where: string[] = [], p: unknown[] = [];
-    if (f.status && STATUS_LABELS[f.status as StatusId]) { p.push(f.status); where.push(`status = $${p.length}`); }
+    if (f.status && STATUS_LABELS[f.status as StatusId]) { p.push(f.status); where.push(`a.status = $${p.length}`); }
+    if (f.assigned === "none") where.push(`a.assigned_to IS NULL`);
+    else if (f.assigned && /^[0-9a-f-]{36}$/i.test(f.assigned)) { p.push(f.assigned); where.push(`a.assigned_to = $${p.length}`); }
     const q = oneLine(f.q, 80).toLowerCase();
-    if (q) { p.push(`%${q}%`); where.push(`(lower(ref) LIKE $${p.length} OR lower(organisation) LIKE $${p.length} OR lower(project_title) LIKE $${p.length} OR email LIKE $${p.length})`); }
+    if (q) { p.push(`%${q}%`); where.push(`(lower(a.ref) LIKE $${p.length} OR lower(a.organisation) LIKE $${p.length} OR lower(a.project_title) LIKE $${p.length} OR a.email LIKE $${p.length})`); }
     const whereSql = where.length ? "WHERE " + where.join(" AND ") : "";
-    const total = Number((await db.query(`SELECT COUNT(*) AS n FROM sponsorship_applications ${whereSql}`, p)).rows[0]?.n ?? 0);
+    const total = Number((await db.query(`SELECT COUNT(*) AS n FROM sponsorship_applications a ${whereSql}`, p)).rows[0]?.n ?? 0);
     p.push(Math.min(Math.max(f.limit ?? 50, 1), 200), Math.max(f.offset ?? 0, 0));
-    const rows = (await db.query(`SELECT id, ref, status, applicant_name, organisation, org_type, email, category, project_title, country, province, currency, amount_requested, amount_zar, notified_at, created_at, updated_at FROM sponsorship_applications ${whereSql} ORDER BY created_at DESC LIMIT $${p.length - 1} OFFSET $${p.length}`, p)).rows;
+    const rows = (await db.query(`SELECT a.id, a.ref, a.status, a.applicant_name, a.organisation, a.org_type, a.email, a.category, a.project_title, a.country, a.province, a.currency, a.amount_requested, a.amount_zar, a.assigned_to, u.name AS assigned_name, a.notified_at, a.created_at, a.updated_at,
+      (a.status = 'more_information_required' AND rp.last_reply IS NOT NULL AND rp.last_reply > COALESCE(hs.last_change, a.created_at)) AS replied
+      FROM sponsorship_applications a LEFT JOIN users u ON u.id = a.assigned_to
+      LEFT JOIN (SELECT application_id, MAX(created_at) AS last_reply FROM sponsorship_replies GROUP BY application_id) rp ON rp.application_id = a.id
+      LEFT JOIN (SELECT application_id, MAX(created_at) AS last_change FROM sponsorship_status_history GROUP BY application_id) hs ON hs.application_id = a.id ${whereSql} ORDER BY a.created_at DESC LIMIT $${p.length - 1} OFFSET $${p.length}`, p)).rows;
     return { total, applications: rows.map(listView) };
   }
 
   async function get(ref: string) {
     const row = (await db.query(`SELECT * FROM sponsorship_applications WHERE ref = $1`, [ref])).rows[0];
     if (!row) return null;
-    const docs = (await db.query(`SELECT id, kind, filename, mime, size_bytes, sha256, scan_status, scan_detail, created_at FROM sponsorship_documents WHERE application_id = $1 ORDER BY created_at, filename`, [row.id])).rows;
+    const docs = (await db.query(`SELECT id, kind, filename, mime, size_bytes, sha256, scan_status, scan_detail, source_id, created_at FROM sponsorship_documents WHERE application_id = $1 ORDER BY created_at, filename`, [row.id])).rows;
     const hist = (await db.query(`SELECT h.from_status, h.to_status, h.reason, h.applicant_message, h.changed_by, h.created_at FROM sponsorship_status_history h WHERE h.application_id = $1 ORDER BY h.created_at, h.id`, [row.id])).rows;
     return {
-      ...listView(row), details: asJson<Record<string, unknown>>(row.details), screening: asJson<ScreeningNote[]>(row.screening), fxRate: row.fx_rate === null ? null : Number(row.fx_rate), consentAt: new Date(row.consent_at as string).toISOString(), lastError: row.last_error ? String(row.last_error) : null, statusMessage: row.status_message ? String(row.status_message) : null,
-      documents: docs.map((d) => ({ id: String(d.id), kind: String(d.kind), filename: String(d.filename), mime: String(d.mime), sizeBytes: Number(d.size_bytes), sha256: String(d.sha256), scanStatus: String(d.scan_status), scanDetail: d.scan_detail ? String(d.scan_detail) : null })),
+      ...listView(row), id: String(row.id), details: asJson<Record<string, unknown>>(row.details), screening: asJson<ScreeningNote[]>(row.screening), fxRate: row.fx_rate === null ? null : Number(row.fx_rate), consentAt: new Date(row.consent_at as string).toISOString(), lastError: row.last_error ? String(row.last_error) : null, statusMessage: row.status_message ? String(row.status_message) : null,
+      documents: docs.map((d) => ({ id: String(d.id), kind: String(d.kind), filename: String(d.filename), mime: String(d.mime), sizeBytes: Number(d.size_bytes), sha256: String(d.sha256), scanStatus: String(d.scan_status), scanDetail: d.scan_detail ? String(d.scan_detail) : null, sourceId: d.source_id ? String(d.source_id) : null })),
       history: hist.map((h) => ({ fromStatus: h.from_status ? String(h.from_status) : null, toStatus: String(h.to_status), reason: String(h.reason), applicantMessage: h.applicant_message ? String(h.applicant_message) : null, changedBy: h.changed_by ? String(h.changed_by) : null, at: new Date(h.created_at as string).toISOString() })),
       nextStatuses: TRANSITIONS[row.status as StatusId] ?? [],
     };
@@ -301,6 +265,6 @@ export function createSponsorshipService(deps: { db: Db; mail: EmailSender; scan
     return Number((await db.query(`SELECT COUNT(*) AS n FROM sponsorship_applications WHERE notified_at IS NULL AND created_at < $1`, [new Date(now().getTime() - 15 * 60_000)])).rows[0]?.n ?? 0);
   }
 
-  return { submit, track, list, get, document, setStatus, retryUnsent, undeliveredCount };
+  return { submit, track, forApplicant, list, get, document, setStatus, retryUnsent, undeliveredCount };
 }
 export type SponsorshipService = ReturnType<typeof createSponsorshipService>;

@@ -250,3 +250,38 @@ export function checkAnswers(raw: Record<string, unknown>, today: string): { dat
 
   return { errors: e, data: { orgType, applicantName, organisation, registrationNumber, contactPerson, email, phone, physicalAddress, postalAddress, country, province, city, website, socialLinks, taxStatus, taxNumber, category, projectTitle, executiveSummary, background, problem, targetAudience, geographicArea, beneficiaries: bn ?? 0, startDate, endDate, implementationPlan, outcomes, whyVink, alignment, currency, totalBudget, amountRequested, ownContribution, otherSponsorsAmount, otherSponsorsNotes, expenditure, requestedItems, financialControls, benefits, benefitsValue } };
 }
+
+// ── review, awards and reports ───────────────────────────────────────────────
+
+/** What a reviewer scores an application on (0 to SCORE_MAX each). A sponsor weights them; the scores support a decision and never replace the people who make it. */
+export const REVIEW_CRITERIA = [
+  { id: "strategic",  label: "Strategic alignment" },
+  { id: "impact",     label: "Community impact" },
+  { id: "feasibility", label: "Feasibility" },
+  { id: "budget",     label: "Budget quality" },
+  { id: "reach",      label: "Reach" },
+  { id: "measurable", label: "Measurable benefits" },
+] as const;
+export type CriterionId = (typeof REVIEW_CRITERIA)[number]["id"];
+export const SCORE_MAX = 5;
+/** Until a sponsor sets its own weights, every criterion counts the same. */
+export const DEFAULT_WEIGHTS: Record<CriterionId, number> = { strategic: 1, impact: 1, feasibility: 1, budget: 1, reach: 1, measurable: 1 };
+export const MAX_WEIGHT = 10;
+
+/** One reviewer's scores as a percentage of the best possible, using the weights; null until every criterion has a score. */
+export function weightedScore(scores: Record<string, unknown>, weights: Record<string, number>): number | null {
+  let got = 0, best = 0;
+  for (const c of REVIEW_CRITERIA) {
+    const w = Number(weights[c.id] ?? 0), v = scores[c.id];
+    if (typeof v !== "number" || !Number.isFinite(v)) return null;
+    got += w * v; best += w * SCORE_MAX;
+  }
+  return best > 0 ? Math.round((got / best) * 1000) / 10 : null;
+}
+
+/** Where an award stands. The agreement is sent by VINK, signed outside the system and marked signed by staff; the final report completes it. */
+export const AWARD_STAGES = { agreement_pending: "Agreement pending", active: "Agreement signed", completed: "Completed" } as const;
+export type AwardStage = keyof typeof AWARD_STAGES;
+export const PAYMENT_KINDS = [{ id: "cash", label: "Payment" }, { id: "in_kind", label: "Products, equipment or services" }] as const;
+export const REPORT_STATUS_LABELS = { submitted: "Submitted", accepted: "Accepted", returned: "Returned for changes" } as const;
+export type ReportStatus = keyof typeof REPORT_STATUS_LABELS;

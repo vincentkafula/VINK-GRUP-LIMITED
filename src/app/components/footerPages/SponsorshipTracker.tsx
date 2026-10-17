@@ -2,12 +2,15 @@ import { useEffect, useRef, useState } from "react";
 import { Search, CircleAlert, Clock, Check, TriangleAlert, X } from "lucide-react";
 import { API_BASE } from "../../services/config";
 import { STATUS_LABELS } from "../../data/sponsorship";
+import { AwardCard, ReplyForm, ReportForm, type AwardView } from "./SponsorshipTrackerExtras";
 import "./contact.css";
 import "./sponsorship-form.css";
 
 export interface Tracked {
   ref: string; status: string; statusLabel: string; project: string; organisation: string; submittedAt: string; updatedAt: string;
-  timeline: { status: string; label: string; at: string; message: string | null }[];
+  timeline: { kind?: "status" | "reply" | "report"; status: string; label: string; at: string; message: string | null }[];
+  /** What this person may do now, and their award once the agreement has been sent. */
+  canReply?: boolean; canReport?: boolean; benefits?: { id: string; label: string }[]; award?: AwardView | null;
 }
 interface Props {
   /** Fills the form in and looks the application up straight away (after sending one). */
@@ -17,7 +20,7 @@ interface Props {
 }
 
 const day = (iso: string) => new Date(iso).toLocaleDateString("en-ZA", { day: "numeric", month: "long", year: "numeric" });
-const tone = (status: string) => (status === "approved" || status === "agreement_pending" ? "ok" : status === "declined" ? "bad" : status === "more_information_required" ? "warn" : "plain");
+const tone = (status: string) => (status === "approved" || status === "agreement_pending" || status === "report_accepted" ? "ok" : status === "declined" ? "bad" : status === "more_information_required" || status === "report_returned" ? "warn" : "plain");
 const ICON = { ok: Check, bad: X, warn: TriangleAlert, plain: Clock } as const;
 const NOT_FOUND = "We could not find an application with that reference and email address. Check both and try again.";
 
@@ -89,13 +92,16 @@ export function SponsorshipTracker({ prefill, email }: Props) {
           <ol className="sf-timeline" aria-label="What has happened to your application">
             {[...result.timeline].reverse().map((t, i) => (
               <li key={`${t.status}-${t.at}-${i}`} className={`sf-timeline__item sf-timeline__item--${tone(t.status)}`}>
-                <p className="sf-timeline__title"><strong>{STATUS_LABELS[t.status as keyof typeof STATUS_LABELS] ?? t.label}</strong><span>{day(t.at)}</span></p>
+                <p className="sf-timeline__title"><strong>{t.kind && t.kind !== "status" ? t.label : STATUS_LABELS[t.status as keyof typeof STATUS_LABELS] ?? t.label}</strong><span>{day(t.at)}</span></p>
                 {t.message && <p className="sf-timeline__msg">{t.message}</p>}
               </li>))}
           </ol>
           <p className="vc-form-note" style={{ marginTop: 18 }}>VINK reviews applications on a quarterly basis. Successful applicants will be contacted within 6 weeks of the review date. Questions? Email <a href={`mailto:${email}`} style={{ color: "var(--vk-crimson-text)", fontWeight: 600 }}>{email}</a>.</p>
         </div>
       )}
+      {result?.award && <AwardCard award={result.award} />}
+      {result?.canReply && <ReplyForm refNo={result.ref} email={mail.trim()} supportEmail={email} onSent={() => void lookup(result.ref, mail)} />}
+      {result?.canReport && <ReportForm refNo={result.ref} email={mail.trim()} currency={result.award?.currency ?? "ZAR"} benefits={result.benefits ?? []} supportEmail={email} onSent={() => void lookup(result.ref, mail)} />}
     </div>
   );
 }
