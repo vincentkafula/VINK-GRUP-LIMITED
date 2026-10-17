@@ -2,7 +2,7 @@ import { render, screen, fireEvent, within } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { SponsorshipViewer } from "./SponsorshipViewer";
 
-const open = (onClose = () => {}) => render(<SponsorshipViewer isOpen onClose={onClose} />);
+const open = (onClose = () => {}, extra: Partial<React.ComponentProps<typeof SponsorshipViewer>> = {}) => render(<SponsorshipViewer isOpen onClose={onClose} {...extra} />);
 const goTab = (name: string) => fireEvent.click(screen.getByRole("tab", { name }));
 
 describe("Sponsorship page", () => {
@@ -11,7 +11,7 @@ describe("Sponsorship page", () => {
     open(onClose);
     expect(screen.getByRole("heading", { level: 1, name: "Sponsorship & Community Investment" })).toBeTruthy();
     const tabs = screen.getAllByRole("tab");
-    expect(tabs.map((t) => t.textContent)).toEqual(["Focus areas", "Who can apply", "How to apply"]);
+    expect(tabs.map((t) => t.textContent)).toEqual(["Focus areas", "Who can apply", "How to apply", "Track an application"]);
     expect(tabs[0].getAttribute("aria-selected")).toBe("true");
     fireEvent.click(within(screen.getByRole("navigation", { name: "Breadcrumb" })).getByRole("button", { name: "Home" }));
     expect(onClose).toHaveBeenCalledTimes(1);
@@ -39,7 +39,7 @@ describe("Sponsorship page", () => {
     expect(screen.getAllByRole("tab")[1].getAttribute("aria-selected")).toBe("true");
     expect(screen.getByRole("heading", { name: "Eligibility criteria" })).toBeTruthy();
     fireEvent.keyDown(screen.getAllByRole("tab")[1], { key: "End" });
-    expect(screen.getAllByRole("tab")[2].getAttribute("aria-selected")).toBe("true");
+    expect(screen.getAllByRole("tab")[3].getAttribute("aria-selected")).toBe("true");
     fireEvent.keyDown(screen.getAllByRole("tab")[2], { key: "Home" });
     expect(screen.getAllByRole("tab")[0].getAttribute("aria-selected")).toBe("true");
     fireEvent.click(within(document.querySelector(".vc-hero__links") as HTMLElement).getByRole("button", { name: /Who can apply/ }));
@@ -89,12 +89,58 @@ describe("Sponsorship page", () => {
     expect(screen.getAllByRole("tab")[1].getAttribute("aria-selected")).toBe("true");
   });
 
-  it("ends with the 'ready to apply' band and the sponsorship mailbox's reply time", () => {
-    open();
+  it("ends with the 'ready to apply' band: the mailbox and its reply time, and a button that starts the application", () => {
+    const onApply = vi.fn();
+    open(() => {}, { onApply });
     goTab("How to apply");
     const band = screen.getByRole("complementary", { name: "Ready to apply?" });
     expect(within(band).getByText("Sponsorships and Partnerships")).toBeTruthy();
     expect(within(band).getByText("Replies within 1–2 business days")).toBeTruthy();
-    expect(within(band).getByRole("link", { name: "Send a proposal" }).getAttribute("href")).toBe("mailto:sponsorships@vink.co.za");
+    expect(within(band).getByRole("link", { name: "sponsorships@vink.co.za" }).getAttribute("href")).toBe("mailto:sponsorships@vink.co.za");
+    fireEvent.click(within(band).getByRole("button", { name: "Apply online" }));
+    expect(onApply).toHaveBeenCalledTimes(1);
+  });
+
+  it("starts the online application from every place that offers it", () => {
+    const onApply = vi.fn();
+    open(() => {}, { onApply });
+    fireEvent.click(within(document.querySelector(".vc-hero__links") as HTMLElement).getByRole("button", { name: /Apply online/ }));                // the hero
+    fireEvent.click(within(screen.getByRole("tabpanel")).getByRole("button", { name: "Apply online" }));                                          // the focus areas
+    goTab("Who can apply"); fireEvent.click(within(screen.getByRole("tabpanel")).getByRole("button", { name: "Apply online" }));                  // eligibility
+    goTab("How to apply"); fireEvent.click(within(screen.getByRole("heading", { name: "Apply online" }).closest(".vc-side-card") as HTMLElement).getByRole("button", { name: "Apply online" }));
+    expect(onApply).toHaveBeenCalledTimes(4);
+  });
+
+  it("keeps email as an alternative to the online application", () => {
+    open();
+    goTab("How to apply");
+    const side = screen.getByRole("heading", { name: "Apply online" }).closest(".vc-side-card") as HTMLElement;
+    expect(within(side).getByText(/Prefer email\?/)).toBeTruthy();
+    expect(within(side).getByRole("link", { name: "sponsorships@vink.co.za" }).getAttribute("href")).toBe("mailto:sponsorships@vink.co.za");
+    fireEvent.click(screen.getByRole("button", { name: "Can I apply by email instead?" }));
+    expect(screen.getByText("Yes. You can send your proposal to sponsorships@vink.co.za.")).toBeTruthy();
+  });
+
+  it("explains the online process: the first step is the application, then the quarterly review and the 6-week answer", () => {
+    open();
+    goTab("How to apply");
+    const next = screen.getByRole("heading", { name: "What happens next" }).closest(".vc-card") as HTMLElement;
+    expect(within(next).getAllByRole("listitem")[0].textContent).toContain("Complete the online application");
+  });
+
+  it("has a tab to follow an application, reachable from the FAQ, and it opens there with the reference filled in after one is sent", () => {
+    open();
+    goTab("How to apply");
+    fireEvent.click(screen.getByRole("button", { name: "How do I follow my application?" }));
+    fireEvent.click(screen.getByRole("button", { name: /Track an application/ }));
+    expect(screen.getAllByRole("tab")[3].getAttribute("aria-selected")).toBe("true");
+    expect(screen.getByRole("heading", { name: "Where is my application?" })).toBeTruthy();
+  });
+  it("opens on the tracker, with the reference and email filled in, when told one was just sent", () => {
+    globalThis.fetch = vi.fn(async () => new Response(JSON.stringify({ success: false, error: "no" }), { status: 404 })) as unknown as typeof fetch;
+    open(() => {}, { trackPrefill: { ref: "SP-ABC234", email: "thandi@example.com" } });
+    expect(screen.getAllByRole("tab")[3].getAttribute("aria-selected")).toBe("true");
+    expect((screen.getByLabelText(/Reference number/) as HTMLInputElement).value).toBe("SP-ABC234");
+    expect((screen.getByLabelText(/Email address/) as HTMLInputElement).value).toBe("thandi@example.com");
   });
 });

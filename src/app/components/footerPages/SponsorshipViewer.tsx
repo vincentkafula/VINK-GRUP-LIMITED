@@ -1,16 +1,24 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Bus, GraduationCap, ShieldCheck, Trophy, HeartHandshake, Users, FileText, Wallet, CalendarDays, MapPin, Mail, ArrowRight, Check, Target,
 } from "lucide-react";
 import { Footer } from "../Footer";
 import { Accordion, type AccItem } from "./Accordion";
+import { SponsorshipTracker } from "./SponsorshipTracker";
 import { departmentByKey } from "../../data/departments";
 import "./contact.css";
 import "./page-kit.css";
 
-interface Props { isOpen: boolean; onClose: () => void; }
+interface Props {
+  isOpen: boolean;
+  onClose: () => void;
+  /** Opens the online application form. */
+  onApply?: () => void;
+  /** After an application is sent: open the tracker with its reference and email filled in. */
+  trackPrefill?: { ref: string; email: string } | null;
+}
 
-type TabId = "focus" | "eligibility" | "apply";
+type TabId = "focus" | "eligibility" | "apply" | "track";
 
 const FOCUS_AREAS = [
   { icon: Bus,            title: "Transport Safety",       desc: "Taxi industry road safety campaigns, CCTV deployment, and community crime prevention initiatives." },
@@ -38,6 +46,7 @@ const TABS: { id: TabId; label: string }[] = [
   { id: "focus",       label: "Focus areas" },
   { id: "eligibility", label: "Who can apply" },
   { id: "apply",       label: "How to apply" },
+  { id: "track",       label: "Track an application" },
 ];
 
 const DEPT = departmentByKey("sponsorships");
@@ -45,7 +54,7 @@ const EMAIL = DEPT?.address ?? "sponsorships@vink.co.za";
 const REPLY = DEPT?.respondWithin ?? "1–2 business days";
 
 // ── Focus areas ────────────────────────────────────────────────────────────
-function FocusTab({ goTo }: { goTo: (t: TabId) => void }) {
+function FocusTab({ onApply }: { onApply?: () => void }) {
   return (
     <div className="vc-panel">
       <p className="vc-section-eyebrow">Our focus areas</p>
@@ -60,15 +69,15 @@ function FocusTab({ goTo }: { goTo: (t: TabId) => void }) {
           </li>))}
       </ul>
       <div className="vx-cta">
-        <button type="button" className="vc-btn vc-btn--primary" onClick={() => goTo("apply")}>How to apply<ArrowRight className="vc-icon" aria-hidden="true" /></button>
-        <p>Proposals are sent to <a href={`mailto:${EMAIL}`} style={{ color: "var(--vk-crimson-text)", fontWeight: 600 }}>{EMAIL}</a>.</p>
+        <button type="button" className="vc-btn vc-btn--primary" onClick={onApply}>Apply online<ArrowRight className="vc-icon" aria-hidden="true" /></button>
+        <p>Or email your proposal to <a href={`mailto:${EMAIL}`} style={{ color: "var(--vk-crimson-text)", fontWeight: 600 }}>{EMAIL}</a>.</p>
       </div>
     </div>
   );
 }
 
 // ── Who can apply ──────────────────────────────────────────────────────────
-function EligibilityTab({ goTo }: { goTo: (t: TabId) => void }) {
+function EligibilityTab({ onApply }: { onApply?: () => void }) {
   return (
     <div className="vc-panel">
       <div className="vc-panel-grid">
@@ -79,7 +88,7 @@ function EligibilityTab({ goTo }: { goTo: (t: TabId) => void }) {
             <p className="vc-section-lead">The criteria below apply to every application.</p>
           </div>
           <div>
-            <button type="button" className="vc-btn vc-btn--primary" onClick={() => goTo("apply")}>How to apply<ArrowRight className="vc-icon" aria-hidden="true" /></button>
+            <button type="button" className="vc-btn vc-btn--primary" onClick={onApply}>Apply online<ArrowRight className="vc-icon" aria-hidden="true" /></button>
           </div>
         </div>
         <div className="vc-card">
@@ -99,16 +108,18 @@ function EligibilityTab({ goTo }: { goTo: (t: TabId) => void }) {
 }
 
 // ── How to apply ───────────────────────────────────────────────────────────
-function ApplyTab({ goTo }: { goTo: (t: TabId) => void }) {
+function ApplyTab({ goTo, onApply }: { goTo: (t: TabId) => void; onApply?: () => void }) {
   const faqs: AccItem[] = [
     { id: "faq-amount", title: "How much can I ask for?", intro: "Minimum request: R5,000 · Maximum: R500,000 per application." },
     { id: "faq-region", title: "Do you only support the Western Cape?", intro: "Priority is given to Western Cape applicants; national applications are considered." },
     { id: "faq-who", title: "Who can apply?", intro: "Non-profit organisations, community sport teams, school programmes, or community events.", link: { label: "See every criterion", onClick: () => goTo("eligibility") } },
     { id: "faq-review", title: "How often are applications reviewed?", intro: "VINK reviews applications on a quarterly basis." },
     { id: "faq-hear", title: "When will I hear back?", intro: "Successful applicants will be contacted within 6 weeks of the review date." },
+    { id: "faq-email", title: "Can I apply by email instead?", intro: `Yes. You can send your proposal to ${EMAIL}.` },
+    { id: "faq-track", title: "How do I follow my application?", intro: "Use the reference number from your confirmation email, with the email address you applied with.", link: { label: "Track an application", onClick: () => goTo("track") } },
   ];
   const steps = [
-    <>Email your proposal to <a href={`mailto:${EMAIL}`} style={{ color: "var(--vk-crimson-text)", fontWeight: 600 }}>{EMAIL}</a></>,
+    "Complete the online application and attach your documents. You receive a reference number and a confirmation email",
     "VINK reviews applications on a quarterly basis",
     "Successful applicants will be contacted within 6 weeks of the review date",
   ];
@@ -118,11 +129,12 @@ function ApplyTab({ goTo }: { goTo: (t: TabId) => void }) {
         <div className="vc-side-card">
           <div>
             <p className="vc-section-eyebrow">How to apply</p>
-            <h2 className="vc-section-title">Send us a proposal</h2>
-            <p className="vc-section-lead">Submit a sponsorship proposal to {EMAIL}.</p>
+            <h2 className="vc-section-title">Apply online</h2>
+            <p className="vc-section-lead">Complete the online application, attach your documents and send it. You get a reference number to follow its progress.</p>
           </div>
           <div>
-            <a className="vc-btn vc-btn--primary" href={`mailto:${EMAIL}`}><Mail className="vc-icon" aria-hidden="true" />Email {EMAIL}</a>
+            <button type="button" className="vc-btn vc-btn--primary" onClick={onApply}>Apply online<ArrowRight className="vc-icon" aria-hidden="true" /></button>
+            <p className="vc-form-note" style={{ marginTop: 14 }}>Prefer email? Send your proposal to <a href={`mailto:${EMAIL}`} style={{ color: "var(--vk-crimson-text)", fontWeight: 600 }}>{EMAIL}</a>.</p>
           </div>
         </div>
         <div className="vc-card">
@@ -155,7 +167,7 @@ function ApplyTab({ goTo }: { goTo: (t: TabId) => void }) {
           <span className="vc-assist__badge" aria-hidden="true"><HeartHandshake className="vc-icon" /></span>
           <span>
             <h3>Ready to apply?</h3>
-            <p>Send your proposal to our sponsorship team.</p>
+            <p>Apply online, or send your proposal to our sponsorship team.</p>
           </span>
         </div>
         <div>
@@ -167,7 +179,7 @@ function ApplyTab({ goTo }: { goTo: (t: TabId) => void }) {
           </span>
         </div>
         <div>
-          <a className="vc-btn vc-btn--outline" href={`mailto:${EMAIL}`}>Send a proposal</a>
+          <button type="button" className="vc-btn vc-btn--outline" onClick={onApply}>Apply online</button>
         </div>
       </aside>
     </div>
@@ -175,8 +187,9 @@ function ApplyTab({ goTo }: { goTo: (t: TabId) => void }) {
 }
 
 // ── Main component ─────────────────────────────────────────────────────────
-export function SponsorshipViewer({ isOpen, onClose }: Props) {
-  const [tab, setTab] = useState<TabId>("focus");
+export function SponsorshipViewer({ isOpen, onClose, onApply, trackPrefill }: Props) {
+  const [tab, setTab] = useState<TabId>(trackPrefill ? "track" : "focus");
+  useEffect(() => { if (trackPrefill) setTab("track"); }, [trackPrefill?.ref, trackPrefill?.email]);   // eslint-disable-line react-hooks/exhaustive-deps
   if (!isOpen) return null;
 
   const go = (t: TabId) => { setTab(t); document.getElementById("sponsorship-tabs")?.scrollIntoView?.({ behavior: "smooth", block: "start" }); };
@@ -201,7 +214,7 @@ export function SponsorshipViewer({ isOpen, onClose }: Props) {
             <div className="vc-hero__links">
               <button type="button" onClick={() => go("focus")}><HeartHandshake className="vc-icon" aria-hidden="true" />Our focus areas</button>
               <button type="button" onClick={() => go("eligibility")}><Users className="vc-icon" aria-hidden="true" />Who can apply</button>
-              <button type="button" onClick={() => go("apply")}><FileText className="vc-icon" aria-hidden="true" />How to apply</button>
+              <button type="button" onClick={onApply}><FileText className="vc-icon" aria-hidden="true" />Apply online</button>
             </div>
           </div>
           <div className="vx-media">
@@ -230,9 +243,10 @@ export function SponsorshipViewer({ isOpen, onClose }: Props) {
           <span aria-hidden="true">/</span><span aria-current="page">Sponsorship{tab !== "focus" ? ` · ${current.label}` : ""}</span>
         </nav>
         <div id={`sponsorship-panel-${tab}`} role="tabpanel" aria-labelledby={`sponsorship-tab-${tab}`}>
-          {tab === "focus"       && <FocusTab goTo={go} />}
-          {tab === "eligibility" && <EligibilityTab goTo={go} />}
-          {tab === "apply"       && <ApplyTab goTo={go} />}
+          {tab === "focus"       && <FocusTab onApply={onApply} />}
+          {tab === "eligibility" && <EligibilityTab onApply={onApply} />}
+          {tab === "apply"       && <ApplyTab goTo={go} onApply={onApply} />}
+          {tab === "track"       && <SponsorshipTracker prefill={trackPrefill} email={EMAIL} />}
         </div>
       </div>
 

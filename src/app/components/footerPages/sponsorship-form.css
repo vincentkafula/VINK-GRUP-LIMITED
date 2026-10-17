@@ -1,0 +1,167 @@
+/*
+ * The sponsorship application form. It sits on the Contact design system (contact.css) and the content-page kit (page-kit.css), and adds only what a long,
+ * multi-step form needs: the step bar, validation messages, option cards, the funding summary, document slots and the review. Prefix: sf-.
+ * Everything uses the same tokens, so it follows light/dark; errors use --vk-bad, success --vk-ok, and neither is ever shown by colour alone.
+ */
+
+/* ── a short hero: the form is the point of the page ─────────────────────────────────── */
+.vc .vc-hero.sf-hero .vc-hero__inner { min-height: 0; grid-template-columns: 1fr; }
+.vc .vc-hero.sf-hero .vc-hero__copy { padding: 24px 0 24px; }
+.vc .vc-hero.sf-hero h1 { max-width: none; margin-bottom: 6px; font-size: clamp(24px, 3vw, 32px); }
+.vc .vc-hero.sf-hero p { margin: 0; max-width: 60ch; }
+
+/* ── the step bar: it stays at the top while the form scrolls ────────────────────────── */
+.vc .sf-steps { list-style: none; margin: 0; padding: 14px 0; display: flex; align-items: center; }
+.vc .sf-step { flex: 1 1 0; min-width: 0; display: flex; align-items: center; gap: 10px; position: relative; }
+.vc .sf-step:last-child { flex: 0 0 auto; }
+.vc .sf-step:not(:last-child)::after { content: ""; flex: 1 1 auto; height: 2px; margin: 0 12px; background: var(--vc-line); border-radius: 2px; }
+.vc .sf-step--done:not(:last-child)::after { background: var(--vc-red); }
+.vc .sf-step__btn { display: inline-flex; align-items: center; gap: 10px; padding: 0; border: 0; background: none; font: inherit; color: inherit; cursor: default; text-align: left; }
+.vc .sf-step--done .sf-step__btn, .vc .sf-step--seen .sf-step__btn { cursor: pointer; }
+.vc .sf-step__n { flex: none; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; border: 2px solid var(--vk-line-strong); background: var(--vk-surface); color: var(--vc-ink-2); font-size: 13px; font-weight: 700; }
+.vc .sf-step__n .vc-icon { width: 16px; height: 16px; }
+.vc .sf-step--current .sf-step__n { background: var(--vc-red); border-color: var(--vc-red); color: #fff; box-shadow: 0 0 0 4px color-mix(in srgb, var(--vc-red) 16%, transparent); }
+.vc .sf-step--done .sf-step__n { background: var(--vc-red); border-color: var(--vc-red); color: #fff; }
+.vc .sf-step__label { font-size: 13px; font-weight: 500; color: var(--vc-ink-2); white-space: nowrap; }
+.vc .sf-step--current .sf-step__label { color: var(--vc-ink); font-weight: 700; }
+.vc .sf-stepmeta { display: none; padding: 12px 0 4px; font-size: 14px; font-weight: 700; color: var(--vc-ink); }
+.vc .sf-progress { display: none; height: 4px; margin-bottom: 10px; border-radius: 4px; background: var(--vc-line); overflow: hidden; }
+.vc .sf-progress > span { display: block; height: 100%; background: var(--vc-red); transition: width .25s ease; }
+
+/* ── the card for each step ───────────────────────────────────────────────────────────── */
+.vc .sf-wrap { max-width: 860px; margin: 0 auto; padding-bottom: 28px; }
+.vc .sf-card { animation: vc-fade .3s ease; }
+.vc .sf-card h2:focus { outline: none; }
+.vc .sf-card h2:focus-visible { outline: 2px solid var(--vc-red); outline-offset: 4px; border-radius: 4px; }
+.vc .sf-sub { margin: 26px 0 12px; font-size: 15px; font-weight: 700; color: var(--vc-ink); }
+.vc .sf-sub:first-child { margin-top: 0; }
+.vc .sf-hint { margin: 0; font-size: 12px; color: var(--vc-ink-3); }
+.vc .sf-count { font-size: 12px; color: var(--vc-ink-3); text-align: right; }
+.vc .sf-meta { display: flex; justify-content: space-between; gap: 12px; }
+.vc .sf-err { display: flex; gap: 6px; align-items: flex-start; margin: 0; font-size: 12.5px; line-height: 1.4; font-weight: 500; color: var(--vk-bad); }
+.vc .sf-err .vc-icon { flex: none; width: 15px; height: 15px; margin-top: 1px; }
+.vc .vc-input[aria-invalid="true"], .vc .vc-select[aria-invalid="true"], .vc .vc-textarea[aria-invalid="true"] { border-color: var(--vk-bad); }
+.vc .vc-input[aria-invalid="true"]:focus, .vc .vc-select[aria-invalid="true"]:focus, .vc .vc-textarea[aria-invalid="true"]:focus { box-shadow: 0 0 0 4px color-mix(in srgb, var(--vk-bad) 16%, transparent); }
+.vc .sf-money { position: relative; }
+.vc .sf-money > span { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 13px; font-weight: 600; color: var(--vc-ink-2); pointer-events: none; }
+.vc .sf-money .vc-input { padding-left: 52px; }
+
+.vc .sf-summary { display: flex; gap: 12px; align-items: flex-start; margin: 0 0 22px; padding: 14px 16px; border: 1px solid var(--vk-bad); border-radius: 12px; background: var(--vk-bad-bg); color: var(--vc-ink); }
+.vc .sf-summary .vc-icon { flex: none; width: 20px; height: 20px; color: var(--vk-bad); }
+.vc .sf-summary strong { display: block; margin-bottom: 4px; font-size: 14px; }
+.vc .sf-summary ul { margin: 0; padding-left: 18px; font-size: 13px; }
+.vc .sf-summary button { padding: 0; border: 0; background: none; font: inherit; color: var(--vk-bad); text-decoration: underline; cursor: pointer; text-align: left; }
+
+.vc .sf-banner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 18px; margin: 0 0 22px; padding: 14px 18px; border: 1px solid var(--vc-line); border-radius: 14px; background: var(--vc-red-tint); }
+.vc .sf-banner p { margin: 0; font-size: 14px; color: var(--vc-ink-on-tint); }
+.vc .sf-banner div { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* ── option cards: the category, and what the applicant can offer ────────────────────── */
+.vc .sf-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; border: 0; padding: 0; margin: 0; }
+.vc .sf-options--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.vc .sf-options legend { margin-bottom: 10px; }
+.vc .sf-options .vc-fb-type span { min-height: 58px; display: flex; align-items: center; gap: 10px; text-align: left; }
+.vc .sf-radios { display: flex; flex-wrap: wrap; gap: 10px 22px; }
+.vc .sf-radios label { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
+.vc .sf-radios input, .vc .sf-consent input { width: 18px; height: 18px; accent-color: var(--vc-red); flex: none; }
+
+/* ── the money: expenditure lines and the funding summary ────────────────────────────── */
+.vc .sf-rows { display: grid; gap: 12px; }
+.vc .sf-row { display: grid; grid-template-columns: minmax(0, 1fr) 190px 44px; gap: 12px; align-items: start; }
+.vc .sf-row .vc-btn { height: 44px; padding: 0; width: 44px; }
+.vc .sf-funding { display: grid; gap: 10px; margin-top: 16px; padding: 16px 18px; border: 1px solid var(--vc-line); border-radius: 14px; background: var(--vc-bg-soft); }
+.vc .sf-funding p { margin: 0; display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px; color: var(--vc-ink); }
+.vc .sf-funding .vc-icon { flex: none; width: 18px; height: 18px; margin-top: 1px; }
+.vc .sf-ok .vc-icon { color: var(--vk-ok); }
+.vc .sf-warn .vc-icon { color: var(--vk-warn); }
+.vc .sf-note { display: flex; gap: 10px; align-items: flex-start; margin: 0 0 18px; padding: 12px 14px; border-radius: 12px; background: var(--vc-red-tint); font-size: 13px; color: var(--vc-ink-on-tint); }
+.vc .sf-note .vc-icon { flex: none; width: 18px; height: 18px; margin-top: 1px; color: var(--vc-red-text); }
+
+/* ── documents ────────────────────────────────────────────────────────────────────────── */
+.vc .sf-docs { display: grid; gap: 14px; }
+.vc .sf-doc { display: grid; gap: 12px; padding: 16px 18px; border: 1px solid var(--vc-line); border-radius: 14px; background: var(--vk-surface); transition: border-color .15s, background .15s; }
+.vc .sf-doc[data-drag="true"] { border-color: var(--vc-red); background: var(--vc-red-tint); }
+.vc .sf-doc[data-bad="true"] { border-color: var(--vk-bad); }
+.vc .sf-doc__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 14px; }
+.vc .sf-doc__title { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; font-size: 14px; font-weight: 600; color: var(--vc-ink); }
+.vc .sf-tag { padding: 2px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 700; letter-spacing: .02em; background: var(--vc-bg-soft); color: var(--vc-ink-2); border: 1px solid var(--vc-line); }
+.vc .sf-tag--req { background: var(--vc-red-soft); color: var(--vk-crimson-text); border-color: transparent; }
+.vc .sf-files { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.vc .sf-file { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 10px; background: var(--vc-bg-soft); font-size: 13px; color: var(--vc-ink); }
+.vc .sf-file .vc-icon { flex: none; width: 16px; height: 16px; color: var(--vc-ink-2); }
+.vc .sf-file span:nth-of-type(1) { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vc .sf-file small { flex: none; color: var(--vc-ink-3); font-size: 12px; }
+.vc .sf-file button { flex: none; display: grid; place-items: center; width: 28px; height: 28px; border: 0; border-radius: 50%; background: none; color: var(--vc-ink-2); cursor: pointer; }
+.vc .sf-file button:hover { background: var(--vc-line); color: var(--vc-ink); }
+.vc .sf-meter { margin: 0 0 16px; font-size: 13.5px; font-weight: 600; color: var(--vc-ink); }
+
+/* ── the review and the declaration ───────────────────────────────────────────────────── */
+.vc .sf-review { display: grid; gap: 14px; margin-bottom: 26px; }
+.vc .sf-review section { padding: 16px 18px; border: 1px solid var(--vc-line); border-radius: 14px; background: var(--vc-bg-soft); }
+.vc .sf-review header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.vc .sf-review h3 { margin: 0; font-size: 14px; font-weight: 700; color: var(--vc-ink); }
+.vc .sf-review dl { display: grid; grid-template-columns: minmax(120px, 190px) minmax(0, 1fr); gap: 6px 16px; margin: 0; font-size: 13.5px; }
+.vc .sf-review dt { color: var(--vc-ink-2); }
+.vc .sf-review dd { margin: 0; color: var(--vc-ink); overflow-wrap: anywhere; }
+.vc .sf-consent { display: grid; gap: 12px; margin: 0; padding: 0; border: 0; }
+.vc .sf-consent label { display: flex; align-items: flex-start; gap: 12px; font-size: 14px; color: var(--vc-ink); cursor: pointer; }
+.vc .sf-consent a, .vc .sf-consent button.sf-link { color: var(--vk-crimson-text); font-weight: 600; background: none; border: 0; padding: 0; font: inherit; text-decoration: underline; cursor: pointer; }
+.vc .sf-hp { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; }
+
+.vc .sf-nav { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; margin-top: 28px; padding-top: 22px; border-top: 1px solid var(--vc-line); }
+.vc .sf-nav .vc-form-note { flex: 1 1 220px; text-align: center; }
+.vc .sf-nav .vc-btn[disabled] { opacity: .6; cursor: progress; }
+
+/* ── after it is sent ─────────────────────────────────────────────────────────────────── */
+.vc .sf-done { text-align: center; display: grid; justify-items: center; gap: 14px; padding: 38px 28px 34px; }
+.vc .sf-done__badge { width: 64px; height: 64px; display: grid; place-items: center; border-radius: 50%; background: var(--vk-ok-bg); color: var(--vk-ok); }
+.vc .sf-done__badge .vc-icon { width: 32px; height: 32px; }
+.vc .sf-done h2 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -.01em; color: var(--vc-ink); }
+.vc .sf-done p { margin: 0; max-width: 54ch; font-size: 14.5px; color: var(--vc-ink-2); }
+.vc .sf-ref { display: inline-flex; align-items: center; gap: 12px; padding: 12px 18px; border: 1px dashed var(--vc-red); border-radius: 14px; background: var(--vc-red-tint); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 22px; font-weight: 700; letter-spacing: .08em; color: var(--vc-ink); }
+.vc .sf-next { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 10px; text-align: left; max-width: 54ch; font-size: 14px; color: var(--vc-ink); }
+.vc .sf-next li { display: flex; gap: 10px; align-items: flex-start; }
+.vc .sf-next .vc-icon { flex: none; width: 18px; height: 18px; margin-top: 2px; color: var(--vk-ok); }
+
+/* ── following an application ─────────────────────────────────────────────────────────── */
+.vc .sf-track { margin-top: 8px; }
+.vc .sf-track__head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 22px; }
+.vc .sf-status { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px; font-size: 13.5px; font-weight: 700; border: 1px solid transparent; }
+.vc .sf-status .vc-icon { width: 16px; height: 16px; }
+.vc .sf-status--plain { background: var(--vc-bg-soft); color: var(--vc-ink); border-color: var(--vc-line); }
+.vc .sf-status--ok { background: var(--vk-ok-bg); color: var(--vk-ok); }
+.vc .sf-status--warn { background: var(--vk-warn-bg); color: var(--vk-warn); }
+.vc .sf-status--bad { background: var(--vk-bad-bg); color: var(--vk-bad); }
+.vc .sf-timeline { list-style: none; margin: 0; padding: 0 0 0 4px; }
+.vc .sf-timeline__item { position: relative; padding: 0 0 22px 28px; }
+.vc .sf-timeline__item:last-child { padding-bottom: 0; }
+.vc .sf-timeline__item::before { content: ""; position: absolute; left: 5px; top: 18px; bottom: -2px; width: 2px; background: var(--vc-line); }
+.vc .sf-timeline__item:last-child::before { display: none; }
+.vc .sf-timeline__item::after { content: ""; position: absolute; left: 0; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: var(--vk-line-strong); border: 2px solid var(--vk-surface); box-shadow: 0 0 0 2px var(--vk-line-strong); }
+.vc .sf-timeline__item:first-child::after { background: var(--vc-red); box-shadow: 0 0 0 2px var(--vc-red); }
+.vc .sf-timeline__title { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 14px; margin: 0; font-size: 14.5px; color: var(--vc-ink); }
+.vc .sf-timeline__title span { font-size: 12.5px; color: var(--vc-ink-3); }
+.vc .sf-timeline__msg { margin: 6px 0 0; padding: 10px 14px; border-radius: 12px; background: var(--vc-bg-soft); font-size: 13.5px; line-height: 1.5; color: var(--vc-ink); white-space: pre-wrap; }
+
+@media (max-width: 1040px) {
+  .vc .sf-step__label { display: none; }
+  .vc .sf-step--current .sf-step__label { display: none; }
+}
+@media (max-width: 860px) {
+  .vc .sf-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 700px) {
+  .vc .sf-steps { display: none; }
+  .vc .sf-stepmeta, .vc .sf-progress { display: block; }
+  .vc .sf-row { grid-template-columns: minmax(0, 1fr) 44px; }
+  .vc .sf-row > :nth-child(2) { grid-column: 1; grid-row: 2; }
+  .vc .sf-row > :nth-child(3) { grid-column: 2; grid-row: 1; }
+  .vc .sf-review dl { grid-template-columns: 1fr; gap: 2px; }
+  .vc .sf-review dd { margin-bottom: 8px; }
+  .vc .sf-nav .vc-form-note { order: 3; flex-basis: 100%; }
+}
+@media (max-width: 560px) {
+  .vc .sf-options, .vc .sf-options--2 { grid-template-columns: 1fr; }
+  .vc .sf-card { padding: 22px 18px 24px; }
+}
+@media (prefers-reduced-motion: reduce) { .vc .sf-card, .vc .sf-progress > span { animation: none; transition: none; } }

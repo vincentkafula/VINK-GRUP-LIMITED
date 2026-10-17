@@ -1411,6 +1411,67 @@ CREATE TABLE IF NOT EXISTS contact_messages (
 );
 CREATE INDEX IF NOT EXISTS idx_contact_department ON contact_messages(department, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_contact_undelivered ON contact_messages(created_at) WHERE notified_at IS NULL;
+
+-- ─── Sponsorship applications ───────────────────────────────────────────────
+-- The online sponsorship application (see services/sponsorshipService.ts). An application is stored first, so it is never lost if email is down, and then the
+-- sponsorship team and the applicant are emailed (notified_at / ack_sent_at record that; a failed send is retried). The whole form as submitted is kept in
+-- "details"; the columns beside it are the ones staff filter and sort by. Document bytes live in their own table so listing applications never loads them.
+CREATE TABLE IF NOT EXISTS sponsorship_applications (
+  id               UUID PRIMARY KEY,
+  ref              TEXT NOT NULL UNIQUE,
+  status           TEXT NOT NULL DEFAULT 'submitted' CHECK (status IN ('submitted','under_review','more_information_required','approved','declined','agreement_pending')),
+  status_message   TEXT,                                -- what the applicant was told at the last status change
+  applicant_name   TEXT NOT NULL,
+  organisation     TEXT NOT NULL,
+  org_type         TEXT NOT NULL,
+  email            TEXT NOT NULL,                       -- stored lower-case
+  phone            TEXT NOT NULL,
+  category         TEXT NOT NULL,
+  project_title    TEXT NOT NULL,
+  country          TEXT NOT NULL,
+  province         TEXT,
+  currency         TEXT NOT NULL,
+  amount_requested NUMERIC(14,2) NOT NULL,
+  amount_zar       NUMERIC(14,2),                       -- the requested amount in rand, when it could be worked out
+  fx_rate          NUMERIC(18,8),                       -- how many of the currency one rand bought when it was converted
+  details          JSONB NOT NULL,
+  screening        JSONB NOT NULL DEFAULT '[]',         -- notes from the automatic eligibility check, for staff only
+  consent_at       TIMESTAMPTZ NOT NULL,
+  notified_at      TIMESTAMPTZ,
+  ack_sent_at      TIMESTAMPTZ,
+  tries            INTEGER NOT NULL DEFAULT 0,
+  last_error       TEXT,
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at       TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_sponsorship_status ON sponsorship_applications(status, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_sponsorship_email ON sponsorship_applications(email);
+CREATE INDEX IF NOT EXISTS idx_sponsorship_unsent ON sponsorship_applications(created_at) WHERE notified_at IS NULL;
+CREATE TABLE IF NOT EXISTS sponsorship_documents (
+  id             UUID PRIMARY KEY,
+  application_id UUID NOT NULL REFERENCES sponsorship_applications(id) ON DELETE CASCADE,
+  kind           TEXT NOT NULL,                         -- which document this is, e.g. 'proposal' (see config/sponsorship.ts)
+  filename       TEXT NOT NULL,
+  mime           TEXT NOT NULL,
+  size_bytes     INTEGER NOT NULL,
+  sha256         TEXT NOT NULL,
+  scan_status    TEXT NOT NULL,                         -- clean | unscanned (infected and suspicious files are refused, never stored)
+  scan_detail    TEXT,
+  data_b64       TEXT NOT NULL,                         -- the file, base64-encoded (as the job applications store theirs); never selected when listing
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_sponsorship_docs_app ON sponsorship_documents(application_id);
+CREATE TABLE IF NOT EXISTS sponsorship_status_history (
+  id                UUID PRIMARY KEY,
+  application_id    UUID NOT NULL REFERENCES sponsorship_applications(id) ON DELETE CASCADE,
+  from_status       TEXT,
+  to_status         TEXT NOT NULL,
+  reason            TEXT NOT NULL,                      -- the reviewer's own note: kept for the audit trail, never shown to the applicant
+  applicant_message TEXT,                               -- what the applicant is told (shown when they track their application, and emailed)
+  changed_by        TEXT,
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_sponsorship_history ON sponsorship_status_history(application_id, created_at);
 ALTER TABLE inbound_emails ADD COLUMN IF NOT EXISTS department TEXT;
 
 -- Staff mail: incoming email gets a status like website messages do, and everything staff send from a department is recorded (see services/mailService.ts).

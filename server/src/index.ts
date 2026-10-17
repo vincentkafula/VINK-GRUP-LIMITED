@@ -50,6 +50,8 @@ import { createSchemeSettlement } from "./services/schemeSettlement.js";
 import { createOpsAdminRouter } from "./routes/opsAdminRouter.js";
 import { createContactService } from "./services/contactService.js";
 import { createContactRouter, createContactAdminRouter } from "./routes/contactRouter.js";
+import { createSponsorshipService } from "./services/sponsorshipService.js";
+import { createSponsorshipRouter, createSponsorshipAdminRouter } from "./routes/sponsorshipRouter.js";
 import { createMailService } from "./services/mailService.js";
 import { createMailRouter, createShareRouter } from "./routes/mailRouter.js";
 import { createMailFiles } from "./services/mailFiles.js";
@@ -251,6 +253,12 @@ app.use("/api/jobs",               jobsRouter);
 app.use("/api/public",             publicRouter);
 // Messages to a VINK department: stored, then emailed to the department, with a receipt to the sender (see services/contactService.ts).
 const contactService = pool ? createContactService({ db: pool, mail: createEmailSender() }) : null;
+// Online sponsorship applications: stored (with their documents), then emailed to the sponsorship team and acknowledged to the applicant (see services/sponsorshipService.ts).
+const sponsorshipService = pool ? createSponsorshipService({ db: pool, mail: createEmailSender() }) : null;
+if (sponsorshipService) {
+  app.use("/api/sponsorship", createSponsorshipRouter(sponsorshipService));
+  app.use("/api/admin/sponsorship", requireAuth, requireRole("owner", "superadmin"), createSponsorshipAdminRouter({ db: pool!, svc: sponsorshipService }));
+}
 if (contactService) {
   app.use("/api/contact", createContactRouter(contactService));
   app.use("/api/admin/contact", requireAuth, requireRole("owner", "superadmin"), createContactAdminRouter({ db: pool!, svc: contactService }));
@@ -374,6 +382,7 @@ app.get("/api", (_req, res) => {
       "/api/applications/*      — personal/business/corporate account applications",
       "/api/otp/*               — one-time-passcode verification",
       "/api/jobs/*              — job applications (HR)",
+      "/api/sponsorship/*       — online sponsorship applications and tracking",
       "/api/public/*            — public contact form, newsletter signup, account applications",
       "/api/financial/*         — financial reports",
       "/api/levy/*              — AFC trip levy, driver/owner/investor/marshall revenue split",
@@ -434,6 +443,7 @@ async function boot() {
         void refresh().catch((e) => console.error("[fx] refresh failed:", e instanceof Error ? e.message : e));
         setInterval(() => { refresh().catch((e) => console.error("[fx] refresh failed:", e instanceof Error ? e.message : e)); }, 3600_000).unref();
       }
+      if (sponsorshipService) setInterval(() => { sponsorshipService.retryUnsent().catch((e) => console.error("[sponsorship] retry failed:", e instanceof Error ? e.message : e)); }, 300_000).unref();
       if (contactService) setInterval(() => { contactService.retryUnsent().catch((e) => console.error("[contact] retry failed:", e instanceof Error ? e.message : e)); }, 300_000).unref();
       if (opsMonitor && process.env.OPS_MONITOR !== "off") {
         // Every five minutes: reconcile, and tell a person about anything new or still open (see services/opsMonitor.ts).
