@@ -9,7 +9,7 @@ import { SponsorshipPanel } from "./SponsorshipPanel";
 import { SponsorshipDetail } from "./SponsorshipDetail";
 import { DEFAULT_WEIGHTS } from "../../data/sponsorship";
 
-const me = (over = {}) => ({ userId: "u-ben", name: "Ben Reviewer", role: "customer", isSuper: false, isFinance: false, sectionName: "Sponsorships and Partnerships", settings: { weights: DEFAULT_WEIGHTS, approvalLimitZar: null }, ...over });
+const me = (over = {}) => ({ userId: "u-ben", name: "Ben Reviewer", role: "customer", isSuper: false, isFinance: false, canReview: true, sectionName: "Sponsorships and Partnerships", settings: { weights: DEFAULT_WEIGHTS, approvalLimitZar: null }, ...over });
 const row = (over = {}) => ({ ref: "SP-ABC234", status: "under_review", statusLabel: "Under review", applicantName: "Thandi Nkosi", organisation: "Khayelitsha Youth Hub", orgType: "ngo", email: "thandi@example.com", category: "youth", projectTitle: "Township Entrepreneurs Bootcamp", country: "South Africa", province: "Western Cape", currency: "ZAR", amountRequested: 50000, amountZar: 50000, assignedTo: null, assignedName: null, replied: false, delivered: true, createdAt: "2026-10-09T10:00:00Z", updatedAt: "2026-10-09T10:00:00Z", ...over });
 const all = (n: number) => ({ strategic: n, impact: n, feasibility: n, budget: n, reach: n, measurable: n });
 const detail = (over: Record<string, unknown> = {}) => ({
@@ -44,6 +44,18 @@ describe("the Sponsorships panel", () => {
     expect(await names({})).toEqual(["Applications", "Reports"]);
     expect(await names({ isFinance: true })).toEqual(["Applications", "Reports", "Budget"]);
     expect(await names({ isSuper: true, isFinance: true })).toEqual(["Applications", "Reports", "Budget", "Settings"]);
+  });
+  it("shows finance staff the budget and nothing else, and opens on it", async () => {
+    h.getData.mockImplementation(async (p: string) => (p === "/me" ? { data: me({ isFinance: true, canReview: false }) } : p === "/budget" ? { data: { totals: { requestedZar: 100000, approvedZar: 45000, committedZar: 45000, paidZar: 20000, awards: 1, notConverted: 0 }, awards: [] } } : { data: {} }));
+    render(<SponsorshipPanel />);
+    expect((await screen.findAllByRole("tab")).map((t) => t.textContent)).toEqual(["Budget"]);
+    expect(screen.getByRole("tab", { name: "Budget" }).getAttribute("aria-selected")).toBe("true");
+    expect(await screen.findByText("Committed")).toBeTruthy(); expect(screen.queryByLabelText("Search applications")).toBeNull();     // never asks the server for the applications they may not read
+    expect(h.call).not.toHaveBeenCalledWith(expect.stringMatching(/^\/\?/));
+  });
+  it("says so when someone has no part of it to use", async () => {
+    h.getData.mockImplementation(async (p: string) => (p === "/me" ? { data: me({ canReview: false }) } : { data: {} }));
+    render(<SponsorshipPanel />); expect(await screen.findByText("You are not approved to work on sponsorships.")).toBeTruthy(); expect(screen.queryByRole("tablist")).toBeNull();
   });
   it("lists applications with their status, who has replied, and who is looking after each", async () => {
     render(<SponsorshipPanel />);

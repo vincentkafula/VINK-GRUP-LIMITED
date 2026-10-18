@@ -5,6 +5,7 @@ import { DEMO_ALLOWED } from "./demoPolicy";
 
 import { API_BASE as BASE } from "./config";
 import { getToken, setAuth, clearAuth, getValidToken, refreshSession, isCookieSession, endSession, authFetch, bootstrapSession } from "./authSession";
+import { setMfaEnrolRequired } from "./mfaFlag";
 
 const DEMO_KEY  = "vink_demo";
 
@@ -183,8 +184,9 @@ export function normalizeAuthResponse(r: ApiResponse<{ token: string; user: obje
 
 function storeAuth(r: ApiResponse<{ token: string; user: object }>) {
   if (r.success && r.data) {
-    const extra = r as unknown as { expiresIn?: number; csrfToken?: string; mode?: "cookie" | "legacy" };
+    const extra = r as unknown as { expiresIn?: number; csrfToken?: string; mode?: "cookie" | "legacy"; mfaEnrollRequired?: boolean };
     setAuth({ token: r.data.token, expiresIn: extra.expiresIn, csrfToken: extra.csrfToken, mode: extra.mode });
+    setMfaEnrolRequired(extra.mfaEnrollRequired === true);        // the server asks staff without two-factor to set it up: remembered for this tab so the panel can prompt
     setSession(r.data.user);
     setDemoMode(false);
   }

@@ -119,6 +119,8 @@ export function createSponsorshipAdminRouter(d: { db: Db; svc: SponsorshipServic
   const isSuper = (req: Request) => SUPER_ROLES.includes(role(req));
   const isFinance = (req: Request) => FINANCE_ROLES.includes(role(req));
   const nameOf = async (req: Request) => String((await db.query(`SELECT name FROM users WHERE id = $1`, [uid(req)])).rows[0]?.name ?? req.user?.username ?? "Staff");
+  /** Super Administrators and people approved for the sponsorship section may read and work applications. Finance staff reach only the budget and payments. */
+  const canReview = async (req: Request) => isSuper(req) || (await db.query(`SELECT 1 AS x FROM section_permissions WHERE user_id = $1 AND section = $2`, [uid(req), sectionName])).rows.length > 0;
 
   const financePath = (req: Request) => req.path === "/me" || req.path === "/budget" || (req.method === "POST" && /^\/SP-[A-Z2-9]{6}\/payments$/.test(req.path));
   const staffGuard = async (req: Request, res: Response, next: NextFunction) => {
@@ -142,7 +144,7 @@ export function createSponsorshipAdminRouter(d: { db: Db; svc: SponsorshipServic
 
   // ── about the person asking, the people, the settings, the money, the reports ──
   router.get("/me", h(async (req, res) => {
-    res.json({ success: true, data: { userId: uid(req), name: await nameOf(req), role: role(req), isSuper: isSuper(req), isFinance: isFinance(req), sectionName, settings: await review.settings() } });
+    res.json({ success: true, data: { userId: uid(req), name: await nameOf(req), role: role(req), isSuper: isSuper(req), isFinance: isFinance(req), canReview: await canReview(req), sectionName, settings: await review.settings() } });
   }));
   router.get("/staff", h(async (_req, res) => { res.json({ success: true, staff: await review.staff() }); }));
   router.get("/settings", h(async (_req, res) => { res.json({ success: true, data: await review.settings() }); }));

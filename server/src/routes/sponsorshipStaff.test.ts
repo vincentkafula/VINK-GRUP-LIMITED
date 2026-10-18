@@ -60,8 +60,9 @@ describe("who may use the staff routes", () => {
     expect((await call("GET", "/admin/budget", "ben")).status).toBe(403); expect((await call("GET", "/admin/budget", "amy")).status).toBe(200);
   });
   it("tell each person what they can do", async () => {
-    expect((await call("GET", "/admin/me", "ben")).body.data).toMatchObject({ userId: ID.ben, name: "Ben Reviewer", isSuper: false, isFinance: false, sectionName: SECTION });
-    expect((await call("GET", "/admin/me", "amy")).body.data).toMatchObject({ isSuper: true, isFinance: true, settings: { approvalLimitZar: null } });
+    expect((await call("GET", "/admin/me", "ben")).body.data).toMatchObject({ userId: ID.ben, name: "Ben Reviewer", isSuper: false, isFinance: false, canReview: true, sectionName: SECTION });
+    expect((await call("GET", "/admin/me", "amy")).body.data).toMatchObject({ isSuper: true, isFinance: true, canReview: true, settings: { approvalLimitZar: null } });
+    expect((await call("GET", "/admin/me", "fin")).body.data).toMatchObject({ isSuper: false, isFinance: true, canReview: false });      // finance staff handle the money, not the applications
   });
   it("keep the settings for Super Administrators, though everyone on the team may read them", async () => {
     expect((await call("PUT", "/admin/settings", "ben", { approvalLimitZar: 40000 })).status).toBe(403);

@@ -17,6 +17,7 @@ vi.mock("./portal/MailPanel", () => ({ MailPanel: () => <div>MAIL PANEL</div> })
 vi.mock("./portal/OpsPanel", () => ({ OpsPanel: () => <div>OPS PANEL</div> }));
 vi.mock("./portal/DepartmentsPanel", () => ({ DepartmentsPanel: () => <div>DEPARTMENTS PANEL</div> }));
 vi.mock("./portal/SponsorshipPanel", () => ({ SponsorshipPanel: () => <div>SPONSORSHIP PANEL</div> }));
+vi.mock("./portal/TwoFactorPanel", () => ({ TwoFactorPanel: ({ required }: { required?: boolean }) => <div>TWO FACTOR PANEL{required ? " (required)" : ""}</div> }));
 
 import { ManagementPanelViewer } from "./ManagementPanelViewer";
 
@@ -103,6 +104,13 @@ describe("Management Panel: sponsorships", () => {
       expect(host.textContent).toContain("SPONSORSHIP PANEL");
     }
   });
+  it("is there for finance staff, who see only the budget in it, but not for other roles", async () => {
+    await open("billing_admin"); expect(btn("Sponsorships")).toBeTruthy();
+    for (const role of ["noc_engineer", "customer"]) {
+      act(() => root.unmount()); host.remove(); host = document.createElement("div"); document.body.appendChild(host); root = createRoot(host);
+      sections = []; await open(role); expect(btn("Sponsorships"), role).toBeUndefined();
+    }
+  });
   it("is there for a manager approved for Sponsorships and Partnerships, and for nobody else", async () => {
     sections = ["Sponsorships and Partnerships"]; await open("customer");
     expect(btn("Sponsorships")).toBeTruthy();
@@ -113,5 +121,23 @@ describe("Management Panel: sponsorships", () => {
       sections = other; await open("customer");
       expect(btn("Sponsorships"), `sections: ${other.join(", ") || "none"}`).toBeUndefined();
     }
+  });
+});
+
+describe("Management Panel: security", () => {
+  it("has a Security section for everyone who can open the panel", async () => {
+    for (const role of ["superadmin", "billing_admin", "customer"]) {
+      act(() => root.unmount()); host.remove(); host = document.createElement("div"); document.body.appendChild(host); root = createRoot(host);
+      sections = ["Sales"]; await open(role);
+      expect(btn("Security"), role).toBeTruthy();
+      await act(async () => { btn("Security")!.click(); }); await settle();
+      expect(host.textContent).toContain("TWO FACTOR PANEL"); expect(host.textContent).not.toContain("(required)");
+    }
+  });
+  it("opens on Security, with the prompt, when the server said this account must set up two-factor", async () => {
+    sessionStorage.setItem("vink_mfa_enrol", "1");
+    await open("superadmin");
+    expect(host.textContent).toContain("TWO FACTOR PANEL (required)");
+    sessionStorage.removeItem("vink_mfa_enrol");
   });
 });

@@ -30,14 +30,14 @@ export function SponsorshipDetail({ refNo, me, onBack }: { refNo: string; me: Me
       <button type="button" onClick={onBack} className="inline-flex items-center gap-1 text-sm font-bold text-fg-muted hover:underline"><ArrowLeft className="h-4 w-4" aria-hidden="true" />All applications</button>
       <Status load={load}>{(d) => (
         <>
-          <header className="rounded-xl border border-line bg-surface p-4">
+          <div className="rounded-xl border border-line bg-surface p-4">
             <p className="flex flex-wrap items-center gap-2"><span className="font-mono text-xs text-fg-muted">{d.ref}</span><Pill tone={toneOf(d.status)}>{d.statusLabel}</Pill>{d.award && <Pill tone={d.award.stage === "completed" ? "ok" : "plain"}>Award: {d.award.stageLabel}</Pill>}{d.replied && <Pill tone="warn">The applicant has replied</Pill>}{!d.delivered && <Pill tone="bad">Team email not sent</Pill>}</p>
             <h2 className="text-xl font-black text-fg">{d.projectTitle}</h2>
             <p className="text-sm text-fg-muted">{d.organisation} · {cur(d.amountRequested, d.currency)}{d.currency !== "ZAR" && (d.amountZar === null ? " (no rand figure)" : ` (${rand(d.amountZar)})`)} · sent {when(d.createdAt)}</p>
-          </header>
+          </div>
           <div role="tablist" aria-label="Application sections" className="flex flex-wrap gap-2">
             {([["overview", "Overview"], ["review", "Review"], ["decision", "Decision"], ["award", "Award"], ["followup", `Follow-up${d.replies.length + d.reports.length ? ` (${d.replies.length + d.reports.length})` : ""}`]] as const).map(([id, label]) => (
-              <button key={id} role="tab" aria-selected={tab === id} type="button" onClick={() => setTab(id)} className="rounded-lg px-3 py-1.5 text-sm font-bold border border-line" style={tab === id ? { background: COLOR, color: "#fff", borderColor: COLOR } : { background: "var(--vk-surface)", color: "var(--vk-fg)" }}>{label}</button>))}
+              <button key={id} role="tab" aria-selected={tab === id} type="button" onClick={() => setTab(id)} className="bg-surface rounded-lg px-3 py-1.5 text-sm font-bold border border-line" style={tab === id ? { background: "var(--vkd-fg)", color: "var(--vk-surface)", borderColor: "var(--vkd-fg)" } : { background: "var(--vk-surface)", color: "var(--vk-fg)" }}>{label}</button>))}
           </div>
           {tab === "overview" && <Overview d={d} />}
           {tab === "review" && <Review d={d} me={me} act={act} />}
@@ -57,7 +57,7 @@ function DocList({ docs, refNo }: { docs: Doc[]; refNo: string }) {
     <li key={x.id} className="flex flex-wrap items-center gap-2 text-sm">
       <FileText className="h-4 w-4 text-fg-muted" aria-hidden="true" /><span className="font-medium text-fg">{x.filename}</span><span className="text-xs text-fg-muted">{kb(x.sizeBytes)}</span>
       {x.scanStatus !== "clean" && <Pill tone="warn">Not scanned for viruses</Pill>}
-      <ActionButton small label="Download" color="var(--vk-surface-2)" className="!text-fg border border-line" onRun={async () => { const r = await fetchFile(`/${refNo}/documents/${x.id}`, { save: x.filename }); if (r) return { error: r.error }; }} />
+      <ActionButton small label="Download" color="var(--vk-surface-2)" className="bg-surface-2 !text-fg border border-line" onRun={async () => { const r = await fetchFile(`/${refNo}/documents/${x.id}`, { save: x.filename }); if (r) return { error: r.error }; }} />
     </li>))}</ul>;
 }
 function Overview({ d }: { d: Detail }) {
@@ -177,8 +177,8 @@ function AwardTab({ d, me, act }: { d: Detail; me: Me; act: Act }) {
         <>
           <Box title="Award letter and agreement" note="The agreement is a template. VINK's legal advisers must add and review the legal terms before anyone signs it.">
             <div className="flex flex-wrap items-center gap-2">
-              <ActionButton small label="Read the award letter" color="var(--vk-surface-2)" className="!text-fg border border-line" onRun={async () => { const r = await fetchFile(`/${d.ref}/award/letter.pdf`, { open: true }); if (r) return { error: r.error }; }} />
-              <ActionButton small label="Read the agreement" color="var(--vk-surface-2)" className="!text-fg border border-line" onRun={async () => { const r = await fetchFile(`/${d.ref}/award/agreement.pdf`, { open: true }); if (r) return { error: r.error }; }} />
+              <ActionButton small label="Read the award letter" color="var(--vk-surface-2)" className="bg-surface-2 !text-fg border border-line" onRun={async () => { const r = await fetchFile(`/${d.ref}/award/letter.pdf`, { open: true }); if (r) return { error: r.error }; }} />
+              <ActionButton small label="Read the agreement" color="var(--vk-surface-2)" className="bg-surface-2 !text-fg border border-line" onRun={async () => { const r = await fetchFile(`/${d.ref}/award/agreement.pdf`, { open: true }); if (r) return { error: r.error }; }} />
             </div>
             {aw.stage === "agreement_pending" && (
               <div className="mt-4 space-y-3 max-w-2xl">
@@ -251,7 +251,7 @@ function ReportCard({ d, r, act }: { d: Detail; r: Report; act: Act }) {
       {r.status === "submitted" ? (
         <div className="mt-3 space-y-2 border-t border-line pt-3"><TextArea label="Note to the applicant (needed to return it)" value={note} onChange={setNote} rows={2} />
           <span className="flex flex-wrap gap-2"><ActionButton label="Accept the report" color={COLOR} onRun={act(() => send("POST", `/${d.ref}/reports/${r.id}/review`, { decision: "accepted", note: note || undefined }), "Accepted. The award is complete.")} />
-            <ActionButton label="Return it for changes" color="var(--vk-surface-2)" className="!text-fg border border-line" onRun={act(() => send("POST", `/${d.ref}/reports/${r.id}/review`, { decision: "returned", note }), "Returned.")} /></span></div>
+            <ActionButton label="Return it for changes" color="var(--vk-surface-2)" className="bg-surface-2 !text-fg border border-line" onRun={act(() => send("POST", `/${d.ref}/reports/${r.id}/review`, { decision: "returned", note }), "Returned.")} /></span></div>
       ) : r.reviewNote && <p className="mt-2 text-xs text-fg-muted">Your note: {r.reviewNote}</p>}
     </article>
   );

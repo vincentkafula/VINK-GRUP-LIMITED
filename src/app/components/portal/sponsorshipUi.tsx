@@ -4,5 +4,5 @@ export const TONE: Record<string, { bg: string; fg: string }> = {
 };
 export const toneOf = (s: string) => (s === "approved" || s === "agreement_pending" ? "ok" : s === "declined" ? "bad" : s === "more_information_required" ? "warn" : "plain");
 export function Pill({ tone, children }: { tone: keyof typeof TONE; children: React.ReactNode }) {
-  return <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-bold" style={{ background: TONE[tone].bg, color: TONE[tone].fg }}>{children}</span>;
+  return <span className="bg-surface-2 inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-bold" style={{ background: TONE[tone].bg, color: TONE[tone].fg }}>{children}</span>;
 }

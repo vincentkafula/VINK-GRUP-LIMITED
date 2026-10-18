@@ -15,6 +15,8 @@ import { DepartmentsPanel } from "./portal/DepartmentsPanel";
 import { SocialPanel } from "./portal/SocialPanel";
 import { WhatsAppPanel } from "./portal/WhatsAppPanel";
 import { SponsorshipPanel } from "./portal/SponsorshipPanel";
+import { TwoFactorPanel } from "./portal/TwoFactorPanel";
+import { mfaEnrolRequired } from "../services/mfaFlag";
 import { DEPARTMENTS, SECTION_ALIASES } from "../data/departments";
 import { rbacApi, jobsApi, getSession, getToken, type SectionApplication, type ManagerRecord, type AuditEntry, type JobApplication } from "../services/apiClient";
 import { BRAND } from "../brand";
@@ -89,7 +91,7 @@ const SOCIAL_SECTION = "Social Media Management";
 /** The section whose people work on sponsorships: the name of the "Sponsorships and Partnerships" department, so approving someone for that department opens this screen. */
 const SPONSORSHIP_SECTION = DEPARTMENTS.find((d) => d.key === "sponsorships")?.name ?? "Sponsorships and Partnerships";
 
-type View = "dashboard" | "applications" | "managers" | "audit" | "apply" | "jobApplications" | "mail" | "ops" | "departments" | "social" | "whatsapp" | "sponsorship";
+type View = "dashboard" | "applications" | "managers" | "audit" | "apply" | "jobApplications" | "mail" | "ops" | "departments" | "social" | "whatsapp" | "sponsorship" | "security";
 
 /** Department mailboxes are sections too, named exactly like the department ("Sales", "Customer Support"...). */
 /** The built-in departments; the list the server sends (including departments a Super Administrator has made) replaces it once it has loaded. */
@@ -141,6 +143,8 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
   const [sessionExpired, setSessionExpired] = useState(false);
   const [sessionExpiredDetail, setSessionExpiredDetail] = useState<{ path: string; hadToken: boolean; backendError: string | null } | null>(null);
 
+  // An account the platform requires to use two-factor sign-in, but that has not set it up, is taken to the Security section first.
+  useEffect(() => { if (isOpen && mfaEnrolRequired()) setView("security"); }, [isOpen]);
   useEffect(() => {
     if (!isOpen) return;
     // A missing/unknown role used to silently default to "superadmin" (the
@@ -323,8 +327,8 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
   const canUseMail = isOwner || (mySections ?? []).some(s => DEPARTMENT_SECTIONS.includes(s) || s in SECTION_ALIASES);
   // WhatsApp chats belong to the departments, so whoever can use department mail can answer them; the social accounts have their own section.
   const canUseSocial = isOwner || (mySections ?? []).includes(SOCIAL_SECTION);
-  // Sponsorships: Super Administrators, and people approved for the Sponsorships and Partnerships section (the server checks it again).
-  const canUseSponsorship = isOwner || (mySections ?? []).includes(SPONSORSHIP_SECTION);
+  // Sponsorships: Super Administrators, people approved for the Sponsorships and Partnerships section, and finance staff (who see only the budget). The server checks it again.
+  const canUseSponsorship = isOwner || (mySections ?? []).includes(SPONSORSHIP_SECTION) || role === "billing_admin";
 
   return (
     <div data-theme-aware data-dashboard className="fixed inset-0 z-50 flex text-[14px]" style={{ fontFamily: "var(--font-sans)", background: "var(--vk-bg)" }}>
@@ -415,6 +419,13 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
                 <HeartHandshake className="w-4 h-4" /> Sponsorships
               </button>
             )}
+            <button
+              onClick={() => goView("security")}
+              className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-semibold mb-4"
+              style={view === "security" ? { background: "rgba(255,255,255,0.22)", color: "#fff" } : { color: "rgba(255,255,255,0.7)" }}
+            >
+              <ShieldCheck className="w-4 h-4" /> Security
+            </button>
 
             {isOwner && (
               <>
@@ -708,6 +719,7 @@ export function ManagementPanelViewer({ isOpen, onClose, adminName = "Admin User
           {view === "whatsapp" && canUseMail && <WhatsAppPanel />}
           {view === "social" && canUseSocial && <SocialPanel isSuper={isOwner} />}
           {view === "sponsorship" && canUseSponsorship && <SponsorshipPanel />}
+          {view === "security" && <TwoFactorPanel required={mfaEnrolRequired()} />}
           {view === "ops" && isOwner && <OpsPanel />}
           {view === "departments" && isOwner && <DepartmentsPanel />}
 

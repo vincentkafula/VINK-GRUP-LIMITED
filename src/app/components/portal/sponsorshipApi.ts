@@ -12,7 +12,8 @@ export interface Row {
   replied: boolean; delivered: boolean; createdAt: string; updatedAt: string;
 }
 export interface Weights { weights: Record<CriterionId, number>; approvalLimitZar: number | null }
-export interface Me { userId: string; name: string; role: string; isSuper: boolean; isFinance: boolean; sectionName: string; settings: Weights }
+/** canReview: may read and work applications (Super Administrators and the section). Finance staff have isFinance only: the budget and payments. */
+export interface Me { userId: string; name: string; role: string; isSuper: boolean; isFinance: boolean; canReview: boolean; sectionName: string; settings: Weights }
 export interface Doc { id: string; kind: string; filename: string; mime: string; sizeBytes: number; sha256: string; scanStatus: string; scanDetail: string | null; sourceId: string | null }
 export interface Hist { fromStatus: string | null; toStatus: string; reason: string; applicantMessage: string | null; changedBy: string | null; at: string }
 export interface Reviewer { reviewerId: string; reviewerName: string; scores: Record<string, number>; comment: string | null; total: number | null; updatedAt: string }

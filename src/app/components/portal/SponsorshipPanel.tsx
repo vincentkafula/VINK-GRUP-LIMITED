@@ -28,16 +28,26 @@ export function SponsorshipPanel() {
       </div>
       <Status load={me}>{(m) => (
         <>
-          {!open && (
-            <div role="tablist" aria-label="Sponsorship sections" className="flex flex-wrap gap-2">
-              {([["applications", "Applications", true], ["reports", "Reports", true], ["budget", "Budget", m.isFinance], ["settings", "Settings", m.isSuper]] as const).filter(([, , show]) => show).map(([id, label]) => (
-                <button key={id} role="tab" aria-selected={view === id} type="button" onClick={() => setView(id)} className="rounded-lg px-3 py-1.5 text-sm font-bold border border-line" style={view === id ? { background: COLOR, color: "#fff", borderColor: COLOR } : { background: "var(--vk-surface)", color: "var(--vk-fg)" }}>{label}</button>))}
-            </div>)}
-          {open ? <SponsorshipDetail refNo={open} me={m} onBack={() => setOpen(null)} />
-            : view === "applications" ? <Applications me={m} onOpen={setOpen} />
-            : view === "reports" ? <Reports />
-            : view === "budget" ? <BudgetView />
-            : <SettingsView me={m} />}
+          {(() => {
+            // Each person is shown only what they can use: reviewers the applications and reports, finance staff the budget, Super Administrators the settings.
+            const tabs = ([["applications", "Applications", m.canReview], ["reports", "Reports", m.canReview], ["budget", "Budget", m.isFinance], ["settings", "Settings", m.isSuper]] as const).filter(([, , show]) => show);
+            const current: View | undefined = tabs.some(([id]) => id === view) ? view : tabs[0]?.[0];
+            if (!current) return <Empty>You are not approved to work on sponsorships.</Empty>;
+            return (
+              <>
+                {!open && (
+                  <div role="tablist" aria-label="Sponsorship sections" className="flex flex-wrap gap-2">
+                    {tabs.map(([id, label]) => (
+                      <button key={id} role="tab" aria-selected={current === id} type="button" onClick={() => setView(id)} className="bg-surface rounded-lg px-3 py-1.5 text-sm font-bold border border-line" style={current === id ? { background: "var(--vkd-fg)", color: "var(--vk-surface)", borderColor: "var(--vkd-fg)" } : { background: "var(--vk-surface)", color: "var(--vk-fg)" }}>{label}</button>))}
+                  </div>)}
+                {open ? <SponsorshipDetail refNo={open} me={m} onBack={() => setOpen(null)} />
+                  : current === "applications" ? <Applications me={m} onOpen={setOpen} />
+                  : current === "reports" ? <Reports />
+                  : current === "budget" ? <BudgetView />
+                  : <SettingsView me={m} />}
+              </>
+            );
+          })()}
         </>)}
       </Status>
     </div>
@@ -105,7 +115,7 @@ function Reports() {
       <div className="flex flex-wrap items-end gap-3">
         <label className="block"><span className="text-xs font-bold text-fg">From</span><input type="date" aria-label="From" className={inputCls} value={from} onChange={(e) => setFrom(e.target.value)} /></label>
         <label className="block"><span className="text-xs font-bold text-fg">To</span><input type="date" aria-label="To" className={inputCls} value={to} onChange={(e) => setTo(e.target.value)} /></label>
-        <ActionButton label="Download spreadsheet" color={COLOR} onRun={async () => { const r = await fetchFile(`/reports/export.csv${qs ? `?${qs}` : ""}`, { save: "sponsorship-applications.csv" }); if (r) return { error: r.error }; return { message: "Downloaded." }; }} />
+        <ActionButton label="Download spreadsheet" color="var(--vk-surface)" className="bg-surface !text-fg border border-line" onRun={async () => { const r = await fetchFile(`/reports/export.csv${qs ? `?${qs}` : ""}`, { save: "sponsorship-applications.csv" }); if (r) return { error: r.error }; return { message: "Downloaded." }; }} />
       </div>
       <Status load={load}>{(s) => (
         <>
