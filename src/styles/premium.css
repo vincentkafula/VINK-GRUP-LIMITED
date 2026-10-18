@@ -143,3 +143,21 @@
   .vkp-spot, .vkp-spot::before, .vkp-spot::after { transition: none; }
   .vkp-ping, .vkp-dash, .vkp-blink { animation: none; }
 }
+
+/*
+ * The "More Than a Card" section in the violet palette of the VINK card design (an indigo-navy background with electric violet and orchid accents).
+ * Scoped to .vkp-violet so the other premium sections keep the brand red; remove the class from the section to put it back.
+ *   background  #09124E to #111855 to #1C0D6F      violet  #5D1EFB (buttons and tiles)      orchid  #B77CFF (accent text)
+ */
+.vkp-violet { --vkv-violet: #5d1efb; --vkv-violet-hi: #7a4dff; --vkv-violet-deep: #3d12c4; --vkv-orchid: #b77cff; --vkv-orchid-soft: #d6b8ff; }
+.vkp-ink.vkp-violet { background: radial-gradient(120% 90% at 50% 0%, #1c0d6f 0%, #111855 46%, #09124e 100%); }
+.vkp-violet .vkp-gradient-text { background: linear-gradient(100deg, #d6b8ff, #bc71ff 60%, #a35bff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.vkp-violet .vkp-tile {
+  background: linear-gradient(145deg, #7a4dff 0%, #5d1efb 55%, #3d12c4 100%);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.4) inset, 0 10px 20px -10px rgba(93, 30, 251, 0.8);
+}
+.vkp-violet .vkp-spot::before { background: radial-gradient(320px circle at var(--mx, 50%) var(--my, 0%), rgba(122, 77, 255, 0.36), transparent 65%); }
+.vkp-violet .vkp-spot::after { background: radial-gradient(220px circle at var(--mx, 50%) var(--my, 0%), rgba(214, 184, 255, 0.9), transparent 70%); }
+.vkp-violet .vkp-spot:hover { box-shadow: 0 1px 0 rgba(255, 255, 255, 0.12) inset, 0 34px 54px -28px rgba(93, 30, 251, 0.6); }
+.vkp-violet .vkp-spot-hot { background: linear-gradient(150deg, rgba(106, 59, 255, 0.97), rgba(93, 30, 251, 0.95) 50%, rgba(52, 14, 170, 0.97)); }
+.vkp-violet .vkp-figure { background: linear-gradient(180deg, #fff 30%, #d6b8ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
