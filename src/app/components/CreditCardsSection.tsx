@@ -116,7 +116,7 @@ export function CreditCardsSection({ onApply }: { onApply?: () => void }) {
   const [viewerCard, setViewerCard] = useState<typeof CARDS[0] | null>(null);
 
   return (
-    <section className="relative overflow-hidden py-14 sm:py-20" style={{ background: "linear-gradient(180deg,var(--vk-surface-2),var(--vk-bg) 85%)" }}>
+    <section className="relative overflow-hidden py-8 sm:py-10" style={{ background: "linear-gradient(180deg,var(--vk-surface-2),var(--vk-bg) 85%)" }}>
       <div aria-hidden="true" className="vkp-dots" />
       <div aria-hidden="true" className="vkp-glow left-1/2 top-24 h-72 w-[34rem] max-w-full -translate-x-1/2 opacity-[0.14]" style={{ background: "#c8102e" }} />
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

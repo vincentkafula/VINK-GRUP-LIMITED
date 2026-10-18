@@ -119,8 +119,8 @@ export function HeroSection({ onApplyClick }: { onApplyClick?: () => void }) {
       <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full opacity-10 pointer-events-none"
         style={{ background: "radial-gradient(circle,#8F1027 0%,transparent 70%)", transform: "translate(-40%,40%)" }} />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-14 md:pt-12 md:pb-20 lg:pt-14 lg:pb-24 relative z-10">
-        <div className={"grid grid-cols-1 gap-10 items-center transition-[grid-template-columns] duration-500 " + (slide.wide ? "md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]" : "md:grid-cols-2")}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-8 md:pt-6 md:pb-9 lg:pt-6 lg:pb-9 relative z-10">
+        <div className={"grid grid-cols-1 gap-6 items-center transition-[grid-template-columns] duration-500 " + (slide.wide ? "md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]" : "md:grid-cols-2")}>
 
           {/* ── Text side — fades with the slide ── */}
           <div
@@ -128,22 +128,22 @@ export function HeroSection({ onApplyClick }: { onApplyClick?: () => void }) {
             style={{ opacity: fading ? 0 : 1, transform: fading ? "translateY(8px)" : "translateY(0)" }}
           >
             {/* Headline */}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl leading-[1.05] mb-5"
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl leading-[1.05] mb-3"
               style={{ fontFamily: "var(--font-display)", fontWeight: 600, letterSpacing: "-0.01em", textShadow: "0 2px 24px rgba(80,0,16,0.35)" }}>
               {slide.headline}
             </h1>
 
             {/* Body */}
-            <p className="text-white/90 text-base sm:text-lg mb-5 leading-relaxed max-w-md mx-auto md:mx-0">
+            <p className="text-white/90 text-sm sm:text-base mb-4 leading-relaxed max-w-md mx-auto md:mx-0">
               {slide.body}
             </p>
 
             {/* CTAs */}
-            <div className="flex flex-wrap justify-center md:justify-start gap-3 mb-7">
+            <div className="flex flex-wrap justify-center md:justify-start gap-3 mb-5">
               {slide.ctas.map((cta, i) => (
                 <button key={i}
                   onClick={cta.label === "Start Now" ? startApplication : onApplyClick}
-                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl text-sm font-bold text-white transition-all duration-300 ease-out hover:scale-[1.03] hover:-translate-y-0.5 active:scale-95 shadow-lg"
+                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold text-white transition-all duration-300 ease-out hover:scale-[1.03] hover:-translate-y-0.5 active:scale-95 shadow-lg"
                   style={{ letterSpacing: "0.01em", ...(i === 0 ? { background: "linear-gradient(180deg,#ffffff,#f3f3f6)", color: "#C8102E", boxShadow: "0 14px 30px -10px rgba(60,0,12,.55), inset 0 1px 0 #fff" } : { background: "rgba(255,255,255,.12)", border: "1px solid rgba(255,255,255,.3)", color: "#ffffff", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" }) }}>
                   {cta.label}
                 </button>
@@ -151,7 +151,7 @@ export function HeroSection({ onApplyClick }: { onApplyClick?: () => void }) {
             </div>
 
             {/* Trust stats */}
-            <div className="vkp-glass-dark inline-flex max-w-full justify-center md:justify-start rounded-2xl px-2 py-3 sm:px-3">
+            <div className="vkp-glass-dark inline-flex max-w-full justify-center md:justify-start rounded-2xl px-2 py-2 sm:px-3">
               {slide.trust.map((t, i) => (
                 <div key={i} className={"text-center md:text-left px-4 sm:px-5 " + (i > 0 ? "border-l border-white/20" : "")}>
                   <p className="text-xl" style={{ color: "#ffffff", fontFamily: "var(--font-mono)", fontWeight: 700 }}>{t.value}</p>
@@ -170,7 +170,7 @@ export function HeroSection({ onApplyClick }: { onApplyClick?: () => void }) {
               key={current}
               src={slide.image}
               alt={slide.wide ? "The VINK multi-ticketing validator reading a tapped card, with its five channels: NFC card payment, QR-code, balance inquiry, segmented charge and GPS location." : slide.eyebrow}
-              className={"relative z-10 w-full object-contain drop-shadow-[0_28px_40px_rgba(70,0,14,0.45)] " + (slide.wide ? "max-w-3xl" : "max-w-sm sm:max-w-md md:max-w-lg max-h-[60vh]")}
+              className={"relative z-10 w-full object-contain drop-shadow-[0_28px_40px_rgba(70,0,14,0.45)] " + (slide.wide ? "max-w-3xl max-h-[340px]" : "max-w-xs sm:max-w-sm md:max-w-md max-h-[300px] md:max-h-[340px]")}
               draggable={false}
               style={{
                 transition: "opacity 0.4s ease", opacity: fading ? 0 : 1,

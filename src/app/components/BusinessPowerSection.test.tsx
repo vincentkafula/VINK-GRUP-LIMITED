@@ -24,14 +24,14 @@ describe("BusinessPowerSection (Global Payments)", () => {
     expect([...host.querySelectorAll("ul > li")].map((l) => l.textContent)).toEqual(["🇿🇦 South Africa", "🇺🇸 United States", "🇿🇲 Zambia", "🇨🇳 China"]);
   });
 
-  it("sets the type large: a big headline with its second half emphasised, and body text of at least 16px", () => {
+  it("keeps the type readable in the compact layout: a clear headline with its second half emphasised, and body text of at least 14px", () => {
     const h = host.querySelector("h2")!;
-    expect(h.className).toContain("text-[2.5rem]"); expect(h.className).toContain("xl:text-[3.5rem]");
+    expect(h.className).toContain("text-[1.75rem]"); expect(h.className).toContain("xl:text-4xl");
     expect(h.querySelector("span")!.textContent).toBe("shouldn't cost a fortune.");
     const body = [...host.querySelectorAll("p")].filter((p) => p.textContent!.length > 60);
     expect(body.length).toBeGreaterThanOrEqual(4);
-    for (const p of body) expect(p.className).toMatch(/text-(base|lg|xl|\[1[5-9]px\]|\[1\.|\[2)/);
-    expect(body.some((p) => /text-\[1\.65rem\]/.test(p.className))).toBe(true);                       // the pull-quote line
+    for (const p of body) expect(p.className, p.textContent!.slice(0, 30)).toMatch(/text-(sm|base|lg|xl|\[1[4-9]px\]|\[1\.|\[2)/);          // never below 14px
+    expect(body.some((p) => /sm:text-lg/.test(p.className))).toBe(true);                                // the pull-quote line, the largest body text
   });
 
   it("shows the three figures with premium medallions, and the two buttons call the page", () => {

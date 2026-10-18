@@ -19,8 +19,8 @@ function RouteMap() {
   ];
   const routes = ["M70 70 Q 140 20 205 168", "M330 62 Q 300 130 205 168", "M205 168 Q 215 205 182 238", "M70 70 Q 90 190 182 238", "M330 62 Q 330 190 182 238"];
   return (
-    <div aria-hidden="true" className="vkp-glass-dark relative col-span-full overflow-hidden rounded-2xl sm:col-span-3 lg:col-span-1">
-      <svg viewBox="0 0 400 290" className="block h-auto w-full" role="presentation">
+    <div aria-hidden="true" className="vkp-glass-dark relative col-span-full overflow-hidden rounded-2xl sm:col-span-3 lg:col-span-1 lg:mx-auto lg:w-4/5">
+      <svg viewBox="0 28 400 244" className="block h-auto w-full" role="presentation">
         <defs>
           <radialGradient id="vkp-node" cx="50%" cy="50%" r="50%"><stop offset="0" stopColor="#ff8fa3" /><stop offset="1" stopColor="#c8102e" stopOpacity="0" /></radialGradient>
           <linearGradient id="vkp-route" x1="0" x2="1"><stop offset="0" stopColor="#ff8fa3" stopOpacity="0.1" /><stop offset="0.5" stopColor="#ff8fa3" /><stop offset="1" stopColor="#ff8fa3" stopOpacity="0.1" /></linearGradient>
@@ -41,7 +41,7 @@ function RouteMap() {
 
 export const BusinessPowerSection = memo(function BusinessPowerSection({ onSubNavClick }: { onSubNavClick?: (item: string) => void }) {
   return (
-    <section className="vkp-ink vkp-grain py-16 sm:py-24 lg:py-28 relative overflow-hidden">
+    <section className="vkp-ink vkp-grain py-8 sm:py-10 lg:py-10 relative overflow-hidden">
       {/* a dotted "map" fading in from the right, and two soft glows */}
       <div aria-hidden="true" className="vkp-hairline absolute inset-x-0 top-0" />
       <div aria-hidden="true" className="vkp-dots" style={{ WebkitMaskImage: "radial-gradient(ellipse 60% 80% at 85% 45%, #000 20%, transparent 75%)", maskImage: "radial-gradient(ellipse 60% 80% at 85% 45%, #000 20%, transparent 75%)" }} />
@@ -49,72 +49,72 @@ export const BusinessPowerSection = memo(function BusinessPowerSection({ onSubNa
       <div aria-hidden="true" className="vkp-glow -left-24 bottom-10 h-72 w-72 opacity-20" style={{ background: "#3b4cca" }} />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] gap-12 lg:gap-16 xl:gap-20 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] gap-6 lg:gap-8 xl:gap-10 items-center">
           <div className="text-center lg:text-left">
-            <div className="flex items-center justify-center lg:justify-start gap-3 mb-6">
+            <div className="flex items-center justify-center lg:justify-start gap-3 mb-3">
               <span className="text-xs sm:text-[13px] font-bold uppercase tracking-[0.22em]" style={{ color: ACCENT }}>Global Payments</span>
               <span aria-hidden="true" className="h-px w-12 sm:w-16" style={{ background: `linear-gradient(90deg,${ACCENT},transparent)` }} />
             </div>
 
-            <h2 className="text-[2.5rem] sm:text-5xl xl:text-[3.5rem] leading-[1.05] text-white mb-7 tracking-[-0.015em]" style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}>
+            <h2 className="text-[1.75rem] sm:text-3xl xl:text-4xl leading-[1.1] text-white mb-3 tracking-[-0.015em]" style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}>
               Cross-border payments{" "}
               <span className="vkp-gradient-text">shouldn&apos;t cost a fortune.</span>
             </h2>
 
-            <p className="text-white/70 text-lg sm:text-xl leading-[1.65] mb-8 max-w-2xl mx-auto lg:mx-0">
+            <p className="text-white/70 text-sm leading-relaxed mb-3 max-w-3xl mx-auto lg:mx-0">
               People around the world pay a fortune to send money across borders — often 10% or more in fees just to support a loved one. Businesses fare no better, losing significant money every time they purchase or import goods from abroad.
             </p>
 
             {/* Pull quote: the core value proposition gets its own visual weight */}
-            <div className="relative max-w-2xl mx-auto lg:mx-0 mb-8 vkp-glass-dark rounded-2xl p-6 text-left lg:pl-8">
+            <div className="relative max-w-3xl mx-auto lg:mx-0 mb-3 vkp-glass-dark rounded-xl p-3.5 text-left lg:pl-6">
                 <span aria-hidden="true" className="absolute inset-y-4 left-0 hidden w-1 rounded-full lg:block" style={{ background: "linear-gradient(180deg,#e8405b,#c8102e 55%,#101828)" }} />
-              <p className="text-white/70 text-base sm:text-[17px] leading-relaxed mb-3 text-center lg:text-left">
+              <p className="text-white/70 text-sm leading-snug mb-2 text-center lg:text-left">
                 Once you qualify for a VINK card, every transaction — even cross-border transfers — is charged at local rates.
               </p>
-              <p className="text-white text-[1.65rem] sm:text-[2rem] leading-[1.25] text-center lg:text-left" style={{ fontFamily: "var(--font-display)", fontWeight: 500, letterSpacing: "-0.005em" }}>
+              <p className="text-white text-base sm:text-lg leading-[1.25] text-center lg:text-left" style={{ fontFamily: "var(--font-display)", fontWeight: 500, letterSpacing: "-0.005em" }}>
                 No international fees. No hidden markups.{" "}
                 <span className="vkp-gradient-text">Just local pricing</span>, wherever you send or spend.
               </p>
             </div>
 
-            <p className="text-white/70 text-base sm:text-lg leading-relaxed mb-4 max-w-2xl mx-auto lg:mx-0">
+            <p className="text-white/70 text-sm leading-snug mb-2 max-w-3xl mx-auto lg:mx-0">
               VINK has eliminated these fees in its initial markets, with more countries coming soon:
             </p>
 
             {/* Country badges: makes "4 markets" concrete rather than an abstract stat */}
-            <ul className="flex flex-wrap justify-center lg:justify-start gap-2.5 mb-9 list-none p-0">
+            <ul className="flex flex-wrap justify-center lg:justify-start gap-2 mb-3 list-none p-0">
               {MARKETS.map((country) => (
-                <li key={country} className="vkp-glass-dark text-sm sm:text-[15px] font-semibold px-4 py-2 rounded-full text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/10">
+                <li key={country} className="vkp-glass-dark text-xs sm:text-[13px] font-semibold px-3 py-1 rounded-full text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/10">
                   {country}
                 </li>
               ))}
             </ul>
 
-            <p className="text-white/70 text-[15px] sm:text-base leading-relaxed mb-10 max-w-2xl mx-auto lg:mx-0 pt-6 border-t border-white/15">
+            <p className="text-white/70 text-sm leading-snug mb-4 max-w-3xl mx-auto lg:mx-0 pt-3 border-t border-white/15">
               We&apos;re not a traditional bank — VINK is a cloud-based banking platform issuing Visa and Mastercard-powered cards, built for how people and businesses actually move money today.
             </p>
 
-            <div className="flex flex-wrap justify-center lg:justify-start gap-3.5">
-              <button onClick={() => onSubNavClick?.("Start My Business")} className="group inline-flex items-center gap-2.5 px-9 py-4 rounded-xl text-base font-bold transition-all duration-300 ease-out hover:scale-[1.03] hover:-translate-y-0.5"
+            <div className="flex flex-wrap justify-center lg:justify-start gap-3">
+              <button onClick={() => onSubNavClick?.("Start My Business")} className="group inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ease-out hover:scale-[1.03] hover:-translate-y-0.5"
                 style={{ background: "linear-gradient(135deg,#e8405b,#c8102e 60%,#a50f27)", color: "#fff", boxShadow: "0 16px 32px -12px rgba(200,16,46,.7), inset 0 1px 0 rgba(255,255,255,0.3)", letterSpacing: "0.01em" }}>
                 See How It Works <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true" />
               </button>
-              <button onClick={() => onSubNavClick?.("BusinessHome")} className="px-9 py-4 rounded-xl text-base font-semibold transition-all hover:bg-white/10"
+              <button onClick={() => onSubNavClick?.("BusinessHome")} className="px-6 py-2.5 rounded-lg text-sm font-semibold transition-all hover:bg-white/10"
                 style={{ border: "1px solid rgba(255,255,255,0.3)", color: "#fff" }}>
                 Learn More
               </button>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-4 lg:gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-3">
             <RouteMap />
             {STATS.map((s) => (
-              <div key={s.label} {...spot} className="group vkp-spot p-6 flex flex-col lg:flex-row items-center text-center lg:text-left gap-5">
-                <span aria-hidden="true" className="vkp-tile size-16 shrink-0 rounded-2xl"><s.icon aria-hidden="true" className="size-7 transition-transform duration-300 group-hover:scale-110" strokeWidth={1.7} /></span>
+              <div key={s.label} {...spot} className="group vkp-spot p-3 flex flex-col lg:flex-row items-center text-center lg:text-left gap-2 lg:gap-3.5">
+                <span aria-hidden="true" className="vkp-tile size-10 shrink-0 rounded-xl"><s.icon aria-hidden="true" className="size-5 transition-transform duration-300 group-hover:scale-110" strokeWidth={1.7} /></span>
                 <div>
-                  <p className="text-3xl leading-none mb-2 text-white" style={{ fontFamily: "var(--font-mono)", fontWeight: 700 }}>{s.value}</p>
-                  <p className="text-base font-semibold leading-tight text-white">{s.label}</p>
-                  <p className="text-sm text-white/70 mt-1.5 leading-snug">{s.sub}</p>
+                  <p className="text-lg leading-none mb-1 text-white" style={{ fontFamily: "var(--font-mono)", fontWeight: 700 }}>{s.value}</p>
+                  <p className="text-[13px] font-semibold leading-tight text-white">{s.label}</p>
+                  <p className="text-[11.5px] text-white/70 mt-0.5 leading-snug">{s.sub}</p>
                 </div>
               </div>
             ))}
