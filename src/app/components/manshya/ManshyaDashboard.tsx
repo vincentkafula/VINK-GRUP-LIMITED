@@ -24,15 +24,17 @@ interface Props {
   onClose: () => void;
   /** Called after the user chooses to sign out (session already cleared). */
   onSignOut?: () => void;
+  /** Which section to open on: the personal dashboard opens straight on banking. */
+  initialMode?: Mode;
 }
 
 const applyTheme = (t: string | undefined): "light" | "dark" | undefined => (t === "light" || t === "dark" ? t : undefined);
 
-export function ManshyaDashboard({ isOpen, onClose, onSignOut }: Props) {
+export function ManshyaDashboard({ isOpen, onClose, onSignOut, initialMode }: Props) {
   useBodyScrollLock(isOpen);
   const session = getSession();
   const [authProblem, setAuthProblem] = useState<null | "expired" | "not_customer">(null);
-  const [mode, setMode] = useState<Mode>("online");
+  const [mode, setMode] = useState<Mode>(initialMode ?? "online");
   const [page, setPage] = useState("home");
   const [theme, setTheme] = useState<"light" | "dark" | undefined>();
   const [me, setMe] = useState<{ id: string; name: string; verified: boolean } | null>(null);

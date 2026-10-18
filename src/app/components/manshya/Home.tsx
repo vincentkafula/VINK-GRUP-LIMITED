@@ -7,6 +7,7 @@ import { R, K, initials, when, monthName, shiftMonth, thisMonth, cumulative } fr
 import { payoutNow, newPaymentRequest, addBeneficiary } from "./pages/shared";
 import { Icon } from "./icons";
 import type { Mode } from "./nav";
+import { getSession } from "../../services/apiClient";
 
 /* The three home screens: online payments, card machines, banking. */
 
@@ -258,7 +259,7 @@ export function BankHome() {
 
   return (
     <div className="pad" data-view="bank">
-      <div className="wel" style={{ display: "flex" }}><div><h1>Banking</h1><p>Business current account · {new Date().toLocaleDateString("en-ZA", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</p></div></div>
+      <div className="wel" style={{ display: "flex" }}><div><h1>Banking</h1><p>{getSession()?.role === "personal" ? "Personal account" : "Business current account"} · {new Date().toLocaleDateString("en-ZA", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</p></div></div>
       <section className="bh">
         <small>Total balance</small>
         <div className="big">{d ? R(d.total) : "—"}</div>
