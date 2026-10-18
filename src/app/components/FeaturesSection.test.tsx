@@ -37,12 +37,32 @@ describe("FeaturesSection benefits", () => {
     for (const t of ["Rewards", "Cash Back", "Balance Transfer", "Travel", "Zero Percent", "Low Interest"]) expect(host.textContent).toContain(t);
     expect(host.textContent).toContain("Earn points on every spend and redeem for exciting rewards and offers.");
     expect(host.textContent!.match(/Most Popular/g)).toHaveLength(1);
-    const medallions = [...host.querySelectorAll('span[aria-hidden="true"].size-14')].filter((s) => s.querySelector("svg.lucide"));
+    const medallions = [...host.querySelectorAll('span[aria-hidden="true"].size-11')].filter((s) => s.querySelector("svg.lucide"));
     expect(medallions).toHaveLength(6);
     const popular = [...host.querySelectorAll("span")].find((s) => s.textContent === "Most Popular")!;
     expect(popular.closest("[aria-hidden='true']")).toBeNull();                                  // the badge is its own element, not inside an icon
     expect(popular.className).not.toContain("absolute");                                         // in the card's footer row, so it never sits over the icon
     expect(host.querySelectorAll("img[src*='BenefitIcon']")).toHaveLength(0);                    // the old raster icons are gone
+  });
+
+  it("puts the Visa card on the left and the six benefits, small and grouped, on the right", () => {
+    mount(<FeaturesSection />);
+    const card = host.querySelector('button[aria-label="View the VINK Visa Signature card in 3D"]')!;
+    const benefits = [...host.querySelectorAll("div.vkp-spot")];
+    expect(benefits).toHaveLength(6);
+    // the card comes first in the page, and in the layout's first column
+    for (const b of benefits) expect(card.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING, b.textContent!.slice(0, 12)).toBeTruthy();
+    const layout = card.closest("div.grid")!; expect(layout.className).toContain("lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]");
+    expect(layout.children[0].contains(card)).toBe(true);                                         // left column: the card
+    const group = benefits[0].parentElement!; expect(group.className).toContain("sm:grid-cols-2");   // right column: one compact group, two across
+    expect(layout.children[1]).toBe(group); for (const b of benefits) expect(b.parentElement).toBe(group);
+    expect(benefits.map((b) => b.querySelector("p")!.textContent)).toEqual(["Rewards", "Cash Back", "Balance Transfer", "Travel", "Zero Percent", "Low Interest"]);   // order and numbering unchanged
+  });
+
+  it("makes the benefit cards smaller and the section tighter than before", () => {
+    mount(<FeaturesSection />);
+    for (const b of host.querySelectorAll("div.vkp-spot")) { expect(b.className).toContain("p-4"); expect(b.className).not.toContain("p-5"); expect(b.querySelector("p")!.className).toContain("text-base"); }
+    const section = host.querySelector("section")!; expect(section.className).toContain("lg:py-16"); expect(section.className).not.toContain("lg:py-28");
   });
 
   it("gives the four figures in the dark strip each a glass icon tile", () => {

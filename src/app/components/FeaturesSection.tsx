@@ -28,18 +28,18 @@ const STATS = [
 function BenefitCard({ b, index }: { b: Benefit; index: number }) {
   const Icon = b.icon;
   return (
-    <div {...spot} className={`group vkp-spot vkp-rise p-5 flex flex-col ${b.featured ? "vkp-spot-hot" : ""}`} style={{ animationDelay: `${index * 80}ms` }}>
-      <div className="mb-4 flex items-start justify-between">
-        <span aria-hidden="true" className={`size-14 rounded-2xl ${b.featured ? "vkp-tile-glass inline-flex items-center justify-center" : "vkp-tile"}`}>
-          <Icon aria-hidden className="size-6 transition-transform duration-300 group-hover:scale-110" strokeWidth={1.6} />
+    <div {...spot} className={`group vkp-spot vkp-rise flex h-full flex-col p-4 ${b.featured ? "vkp-spot-hot" : ""}`} style={{ animationDelay: `${index * 80}ms` }}>
+      <div className="mb-3 flex items-start justify-between">
+        <span aria-hidden="true" className={`size-11 rounded-xl ${b.featured ? "vkp-tile-glass inline-flex items-center justify-center" : "vkp-tile"}`}>
+          <Icon aria-hidden className="size-5 transition-transform duration-300 group-hover:scale-110" strokeWidth={1.6} />
         </span>
         <span aria-hidden="true" className="text-[11px] font-bold tracking-[0.2em] text-white/40" style={{ fontFamily: "var(--font-mono)" }}>{String(index + 1).padStart(2, "0")}</span>
       </div>
-      <p className="mb-1.5 text-lg font-bold text-white">{b.title}</p>
-      <p className={`mb-5 text-[13.5px] leading-relaxed ${b.featured ? "text-white/90" : "text-white/65"}`}>{b.desc}</p>
+      <p className="mb-1 text-base font-bold text-white">{b.title}</p>
+      <p className={`mb-3 text-[13px] leading-snug ${b.featured ? "text-white/90" : "text-white/65"}`}>{b.desc}</p>
       <div className="mt-auto flex flex-wrap items-center justify-between gap-2">
-        <span aria-hidden="true" className={`flex size-9 items-center justify-center rounded-full transition-all duration-300 group-hover:translate-x-0.5 ${b.featured ? "bg-white text-[color:var(--vkv-violet)]" : "bg-white/10 text-white group-hover:bg-white group-hover:text-[color:var(--vkv-violet)]"}`}>
-          <ArrowRight className="size-4" />
+        <span aria-hidden="true" className={`flex size-8 items-center justify-center rounded-full transition-all duration-300 group-hover:translate-x-0.5 ${b.featured ? "bg-white text-[color:var(--vkv-violet)]" : "bg-white/10 text-white group-hover:bg-white group-hover:text-[color:var(--vkv-violet)]"}`}>
+          <ArrowRight className="size-3.5" />
         </span>
         {b.featured && (
           <span className="flex items-center gap-1 rounded-full bg-white px-2.5 py-1 text-[11px] font-bold" style={{ color: "var(--vkv-violet)" }}>
@@ -54,7 +54,7 @@ function BenefitCard({ b, index }: { b: Benefit; index: number }) {
 export const FeaturesSection = memo(function FeaturesSection({ onExploreAll }: { onExploreAll?: () => void }) {
   const [showCardViewer, setShowCardViewer] = useState(false);
   return (
-    <section className="vkp-ink vkp-violet vkp-grain relative overflow-hidden py-16 sm:py-24 lg:py-28">
+    <section className="vkp-ink vkp-violet vkp-grain relative overflow-hidden py-12 sm:py-14 lg:py-16">
       <div aria-hidden="true" className="vkp-dots" />
       <div aria-hidden="true" className="vkp-glow left-1/2 top-0 h-[26rem] w-[44rem] max-w-full -translate-x-1/2 opacity-30" style={{ background: "var(--vkv-violet)" }} />
       <div aria-hidden="true" className="vkp-glow -left-32 bottom-0 h-80 w-80 opacity-20" style={{ background: "#3b4cca" }} />
@@ -71,15 +71,11 @@ export const FeaturesSection = memo(function FeaturesSection({ onExploreAll }: {
           <p className="vkp-glass-dark mt-5 inline-block rounded-full px-4 py-1.5 text-xs font-medium text-white/75">Planned benefits, available at our June 2027 launch.</p>
         </div>
 
-        {/* Benefits either side of the card */}
-        <div className="mt-14 grid items-center gap-6 lg:mt-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-8">
-          <div className="order-2 grid gap-5 sm:grid-cols-3 lg:order-1 lg:grid-cols-1">
-            {BENEFITS.slice(0, 3).map((b, i) => <BenefitCard key={b.title} b={b} index={i} />)}
-          </div>
-
-          {/* The card, centre stage */}
-          <div className="order-1 lg:order-2">
-            <div className="relative mx-auto max-w-md py-10">
+        {/* The card on the left; the six benefits, small and close together, on the right */}
+        <div className="mt-10 grid items-center gap-8 lg:mt-12 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-10">
+          {/* The card, on the left */}
+          <div className="order-1">
+            <div className="relative mx-auto max-w-md py-6">
               <div aria-hidden="true" className="absolute inset-0 m-auto aspect-square w-[120%] rounded-full opacity-70" style={{ background: "radial-gradient(circle,rgba(93,30,251,0.55),transparent 62%)" }} />
               <div aria-hidden="true" className="absolute inset-0 m-auto aspect-square w-[108%] animate-[spin_70s_linear_infinite] rounded-full border border-dashed border-white/20 motion-reduce:animate-none" />
               <div aria-hidden="true" className="absolute inset-0 m-auto aspect-square w-[86%] animate-[spin_55s_linear_infinite_reverse] rounded-full border border-white/10 motion-reduce:animate-none" />
@@ -105,19 +101,19 @@ export const FeaturesSection = memo(function FeaturesSection({ onExploreAll }: {
                 <span className="inline-flex items-center gap-1 text-xs font-bold" style={{ color: "#101828" }}><Sparkles className="size-3 text-[color:var(--vkv-violet)]" aria-hidden="true" />Smart. Simple. Smarter.</span>
               </div>
             </div>
-            <p className="mt-8 hidden text-center text-xs font-medium text-white/60 [@media(hover:hover)]:block">Roll over image to zoom in · click the card to open it</p>
-            <p className="mt-8 text-center text-xs font-medium text-white/60 [@media(hover:hover)]:hidden">Tap the card to see it in 3D</p>
+            <p className="mt-4 hidden text-center text-xs font-medium text-white/60 [@media(hover:hover)]:block">Roll over image to zoom in · click the card to open it</p>
+            <p className="mt-4 text-center text-xs font-medium text-white/60 [@media(hover:hover)]:hidden">Tap the card to see it in 3D</p>
           </div>
 
-          <div className="order-3 grid gap-5 sm:grid-cols-3 lg:grid-cols-1">
-            {BENEFITS.slice(3).map((b, i) => <BenefitCard key={b.title} b={b} index={i + 3} />)}
+          <div className="order-2 grid gap-3 sm:grid-cols-2">
+            {BENEFITS.map((b, i) => <BenefitCard key={b.title} b={b} index={i} />)}
           </div>
         </div>
 
         {/* Figures */}
-        <div className="mt-16 lg:mt-20">
+        <div className="mt-10 lg:mt-12">
           <div aria-hidden="true" className="vkp-hairline" />
-          <div className="grid grid-cols-2 gap-x-6 gap-y-10 py-10 lg:grid-cols-4 lg:gap-0">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-8 py-7 lg:grid-cols-4 lg:gap-0">
             {STATS.map((s, i) => (
               <div key={s.label} className={`group flex flex-col items-center px-3 text-center ${i > 0 ? "lg:border-l lg:border-white/10" : ""}`}>
                 <span aria-hidden="true" className="vkp-tile-glass mb-4 inline-flex size-12 items-center justify-center rounded-2xl"><s.Icon aria-hidden className="size-5 transition-transform duration-300 group-hover:scale-110" strokeWidth={1.6} /></span>
