@@ -119,8 +119,8 @@ export function HeroSection({ onApplyClick }: { onApplyClick?: () => void }) {
       <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full opacity-10 pointer-events-none"
         style={{ background: "radial-gradient(circle,#8F1027 0%,transparent 70%)", transform: "translate(-40%,40%)" }} />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-8 md:pt-6 md:pb-9 lg:pt-6 lg:pb-9 relative z-10">
-        <div className={"grid grid-cols-1 gap-6 items-center transition-[grid-template-columns] duration-500 " + (slide.wide ? "md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]" : "md:grid-cols-2")}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-10 md:pt-8 md:pb-12 lg:pt-10 lg:pb-14 relative z-10">
+        <div className={"grid grid-cols-1 gap-8 items-center transition-[grid-template-columns] duration-500 " + (slide.wide ? "md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]" : "md:grid-cols-2")}>
 
           {/* ── Text side — fades with the slide ── */}
           <div
@@ -170,7 +170,7 @@ export function HeroSection({ onApplyClick }: { onApplyClick?: () => void }) {
               key={current}
               src={slide.image}
               alt={slide.wide ? "The VINK multi-ticketing validator reading a tapped card, with its five channels: NFC card payment, QR-code, balance inquiry, segmented charge and GPS location." : slide.eyebrow}
-              className={"relative z-10 w-full object-contain drop-shadow-[0_28px_40px_rgba(70,0,14,0.45)] " + (slide.wide ? "max-w-3xl max-h-[340px]" : "max-w-xs sm:max-w-sm md:max-w-md max-h-[300px] md:max-h-[340px]")}
+              className={"relative z-10 w-full object-contain drop-shadow-[0_28px_40px_rgba(70,0,14,0.45)] " + (slide.wide ? "max-w-3xl max-h-[400px]" : "max-w-xs sm:max-w-sm md:max-w-md max-h-[340px] md:max-h-[400px]")}
               draggable={false}
               style={{
                 transition: "opacity 0.4s ease", opacity: fading ? 0 : 1,

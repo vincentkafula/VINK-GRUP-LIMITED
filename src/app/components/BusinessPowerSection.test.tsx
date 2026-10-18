@@ -26,7 +26,7 @@ describe("BusinessPowerSection (Global Payments)", () => {
 
   it("keeps the type readable in the compact layout: a clear headline with its second half emphasised, and body text of at least 14px", () => {
     const h = host.querySelector("h2")!;
-    expect(h.className).toContain("text-[1.75rem]"); expect(h.className).toContain("xl:text-4xl");
+    expect(h.className).toContain("text-[1.6rem]"); expect(h.className).toContain("xl:text-[1.875rem]");
     expect(h.querySelector("span")!.textContent).toBe("shouldn't cost a fortune.");
     const body = [...host.querySelectorAll("p")].filter((p) => p.textContent!.length > 60);
     expect(body.length).toBeGreaterThanOrEqual(4);

@@ -11,22 +11,22 @@ const padding = (f: string) => src(f).match(/<section[^>]*className="([^"]*)"/)!
  * They are compact now; this keeps them that way.
  */
 describe("the home page's sections stay compact", () => {
-  it("keeps the vertical padding between sections small (40 to 48px on a desktop, not 112)", () => {
-    expect(padding("FeaturesSection.tsx")).toContain("lg:py-10");
+  it("keeps the vertical padding between sections small (24 to 48px on a desktop, not 112)", () => {
+    expect(padding("FeaturesSection.tsx")).toContain("lg:py-6");
     expect(padding("ProtectionSection.tsx")).toContain("lg:py-12");
     expect(padding("CreditCardsSection.tsx")).toContain("sm:py-10");
-    expect(padding("BusinessPowerSection.tsx")).toContain("lg:py-10");
+    expect(padding("BusinessPowerSection.tsx")).toContain("lg:py-6");
     for (const f of ["FeaturesSection.tsx", "ProtectionSection.tsx", "CreditCardsSection.tsx", "BusinessPowerSection.tsx"]) expect(padding(f), f).not.toMatch(/py-(14|16|20|24|28)\b/);
   });
-  it("keeps the hero about a quarter shorter: less padding, a smaller heading, and an image capped at 340px", () => {
+  it("keeps the hero shorter than the original (670px) but not cramped: less padding, a smaller heading, and an image capped at 400px", () => {
     const hero = src("HeroSection.tsx");
-    expect(hero).toContain("lg:pt-6 lg:pb-9"); expect(hero).not.toContain("lg:pb-24"); expect(hero).not.toContain("max-h-[60vh]");
-    expect(hero).toContain("max-h-[340px]"); expect(hero).toContain("lg:text-5xl");
+    expect(hero).toContain("lg:pt-10 lg:pb-14"); expect(hero).not.toContain("lg:pb-24"); expect(hero).not.toContain("max-h-[60vh]");
+    expect(hero).toContain("max-h-[400px]"); expect(hero).toContain("lg:text-5xl");
   });
   it("keeps the violet section's heading to one line of 48px at most, with the cards in a three-across grid", () => {
-    const f = src("FeaturesSection.tsx"); expect(f).toContain("lg:text-5xl"); expect(f).not.toContain("lg:text-7xl"); expect(f).toContain("md:grid-cols-3");
+    const f = src("FeaturesSection.tsx"); expect(f).toContain("lg:text-[2.5rem]"); expect(f).not.toContain("lg:text-7xl"); expect(f).toContain("md:grid-cols-3");
   });
   it("keeps the cross-border section's stat cards as slim rows and its map shorter", () => {
-    const b = src("BusinessPowerSection.tsx"); expect(b).toContain('viewBox="0 28 400 244"'); expect(b).toContain("lg:w-4/5"); expect(b).not.toContain("size-16 shrink-0");
+    const b = src("BusinessPowerSection.tsx"); expect(b).toContain('viewBox="0 38 400 226"'); expect(b).toContain("lg:w-3/5"); expect(b).not.toContain("size-16 shrink-0");
   });
 });
