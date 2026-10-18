@@ -17,7 +17,12 @@ export function portalClient(segment: string) {
         headers: { "Content-Type": "application/json" },
         body: init?.body === undefined ? undefined : JSON.stringify(init.body),
       });
-      const body = await res.json().catch(() => ({}));
+      // A reply that is not JSON (a proxy's error page, or a route this server does not have) is an error, not an empty success: the screens trust the shape of what they are given.
+      const text = await res.text().catch(() => "");
+      let body: (Record<string, unknown> & { success?: boolean; error?: string }) | null = null;
+      if (text) { try { const j = JSON.parse(text); body = j && typeof j === "object" ? j : null; } catch { body = null; } }
+      else if (res.ok) body = {};                                          // a successful reply with no body at all (204)
+      if (body === null) return { error: res.ok ? "The server sent a reply we could not read. Please try again." : `Request failed (${res.status})` };
       if (!res.ok || body.success === false) return { error: body.error ?? `Request failed (${res.status})` };
       return { data: body as T };
     } catch { return { error: "We could not reach the server. Please try again." }; }
@@ -42,7 +47,7 @@ export function useLoad<T>(fetcher: () => Promise<{ data: T } | { error: string 
 
 export function Status<T>({ load, children }: { load: Load<T>; children: (d: T) => React.ReactNode }) {
   if (load.state === "loading") return <SkeletonList rows={2} />;
-  if (load.state === "error") return <p role="alert" className="flex items-center gap-2 text-sm text-bad"><TriangleAlert className="w-4 h-4" />{load.error}</p>;
+  if (load.state === "error") return <p role="alert" className="bg-surface flex items-center gap-2 rounded-lg border border-line px-3 py-2 text-sm text-bad"><TriangleAlert className="w-4 h-4 shrink-0" />{load.error}</p>;
   return <>{children(load.data)}</>;
 }
 
@@ -60,7 +65,9 @@ export const day = (iso: string | null) => (iso ? new Date(iso).toLocaleDateStri
 export function inkOn(hex: string): string {
   const m = /^#([0-9a-f]{6})$/i.exec(hex); if (!m) return "#101010";
   const [r, g, b] = [0, 2, 4].map((i) => parseInt(m[1].slice(i, i + 2), 16) / 255).map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b < 0.25 ? "#ffffff" : "#101010";
+  const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  const DARK = 0.0052;                                                    // the luminance of #101010
+  return 1.05 / (lum + 0.05) >= (lum + 0.05) / (DARK + 0.05) ? "#ffffff" : "#101010";   // whichever has the better contrast ratio on this background
 }
 
 /** A button that runs an async action, shows progress, and reports the server's message or error next to it. */

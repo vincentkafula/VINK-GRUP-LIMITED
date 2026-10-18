@@ -5,7 +5,7 @@ import { Banknote } from "lucide-react";
 import { PaymentsPanel, TripsPanel, CrossBorderPanel, VirtualAccountsPanel } from "./MoneyPanels";
 import { BankStrip, BankScreen } from "./BankAccount";
 import { DashboardShell, SectionPanel, StatCard, TableCard } from "../dashboards/DashboardShell";
-import { portalClient, useLoad, Status, Empty, Field, ActionButton, inputCls, when, type Load } from "./ui";
+import { portalClient, useLoad, Status, Empty, Field, ActionButton, inputCls, when, inkOn, type Load } from "./ui";
 import { LinksPanel } from "./LinksPanel";
 import { CsvButton, Pager, RangeBar, ScreenBoundary, TrendChart, rangeQuery, saToday, saShift, monthStart, useAutoRefresh, type Range } from "./widgets";
 
@@ -57,7 +57,7 @@ function RankPicker({ ranks, picked, onPick }: { ranks: Load<{ ranks: Rank[] }>;
     ) : (
       <div className="flex flex-wrap gap-2" role="tablist" aria-label="Your ranks">{rs.map((r) => (
         <button key={r.id} role="tab" aria-selected={r.id === picked} onClick={() => onPick(r.id)}
-          className="px-3 py-1.5 rounded-lg text-sm" style={{ background: r.id === picked ? COLOR : "var(--vk-surface)", color: r.id === picked ? "#06122b" : "#cbd5e1", border: "1px solid var(--vk-line)" }}>
+          className="px-3 py-1.5 rounded-lg text-sm" style={{ background: r.id === picked ? COLOR : "var(--vk-surface)", color: r.id === picked ? inkOn(COLOR) : "var(--vkd-fg)", border: "1px solid var(--vk-line)" }}>
           {r.name} <span className="opacity-70">· {r.waiting} waiting</span>
         </button>))}</div>
     )}</Status>

@@ -17,14 +17,15 @@
   background: #c8102e !important;
   color: #fff;
   --vk-fg: #fff;
-  --vk-fg-muted: rgba(255, 255, 255, 0.88);
-  --vk-fg-subtle: rgba(255, 255, 255, 0.72);
+  --vk-fg-muted: rgba(255, 255, 255, 0.94);
+  --vk-fg-subtle: rgba(255, 255, 255, 0.86);
   --vk-line: rgba(255, 255, 255, 0.24);
   --vk-line-strong: rgba(255, 255, 255, 0.42);
 }
 
-/* a white card, panel, table or chart on top of the red: normal text and lines again */
-[data-dashboard] :is(.bg-surface, .bg-surface-2, .bg-bg, .bg-white, .bg-card, .bg-popover) {
+/* a white card, panel, table or chart on top of the red: normal text and lines again. A widget that paints its own surface inline
+   (style="background: var(--vk-surface)") is a card too, so it does not also have to remember the class. */
+[data-dashboard] :is(.bg-surface, .bg-surface-2, .bg-bg, .bg-white, .bg-card, .bg-popover, [style*="background: var(--vk-surface"], [style*="background:var(--vk-surface"], [style*="background: var(--vk-bg"]) {
   --vk-fg: var(--vkd-fg);
   --vk-fg-muted: var(--vkd-fg-muted);
   --vk-fg-subtle: var(--vkd-fg-subtle);
@@ -38,8 +39,8 @@
 [data-dashboard] :is(aside, header, nav)[class*="bg-bg"] {
   background: transparent !important;
   --vk-fg: #fff;
-  --vk-fg-muted: rgba(255, 255, 255, 0.88);
-  --vk-fg-subtle: rgba(255, 255, 255, 0.72);
+  --vk-fg-muted: rgba(255, 255, 255, 0.94);
+  --vk-fg-subtle: rgba(255, 255, 255, 0.86);
   --vk-line: rgba(255, 255, 255, 0.24);
   --vk-line-strong: rgba(255, 255, 255, 0.42);
   color: #fff;

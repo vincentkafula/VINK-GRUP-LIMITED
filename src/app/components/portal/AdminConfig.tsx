@@ -3,7 +3,7 @@ import { X, SlidersHorizontal } from "lucide-react";
 import { authFetch, getSession } from "../../services/apiClient";
 import { API_BASE } from "../../services/config";
 import { Badge } from "../dashboards/DashboardShell";
-import { useLoad, Status, Empty, ActionButton, inputCls, when } from "./ui";
+import { useLoad, Status, Empty, ActionButton, inputCls, when, inkOn } from "./ui";
 import { usePageTitle } from "../ds";
 import { openSignIn } from "../../services/signIn";
 
@@ -55,7 +55,7 @@ function Body({ country, setCountry, tick, refresh, meId }: { country: "ZA" | "Z
   return (
           <>
             <div className="flex gap-2" role="tablist">{(["ZA", "ZM"] as const).map((c) => (
-              <button key={c} role="tab" aria-selected={country === c} onClick={() => setCountry(c)} className="px-4 py-2 rounded-lg text-sm font-bold" style={{ background: country === c ? COLOR : "var(--vk-surface)", color: country === c ? "#101010" : "#cbd5e1", border: "1px solid var(--vk-line)" }}>{c === "ZA" ? "South Africa" : "Zambia"}</button>))}</div>
+              <button key={c} role="tab" aria-selected={country === c} onClick={() => setCountry(c)} className="px-4 py-2 rounded-lg text-sm font-bold" style={{ background: country === c ? COLOR : "var(--vk-surface)", color: country === c ? inkOn(COLOR) : "var(--vkd-fg)", border: "1px solid var(--vk-line)" }}>{c === "ZA" ? "South Africa" : "Zambia"}</button>))}</div>
             <Status load={overview}>{(o) => {
               const c = o.countries.find((x) => x.country === country);
               return <Country key={country + tick} country={country} active={c?.active ?? null} inProgress={c?.inProgress ?? null} approvalsRequired={o.approvalsRequired} meId={meId} onChange={refresh} />;
@@ -199,7 +199,7 @@ function Reconciliation() {
       <Status load={load}>{(r) => (
         <>
           <p role="status" className={`text-sm ${r.ok ? "text-ok" : "text-bad"}`}>{r.ok ? "Records and ledger agree." : "Something does not agree and needs an engineer."} <span className="text-fg-subtle">Checked {when(r.checkedAt)}</span></p>
-          {r.issues.length > 0 && <ul className="text-xs space-y-1">{r.issues.map((i) => <li key={i.code + i.message} className={i.severity === "problem" ? "text-red-300" : "text-amber-300"}>{i.count} · {i.message}</li>)}</ul>}
+          {r.issues.length > 0 && <ul className="text-xs space-y-1">{r.issues.map((i) => <li key={i.code + i.message} className={i.severity === "problem" ? "text-bad" : "text-warn"}>{i.count} · {i.message}</li>)}</ul>}
           <p className="text-[11px] text-fg-muted">{r.figures.settledTaps} taps settled · {r.figures.unsettledConfirmedTaps} waiting · {r.figures.trips} trips · {r.figures.paidItems} payments made · {(r.figures.waitingCents / 100).toFixed(2)} waiting for funds · {(r.figures.arrearsCents / 100).toFixed(2)} in arrears</p>
         </>)}</Status>
     </section>
@@ -412,7 +412,7 @@ function ReadinessPanel({ profileId }: { profileId: string }) {
         <>
           <p role="status" className={`text-sm ${r.ready ? "text-ok" : "text-warn"}`}>{r.ready ? "Everything needed for live is filled in." : `${r.blockers} thing${r.blockers === 1 ? "" : "s"} still to fill in before this can go live. Sandbox works without them.`}</p>
           <ul className="text-xs space-y-1">{r.items.map((i) => (
-            <li key={i.id} className={i.ok ? "text-emerald-300" : i.blocking ? "text-amber-300" : "text-white/60"}>{i.ok ? "✔" : i.blocking ? "○" : "·"} {i.label}{!i.ok && <span className="text-fg-muted"> — {i.hint}</span>}</li>))}</ul>
+            <li key={i.id} className={i.ok ? "text-ok" : i.blocking ? "text-warn" : "text-fg-subtle"}>{i.ok ? "✔" : i.blocking ? "○" : "·"} {i.label}{!i.ok && <span className="text-fg-muted"> — {i.hint}</span>}</li>))}</ul>
         </>)}</Status>
     </section>
   );

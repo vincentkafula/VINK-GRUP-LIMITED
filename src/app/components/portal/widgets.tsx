@@ -2,7 +2,7 @@ import { Component, useEffect, useRef, useState, type ReactNode } from "react";
 import { ChevronLeft, ChevronRight, Download, TriangleAlert } from "lucide-react";
 import { authFetch } from "../../services/apiClient";
 import { API_BASE } from "../../services/config";
-import { inputCls } from "./ui";
+import { inputCls, inkOn } from "./ui";
 import { BRAND } from "../../brand";
 
 /* ───────────── dates (South African days, UTC+2 with no daylight saving) ───────────── */
@@ -24,7 +24,7 @@ export function RangeBar({ value, onChange, color }: { value: Range; onChange: (
       <div className="flex flex-wrap gap-1.5" role="group" aria-label="Quick ranges">
         {presets.map(([label, r]) => (
           <button key={label} type="button" onClick={() => onChange(r)} className="px-2.5 py-1.5 rounded-lg text-xs"
-            style={{ background: value.from === r.from && value.to === r.to ? color : "var(--vk-surface)", color: value.from === r.from && value.to === r.to ? "#101010" : "#cbd5e1", border: "1px solid var(--vk-line)" }}>{label}</button>))}
+            style={{ background: value.from === r.from && value.to === r.to ? color : "var(--vk-surface)", color: value.from === r.from && value.to === r.to ? inkOn(color) : "var(--vkd-fg)", border: "1px solid var(--vk-line)" }}>{label}</button>))}
       </div>
     </div>
   );
@@ -39,7 +39,7 @@ export const rangeQuery = (r: Range, extra: Record<string, string | number | und
 export function Pager({ total, limit, offset, onChange }: { total: number; limit: number; offset: number; onChange: (offset: number) => void }) {
   if (total <= limit) return null;
   const page = Math.floor(offset / limit) + 1, pages = Math.ceil(total / limit);
-  const btn = "p-1.5 rounded-lg border border-[var(--vk-line)] disabled:opacity-30 text-white/80";
+  const btn = "p-1.5 rounded-lg border border-[var(--vk-line)] disabled:opacity-30 text-fg";
   return (
     <nav className="flex items-center justify-end gap-2 text-xs text-fg-muted" aria-label="Pagination">
       <span>{offset + 1}–{Math.min(offset + limit, total)} of {total}</span>
@@ -66,7 +66,7 @@ export function CsvButton({ segment, path, label = "Download CSV", color }: { se
   };
   return (
     <span className="inline-flex items-center gap-2">
-      <button type="button" disabled={busy} onClick={run} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold disabled:opacity-60" style={{ background: color, color: "#101010" }}>
+      <button type="button" disabled={busy} onClick={run} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold disabled:opacity-60" style={{ background: color, color: inkOn(color) }}>
         <Download className="w-3.5 h-3.5" />{busy ? "Preparing…" : label}
       </button>
       {err && <span role="alert" className="text-xs text-bad">{err}</span>}

@@ -4,7 +4,7 @@ import { User, Car, Route as RouteIcon, Wallet, Bell, Loader2, TriangleAlert, Li
 import { Banknote } from "lucide-react";
 import { PaymentsPanel, TripsPanel, CrossBorderPanel, VirtualAccountsPanel, DriverAgreements } from "./MoneyPanels";
 import { BankStrip, BankScreen } from "./BankAccount";
-import { portalClient } from "./ui";
+import { portalClient, inkOn } from "./ui";
 import { LinksPanel } from "./LinksPanel";
 import { PowerPanel, DriverTrips, DriverTrend, DriverStatements } from "./DriverExtras";
 import { ScreenBoundary } from "./widgets";
@@ -123,7 +123,7 @@ function ProfileForm({ user, profile, onSaved }: { user: { name: string; email: 
               <input className={input + " mt-1"} type={type} placeholder={ph} value={f[key]} onChange={set(key)} /></label>
           ))}
           <div className="sm:col-span-2 flex items-center gap-3">
-            <button disabled={busy} className="px-4 py-2 rounded-lg text-sm font-bold disabled:opacity-60" style={{ background: COLOR, color: "#1a1200" }}>{busy ? "Saving…" : "Save details"}</button>
+            <button disabled={busy} className="px-4 py-2 rounded-lg text-sm font-bold disabled:opacity-60" style={{ background: COLOR, color: inkOn(COLOR) }}>{busy ? "Saving…" : "Save details"}</button>
             {msg && <span role={msg.ok ? "status" : "alert"} className={`text-sm ${msg.ok ? "text-ok" : "text-bad"}`}>{msg.text}</span>}
           </div>
           <p className="sm:col-span-2 text-[11px] text-fg-subtle">These details are entered by you. They are used for expiry reminders and are not checked against any licensing authority.</p>

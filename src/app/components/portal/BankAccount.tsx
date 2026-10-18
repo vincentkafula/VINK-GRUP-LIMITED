@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Landmark, Copy, Check, ShieldCheck, Clock, TriangleAlert, Plus, X } from "lucide-react";
 import { SectionPanel, TableCard, Badge } from "../dashboards/DashboardShell";
-import { portalClient, useLoad, Status, Empty, ActionButton, Field, inputCls, rand, when } from "./ui";
+import { portalClient, useLoad, Status, Empty, ActionButton, Field, inputCls, rand, when, inkOn } from "./ui";
 import { businessProblem, type BankRole, type HolderType } from "./bankRules";
 import { BRAND } from "../../brand";
 
@@ -47,7 +47,7 @@ export function CopyButton({ value, label, color }: { value: string; label: stri
   const run = async () => { setState((await copyText(value)) ? "done" : "failed"); clearTimeout(timer.current); timer.current = setTimeout(() => setState("idle"), 2000); };
   return (
     <button type="button" onClick={run} aria-label={`Copy ${label}`} className="inline-flex items-center justify-center gap-1.5 min-h-[40px] min-w-[40px] px-3 rounded-lg text-xs font-bold"
-      style={{ background: state === "failed" ? "#7f1d1d" : color, color: state === "failed" ? "#fff" : "#101010" }}>
+      style={{ background: state === "failed" ? "#7f1d1d" : color, color: state === "failed" ? "#fff" : inkOn(color) }}>
       {state === "done" ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
       <span aria-live="polite">{state === "done" ? "Copied" : state === "failed" ? "Copy failed" : "Copy"}</span>
     </button>
@@ -67,10 +67,10 @@ export function BankStrip({ segment, color, onOpen }: { segment: string; color: 
       <Status load={load}>{(b) => !b.link ? (
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3"><Landmark className="w-5 h-5 text-fg-muted" /><div><p className="text-sm font-semibold text-fg">No bank account linked yet</p><p className="text-xs text-fg-muted">{b.rules.message}</p></div></div>
-          <button type="button" onClick={() => setDialog(true)} className="inline-flex items-center gap-1.5 min-h-[40px] px-4 rounded-lg text-sm font-bold" style={{ background: color, color: "#101010" }}><Plus className="w-4 h-4" />Link account</button>
+          <button type="button" onClick={() => setDialog(true)} className="inline-flex items-center gap-1.5 min-h-[40px] px-4 rounded-lg text-sm font-bold" style={{ background: color, color: inkOn(color) }}><Plus className="w-4 h-4" />Link account</button>
         </div>
       ) : b.link.accountMissing ? (
-        <p className="text-sm text-amber-200">Your linked account could not be found in the Banking module. Open Bank account to fix it.</p>
+        <p className="text-sm text-warn">Your linked account could not be found in the Banking module. Open Bank account to fix it.</p>
       ) : (
         <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
           <div className="min-w-0">
@@ -132,7 +132,7 @@ export function LinkDialog({ info, call, color, onClose }: { info: BankInfo; cal
                 </label>);
             })}
           </div>
-          {allowed.length === 1 && <p className="mt-2 text-xs text-amber-200/90" role="note">{info.rules.message}</p>}
+          {allowed.length === 1 && <p className="mt-2 text-xs text-warn" role="note">{info.rules.message}</p>}
         </fieldset>
 
         {type === "business" && (
@@ -195,7 +195,7 @@ export function BankScreen({ segment, color }: { segment: string; color: string 
                 <Landmark className="w-10 h-10 mx-auto text-fg-subtle" />
                 <p className="text-fg font-semibold">No bank account linked yet</p>
                 <p className="text-sm text-fg-muted max-w-md mx-auto">Link an account from our Banking module so your balance, account details and transactions show here. {b.rules.message}</p>
-                <button type="button" onClick={() => setDialog(true)} className="inline-flex items-center gap-1.5 min-h-[44px] px-5 rounded-lg text-sm font-bold" style={{ background: color, color: "#101010" }}><Plus className="w-4 h-4" />Link account</button>
+                <button type="button" onClick={() => setDialog(true)} className="inline-flex items-center gap-1.5 min-h-[44px] px-5 rounded-lg text-sm font-bold" style={{ background: color, color: inkOn(color) }}><Plus className="w-4 h-4" />Link account</button>
               </div>
             </SectionPanel>
           ) : <LinkedAccount link={b.link} call={call} color={color} onEdit={() => setDialog(true)} />}
@@ -220,7 +220,7 @@ function LinkedAccount({ link, call, color, onEdit }: { link: BankLink; call: Re
               <span>{link.status === "pending_review" ? "An administrator is checking your business details. Your account number works as normal while you wait." : `Your business details were rejected${link.reviewNote ? `: ${link.reviewNote}` : "."} Edit them and save to send them for review again.`}</span>
             </p>
           )}
-          {link.accountMissing ? <p className="text-sm text-amber-200">This account could not be found in the Banking module. Remove the link and link it again.</p> : (
+          {link.accountMissing ? <p className="text-sm text-warn">This account could not be found in the Banking module. Remove the link and link it again.</p> : (
             <div>
               <p className="text-[10px] uppercase tracking-wide text-fg-subtle">Account number</p>
               <div className="flex flex-wrap items-center gap-3"><p className="font-mono text-2xl sm:text-3xl font-bold tracking-wider text-fg" data-testid="account-number-large">{spaced(link.accountNumber!)}</p><CopyButton value={link.accountNumber!} label="account number" color={color} /></div>

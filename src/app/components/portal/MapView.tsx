@@ -34,7 +34,7 @@ export function MapView({ routes, positions, color, draft = [], onPick, height =
 function Fallback({ why, routes, positions, color }: { why: MapsFailure; routes: MapRoute[]; positions: MapPosition[]; color: string }) {
   return (
     <div className="space-y-2">
-      <p role="status" className="flex items-start gap-2 text-xs text-amber-200/90"><TriangleAlert className="w-4 h-4 shrink-0 mt-0.5" />{WHY[why]}</p>
+      <p role="status" className="bg-surface flex items-start gap-2 rounded-lg border border-line px-3 py-2 text-xs text-fg"><TriangleAlert className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "var(--vk-warn)" }} aria-hidden="true" />{WHY[why]}</p>
       <RouteMap routes={routes} positions={positions} color={color} />
     </div>
   );
