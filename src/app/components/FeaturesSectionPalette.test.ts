@@ -24,13 +24,13 @@ describe("More Than a Card: the ivory and crimson palette", () => {
     expect(tsx).toContain('className="vkp-ivory relative');
     for (const old of ["vkv-", "violet", "#5d1efb", "#3b4cca", "93,30,251", "183,124,255"]) expect(tsx, old).not.toContain(old);
   });
-  it("is scoped: every rule in the palette block starts with .vkp-ivory, .dark .vkp-ivory or .vkp-night, so other sections are untouched", () => {
+  it("is scoped: every rule in the palette block starts with .vkp-ivory or .dark .vkp-ivory, so other sections are untouched", () => {
     const rules = palette.split("}").map((r) => r.replace(/\/\*[\s\S]*?\*\//g, "").trim()).filter(Boolean).map((r) => r.split("{")[0].trim());
     expect(rules.length).toBeGreaterThan(10);
-    for (const sel of rules) expect(/^(\.vkp-ivory|\.dark \.vkp-ivory|\.vkp-night)/.test(sel), sel).toBe(true);
+    for (const sel of rules) expect(/^(\.vkp-ivory|\.dark \.vkp-ivory)/.test(sel), sel).toBe(true);
   });
-  it("defines the palette once, as tokens: ivory, ink, rose and night, with the dark theme flipping ivory and ink", () => {
-    expect([tok(light, "ivory"), tok(light, "ivory-2"), tok(light, "ink"), tok(light, "rose"), tok(light, "night")]).toEqual(["#f6f3ee", "#fbf9f5", "#0b1020", "#fbe3e7", "#0b1020"]);
+  it("defines the palette once, as tokens: ivory, ink and rose, with the dark theme flipping ivory and ink", () => {
+    expect([tok(light, "ivory"), tok(light, "ivory-2"), tok(light, "ink"), tok(light, "rose")]).toEqual(["#f6f3ee", "#fbf9f5", "#0b1020", "#fbe3e7"]);
     expect([tok(dark, "ivory"), tok(dark, "ink")]).toEqual(["#0b1020", "#f6f3ee"]);
   });
   it("keeps the Visa card exactly as it was: the same image, still magnified on roll-over and opened in 3D on click", () => {
@@ -50,9 +50,6 @@ describe("the ivory palette stays readable (WCAG AA)", () => {
   it("white text on the featured card, at its lightest gradient stop", () => {
     const stops = [...css.slice(css.indexOf(".vkp-ivory .vkp-spot-hot {")).split("\n")[0].matchAll(/#[0-9a-f]{6}/g)].map((m) => rgb(m[0])); expect(stops.length).toBe(3);
     for (const s of stops) expect(ratio(WHITE, s), s.join(",")).toBeGreaterThanOrEqual(4.5);
-  });
-  it("the always-dark band: on-night text on night, and the softer text on both its stops", () => {
-    for (const bg of [rgb(tok(light, "night")), rgb(tok(light, "night-2"))]) { expect(ratio(rgb(tok(light, "on-night")), bg)).toBeGreaterThanOrEqual(12); expect(ratio(rgb(tok(light, "on-night-2")), bg)).toBeGreaterThanOrEqual(7); }
   });
   it("in the dark theme: ink-2 and ink-3 on the deep ink surfaces, and crimson text on the crimson wash", () => {
     for (const bg of [rgb(tok(dark, "ivory")), rgb(tok(dark, "ivory-2"))]) { expect(ratio(rgb(tok(dark, "ink-2")), bg)).toBeGreaterThanOrEqual(7); expect(ratio(rgb(tok(dark, "ink-3")), bg)).toBeGreaterThanOrEqual(4.5); }

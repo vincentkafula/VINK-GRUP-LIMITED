@@ -145,12 +145,12 @@
 }
 
 /*
- * Ivory and crimson. Two scopes for the home page sections, both built from the palette tokens (tokens.css):
+ * Ivory and crimson. One scope for the light sections between the hero and the footer, built from the palette tokens (tokens.css):
  *   .vkp-ivory  a light section: ivory page tint, white cards with a hairline and a soft shadow, rose icon tiles, a crimson featured card, ink figures.
  *               It follows the theme, so in dark mode the same section turns deep ink.
- *   .vkp-night  the always-dark band: deep ink with a crimson glow, for the sections that should break the light rhythm.
  */
 .vkp-ivory { background: var(--vk-ivory-2); color: var(--vk-ink); }
+.vkp-ivory-alt { background: var(--vk-ivory); }   /* the neighbouring section's tone, so two light sections in a row stay apart */
 .vkp-ivory .vkp-glass-dark {
   background: color-mix(in srgb, var(--vk-surface) 80%, transparent); border: 1px solid var(--vk-hair); color: var(--vk-ink);
   box-shadow: 0 1px 2px rgba(11, 16, 32, 0.04), 0 12px 24px -14px rgba(11, 16, 32, 0.2);
@@ -175,8 +175,3 @@
 .dark .vkp-ivory .vkp-gradient-text { background: linear-gradient(100deg, #ff8fa3, #ff6b81 60%, #f2455f); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .vkp-ivory .vkp-hairline { background: linear-gradient(90deg, transparent, var(--vk-hair) 20%, var(--vk-hair) 80%, transparent); }
 
-.vkp-night {
-  background: radial-gradient(90% 80% at 12% 8%, rgba(200, 16, 46, 0.22), transparent 62%), radial-gradient(70% 70% at 96% 100%, rgba(251, 227, 231, 0.07), transparent 60%),
-    linear-gradient(160deg, var(--vk-night-2) 0%, var(--vk-night) 62%);
-  color: var(--vk-on-night);
-}
