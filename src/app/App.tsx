@@ -10,7 +10,6 @@ import { HeroSection } from "./components/HeroSection";
 import { LazySection } from "./components/LazySection";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { useBodyScrollLock } from "./hooks/useBodyScrollLock";
-import { PremiumHome } from "./components/PremiumHome";
 
 // ─── Below-fold homepage sections — code-split ────────────────────────────────
 const FeaturesSection              = lazy(() => import("./components/FeaturesSection").then(m => ({ default: m.FeaturesSection })));
@@ -635,7 +634,16 @@ export default function App() {
       </ErrorBoundary>
 
       <main id="main" tabIndex={-1} className="outline-none">
-        <PremiumHome onApply={() => openSelector("account")} onBusiness={() => handleSubNavClick("Business")} />
+        <ErrorBoundary>
+          <HeroSection onApplyClick={() => openSelector("account")} />
+        </ErrorBoundary>
+
+        <SearchSection onFindCard={() => openSelector("creditCard")} />
+
+        <LazySection><Suspense fallback={null}><FeaturesSection /></Suspense></LazySection>
+        <LazySection><Suspense fallback={null}><ProtectionSection /></Suspense></LazySection>
+        <LazySection><Suspense fallback={null}><CreditCardsSection onApply={() => openSelector("creditCard")} /></Suspense></LazySection>
+        <LazySection><Suspense fallback={null}><BusinessPowerSection onSubNavClick={handleSubNavClick} /></Suspense></LazySection>
       </main>
 
       <LazySection>
