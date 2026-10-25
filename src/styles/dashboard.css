@@ -13,7 +13,9 @@
   --vkd-line-strong: var(--vk-line-strong);
 }
 
-[data-dashboard] {\n  background: linear-gradient(145deg, #c8102e 0%, #9f1028 52%, #6f0d1d 100%) !important;\n  color: #fff;
+[data-dashboard] {
+  background: linear-gradient(145deg, #c8102e 0%, #9f1028 52%, #6f0d1d 100%) !important;
+  color: #fff;
   --vk-fg: #fff;
   --vk-fg-muted: rgba(255, 255, 255, 0.94);
   --vk-fg-subtle: rgba(255, 255, 255, 0.86);
@@ -58,7 +60,8 @@
 /* every side menu is a deeper shade of the red, whatever dark colour it used before */
 [data-dashboard] aside { background: linear-gradient(180deg, rgba(60, 0, 10, 0.44), rgba(25, 5, 10, 0.72)) !important; }
 [data-dashboard] header { background: rgba(12, 12, 14, 0.66); backdrop-filter: blur(18px); }
-[data-dashboard] .shadow-card { box-shadow: 0 18px 45px rgba(0,0,0,.12), 0 0 0 1px rgba(200,16,46,.12); transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease; }\n[data-dashboard] .shadow-card:hover { transform: translateY(-2px); box-shadow: 0 22px 50px rgba(0,0,0,.16), 0 0 0 1px rgba(200,16,46,.2); }
+[data-dashboard] .shadow-card { box-shadow: 0 18px 45px rgba(0,0,0,.12), 0 0 0 1px rgba(200,16,46,.12); transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease; }
+[data-dashboard] .shadow-card:hover { transform: translateY(-2px); box-shadow: 0 22px 50px rgba(0,0,0,.16), 0 0 0 1px rgba(200,16,46,.2); }
 [data-dashboard] button { transition: transform .2s ease, box-shadow .2s ease, background-color .2s ease; }
 [data-dashboard] button:hover:not(:disabled) { transform: translateY(-1px); }
 
