@@ -10,6 +10,7 @@ import { HeroSection } from "./components/HeroSection";
 import { LazySection } from "./components/LazySection";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { useBodyScrollLock } from "./hooks/useBodyScrollLock";
+import { PremiumHome } from "./components/PremiumHome";
 
 // ─── Below-fold homepage sections — code-split ────────────────────────────────
 const FeaturesSection              = lazy(() => import("./components/FeaturesSection").then(m => ({ default: m.FeaturesSection })));
@@ -634,23 +635,7 @@ export default function App() {
       </ErrorBoundary>
 
       <main id="main" tabIndex={-1} className="outline-none">
-      <ErrorBoundary>
-        <HeroSection onApplyClick={() => openSelector("account")} />
-      </ErrorBoundary>
-
-      <SearchSection onFindCard={() => openSelector("creditCard")} />
-
-      <LazySection><Suspense fallback={null}><FeaturesSection /></Suspense></LazySection>
-      <LazySection><Suspense fallback={null}><ProtectionSection /></Suspense></LazySection>
-      <LazySection><Suspense fallback={null}><CreditCardsSection onApply={() => openSelector("creditCard")} /></Suspense></LazySection>
-      <LazySection><Suspense fallback={null}><BusinessPowerSection onSubNavClick={handleSubNavClick} /></Suspense></LazySection>
-      {/* AppShowcaseSection and the App Launcher are admin-only now --
-          see BankingDashboard's "App Preview" sidebar button. Not
-          reachable from the public site at all: none of the apps are
-          actually published yet (every download CTA now says "Coming
-          Soon"), so a public-facing "browse and preview our apps"
-          experience would be showing incomplete/simulated features to
-          real visitors as if they were real. */}
+        <PremiumHome onApply={() => openSelector("account")} onBusiness={() => handleSubNavClick("Business")} />
       </main>
 
       <LazySection>
