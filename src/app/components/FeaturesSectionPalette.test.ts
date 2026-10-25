@@ -5,7 +5,7 @@ import { join } from "path";
 const tsx = readFileSync(join(__dirname, "FeaturesSection.tsx"), "utf8");
 const css = readFileSync(join(__dirname, "../../styles/premium.css"), "utf8");
 const tokens = readFileSync(join(__dirname, "../../styles/tokens.css"), "utf8");
-const palette = css.slice(css.indexOf(".vkp-ivory {"));
+const palette = css.slice(css.indexOf(".vkp-ivory {"), css.indexOf("/* ── Polish"));   // the ivory scope, up to the general polish styles
 
 // the value of a token in the light theme (:root) or the dark theme (.dark)
 const block = (open: string) => { const i = tokens.indexOf(open); return tokens.slice(i, tokens.indexOf("\n}", i)); };

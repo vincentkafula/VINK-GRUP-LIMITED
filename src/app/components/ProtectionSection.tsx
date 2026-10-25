@@ -1,6 +1,7 @@
 import { memo } from "react";
 import protectionImage from "../../imports/image-1.webp";
 import { Lock, Zap, ShieldCheck, ArrowRight } from "lucide-react";
+import { useReveal } from "./useReveal";
 
 
 const TRUST_ITEMS = [
@@ -10,6 +11,7 @@ const TRUST_ITEMS = [
 ];
 
 export const ProtectionSection = memo(function ProtectionSection() {
+  const rImg = useReveal(), rText = useReveal(110);
   return (
     <section className="vkp-ivory vkp-ivory-alt relative overflow-hidden py-8 sm:py-10 lg:py-12">
       <div aria-hidden="true" className="vkp-hairline absolute inset-x-0 top-0" />
@@ -18,7 +20,7 @@ export const ProtectionSection = memo(function ProtectionSection() {
       <div aria-hidden="true" className="vkp-glow -right-24 bottom-0 h-80 w-80" style={{ background: "var(--vk-glow-rose)" }} />
       <div className="relative z-[1] max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-20 items-center">
-          <div className="relative flex justify-center order-2 md:order-1">
+          <div ref={rImg.ref} style={rImg.style} className={"relative flex justify-center order-2 md:order-1 " + rImg.className}>
             {/* the glow and the slow ring that the shield sits in */}
             <div aria-hidden="true" className="absolute inset-0 m-auto aspect-square w-[88%] max-w-md rounded-full" style={{ background: "radial-gradient(circle,rgba(200,16,46,0.16),transparent 66%)" }} />
             <div aria-hidden="true" className="absolute inset-0 m-auto aspect-square w-[78%] max-w-[26rem] animate-[spin_50s_linear_infinite] rounded-full border border-dashed border-hair motion-reduce:animate-none" />
@@ -34,7 +36,7 @@ export const ProtectionSection = memo(function ProtectionSection() {
             <img src={protectionImage} alt="Your Money Always Protected — VINK security"
               className="vkp-float relative w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg object-contain drop-shadow-[0_28px_40px_rgba(11,16,32,0.28)]" draggable={false} loading="lazy" />
           </div>
-          <div className="order-1 md:order-2 text-center md:text-left max-w-xl mx-auto md:mx-0">
+          <div ref={rText.ref} style={rText.style} className={"order-1 md:order-2 text-center md:text-left max-w-xl mx-auto md:mx-0 " + rText.className}>
             <div className="flex items-center justify-center md:justify-start gap-3 mb-5">
               <span className="text-xs sm:text-[13px] font-bold uppercase tracking-[0.22em] text-[color:var(--vk-crimson-text)]">Zero Liability</span>
               <span aria-hidden="true" className="h-px w-12 sm:w-16" style={{ background: "linear-gradient(90deg,var(--vk-crimson-text),transparent)" }} />
@@ -56,7 +58,7 @@ export const ProtectionSection = memo(function ProtectionSection() {
                 </li>
               ))}
             </ul>
-            <button className="group inline-flex items-center gap-2.5 px-9 py-4 rounded-xl text-base font-bold transition-all duration-300 ease-out hover:scale-[1.03] hover:-translate-y-0.5"
+            <button className="vkp-cta group inline-flex items-center gap-2.5 px-9 py-4 rounded-xl text-base font-bold transition-all duration-300 ease-out hover:scale-[1.03] hover:-translate-y-0.5"
               style={{ background: "linear-gradient(135deg,#e8405b,#c8102e 60%,#a50f27)", color: "#fff", boxShadow: "0 16px 36px -10px rgba(200,16,46,.75), inset 0 1px 0 rgba(255,255,255,0.3)", letterSpacing: "0.01em" }}>
               Learn How We Protect You <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true" />
             </button>

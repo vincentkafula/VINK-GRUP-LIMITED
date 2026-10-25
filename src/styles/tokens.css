@@ -41,6 +41,9 @@
   --vk-hair: rgba(11, 16, 32, 0.1);
   --vk-rose: #fbe3e7;
   --vk-glow-rose: rgba(243, 201, 208, 0.6);   /* the soft pink glow in the corners of the light sections */
+  /* Layered shadows: a hairline contact shadow, a soft near shadow and a long faint one, so a card sits on the page instead of floating over it. Lift adds a crimson-tinted glow. */
+  --vk-shadow-card: 0 1px 2px rgba(11, 16, 32, 0.04), 0 2px 6px -2px rgba(11, 16, 32, 0.06), 0 18px 36px -22px rgba(11, 16, 32, 0.2);
+  --vk-shadow-lift: 0 1px 2px rgba(11, 16, 32, 0.05), 0 6px 14px -6px rgba(11, 16, 32, 0.1), 0 30px 54px -26px rgba(200, 16, 46, 0.32);
 
   /* LEGACY ALIASES. "gold" used to be the brand accent; it now resolves to the brand red so any
      component still using bg-gold / text-gold / var(--vk-gold) lands on-brand. New code should use
@@ -85,6 +88,8 @@
   --vk-ink-3: #8f97b3;
   --vk-hair: rgba(246, 243, 238, 0.12);
   --vk-rose: rgba(200, 16, 46, 0.16);
+  --vk-shadow-card: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 18px 36px -22px rgba(0, 0, 0, 0.7);
+  --vk-shadow-lift: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 30px 54px -26px rgba(200, 16, 46, 0.4);
   --vk-glow-rose: rgba(200, 16, 46, 0.2);    /* in the dark theme the same glow is a dark crimson, never a bright pink that would wash out the text above it */
   --vk-bg: #0c111d;
   --vk-surface: #101828;

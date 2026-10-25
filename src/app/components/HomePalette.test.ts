@@ -14,7 +14,7 @@ describe("the home page's ivory and crimson look", () => {
     expect(h).toContain("linear-gradient(135deg, #C8102E 0%, #A30D25 54%, #7F1D1D 100%)"); expect(h).toContain("text-white"); expect(h).toContain("vkp-dots-on-red");
     expect(h).not.toMatch(/vk-ivory|text-ink|vk-glow-rose/);
     // the white button's red label comes from a class, not an inline colour: the dark theme lightens inline red text to pink, which is unreadable on white (2.7 to 1)
-    expect(h).toContain('"text-[#C8102E]"'); expect(h).not.toMatch(/background: "linear-gradient\(180deg,#ffffff,#f3f3f6\)", color:/);
+    expect(h).toContain('"vkp-cta-light text-[#C8102E]"'); expect(h).not.toMatch(/background: "linear-gradient\(180deg,#ffffff,#f3f3f6\)", color:/);
   });
   it("keeps the find-a-card bar from leaving a white strip between the ivory hero and the ivory benefits section", () => {
     const s = src("SearchSection.tsx"); expect(s).toContain("var(--vk-ivory-2) 2.25rem"); expect(s).toContain("-mt-9");

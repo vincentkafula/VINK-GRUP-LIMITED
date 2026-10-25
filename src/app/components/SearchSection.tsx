@@ -24,7 +24,7 @@ export function SearchSection({ onFindCard }: { onFindCard?: () => void }) {
               ))}
             </ul>
           </div>
-          <Button onClick={onFindCard} className="shrink-0 shadow-[0_16px_30px_-12px_rgba(200,16,46,0.75)]"><CreditCard aria-hidden="true" />Find My Card</Button>
+          <Button onClick={onFindCard} className="vkp-cta shrink-0 shadow-[0_16px_30px_-12px_rgba(200,16,46,0.75)]"><CreditCard aria-hidden="true" />Find My Card</Button>
         </div>
       </div>
     </section>

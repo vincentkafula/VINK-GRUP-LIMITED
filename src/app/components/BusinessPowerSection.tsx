@@ -1,6 +1,7 @@
 import { memo } from "react";
 import { Globe, BadgePercent, ShieldCheck, ArrowRight } from "lucide-react";
 import { spot } from "./premiumFx";
+import { useReveal } from "./useReveal";
 const ACCENT = "var(--vk-crimson-text)";   // brand red as text: #C8102E on the light theme, the lighter tint on the dark one
 
 const STATS = [
@@ -40,6 +41,7 @@ function RouteMap() {
 }
 
 export const BusinessPowerSection = memo(function BusinessPowerSection({ onSubNavClick }: { onSubNavClick?: (item: string) => void }) {
+  const rText = useReveal(), rSide = useReveal(120);
   return (
     <section className="vkp-ivory vkp-ivory-alt py-5 sm:py-6 lg:py-6 relative overflow-hidden">
       {/* a dotted "map" fading in from the right, and two soft glows */}
@@ -50,7 +52,7 @@ export const BusinessPowerSection = memo(function BusinessPowerSection({ onSubNa
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] gap-6 lg:gap-8 xl:gap-10 items-center">
-          <div className="text-center lg:text-left">
+          <div ref={rText.ref} style={rText.style} className={"text-center lg:text-left " + rText.className}>
             <div className="flex items-center justify-center lg:justify-start gap-3 mb-2">
               <span className="text-xs sm:text-[13px] font-bold uppercase tracking-[0.22em]" style={{ color: ACCENT }}>Global Payments</span>
               <span aria-hidden="true" className="h-px w-12 sm:w-16" style={{ background: `linear-gradient(90deg,${ACCENT},transparent)` }} />
@@ -95,7 +97,7 @@ export const BusinessPowerSection = memo(function BusinessPowerSection({ onSubNa
             </p>
 
             <div className="flex flex-wrap justify-center lg:justify-start gap-3">
-              <button onClick={() => onSubNavClick?.("Start My Business")} className="group inline-flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-bold transition-all duration-300 ease-out hover:scale-[1.03] hover:-translate-y-0.5"
+              <button onClick={() => onSubNavClick?.("Start My Business")} className="vkp-cta group inline-flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-bold transition-all duration-300 ease-out hover:scale-[1.03] hover:-translate-y-0.5"
                 style={{ background: "linear-gradient(135deg,#e8405b,#c8102e 60%,#a50f27)", color: "#fff", boxShadow: "0 16px 32px -12px rgba(200,16,46,.7), inset 0 1px 0 rgba(255,255,255,0.3)", letterSpacing: "0.01em" }}>
                 See How It Works <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true" />
               </button>
@@ -106,7 +108,7 @@ export const BusinessPowerSection = memo(function BusinessPowerSection({ onSubNa
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-2.5">
+          <div ref={rSide.ref} style={rSide.style} className={"grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-2.5 " + rSide.className}>
             <RouteMap />
             {STATS.map((s) => (
               <div key={s.label} {...spot} className="group vkp-spot p-2 flex flex-col lg:flex-row items-center text-center lg:text-left gap-2 lg:gap-3.5">

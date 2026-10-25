@@ -104,6 +104,7 @@ export function HeroSection({ onApplyClick }: { onApplyClick?: () => void }) {
           decoration, positioned so it reads as ambient texture, not a focal
           point competing with the headline or product image. */}
       <div aria-hidden="true" className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(60% 80% at 12% 0%, rgba(200,16,46,0.16), transparent 62%), radial-gradient(70% 95% at 100% 100%, rgba(200,16,46,0.22), transparent 62%), linear-gradient(120deg, transparent 35%, rgba(255,255,255,0.035) 100%)" }} />
+      <div aria-hidden="true" className="vkp-mesh"><i /><i /><i /></div>
       <div aria-hidden="true" className="vkp-dots-on-red" />
       <div className="absolute -right-24 top-1/2 -translate-y-1/2 w-[560px] h-[560px] pointer-events-none hidden md:block" aria-hidden="true">
         {[0, 1, 2, 3].map(i => (
@@ -143,7 +144,7 @@ export function HeroSection({ onApplyClick }: { onApplyClick?: () => void }) {
               {slide.ctas.map((cta, i) => (
                 <button key={i}
                   onClick={cta.label === "Start Now" ? startApplication : onApplyClick}
-                  className={"inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ease-out hover:scale-[1.03] hover:-translate-y-0.5 active:scale-95 shadow-lg " + (i === 0 ? "text-[#C8102E]" : "text-white")}
+                  className={"inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ease-out hover:scale-[1.03] hover:-translate-y-0.5 active:scale-95 shadow-lg " + (i === 0 ? "vkp-cta-light text-[#C8102E]" : "text-white")}
                   style={{ letterSpacing: "0.01em", ...(i === 0 ? { background: "linear-gradient(180deg,#ffffff,#f3f3f6)", boxShadow: "0 14px 30px -10px rgba(60,0,12,.55), inset 0 1px 0 #fff" } : { background: "rgba(255,255,255,.12)", border: "1px solid rgba(255,255,255,.3)", color: "#ffffff", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" }) }}>
                   {cta.label}
                 </button>
@@ -170,7 +171,7 @@ export function HeroSection({ onApplyClick }: { onApplyClick?: () => void }) {
               key={current}
               src={slide.image}
               alt={slide.wide ? "The VINK multi-ticketing validator reading a tapped card, with its five channels: NFC card payment, QR-code, balance inquiry, segmented charge and GPS location." : slide.eyebrow}
-              className={"relative z-10 w-full object-contain drop-shadow-[0_28px_40px_rgba(70,0,14,0.45)] " + (slide.wide ? "max-w-3xl max-h-[400px]" : "max-w-xs sm:max-w-sm md:max-w-md max-h-[340px] md:max-h-[400px]")}
+              className={"relative z-10 w-full object-contain drop-shadow-[0_28px_40px_rgba(70,0,14,0.45)] vkp-float " + (slide.wide ? "max-w-3xl max-h-[400px]" : "max-w-xs sm:max-w-sm md:max-w-md max-h-[340px] md:max-h-[400px]")}
               draggable={false}
               style={{
                 transition: "opacity 0.4s ease", opacity: fading ? 0 : 1,

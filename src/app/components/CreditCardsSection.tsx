@@ -5,6 +5,7 @@ import vinkBlackVisaCard from "../../imports/VinkBlackVisaCard.webp";
 import vinkBlueMastercard from "../../imports/VinkBlueMastercard.webp";
 import { Card3DViewer } from "./Card3DViewer";
 import { ZoomImage } from "./ZoomImage";
+import { useReveal } from "./useReveal";
 
 const CARDS = [
   {
@@ -113,6 +114,7 @@ function CardVisual({ card, active }: { card: typeof CARDS[0]; active: boolean }
 
 export function CreditCardsSection({ onApply }: { onApply?: () => void }) {
   const [active, setActive] = useState(0);
+  const rHead = useReveal(), rStage = useReveal(120);
   const [viewerCard, setViewerCard] = useState<typeof CARDS[0] | null>(null);
 
   return (
@@ -120,7 +122,7 @@ export function CreditCardsSection({ onApply }: { onApply?: () => void }) {
       <div aria-hidden="true" className="vkp-dots" />
       <div aria-hidden="true" className="vkp-glow left-1/2 top-24 h-72 w-[34rem] max-w-full -translate-x-1/2 opacity-[0.14]" style={{ background: "#c8102e" }} />
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
+        <div ref={rHead.ref} style={rHead.style} className={"text-center mb-12 " + rHead.className}>
           <span className="inline-block text-xs font-bold uppercase tracking-[0.14em] px-3.5 py-1.5 rounded-full mb-4 text-white" style={{ background: "linear-gradient(135deg,#e8405b,#c8102e 60%,#a50f27)", boxShadow: "0 10px 20px -10px rgba(200,16,46,0.8)" }}>Compare Cards</span>
           <h2 className="font-display text-3xl sm:text-5xl tracking-[-0.028em] text-ink font-semibold">Choose Your Perfect <span className="vkp-gradient-text">VINK Card</span></h2>
           <p className="vkp-chip mx-auto mt-4 inline-block rounded-full px-3.5 py-1.5 text-xs font-medium text-ink-2">Planned cards and benefits, available at our June 2027 launch.</p>
@@ -130,7 +132,7 @@ export function CreditCardsSection({ onApply }: { onApply?: () => void }) {
         <p className="text-center text-xs font-medium text-ink-2 mb-5 [@media(hover:hover)]:hidden">Tap a card to see it up close</p>
 
         {/* The stage: the cards fan out in perspective around the chosen one */}
-        <div className="vkp-stage relative mb-10 pt-6 pb-8">
+        <div ref={rStage.ref} style={rStage.style} className={"vkp-stage relative mb-10 pt-6 pb-8 " + rStage.className}>
           <div aria-hidden="true" className="absolute inset-x-[8%] bottom-0 h-24 rounded-[50%] opacity-80 blur-2xl" style={{ background: "radial-gradient(ellipse,rgba(16,24,40,0.35),transparent 70%)" }} />
           <div className="flex flex-wrap justify-center gap-5 sm:gap-8 md:flex-nowrap md:gap-0">
             {CARDS.map((c, i) => {

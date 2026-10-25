@@ -5,6 +5,7 @@ import { Card3DViewer } from "./Card3DViewer";
 import type { PremiumIcon } from "./PremiumIcon";
 import { ZoomImage } from "./ZoomImage";
 import { spot } from "./premiumFx";
+import { useReveal } from "./useReveal";
 
 interface Benefit { icon: React.ComponentProps<typeof PremiumIcon>["icon"]; title: string; desc: string; featured: boolean }
 
@@ -53,6 +54,7 @@ function BenefitCard({ b, index }: { b: Benefit; index: number }) {
 
 export const FeaturesSection = memo(function FeaturesSection({ onExploreAll }: { onExploreAll?: () => void }) {
   const [showCardViewer, setShowCardViewer] = useState(false);
+  const rHead = useReveal(), rCard = useReveal(60), rGrid = useReveal(140), rFig = useReveal(100);
   return (
     <section className="vkp-ivory relative overflow-hidden py-5 sm:py-6 lg:py-6">
       <div aria-hidden="true" className="vkp-dots" />
@@ -60,7 +62,7 @@ export const FeaturesSection = memo(function FeaturesSection({ onExploreAll }: {
       <div aria-hidden="true" className="vkp-glow -left-32 bottom-0 h-80 w-80" style={{ background: "var(--vk-glow-rose)" }} />
       <div className="relative z-[1] mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Heading: centred and large */}
-        <div className="mx-auto max-w-4xl text-center">
+        <div ref={rHead.ref} style={rHead.style} className={"mx-auto max-w-4xl text-center " + rHead.className}>
           <div className="flex flex-wrap items-center justify-center gap-2">
             <span className="inline-block rounded-full bg-rose px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-[color:var(--vk-crimson-text)]">More Than a Card</span>
             <p className="vkp-glass-dark inline-block rounded-full px-3 py-1 text-xs font-medium text-ink-2">Planned benefits, available at our June 2027 launch.</p>
@@ -76,7 +78,7 @@ export const FeaturesSection = memo(function FeaturesSection({ onExploreAll }: {
         {/* The card on the left; the six benefits, small and close together, on the right */}
         <div className="mt-4 grid items-center gap-4 lg:mt-5 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-6">
           {/* The card, on the left */}
-          <div className="order-1">
+          <div ref={rCard.ref} style={rCard.style} className={"order-1 " + rCard.className}>
             <div className="relative mx-auto max-w-[21rem] py-3">
               <div aria-hidden="true" className="absolute inset-0 m-auto aspect-square w-[120%] rounded-full opacity-70" style={{ background: "radial-gradient(circle,rgba(200,16,46,0.2),transparent 62%)" }} />
               <div aria-hidden="true" className="absolute inset-0 m-auto aspect-square w-[108%] animate-[spin_70s_linear_infinite] rounded-full border border-dashed border-hair motion-reduce:animate-none" />
@@ -107,13 +109,13 @@ export const FeaturesSection = memo(function FeaturesSection({ onExploreAll }: {
             <p className="mt-4 text-center text-xs font-medium text-ink-2 [@media(hover:hover)]:hidden">Tap the card to see it in 3D</p>
           </div>
 
-          <div className="order-2 grid grid-cols-2 gap-2 md:grid-cols-3">
+          <div ref={rGrid.ref} style={rGrid.style} className={"order-2 grid grid-cols-2 gap-2 md:grid-cols-3 " + rGrid.className}>
             {BENEFITS.map((b, i) => <BenefitCard key={b.title} b={b} index={i} />)}
           </div>
         </div>
 
         {/* Figures */}
-        <div className="mt-3 lg:mt-4">
+        <div ref={rFig.ref} style={rFig.style} className={"mt-3 lg:mt-4 " + rFig.className}>
           <div aria-hidden="true" className="vkp-hairline" />
           <div className="grid grid-cols-2 gap-x-6 gap-y-4 py-2 lg:grid-cols-4 lg:gap-0">
             {STATS.map((s, i) => (
