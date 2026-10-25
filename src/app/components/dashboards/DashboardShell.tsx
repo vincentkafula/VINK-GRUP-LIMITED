@@ -1,5 +1,6 @@
 import { X, Bell, RefreshCw, Clock, Menu, LogOut, ChevronRight, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { Sheet, ThemeToggle } from "../ds";
 
 export interface NavItem {
@@ -76,7 +77,8 @@ export function DashboardShell({
   );
 
   return (
-    <div data-dashboard data-theme-aware className="fixed inset-0 z-50 flex bg-bg text-fg">
+    <motion.div data-dashboard data-theme-aware className="fixed inset-0 z-50 flex bg-bg text-fg" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
+      <motion.div className="contents" initial={{ y: 12 }} animate={{ y: 0 }} transition={{ duration: 0.35, ease: "easeOut" }}>
       {/* Side navigation: always on large screens, a drawer on small ones */}
       <aside className={`hidden shrink-0 flex-col border-r border-line bg-surface transition-[width] duration-200 lg:flex ${collapsed ? "w-[72px]" : "w-60"}`}>
         <div className="flex items-center gap-3 border-b border-line px-3.5 py-3.5">
@@ -141,7 +143,8 @@ export function DashboardShell({
           {children}
         </main>
       </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
 

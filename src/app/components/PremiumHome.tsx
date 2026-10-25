@@ -1,4 +1,5 @@
 import { ArrowUpRight, BarChart3, ChevronRight, CreditCard, Globe2, ShieldCheck, Sparkles } from "lucide-react";
+import { motion } from "framer-motion";
 import heroValidator from "../../imports/HeroValidator.webp";
 
 const red = "#C8102E";
@@ -19,7 +20,7 @@ function MiniChart() {
 export function PremiumHome({ onApply, onBusiness }: { onApply: () => void; onBusiness: () => void }) {
   return (
     <div className="premium-home">
-      <section className="premium-hero">
+      <motion.section className="premium-hero" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6 }}>
         <div className="premium-ambient premium-ambient-one" />
         <div className="premium-ambient premium-ambient-two" />
         <div className="premium-shell premium-hero-grid">
@@ -42,11 +43,11 @@ export function PremiumHome({ onApply, onBusiness }: { onApply: () => void; onBu
             <div className="premium-float-card premium-float-card-mini"><CreditCard size={18} /><span>VINK Black<br /><small>•••• 2048</small></span></div>
           </div>
         </div>
-      </section>
-      <section className="premium-shell premium-bento-section"><div className="premium-section-heading"><div><p className="premium-kicker">The VINK advantage</p><h2>One platform.<br /><span>Every possibility.</span></h2></div><p>Designed around how Africa really moves — with clarity, control and zero friction.</p></div>
+      </motion.section>
+      <motion.section className="premium-shell premium-bento-section" initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} variants={{ hidden: { opacity: 0, y: 24 }, show: { opacity: 1, y: 0, transition: { duration: 0.5 } } }}><div className="premium-section-heading"><div><p className="premium-kicker">The VINK advantage</p><h2>One platform.<br /><span>Every possibility.</span></h2></div><p>Designed around how Africa really moves — with clarity, control and zero friction.</p></div>
         <div className="premium-bento-grid"><article className="premium-bento premium-bento-large"><div className="premium-bento-icon"><BarChart3 size={20} /></div><p className="premium-card-label">Built for momentum</p><h3>See the whole picture.</h3><p>Real-time insights across every account, route and revenue stream. No spreadsheets. No surprises.</p><MiniChart /></article><article className="premium-bento"><div className="premium-bento-icon"><ShieldCheck size={20} /></div><p className="premium-card-label">Protected by design</p><h3>Your money, fortified.</h3><p>Smart security that stays out of your way and steps in when it matters.</p></article><article className="premium-bento premium-bento-red"><div className="premium-bento-icon"><Globe2 size={20} /></div><p className="premium-card-label">Made to move</p><h3>Across borders. Without friction.</h3><p>Payments, cards and tools that keep pace with your world.</p><button className="premium-card-link" onClick={onApply}>Get started <ArrowUpRight size={15} /></button></article></div>
-      </section>
-      <section className="premium-shell premium-quote"><div className="premium-quote-mark">“</div><blockquote>We are not building another bank. We are building the infrastructure for Africa's next chapter.</blockquote><div className="premium-quote-line"><span /> VINK / OUR NORTH STAR</div></section>
+      </motion.section>
+      <motion.section className="premium-shell premium-quote" initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.35 }} transition={{ duration: 0.5 }}><div className="premium-quote-mark">“</div><blockquote>We are not building another bank. We are building the infrastructure for Africa's next chapter.</blockquote><div className="premium-quote-line"><span /> VINK / OUR NORTH STAR</div>      </motion.section>
     </div>
   );
 }
