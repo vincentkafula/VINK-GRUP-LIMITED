@@ -31,6 +31,21 @@
   --vk-navy: #101828;             /* dark navy for structural bars (headers, footers, sidebars) */
   --vk-navy-2: #182230;           /* a step lighter, for an active or raised item on navy */
 
+  /* Ivory and crimson: the warm light palette of the home page. Ivory is the page tint, ink the text on it, rose a wash of the brand red.
+     Night is the always-dark band (deep ink), the same in both themes. Contrast: ink-2 on ivory 7.1:1, ink-3 on ivory 4.9:1, on-night-2 on night 10.3:1. */
+  --vk-ivory: #f6f3ee;
+  --vk-ivory-2: #fbf9f5;
+  --vk-ink: #0b1020;
+  --vk-ink-2: #4a5068;
+  --vk-ink-3: #636a82;
+  --vk-hair: rgba(11, 16, 32, 0.1);
+  --vk-rose: #fbe3e7;
+  --vk-glow-rose: rgba(243, 201, 208, 0.6);   /* the soft pink glow in the corners of the light sections */
+  --vk-night: #0b1020;
+  --vk-night-2: #151b30;
+  --vk-on-night: #f6f3ee;
+  --vk-on-night-2: #b9bfd3;
+
   /* LEGACY ALIASES. "gold" used to be the brand accent; it now resolves to the brand red so any
      component still using bg-gold / text-gold / var(--vk-gold) lands on-brand. New code should use
      the brand tokens above. --vk-gold-fg is white, never dark, so text on the fill stays readable. */
@@ -66,6 +81,15 @@
 }
 
 .dark {
+  /* the ivory palette in the dark theme: the page tint becomes deep ink and the ink text becomes ivory */
+  --vk-ivory: #0b1020;
+  --vk-ivory-2: #0f1528;
+  --vk-ink: #f6f3ee;
+  --vk-ink-2: #b9bfd3;
+  --vk-ink-3: #8f97b3;
+  --vk-hair: rgba(246, 243, 238, 0.12);
+  --vk-rose: rgba(200, 16, 46, 0.16);
+  --vk-glow-rose: rgba(200, 16, 46, 0.2);    /* in the dark theme the same glow is a dark crimson, never a bright pink that would wash out the text above it */
   --vk-bg: #0c111d;
   --vk-surface: #101828;
   --vk-surface-2: #182230;
@@ -150,6 +174,17 @@
   --color-brand-soft: var(--vk-brand-soft);
   --color-navy: var(--vk-navy);
   --color-navy-2: var(--vk-navy-2);
+  --color-ivory: var(--vk-ivory);
+  --color-ivory-2: var(--vk-ivory-2);
+  --color-ink: var(--vk-ink);
+  --color-ink-2: var(--vk-ink-2);
+  --color-ink-3: var(--vk-ink-3);
+  --color-hair: var(--vk-hair);
+  --color-rose: var(--vk-rose);
+  --color-night: var(--vk-night);
+  --color-night-2: var(--vk-night-2);
+  --color-on-night: var(--vk-on-night);
+  --color-on-night-2: var(--vk-on-night-2);
   --color-crimson-text: var(--vk-crimson-text);
   --color-gold: var(--vk-gold);
   --color-gold-text: var(--vk-gold-text);

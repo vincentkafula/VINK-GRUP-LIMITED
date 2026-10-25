@@ -11,7 +11,7 @@ const TRUST_ITEMS = [
 
 export const ProtectionSection = memo(function ProtectionSection() {
   return (
-    <section className="vkp-dark vkp-wine vkp-grain relative overflow-hidden py-8 sm:py-10 lg:py-12">
+    <section className="vkp-dark vkp-night vkp-grain relative overflow-hidden py-8 sm:py-10 lg:py-12">
       <div aria-hidden="true" className="vkp-hairline absolute inset-x-0 top-0" />
       <div aria-hidden="true" className="vkp-dots" />
       <div aria-hidden="true" className="vkp-glow -left-20 top-1/4 h-96 w-96 opacity-40" style={{ background: "#c8102e" }} />

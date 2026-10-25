@@ -116,18 +116,18 @@ export function CreditCardsSection({ onApply }: { onApply?: () => void }) {
   const [viewerCard, setViewerCard] = useState<typeof CARDS[0] | null>(null);
 
   return (
-    <section className="relative overflow-hidden py-8 sm:py-10" style={{ background: "linear-gradient(180deg,var(--vk-surface-2),var(--vk-bg) 85%)" }}>
+    <section className="relative overflow-hidden py-8 sm:py-10" style={{ background: "linear-gradient(180deg,var(--vk-ivory) 0%,var(--vk-ivory-2) 100%)" }}>
       <div aria-hidden="true" className="vkp-dots" />
       <div aria-hidden="true" className="vkp-glow left-1/2 top-24 h-72 w-[34rem] max-w-full -translate-x-1/2 opacity-[0.14]" style={{ background: "#c8102e" }} />
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <span className="inline-block text-xs font-bold uppercase tracking-[0.14em] px-3.5 py-1.5 rounded-full mb-4 text-white" style={{ background: "linear-gradient(135deg,#e8405b,#c8102e 60%,#a50f27)", boxShadow: "0 10px 20px -10px rgba(200,16,46,0.8)" }}>Compare Cards</span>
-          <h2 className="font-display text-3xl sm:text-5xl tracking-[-0.015em] text-fg font-semibold">Choose Your Perfect <span className="vkp-gradient-text">VINK Card</span></h2>
-          <p className="vkp-chip mx-auto mt-4 inline-block rounded-full px-3.5 py-1.5 text-xs font-medium text-fg-muted">Planned cards and benefits, available at our June 2027 launch.</p>
+          <h2 className="font-display text-3xl sm:text-5xl tracking-[-0.028em] text-ink font-semibold">Choose Your Perfect <span className="vkp-gradient-text">VINK Card</span></h2>
+          <p className="vkp-chip mx-auto mt-4 inline-block rounded-full px-3.5 py-1.5 text-xs font-medium text-ink-2">Planned cards and benefits, available at our June 2027 launch.</p>
         </div>
 
-        <p className="hidden [@media(hover:hover)]:block text-center text-xs font-medium text-fg-muted mb-5">Roll over image to zoom in · click a card to open it</p>
-        <p className="text-center text-xs font-medium text-fg-muted mb-5 [@media(hover:hover)]:hidden">Tap a card to see it up close</p>
+        <p className="hidden [@media(hover:hover)]:block text-center text-xs font-medium text-ink-2 mb-5">Roll over image to zoom in · click a card to open it</p>
+        <p className="text-center text-xs font-medium text-ink-2 mb-5 [@media(hover:hover)]:hidden">Tap a card to see it up close</p>
 
         {/* The stage: the cards fan out in perspective around the chosen one */}
         <div className="vkp-stage relative mb-10 pt-6 pb-8">
@@ -144,7 +144,7 @@ export function CreditCardsSection({ onApply }: { onApply?: () => void }) {
                     <CardVisual card={c} active={active === i} />
                     <span aria-hidden="true" className="absolute -bottom-3 left-6 right-6 h-4 rounded-[50%] blur-lg transition-opacity duration-500" style={{ background: "rgba(16,24,40,0.55)", opacity: active === i ? 0.7 : 0.25 }} />
                   </span>
-                  <span className={`mt-2 rounded-full px-3 py-1 text-xs font-semibold transition-colors duration-300 ${active === i ? "bg-brand text-brand-fg shadow-card" : "text-fg-muted group-hover:text-fg"}`}>{c.sub}</span>
+                  <span className={`mt-2 rounded-full px-3 py-1 text-xs font-semibold transition-colors duration-300 ${active === i ? "bg-brand text-brand-fg shadow-card" : "text-ink-2 group-hover:text-fg"}`}>{c.sub}</span>
                 </button>
               );
             })}
@@ -155,7 +155,7 @@ export function CreditCardsSection({ onApply }: { onApply?: () => void }) {
         <div key={active} className="vkp-rise mx-auto mb-8 flex max-w-2xl flex-col items-center gap-3 rounded-3xl border border-line bg-surface px-6 py-6 text-center shadow-card" style={{ boxShadow: "0 30px 60px -34px rgba(200,16,46,0.4)" }}>
           <span className="rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-white" style={{ background: "linear-gradient(135deg,#e8405b,#c8102e 60%,#a50f27)" }}>{CARDS[active].tier}</span>
           <p className="font-display text-2xl font-semibold text-fg">{CARDS[active].name}</p>
-          <p className="text-fg-muted">{CARDS[active].benefit}</p>
+          <p className="text-ink-2">{CARDS[active].benefit}</p>
           <button type="button" onClick={() => setViewerCard(CARDS[active])} className="mt-1 inline-flex h-11 items-center rounded-full border-2 border-brand px-6 text-sm font-semibold text-crimson-text transition-colors hover:bg-brand hover:text-brand-fg">View it up close</button>
         </div>
 

@@ -218,7 +218,7 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
                 <path d="M14.7 5.42c.66-.8 1.11-1.92 .99-3.03-.95.04-2.11.63-2.8 1.43-.61.7-1.15 1.86-1 2.94 1.06.08 2.15-.53 2.81-1.34z"/>
               </svg>
               <div>
-                <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 11, lineHeight: 1, margin: 0, letterSpacing: "0.06em" }}>App Store</p>
+                <p style={{ color: "rgba(255,255,255,0.88)", fontSize: 11, lineHeight: 1, margin: 0, letterSpacing: "0.06em" }}>App Store</p>
                 <p style={{ color: "#fff", fontSize: 15, fontWeight: 600, lineHeight: "20px", margin: "3px 0 0", letterSpacing: "-0.01em" }}>Coming Soon</p>
               </div>
             </div>
@@ -239,7 +239,7 @@ export function Footer({ onLinkClick }: { onLinkClick?: (label: string) => void 
                 <path d="M13.5 12L21 7.5V16.5L13.5 12Z"  fill="#4285F4" />
               </svg>
               <div>
-                <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 11, lineHeight: 1, margin: 0, letterSpacing: "0.06em" }}>Google Play</p>
+                <p style={{ color: "rgba(255,255,255,0.88)", fontSize: 11, lineHeight: 1, margin: 0, letterSpacing: "0.06em" }}>Google Play</p>
                 <p style={{ color: "#fff", fontSize: 15, fontWeight: 600, lineHeight: "20px", margin: "3px 0 0", letterSpacing: "-0.01em" }}>Coming Soon</p>
               </div>
             </div>

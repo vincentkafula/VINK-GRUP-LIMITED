@@ -33,16 +33,16 @@ function BenefitCard({ b, index }: { b: Benefit; index: number }) {
         <span aria-hidden="true" className={`size-8 shrink-0 rounded-lg ${b.featured ? "vkp-tile-glass inline-flex items-center justify-center" : "vkp-tile"}`}>
           <Icon aria-hidden className="size-4 transition-transform duration-300 group-hover:scale-110" strokeWidth={1.6} />
         </span>
-        <p className="text-[15px] font-bold leading-tight text-white">{b.title}</p>
-        <span aria-hidden="true" className="ml-auto self-start text-[11px] font-bold tracking-[0.2em] text-white/40" style={{ fontFamily: "var(--font-mono)" }}>{String(index + 1).padStart(2, "0")}</span>
+        <p className={`text-[15px] font-bold leading-tight ${b.featured ? "text-white" : "text-ink"}`}>{b.title}</p>
+        <span aria-hidden="true" className={`ml-auto self-start text-[11px] font-bold tracking-[0.2em] ${b.featured ? "text-white/90" : "text-ink-3"}`} style={{ fontFamily: "var(--font-mono)" }}>{String(index + 1).padStart(2, "0")}</span>
       </div>
-      <p className={`mb-2 text-[12px] leading-[1.35] ${b.featured ? "text-white/90" : "text-white/65"}`}>{b.desc}</p>
+      <p className={`mb-2 text-[12px] leading-[1.35] ${b.featured ? "text-white" : "text-ink-2"}`}>{b.desc}</p>
       <div className="mt-auto flex flex-wrap items-center justify-between gap-2">
-        <span aria-hidden="true" className={`flex size-6 items-center justify-center rounded-full transition-all duration-300 group-hover:translate-x-0.5 ${b.featured ? "bg-white text-[color:var(--vkv-violet)]" : "bg-white/10 text-white group-hover:bg-white group-hover:text-[color:var(--vkv-violet)]"}`}>
+        <span aria-hidden="true" className={`flex size-6 items-center justify-center rounded-full transition-all duration-300 group-hover:translate-x-0.5 ${b.featured ? "bg-white text-brand" : "bg-rose text-[color:var(--vk-crimson-text)] group-hover:bg-brand group-hover:text-white"}`}>
           <ArrowRight className="size-3.5" />
         </span>
         {b.featured && (
-          <span className="flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-[10.5px] font-bold" style={{ color: "var(--vkv-violet)" }}>
+          <span className="flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-[10.5px] font-bold" style={{ color: "var(--vk-brand)" }}>
             <Flame className="size-3" aria-hidden="true" />Most Popular
           </span>
         )}
@@ -54,21 +54,21 @@ function BenefitCard({ b, index }: { b: Benefit; index: number }) {
 export const FeaturesSection = memo(function FeaturesSection({ onExploreAll }: { onExploreAll?: () => void }) {
   const [showCardViewer, setShowCardViewer] = useState(false);
   return (
-    <section className="vkp-ink vkp-violet vkp-grain relative overflow-hidden py-5 sm:py-6 lg:py-6">
+    <section className="vkp-ivory relative overflow-hidden py-5 sm:py-6 lg:py-6">
       <div aria-hidden="true" className="vkp-dots" />
-      <div aria-hidden="true" className="vkp-glow left-1/2 top-0 h-[26rem] w-[44rem] max-w-full -translate-x-1/2 opacity-30" style={{ background: "var(--vkv-violet)" }} />
-      <div aria-hidden="true" className="vkp-glow -left-32 bottom-0 h-80 w-80 opacity-20" style={{ background: "#3b4cca" }} />
+      <div aria-hidden="true" className="vkp-glow left-1/2 top-0 h-[26rem] w-[44rem] max-w-full -translate-x-1/2 opacity-10" style={{ background: "var(--vk-brand)" }} />
+      <div aria-hidden="true" className="vkp-glow -left-32 bottom-0 h-80 w-80" style={{ background: "var(--vk-glow-rose)" }} />
       <div className="relative z-[1] mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Heading: centred and large */}
         <div className="mx-auto max-w-4xl text-center">
           <div className="flex flex-wrap items-center justify-center gap-2">
-            <span className="inline-block rounded-full border border-white/20 bg-white/5 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-[color:var(--vkv-orchid-soft)]">More Than a Card</span>
-            <p className="vkp-glass-dark inline-block rounded-full px-3 py-1 text-xs font-medium text-white/75">Planned benefits, available at our June 2027 launch.</p>
+            <span className="inline-block rounded-full bg-rose px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-[color:var(--vk-crimson-text)]">More Than a Card</span>
+            <p className="vkp-glass-dark inline-block rounded-full px-3 py-1 text-xs font-medium text-ink-2">Planned benefits, available at our June 2027 launch.</p>
           </div>
-          <h2 className="font-display mt-3 text-3xl font-semibold leading-[1.05] tracking-[-0.02em] text-white sm:text-4xl lg:text-[2.5rem]">
+          <h2 className="font-display mt-3 text-3xl font-semibold leading-[1.05] tracking-[-0.028em] text-ink sm:text-4xl lg:text-[2.5rem]">
             Designed for the way <span className="vkp-gradient-text">you</span> live
           </h2>
-          <p className="mx-auto mt-2 max-w-2xl text-sm leading-relaxed text-white/70">
+          <p className="mx-auto mt-2 max-w-2xl text-sm leading-relaxed text-ink-2">
             Unlock a world of exclusive benefits that reward your everyday and elevate every moment.
           </p>
         </div>
@@ -78,13 +78,13 @@ export const FeaturesSection = memo(function FeaturesSection({ onExploreAll }: {
           {/* The card, on the left */}
           <div className="order-1">
             <div className="relative mx-auto max-w-[21rem] py-3">
-              <div aria-hidden="true" className="absolute inset-0 m-auto aspect-square w-[120%] rounded-full opacity-70" style={{ background: "radial-gradient(circle,rgba(93,30,251,0.55),transparent 62%)" }} />
-              <div aria-hidden="true" className="absolute inset-0 m-auto aspect-square w-[108%] animate-[spin_70s_linear_infinite] rounded-full border border-dashed border-white/20 motion-reduce:animate-none" />
-              <div aria-hidden="true" className="absolute inset-0 m-auto aspect-square w-[86%] animate-[spin_55s_linear_infinite_reverse] rounded-full border border-white/10 motion-reduce:animate-none" />
-              <div aria-hidden="true" className="absolute -bottom-1 left-10 right-10 h-8 rounded-[50%] bg-black/70 blur-2xl" />
+              <div aria-hidden="true" className="absolute inset-0 m-auto aspect-square w-[120%] rounded-full opacity-70" style={{ background: "radial-gradient(circle,rgba(200,16,46,0.2),transparent 62%)" }} />
+              <div aria-hidden="true" className="absolute inset-0 m-auto aspect-square w-[108%] animate-[spin_70s_linear_infinite] rounded-full border border-dashed border-hair motion-reduce:animate-none" />
+              <div aria-hidden="true" className="absolute inset-0 m-auto aspect-square w-[86%] animate-[spin_55s_linear_infinite_reverse] rounded-full border border-hair motion-reduce:animate-none" />
+              <div aria-hidden="true" className="absolute -bottom-1 left-10 right-10 h-8 rounded-[50%] bg-[#0b1020]/30 blur-2xl" />
               <button type="button" onClick={() => setShowCardViewer(true)} aria-label="View the VINK Visa Signature card in 3D" className="vkp-float relative block w-full rounded-2xl">
                 {/* Rolling the mouse over the card magnifies the part under it; a tap or a click opens it in 3D */}
-                <span className="relative block rounded-[1.2rem] p-[2px]" style={{ background: "linear-gradient(135deg,rgba(255,255,255,0.95),rgba(183,124,255,0.8) 40%,rgba(255,255,255,0.15))", boxShadow: "0 40px 70px -26px rgba(0,0,0,0.9), 0 0 60px -10px rgba(93,30,251,0.6)" }}>
+                <span className="relative block rounded-[1.2rem] p-[2px]" style={{ background: "linear-gradient(135deg,#ffffff,rgba(200,16,46,0.55) 42%,rgba(255,255,255,0.4))", boxShadow: "0 36px 60px -28px rgba(11,16,32,0.45), 0 0 56px -12px rgba(200,16,46,0.35)" }}>
                   <span className="relative block aspect-[640/404] w-full overflow-hidden rounded-2xl">
                     <ZoomImage src={vinkGoldFeatureCard} alt="VINK Visa Signature card" zoom={2.2} className="h-full w-full object-cover" />
                   </span>
@@ -93,18 +93,18 @@ export const FeaturesSection = memo(function FeaturesSection({ onExploreAll }: {
 
               <div className="vkp-glass-dark absolute -top-3 right-0 flex items-center gap-2 rounded-xl px-3 py-2 shadow-lg sm:-right-10">
                 <span aria-hidden="true" className="vkp-tile size-7 rounded-lg"><Headphones className="size-3.5" /></span>
-                <span className="text-xs font-bold leading-tight text-white">24/7<br />Support</span>
+                <span className="text-xs font-bold leading-tight text-ink">24/7<br />Support</span>
               </div>
               <div className="vkp-glass-dark absolute -left-1 bottom-10 flex items-center gap-2 rounded-xl px-3 py-2 shadow-lg sm:-left-10">
                 <span aria-hidden="true" className="vkp-tile size-7 rounded-lg"><ShieldCheck className="size-3.5" /></span>
-                <span className="text-xs font-bold leading-tight text-white">Secure<br />Transactions</span>
+                <span className="text-xs font-bold leading-tight text-ink">Secure<br />Transactions</span>
               </div>
               <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-white px-4 py-2 shadow-lg">
-                <span className="inline-flex items-center gap-1 text-xs font-bold" style={{ color: "#101828" }}><Sparkles className="size-3 text-[color:var(--vkv-violet)]" aria-hidden="true" />Smart. Simple. Smarter.</span>
+                <span className="inline-flex items-center gap-1 text-xs font-bold" style={{ color: "#0b1020" }}><Sparkles className="size-3 text-brand" aria-hidden="true" />Smart. Simple. Smarter.</span>
               </div>
             </div>
-            <p className="mt-4 hidden text-center text-xs font-medium text-white/60 [@media(hover:hover)]:block">Roll over image to zoom in · click the card to open it</p>
-            <p className="mt-4 text-center text-xs font-medium text-white/60 [@media(hover:hover)]:hidden">Tap the card to see it in 3D</p>
+            <p className="mt-4 hidden text-center text-xs font-medium text-ink-2 [@media(hover:hover)]:block">Roll over image to zoom in · click the card to open it</p>
+            <p className="mt-4 text-center text-xs font-medium text-ink-2 [@media(hover:hover)]:hidden">Tap the card to see it in 3D</p>
           </div>
 
           <div className="order-2 grid grid-cols-2 gap-2 md:grid-cols-3">
@@ -117,11 +117,11 @@ export const FeaturesSection = memo(function FeaturesSection({ onExploreAll }: {
           <div aria-hidden="true" className="vkp-hairline" />
           <div className="grid grid-cols-2 gap-x-6 gap-y-4 py-2 lg:grid-cols-4 lg:gap-0">
             {STATS.map((s, i) => (
-              <div key={s.label} className={`group flex flex-col items-center px-3 text-center lg:flex-row lg:justify-center lg:gap-3 lg:text-left ${i > 0 ? "lg:border-l lg:border-white/10" : ""}`}>
+              <div key={s.label} className={`group flex flex-col items-center px-3 text-center lg:flex-row lg:justify-center lg:gap-3 lg:text-left ${i > 0 ? "lg:border-l lg:border-hair" : ""}`}>
                 <span aria-hidden="true" className="vkp-tile-glass mb-2 inline-flex size-8 shrink-0 items-center justify-center rounded-xl lg:mb-0"><s.Icon aria-hidden className="size-4 transition-transform duration-300 group-hover:scale-110" strokeWidth={1.6} /></span>
                 <div>
                   <p className="vkp-figure text-2xl leading-none sm:text-3xl">{s.value}</p>
-                  <p className="mt-1 max-w-[15rem] text-[13px] leading-snug text-white/65">{s.label}</p>
+                  <p className="mt-1 max-w-[15rem] text-[13px] leading-snug text-ink-2">{s.label}</p>
                 </div>
               </div>
             ))}
@@ -131,7 +131,7 @@ export const FeaturesSection = memo(function FeaturesSection({ onExploreAll }: {
 
         {onExploreAll && (
           <div className="mt-3 text-center">
-            <button onClick={onExploreAll} className="cursor-pointer border-none bg-transparent text-sm font-semibold text-[color:var(--vkv-orchid-soft)] hover:underline">
+            <button onClick={onExploreAll} className="cursor-pointer border-none bg-transparent text-sm font-semibold text-[color:var(--vk-crimson-text)] hover:underline">
               Explore All Features →
             </button>
           </div>

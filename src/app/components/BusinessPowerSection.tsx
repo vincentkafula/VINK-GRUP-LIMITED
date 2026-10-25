@@ -41,7 +41,7 @@ function RouteMap() {
 
 export const BusinessPowerSection = memo(function BusinessPowerSection({ onSubNavClick }: { onSubNavClick?: (item: string) => void }) {
   return (
-    <section className="vkp-ink vkp-grain py-5 sm:py-6 lg:py-6 relative overflow-hidden">
+    <section className="vkp-dark vkp-night vkp-grain py-5 sm:py-6 lg:py-6 relative overflow-hidden">
       {/* a dotted "map" fading in from the right, and two soft glows */}
       <div aria-hidden="true" className="vkp-hairline absolute inset-x-0 top-0" />
       <div aria-hidden="true" className="vkp-dots" style={{ WebkitMaskImage: "radial-gradient(ellipse 60% 80% at 85% 45%, #000 20%, transparent 75%)", maskImage: "radial-gradient(ellipse 60% 80% at 85% 45%, #000 20%, transparent 75%)" }} />
