@@ -97,13 +97,13 @@ export function HeroSection({ onApplyClick }: { onApplyClick?: () => void }) {
 
   return (
     <section className="vkp-grain text-white overflow-hidden relative -mt-[var(--vk-header-h,65px)] pt-[var(--vk-header-h,65px)]" aria-roledescription="carousel" aria-label="Featured" onMouseEnter={() => setHold(true)} onMouseLeave={() => setHold(false)} onFocusCapture={() => setHold(true)} onBlurCapture={() => setHold(false)}
-      style={{ background: "#C8102E" }}>
+      style={{ background: "linear-gradient(135deg, #0A0F18 0%, #101A29 54%, #171018 100%)" }}>
       {/* Signature motif — concentric "tap" rings, evoking the NFC contactless
           gesture that's central to how VINK actually works. Deliberately
           restrained: one quiet element per section rather than scattered
           decoration, positioned so it reads as ambient texture, not a focal
           point competing with the headline or product image. */}
-      <div aria-hidden="true" className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(60% 80% at 12% 0%, rgba(255,255,255,0.2), transparent 62%), radial-gradient(70% 95% at 100% 100%, rgba(112,6,26,0.6), transparent 62%)" }} />
+      <div aria-hidden="true" className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(60% 80% at 12% 0%, rgba(200,16,46,0.16), transparent 62%), radial-gradient(70% 95% at 100% 100%, rgba(200,16,46,0.22), transparent 62%), linear-gradient(120deg, transparent 35%, rgba(255,255,255,0.035) 100%)" }} />
       <div aria-hidden="true" className="vkp-dots-on-red" />
       <div className="absolute -right-24 top-1/2 -translate-y-1/2 w-[560px] h-[560px] pointer-events-none hidden md:block" aria-hidden="true">
         {[0, 1, 2, 3].map(i => (
@@ -117,7 +117,7 @@ export function HeroSection({ onApplyClick }: { onApplyClick?: () => void }) {
       <div className="absolute top-0 right-0 w-96 h-96 rounded-full opacity-10 pointer-events-none"
         style={{ background: "radial-gradient(circle,#fff 0%,transparent 70%)", transform: "translate(30%,-30%)" }} />
       <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full opacity-10 pointer-events-none"
-        style={{ background: "radial-gradient(circle,#8F1027 0%,transparent 70%)", transform: "translate(-40%,40%)" }} />
+        style={{ background: "radial-gradient(circle,rgba(200,16,46,0.55) 0%,transparent 70%)", transform: "translate(-40%,40%)" }} />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-10 md:pt-8 md:pb-12 lg:pt-10 lg:pb-14 relative z-10">
         <div className={"grid grid-cols-1 gap-8 items-center transition-[grid-template-columns] duration-500 " + (slide.wide ? "md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]" : "md:grid-cols-2")}>
@@ -151,7 +151,7 @@ export function HeroSection({ onApplyClick }: { onApplyClick?: () => void }) {
             </div>
 
             {/* Trust stats */}
-            <div className="vkp-glass-dark inline-flex max-w-full justify-center md:justify-start rounded-2xl px-2 py-2 sm:px-3">
+            <div className="vkp-glass-dark inline-flex max-w-full justify-center md:justify-start rounded-2xl px-2 py-2 sm:px-3" style={{ border: "1px solid rgba(255,255,255,0.14)", boxShadow: "0 18px 48px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.08)" }}>
               {slide.trust.map((t, i) => (
                 <div key={i} className={"text-center md:text-left px-4 sm:px-5 " + (i > 0 ? "border-l border-white/20" : "")}>
                   <p className="text-xl" style={{ color: "#ffffff", fontFamily: "var(--font-mono)", fontWeight: 700 }}>{t.value}</p>
