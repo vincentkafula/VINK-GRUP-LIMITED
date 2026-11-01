@@ -65,6 +65,18 @@ An **owner or Super Administrator** can allow one approval anyway: they press *A
 
 Applications that were submitted *before* the checks were switched on cannot be approved until the applicant confirms (they can do it from their signed-in home, or you can override). Plan for that when you switch it on.
 
+## What VINK keeps, and what that obliges you to do
+
+**Through Sumsub:** the ID document, selfie, company documents and the details of directors and owners go to Sumsub and stay there. VINK keeps only the result of each check (tables `identity_checks` and `business_checks`).
+
+**Through the "Start Now" application form:** that form asks for the applicant's **ID number, passport number, selfie photo, driver's licence and vehicle documents** and **VINK keeps them** in the application record (`applications.tier_data`). The consent on the identity card says exactly this ("VINK keeps the result of the check, together with the information I gave in my application"); do not change it back to say VINK keeps nothing. As things stand:
+
+- They are stored as ordinary text. The platform's field encryption (`DATA_ENCRYPTION_KEY`, used for two-factor secrets and bank links) is **not** applied to application data.
+- The staff applications screen prints every text value in the record, so reviewers see the ID number as plain text, and the selfie (stored as a long text string) is printed with it. Every reviewer role can open applications.
+- There is no retention limit: nothing deletes an application's details after a period.
+
+An ID number is personal information, and a selfie used to confirm who someone is is biometric information, which POPIA treats as special personal information with stricter conditions. Decide with your legal adviser: how long to keep them, who may see them (and whether staff should see them masked), whether to encrypt them at rest, and that your privacy notice names them and says why. **None of this has been changed:** only the consent wording was corrected to match what is stored.
+
 ## What we store
 
 Table `identity_checks`, one row per application (`kind` is `application` or `sponsorship`): Sumsub's applicant id, our opaque external id, the level, the stage, Sumsub's answer (GREEN/RED), whether a retry is allowed, its reasons and notes (staff only), the time consent was given, the number of attempts, and any override (reason, who, when). Table `identity_events` only remembers which events were applied, so a repeated event is applied once.

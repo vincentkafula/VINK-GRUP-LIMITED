@@ -53,7 +53,7 @@ describe("starting the check", () => {
   });
   it("names Sumsub and says who keeps the documents, next to the box", () => {
     mount(); const text = screen.getByRole("checkbox").closest("label")!.textContent!;
-    expect(text).toContain("Sumsub"); expect(text).toMatch(/VINK does not keep them/);
+    expect(text).toContain("Sumsub"); expect(text).toMatch(/Sumsub holds these documents\. VINK keeps the result of the check, together with the information I gave in my application\./);
   });
   it("sends the reference, the email and the agreement to the right place, then opens Sumsub's widget with the token it was given", async () => {
     const f = tokenReply("_act-777"); globalThis.fetch = f; const sdk = fakeSdk(); mount(); tick(); press(/Confirm my identity/);
@@ -160,5 +160,9 @@ describe("after the applicant finishes in the widget", () => {
   });
   it("sends no party at all for the person check, exactly as before", async () => {
     globalThis.fetch = tokenReply(); const sdk = fakeSdk(); mount(); tick(); press(/Confirm my identity/); await waitFor(() => expect(sdk.launched).toBe("#sumsub-websdk-container-person")); expect(JSON.parse(String(vi.mocked(globalThis.fetch).mock.calls[0][1]?.body))).not.toHaveProperty("party");
+  });
+
+  it("never tells the applicant that VINK does not keep their details: the application form stores the ID number and selfie it asks for, so the consent says only what is true", () => {
+    for (const party of ["person", "company"] as const) { render(<IdentityCard identity={view()} kind="application" party={party} refNo="VNK-BA-ABC123456" supportEmail="s@x.co" onChanged={vi.fn()} />); const t = document.body.textContent ?? ""; expect(t, party).not.toMatch(/does not keep|doesn't keep|never keep|not stored|not kept/i); expect(t, party).toMatch(/VINK keeps the result of the check, together with the information I gave in my application/); cleanup(); }
   });
 });
