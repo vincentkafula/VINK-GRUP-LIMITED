@@ -29,7 +29,9 @@ import geoCurrencyRouter from "./routes/geoCurrency.js";
 import rbacRouter, { MODULE_SECTIONS } from "./routes/rbac.js";
 import { createDepartmentsRouter, loadCustomDepartments } from "./routes/departmentsRouter.js";
 import { setBroadcaster } from "./services/wsBroadcast.js";
-import applicationsRouter from "./routes/applicationsRouter.js";
+import applicationsRouter, { setApplicationsIdentity } from "./routes/applicationsRouter.js";
+import { createIdentityModule } from "./services/sumsub/module.js";
+import { createIdentityRouter } from "./routes/identityRouter.js";
 import otpRouter from "./routes/otpRouter.js";
 import jobsRouter from "./routes/jobsRouter.js";
 import mastercardRouter from "./routes/mastercard.js";
@@ -59,7 +61,7 @@ import { liveStartBlockers } from "./payments/goLive.js";
 import { createEmailSender } from "./auth/email.js";
 import { hasDb, pool } from "./db/pool.js";
 import { migrateAndSeed } from "./db/migrate.js";
-import { requireAuth, requireRole, JWT_SECRET } from "./middleware/auth.js";
+import { requireAuth, requireRole, optionalAuth, JWT_SECRET } from "./middleware/auth.js";
 import { createPortalRouter } from "./routes/portal.js";
 import { createBankAdminRouter, manshyaBankCore, seedBankLinks, readChannelAccounts } from "./portal/bankLinks.js";
 import { syncManshyaFees } from "./config/manshyaFeeSync.js";
@@ -152,6 +154,12 @@ app.use("/api/inbound", createInboundRouter({
 // The bank's signed feed of credits to the pooled accounts: raw body for the signature, so also before the JSON parser. Wired up below once the money engine exists.
 const bankFeed: { router?: express.Router } = {};
 app.use("/api/webhooks/bank-credits", (req, res, next) => (bankFeed.router ? bankFeed.router(req, res, next) : next()));
+
+// Confirming that a real person is applying, by Sumsub (services/sumsub): ONE system for every kind of application (sponsorships, and the applications table: accounts, credit cards,
+// loans, SIM and service applications). Sumsub signs the exact bytes it sends, so its webhook needs the raw body and sits before the JSON parser. It stays off until SUMSUB_APP_TOKEN and
+// SUMSUB_SECRET_KEY are set (docs/SUMSUB.md).
+const identityModule = pool ? createIdentityModule({ db: pool }) : null;
+if (identityModule) { app.use("/api/webhooks/sumsub", identityModule.webhookRouter); setApplicationsIdentity(identityModule.identity); }
 
 app.use(express.json({ limit: "1mb" }));
 app.use(requestLogger);
@@ -254,11 +262,12 @@ app.use("/api/public",             publicRouter);
 const contactService = pool ? createContactService({ db: pool, mail: createEmailSender() }) : null;
 // Online sponsorship: applications and their documents, review and scoring, awards and agreements, payments, replies and final reports (see services/sponsorship*.ts).
 // Applicants use /api/sponsorship. Staff use /api/admin/sponsorship: Super Administrators and people approved for the "Sponsorships and Partnerships" section (the router checks).
-const sponsorship = pool ? createSponsorship({ db: pool, mail: createEmailSender() }) : null;
+const sponsorship = pool ? createSponsorship({ db: pool, mail: createEmailSender(), identity: identityModule?.identity }) : null;
 if (sponsorship) {
   app.use("/api/sponsorship", sponsorship.publicRouter);
   app.use("/api/admin/sponsorship", requireAuth, sponsorship.adminRouter);
 }
+if (identityModule) app.use("/api/identity", createIdentityRouter({ identity: identityModule.identity, auth: optionalAuth }));      // where an applicant's check stands, and starting it (any kind of application)
 if (contactService) {
   app.use("/api/contact", createContactRouter(contactService));
   app.use("/api/admin/contact", requireAuth, requireRole("owner", "superadmin"), createContactAdminRouter({ db: pool!, svc: contactService }));
@@ -383,6 +392,8 @@ app.get("/api", (_req, res) => {
       "/api/otp/*               — one-time-passcode verification",
       "/api/jobs/*              — job applications (HR)",
       "/api/sponsorship/*       — online sponsorship applications and tracking",
+      "/api/identity/*         — confirming a real person is applying, by Sumsub (every kind of application)",
+      "/api/webhooks/sumsub    — Sumsub identity-check events (signed)",
       "/api/public/*            — public contact form, newsletter signup, account applications",
       "/api/financial/*         — financial reports",
       "/api/levy/*              — AFC trip levy, driver/owner/investor/marshall revenue split",

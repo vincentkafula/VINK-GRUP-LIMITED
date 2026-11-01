@@ -17,6 +17,9 @@ import {
   type AppTier,
 } from "../services/applicationsApi";
 import { BRAND } from "../brand";
+import { AdminIdentityPanel } from "./AdminIdentityPanel";
+import { getSession } from "../services/apiClient";
+import type { IdentityStaff } from "../services/identityStaff";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
@@ -72,19 +75,26 @@ function StatCard({ icon, label, value, color, sub }: { icon: React.ReactNode; l
 
 // ─── Application detail panel ─────────────────────────────────────────────────
 function ApplicationDetail({ app, onClose, onStatusUpdate }: {
-  app: Application; onClose: () => void; onStatusUpdate: (ref: string, status: AppStatus, reason: string) => void;
+  app: Application; onClose: () => void; onStatusUpdate: (ref: string, status: AppStatus, reason: string) => Promise<string | null>;       // an error message, or null when it worked
 }) {
   const [newStatus, setNewStatus] = useState<AppStatus>(app.status);
   const [reason, setReason] = useState("");
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  // confirming that a real person is applying: the full detail brings it a moment after the panel opens
+  const [identity, setIdentity] = useState<IdentityStaff | undefined>(app.identity);
+  useEffect(() => { setIdentity(app.identity); }, [app.identity]);
+  const canOverride = ["owner", "superadmin"].includes(getSession()?.role ?? "");        // (the server checks this too)
+  const approvalBlocked = newStatus === "approved" && !!identity && identity.requirement === "required" && !identity.confirmed && !identity.override;
   const sc = STATUS_CFG[app.status];
   const tc = TYPE_CFG[app.tier] ?? TYPE_CFG.personal;
 
   const save = async () => {
     if (!reason.trim()) return; // the backend requires a reason for every status change — enforce it here too, not just server-side
-    setSaving(true);
-    await onStatusUpdate(app.referenceNumber, newStatus, reason.trim());
+    setSaving(true); setError("");
+    const failed = await onStatusUpdate(app.referenceNumber, newStatus, reason.trim());
     setSaving(false);
+    if (failed) setError(failed);
   };
 
   return (
@@ -124,6 +134,10 @@ function ApplicationDetail({ app, onClose, onStatusUpdate }: {
               <div><p className="text-xs text-fg-subtle">Account type requested</p><p className="font-semibold text-fg">{app.accountTypeRequested || "—"}</p></div>
             </div>
           </div>
+
+          {identity && <AdminIdentityPanel identity={identity} canOverride={canOverride}
+            onRefresh={async () => { const r = await applicationsApi.identityRefresh(app.referenceNumber); if (r.success && r.data) { setIdentity(r.data); return null; } return r.error ?? "Could not ask Sumsub just now."; }}
+            onOverride={async (why) => { const r = await applicationsApi.identityOverride(app.referenceNumber, why); if (r.success && r.data) { setIdentity(r.data); setError(""); return null; } return r.error ?? "Could not save the override."; }} />}
 
           {/* Tier-specific data */}
           {app.tierData && Object.keys(app.tierData).length > 0 && (
@@ -174,6 +188,7 @@ function ApplicationDetail({ app, onClose, onStatusUpdate }: {
                 );
               })}
             </div>
+            {approvalBlocked && <p className="rounded-lg px-3 py-2 text-xs font-semibold" role="note" style={{ color: "var(--vk-warn)", background: "var(--vk-warn-bg)" }}>The applicant's identity is not confirmed yet, so this approval will be refused.{canOverride ? " You can allow it with a reason in the identity check above." : " A Super Administrator can allow it with a reason."}</p>}
             <textarea
               value={reason}
               onChange={e => setReason(e.target.value)}
@@ -186,6 +201,7 @@ function ApplicationDetail({ app, onClose, onStatusUpdate }: {
               style={{ background: `linear-gradient(135deg,${P},#A50F27)` }}>
               {saving ? "Saving…" : "Save Changes"}
             </button>
+            {error && <p className="text-sm font-semibold" role="alert" style={{ color: "var(--vk-bad)" }}>{error}</p>}
           </div>
         </div>
       </div>
@@ -228,13 +244,22 @@ export function AdminApplicationsViewer({ isOpen, onClose }: Props) {
 
   useEffect(() => { if (isOpen) load(); }, [isOpen, load]);
 
-  const handleStatusUpdate = async (ref: string, status: AppStatus, reason: string) => {
+  const handleStatusUpdate = async (ref: string, status: AppStatus, reason: string): Promise<string | null> => {
     const result = await applicationsApi.updateStatus(ref, status, reason);
     if (result.success) {
       setApps(prev => prev.map(a => a.referenceNumber === ref ? { ...a, status, statusReason: reason } : a));
       if (selectedApp?.referenceNumber === ref) setSelectedApp(a => a ? { ...a, status, statusReason: reason } : a);
       load(); // refresh
+      return null;
     }
+    return result.error ?? "The status could not be changed. Please try again.";          // shown to the reviewer: a refusal (such as an identity that is not confirmed yet) must never be silent
+  };
+
+  /** Opens an application, then fetches its full detail (status history, and the identity check) which the list does not carry. */
+  const openApp = async (app: Application) => {
+    setSelectedApp(app);
+    const full = await applicationsApi.get(app.referenceNumber).catch(() => null);
+    if (full?.success && full.data) setSelectedApp(cur => (cur?.referenceNumber === app.referenceNumber ? { ...cur, ...full.data! } : cur));
   };
 
   const filtered = apps.filter(a =>
@@ -421,7 +446,7 @@ export function AdminApplicationsViewer({ isOpen, onClose }: Props) {
                               <p className="text-xs text-fg-subtle whitespace-nowrap">{fmtDate(app.submittedAt)}</p>
                             </td>
                             <td className="px-4 py-3">
-                              <button onClick={() => setSelectedApp(app)}
+                              <button onClick={() => void openApp(app)}
                                 className="text-xs font-bold px-3 py-1.5 rounded-lg transition-all hover:opacity-90 text-white"
                                 style={{ background: P }}>
                                 Review

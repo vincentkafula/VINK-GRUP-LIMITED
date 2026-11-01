@@ -5,6 +5,7 @@ import { Footer } from "./Footer";
 import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { applicationsApi } from "../services/applicationsApi";
 import { BRAND } from "../brand";
+import { ApplicationIdentityStep } from "./ApplicationIdentityStep";
 
 interface Props { isOpen: boolean; onClose: () => void; initialAccountType?: string; }
 
@@ -491,6 +492,8 @@ function Step7({ onBack, onClose, initialAccountType, formData }: { onBack: () =
           Your business account application has been received. Our team will review it within 2–5 business days and contact you at the email address provided.
         </p>
         <p className="text-xs text-fg-muted">Reference: {referenceNumber}</p>
+        {/* confirming that a real person is applying (shows nothing unless identity checks are switched on) */}
+        <ApplicationIdentityStep refNo={referenceNumber} email={formData.email} />
         <button onClick={onClose}
           className="mt-4 px-8 py-3 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90"
           style={{ background: PURPLE }}>

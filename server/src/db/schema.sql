@@ -1561,6 +1561,43 @@ CREATE INDEX IF NOT EXISTS idx_sponsorship_scores_app ON sponsorship_scores(appl
 CREATE INDEX IF NOT EXISTS idx_sponsorship_reports_app ON sponsorship_reports(application_id, created_at);
 -- one final report is open (submitted) or settled (accepted) at a time: two arriving together leave one. A returned report does not count, so it can be sent again.
 CREATE UNIQUE INDEX IF NOT EXISTS uq_sponsorship_report_open ON sponsorship_reports(application_id) WHERE status IN ('submitted','accepted');
+
+-- Identity checks, done by Sumsub (services/sumsub): is the person who applied a real person who is who they say? One row per application, for every kind that needs it:
+-- kind 'application' (account, credit card, loan, SIM, service applications: the applications table) and 'sponsorship'. The identity documents and the selfie are held by
+-- Sumsub and never by us: this row keeps only whose check it is, where it stands and its outcome. The external id is opaque (it carries no personal data).
+CREATE TABLE IF NOT EXISTS identity_checks (
+  kind               TEXT NOT NULL CHECK (kind IN ('sponsorship','application')),
+  subject_id         TEXT NOT NULL,                     -- the id of the application it belongs to
+  profile            TEXT NOT NULL,                     -- personal, business, corporate or sponsorship: picks the Sumsub level and whether a confirmed identity is required
+  applicant_id       TEXT UNIQUE,                       -- Sumsub's id for the person, once Sumsub has created them
+  external_user_id   TEXT NOT NULL UNIQUE,              -- the id we gave Sumsub for this application
+  level_name         TEXT NOT NULL,                     -- the Sumsub verification level used (which documents and checks)
+  status             TEXT NOT NULL DEFAULT 'not_started' CHECK (status IN ('not_started','in_progress','pending','on_hold','approved','retry','rejected')),
+  review_status      TEXT,                              -- Sumsub's own: init, pending, prechecked, queued, completed, onHold
+  review_answer      TEXT,                              -- GREEN (passed) or RED (not passed)
+  reject_type        TEXT,                              -- RETRY (they may fix it and send again) or FINAL
+  reject_labels      JSONB NOT NULL DEFAULT '[]',       -- Sumsub's reasons, for staff only
+  moderation_comment TEXT,                              -- Sumsub's internal note, for staff only
+  client_comment     TEXT,                              -- what Sumsub says the applicant may be told
+  consent_at         TIMESTAMPTZ,                       -- when they agreed to send their documents to Sumsub
+  attempts           INTEGER NOT NULL DEFAULT 0,        -- how many times they have submitted
+  reviewed_at        TIMESTAMPTZ,
+  last_event_at      TIMESTAMPTZ,                       -- the time of the newest Sumsub event applied (an older one that arrives late is ignored)
+  override_reason    TEXT,                              -- set when a Super Administrator approved without a confirmed identity: why
+  overridden_by      TEXT,
+  overridden_at      TIMESTAMPTZ,
+  created_at         TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at         TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (kind, subject_id)
+);
+-- Every event Sumsub sends is applied once: it retries until it gets a success reply, so the same event can arrive several times.
+CREATE TABLE IF NOT EXISTS identity_events (
+  id          TEXT PRIMARY KEY,                         -- applicantId:type:correlationId
+  kind        TEXT NOT NULL,
+  subject_id  TEXT NOT NULL,
+  type        TEXT NOT NULL,
+  received_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
 ALTER TABLE inbound_emails ADD COLUMN IF NOT EXISTS department TEXT;
 
 -- Staff mail: incoming email gets a status like website messages do, and everything staff send from a department is recorded (see services/mailService.ts).

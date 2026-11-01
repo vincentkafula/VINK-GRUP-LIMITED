@@ -8,6 +8,7 @@ import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { AppHero, StepTracker, ProgressBar, FormCard, Field, DocSlot, OtpInput, NavButtons, inputCls, selectCls, VerifiedBadge, P as CP, GOLD, GREEN } from "./AppFormShell";
 import { applicationsApi } from "../services/applicationsApi";
 import { Footer } from "./Footer";
+import { ApplicationIdentityStep } from "./ApplicationIdentityStep";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
@@ -631,6 +632,9 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
                 </div>
               </div>
             </div>
+
+            {/* confirming that a real person is applying (shows nothing unless identity checks are switched on) */}
+            <ApplicationIdentityStep refNo={accountNumber} email={form.email} />
 
             {/* Account details */}
             <div className="bg-surface rounded-2xl border border-line p-5 shadow-sm space-y-3">

@@ -10,6 +10,7 @@ import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { getSession } from "../services/apiClient";
 import { applicationsApi, type Application } from "../services/applicationsApi";
 import { BRAND } from "../brand";
+import { ApplicationIdentityStep } from "./ApplicationIdentityStep";
 
 interface PostLoginHomeProps {
   isOpen: boolean;
@@ -272,6 +273,8 @@ export function PostLoginHome({ isOpen, onClose, onNavigate }: PostLoginHomeProp
         {/* ── Scrollable icon grid ── */}
         <div className="flex-1 overflow-y-auto px-5" style={{ scrollbarWidth: "none" }}>
           <div className="space-y-5 pb-6">
+            {/* confirming that a real person is applying: the signed-in customer's own login proves the application is theirs (shows nothing unless identity checks are on and it is still undecided) */}
+            {myApplication && myApplication.status !== "approved" && myApplication.status !== "declined" && <ApplicationIdentityStep refNo={myApplication.referenceNumber} />}
             {MENU_ROWS.map((row, rowIdx) => (
               <div
                 key={rowIdx}

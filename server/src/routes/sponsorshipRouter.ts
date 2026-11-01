@@ -12,6 +12,8 @@ import { createSponsorshipAwards, type SponsorshipAwards } from "../services/spo
 import { createSponsorshipFollowUp, type SponsorshipFollowUp } from "../services/sponsorshipFollowUp.js";
 import type { UploadedFile } from "../services/sponsorshipUtil.js";
 import { FILE_RULES, ALL_DOCUMENT_IDS } from "../config/sponsorship.js";
+import { createIdentityModule } from "../services/sumsub/module.js";
+import type { Identity } from "../services/sumsub/identity.js";
 
 /**
  * Applicants (public):
@@ -19,28 +21,30 @@ import { FILE_RULES, ALL_DOCUMENT_IDS } from "../config/sponsorship.js";
  *   POST /api/sponsorship/track      { ref, email }  where it stands, what they may do now, the award once the agreement is sent
  *   POST /api/sponsorship/reply      multipart: "data" = { ref, email, message }, files in any parts: an answer to "more information required"  (10 an hour)
  *   POST /api/sponsorship/report     multipart: "data" = { ref, email, ...the report }, files in any parts: the final report  (5 an hour)
+ *   (confirming a real person is applying, by Sumsub, is in /track as "identity", and is started at POST /api/identity/token: see routes/identityRouter.ts)
  *
  * Staff (mounted at /api/admin/sponsorship; every change is audited). Allowed: Super Administrators (owner, superadmin) and people approved for the section
  * "Sponsorships and Partnerships". Recording payments and the budget are for owner, superadmin and billing_admin; changing the settings is for owner and superadmin.
  *   GET  /me  /staff  /settings  /budget  /reports/summary  /reports/export.csv  /               what you may do; who can be assigned; weights and limit; money; reports; the list
  *   GET  /:ref  /:ref/documents/:id  /:ref/award/letter.pdf  /:ref/award/agreement.pdf          one application; a file; the award letter and the agreement
- *   POST /:ref/status  /:ref/assign  /:ref/award  /:ref/agreement  /:ref/milestones  /:ref/milestones/:id  /:ref/payments  /:ref/reports/:id/review
+ *   POST /:ref/status  /:ref/assign  /:ref/award  /:ref/agreement  /:ref/milestones  /:ref/milestones/:id  /:ref/payments  /:ref/reports/:id/review  /:ref/identity/refresh  /:ref/identity/override
  *   PUT  /settings   /:ref/score          DELETE /:ref/milestones/:id          POST /retry
  */
 const SUPER_ROLES = ["owner", "superadmin"];
 const FINANCE_ROLES = [...SUPER_ROLES, "billing_admin"];
 const REF = /^SP-[A-Z2-9]{6}$/;
 
-export interface Sponsorship { svc: SponsorshipService; review: SponsorshipReview; awards: SponsorshipAwards; followUp: SponsorshipFollowUp; publicRouter: Router; adminRouter: Router; retryUnsent: () => Promise<number>; undeliveredCount: () => Promise<number> }
+export interface Sponsorship { svc: SponsorshipService; review: SponsorshipReview; awards: SponsorshipAwards; followUp: SponsorshipFollowUp; identity: Identity; publicRouter: Router; adminRouter: Router; retryUnsent: () => Promise<number>; undeliveredCount: () => Promise<number> }
 
 /** The whole sponsorship system from a database and a mailer: server start-up and the tests both build it here, so they cannot wire it differently. */
-export function createSponsorship(d: { db: Db; mail: EmailSender; scanner?: FileScanner; env?: NodeJS.ProcessEnv; now?: () => Date; attachLimitBytes?: number; pdfCompress?: boolean }): Sponsorship {
+export function createSponsorship(d: { db: Db; mail: EmailSender; scanner?: FileScanner; env?: NodeJS.ProcessEnv; now?: () => Date; attachLimitBytes?: number; pdfCompress?: boolean; fetchImpl?: typeof fetch; identity?: Identity }): Sponsorship {
   const scanner = d.scanner ?? createScanner(d.env ?? process.env);
   const svc = createSponsorshipService({ db: d.db, mail: d.mail, scanner, env: d.env, now: d.now, attachLimitBytes: d.attachLimitBytes });
   const review = createSponsorshipReview({ db: d.db, now: d.now, sectionName: departmentByKey("sponsorships")!.name });
   const awards = createSponsorshipAwards({ db: d.db, mail: d.mail, now: d.now, pdfCompress: d.pdfCompress, setStatus: (ref, i) => svc.setStatus(ref, i) });
   const followUp = createSponsorshipFollowUp({ db: d.db, mail: d.mail, scanner, env: d.env, now: d.now, attachLimitBytes: d.attachLimitBytes, forApplicant: (r, e) => svc.forApplicant(r, e), stageOf: (id) => awards.stageOf(id), markCompleted: (id) => awards.markCompleted(id) });
-  return { svc, review, awards, followUp, publicRouter: createSponsorshipRouter({ svc, awards, followUp }), adminRouter: createSponsorshipAdminRouter({ db: d.db, svc, review, awards, followUp }), retryUnsent: () => svc.retryUnsent(), undeliveredCount: () => svc.undeliveredCount() };
+  const identity = d.identity ?? createIdentityModule({ db: d.db, env: d.env, fetchImpl: d.fetchImpl, now: d.now }).identity;       // the server builds it once for every kind of application and passes it in
+  return { svc, review, awards, followUp, identity, publicRouter: createSponsorshipRouter({ svc, awards, followUp, identity }), adminRouter: createSponsorshipAdminRouter({ db: d.db, svc, review, awards, followUp, identity }), retryUnsent: () => svc.retryUnsent(), undeliveredCount: () => svc.undeliveredCount() };
 }
 
 const upload = multer({
@@ -65,8 +69,8 @@ const readData = (req: Request): Record<string, unknown> | null => {
 const limiter = (max: number, error: string) => rateLimit({ windowMs: 3600_000, max, standardHeaders: true, legacyHeaders: false, message: { success: false, error } });
 const filesOf = (req: Request, kindOf: (f: Express.Multer.File) => string): UploadedFile[] => ((req.files as Express.Multer.File[] | undefined) ?? []).map((f) => ({ kind: kindOf(f), filename: f.originalname, data: f.buffer }));
 
-export function createSponsorshipRouter(d: { svc: SponsorshipService; awards: SponsorshipAwards; followUp: SponsorshipFollowUp }): Router {
-  const { svc, awards, followUp } = d;
+export function createSponsorshipRouter(d: { svc: SponsorshipService; awards: SponsorshipAwards; followUp: SponsorshipFollowUp; identity: Identity }): Router {
+  const { svc, awards, followUp, identity } = d;
   const router = Router();
 
   router.post("/", limiter(5, "You have sent several applications already. Please try again later, or email us."), parse, h(async (req, res) => {
@@ -92,7 +96,7 @@ export function createSponsorshipRouter(d: { svc: SponsorshipService; awards: Sp
       ...x.replies.map((r) => ({ kind: "reply" as const, status: "reply", label: "You sent more information", at: r.at, message: r.message as string | null })),
       ...x.reports.map((r) => ({ kind: "report" as const, status: `report_${r.status}`, label: r.status === "submitted" ? "Final report sent" : r.status === "accepted" ? "Final report accepted" : "Final report returned for changes", at: r.at, message: r.note })),
     ].sort((a, b) => a.at.localeCompare(b.at));
-    res.json({ success: true, data: { ...t, timeline, canReply: x.canReply, canReport: x.canReport, benefits: x.benefits, award: await awards.applicantView(app.id) } });
+    res.json({ success: true, data: { ...t, timeline, canReply: x.canReply, canReport: x.canReport, benefits: x.benefits, award: await awards.applicantView(app.id), identity: await identity.applicantView("sponsorship", { id: app.id, status: app.status, profile: "sponsorship" }) } });
   }));
 
   router.post("/reply", limiter(10, "Too many replies. Please try again later, or email us."), parse, h(async (req, res) => {
@@ -111,8 +115,8 @@ export function createSponsorshipRouter(d: { svc: SponsorshipService; awards: Sp
   return router;
 }
 
-export function createSponsorshipAdminRouter(d: { db: Db; svc: SponsorshipService; review: SponsorshipReview; awards: SponsorshipAwards; followUp: SponsorshipFollowUp }): Router {
-  const { db, svc, review, awards, followUp } = d;
+export function createSponsorshipAdminRouter(d: { db: Db; svc: SponsorshipService; review: SponsorshipReview; awards: SponsorshipAwards; followUp: SponsorshipFollowUp; identity: Identity }): Router {
+  const { db, svc, review, awards, followUp, identity } = d;
   const router = Router();
   const sectionName = departmentByKey("sponsorships")!.name;
   const role = (req: Request) => req.user?.role ?? "";
@@ -170,7 +174,7 @@ export function createSponsorshipAdminRouter(d: { db: Db; svc: SponsorshipServic
   router.get("/:ref", h(async (req, res) => {
     if (!refOk(req, res)) return;
     const a = await svc.get(req.params.ref); if (!a) return fail(res, 404, "Application not found");
-    res.json({ success: true, data: { ...a, ...(await review.assignmentOf(a.id)), review: await review.scoresFor(a.id), award: await awards.forApplication(a.id), replies: await followUp.repliesFor(a.id), reports: await followUp.reportsFor(a.id), mayApprove: (await review.mayApprove(req.params.ref, isSuper(req))).ok } });
+    res.json({ success: true, data: { ...a, identity: await identity.staffView("sponsorship", { id: a.id, profile: "sponsorship" }), ...(await review.assignmentOf(a.id)), review: await review.scoresFor(a.id), award: await awards.forApplication(a.id), replies: await followUp.repliesFor(a.id), reports: await followUp.reportsFor(a.id), mayApprove: (await review.mayApprove(req.params.ref, isSuper(req))).ok } });
   }));
   router.get("/:ref/documents/:id", h(async (req, res) => {
     if (!REF.test(req.params.ref) || !isUuid(req.params.id)) return fail(res, 400, "Invalid document");
@@ -184,7 +188,11 @@ export function createSponsorshipAdminRouter(d: { db: Db; svc: SponsorshipServic
   // ── deciding ──────────────────────────────────────────────────────────────
   router.post("/:ref/status", json({ limit: "8kb" }), h(async (req, res) => {
     if (!refOk(req, res)) return;
-    if ((req.body ?? {}).status === "approved") { const ok = await review.mayApprove(req.params.ref, isSuper(req)); if (!ok.ok) return bad(res, ok); }
+    if ((req.body ?? {}).status === "approved") {
+      const ok = await review.mayApprove(req.params.ref, isSuper(req)); if (!ok.ok) return bad(res, ok);
+      const app = await identity.subject("sponsorship")!.byRef(req.params.ref);                      // a kind that must have a confirmed identity cannot be approved without one
+      const g = app ? await identity.gate("sponsorship", app) : { ok: true as const }; if (!g.ok) { res.status(g.status).json({ success: false, error: g.error, code: g.code }); return; }
+    }
     const r = await svc.setStatus(req.params.ref, { status: (req.body ?? {}).status, reason: (req.body ?? {}).reason, applicantMessage: (req.body ?? {}).applicantMessage, by: uid(req) });
     if (!r.ok) return bad(res, r);
     await audit(db, req, "sponsorship.status", req.params.ref, { status: req.body.status, reason: req.body.reason });
@@ -242,6 +250,18 @@ export function createSponsorshipAdminRouter(d: { db: Db; svc: SponsorshipServic
     if (!refOk(req, res)) return;
     const r = await awards.addPayment(req.params.ref, req.body ?? {}, uid(req)); if (!r.ok) return bad(res, r);
     await audit(db, req, "sponsorship.payment", req.params.ref, { kind: (req.body ?? {}).kind, amount: (req.body ?? {}).amount, reference: (req.body ?? {}).reference }); res.json({ success: true, data: r.award });
+  }));
+  router.post("/:ref/identity/override", superOnly, json({ limit: "2kb" }), h(async (req, res) => {
+    if (!refOk(req, res)) return;
+    const r = await identity.override("sponsorship", req.params.ref, (req.body ?? {}).reason, await nameOf(req)); if (!r.ok) return bad(res, r);
+    await audit(db, req, "sponsorship.identity_override", req.params.ref, { reason: r.view.override?.reason });
+    res.json({ success: true, data: r.view });
+  }));
+  router.post("/:ref/identity/refresh", h(async (req, res) => {
+    if (!refOk(req, res)) return;
+    const r = await identity.refresh("sponsorship", req.params.ref); if (!r.ok) return bad(res, r);
+    await audit(db, req, "sponsorship.identity_refresh", req.params.ref, { status: r.view.status });
+    res.json({ success: true, data: r.view });
   }));
   router.post("/:ref/reports/:id/review", json({ limit: "4kb" }), h(async (req, res) => {
     if (!refOk(req, res)) return; if (!isUuid(req.params.id)) return fail(res, 400, "Invalid report");

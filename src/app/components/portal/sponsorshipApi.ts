@@ -2,6 +2,7 @@ import { API_BASE } from "../../services/config";
 import { authFetch } from "../../services/apiClient";
 import { adminClient } from "./adminApi";
 import type { StatusId, CriterionId, AwardStage, ReportStatus } from "../../data/sponsorship";
+import type { IdentityStaff } from "../../services/identityStaff";
 
 /** The staff side of sponsorships (/api/admin/sponsorship): typed answers, and downloads that carry the signed-in session. */
 export const call = adminClient("/api/admin/sponsorship");
@@ -27,10 +28,13 @@ export interface Report {
   id: string; beneficiaries: number; summary: string; outcomes: string; benefitsDelivered: Record<string, string>; spent: number; expenditureNotes: string | null; challenges: string | null;
   status: ReportStatus; statusLabel: string; reviewNote: string | null; reviewedBy: string | null; reviewedAt: string | null; createdAt: string;
 }
+/** The identity check by Sumsub, as staff see it: the stage, Sumsub's answer and reasons (the applicant sees none of these), and a link to the full case. */
+export type { IdentityStage } from "../../services/identityStaff";
+export type Identity = IdentityStaff;
 export interface Detail extends Row {
   id: string; details: Record<string, unknown> & { expenditure?: { description: string; amount: number }[]; benefits?: string[] }; screening: { level: "info" | "review"; note: string }[]; fxRate: number | null; consentAt: string;
   statusMessage: string | null; documents: Doc[]; history: Hist[]; nextStatuses: StatusId[]; review: { weights: Record<CriterionId, number>; reviewers: Reviewer[]; average: number | null };
-  award: Award | null; replies: { id: string; message: string; at: string }[]; reports: Report[]; mayApprove: boolean;
+  award: Award | null; replies: { id: string; message: string; at: string }[]; reports: Report[]; mayApprove: boolean; identity: Identity;
 }
 export interface Summary {
   total: number; byStatus: { id: string; label: string; count: number }[]; byCategory: Group[]; byLocation: Group[]; byMonth: Group[];

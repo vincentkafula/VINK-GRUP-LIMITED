@@ -10,6 +10,7 @@
  * file (apiClient.ts, bankingApi.ts, etc.).
  */
 import { API_BASE as BASE } from "./config";
+import type { IdentityStaff } from "./identityStaff";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -56,6 +57,8 @@ export interface Application {
   submittedAt: string;
   updatedAt: string;
   statusHistory?: { fromStatus: string | null; toStatus: string; reason: string; changedBy: string | null; changedByName?: string; createdAt: string }[];
+  /** Confirming that a real person is applying (Sumsub). Only on the full detail a reviewer opens, and only when the server has it. */
+  identity?: IdentityStaff;
 }
 
 export interface ApiResult<T = unknown> {
@@ -140,6 +143,12 @@ export const applicationsApi = {
       method: "PATCH",
       body: JSON.stringify({ status, reason }),
     }),
+
+  /** Ask Sumsub where the applicant's identity check stands now (for an event that never arrived). Reviewer-only. */
+  identityRefresh: (ref: string) => request<IdentityStaff>(`/api/applications/${ref}/identity/refresh`, { method: "POST", body: "{}" }),
+
+  /** A Super Administrator allows approval without a confirmed identity. The reason is kept with their name. Owner and Super Administrator only. */
+  identityOverride: (ref: string, reason: string) => request<IdentityStaff>(`/api/applications/${ref}/identity/override`, { method: "POST", body: JSON.stringify({ reason }) }),
 
   /** Summary counts by tier and status, computed live from real data.
    *  Reviewer-only. */

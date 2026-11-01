@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { ArrowLeft, FileText, Trash2 } from "lucide-react";
 import { useLoad, Status, ActionButton, Empty, Field, inputCls, rand, when, day } from "./ui";
-import { call, getData, send, fetchFile, type Me, type Detail, type Doc, type Award, type Report } from "./sponsorshipApi";
+import { call, getData, send, fetchFile, type Me, type Detail, type Doc, type Award, type Report, type Identity, type IdentityStage } from "./sponsorshipApi";
 import { Pill, toneOf } from "./sponsorshipUi";
 import { STATUS_LABELS, ORG_TYPES, CATEGORIES, BENEFITS, REVIEW_CRITERIA, SCORE_MAX, PAYMENT_KINDS, weightedScore, type StatusId, type CriterionId } from "../../data/sponsorship";
 
@@ -39,7 +39,7 @@ export function SponsorshipDetail({ refNo, me, onBack }: { refNo: string; me: Me
             {([["overview", "Overview"], ["review", "Review"], ["decision", "Decision"], ["award", "Award"], ["followup", `Follow-up${d.replies.length + d.reports.length ? ` (${d.replies.length + d.reports.length})` : ""}`]] as const).map(([id, label]) => (
               <button key={id} role="tab" aria-selected={tab === id} type="button" onClick={() => setTab(id)} className="bg-surface rounded-lg px-3 py-1.5 text-sm font-bold border border-line" style={tab === id ? { background: "var(--vkd-fg)", color: "var(--vk-surface)", borderColor: "var(--vkd-fg)" } : { background: "var(--vk-surface)", color: "var(--vk-fg)" }}>{label}</button>))}
           </div>
-          {tab === "overview" && <Overview d={d} />}
+          {tab === "overview" && <Overview d={d} me={me} act={act} />}
           {tab === "review" && <Review d={d} me={me} act={act} />}
           {tab === "decision" && <Decision d={d} act={act} />}
           {tab === "award" && <AwardTab d={d} me={me} act={act} />}
@@ -49,6 +49,56 @@ export function SponsorshipDetail({ refNo, me, onBack }: { refNo: string; me: Me
   );
 }
 type Act = (fn: () => Promise<{ error: string } | { data: unknown }>, message: string) => () => Promise<{ error?: string; message?: string }>;
+
+// ── identity check (Sumsub) ─────────────────────────────────────────────────
+const STAGE: Record<IdentityStage, { tone: "ok" | "warn" | "bad" | "plain"; label: string }> = {
+  not_started: { tone: "plain", label: "Not started" }, in_progress: { tone: "plain", label: "Started, not finished" }, pending: { tone: "plain", label: "Being checked" }, on_hold: { tone: "warn", label: "On hold at Sumsub" },
+  approved: { tone: "ok", label: "Confirmed" }, retry: { tone: "warn", label: "Not confirmed: may try again" }, rejected: { tone: "bad", label: "Not confirmed: final" },
+};
+const Fact = ({ label, children }: { label: string; children: React.ReactNode }) => <div><p className="text-[11px] font-bold uppercase tracking-wide text-fg-muted">{label}</p><p className="text-sm text-fg">{children}</p></div>;
+/** Whether the person who applied has confirmed who they are. Sumsub does the check; the documents stay with Sumsub. It is information for the people deciding: it never moves the application on. */
+export function IdentityBox({ d, me, act }: { d: Detail; me: Me; act: Act }) {
+  const [reason, setReason] = useState("");
+  const i: Identity | undefined = d.identity;
+  if (!i) return null;                                   // the front end can go live before the server that sends this: show nothing rather than fail
+  const stage = STAGE[i.status];
+  return (
+    <Box title="Identity check (Sumsub)" note="Done by Sumsub: the ID document and selfie are held by Sumsub, not by VINK. This is information for you. It does not change the application.">
+      {!i.enabled && i.status === "not_started" ? <Empty>Identity checks are not switched on.</Empty> : (
+        <div className="space-y-3">
+          <p className="flex flex-wrap items-center gap-2"><Pill tone={stage.tone}>{stage.label}</Pill>{!i.enabled && <Pill tone="warn">Checks are switched off now</Pill>}</p>
+          {i.requirement === "required" && <p className="text-sm font-semibold text-fg">{i.confirmed ? "Required, and confirmed." : i.override ? "Required, but approval was allowed without it (below)." : "Required: this application cannot be approved until the identity is confirmed."}</p>}
+          {i.requirement === "recommended" && <p className="text-sm text-fg-muted">Recommended. Approval is not blocked.</p>}
+          {i.override && <p className="rounded-lg border border-line bg-surface-2 p-3 text-sm text-fg"><strong>Approval allowed without a confirmed identity</strong> by {i.override.by} on {when(i.override.at)}: “{i.override.reason}”</p>}
+          {i.status === "not_started" ? <p className="text-sm text-fg-muted">The applicant has not started. They can do it from their tracking page.</p> : (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <Fact label="Sumsub's answer">{i.reviewAnswer === "GREEN" ? "Passed" : i.reviewAnswer === "RED" ? "Not passed" : "No answer yet"}</Fact>
+              <Fact label="Another try">{i.reviewAnswer !== "RED" ? "Not applicable" : i.rejectType === "RETRY" ? "Yes, they may try again" : "No, this is final"}</Fact>
+              <Fact label="Times submitted">{i.attempts}</Fact>
+              <Fact label="Agreed to the check">{i.consentAt ? when(i.consentAt) : "No record"}</Fact>
+              {i.reviewedAt && <Fact label="Reviewed">{when(i.reviewedAt)}</Fact>}
+            </div>)}
+          {i.rejectLabels.length > 0 && <div><p className="text-[11px] font-bold uppercase tracking-wide text-fg-muted">Sumsub's reasons (the applicant does not see these)</p><ul className="mt-1 flex flex-wrap gap-1.5">{i.rejectLabels.map((l) => <li key={l} className="rounded-md border border-line bg-surface-2 px-2 py-0.5 font-mono text-[11px] text-fg">{l}</li>)}</ul></div>}
+          {i.moderationComment && <div><p className="text-[11px] font-bold uppercase tracking-wide text-fg-muted">Sumsub's note for staff</p><p className="mt-1 whitespace-pre-wrap text-sm text-fg">{i.moderationComment}</p></div>}
+          {i.clientComment && <div><p className="text-[11px] font-bold uppercase tracking-wide text-fg-muted">What the applicant was told</p><p className="mt-1 text-sm text-fg">{i.clientComment}</p></div>}
+          {me.isSuper && i.requirement === "required" && !i.confirmed && !i.override && (
+            <div className="space-y-2 rounded-lg border border-line p-3">
+              <p className="text-[11px] font-bold uppercase tracking-wide text-fg-muted">Allow approval without a confirmed identity</p>
+              <p className="text-xs text-fg-muted">Only if you have confirmed who the applicant is another way. Your name and this reason are kept on record.</p>
+              <textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={2} aria-label="Why approval may go ahead without a confirmed identity" placeholder="Why (at least 10 characters)…" className="w-full resize-none rounded-lg border border-line bg-surface px-3 py-2 text-sm text-fg outline-none" />
+              <ActionButton small label="Allow approval anyway" busyLabel="Saving…" color={COLOR}
+                onRun={async () => reason.trim().length < 10 ? { error: "Say why in a sentence (at least 10 characters). It is kept with your name." } : act(() => send("POST", `/${d.ref}/identity/override`, { reason: reason.trim() }), "Approval allowed, with your reason on record")()} />
+            </div>)}
+          {i.applicantId && (
+            <div className="flex flex-wrap items-center gap-3">
+              <ActionButton small label="Refresh from Sumsub" busyLabel="Asking Sumsub…" color={COLOR} onRun={act(() => send("POST", `/${d.ref}/identity/refresh`), "Updated from Sumsub")} />
+              {i.caseUrl && <a href={i.caseUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-bold text-fg underline">Open the full case in Sumsub</a>}
+              <span className="text-xs text-fg-muted">Refresh if the result has not appeared after the applicant finished.</span>
+            </div>)}
+        </div>)}
+    </Box>
+  );
+}
 
 // ── overview ────────────────────────────────────────────────────────────────
 function DocList({ docs, refNo }: { docs: Doc[]; refNo: string }) {
@@ -60,7 +110,7 @@ function DocList({ docs, refNo }: { docs: Doc[]; refNo: string }) {
       <ActionButton small label="Download" color="var(--vk-surface-2)" className="bg-surface-2 !text-fg border border-line" onRun={async () => { const r = await fetchFile(`/${refNo}/documents/${x.id}`, { save: x.filename }); if (r) return { error: r.error }; }} />
     </li>))}</ul>;
 }
-function Overview({ d }: { d: Detail }) {
+function Overview({ d, me, act }: { d: Detail; me: Me; act: Act }) {
   const a = d.details as Record<string, string | number | undefined>;
   const long: [string, string | undefined][] = [["Executive summary", a.executiveSummary as string], ["Background and objectives", a.background as string], ["Problem being addressed", a.problem as string], ["Target audience", a.targetAudience as string], ["Implementation plan", a.implementationPlan as string], ["Expected outcomes", a.outcomes as string], ["Why VINK", a.whyVink as string], ["How it aligns with VINK", a.alignment as string], ["Financial controls", a.financialControls as string], ["Value of the partnership", a.benefitsValue as string]];
   const original = d.documents.filter((x) => !x.sourceId);
@@ -83,6 +133,7 @@ function Overview({ d }: { d: Detail }) {
         <ul className="mt-3 space-y-1 text-sm text-fg">{(d.details.expenditure ?? []).map((e, i) => <li key={i} className="flex justify-between gap-4 border-t border-line pt-1"><span>{e.description}</span><span className="text-fg-muted">{cur(e.amount, d.currency)}</span></li>)}</ul></Box>
       <Box title="What they wrote">{long.filter(([, v]) => v).map(([k, v]) => <details key={k} className="border-t border-line py-1.5 first:border-0"><summary className="cursor-pointer text-sm font-bold text-fg">{k}</summary><p className="mt-1 whitespace-pre-wrap text-sm text-fg-muted">{v}</p></details>)}</Box>
       <Box title="Documents sent with the application"><DocList docs={original} refNo={d.ref} /></Box>
+      <IdentityBox d={d} me={me} act={act} />
     </div>
   );
 }

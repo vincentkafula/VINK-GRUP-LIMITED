@@ -3,6 +3,8 @@ import { randomUUID } from "crypto";
 import { pool } from "../db/pool.js";
 import { requireAuth, requireRole, optionalAuth } from "../middleware/auth.js";
 import { checkApplicationRisk } from "../services/fraudRiskChecks.js";
+import { audit } from "../portal/common.js";
+import type { Identity } from "../services/sumsub/identity.js";
 
 const router: ReturnType<typeof Router> = Router();
 
@@ -10,6 +12,15 @@ const REVIEWER_ROLES = ["owner", "superadmin", "noc_engineer", "billing_admin"] 
 
 const VALID_TIERS = ["personal", "business", "corporate"] as const;
 type Tier = (typeof VALID_TIERS)[number];
+
+/**
+ * Confirming that a real person is applying, by Sumsub (services/sumsub). Wired at start-up (index.ts). Every application here, whatever it is for (an account, a credit card, a business or
+ * corporate loan, a SIM, a service), is identity-checked the same way; the tier picks the Sumsub level and whether a confirmed identity is REQUIRED before staff can approve it.
+ * Without it (no database, or the checks switched off) nothing in this file changes.
+ */
+let identity: Identity | null = null;
+export function setApplicationsIdentity(i: Identity | null): void { identity = i; }
+const SUPER = ["owner", "superadmin"] as const;
 
 // Several older application forms (credit card, business loan, corporate
 // loan, SIM, vehicle tracking, generic services) predate the tier-based
@@ -302,6 +313,7 @@ router.get("/:ref", requireAuth, requireRole(...REVIEWER_ROLES), async (req: Req
     success: true,
     data: {
       ...mapApplication(rows[0]),
+      identity: identity ? await identity.staffView("application", { id: rows[0].id, profile: rows[0].tier }) : undefined,
       statusHistory: history.map((h: any) => ({
         fromStatus: h.from_status,
         toStatus: h.to_status,
@@ -345,6 +357,11 @@ router.patch("/:ref/status", requireAuth, requireRole(...REVIEWER_ROLES), async 
       return;
     }
 
+    if (target === "approved" && identity) {                       // a kind that must have a confirmed identity cannot be approved without one (unless a Super Administrator overrode it)
+      const g = await identity.gate("application", { id: current.id, profile: current.tier });
+      if (!g.ok) { await client.query("ROLLBACK"); res.status(g.status).json({ success: false, error: g.error, code: g.code }); return; }
+    }
+
     const { rows: updated } = await client.query(
       `UPDATE applications SET status = $1, status_reason = $2, updated_at = now(), rejected_at = CASE WHEN $1 = 'declined' THEN now() ELSE rejected_at END WHERE id = $3 RETURNING *`,
       [target, reason.trim(), current.id]
@@ -363,6 +380,24 @@ router.patch("/:ref/status", requireAuth, requireRole(...REVIEWER_ROLES), async 
   } finally {
     client.release();
   }
+});
+
+// POST /api/applications/:ref/identity/refresh — ask Sumsub where the identity check stands now (for an event that never arrived).
+router.post("/:ref/identity/refresh", requireAuth, requireRole(...REVIEWER_ROLES), async (req: Request, res: Response): Promise<void> => {
+  if (!identity || !pool) { res.status(503).json({ success: false, error: "Identity checks are not available" }); return; }
+  const r = await identity.refresh("application", req.params.ref);
+  if (!r.ok) { res.status(r.status).json({ success: false, error: r.error }); return; }
+  await audit(pool, req, "application.identity_refresh", req.params.ref, { status: r.view.status });
+  res.json({ success: true, data: r.view });
+});
+
+// POST /api/applications/:ref/identity/override { reason } — a Super Administrator allows approval without a confirmed identity. The reason is kept with their name and the time, and audited.
+router.post("/:ref/identity/override", requireAuth, requireRole(...SUPER), async (req: Request, res: Response): Promise<void> => {
+  if (!identity || !pool) { res.status(503).json({ success: false, error: "Identity checks are not available" }); return; }
+  const r = await identity.override("application", req.params.ref, (req.body ?? {}).reason, req.user!.username);
+  if (!r.ok) { res.status(r.status).json({ success: false, error: r.error }); return; }
+  await audit(pool, req, "application.identity_override", req.params.ref, { reason: r.view.override?.reason });
+  res.json({ success: true, data: r.view });
 });
 
 // GET /api/applications/stats/summary — real counts by tier and status,

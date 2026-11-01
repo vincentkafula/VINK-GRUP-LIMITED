@@ -4,6 +4,7 @@ import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { AppHero, StepTracker, ProgressBar, FormCard, Field, DocSlot, OtpInput, NavButtons, inputCls, selectCls, VerifiedBadge, P as CP, GOLD, GREEN } from "./AppFormShell";
 import { applicationsApi, otpApi } from "../services/applicationsApi";
 import { Footer } from "./Footer";
+import { ApplicationIdentityStep } from "./ApplicationIdentityStep";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
@@ -51,6 +52,7 @@ export function BusinessLoanApplicationViewer({ isOpen, onClose }: Props) {
   const [docs, setDocs] = useState<Record<string, boolean>>({});
   const [agreed, setAgreed] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [refNo, setRefNo] = useState("");           // the reference number the server gave this application
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
@@ -414,6 +416,7 @@ export function BusinessLoanApplicationViewer({ isOpen, onClose }: Props) {
                     });
                     setSubmitting(false);
                     if (result.success && result.data) {
+                      setRefNo(result.data.referenceNumber);
                       setSubmitted(true);
                     } else {
                       setSubmitError(result.error ?? "Submission failed. Please try again.");
@@ -438,9 +441,11 @@ export function BusinessLoanApplicationViewer({ isOpen, onClose }: Props) {
                 <div className="rounded-xl p-4 mt-2" style={{ background: "var(--vk-surface-2)" }}>
                   <p className="text-xs text-fg-muted mb-1">Application reference number</p>
                   <p className="font-black text-lg" style={{ color: CP }}>
-                    VINK-BL-{new Date().getFullYear()}-{Math.floor(Math.random() * 90000 + 10000)}
+                    {refNo}
                   </p>
                 </div>
+                {/* confirming that a real person is applying (shows nothing unless identity checks are switched on) */}
+                <ApplicationIdentityStep refNo={refNo} email={form.email} />
                 <p className="text-xs text-fg-subtle">
                   A confirmation email has been sent to {form.email || "your registered email address"}.
                 </p>

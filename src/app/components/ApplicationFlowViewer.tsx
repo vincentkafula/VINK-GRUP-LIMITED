@@ -6,6 +6,7 @@ import { applicationsApi, otpApi, type AppTier } from "../services/applicationsA
 import { SelfieCapture } from "./SelfieCapture";
 import { openSignIn } from "../services/signIn";
 import { CATALOG, SEGMENTS, type Segment } from "../data/productCatalog";
+import { ApplicationIdentityStep } from "./ApplicationIdentityStep";
 
 /**
  * The application form that opens from "Start Now": register, take a photo (optional), confirm details, business and driver details, a phone code, done.
@@ -450,6 +451,8 @@ export function ApplicationFlowViewer({ isOpen, onClose }: Props) {
                     <div><dt className="text-[11px] font-bold uppercase tracking-[0.14em] text-fg-muted">Account number</dt><dd className="mt-0.5 text-[18px] font-bold tracking-wide text-fg">{result.account}</dd></div>
                   </dl>
                 )}
+                {/* confirming that a real person is applying (shows nothing unless identity checks are switched on) */}
+                {result && <ApplicationIdentityStep refNo={result.ref} email={form.em.trim()} />}
                 <p className="mx-auto mt-5 max-w-xs text-[14px] leading-relaxed text-fg-muted">We'll review your application and contact you on {form.em || "your email"}. Keep your reference number safe.</p>
                 <Btn onClick={() => go("soon")} className="mt-6">Ok</Btn>
               </section>

@@ -3,6 +3,7 @@ import { Search, CircleAlert, Clock, Check, TriangleAlert, X } from "lucide-reac
 import { API_BASE } from "../../services/config";
 import { STATUS_LABELS } from "../../data/sponsorship";
 import { AwardCard, ReplyForm, ReportForm, type AwardView } from "./SponsorshipTrackerExtras";
+import { IdentityCard, type IdentityView } from "./IdentityCard";
 import "./contact.css";
 import "./sponsorship-form.css";
 
@@ -10,7 +11,7 @@ export interface Tracked {
   ref: string; status: string; statusLabel: string; project: string; organisation: string; submittedAt: string; updatedAt: string;
   timeline: { kind?: "status" | "reply" | "report"; status: string; label: string; at: string; message: string | null }[];
   /** What this person may do now, and their award once the agreement has been sent. */
-  canReply?: boolean; canReport?: boolean; benefits?: { id: string; label: string }[]; award?: AwardView | null;
+  canReply?: boolean; canReport?: boolean; benefits?: { id: string; label: string }[]; award?: AwardView | null; identity?: IdentityView;
 }
 interface Props {
   /** Fills the form in and looks the application up straight away (after sending one). */
@@ -33,22 +34,24 @@ export function SponsorshipTracker({ prefill, email }: Props) {
   const [result, setResult] = useState<Tracked | null>(null);
   const resultRef = useRef<HTMLHeadingElement>(null);
 
-  const lookup = async (r: string, e: string) => {
-    setError(""); setResult(null);
+  const lookup = async (r: string, e: string, quiet = false) => {
+    if (!quiet) { setError(""); setResult(null); }      // a quiet re-check (the identity check finishing) leaves the page as it is: clearing it would close the widget
     if (!/^sp-[a-z2-9]{6}$/i.test(r.trim())) { setError("Enter your reference number. It starts with SP- and has six more letters or numbers."); return; }
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(e.trim())) { setError("Enter the email address you used on the application."); return; }
-    setBusy(true);
+    if (!quiet) setBusy(true);
     try {
       const res = await fetch(`${API_BASE}/api/sponsorship/track`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ref: r.trim().toUpperCase(), email: e.trim() }) });
       const json = (await res.json().catch(() => null)) as { success?: boolean; error?: string; data?: Tracked } | null;
       if (res.ok && json?.success && json.data) setResult(json.data);
+      else if (quiet) return;
       else setError(res.status === 404 ? NOT_FOUND : json?.error ?? `We could not look that up just now. Please try again, or email ${email}.`);
-    } catch { setError(`We could not look that up just now. Please check your connection and try again, or email ${email}.`); }
-    finally { setBusy(false); }
+    } catch { if (!quiet) setError(`We could not look that up just now. Please check your connection and try again, or email ${email}.`); }
+    finally { if (!quiet) setBusy(false); }
   };
 
   useEffect(() => { if (prefill) { setRef(prefill.ref); setMail(prefill.email); void lookup(prefill.ref, prefill.email); } }, [prefill?.ref, prefill?.email]);   // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { if (result) { resultRef.current?.closest(".sf-track")?.scrollIntoView?.({ behavior: "smooth", block: "start" }); resultRef.current?.focus({ preventScroll: true }); } }, [result]);   // the result is below the form: bring it into view, not just into focus
+  useEffect(() => { if (result) { resultRef.current?.closest(".sf-track")?.scrollIntoView?.({ behavior: "smooth", block: "start" }); resultRef.current?.focus({ preventScroll: true }); } }, [result?.ref]);   // eslint-disable-line react-hooks/exhaustive-deps
+  // (keyed on the reference, so a quiet re-check of the same application does not scroll the page back up)   // the result is below the form: bring it into view, not just into focus
 
   const Icon = result ? ICON[tone(result.status)] : Clock;
   return (
@@ -99,6 +102,7 @@ export function SponsorshipTracker({ prefill, email }: Props) {
           <p className="vc-form-note" style={{ marginTop: 18 }}>VINK reviews applications on a quarterly basis. Successful applicants will be contacted within 6 weeks of the review date. Questions? Email <a href={`mailto:${email}`} style={{ color: "var(--vk-crimson-text)", fontWeight: 600 }}>{email}</a>.</p>
         </div>
       )}
+      {result?.identity?.enabled && <IdentityCard identity={result.identity} kind="sponsorship" refNo={result.ref} email={mail.trim()} supportEmail={email} onChanged={() => void lookup(result.ref, mail, true)} />}
       {result?.award && <AwardCard award={result.award} />}
       {result?.canReply && <ReplyForm refNo={result.ref} email={mail.trim()} supportEmail={email} onSent={() => void lookup(result.ref, mail)} />}
       {result?.canReport && <ReportForm refNo={result.ref} email={mail.trim()} currency={result.award?.currency ?? "ZAR"} benefits={result.benefits ?? []} supportEmail={email} onSent={() => void lookup(result.ref, mail)} />}

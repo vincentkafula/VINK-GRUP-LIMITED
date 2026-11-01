@@ -22,6 +22,7 @@ import { useFormValidation, validators } from "../hooks/useFormValidation";
 import { InlineError } from "./ErrorBoundary";
 import { Footer } from "./Footer";
 import { BRAND } from "../brand";
+import { ApplicationIdentityStep } from "./ApplicationIdentityStep";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type ServiceType = "invest" | "rewards" | "account";
@@ -612,6 +613,8 @@ export function ServiceApplicationViewer({ isOpen, onClose, serviceType }: Props
               </div>
               <p className="text-xs text-fg-subtle">A confirmation email has been sent to <strong>{form.email || "your registered email"}</strong>.</p>
             </div>
+            {/* confirming that a real person is applying (shows nothing unless identity checks are switched on) */}
+            <ApplicationIdentityStep refNo={accountNo} email={form.email} />
             <button onClick={onClose}
               className="w-full py-3.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 shadow-lg"
               style={{ background: `linear-gradient(135deg,${CP},#A50F27)` }}>

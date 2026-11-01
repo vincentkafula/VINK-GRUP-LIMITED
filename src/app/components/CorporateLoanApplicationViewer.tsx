@@ -4,6 +4,7 @@ import vinkLogo from "../../imports/LOGO_FINAL.png";
 import { AppHero, StepTracker, ProgressBar, FormCard, Field, DocSlot, NavButtons, inputCls, selectCls, P as CP, GOLD, GREEN } from "./AppFormShell";
 import { applicationsApi } from "../services/applicationsApi";
 import { Footer } from "./Footer";
+import { ApplicationIdentityStep } from "./ApplicationIdentityStep";
 
 interface Props { isOpen: boolean; onClose: () => void; }
 
@@ -494,6 +495,9 @@ export function CorporateLoanApplicationViewer({ isOpen, onClose }: Props) {
                 <p className="text-xs text-fg-muted mt-1">Keep this reference for all future correspondence</p>
               </div>
             </div>
+
+            {/* confirming that a real person is applying (shows nothing unless identity checks are switched on) */}
+            <ApplicationIdentityStep refNo={refNo} email={contact.email} />
 
             <div className="bg-surface rounded-2xl border border-line p-5 shadow-sm space-y-3">
               <h3 className="font-bold text-fg">What happens next?</h3>

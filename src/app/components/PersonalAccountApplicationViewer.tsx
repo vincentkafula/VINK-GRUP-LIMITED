@@ -9,6 +9,7 @@ import { validatePostalCode, getCountryByCode, getPostalLabel } from "postal-cod
 import { API_BASE } from "../services/config";
 import { BRAND } from "../brand";
 import { openSignIn } from "../services/signIn";
+import { ApplicationIdentityStep } from "./ApplicationIdentityStep";
 
 interface Props { isOpen: boolean; onClose: () => void; onGoToDashboard?: () => void; /** The banking account the applicant picked before opening the form. */ initialAccountType?: string; }
 
@@ -670,6 +671,9 @@ function Step7({ onClose, onGoToDashboard, referenceNumber, accountNumber, login
         <p className="text-2xl font-black tracking-widest" style={{ color: BLUE }}>{referenceNumber}</p>
         <p className="text-[11px] text-fg-muted mt-3">Quote this reference if you contact us about your application.</p>
       </div>
+
+      {/* confirming that a real person is applying (shows nothing unless identity checks are switched on) */}
+      <ApplicationIdentityStep refNo={referenceNumber} email={loginUsername} />
 
       {/* Account number box */}
       {accountNumber && (
