@@ -1590,6 +1590,35 @@ CREATE TABLE IF NOT EXISTS identity_checks (
   updated_at         TIMESTAMPTZ NOT NULL DEFAULT now(),
   PRIMARY KEY (kind, subject_id)
 );
+-- Business verification (KYB), done by Sumsub: is the COMPANY behind a business or corporate application a real, registered business? It sits beside identity_checks (which is about the
+-- PERSON applying) with the same columns and the same rules: the company documents and the details of its directors and owners are held by Sumsub and never by us; this row keeps only where
+-- the check stands and its outcome. The external id (ab-<application id>) is opaque. Sumsub's events for a company arrive at the same webhook and are recorded in identity_events.
+CREATE TABLE IF NOT EXISTS business_checks (
+  kind               TEXT NOT NULL CHECK (kind IN ('sponsorship','application')),
+  subject_id         TEXT NOT NULL,                     -- the id of the application it belongs to
+  profile            TEXT NOT NULL,                     -- business or corporate: whether a verified business is required before approval
+  applicant_id       TEXT UNIQUE,                       -- Sumsub's id for the person, once Sumsub has created them
+  external_user_id   TEXT NOT NULL UNIQUE,              -- the id we gave Sumsub for this application
+  level_name         TEXT NOT NULL,                     -- the Sumsub verification level used (which documents and checks)
+  status             TEXT NOT NULL DEFAULT 'not_started' CHECK (status IN ('not_started','in_progress','pending','on_hold','approved','retry','rejected')),
+  review_status      TEXT,                              -- Sumsub's own: init, pending, prechecked, queued, completed, onHold
+  review_answer      TEXT,                              -- GREEN (passed) or RED (not passed)
+  reject_type        TEXT,                              -- RETRY (they may fix it and send again) or FINAL
+  reject_labels      JSONB NOT NULL DEFAULT '[]',       -- Sumsub's reasons, for staff only
+  moderation_comment TEXT,                              -- Sumsub's internal note, for staff only
+  client_comment     TEXT,                              -- what Sumsub says the applicant may be told
+  consent_at         TIMESTAMPTZ,                       -- when they agreed to send their documents to Sumsub
+  attempts           INTEGER NOT NULL DEFAULT 0,        -- how many times they have submitted
+  reviewed_at        TIMESTAMPTZ,
+  last_event_at      TIMESTAMPTZ,                       -- the time of the newest Sumsub event applied (an older one that arrives late is ignored)
+  override_reason    TEXT,                              -- set when a Super Administrator approved without a confirmed identity: why
+  overridden_by      TEXT,
+  overridden_at      TIMESTAMPTZ,
+  created_at         TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at         TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (kind, subject_id)
+);
+
 -- Every event Sumsub sends is applied once: it retries until it gets a success reply, so the same event can arrive several times.
 CREATE TABLE IF NOT EXISTS identity_events (
   id          TEXT PRIMARY KEY,                         -- applicantId:type:correlationId

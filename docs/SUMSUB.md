@@ -15,7 +15,7 @@ Every application that arrives at `POST /api/applications` goes into the same ta
 | Corporate tier (corporate accounts and loans) | `SUMSUB_LEVEL_CORPORATE`, else the default | Yes, by default |
 | Sponsorship | `SUMSUB_LEVEL_SPONSORSHIP`, else the default | No: shown to staff, who decide |
 
-**Not covered:** job applications, and company verification. A new kind of application needs its type added to `APPLICATION_TYPE_TIERS` in `server/src/routes/applicationsRouter.ts` (that is what gives it a tier, and so a level and the approval requirement) and its confirmation screen needs `ApplicationIdentityStep`; a test fails if a screen that submits an application lacks it. For business and corporate applications this confirms **the person who is applying**, not the company: verifying a company is a separate Sumsub product ("KYB").
+**Business verification (KYB)** is covered separately, below: for business and corporate applications it verifies the *company* as well as the person applying. **Not covered:** job applications and sponsorships' organisations. A new kind of application needs its type added to `APPLICATION_TYPE_TIERS` in `server/src/routes/applicationsRouter.ts` (that is what gives it a tier, and so a level and the approval requirement) and its confirmation screen needs `ApplicationIdentityStep`; a test fails if a screen that submits an application lacks it. 
 
 ## How it works
 
@@ -26,6 +26,36 @@ Every application that arrives at `POST /api/applications` goes into the same ta
 5. Staff see the result on the application, with Sumsub's reasons and a link to the full case. **Refresh from Sumsub** fetches the latest if an event was missed.
 
 The applicant proves the application is theirs with its **reference and the email address on it**, or by being **signed in as its owner** (some applications were sent before the customer had a login, so the email is how the two are linked).
+
+## Verifying the business (KYB)
+
+For a **business or corporate application** (a business account, a business or corporate loan, a business started through the application form) there are two checks, because a real person applying does not make the company they name real:
+
+1. **The person** (as above): is the applicant who they say?
+2. **The business** (KYB): is the company real and registered, and who are its directors and owners? The applicant adds the company's registration documents and the details of its directors and owners in Sumsub's own widget ("Verify your business", shown beneath "Confirm your identity"). **The documents and the directors' and owners' details go to Sumsub and never to VINK.** We keep only where the check stands and its outcome (table `business_checks`).
+
+The business is started from whatever the application already says (its name and registration number, read from wherever the screen keeps them, and often blank: the widget asks for anything missing). Staff see a second panel, **Business verification (Sumsub KYB)**, with the same refresh, the same link to the full case and the same override as the person's check.
+
+**When approval needs it.** With KYB switched on, a business or corporate application cannot be approved until **both** the person is confirmed **and** the business is verified; the refusal and the warning before it say which one is missing. An owner or Super Administrator can override each separately, with a reason (audited as `application.kyb_override`). Personal applications never have a business check. Nothing is blocked while KYB is off.
+
+**Switching it on needs a company level.** Sumsub verification levels are made for either people or companies, and a person's level cannot verify a company, so there is **no default**: leave `SUMSUB_LEVEL_KYB` empty and business verification stays off (identity checks carry on unchanged).
+
+| Variable | Value |
+| --- | --- |
+| `SUMSUB_LEVEL_KYB` | the exact name of a **company** level made in the Sumsub dashboard (applicant type: company) |
+| `SUMSUB_KYB_REQUIRED_FOR` | optional: `business`, `corporate` (comma list) or the word `none`. Default `business,corporate`; blank or misspelt uses the default |
+
+The webhook is the same one: events for the business arrive at `/api/webhooks/sumsub` and are matched to the right check. Events Sumsub sends about the directors and owners it adds behind a company belong to Sumsub's own records, not to a VINK application, and are acknowledged and ignored.
+
+**Confirm in the Sumsub sandbox before relying on it** (the stand-in used for the tests follows Sumsub's public documentation and has not been run against Sumsub):
+
+1. Creating a company applicant works as we send it: `POST /resources/applicants?levelName=<company level>` with `type: "company"` and `info.companyInfo` (`companyName`, `registrationNumber`). If Sumsub wants a different shape, only `createApplicant` in `services/sumsub/client.ts` changes.
+2. The company level opens in the widget for the access token we issue, and the applicant can add documents, directors and owners.
+3. Reviews of a company arrive at the webhook as `applicantReviewed` for the company applicant and are shown on the right check. A company's directors and owners may be reviewed as separate applicants; whether the company's own answer waits for them is Sumsub's behaviour.
+4. A GREEN company review moves the business panel to *Verified* and allows approval; a RED review shows its reasons to staff only.
+5. A level that is not a company level, set by mistake as `SUMSUB_LEVEL_KYB`, is refused by Sumsub: applicants see "We could not start the check just now" and the server log says why.
+
+The directors' and owners' personal details are processed by Sumsub on the applicant's behalf, so your privacy notice, consent wording and data agreement with Sumsub should cover them; have your legal adviser review the company consent wording on the card.
 
 ## The approval requirement
 
@@ -61,6 +91,8 @@ In the Sumsub dashboard (menu names may differ slightly):
 | `SUMSUB_WEBHOOK_SECRET` | the webhook secret from step 3 |
 | `SUMSUB_LEVEL_NAME` | the default level's exact name (default `basic-kyc-level`) |
 | `SUMSUB_LEVEL_PERSONAL` / `_BUSINESS` / `_CORPORATE` / `_SPONSORSHIP` | optional: a level for that kind of applicant |
+| `SUMSUB_LEVEL_KYB` | optional: a **company** level, which switches on business verification (see above) |
+| `SUMSUB_KYB_REQUIRED_FOR` | optional: which business kinds must be verified before approval (see above) |
 | `SUMSUB_REQUIRED_FOR` | optional: which kinds must be confirmed before approval, e.g. `personal,business,corporate,sponsorship`, or the word `none` to switch the requirement off. Default `personal,business,corporate`; a blank or misspelt value uses the default, so a slip can never silently disable it |
 
 Leave `SUMSUB_APP_TOKEN` or `SUMSUB_SECRET_KEY` empty and the whole feature stays off: applicants see nothing, Sumsub is never called, and nothing is blocked. Without `SUMSUB_WEBHOOK_SECRET` the webhook answers 503 and trusts nothing.

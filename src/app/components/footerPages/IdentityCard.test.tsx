@@ -57,11 +57,11 @@ describe("starting the check", () => {
   });
   it("sends the reference, the email and the agreement to the right place, then opens Sumsub's widget with the token it was given", async () => {
     const f = tokenReply("_act-777"); globalThis.fetch = f; const sdk = fakeSdk(); mount(); tick(); press(/Confirm my identity/);
-    await waitFor(() => expect(sdk.launched).toBe("#sumsub-websdk-container"));
+    await waitFor(() => expect(sdk.launched).toBe("#sumsub-websdk-container-person"));
     const [url, init] = vi.mocked(f).mock.calls[0]; expect(String(url)).toMatch(/\/api\/identity\/token$/); expect(init?.method).toBe("POST"); expect((init?.headers as Record<string, string>).Authorization).toBeUndefined();
     expect(JSON.parse(String(init?.body))).toEqual({ kind: "application", ref: "VNK-PA-ABC123456", email: "thandi@example.com", consent: true });
     expect(sdk.token).toBe("_act-777"); expect(sdk.conf).toEqual({ lang: "en" }); expect(sdk.options).toMatchObject({ addViewportTag: false, adaptIframeHeight: true });
-    expect(document.getElementById("sumsub-websdk-container")).toBeTruthy(); expect(screen.queryByRole("button", { name: /Confirm my identity/ })).toBeNull();      // the intro gives way to the widget
+    expect(document.getElementById("sumsub-websdk-container-person")).toBeTruthy(); expect(screen.queryByRole("button", { name: /Confirm my identity/ })).toBeNull();      // the intro gives way to the widget
     expect(screen.getByRole("link", { name: SUPPORT }).getAttribute("href")).toBe(`mailto:${SUPPORT}`);
   });
   it("says the check has started, and what to do, as soon as the widget is open (before the page has heard back from the server)", async () => {
@@ -71,10 +71,10 @@ describe("starting the check", () => {
   });
   it("takes the widget away once the answer is final (confirmed or not), leaving just the outcome", async () => {
     globalThis.fetch = tokenReply(); const sdk = fakeSdk(); const { rerender } = mount(); tick(); press(/Confirm my identity/); await waitFor(() => expect(sdk.launched).toBeTruthy());
-    expect(document.getElementById("sumsub-websdk-container")).toBeTruthy();
+    expect(document.getElementById("sumsub-websdk-container-person")).toBeTruthy();
     for (const status of ["approved", "rejected"] as const) {
       rerender(<IdentityCard identity={view({ status, canStart: false, message: `outcome ${status}` })} kind="application" refNo="VNK-PA-ABC123456" email="thandi@example.com" supportEmail={SUPPORT} onChanged={vi.fn()} />);
-      expect(document.getElementById("sumsub-websdk-container")).toBeNull(); expect(screen.queryByText(/Trouble with the camera/)).toBeNull(); expect(screen.getByRole("status").textContent).toBe(`outcome ${status}`);
+      expect(document.getElementById("sumsub-websdk-container-person")).toBeNull(); expect(screen.queryByText(/Trouble with the camera/)).toBeNull(); expect(screen.getByRole("status").textContent).toBe(`outcome ${status}`);
     }
   });
   it("goes back to what the server says once it says something more (being checked, confirmed)", async () => {
@@ -107,7 +107,7 @@ describe("starting the check", () => {
   });
   it("shows the server's own words when it will not start (not found, already confirmed, closed), and leaves them able to try again", async () => {
     globalThis.fetch = failReply(409, "This application is closed, so there is nothing to confirm."); fakeSdk(); mount(); tick(); press(/Confirm my identity/);
-    expect((await screen.findByRole("alert")).textContent).toContain("This application is closed"); expect(screen.getByRole("button", { name: /Confirm my identity/ })).toBeTruthy(); expect(document.getElementById("sumsub-websdk-container")).toBeNull();
+    expect((await screen.findByRole("alert")).textContent).toContain("This application is closed"); expect(screen.getByRole("button", { name: /Confirm my identity/ })).toBeTruthy(); expect(document.getElementById("sumsub-websdk-container-person")).toBeNull();
   });
   it("tells them plainly when the connection fails, with the address to write to", async () => {
     globalThis.fetch = vi.fn(async () => { throw new Error("offline"); }) as unknown as typeof fetch; fakeSdk(); mount(); tick(); press(/Confirm my identity/);
@@ -143,5 +143,22 @@ describe("after the applicant finishes in the widget", () => {
   it("stops looking when the page is left", async () => {
     globalThis.fetch = tokenReply(); const sdk = fakeSdk(); const onChanged = vi.fn(); const { unmount } = mount({ onChanged }); tick(); press(/Confirm my identity/); await waitFor(() => expect(sdk.launched).toBeTruthy());
     vi.useFakeTimers(); act(() => sdk.handlers["idCheck.onApplicantSubmitted"]()); unmount(); act(() => { vi.advanceTimersByTime(120_000); }); expect(onChanged).toHaveBeenCalledTimes(1);
+  });
+
+  it("says it is verifying the BUSINESS when it is the company check: its heading, consent, button, notice and outcome", () => {
+    render(<IdentityCard identity={view({ required: true })} kind="application" party="company" refNo="VNK-BA-ABC123456" email="d@x.co" supportEmail="support@vink.co.za" onChanged={vi.fn()} />);
+    expect(screen.getByRole("heading", { name: "Verify your business" })).toBeTruthy(); expect(screen.getByLabelText("Verify your business")).toBeTruthy();
+    expect(screen.getByText(/I agree that VINK sends my business's registration documents and details of its directors and owners to Sumsub/)).toBeTruthy(); expect(screen.getByRole("button", { name: /Verify my business/ })).toBeTruthy();
+    expect(screen.getByText("We cannot approve your application until your business is verified.")).toBeTruthy(); expect(screen.queryByText(/ID document and a photo of my face/)).toBeNull(); expect(screen.queryByText(/until your identity is confirmed/)).toBeNull();
+    cleanup(); for (const [status, label] of [["approved", "Verified"], ["rejected", "Could not be verified"]] as const) { render(<IdentityCard identity={view({ status, canStart: false, required: true })} kind="application" party="company" refNo="VNK-BA-ABC123456" supportEmail="s@x.co" onChanged={vi.fn()} />); expect(screen.getByText(label)).toBeTruthy(); cleanup(); }
+  });
+  it("asks the server for the BUSINESS check, opens the widget in its own container, and says so if it cannot", async () => {
+    globalThis.fetch = tokenReply(); const sdk = fakeSdk();
+    render(<IdentityCard identity={view()} kind="application" party="company" refNo="VNK-BA-ABC123456" email="d@x.co" supportEmail="support@vink.co.za" onChanged={vi.fn()} />); tick(); press(/Verify my business/);
+    await waitFor(() => expect(sdk.launched).toBe("#sumsub-websdk-container-company")); expect(JSON.parse(String(vi.mocked(globalThis.fetch).mock.calls[0][1]?.body))).toEqual({ kind: "application", ref: "VNK-BA-ABC123456", party: "company", email: "d@x.co", consent: true });
+    expect(document.getElementById("sumsub-websdk-container-company")).toBeTruthy(); expect(document.getElementById("sumsub-websdk-container-person")).toBeNull(); expect(screen.getByText(/Trouble with your business documents/)).toBeTruthy();
+  });
+  it("sends no party at all for the person check, exactly as before", async () => {
+    globalThis.fetch = tokenReply(); const sdk = fakeSdk(); mount(); tick(); press(/Confirm my identity/); await waitFor(() => expect(sdk.launched).toBe("#sumsub-websdk-container-person")); expect(JSON.parse(String(vi.mocked(globalThis.fetch).mock.calls[0][1]?.body))).not.toHaveProperty("party");
   });
 });

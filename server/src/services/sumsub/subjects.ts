@@ -4,6 +4,18 @@ import type { IdentitySubject, SubjectApp } from "./identity.js";
 
 /** The kinds of application that can be identity-checked. A new kind (insurance, say) is one more adapter here and one line where the engine is built. */
 const clean = (v: unknown, max: number) => (typeof v === "string" ? v.trim().slice(0, max) : "");
+const obj = (v: unknown): Record<string, unknown> => { try { const o = typeof v === "string" ? JSON.parse(v) : v; return o && typeof o === "object" && !Array.isArray(o) ? (o as Record<string, unknown>) : {}; } catch { return {}; } };
+const firstOf = (max: number, ...vs: unknown[]) => { for (const v of vs) { const t = clean(v, max); if (t) return t; } return undefined; };
+
+/**
+ * What an application says about the business behind it, for the business verification. The screens that take a business application keep it in different places: the account flow
+ * ("business": name, registrationNumber), the business account (bizName, regNo), the business loan (businessName, cipcNumber) and the corporate loan ("company": name, cipc). Any of it may be
+ * blank (the business account's own comment says its fields were never actually required), so everything is optional: Sumsub's widget asks the applicant for what is missing.
+ */
+export function companyOf(tierData: unknown): { name?: string; registrationNumber?: string } {
+  const t = obj(tierData), biz = obj(t.business), co = obj(t.company);
+  return { name: firstOf(200, biz.name, co.name, t.businessName, t.bizName, t.companyName), registrationNumber: firstOf(60, biz.registrationNumber, co.cipc, t.cipcNumber, t.regNo, t.registrationNumber, t.cipc) };
+}
 
 /**
  * Everything in the applications table: account applications (personal, business, corporate), credit cards, business and corporate loans, SIM, vehicle tracking and the invest and
@@ -11,8 +23,8 @@ const clean = (v: unknown, max: number) => (typeof v === "string" ? v.trim().sli
  * address on it, or by being signed in as its owner (some applications were sent before the customer had a login, so the email is how the two are linked).
  */
 export function applicationSubject(db: Db): IdentitySubject {
-  const COLS = `id, status, tier, applicant_email, applicant_phone`;
-  const toApp = (r: Record<string, unknown>): SubjectApp => ({ id: String(r.id), status: String(r.status), email: r.applicant_email ? String(r.applicant_email) : null, phone: r.applicant_phone ? String(r.applicant_phone) : null, profile: String(r.tier) as Profile });
+  const COLS = `id, status, tier, applicant_email, applicant_phone, tier_data`;
+  const toApp = (r: Record<string, unknown>): SubjectApp => ({ id: String(r.id), status: String(r.status), email: r.applicant_email ? String(r.applicant_email) : null, phone: r.applicant_phone ? String(r.applicant_phone) : null, profile: String(r.tier) as Profile, company: companyOf(r.tier_data) });
   return {
     kind: "application",
     closed: new Set(["approved", "declined"]),

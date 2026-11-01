@@ -5,11 +5,12 @@ import { createHmac } from "crypto";
  * signature does not verify. It recomputes the signature with its own HMAC code (not the client's), so if the client signs the wrong thing, tests fail.
  * It does not claim to be the real Sumsub: the shapes below follow Sumsub's public documentation and need confirming against a Sumsub sandbox account.
  */
-export interface MockApplicant { id: string; externalUserId: string; email?: string; phone?: string; levelName: string; reviewStatus: string; reviewResult?: Record<string, unknown>; attemptCnt: number }
+export interface MockApplicant { id: string; externalUserId: string; email?: string; phone?: string; type?: string; info?: unknown; levelName: string; reviewStatus: string; reviewResult?: Record<string, unknown>; attemptCnt: number }
 export interface MockCall { method: string; path: string; body: Record<string, unknown> | null; headers: Record<string, string> }
 
-export function mockSumsub(d: { appToken: string; secretKey: string; levelName: string; moreLevels?: string[]; now?: () => Date }) {
-  const levels = new Set([d.levelName, ...(d.moreLevels ?? [])]);
+export function mockSumsub(d: { appToken: string; secretKey: string; levelName: string; moreLevels?: string[]; companyLevels?: string[]; now?: () => Date }) {
+  const companyLevels = new Set(d.companyLevels ?? []);                          // like Sumsub, a level is made for COMPANIES or for PEOPLE, and the wrong kind is refused
+  const levels = new Set([d.levelName, ...(d.moreLevels ?? []), ...companyLevels]);
   const now = d.now ?? (() => new Date());
   const applicants = new Map<string, MockApplicant>();                  // by external user id
   const calls: MockCall[] = []; let n = 0; let failNext: number | null = null; let hang = false;
@@ -33,10 +34,11 @@ export function mockSumsub(d: { appToken: string; secretKey: string; levelName: 
     const path0 = url.pathname;
     if (method === "POST" && path0 === "/resources/applicants") {
       const level = url.searchParams.get("levelName") ?? ""; if (!levels.has(level)) return json(400, { description: `Level '${level}' not found`, code: 400 });
-      const b = JSON.parse(body || "{}") as { externalUserId?: string; email?: string; phone?: string };
+      const b = JSON.parse(body || "{}") as { externalUserId?: string; email?: string; phone?: string; type?: string; info?: unknown };
+      if ((b.type === "company") !== companyLevels.has(level)) return json(400, { description: b.type === "company" ? `Level '${level}' is not a company level` : `Level '${level}' is for companies, not for individuals`, code: 400 });
       if (!b.externalUserId) return json(400, { description: "externalUserId is required", code: 400 });
       const dup = applicants.get(b.externalUserId); if (dup) return json(409, { description: `Applicant with external user id '${b.externalUserId}' already exists: ${dup.id}`, code: 409 });
-      const a: MockApplicant = { id: `app${++n}`, externalUserId: b.externalUserId, email: b.email, phone: b.phone, levelName: level, reviewStatus: "init", attemptCnt: 0 };
+      const a: MockApplicant = { id: `app${++n}`, externalUserId: b.externalUserId, email: b.email, phone: b.phone, type: b.type, info: b.info, levelName: level, reviewStatus: "init", attemptCnt: 0 };
       applicants.set(b.externalUserId, a); return json(201, applicantJson(a));
     }
     const one = path0.match(/^\/resources\/applicants\/-;externalUserId=([^/]+)\/one$/);

@@ -54,7 +54,7 @@ describe("the override and the refresh on an application", () => {
     await open(); expect(screen.queryByText("Allow approval without a confirmed identity")).toBeNull(); cleanup();
     vi.mocked(getSession).mockReturnValue({ id: "u9", username: "boss", name: "Boss", email: "b@x.co", role: "superadmin" } as never);
     api.identityOverride.mockResolvedValueOnce(ok(identity({ override: { reason: "Known customer; ID seen in the branch", by: "Boss", at: "2026-11-01T09:00:00Z" } })) as never);
-    await open(); fireEvent.click(screen.getByRole("button", { name: /^Approved$/ })); expect(screen.getByRole("note").textContent).toMatch(/You can allow it with a reason in the identity check above/);
+    await open(); fireEvent.click(screen.getByRole("button", { name: /^Approved$/ })); expect(screen.getByRole("note").textContent).toMatch(/You can allow it with a reason in the check above/);
     fireEvent.change(screen.getByLabelText(/Why approval may go ahead/), { target: { value: "Known customer; ID seen in the branch" } }); fireEvent.click(screen.getByRole("button", { name: "Allow approval anyway" }));
     await waitFor(() => expect(api.identityOverride).toHaveBeenCalledWith("VNK-PA-TEST000001", "Known customer; ID seen in the branch")); expect(await screen.findByText(/Approval allowed without a confirmed identity/)).toBeTruthy(); await waitFor(() => expect(screen.queryByRole("note")).toBeNull());
   });
@@ -64,5 +64,32 @@ describe("the override and the refresh on an application", () => {
     const panel = await open(); const btn = () => within(panel).getByRole("button", { name: "Refresh from Sumsub" });
     fireEvent.click(btn()); expect((await within(panel).findByRole("alert")).textContent).toMatch(/could not be reached/);
     fireEvent.click(btn()); await waitFor(() => expect(panel.textContent).toContain("Confirmed")); expect(api.identityRefresh).toHaveBeenCalledWith("VNK-PA-TEST000001");
+  });
+});
+
+describe("a business or corporate application", () => {
+  const withBusiness = (identityOver: Partial<IdentityStaff>, kybOver: Partial<IdentityStaff> | null) => api.get.mockResolvedValue(ok(app({ tier: "business", identity: identity(identityOver), ...(kybOver ? { kyb: identity(kybOver) } : {}) })) as never);
+  it("shows the business's verification beside the person's check, each in its own words", async () => {
+    withBusiness({}, { applicantId: "ab1" }); await open(); const panels = await screen.findAllByLabelText(/Identity check|Business verification/);
+    expect(panels.map((p) => p.getAttribute("aria-label"))).toEqual(["Identity check", "Business verification"]); expect(screen.getByText("Business verification (Sumsub KYB)")).toBeTruthy(); expect(screen.getByText(/company documents and the details of its directors and owners/)).toBeTruthy();
+  });
+  it("shows no business panel for a personal application, or when business verification is off", async () => {
+    await open(); expect(screen.queryByLabelText("Business verification")).toBeNull(); cleanup();
+    withBusiness({}, { enabled: false, requirement: "off" }); await open(); expect(screen.queryByLabelText("Business verification")).toBeNull();
+  });
+  it("warns, before the attempt, about exactly what is missing: the person, the business, or both", async () => {
+    for (const [idOver, kybOver, expected, absent] of [[{}, {}, /^The applicant's identity is not confirmed yet, and the business is not verified yet, so this approval/, null], [{ status: "approved", confirmed: true }, {}, /^The business is not verified yet, so this approval/, /identity is not confirmed/], [{}, { status: "approved", confirmed: true }, /^The applicant's identity is not confirmed yet, so this approval/, /business is not verified/]] as const) {
+      withBusiness(idOver, kybOver); await open(); fireEvent.click(screen.getByRole("button", { name: /^Approved$/ })); const note = screen.getByRole("note").textContent ?? ""; expect(note).toMatch(expected); if (absent) expect(note).not.toMatch(absent); cleanup();
+    }
+    withBusiness({ status: "approved", confirmed: true }, { status: "approved", confirmed: true }); await open(); fireEvent.click(screen.getByRole("button", { name: /^Approved$/ })); expect(screen.queryByRole("note")).toBeNull();            // both done: nothing to warn about
+  });
+  it("refreshes and overrides the BUSINESS check, not the person's, from its own panel", async () => {
+    vi.mocked(getSession).mockReturnValue({ id: "u9", username: "boss", name: "Boss", email: "b@x.co", role: "superadmin" } as never);
+    withBusiness({ status: "approved", confirmed: true }, { applicantId: "ab1", status: "pending" });
+    api.identityRefresh.mockResolvedValueOnce(ok(identity({ status: "approved", confirmed: true, applicantId: "ab1" })) as never); await open(); const panel = screen.getByLabelText("Business verification");
+    fireEvent.click(within(panel).getByRole("button", { name: "Refresh from Sumsub" })); await waitFor(() => expect(api.identityRefresh).toHaveBeenCalledWith("VNK-PA-TEST000001", "company")); await waitFor(() => expect(panel.textContent).toContain("Verified"));
+    cleanup(); withBusiness({ status: "approved", confirmed: true }, { status: "pending" }); api.identityOverride.mockResolvedValueOnce(ok(identity({ override: { reason: "Registry search done by compliance", by: "Boss", at: "2026-11-01T09:00:00Z" } })) as never); await open();
+    const p2 = screen.getByLabelText("Business verification"); fireEvent.change(within(p2).getByLabelText(/Why approval may go ahead without a verified business/), { target: { value: "Registry search done by compliance" } }); fireEvent.click(within(p2).getByRole("button", { name: "Allow approval anyway" }));
+    await waitFor(() => expect(api.identityOverride).toHaveBeenCalledWith("VNK-PA-TEST000001", "Registry search done by compliance", "company")); expect(await within(p2).findByText(/Approval allowed without a verified business/)).toBeTruthy();
   });
 });

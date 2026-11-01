@@ -19,7 +19,12 @@ type Tier = (typeof VALID_TIERS)[number];
  * Without it (no database, or the checks switched off) nothing in this file changes.
  */
 let identity: Identity | null = null;
-export function setApplicationsIdentity(i: Identity | null): void { identity = i; }
+let kyb: Identity | null = null;       // the same, for the BUSINESS behind a business or corporate application (KYB); null when business verification is not set up
+export function setApplicationsIdentity(i: Identity | null, business?: Identity | null): void { identity = i; kyb = business ?? null; }
+/** The check a reviewer is acting on: the person (default) or the business. */
+const checkFor = (party: unknown): Identity | null => (party === "company" ? kyb : identity);
+/** A staff action names the check it is about: the person (the default) or the business. Anything else is refused, so a typo can never act on the wrong check. */
+const knownParty = (party: unknown): boolean => party === undefined || party === "person" || party === "company";
 const SUPER = ["owner", "superadmin"] as const;
 
 // Several older application forms (credit card, business loan, corporate
@@ -318,6 +323,7 @@ router.get("/:ref", requireAuth, requireRole(...REVIEWER_ROLES), async (req: Req
     data: {
       ...mapApplication(rows[0]),
       identity: identity ? await identity.staffView("application", { id: rows[0].id, profile: rows[0].tier }) : undefined,
+      kyb: kyb && kyb.applies("application", rows[0].tier) ? await kyb.staffView("application", { id: rows[0].id, profile: rows[0].tier }) : undefined,       // the business behind it, for business and corporate applications
       statusHistory: history.map((h: any) => ({
         fromStatus: h.from_status,
         toStatus: h.to_status,
@@ -364,6 +370,8 @@ router.patch("/:ref/status", requireAuth, requireRole(...REVIEWER_ROLES), async 
     if (target === "approved" && identity) {                       // a kind that must have a confirmed identity cannot be approved without one (unless a Super Administrator overrode it)
       const g = await identity.gate("application", { id: current.id, profile: current.tier });
       if (!g.ok) { await client.query("ROLLBACK"); res.status(g.status).json({ success: false, error: g.error, code: g.code }); return; }
+      const gk = kyb ? await kyb.gate("application", { id: current.id, profile: current.tier }) : { ok: true as const };         // and, for a business, that the business is verified too
+      if (!gk.ok) { await client.query("ROLLBACK"); res.status(gk.status).json({ success: false, error: gk.error, code: gk.code }); return; }
     }
 
     const { rows: updated } = await client.query(
@@ -388,19 +396,23 @@ router.patch("/:ref/status", requireAuth, requireRole(...REVIEWER_ROLES), async 
 
 // POST /api/applications/:ref/identity/refresh — ask Sumsub where the identity check stands now (for an event that never arrived).
 router.post("/:ref/identity/refresh", requireAuth, requireRole(...REVIEWER_ROLES), async (req: Request, res: Response): Promise<void> => {
-  if (!identity || !pool) { res.status(503).json({ success: false, error: "Identity checks are not available" }); return; }
-  const r = await identity.refresh("application", req.params.ref);
+  if (!knownParty((req.body ?? {}).party)) { res.status(400).json({ success: false, error: "Unknown kind of check" }); return; }
+  const check = checkFor((req.body ?? {}).party);                                       // body { party: "company" } refreshes the business verification
+  if (!check || !pool) { res.status(503).json({ success: false, error: "Identity checks are not available" }); return; }
+  const r = await check.refresh("application", req.params.ref);
   if (!r.ok) { res.status(r.status).json({ success: false, error: r.error }); return; }
-  await audit(pool, req, "application.identity_refresh", req.params.ref, { status: r.view.status });
+  await audit(pool, req, `application.${check.party === "company" ? "kyb" : "identity"}_refresh`, req.params.ref, { status: r.view.status });
   res.json({ success: true, data: r.view });
 });
 
 // POST /api/applications/:ref/identity/override { reason } — a Super Administrator allows approval without a confirmed identity. The reason is kept with their name and the time, and audited.
 router.post("/:ref/identity/override", requireAuth, requireRole(...SUPER), async (req: Request, res: Response): Promise<void> => {
-  if (!identity || !pool) { res.status(503).json({ success: false, error: "Identity checks are not available" }); return; }
-  const r = await identity.override("application", req.params.ref, (req.body ?? {}).reason, req.user!.username);
+  if (!knownParty((req.body ?? {}).party)) { res.status(400).json({ success: false, error: "Unknown kind of check" }); return; }
+  const check = checkFor((req.body ?? {}).party);                                       // body { party: "company" } overrides the business verification
+  if (!check || !pool) { res.status(503).json({ success: false, error: "Identity checks are not available" }); return; }
+  const r = await check.override("application", req.params.ref, (req.body ?? {}).reason, req.user!.username);
   if (!r.ok) { res.status(r.status).json({ success: false, error: r.error }); return; }
-  await audit(pool, req, "application.identity_override", req.params.ref, { reason: r.view.override?.reason });
+  await audit(pool, req, `application.${check.party === "company" ? "kyb" : "identity"}_override`, req.params.ref, { reason: r.view.override?.reason });
   res.json({ success: true, data: r.view });
 });
 

@@ -39,4 +39,26 @@ describe("the identity step on an application's confirmation screen", () => {
     fireEvent.click(screen.getByRole("checkbox")); fireEvent.click(screen.getByRole("button", { name: /Confirm my identity/ })); await waitFor(() => expect(sdk.handlers["idCheck.onApplicantSubmitted"]).toBeTruthy());
     sdk.handlers["idCheck.onApplicantSubmitted"](); await waitFor(() => expect(screen.getByRole("status").textContent).toBe("Being checked msg")); delete window.snsWebSdk;
   });
+
+  describe("for a business or corporate application", () => {
+    const answer = (person: unknown, business: unknown) => vi.fn(async (_u: unknown, init?: RequestInit) => { const party = JSON.parse(String(init?.body)).party; const body = party === "company" ? business : person; return body === "fail" ? new Response("x", { status: 500 }) : new Response(JSON.stringify({ success: true, data: body }), { status: 200 }); }) as unknown as typeof fetch;
+    const biz = (over: Record<string, unknown> = {}) => view({ party: "company", message: "Verify your business. You will need its registration documents.", ...over });
+    it("shows the person's card and, beneath it, the business's, and asks about each separately", async () => {
+      const f = answer(view({ party: "person" }), biz()); globalThis.fetch = f; render(<ApplicationIdentityStep refNo="VNK-BA-ABC123456" email="d@zuri.example" />);
+      expect(await screen.findByRole("heading", { name: "Verify your business" })).toBeTruthy(); expect(screen.getByRole("heading", { name: "Confirm your identity" })).toBeTruthy();
+      const bodies = vi.mocked(f).mock.calls.map((c) => JSON.parse(String(c[1]?.body))); expect(bodies).toEqual([{ kind: "application", ref: "VNK-BA-ABC123456", email: "d@zuri.example" }, { kind: "application", ref: "VNK-BA-ABC123456", party: "company", email: "d@zuri.example" }]);
+      const headings = screen.getAllByRole("heading").map((h) => h.textContent); expect(headings.indexOf("Confirm your identity")).toBeLessThan(headings.indexOf("Verify your business"));
+    });
+    it("shows only the person's card when business verification does not apply or is off", async () => {
+      for (const business of [biz({ enabled: false, canStart: false }), "fail"]) { globalThis.fetch = answer(view({ party: "person" }), business); const { unmount } = render(<ApplicationIdentityStep refNo="VNK-PA-ABC123456" email="a@b.co" />); expect(await screen.findByRole("heading", { name: "Confirm your identity" })).toBeTruthy(); await new Promise((r) => setTimeout(r, 20)); expect(screen.queryByRole("heading", { name: "Verify your business" })).toBeNull(); unmount(); }
+    });
+    it("never shows the person's status a second time as the business's, even if a server that does not know about business verification answers with it", async () => {
+      globalThis.fetch = answer(view({ party: "person" }), view({ party: "person" })); render(<ApplicationIdentityStep refNo="VNK-BA-ABC123456" email="a@b.co" />);
+      expect(await screen.findByRole("heading", { name: "Confirm your identity" })).toBeTruthy(); await new Promise((r) => setTimeout(r, 20)); expect(screen.getAllByRole("heading")).toHaveLength(1);
+      cleanup(); globalThis.fetch = answer(view({}), view({})); render(<ApplicationIdentityStep refNo="VNK-BA-ABC123456" email="a@b.co" />); await screen.findByRole("heading", { name: "Confirm your identity" }); await new Promise((r) => setTimeout(r, 20)); expect(screen.getAllByRole("heading")).toHaveLength(1);       // an older server that sends no party at all
+    });
+    it("still shows the business's card if the person's lookup fails", async () => {
+      globalThis.fetch = answer("fail", biz()); render(<ApplicationIdentityStep refNo="VNK-BA-ABC123456" email="a@b.co" />); expect(await screen.findByRole("heading", { name: "Verify your business" })).toBeTruthy(); expect(screen.queryByRole("heading", { name: "Confirm your identity" })).toBeNull();
+    });
+  });
 });

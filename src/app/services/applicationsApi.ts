@@ -59,6 +59,8 @@ export interface Application {
   statusHistory?: { fromStatus: string | null; toStatus: string; reason: string; changedBy: string | null; changedByName?: string; createdAt: string }[];
   /** Confirming that a real person is applying (Sumsub). Only on the full detail a reviewer opens, and only when the server has it. */
   identity?: IdentityStaff;
+  /** Verifying the BUSINESS behind a business or corporate application (Sumsub KYB). Only present for those, and only on the full detail. */
+  kyb?: IdentityStaff;
 }
 
 export interface ApiResult<T = unknown> {
@@ -145,10 +147,10 @@ export const applicationsApi = {
     }),
 
   /** Ask Sumsub where the applicant's identity check stands now (for an event that never arrived). Reviewer-only. */
-  identityRefresh: (ref: string) => request<IdentityStaff>(`/api/applications/${ref}/identity/refresh`, { method: "POST", body: "{}" }),
+  identityRefresh: (ref: string, party?: "company") => request<IdentityStaff>(`/api/applications/${ref}/identity/refresh`, { method: "POST", body: JSON.stringify(party ? { party } : {}) }),
 
   /** A Super Administrator allows approval without a confirmed identity. The reason is kept with their name. Owner and Super Administrator only. */
-  identityOverride: (ref: string, reason: string) => request<IdentityStaff>(`/api/applications/${ref}/identity/override`, { method: "POST", body: JSON.stringify({ reason }) }),
+  identityOverride: (ref: string, reason: string, party?: "company") => request<IdentityStaff>(`/api/applications/${ref}/identity/override`, { method: "POST", body: JSON.stringify({ reason, ...(party ? { party } : {}) }) }),
 
   /** Summary counts by tier and status, computed live from real data.
    *  Reviewer-only. */

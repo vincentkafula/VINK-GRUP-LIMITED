@@ -46,4 +46,13 @@ describe("the identity check on an application, as a reviewer sees it", () => {
     show(id({ override: { reason: "Known customer; ID seen at the branch", by: "Vincent", at: "2026-11-01T09:00:00Z" } }));
     expect(screen.getByText(/Approval allowed without a confirmed identity/)).toBeTruthy(); expect(screen.getByText(/Vincent/)).toBeTruthy(); expect(screen.getByText(/Known customer; ID seen at the branch/)).toBeTruthy(); expect(screen.getByText(/approval was allowed without it/)).toBeTruthy();
   });
+
+  it("speaks of a business when it is the business verification: its title, stages, requirement, override and record", () => {
+    const b = (i: IdentityStaff, o: { canOverride?: boolean } = {}) => render(<AdminIdentityPanel business identity={i} canOverride={o.canOverride ?? false} onRefresh={async () => null} onOverride={async () => null} />);
+    b(id()); expect(screen.getByLabelText("Business verification")).toBeTruthy(); expect(screen.getByText("Business verification (Sumsub KYB)")).toBeTruthy(); expect(screen.getByText(/cannot be approved until the business is verified/)).toBeTruthy(); expect(screen.getByText(/company documents and the details of its directors and owners/)).toBeTruthy(); cleanup();
+    for (const [status, label] of [["approved", "Verified"], ["retry", "Not verified: may try again"], ["rejected", "Not verified: final"]] as const) { b(id({ status, confirmed: status === "approved" })); expect(screen.getByLabelText("Business verification").textContent).toContain(label); cleanup(); }
+    b(id({ confirmed: true, status: "approved" })); expect(screen.getByText("Required, and verified.")).toBeTruthy(); cleanup();
+    b(id({ applicantId: "a1" }), { canOverride: true }); expect(screen.getByText("Allow approval without a verified business")).toBeTruthy(); expect(screen.getByLabelText(/Why approval may go ahead without a verified business/)).toBeTruthy(); expect(screen.getByText(/verified the business another way/)).toBeTruthy(); cleanup();
+    b(id({ override: { reason: "Registry search done", by: "Vincent", at: "2026-11-01T09:00:00Z" } })); expect(screen.getByText(/Approval allowed without a verified business/)).toBeTruthy();
+  });
 });

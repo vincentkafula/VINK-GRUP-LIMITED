@@ -9,7 +9,11 @@ import { createSumsubWebhookRouter } from "./webhook.js";
 export function createIdentityModule(d: { db: Db; env?: NodeJS.ProcessEnv; fetchImpl?: typeof fetch; now?: () => Date }) {
   const config = sumsubConfigFromEnv(d.env ?? process.env);
   const client = createSumsubClient({ config, fetchImpl: d.fetchImpl, now: d.now });
-  const identity = createIdentity({ db: d.db, config, client, now: d.now, subjects: [applicationSubject(d.db), sponsorshipSubject(d.db)] });
-  return { identity, config, webhookRouter: createSumsubWebhookRouter({ identity, config }) };
+  const subjects = [applicationSubject(d.db), sponsorshipSubject(d.db)];
+  const identity = createIdentity({ db: d.db, config, client, now: d.now, subjects });                          // is the PERSON applying who they say?
+  const kyb = createIdentity({ db: d.db, config, client, now: d.now, subjects, party: "company" });          // is the BUSINESS behind a business or corporate application real? (KYB)
+  // One webhook serves both: an event is offered to the person check, and if that is not its applicant, to the business check.
+  const events = { applyEvent: async (payload: unknown) => { const r = await identity.applyEvent(payload); return r.ok && r.ignored === "unknown applicant" ? kyb.applyEvent(payload) : r; } };
+  return { identity, kyb, config, webhookRouter: createSumsubWebhookRouter({ identity: events, config }) };
 }
 export type IdentityModule = ReturnType<typeof createIdentityModule>;

@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import { isUniqueViolation } from "../../portal/common.js";
 import type { Db } from "../../portal/driverRoutes.js";
-import { sumsubReady, levelFor, isRequired, type SumsubConfig, type Profile } from "./config.js";
+import { sumsubReady, levelFor, isRequired, kybReady, isKybRequired, isBusinessProfile, type SumsubConfig, type Profile } from "./config.js";
 import type { SumsubClient } from "./client.js";
 import { identityStatusFor, EVENT_REVIEW_STATUS, type IdentityStatus, type SumsubReviewResult } from "./status.js";
 
@@ -26,7 +26,8 @@ import { identityStatusFor, EVENT_REVIEW_STATUS, type IdentityStatus, type Sumsu
 export type Kind = "sponsorship" | "application";
 export const KINDS: Kind[] = ["sponsorship", "application"];
 type Fail = { ok: false; status: number; error: string };
-export interface SubjectApp { id: string; status: string; email: string | null; phone: string | null; profile: Profile }
+/** `company`: what the application says about the business behind it (any of it may be missing), used to start the business verification. */
+export interface SubjectApp { id: string; status: string; email: string | null; phone: string | null; profile: Profile; company?: { name?: string; registrationNumber?: string; country?: string } }
 export interface IdentitySubject {
   kind: Kind;
   /** The application for a person who can prove it is theirs: its reference, with the email address on it or (when signed in) their own account. */
@@ -37,7 +38,8 @@ export interface IdentitySubject {
   closed: ReadonlySet<string>;
 }
 
-export interface IdentityApplicantView { enabled: boolean; status: IdentityStatus; canStart: boolean; consentRequired: boolean; required: boolean; message: string; attempts: number }
+/** `party` says which check this is about (the person, or the business), so a screen can never show one check's status as the other's. */
+export interface IdentityApplicantView { party: "person" | "company"; enabled: boolean; status: IdentityStatus; canStart: boolean; consentRequired: boolean; required: boolean; message: string; attempts: number }
 export interface IdentityStaffView {
   enabled: boolean; status: IdentityStatus; requirement: "required" | "recommended" | "off"; confirmed: boolean; reviewStatus: string | null; reviewAnswer: string | null; rejectType: string | null; rejectLabels: string[];
   moderationComment: string | null; clientComment: string | null; consentAt: string | null; attempts: number; reviewedAt: string | null; applicantId: string | null; levelName: string | null; caseUrl: string | null;
@@ -75,21 +77,40 @@ const WHAT_NEXT: Record<IdentityStatus, string> = {
   retry: "We could not confirm your identity from what was sent. You can try again with clearer photos of your document.",
   rejected: "We could not confirm your identity. Please contact us and we will help you.",
 };
+/** The same stages, in words about a BUSINESS (KYB), for the card an applicant sees. */
+const COMPANY_NEXT: Record<IdentityStatus, string> = {
+  not_started: "You will need the business's registration documents and the details of its directors and owners.",
+  in_progress: "You started verifying your business but have not finished. You can carry on where you left off.",
+  pending: "Thank you. We have your business documents and they are being checked. This can take a little while.",
+  on_hold: "The check on your business needs a little more time. We will contact you if we need anything else from you.",
+  approved: "Your business has been verified. Thank you.",
+  retry: "We could not verify your business from what was sent. You can add or correct documents and try again.",
+  rejected: "We could not verify your business. Please contact us and we will help you.",
+};
 const NOT_FOUND = "We could not find an application with that reference and email address. Check both and try again.";
 
-export function createIdentity(d: { db: Db; config: SumsubConfig; client: SumsubClient; subjects: IdentitySubject[]; now?: () => Date }) {
+export function createIdentity(d: { db: Db; config: SumsubConfig; client: SumsubClient; subjects: IdentitySubject[]; now?: () => Date; party?: "person" | "company" }) {
+  const company = d.party === "company";                                                 // true: verify the BUSINESS behind a business or corporate application (KYB), not the person applying
+  const T = company ? "business_checks" : "identity_checks";                           // each has its own table, with the same columns
+  const PREFIX_OF: Record<Kind, string> = company ? { sponsorship: "sb", application: "ab" } : PREFIX;
   const { db, config, client } = d;
   const now = d.now ?? (() => new Date());
   const subjects = new Map(d.subjects.map((s) => [s.kind, s] as const));
-  const enabled = () => sumsubReady(config);
+  const enabled = () => (company ? kybReady(config) : sumsubReady(config));
+  const required = (profile: Profile) => (company ? isKybRequired(config, profile) : isRequired(config, profile));
+  const levelOf = (profile: Profile) => (company ? config.kybLevel : levelFor(config, profile));
+  /** A company check only applies to the kinds of application a business makes. */
+  const applies = (kind: Kind, profile: Profile) => !company || (kind === "application" && isBusinessProfile(profile));
+  const NEXT = company ? COMPANY_NEXT : WHAT_NEXT;
+  const OFF = company ? "Business verification is not switched on" : "Identity checks are not switched on";
   const subject = (kind: unknown) => (typeof kind === "string" ? subjects.get(kind as Kind) : undefined);
 
-  const rowFor = async (kind: Kind, id: string): Promise<Row | null> => ((await db.query(`SELECT * FROM identity_checks WHERE kind = $1 AND subject_id = $2`, [kind, id])).rows[0] as unknown as Row | undefined) ?? null;
+  const rowFor = async (kind: Kind, id: string): Promise<Row | null> => ((await db.query(`SELECT * FROM ${T} WHERE kind = $1 AND subject_id = $2`, [kind, id])).rows[0] as unknown as Row | undefined) ?? null;
   async function ensureRow(kind: Kind, app: { id: string; profile: Profile }): Promise<Row> {
     const existing = await rowFor(kind, app.id); if (existing) return existing;
     try {
-      await db.query(`INSERT INTO identity_checks (kind, subject_id, profile, external_user_id, level_name, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$6)`,
-        [kind, app.id, app.profile, `${PREFIX[kind]}-${app.id}`, levelFor(config, app.profile), now()]);
+      await db.query(`INSERT INTO ${T} (kind, subject_id, profile, external_user_id, level_name, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$6)`,
+        [kind, app.id, app.profile, `${PREFIX_OF[kind]}-${app.id}`, levelOf(app.profile), now()]);
     } catch (e) { if (!isUniqueViolation(e)) throw e; }                    // two requests arriving together: one wins, both read the row
     return (await rowFor(kind, app.id))!;
   }
@@ -98,10 +119,11 @@ export function createIdentity(d: { db: Db; config: SumsubConfig; client: Sumsub
   async function applicantView(kind: Kind, app: { id: string; status: string; profile: Profile }): Promise<IdentityApplicantView> {
     const row = enabled() ? await rowFor(kind, app.id) : null;
     const status = row?.status ?? "not_started";
-    const base = WHAT_NEXT[status];
+    const base = NEXT[status];
     const message = status === "retry" && row?.client_comment ? `${base} Note from the checker: ${row.client_comment}` : base;      // only the comment Sumsub marks as fit for the applicant
     const closed = !!subject(kind)?.closed.has(app.status);
-    return { enabled: enabled(), status, canStart: enabled() && !closed && STARTABLE.has(status), consentRequired: !row?.consent_at, required: isRequired(config, app.profile), message, attempts: row?.attempts ?? 0 };
+    const on = enabled() && applies(kind, app.profile);                                   // a business check that does not apply to this application shows as off
+    return { party: company ? "company" : "person", enabled: on, status, canStart: on && !closed && STARTABLE.has(status), consentRequired: !row?.consent_at, required: required(app.profile) && applies(kind, app.profile), message, attempts: row?.attempts ?? 0 };
   }
 
   /** What an applicant sees for an application they can prove is theirs (the reference with its email address, or being signed in as its owner). */
@@ -114,7 +136,7 @@ export function createIdentity(d: { db: Db; config: SumsubConfig; client: Sumsub
   async function staffView(kind: Kind, app: { id: string; profile: Profile }): Promise<IdentityStaffView> {
     const row = await rowFor(kind, app.id);
     return {
-      enabled: enabled(), status: row?.status ?? "not_started", requirement: !enabled() ? "off" : isRequired(config, app.profile) ? "required" : "recommended", confirmed: row?.status === "approved",
+      enabled: enabled(), status: row?.status ?? "not_started", requirement: !enabled() || !applies(kind, app.profile) ? "off" : required(app.profile) ? "required" : "recommended", confirmed: row?.status === "approved",
       reviewStatus: row?.review_status ?? null, reviewAnswer: row?.review_answer ?? null, rejectType: row?.reject_type ?? null, rejectLabels: row ? parseLabels(row.reject_labels) : [],
       moderationComment: row?.moderation_comment ?? null, clientComment: row?.client_comment ?? null, consentAt: iso(row?.consent_at), attempts: row?.attempts ?? 0, reviewedAt: iso(row?.reviewed_at),
       applicantId: row?.applicant_id ?? null, levelName: row?.level_name ?? null,
@@ -125,50 +147,55 @@ export function createIdentity(d: { db: Db; config: SumsubConfig; client: Sumsub
 
   // ── the applicant starts (or carries on) ─────────────────────────────────
   async function startSession(kind: unknown, ref: unknown, email: unknown, consent: unknown, userId?: string | null): Promise<({ ok: true; token: string; expiresInSecs: number; status: IdentityStatus }) | Fail> {
-    if (!enabled()) return { ok: false, status: 503, error: "Identity checks are not switched on yet. Please check back soon, or contact us." };
+    if (!enabled()) return { ok: false, status: 503, error: `${OFF} yet. Please check back soon, or contact us.` };
     const s = subject(kind); if (!s) return { ok: false, status: 400, error: "Unknown kind of application" };
     const app = await s.forApplicant(ref, email, userId); if (!app) return { ok: false, status: 404, error: NOT_FOUND };
+    if (!applies(s.kind, app.profile)) return { ok: false, status: 409, error: "Business verification is not needed for this application." };
     if (s.closed.has(app.status)) return { ok: false, status: 409, error: "This application is closed, so there is nothing to confirm." };
     const row = await ensureRow(s.kind, app);
-    if (!STARTABLE.has(row.status)) return { ok: false, status: 409, error: WHAT_NEXT[row.status] };
+    if (!STARTABLE.has(row.status)) return { ok: false, status: 409, error: NEXT[row.status] };
     if (!row.consent_at) {
-      if (consent !== true) return { ok: false, status: 400, error: "Please agree to your documents being sent to Sumsub, our identity-verification provider, before you start." };
-      await db.query(`UPDATE identity_checks SET consent_at = $3, updated_at = $3 WHERE kind = $1 AND subject_id = $2 AND consent_at IS NULL`, [s.kind, app.id, now()]);
+      if (consent !== true) return { ok: false, status: 400, error: company ? "Please agree to your business documents being sent to Sumsub, our verification provider, before you start." : "Please agree to your documents being sent to Sumsub, our identity-verification provider, before you start." };
+      await db.query(`UPDATE ${T} SET consent_at = $3, updated_at = $3 WHERE kind = $1 AND subject_id = $2 AND consent_at IS NULL`, [s.kind, app.id, now()]);
     }
     let applicantId = row.applicant_id;
     if (!applicantId) {
-      const made = await client.createApplicant({ externalUserId: row.external_user_id, email: app.email ?? undefined, phone: app.phone ?? undefined, levelName: row.level_name });
+      const made = await client.createApplicant({ externalUserId: row.external_user_id, email: app.email ?? undefined, phone: app.phone ?? undefined, levelName: row.level_name, ...(company ? { company: app.company ?? {} } : {}) });
       if (!made.ok) { console.error(`[sumsub] could not create the applicant for ${s.kind} ${app.id}: ${made.error}${made.detail ? ` (${made.detail})` : ""}`); return { ok: false, status: 502, error: "We could not start the check just now. Please try again in a few minutes." }; }
       applicantId = made.applicantId;
-      await db.query(`UPDATE identity_checks SET applicant_id = $3, updated_at = $4 WHERE kind = $1 AND subject_id = $2 AND applicant_id IS NULL`, [s.kind, app.id, applicantId, now()]);
+      await db.query(`UPDATE ${T} SET applicant_id = $3, updated_at = $4 WHERE kind = $1 AND subject_id = $2 AND applicant_id IS NULL`, [s.kind, app.id, applicantId, now()]);
     }
     const t = await client.accessToken({ externalUserId: row.external_user_id, levelName: row.level_name });
     if (!t.ok) { console.error(`[sumsub] could not issue a token for ${s.kind} ${app.id}: ${t.error}${t.detail ? ` (${t.detail})` : ""}`); return { ok: false, status: 502, error: "We could not start the check just now. Please try again in a few minutes." }; }
-    if (row.status === "not_started") await db.query(`UPDATE identity_checks SET status = 'in_progress', updated_at = $3 WHERE kind = $1 AND subject_id = $2 AND status = 'not_started'`, [s.kind, app.id, now()]);
+    if (row.status === "not_started") await db.query(`UPDATE ${T} SET status = 'in_progress', updated_at = $3 WHERE kind = $1 AND subject_id = $2 AND status = 'not_started'`, [s.kind, app.id, now()]);
     return { ok: true, token: t.token, expiresInSecs: t.expiresInSecs, status: row.status === "not_started" ? "in_progress" : row.status };
   }
 
   // ── may staff approve? ───────────────────────────────────────────────────
   /** A kind that must have a confirmed identity cannot be approved without one, unless a Super Administrator overrode it. Nothing is ever blocked while checks are switched off. */
   async function gate(kind: Kind, app: { id: string; profile: Profile }): Promise<{ ok: true } | (Fail & { code: "identity_required" })> {
-    if (!isRequired(config, app.profile)) return { ok: true };
+    if (!applies(kind, app.profile) || !required(app.profile)) return { ok: true };
     const row = await rowFor(kind, app.id);
     if (row?.status === "approved" || row?.overridden_at) return { ok: true };
     const where: Record<IdentityStatus, string> = {
       not_started: "The applicant has not started confirming their identity.", in_progress: "The applicant started confirming their identity but has not finished.", pending: "The applicant's identity check is still being reviewed.",
       on_hold: "The applicant's identity check is on hold at Sumsub.", approved: "", retry: "Sumsub could not confirm the applicant's identity. They may try again.", rejected: "Sumsub could not confirm the applicant's identity.",
     };
-    return { ok: false, status: 409, code: "identity_required", error: `This application cannot be approved until the applicant's identity is confirmed. ${where[row?.status ?? "not_started"]} A Super Administrator can approve it anyway, with a reason.` };
+    if (company) Object.assign(where, {
+      not_started: "The business has not started being verified.", in_progress: "The business verification was started but not finished.", pending: "The business verification is still being reviewed.",
+      on_hold: "The business verification is on hold at Sumsub.", retry: "Sumsub could not verify the business. They may try again.", rejected: "Sumsub could not verify the business.",
+    });
+    return { ok: false, status: 409, code: "identity_required", error: `This application cannot be approved until ${company ? "the business is verified" : "the applicant's identity is confirmed"}. ${where[row?.status ?? "not_started"]} A Super Administrator can approve it anyway, with a reason.` };
   }
 
   /** A Super Administrator approves without a confirmed identity. The reason is kept with who and when (and the caller audits it). */
   async function override(kind: Kind, ref: string, reason: unknown, by: string): Promise<{ ok: true; view: IdentityStaffView } | Fail> {
     const s = subject(kind); if (!s) return { ok: false, status: 400, error: "Unknown kind of application" };
     const why = text(reason, 500); if (!why || why.length < 10) return { ok: false, status: 400, error: "Say why in a sentence (at least 10 characters). It is kept with your name." };
-    if (!enabled()) return { ok: false, status: 409, error: "Identity checks are not switched on, so there is nothing to override" };
+    if (!enabled()) return { ok: false, status: 409, error: `${OFF}, so there is nothing to override` };
     const app = await s.byRef(ref); if (!app) return { ok: false, status: 404, error: "Application not found" };
     await ensureRow(s.kind, app);
-    await db.query(`UPDATE identity_checks SET override_reason = $3, overridden_by = $4, overridden_at = $5, updated_at = $5 WHERE kind = $1 AND subject_id = $2`, [s.kind, app.id, why, by, now()]);
+    await db.query(`UPDATE ${T} SET override_reason = $3, overridden_by = $4, overridden_at = $5, updated_at = $5 WHERE kind = $1 AND subject_id = $2`, [s.kind, app.id, why, by, now()]);
     return { ok: true, view: await staffView(s.kind, app) };
   }
 
@@ -182,7 +209,7 @@ export function createIdentity(d: { db: Db; config: SumsubConfig; client: Sumsub
     const result = s.result ?? {};
     const attempts = typeof s.attempts === "number" ? Math.max(row.attempts, s.attempts) : row.attempts + (s.submitted ? 1 : 0);
     await db.query(
-      `UPDATE identity_checks SET status = $3, review_status = $4, review_answer = $5, reject_type = $6, reject_labels = $7, moderation_comment = $8, client_comment = $9, attempts = $10,
+      `UPDATE ${T} SET status = $3, review_status = $4, review_answer = $5, reject_type = $6, reject_labels = $7, moderation_comment = $8, client_comment = $9, attempts = $10,
          reviewed_at = $11, last_event_at = $12, applicant_id = COALESCE(applicant_id, $13), updated_at = $14 WHERE kind = $1 AND subject_id = $2`,
       [row.kind, row.subject_id, next, s.reviewStatus, done ? text(result.reviewAnswer, 10)?.toUpperCase() ?? null : null, done ? text(result.reviewRejectType, 10)?.toUpperCase() ?? null : null,
         JSON.stringify(done ? labelsOf(result.rejectLabels) : []), done ? text(result.moderationComment, 2000) : null, done ? text(result.clientComment, 1000) : null, attempts,
@@ -193,7 +220,7 @@ export function createIdentity(d: { db: Db; config: SumsubConfig; client: Sumsub
   async function applyEvent(payload: unknown): Promise<{ ok: true; applied?: boolean; ignored?: string } | Fail> {
     const p = asObj(payload); const type = str(p?.type); const applicantId = str(p?.applicantId); const external = str(p?.externalUserId);
     if (!p || !type || (!applicantId && !external)) return { ok: false, status: 400, error: "Not a Sumsub event" };
-    const found = (await db.query(`SELECT * FROM identity_checks WHERE applicant_id = $1 OR external_user_id = $2 ORDER BY (applicant_id = $1) DESC LIMIT 1`, [applicantId ?? "", external ?? ""])).rows[0] as unknown as Row | undefined;
+    const found = (await db.query(`SELECT * FROM ${T} WHERE applicant_id = $1 OR external_user_id = $2 ORDER BY (applicant_id = $1) DESC LIMIT 1`, [applicantId ?? "", external ?? ""])).rows[0] as unknown as Row | undefined;
     if (!found) return { ok: true, ignored: "unknown applicant" };                            // not one of ours (another environment sharing the account): answer success so Sumsub stops retrying
     if (found.applicant_id && applicantId && found.applicant_id !== applicantId) return { ok: true, ignored: "applicant does not match" };
     const id = `${applicantId ?? external}:${type}:${str(p.correlationId) ?? crypto.createHash("sha256").update(JSON.stringify(p)).digest("hex")}`;
@@ -206,17 +233,17 @@ export function createIdentity(d: { db: Db; config: SumsubConfig; client: Sumsub
 
   /** Staff: ask Sumsub where the check stands now (for an event that never arrived). */
   async function refresh(kind: Kind, ref: string): Promise<{ ok: true; view: IdentityStaffView } | Fail> {
-    if (!enabled()) return { ok: false, status: 503, error: "Identity checks are not switched on" };
+    if (!enabled()) return { ok: false, status: 503, error: OFF };
     const s = subject(kind); if (!s) return { ok: false, status: 400, error: "Unknown kind of application" };
     const app = await s.byRef(ref); if (!app) return { ok: false, status: 404, error: "Application not found" };
     const row = await rowFor(s.kind, app.id);
-    if (!row?.applicant_id) return { ok: false, status: 409, error: "The applicant has not started the identity check yet" };
+    if (!row?.applicant_id) return { ok: false, status: 409, error: company ? "The applicant has not started verifying the business yet" : "The applicant has not started the identity check yet" };
     const st = await client.status(row.applicant_id);
     if (!st.ok) { console.error(`[sumsub] refresh failed for ${s.kind} ${ref}: ${st.error}${st.detail ? ` (${st.detail})` : ""}`); return { ok: false, status: 502, error: "Sumsub could not be reached. Try again in a moment." }; }
     await apply(row, { reviewStatus: st.reviewStatus, result: st.result, at: now(), attempts: st.attempts });
     return { ok: true, view: await staffView(s.kind, app) };
   }
 
-  return { enabled, applicantView, statusFor, staffView, startSession, gate, override, refresh, applyEvent, subject };
+  return { enabled, applies, party: company ? "company" as const : "person" as const, applicantView, statusFor, staffView, startSession, gate, override, refresh, applyEvent, subject };
 }
 export type Identity = ReturnType<typeof createIdentity>;

@@ -273,7 +273,7 @@ describe("the database tables", () => {
       return [...parts.map((p) => p.trim().split(/\s+/)[0]).filter((c) => c && !/^(PRIMARY|UNIQUE|CHECK|CONSTRAINT|FOREIGN)$/i.test(c)), ...added].sort();
     };
     const real = readFileSync(join(__dirname, "../db/schema.sql"), "utf8"), mirror = readFileSync(join(__dirname, "../portal/testDb.ts"), "utf8");
-    for (const t of ["identity_checks", "identity_events", "applications", "application_status_history"]) expect(columns(mirror, t), t).toEqual(columns(real, t));
+    for (const t of ["identity_checks", "business_checks", "identity_events", "applications", "application_status_history"]) expect(columns(mirror, t), t).toEqual(columns(real, t));
     expect(columns(real, "identity_checks")).toEqual(expect.arrayContaining(["kind", "subject_id", "consent_at", "override_reason"]));
   });
 });

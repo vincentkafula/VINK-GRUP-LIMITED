@@ -33,18 +33,18 @@ describe("the identity check on the tracking page", () => {
     render(<SponsorshipTracker email="sponsorships@vink.co.za" />); fill(); await screen.findByRole("heading", { name: "Confirm your identity" });
     expect(scrolls).toBe(1);                                                                                              // arriving at the answer scrolls to it, once
     fireEvent.click(screen.getByRole("checkbox")); fireEvent.click(screen.getByRole("button", { name: /Confirm my identity/ })); await waitFor(() => expect(sdk.launched()).toBe(1));
-    const box = document.getElementById("sumsub-websdk-container")!, calls = vi.mocked(globalThis.fetch).mock.calls.length;
+    const box = document.getElementById("sumsub-websdk-container-person")!, calls = vi.mocked(globalThis.fetch).mock.calls.length;
 
     next.track = () => json(200, { success: true, data: tracked(identity({ status: "pending", canStart: false, message: "Thank you. We have your documents.", attempts: 1 })) });
     act(() => sdk.handlers["idCheck.onApplicantSubmitted"]());
     await waitFor(() => expect(card().getByText("Being checked")).toBeTruthy());
     expect(vi.mocked(globalThis.fetch).mock.calls.length).toBeGreaterThan(calls);                                          // it did ask again
-    expect(document.getElementById("sumsub-websdk-container")).toBe(box); expect(sdk.launched()).toBe(1);                // the very same widget: nothing was torn down and rebuilt
+    expect(document.getElementById("sumsub-websdk-container-person")).toBe(box); expect(sdk.launched()).toBe(1);                // the very same widget: nothing was torn down and rebuilt
     expect(scrolls).toBe(1); expect(screen.getByRole("heading", { name: "Township Entrepreneurs Bootcamp" })).toBeTruthy();   // no jump back to the top, the page is still there
 
     next.track = () => json(500, { success: false, error: "Server trouble" });
     act(() => sdk.handlers["idCheck.onApplicantStatusChanged"]()); await new Promise((r) => setTimeout(r, 30));
-    expect(screen.queryByText("Server trouble")).toBeNull(); expect(document.getElementById("sumsub-websdk-container")).toBe(box); expect(card().getByText("Being checked")).toBeTruthy();
+    expect(screen.queryByText("Server trouble")).toBeNull(); expect(document.getElementById("sumsub-websdk-container-person")).toBe(box); expect(card().getByText("Being checked")).toBeTruthy();
   });
   it("still clears and rebuilds the page for a normal look-up (looking up another application starts afresh)", async () => {
     globalThis.fetch = server({ track: () => json(200, { success: true, data: tracked(identity()) }) }); render(<SponsorshipTracker email="sponsorships@vink.co.za" />); fill(); await screen.findByRole("heading", { name: "Confirm your identity" });

@@ -84,8 +84,13 @@ function ApplicationDetail({ app, onClose, onStatusUpdate }: {
   // confirming that a real person is applying: the full detail brings it a moment after the panel opens
   const [identity, setIdentity] = useState<IdentityStaff | undefined>(app.identity);
   useEffect(() => { setIdentity(app.identity); }, [app.identity]);
+  // and, for a business or corporate application, the business itself (Sumsub KYB)
+  const [kyb, setKyb] = useState<IdentityStaff | undefined>(app.kyb);
+  useEffect(() => { setKyb(app.kyb); }, [app.kyb]);
   const canOverride = ["owner", "superadmin"].includes(getSession()?.role ?? "");        // (the server checks this too)
-  const approvalBlocked = newStatus === "approved" && !!identity && identity.requirement === "required" && !identity.confirmed && !identity.override;
+  const lacking = (c?: IdentityStaff) => !!c && c.requirement === "required" && !c.confirmed && !c.override;
+  const missing = newStatus === "approved" ? [lacking(identity) && "the applicant's identity is not confirmed yet", lacking(kyb) && "the business is not verified yet"].filter(Boolean) as string[] : [];
+  const approvalBlocked = missing.length > 0;
   const sc = STATUS_CFG[app.status];
   const tc = TYPE_CFG[app.tier] ?? TYPE_CFG.personal;
 
@@ -139,6 +144,10 @@ function ApplicationDetail({ app, onClose, onStatusUpdate }: {
             onRefresh={async () => { const r = await applicationsApi.identityRefresh(app.referenceNumber); if (r.success && r.data) { setIdentity(r.data); return null; } return r.error ?? "Could not ask Sumsub just now."; }}
             onOverride={async (why) => { const r = await applicationsApi.identityOverride(app.referenceNumber, why); if (r.success && r.data) { setIdentity(r.data); setError(""); return null; } return r.error ?? "Could not save the override."; }} />}
 
+          {kyb && (kyb.enabled || kyb.status !== "not_started") && <AdminIdentityPanel business identity={kyb} canOverride={canOverride}
+            onRefresh={async () => { const r = await applicationsApi.identityRefresh(app.referenceNumber, "company"); if (r.success && r.data) { setKyb(r.data); return null; } return r.error ?? "Could not ask Sumsub just now."; }}
+            onOverride={async (why) => { const r = await applicationsApi.identityOverride(app.referenceNumber, why, "company"); if (r.success && r.data) { setKyb(r.data); setError(""); return null; } return r.error ?? "Could not save the override."; }} />}
+
           {/* Tier-specific data */}
           {app.tierData && Object.keys(app.tierData).length > 0 && (
             <div className="rounded-xl border border-line p-4">
@@ -188,7 +197,7 @@ function ApplicationDetail({ app, onClose, onStatusUpdate }: {
                 );
               })}
             </div>
-            {approvalBlocked && <p className="rounded-lg px-3 py-2 text-xs font-semibold" role="note" style={{ color: "var(--vk-warn)", background: "var(--vk-warn-bg)" }}>The applicant's identity is not confirmed yet, so this approval will be refused.{canOverride ? " You can allow it with a reason in the identity check above." : " A Super Administrator can allow it with a reason."}</p>}
+            {approvalBlocked && <p className="rounded-lg px-3 py-2 text-xs font-semibold" role="note" style={{ color: "var(--vk-warn)", background: "var(--vk-warn-bg)" }}>{missing.map((m, i) => (i ? `, and ${m}` : m[0].toUpperCase() + m.slice(1))).join("")}, so this approval will be refused.{canOverride ? " You can allow it with a reason in the check above." : " A Super Administrator can allow it with a reason."}</p>}
             <textarea
               value={reason}
               onChange={e => setReason(e.target.value)}

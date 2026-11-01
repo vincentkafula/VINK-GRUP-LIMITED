@@ -53,9 +53,11 @@ export function createSumsubClient(d: { config: SumsubConfig; fetchImpl?: typeof
   }
 
   /** Creates the person in Sumsub under our opaque external id. If one already exists for that id (an earlier attempt that we did not get to save), that one is used. */
-  async function createApplicant(i: { externalUserId: string; email?: string; phone?: string; levelName?: string }): Promise<({ ok: true } & SumsubApplicant) | SumsubFail> {
+  /** `company` makes it a COMPANY applicant (KYB), with whatever is known about the business: the people behind it are added by the applicant in Sumsub's widget. */
+  async function createApplicant(i: { externalUserId: string; email?: string; phone?: string; levelName?: string; company?: { name?: string; registrationNumber?: string; country?: string } }): Promise<({ ok: true } & SumsubApplicant) | SumsubFail> {
     const level = i.levelName || config.levelName;
     const body: Json = { externalUserId: i.externalUserId }; if (i.email) body.email = i.email; const phone = e164(i.phone); if (phone) body.phone = phone;
+    if (i.company) { body.type = "company"; const info: Json = {}; if (i.company.name) info.companyName = i.company.name; if (i.company.registrationNumber) info.registrationNumber = i.company.registrationNumber; if (/^[A-Z]{3}$/.test(i.company.country ?? "")) info.country = i.company.country; body.info = { companyInfo: info }; }
     const r = await call("POST", `/resources/applicants?levelName=${encodeURIComponent(level)}`, body);
     if (!r.ok) return r.status === 409 ? getByExternalUserId(i.externalUserId) : r;
     const a = applicantOf(r.json); return a ? { ok: true, ...a } : { ok: false, status: 502, error: "Sumsub's answer did not name the applicant" };
