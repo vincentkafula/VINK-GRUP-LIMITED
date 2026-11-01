@@ -44,6 +44,7 @@ const CreditCardApplicationViewer = lazy(() => import("./components/CreditCardAp
 const LoanViewer                  = lazy(() => import("./components/LoanViewer").then(m => ({ default: m.LoanViewer })));
 const InvestViewer                = lazy(() => import("./components/InvestViewer").then(m => ({ default: m.InvestViewer })));
 const RewardsViewer               = lazy(() => import("./components/RewardsViewer").then(m => ({ default: m.RewardsViewer })));
+const ProductApplicationViewer    = lazy(() => import("./components/ProductApplicationViewer").then(m => ({ default: m.ProductApplicationViewer })));
 const ServiceApplicationViewer    = lazy(() => import("./components/ServiceApplicationViewer").then(m => ({ default: m.ServiceApplicationViewer })));
 const ProductSelectorViewer       = lazy(() => import("./components/ProductSelectorViewer").then(m => ({ default: m.ProductSelectorViewer })));
 const StartMyBusinessViewer       = lazy(() => import("./components/StartMyBusinessViewer").then(m => ({ default: m.StartMyBusinessViewer })));
@@ -131,7 +132,7 @@ export default function App() {
   const [showSafetySecurity, setShowSafetySecurity]         = useState(false);
   const [showPersonalAccount, setShowPersonalAccount]       = useState(false);
   const [showPersonalLedger, setShowPersonalLedger]          = useState(false);
-  const [ledgerCategory, setLedgerCategory]                  = useState<"creditCard" | "loan" | "invest" | "rewards">("creditCard");
+  const [ledgerCategory, setLedgerCategory]                  = useState<"creditCard" | "loan" | "invest" | "rewards" | "insurance">("creditCard");
   const [showCreditCard, setShowCreditCard]                 = useState(false);
   const [showCreditCardApp, setShowCreditCardApp]           = useState(false);
   const [showLoan, setShowLoan]                             = useState(false);
@@ -140,10 +141,13 @@ export default function App() {
   const [showInvestApp, setShowInvestApp]                   = useState(false);
   const [showRewardsApp, setShowRewardsApp]                 = useState(false);
   const [showAccountApp, setShowAccountApp]                 = useState(false);
+  const [showInsureApp, setShowInsureApp]                     = useState(false);
+  const [showPersonalLoanApp, setShowPersonalLoanApp]         = useState(false);
+  const [chosenProduct, setChosenProduct]                     = useState<string | undefined>(undefined);   // the product picked in the selector, so the application starts after that question
 
   // ── Product selector ───────────────────────────────────────────────────────
   const [selectorOpen, setSelectorOpen]                     = useState(false);
-  const [selectorCategory, setSelectorCategory]             = useState<"account"|"creditCard"|"loan"|"invest"|"rewards"|null>(null);
+  const [selectorCategory, setSelectorCategory]             = useState<"account"|"creditCard"|"loan"|"invest"|"rewards"|"insurance"|null>(null);
 
   // ── Business ──────────────────────────────────────────────────────────────
   const [showStartBusiness, setShowStartBusiness]           = useState(false);
@@ -268,11 +272,10 @@ export default function App() {
         // feature. No dedicated personal-consumer forex screen exists
         // yet, so this stays on the consumer dashboard.
         case "forex":        mount("postLogin");        setShowPostLogin(true);        break;
-        // Rewards -- "GuardMe" and "Insurance" tiles have no consumer-facing
-        // destination anymore (insurance was removed), so they land on the
-        // consumer dashboard rather than dead-end.
-        case "guardme":
-        case "insurance":    mount("postLogin");        setShowPostLogin(true);        break;
+        // Rewards -- the "GuardMe" tile has no consumer-facing destination, so it lands on the
+        // consumer dashboard rather than dead-end. "Insurance" opens the insurance products (and their application).
+        case "guardme":      mount("postLogin");        setShowPostLogin(true);        break;
+        case "insurance":    openSelector("insurance"); break;
         case "rewards":      mount("rewards");          setShowRewards(true);          break;
         // Connectivity -- "Connect", "Mobile", and "VINK TV" tiles have no
         // consumer-facing destination (the backoffice mobile-network tool
@@ -310,12 +313,15 @@ export default function App() {
     });
   }, [mount]);
 
-  const applyForProductCategory = (category: "creditCard" | "loan" | "invest" | "rewards") => {
+  /** Opens the application for a category of personal product. `product` is the name the visitor chose in the selector, when they chose one. */
+  const applyForProductCategory = (category: "creditCard" | "loan" | "invest" | "rewards" | "insurance", product?: string) => {
     startTransition(() => {
+      setChosenProduct(product);
       if (category === "invest")      { mount("investApp");     setShowInvestApp(true); }
       else if (category === "rewards"){ mount("rewardsApp");    setShowRewardsApp(true); }
       else if (category === "creditCard") { mount("creditCardApp"); setShowCreditCardApp(true); }
-      else if (category === "loan")   { mount("bizLoanApp");    setShowBusinessLoanApp(true); }
+      else if (category === "loan")   { mount("personalLoanApp"); setShowPersonalLoanApp(true); }      // the six personal loans have their own application (they used to open the BUSINESS loan form)
+      else if (category === "insurance") { mount("insureApp");  setShowInsureApp(true); }
     });
   };
 
@@ -362,7 +368,7 @@ export default function App() {
     "PersonalHome": "/personal",
     "BusinessHome": "/business",
     "Account": "/personal/account", "Credit Card": "/personal/credit-card", "Loan": "/personal/loan",
-    "Invest": "/personal/invest", "Rewards": "/personal/rewards",
+    "Invest": "/personal/invest", "Rewards": "/personal/rewards", "Insure": "/personal/insure",
     "Start My Business": "/business/start-my-business", "Accounts": "/business/accounts",
     "Credit Cards": "/business/credit-cards", "Loans": "/business/loans",
     "Business:Invest": "/business/invest",
@@ -385,6 +391,7 @@ export default function App() {
       if (item === "Loan")              { mount("personalAccount"); mount("personalLedger"); setLedgerCategory("loan"); setShowPersonalLedger(true); return; }
       if (item === "Invest")            { mount("personalAccount"); mount("personalLedger"); setLedgerCategory("invest"); setShowPersonalLedger(true); return; }
       if (item === "Rewards")           { mount("personalAccount"); mount("personalLedger"); setLedgerCategory("rewards"); setShowPersonalLedger(true); return; }
+      if (item === "Insure")            { mount("personalAccount"); mount("personalLedger"); setLedgerCategory("insurance"); setShowPersonalLedger(true); return; }
       // Business — Header.tsx's BUSINESS_SUB_NAV sends these exact bare labels
       if (item === "Start My Business") { mount("startBusiness");      setShowStartBusiness(true); return; }
       if (item === "Accounts")          { mount("bizAccountSelector"); setShowBusinessAccountSelector(true); return; }
@@ -403,7 +410,7 @@ export default function App() {
 
   // Every public page, by name, with the function that closes it. Closing from the header (Close, or switching section) uses this list, the same pages
   // the header is shown for (sitePages.ts), so a page can never stay open underneath another.
-  const sitePageClosers: Record<string, (open: boolean) => void> = { showPersonalLanding: setShowPersonalLanding, showPersonalAccount: setShowPersonalAccount, showPersonalLedger: setShowPersonalLedger, showCreditCard: setShowCreditCard, showCreditCardApp: setShowCreditCardApp, showLoan: setShowLoan, showInvest: setShowInvest, showRewards: setShowRewards, showInvestApp: setShowInvestApp, showRewardsApp: setShowRewardsApp, showAccountApp: setShowAccountApp, showBusinessLanding: setShowBusinessLanding, showStartBusiness: setShowStartBusiness, showBusinessAccountSelector: setShowBusinessAccountSelector, showBusinessAccounts: setShowBusinessAccounts, showBusinessLedger: setShowBusinessLedger, showBusinessLoanApp: setShowBusinessLoanApp, showManageBusiness: setShowManageBusiness, showCorporateLedger: setShowCorporateLedger, showCorporateLoanApp: setShowCorporateLoanApp, showCorporateCSR: setShowCorporateCSR, showInvestorRelations: setShowInvestorRelations, selectorOpen: setSelectorOpen, showContactUs: setShowContactUs, showAboutVINK: setShowAboutVINK, showApplication: setShowApplication, showCareers: setShowCareers, showSwitchToVINK: setShowSwitchToVINK, showSafetySecurity: setShowSafetySecurity, showTaxiAssociations: setShowTaxiAssociations, showJobApp: setShowJobApp, showLegal: setShowLegal, showBranchLocator: setShowBranchLocator, showSponsorship: setShowSponsorship, showSponsorshipApply: setShowSponsorshipApply, showBankingFees: setShowBankingFees, showBankingGuide: setShowBankingGuide, showBankingChannels: setShowBankingChannels, showExchangeRates: setShowExchangeRates, showLatestOffers: setShowLatestOffers, showMarketIndices: setShowMarketIndices, showVinkBlog: setShowVinkBlog };
+  const sitePageClosers: Record<string, (open: boolean) => void> = { showPersonalLanding: setShowPersonalLanding, showPersonalAccount: setShowPersonalAccount, showPersonalLedger: setShowPersonalLedger, showCreditCard: setShowCreditCard, showCreditCardApp: setShowCreditCardApp, showLoan: setShowLoan, showInvest: setShowInvest, showRewards: setShowRewards, showInvestApp: setShowInvestApp, showRewardsApp: setShowRewardsApp, showAccountApp: setShowAccountApp, showInsureApp: setShowInsureApp, showPersonalLoanApp: setShowPersonalLoanApp, showBusinessLanding: setShowBusinessLanding, showStartBusiness: setShowStartBusiness, showBusinessAccountSelector: setShowBusinessAccountSelector, showBusinessAccounts: setShowBusinessAccounts, showBusinessLedger: setShowBusinessLedger, showBusinessLoanApp: setShowBusinessLoanApp, showManageBusiness: setShowManageBusiness, showCorporateLedger: setShowCorporateLedger, showCorporateLoanApp: setShowCorporateLoanApp, showCorporateCSR: setShowCorporateCSR, showInvestorRelations: setShowInvestorRelations, selectorOpen: setSelectorOpen, showContactUs: setShowContactUs, showAboutVINK: setShowAboutVINK, showApplication: setShowApplication, showCareers: setShowCareers, showSwitchToVINK: setShowSwitchToVINK, showSafetySecurity: setShowSafetySecurity, showTaxiAssociations: setShowTaxiAssociations, showJobApp: setShowJobApp, showLegal: setShowLegal, showBranchLocator: setShowBranchLocator, showSponsorship: setShowSponsorship, showSponsorshipApply: setShowSponsorshipApply, showBankingFees: setShowBankingFees, showBankingGuide: setShowBankingGuide, showBankingChannels: setShowBankingChannels, showExchangeRates: setShowExchangeRates, showLatestOffers: setShowLatestOffers, showMarketIndices: setShowMarketIndices, showVinkBlog: setShowVinkBlog };
   // The signed-in tools, which show the header as well, and are closed the same way.
   const appPageClosers: Record<string, (open: boolean) => void> = { showPostLogin: setShowPostLogin, showUserProfile: setShowUserProfile, showOwners: setShowOwners, showInvestors: setShowInvestors, showSuperAdmin: setShowSuperAdmin, showBanking: setShowBanking, showTerminalManagement: setShowTerminalManagement, showControlCentre: setShowControlCentre, showManagementPanel: setShowManagementPanel, showTokenReader: setShowTokenReader, showSIMApp: setShowSIMApp, showAFCApp: setShowAFCApp, showVinkBankingApp: setShowVinkBankingApp, showVinkBusinessBankingApp: setShowVinkBusinessBankingApp, showVinkCorporateBankingApp: setShowVinkCorporateBankingApp, showVinkMobileApp: setShowVinkMobileApp, showAppLauncher: setShowAppLauncher, showRevenueDashboard: setShowRevenueDashboard, showFinancialReports: setShowFinancialReports, showAdminDashboard: setShowAdminDashboard, showAdminApps: setShowAdminApps, showLogin: setShowLogin, showManshya: setShowManshya, showManshyaAdmin: setShowManshyaAdmin, showManshyaPay: setShowManshyaPay };
   const closeAllRoutedViewers = () => {
@@ -416,7 +423,7 @@ export default function App() {
   // requires backing out to the homepage first.
   // Every public page shows the header: the list of pages and the rule are in sitePages.ts (a test makes sure no page is left out).
   const { section: activeSiteSection, showNav: siteNav } = siteChrome({
-    showPersonalLanding, showPersonalAccount, showPersonalLedger, showCreditCard, showCreditCardApp, showLoan, showInvest, showRewards, showInvestApp, showRewardsApp, showAccountApp,
+    showPersonalLanding, showPersonalAccount, showPersonalLedger, showCreditCard, showCreditCardApp, showLoan, showInvest, showRewards, showInvestApp, showRewardsApp, showAccountApp, showInsureApp, showPersonalLoanApp,
     showBusinessLanding, showStartBusiness, showBusinessAccountSelector, showBusinessAccounts, showBusinessLedger, showBusinessLoanApp, showManageBusiness,
     showCorporateLedger, showCorporateLoanApp, showCorporateCSR, showInvestorRelations,
     selectorOpen, showContactUs, showAboutVINK, showApplication, showCareers, showSwitchToVINK, showSafetySecurity, showTaxiAssociations, showJobApp,
@@ -456,7 +463,7 @@ export default function App() {
       return true;
     }
     if (seg[0] === "personal" && seg[1]) {
-      const map: Record<string, string> = { account: "account", "credit-card": "creditCard", loan: "loan", invest: "invest", rewards: "rewards" };
+      const map: Record<string, string> = { account: "account", "credit-card": "creditCard", loan: "loan", invest: "invest", rewards: "rewards", insure: "insurance" };
       const cat = map[seg[1]];
       if (!cat) return false;
       mount("personalAccount");
@@ -594,15 +601,11 @@ export default function App() {
   // restored to the site default when closed again.
   useEffect(() => { if (showStartBusiness)      return setPageMeta(PAGE_META.business.title,     PAGE_META.business.description); }, [showStartBusiness]);
 
-  const handleSelectorSelect = (type: string, productId: string) => {
+  /** The selector reports the product chosen; the application to open depends on the CATEGORY being browsed. */
+  const handleSelectorSelect = (category: NonNullable<typeof selectorCategory>, productName: string) => {
     setSelectorOpen(false);
-    startTransition(() => {
-      if (type === "invest")     { mount("investApp");      setShowInvestApp(true); }
-      else if (type === "rewards"){ mount("rewardsApp");    setShowRewardsApp(true); }
-      else if (type === "account"){ mount("accountApp");    setShowAccountApp(true); }
-      else if (type === "creditCard") { mount("creditCardApp"); setShowCreditCardApp(true); }
-      else if (type === "loan")  { mount("bizLoanApp");     setShowBusinessLoanApp(true); }
-    });
+    if (category === "account") { startTransition(() => { setChosenProduct(productName); mount("accountApp"); setShowAccountApp(true); }); return; }
+    applyForProductCategory(category, productName);
   };
 
   return (
@@ -687,9 +690,11 @@ export default function App() {
       {has("investApp")       && <Suspense fallback={null}><ServiceApplicationViewer serviceType="invest"   isOpen={showInvestApp}     onClose={() => setShowInvestApp(false)} /></Suspense>}
       {has("rewardsApp")      && <Suspense fallback={null}><ServiceApplicationViewer serviceType="rewards"  isOpen={showRewardsApp}    onClose={() => setShowRewardsApp(false)} /></Suspense>}
       {has("accountApp")      && <Suspense fallback={null}><ServiceApplicationViewer serviceType="account"  isOpen={showAccountApp}    onClose={() => setShowAccountApp(false)} /></Suspense>}
+      {has("insureApp")       && <Suspense fallback={null}><ProductApplicationViewer kind="insurance"    isOpen={showInsureApp}      initialProduct={chosenProduct} onClose={() => setShowInsureApp(false)} /></Suspense>}
+      {has("personalLoanApp") && <Suspense fallback={null}><ProductApplicationViewer kind="personalLoan" isOpen={showPersonalLoanApp} initialProduct={chosenProduct} onClose={() => setShowPersonalLoanApp(false)} /></Suspense>}
 
       {/* Product selector */}
-      {has("productSelector") && <Suspense fallback={null}><ProductSelectorViewer  isOpen={selectorOpen} category={selectorCategory} onClose={() => setSelectorOpen(false)} onSelect={handleSelectorSelect} /></Suspense>}
+      {has("productSelector") && <Suspense fallback={null}><ProductSelectorViewer  isOpen={selectorOpen} category={selectorCategory} onClose={() => setSelectorOpen(false)} onSelect={(_productId, productName) => selectorCategory && handleSelectorSelect(selectorCategory, productName)} /></Suspense>}
 
       {/* Business */}
       {has("startBusiness")      && <Suspense fallback={null}><StartMyBusinessViewer       isOpen={showStartBusiness}       onClose={() => { setShowStartBusiness(false); pushRoute("/"); }} onNavigate={navigateBusinessItem} /></Suspense>}

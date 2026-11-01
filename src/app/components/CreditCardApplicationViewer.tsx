@@ -604,33 +604,10 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
                 <CheckCircle className="w-12 h-12 text-green-600" />
               </div>
               <div>
-                <h2 className="text-2xl font-black text-fg">Account Created!</h2>
-                <p className="text-fg-muted text-sm mt-1">Your VINK credit card has been approved and issued.</p>
+                <h2 className="text-2xl font-black text-fg">Application received</h2>
+                <p className="text-fg-muted text-sm mt-1 max-w-sm mx-auto">We have your credit card application and will review it. No card is issued until it is approved.</p>
               </div>
 
-              {/* Virtual card preview */}
-              <div className="rounded-2xl p-5 text-white mx-auto max-w-xs relative overflow-hidden"
-                style={{ background: CARD_TYPES.find(c => c.id === selectedCard)?.color ?? "" }}>
-                <div className="absolute -top-6 -right-6 w-28 h-28 rounded-full bg-white/10" />
-                <div className="absolute -bottom-4 -left-4 w-20 h-20 rounded-full bg-white/10" />
-                <div className="relative z-10">
-                  <div className="flex justify-between items-start mb-8">
-                    <div>
-                      <p className="text-[9px] tracking-widest opacity-60 uppercase">VINK</p>
-                      <p className="text-sm font-bold">{CARD_TYPES.find(c => c.id === selectedCard)?.name}</p>
-                    </div>
-                    <div className="w-9 h-6 rounded bg-yellow-400/70" />
-                  </div>
-                  <p className="font-mono text-sm tracking-widest mb-3">{accountNumber.slice(0, 4)} •••• •••• {accountNumber.slice(-4)}</p>
-                  <div className="flex justify-between items-end">
-                    <div>
-                      <p className="text-[8px] opacity-55 uppercase">Card Holder</p>
-                      <p className="text-xs font-medium">{form.firstName || "VINK"} {form.lastName || "Cardholder"}</p>
-                    </div>
-                    <p className="text-base font-black italic">VISA</p>
-                  </div>
-                </div>
-              </div>
             </div>
 
             {/* confirming that a real person is applying (shows nothing unless identity checks are switched on) */}
@@ -638,14 +615,11 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
 
             {/* Account details */}
             <div className="bg-surface rounded-2xl border border-line p-5 shadow-sm space-y-3">
-              <h3 className="font-bold text-fg text-sm">Your card details</h3>
+              <h3 className="font-bold text-fg text-sm">Your application</h3>
               {[
-                { label: "Card number",       value: accountNumber },
-                { label: "Card type",         value: CARD_TYPES.find(c => c.id === selectedCard)?.name ?? "" },
-                { label: "Credit limit",      value: CARD_TYPES.find(c => c.id === selectedCard)?.limit ?? "" },
-                { label: "Card expiry",       value: `${new Date().getMonth() + 1 < 10 ? "0" : ""}${new Date().getMonth() + 1}/${new Date().getFullYear() + 3 - 2000}` },
-                { label: "Account status",    value: "Active — card being printed" },
-                { label: "Reference number",  value: `VINK-CC-${new Date().getFullYear()}-${Math.floor(Math.random() * 90000 + 10000)}` },
+                { label: "Reference number",  value: accountNumber },
+                { label: "Card applied for",  value: CARD_TYPES.find(c => c.id === selectedCard)?.name ?? "" },
+                { label: "Status",            value: "Received: we will review it" },
               ].map((item, i) => (
                 <div key={i} className="flex justify-between py-2 border-b border-line last:border-0">
                   <span className="text-xs text-fg-muted font-medium">{item.label}</span>
@@ -655,9 +629,7 @@ export function CreditCardApplicationViewer({ isOpen, onClose }: Props) {
             </div>
 
             <div className="bg-surface rounded-2xl border border-line p-5 shadow-sm text-sm text-fg-muted leading-relaxed">
-              <p>📦 Your physical card will be delivered to <strong>{form.address || "your registered address"}</strong> within <strong>5–7 business days</strong>.</p>
-              <p className="mt-2">📱 Your virtual card is available immediately in the <strong>VINK app</strong> for online and tap-to-pay transactions.</p>
-              <p className="mt-2 text-xs text-fg-subtle">A welcome email has been sent to {form.email || "your registered email"}.</p>
+              <p>We will contact you on <strong>{form.email || "the email address you gave us"}</strong> about your application.</p>
             </div>
 
             <button onClick={onClose}

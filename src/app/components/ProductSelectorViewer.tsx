@@ -11,7 +11,7 @@ import { BRAND } from "../brand";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type ProductCategory =
-  | "invest" | "rewards" | "loan" | "creditCard" | "account";
+  | "invest" | "rewards" | "loan" | "creditCard" | "account" | "insurance";
 
 export interface Product {
   id: string;
@@ -51,6 +51,13 @@ export const CATEGORY_CONFIG: Record<ProductCategory, {
     title: "Choose Your Rewards Programme",
     subtitle: "Earn VINK Points on every purchase — pick the card that rewards you most for how you spend.",
     tag: "Personal Banking · VINK Points",
+    gradient: "#C8102E",
+    accentColor: BRAND.crimson,
+  },
+  insurance: {
+    title: "Choose Your Insurance",
+    subtitle: "Tell us what you would like cover for and we will come back to you with a quote. Applying does not give you cover.",
+    tag: "Personal Banking · Insurance",
     gradient: "#C8102E",
     accentColor: BRAND.crimson,
   },
@@ -103,6 +110,12 @@ export const PRODUCTS: Record<ProductCategory, Product[]> = {
     { id: "retail-rewards", name: "ThriveClub", tagline: "A wellness-linked rewards programme that rewards healthy habits and positive lifestyle choices.", price: "R170", priceLabel: "/month", emoji: "🛒", gradient: "linear-gradient(135deg,color-mix(in srgb, #F3E5F5 var(--vk-wash), var(--vk-surface)),color-mix(in srgb, #EAF7EE var(--vk-wash), var(--vk-surface)))", features: ["Double VINK Points at Pick n Pay, Shoprite, Checkers & Spar", "Redeem in-store or on the VINK app", "Selected independent retailers included", "Points never expire while account is active"] },
     { id: "travel-rewards", name: "ElevateRewards", tagline: "A premium rewards programme offering enhanced benefits for high-engagement VINK customers.", price: "R265", priceLabel: "/month", emoji: "✈️", gradient: "linear-gradient(135deg,#C8102E,#A50F27)", featured: true, badge: "Top Pick", badgeColor: BRAND.crimsonHover, features: ["3× VINK Points on flights and hotels", "Access to Bidvest Lounges at all SA airports", "Travel insurance on bookings", "Airline partners: Comair and FlySafair"] },
     { id: "automotive-rewards", name: "JourneyPoints", tagline: "A travel-focused rewards programme designed to reward spending with travel perks, upgrades, and experiences.", price: "R415", priceLabel: "/month", emoji: "🔧", gradient: "linear-gradient(135deg,#212121,#424242)", features: ["Earn VINK Points at Tiger Wheel & Tyre, Supa Quick & AutoZone", "Redeem for oil changes, tyres, and services", "Monthly automotive spend report", "Linked to fleet management tools"] },
+  ],
+
+  insurance: [
+    { id: "life", name: "Life Insurance", tagline: "A lump sum paid to the people who depend on you if you die.", price: "Quote", priceLabel: "we price it for you", emoji: "🛡️", gradient: "linear-gradient(135deg,color-mix(in srgb, #FFEBEE var(--vk-wash), var(--vk-surface)),#FFCDD2)", features: ["Tell us how much cover you would like", "No health questions on this application", "We come back to you with a quote"] },
+    { id: "funeral", name: "Funeral Cover", tagline: "Cover towards funeral costs for you and your family.", price: "Quote", priceLabel: "we price it for you", emoji: "🕊️", gradient: "linear-gradient(135deg,color-mix(in srgb, #EDE7F6 var(--vk-wash), var(--vk-surface)),#D1C4E9)", features: ["Cover yourself, a partner, children and parents", "No health questions on this application", "We come back to you with a quote"] },
+    { id: "vehicle", name: "Vehicle Insurance", tagline: "Cover for your car against loss and damage.", price: "Quote", priceLabel: "we price it for you", emoji: "🚗", gradient: "linear-gradient(135deg,color-mix(in srgb, #E3F2FD var(--vk-wash), var(--vk-surface)),#BBDEFB)", features: ["Tell us about your car and how it is used", "Choose the type of cover you want", "We come back to you with a quote"] },
   ],
   loan: [
     { id: "personal", name: "LifeAdvance", tagline: "A flexible personal loan designed to help fund major life milestones, from home improvements to family events.", price: "R0", priceLabel: "application fee", emoji: "👤", gradient: "linear-gradient(135deg,color-mix(in srgb, #FFEBEE var(--vk-wash), var(--vk-surface)),#FFCDD2)", badge: "Same-day Approval", badgeColor: BRAND.ok, features: ["R1,000 – R250,000", "12–60 month terms", "Interest rate 12.5%–24.5% p.a.", "Same-day approval for qualifying applicants"] },

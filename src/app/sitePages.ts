@@ -12,7 +12,7 @@ export type SiteSection = "Personal" | "Business" | "Corporate";
 
 /** The pages that belong to a section. The section's name is highlighted in the header while one of them is open. */
 export const SECTION_PAGES: Record<SiteSection, readonly string[]> = {
-  Personal: ["showPersonalLanding", "showPersonalAccount", "showPersonalLedger", "showCreditCard", "showCreditCardApp", "showLoan", "showInvest", "showRewards", "showInvestApp", "showRewardsApp", "showAccountApp"],
+  Personal: ["showPersonalLanding", "showPersonalAccount", "showPersonalLedger", "showCreditCard", "showCreditCardApp", "showLoan", "showInvest", "showRewards", "showInvestApp", "showRewardsApp", "showAccountApp", "showInsureApp", "showPersonalLoanApp"],
   Business: ["showBusinessLanding", "showStartBusiness", "showBusinessAccountSelector", "showBusinessAccounts", "showBusinessLedger", "showBusinessLoanApp", "showManageBusiness"],
   Corporate: ["showCorporateLedger", "showCorporateLoanApp", "showCorporateCSR", "showInvestorRelations"],
 };

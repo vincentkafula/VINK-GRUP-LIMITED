@@ -643,16 +643,14 @@ function Step6({ onNext, onBack, submitting, initialAccountType }: { onNext: (da
   );
 }
 
-// ─── Step 7 — Account Opened (matches image) ─────────────────────────────────
+// ─── Step 7 — Application received ───────────────────────────────────────────
 function Step7({ onClose, onGoToDashboard, referenceNumber, accountNumber, loginUsername, loginCreated, loginError }: {
   onClose: () => void; onGoToDashboard: () => void; referenceNumber: string; accountNumber: string; loginUsername: string; loginCreated: boolean; loginError: string;
 }) {
+  // only what has actually happened: the application is received, and everything else (identity checks, the account itself) comes after it is reviewed
   const SUMMARY_ITEMS = [
-    "Identity verified via OTP, fingerprint and selfie",
-    "KYC documents received and processed",
-    "Privacy consent and acknowledgement recorded",
-    "Account and selected services activated",
-    "Confirmation sent to your phone and email",
+    "Your application has been received",
+    "We will review it and contact you on the email address you gave us",
   ];
 
   return (

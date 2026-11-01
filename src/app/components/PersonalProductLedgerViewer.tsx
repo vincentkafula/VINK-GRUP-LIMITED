@@ -9,7 +9,7 @@ interface Props {
   onClose: () => void;
   initialCategory: Exclude<ProductCategory, "account">;
   onNavigateToAccount: () => void;
-  onApply: (category: Exclude<ProductCategory, "account">) => void;
+  onApply: (category: Exclude<ProductCategory, "account">, productName?: string) => void;     // the product the visitor pressed "Apply now" on, so the application can start after that choice
 }
 
 // "Account" is handled by its own dedicated page (PersonalAccountViewer) with
@@ -22,6 +22,7 @@ const SUB_NAV: { label: string; category: ProductCategory }[] = [
   { label: "Loan",        category: "loan" },
   { label: "Invest",      category: "invest" },
   { label: "Rewards",     category: "rewards" },
+  { label: "Insure",      category: "insurance" },
 ];
 
 const PAGE_COPY: Record<ProductCategory, { heading: string; scaleNote: string; detailsCta: string; heroEyebrow: string; heroTitle: string; heroSubtitle: string }> = {
@@ -29,6 +30,7 @@ const PAGE_COPY: Record<ProductCategory, { heading: string; scaleNote: string; d
   creditCard: { heading: "All personal credit cards", scaleNote: "Monthly card fee shown on a shared scale, R0 → R415",          detailsCta: "See card details", heroEyebrow: "Credit Cards", heroTitle: "Credit cards built for\nhow you spend.", heroSubtitle: "From everyday essentials to premium rewards — find the card that fits your life." },
   loan:       { heading: "All personal loans",       scaleNote: "Application / admin fee shown on a shared scale, R0 → R415",   detailsCta: "See loan details", heroEyebrow: "Loans", heroTitle: "Loans that move\nas fast as you do.", heroSubtitle: "Quick approvals and clear terms — borrow with confidence, on your timeline." },
   invest:     { heading: "All investment products",  scaleNote: "Entry cost or rate varies by product type",                    detailsCta: "See investment details", heroEyebrow: "Invest", heroTitle: "Grow your wealth\nwith confidence.", heroSubtitle: "Investment products for every goal, from your first fund to long-term wealth." },
+  insurance:  { heading: "All insurance products", scaleNote: "Every insurance product is priced for you after you apply", detailsCta: "See cover details", heroEyebrow: "Insurance", heroTitle: "Cover for the people\nand things you rely on.", heroSubtitle: "Tell us what you would like cover for and we will come back to you with a quote. Applying does not give you cover." },
   rewards:    { heading: "All rewards cards",        scaleNote: "Monthly card fee shown on a shared scale, R0 → R415",          detailsCta: "See card details", heroEyebrow: "Rewards", heroTitle: "Get more out of\neveryday banking.", heroSubtitle: "Earn on every swipe and unlock offers built around how you already spend." },
 };
 
@@ -91,7 +93,7 @@ export function PersonalProductLedgerViewer({ isOpen, onClose, initialCategory, 
         return parsed.length ? Math.max(...parsed) : null;
       })()
     : null;
-  const handleApply = () => { onClose(); onApply(category as Exclude<ProductCategory, "account">); };
+  const handleApply = (productName?: string) => { onClose(); onApply(category as Exclude<ProductCategory, "account">, productName); };
 
   return (
     <div className="pav-root fixed inset-0 z-50 overflow-y-auto">
@@ -251,12 +253,12 @@ export function PersonalProductLedgerViewer({ isOpen, onClose, initialCategory, 
 
           <div className="pav-grid">
             {products.slice(0, 3).map((p, i) => (
-              <ProductCard key={p.id} product={p} folio={String(i + 1).padStart(2, "0")} maxPrice={maxPrice} detailsCta={copy.detailsCta} onApply={handleApply} onDetails={() => setDetailProduct({ product: p, folio: String(i + 1).padStart(2, "0") })} />
+              <ProductCard key={p.id} product={p} folio={String(i + 1).padStart(2, "0")} maxPrice={maxPrice} detailsCta={copy.detailsCta} onApply={() => handleApply(p.name)} onDetails={() => setDetailProduct({ product: p, folio: String(i + 1).padStart(2, "0") })} />
             ))}
           </div>
           <div className="pav-grid">
             {products.slice(3, 6).map((p, i) => (
-              <ProductCard key={p.id} product={p} folio={String(i + 4).padStart(2, "0")} maxPrice={maxPrice} detailsCta={copy.detailsCta} onApply={handleApply} onDetails={() => setDetailProduct({ product: p, folio: String(i + 4).padStart(2, "0") })} />
+              <ProductCard key={p.id} product={p} folio={String(i + 4).padStart(2, "0")} maxPrice={maxPrice} detailsCta={copy.detailsCta} onApply={() => handleApply(p.name)} onDetails={() => setDetailProduct({ product: p, folio: String(i + 4).padStart(2, "0") })} />
             ))}
           </div>
         </div>
@@ -272,7 +274,7 @@ export function PersonalProductLedgerViewer({ isOpen, onClose, initialCategory, 
             featuresHead: "Key features", features: detailProduct.product.features, backLabel: `Back to ${copy.heading.toLowerCase()}`,
           }}
           onBack={() => setDetailProduct(null)}
-          onApply={() => { setDetailProduct(null); handleApply(); }}
+          onApply={() => { const chosen = detailProduct?.product.name; setDetailProduct(null); handleApply(chosen); }}
         />
       )}
     </div>

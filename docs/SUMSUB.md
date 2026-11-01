@@ -6,16 +6,16 @@ Applicants confirm who they are with [Sumsub](https://sumsub.com): they photogra
 
 ## What it covers
 
-Every application that arrives at `POST /api/applications` goes into the same table and is checked the same way: **account applications** (personal, business, corporate), **credit cards**, **business and corporate loans**, **SIM**, **vehicle tracking**, and the **invest** and **rewards** service forms. **Sponsorship applications** use the same engine.
+Every application that arrives at `POST /api/applications` goes into the same table and is checked the same way: **account applications** (personal, business, corporate), **credit cards**, **personal loans**, **insurance** (life, funeral, vehicle), **business and corporate loans**, **SIM**, **vehicle tracking**, and the **invest** and **rewards** service forms. **Sponsorship applications** use the same engine.
 
 | Kind | Sumsub level used | Approval needs a confirmed identity? |
 | --- | --- | --- |
-| Personal tier (accounts, cards, SIM, services) | `SUMSUB_LEVEL_PERSONAL`, else `SUMSUB_LEVEL_NAME` | Yes, by default |
+| Personal tier (accounts, cards, personal loans, insurance, SIM, services) | `SUMSUB_LEVEL_PERSONAL`, else `SUMSUB_LEVEL_NAME` | Yes, by default |
 | Business tier (business accounts, business loans) | `SUMSUB_LEVEL_BUSINESS`, else the default | Yes, by default |
 | Corporate tier (corporate accounts and loans) | `SUMSUB_LEVEL_CORPORATE`, else the default | Yes, by default |
 | Sponsorship | `SUMSUB_LEVEL_SPONSORSHIP`, else the default | No: shown to staff, who decide |
 
-**Not covered:** insurance (there is no insurance application in the system yet; a new kind is one small adapter in `services/sumsub/subjects.ts`), job applications, and company verification. For business and corporate applications this confirms **the person who is applying**, not the company: verifying a company is a separate Sumsub product ("KYB").
+**Not covered:** job applications, and company verification. A new kind of application needs its type added to `APPLICATION_TYPE_TIERS` in `server/src/routes/applicationsRouter.ts` (that is what gives it a tier, and so a level and the approval requirement) and its confirmation screen needs `ApplicationIdentityStep`; a test fails if a screen that submits an application lacks it. For business and corporate applications this confirms **the person who is applying**, not the company: verifying a company is a separate Sumsub product ("KYB").
 
 ## How it works
 
@@ -82,10 +82,19 @@ Sumsub gives every account a sandbox. Use a sandbox App Token first, then confir
 
 Applicants' identity documents are processed by a third party in another country. Before going live, have your legal adviser confirm: the consent wording on the card, that Sumsub is named in your privacy notice as an operator, the data-processing agreement and the region Sumsub stores data in, and how long Sumsub keeps documents (set in its dashboard). The consent time is recorded per application. Nothing here is legal advice.
 
+## Insurance and personal loans
+
+Both have their own application (`ProductApplicationViewer`, described by `src/app/data/productApplications.ts`), reached from the **Insure** tab and the **Loan** tab of the personal products page, from the product selector, and from the Insurance tile. Each is a quote request or an application, not cover or an offer, and says so before and after applying. They do **not** ask for an ID number, health details or bank details (the identity check takes the ID; an insurer asks health questions later).
+
+**Before these go to the public, your legal adviser must confirm the regulatory position.** Insurance needs a licensed insurer or an authorised partner, and consumer credit needs credit-provider registration, an affordability assessment and a lawful credit check. The loan application records the applicant's consent to a credit check but **does not run one**.
+
 ## Things found while building this (not part of the identity check)
 
-- The business loan confirmation used to show a **made-up reference number** generated in the browser, not the one the server issued. It now shows the real one (the identity check needs it).
-- The credit card confirmation says *"Your VINK credit card has been approved and issued"* the moment someone submits, although the application is only "submitted" for review. That wording was not changed.
+- **The product selector opened nothing.** Choosing a product and pressing "Apply Now" closed the selector and opened no application (the selector reported a product where the app expected a category). Fixed, with a test that reads the app shell.
+- **Personal loans opened the business loan form.** They now open the personal loan application, and "Apply now" on a product starts it with that product chosen.
+- **Confirmation screens made claims that were not true** (account "opened" and "active", card "approved and issued" with delivery in 5–7 days, a welcome bonus "credited", identity "verified via fingerprint and selfie", "a confirmation email has been sent" although the server sends none, and a reference number made up in the browser on the business loan screen). They now say the application was received. `applicationScreens.honesty.test.ts` fails if such claims come back.
+- **The staff applications screen failed silently** when a status change was refused, and never loaded an application's full detail. It now shows the server's reason and loads the detail.
+- **For you to check, not changed:** the loan cards in the product selector claim "Same-day Approval", interest of 12.5%–24.5%, and "R1,000 – R250,000", and the FlexiLoan card (a personal loan) lists home-loan features ("Up to 100% LTV", "20-year term"). The personal loan form accepts up to R2,000,000 over up to 84 months, which does not match those cards.
 
 ## If something goes wrong
 

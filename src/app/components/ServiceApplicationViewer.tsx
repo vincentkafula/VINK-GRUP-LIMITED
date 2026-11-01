@@ -40,9 +40,9 @@ const SERVICE_CONFIG: Record<ServiceType, {
     title:         "Investment Account Application",
     subtitle:      "Open a Tax-Free Savings Account, Fixed Deposit, Unit Trust, Retirement Annuity or Money Market — verified in minutes.",
     gradient:      "#C8102E",
-    successTitle:  "Investment Account Opened!",
-    successBody:   "Your investment account is active. Access it via the VINK app or web portal.",
-    accountLabel:  "Investment account number",
+    successTitle:  "Application received",
+    successBody:   "We have your investment account application and will review it. No account is opened until it is approved.",
+    accountLabel:  "Application reference number",
     accountPrefix: "VINK-INV",
     accentColor:   BRAND.crimson,
   },
@@ -51,9 +51,9 @@ const SERVICE_CONFIG: Record<ServiceType, {
     title:         "VINK Points Rewards Enrolment",
     subtitle:      "Enrol in VINK Points to earn on every taxi ride, fuel purchase, grocery trip, and online spend.",
     gradient:      "#C8102E",
-    successTitle:  "VINK Points Account Created!",
-    successBody:   "You have been enrolled in VINK Points. Your welcome bonus of 5,000 points (worth R50) has been credited.",
-    accountLabel:  "VINK Points member number",
+    successTitle:  "Application received",
+    successBody:   "We have your VINK Points enrolment and will review it. You are not enrolled until it is approved.",
+    accountLabel:  "Application reference number",
     accountPrefix: "VINK-RWD",
     accentColor:   BRAND.crimson,
   },
@@ -62,9 +62,9 @@ const SERVICE_CONFIG: Record<ServiceType, {
     title:         "Bank Account Application",
     subtitle:      "Open your selected VINK account in minutes — FICA-verified and ready to use.",
     gradient:      "#C8102E",
-    successTitle:  "Account Opened!",
-    successBody:   "Your VINK finance account is active. Your VINK card will be delivered to your registered address within 5–7 business days.",
-    accountLabel:  "Account number",
+    successTitle:  "Application received",
+    successBody:   "We have your account application and will review it. No account is opened until it is approved.",
+    accountLabel:  "Application reference number",
     accountPrefix: "VINK-ACC",
     accentColor:   BRAND.crimson,
   },
@@ -611,7 +611,7 @@ export function ServiceApplicationViewer({ isOpen, onClose, serviceType }: Props
                 <p className="font-black text-xl tracking-wide">{accountNo}</p>
                 <p className="text-[10px] opacity-60 mt-2">{form.firstName} {form.lastName}</p>
               </div>
-              <p className="text-xs text-fg-subtle">A confirmation email has been sent to <strong>{form.email || "your registered email"}</strong>.</p>
+              <p className="text-xs text-fg-subtle">We will contact you on <strong>{form.email || "the email address you gave us"}</strong>.</p>
             </div>
             {/* confirming that a real person is applying (shows nothing unless identity checks are switched on) */}
             <ApplicationIdentityStep refNo={accountNo} email={form.email} />

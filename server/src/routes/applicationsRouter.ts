@@ -31,11 +31,15 @@ const SUPER = ["owner", "superadmin"] as const;
 // new application type added later doesn't silently break again.
 const TYPE_TO_TIER: Record<string, Tier> = {
   creditCard: "personal",
+  personalLoan: "personal",       // the six personal loan products (LifeAdvance, FlexiLoan, ...): a personal application, not a business one
+  insurance: "personal",          // Life Insurance, Funeral Cover, Vehicle Insurance: the product is kept in account_type_requested
   businessLoan: "business",
   corporateLoan: "corporate",
   "sim-application": "personal",
   "vehicle-tracking": "personal",
 };
+/** Exported so a test can pin it: a new kind of application must be given a tier here, because the tier decides its identity-check level and whether approval needs a confirmed identity. */
+export const APPLICATION_TYPE_TIERS = TYPE_TO_TIER;
 
 const VALID_STATUSES = ["submitted", "under_review", "approved", "declined", "more_info_requested"] as const;
 type Status = (typeof VALID_STATUSES)[number];

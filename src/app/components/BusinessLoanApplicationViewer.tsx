@@ -447,7 +447,7 @@ export function BusinessLoanApplicationViewer({ isOpen, onClose }: Props) {
                 {/* confirming that a real person is applying (shows nothing unless identity checks are switched on) */}
                 <ApplicationIdentityStep refNo={refNo} email={form.email} />
                 <p className="text-xs text-fg-subtle">
-                  A confirmation email has been sent to {form.email || "your registered email address"}.
+                  We will contact you on {form.email || "the email address you gave us"}.
                 </p>
                 <button onClick={onClose}
                   className="mt-4 px-8 py-3 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90"

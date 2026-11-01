@@ -11,8 +11,9 @@ const src = (f: string) => readFileSync(join(dir, f), "utf8");
 const submitters = readdirSync(dir).filter((f) => /\.tsx$/.test(f) && !/\.test\./.test(f) && src(f).includes("applicationsApi.submit("));
 
 describe("every application screen offers the identity step", () => {
-  it("finds the seven screens that submit applications (so the scan below can never pass by finding none)", () => {
-    expect(submitters.sort()).toEqual(["ApplicationFlowViewer.tsx", "BusinessAccountApplicationViewer.tsx", "BusinessLoanApplicationViewer.tsx", "CorporateLoanApplicationViewer.tsx", "CreditCardApplicationViewer.tsx", "PersonalAccountApplicationViewer.tsx", "ServiceApplicationViewer.tsx"]);
+  it("finds the screens that submit applications (so the scan below can never pass by finding none)", () => {
+    // ProductApplicationViewer is one screen for two applications: insurance and the personal loan
+    expect(submitters.sort()).toEqual(["ApplicationFlowViewer.tsx", "BusinessAccountApplicationViewer.tsx", "BusinessLoanApplicationViewer.tsx", "CorporateLoanApplicationViewer.tsx", "CreditCardApplicationViewer.tsx", "PersonalAccountApplicationViewer.tsx", "ProductApplicationViewer.tsx", "ServiceApplicationViewer.tsx"]);
   });
   it.each(submitters)("%s imports and shows it, with the reference the server gave and the applicant's email", (f) => {
     const s = src(f);

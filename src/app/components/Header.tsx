@@ -21,7 +21,7 @@ interface HeaderProps {
 
 type NavItem = Section;
 
-const PERSONAL_SUB_NAV = ["Account", "Credit Card", "Loan", "Invest", "Rewards"] as const;
+const PERSONAL_SUB_NAV = ["Account", "Credit Card", "Loan", "Invest", "Rewards", "Insure"] as const;
 const BUSINESS_SUB_NAV   = ["Start My Business", "Accounts", "Credit Cards", "Loans", "Invest", "Manage My Business"] as const;
 const CORPORATE_SUB_NAV  = ["Account", "Solutions & Credit Cards", "Loan", "Social Responsibility"] as const;
 
