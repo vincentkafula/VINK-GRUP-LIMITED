@@ -82,6 +82,20 @@ function createManshya(options = {}) {
     bank: { ...DEFAULTS.bank, ...(options.config || {}).bank },
   };
   const db = openDb({ ...options, mode: options.paymentsMode || (config.mode === 'live' ? 'live' : 'sandbox') });
+
+  // Live mode (real customers' money) never runs on the bundled stand-ins. Each adapter below defaults to a mock: a mock identity check "verifies" everyone, mock bank rails record a transfer that
+  // never leaves, mock bill and licence providers return success for nothing, a mock gateway takes no money. So in live mode each must be supplied, and the engine refuses to start without
+  // them rather than quietly using the mock. (The provider settings in payments/config.ts already keep the card issuer and acquirer real; this covers the rest of the engine.)
+  if ((options.paymentsMode || (config.mode === 'live' ? 'live' : 'sandbox')) === 'live') {
+    const standIns = [];
+    if (!options.rails) standIns.push('rails (bank transfers, PayShap, cash collection, international payments)');
+    if (!options.bills) standIns.push('bills (prepaid and bill payments)');
+    if (!options.identity) standIns.push('identity (KYC checks)');
+    if (!options.vehicle) standIns.push('vehicle (licence renewals)');
+    if (!options.mailer) standIns.push('mailer (statements, notifications and alerts)');
+    if (!options.gateways || !Object.keys(options.gateways).length || config.defaultGateway === 'mock') standIns.push('payment gateway (supply options.gateways and set config.defaultGateway to one of them)');
+    if (standIns.length) { db.close(); throw new Error(`Live mode refuses the bundled stand-ins. Supply real adapters for: ${standIns.join('; ')}.`); }
+  }
   const ledger = buildLedger(db);
   const baseEmit = buildEmitter(db);
   const mailer = options.mailer || mockMailer();
