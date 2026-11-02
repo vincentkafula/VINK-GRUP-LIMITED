@@ -20,6 +20,11 @@ const { buildRecon } = require('./reconcile');
  *   list()          what exists, newest first, with each one's verification result (never the contents)
  *   restoreCheck()  the real test: copy a backup to a scratch file, open it as a database, and run the full daily reconciliation on it
  *
+ * UPLOADED DOCUMENTS (the KYC evidence customers send) are not in the database: they are files beside it. They are written once and never change, so they are MIRRORED rather than
+ * re-copied: every backup copies any file the mirror does not have yet into `backups/uploads-mirror/`, never overwrites or deletes one, and reports (and alerts on) any file that has
+ * CHANGED or DISAPPEARED from the live store since it was mirrored, and any document the database lists whose file is not there. An off-site store can take each new file as it is mirrored
+ * (`offsite.putUpload(file, key)`).
+ *
  * Where they go: next to the database, in `backups/`, on the same volume. That protects against corruption, mistakes and bad deploys, NOT against losing the volume itself: a copy
  * must also leave the machine. That needs somewhere to send it (a bucket, another host), which is yours to provide, so it is a hook: pass `offsite.put(file, manifest)` and every
  * good backup is handed to it; a failure there raises an alert but never deletes anything. Files are readable only by the owner (0600): they contain everything.
@@ -50,7 +55,7 @@ function inspect(file) {
   finally { c.close(); }
 }
 
-function buildBackups({ db, dir, mode = 'sandbox', keep = 14, offsite = null, notify = () => {}, nowFn = () => new Date() }) {
+function buildBackups({ db, dir, uploadsDir = null, mode = 'sandbox', keep = 14, offsite = null, notify = () => {}, nowFn = () => new Date() }) {
   const enabled = !!dir;
   if (enabled) fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
   const manifestOf = (file) => `${file}.json`;
@@ -75,6 +80,31 @@ function buildBackups({ db, dir, mode = 'sandbox', keep = 14, offsite = null, no
     return drop.length;
   }
 
+  const walk = (root, rel = '') => fs.existsSync(path.join(root, rel)) ? fs.readdirSync(path.join(root, rel), { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(root, path.join(rel, e.name)) : [path.join(rel, e.name)])) : [];
+
+  /** Copies any uploaded file the mirror does not have yet, and reports anything that is not as it should be. Never overwrites or deletes in the mirror. */
+  async function mirrorUploads() {
+    if (!uploadsDir || !fs.existsSync(uploadsDir)) return null;
+    const dest = path.join(dir, 'uploads-mirror'); fs.mkdirSync(dest, { recursive: true, mode: 0o700 });
+    const out = { files: 0, bytes: 0, copied: 0, changed: [], missing: [], documents_without_file: 0, offsite_failed: 0 };
+    const live = new Set(walk(uploadsDir));
+    for (const rel of live) {
+      const src = path.join(uploadsDir, rel), dst = path.join(dest, rel), size = fs.statSync(src).size; out.files++; out.bytes += size;
+      if (fs.existsSync(dst)) { if (fs.statSync(dst).size !== size || sha256(dst) !== sha256(src)) out.changed.push(rel); continue; }       // already mirrored; written once, so it must still be the same
+      fs.mkdirSync(path.dirname(dst), { recursive: true, mode: 0o700 }); fs.copyFileSync(src, dst, fs.constants.COPYFILE_EXCL); fs.chmodSync(dst, 0o600); out.copied++;
+      if (offsite && offsite.putUpload) { try { await offsite.putUpload(dst, rel); } catch { out.offsite_failed++; } }
+    }
+    out.missing = walk(dest).filter((rel) => !live.has(rel));                                         // mirrored once, gone from the live store now: kept in the mirror
+    try { for (const d of db.prepare("SELECT storage_key FROM documents WHERE storage_key IS NOT NULL").all()) if (!live.has(path.normalize(d.storage_key))) out.documents_without_file++; } catch { /* no documents table */ }
+    const bad = [];
+    if (out.changed.length) bad.push(`${out.changed.length} uploaded file(s) have CHANGED since they were first saved (they are write-once): ${out.changed.slice(0, 5).join(', ')}`);
+    if (out.missing.length) bad.push(`${out.missing.length} uploaded file(s) have DISAPPEARED from the live store (the mirror still has them): ${out.missing.slice(0, 5).join(', ')}`);
+    if (out.documents_without_file) bad.push(`${out.documents_without_file} document(s) listed in the database have no file in the live store`);
+    if (bad.length) notify('Uploaded documents are not as they should be', `While backing up:\n- ${bad.join('\n- ')}\nNothing in the mirror has been changed or removed.`);
+    if (out.offsite_failed) notify('Uploaded documents could not be sent off the machine', `${out.offsite_failed} newly mirrored file(s) could not be handed to the offsite store. They are safe in the mirror on the volume.`);
+    return out;
+  }
+
   async function create(by = 'schedule') {
     if (!enabled) throw new ApiError(409, 'backups_off', 'Backups need a database file. This database is in memory.');
     const at = nowFn(), name = `manshya-${mode}-${stamp(at)}.db`, file = path.join(dir, name);
@@ -83,7 +113,8 @@ function buildBackups({ db, dir, mode = 'sandbox', keep = 14, offsite = null, no
     fs.chmodSync(file, 0o600);
     const check = inspect(file), bytes = fs.statSync(file).size, sum = sha256(file);
     if (check.mode && check.mode !== mode) { check.ok = false; check.problems.push(`The backup says it belongs to ${check.mode} mode but this system is in ${mode} mode`); }
-    const manifest = { created_at: at.toISOString(), by, bytes, sha256: sum, mode: check.mode, journals: check.journals, entries: check.entries, ok: check.ok, problems: check.problems, offsite: null };
+    let uploads = null; try { uploads = await mirrorUploads(); } catch (e) { notify('Uploaded documents could not be mirrored', e.message); uploads = { error: e.message }; }
+    const manifest = { created_at: at.toISOString(), by, bytes, sha256: sum, mode: check.mode, journals: check.journals, entries: check.entries, ok: check.ok, problems: check.problems, uploads, offsite: null };
     fs.writeFileSync(manifestOf(file), JSON.stringify(manifest, null, 2), { mode: 0o600 });
     if (!check.ok) notify('Backup FAILED verification', `The backup ${name} was taken but is not sound:\n- ${check.problems.join('\n- ')}\nIt has been kept for investigation and does not count as a good backup. Older good backups have not been touched.`);
     else if (offsite) {

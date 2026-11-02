@@ -144,3 +144,38 @@ describe("the staff routes", () => {
     for (const p of [`/backups/${l.body.data[0].name}`, `/backups/${l.body.data[0].name}/download`, `/backups/${l.body.data[0].name}/file`]) { const r = await call("GET", p); expect(r.status, p).not.toBe(200); expect(JSON.stringify(r.body ?? {}), p).not.toMatch(/SQLite|sha256/); }       // nothing serves the file
   });
 });
+
+describe("uploaded documents (the KYC evidence, which is files beside the database, not rows in it)", () => {
+  const pdf = (text: string) => Buffer.from(`%PDF-1.4\n${text}\n%%EOF`).toString("base64");
+  async function withDocs(extra: any = {}) {
+    const e = await engine(extra); const up = (name: string, text: string) => e.mn.account.addDocumentFile(e.m, { type: "id_document", filename: name, contentBase64: pdf(text) });
+    const d1 = up("id.pdf", "first"), d2 = up("address.pdf", "second"); const live = (d: any) => join(e.root, "uploads", "docs", e.m.id, d.id); const mirror = (d: any) => join(e.dir, "uploads-mirror", "docs", e.m.id, d.id);
+    return { ...e, up, d1, d2, live, mirror };
+  }
+  it("copies every uploaded file into the mirror, readable only by the owner, and does not copy any of them again", async () => {
+    const { mn, d1, d2, live, mirror } = await withDocs(); const first = await mn.backups.create();
+    expect(first.uploads).toMatchObject({ files: 2, copied: 2, changed: [], missing: [], documents_without_file: 0 }); for (const d of [d1, d2]) { expect(readFileSync(mirror(d))).toEqual(readFileSync(live(d))); expect(statSync(mirror(d)).mode & 0o777).toBe(0o600); }
+    await new Promise((r) => setTimeout(r, 1100)); expect((await mn.backups.create()).uploads).toMatchObject({ files: 2, copied: 0 });
+  });
+  it("copies a file that arrives later, and leaves the earlier ones alone", async () => {
+    const { mn, up, mirror, d1 } = await withDocs(); await mn.backups.create(); const before = statSync(mirror(d1)).mtimeMs; const d3 = up("tax.pdf", "third");
+    await new Promise((r) => setTimeout(r, 1100)); expect((await mn.backups.create()).uploads).toMatchObject({ files: 3, copied: 1 }); expect(readFileSync(mirror(d3)).toString()).toContain("third"); expect(statSync(mirror(d1)).mtimeMs).toBe(before);
+  });
+  it("says so, and alerts, when a file that was written once has changed, and keeps the original in the mirror", async () => {
+    const { mn, d1, live, mirror, sent } = await withDocs(); await mn.backups.create(); writeFileSync(live(d1), "%PDF-1.4 tampered");
+    await new Promise((r) => setTimeout(r, 1100)); const r = await mn.backups.create(); expect(r.uploads.changed).toHaveLength(1); expect(r.uploads.changed[0]).toContain(d1.id); expect(r.uploads).toMatchObject({ copied: 0, missing: [] });
+    expect(readFileSync(mirror(d1)).toString()).toContain("first"); await new Promise((r2) => setTimeout(r2, 20)); expect(sent.map((x) => x.subject)).toContain("Uploaded documents are not as they should be"); expect(sent.at(-1).text).toMatch(/have CHANGED/);
+  });
+  it("says so, and alerts, when a file has disappeared from the live store, keeps it in the mirror, and flags the document that now has no file", async () => {
+    const { mn, d1, live, mirror, sent } = await withDocs(); await mn.backups.create(); rmSync(live(d1)); await new Promise((r) => setTimeout(r, 1100)); const r = await mn.backups.create();
+    expect(r.uploads).toMatchObject({ missing: [expect.stringContaining(d1.id)], documents_without_file: 1 }); expect(existsSync(mirror(d1))).toBe(true); await new Promise((r2) => setTimeout(r2, 20)); expect(sent.at(-1).text).toMatch(/DISAPPEARED/); expect(sent.at(-1).text).toMatch(/no file in the live store/);
+  });
+  it("hands only the NEWLY mirrored files to the off-site store, and a failure there alerts without losing the file", async () => {
+    const got: string[] = []; const { mn, up, sent } = await withDocs({ offsite: { put: async () => "ok", putUpload: async (_f: string, key: string) => { got.push(key); } } }); await mn.backups.create(); expect(got).toHaveLength(2);
+    up("late.pdf", "late"); await new Promise((r) => setTimeout(r, 1100)); await mn.backups.create(); expect(got).toHaveLength(3);
+    const b = await withDocs({ offsite: { putUpload: async () => { throw new Error("no"); } } }); const r = await b.mn.backups.create(); expect(r.uploads).toMatchObject({ copied: 2, offsite_failed: 2 }); expect(existsSync(b.mirror(b.d1))).toBe(true);
+    await new Promise((r2) => setTimeout(r2, 20)); expect(b.sent.map((x) => x.subject)).toContain("Uploaded documents could not be sent off the machine"); expect(sent).toEqual([]);
+  });
+  it("has nothing to mirror, and no trouble, when no document has ever been uploaded", async () => { const { mn } = await engine(); expect((await mn.backups.create()).uploads).toMatchObject({ files: 0, copied: 0, changed: [], missing: [], documents_without_file: 0 }); });
+});
+

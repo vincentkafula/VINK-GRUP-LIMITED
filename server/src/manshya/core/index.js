@@ -146,7 +146,7 @@ function createManshya(options = {}) {
   const recon = buildRecon({ db, notify: alert });
   // Verified, rotating backups of the database file, taken daily by the scheduler. Off for an in-memory database. See backup.js for what they do and do not protect against.
   const dbFile = options.dbPath && options.dbPath !== ':memory:' ? path.resolve(options.dbPath) : null;
-  const backups = buildBackups({ db, dir: options.backupDir || (dbFile ? path.join(path.dirname(dbFile), 'backups') : null), mode: options.paymentsMode || (config.mode === 'live' ? 'live' : 'sandbox'), keep: options.backupsKept || Number(process.env.BACKUPS_KEPT) || 14, offsite: options.offsite || null, notify: alert });
+  const backups = buildBackups({ db, uploadsDir: dir, dir: options.backupDir || (dbFile ? path.join(path.dirname(dbFile), 'backups') : null), mode: options.paymentsMode || (config.mode === 'live' ? 'live' : 'sandbox'), keep: options.backupsKept || Number(process.env.BACKUPS_KEPT) || 14, offsite: options.offsite || null, notify: alert });
   const routes3 = buildRoutes3({ recon, backups, events: baseEmit, admin, statements, p2, cards, extras, banking, credit, insurance, account, rails, config, core: services });
   const routes2 = buildRoutes2({ core: services, account, online, catalog, banking, config });
 
