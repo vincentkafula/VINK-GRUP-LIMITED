@@ -131,6 +131,15 @@ function buildBooksChecks({ db }) {
       orphans('credit', ['credit_draw', 'credit_repay', 'credit_interest'], ids);
     }
 
+    // Card machine money goes straight into a VINK bank account, and the payment records which one (a refund or a dispute takes the money back from there). So what the payment says and what was
+    // posted must agree, both ways: a payment that names an account must have put its money there, and money put in a bank account by a payment must be named.
+    for (const p of all('SELECT id, merchant_id, settled_to FROM payments WHERE settled_to IS NOT NULL')) {
+      const put = get("SELECT COALESCE(SUM(e.amount),0) s FROM entries e JOIN journals j ON j.id=e.journal_id WHERE j.kind='payment' AND j.ref=? AND e.account_id=?", p.id, `bank:${p.settled_to}`).s;
+      if (put <= 0) add('payment_settlement_mismatch', p.id, `Payment says its money went to bank account ${p.settled_to}, but nothing was posted there`, p.merchant_id);
+    }
+    for (const r of all("SELECT DISTINCT j.ref ref, p.merchant_id merchant FROM journals j JOIN entries e ON e.journal_id=j.id AND e.account_id LIKE 'bank:%' AND e.amount>0 JOIN payments p ON p.id=j.ref WHERE j.kind='payment' AND p.settled_to IS NULL"))
+      add('payment_settlement_mismatch', r.ref, 'A payment put money into a bank account but does not say where it went, so a refund would look in the wrong place', r.merchant);
+
     // Savings and debit orders have no balance of their own on record, but nothing may be posted for one that does not exist.
     orphans('savings', ['goal', 'interest'], new Set(all('SELECT id FROM savings_goals').map((x) => String(x.id))));
     orphans('debit_order', ['debit_order'], new Set(all('SELECT id FROM debit_orders').map((x) => String(x.id))));

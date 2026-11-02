@@ -148,6 +148,9 @@ module.exports = function buildRouter({ db, events, services: s, gateways, confi
   // point of sale
   r.post('/pos/devices', wrap((req, res) => res.status(201).json(s.createDevice(M(req), req.body))));
   r.get('/pos/devices', wrap((req, res) => res.json(s.listDevices(M(req)))));
+  // Where card machine (VINK Tap) money goes: a VINK bank account of the merchant's own, which they can choose.
+  r.get('/pos/settlement', wrap((req, res) => res.json(s.getSettlement(M(req)))));
+  r.put('/pos/settlement', wrap((req, res) => res.json(s.setSettlement(M(req), req.body))));
   r.post('/pos/devices/:id/heartbeat', wrap((req, res) => res.json(s.heartbeat(M(req), req.params.id))));
   r.post('/pos/sales', idem, wrap(async (req, res) => res.status(201).json(await s.createPayment(M(req), { ...req.body, channel: 'pos' }))));
 

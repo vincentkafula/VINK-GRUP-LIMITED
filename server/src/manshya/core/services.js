@@ -143,6 +143,30 @@ module.exports = function buildServices({ db, ledger, gateways, rails, config, e
   }
 
   // Idempotent: only a 'pending' payment can settle, and only once.
+  /* ---------- where card machine (VINK Tap) money settles ---------- */
+  /**
+   * What a driver (or any shop) takes on a card machine goes STRAIGHT INTO A VINK BANK ACCOUNT, not into the payments balance to wait for a payout. It is the account they chose, else their
+   * main current account. If they have no VINK bank account at all it stays in the payments balance, so money is never lost, until they open one. Online (VINK Pay) payments are unchanged.
+   */
+  function settlementAccountId(merchantId) {
+    const chosen = get('SELECT settlement_account_id id FROM merchants WHERE id=?', merchantId)?.id;
+    if (chosen && get('SELECT 1 x FROM bank_accounts WHERE id=? AND merchant_id=?', chosen, merchantId)) return chosen;
+    return get("SELECT id FROM bank_accounts WHERE merchant_id=? ORDER BY (kind='current') DESC, created_at LIMIT 1", merchantId)?.id ?? null;
+  }
+  /** Where a payment's money was put, so a refund or dispute takes it back from the same place. */
+  const homeOf = (p, merchantId) => (p.settled_to ? { account: A.bank(p.settled_to), merchant: merchantId, kind: 'bank' } : { account: A.avail(merchantId), merchant: merchantId, kind: 'available' });
+  function getSettlement(m) {
+    const id = settlementAccountId(m.id), chosen = get('SELECT settlement_account_id id FROM merchants WHERE id=?', m.id)?.id;
+    const a = id ? getAccount(m.id, id) : null;
+    return { mode: a ? 'bank_account' : 'payments_balance', chosen: !!(a && chosen === id), account: a ? { id: a.id, name: a.name, number: a.number, kind: a.kind, balance: a.balance } : null };
+  }
+  function setSettlement(m, b = {}) {
+    if (typeof b.accountId !== 'string' || !b.accountId) throw new ApiError(400, 'invalid_request', 'accountId is required');
+    const a = getAccount(m.id, b.accountId);                                  // must be one of this merchant's own VINK bank accounts
+    run('UPDATE merchants SET settlement_account_id=? WHERE id=?', a.id, m.id);
+    return getSettlement(m);
+  }
+
   function settlePayment(paymentId) {
     let done = null;
     tx(() => {
@@ -152,13 +176,14 @@ module.exports = function buildServices({ db, ledger, gateways, rails, config, e
       const fee = feeFor(p.channel, p.amount);
       const retained = Math.round((p.amount - fee) * reserveRate(m));
       const net = p.amount - fee - retained;
+      const home = p.channel === 'pos' ? settlementAccountId(m.id) : null;               // card machine money goes straight to the VINK bank account
       ledger.post('payment', [
         { account: A.clearing, amount: -p.amount, kind: 'system' },
-        { account: A.avail(m.id), merchant: m.id, kind: 'available', amount: net },
+        home ? { account: A.bank(home), merchant: m.id, kind: 'bank', amount: net } : { account: A.avail(m.id), merchant: m.id, kind: 'available', amount: net },
         { account: A.ret(m.id), merchant: m.id, kind: 'retained', amount: retained },
         { account: A.fees, amount: fee, kind: 'system' },
-      ], { ref: p.id, memo: `Payment ${p.reference || p.id}` });
-      run("UPDATE payments SET status='paid',fee=?,settled_at=? WHERE id=?", fee, now(), p.id);
+      ], { ref: p.id, memo: home ? `Card machine payment ${p.reference || p.id}` : `Payment ${p.reference || p.id}` });
+      run("UPDATE payments SET status='paid',fee=?,settled_at=?,settled_to=? WHERE id=?", fee, now(), home, p.id);
       run("UPDATE payment_requests SET status='paid' WHERE payment_id=?", p.id);
       done = p.id;
     });
@@ -187,7 +212,7 @@ module.exports = function buildServices({ db, ledger, gateways, rails, config, e
       if (!['paid', 'partially_refunded'].includes(cur.status) || cur.amount - cur.refunded < amount)
         throw new ApiError(409, 'not_refundable', 'This payment cannot be refunded');
       ledger.post('refund', [
-        { account: A.avail(m.id), merchant: m.id, kind: 'available', amount: -amount, floor: 0 },
+        { ...homeOf(cur, m.id), amount: -amount, floor: 0 },                      // from where the payment's money was put: the VINK bank account for a card machine payment
         { account: A.clearing, amount, kind: 'system' },
       ], { ref: p.id, memo: `Refund of ${p.id}` });
       const refunded = cur.refunded + amount;
@@ -198,7 +223,7 @@ module.exports = function buildServices({ db, ledger, gateways, rails, config, e
     } catch {
       tx(() => {
         ledger.post('refund_reversal', [
-          { account: A.avail(m.id), merchant: m.id, kind: 'available', amount },
+          { ...homeOf(get('SELECT * FROM payments WHERE id=?', p.id), m.id), amount },
           { account: A.clearing, amount: -amount, kind: 'system' },
         ], { ref: p.id });
         const cur = get('SELECT * FROM payments WHERE id=?', p.id);
@@ -483,7 +508,7 @@ module.exports = function buildServices({ db, ledger, gateways, rails, config, e
       COUNT(CASE WHEN p.status IN ${PAID} THEN 1 END) today_count FROM devices d
       LEFT JOIN payments p ON p.device_id=d.id AND substr(p.created_at,1,10)=? WHERE d.merchant_id=? GROUP BY d.id ORDER BY d.created_at`, today, m.id)
       .map((d) => publicDevice(d, { today_total: d.today_total, today_count: d.today_count }));
-    return { today: { sales: t.total, transactions: t.n, declined, fees: Math.round(t.total * config.fees.pos.pct) }, devices };
+    return { today: { sales: t.total, transactions: t.n, declined, fees: Math.round(t.total * config.fees.pos.pct) }, devices, settlement: getSettlement(m) };
   }
   function dashBank(m) {
     const accounts = listAccounts(m);
@@ -500,6 +525,6 @@ module.exports = function buildServices({ db, ledger, gateways, rails, config, e
     requestPayout, approvePayout, rejectPayout, sendOnRail, listPayouts, createDevice, listDevices, heartbeat,
     profileEmail: (m) => { try { const e = (JSON.parse(get('SELECT profile FROM merchants WHERE id=?', m.id).profile || '{}').personal || {}).email; return e ? e.toLowerCase() : null; } catch { return null; } },
     createBeneficiary, listBeneficiaries, getBeneficiary, like, hasGateway: (n) => !!gateways[n], transfer, listTransfers, statement,
-    issueCard, listCards, updateCard, dashOnline, dashPos, dashBank,
+    issueCard, listCards, updateCard, dashOnline, dashPos, dashBank, getSettlement, setSettlement, settlementAccountId,
   };
 };

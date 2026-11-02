@@ -23,7 +23,7 @@ async function setup() {
   return { mn, call };
 }
 const BUSINESS_ONLY = ["/credit/products", "/account/ubos", "/account/users", "/pos/staff", "/pos/categories", "/pos/products"];
-const OPEN_TO_PERSONAL = ["/bank/accounts", "/pos/devices", "/payment-buttons", "/subscriptions", "/insurance/products", "/rewards"];
+const OPEN_TO_PERSONAL = ["/bank/accounts", "/pos/devices", "/pos/settlement", "/payment-buttons", "/subscriptions", "/insurance/products", "/rewards"];
 
 describe("business-only services", () => {
   it("are refused to a personal account, by name, whatever the screen shows", async () => {

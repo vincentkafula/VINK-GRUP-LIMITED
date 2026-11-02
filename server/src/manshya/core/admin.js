@@ -93,6 +93,8 @@ module.exports = function buildAdmin({ db, ledger, core, account, config, mail, 
   }
 
   /* disputes and chargebacks: funds are held while a dispute is open */
+  /** A dispute takes money from, and gives it back to, wherever the payment's money was put: the VINK bank account for a card machine payment, the payments balance otherwise. */
+  const homeOf = (p, merchantId) => (p.settled_to ? { account: A.bank(p.settled_to), merchant: merchantId, kind: 'bank' } : { account: A.avail(merchantId), merchant: merchantId, kind: 'available' });
   function openDispute(b = {}, actor) {
     const p = get('SELECT * FROM payments WHERE id=?', text(b.paymentId, 'paymentId', { max: 60 }));
     if (!p || !['paid', 'partially_refunded'].includes(p.status)) throw new ApiError(409, 'not_disputable', 'Only paid payments can be disputed');
@@ -101,7 +103,7 @@ module.exports = function buildAdmin({ db, ledger, core, account, config, mail, 
     if (amount <= 0) throw new ApiError(409, 'not_disputable', 'Nothing left to dispute on this payment');
     const id = rid('dsp');
     tx(() => {
-      ledger.post('dispute_hold', [{ account: A.avail(p.merchant_id), merchant: p.merchant_id, kind: 'available', amount: -amount }, { account: 'sys:disputes', kind: 'system', amount }], { ref: id, memo: `Dispute on ${p.id}` });
+      ledger.post('dispute_hold', [{ ...homeOf(p, p.merchant_id), amount: -amount }, { account: 'sys:disputes', kind: 'system', amount }], { ref: id, memo: `Dispute on ${p.id}` });
       run('INSERT INTO disputes(id,merchant_id,payment_id,amount,reason,created_at) VALUES(?,?,?,?,?,?)', id, p.merchant_id, p.id, amount, text(b.reason, 'reason', { optional: true, max: 200 }), now());
     });
     if (actor) adminAudit(actor, p.merchant_id, `open dispute ${id}`);
@@ -119,11 +121,12 @@ module.exports = function buildAdmin({ db, ledger, core, account, config, mail, 
     oneOf(outcome, 'outcome', ['merchant', 'customer']);
     const d = get("SELECT * FROM disputes WHERE id=? AND status='open'", id);
     if (!d) throw notFound('dispute');
+    const pay = get('SELECT * FROM payments WHERE id=?', d.payment_id);
     tx(() => {
-      if (outcome === 'merchant') ledger.post('dispute_release', [{ account: 'sys:disputes', kind: 'system', amount: -d.amount }, { account: A.avail(d.merchant_id), merchant: d.merchant_id, kind: 'available', amount: d.amount }], { ref: id, memo: 'Dispute won' });
+      if (outcome === 'merchant') ledger.post('dispute_release', [{ account: 'sys:disputes', kind: 'system', amount: -d.amount }, { ...homeOf(pay, d.merchant_id), amount: d.amount }], { ref: id, memo: 'Dispute won' });
       else {
         ledger.post('chargeback', [{ account: 'sys:disputes', kind: 'system', amount: -d.amount }, { account: A.clearing, kind: 'system', amount: d.amount }], { ref: id, memo: 'Chargeback' });
-        ledger.post('chargeback_fee', [{ account: A.avail(d.merchant_id), merchant: d.merchant_id, kind: 'available', amount: -config.chargebackFee }, { account: A.fees, kind: 'system', amount: config.chargebackFee }], { ref: id, memo: 'Chargeback fee' });
+        ledger.post('chargeback_fee', [{ ...homeOf(pay, d.merchant_id), amount: -config.chargebackFee }, { account: A.fees, kind: 'system', amount: config.chargebackFee }], { ref: id, memo: 'Chargeback fee' });
         const p = get('SELECT * FROM payments WHERE id=?', d.payment_id), refunded = p.refunded + d.amount;
         run('UPDATE payments SET refunded=?,status=? WHERE id=?', refunded, refunded >= p.amount ? 'refunded' : 'partially_refunded', p.id);
       }

@@ -227,6 +227,9 @@ function openDb({ db, dbPath = ':memory:', mode = 'sandbox' } = {}) {
   addCol('cards', 'provider_card_id', 'TEXT');
   // How much of a card purchase the processor has since reversed, and each reversal message once (processors retry).
   addCol('card_transactions', 'reversed', 'INTEGER NOT NULL DEFAULT 0');
+  // Where card machine (VINK Tap) money settles: the merchant's chosen VINK bank account, and, on each payment, where its money was actually put (so a refund or dispute takes it back from there).
+  addCol('merchants', 'settlement_account_id', 'TEXT');
+  addCol('payments', 'settled_to', 'TEXT');
   conn.exec(`CREATE TABLE IF NOT EXISTS card_reversals(provider TEXT NOT NULL, reversal_id TEXT NOT NULL, card_tx_id TEXT NOT NULL, amount INTEGER NOT NULL, created_at TEXT NOT NULL, PRIMARY KEY(provider, reversal_id))`);
   conn.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_cards_provider ON cards(provider, provider_card_id) WHERE provider_card_id IS NOT NULL;
     CREATE TABLE IF NOT EXISTS authorisations(
