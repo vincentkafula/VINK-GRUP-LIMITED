@@ -54,6 +54,11 @@
 .has-persistent-nav .fixed.inset-0 {
   top: 65px !important;
 }
+/* The VINK payments and banking dashboards (the product dashboards and the back office) are full-screen pages too, but they are built on their own .mn class rather than fixed + inset-0, so the rule
+   above never reached them and the strip covered the top of their own bar (the product badge, the bell and the close button). Same offset. */
+.has-persistent-nav .mn {
+  top: 65px !important;
+}
 /* A page's own logo + X bar (marked by pageBars.ts) would be a second logo under the site header, whose logo is the way home. */
 .has-persistent-nav [data-page-bar] {
   display: none !important;
