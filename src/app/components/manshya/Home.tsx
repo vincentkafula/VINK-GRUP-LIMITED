@@ -141,6 +141,16 @@ export function PosHome() {
     const v = await ask("Add a card machine", [{ name: "name", label: "Name" }], "Add");
     if (v) { await api("/pos/devices", { method: "POST", body: v }); await load(); }
   });
+  // Card machine money goes straight into one of the person's own VINK bank accounts; this chooses which.
+  const settlement = d?.settlement;
+  const changeAccount = () => run(async () => {
+    const accounts: any[] = (await api("/bank/accounts")).data ?? [];
+    if (!accounts.length) return toast("You need a VINK bank account first. Open one in VINK Banking.");
+    const v = await ask("Where should your card machine takings go?", [{ name: "accountId", label: "VINK bank account", type: "select", options: accounts.map((a) => [a.id, `${a.name} · ${a.number}`]) }], "Save");
+    if (!v) return;
+    await api("/pos/settlement", { method: "PUT", body: { accountId: v.accountId } });
+    toast("Saved. Your takings will go there."); await load();
+  });
   const sale = () => run(async () => {
     if (!devices.length) return toast("Add a card machine first");
     const v = await ask("Record a card machine sale", [
@@ -172,6 +182,18 @@ export function PosHome() {
         <p className="fee">+ R49 a month connectivity fee</p>
         <p style={{ color: "var(--mute)", maxWidth: 560, margin: "0 auto 18px", fontSize: 14 }}>Accept in-person payments with a secure, fully mobile touchscreen device with dual SIM connectivity. Free delivery.</p>
         <button className="btn p" onClick={() => toast("Device orders open soon. You can add a sandbox machine below to try it out.")}>Order a device</button> <button className="btn g" onClick={sale}>Record a sale</button>
+      </section>
+      <section className="card" aria-label="Where your takings go">
+        <h2>Where your takings go {settlement?.account && <a href="#" onClick={(e) => { e.preventDefault(); changeAccount(); }}>Change</a>}</h2>
+        {!d ? null : settlement?.account ? (
+          <p style={{ margin: "-6px 0 0", color: "var(--mute)", fontSize: 14 }}>
+            What you take on a card machine goes straight into your VINK bank account, <b style={{ color: "var(--ink)" }}>{settlement.account.name}</b> (account {settlement.account.number}), not into a payments balance. Fees are taken first, and until you are verified a part is held back as a reserve.
+          </p>
+        ) : (
+          <p style={{ margin: "-6px 0 0", color: "var(--mute)", fontSize: 14 }}>
+            You do not have a VINK bank account yet, so your takings wait in your payments balance. Open a VINK bank account in VINK Banking and your takings will go straight into it.
+          </p>
+        )}
       </section>
       <section className="card">
         <h2>Card machines <a href="#" onClick={(e) => { e.preventDefault(); addDevice(); }}>Add device</a></h2>
