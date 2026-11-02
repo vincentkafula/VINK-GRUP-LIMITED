@@ -21,6 +21,7 @@ const { localDisk } = require('./storage');
 const os = require('os');
 const path = require('path');
 const { rid, now } = require('./util');
+const { buildBackups } = require('./backup');
 const { mockGateway, mockRails, mockBills, mockMailer, mockVehicle, mockIdentity } = require('./gateways');
 const { sha256 } = require('./util');
 
@@ -141,12 +142,16 @@ function createManshya(options = {}) {
   const statements = buildStatements({ db, core: services, config, online, mail });
   const p2 = buildPayments2({ db, ledger, core: services, rails, config, emit, notify: account.notify });
   const alertTo = options.reconAlertEmail || process.env.RECON_ALERT_EMAIL;
-  const recon = buildRecon({ db, notify: (subject, body) => { if (alertTo) Promise.resolve(mailer.send({ to: alertTo, subject, text: body })).catch((e) => console.error('[reconciliation] the alert email was not sent:', e.message)); else console.error('[reconciliation] ' + subject + ' (set RECON_ALERT_EMAIL to be emailed)'); } });
-  const routes3 = buildRoutes3({ recon, events: baseEmit, admin, statements, p2, cards, extras, banking, credit, insurance, account, rails, config, core: services });
+  const alert = (subject, body) => { if (alertTo) Promise.resolve(mailer.send({ to: alertTo, subject, text: body })).catch((e) => console.error('[operations] the alert email was not sent:', e.message)); else console.error('[operations] ' + subject + ' (set RECON_ALERT_EMAIL to be emailed)'); };
+  const recon = buildRecon({ db, notify: alert });
+  // Verified, rotating backups of the database file, taken daily by the scheduler. Off for an in-memory database. See backup.js for what they do and do not protect against.
+  const dbFile = options.dbPath && options.dbPath !== ':memory:' ? path.resolve(options.dbPath) : null;
+  const backups = buildBackups({ db, dir: options.backupDir || (dbFile ? path.join(path.dirname(dbFile), 'backups') : null), mode: options.paymentsMode || (config.mode === 'live' ? 'live' : 'sandbox'), keep: options.backupsKept || Number(process.env.BACKUPS_KEPT) || 14, offsite: options.offsite || null, notify: alert });
+  const routes3 = buildRoutes3({ recon, backups, events: baseEmit, admin, statements, p2, cards, extras, banking, credit, insurance, account, rails, config, core: services });
   const routes2 = buildRoutes2({ core: services, account, online, catalog, banking, config });
 
   // Run this on a timer (every minute is fine): subscriptions, payout schedules, scheduled payments, auto-savings.
-  const runDue = async (at = new Date()) => ({ subscriptions: await online.runSubscriptions(at), webhooks: await baseEmit.retryDue(at), reconciliation: recon.runDaily(at), payout_schedules: await online.runPayoutSchedules(at), scheduled_payments: await banking.runScheduled(at), savings: banking.runSavings(at), interest: banking.accrueInterest(at), cash: p2.runCash(at), credit: credit.runDue(at), premiums: insurance.runPremiums(at) });
+  const runDue = async (at = new Date()) => ({ subscriptions: await online.runSubscriptions(at), webhooks: await baseEmit.retryDue(at), reconciliation: recon.runDaily(at), backup: await backups.runDaily(at), payout_schedules: await online.runPayoutSchedules(at), scheduled_payments: await banking.runScheduled(at), savings: banking.runSavings(at), interest: banking.accrueInterest(at), cash: p2.runCash(at), credit: credit.runDue(at), premiums: insurance.runPremiums(at) });
   const startScheduler = (ms = 60000) => { const t = setInterval(() => runDue().catch((e) => console.error('scheduler', e.message)), ms); t.unref(); return () => clearInterval(t); };
 
   const byKey = async (req) => {
@@ -157,6 +162,6 @@ function createManshya(options = {}) {
   };
   const authenticate = options.authenticate || byKey;
   const router = buildRouter({ db, events: baseEmit, services, gateways, config, authenticate, routes2, routes3 });
-  return { recon, events: baseEmit, router, services, account, online, catalog, banking, admin, statements, payments2: p2, cards, extras, credit, insurance, mail, runDue, startScheduler, db, ledger, config, gateways, A, close: () => db.close() };
+  return { recon, backups, events: baseEmit, router, services, account, online, catalog, banking, admin, statements, payments2: p2, cards, extras, credit, insurance, mail, runDue, startScheduler, db, ledger, config, gateways, A, close: () => db.close() };
 }
 module.exports = { createManshya, DEFAULTS };

@@ -1,10 +1,11 @@
 import { describe, it, expect } from "vitest";
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { createManshya } = require("./core");
+import { tampering } from "./tamper";
 
 /** A small, honest history: a payment, a refund, a payout, and a transfer between two accounts. */
 async function books() {
-  const mn = createManshya();
+  const mn = tampering(createManshya());
   const m = mn.services.createMerchant("Recon Co");
   const pay = await mn.services.createPayment(m, { amount: 100_000, method: "card", channel: "online", paymentToken: "tok_visa", reference: "r1", customer: { name: "A", email: "a@b.co" } });
   await mn.services.refundPayment(m, pay.id, { amount: 10_000 });

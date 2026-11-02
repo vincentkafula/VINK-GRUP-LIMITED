@@ -19,7 +19,10 @@ const { ApiError, rid, now } = require('./util');
 const STUCK_DAYS = 3;
 const MONEY_KINDS = "('available','retained','bank','savings','rewards')";
 
+const { buildBooksChecks } = require('./reconcileBooks');
+
 function buildRecon({ db, notify = () => {} }) {
+  const books = buildBooksChecks({ db });          // every other kind of money movement, checked against its own records (reconcileBooks.js)
   const all = (sql, ...p) => db.prepare(sql).all(...p), get = (sql, ...p) => db.prepare(sql).get(...p);
 
   function check(at) {
@@ -38,6 +41,9 @@ function buildRecon({ db, notify = () => {} }) {
     const paymentJ = posted('payment');
     const clearing = new Map(all("SELECT j.ref ref, SUM(e.amount) s FROM journals j JOIN entries e ON e.journal_id=j.id WHERE j.kind='payment' AND e.account_id='sys:clearing' GROUP BY j.ref").map((r) => [r.ref, r.s]));
     const refunded = new Map(all("SELECT j.ref ref, SUM(e.amount) s FROM journals j JOIN entries e ON e.journal_id=j.id WHERE j.kind IN ('refund','refund_reversal') AND e.account_id='sys:clearing' GROUP BY j.ref").map((r) => [r.ref, r.s]));
+    // A lost dispute is paid back to the customer as a chargeback, and it counts as refunded on the payment (resolveDispute adds it to payments.refunded), but it is posted under the
+    // DISPUTE's reference, not the payment's. Without this, every lost dispute would reconcile as a refund mismatch.
+    for (const c of all("SELECT d.payment_id ref, SUM(e.amount) s FROM journals j JOIN entries e ON e.journal_id=j.id JOIN disputes d ON d.id=j.ref WHERE j.kind='chargeback' AND e.account_id='sys:clearing' GROUP BY d.payment_id")) refunded.set(c.ref, (refunded.get(c.ref) ?? 0) + c.s);
     const payments = all("SELECT id,merchant_id,amount,refunded,status FROM payments");
     const known = new Set(payments.map((p) => p.id));
     for (const p of payments) {
@@ -62,6 +68,7 @@ function buildRecon({ db, notify = () => {} }) {
 
     const dead = get('SELECT COUNT(*) n FROM events WHERE dead=1').n;
     if (dead) add('webhook_dead_letters', null, `${dead} webhook event(s) gave up after repeated failures and can be replayed`);
+    books(add);
     return ex;
   }
 

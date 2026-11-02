@@ -240,6 +240,21 @@ function openDb({ db, dbPath = ':memory:', mode = 'sandbox' } = {}) {
       BEGIN UPDATE ${t} SET mode = (SELECT value FROM kv WHERE key='payments_mode') WHERE rowid = NEW.rowid; END`);
     conn.prepare(`UPDATE ${t} SET mode = ? WHERE mode IS NULL`).run(mode);
   }
+
+  // The ledger is append-only. A posted entry can never be edited or removed, and neither can a journal, so what was recorded cannot be quietly rewritten, whether by a bug, a stray
+  // statement or someone with access to the file: a mistake is corrected by posting a reversing journal, which leaves both in the record. The one change a journal may undergo is
+  // its mode tag being filled in (done by the tagging trigger above, and by the backfill, both of which only ever turn a blank into a value).
+  // Deliberately lifting these (a test, or a repair someone has decided to make) means dropping them by name: LEDGER_GUARDS.
+  const refuse = "SELECT RAISE(ABORT, 'The ledger cannot be edited: post a reversing journal instead')";
+  conn.exec(`
+    CREATE TRIGGER IF NOT EXISTS ledger_entries_no_update BEFORE UPDATE ON entries BEGIN ${refuse}; END;
+    CREATE TRIGGER IF NOT EXISTS ledger_entries_no_delete BEFORE DELETE ON entries BEGIN ${refuse}; END;
+    CREATE TRIGGER IF NOT EXISTS ledger_journals_no_delete BEFORE DELETE ON journals BEGIN ${refuse}; END;
+    CREATE TRIGGER IF NOT EXISTS ledger_journals_no_update BEFORE UPDATE ON journals
+      WHEN NOT (OLD.mode IS NULL AND NEW.mode IS NOT NULL AND NEW.id IS OLD.id AND NEW.kind IS OLD.kind AND NEW.ref IS OLD.ref AND NEW.memo IS OLD.memo AND NEW.created_at IS OLD.created_at)
+      BEGIN ${refuse}; END;`);
   return conn;
 }
-module.exports = { openDb };
+/** The names of the triggers that keep the ledger append-only. */
+const LEDGER_GUARDS = ['ledger_entries_no_update', 'ledger_entries_no_delete', 'ledger_journals_no_delete', 'ledger_journals_no_update'];
+module.exports = { openDb, LEDGER_GUARDS };

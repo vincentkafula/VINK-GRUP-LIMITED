@@ -56,7 +56,10 @@ module.exports = function buildInsurance({ db, ledger, core, config, notify, emi
   function claim(m, b = {}) {
     const p = get("SELECT * FROM policies WHERE id=? AND merchant_id=? AND status='active'", b.policyId, m.id);
     if (!p) throw notFound('policy');
-    const cause = oneOf(b.cause, 'cause', ['natural', 'accident']), amount = num(b.amount, 'amount', { min: 100, max: p.cover }), id = rid('clm');
+    // What has already been paid out on this policy counts against its cover: a policy of R100 000 cannot pay R100 000 again and again.
+    const left = p.cover - get("SELECT COALESCE(SUM(paid),0) s FROM claims WHERE policy_id=? AND status='paid'", p.id).s;
+    if (left < 100) throw new ApiError(409, 'cover_exhausted', 'The cover on this policy has been paid out in full');
+    const cause = oneOf(b.cause, 'cause', ['natural', 'accident']), amount = num(b.amount, 'amount', { min: 100, max: left }), id = rid('clm');
     const waiting = cause === 'natural' && p.waiting_until > now();
     run('INSERT INTO claims(id,merchant_id,policy_id,cause,description,amount,status,reason,created_at) VALUES(?,?,?,?,?,?,?,?,?)', id, m.id, p.id, cause, text(b.description, 'description', { max: 1000 }), amount,
       waiting ? 'rejected' : 'submitted', waiting ? `Natural causes are covered from ${p.waiting_until.slice(0, 10)}` : null, now());
@@ -71,8 +74,12 @@ module.exports = function buildInsurance({ db, ledger, core, config, notify, emi
     if (b.decision !== 'approve') throw new ApiError(400, 'invalid_decision', 'decision must be approve or decline');
     const p = get('SELECT * FROM policies WHERE id=?', c.policy_id), pay = b.amount === undefined ? c.amount : num(b.amount, 'amount', { min: 100, max: Math.min(c.amount, p.cover) });
     tx(() => {
+      // Checked inside the same transaction as the payout, against everything paid so far, so two approvals cannot together pay out more than the cover.
+      const before = get("SELECT COALESCE(SUM(paid),0) s FROM claims WHERE policy_id=? AND status='paid'", p.id).s;
+      if (pay > p.cover - before) throw new ApiError(409, 'cover_exhausted', `Only R ${((p.cover - before) / 100).toFixed(2)} of cover is left on this policy`);
       if (!run("UPDATE claims SET status='paid',paid=?,decided_at=? WHERE id=? AND status='submitted'", pay, now(), id).changes) throw new ApiError(409, 'already_decided', 'This claim was already decided');
       ledger.post('claim', [{ account: 'sys:claims_pool', kind: 'system', amount: -pay }, { account: A.bank(p.account_id), merchant: c.merchant_id, kind: 'bank', amount: pay }], { ref: id, memo: 'Insurance claim paid' });
+      if (before + pay >= p.cover) run("UPDATE policies SET status='closed' WHERE id=?", p.id);       // all the cover has been paid out: the policy ends, and so do its premiums
     });
     notify(c.merchant_id, 'insurance', 'Claim paid', `R ${(pay / 100).toFixed(2)} was paid into your account.`);
     return { id, status: 'paid', paid: pay };
