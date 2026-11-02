@@ -69,12 +69,19 @@ module.exports = function buildRouter({ db, events, services: s, gateways, confi
     const m = p && db.prepare('SELECT * FROM merchants WHERE id=?').get(p.merchantId);
     if (!m) throw new ApiError(401, 'unauthorized', 'Missing or invalid credentials');
     if (m.status === 'suspended') throw new ApiError(403, 'account_suspended', 'This account is suspended. Please contact support.');
-    req.merchant = m;
+    // A personal account (a passenger, a driver, anyone with an account but no business) or a business. Anything that does not say is a business, as before (API keys, existing callers).
+    req.accountKind = p.accountKind === 'personal' ? 'personal' : 'business';
+    req.merchant = { ...m, accountKind: req.accountKind };
     req.role = ROLES.includes(p.role) ? p.role : 'admin';
     req.actor = p.actor || 'merchant';
     next();
   }));
   r.use(limiter(300, 60000, (req) => 'm:' + req.merchant.id));
+
+  // BUSINESS-ONLY services. A personal account can bank, earn rewards, take online payments and use a card machine, but business credit, a business's owners and team, and managing a shop's
+  // categories, products and staff are for business accounts. Enforced here, not only by hiding the menu: the screen is a convenience, this is the rule.
+  const BUSINESS_ONLY = ['/credit', '/account/ubos', '/account/users', '/pos/categories', '/pos/products', '/pos/staff'];
+  r.use(BUSINESS_ONLY, (req, res, next) => (req.accountKind === 'personal' ? next(new ApiError(403, 'business_only', 'This service is for business accounts. A personal account can use banking, rewards, online payments and a card machine.')) : next()));
 
   // Roles: viewer is read-only; `need('admin')` guards settings, account, users and keys.
   const need = (role) => (req, res, next) => (ROLES.indexOf(req.role) >= ROLES.indexOf(role) ? next() : next(new ApiError(403, 'forbidden', `This needs the ${role} role`)));

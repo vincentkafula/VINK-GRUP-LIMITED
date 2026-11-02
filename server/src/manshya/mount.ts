@@ -79,7 +79,7 @@ export function createManshyaModule() {
         }
         known.add(id);
       }
-      return { merchantId: id, role: "owner", actor: `customer:${a.user.username}` };
+      return { merchantId: id, role: "owner", actor: `customer:${a.user.username}`, accountKind: a.user.role === "personal" ? "personal" : "business" };
     },
 
     adminAuthenticate: async (req: { get(h: string): string | undefined }) => {

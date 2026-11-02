@@ -24,7 +24,9 @@ module.exports = function buildInsurance({ db, ledger, core, config, notify, emi
   }
   const pub = (p) => ({ id: p.id, product: p.product, cover: p.cover, premium: p.premium, beneficiary: p.beneficiary, status: p.status, waiting_until: p.waiting_until, next_due: p.next_due, created_at: p.created_at });
   function buy(m, b = {}) {
-    const q = quote(b), a = core.getAccount(m.id, b.accountId), id = rid('pol');
+    const q = quote(b);
+    if (q.product === 'business' && m.accountKind === 'personal') throw new ApiError(409, 'business_only', 'Business contents cover is for business accounts. Funeral and life cover are available on a personal account.');
+    const a = core.getAccount(m.id, b.accountId), id = rid('pol');
     const prod = prods().find((x) => x.id === q.product), waiting = new Date(Date.now() + prod.waitingDays * 864e5).toISOString();
     tx(() => {
       ledger.post('premium', [{ account: A.bank(a.id), merchant: m.id, kind: 'bank', amount: -q.premium, floor: 0 }, { account: 'sys:premiums', kind: 'system', amount: q.premium }], { ref: id, memo: `${q.name} premium` });
