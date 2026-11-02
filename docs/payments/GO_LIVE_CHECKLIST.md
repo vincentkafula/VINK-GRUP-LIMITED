@@ -38,6 +38,7 @@ Tick every box, in order. A "No" on any legal/regulatory line means **do not go 
 
 ## 5. Platform
 - [ ] VINK data moved off SQLite to Postgres (or SQLite on a backed-up volume accepted explicitly as a limit), with automated backups and a tested restore.
+  - Built: verified daily backups, a restore test and a mirror of uploaded documents (see `BANKING_ENGINE_SAFEGUARDS.md`). Still needed from you: somewhere **off the machine** to send them (the volume alone is not enough), and a person to run a real restore test and tick this.
 - [ ] A separate **live** database. A database is bound to one mode and refuses to open in the other.
 - [ ] Live webhook endpoints registered with each provider (https, signature verified, replay protection on); live webhook secrets set.
 - [ ] Persistent webhook retry queue (current retries are in memory).

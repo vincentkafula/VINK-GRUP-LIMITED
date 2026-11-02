@@ -31,6 +31,8 @@ npm test                                     # access rules and the rest of the 
 | `MANSHYA_DB_PATH` | `./data/manshya.db` | SQLite file (and `uploads/` beside it for KYC documents). Use `:memory:` for throwaway runs. On Railway put it on a Volume. |
 | `PAYMENTS_MODE` | `sandbox` | `sandbox` or `live`. Live is refused at startup unless every condition in `payments/config.ts` holds (see `docs/payments/GO_LIVE_CHECKLIST.md`). Every journal and payment row records its mode, and a database file only opens in the mode it was created in. |
 | `ISSUING_PROVIDER` / `ACQUIRING_PROVIDER` | `mock` | See `docs/payments/PROVIDERS.md`. |
+| `RECON_ALERT_EMAIL` | unset | Where the daily reconciliation and the backup jobs email a problem. Unset, they are only logged. |
+| `BACKUPS_KEPT` | `14` | How many good database backups to keep, in `backups/` beside the database (see `docs/payments/BANKING_ENGINE_SAFEGUARDS.md`). |
 
 The module is plain CommonJS under `core/` (`allowJs`); `mount.ts` wires it to the app's JWT login and `access.ts` holds the access rules.
 
