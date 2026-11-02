@@ -1,6 +1,6 @@
 import { lazy, Suspense, useState } from "react";
 import { TokensPanel } from "./TokensPanel";
-import { User, CreditCard, Landmark, LifeBuoy, Coins } from "lucide-react";
+import { User, CreditCard, Landmark, LifeBuoy, Coins, ShoppingCart, Smartphone } from "lucide-react";
 import { DashboardShell, SectionPanel } from "../dashboards/DashboardShell";
 import { Pill } from "./sponsorshipUi";
 import { portalClient, useLoad, Status, Empty, Field, ActionButton, inputCls, when } from "./ui";
@@ -8,15 +8,20 @@ import { ScreenBoundary } from "./widgets";
 import { api as bankApi } from "../manshya/api";
 import { R, when as whenCents } from "../manshya/format";
 import { BRAND } from "../../brand";
+import type { Product } from "../manshya/products";
 
-// The payments and banking dashboard is the same one customers use (online payments, in-person payments, banking, receipts).
+// VINK Banking, VINK Pay and VINK Tap are separate dashboards (the same ones customers use); a personal account can open any of them. Each opens on its own.
 const ManshyaDashboard = lazy(() => import("../manshya/ManshyaDashboard").then((m) => ({ default: m.ManshyaDashboard })));
 
 const COLOR = BRAND.crimson;
 const call = portalClient("personal");
+/** The navigation entries that open one of the VINK product dashboards, and which product each is. */
+const PRODUCT_NAV: Record<string, Product> = { "Payments & banking": "bank", "VINK Pay": "pay", "VINK Tap": "tap" };
 const NAV = [
   { icon: <Landmark className="w-4 h-4" />, label: "Accounts" },
   { icon: <CreditCard className="w-4 h-4" />, label: "Payments & banking" },
+  { icon: <ShoppingCart className="w-4 h-4" />, label: "VINK Pay" },
+  { icon: <Smartphone className="w-4 h-4" />, label: "VINK Tap" },
   { icon: <Coins className="w-4 h-4" />, label: "VINK Tokens" },
   { icon: <User className="w-4 h-4" />, label: "Profile" },
   { icon: <LifeBuoy className="w-4 h-4" />, label: "Support" },
@@ -36,12 +41,12 @@ export function PersonalDashboard({ userName, onClose }: { userName?: string; on
           {nav === "Profile" && <ProfileScreen />}
           {nav === "VINK Tokens" && <TokensPanel segment="personal" color={COLOR} />}
           {nav === "Support" && <SupportScreen />}
-          {nav === "Payments & banking" && <SectionPanel title="Payments & banking"><div className="p-4"><Empty>Opening your payments and banking dashboard…</Empty></div></SectionPanel>}
+          {nav in PRODUCT_NAV && <SectionPanel title={nav}><div className="p-4"><Empty>Opening your {nav === "Payments & banking" ? "banking" : nav} dashboard…</Empty></div></SectionPanel>}
           </ScreenBoundary>
         </div>
       </DashboardShell>
-      {nav === "Payments & banking" && (
-        <Suspense fallback={null}><ManshyaDashboard isOpen initialMode="bank" onClose={() => setNav("Accounts")} onSignOut={onClose} /></Suspense>
+      {nav in PRODUCT_NAV && (
+        <Suspense fallback={null}><ManshyaDashboard isOpen product={PRODUCT_NAV[nav]} onClose={() => setNav("Accounts")} onSignOut={onClose} /></Suspense>
       )}
     </>
   );

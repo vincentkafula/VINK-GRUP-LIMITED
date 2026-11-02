@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- notification rows are untyped API JSON */
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "./manshya.css";
 import { getSession, clearSession } from "../../services/apiClient";
 import { useBodyScrollLock } from "../../hooks/useBodyScrollLock";
@@ -9,7 +9,8 @@ import { PageHost, type FilterStore } from "./PageHost";
 import { TestModeBanner } from "./TestModeBanner";
 import { HomeFor } from "./Home";
 import { Icon } from "./icons";
-import { NAV, SHARED, isGroup, type Mode, type NavEntry } from "./nav";
+import { menuFor, isGroup, type Mode, type NavEntry } from "./nav";
+import { PRODUCTS, accountKind, pageAllowed, productForMode, type Product } from "./products";
 import { themeEvents } from "./pages/account";
 import { list, Row } from "./kit";
 import { when } from "./format";
@@ -24,18 +25,26 @@ interface Props {
   onClose: () => void;
   /** Called after the user chooses to sign out (session already cleared). */
   onSignOut?: () => void;
-  /** Which section to open on: the personal dashboard opens straight on banking. */
+  /** Which product this dashboard is for: VINK Banking, VINK Pay or VINK Tap. Each has its own dashboard; there is no switching between them inside one. */
+  product?: Product;
+  /** Takes the person back to choose another product. Without it the product badge is just a label. */
+  onChooseProduct?: () => void;
+  /** Older callers say which section to open; it is read as the product it belongs to. */
   initialMode?: Mode;
 }
 
 const applyTheme = (t: string | undefined): "light" | "dark" | undefined => (t === "light" || t === "dark" ? t : undefined);
 
-export function ManshyaDashboard({ isOpen, onClose, onSignOut, initialMode }: Props) {
+export function ManshyaDashboard({ isOpen, onClose, onSignOut, product: productProp, onChooseProduct, initialMode }: Props) {
   useBodyScrollLock(isOpen);
   const session = getSession();
   const [authProblem, setAuthProblem] = useState<null | "expired" | "not_customer">(null);
-  const [mode, setMode] = useState<Mode>(initialMode ?? "online");
   const [page, setPage] = useState("home");
+  const product: Product = productProp ?? productForMode(initialMode) ?? "pay";
+  const info = PRODUCTS[product], mode = info.mode;
+  const kind = accountKind(session?.role);                                     // a personal account or a business: some services are for businesses only
+  const menu = useMemo(() => menuFor(product, kind), [product, kind]);
+  useEffect(() => { setPage("home"); }, [product]);
   const [theme, setTheme] = useState<"light" | "dark" | undefined>();
   const [me, setMe] = useState<{ id: string; name: string; verified: boolean } | null>(null);
   const [unread, setUnread] = useState(0);
@@ -109,7 +118,6 @@ export function ManshyaDashboard({ isOpen, onClose, onSignOut, initialMode }: Pr
     setPage(id);
     document.querySelector(".mn")?.scrollTo?.(0, 0);
   };
-  const switchMode = (m: Mode) => { setMode(m); setPage("home"); };
 
   const openBell = async () => {
     const n = await refreshBell();
@@ -121,40 +129,37 @@ export function ManshyaDashboard({ isOpen, onClose, onSignOut, initialMode }: Pr
   };
 
   const firstName = (session?.name || me?.name || "").split(/\s+/)[0] || "there";
-  // The Banking tab is kept, but without a separate "finance" product name.
-  const tabs: [Mode, string, string, string][] = [
-    ["online", "Online payments", "cart", "VINK Pay"], ["pos", "In-person payments", "dev", "VINK Tap"], ["bank", "Banking", "bank", "My banking"],
-  ];
 
   return (
-    <div className="mn" data-mode={mode} data-page={page === "home" ? undefined : page} data-theme={theme} role="dialog" aria-modal="true" aria-label="VINK business dashboard">
+    <div className="mn" data-mode={mode} data-page={page === "home" ? undefined : page} data-theme={theme} role="dialog" aria-modal="true" aria-label={`${info.name} dashboard`}>
       <TestModeBanner />
       <div className="bar">
         <div className="logo">vink<i>.</i></div>
-        <div className="tabs" role="group" aria-label="Payment type">
-          {tabs.map(([m, small, icon, label]) => (
-            <button key={m} className={mode === m ? "on" : ""} onClick={() => switchMode(m)}>
-              <small>{small}</small><b><Icon name={icon} />{label}</b>
-            </button>
-          ))}
+        <div className="tabs" role="group" aria-label="Product">
+          <button className="on" onClick={onChooseProduct} disabled={!onChooseProduct} title={onChooseProduct ? "Choose another VINK product" : undefined}
+            aria-label={onChooseProduct ? `${info.name}. Choose another product` : info.name}>
+            <small>{info.short}</small><b><Icon name={info.icon} />{info.name}</b>
+          </button>
         </div>
         <button className="bell" aria-label={unread ? `Notifications, ${unread} unread` : "Notifications"} onClick={openBell}>
           <Icon name="bell" />{unread > 0 && <b>{unread}</b>}
         </button>
-        <div className="who"><b>{session?.name}</b>Business Dashboard</div>
+        <div className="who"><b>{session?.name}</b>{kind === "personal" ? "Personal account" : "Business account"}</div>
         <button className="bell" aria-label="Close dashboard" onClick={onClose} style={{ fontSize: 22 }}>×</button>
       </div>
 
       <div className="wrap">
         <aside>
-          <Menu entries={NAV[mode]} page={page} go={go} />
+          <Menu entries={menu.main} page={page} go={go} />
           <hr />
-          <Menu entries={SHARED} page={page} go={go} />
+          <Menu entries={menu.more} page={page} go={go} />
         </aside>
         <main>
           {page === "home"
             ? <HomeFor mode={mode} name={firstName} merchantId={me?.id} verified={me?.verified} />
-            : <PageHost key={page} id={page} filters={filters} onAuthError={onAuthError} />}
+            : pageAllowed(page, kind)
+              ? <PageHost key={page} id={page} filters={filters} onAuthError={onAuthError} />
+              : <BusinessOnly />}
         </main>
       </div>
       <DialogHost />
@@ -188,5 +193,15 @@ function Group({ label, icon, kids, page, go }: { label: string; icon: string; k
         <a key={id} href="#" className={page === id ? "on" : ""} onClick={(ev) => { ev.preventDefault(); go(id); }}>{text}</a>
       ))}
     </details>
+  );
+}
+
+/** What a personal account sees if it reaches a service that is for businesses only (the menu does not offer it, but a saved link or an old bookmark might). */
+function BusinessOnly() {
+  return (
+    <div className="pad" role="status">
+      <div className="pghead"><div><h1>For business accounts</h1><p>This service is for business accounts.</p></div></div>
+      <p className="empty">A personal account can use banking, rewards, online payments and a card machine. Business credit, a business&apos;s owners and team, and managing a shop&apos;s products and staff are for business accounts.</p>
+    </div>
   );
 }

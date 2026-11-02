@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, waitFor, cleanup } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
-vi.mock("../manshya/ManshyaDashboard", () => ({ ManshyaDashboard: (p: { initialMode?: string; onClose: () => void }) => <div data-testid="manshya" data-mode={p.initialMode}><button onClick={p.onClose}>close banking</button></div> }));
+vi.mock("../manshya/ManshyaDashboard", () => ({ ManshyaDashboard: (p: { product?: string; onClose: () => void }) => <div data-testid="manshya" data-mode={p.product}><button onClick={p.onClose}>close banking</button></div> }));
 vi.mock("./TokensPanel", () => ({ TokensPanel: () => <div>TOKENS PANEL</div> }));
 
 import { PersonalDashboard } from "./PersonalDashboard";
@@ -84,6 +84,12 @@ describe("the personal dashboard: the rest", () => {
     open(); await screen.findByText("R 12,540.00");
     fireEvent.click(screen.getByRole("button", { name: "Send money and more" })); expect((await screen.findByTestId("manshya")).getAttribute("data-mode")).toBe("bank");
     fireEvent.click(screen.getByRole("button", { name: "close banking" })); await waitFor(() => expect(screen.queryByTestId("manshya")).toBeNull()); expect(await screen.findByText("R 12,540.00")).toBeTruthy();
+    tab("Payments & banking"); expect((await screen.findByTestId("manshya")).getAttribute("data-mode")).toBe("bank");
+  });
+  it("opens VINK Pay and VINK Tap as their own dashboards, each on its own, and VINK Banking for the banking button", async () => {
+    open(); await screen.findByText("R 12,540.00");
+    tab("VINK Pay"); expect((await screen.findByTestId("manshya")).getAttribute("data-mode")).toBe("pay"); fireEvent.click(screen.getByRole("button", { name: "close banking" })); await waitFor(() => expect(screen.queryByTestId("manshya")).toBeNull());
+    tab("VINK Tap"); expect((await screen.findByTestId("manshya")).getAttribute("data-mode")).toBe("tap"); fireEvent.click(screen.getByRole("button", { name: "close banking" })); await waitFor(() => expect(screen.queryByTestId("manshya")).toBeNull());
     tab("Payments & banking"); expect((await screen.findByTestId("manshya")).getAttribute("data-mode")).toBe("bank");
   });
   it("still shows the profile, tokens and support", async () => {

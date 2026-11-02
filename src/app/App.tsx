@@ -34,6 +34,7 @@ import { PersistentTopNav } from "./components/PersistentTopNav";
 import { WhatsAppButton } from "./components/WhatsAppChat";
 import { siteChrome } from "./sitePages";
 import { markPageBars } from "./pageBars";
+import { PRODUCTS, type Product } from "./components/manshya/products";
 const PersonalAccountViewer       = lazy(() => import("./components/PersonalAccountViewer").then(m => ({ default: m.PersonalAccountViewer })));
 const PersonalLandingViewer       = lazy(() => import("./components/PersonalLandingViewer").then(m => ({ default: m.PersonalLandingViewer })));
 const BusinessLandingViewer       = lazy(() => import("./components/BusinessLandingViewer").then(m => ({ default: m.BusinessLandingViewer })));
@@ -89,6 +90,7 @@ const RolePortal                   = lazy(() => import("./components/portal/Role
 const AdminConfig                   = lazy(() => import("./components/portal/AdminConfig").then(m => ({ default: m.AdminConfig })));
 const AdminBankLinks                = lazy(() => import("./components/portal/AdminBankLinks").then(m => ({ default: m.AdminBankLinks })));
 const AuthLinkPage                 = lazy(() => import("./components/AuthLinkPage").then(m => ({ default: m.AuthLinkPage })));
+const ProductChooser              = lazy(() => import("./components/manshya/ProductChooser").then(m => ({ default: m.ProductChooser })));
 const ManshyaDashboard            = lazy(() => import("./components/manshya/ManshyaDashboard").then(m => ({ default: m.ManshyaDashboard })));
 const ManshyaAdmin                = lazy(() => import("./components/manshya/ManshyaAdmin").then(m => ({ default: m.ManshyaAdmin })));
 const ManshyaPay                  = lazy(() => import("./components/manshya/ManshyaPay").then(m => ({ default: m.ManshyaPay })));
@@ -205,6 +207,7 @@ export default function App() {
   const [adminBank, setAdminBank]                             = useState(false);
   const [adminConfig, setAdminConfig]                         = useState(false);
   const [showManshya, setShowManshya]                        = useState(false);
+  const [manshyaProduct, setManshyaProduct]                   = useState<Product | null>(null);     // null: the "choose a product" screen; otherwise that product's own dashboard
   const [showManshyaAdmin, setShowManshyaAdmin]              = useState(false);
   const [showManshyaPay, setShowManshyaPay]                  = useState(false);
 
@@ -240,7 +243,7 @@ export default function App() {
       else if (id === "account")           { mount("postLogin");        setShowPostLogin(true); }
       else if (id === "managementPanel")   { mount("managementPanel");  setShowManagementPanel(true); pushRoute("/management-panel"); }
       else if (id.startsWith("portal:") && id.slice(7) in PORTALS) { mount("portal"); setPortal(id.slice(7) as PortalKey); pushRoute("/portal/" + id.slice(7)); }
-      else if (id === "manshya")           { mount("manshya");          setShowManshya(true); pushRoute("/dashboard"); }
+      else if (id === "manshya")           { mount("manshya");          setManshyaProduct(null); setShowManshya(true); pushRoute("/dashboard"); }       // sign-in lands on choosing a product
       else if (id === "manshyaAdmin")      { mount("manshyaAdmin");     setShowManshyaAdmin(true); pushRoute("/back-office"); }
       else if (id === "adminBankingPanel") { mount("banking");          setShowBanking(true); }
       else if (id === "appLauncher")       { mount("appLauncher");      setShowAppLauncher(true); }
@@ -512,7 +515,11 @@ export default function App() {
     if (seg[0] === "portal" && seg[1] && seg[1] in PORTALS) { mount("portal"); setPortal(seg[1] as PortalKey); return true; }
     if (path === "/reset-password") { mount("authLink"); setAuthLink("reset");  return true; }
     if (path === "/verify-email")   { mount("authLink"); setAuthLink("verify"); return true; }
-    if (path === "/dashboard")       { mount("manshya");      setShowManshya(true);      return true; }
+    if (path === "/dashboard")       { mount("manshya");      setManshyaProduct(null); setShowManshya(true); return true; }
+    if (path.startsWith("/dashboard/")) {                                                                       // /dashboard/banking, /dashboard/pay, /dashboard/tap: one product's dashboard
+      const slug = path.slice("/dashboard/".length).replace(/\/$/, ""), hit = (Object.values(PRODUCTS) as typeof PRODUCTS[Product][]).find((p) => p.path === `/dashboard/${slug}`);
+      if (hit) { mount("manshya"); setManshyaProduct(hit.id); setShowManshya(true); return true; }
+    }
     if (path === "/back-office") { mount("manshyaAdmin"); setShowManshyaAdmin(true); return true; }
     if (path === "/pay")           { mount("manshyaPay");   setShowManshyaPay(true);   return true; }
     return false;
@@ -670,7 +677,19 @@ export default function App() {
       {has("adminBank")       && adminBank && <Suspense fallback={null}><AdminBankLinks isOpen onClose={() => { setAdminBank(false); pushRoute("/"); }} /></Suspense>}
       {has("portal")          && portal && <Suspense fallback={null}><RolePortal portal={portal} isOpen onClose={() => { setPortal(null); pushRoute("/"); }} /></Suspense>}
       {has("authLink")        && authLink && <Suspense fallback={null}><AuthLinkPage kind={authLink} isOpen onClose={() => { setAuthLink(null); window.history.replaceState({}, "", "/"); }} /></Suspense>}
-      {has("manshya")         && <Suspense fallback={null}><ManshyaDashboard      isOpen={showManshya}         onClose={() => { setShowManshya(false); pushRoute("/"); }} onSignOut={() => { setIsLoggedIn(false); setUserRole("personal"); window.dispatchEvent(new Event("vink:open-login")); }} /></Suspense>}
+      {has("manshya")         && (() => {
+        const close = () => { setShowManshya(false); setManshyaProduct(null); pushRoute("/"); };
+        const signedOut = () => { setIsLoggedIn(false); setUserRole("personal"); window.dispatchEvent(new Event("vink:open-login")); };
+        return (
+          <Suspense fallback={null}>
+            {manshyaProduct
+              ? <ManshyaDashboard product={manshyaProduct} isOpen={showManshya} onClose={close} onSignOut={signedOut} onChooseProduct={() => { setManshyaProduct(null); pushRoute("/dashboard"); }} />
+              : <ProductChooser isOpen={showManshya} onClose={close} onSignOut={signedOut}
+                  onOpen={(p) => { setManshyaProduct(p); pushRoute(PRODUCTS[p].path); }}
+                  onApplyBank={() => { setShowManshya(false); setManshyaProduct(null); startTransition(() => { mount("application"); setShowApplication(true); pushRoute("/apply"); }); }} />}
+          </Suspense>
+        );
+      })()}
       {has("manshyaAdmin")    && <Suspense fallback={null}><ManshyaAdmin          isOpen={showManshyaAdmin}    onClose={() => { setShowManshyaAdmin(false); pushRoute("/"); }} /></Suspense>}
       {has("manshyaPay")      && <Suspense fallback={null}><ManshyaPay            isOpen={showManshyaPay}      onClose={() => { setShowManshyaPay(false); window.history.replaceState({}, "", "/"); }} /></Suspense>}
       {has("tokenReader")     && <Suspense fallback={null}><TokenReader isOpen={showTokenReader} /></Suspense>}
