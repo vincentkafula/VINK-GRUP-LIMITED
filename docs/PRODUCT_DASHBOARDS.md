@@ -32,7 +32,22 @@ An account is **personal** when its login role is `personal`; any other customer
 - **To make a service business-only:** add its page id to `BUSINESS_ONLY_PAGES` and its API path to `BUSINESS_ONLY`, then update the table above. A test checks each pairing.
 - **To add a page to a product:** register it in `pages/`, add it to that product's menu in `nav.ts`. A test fails if a menu entry has no page behind it (the one marked coming soon, "Business funding", is the only exception).
 
+## Where card machine (VINK Tap) money goes
+
+What a driver, or any shop, takes on a card machine goes **straight into a VINK bank account**. It does not wait in the payments balance for a payout.
+
+- **Which account:** the one they choose on the Tap dashboard (*Where your takings go > Change*), otherwise their main current account. Every merchant gets a default account when created, so there is always one. Only the person's own accounts can be chosen.
+- **What lands there:** the payment less the card machine fee and, until the person is verified, the reserve that is held back (10%, `reservePct` in the engine's config). Fees and the reserve work exactly as before.
+- **No bank account at all:** the money stays in the payments balance, so it is never lost, and the next payment goes to the account once one exists.
+- **Refunds and disputes** (holds, releases, chargebacks and their fee) take the money from, and give it back to, the account the payment was settled to, which the payment records, even if the person later chooses a different account. A refund the account cannot cover is refused and changes nothing. A full refund returns the customer's whole payment, which is more than the driver received after fees, so other money has to be in the account.
+- **Online (VINK Pay) payments are unchanged:** they go to the payments balance and wait for a payout, which can go to a VINK bank account or an external one. Nothing here changes the payout fee.
+- **Money already in the payments balance** stays there until it is paid out in the usual way.
+- **Reconciliation** checks, both ways, that a payment's recorded account matches where its money was posted (`payment_settlement_mismatch`).
+- **Where it lives:** `settlePayment` and the settlement functions in `server/src/manshya/core/services.js`; `GET` and `PUT /api/vink/pos/settlement`; the section on the Tap home in `Home.tsx`.
+
 ## Not decided yet
 
 - **Drivers.** The banking server only accepts `customer` and `personal` logins, so a `driver` login cannot open VINK Tap. Letting drivers in needs a rule for what a driver may see and do (for example only the card machine pages), which has not been set. Until then a driver uses Tap through a personal account.
+- **Whether online (VINK Pay) money should also go straight to a bank account,** and whether payouts to an external bank should be blocked. Both are unchanged for now.
+- **Whether moving money into your own VINK account by payout should be free.** The payout fee still applies to it.
 - **Applying for Pay and Tap.** They have no separate application: a merchant record appears on first visit, and Tap is set up by adding a card machine inside its dashboard. The chooser shows what is still to do, but there is nothing to "apply" for except a bank account.

@@ -20,6 +20,7 @@ The books are checked against the engine's own records once a day (and on demand
 | --- | --- |
 | Payments, refunds, payouts, transfers | posted for the right amount; stuck items; dead webhooks |
 | Bill payments, vehicle renewals, international payments, inbound bank credits | posted, right amount, failed ones returned, orphans |
+| Card machine payments (VINK Tap) | the money posted to the bank account the payment says it went to, and money posted to a bank account by a payment must be named (`payment_settlement_mismatch`) |
 | Card purchases and their reversals | approved = posted; declined = nothing; amount returned = amount reversed; never more than the purchase |
 | Cash for collection | posted, collected or returned exactly once; **the escrow account equals the vouchers still waiting** |
 | Disputes and chargebacks | held, then released (won) or charged back with the fee (lost); **the disputes account equals the open disputes** |
