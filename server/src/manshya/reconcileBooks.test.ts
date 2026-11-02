@@ -30,6 +30,8 @@ async function everything() {
   const card = mn.cards.order(m, { accountId: main.id }); mn.cards.activate(m, card.id);
   mn.cards.authorize(m, { cardId: card.id, amount: 25_000, channel: "chip" });                                                                         // approved
   mn.cards.authorize(m, { cardId: card.id, amount: 600_000, channel: "chip" });                                                                        // declined (over the daily limit): nothing moves
+  mn.cards.linkProviderCard(m, card.id, "paymentology", "555");                                                                                         // a purchase through the processor, partly reversed
+  mn.cards.authoriseFromProvider({ provider: "paymentology", authorisationId: "T9:R1", providerCardId: "555", amount: 20_000, channel: "chip" }); mn.cards.reverseFromProvider({ provider: "paymentology", threadId: "T9", amountCents: 5_000, reversalId: "R2" });
   const pay = await mn.services.createPayment(m, { amount: 200_000, method: "card", channel: "online", paymentToken: "tok_visa", reference: "r1", customer: { name: "A", email: "a@b.co" } });
   const won = mn.admin.openDispute({ paymentId: pay.id, amount: 20_000 }, "t"), lost = mn.admin.openDispute({ paymentId: pay.id, amount: 30_000 }, "t"), open = mn.admin.openDispute({ paymentId: pay.id, amount: 10_000 }, "t");
   mn.admin.resolveDispute(won.id, "merchant", "t"); mn.admin.resolveDispute(lost.id, "customer", "t");
@@ -100,6 +102,19 @@ describe("each check notices what it is for", () => {
   it("names the merchant and says what is wrong in words, so the daily alert can be acted on", async () => {
     const { mn, m } = await everything(); const id = mn.db.prepare("SELECT id FROM bill_purchases WHERE status='completed'").get().id; mn.db.prepare("UPDATE bill_purchases SET amount=amount+1 WHERE id=?").run(id);
     const item = problems(mn).items.find((i: any) => i.check === "bill_amount_mismatch"); expect(item).toMatchObject({ ref: id, merchant_id: m.id }); expect(item.detail).toMatch(/Bill payment is 5001 cents on record but 5000 cents was posted/);
+  });
+});
+
+describe("card reversals", () => {
+  it("are checked: what is recorded as reversed must be what was returned, never more than the purchase, and a fully reversed purchase must say so", async () => {
+    const { mn } = await everything(); const id = mn.db.prepare("SELECT id FROM card_transactions WHERE reversed > 0").get().id;
+    mn.db.prepare("UPDATE card_transactions SET reversed = reversed + 1 WHERE id=?").run(id); expect(problems(mn).checks).toContain("card_reversal_mismatch"); mn.db.prepare("UPDATE card_transactions SET reversed = reversed - 1 WHERE id=?").run(id);
+    mn.db.prepare("UPDATE card_transactions SET status='reversed' WHERE id=?").run(id); expect(problems(mn).checks).toContain("card_status_mismatch"); mn.db.prepare("UPDATE card_transactions SET status='approved' WHERE id=?").run(id);
+    mn.db.prepare("UPDATE card_transactions SET reversed = 99999999 WHERE id=?").run(id); expect(problems(mn).checks).toContain("card_over_reversed");
+  });
+  it("are noticed when the money was returned but the purchase does not say so, and when a reversal is posted for a purchase that is not on file", async () => {
+    const { mn } = await everything(); const id = mn.db.prepare("SELECT id FROM card_transactions WHERE reversed > 0").get().id; mn.db.prepare("UPDATE card_transactions SET reversed = 0 WHERE id=?").run(id);
+    expect(problems(mn).checks).toContain("card_reversal_mismatch"); mn.db.prepare("UPDATE card_transactions SET reversed = 5000 WHERE id=?").run(id); ghost(mn, "card_reversal", "ghost-purchase"); expect(problems(mn).checks).toContain("card_orphan_journal");
   });
 });
 

@@ -20,7 +20,7 @@
 const COVERED = {
   payment: 'core', refund: 'core', refund_reversal: 'core', payout: 'core', transfer: 'core', reversal: 'core',
   bill: 'books', bill_reversal: 'books', cash_send: 'books', cash_collect: 'books', cash_refund: 'books', inbound: 'books', international: 'books', international_reversal: 'books',
-  vehicle: 'books', vehicle_reversal: 'books', card: 'books', dispute_hold: 'books', dispute_release: 'books', chargeback: 'books', chargeback_fee: 'books',
+  vehicle: 'books', vehicle_reversal: 'books', card: 'books', card_reversal: 'books', dispute_hold: 'books', dispute_release: 'books', chargeback: 'books', chargeback_fee: 'books',
   premium: 'books', claim: 'books', credit_draw: 'books', credit_repay: 'books', credit_interest: 'books',
   goal: 'orphans', interest: 'orphans', debit_order: 'orphans',
   deposit: 'none',        // seed and test funding: there is no business record behind it
@@ -58,17 +58,20 @@ function buildBooksChecks({ db }) {
     postedOnce('vehicle', 'Vehicle licence renewal', { table: 'vehicle_renewals', post: ['vehicle'], reverse: ['vehicle_reversal'], failed: "status='failed'" });
     postedOnce('inbound', 'Inbound bank credit', { table: 'inbound_credits', id: 'rail_ref', post: ['inbound'] });
 
-    // Card purchases: an approved one moved its amount, a declined one moved nothing.
+    // Card purchases: an approved one moved its amount, a declined one moved nothing, and whatever the processor later reversed was returned, no more and no less.
     {
-      const p = moved(['card']), rows = all('SELECT id, merchant_id, amount, status FROM card_transactions'), ids = new Set(rows.map((x) => String(x.id)));
+      const p = moved(['card']), back = moved(['card_reversal']), rows = all('SELECT id, merchant_id, amount, reversed, status FROM card_transactions'), ids = new Set(rows.map((x) => String(x.id)));
       for (const x of rows) {
-        const got = p.get(String(x.id));
-        if (x.status === 'approved') {
+        const got = p.get(String(x.id)), returned = back.get(String(x.id))?.v ?? 0;
+        if (x.status === 'approved' || x.status === 'reversed') {
           if (!got) add('card_not_posted', x.id, `Card purchase of ${cents(x.amount)} was approved but never posted to the books`, x.merchant_id);
           else if (got.v !== x.amount) add('card_amount_mismatch', x.id, `Card purchase is ${cents(x.amount)} on record but ${cents(got.v)} was posted`, x.merchant_id);
         } else if (got) add('card_declined_but_posted', x.id, `A card purchase was declined but ${cents(got.v)} was posted for it`, x.merchant_id);
+        if (returned !== x.reversed) add('card_reversal_mismatch', x.id, `${cents(x.reversed)} is recorded as reversed but ${cents(returned)} was returned to the account`, x.merchant_id);
+        if (x.reversed > x.amount) add('card_over_reversed', x.id, `${cents(x.reversed)} was reversed on a purchase of ${cents(x.amount)}`, x.merchant_id);
+        if ((x.status === 'reversed') !== (x.reversed >= x.amount && x.amount > 0)) add('card_status_mismatch', x.id, `Card purchase is ${x.status} but ${cents(x.reversed)} of ${cents(x.amount)} was reversed`, x.merchant_id);
       }
-      orphans('card', ['card'], ids);
+      orphans('card', ['card', 'card_reversal'], ids);
     }
 
     // Cash waiting at a retailer or ATM: money leaves the account into escrow, then either goes out (collected) or comes back (cancelled or expired).

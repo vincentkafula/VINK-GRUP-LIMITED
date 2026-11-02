@@ -98,6 +98,8 @@ export function createManshyaModule() {
     services: { createMerchant(name: string, o: { id: string }): unknown; listAccounts(m: { id: string }): { id: string; name: string; number: string; kind: string; balance: number }[]; statement(m: { id: string }, accountId: string, q: { limit: number }): { data: { date: string; kind: string; memo: string | null; amount: number; balance: number }[] } };
     banking: { renameAccount(m: { id: string }, id: string, name: string): unknown };
     config: { bankName: string; branchCode: string };
-    cards: { authoriseFromProvider(a: { provider: string; authorisationId: string; providerCardId: string; amount: number; currency?: string; channel?: string; descriptor?: string }): { id: string | null; approved: boolean; reason: string | null; replayed: boolean } };
+    cards: { authoriseFromProvider(a: { provider: string; authorisationId: string; providerCardId: string; amount: number; currency?: string; channel?: string; descriptor?: string }): { id: string | null; approved: boolean; reason: string | null; replayed: boolean };
+      reverseFromProvider(a: { provider: string; authorisationId?: string; threadId?: string; amountCents?: number; reversalId?: string }): { reversed: boolean; refundedCents?: number } | null;
+      providerCardActive(provider: string, providerCardId: string): boolean | null };
   };
 }

@@ -113,7 +113,7 @@ app.use("/api/vink", manshya.router);
 // VINK token cards are decided by the token service, which is created further down; the issuer endpoint asks it through this bridge when a request arrives.
 const tokenCardsBridge: TokenCardAuthoriser = { authorise: async (a) => (tokenService ? tokenService.authoriseCardSpend(a) : null), reverse: async (a) => (tokenService ? tokenService.reverseCardSpend(a) : null), isActive: async (p, c) => (tokenService ? tokenService.cardIsActive(p, c) : null) };
 app.use("/api/payments/issuer", createIssuerRouter(manshya.payments, manshya, tokenCardsBridge));
-app.use("/api/payments/issuer", createPaymentologyFastRouter({ tokens: tokenCardsBridge, secret: process.env.PAYMENTOLOGY_FAST_SECRET?.trim() || null }));
+app.use("/api/payments/issuer", createPaymentologyFastRouter({ tokens: tokenCardsBridge, engine: manshya.cards, secret: process.env.PAYMENTOLOGY_FAST_SECRET?.trim() || null }));
 
 
 // Files in department mail: attachments of incoming email, files staff attach, and the expiring links for big ones (services/mailFiles.ts).

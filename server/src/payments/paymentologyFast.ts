@@ -18,10 +18,19 @@ import type { TokenCardAuthoriser } from "./issuerRoutes.js";
  *  - the exact reply body for the advice messages and the decline code for a card that is not ours.
  * A request this code cannot read is declined ("30", format error) rather than guessed at.
  */
-export interface FastOptions { tokens: TokenCardAuthoriser; secret: string | null; provider?: string }
+/** The engine's own bank-account cards (cards linked to a VINK bank account). Asked after the token cards: a card that is neither is not ours. */
+export interface EngineCards {
+  authoriseFromProvider(a: { provider: string; authorisationId: string; providerCardId: string; amount: number; currency?: string; channel?: string; descriptor?: string }): { id: string | null; approved: boolean; reason: string | null; replayed?: boolean };
+  reverseFromProvider(a: { provider: string; authorisationId?: string; threadId?: string; amountCents?: number; reversalId?: string }): { reversed: boolean; refundedCents?: number } | null;
+  providerCardActive?(provider: string, providerCardId: string): boolean | null;
+}
+export interface FastOptions { tokens: TokenCardAuthoriser; /** Bank-account cards: without this, only token cards can transact and reversals for bank cards are lost. */ engine?: EngineCards; secret: string | null; provider?: string }
 
 const REPLY_MTI: Record<string, string> = { "0100": "0110", "0200": "0210", "0400": "0410", "0420": "0430", "0120": "0130" };
-const DECLINE: Record<string, string> = { insufficient_funds: "51", limit_exceeded: "61", card_not_active: "62", wallet_inactive: "62", unknown_card: "14", currency_mismatch: "57" };
+const DECLINE: Record<string, string> = {
+  insufficient_funds: "51", limit_exceeded: "61", card_not_active: "62", wallet_inactive: "62", unknown_card: "14", currency_mismatch: "57",
+  daily_limit: "61", monthly_limit: "61", tier_limit: "61", card_inactive: "62", card_blocked: "62", card_lost: "41", card_stolen: "43", account_suspended: "62", currency_not_supported: "57", invalid_amount: "13",
+};
 
 const num = (v: unknown): number | null => (typeof v === "number" ? v : typeof v === "string" && v.trim() !== "" ? Number(v) : null);
 const str = (v: unknown): string | null => (typeof v === "string" && v.trim() !== "" ? v.trim() : typeof v === "number" ? String(v) : null);
@@ -35,6 +44,16 @@ function sameSecret(a: string, b: string): boolean {
 function cents(v: unknown): number | null {
   const n = num(v);
   return n === null || !Number.isFinite(n) || n < 0 ? null : Math.round(n * 100);
+}
+
+/** The engine's channels are chip, tap, online, international and atm; the processor's message says less, so this is the best reading of it. */
+function engineChannelOf(m: Record<string, unknown>): string {
+  const t = `${str(m.Spend_Type) ?? ""} ${str(m.Card_Use_Type) ?? ""}`.toLowerCase();
+  if (/atm|cash/.test(t)) return "atm";
+  if (/international|foreign|cross.?border/.test(t)) return "international";
+  if (/online|ecom|e-com|internet/.test(t)) return "online";
+  if (/tap|contactless|nfc/.test(t)) return "tap";
+  return "chip";
 }
 
 function channelOf(m: Record<string, unknown>): string {
@@ -67,19 +86,28 @@ export function createPaymentologyFastRouter(opts: FastOptions): Router {
     try {
       if (mti === "0400" || mti === "0420") {
         const amount = cents(m.Billing_Amount);
-        await opts.tokens.reverse({ provider, threadId: tid, amountCents: amount && amount > 0 ? amount : undefined, reversalId: rid });
+        const want = { provider, threadId: tid, amountCents: amount && amount > 0 ? amount : undefined, reversalId: rid };
+        const done = await opts.tokens.reverse(want);
+        if (!done && opts.engine) opts.engine.reverseFromProvider(want);                                      // not a token card purchase: a bank-account card purchase is returned the same way
         reply("00");                                                                                            // never leave a reversal unanswered; an unknown purchase has nothing to return
         return;
       }
       const card = str(iso.DE2), amount = cents(m.Billing_Amount);
       if (!card || amount === null) { reply("30"); return; }
       if (amount === 0) {                                                                                       // a card check with no amount: is it ours and live?
-        const live = opts.tokens.isActive ? await opts.tokens.isActive(provider, card) : null;
+        let live = opts.tokens.isActive ? await opts.tokens.isActive(provider, card) : null;
+        if (live === null && opts.engine?.providerCardActive) live = opts.engine.providerCardActive(provider, card);
         reply(live === null ? "14" : live ? "00" : "62");
         return;
       }
       const t = await opts.tokens.authorise({ provider, providerCardId: card, authorisationId: `${tid}:${rid}`, amountCents: amount, currency: "ZAR", channel: channelOf(m), merchant: str(m.Merchant_Name) ?? str(iso.DE43) ?? undefined });
-      if (!t) { reply("14"); return; }                                                                          // not a VINK card
+      if (!t) {
+        if (opts.engine) {                                                                                      // not a token card: is it a card on a VINK bank account?
+          const e = opts.engine.authoriseFromProvider({ provider, providerCardId: card, authorisationId: `${tid}:${rid}`, amount, currency: "ZAR", channel: engineChannelOf(m), descriptor: str(m.Merchant_Name) ?? str(iso.DE43) ?? undefined });
+          reply(e.approved ? "00" : (DECLINE[e.reason ?? ""] ?? "05")); return;
+        }
+        reply("14"); return;                                                                                    // not a VINK card
+      }
       reply(t.approved ? "00" : (DECLINE[t.reason ?? ""] ?? "05"));
     } catch (e) {
       console.error("[fast] failed:", (e as Error).message);

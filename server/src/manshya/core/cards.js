@@ -65,7 +65,7 @@ module.exports = function buildCards({ db, ledger, config, rewards, notify }) {
   // The card controls take real effect here: status, tap, online and international switches and both limits.
   function authorize(m, b = {}) {
     const c = card(m, b.cardId), amount = num(b.amount, 'amount', { min: 1, max: 1e10 }), channel = oneOf(b.channel || 'chip', 'channel', ['chip', 'tap', 'online', 'international', 'atm']);
-    const day = now().slice(0, 10), month = now().slice(0, 7), sum = (p) => get("SELECT COALESCE(SUM(amount),0) s FROM card_transactions WHERE card_id=? AND status='approved' AND substr(created_at,1,?)=?", c.id, p.length, p).s;
+    const day = now().slice(0, 10), month = now().slice(0, 7), sum = (p) => get("SELECT COALESCE(SUM(amount - reversed),0) s FROM card_transactions WHERE card_id=? AND status='approved' AND substr(created_at,1,?)=?", c.id, p.length, p).s;
     let reason = null;
     if (c.status !== 'active') reason = `card_${c.status}`;
     else if (channel === 'tap' && !c.tap) reason = 'tap_disabled';
@@ -76,7 +76,7 @@ module.exports = function buildCards({ db, ledger, config, rewards, notify }) {
     else if (config.limitGuard) {
       // The country profile's daily limits for the customer's verification level (only when the profile switches enforcement on).
       const group = channel === 'atm' ? ['atm'] : channel === 'online' || channel === 'international' ? ['online', 'international'] : ['chip', 'tap'];
-      const used = get(`SELECT COALESCE(SUM(amount),0) s FROM card_transactions WHERE merchant_id=? AND status='approved' AND substr(created_at,1,10)=? AND channel IN (${group.map(() => '?').join(',')})`, m.id, day, ...group).s;
+      const used = get(`SELECT COALESCE(SUM(amount - reversed),0) s FROM card_transactions WHERE merchant_id=? AND status='approved' AND substr(created_at,1,10)=? AND channel IN (${group.map(() => '?').join(',')})`, m.id, day, ...group).s;
       const refused = config.limitGuard({ merchantId: m.id, verified: !!get('SELECT verified FROM merchants WHERE id=?', m.id)?.verified, channel: channel === 'atm' ? 'atm' : group[0] === 'online' ? 'online' : 'pos', amount, usedToday: used });
       if (refused) reason = 'tier_limit';
     }
@@ -128,5 +128,39 @@ module.exports = function buildCards({ db, ledger, config, rewards, notify }) {
     });
   }
 
-  return { order, list, activate, update, block, wallet, authorize, transactions, linkProviderCard, authoriseFromProvider };
+  /**
+   * The processor reverses a purchase it earlier asked us to approve (the shop cancelled it, the terminal timed out, the customer was charged twice): the money goes back.
+   *
+   * The purchase is found by the processor's transaction THREAD (every message about one purchase carries the same thread id), or by the authorisation id. A reversal may be for part
+   * of the purchase, and several may arrive; together they can never return more than was taken. Processors retry, so each reversal message (by its own id) counts once: a repeat
+   * returns what the first one did. Returns null when the thread is not one of this engine's card purchases (so the caller can try another card system), and
+   * { reversed: false } when it is but there is nothing left to return.
+   */
+  function reverseFromProvider({ provider, authorisationId, threadId, amountCents, reversalId }) {
+    return tx(() => {
+      let a;
+      if (authorisationId) a = get('SELECT * FROM authorisations WHERE provider=? AND authorisation_id=? AND approved=1 AND card_tx_id IS NOT NULL', provider, authorisationId);
+      else if (threadId) a = get("SELECT * FROM authorisations WHERE provider=? AND substr(authorisation_id,1,?)=? AND approved=1 AND card_tx_id IS NOT NULL ORDER BY created_at DESC LIMIT 1", provider, String(threadId).length + 1, `${threadId}:`);
+      if (!a) return null;
+      // A retry of the same message is the same reversal. Without a message id, the same request for the same amount is treated as one.
+      const key = reversalId ? String(reversalId) : `${a.authorisation_id}:${amountCents ?? 'all'}`;
+      const prior = get('SELECT amount FROM card_reversals WHERE provider=? AND reversal_id=?', provider, key);
+      if (prior) return { reversed: prior.amount > 0, refundedCents: prior.amount, replayed: true };
+      const t = get('SELECT * FROM card_transactions WHERE id=?', a.card_tx_id), c = t && get('SELECT * FROM cards WHERE id=?', t.card_id);
+      if (!t || !c) return null;
+      const left = t.amount - t.reversed;
+      const give = amountCents === undefined || amountCents === null ? left : Math.min(Math.max(Math.floor(amountCents), 0), left);       // never more than is left to return
+      run('INSERT INTO card_reversals(provider,reversal_id,card_tx_id,amount,created_at) VALUES(?,?,?,?,?)', provider, key, t.id, give, now());
+      if (give <= 0) return { reversed: false, refundedCents: 0, replayed: false };
+      ledger.post('card_reversal', [{ account: 'sys:card_settlement', kind: 'system', amount: -give }, { account: A.bank(c.account_id), merchant: t.merchant_id, kind: 'bank', amount: give }], { ref: t.id, memo: `Card purchase reversed${t.descriptor ? ': ' + t.descriptor : ''}` });
+      run("UPDATE card_transactions SET reversed = reversed + ?, status = CASE WHEN reversed + ? >= amount THEN 'reversed' ELSE status END WHERE id=?", give, give, t.id);
+      notify(t.merchant_id, 'card', 'Card purchase reversed', `R ${(give / 100).toFixed(2)} was returned to your account${t.descriptor ? ` (${t.descriptor})` : ''}.`);
+      return { reversed: true, refundedCents: give, replayed: false };
+    });
+  }
+
+  /** For a card check with no amount: is this one of ours (null if not) and is it live? */
+  const providerCardActive = (provider, providerCardId) => { const c = get('SELECT status FROM cards WHERE provider=? AND provider_card_id=?', provider, providerCardId); return c ? c.status === 'active' : null; };
+
+  return { order, list, activate, update, block, wallet, authorize, transactions, linkProviderCard, authoriseFromProvider, reverseFromProvider, providerCardActive };
 };

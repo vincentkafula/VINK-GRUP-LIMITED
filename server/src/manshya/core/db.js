@@ -225,6 +225,9 @@ function openDb({ db, dbPath = ':memory:', mode = 'sandbox' } = {}) {
   // Link to the card issuer-processor's own card id, and a record of every authorisation it asked us to decide (idempotency).
   addCol('cards', 'provider', 'TEXT');
   addCol('cards', 'provider_card_id', 'TEXT');
+  // How much of a card purchase the processor has since reversed, and each reversal message once (processors retry).
+  addCol('card_transactions', 'reversed', 'INTEGER NOT NULL DEFAULT 0');
+  conn.exec(`CREATE TABLE IF NOT EXISTS card_reversals(provider TEXT NOT NULL, reversal_id TEXT NOT NULL, card_tx_id TEXT NOT NULL, amount INTEGER NOT NULL, created_at TEXT NOT NULL, PRIMARY KEY(provider, reversal_id))`);
   conn.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_cards_provider ON cards(provider, provider_card_id) WHERE provider_card_id IS NOT NULL;
     CREATE TABLE IF NOT EXISTS authorisations(
       provider TEXT NOT NULL, authorisation_id TEXT NOT NULL, card_tx_id TEXT, approved INTEGER NOT NULL, reason TEXT, amount INTEGER, created_at TEXT NOT NULL,
