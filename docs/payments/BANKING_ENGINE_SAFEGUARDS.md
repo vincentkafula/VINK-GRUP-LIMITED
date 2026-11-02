@@ -36,7 +36,7 @@ Set `RECON_ALERT_EMAIL` and the first scheduled run that finds a *new* problem e
 
 **Uploaded documents** (the KYC evidence customers send) are not in the database: they are files beside it. They are written once, so each backup **mirrors** them into `backups/uploads-mirror/`: new files are copied, nothing is overwritten or deleted. It alerts if a file has *changed* since it was first saved, has *disappeared* from the live store (the mirror keeps it), or if the database lists a document whose file is not there.
 
-Staff: anyone on staff can list backups (`GET /api/vink/admin/backups`); only a superadmin can take one (`POST .../backups`) or run the restore test (`POST .../backups/<name>/restore-check`). **There is no download.**
+Who: the back office is reachable only by the `owner` and `superadmin` roles (`manshya/access.ts`), and both are the engine's superadmin, so both can list backups (`GET /api/vink/admin/backups`), take one (`POST .../backups`) and run the restore test (`POST .../backups/<name>/restore-check`). The engine also has lesser admin roles that can list but not take or test; no signed-in user has one today. They are on the **Reconciliation** page of the back office (*Database backups*). **There is no download.**
 
 ### The restore test (the go-live item "Database and ledger restore tested")
 

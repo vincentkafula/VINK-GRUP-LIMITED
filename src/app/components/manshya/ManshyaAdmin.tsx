@@ -319,6 +319,16 @@ const PAGES: Record<Tab, (c: Ctx) => Promise<ReactNode>> = {
     const shown = mq && runs.data.some((r: any) => r.id === mq) ? mq : runs.data[0]?.id;
     const run = shown ? await api("/reconciliation/runs/" + shown) : null;
     const last = runs.data[0];
+    // Database backups: tolerated if the server does not have them (an older server) or the call fails, so they can never break this page.
+    const backups: any = await api("/backups").catch(() => null);
+    const canBackup = ["owner", "superadmin"].includes(getSession()?.role ?? "");       // the only roles that can reach the back office at all (manshya/access.ts), and both are the engine's superadmin
+    const takeBackup = act(async () => { const r = await api("/backups", { method: "POST", body: {} }); toast(r.ok ? `Backup taken and checked: ${r.journals} journals.` : `The backup was taken but is NOT sound: ${(r.problems || []).join("; ")}`); });
+    const testRestore = (name: string) => act(async () => {
+      const r = await api(`/backups/${name}/restore-check`, { method: "POST", body: {} });
+      if (r.ok) toast(`Restored copy reconciles: ${r.journals} journals, ${r.entries} entries.`);
+      else await secret("Restore test: problems found", [...(r.problems || []), ...(r.items || []).map((i: any) => `${String(i.check).replace(/_/g, " ")} — ${i.detail}`)].join("\n") || "The copy did not restore cleanly.", "The backup itself was not changed.");
+    });
+    const mb = (n: number) => `${(n / 1048576).toFixed(1)} MB`;
     const runNow = act(async () => { const r = await api("/reconciliation/run", { method: "POST", body: {} }); setMq(r.id); toast(r.ok ? "The books reconcile." : `${r.exceptions} exception(s) found.`); });
     const importFile = act(async () => {
       const v = await ask("Import a settlement file", [
@@ -375,6 +385,27 @@ const PAGES: Record<Tab, (c: Ctx) => Promise<ReactNode>> = {
           { h: "Merchant", f: (r: any) => r.merchant || r.merchant_id }, { h: "Event", f: (r: any) => r.type }, { h: "When", f: (r: any) => dt(r.created_at) },
           { h: "Tries", r: true, f: (r: any) => r.attempts }, { h: "Last error", f: (r: any) => r.last_error || "—" }, { h: "", f: (r: any) => <Lk onClick={replay(r.id)}>Replay</Lk> },
         ]} />
+
+        {backups && (
+          <>
+            <h1>Database backups</h1>
+            <p style={{ margin: "0 0 14px", fontSize: 13 }}>The banking database is backed up automatically once a day, and each backup is opened and checked as soon as it is taken. They are kept on the same volume as the database, so they do not protect against losing the volume until a copy is also sent off the machine.</p>
+            {backups.enabled === false ? <p style={{ fontSize: 13 }}>Backups are off: this database is in memory.</p> : (
+              <>
+                {canBackup && <div style={{ margin: "0 0 14px" }}><button className="btn p" onClick={takeBackup}>Take a backup now</button></div>}
+                <Table empty="No backups yet." rows={backups.data} cols={[
+                  { h: "Taken", f: (r: any) => dt(r.created_at) }, { h: "By", f: (r: any) => r.by || "—" },
+                  { h: "Result", f: (r: any) => <span className={`tag ${r.ok ? "g" : "r"}`}>{r.ok ? "verified" : r.unverified ? "never verified" : "unsound"}</span> },
+                  { h: "Size", r: true, f: (r: any) => (r.bytes ? mb(r.bytes) : "—") }, { h: "Journals", r: true, f: (r: any) => r.journals ?? "—" },
+                  { h: "Documents", f: (r: any) => (!r.uploads || r.uploads.error ? "—" : `${r.uploads.files} file(s)${r.uploads.copied ? `, ${r.uploads.copied} new` : ""}${r.uploads.changed?.length || r.uploads.missing?.length || r.uploads.documents_without_file ? " — CHECK" : ""}`) },
+                  { h: "Off the machine", f: (r: any) => (!r.offsite ? "not set up" : String(r.offsite).startsWith("failed") ? "failed" : "sent") },
+                  { h: "Problems", f: (r: any) => (r.problems?.length ? r.problems.join("; ") : "—") },
+                  { h: "", f: (r: any) => (canBackup && !r.unverified ? <Lk onClick={testRestore(r.name)}>Test restore</Lk> : null) },
+                ]} />
+              </>
+            )}
+          </>
+        )}
       </>
     );
   },
