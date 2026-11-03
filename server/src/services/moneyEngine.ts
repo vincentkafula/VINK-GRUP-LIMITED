@@ -166,6 +166,14 @@ export function createMoneyEngine(deps: {
     if (!s || s.status !== "closed") return { trip: null };
     const taps = (await db.query(`SELECT id, amount, currency, received_at, scheme FROM terminal_taps WHERE session_id = $1 AND status = 'confirmed' AND trip_id IS NULL ORDER BY received_at, id`, [sessionId])).rows;
     if (!taps.length) return { trip: null };
+    // Taps a device made without a signal and sent after the vehicle left belong to that session's trip: they join it (one trip per session, and its fees are charged once) rather than make a second.
+    const made = (await db.query(`SELECT trip_id FROM terminal_taps WHERE session_id = $1 AND trip_id IS NOT NULL LIMIT 1`, [sessionId])).rows[0];
+    if (made) {
+      const late = taps.reduce((a, g) => a + cents(g.amount), 0), at = new Date(taps[taps.length - 1].received_at);
+      await db.query(`UPDATE trips SET taps = taps + $2, fare_cents = fare_cents + $3, completed_at = CASE WHEN completed_at < $4 THEN $4 ELSE completed_at END WHERE id = $1`, [made.trip_id, taps.length, late, at]);
+      for (const g of taps) await db.query(`UPDATE terminal_taps SET trip_id = $1 WHERE id = $2 AND trip_id IS NULL`, [made.trip_id, g.id]);
+      return { trip: String(made.trip_id) };
+    }
     const cfg = await cfgFor(taps[0].currency);
     const next = Number((await db.query(`SELECT COALESCE(MAX(trip_no), 0) + 1 AS n FROM trips WHERE terminal_id = $1`, [s.terminal_id])).rows[0].n);
     const first = new Date(taps[0].received_at), last = new Date(taps[taps.length - 1].received_at), fare = taps.reduce((a, g) => a + cents(g.amount), 0);

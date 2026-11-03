@@ -205,7 +205,8 @@ export interface DeviceAuth { authenticated: boolean; terminalId?: string; error
  */
 export function createTokenTerminalRouter(d: { db: Db; tokens: TokenService; authenticate: (serial: string, apiKey: string) => Promise<DeviceAuth> }): Router {
   const router = Router();
-  router.use(json({ limit: "4kb" }));
+  const small = json({ limit: "4kb" });
+  router.use((req, res, next) => (req.path === "/rank-tap/batch" ? next() : small(req, res, next)));        // a batch of offline taps is bigger, and has its own limit; everything else keeps the strict one
   const authed = async (req: { header(n: string): string | undefined }) => d.authenticate(req.header("x-terminal-serial") ?? "", req.header("x-terminal-api-key") ?? "");
 
   router.get("/routes", h(async (req, res) => {
@@ -238,6 +239,20 @@ export function createTokenTerminalRouter(d: { db: Db; tokens: TokenService; aut
     const r = await createRankSessions(d.db).tap({ terminalId: a.terminalId, serial: req.header("x-terminal-serial") ?? "", cardUid: b.cardNumber, key: req.header("idempotency-key") ?? "" }, (t) => d.tokens.tapToken(t));
     if (!r.ok) { res.status(r.status).json({ success: false, error: r.message, code: r.code, data: (r as { tapId?: string }).tapId ? { tapId: (r as { tapId?: string }).tapId } : undefined }); return; }
     res.status(r.value.replayed ? 200 : 201).json({ success: true, data: r.value });
+  }));
+  /**
+   * POST /rank-tap/batch  {taps: [{key, cardNumber, at}]}   (at most 200)
+   * A device that lost its signal sends the taps it took meanwhile, each with its own reference and the time it really happened. Each is placed in the session that was loading AT THAT TIME and decided
+   * on its own, so the answer is always 200 with one result per tap, in the order sent: accepted, replayed (already counted), declined (not enough tokens) or rejected with a reason (no driver was paired
+   * then, a double tap, too old). A batch can be sent again safely.
+   */
+  router.post("/rank-tap/batch", json({ limit: "64kb" }), h(async (req, res) => {
+    const a = await authed(req);
+    if (!a.authenticated || !a.terminalId) return fail(res, 401, a.error ?? "Terminal authentication failed");
+    const taps = ((req.body ?? {}) as { taps?: { key?: unknown; cardNumber?: unknown; at?: unknown }[] }).taps;
+    const r = await createRankSessions(d.db).syncTaps({ terminalId: a.terminalId, serial: req.header("x-terminal-serial") ?? "", taps: Array.isArray(taps) ? taps.map((x) => ({ key: x?.key, cardUid: x?.cardNumber, at: x?.at })) : taps }, (t) => d.tokens.tapToken(t));
+    if (!r.ok) { res.status(r.status).json({ success: false, error: r.message, code: r.code }); return; }
+    res.json({ success: true, data: r.value });
   }));
   return router;
 }

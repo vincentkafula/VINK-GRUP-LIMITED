@@ -39,7 +39,12 @@ export const PAIR_WINDOW_MS = 10 * 60_000;
 export const DUPLICATE_WINDOW_MS = 10_000;
 /** What the token service answers to a tap. */
 export type TapAnswer = { ok: true; tapId: string; fareCents: number; balanceCents: number; route: string; replayed: boolean } | { ok: false; status: number; code: string; message: string; tapId?: string };
-export type TapFn = (t: { terminalId: string; cardUid: unknown; routeId: string; key: string; sessionId: string }) => Promise<TapAnswer>;
+export type TapFn = (t: { terminalId: string; cardUid: unknown; routeId: string; key: string; sessionId: string; at?: Date | null }) => Promise<TapAnswer>;
+/** Taps a device made without a signal and sends later: at most this many in one request, and none older than this (a device that has been off for days has a problem to look at, not taps to trust). */
+export const MAX_OFFLINE_BATCH = 200;
+export const MAX_OFFLINE_AGE_MS = 72 * 3600_000;
+export interface SyncItem { key: unknown; cardUid: unknown; at: unknown }
+export interface SyncResult { key: string; status: "accepted" | "replayed" | "declined" | "rejected"; code?: string; message?: string; tapId?: string; sessionId?: string }
 export const ONLINE_WITHIN_MS = 3 * 60_000;
 
 const iso = (v: unknown): string | null => (v ? new Date(v as string).toISOString() : null);
@@ -224,6 +229,52 @@ export function createRankSessions(db: Db, now: () => Date = () => new Date(), p
     return close({ sessionId: String(s.id), rankId: s.rank_id ? String(s.rank_id) : null, marshalId: s.marshal_id ? String(s.marshal_id) : null, actorName: a.actorName, actorId: a.ownerId, by: "owner" });
   }
 
+  /**
+   * TAPS MADE WITHOUT A SIGNAL. A device that loses its connection keeps taking taps and sends them later, each with the time it really happened and its own reference. Each one is placed in the
+   * session that was loading on that device AT THAT TIME (not whichever is open now), so the fare goes to the driver who was driving then. A tap made when no driver was paired is refused and
+   * charges nothing. Each tap is decided on its own (one bad one never stops the rest), a resent batch charges nothing twice (each reference answers as before), the double-tap rule uses the
+   * original times, and taps for a vehicle that has already left join its trip. The answer lists every tap, in the order sent.
+   */
+  async function syncTaps(a: { terminalId: string; serial: string; taps: unknown }, charge: TapFn): Promise<Res<{ results: SyncResult[]; accepted: number; replayed: number; declined: number; rejected: number }>> {
+    const list = Array.isArray(a.taps) ? (a.taps as SyncItem[]) : [];
+    if (!list.length) return bad(400, "empty", "There are no taps to send");
+    if (list.length > MAX_OFFLINE_BATCH) return bad(400, "too_many", `Send at most ${MAX_OFFLINE_BATCH} taps at a time`);
+    const term = (await db.query(`SELECT route_id FROM terminals WHERE id = $1`, [a.terminalId])).rows[0];
+    if (!term?.route_id) return bad(409, "no_route", "This device has no route, so no fare, set");
+    const results: SyncResult[] = new Array(list.length), touched = new Set<string>();
+    const nowMs = now().getTime();
+    // oldest first, so the double-tap rule always sees the earlier tap first, whatever order the device sent them in
+    const order = list.map((item, i) => ({ item, i, t: new Date(String((item as SyncItem)?.at ?? "")).getTime() })).sort((x, y) => (Number.isNaN(x.t) ? Infinity : x.t) - (Number.isNaN(y.t) ? Infinity : y.t) || x.i - y.i);
+    for (const { item, i, t } of order) {
+      const key = typeof item?.key === "string" ? item.key : "";
+      const no = (code: string, message: string): SyncResult => ({ key, status: "rejected", code, message });
+      if (!/^[A-Za-z0-9._-]{6,80}$/.test(key)) { results[i] = no("bad_key", "A unique tap reference is required"); continue; }
+      const uid = normaliseCardUid(item.cardUid); if (!uid) { results[i] = no("bad_card", "Card not recognised"); continue; }
+      if (Number.isNaN(t)) { results[i] = no("bad_time", "The time of the tap is not valid"); continue; }
+      if (t > nowMs + 5 * 60_000) { results[i] = no("bad_time", "The tap is dated in the future"); continue; }
+      if (nowMs - t > MAX_OFFLINE_AGE_MS) { results[i] = no("too_old", "That tap is too old to accept. Contact VINK."); continue; }
+      const at = new Date(t), ref = `toktap:${a.terminalId}:${key}`;
+      const seen = (await db.query(`SELECT id, status, session_id FROM terminal_taps WHERE terminal_id = $1 AND idempotency_key = $2`, [a.terminalId, ref])).rows[0];
+      if (seen) { results[i] = seen.status === "confirmed" ? { key, status: "replayed", tapId: String(seen.id), ...(seen.session_id ? { sessionId: String(seen.session_id) } : {}) } : { key, status: "declined", code: "insufficient_tokens", message: "Not enough tokens", tapId: String(seen.id) }; continue; }
+      const s = (await db.query(`SELECT s.id FROM terminals t JOIN loading_sessions s ON s.terminal_id = t.id WHERE t.id = $1 AND s.status IN ('loading','closed') AND s.paired_at IS NOT NULL AND s.paired_at <= $2 AND (s.ended_at IS NULL OR s.ended_at >= $2) ORDER BY s.paired_at DESC LIMIT 1`, [a.terminalId, at])).rows[0];
+      if (!s) { results[i] = no("no_session", "No driver was paired on this device at that time"); continue; }
+      const near = (await db.query(`SELECT id FROM terminal_taps WHERE session_id = $1 AND masked_pan = $2 AND status = 'confirmed' AND received_at >= $3 AND received_at <= $4 LIMIT 1`, [s.id, `VINK ****${uid.slice(-4)}`, new Date(t - DUPLICATE_WINDOW_MS), new Date(t + DUPLICATE_WINDOW_MS)])).rows[0];
+      if (near) { results[i] = no("duplicate_tap", "This card was used a moment before or after"); continue; }
+      const r = await charge({ terminalId: a.terminalId, cardUid: item.cardUid, routeId: String(term.route_id), key, sessionId: String(s.id), at });
+      if (!r.ok) { results[i] = { key, status: "declined", code: r.code, message: r.message, ...(r.tapId ? { tapId: r.tapId } : {}) }; if (r.tapId) touched.add(String(s.id)); continue; }
+      touched.add(String(s.id)); results[i] = { key, status: r.replayed ? "replayed" : "accepted", tapId: r.tapId, sessionId: String(s.id) };
+    }
+    for (const sid of touched) {
+      const sum = (await db.query(`SELECT COUNT(*) AS n, COALESCE(SUM(amount), 0) AS total FROM terminal_taps WHERE session_id = $1 AND status = 'confirmed'`, [sid])).rows[0];
+      await db.query(`UPDATE loading_sessions SET passengers = $2, total_cents = $3 WHERE id = $1`, [sid, Number(sum.n), Math.round(Number(sum.total) * 100)]);
+      const st = (await db.query(`SELECT status FROM loading_sessions WHERE id = $1`, [sid])).rows[0]?.status;
+      if (st === "closed" && hooks.onClosed) { try { await hooks.onClosed(sid); } catch (e) { console.error("[rank] the trip for late taps will be completed by the next cycle:", e instanceof Error ? e.message : e); } }       // joins the trip already made
+      await announce(sid);
+    }
+    const count = (st: SyncResult["status"]) => results.filter((x) => x.status === st).length;
+    return { ok: true, value: { results, accepted: count("accepted"), replayed: count("replayed"), declined: count("declined"), rejected: count("rejected") } };
+  }
+
   /** What the driver's Loading Dashboard shows: the session they are driving now (passengers, running total, the latest taps) and their closed sessions in a period. */
   async function forDriver(driverId: string, period: { from: Date; to: Date }) {
     const cur = (await db.query(`${SESSION_SQL} WHERE s.driver_id = $1 AND s.status = 'loading'`, [driverId])).rows[0] ?? null;
@@ -254,7 +305,7 @@ export function createRankSessions(db: Db, now: () => Date = () => new Date(), p
     };
   }
 
-  return { open, pair, tap, cancel, close, departByDriver, endByOwner, board, forDriver, expireStale };
+  return { open, pair, tap, syncTaps, cancel, close, departByDriver, endByOwner, board, forDriver, expireStale };
 }
 /**
  * Whether a terminal may be set up (or changed) as a SHARED RANK DEVICE: kind "rank", at one rank, charging one route. The rank has to be at one end of that route, and a route has one active

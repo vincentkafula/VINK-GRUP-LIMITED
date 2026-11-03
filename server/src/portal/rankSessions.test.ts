@@ -236,11 +236,11 @@ describe("the device routes stay wired to the service", () => {
 });
 
 /** A stand-in for the token service: records a confirmed tap on the session, as the real one does, so the rules around it can be tested on their own. */
-const fakeCharge = (db: Db, o: { fail?: { status: number; code: string; message: string } } = {}) => async (t: { terminalId: string; cardUid: unknown; routeId: string; key: string; sessionId: string }) => {
-  if (o.fail) return { ok: false as const, ...o.fail };
+const fakeCharge = (db: Db, o: { fail?: { status: number; code: string; message: string }; failFor?: string } = {}) => async (t: { terminalId: string; cardUid: unknown; routeId: string; key: string; sessionId: string; at?: Date | null }) => {
+  if (o.fail && (!o.failFor || String(t.cardUid) === o.failFor)) return { ok: false as const, ...o.fail };
   const ref = `toktap:${t.terminalId}:${t.key}`, dup = (await db.query(`SELECT id FROM terminal_taps WHERE terminal_id = $1 AND idempotency_key = $2`, [t.terminalId, ref])).rows[0];
   if (dup) return { ok: true as const, tapId: String(dup.id), fareCents: 2500, balanceCents: 5000, route: "Langa to Bellville", replayed: true };
-  const row = (await db.query(`INSERT INTO terminal_taps (terminal_id, masked_pan, scheme, amount, currency, cardholder_verification, status, idempotency_key, session_id) VALUES ($1,$2,'vink_token',25,'ZAR','token_card','confirmed',$3,$4) RETURNING id`, [t.terminalId, `VINK ****${String(t.cardUid).slice(-4)}`, ref, t.sessionId])).rows[0];
+  const row = (await db.query(`INSERT INTO terminal_taps (terminal_id, masked_pan, scheme, amount, currency, cardholder_verification, status, idempotency_key, session_id, received_at) VALUES ($1,$2,'vink_token',25,'ZAR','token_card','confirmed',$3,$4,COALESCE($5, now())) RETURNING id`, [t.terminalId, `VINK ****${String(t.cardUid).slice(-4)}`, ref, t.sessionId, t.at ?? null])).rows[0];
   return { ok: true as const, tapId: String(row.id), fareCents: 2500, balanceCents: 5000, route: "Langa to Bellville", replayed: false };
 };
 
@@ -508,6 +508,83 @@ describe("the owner's device routes", () => {
     const d = await ownDevice(w, "OWN-1"); const s = ok<any>(await w.rs.pair({ terminalId: d, serial: "OWN-1", cardUid: CARD.driver }));
     as = U.owner2; expect((await call("POST", `/owner/loading/${s.id}/end`)).status).toBe(404); expect((await call("POST", "/owner/loading/nope/end")).status).toBe(400);
     as = U.owner; expect(await call("POST", `/owner/loading/${s.id}/end`)).toMatchObject({ status: 200, body: { success: true, session: { status: "closed" } } }); expect(closed).toEqual([s.id]);
+  });
+});
+
+describe("taps made without a signal", () => {
+  const min = (m: number, sec = 0) => new Date(new Date("2026-10-07T10:00:00Z").getTime() + m * 60_000 + sec * 1000).toISOString();     // minutes after the 10:00 the sessions start at
+  const item = (key: string, at: string, uid: unknown = "04AAAA0001") => ({ key, cardUid: uid, at });
+  const sync = (w: W, d: string, taps: unknown, charge = fakeCharge(w.db), rsx = w.rs) => rsx.syncTaps({ terminalId: d, serial: "RK-1", taps }, charge);
+  /** driver one loads from 10:00, departs at 10:30; driver two loads from 10:35 */
+  async function twoLoads(w: W, hooks: { onClosed?: (id: string) => Promise<unknown>; notify?: (to: string[], e: string, d: unknown) => void } = {}) {
+    const rsx = createRankSessions(w.db, () => clock, undefined, { notify: () => {}, ...hooks }); const d = await w.device("RK-1"); await w.queue(w.rank, w.v1);
+    const a = ok<any>(await rsx.open({ rankId: w.rank, marshalId: U.marshal, actorName: "m", terminalId: d })); ok(await rsx.pair({ terminalId: d, serial: "RK-1", cardUid: CARD.driver }));
+    clock = new Date(min(30)); ok(await rsx.close({ sessionId: a.id, rankId: w.rank, marshalId: U.marshal, actorName: "m" }));
+    clock = new Date(min(35)); await w.queue(w.rank, w.v2); const b = ok<any>(await rsx.open({ rankId: w.rank, marshalId: U.marshal, actorName: "m", terminalId: d })); ok(await rsx.pair({ terminalId: d, serial: "RK-1", cardUid: CARD.driver2 }));
+    clock = new Date(min(60)); return { rsx, d, a, b };
+  }
+
+  it("puts each tap in the session that was loading AT THAT TIME, so each driver is credited for their own load, and keeps the time it really happened", async () => {
+    const w = await world(); const { rsx, d, a, b } = await twoLoads(w);
+    const r = ok<any>(await sync(w, d, [item("off-0001", min(10), "04AAAA0001"), item("off-0002", min(20), "04BBBB0002"), item("off-0003", min(40), "04CCCC0003"), item("off-0004", min(50), "04DDDD0004")], fakeCharge(w.db), rsx));
+    expect(r).toMatchObject({ accepted: 4, replayed: 0, declined: 0, rejected: 0 }); expect(r.results.map((x: any) => x.sessionId)).toEqual([a.id, a.id, b.id, b.id]);
+    const rows = (await w.db.query(`SELECT id, passengers, total_cents FROM loading_sessions ORDER BY started_at`)).rows; expect(rows.map((x: any) => [x.id, x.passengers, x.total_cents])).toEqual([[a.id, 2, 5000], [b.id, 2, 5000]]);
+    expect((await w.db.query(`SELECT received_at FROM terminal_taps ORDER BY received_at`)).rows.map((x: any) => new Date(x.received_at).toISOString())).toEqual([min(10), min(20), min(40), min(50)]);
+  });
+  it("refuses a tap made when no driver was paired: before the first load, between two loads, and while the session was cancelled, and charges nothing", async () => {
+    const w = await world(); const { rsx, d } = await twoLoads(w); const charged: string[] = [];
+    const charge = async (t: any) => { charged.push(t.key); return fakeCharge(w.db)(t); };
+    const r = ok<any>(await sync(w, d, [item("off-0001", min(-5), "04AAAA0001"), item("off-0002", min(32), "04BBBB0002"), item("off-0003", min(35), "04CCCC0003")], charge, rsx));
+    expect(r.results.map((x: any) => [x.status, x.code])).toEqual([["rejected", "no_session"], ["rejected", "no_session"], ["accepted", undefined]]); expect(charged).toEqual(["off-0003"]);      // the moment B paired counts as B's
+    const e = await world(); const dev = await e.device("RK-1"); await e.queue(e.rank, e.v1); const s = ok<any>(await e.rs.open({ rankId: e.rank, marshalId: U.marshal, actorName: "m", terminalId: dev })); ok(await e.rs.pair({ terminalId: dev, serial: "RK-1", cardUid: CARD.driver }));
+    ok(await e.rs.cancel({ sessionId: s.id, rankId: e.rank, marshalId: U.marshal, actorName: "m" })); clock = new Date(min(20)); expect(ok<any>(await sync(e, dev, [item("off-0009", min(5))])).results[0]).toMatchObject({ status: "rejected", code: "no_session" });
+  });
+  it("answers a batch that is sent again as before: each tap is counted once, whatever the number of resends", async () => {
+    const w = await world(); const { rsx, d } = await twoLoads(w); const batch = [item("off-0001", min(10), "04AAAA0001"), item("off-0002", min(20), "04BBBB0002")];
+    ok(await sync(w, d, batch, fakeCharge(w.db), rsx)); const again = ok<any>(await sync(w, d, batch, fakeCharge(w.db), rsx)); expect(again).toMatchObject({ accepted: 0, replayed: 2 }); ok(await sync(w, d, batch, fakeCharge(w.db), rsx));
+    expect((await w.db.query(`SELECT COUNT(*) AS n FROM terminal_taps`)).rows[0].n).toBe(2); expect((await w.db.query(`SELECT passengers FROM loading_sessions ORDER BY started_at`)).rows[0].passengers).toBe(2);
+  });
+  it("applies the double-tap rule to the times the taps really happened, in whatever order they were sent", async () => {
+    const w = await world(); const { rsx, d } = await twoLoads(w);
+    const r = ok<any>(await sync(w, d, [item("off-0002", min(10, 5), "04AAAA0001"), item("off-0001", min(10), "04AAAA0001"), item("off-0003", min(10, 16), "04AAAA0001")], fakeCharge(w.db), rsx));
+    expect(r.results.map((x: any) => [x.key, x.status, x.code])).toEqual([["off-0002", "rejected", "duplicate_tap"], ["off-0001", "accepted", undefined], ["off-0003", "accepted", undefined]]);     // 10:10:00 is taken, 10:10:05 is too close, 10:10:16 is fine
+  });
+  it("decides each tap on its own: a bad one, a declined card and a good one in the same batch", async () => {
+    const w = await world(); const { rsx, d } = await twoLoads(w);
+    const r = ok<any>(await sync(w, d, [item("x", min(10)), item("off-0002", min(10, 30), ""), item("off-0003", "not a time"), item("off-0004", min(120)), item("off-0005", min(-4400)), item("off-0006", min(11), "04PROBLEM1"), item("off-0007", min(12), "04GOODCARD")], fakeCharge(w.db, { fail: { status: 402, code: "insufficient_tokens", message: "Not enough tokens" }, failFor: "04PROBLEM1" }), rsx));
+    expect(r.results.map((x: any) => [x.status, x.code])).toEqual([["rejected", "bad_key"], ["rejected", "bad_card"], ["rejected", "bad_time"], ["rejected", "bad_time"], ["rejected", "too_old"], ["declined", "insufficient_tokens"], ["accepted", undefined]]);
+    expect(r).toMatchObject({ accepted: 1, declined: 1, rejected: 5 }); expect((await w.db.query(`SELECT passengers FROM loading_sessions ORDER BY started_at`)).rows[0].passengers).toBe(1);
+  });
+  it("takes between one and 200 taps, and needs the device to have a route", async () => {
+    const w = await world(); const { rsx, d } = await twoLoads(w);
+    refused(await sync(w, d, [], fakeCharge(w.db), rsx), 400, "empty"); refused(await sync(w, d, "nope", fakeCharge(w.db), rsx), 400, "empty"); refused(await sync(w, d, Array.from({ length: 201 }, (_, i) => item(`off-${String(i).padStart(4, "0")}`, min(10))), fakeCharge(w.db), rsx), 400, "too_many");
+    expect(ok<any>(await sync(w, d, Array.from({ length: 200 }, (_, i) => item(`off-${String(i).padStart(4, "0")}`, min(10, i), `04${String(i).padStart(8, "0")}`)), fakeCharge(w.db), rsx)).accepted).toBe(200);
+    await w.db.query(`UPDATE terminals SET route_id = NULL WHERE id = $1`, [d]); refused(await sync(w, d, [item("off-9999", min(10))], fakeCharge(w.db), rsx), 409, "no_route");
+  });
+  it("completes the trip of a vehicle that already left once its late taps arrive, and tells the session's people", async () => {
+    const w = await world(); const done: string[] = [], sent: string[] = []; const { rsx, d, a } = await twoLoads(w, { onClosed: async (id) => { done.push(id); }, notify: (to, e) => { sent.push(`${e}:${to.length}`); } });
+    done.length = 0; sent.length = 0; ok(await sync(w, d, [item("off-0001", min(10))], fakeCharge(w.db), rsx));
+    expect(done).toEqual([a.id]); expect(sent).toEqual(["rank.session:2"]);                                // the closed session's trip is brought up to date, and its marshal and driver are told
+    sent.length = 0; ok(await sync(w, d, [item("off-0002", min(-4400))], fakeCharge(w.db), rsx)); expect(sent).toEqual([]); expect(done).toEqual([a.id]);     // a batch with nothing accepted changes nothing and says nothing
+  });
+});
+
+describe("the real schema keeps the guarantees the in-memory copy cannot", () => {
+  it("has the unique indexes that allow one open session per device, per vehicle, and one loading vehicle per driver, and the index the offline lookup uses", () => {
+    const sql = readFileSync(join(__dirname, "../db/schema.sql"), "utf8");
+    expect(sql).toMatch(/CREATE UNIQUE INDEX IF NOT EXISTS idx_loading_one_open_per_terminal ON loading_sessions\(terminal_id\) WHERE status IN \('pending','loading'\)/);
+    expect(sql).toMatch(/CREATE UNIQUE INDEX IF NOT EXISTS idx_loading_one_open_per_vehicle\s+ON loading_sessions\(vehicle_id\)\s+WHERE status IN \('pending','loading'\)/);
+    expect(sql).toMatch(/CREATE UNIQUE INDEX IF NOT EXISTS idx_loading_one_loading_per_driver ON loading_sessions\(driver_id\)\s+WHERE status = 'loading'/);
+    expect(sql).toMatch(/CREATE INDEX IF NOT EXISTS idx_loading_terminal ON loading_sessions\(terminal_id, paired_at\)/);
+  });
+});
+
+describe("the device's batch route stays wired", () => {
+  const read = (f: string) => readFileSync(join(__dirname, f), "utf8");
+  it("sends a batch through the service after authenticating the device, with a larger body limit only for that route", () => {
+    const src = read("tokenRoutes.ts");
+    expect(src).toMatch(/router\.post\("\/rank-tap\/batch", json\(\{ limit: "64kb" \}\)[\s\S]*?authed\(req\)[\s\S]*?createRankSessions\(d\.db\)\.syncTaps\([\s\S]*?d\.tokens\.tapToken\(t\)/);
+    expect(src).toMatch(/req\.path === "\/rank-tap\/batch" \? next\(\) : small\(req, res, next\)/); expect(src).toMatch(/const small = json\(\{ limit: "4kb" \}\)/);
   });
 });
 

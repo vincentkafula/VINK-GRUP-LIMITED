@@ -106,7 +106,9 @@ export function allPortalsDb(): Db {
     ALTER TABLE token_routes ADD COLUMN from_rank_id UUID;
     ALTER TABLE token_routes ADD COLUMN to_rank_id UUID;
     CREATE TABLE loading_sessions (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), terminal_id UUID NOT NULL, rank_id UUID, queue_id UUID, vehicle_id UUID NOT NULL, route_id UUID, marshal_id UUID, driver_id UUID, driver_card_id UUID, status TEXT NOT NULL DEFAULT 'pending', started_at TIMESTAMPTZ NOT NULL DEFAULT now(), paired_at TIMESTAMPTZ, ended_at TIMESTAMPTZ, passengers INTEGER NOT NULL DEFAULT 0, total_cents BIGINT NOT NULL DEFAULT 0, close_reason TEXT, departure_id UUID);
-    CREATE UNIQUE INDEX idx_loading_one_open_per_terminal ON loading_sessions(terminal_id) WHERE status IN ('pending','loading');
+    -- (db/schema.sql also has a partial unique index on terminal_id for open sessions. It is left out of this in-memory copy because pg-mem wrongly answers every lookup by device from that partial index,
+    -- which hides closed sessions; real PostgreSQL does not. A test checks the real schema still has it, and the service refuses a busy device itself.)
+    CREATE INDEX idx_loading_terminal ON loading_sessions(terminal_id, paired_at);
     CREATE UNIQUE INDEX idx_loading_one_open_per_vehicle ON loading_sessions(vehicle_id) WHERE status IN ('pending','loading');
     CREATE UNIQUE INDEX idx_loading_one_loading_per_driver ON loading_sessions(driver_id) WHERE status = 'loading';
     ALTER TABLE terminal_taps ADD COLUMN session_id UUID;

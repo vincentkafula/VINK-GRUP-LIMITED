@@ -9,6 +9,10 @@ import { recordPoolCredit } from "./poolService.js";
 import { DEFAULT_ZA } from "../config/countryConfig.js";
 import { MockCardRail } from "../payments/providers/mockCardRail.js";
 import { pinClock, unpinClock } from "../testClock.js";
+import express from "express";
+import type { Server } from "http";
+import type { AddressInfo } from "net";
+import { createTokenTerminalRouter } from "../portal/tokenRoutes.js";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /**
@@ -171,6 +175,64 @@ describe("a trip on a device the owner fitted to their own vehicle", () => {
     const s = ok(await pairOwn(CARD.d1)); ok(await tapOwn("tap-0001"));
     ok(await rs.endByOwner({ ownerId: U.owner, sessionId: s.id, actorName: "owner" })); await engine.closeTrips();
     expect(await q(`SELECT driver_id, owner_id FROM trips`)).toEqual([{ driver_id: U.d1, owner_id: U.owner }]);
+  });
+});
+
+describe("taps made without a signal, with real money", () => {
+  const at = (m: number, sec = 0) => new Date(NOW.getTime() + m * 60_000 + sec * 1000);
+  const svc = (m: number) => createRankSessions(db, () => at(m), undefined, { notify: () => {}, onClosed: (sid) => engine.closeSessionTrip(sid) });
+  const send = (m: number, taps: { key: string; cardUid: string; at: Date }[]) => svc(m).syncTaps({ terminalId: DEVICE, serial: "RK-1", taps: taps.map((t) => ({ ...t, at: t.at.toISOString() })) }, (t) => tokens.tapToken(t));
+  /** driver one loads from 10:00 and departs at 10:10 (one fare taken live); driver two loads from 10:15 */
+  async function twoLoads() {
+    await queueUp(); const a = ok(await open()); ok(await pair(CARD.d1)); ok(await tapOn("tap-0001"));
+    ok(await svc(10).close({ sessionId: a.id, rankId: RANK, marshalId: U.marshal, actorName: "m" }));
+    await queueUp(); const b = ok(await svc(15).open({ rankId: RANK, marshalId: U.marshal, actorName: "m", terminalId: DEVICE })); ok(await svc(15).pair({ terminalId: DEVICE, serial: "RK-1", cardUid: CARD.d2 }));
+    return { a, b };
+  }
+
+  it("credits each late tap to the driver who was driving WHEN it happened, not the one driving when it arrives, and charges each passenger once", async () => {
+    const { a, b } = await twoLoads(); const pax2 = tok(U.pax2), pax = tok(U.pax);
+    const r = ok(await send(30, [{ key: "off-0001", cardUid: CARD.pax2, at: at(5) }, { key: "off-0002", cardUid: CARD.pax, at: at(20) }]));
+    expect(r).toMatchObject({ accepted: 2, rejected: 0, declined: 0 }); expect(r.results.map((x: any) => x.sessionId)).toEqual([a.id, b.id]);
+    expect(tok(U.d1)).toBe(2 * (FARE - FEE)); expect(tok(U.d2)).toBe(FARE - FEE); expect(tok(U.owner)).toBe(0);              // one fare taken live and one late for the first driver, one late for the second
+    expect(tok(U.pax2)).toBe(pax2 - FARE); expect(tok(U.pax)).toBe(pax - FARE);
+    ok(await send(30, [{ key: "off-0001", cardUid: CARD.pax2, at: at(5) }, { key: "off-0002", cardUid: CARD.pax, at: at(20) }]));          // the device sends the same batch again
+    expect(tok(U.pax2)).toBe(pax2 - FARE); expect(tok(U.d1)).toBe(2 * (FARE - FEE));
+  });
+  it("adds a late tap to the trip the vehicle already made, with its fees charged once, and does not make a second trip", async () => {
+    const { a } = await twoLoads(); expect(await q(`SELECT taps, fare_cents FROM trips`)).toEqual([{ taps: 1, fare_cents: FARE }]); const fees = (await q(`SELECT id FROM payment_items`)).length;
+    ok(await send(30, [{ key: "off-0001", cardUid: CARD.pax2, at: at(5) }]));
+    expect(await q(`SELECT taps, fare_cents, driver_id FROM trips`)).toEqual([{ taps: 2, fare_cents: 2 * FARE, driver_id: U.d1 }]); expect((await q(`SELECT id FROM payment_items`)).length).toBe(fees);
+    expect((await q(`SELECT trip_id FROM terminal_taps WHERE session_id = $1`, [a.id])).every((t) => !!t.trip_id)).toBe(true);
+    expect((await q(`SELECT received_at FROM terminal_taps WHERE idempotency_key LIKE '%off-0001'`))[0].received_at.toISOString()).toBe(at(5).toISOString());          // it keeps the time it really happened
+  });
+  it("moves nothing for a card without enough tokens, a tap when no driver was paired, or a double tap", async () => {
+    await twoLoads(); await db.query(`INSERT INTO users (id, username, name, email, role) VALUES ($1,'poor','Poor','p@x.test','personal')`, [id(60)]); await tokens.openWallet(id(60), "passenger", "ZAR"); await tokens.linkCard(id(60), "ZAR", "04F0F0F0");
+    const d1 = tok(U.d1), d2 = tok(U.d2), pax2 = tok(U.pax2);
+    const r = ok(await send(30, [{ key: "off-0001", cardUid: "04F0F0F0", at: at(5) }, { key: "off-0002", cardUid: CARD.pax2, at: at(12) }, { key: "off-0003", cardUid: CARD.pax2, at: at(20) }, { key: "off-0004", cardUid: CARD.pax2, at: at(20, 4) }]));
+    expect(r.results.map((x: any) => [x.status, x.code])).toEqual([["declined", "insufficient_tokens"], ["rejected", "no_session"], ["accepted", undefined], ["rejected", "duplicate_tap"]]);          // 10:12 is between the loads
+    expect(tok(U.d1)).toBe(d1); expect(tok(U.d2)).toBe(d2 + (FARE - FEE)); expect(tok(U.pax2)).toBe(pax2 - FARE);
+  });
+});
+
+describe("the batch route", () => {
+  let server: Server, base = "";
+  beforeEach(async () => {
+    const app = express(); app.use("/term", createTokenTerminalRouter({ db, tokens, authenticate: async (serial, key) => (serial === "RK-1" && key === "secret" ? { authenticated: true, terminalId: DEVICE } : { authenticated: false, error: "Terminal authentication failed" }) as never }));
+    await new Promise<void>((ok2) => { server = app.listen(0, "127.0.0.1", ok2); }); base = `http://127.0.0.1:${(server.address() as AddressInfo).port}/term`;
+  });
+  afterEach(() => new Promise<void>((ok2) => server.close(() => ok2())));
+  const post = async (path: string, body: unknown, headers: Record<string, string> = { "x-terminal-serial": "RK-1", "x-terminal-api-key": "secret" }) => { const r = await fetch(base + path, { method: "POST", headers: { "Content-Type": "application/json", ...headers }, body: JSON.stringify(body) }); return { status: r.status, body: (await r.json().catch(() => null)) as any }; };
+  const batch = (n: number) => ({ taps: Array.from({ length: n }, (_, i) => ({ key: `off-${String(i).padStart(4, "0")}`, cardNumber: `04${String(i).padStart(8, "0")}`, at: new Date(Date.now() - 60_000).toISOString() })) });
+
+  it("accepts a full batch of 200 taps (far more than the 4 KB every other terminal route allows) and answers each one", async () => {
+    const big = batch(200); expect(JSON.stringify(big).length).toBeGreaterThan(4096);
+    const r = await post("/rank-tap/batch", big); expect(r.status).toBe(200); expect(r.body.data.results).toHaveLength(200); expect(r.body.data.results.every((x: any) => x.status === "rejected" && x.code === "no_session")).toBe(true);          // nobody was paired
+  });
+  it("keeps the strict 4 KB limit on a single tap, needs the device's own credentials, and refuses an empty or oversized batch", async () => {
+    expect((await post("/rank-tap", { cardNumber: "x".repeat(5000) })).status).toBe(413);
+    expect((await post("/rank-tap/batch", batch(1), {})).status).toBe(401); expect((await post("/rank-tap/batch", batch(1), { "x-terminal-serial": "RK-1", "x-terminal-api-key": "wrong" })).status).toBe(401);
+    expect(await post("/rank-tap/batch", { taps: [] })).toMatchObject({ status: 400, body: { code: "empty" } }); expect(await post("/rank-tap/batch", {})).toMatchObject({ status: 400, body: { code: "empty" } }); expect(await post("/rank-tap/batch", batch(201))).toMatchObject({ status: 400, body: { code: "too_many" } });
   });
 });
 
