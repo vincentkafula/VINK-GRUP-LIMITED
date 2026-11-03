@@ -1,6 +1,7 @@
 import { Router, json, type Request, type Response, type RequestHandler } from "express";
 import { audit, bucketDays, pageParams, rangeParams, saDay, saDayStart, sendCsv, isUuid, fail } from "./common.js";
 import { createRankSessions } from "./rankSessions.js";
+import { createLoadingReports } from "./loadingReports.js";
 
 /**
  * The Driver's Dashboard API, mounted at /api/portal/driver (driver accounts only; the guard is applied where this is mounted).
@@ -101,6 +102,8 @@ export function createDriverRouter(db: Db, now: () => Date = () => new Date(), o
     const day = saDayStart(saDay(now()));
     res.json({ success: true, ...(await createRankSessions(db, now).forDriver(uid(req), { from: day, to: new Date(day.getTime() + 24 * 3600_000) })) });
   }));
+
+  createLoadingReports(db).mount(router, "driver", now);                               // the driver's own loads: per load, vehicle or route, for a period
 
   /**
    * POST /loading/depart   {note?}   "Vehicle full, depart": the driver ends the session they are loading. The departure is logged under the marshal who started it, the vehicle leaves the queue and the

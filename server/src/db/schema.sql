@@ -1915,6 +1915,8 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_loading_one_open_per_vehicle  ON loading_s
 CREATE UNIQUE INDEX IF NOT EXISTS idx_loading_one_loading_per_driver ON loading_sessions(driver_id)  WHERE status = 'loading';
 CREATE INDEX IF NOT EXISTS idx_loading_rank ON loading_sessions(rank_id, started_at DESC);
 CREATE INDEX IF NOT EXISTS idx_loading_terminal ON loading_sessions(terminal_id, paired_at);          -- which session was loading on a device at a given time (offline taps)
+CREATE INDEX IF NOT EXISTS idx_loading_vehicle ON loading_sessions(vehicle_id, paired_at);            -- a vehicle's trips (the owner's reports)
+CREATE INDEX IF NOT EXISTS idx_loading_driver ON loading_sessions(driver_id, paired_at);              -- a driver's trips (their reports)
 CREATE INDEX IF NOT EXISTS idx_departures_driver ON departures(driver_id, departed_at DESC);          -- a driver's own departures: the day totals on the Loading Dashboard
 ALTER TABLE terminal_taps ADD COLUMN IF NOT EXISTS session_id UUID REFERENCES loading_sessions(id);   -- the loading session a tap belongs to (empty for a vehicle device)
 -- A device an OWNER has fitted to their own vehicle (kind 'vehicle') needs no rank and no marshal: the driver taps their driver card on it and that opens and pairs a session for that vehicle at

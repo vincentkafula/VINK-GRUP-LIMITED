@@ -133,6 +133,9 @@ export function createRankSessions(db: Db, now: () => Date = () => new Date(), p
     const driver = String(c.user_id);
     const linked = String(s.vehicle_driver ?? "") === driver || (await db.query(`SELECT 1 AS x FROM owner_drivers WHERE owner_id = $1 AND driver_id = $2 AND status = 'active'`, [s.owner_id, driver])).rows.length > 0;
     if (!linked) return refuse(403, "wrong_driver", "This driver is not registered for this vehicle");
+    // A driver loads one vehicle at a time and a vehicle has one load at a time. Said here, in plain words, before the database's own unique indexes (which still decide a race).
+    if ((await db.query(`SELECT 1 AS x FROM loading_sessions WHERE driver_id = $1 AND status = 'loading'`, [driver])).rows.length) return refuse(409, "driver_busy", "This driver is already loading another vehicle");
+    if (ownerDevice && (await db.query(`SELECT 1 AS x FROM loading_sessions WHERE vehicle_id = $1 AND status IN ('pending','loading')`, [s.vehicle_id])).rows.length) return refuse(409, "vehicle_busy", "This vehicle is already loading");
     let claimed;
     try {
       claimed = ownerDevice

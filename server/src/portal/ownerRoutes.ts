@@ -4,6 +4,7 @@ import { saPeriods, expiryReminders } from "./driverRoutes.js";
 import { requestLink } from "./linkRoutes.js";
 import { loadMap } from "./mapData.js";
 import { createRankSessions, ONLINE_WITHIN_MS } from "./rankSessions.js";
+import { createLoadingReports } from "./loadingReports.js";
 
 /**
  * The Owner Dashboard API, mounted at /api/portal/owner (vehicle owners only). An owner sees and changes only their own records.
@@ -145,6 +146,7 @@ export function createOwnerRouter(db: Db, now: () => Date = () => new Date(), on
     await audit(db, req, "owner.device_attach", String(dev.id), { vehicleId, routeId });
     res.json({ success: true });
   }));
+  createLoadingReports(db).mount(router, "owner", now);                                // what loads on their vehicles collected: per load, driver, vehicle or route
   /** End a trip on one of the owner's own vehicles, for a driver who forgot to or has left. */
   router.post("/loading/:sid/end", h(async (req, res) => {
     if (!isUuid(req.params.sid)) { fail(res, 400, "Invalid session"); return; }

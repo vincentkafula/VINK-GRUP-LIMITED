@@ -3,6 +3,7 @@ import { h, uid, num, iso, dateOnly, isUuid, text, optText, validDate, fail, fin
 import { saPeriods } from "./driverRoutes.js";
 import { requestLink } from "./linkRoutes.js";
 import { loadMap } from "./mapData.js";
+import { createLoadingReports } from "./loadingReports.js";
 
 /**
  * The Association Dashboard API, mounted at /api/portal/association (associations only). An association sees and changes only its own
@@ -18,6 +19,7 @@ import { loadMap } from "./mapData.js";
  */
 export function createAssociationRouter(db: Db, now: () => Date = () => new Date()): Router {
   const router = Router();
+  createLoadingReports(db).mount(router, "association", now);                          // what loads at the association's ranks and on its devices collected: per load, driver, vehicle or route
   const body = json({ limit: "10kb" });
 
   router.get("/", (req, res) => { res.json({ success: true, role: "association", user: { id: uid(req), username: req.user!.username } }); });

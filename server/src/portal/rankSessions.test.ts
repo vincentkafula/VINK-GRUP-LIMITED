@@ -71,10 +71,16 @@ describe("opening a session", () => {
     const q = (await w.rs.board(w.rank)).queue[0].id; refused(await open(d5, q), 409, "vehicle_busy");
     const e = await world(); refused(await e.rs.open({ rankId: e.rank, marshalId: U.marshal, actorName: "m", terminalId: await e.device("E-1") }), 409, "queue");
   });
-  it("lets only one of two simultaneous requests open the same device", async () => {
-    const w = await world(); const d = await w.device("RK-1"); await w.queue(w.rank, w.v1); await w.queue(w.rank, w.v2);
-    const [a, b] = await Promise.all([1, 2].map(() => w.rs.open({ rankId: w.rank, marshalId: U.marshal, actorName: "m", terminalId: d })));
-    expect([a.ok, b.ok].filter(Boolean)).toHaveLength(1);
+  it("lets only one of two simultaneous requests pair the same driver, on two devices (the database decides the race)", async () => {
+    const w = await world(); const d1 = await w.device("RK-1"), d2 = await w.device("RK-2"); await w.queue(w.rank, w.v1); await w.queue(w.rank, w.v2); await w.db.query(`UPDATE vehicles SET driver_id = $1 WHERE id = $2`, [U.driver, w.v2]);
+    ok(await w.rs.open({ rankId: w.rank, marshalId: U.marshal, actorName: "m", terminalId: d1 })); ok(await w.rs.open({ rankId: w.rank, marshalId: U.marshal, actorName: "m", terminalId: d2 }));
+    const [a, b] = await Promise.all([w.rs.pair({ terminalId: d1, serial: "RK-1", cardUid: CARD.driver }), w.rs.pair({ terminalId: d2, serial: "RK-2", cardUid: CARD.driver })]);
+    expect([a.ok, b.ok].filter(Boolean)).toHaveLength(1); expect((await w.db.query(`SELECT COUNT(*) AS n FROM loading_sessions WHERE status = 'loading'`)).rows[0].n).toBe(1);
+  });
+  it("refuses a device or a vehicle that is already loading, in plain words", async () => {
+    const w = await world(); const d = await w.device("RK-1"); await w.queue(w.rank, w.v1); await w.queue(w.rank, w.v2); ok(await w.rs.open({ rankId: w.rank, marshalId: U.marshal, actorName: "m", terminalId: d }));
+    refused(await w.rs.open({ rankId: w.rank, marshalId: U.marshal, actorName: "m", terminalId: d }), 409, "device_busy"); const d2 = await w.device("RK-2"); const first = (await w.rs.board(w.rank)).queue[0].id;
+    refused(await w.rs.open({ rankId: w.rank, marshalId: U.marshal, actorName: "m", terminalId: d2, queueId: first }), 409, "vehicle_busy");
   });
   it("cancels a session nobody paired after the window, so a forgotten one can never block the device", async () => {
     const w = await world(); const { d } = await opened(w); clock = new Date(clock.getTime() + PAIR_WINDOW_MS + 1000);
@@ -448,7 +454,7 @@ describe("a driver on an owner's own device", () => {
     await w.db.query(`INSERT INTO owner_drivers (owner_id, driver_id, status, requested_by) VALUES ($1,$2,'active','owner')`, [U.owner, U.driver3]); refused(await w.rs.pair({ terminalId: d, serial: "OWN-1", cardUid: CARD.driver3 }), 409, "device_busy");
     const d2 = await ownDevice(w, "OWN-2", { vehicle: w.v2 }); await w.db.query(`UPDATE vehicles SET driver_id = $1 WHERE id = $2`, [U.driver, w.v2]); refused(await w.rs.pair({ terminalId: d2, serial: "OWN-2", cardUid: CARD.driver }), 409, "driver_busy");
     const e = await world(); const od = await ownDevice(e, "OWN-9"); const rk = await e.device("RK-1"); await e.queue(e.rank, e.v1); ok(await e.rs.open({ rankId: e.rank, marshalId: U.marshal, actorName: "m", terminalId: rk }));     // the vehicle is already loading at the rank
-    refused(await e.rs.pair({ terminalId: od, serial: "OWN-9", cardUid: CARD.driver }), 409, "driver_busy");
+    refused(await e.rs.pair({ terminalId: od, serial: "OWN-9", cardUid: CARD.driver }), 409, "vehicle_busy");
   });
   it("takes passengers' fares like a rank device does, and the driver ends the trip: no departure is logged, and the next driver can start", async () => {
     const closed: string[] = []; const w = await world(); const rsd = createRankSessions(w.db, () => clock, undefined, { notify: () => {}, onClosed: async (id) => { closed.push(id); } });
@@ -575,7 +581,7 @@ describe("the real schema keeps the guarantees the in-memory copy cannot", () =>
     expect(sql).toMatch(/CREATE UNIQUE INDEX IF NOT EXISTS idx_loading_one_open_per_terminal ON loading_sessions\(terminal_id\) WHERE status IN \('pending','loading'\)/);
     expect(sql).toMatch(/CREATE UNIQUE INDEX IF NOT EXISTS idx_loading_one_open_per_vehicle\s+ON loading_sessions\(vehicle_id\)\s+WHERE status IN \('pending','loading'\)/);
     expect(sql).toMatch(/CREATE UNIQUE INDEX IF NOT EXISTS idx_loading_one_loading_per_driver ON loading_sessions\(driver_id\)\s+WHERE status = 'loading'/);
-    expect(sql).toMatch(/CREATE INDEX IF NOT EXISTS idx_loading_terminal ON loading_sessions\(terminal_id, paired_at\)/);
+    expect(sql).toMatch(/CREATE INDEX IF NOT EXISTS idx_loading_terminal ON loading_sessions\(terminal_id, paired_at\)/); expect(sql).toMatch(/CREATE INDEX IF NOT EXISTS idx_loading_vehicle ON loading_sessions\(vehicle_id, paired_at\)/); expect(sql).toMatch(/CREATE INDEX IF NOT EXISTS idx_loading_driver ON loading_sessions\(driver_id, paired_at\)/);
   });
 });
 

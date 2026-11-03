@@ -106,11 +106,13 @@ export function allPortalsDb(): Db {
     ALTER TABLE token_routes ADD COLUMN from_rank_id UUID;
     ALTER TABLE token_routes ADD COLUMN to_rank_id UUID;
     CREATE TABLE loading_sessions (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), terminal_id UUID NOT NULL, rank_id UUID, queue_id UUID, vehicle_id UUID NOT NULL, route_id UUID, marshal_id UUID, driver_id UUID, driver_card_id UUID, status TEXT NOT NULL DEFAULT 'pending', started_at TIMESTAMPTZ NOT NULL DEFAULT now(), paired_at TIMESTAMPTZ, ended_at TIMESTAMPTZ, passengers INTEGER NOT NULL DEFAULT 0, total_cents BIGINT NOT NULL DEFAULT 0, close_reason TEXT, departure_id UUID);
-    -- (db/schema.sql also has a partial unique index on terminal_id for open sessions. It is left out of this in-memory copy because pg-mem wrongly answers every lookup by device from that partial index,
-    -- which hides closed sessions; real PostgreSQL does not. A test checks the real schema still has it, and the service refuses a busy device itself.)
+    -- (db/schema.sql has three partial unique indexes: one open session per device, one per vehicle, one loading vehicle per driver. pg-mem wrongly answers every lookup by the indexed column from a
+    -- partial index, which hides closed sessions; real PostgreSQL does not. So the two whose condition covers two statuses (device, vehicle) are left out of this in-memory copy, and the driver one
+    -- (one status) has status as a second column here, which enforces the same rule. A test checks the real schema still has all three, and the service refuses a busy device, vehicle or driver itself.)
     CREATE INDEX idx_loading_terminal ON loading_sessions(terminal_id, paired_at);
-    CREATE UNIQUE INDEX idx_loading_one_open_per_vehicle ON loading_sessions(vehicle_id) WHERE status IN ('pending','loading');
-    CREATE UNIQUE INDEX idx_loading_one_loading_per_driver ON loading_sessions(driver_id) WHERE status = 'loading';
+    CREATE INDEX idx_loading_vehicle ON loading_sessions(vehicle_id, paired_at);
+    CREATE INDEX idx_loading_driver ON loading_sessions(driver_id, paired_at);
+    CREATE UNIQUE INDEX idx_loading_one_loading_per_driver ON loading_sessions(driver_id, status) WHERE status = 'loading';
     ALTER TABLE terminal_taps ADD COLUMN session_id UUID;
   `);
   const { Pool } = mem.adapters.createPg();
