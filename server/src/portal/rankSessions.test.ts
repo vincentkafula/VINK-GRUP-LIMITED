@@ -9,6 +9,7 @@ import { join } from "node:path";
 import { createRankSessions, checkRankDevice, PAIR_WINDOW_MS } from "./rankSessions.js";
 import { createMarshalRouter } from "./marshalRoutes.js";
 import { createDriverRouter } from "./driverRoutes.js";
+import { createOwnerRouter } from "./ownerRoutes.js";
 import { cardHash } from "../services/tokenService.js";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -410,6 +411,103 @@ describe("the old Depart and Remove buttons leave a loading vehicle to its sessi
     const q1 = await w.queue(w.rank, w.v1); const q2 = await w.queue(w.rank, w.v2); expect((await post(`/marshal/ranks/${w.rank}/queue/${q2}/remove`)).status).toBe(200);
     const d = await w.device("RK-1"); const s = ok<any>(await w.rs.open({ rankId: w.rank, marshalId: U.marshal, actorName: "m", terminalId: d })); expect((await post(`/marshal/ranks/${w.rank}/depart`, { queueId: q1 })).status).toBe(409);
     ok(await w.rs.cancel({ sessionId: s.id, rankId: w.rank, marshalId: U.marshal, actorName: "m" })); expect((await post(`/marshal/ranks/${w.rank}/depart`, { queueId: q1 })).status).toBe(201);
+  });
+});
+
+/** a device an OWNER has fitted to their own vehicle: no rank, no marshal */
+async function ownDevice(w: W, serial: string, o: { vehicle?: string | null; owner?: string | null; kind?: string; status?: string; association?: string | null } = {}) {
+  return (await w.db.query(`INSERT INTO terminals (serial, kind, vehicle_id, route_id, owner_id, association_id, status) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id`,
+    [serial, o.kind ?? "vehicle", o.vehicle === undefined ? w.v1 : o.vehicle, w.route, o.owner === undefined ? U.owner : o.owner, o.association === undefined ? U.assoc : o.association, o.status ?? "active"])).rows[0].id as string;
+}
+const sessionRows = async (w: W) => (await w.db.query(`SELECT * FROM loading_sessions`)).rows as any[];
+
+describe("a driver on an owner's own device", () => {
+  it("opens and pairs a trip with one tap of their own driver card: no marshal, no rank, no queue", async () => {
+    const w = await world(); const d = await ownDevice(w, "OWN-1"); const r = ok<any>(await w.rs.pair({ terminalId: d, serial: "OWN-1", cardUid: CARD.driver }));
+    expect(r).toMatchObject({ status: "loading", driverId: U.driver, driverName: "Driver One", vehicleId: w.v1, registration: "CA 111-111", routeId: w.route, replayed: false });
+    expect((await sessionRows(w))[0]).toMatchObject({ rank_id: null, marshal_id: null, queue_id: null, terminal_id: d, status: "loading" });
+    expect((await w.audit("rank.paired"))[0]).toMatchObject({ target: r.id, actor_name: "terminal:OWN-1" });
+  });
+  it("is just as strict as at a rank: a passenger's card, an unknown card, a blocked card and a driver not on that vehicle all open nothing", async () => {
+    const w = await world(); const d = await ownDevice(w, "OWN-1"); const tap = (cardUid: string) => w.rs.pair({ terminalId: d, serial: "OWN-1", cardUid });
+    refused(await tap(CARD.pax), 403, "not_driver_card"); refused(await tap(CARD.stranger), 404, "card_unknown"); refused(await tap(CARD.driver2), 403, "wrong_driver");
+    await w.db.query(`UPDATE token_cards SET status = 'blocked' WHERE card_hash = $1`, [cardHash(CARD.driver)]); refused(await tap(CARD.driver), 403, "card_blocked");
+    expect(await sessionRows(w)).toEqual([]); expect((await w.audit("rank.pair_refused")).length).toBe(4);
+  });
+  it("never opens by itself on a shared rank device (the marshal decides who loads), on a device with no vehicle, or on one that is switched off", async () => {
+    const w = await world(); const tap = (d: string, serial: string) => w.rs.pair({ terminalId: d, serial, cardUid: CARD.driver });
+    const rk = await w.device("RK-1"); refused(await tap(rk, "RK-1"), 409, "no_session");                  // a rank device with nobody started on it
+    await w.db.query(`UPDATE terminals SET vehicle_id = $1 WHERE id = $2`, [w.v1, rk]); refused(await tap(rk, "RK-1"), 409, "no_session");      // ... even if it was mistakenly given a vehicle: only the marshal starts a load at a rank
+    refused(await tap(await ownDevice(w, "OWN-2", { vehicle: null }), "OWN-2"), 409, "no_session");
+    refused(await tap(await ownDevice(w, "OWN-3", { status: "inactive" }), "OWN-3"), 409, "no_session");
+    expect(await sessionRows(w)).toEqual([]);
+  });
+  it("answers the same driver tapping again as before, refuses a different driver while one is loading, and a driver or vehicle that is already loading elsewhere", async () => {
+    const w = await world(); const d = await ownDevice(w, "OWN-1"); ok(await w.rs.pair({ terminalId: d, serial: "OWN-1", cardUid: CARD.driver }));
+    expect(ok<any>(await w.rs.pair({ terminalId: d, serial: "OWN-1", cardUid: CARD.driver })).replayed).toBe(true); expect((await sessionRows(w)).length).toBe(1);
+    await w.db.query(`INSERT INTO owner_drivers (owner_id, driver_id, status, requested_by) VALUES ($1,$2,'active','owner')`, [U.owner, U.driver3]); refused(await w.rs.pair({ terminalId: d, serial: "OWN-1", cardUid: CARD.driver3 }), 409, "device_busy");
+    const d2 = await ownDevice(w, "OWN-2", { vehicle: w.v2 }); await w.db.query(`UPDATE vehicles SET driver_id = $1 WHERE id = $2`, [U.driver, w.v2]); refused(await w.rs.pair({ terminalId: d2, serial: "OWN-2", cardUid: CARD.driver }), 409, "driver_busy");
+    const e = await world(); const od = await ownDevice(e, "OWN-9"); const rk = await e.device("RK-1"); await e.queue(e.rank, e.v1); ok(await e.rs.open({ rankId: e.rank, marshalId: U.marshal, actorName: "m", terminalId: rk }));     // the vehicle is already loading at the rank
+    refused(await e.rs.pair({ terminalId: od, serial: "OWN-9", cardUid: CARD.driver }), 409, "driver_busy");
+  });
+  it("takes passengers' fares like a rank device does, and the driver ends the trip: no departure is logged, and the next driver can start", async () => {
+    const closed: string[] = []; const w = await world(); const rsd = createRankSessions(w.db, () => clock, undefined, { notify: () => {}, onClosed: async (id) => { closed.push(id); } });
+    const d = await ownDevice(w, "OWN-1"); const s = ok<any>(await rsd.pair({ terminalId: d, serial: "OWN-1", cardUid: CARD.driver })); ok(await rsd.tap({ terminalId: d, serial: "OWN-1", cardUid: CARD.pax, key: "tap-0001" }, fakeCharge(w.db)));
+    expect(ok<any>(await rsd.tap({ terminalId: d, serial: "OWN-1", cardUid: "04AAAA0002", key: "tap-0002" }, fakeCharge(w.db))).session).toMatchObject({ passengers: 2, totalCents: 5000 });
+    const done = ok<any>(await rsd.departByDriver({ driverId: U.driver, actorName: "driver" })); expect(done).toMatchObject({ id: s.id, status: "closed", passengers: 2, departureId: null }); expect(closed).toEqual([s.id]);
+    expect((await w.db.query(`SELECT COUNT(*) AS n FROM departures`)).rows[0].n).toBe(0); expect(JSON.parse((await w.audit("rank.session_close"))[0].details)).toMatchObject({ by: "driver", departureId: null });
+    await w.db.query(`INSERT INTO owner_drivers (owner_id, driver_id, status, requested_by) VALUES ($1,$2,'active','owner')`, [U.owner, U.driver3]); expect(ok<any>(await rsd.pair({ terminalId: d, serial: "OWN-1", cardUid: CARD.driver3 })).driverId).toBe(U.driver3);
+    expect(ok<any>(await rsd.tap({ terminalId: d, serial: "OWN-1", cardUid: CARD.pax, key: "tap-0003" }, fakeCharge(w.db))).session).toMatchObject({ passengers: 1, totalCents: 2500, driverName: "Driver Three" });      // a new trip, so the same card is a new fare, counted on the new driver
+  });
+  it("lets the owner, and only the owner of that vehicle, end a trip a driver forgot", async () => {
+    const w = await world(); const d = await ownDevice(w, "OWN-1"); const s = ok<any>(await w.rs.pair({ terminalId: d, serial: "OWN-1", cardUid: CARD.driver }));
+    refused(await w.rs.endByOwner({ ownerId: U.owner2, sessionId: s.id, actorName: "owner2" }), 404, "session"); refused(await w.rs.endByOwner({ ownerId: U.driver, sessionId: s.id, actorName: "driver" }), 404, "session");
+    expect((await sessionRows(w))[0].status).toBe("loading"); expect(ok<any>(await w.rs.endByOwner({ ownerId: U.owner, sessionId: s.id, actorName: "owner" })).status).toBe("closed");
+    expect(JSON.parse((await w.audit("rank.session_close"))[0].details)).toMatchObject({ by: "owner" });
+  });
+});
+
+describe("the owner's device routes", () => {
+  let server: Server, url = "", w: W, as = U.owner; const closed: string[] = [];
+  beforeEach(async () => {
+    w = await world(); as = U.owner; closed.length = 0; const app = express(); app.use(express.json());
+    app.use((req, _r, next) => { (req as any).user = { userId: as, username: "owner", role: "vehicle_owner" }; next(); }); app.use("/owner", createOwnerRouter(w.db, () => clock, async (id) => { closed.push(id); }));
+    await new Promise<void>((ok2) => { server = app.listen(0, "127.0.0.1", ok2); }); url = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+  });
+  afterEach(() => new Promise<void>((ok2) => server.close(() => ok2())));
+  const call = async (method: string, path: string, body?: unknown) => { const r = await fetch(url + path, { method, headers: { "Content-Type": "application/json" }, body: body === undefined ? undefined : JSON.stringify(body) }); return { status: r.status, body: (await r.json()) as any }; };
+  const loose = async (serial: string, o: { owner?: string | null; kind?: string; association?: string | null } = {}) => (await w.db.query(`INSERT INTO terminals (serial, kind, owner_id, association_id) VALUES ($1,$2,$3,$4) RETURNING id`, [serial, o.kind ?? "vehicle", o.owner === undefined ? U.owner : o.owner, o.association === undefined ? U.assoc : o.association])).rows[0].id as string;
+
+  it("lists only the owner's own devices, with the vehicle, route and fare they are fitted to and who is loading", async () => {
+    const a = await ownDevice(w, "OWN-1"); await loose("LOOSE-1"); await loose("NOT-MINE", { owner: U.owner2 }); ok(await w.rs.pair({ terminalId: a, serial: "OWN-1", cardUid: CARD.driver }));
+    const r = await call("GET", "/owner/devices"); expect(r.status).toBe(200); expect(r.body.devices.map((d: any) => d.serial)).toEqual(["LOOSE-1", "OWN-1"]);
+    expect(r.body.devices.find((d: any) => d.serial === "OWN-1")).toMatchObject({ shared: false, registration: "CA 111-111", route: "Langa to Bellville", fareCents: 2500, session: { driver: "Driver One", passengers: 0 } }); expect(r.body.devices.find((d: any) => d.serial === "LOOSE-1")).toMatchObject({ vehicleId: null, session: null });
+    as = U.owner2; expect((await call("GET", "/owner/devices")).body.devices.map((d: any) => d.serial)).toEqual(["NOT-MINE"]);
+  });
+  it("fits a device to one of the owner's own vehicles and a route, and can take it off again", async () => {
+    const d = await loose("LOOSE-1"); expect((await call("PUT", `/owner/devices/${d}`, { vehicleId: w.v1, routeId: w.route })).status).toBe(200);
+    expect((await w.db.query(`SELECT kind, vehicle_id, route_id FROM terminals WHERE id = $1`, [d])).rows[0]).toMatchObject({ kind: "vehicle", vehicle_id: w.v1, route_id: w.route }); expect((await w.audit("owner.device_attach")).length).toBe(1);
+    ok(await w.rs.pair({ terminalId: d, serial: "LOOSE-1", cardUid: CARD.driver })); expect((await call("PUT", `/owner/devices/${d}`, { vehicleId: null })).status).toBe(409);            // not while a driver is loading
+    expect((await call("PUT", `/owner/devices/${d}`, { vehicleId: w.v2, routeId: w.route })).status).toBe(409);
+    expect((await w.db.query(`SELECT vehicle_id, route_id FROM terminals WHERE id = $1`, [d])).rows[0]).toMatchObject({ vehicle_id: w.v1, route_id: w.route });                  // and the refusal really changed nothing
+    ok(await w.rs.endByOwner({ ownerId: U.owner, sessionId: (await sessionRows(w))[0].id, actorName: "o" })); expect((await call("PUT", `/owner/devices/${d}`, { vehicleId: null })).status).toBe(200);
+    expect((await w.db.query(`SELECT vehicle_id, route_id FROM terminals WHERE id = $1`, [d])).rows[0]).toMatchObject({ vehicle_id: null, route_id: null });
+  });
+  it("refuses: someone else's device or vehicle, a missing route, a route of another association, a shared rank device, a vehicle that already has a device, and bad ids", async () => {
+    const d = await loose("LOOSE-1"); const put = (b: unknown, id = d) => call("PUT", `/owner/devices/${id}`, b);
+    expect((await put({ vehicleId: w.v3, routeId: w.route })).status).toBe(404);                         // another owner's vehicle
+    expect((await put({ vehicleId: w.v1, routeId: id(777) })).status).toBe(404); expect((await put({ vehicleId: w.v1 })).status).toBe(400); expect((await put({ routeId: w.route })).status).toBe(400); expect((await put({ vehicleId: "x", routeId: w.route })).status).toBe(400);
+    expect((await call("PUT", `/owner/devices/nope`, {})).status).toBe(400); expect((await put({ vehicleId: w.v1, routeId: w.route }, id(888))).status).toBe(404);
+    expect((await put({ vehicleId: w.v1, routeId: w.route }, await loose("NOT-MINE", { owner: U.owner2 }))).status).toBe(404);
+    expect((await put({ vehicleId: w.v1, routeId: w.route }, await loose("RANK-1", { kind: "rank" }))).status).toBe(409);
+    const other = (await w.db.query(`INSERT INTO token_routes (association_id, name, fare_cents) VALUES ($1,'Elsewhere',1000) RETURNING id`, [U.owner2])).rows[0].id as string; expect((await put({ vehicleId: w.v1, routeId: other })).status).toBe(400);
+    await ownDevice(w, "FITTED", { vehicle: w.v2 }); expect((await put({ vehicleId: w.v2, routeId: w.route })).status).toBe(409);
+    expect((await w.db.query(`SELECT vehicle_id FROM terminals WHERE id = $1`, [d])).rows[0].vehicle_id).toBeNull();                      // none of those changed anything
+  });
+  it("lets the owner end a trip on their own vehicle (and makes its trip), and no one else's", async () => {
+    const d = await ownDevice(w, "OWN-1"); const s = ok<any>(await w.rs.pair({ terminalId: d, serial: "OWN-1", cardUid: CARD.driver }));
+    as = U.owner2; expect((await call("POST", `/owner/loading/${s.id}/end`)).status).toBe(404); expect((await call("POST", "/owner/loading/nope/end")).status).toBe(400);
+    as = U.owner; expect(await call("POST", `/owner/loading/${s.id}/end`)).toMatchObject({ status: 200, body: { success: true, session: { status: "closed" } } }); expect(closed).toEqual([s.id]);
   });
 });
 

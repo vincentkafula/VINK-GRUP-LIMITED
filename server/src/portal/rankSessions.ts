@@ -106,10 +106,17 @@ export function createRankSessions(db: Db, now: () => Date = () => new Date(), p
     const uid = normaliseCardUid(a.cardUid);
     if (!uid) return bad(400, "bad_card", "Card not recognised");
     const hash = cardHash(uid), last4 = uid.slice(-4);
-    const s = (await db.query(`SELECT s.*, v.owner_id, v.driver_id AS vehicle_driver FROM loading_sessions s JOIN vehicles v ON v.id = s.vehicle_id WHERE s.terminal_id = $1 AND s.status IN ('pending','loading')`, [a.terminalId])).rows[0];
-    if (!s) { await record(null, `terminal:${a.serial}`, "rank.pair_refused", a.terminalId, { reason: "no_session", card: last4 }); return bad(409, "no_session", "No vehicle is waiting to load on this device"); }
+    let s = (await db.query(`SELECT s.*, v.owner_id, v.driver_id AS vehicle_driver FROM loading_sessions s JOIN vehicles v ON v.id = s.vehicle_id WHERE s.terminal_id = $1 AND s.status IN ('pending','loading')`, [a.terminalId])).rows[0];
+    // A device the owner fitted to their own vehicle has no marshal to open a session: the driver's card is what opens it (and pairs it, in one step).
+    let ownerDevice = false;
+    if (!s) {
+      const t = (await db.query(`SELECT t.id, t.vehicle_id, t.route_id, v.owner_id, v.driver_id AS vehicle_driver FROM terminals t JOIN vehicles v ON v.id = t.vehicle_id WHERE t.id = $1 AND t.kind = 'vehicle' AND t.status = 'active'`, [a.terminalId])).rows[0];
+      if (!t) { await record(null, `terminal:${a.serial}`, "rank.pair_refused", a.terminalId, { reason: "no_session", card: last4 }); return bad(409, "no_session", "No vehicle is waiting to load on this device"); }
+      s = { id: null, status: "pending", terminal_id: t.id, vehicle_id: t.vehicle_id, route_id: t.route_id, owner_id: t.owner_id, vehicle_driver: t.vehicle_driver, rank_id: null, marshal_id: null };
+      ownerDevice = true;
+    }
     const c = (await db.query(`SELECT c.id, c.status, w.user_id, w.role, w.status AS wallet_status FROM token_cards c JOIN token_wallets w ON w.id = c.wallet_id WHERE c.card_hash = $1`, [hash])).rows[0];
-    const refuse = async (status: number, code: string, message: string) => { await record(null, `terminal:${a.serial}`, "rank.pair_refused", String(s.id), { reason: code, card: last4 }); return bad(status, code, message); };
+    const refuse = async (status: number, code: string, message: string) => { await record(null, `terminal:${a.serial}`, "rank.pair_refused", String(s.id ?? a.terminalId), { reason: code, card: last4 }); return bad(status, code, message); };
     if (!c) return refuse(404, "card_unknown", "This card is not registered");
     if (c.status !== "active" || c.wallet_status !== "active") return refuse(403, "card_blocked", "This card cannot be used");
     if (c.role !== "driver") return refuse(403, "not_driver_card", "This is not a driver card");
@@ -123,8 +130,11 @@ export function createRankSessions(db: Db, now: () => Date = () => new Date(), p
     if (!linked) return refuse(403, "wrong_driver", "This driver is not registered for this vehicle");
     let claimed;
     try {
-      claimed = (await db.query(`UPDATE loading_sessions SET status = 'loading', driver_id = $2, driver_card_id = $3, paired_at = $4 WHERE id = $1 AND status = 'pending' RETURNING id`, [s.id, driver, c.id, now()])).rows[0];
-    } catch (e) { if (isUniqueViolation(e)) return refuse(409, "driver_busy", "This driver is already loading another vehicle"); throw e; }
+      claimed = ownerDevice
+        ? (await db.query(`INSERT INTO loading_sessions (terminal_id, vehicle_id, route_id, driver_id, driver_card_id, status, started_at, paired_at) VALUES ($1,$2,$3,$4,$5,'loading',$6,$6) RETURNING id`, [s.terminal_id, s.vehicle_id, s.route_id ?? null, driver, c.id, now()])).rows[0]
+        : (await db.query(`UPDATE loading_sessions SET status = 'loading', driver_id = $2, driver_card_id = $3, paired_at = $4 WHERE id = $1 AND status = 'pending' RETURNING id`, [s.id, driver, c.id, now()])).rows[0];
+    } catch (e) { if (isUniqueViolation(e)) return refuse(409, "driver_busy", "This driver, or this vehicle, is already loading"); throw e; }
+    if (claimed && ownerDevice) s = { ...s, id: claimed.id };
     if (!claimed) return refuse(409, "not_pending", "This session is no longer waiting for a driver");
     await record(driver, `terminal:${a.serial}`, "rank.paired", String(s.id), { terminalId: a.terminalId, driverId: driver, card: last4, vehicleId: s.vehicle_id });
     await announce(String(s.id));
@@ -146,8 +156,8 @@ export function createRankSessions(db: Db, now: () => Date = () => new Date(), p
   }
 
   /** The vehicle departs. The session is closed first (an atomic step, so it can only happen once), then the vehicle takes its place out of the queue and the departure is logged as the marshal's Depart does. */
-  async function close(a: { sessionId: string; rankId: string; marshalId: string; actorName: string; actorId?: string | null; by?: "marshal" | "driver"; passengers?: number | null; note?: string | null }): Promise<Res<SessionView>> {
-    const s = await byId(a.sessionId, a.rankId);
+  async function close(a: { sessionId: string; rankId?: string | null; marshalId?: string | null; actorName: string; actorId?: string | null; by?: "marshal" | "driver" | "owner"; passengers?: number | null; note?: string | null }): Promise<Res<SessionView>> {
+    const s = await byId(a.sessionId, a.rankId ?? undefined);
     if (!s) return bad(404, "session", "Session not found");
     if (s.status === "closed") return { ok: true, value: view(s) };                                // a repeat of the same request
     if (s.status !== "loading") return bad(409, "not_loading", s.status === "pending" ? "That vehicle has not paired with its driver yet. Cancel the session instead." : "That session is not loading");
@@ -155,10 +165,11 @@ export function createRankSessions(db: Db, now: () => Date = () => new Date(), p
     if (!claimed) return bad(409, "changed", "That session has just changed. Refresh and try again.");
     if (s.queue_id) await db.query(`UPDATE rank_queue SET left_at = $2 WHERE id = $1 AND left_at IS NULL`, [s.queue_id, now()]);
     const pax = a.passengers ?? (Number(s.passengers) || null);
-    const dep = (await db.query(`INSERT INTO departures (rank_id, vehicle_id, driver_id, marshal_id, passengers, note, departed_at) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id`,
-      [s.rank_id, s.vehicle_id, s.driver_id, a.marshalId, pax, a.note ?? null, now()])).rows[0];
-    await db.query(`UPDATE loading_sessions SET departure_id = $2, passengers = COALESCE($3, passengers) WHERE id = $1`, [s.id, dep.id, pax]);
-    await record(a.actorId ?? a.marshalId, a.actorName, "rank.session_close", String(s.id), { departureId: dep.id, passengers: pax, totalCents: Number(s.total_cents), by: a.by ?? "marshal" });
+    // A session at a rank is a departure the marshal logged. A session on an owner's own device has no rank, no queue and no marshal, so it has no departure: it is just the driver's trip.
+    const dep = s.rank_id ? (await db.query(`INSERT INTO departures (rank_id, vehicle_id, driver_id, marshal_id, passengers, note, departed_at) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id`,
+      [s.rank_id, s.vehicle_id, s.driver_id, a.marshalId ?? s.marshal_id, pax, a.note ?? null, now()])).rows[0] : null;
+    await db.query(`UPDATE loading_sessions SET departure_id = $2, passengers = COALESCE($3, passengers) WHERE id = $1`, [s.id, dep?.id ?? null, pax]);
+    await record(a.actorId ?? a.marshalId ?? null, a.actorName, "rank.session_close", String(s.id), { departureId: dep?.id ?? null, passengers: pax, totalCents: Number(s.total_cents), by: a.by ?? "marshal" });
     await announce(String(s.id));
     // The session becomes a trip for ITS vehicle, driver and marshal. If that fails the departure still stands and the money cycle makes the trip on its next run.
     if (hooks.onClosed) { try { await hooks.onClosed(String(s.id)); } catch (e) { console.error("[rank] the trip for a closed session will be made by the next cycle:", e instanceof Error ? e.message : e); } }
@@ -201,7 +212,16 @@ export function createRankSessions(db: Db, now: () => Date = () => new Date(), p
   async function departByDriver(a: { driverId: string; actorName: string; passengers?: number | null; note?: string | null }): Promise<Res<SessionView>> {
     const s = (await db.query(`SELECT id, rank_id, marshal_id FROM loading_sessions WHERE driver_id = $1 AND status = 'loading'`, [a.driverId])).rows[0];
     if (!s) return bad(409, "no_session", "You are not loading a vehicle right now");
-    return close({ sessionId: String(s.id), rankId: String(s.rank_id), marshalId: String(s.marshal_id), actorName: a.actorName, actorId: a.driverId, by: "driver", passengers: a.passengers ?? null, note: a.note ?? null });
+    return close({ sessionId: String(s.id), rankId: s.rank_id ? String(s.rank_id) : null, marshalId: s.marshal_id ? String(s.marshal_id) : null, actorName: a.actorName, actorId: a.driverId, by: "driver", passengers: a.passengers ?? null, note: a.note ?? null });
+  }
+
+  /**
+   * An OWNER ends a session on their own vehicle, for a driver who forgot to or has left: only a session on one of the owner's own vehicles. It is the same departure and trip as the driver's.
+   */
+  async function endByOwner(a: { ownerId: string; sessionId: string; actorName: string }): Promise<Res<SessionView>> {
+    const s = (await db.query(`SELECT s.id, s.rank_id, s.marshal_id, s.status FROM loading_sessions s JOIN vehicles v ON v.id = s.vehicle_id WHERE s.id = $1 AND v.owner_id = $2`, [a.sessionId, a.ownerId])).rows[0];
+    if (!s) return bad(404, "session", "Session not found");
+    return close({ sessionId: String(s.id), rankId: s.rank_id ? String(s.rank_id) : null, marshalId: s.marshal_id ? String(s.marshal_id) : null, actorName: a.actorName, actorId: a.ownerId, by: "owner" });
   }
 
   /** What the driver's Loading Dashboard shows: the session they are driving now (passengers, running total, the latest taps) and their closed sessions in a period. */
@@ -234,7 +254,7 @@ export function createRankSessions(db: Db, now: () => Date = () => new Date(), p
     };
   }
 
-  return { open, pair, tap, cancel, close, departByDriver, board, forDriver, expireStale };
+  return { open, pair, tap, cancel, close, departByDriver, endByOwner, board, forDriver, expireStale };
 }
 /**
  * Whether a terminal may be set up (or changed) as a SHARED RANK DEVICE: kind "rank", at one rank, charging one route. The rank has to be at one end of that route, and a route has one active

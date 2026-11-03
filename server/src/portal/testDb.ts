@@ -105,7 +105,7 @@ export function allPortalsDb(): Db {
     ALTER TABLE terminals ADD COLUMN route_id UUID;
     ALTER TABLE token_routes ADD COLUMN from_rank_id UUID;
     ALTER TABLE token_routes ADD COLUMN to_rank_id UUID;
-    CREATE TABLE loading_sessions (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), terminal_id UUID NOT NULL, rank_id UUID NOT NULL, queue_id UUID, vehicle_id UUID NOT NULL, route_id UUID, marshal_id UUID NOT NULL, driver_id UUID, driver_card_id UUID, status TEXT NOT NULL DEFAULT 'pending', started_at TIMESTAMPTZ NOT NULL DEFAULT now(), paired_at TIMESTAMPTZ, ended_at TIMESTAMPTZ, passengers INTEGER NOT NULL DEFAULT 0, total_cents BIGINT NOT NULL DEFAULT 0, close_reason TEXT, departure_id UUID);
+    CREATE TABLE loading_sessions (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), terminal_id UUID NOT NULL, rank_id UUID, queue_id UUID, vehicle_id UUID NOT NULL, route_id UUID, marshal_id UUID, driver_id UUID, driver_card_id UUID, status TEXT NOT NULL DEFAULT 'pending', started_at TIMESTAMPTZ NOT NULL DEFAULT now(), paired_at TIMESTAMPTZ, ended_at TIMESTAMPTZ, passengers INTEGER NOT NULL DEFAULT 0, total_cents BIGINT NOT NULL DEFAULT 0, close_reason TEXT, departure_id UUID);
     CREATE UNIQUE INDEX idx_loading_one_open_per_terminal ON loading_sessions(terminal_id) WHERE status IN ('pending','loading');
     CREATE UNIQUE INDEX idx_loading_one_open_per_vehicle ON loading_sessions(vehicle_id) WHERE status IN ('pending','loading');
     CREATE UNIQUE INDEX idx_loading_one_loading_per_driver ON loading_sessions(driver_id) WHERE status = 'loading';

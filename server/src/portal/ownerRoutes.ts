@@ -3,6 +3,7 @@ import { h, uid, num, iso, dateOnly, isUuid, text, optText, validDate, fail, fin
 import { saPeriods, expiryReminders } from "./driverRoutes.js";
 import { requestLink } from "./linkRoutes.js";
 import { loadMap } from "./mapData.js";
+import { createRankSessions, ONLINE_WITHIN_MS } from "./rankSessions.js";
 
 /**
  * The Owner Dashboard API, mounted at /api/portal/owner (vehicle owners only). An owner sees and changes only their own records.
@@ -33,7 +34,7 @@ function cleanVehicle(b: Record<string, unknown>): { error: string } | { v: { re
   return { v: { registration, make, model, year, colour, seats, disc_expiry: disc as string | null } };
 }
 
-export function createOwnerRouter(db: Db, now: () => Date = () => new Date()): Router {
+export function createOwnerRouter(db: Db, now: () => Date = () => new Date(), onSessionClosed?: (sessionId: string) => Promise<unknown>): Router {
   const router = Router();
 
   router.get("/", (req, res) => { res.json({ success: true, role: "vehicle_owner", user: { id: uid(req), username: req.user!.username } }); });
@@ -108,6 +109,48 @@ export function createOwnerRouter(db: Db, now: () => Date = () => new Date()): R
     await db.query(`UPDATE vehicles SET driver_id = NULL WHERE owner_id = $1 AND driver_id = $2`, [uid(req), r.rows[0].driver_id]);   // a removed driver comes off the vehicles
     await audit(db, req, "owner.driver.remove", req.params.id);
     res.json({ success: true });
+  }));
+
+  /* ───── the owner's own card devices ───── */
+  // A device the owner has bought is assigned to them by VINK. The owner fits it to one of their own vehicles and says which route (and so which fare) it charges. The driver then taps their own driver card
+  // on it to start a trip: no marshal and no rank pairing, but the money and the trip are still the tapping driver's. Shared rank devices are not the owner's to change.
+  router.get("/devices", h(async (req, res) => {
+    const r = await db.query(
+      `SELECT t.id, t.serial, t.model, t.status, t.kind, t.vehicle_id, t.route_id, t.last_seen_at, v.registration, tr.name AS route_name, tr.fare_cents
+         FROM terminals t LEFT JOIN vehicles v ON v.id = t.vehicle_id LEFT JOIN token_routes tr ON tr.id = t.route_id WHERE t.owner_id = $1 ORDER BY t.serial`, [uid(req)]);
+    const open = (await db.query(`SELECT s.id, s.terminal_id, s.passengers, s.total_cents, s.paired_at, u.name AS driver_name FROM loading_sessions s JOIN vehicles v ON v.id = s.vehicle_id LEFT JOIN users u ON u.id = s.driver_id WHERE v.owner_id = $1 AND s.status IN ('pending','loading')`, [uid(req)])).rows;
+    res.json({ success: true, devices: r.rows.map((d) => { const s = open.find((x) => String(x.terminal_id) === String(d.id)); return {
+      id: d.id, serial: d.serial, model: d.model ?? null, status: d.status, shared: d.kind === "rank", vehicleId: d.vehicle_id ?? null, registration: d.registration ?? null, routeId: d.route_id ?? null, route: d.route_name ?? null, fareCents: d.fare_cents === null || d.fare_cents === undefined ? null : Number(d.fare_cents),
+      online: !!d.last_seen_at && now().getTime() - new Date(d.last_seen_at as string).getTime() <= ONLINE_WITHIN_MS,
+      session: s ? { id: s.id, driver: s.driver_name ?? null, passengers: Number(s.passengers), totalCents: Number(s.total_cents), pairedAt: iso(s.paired_at) } : null }; }) });
+  }));
+  router.put("/devices/:id", json({ limit: "5kb" }), h(async (req, res) => {
+    if (!isUuid(req.params.id)) { fail(res, 400, "Invalid device"); return; }
+    const { vehicleId, routeId } = req.body ?? {};
+    const dev = (await db.query(`SELECT id, serial, kind, owner_id, association_id FROM terminals WHERE id = $1 AND owner_id = $2`, [req.params.id, uid(req)])).rows[0];
+    if (!dev) { fail(res, 404, "Device not found"); return; }
+    if (dev.kind === "rank") { fail(res, 409, "That is a shared rank device. Your association sets those up."); return; }
+    if ((await db.query(`SELECT 1 AS x FROM loading_sessions WHERE terminal_id = $1 AND status IN ('pending','loading')`, [dev.id])).rows.length) { fail(res, 409, "A driver is loading on that device right now. End the trip first."); return; }
+    if (vehicleId === null) {                                                                           // take it off the vehicle
+      await db.query(`UPDATE terminals SET vehicle_id = NULL, route_id = NULL WHERE id = $1`, [dev.id]); await audit(db, req, "owner.device_detach", String(dev.id), {}); res.json({ success: true }); return;
+    }
+    if (!isUuid(vehicleId)) { fail(res, 400, "Choose one of your vehicles"); return; }
+    if (!isUuid(routeId)) { fail(res, 400, "Choose the route this device charges for"); return; }
+    if (!(await db.query(`SELECT 1 AS x FROM vehicles WHERE id = $1 AND owner_id = $2`, [vehicleId, uid(req)])).rows.length) { fail(res, 404, "Vehicle not found"); return; }
+    if ((await db.query(`SELECT 1 AS x FROM terminals WHERE vehicle_id = $1 AND id <> $2 AND status = 'active'`, [vehicleId, dev.id])).rows.length) { fail(res, 409, "That vehicle already has a device fitted"); return; }
+    const route = (await db.query(`SELECT id, association_id FROM token_routes WHERE id = $1 AND active = true`, [routeId])).rows[0];
+    if (!route) { fail(res, 404, "Route not found"); return; }
+    if (route.association_id && dev.association_id && String(route.association_id) !== String(dev.association_id)) { fail(res, 400, "That route belongs to a different association from this device"); return; }
+    await db.query(`UPDATE terminals SET kind = 'vehicle', vehicle_id = $2, route_id = $3 WHERE id = $1`, [dev.id, vehicleId, routeId]);
+    await audit(db, req, "owner.device_attach", String(dev.id), { vehicleId, routeId });
+    res.json({ success: true });
+  }));
+  /** End a trip on one of the owner's own vehicles, for a driver who forgot to or has left. */
+  router.post("/loading/:sid/end", h(async (req, res) => {
+    if (!isUuid(req.params.sid)) { fail(res, 400, "Invalid session"); return; }
+    const r = await createRankSessions(db, now, undefined, { onClosed: onSessionClosed }).endByOwner({ ownerId: uid(req), sessionId: req.params.sid, actorName: req.user!.username });
+    if (!r.ok) { res.status(r.status).json({ success: false, error: r.message, code: r.code }); return; }
+    res.json({ success: true, session: r.value });
   }));
 
   /* ───── earnings and reports (taps on terminals fitted to the owner's vehicles, or assigned to the owner) ───── */

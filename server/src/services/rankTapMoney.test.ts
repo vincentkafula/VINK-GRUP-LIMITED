@@ -145,3 +145,32 @@ describe("a departed session becomes one trip for its own vehicle, driver and ma
     const s = await loading(); ok(await rs.close({ sessionId: s.id, rankId: RANK, marshalId: U.marshal, actorName: "m", passengers: 0 })); expect((await q(`SELECT id FROM trips`)).length).toBe(0);
   });
 });
+
+describe("a trip on a device the owner fitted to their own vehicle", () => {
+  const OWN = id(200);
+  beforeEach(async () => { await db.query(`INSERT INTO terminals (id, serial, kind, vehicle_id, route_id, owner_id, association_id, investor_id) VALUES ($1,'OWN-1','vehicle',$2,$3,$4,$5,$6)`, [OWN, VEH, ROUTE, U.owner, U.assoc, U.investor]); });
+  const pairOwn = (uid: string) => rs.pair({ terminalId: OWN, serial: "OWN-1", cardUid: uid });
+  const tapOwn = (key: string, uid = CARD.pax) => rs.tap({ terminalId: OWN, serial: "OWN-1", cardUid: uid, key }, (t) => tokens.tapToken(t));
+
+  it("pays the driver who tapped their card, not the owner the device belongs to, and a different driver on the next trip", async () => {
+    ok(await pairOwn(CARD.d1)); ok(await tapOwn("tap-0001")); expect(tok(U.d1)).toBe(FARE - FEE); expect(tok(U.owner)).toBe(0);
+    ok(await rs.departByDriver({ driverId: U.d1, actorName: "driver" })); ok(await pairOwn(CARD.d2)); ok(await tapOwn("tap-0002", CARD.pax2)); expect(tok(U.d2)).toBe(FARE - FEE); expect(tok(U.d1)).toBe(FARE - FEE);
+  });
+  it("makes the trip when the driver ends it, with no departure and no marshal, so no marshal fee, but the device fee still falls on that driver", async () => {
+    const s = ok(await pairOwn(CARD.d1)); ok(await tapOwn("tap-0001")); ok(await tapOwn("tap-0002", CARD.pax2));
+    ok(await rs.departByDriver({ driverId: U.d1, actorName: "driver" }));
+    expect(await q(`SELECT terminal_id, vehicle_id, driver_id, owner_id, marshal_id, departure_id, taps, fare_cents FROM trips`)).toEqual([{ terminal_id: OWN, vehicle_id: VEH, driver_id: U.d1, owner_id: U.owner, marshal_id: null, departure_id: null, taps: 2, fare_cents: 2 * FARE }]);
+    const items = await q(`SELECT kind, payer_id, payee_id FROM payment_items`); expect(items.filter((i) => i.kind === "marshal_fee")).toEqual([]);              // no marshal was involved, so none is owed
+    expect(items.find((i) => i.kind === "per_trip_pay")).toMatchObject({ payer_id: U.d1, payee_id: U.investor }); expect(s.id).toBeTruthy();
+  });
+  it("still pays the owner when the owner and that driver have a salary agreement, as at a rank", async () => {
+    await db.query(`INSERT INTO driver_agreements (owner_id, driver_id, mode, amount_cents, pay_day, start_date, status) VALUES ($1,$2,'monthly_salary',300000,25,'2026-10-01','active')`, [U.owner, U.d1]);
+    ok(await pairOwn(CARD.d1)); ok(await tapOwn("tap-0001")); expect(tok(U.owner)).toBe(FARE - FEE); expect(tok(U.d1)).toBe(0);
+  });
+  it("makes the trip when the owner ends it for a driver who forgot, and the trip is the driver's, not the owner's", async () => {
+    const s = ok(await pairOwn(CARD.d1)); ok(await tapOwn("tap-0001"));
+    ok(await rs.endByOwner({ ownerId: U.owner, sessionId: s.id, actorName: "owner" })); await engine.closeTrips();
+    expect(await q(`SELECT driver_id, owner_id FROM trips`)).toEqual([{ driver_id: U.d1, owner_id: U.owner }]);
+  });
+});
+
