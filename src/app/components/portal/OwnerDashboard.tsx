@@ -9,6 +9,7 @@ import { portalClient, useLoad, Status, Empty, ActionButton, outcome, inputCls, 
 import { LinksPanel } from "./LinksPanel";
 import { OwnerTrend, OwnerMap, OwnerFinancials } from "./OwnerExtras";
 import { ScreenBoundary } from "./widgets";
+import { LoadingReport } from "./LoadingReport";
 
 const COLOR = "#C8102E";
 const call = portalClient("owner");
@@ -40,7 +41,7 @@ export function OwnerDashboard({ userName, onClose }: { userName?: string; onClo
           {nav === "Vehicles" && <Vehicles />}
           {nav === "Drivers" && <Drivers />}
           {nav === "Routes & map" && <OwnerMap />}
-          {nav === "Reports" && <Reports />}
+          {nav === "Reports" && <><Reports /><LoadingReport segment="owner" /></>}
           {nav === "Financials" && <OwnerFinancials />}
           {nav === "Driver pay" && <OwnerAgreements color={COLOR} />}
           {nav === "Payments & trips" && <><VirtualAccountsPanel segment="owner" color={COLOR} /><CrossBorderPanel segment="owner" color={COLOR} /><PaymentsPanel segment="owner" color={COLOR} /><TripsPanel segment="owner" color={COLOR} /></>}

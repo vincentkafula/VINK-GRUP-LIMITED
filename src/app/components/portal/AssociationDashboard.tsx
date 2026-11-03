@@ -8,6 +8,7 @@ import { DashboardShell, SectionPanel, StatCard, TableCard, Badge } from "../das
 import { portalClient, useLoad, Status, Empty, ActionButton, outcome, inputCls, rand, day, when } from "./ui";
 import { MembersList, VehiclesList, RoutesManager, AssociationMap, DeparturesTrend, FinesLedger, AssociationStatements } from "./AssociationExtras";
 import { ScreenBoundary } from "./widgets";
+import { LoadingReport } from "./LoadingReport";
 
 const COLOR = "#C8102E";
 const call = portalClient("association");
@@ -49,7 +50,7 @@ export function AssociationDashboard({ userName, onClose }: { userName?: string;
           {nav === "Map" && <AssociationMap />}
           {nav === "Levies" && <Levies />}
           {nav === "Fines ledger" && <FinesLedger />}
-          {nav === "Statements" && <AssociationStatements />}
+          {nav === "Statements" && <><AssociationStatements /><LoadingReport segment="association" /></>}
           {nav === "Marshal fee & payments" && <><MarshalFeeSetting color={COLOR} /><VirtualAccountsPanel segment="association" color={COLOR} /><CrossBorderPanel segment="association" color={COLOR} /><PaymentsPanel segment="association" color={COLOR} /><TripsPanel segment="association" color={COLOR} /></>}
           {nav === "VINK Tokens" && <TokensPanel segment="association" color={COLOR} />}
           {nav === "Bank account" && <BankScreen segment="association" color={COLOR} />}

@@ -8,6 +8,7 @@ import { DashboardShell, SectionPanel, StatCard, TableCard } from "../dashboards
 import { portalClient, useLoad, Status, Empty, Field, ActionButton, inputCls, when, inkOn, type Load } from "./ui";
 import { LinksPanel } from "./LinksPanel";
 import { MarshalLoading } from "./MarshalLoading";
+import { LoadingReport } from "./LoadingReport";
 import { CsvButton, Pager, RangeBar, ScreenBoundary, TrendChart, rangeQuery, saToday, saShift, monthStart, useAutoRefresh, type Range } from "./widgets";
 
 const COLOR = "#C8102E";
@@ -42,7 +43,7 @@ export function MarshalDashboard({ userName, onClose }: { userName?: string; onC
           {nav === "Ranks & queue" && picked && <QueueScreen key={picked.id} rank={picked} onChanged={reloadRanks} />}
           {nav === "Loading" && picked && <MarshalLoading key={picked.id} rank={picked} />}
           {nav === "Departures" && picked && <DeparturesScreen key={picked.id} rank={picked} />}
-          {nav === "Reports" && <ReportsScreen />}
+          {nav === "Reports" && <><ReportsScreen /><LoadingReport segment="marshal" /></>}
           {nav === "Payments & trips" && <><VirtualAccountsPanel segment="marshal" color={COLOR} /><CrossBorderPanel segment="marshal" color={COLOR} /><PaymentsPanel segment="marshal" color={COLOR} /><TripsPanel segment="marshal" color={COLOR} /></>}
           {nav === "Requests & links" && <LinksPanel call={call} color={COLOR} />}
           {nav === "VINK Tokens" && <TokensPanel segment="marshal" color={COLOR} />}
