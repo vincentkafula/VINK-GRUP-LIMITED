@@ -153,7 +153,7 @@ export function createTokenService(deps: {
 
   /* ── the tap ── */
   /** A passenger taps a VINK card on a device. The server decides the fare from the route; the device only names the route and the card. */
-  async function tapToken(t: { terminalId: string; cardUid: unknown; routeId: string; key: string }): Promise<TapOutcome> {
+  async function tapToken(t: { terminalId: string; cardUid: unknown; routeId: string; key: string; sessionId?: string | null }): Promise<TapOutcome> {
     const uid = normaliseCardUid(t.cardUid);
     if (!uid) return { ok: false, status: 400, code: "bad_card", message: "Card not recognised" };
     if (!/^[A-Za-z0-9._-]{6,80}$/.test(t.key)) return { ok: false, status: 400, code: "bad_key", message: "A unique tap reference is required" };
@@ -177,17 +177,17 @@ export function createTokenService(deps: {
     const masked = `VINK ****${uid.slice(-4)}`;
     const posted = ledger.post(ref, "token_tap", [line(cur, holder, -fare, true), { account: systemAccounts(cur).clearing, kind: "system", amount: fare }], `Fare ${route.name}`);
     if (posted === "insufficient") {
-      const d = await db.query(`INSERT INTO terminal_taps (terminal_id, masked_pan, scheme, amount, currency, cardholder_verification, status, error_message, idempotency_key)
-                                VALUES ($1,$2,'vink_token',$3,$4,'token_card','declined','insufficient_tokens',$5) RETURNING id`, [t.terminalId, masked, fare / 100, cur, ref]);
+      const d = await db.query(`INSERT INTO terminal_taps (terminal_id, masked_pan, scheme, amount, currency, cardholder_verification, status, error_message, idempotency_key, session_id)
+                                VALUES ($1,$2,'vink_token',$3,$4,'token_card','declined','insufficient_tokens',$5,$6) RETURNING id`, [t.terminalId, masked, fare / 100, cur, ref, t.sessionId ?? null]);
       return { ok: false, status: 402, code: "insufficient_tokens", message: "Not enough tokens", tapId: String(d.rows[0].id) };
     }
     const cfg = (await reader.active(countryForCurrency(cur))).config;
     const split = calculateRevenueSplit(fare / 100, cfg.afc);
     const fee = split.vinkFeeDevice + split.vinkFeeCard;
     // the investor is paid the device fee per trip, not a share of each tap, so the per-tap investor share is zero for token taps
-    const ins = await db.query(`INSERT INTO terminal_taps (terminal_id, masked_pan, scheme, amount, currency, cardholder_verification, vink_fee_device, vink_fee_card, owner_settlement, investor_share, idempotency_key, status)
-                                VALUES ($1,$2,'vink_token',$3,$4,'token_card',$5,$6,$7,0,$8,'confirmed') RETURNING id`,
-      [t.terminalId, masked, fare / 100, cur, split.vinkFeeDevice, split.vinkFeeCard, Math.max(0, fare / 100 - fee), ref]);
+    const ins = await db.query(`INSERT INTO terminal_taps (terminal_id, masked_pan, scheme, amount, currency, cardholder_verification, vink_fee_device, vink_fee_card, owner_settlement, investor_share, idempotency_key, status, session_id)
+                                VALUES ($1,$2,'vink_token',$3,$4,'token_card',$5,$6,$7,0,$8,'confirmed',$9) RETURNING id`,
+      [t.terminalId, masked, fare / 100, cur, split.vinkFeeDevice, split.vinkFeeCard, Math.max(0, fare / 100 - fee), ref, t.sessionId ?? null]);
     await event(holder, cur, "fare", -fare, String(route.name), ref);
     if (engine) { try { await engine.settleTaps(25); } catch (e) { console.error("[token] settle after tap failed:", e instanceof Error ? e.message : e); } }   // the driver is credited at once; a failure here is retried by the next cycle
     return { ok: true, tapId: String(ins.rows[0].id), fareCents: fare, balanceCents: balance(), route: String(route.name), replayed: false };

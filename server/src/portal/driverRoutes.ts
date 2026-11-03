@@ -1,5 +1,6 @@
 import { Router, json, type Request, type Response, type RequestHandler } from "express";
-import { audit, bucketDays, pageParams, rangeParams, saDay, sendCsv, isUuid, fail } from "./common.js";
+import { audit, bucketDays, pageParams, rangeParams, saDay, saDayStart, sendCsv, isUuid, fail } from "./common.js";
+import { createRankSessions } from "./rankSessions.js";
 
 /**
  * The Driver's Dashboard API, mounted at /api/portal/driver (driver accounts only; the guard is applied where this is mounted).
@@ -91,6 +92,15 @@ export function createDriverRouter(db: Db, now: () => Date = () => new Date()): 
   const uid = (req: Request) => req.user!.userId;
 
   router.get("/", (req, res) => { res.json({ success: true, role: "driver", user: { id: uid(req), username: req.user!.username } }); });
+
+  /**
+   * GET /loading   the Driver Loading Dashboard: the vehicle this driver is loading now on a shared rank device (passengers, the running total, the latest taps) and what their closed
+   * sessions today came to. Only ever the signed-in driver's own: the driver is whoever tapped their card to pair the session, so a driver who takes over a vehicle sees their own sessions.
+   */
+  router.get("/loading", h(async (req, res) => {
+    const day = saDayStart(saDay(now()));
+    res.json({ success: true, ...(await createRankSessions(db, now).forDriver(uid(req), { from: day, to: new Date(day.getTime() + 24 * 3600_000) })) });
+  }));
 
   router.get("/profile", h(async (req, res) => {
     const u = (await db.query(`SELECT username, name, email FROM users WHERE id = $1`, [uid(req)])).rows[0];

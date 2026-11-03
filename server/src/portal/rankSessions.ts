@@ -34,11 +34,16 @@ export interface BoardView {
 
 /** How long a device waits for the driver's card before the session is cancelled, and how recently a device must have reported to count as online. */
 export const PAIR_WINDOW_MS = 10 * 60_000;
+/** The same card tapped again on the same session inside this window is not charged twice. (Someone paying for two passengers taps twice on purpose, so it is short.) */
+export const DUPLICATE_WINDOW_MS = 10_000;
+/** What the token service answers to a tap. */
+export type TapAnswer = { ok: true; tapId: string; fareCents: number; balanceCents: number; route: string; replayed: boolean } | { ok: false; status: number; code: string; message: string; tapId?: string };
+export type TapFn = (t: { terminalId: string; cardUid: unknown; routeId: string; key: string; sessionId: string }) => Promise<TapAnswer>;
 export const ONLINE_WITHIN_MS = 3 * 60_000;
 
 const iso = (v: unknown): string | null => (v ? new Date(v as string).toISOString() : null);
 
-export function createRankSessions(db: Db, now: () => Date = () => new Date(), pairWindowMs: number = PAIR_WINDOW_MS) {
+export function createRankSessions(db: Db, now: () => Date = () => new Date(), pairWindowMs: number = PAIR_WINDOW_MS, hooks: { onClosed?: (sessionId: string) => Promise<unknown> } = {}) {
   async function record(actorId: string | null, actorName: string, action: string, target: string, details: Record<string, unknown>): Promise<void> {
     try { await db.query(`INSERT INTO audit_log (id, actor_id, actor_name, action, target, details) VALUES ($1,$2,$3,$4,$5,$6)`, [randomUUID(), actorId, actorName, action, target, JSON.stringify(details)]); }
     catch (e) { console.error("[rank] audit failed:", e instanceof Error ? e.message : e); }
@@ -142,7 +147,49 @@ export function createRankSessions(db: Db, now: () => Date = () => new Date(), p
       [s.rank_id, s.vehicle_id, s.driver_id, a.marshalId, pax, a.note ?? null, now()])).rows[0];
     await db.query(`UPDATE loading_sessions SET departure_id = $2, passengers = COALESCE($3, passengers) WHERE id = $1`, [s.id, dep.id, pax]);
     await record(a.marshalId, a.actorName, "rank.session_close", String(s.id), { departureId: dep.id, passengers: pax, totalCents: Number(s.total_cents) });
+    // The session becomes a trip for ITS vehicle, driver and marshal. If that fails the departure still stands and the money cycle makes the trip on its next run.
+    if (hooks.onClosed) { try { await hooks.onClosed(String(s.id)); } catch (e) { console.error("[rank] the trip for a closed session will be made by the next cycle:", e instanceof Error ? e.message : e); } }
     return { ok: true, value: view((await byId(String(s.id)))!) };
+  }
+
+  /**
+   * A PASSENGER taps their VINK card on the rank device. It is charged only while a driver is paired, at the fare of the route the device serves (the server decides the amount), to the
+   * session, so the money and the trip follow that session's driver and vehicle. A retry with the same reference is answered as before and never charged twice; the same card again within
+   * a few seconds, on a new reference, is refused so a double tap cannot charge twice; a card without enough tokens is declined. Each session's passenger count and total are recounted from its taps.
+   */
+  async function tap(a: { terminalId: string; serial: string; cardUid: unknown; key: string }, charge: TapFn): Promise<Res<{ tapId: string; fareCents: number; balanceCents: number; route: string; replayed: boolean; session: { id: string; registration: string | null; driverName: string | null; passengers: number; totalCents: number } }>> {
+    const s = (await db.query(`${SESSION_SQL} WHERE s.terminal_id = $1 AND s.status IN ('pending','loading')`, [a.terminalId])).rows[0];
+    if (!s) return bad(409, "no_session", "No vehicle is loading on this device");
+    if (s.status === "pending") return bad(409, "not_paired", "Waiting for the driver to tap their driver card");
+    const term = (await db.query(`SELECT route_id FROM terminals WHERE id = $1`, [a.terminalId])).rows[0];
+    if (!term?.route_id) return bad(409, "no_route", "This device has no route, so no fare, set");
+    const uid = normaliseCardUid(a.cardUid);
+    if (!uid) return bad(400, "bad_card", "Card not recognised");
+    const ref = `toktap:${a.terminalId}:${a.key}`;
+    const seen = (await db.query(`SELECT id FROM terminal_taps WHERE terminal_id = $1 AND idempotency_key = $2`, [a.terminalId, ref])).rows[0];
+    if (!seen) {                                                                                      // a retry of a tap already answered skips this check and is answered as before
+      const masked = `VINK ****${uid.slice(-4)}`;
+      const recent = (await db.query(`SELECT id FROM terminal_taps WHERE session_id = $1 AND masked_pan = $2 AND status = 'confirmed' AND received_at >= $3 LIMIT 1`, [s.id, masked, new Date(Date.now() - DUPLICATE_WINDOW_MS)])).rows[0];
+      if (recent) { await record(null, `terminal:${a.serial}`, "rank.tap_blocked", String(s.id), { reason: "duplicate", card: uid.slice(-4) }); return bad(409, "duplicate_tap", "This card was just used. Wait a few seconds before tapping again."); }
+    }
+    const r = await charge({ terminalId: a.terminalId, cardUid: a.cardUid, routeId: String(term.route_id), key: a.key, sessionId: String(s.id) });
+    if (!r.ok) return { ...bad(r.status, r.code, r.message), ...(r.tapId ? { tapId: r.tapId } : {}) } as Fail;
+    const sum = (await db.query(`SELECT COUNT(*) AS n, COALESCE(SUM(amount), 0) AS total FROM terminal_taps WHERE session_id = $1 AND status = 'confirmed'`, [s.id])).rows[0];
+    const passengers = Number(sum.n), totalCents = Math.round(Number(sum.total) * 100);
+    await db.query(`UPDATE loading_sessions SET passengers = $2, total_cents = $3 WHERE id = $1`, [s.id, passengers, totalCents]);
+    return { ok: true, value: { tapId: r.tapId, fareCents: r.fareCents, balanceCents: r.balanceCents, route: r.route, replayed: r.replayed, session: { id: String(s.id), registration: s.registration ? String(s.registration) : null, driverName: s.driver_name ? String(s.driver_name) : null, passengers, totalCents } } };
+  }
+
+  /** What the driver's Loading Dashboard shows: the session they are driving now (passengers, running total, the latest taps) and their closed sessions in a period. */
+  async function forDriver(driverId: string, period: { from: Date; to: Date }) {
+    const cur = (await db.query(`${SESSION_SQL} WHERE s.driver_id = $1 AND s.status = 'loading'`, [driverId])).rows[0] ?? null;
+    const taps = cur ? (await db.query(`SELECT id, amount, received_at, masked_pan, status FROM terminal_taps WHERE session_id = $1 ORDER BY received_at DESC, id DESC LIMIT 15`, [cur.id])).rows : [];
+    // a closed session is a departure (the same record the marshal's list shows), so the day is this driver's departures in the period, with what each session collected
+    const day = (await db.query(`SELECT COUNT(*) AS n, COALESCE(SUM(s.passengers), 0) AS p, COALESCE(SUM(s.total_cents), 0) AS t FROM departures d JOIN loading_sessions s ON s.departure_id = d.id WHERE d.driver_id = $1 AND d.departed_at >= $2 AND d.departed_at < $3`, [driverId, period.from, period.to])).rows[0];
+    return {
+      current: cur ? { ...view(cur), taps: taps.map((t) => ({ id: String(t.id), at: iso(t.received_at)!, amountCents: Math.round(Number(t.amount) * 100), card: String(t.masked_pan ?? ""), status: String(t.status) })) } : null,
+      period: { sessions: Number(day.n), passengers: Number(day.p), totalCents: Number(day.t) },
+    };
   }
 
   /** What the marshal sees: the queue with each vehicle's loading status, and the rank's devices with whether each is online and in use. */
@@ -162,7 +209,7 @@ export function createRankSessions(db: Db, now: () => Date = () => new Date(), p
     };
   }
 
-  return { open, pair, cancel, close, board, expireStale };
+  return { open, pair, tap, cancel, close, board, forDriver, expireStale };
 }
 /**
  * Whether a terminal may be set up (or changed) as a SHARED RANK DEVICE: kind "rank", at one rank, charging one route. The rank has to be at one end of that route, and a route has one active

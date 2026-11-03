@@ -22,7 +22,7 @@ import { createRankSessions, type Res } from "./rankSessions.js";
  *   POST /ranks/:id/sessions/:sid/cancel     {reason?} a session that never loaded, or was started on the wrong vehicle
  *   POST /ranks/:id/sessions/:sid/close      {passengers?, note?} the vehicle departs: the departure is logged and the next vehicle can load
  */
-export function createMarshalRouter(db: Db, now: () => Date = () => new Date()): Router {
+export function createMarshalRouter(db: Db, now: () => Date = () => new Date(), onSessionClosed?: (sessionId: string) => Promise<unknown>): Router {
   const router = Router();
 
   router.get("/", (req, res) => { res.json({ success: true, role: "marshal", user: { id: uid(req), username: req.user!.username } }); });
@@ -121,7 +121,7 @@ export function createMarshalRouter(db: Db, now: () => Date = () => new Date()):
   }));
 
   /* ── shared rank devices ── */
-  const sessions = createRankSessions(db, now);
+  const sessions = createRankSessions(db, now, undefined, { onClosed: onSessionClosed });
   const answer = <T,>(res: import("express").Response, r: Res<T>, okStatus = 200) => {
     if (!r.ok) { res.status(r.status).json({ success: false, error: r.message, code: r.code }); return; }
     res.status(okStatus).json({ success: true, session: r.value });

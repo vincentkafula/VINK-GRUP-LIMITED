@@ -59,7 +59,7 @@ export function createPortalRouter(db: Db | null = pool, bank: Omit<BankDeps, "d
   };
   mount("driver", createDriverRouter, (d) => createLinkRouter(d, "driver"));
   mount("vehicle_owner", createOwnerRouter, (d) => createLinkRouter(d, "vehicle_owner"));
-  mount("marshal", createMarshalRouter, (d) => createLinkRouter(d, "marshal"));
+  mount("marshal", (d) => createMarshalRouter(d, undefined, money.closeSessionTrip), (d) => createLinkRouter(d, "marshal"));
   mount("association", createAssociationRouter);
   mount("investor", createInvestorRouter);
   mount("personal", createPersonalRouter);

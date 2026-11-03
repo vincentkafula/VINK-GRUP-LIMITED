@@ -8,6 +8,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { createRankSessions, checkRankDevice, PAIR_WINDOW_MS } from "./rankSessions.js";
 import { createMarshalRouter } from "./marshalRoutes.js";
+import { createDriverRouter } from "./driverRoutes.js";
 import { cardHash } from "../services/tokenService.js";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -230,6 +231,80 @@ describe("the device routes stay wired to the service", () => {
     expect(src).toMatch(/router\.post\("\/pair"[\s\S]*?authenticateTerminal\([\s\S]*?createRankSessions\(pool\)\.pair\(/);
     expect(src).toMatch(/router\.patch\("\/terminals\/:id"[\s\S]*?checkRankDevice\(pool, req\.params\.id, \{ kind, rankId, routeId \}\)/);
     expect(src).toMatch(/kind: \$\{?|kind = COALESCE\(\$8, kind\)/);
+  });
+});
+
+/** A stand-in for the token service: records a confirmed tap on the session, as the real one does, so the rules around it can be tested on their own. */
+const fakeCharge = (db: Db, o: { fail?: { status: number; code: string; message: string } } = {}) => async (t: { terminalId: string; cardUid: unknown; routeId: string; key: string; sessionId: string }) => {
+  if (o.fail) return { ok: false as const, ...o.fail };
+  const ref = `toktap:${t.terminalId}:${t.key}`, dup = (await db.query(`SELECT id FROM terminal_taps WHERE terminal_id = $1 AND idempotency_key = $2`, [t.terminalId, ref])).rows[0];
+  if (dup) return { ok: true as const, tapId: String(dup.id), fareCents: 2500, balanceCents: 5000, route: "Langa to Bellville", replayed: true };
+  const row = (await db.query(`INSERT INTO terminal_taps (terminal_id, masked_pan, scheme, amount, currency, cardholder_verification, status, idempotency_key, session_id) VALUES ($1,$2,'vink_token',25,'ZAR','token_card','confirmed',$3,$4) RETURNING id`, [t.terminalId, `VINK ****${String(t.cardUid).slice(-4)}`, ref, t.sessionId])).rows[0];
+  return { ok: true as const, tapId: String(row.id), fareCents: 2500, balanceCents: 5000, route: "Langa to Bellville", replayed: false };
+};
+
+describe("a passenger's tap on the device (the rules around the charge)", () => {
+  const tap = (w: W, d: string, key: string, uid: unknown = CARD.pax, charge = fakeCharge(w.db)) => w.rs.tap({ terminalId: d, serial: "RK-1", cardUid: uid, key }, charge);
+  it("needs a session that has been paired, a route for the fare and a readable card, and says which is missing", async () => {
+    const w = await world(); const d = await w.device("RK-1"); refused(await tap(w, d, "tap-0001"), 409, "no_session");
+    await w.queue(w.rank, w.v1); ok(await w.rs.open({ rankId: w.rank, marshalId: U.marshal, actorName: "m", terminalId: d })); refused(await tap(w, d, "tap-0001"), 409, "not_paired");
+    ok(await w.rs.pair({ terminalId: d, serial: "RK-1", cardUid: CARD.driver })); refused(await tap(w, d, "tap-0001", ""), 400, "bad_card"); refused(await tap(w, d, "tap-0001", null), 400, "bad_card");
+    await w.db.query(`UPDATE terminals SET route_id = NULL WHERE id = $1`, [d]); refused(await tap(w, d, "tap-0001"), 409, "no_route");
+    expect((await w.db.query(`SELECT COUNT(*) AS n FROM terminal_taps`)).rows[0].n).toBe(0);                        // none of those charged anything
+  });
+  it("counts each accepted tap on the session, and passes a refusal from the token service through with its code", async () => {
+    const w = await world(); const { d } = await opened(w); ok(await w.rs.pair({ terminalId: d, serial: "RK-1", cardUid: CARD.driver }));
+    expect(ok<any>(await tap(w, d, "tap-0001")).session).toMatchObject({ passengers: 1, totalCents: 2500, registration: "CA 111-111", driverName: "Driver One" });
+    expect(ok<any>(await tap(w, d, "tap-0002", "04AAAA0002")).session).toMatchObject({ passengers: 2, totalCents: 5000 });
+    refused(await tap(w, d, "tap-0003", "04BBBB0003", fakeCharge(w.db, { fail: { status: 402, code: "insufficient_tokens", message: "Not enough tokens" } })), 402, "insufficient_tokens");
+    expect((await w.rs.board(w.rank)).queue[0]).toMatchObject({ status: "loading" });
+  });
+});
+
+describe("the driver's loading dashboard", () => {
+  let server: Server, url = "", w: W, as = U.driver, d = "";
+  beforeEach(async () => {
+    w = await world(); as = U.driver; const app = express(); app.use(express.json());
+    app.use((req, _r, next) => { (req as any).user = { userId: as, username: "driver", role: "driver" }; next(); }); app.use("/driver", createDriverRouter(w.db, () => clock));
+    await new Promise<void>((ok2) => { server = app.listen(0, "127.0.0.1", ok2); }); url = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+    d = await w.device("RK-1"); await w.queue(w.rank, w.v1); ok(await w.rs.open({ rankId: w.rank, marshalId: U.marshal, actorName: "m", terminalId: d })); ok(await w.rs.pair({ terminalId: d, serial: "RK-1", cardUid: CARD.driver }));
+  });
+  afterEach(() => new Promise<void>((ok2) => server.close(() => ok2())));
+  const get = async () => (await (await fetch(url + "/driver/loading")).json()) as any;
+
+  it("shows the driver the vehicle they are loading, the running total and the latest taps, and only theirs", async () => {
+    await tap2(w, d, "tap-0001", "04AAAA0001"); await tap2(w, d, "tap-0002", "04BBBB0002");
+    const mine = await get(); expect(mine).toMatchObject({ success: true, current: { status: "loading", registration: "CA 111-111", driverName: "Driver One", passengers: 2, totalCents: 5000 }, period: { sessions: 0, passengers: 0, totalCents: 0 } });
+    expect(mine.current.taps).toHaveLength(2); expect(mine.current.taps[0]).toMatchObject({ amountCents: 2500, status: "confirmed" }); expect(mine.current.taps[0].card).toMatch(/^VINK \*\*\*\*/);
+    as = U.driver2; expect((await get()).current).toBeNull();                                    // another driver sees nothing of it
+    as = U.owner; expect((await get()).current).toBeNull();
+  });
+  it("adds a departed session to the driver's day, and the driver who takes the vehicle over sees their own session, not the last one's", async () => {
+    await tap2(w, d, "tap-0001", "04AAAA0001"); const sid = (await w.db.query(`SELECT id FROM loading_sessions`)).rows[0].id as string;
+    ok(await w.rs.close({ sessionId: sid, rankId: w.rank, marshalId: U.marshal, actorName: "m" }));
+    expect(await get()).toMatchObject({ current: null, period: { sessions: 1, passengers: 1, totalCents: 2500 } });
+    await w.db.query(`INSERT INTO owner_drivers (owner_id, driver_id, status, requested_by) VALUES ($1,$2,'active','owner')`, [U.owner, U.driver3]);
+    await w.queue(w.rank, w.v1); ok(await w.rs.open({ rankId: w.rank, marshalId: U.marshal, actorName: "m", terminalId: d })); ok(await w.rs.pair({ terminalId: d, serial: "RK-1", cardUid: CARD.driver3 }));
+    as = U.driver3; expect((await get()).current).toMatchObject({ driverName: "Driver Three", passengers: 0 }); as = U.driver; expect((await get()).current).toBeNull();
+  });
+});
+const tap2 = (w: W, d: string, key: string, uid: string) => w.rs.tap({ terminalId: d, serial: "RK-1", cardUid: uid, key }, fakeCharge(w.db));
+
+describe("the departure hook and the wiring", () => {
+  it("makes the session's trip when the marshal ends it, and a failing hook does not stop the departure", async () => {
+    const seen: string[] = []; const w = await world(); const d = await w.device("RK-1"); await w.queue(w.rank, w.v1);
+    const rsHook = createRankSessions(w.db, () => clock, undefined, { onClosed: async (sid) => { seen.push(sid); throw new Error("trip service down"); } });
+    const s = ok<any>(await rsHook.open({ rankId: w.rank, marshalId: U.marshal, actorName: "m", terminalId: d })); ok(await rsHook.pair({ terminalId: d, serial: "RK-1", cardUid: CARD.driver }));
+    expect(ok<any>(await rsHook.close({ sessionId: s.id, rankId: w.rank, marshalId: U.marshal, actorName: "m" })).status).toBe("closed"); expect(seen).toEqual([s.id]);
+  });
+  it("is wired end to end in the source: the device taps through the service, the marshal's router and the portal pass the hook on, and settlement reads the session's driver and owner", () => {
+    const read = (f: string) => readFileSync(join(__dirname, f), "utf8");
+    expect(read("tokenRoutes.ts")).toMatch(/router\.post\("\/rank-tap"[\s\S]*?authed\(req\)[\s\S]*?createRankSessions\(d\.db\)\.tap\([\s\S]*?d\.tokens\.tapToken\(t\)/);
+    expect(read("../routes/portal.ts")).toMatch(/createMarshalRouter\(d, undefined, money\.closeSessionTrip\)/); expect(read("../index.ts")).toMatch(/closeSessionTrip: moneyEngine \? \(id\) => moneyEngine\.closeSessionTrip\(id\) : undefined/);
+    expect(read("marshalRoutes.ts")).toMatch(/createRankSessions\(db, now, undefined, \{ onClosed: onSessionClosed \}\)/);
+    const money = read("../services/moneyEngine.ts");
+    expect(money).toMatch(/COALESCE\(s\.driver_id, m\.driver_id\) AS driver_id, COALESCE\(sv\.owner_id, m\.owner_id\) AS owner_id/); expect(money).toMatch(/LEFT JOIN loading_sessions s ON s\.id = t\.session_id/);
+    expect(money).toMatch(/t\.status = 'confirmed' AND t\.trip_id IS NULL AND t\.session_id IS NULL/);                 // the ordinary trip run leaves session taps to the session's own trip
   });
 });
 

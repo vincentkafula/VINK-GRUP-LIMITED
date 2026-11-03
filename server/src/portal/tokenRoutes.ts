@@ -6,6 +6,7 @@ import type { CrossBorder } from "../services/crossBorderService.js";
 import type { Engine, LedgerPort } from "../services/moneyEngine.js";
 import type { ConfigReader } from "../config/configService.js";
 import { recordPoolCredit, referenceLooksValid, normaliseReference } from "../services/poolService.js";
+import { createRankSessions } from "./rankSessions.js";
 
 /**
  * VINK tokens for every portal user (passengers, drivers, owners, marshals, associations, investors). Mounted at /api/portal/<role>/tokens.
@@ -224,6 +225,19 @@ export function createTokenTerminalRouter(d: { db: Db; tokens: TokenService; aut
     const r = await d.tokens.tapToken({ terminalId: a.terminalId, cardUid: b.cardNumber, routeId: b.routeId, key });
     if (!r.ok) { res.status(r.status).json({ success: false, error: r.message, code: r.code, data: r.tapId ? { tapId: r.tapId } : undefined }); return; }
     res.status(r.replayed ? 200 : 201).json({ success: true, data: { tapId: r.tapId, fareCents: r.fareCents, balanceCents: r.balanceCents, route: r.route, replayed: r.replayed } });
+  }));
+  /**
+   * POST /rank-tap  {cardNumber}   (header Idempotency-Key)
+   * A passenger taps their VINK card on a SHARED RANK DEVICE. Charged only while a driver is paired (see POST /api/terminal/pair), at the fare of the route the device serves, to that
+   * session: the money and the trip follow the session's driver and vehicle. Retried safely by key; the same card again within a few seconds is refused (duplicate_tap).
+   */
+  router.post("/rank-tap", h(async (req, res) => {
+    const a = await authed(req);
+    if (!a.authenticated || !a.terminalId) return fail(res, 401, a.error ?? "Terminal authentication failed");
+    const b = (req.body ?? {}) as Record<string, unknown>;
+    const r = await createRankSessions(d.db).tap({ terminalId: a.terminalId, serial: req.header("x-terminal-serial") ?? "", cardUid: b.cardNumber, key: req.header("idempotency-key") ?? "" }, (t) => d.tokens.tapToken(t));
+    if (!r.ok) { res.status(r.status).json({ success: false, error: r.message, code: r.code, data: (r as { tapId?: string }).tapId ? { tapId: (r as { tapId?: string }).tapId } : undefined }); return; }
+    res.status(r.value.replayed ? 200 : 201).json({ success: true, data: r.value });
   }));
   return router;
 }

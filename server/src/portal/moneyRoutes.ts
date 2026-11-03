@@ -43,6 +43,8 @@ export interface MoneyDeps {
   crossBorder?: CrossBorder;
   /** VINK tokens: the closed-loop points system, available to every portal user. */
   tokens?: TokenService;
+  /** Makes the trip (and its marshal and device fees) for a loading session that has just departed. */
+  closeSessionTrip?: (sessionId: string) => Promise<unknown>;
 }
 
 export function createMoneyRouter(db: Db, role: MoneyRole, deps: MoneyDeps = {}): Router {

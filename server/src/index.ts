@@ -217,7 +217,7 @@ const crossBorder = moneyEngine && pool ? createCrossBorder({ db: pool, ledger: 
 if (moneyEngine) bankFeed.router = createBankFeedRouter({ deps: { db: pool!, ledger: moneyLedger, engine: moneyEngine, reader: configReader }, secret: process.env.BANK_WEBHOOK_SECRET?.trim() || undefined });
 const channelAccounts = () => pooled.forCurrency("ZAR");
 app.use("/api/portal",        createPortalRouter(pool, bankDeps, {
-  channels: (currency) => pooled.forCurrency(currency), crossBorder, tokens: tokenService ?? undefined,
+  channels: (currency) => pooled.forCurrency(currency), crossBorder, tokens: tokenService ?? undefined, closeSessionTrip: moneyEngine ? (id) => moneyEngine.closeSessionTrip(id) : undefined,
   wallets: (userId) => { const b = moneyLedger.balance(walletLedgerAccount("ZMW", userId)); return b ? [{ currency: "ZMW", balanceCents: b }] : []; },
 }));
 if (pool) app.use("/api/admin/departments", requireAuth, requireRole("owner", "superadmin"), createDepartmentsRouter({ db: pool, moduleSections: MODULE_SECTIONS }));

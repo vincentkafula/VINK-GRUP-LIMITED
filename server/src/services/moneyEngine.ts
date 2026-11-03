@@ -75,6 +75,8 @@ export interface Agreement { id: string; owner_id: string; driver_id: string; mo
 export interface Engine {
   settleTaps(limit?: number): Promise<{ settled: number; blocked: number }>;
   closeTrips(): Promise<{ trips: number }>;
+  /** The trip for one departed loading session on a shared rank device: its own vehicle, driver, owner and marshal. Safe to repeat. */
+  closeSessionTrip(sessionId: string): Promise<{ trip: string | null }>;
   runSchedules(now?: Date): Promise<{ created: number }>;
   processItems(now?: Date, limit?: number): Promise<{ paid: number; waiting: number; arrears: number }>;
   runCycle(now?: Date): Promise<Record<string, number>>;
@@ -110,9 +112,12 @@ export function createMoneyEngine(deps: {
   /* ── 1. settle confirmed taps ── */
   async function settleTaps(limit = 200) {
     const taps = (await db.query(
-      `SELECT t.id, t.amount, t.currency, t.vink_fee_device, t.vink_fee_card, t.investor_share, t.owner_settlement, t.received_at,
-              m.owner_id, m.driver_id, m.investor_id
+      // A tap made on a SHARED RANK DEVICE belongs to a loading session: its driver is whoever tapped their card to pair it (drivers change), and its owner is the vehicle's. Every other tap
+      // belongs to the terminal's own owner and driver, exactly as before.
+      `SELECT t.id, t.amount, t.currency, t.vink_fee_device, t.vink_fee_card, t.investor_share, t.owner_settlement, t.received_at, t.session_id,
+              COALESCE(s.driver_id, m.driver_id) AS driver_id, COALESCE(sv.owner_id, m.owner_id) AS owner_id, m.investor_id
          FROM terminal_taps t JOIN terminals m ON m.id = t.terminal_id
+         LEFT JOIN loading_sessions s ON s.id = t.session_id LEFT JOIN vehicles sv ON sv.id = s.vehicle_id
         WHERE t.status = 'confirmed' AND t.settled_at IS NULL ORDER BY t.received_at, t.id LIMIT $1`, [limit])).rows;
     let settled = 0, blocked = 0;
     for (const t of taps) {
@@ -121,7 +126,10 @@ export function createMoneyEngine(deps: {
       const on = saDay(new Date(t.received_at));
       const agr = await activeAgreement(t.owner_id, t.driver_id, on);
       // who keeps the remainder: the driver on cash basis (they pay the owner weekly); otherwise the owner (salary and per-trip agreements, or none); the driver when there is no owner
-      const destUser = agr?.mode === "cash_basis_weekly" ? t.driver_id : (t.owner_id ?? t.driver_id);
+      // On a rank device the driver at the wheel keeps the fares (to withdraw any time, to cover fuel and other costs) and settles with the owner under their agreement, unless the agreement
+      // is a salary or a per-trip amount, where the owner receives the fares and pays the driver. A substitute driver with no agreement keeps what they collect.
+      const destUser = t.session_id ? (agr && agr.mode !== "cash_basis_weekly" ? (t.owner_id ?? t.driver_id) : t.driver_id)
+        : agr?.mode === "cash_basis_weekly" ? t.driver_id : (t.owner_id ?? t.driver_id);
       const cur = String(t.currency ?? "ZAR"), sys = systemAccounts(cur);
       const dest = await partyOf(destUser, cur);
       const investor = investorCut > 0 ? await partyOf(t.investor_id, cur) : null;
@@ -147,14 +155,43 @@ export function createMoneyEngine(deps: {
   }
 
   /* ── 2. taps -> trips -> marshal fee / per-trip pay ── */
+  /**
+   * A loading session on a rank device is ONE trip: when the vehicle has departed, the taps it collected become a trip for the session's own vehicle, driver, owner and marshal (not the
+   * terminal's), linked to the departure, so the marshal fee, the device fee and any per-trip pay fall on the right people. Safe to repeat: a departure has at most one trip.
+   */
+  async function closeSessionTrip(sessionId: string): Promise<{ trip: string | null }> {
+    const s = (await db.query(
+      `SELECT s.id, s.terminal_id, s.vehicle_id, s.driver_id, s.marshal_id, s.departure_id, s.status, v.owner_id, r.association_id, m.investor_id
+         FROM loading_sessions s JOIN vehicles v ON v.id = s.vehicle_id JOIN ranks r ON r.id = s.rank_id JOIN terminals m ON m.id = s.terminal_id WHERE s.id = $1`, [sessionId])).rows[0];
+    if (!s || s.status !== "closed") return { trip: null };
+    const taps = (await db.query(`SELECT id, amount, currency, received_at, scheme FROM terminal_taps WHERE session_id = $1 AND status = 'confirmed' AND trip_id IS NULL ORDER BY received_at, id`, [sessionId])).rows;
+    if (!taps.length) return { trip: null };
+    const cfg = await cfgFor(taps[0].currency);
+    const next = Number((await db.query(`SELECT COALESCE(MAX(trip_no), 0) + 1 AS n FROM trips WHERE terminal_id = $1`, [s.terminal_id])).rows[0].n);
+    const first = new Date(taps[0].received_at), last = new Date(taps[taps.length - 1].received_at), fare = taps.reduce((a, g) => a + cents(g.amount), 0);
+    let tripId: string;
+    try {
+      tripId = (await db.query(
+        `INSERT INTO trips (terminal_id, trip_no, vehicle_id, driver_id, owner_id, marshal_id, departure_id, taps, fare_cents, currency, first_tap_at, completed_at)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING id`, [s.terminal_id, next, s.vehicle_id, s.driver_id, s.owner_id, s.marshal_id, s.departure_id, taps.length, fare, taps[0].currency, first, last])).rows[0].id;
+    } catch (e) { if (isUniqueViolation(e)) return { trip: null }; throw e; }                 // the session's departure already has its trip
+    for (const g of taps) await db.query(`UPDATE terminal_taps SET trip_id = $1 WHERE id = $2 AND trip_id IS NULL`, [tripId, g.id]);
+    await createTripItems(tripId, { driver_id: s.driver_id, owner_id: s.owner_id, association_id: s.association_id, marshal_id: s.marshal_id, investor_id: s.investor_id }, taps[0].currency, last, cfg, taps.every((g) => g.scheme === "vink_token"));
+    return { trip: tripId };
+  }
+
   async function closeTrips() {
+    // sessions that have departed but whose trip was not made (the hook at close failed): made here, so nothing is left behind
+    const owing = (await db.query(`SELECT DISTINCT t.session_id FROM terminal_taps t JOIN loading_sessions s ON s.id = t.session_id WHERE t.status = 'confirmed' AND t.trip_id IS NULL AND s.status = 'closed'`)).rows;
+    let fromSessions = 0;
+    for (const o of owing) if ((await closeSessionTrip(String(o.session_id))).trip) fromSessions++;
     const terms = (await db.query(
-      `SELECT DISTINCT t.terminal_id FROM terminal_taps t WHERE t.status = 'confirmed' AND t.trip_id IS NULL`)).rows;
+      `SELECT DISTINCT t.terminal_id FROM terminal_taps t WHERE t.status = 'confirmed' AND t.trip_id IS NULL AND t.session_id IS NULL`)).rows;
     let made = 0;
     for (const { terminal_id } of terms) {
       const term = (await db.query(`SELECT id, vehicle_id, driver_id, owner_id, association_id, investor_id FROM terminals WHERE id = $1`, [terminal_id])).rows[0];
       if (!term) continue;
-      const taps = (await db.query(`SELECT id, amount, currency, received_at, scheme FROM terminal_taps WHERE terminal_id = $1 AND status = 'confirmed' AND trip_id IS NULL ORDER BY received_at, id`, [terminal_id])).rows;
+      const taps = (await db.query(`SELECT id, amount, currency, received_at, scheme FROM terminal_taps WHERE terminal_id = $1 AND status = 'confirmed' AND trip_id IS NULL AND session_id IS NULL ORDER BY received_at, id`, [terminal_id])).rows;
       if (!taps.length) continue;
       const cfg = await cfgFor(taps[0].currency);
       const per = cfg.trip.tapsPerTrip;
@@ -181,7 +218,7 @@ export function createMoneyEngine(deps: {
         await createTripItems(tripId, { ...term, marshal_id: dep?.marshal_id ?? null }, group[0].currency, last, cfg, group.every((g) => g.scheme === "vink_token"));
       }
     }
-    return { trips: made };
+    return { trips: made + fromSessions };
   }
 
   async function createTripItems(tripId: string, t: { driver_id: string | null; owner_id: string | null; association_id: string | null; marshal_id: string | null; investor_id?: string | null }, currency: string, at: Date, cfg: CountryConfig, tokenTrip = false) {
@@ -302,5 +339,5 @@ export function createMoneyEngine(deps: {
     const s = await settleTaps(), t = await closeTrips(), sc = await runSchedules(now), p = await processItems(at ?? clock());      // items created a moment ago by this very cycle are due too
     return { settled: s.settled, blocked: s.blocked, trips: t.trips, scheduled: sc.created, paid: p.paid, waiting: p.waiting, arrears: p.arrears };
   }
-  return { settleTaps, closeTrips, runSchedules, processItems, runCycle, partyOf };
+  return { settleTaps, closeTrips, closeSessionTrip, runSchedules, processItems, runCycle, partyOf };
 }
