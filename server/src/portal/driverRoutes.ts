@@ -87,7 +87,7 @@ export function expiryReminders(items: { key: string; kind: Reminder["kind"]; la
   return out;
 }
 
-export function createDriverRouter(db: Db, now: () => Date = () => new Date()): Router {
+export function createDriverRouter(db: Db, now: () => Date = () => new Date(), onSessionClosed?: (sessionId: string) => Promise<unknown>): Router {
   const router = Router();
   const uid = (req: Request) => req.user!.userId;
 
@@ -100,6 +100,17 @@ export function createDriverRouter(db: Db, now: () => Date = () => new Date()): 
   router.get("/loading", h(async (req, res) => {
     const day = saDayStart(saDay(now()));
     res.json({ success: true, ...(await createRankSessions(db, now).forDriver(uid(req), { from: day, to: new Date(day.getTime() + 24 * 3600_000) })) });
+  }));
+
+  /**
+   * POST /loading/depart   {note?}   "Vehicle full, depart": the driver ends the session they are loading. The departure is logged under the marshal who started it, the vehicle leaves the queue and the
+   * session becomes a trip. A driver can only depart their own session.
+   */
+  router.post("/loading/depart", json({ limit: "5kb" }), h(async (req, res) => {
+    const note = typeof req.body?.note === "string" ? req.body.note.trim().slice(0, 200) || null : null;
+    const r = await createRankSessions(db, now, undefined, { onClosed: onSessionClosed }).departByDriver({ driverId: uid(req), actorName: req.user!.username, note });
+    if (!r.ok) { res.status(r.status).json({ success: false, error: r.message, code: r.code }); return; }
+    res.json({ success: true, session: r.value });
   }));
 
   router.get("/profile", h(async (req, res) => {

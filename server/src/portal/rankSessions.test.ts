@@ -308,3 +308,108 @@ describe("the departure hook and the wiring", () => {
   });
 });
 
+/** A service that records every live event it would send, so who receives what can be checked. */
+function watched(w: W, o: { throws?: boolean } = {}) {
+  const sent: { to: string[]; event: string; data: any }[] = [];
+  const rsw = createRankSessions(w.db, () => clock, undefined, { notify: (to, event, data) => { if (o.throws) throw new Error("socket down"); sent.push({ to, event, data }); }, onClosed: async () => undefined });
+  return { rsw, sent };
+}
+
+describe("live events go only to the session's driver and marshal", () => {
+  it("tells the marshal when a session opens, and the driver as well once they pair, and nobody else", async () => {
+    const w = await world(); const { rsw, sent } = watched(w); const d = await w.device("RK-1"); await w.queue(w.rank, w.v1);
+    ok(await rsw.open({ rankId: w.rank, marshalId: U.marshal, actorName: "m", terminalId: d })); expect(sent).toEqual([{ to: [U.marshal], event: "rank.session", data: { session: expect.objectContaining({ status: "pending", driverId: null }) } }]);
+    ok(await rsw.pair({ terminalId: d, serial: "RK-1", cardUid: CARD.driver })); expect(sent[1]).toMatchObject({ event: "rank.session", data: { session: { status: "loading", driverId: U.driver, driverName: "Driver One" } } }); expect([...sent[1].to].sort()).toEqual([U.marshal, U.driver].sort());
+    for (const e of sent) for (const other of [U.driver2, U.driver3, U.owner, U.pax, U.marshal2]) expect(e.to, `${e.event} must not reach ${other}`).not.toContain(other);
+  });
+  it("sends each accepted tap to the driver and marshal with the running total, and the card as its last four characters only", async () => {
+    const w = await world(); const { rsw, sent } = watched(w); const d = await w.device("RK-1"); await w.queue(w.rank, w.v1);
+    ok(await rsw.open({ rankId: w.rank, marshalId: U.marshal, actorName: "m", terminalId: d })); ok(await rsw.pair({ terminalId: d, serial: "RK-1", cardUid: CARD.driver })); sent.length = 0;
+    ok(await rsw.tap({ terminalId: d, serial: "RK-1", cardUid: CARD.pax, key: "tap-0001" }, fakeCharge(w.db)));
+    expect(sent).toHaveLength(1); expect(sent[0]).toMatchObject({ event: "rank.tap", data: { passengers: 1, totalCents: 2500, tap: { amountCents: 2500, card: "VINK ****FEED", status: "confirmed" } } }); expect([...sent[0].to].sort()).toEqual([U.marshal, U.driver].sort());
+    expect(JSON.stringify(sent)).not.toContain(CARD.pax);                                          // the full card number never leaves the server in an event
+  });
+  it("sends nothing for a retry, a refused double tap or a card that is declined", async () => {
+    const w = await world(); const { rsw, sent } = watched(w); const d = await w.device("RK-1"); await w.queue(w.rank, w.v1);
+    ok(await rsw.open({ rankId: w.rank, marshalId: U.marshal, actorName: "m", terminalId: d })); ok(await rsw.pair({ terminalId: d, serial: "RK-1", cardUid: CARD.driver }));
+    ok(await rsw.tap({ terminalId: d, serial: "RK-1", cardUid: CARD.pax, key: "tap-0001" }, fakeCharge(w.db))); sent.length = 0;
+    ok(await rsw.tap({ terminalId: d, serial: "RK-1", cardUid: CARD.pax, key: "tap-0001" }, fakeCharge(w.db)));                       // a retry
+    refused(await rsw.tap({ terminalId: d, serial: "RK-1", cardUid: CARD.pax, key: "tap-0002" }, fakeCharge(w.db)), 409, "duplicate_tap");
+    refused(await rsw.tap({ terminalId: d, serial: "RK-1", cardUid: "04ZZZZ0009", key: "tap-0003" }, fakeCharge(w.db, { fail: { status: 402, code: "insufficient_tokens", message: "Not enough tokens" } })), 402, "insufficient_tokens");
+    expect(sent).toEqual([]);
+  });
+  it("tells both of them when the vehicle departs and when a session is cancelled or expires", async () => {
+    const w = await world(); const { rsw, sent } = watched(w); const d = await w.device("RK-1"); await w.queue(w.rank, w.v1);
+    const s = ok<any>(await rsw.open({ rankId: w.rank, marshalId: U.marshal, actorName: "m", terminalId: d })); ok(await rsw.pair({ terminalId: d, serial: "RK-1", cardUid: CARD.driver })); sent.length = 0;
+    ok(await rsw.close({ sessionId: s.id, rankId: w.rank, marshalId: U.marshal, actorName: "m" })); expect(sent.at(-1)).toMatchObject({ event: "rank.session", data: { session: { status: "closed" } } }); expect([...sent.at(-1)!.to].sort()).toEqual([U.marshal, U.driver].sort());
+    await w.queue(w.rank, w.v2); const s2 = ok<any>(await rsw.open({ rankId: w.rank, marshalId: U.marshal, actorName: "m", terminalId: d })); sent.length = 0;
+    ok(await rsw.cancel({ sessionId: s2.id, rankId: w.rank, marshalId: U.marshal, actorName: "m" })); expect(sent[0]).toMatchObject({ to: [U.marshal], data: { session: { status: "cancelled" } } });
+    await w.queue(w.rank, w.v3); ok(await rsw.open({ rankId: w.rank, marshalId: U.marshal, actorName: "m", terminalId: d })); sent.length = 0; clock = new Date(clock.getTime() + PAIR_WINDOW_MS + 1000); await rsw.expireStale();
+    expect(sent[0]).toMatchObject({ to: [U.marshal], data: { session: { status: "cancelled", closeReason: "No driver card was tapped in time" } } });
+  });
+  it("never lets a failing live connection stop the pairing, the tap or the departure", async () => {
+    const w = await world(); const { rsw } = watched(w, { throws: true }); const d = await w.device("RK-1"); await w.queue(w.rank, w.v1);
+    const s = ok<any>(await rsw.open({ rankId: w.rank, marshalId: U.marshal, actorName: "m", terminalId: d })); ok(await rsw.pair({ terminalId: d, serial: "RK-1", cardUid: CARD.driver }));
+    ok(await rsw.tap({ terminalId: d, serial: "RK-1", cardUid: CARD.pax, key: "tap-0001" }, fakeCharge(w.db))); expect(ok<any>(await rsw.close({ sessionId: s.id, rankId: w.rank, marshalId: U.marshal, actorName: "m" })).status).toBe("closed");
+  });
+});
+
+describe("the driver departs their own vehicle", () => {
+  it("ends the session they are loading, under the marshal who started it, with the driver as the person who pressed it, and makes the trip", async () => {
+    const w = await world(); const closed: string[] = []; const rsd = createRankSessions(w.db, () => clock, undefined, { notify: () => {}, onClosed: async (id) => { closed.push(id); } });
+    const d = await w.device("RK-1"); await w.queue(w.rank, w.v1); const s = ok<any>(await rsd.open({ rankId: w.rank, marshalId: U.marshal, actorName: "marshal", terminalId: d })); ok(await rsd.pair({ terminalId: d, serial: "RK-1", cardUid: CARD.driver }));
+    await rsd.tap({ terminalId: d, serial: "RK-1", cardUid: CARD.pax, key: "tap-0001" }, fakeCharge(w.db));
+    const r = ok<any>(await rsd.departByDriver({ driverId: U.driver, actorName: "driver", note: "full" })); expect(r).toMatchObject({ id: s.id, status: "closed", passengers: 1, totalCents: 2500 }); expect(closed).toEqual([s.id]);
+    expect((await w.db.query(`SELECT marshal_id, driver_id, passengers, note FROM departures WHERE id = $1`, [r.departureId])).rows[0]).toMatchObject({ marshal_id: U.marshal, driver_id: U.driver, passengers: 1, note: "full" });
+    const log = (await w.audit("rank.session_close"))[0]; expect(log).toMatchObject({ target: s.id }); expect(JSON.parse(log.details)).toMatchObject({ by: "driver" });
+    expect((await w.rs.board(w.rank)).queue).toEqual([]);                                           // the vehicle has left the queue
+    refused(await rsd.departByDriver({ driverId: U.driver, actorName: "driver" }), 409, "no_session");                // pressing it again, or when not loading, is refused
+  });
+  it("cannot be used to depart someone else's session: a driver who is not loading is told so", async () => {
+    const w = await world(); const { d } = await opened(w); ok(await w.rs.pair({ terminalId: d, serial: "RK-1", cardUid: CARD.driver }));
+    refused(await w.rs.departByDriver({ driverId: U.driver2, actorName: "driver2" }), 409, "no_session"); refused(await w.rs.departByDriver({ driverId: U.marshal, actorName: "marshal" }), 409, "no_session");
+    expect((await w.rs.board(w.rank)).queue[0].status).toBe("loading");
+  });
+  it("is a route that only ever acts for the signed-in driver", async () => {
+    const w = await world(); const app = express(); app.use(express.json()); let as = U.driver;
+    app.use((req, _r, next) => { (req as any).user = { userId: as, username: "driver", role: "driver" }; next(); }); app.use("/driver", createDriverRouter(w.db, () => clock));
+    const srv: Server = await new Promise((ok2) => { const x = app.listen(0, "127.0.0.1", () => ok2(x)); }); const base = `http://127.0.0.1:${(srv.address() as AddressInfo).port}`;
+    try {
+      const { d } = await opened(w); ok(await w.rs.pair({ terminalId: d, serial: "RK-1", cardUid: CARD.driver }));
+      const post = async () => { const r = await fetch(`${base}/driver/loading/depart`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ note: "x".repeat(300) }) }); return { status: r.status, body: (await r.json()) as any }; };
+      as = U.driver2; expect(await post()).toMatchObject({ status: 409, body: { success: false, code: "no_session" } });
+      as = U.driver; const done = await post(); expect(done).toMatchObject({ status: 200, body: { success: true, session: { status: "closed" } } });
+      expect((await w.db.query(`SELECT note FROM departures`)).rows[0].note).toHaveLength(200);                   // the note is cut to 200 characters
+    } finally { await new Promise<void>((ok2) => srv.close(() => ok2())); }
+  });
+});
+
+describe("the old Depart and Remove buttons leave a loading vehicle to its session", () => {
+  let server: Server, url = "", w: W;
+  beforeEach(async () => {
+    w = await world(); const app = express(); app.use(express.json());
+    app.use((req, _r, next) => { (req as any).user = { userId: U.marshal, username: "marshal", role: "marshal" }; next(); }); app.use("/marshal", createMarshalRouter(w.db, () => clock));
+    await new Promise<void>((ok2) => { server = app.listen(0, "127.0.0.1", ok2); }); url = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+  });
+  afterEach(() => new Promise<void>((ok2) => server.close(() => ok2())));
+  const post = async (path: string, body: unknown = {}) => { const r = await fetch(url + path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }); return { status: r.status, body: (await r.json()) as any }; };
+
+  it("refuses to depart or remove a vehicle that is loading on a device, so a session is never left open behind a vehicle that has gone", async () => {
+    const d = await w.device("RK-1"); const q1 = await w.queue(w.rank, w.v1); ok(await w.rs.open({ rankId: w.rank, marshalId: U.marshal, actorName: "m", terminalId: d }));
+    expect(await post(`/marshal/ranks/${w.rank}/depart`, { queueId: q1 })).toMatchObject({ status: 409, body: { error: expect.stringContaining("loading on a device") } });
+    expect(await post(`/marshal/ranks/${w.rank}/queue/${q1}/remove`)).toMatchObject({ status: 409, body: { error: expect.stringContaining("loading on a device") } });
+    expect((await w.db.query(`SELECT COUNT(*) AS n FROM departures`)).rows[0].n).toBe(0); expect((await w.rs.board(w.rank)).queue).toHaveLength(1);
+  });
+  it("takes the next vehicle in line, not the loading one, when no vehicle is named; with nobody else waiting it says so", async () => {
+    const d = await w.device("RK-1"); const q1 = await w.queue(w.rank, w.v1); ok(await w.rs.open({ rankId: w.rank, marshalId: U.marshal, actorName: "m", terminalId: d }));
+    expect(await post(`/marshal/ranks/${w.rank}/depart`)).toMatchObject({ status: 409, body: { error: "Nobody is waiting at this rank" } });
+    const q2 = await w.queue(w.rank, w.v2); expect((await post(`/marshal/ranks/${w.rank}/depart`)).status).toBe(201);
+    expect((await w.db.query(`SELECT vehicle_id FROM departures`)).rows[0].vehicle_id).toBe(w.v2); expect(q1).toBeTruthy(); expect(q2).toBeTruthy();                // the second vehicle left, the loading one stayed
+  });
+  it("works as before for any vehicle that is not loading, and again once its session is cancelled", async () => {
+    const q1 = await w.queue(w.rank, w.v1); const q2 = await w.queue(w.rank, w.v2); expect((await post(`/marshal/ranks/${w.rank}/queue/${q2}/remove`)).status).toBe(200);
+    const d = await w.device("RK-1"); const s = ok<any>(await w.rs.open({ rankId: w.rank, marshalId: U.marshal, actorName: "m", terminalId: d })); expect((await post(`/marshal/ranks/${w.rank}/depart`, { queueId: q1 })).status).toBe(409);
+    ok(await w.rs.cancel({ sessionId: s.id, rankId: w.rank, marshalId: U.marshal, actorName: "m" })); expect((await post(`/marshal/ranks/${w.rank}/depart`, { queueId: q1 })).status).toBe(201);
+  });
+});
+

@@ -8,7 +8,7 @@ import rateLimit from "express-rate-limit";
 import { requestLogger } from "./middleware/logger.js";
 import { createDbAuthRouter, createMemoryAuthRouter } from "./auth/instance.js";
 import { createOriginPolicy } from "./auth/origins.js";
-import { LiveHub, type VerifiedToken } from "./services/liveHub.js";
+import { LiveHub, STAFF_EVENT_ROLES, isStaffOnlyEvent, type VerifiedToken } from "./services/liveHub.js";
 import jwt from "jsonwebtoken";
 import fraudRiskRouter from "./routes/fraudRiskRouter.js";
 import terminalRouter from "./routes/terminalRouter.js";
@@ -28,7 +28,7 @@ import bankUsersRouter from "./routes/bankUsers.js";
 import geoCurrencyRouter from "./routes/geoCurrency.js";
 import rbacRouter, { MODULE_SECTIONS } from "./routes/rbac.js";
 import { createDepartmentsRouter, loadCustomDepartments } from "./routes/departmentsRouter.js";
-import { setBroadcaster } from "./services/wsBroadcast.js";
+import { setBroadcaster, setTargetedBroadcaster } from "./services/wsBroadcast.js";
 import applicationsRouter, { setApplicationsIdentity } from "./routes/applicationsRouter.js";
 import { createIdentityModule } from "./services/sumsub/module.js";
 import { createIdentityRouter } from "./routes/identityRouter.js";
@@ -425,7 +425,8 @@ const hub = new LiveHub((token) => {
   try { return jwt.verify(token, JWT_SECRET) as VerifiedToken; } catch { return null; }
 }, 5000, (m) => console.log(m));
 hub.attach(wss);
-setBroadcaster((event) => hub.broadcast(event));
+setBroadcaster((event) => (isStaffOnlyEvent(event.event) ? hub.sendToRoles(STAFF_EVENT_ROLES, event) : hub.broadcast(event)));      // taps, faults and violations are for staff, not every signed-in client
+setTargetedBroadcaster((userIds, event) => hub.sendToUsers(userIds, event));                                                         // a driver's loading session goes to that driver and their marshal only
 
 // ─── Start Simulators ────────────────────────────────────────────────────────
 

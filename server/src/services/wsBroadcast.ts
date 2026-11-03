@@ -18,9 +18,20 @@
 type Broadcaster = (event: { event: string; timestamp: string; data: unknown }) => void;
 
 let broadcaster: Broadcaster | null = null;
+type Targeted = (userIds: readonly string[], event: { event: string; timestamp: string; data: unknown }) => void;
+let targeted: Targeted | null = null;
 
 export function setBroadcaster(fn: Broadcaster): void {
   broadcaster = fn;
+}
+export function setTargetedBroadcaster(fn: Targeted): void {
+  targeted = fn;
+}
+
+/** Sends an event to particular people only (by user id). Unlike emit(), nobody else receives it. A no-op with no WebSocket server, and it never throws into the caller. */
+export function emitTo(userIds: readonly string[], event: string, data: unknown): void {
+  if (!targeted || !userIds.length) return;
+  try { targeted(userIds, { event, timestamp: new Date().toISOString(), data }); } catch { /* a live nudge is best effort and must never break the action that caused it */ }
 }
 
 export function emit(event: string, data: unknown): void {

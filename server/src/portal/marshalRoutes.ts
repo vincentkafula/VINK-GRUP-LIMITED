@@ -99,13 +99,16 @@ export function createMarshalRouter(db: Db, now: () => Date = () => new Date(), 
     }
     const named = b.queueId;
     if (named !== undefined && named !== null && !isUuid(named)) { fail(res, 400, "Invalid queue entry"); return; }
+    // A vehicle with a loading session on a device is ended through that session (so its taps, trip and device are closed with it), never by this button.
+    const onDevice = new Set((await db.query(`SELECT queue_id FROM loading_sessions WHERE rank_id = $1 AND status IN ('pending','loading')`, [rank.id])).rows.map((x) => String(x.queue_id)));
+    if (named && onDevice.has(String(named))) { fail(res, 409, "That vehicle is loading on a device. End or cancel its loading session instead."); return; }
     // Taking the place in the line is the atomic step (an UPDATE that only succeeds while left_at is still empty), so two requests
     // can never log the same vehicle. A request for "the first in line" that loses the race simply takes the next one.
     let took: Record<string, unknown> | undefined;
     for (let attempt = 0; attempt < 5 && !took; attempt++) {
       let target = named as string | null | undefined;
       if (target === undefined || target === null) {
-        const first = (await db.query(`SELECT id FROM rank_queue WHERE rank_id = $1 AND left_at IS NULL ORDER BY joined_at, id LIMIT 1`, [rank.id])).rows[0];
+        const first = (await db.query(`SELECT id FROM rank_queue WHERE rank_id = $1 AND left_at IS NULL ORDER BY joined_at, id`, [rank.id])).rows.find((x) => !onDevice.has(String(x.id)));          // the first in line that is not already loading on a device
         if (!first) { fail(res, 409, "Nobody is waiting at this rank"); return; }
         target = String(first.id);
       }
@@ -166,6 +169,7 @@ export function createMarshalRouter(db: Db, now: () => Date = () => new Date(), 
     const rank = await myRank(req.params.id, uid(req));
     if (!rank) { fail(res, 404, "Rank not found"); return; }
     if (!isUuid(req.params.queueId)) { fail(res, 400, "Invalid queue entry"); return; }
+    if ((await db.query(`SELECT 1 AS x FROM loading_sessions WHERE queue_id = $1 AND status IN ('pending','loading')`, [req.params.queueId])).rows.length) { fail(res, 409, "That vehicle is loading on a device. End or cancel its loading session instead."); return; }
     const r = await db.query(`UPDATE rank_queue SET left_at = now() WHERE id = $1 AND rank_id = $2 AND left_at IS NULL RETURNING id`, [req.params.queueId, rank.id]);
     if (!r.rows.length) { fail(res, 404, "Queue entry not found"); return; }
     res.json({ success: true });
