@@ -729,17 +729,36 @@ export function createTokenService(deps: {
     const rows = associationId
       ? (await db.query(`SELECT * FROM token_routes WHERE association_id = $1 ORDER BY name`, [associationId])).rows
       : (await db.query(`SELECT * FROM token_routes WHERE active = true ORDER BY name`)).rows;
-    return rows.map((r) => ({ id: String(r.id), associationId: r.association_id ?? null, name: String(r.name), fareCents: Number(r.fare_cents), currency: String(r.currency), effectiveFrom: r.effective_from ? new Date(r.effective_from).toISOString().slice(0, 10) : null, active: !!r.active }));
+    return rows.map((r) => ({ id: String(r.id), associationId: r.association_id ?? null, name: String(r.name), fareCents: Number(r.fare_cents), currency: String(r.currency), effectiveFrom: r.effective_from ? new Date(r.effective_from).toISOString().slice(0, 10) : null, active: !!r.active, fromRankId: r.from_rank_id ? String(r.from_rank_id) : null, toRankId: r.to_rank_id ? String(r.to_rank_id) : null }));
   }
-  async function upsertRoute(associationId: string, r: { name?: unknown; fareCents?: unknown; currency?: unknown; effectiveFrom?: unknown; active?: unknown }): Promise<TokenResult<{ id: string }>> {
+  /**
+   * Sets a route's name, fare and (optionally) its two ENDS: the rank it leaves from and the rank it goes to, both of the association's own. A shared card device is set up at one end of a route, so a
+   * route needs its ends before that can be done. Choose both or neither; editing only the fare leaves the ends as they were. A route cannot be moved away from a rank a device is already set up at.
+   */
+  async function upsertRoute(associationId: string, r: { name?: unknown; fareCents?: unknown; currency?: unknown; effectiveFrom?: unknown; active?: unknown; fromRankId?: unknown; toRankId?: unknown }): Promise<TokenResult<{ id: string }>> {
     const name = typeof r.name === "string" ? r.name.trim() : "";
     if (name.length < 2 || name.length > 80 || /[<>]/.test(name)) return bad(400, "Enter the route name (2 to 80 characters)");
     if (!Number.isInteger(r.fareCents) || (r.fareCents as number) <= 0 || (r.fareCents as number) > 100_000) return bad(400, "The fare must be above zero and at most 1 000.00");
     const cur = r.currency === "ZMW" ? "ZMW" : "ZAR";
     const from = typeof r.effectiveFrom === "string" && /^\d{4}-\d{2}-\d{2}$/.test(r.effectiveFrom) ? r.effectiveFrom : null;
-    const row = (await db.query(`INSERT INTO token_routes (association_id, name, fare_cents, currency, effective_from, active) VALUES ($1,$2,$3,$4,$5,$6)
-                                 ON CONFLICT (association_id, name) DO UPDATE SET fare_cents = EXCLUDED.fare_cents, currency = EXCLUDED.currency, effective_from = EXCLUDED.effective_from, active = EXCLUDED.active
-                                 RETURNING id`, [associationId, name, r.fareCents, cur, from, r.active === false ? false : true])).rows[0];
+    const given = [r.fromRankId, r.toRankId].filter((x) => x !== undefined && x !== null && x !== "");
+    if (given.length === 1) return bad(400, "A route runs from one rank to another: choose both ranks, or neither");
+    let fromRank: string | null = null, toRank: string | null = null;
+    if (given.length === 2) {
+      if (typeof r.fromRankId !== "string" || typeof r.toRankId !== "string" || !/^[0-9a-f-]{36}$/i.test(r.fromRankId) || !/^[0-9a-f-]{36}$/i.test(r.toRankId)) return bad(400, "Choose two of your ranks");
+      if (r.fromRankId === r.toRankId) return bad(400, "The two ends of a route must be different ranks");
+      for (const rank of [r.fromRankId, r.toRankId]) if (!(await db.query(`SELECT 1 AS x FROM ranks WHERE id = $1 AND association_id = $2`, [rank, associationId])).rows.length) return bad(400, "Choose two of your own association's ranks");
+      fromRank = r.fromRankId; toRank = r.toRankId;
+      const was = (await db.query(`SELECT id FROM token_routes WHERE association_id = $1 AND name = $2`, [associationId, name])).rows[0];
+      if (was) {
+        const stranded = (await db.query(`SELECT serial, rank_id FROM terminals WHERE route_id = $1 AND kind = 'rank' AND status = 'active'`, [was.id])).rows.find((d) => String(d.rank_id) !== fromRank && String(d.rank_id) !== toRank);
+        if (stranded) return bad(409, `Device ${stranded.serial} is set up at a rank this route would no longer reach. Move or switch off that device first.`);
+      }
+    }
+    const row = (await db.query(`INSERT INTO token_routes (association_id, name, fare_cents, currency, effective_from, active, from_rank_id, to_rank_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+                                 ON CONFLICT (association_id, name) DO UPDATE SET fare_cents = EXCLUDED.fare_cents, currency = EXCLUDED.currency, effective_from = EXCLUDED.effective_from, active = EXCLUDED.active,
+                                   from_rank_id = COALESCE(EXCLUDED.from_rank_id, token_routes.from_rank_id), to_rank_id = COALESCE(EXCLUDED.to_rank_id, token_routes.to_rank_id)
+                                 RETURNING id`, [associationId, name, r.fareCents, cur, from, r.active === false ? false : true, fromRank, toRank])).rows[0];
     return { ok: true, value: { id: String(row.id) } };
   }
 

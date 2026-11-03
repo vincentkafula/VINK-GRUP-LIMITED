@@ -207,4 +207,43 @@ describe("TokensPanel: the VINK debit card", () => {
     const post = calls.find((c) => c.url.endsWith("/tokens/card/ic2/activate"))!;
     expect(JSON.parse(String(post.init!.body))).toEqual({ last4: "4242" });
   });
+
+  describe("route ranks (a shared card device is set up at one end of a route)", () => {
+    const RANKS = [{ id: "k1", name: "Langa rank" }, { id: "k2", name: "Bellville rank" }, { id: "k3", name: "Cape Town rank" }];
+    const ROUTES = [
+      { id: "r0", name: "Langa – Bellville", fareCents: 2500, currency: "ZAR", effectiveFrom: null, active: true, fromRankId: "k1", toRankId: "k2" },
+      { id: "r1", name: "Langa – Cape Town", fareCents: 3000, currency: "ZAR", effectiveFrom: null, active: true, fromRankId: null, toRankId: null },
+    ];
+    const api = (ranksReply: { status?: number; body: unknown } = { body: { success: true, ranks: RANKS } }) => mockApi((url, init) => init?.method === "PUT" ? { body: { success: true, id: "r9" } } : url.endsWith("/ranks") ? ranksReply : url.includes("/tokens/routes") ? { body: { success: true, routes: ROUTES } } : { body: { success: true, wallets: [], role: "association" } });
+    const type = (label: string, value: string) => act(async () => {
+      const el = [...document.querySelectorAll("label")].find((l) => l.textContent?.startsWith(label))!.querySelector("input,select") as HTMLInputElement | HTMLSelectElement;
+      const setter = Object.getOwnPropertyDescriptor(el instanceof HTMLSelectElement ? HTMLSelectElement.prototype : HTMLInputElement.prototype, "value")!.set!; setter.call(el, value);
+      el.dispatchEvent(new Event(el instanceof HTMLSelectElement ? "change" : "input", { bubbles: true }));
+    });
+    const saved = () => JSON.parse(String(calls.find((c) => c.init?.method === "PUT")!.init!.body));
+
+    it("shows which two ranks each route runs between, and a dash for one with none", async () => {
+      api(); await render(<TokensPanel segment="association" color="#f00" />);
+      expect(host.textContent).toContain("Langa rank → Bellville rank"); expect(host.textContent).toContain("Ranks");
+      const row = [...document.querySelectorAll("tr")].find((r) => r.textContent?.includes("Langa – Cape Town"))!; expect(row.textContent).not.toContain("→");
+    });
+    it("saves the two ranks the association chooses, along with the fare", async () => {
+      api(); await render(<TokensPanel segment="association" color="#f00" />);
+      await type("Route", "Cape Town – Langa"); await type("Fare", "30.00"); await type("From rank", "k3"); await type("To rank", "k1");
+      await act(async () => { btn("Save route")!.click(); }); await settle();
+      expect(saved()).toEqual({ name: "Cape Town – Langa", fareCents: 3000, fromRankId: "k3", toRankId: "k1" });
+    });
+    it("saves with no ranks when none are chosen, so editing only a fare never clears the ends", async () => {
+      api(); await render(<TokensPanel segment="association" color="#f00" />);
+      await type("Route", "Langa – Bellville"); await type("Fare", "26.00"); await act(async () => { btn("Save route")!.click(); }); await settle();
+      expect(saved()).toEqual({ name: "Langa – Bellville", fareCents: 2600 });
+    });
+    it("offers no rank choice with fewer than two ranks, or when the ranks cannot be loaded, and the form still saves a fare", async () => {
+      api({ body: { success: true, ranks: [RANKS[0]] } }); await render(<TokensPanel segment="association" color="#f00" />);
+      expect(host.textContent).not.toContain("From rank"); await type("Route", "Solo"); await type("Fare", "10.00"); await act(async () => { btn("Save route")!.click(); }); await settle(); expect(saved()).toEqual({ name: "Solo", fareCents: 1000 });
+      act(() => root.unmount()); root = createRoot(host); api({ status: 500, body: { error: "down" } }); await render(<TokensPanel segment="association" color="#f00" />);
+      expect(host.textContent).not.toContain("From rank"); expect(host.textContent).toContain("Route fares"); expect(host.textContent).toContain("Langa – Bellville");
+    });
+  });
 });
+

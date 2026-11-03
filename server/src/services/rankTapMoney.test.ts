@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { allPortalsDb } from "../portal/testDb.js";
 import type { Db } from "../portal/driverRoutes.js";
 import { manshyaBankCore } from "../portal/bankLinks.js";
-import { createRankSessions, type RankSessions } from "../portal/rankSessions.js";
+import { createRankSessions, checkRankDevice, type RankSessions } from "../portal/rankSessions.js";
 import { createMoneyEngine, manshyaLedgerPort, walletLedgerAccount, systemAccounts, type Engine, type LedgerPort } from "./moneyEngine.js";
 import { createTokenService, type TokenService } from "./tokenService.js";
 import { recordPoolCredit } from "./poolService.js";
@@ -344,6 +344,44 @@ describe("offline fares are guaranteed: the driver and the owner never lose one,
     const batch = [{ key: "off-0001", cardUid: POOR, at: at(5) }];
     ok(await send(30, batch)); ok(await send(30, batch)); await Promise.allSettled([send(30, batch), send(30, batch)]);
     expect(await debts()).toEqual([{ status: "open", amount_cents: FARE }]); expect(tok(U.d1)).toBe(FARE - FEE); expect(guar()).toBe(-FARE);
+  });
+});
+
+describe("giving a route its two ranks, the product's own way", () => {
+  const RANK3 = id(300), ELSEWHERE = id(301);
+  const route = (extra: Record<string, unknown> = {}) => tokens.upsertRoute(U.assoc, { name: "Langa to Bellville", fareCents: 2500, ...extra });
+  const ends = async () => (await q(`SELECT from_rank_id, to_rank_id FROM token_routes WHERE association_id = $1 AND name = 'Langa to Bellville'`, [U.assoc]))[0];
+  // The fixtures already have an active rank device (RK-1) at one end of a route with this name. Start with it switched off, so each test is only about what it says; the stranding test switches it back on.
+  beforeEach(async () => { await db.query(`INSERT INTO ranks (id, association_id, name) VALUES ($1,$2,'Third rank'),($3,$4,'Not ours')`, [RANK3, U.assoc, ELSEWHERE, U.owner]); await db.query(`UPDATE terminals SET status = 'revoked' WHERE id = $1`, [DEVICE]); });
+
+  it("saves the two ends, lists them, and then a rank device can be set up on that route with no one editing the database", async () => {
+    const r = await route({ fromRankId: RANK2, toRankId: RANK }); expect(r.ok).toBe(true);
+    expect(await ends()).toEqual({ from_rank_id: RANK2, to_rank_id: RANK }); expect((await tokens.routes(U.assoc)).find((x) => x.name === "Langa to Bellville")).toMatchObject({ fromRankId: RANK2, toRankId: RANK });
+    const dev = (await db.query(`INSERT INTO terminals (serial, association_id) VALUES ('NEW-1',$1) RETURNING id`, [U.assoc])).rows[0].id as string;
+    const routeId = (await q(`SELECT id FROM token_routes WHERE name = 'Langa to Bellville'`))[0].id;
+    expect(await checkRankDevice(db, dev, { kind: "rank", rankId: RANK, routeId })).toMatchObject({ ok: true }); expect(await checkRankDevice(db, dev, { kind: "rank", rankId: RANK3, routeId })).toMatchObject({ ok: false, code: "not_on_route" });
+  });
+  it("takes both ends or neither, two different ranks of the association's own, and changes nothing when it refuses", async () => {
+    const before = await ends(); const bad = async (x: Record<string, unknown>) => expect(await route(x), JSON.stringify(x)).toMatchObject({ ok: false, status: 400 });
+    await bad({ fromRankId: RANK });                                                                          // only one end
+    await bad({ fromRankId: RANK, toRankId: RANK });                                                          // the same rank twice
+    await bad({ fromRankId: RANK, toRankId: ELSEWHERE });                                                     // another association's rank
+    await bad({ fromRankId: RANK, toRankId: id(999) });                                                       // no such rank
+    await bad({ fromRankId: "nope", toRankId: RANK2 }); await bad({ fromRankId: 5, toRankId: RANK2 });
+    expect(await ends()).toEqual(before);
+    expect(await route({})).toMatchObject({ ok: true }); expect(await route({ fromRankId: "", toRankId: null })).toMatchObject({ ok: true });      // neither is fine: the route simply has no ends yet
+  });
+  it("keeps the ends when only the fare is changed, and changes them when asked", async () => {
+    ok(await route({ fromRankId: RANK, toRankId: RANK2 })); ok(await route({ fareCents: 3000 }));
+    expect(await ends()).toEqual({ from_rank_id: RANK, to_rank_id: RANK2 }); expect((await q(`SELECT fare_cents FROM token_routes WHERE name = 'Langa to Bellville'`))[0].fare_cents).toBe(3000);
+    ok(await route({ fromRankId: RANK2, toRankId: RANK3 })); expect(await ends()).toEqual({ from_rank_id: RANK2, to_rank_id: RANK3 });
+  });
+  it("will not move a route away from a rank a device is set up at, until that device is moved or switched off", async () => {
+    ok(await route({ fromRankId: RANK, toRankId: RANK2 })); await db.query(`UPDATE terminals SET status = 'active', route_id = (SELECT id FROM token_routes WHERE name = 'Langa to Bellville') WHERE id = $1`, [DEVICE]);          // RK-1 is a rank device at RANK on this route
+    expect(await route({ fromRankId: RANK2, toRankId: RANK3 })).toMatchObject({ ok: false, status: 409 }); expect((await route({ fromRankId: RANK2, toRankId: RANK3 }) as any).error).toContain("RK-1");
+    expect(await ends()).toEqual({ from_rank_id: RANK, to_rank_id: RANK2 });
+    expect(await route({ fromRankId: RANK3, toRankId: RANK })).toMatchObject({ ok: true });                  // the device's own rank is still an end: fine
+    await db.query(`UPDATE terminals SET status = 'revoked' WHERE id = $1`, [DEVICE]); expect(await route({ fromRankId: RANK2, toRankId: RANK3 })).toMatchObject({ ok: true });      // a switched-off device is not stranded
   });
 });
 

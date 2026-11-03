@@ -165,22 +165,32 @@ function Wallet({ w, cards, entry, options, payouts, issued, call, color, reload
 
 /** The association sets a fare per route; its members' devices charge exactly this. */
 function RouteFares({ call, color }: { call: Call; color: string }) {
-  const [load, reload] = useLoad<{ routes: { id: string; name: string; fareCents: number; currency: string; effectiveFrom: string | null; active: boolean }[] }>(() => call("/tokens/routes"));
-  const [name, setName] = useState(""); const [fare, setFare] = useState(""); const [from, setFrom] = useState("");
+  const [load, reload] = useLoad<{ routes: { id: string; name: string; fareCents: number; currency: string; effectiveFrom: string | null; active: boolean; fromRankId?: string | null; toRankId?: string | null }[] }>(() => call("/tokens/routes"));
+  // The association's own ranks, so a route can be given the two ranks it runs between (a shared card device is set up at one end of a route). If this cannot load, the rest of the form still works.
+  const [ranksLoad] = useLoad<{ ranks: { id: string; name: string }[] }>(() => call("/ranks"));
+  const ranks = ranksLoad.state === "ready" ? ranksLoad.data.ranks ?? [] : [];
+  const rankName = (id: string | null | undefined) => ranks.find((x) => x.id === id)?.name ?? "—";
+  const [name, setName] = useState(""); const [fare, setFare] = useState(""); const [from, setFrom] = useState(""); const [fromRank, setFromRank] = useState(""); const [toRank, setToRank] = useState("");
   return (
     <SectionPanel title="Route fares">
       <div className="p-4 space-y-3">
-        <p className="text-xs text-fg-muted">The driver picks the route on the device, and the passenger is charged this fare in tokens. Setting a route with the same name changes its fare.</p>
+        <p className="text-xs text-fg-muted">The driver picks the route on the device, and the passenger is charged this fare in tokens. Setting a route with the same name changes its fare. If shared card devices will be used at your ranks, choose the two ranks the route runs between: a device is set up at one end of a route.</p>
         <Status load={load}>{({ routes }) => routes.length === 0 ? <Empty>No routes yet. Add your first below.</Empty> : (
-          <TableCard title="Routes" color={color} columns={["Route", "Fare", "From", ""]} rows={routes.map((r) => [
-            <span key="n">{r.name}{!r.active && <Badge text="off" color="#94A3B8" />}</span>, money(r.fareCents, r.currency), r.effectiveFrom ?? "—",
+          <TableCard title="Routes" color={color} columns={["Route", "Fare", "Ranks", "From", ""]} rows={routes.map((r) => [
+            <span key="n">{r.name}{!r.active && <Badge text="off" color="#94A3B8" />}</span>, money(r.fareCents, r.currency), r.fromRankId && r.toRankId ? `${rankName(r.fromRankId)} → ${rankName(r.toRankId)}` : "—", r.effectiveFrom ?? "—",
             <ActionButton key="t" small label={r.active ? "Switch off" : "Switch on"} color="#64748B" onRun={async () => { const x = await call(`/tokens/routes/${r.id}/active`, { method: "POST", body: { active: !r.active } }); if ("error" in x) return { error: x.error }; reload(); }} />,
           ])} />)}</Status>
         <div className="flex flex-wrap items-end gap-3">
           <label className="block"><span className="text-[11px] text-fg-muted">Route</span><input className={inputCls + " mt-1"} value={name} onChange={(e) => setName(e.target.value)} placeholder="Langa – Cape Town" /></label>
           <label className="block"><span className="text-[11px] text-fg-muted">Fare</span><input className={inputCls + " mt-1 !w-24"} inputMode="decimal" value={fare} onChange={(e) => setFare(e.target.value)} placeholder="20.00" /></label>
+          {ranks.length >= 2 && (
+            <>
+              <label className="block"><span className="text-[11px] text-fg-muted">From rank</span><select className={inputCls + " mt-1 !w-44"} value={fromRank} onChange={(e) => setFromRank(e.target.value)}><option value="">Not set</option>{ranks.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}</select></label>
+              <label className="block"><span className="text-[11px] text-fg-muted">To rank</span><select className={inputCls + " mt-1 !w-44"} value={toRank} onChange={(e) => setToRank(e.target.value)}><option value="">Not set</option>{ranks.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}</select></label>
+            </>
+          )}
           <label className="block"><span className="text-[11px] text-fg-muted">Effective from</span><input className={inputCls + " mt-1 !w-40"} type="date" value={from} onChange={(e) => setFrom(e.target.value)} /></label>
-          <ActionButton label="Save route" color={color} onRun={async () => { const fareCents = toCents(fare); if (!Number.isInteger(fareCents) || fareCents <= 0) return { error: "Enter the fare" }; const r = await call("/tokens/routes", { method: "PUT", body: { name, fareCents, effectiveFrom: from || undefined } }); if ("error" in r) return { error: r.error }; setName(""); setFare(""); reload(); return { message: "Route saved" }; }} />
+          <ActionButton label="Save route" color={color} onRun={async () => { const fareCents = toCents(fare); if (!Number.isInteger(fareCents) || fareCents <= 0) return { error: "Enter the fare" }; const r = await call("/tokens/routes", { method: "PUT", body: { name, fareCents, effectiveFrom: from || undefined, fromRankId: fromRank || undefined, toRankId: toRank || undefined } }); if ("error" in r) return { error: r.error }; setName(""); setFare(""); reload(); return { message: "Route saved" }; }} />
         </div>
       </div>
     </SectionPanel>

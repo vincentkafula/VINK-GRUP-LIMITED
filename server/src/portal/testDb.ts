@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { afterEach } from "vitest";
 import { Pool, types } from "pg";
 import { newDb, DataType } from "pg-mem";
 import type { Db } from "./driverRoutes.js";
@@ -10,6 +11,16 @@ import type { Db } from "./driverRoutes.js";
  * TEST_PG_URL is set (for example postgres://postgres:pw@127.0.0.1:5432/postgres); each call makes its own database. Fixtures fill in only the columns a test cares about, so every "must be filled
  * in" rule is relaxed here, except on loading_sessions; types, defaults, indexes, unique rules and foreign keys are exactly production's.
  */
+const made: { name: string; baseUrl: string; ready: Promise<Pool> }[] = [];
+// Each test's database is dropped when the test ends, or a few hundred tests would fill the disk (about 8 MB each).
+if (process.env.TEST_PG_URL) afterEach(async () => {
+  for (const m of made.splice(0)) {
+    try { await (await m.ready).end(); } catch { /* it never got as far as connecting */ }
+    const admin = new Pool({ connectionString: m.baseUrl, max: 1 });
+    try { await admin.query(`DROP DATABASE IF EXISTS ${m.name} WITH (FORCE)`); } catch (e) { console.error("[testDb] could not drop", m.name, e instanceof Error ? e.message : e); } finally { await admin.end(); }
+  }
+});
+
 function realPostgresDb(baseUrl: string): Db {
   const name = `t_${randomUUID().replace(/-/g, "")}`;
   const ready = (async () => {
@@ -25,6 +36,7 @@ function realPostgresDb(baseUrl: string): Db {
       LOOP EXECUTE format('ALTER TABLE %I ALTER COLUMN %I DROP NOT NULL', r.table_name, r.column_name); END LOOP; END $$`);
     return pool;
   })();
+  made.push({ name, baseUrl, ready });
   return { query: async (sql: string, params?: unknown[]) => (await ready).query(sql, params as never) } as unknown as Db;
 }
 

@@ -156,7 +156,7 @@ export function createTokenRouter(db: Db, tokens: TokenService, deps: TokenRoute
   }));
   router.put("/routes", h(async (req, res) => {
     if (req.user?.role !== "association") return fail(res, 403, "Only an association sets route fares");
-    const r = await tokens.upsertRoute(uid(req), (req.body ?? {}) as { name?: unknown; fareCents?: unknown; currency?: unknown; effectiveFrom?: unknown; active?: unknown });
+    const r = await tokens.upsertRoute(uid(req), (req.body ?? {}) as { name?: unknown; fareCents?: unknown; currency?: unknown; effectiveFrom?: unknown; active?: unknown; fromRankId?: unknown; toRankId?: unknown });
     if (!r.ok) return fail(res, r.status, r.error);
     await audit(db, req, "token.route.set", r.value.id);
     res.json({ success: true, id: r.value.id });

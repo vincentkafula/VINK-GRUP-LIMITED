@@ -275,6 +275,7 @@ describe("transport portals (real queries on in-memory Postgres)", () => {
       expect((await post(`/marshal/ranks/${rank}/queue`, { vehicleId: outsider })).status).toBe(400);
       expect((await post(`/marshal/ranks/${rank}/queue`, { vehicleId: v1 })).status).toBe(201);
       expect((await post(`/marshal/ranks/${rank}/queue`, { vehicleId: v1 })).status).toBe(409);
+      await new Promise((r) => setTimeout(r, 10));                                           // the in-memory database stamps the time to the millisecond: let the second vehicle really arrive after the first (a real database stamps microseconds)
       expect((await post(`/marshal/ranks/${rank}/queue`, { vehicleId: v2 })).status).toBe(201);
       const q = (await get(`/marshal/ranks/${rank}/queue`)).body.queue;
       expect(q.map((x: any) => [x.position, x.registration, x.driver])).toEqual([[1, "Q 1", "Driver One"], [2, "Q 2", null]]);
