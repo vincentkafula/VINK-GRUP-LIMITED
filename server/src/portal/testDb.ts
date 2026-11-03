@@ -141,6 +141,8 @@ export function allPortalsDb(): Db {
     CREATE INDEX idx_loading_driver ON loading_sessions(driver_id, paired_at);
     CREATE UNIQUE INDEX idx_loading_one_loading_per_driver ON loading_sessions(driver_id, status) WHERE status = 'loading';
     ALTER TABLE terminal_taps ADD COLUMN session_id UUID;
+    CREATE TABLE token_offline_debts (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), wallet_id UUID NOT NULL, user_id UUID NOT NULL, currency TEXT NOT NULL, amount_cents BIGINT NOT NULL, tap_id UUID NOT NULL UNIQUE, terminal_id UUID NOT NULL, session_id UUID, status TEXT NOT NULL DEFAULT 'open', created_at TIMESTAMPTZ NOT NULL DEFAULT now(), settled_at TIMESTAMPTZ, note TEXT);
+    CREATE INDEX idx_token_debts_wallet ON token_offline_debts(wallet_id, status);
   `);
   const { Pool } = mem.adapters.createPg();
   return new Pool() as unknown as Db;

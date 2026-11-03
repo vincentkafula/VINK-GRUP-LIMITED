@@ -37,7 +37,7 @@ export const bankLedgerAccount = (manshyaAccountId: string) => `bank:${manshyaAc
  * a wallet per user and its own clearing and fee accounts. Every journal touches one currency only, so each currency balances on its own.
  */
 export const walletLedgerAccount = (currency: string, userId: string) => `wallet:${currency}:${userId}`;
-export const systemAccounts = (currency: string) => (currency === "ZAR" ? { clearing: SYS_CLEARING, fees: SYS_FEES, externalIn: "sys:external_in" } : { clearing: `sys:${currency.toLowerCase()}:clearing`, fees: `sys:${currency.toLowerCase()}:fees`, externalIn: `sys:${currency.toLowerCase()}:external_in` });
+export const systemAccounts = (currency: string) => (currency === "ZAR" ? { clearing: SYS_CLEARING, fees: SYS_FEES, externalIn: "sys:external_in", offlineGuarantee: "sys:offline_guarantee" } : { clearing: `sys:${currency.toLowerCase()}:clearing`, fees: `sys:${currency.toLowerCase()}:fees`, externalIn: `sys:${currency.toLowerCase()}:external_in`, offlineGuarantee: `sys:${currency.toLowerCase()}:offline_guarantee` });
 
 interface ManshyaLedgerHandle {
   db: { transaction<T>(fn: () => T): { immediate(): T }; prepare(sql: string): { get(...a: unknown[]): unknown } };

@@ -55,8 +55,8 @@ export interface TokenWallet { id: string; userId: string; currency: string; rol
 export type TokenResult<T> = { ok: true; value: T } | { ok: false; status: number; error: string; code?: string };
 const bad = (status: number, error: string, code?: string): TokenResult<never> => ({ ok: false, status, error, code });
 export type TapOutcome =
-  | { ok: true; tapId: string; fareCents: number; balanceCents: number; route: string; replayed: boolean }
-  | { ok: false; status: number; code: string; message: string; tapId?: string };
+  | { ok: true; tapId: string; fareCents: number; balanceCents: number; route: string; replayed: boolean; /** the card could not pay, so VINK paid the driver and the card now owes it */ guaranteed?: boolean; owedCents?: number }
+  | { ok: false; status: number; code: string; message: string; tapId?: string; owedCents?: number };
 export interface ActivityLine { at: string; kind: string; amountCents: number; label: string }
 
 export interface PayoutCardView { id: string; brand: string; last4: string; expiry: string; status: string }
@@ -153,7 +153,12 @@ export function createTokenService(deps: {
 
   /* ── the tap ── */
   /** A passenger taps a VINK card on a device. The server decides the fare from the route; the device only names the route and the card. */
-  async function tapToken(t: { terminalId: string; cardUid: unknown; routeId: string; key: string; sessionId?: string | null; at?: Date | null }): Promise<TapOutcome> {
+  /**
+   * A passenger taps a VINK card. ONLINE (the default), a card that cannot pay is declined on the spot: nothing moves, nobody is paid. With `guarantee` (only for a tap a device really took while it had
+   * no signal, and is sending later) the driver and the owner must not lose the fare: if the card cannot pay, VINK pays it (the offline guarantee account), the tap is confirmed, and the card OWES it.
+   * A card that owes is blocked ("card_owes") until its wallet covers what it owes; the debt is then collected automatically, from the wallet, at its next tap.
+   */
+  async function tapToken(t: { terminalId: string; cardUid: unknown; routeId: string; key: string; sessionId?: string | null; at?: Date | null; guarantee?: boolean }): Promise<TapOutcome> {
     const uid = normaliseCardUid(t.cardUid);
     if (!uid) return { ok: false, status: 400, code: "bad_card", message: "Card not recognised" };
     if (!/^[A-Za-z0-9._-]{6,80}$/.test(t.key)) return { ok: false, status: 400, code: "bad_key", message: "A unique tap reference is required" };
@@ -174,8 +179,20 @@ export function createTokenService(deps: {
         ? { ok: true, tapId: String(dup.id), fareCents: fare, balanceCents: balance(), route: String(route.name), replayed: true }
         : { ok: false, status: 402, code: "insufficient_tokens", message: "Not enough tokens", tapId: String(dup.id) };
     }
+    // A card that owes an earlier offline fare may not ride until it can pay it. If the wallet now covers what is owed it is collected first, and the card is clear.
+    const owing = await openDebts(String(c.wallet_id));
+    if (owing.length) {
+      const total = owing.reduce((a, d) => a + d.amount, 0);
+      if (balance() >= total) await collectDebts(owing, cur, holder);
+      else if (!t.guarantee) return { ok: false, status: 402, code: "card_owes", message: `This card owes ${(total / 100).toFixed(2)} from an earlier fare. Top it up to use it again.`, owedCents: total };
+    }
     const masked = `VINK ****${uid.slice(-4)}`;
-    const posted = ledger.post(ref, "token_tap", [line(cur, holder, -fare, true), { account: systemAccounts(cur).clearing, kind: "system", amount: fare }], `Fare ${route.name}`);
+    let posted = ledger.post(ref, "token_tap", [line(cur, holder, -fare, true), { account: systemAccounts(cur).clearing, kind: "system", amount: fare }], `Fare ${route.name}`);
+    let guaranteed = false;
+    if (posted === "insufficient" && t.guarantee) {                                           // the driver and the owner are paid; the card owes it
+      posted = ledger.post(ref, "token_tap_guaranteed", [{ account: systemAccounts(cur).offlineGuarantee, kind: "system", amount: -fare }, { account: systemAccounts(cur).clearing, kind: "system", amount: fare }], `Fare ${route.name} (offline, guaranteed)`);
+      guaranteed = true;
+    }
     if (posted === "insufficient") {
       const d = await db.query(`INSERT INTO terminal_taps (terminal_id, masked_pan, scheme, amount, currency, cardholder_verification, status, error_message, idempotency_key, session_id, received_at)
                                 VALUES ($1,$2,'vink_token',$3,$4,'token_card','declined','insufficient_tokens',$5,$6,COALESCE($7, now())) RETURNING id`, [t.terminalId, masked, fare / 100, cur, ref, t.sessionId ?? null, t.at ?? null]);
@@ -188,9 +205,45 @@ export function createTokenService(deps: {
     const ins = await db.query(`INSERT INTO terminal_taps (terminal_id, masked_pan, scheme, amount, currency, cardholder_verification, vink_fee_device, vink_fee_card, owner_settlement, investor_share, idempotency_key, status, session_id, received_at)
                                 VALUES ($1,$2,'vink_token',$3,$4,'token_card',$5,$6,$7,0,$8,'confirmed',$9,COALESCE($10, now())) RETURNING id`,
       [t.terminalId, masked, fare / 100, cur, split.vinkFeeDevice, split.vinkFeeCard, Math.max(0, fare / 100 - fee), ref, t.sessionId ?? null, t.at ?? null]);
-    await event(holder, cur, "fare", -fare, String(route.name), ref);
+    if (guaranteed) await db.query(`INSERT INTO token_offline_debts (wallet_id, user_id, currency, amount_cents, tap_id, terminal_id, session_id) VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT (tap_id) DO NOTHING`, [c.wallet_id, holder, cur, fare, ins.rows[0].id, t.terminalId, t.sessionId ?? null]);
+    else await event(holder, cur, "fare", -fare, String(route.name), ref);
     if (engine) { try { await engine.settleTaps(25); } catch (e) { console.error("[token] settle after tap failed:", e instanceof Error ? e.message : e); } }   // the driver is credited at once; a failure here is retried by the next cycle
-    return { ok: true, tapId: String(ins.rows[0].id), fareCents: fare, balanceCents: balance(), route: String(route.name), replayed: false };
+    return { ok: true, tapId: String(ins.rows[0].id), fareCents: fare, balanceCents: balance(), route: String(route.name), replayed: false, ...(guaranteed ? { guaranteed: true, owedCents: (await openDebts(String(c.wallet_id))).reduce((a, d) => a + d.amount, 0) } : {}) };
+  }
+
+  /** For staff: the offline fares VINK paid on cards' behalf, by status, and what VINK is out of pocket for right now (the guarantee account, which always equals what is still owed). */
+  async function offlineDebts(currency: string, status: string = "open") {
+    const rows = (await db.query(`SELECT d.id, d.user_id, d.amount_cents, d.status, d.created_at, d.settled_at, d.note, t.serial, u.name, u.email FROM token_offline_debts d JOIN users u ON u.id = d.user_id JOIN terminals t ON t.id = d.terminal_id WHERE d.currency = $1 AND d.status = $2 ORDER BY d.created_at DESC LIMIT 500`, [currency, status])).rows;
+    const open = (await db.query(`SELECT COALESCE(SUM(amount_cents), 0) AS s, COUNT(*) AS n FROM token_offline_debts WHERE currency = $1 AND status = 'open'`, [currency])).rows[0];
+    return {
+      debts: rows.map((r) => ({ id: String(r.id), userId: String(r.user_id), name: String(r.name ?? ""), email: String(r.email ?? ""), amountCents: Number(r.amount_cents), status: String(r.status), terminal: String(r.serial), createdAt: new Date(r.created_at as string).toISOString(), settledAt: r.settled_at ? new Date(r.settled_at as string).toISOString() : null, note: (r.note as string | null) ?? null })),
+      openCents: Number(open.s), openCount: Number(open.n), guaranteeBalanceCents: ledger.balance(systemAccounts(currency).offlineGuarantee),
+    };
+  }
+  /** Staff write an offline fare off: VINK keeps the loss (moved out of the guarantee account into its fees account, so the guarantee account still equals what is owed) and the card is clear of it. */
+  async function writeOffDebt(id: string, reason: string): Promise<TokenResult<{ amountCents: number }>> {
+    const why = reason.trim();
+    if (!why || why.length > 200) return bad(400, "Say why, in 200 characters or fewer");
+    const d = (await db.query(`SELECT id, currency, amount_cents, status FROM token_offline_debts WHERE id = $1`, [id])).rows[0];
+    if (!d) return bad(404, "No such debt");
+    if (d.status !== "open") return bad(409, "That debt is already settled");
+    const amount = Number(d.amount_cents), cur = String(d.currency);
+    const p = ledger.post(`debt-writeoff:${id}`, "token_debt_written_off", [{ account: systemAccounts(cur).offlineGuarantee, kind: "system", amount }, { account: systemAccounts(cur).fees, kind: "system", amount: -amount }], "Offline fare written off");
+    if (p === "insufficient") return bad(409, "The ledger refused it");
+    await db.query(`UPDATE token_offline_debts SET status = 'written_off', settled_at = now(), note = $2 WHERE id = $1 AND status = 'open'`, [id, why]);
+    return { ok: true, value: { amountCents: amount } };
+  }
+
+  /** What a wallet still owes for offline fares VINK paid on its card's behalf, oldest first. */
+  const openDebts = async (walletId: string) => (await db.query(`SELECT id, amount_cents FROM token_offline_debts WHERE wallet_id = $1 AND status = 'open' ORDER BY created_at, id`, [walletId])).rows.map((r) => ({ id: String(r.id), amount: Number(r.amount_cents) }));
+  /** Pays what a wallet owes back to VINK's offline guarantee account, oldest first, for as long as the wallet can. Each debt is repaid once (its own journal reference). */
+  async function collectDebts(debts: { id: string; amount: number }[], cur: string, holder: string): Promise<void> {
+    for (const d of debts) {
+      const p = ledger.post(`debt:${d.id}`, "token_debt_repaid", [line(cur, holder, -d.amount, true), { account: systemAccounts(cur).offlineGuarantee, kind: "system", amount: d.amount }], "Offline fare repaid");
+      if (p === "insufficient") return;
+      await db.query(`UPDATE token_offline_debts SET status = 'repaid', settled_at = now() WHERE id = $1 AND status = 'open'`, [d.id]);
+      await event(holder, cur, "fare_repaid", -d.amount, "Earlier offline fare", `debt:${d.id}`);
+    }
   }
 
   /* ── moving tokens between holders, and out of the system ── */
@@ -690,6 +743,6 @@ export function createTokenService(deps: {
     return { ok: true, value: { id: String(row.id) } };
   }
 
-  return { bindEngine(e: Pick<Engine, "settleTaps">) { engine = e; }, partyOf, setTier, wallet, openWallet, linkCard, cards, blockCard, tapToken, transfer, redeemToBank, requestCashOut, decideCashOut, retryCashOut, processPayouts, attemptPayout, issueCard, issuedCards, activateCard, cardOrders, shipCardOrder, resetActivation, cardOptions, setIssuedCardStatus, authoriseCardSpend, reverseCardSpend, cardIsActive, addPayoutCard, startCardSession, addPayoutCardFromSession, cardEntry: () => ({ hosted: !!deps.hosted, raw: deps.acceptRawCardNumbers !== false }), payoutsEnabled: () => deps.externalPayouts !== false, payoutCards, removePayoutCard, reviewPayoutCard, cardsToReview, activity, summary, settings, setDeviceFee, routes, upsertRoute };
+  return { bindEngine(e: Pick<Engine, "settleTaps">) { engine = e; }, partyOf, setTier, wallet, openWallet, linkCard, cards, blockCard, tapToken, offlineDebts, writeOffDebt, transfer, redeemToBank, requestCashOut, decideCashOut, retryCashOut, processPayouts, attemptPayout, issueCard, issuedCards, activateCard, cardOrders, shipCardOrder, resetActivation, cardOptions, setIssuedCardStatus, authoriseCardSpend, reverseCardSpend, cardIsActive, addPayoutCard, startCardSession, addPayoutCardFromSession, cardEntry: () => ({ hosted: !!deps.hosted, raw: deps.acceptRawCardNumbers !== false }), payoutsEnabled: () => deps.externalPayouts !== false, payoutCards, removePayoutCard, reviewPayoutCard, cardsToReview, activity, summary, settings, setDeviceFee, routes, upsertRoute };
 }
 export type TokenService = ReturnType<typeof createTokenService>;

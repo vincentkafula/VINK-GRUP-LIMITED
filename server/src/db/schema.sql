@@ -1924,3 +1924,23 @@ ALTER TABLE terminal_taps ADD COLUMN IF NOT EXISTS session_id UUID REFERENCES lo
 ALTER TABLE loading_sessions ALTER COLUMN rank_id DROP NOT NULL;
 ALTER TABLE loading_sessions ALTER COLUMN marshal_id DROP NOT NULL;
 
+-- OFFLINE FARES. A device that really had no signal accepts a tap it cannot check. When that tap is sent, if the card cannot pay, the driver and the owner are paid the fare in full anyway (VINK stands
+-- behind it, from sys:offline_guarantee) and the passenger's card OWES it: one row here. A card that owes cannot ride again until its wallet covers what it owes, and the debt is collected from the
+-- wallet automatically on the next tap. Staff can write one off, which clears the card.
+CREATE TABLE IF NOT EXISTS token_offline_debts (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  wallet_id     UUID NOT NULL REFERENCES token_wallets(id),
+  user_id       UUID NOT NULL REFERENCES users(id),
+  currency      TEXT NOT NULL,
+  amount_cents  BIGINT NOT NULL CHECK (amount_cents > 0),
+  tap_id        UUID NOT NULL UNIQUE REFERENCES terminal_taps(id),
+  terminal_id   UUID NOT NULL REFERENCES terminals(id),
+  session_id    UUID REFERENCES loading_sessions(id),
+  status        TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open','repaid','written_off')),
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  settled_at    TIMESTAMPTZ,
+  note          TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_token_debts_wallet ON token_offline_debts(wallet_id, status);
+CREATE INDEX IF NOT EXISTS idx_token_debts_open ON token_offline_debts(status, created_at);
+

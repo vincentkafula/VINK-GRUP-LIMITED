@@ -237,7 +237,7 @@ export function createTokenTerminalRouter(d: { db: Db; tokens: TokenService; aut
     if (!a.authenticated || !a.terminalId) return fail(res, 401, a.error ?? "Terminal authentication failed");
     const b = (req.body ?? {}) as Record<string, unknown>;
     const r = await createRankSessions(d.db).tap({ terminalId: a.terminalId, serial: req.header("x-terminal-serial") ?? "", cardUid: b.cardNumber, key: req.header("idempotency-key") ?? "" }, (t) => d.tokens.tapToken(t));
-    if (!r.ok) { res.status(r.status).json({ success: false, error: r.message, code: r.code, data: (r as { tapId?: string }).tapId ? { tapId: (r as { tapId?: string }).tapId } : undefined }); return; }
+    if (!r.ok) { res.status(r.status).json({ success: false, error: r.message, code: r.code, data: (r as { tapId?: string }).tapId ? { tapId: (r as { tapId?: string }).tapId } : undefined, ...(r.owedCents ? { owedCents: r.owedCents } : {}) }); return; }
     res.status(r.value.replayed ? 200 : 201).json({ success: true, data: r.value });
   }));
   /**
@@ -267,6 +267,8 @@ export function createTokenTerminalRouter(d: { db: Db; tokens: TokenService; aut
  *   POST /refund                 { userId, currency, amountCents, note } a refund: paid by the system to the holder's own verified debit card, for any reason
  *   PUT  /wallets/tier           { userId, currency, tier } sets a holder's verification level (basic, standard, full, business) once their identity is checked
  *   PUT  /settings               { deviceFeeCents } the per-trip fee paid to the investor who sponsored a device
+ *   GET  /offline-debts?status=open&currency=ZAR   fares VINK paid for cards that could not pay when a device sent them later (the card is blocked until it pays), and what VINK is out of pocket for
+ *   POST /offline-debts/:id/write-off   { reason } VINK keeps the loss and the card is clear
  */
 export function createTokenAdminRouter(d: { db: Db; tokens: TokenService; sandbox?: boolean }): Router {
   const router = Router();
@@ -290,6 +292,18 @@ export function createTokenAdminRouter(d: { db: Db; tokens: TokenService; sandbo
     await audit(d.db, req, `token.cashout.${decision}`, req.params.id as string, { note: note ?? null });
     res.json({ success: true, status: r.value.status });
   });
+  router.get("/offline-debts", h(async (req, res) => {
+    const currency = typeof req.query.currency === "string" && CURRENCIES.includes(req.query.currency) ? req.query.currency : "ZAR";
+    const status = typeof req.query.status === "string" && ["open", "repaid", "written_off"].includes(req.query.status) ? req.query.status : "open";
+    res.json({ success: true, currency, status, ...(await d.tokens.offlineDebts(currency, status)) });
+  }));
+  router.post("/offline-debts/:id/write-off", h(async (req, res) => {
+    if (!isUuid(req.params.id)) return fail(res, 400, "Invalid request");
+    const r = await d.tokens.writeOffDebt(req.params.id as string, typeof req.body?.reason === "string" ? req.body.reason : "");
+    if (!r.ok) return fail(res, r.status, r.error);
+    await audit(d.db, req, "token.offline_debt.write_off", req.params.id as string, { amountCents: r.value.amountCents, reason: String(req.body.reason).trim() });
+    res.json({ success: true, amountCents: r.value.amountCents });
+  }));
   router.post("/cash-outs/:id/reject", decide("rejected"));
   router.post("/cash-outs/:id/retry", h(async (req, res) => {
     if (!isUuid(req.params.id)) return fail(res, 400, "Invalid request");

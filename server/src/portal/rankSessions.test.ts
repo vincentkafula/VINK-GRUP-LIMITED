@@ -628,3 +628,27 @@ describe.runIf(!!process.env.TEST_PG_URL)("simultaneous requests, on a real Post
   });
 });
 
+describe("which taps carry the offline guarantee", () => {
+  // The device's clock is "now" (11:00) in these tests; a tap's age is how long before that it says it happened.
+  const min = (m: number, sec = 0) => new Date(new Date("2026-10-07T10:00:00Z").getTime() + m * 60_000 + sec * 1000).toISOString();
+  const spy = (db: Db) => { const seen: { key: string; guarantee: unknown }[] = []; const charge = async (t: any) => { seen.push({ key: t.key, guarantee: t.guarantee }); return fakeCharge(db)(t); }; return { seen, charge }; };
+  async function loaded(w: W) { const d = await w.device("RK-1"); await w.queue(w.rank, w.v1); ok(await w.rs.open({ rankId: w.rank, marshalId: U.marshal, actorName: "m", terminalId: d })); ok(await w.rs.pair({ terminalId: d, serial: "RK-1", cardUid: CARD.driver })); clock = new Date(min(60)); return d; }
+
+  it("gives it only to a tap at least a minute old, and treats a fresher one in the same batch like a live tap", async () => {
+    const w = await world(); const d = await loaded(w); const { seen, charge } = spy(w.db);
+    ok(await w.rs.syncTaps({ terminalId: d, serial: "RK-1", taps: [{ key: "off-0001", cardUid: "04AAAA0001", at: min(10) }, { key: "off-0002", cardUid: "04AAAA0002", at: min(59, 1) }, { key: "off-0003", cardUid: "04AAAA0003", at: min(58, 59) }, { key: "off-0004", cardUid: "04AAAA0004", at: min(59, 30) }] }, charge));
+    expect(Object.fromEntries(seen.map((x) => [x.key, x.guarantee]))).toEqual({ "off-0001": true, "off-0002": false, "off-0003": true, "off-0004": false });          // 59 s old: live; 61 s old: offline
+  });
+  it("never gives it to a live tap, whatever the card", async () => {
+    const w = await world(); const d = await loaded(w); const { seen, charge } = spy(w.db); ok(await w.rs.tap({ terminalId: d, serial: "RK-1", cardUid: "04AAAA0001", key: "tap-0001" }, charge));
+    expect(seen).toEqual([{ key: "tap-0001", guarantee: undefined }]);
+  });
+  it("passes a guaranteed fare on as accepted with its reason, and says what a blocked card owes", async () => {
+    const w = await world(); const d = await loaded(w);
+    const guaranteed = async (t: any) => ({ ...(await fakeCharge(w.db)(t)), guaranteed: true, owedCents: 2500 });
+    const r = ok<any>(await w.rs.syncTaps({ terminalId: d, serial: "RK-1", taps: [{ key: "off-0001", cardUid: "04AAAA0001", at: min(10) }] }, guaranteed as any)); expect(r.results[0]).toMatchObject({ status: "accepted", code: "guaranteed" }); expect(r.results[0].message).toContain("blocked until it is topped up");
+    const owes = async () => ({ ok: false as const, status: 402, code: "card_owes", message: "This card owes 25.00 from an earlier fare. Top it up to use it again.", owedCents: 2500 });
+    expect(await w.rs.tap({ terminalId: d, serial: "RK-1", cardUid: "04AAAA0009", key: "tap-0002" }, owes as any)).toMatchObject({ ok: false, status: 402, code: "card_owes", owedCents: 2500 });
+  });
+});
+

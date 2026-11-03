@@ -18,7 +18,7 @@ import { emitTo } from "../services/wsBroadcast.js";
  * What the database guarantees, whatever order requests arrive in (unique partial indexes on loading_sessions): one open session per device, one per vehicle, and a driver loading
  * only one vehicle at a time. A "driver card" is a VINK token card whose wallet belongs to a driver, so no new card table is needed. Every change is written to the audit log.
  */
-export type Fail = { ok: false; status: number; code: string; message: string };
+export type Fail = { ok: false; status: number; code: string; message: string; /** what a blocked card owes, so the device can say so */ owedCents?: number };
 export type Res<T> = { ok: true; value: T } | Fail;
 const bad = (status: number, code: string, message: string): Fail => ({ ok: false, status, code, message });
 
@@ -38,11 +38,16 @@ export const PAIR_WINDOW_MS = 10 * 60_000;
 /** The same card tapped again on the same session inside this window is not charged twice. (Someone paying for two passengers taps twice on purpose, so it is short.) */
 export const DUPLICATE_WINDOW_MS = 10_000;
 /** What the token service answers to a tap. */
-export type TapAnswer = { ok: true; tapId: string; fareCents: number; balanceCents: number; route: string; replayed: boolean } | { ok: false; status: number; code: string; message: string; tapId?: string };
-export type TapFn = (t: { terminalId: string; cardUid: unknown; routeId: string; key: string; sessionId: string; at?: Date | null }) => Promise<TapAnswer>;
+export type TapAnswer = { ok: true; tapId: string; fareCents: number; balanceCents: number; route: string; replayed: boolean; guaranteed?: boolean; owedCents?: number } | { ok: false; status: number; code: string; message: string; tapId?: string; owedCents?: number };
+export type TapFn = (t: { terminalId: string; cardUid: unknown; routeId: string; key: string; sessionId: string; at?: Date | null; guarantee?: boolean }) => Promise<TapAnswer>;
 /** Taps a device made without a signal and sends later: at most this many in one request, and none older than this (a device that has been off for days has a problem to look at, not taps to trust). */
 export const MAX_OFFLINE_BATCH = 200;
 export const MAX_OFFLINE_AGE_MS = 72 * 3600_000;
+/**
+ * Online means online: a device with a connection checks every tap live (POST /rank-tap) and a card that cannot pay is declined on the spot. A tap in an offline batch is only treated as one the device could
+ * not check if it is at least this old when it arrives; a fresher one is checked like a live tap. Only a genuinely offline tap carries the guarantee below.
+ */
+export const MIN_OFFLINE_AGE_MS = 60_000;
 export interface SyncItem { key: unknown; cardUid: unknown; at: unknown }
 export interface SyncResult { key: string; status: "accepted" | "replayed" | "declined" | "rejected"; code?: string; message?: string; tapId?: string; sessionId?: string }
 export const ONLINE_WITHIN_MS = 3 * 60_000;
@@ -205,7 +210,7 @@ export function createRankSessions(db: Db, now: () => Date = () => new Date(), p
       if (recent) { await record(null, `terminal:${a.serial}`, "rank.tap_blocked", String(s.id), { reason: "duplicate", card: uid.slice(-4) }); return bad(409, "duplicate_tap", "This card was just used. Wait a few seconds before tapping again."); }
     }
     const r = await charge({ terminalId: a.terminalId, cardUid: a.cardUid, routeId: String(term.route_id), key: a.key, sessionId: String(s.id) });
-    if (!r.ok) return { ...bad(r.status, r.code, r.message), ...(r.tapId ? { tapId: r.tapId } : {}) } as Fail;
+    if (!r.ok) return { ...bad(r.status, r.code, r.message), ...(r.tapId ? { tapId: r.tapId } : {}), ...(r.owedCents ? { owedCents: r.owedCents } : {}) } as Fail;
     const sum = (await db.query(`SELECT COUNT(*) AS n, COALESCE(SUM(amount), 0) AS total FROM terminal_taps WHERE session_id = $1 AND status = 'confirmed'`, [s.id])).rows[0];
     const passengers = Number(sum.n), totalCents = Math.round(Number(sum.total) * 100);
     await db.query(`UPDATE loading_sessions SET passengers = $2, total_cents = $3 WHERE id = $1`, [s.id, passengers, totalCents]);
@@ -263,9 +268,13 @@ export function createRankSessions(db: Db, now: () => Date = () => new Date(), p
       if (!s) { results[i] = no("no_session", "No driver was paired on this device at that time"); continue; }
       const near = (await db.query(`SELECT id FROM terminal_taps WHERE session_id = $1 AND masked_pan = $2 AND status = 'confirmed' AND received_at >= $3 AND received_at <= $4 LIMIT 1`, [s.id, `VINK ****${uid.slice(-4)}`, new Date(t - DUPLICATE_WINDOW_MS), new Date(t + DUPLICATE_WINDOW_MS)])).rows[0];
       if (near) { results[i] = no("duplicate_tap", "This card was used a moment before or after"); continue; }
-      const r = await charge({ terminalId: a.terminalId, cardUid: item.cardUid, routeId: String(term.route_id), key, sessionId: String(s.id), at });
+      // A tap the device really took without a signal cannot be checked when it is taken, so the driver and the owner are paid anyway and the card owes the fare (the guarantee). A fresher tap is checked live.
+      const r = await charge({ terminalId: a.terminalId, cardUid: item.cardUid, routeId: String(term.route_id), key, sessionId: String(s.id), at, guarantee: nowMs - t >= MIN_OFFLINE_AGE_MS });
       if (!r.ok) { results[i] = { key, status: "declined", code: r.code, message: r.message, ...(r.tapId ? { tapId: r.tapId } : {}) }; if (r.tapId) touched.add(String(s.id)); continue; }
-      touched.add(String(s.id)); results[i] = { key, status: r.replayed ? "replayed" : "accepted", tapId: r.tapId, sessionId: String(s.id) };
+      touched.add(String(s.id));
+      results[i] = r.guaranteed
+        ? { key, status: "accepted", code: "guaranteed", message: "The card did not have enough tokens. The fare was paid, and the card is blocked until it is topped up.", tapId: r.tapId, sessionId: String(s.id) }
+        : { key, status: r.replayed ? "replayed" : "accepted", tapId: r.tapId, sessionId: String(s.id) };
     }
     for (const sid of touched) {
       const sum = (await db.query(`SELECT COUNT(*) AS n, COALESCE(SUM(amount), 0) AS total FROM terminal_taps WHERE session_id = $1 AND status = 'confirmed'`, [sid])).rows[0];
