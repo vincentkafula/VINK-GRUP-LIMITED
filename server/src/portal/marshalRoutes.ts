@@ -1,6 +1,7 @@
 import { Router, json, type Request } from "express";
 import { h, uid, num, iso, isUuid, optText, fail, isUniqueViolation, audit, bucketDays, pageParams, rangeParams, saDay, sendCsv, type Db } from "./common.js";
 import { saPeriods } from "./driverRoutes.js";
+import { createRankSessions, type Res } from "./rankSessions.js";
 
 /**
  * The Marshal Dashboard API, mounted at /api/portal/marshal (marshals only). A marshal works only at the ranks the association
@@ -14,6 +15,12 @@ import { saPeriods } from "./driverRoutes.js";
  *   POST /ranks/:id/queue/:queueId/remove    take a vehicle out of the line without logging a departure
  *   GET  /ranks/:id/departures               recent departures
  *   GET  /reports                            departures and passengers today / this week / this month, per rank
+ *
+ * Shared rank devices (a card device at the rank, instead of one on every vehicle):
+ *   GET  /ranks/:id/loading                  the queue with each vehicle's loading status (waiting / pairing / loading) and the rank's devices
+ *   POST /ranks/:id/sessions                 {terminalId, queueId?} open a loading session: the device now waits for the DRIVER's card (default: first in line)
+ *   POST /ranks/:id/sessions/:sid/cancel     {reason?} a session that never loaded, or was started on the wrong vehicle
+ *   POST /ranks/:id/sessions/:sid/close      {passengers?, note?} the vehicle departs: the departure is logged and the next vehicle can load
  */
 export function createMarshalRouter(db: Db, now: () => Date = () => new Date()): Router {
   const router = Router();
@@ -111,6 +118,48 @@ export function createMarshalRouter(db: Db, now: () => Date = () => new Date()):
       [rank.id, took.vehicle_id, veh?.driver_id ?? null, me, passengers, note]);
     await audit(db, req, "marshal.depart", String(rank.id), { vehicleId: took.vehicle_id, passengers });
     res.status(201).json({ success: true, id: r.rows[0].id });
+  }));
+
+  /* ── shared rank devices ── */
+  const sessions = createRankSessions(db, now);
+  const answer = <T,>(res: import("express").Response, r: Res<T>, okStatus = 200) => {
+    if (!r.ok) { res.status(r.status).json({ success: false, error: r.message, code: r.code }); return; }
+    res.status(okStatus).json({ success: true, session: r.value });
+  };
+  router.get("/ranks/:id/loading", h(async (req, res) => {
+    const rank = await myRank(req.params.id, uid(req));
+    if (!rank) { fail(res, 404, "Rank not found"); return; }
+    res.json({ success: true, ...(await sessions.board(String(rank.id))) });
+  }));
+  router.post("/ranks/:id/sessions", json({ limit: "5kb" }), h(async (req, res) => {
+    const rank = await myRank(req.params.id, uid(req));
+    if (!rank) { fail(res, 404, "Rank not found"); return; }
+    const { terminalId, queueId } = req.body ?? {};
+    if (!isUuid(terminalId)) { fail(res, 400, "Choose a device"); return; }
+    if (queueId !== undefined && queueId !== null && !isUuid(queueId)) { fail(res, 400, "Invalid queue entry"); return; }
+    answer(res, await sessions.open({ rankId: String(rank.id), marshalId: uid(req), actorName: req.user!.username, terminalId, queueId: queueId ?? null }), 201);
+  }));
+  router.post("/ranks/:id/sessions/:sid/cancel", json({ limit: "5kb" }), h(async (req, res) => {
+    const rank = await myRank(req.params.id, uid(req));
+    if (!rank) { fail(res, 404, "Rank not found"); return; }
+    if (!isUuid(req.params.sid)) { fail(res, 400, "Invalid session"); return; }
+    const reason = optText(req.body?.reason, 200);
+    if (reason === undefined) { fail(res, 400, "The reason is too long (200 characters at most)"); return; }
+    answer(res, await sessions.cancel({ sessionId: req.params.sid, rankId: String(rank.id), marshalId: uid(req), actorName: req.user!.username, reason }));
+  }));
+  router.post("/ranks/:id/sessions/:sid/close", json({ limit: "5kb" }), h(async (req, res) => {
+    const rank = await myRank(req.params.id, uid(req));
+    if (!rank) { fail(res, 404, "Rank not found"); return; }
+    if (!isUuid(req.params.sid)) { fail(res, 400, "Invalid session"); return; }
+    const b = req.body ?? {}, note = optText(b.note, 200);
+    if (note === undefined) { fail(res, 400, "The note is too long (200 characters at most)"); return; }
+    let passengers: number | null = null;
+    if (b.passengers !== undefined && b.passengers !== null && b.passengers !== "") {
+      const n = Number(b.passengers);
+      if (!Number.isInteger(n) || n < 0 || n > 200) { fail(res, 400, "Passengers must be a whole number from 0 to 200"); return; }
+      passengers = n;
+    }
+    answer(res, await sessions.close({ sessionId: req.params.sid, rankId: String(rank.id), marshalId: uid(req), actorName: req.user!.username, passengers, note }));
   }));
 
   router.post("/ranks/:id/queue/:queueId/remove", h(async (req, res) => {

@@ -1875,3 +1875,44 @@ CREATE TABLE IF NOT EXISTS wa_messages (
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_wa_messages_conv ON wa_messages(conversation_id, created_at);
+
+-- ── Rank devices ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+-- A route has a shared card device at each end (its departure rank and its destination rank). A vehicle does not need its own device: the
+-- rank marshal opens a LOADING SESSION for the vehicle at the front of the queue on the rank's device, the driver pairs it by tapping their
+-- own driver card, and every passenger tap on that device while it is paired belongs to that vehicle and that driver. An owner can still
+-- register a device of their own for their own vehicle (kind 'vehicle', exactly as before). Additive only: the existing terminals, taps,
+-- trips and departures behave as they always did.
+ALTER TABLE terminals ADD COLUMN IF NOT EXISTS kind TEXT NOT NULL DEFAULT 'vehicle';           -- 'vehicle' (on one vehicle, as before) | 'rank' (shared, at a rank)
+ALTER TABLE terminals ADD COLUMN IF NOT EXISTS rank_id UUID REFERENCES ranks(id);               -- the rank a shared device sits at
+ALTER TABLE terminals ADD COLUMN IF NOT EXISTS route_id UUID REFERENCES token_routes(id);       -- the route (and so the fare) a shared device charges
+ALTER TABLE token_routes ADD COLUMN IF NOT EXISTS from_rank_id UUID REFERENCES ranks(id);       -- a route runs from one rank ...
+ALTER TABLE token_routes ADD COLUMN IF NOT EXISTS to_rank_id UUID REFERENCES ranks(id);         -- ... to another
+CREATE TABLE IF NOT EXISTS loading_sessions (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  terminal_id     UUID NOT NULL REFERENCES terminals(id),
+  rank_id         UUID NOT NULL REFERENCES ranks(id),
+  queue_id        UUID REFERENCES rank_queue(id),
+  vehicle_id      UUID NOT NULL REFERENCES vehicles(id),
+  route_id        UUID REFERENCES token_routes(id),
+  marshal_id      UUID NOT NULL REFERENCES users(id),
+  driver_id       UUID REFERENCES users(id),                  -- set when the driver taps their card; empty while 'pending'
+  driver_card_id  UUID REFERENCES token_cards(id),
+  -- pending: the marshal has opened it and the device is waiting for the driver's card. loading: paired, passengers are paying.
+  -- closed: the vehicle departed. cancelled: it never loaded (no card in time, or the marshal cancelled it).
+  status          TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','loading','closed','cancelled')),
+  started_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  paired_at       TIMESTAMPTZ,
+  ended_at        TIMESTAMPTZ,
+  passengers      INTEGER NOT NULL DEFAULT 0,
+  total_cents     BIGINT NOT NULL DEFAULT 0,
+  close_reason    TEXT,
+  departure_id    UUID REFERENCES departures(id)
+);
+-- A device carries at most ONE open session, a vehicle is in at most one, and a driver loads at most one vehicle at a time. The database
+-- enforces these, so two requests at once can never break them.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_loading_one_open_per_terminal ON loading_sessions(terminal_id) WHERE status IN ('pending','loading');
+CREATE UNIQUE INDEX IF NOT EXISTS idx_loading_one_open_per_vehicle  ON loading_sessions(vehicle_id)  WHERE status IN ('pending','loading');
+CREATE UNIQUE INDEX IF NOT EXISTS idx_loading_one_loading_per_driver ON loading_sessions(driver_id)  WHERE status = 'loading';
+CREATE INDEX IF NOT EXISTS idx_loading_rank ON loading_sessions(rank_id, started_at DESC);
+ALTER TABLE terminal_taps ADD COLUMN IF NOT EXISTS session_id UUID REFERENCES loading_sessions(id);   -- the loading session a tap belongs to (empty for a vehicle device)
+

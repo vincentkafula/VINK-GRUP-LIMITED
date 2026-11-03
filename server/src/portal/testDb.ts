@@ -98,6 +98,18 @@ export function allPortalsDb(): Db {
     CREATE TABLE wa_conversations (id UUID PRIMARY KEY, wa_id TEXT NOT NULL UNIQUE, name TEXT NOT NULL DEFAULT '', department TEXT, state TEXT NOT NULL DEFAULT 'menu', status TEXT NOT NULL DEFAULT 'open', opted_in BOOLEAN NOT NULL DEFAULT false, last_inbound_at TIMESTAMPTZ, last_at TIMESTAMPTZ NOT NULL DEFAULT now(), last_preview TEXT NOT NULL DEFAULT '', closed_notice_on TEXT, created_at TIMESTAMPTZ NOT NULL DEFAULT now());
     CREATE TABLE wa_messages (id UUID PRIMARY KEY, conversation_id UUID NOT NULL, direction TEXT NOT NULL, body TEXT NOT NULL, kind TEXT NOT NULL DEFAULT 'text', wa_message_id TEXT UNIQUE, status TEXT NOT NULL DEFAULT 'sent', error TEXT, by_user UUID, by_name TEXT NOT NULL DEFAULT '', created_at TIMESTAMPTZ NOT NULL DEFAULT now());
     CREATE TABLE support_requests (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), user_id UUID NOT NULL, subject TEXT NOT NULL, message TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'open', created_at TIMESTAMPTZ NOT NULL DEFAULT now());
+    -- rank devices (mirrors the end of db/schema.sql)
+    ALTER TABLE terminals ADD COLUMN model TEXT NOT NULL DEFAULT 'P18Q Bus Validator';
+    ALTER TABLE terminals ADD COLUMN kind TEXT NOT NULL DEFAULT 'vehicle';
+    ALTER TABLE terminals ADD COLUMN rank_id UUID;
+    ALTER TABLE terminals ADD COLUMN route_id UUID;
+    ALTER TABLE token_routes ADD COLUMN from_rank_id UUID;
+    ALTER TABLE token_routes ADD COLUMN to_rank_id UUID;
+    CREATE TABLE loading_sessions (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), terminal_id UUID NOT NULL, rank_id UUID NOT NULL, queue_id UUID, vehicle_id UUID NOT NULL, route_id UUID, marshal_id UUID NOT NULL, driver_id UUID, driver_card_id UUID, status TEXT NOT NULL DEFAULT 'pending', started_at TIMESTAMPTZ NOT NULL DEFAULT now(), paired_at TIMESTAMPTZ, ended_at TIMESTAMPTZ, passengers INTEGER NOT NULL DEFAULT 0, total_cents BIGINT NOT NULL DEFAULT 0, close_reason TEXT, departure_id UUID);
+    CREATE UNIQUE INDEX idx_loading_one_open_per_terminal ON loading_sessions(terminal_id) WHERE status IN ('pending','loading');
+    CREATE UNIQUE INDEX idx_loading_one_open_per_vehicle ON loading_sessions(vehicle_id) WHERE status IN ('pending','loading');
+    CREATE UNIQUE INDEX idx_loading_one_loading_per_driver ON loading_sessions(driver_id) WHERE status = 'loading';
+    ALTER TABLE terminal_taps ADD COLUMN session_id UUID;
   `);
   const { Pool } = mem.adapters.createPg();
   return new Pool() as unknown as Db;

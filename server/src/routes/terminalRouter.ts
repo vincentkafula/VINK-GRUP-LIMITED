@@ -7,6 +7,7 @@ import { createConfigReader } from "../config/configService.js";
 import { checkOffRoute } from "../services/routeGeofenceService.js";
 import { containsUnmaskedPan } from "../services/panValidation.js";
 import { emit } from "../services/wsBroadcast.js";
+import { createRankSessions, checkRankDevice } from "../portal/rankSessions.js";
 
 const router: ReturnType<typeof Router> = Router();
 
@@ -184,6 +185,22 @@ router.post("/tap", async (req: Request, res: Response): Promise<void> => {
  * already show device activity (Owner/Investor/Taxi Association fleet
  * dashboards) once this is wired up to real hardware.
  */
+/**
+ * POST /api/terminal/pair   {cardUid}
+ * Device-authenticated, like /tap. A SHARED RANK DEVICE reports the card the DRIVER has just tapped. If the marshal has opened a loading session on this device, the driver's card pairs it
+ * (and only then can passengers pay on it); otherwise the answer says why not (no session, not a driver card, a driver who is not on this vehicle, a device already loading another driver).
+ * No card tap, no pairing. Every attempt, accepted or refused, is in the audit log.
+ */
+router.post("/pair", async (req: Request, res: Response): Promise<void> => {
+  if (!hasDb || !pool) { res.status(503).json({ success: false, error: "Database not configured" }); return; }
+  const serial = req.header("x-terminal-serial") ?? "";
+  const auth = await authenticateTerminal(serial, req.header("x-terminal-api-key") ?? "");
+  if (!auth.authenticated) { res.status(401).json({ success: false, error: auth.error ?? "Terminal authentication failed" }); return; }
+  const r = await createRankSessions(pool).pair({ terminalId: auth.terminalId ?? "", serial, cardUid: (req.body as { cardUid?: unknown } | undefined)?.cardUid });
+  if (!r.ok) { res.status(r.status).json({ success: false, error: r.message, code: r.code }); return; }
+  res.status(200).json({ success: true, data: r.value });
+});
+
 router.get("/taps", requireAuth, requireRole(...REVIEWER_ROLES), async (req: Request, res: Response): Promise<void> => {
   if (!hasDb || !pool) { res.json({ success: true, data: [] }); return; }
   const { rows } = await pool.query(
@@ -223,15 +240,19 @@ router.get("/terminals", requireAuth, requireRole(...REVIEWER_ROLES), async (_re
  */
 router.patch("/terminals/:id", requireAuth, requireRole(...REVIEWER_ROLES), async (req: Request, res: Response): Promise<void> => {
   if (!hasDb || !pool) { res.status(503).json({ success: false, error: "Database not configured" }); return; }
-  const { status, assignedDriver, investorId, ownerId, driverId, associationId } = req.body as {
-    status?: string; assignedDriver?: string; investorId?: string; ownerId?: string; driverId?: string; associationId?: string;
+  const { status, assignedDriver, investorId, ownerId, driverId, associationId, kind, rankId, routeId } = req.body as {
+    status?: string; assignedDriver?: string; investorId?: string; ownerId?: string; driverId?: string; associationId?: string; kind?: string; rankId?: string; routeId?: string;
   };
   if (status && !["active", "inactive", "revoked"].includes(status)) {
     res.status(400).json({ success: false, error: "status must be 'active', 'inactive', or 'revoked'" });
     return;
   }
+  // A SHARED RANK DEVICE: marked kind "rank", at one rank, charging one route. The rules are in checkRankDevice (portal/rankSessions.ts).
+  const check = await checkRankDevice(pool, req.params.id, { kind, rankId, routeId });
+  if (!check.ok) { res.status(check.status).json({ success: false, error: check.message, code: check.code }); return; }
   const { rows } = await pool.query(
     `UPDATE terminals SET
+       kind = COALESCE($8, kind), rank_id = COALESCE($9, rank_id), route_id = COALESCE($10, route_id),
        status = COALESCE($1, status),
        assigned_driver = COALESCE($2, assigned_driver),
        investor_id = COALESCE($3, investor_id),
@@ -239,8 +260,8 @@ router.patch("/terminals/:id", requireAuth, requireRole(...REVIEWER_ROLES), asyn
        driver_id = COALESCE($5, driver_id),
        association_id = COALESCE($6, association_id)
      WHERE id = $7
-     RETURNING id, serial, model, status, assigned_driver, investor_id, owner_id, driver_id, association_id, last_seen_at, registered_at`,
-    [status ?? null, assignedDriver ?? null, investorId ?? null, ownerId ?? null, driverId ?? null, associationId ?? null, req.params.id]
+     RETURNING id, serial, model, status, kind, rank_id, route_id, assigned_driver, investor_id, owner_id, driver_id, association_id, last_seen_at, registered_at`,
+    [status ?? null, assignedDriver ?? null, investorId ?? null, ownerId ?? null, driverId ?? null, associationId ?? null, req.params.id, kind ?? null, rankId ?? null, routeId ?? null]
   );
   if (!rows.length) { res.status(404).json({ success: false, error: "Terminal not found" }); return; }
   res.json({ success: true, data: rows[0] });
