@@ -16,6 +16,8 @@ import { cardHash } from "../services/tokenService.js";
 /**
  * Loading sessions on a shared rank device, on a real (in-memory) Postgres: the marshal opens a session, the DRIVER pairs it with their own card, the vehicle departs and the next one loads.
  */
+/** an audit entry's details: real JSON on a real PostgreSQL, text on the in-memory one */
+const det = (v: unknown) => (typeof v === "string" ? JSON.parse(v) : v) as any;
 const id = (n: number) => `00000000-0000-0000-0000-${String(n).padStart(12, "0")}`;
 const U = { assoc: id(1), owner: id(2), owner2: id(3), driver: id(4), driver2: id(5), driver3: id(6), marshal: id(7), marshal2: id(8), pax: id(9) };
 const CARD = { driver: "04A1B2C3D4", driver2: "04E5F6A7B8", driver3: "04C0FFEE01", pax: "04D00DFEED", stranger: "04DEADBEEF" };
@@ -77,6 +79,12 @@ describe("opening a session", () => {
     const [a, b] = await Promise.all([w.rs.pair({ terminalId: d1, serial: "RK-1", cardUid: CARD.driver }), w.rs.pair({ terminalId: d2, serial: "RK-2", cardUid: CARD.driver })]);
     expect([a.ok, b.ok].filter(Boolean)).toHaveLength(1); expect((await w.db.query(`SELECT COUNT(*) AS n FROM loading_sessions WHERE status = 'loading'`)).rows[0].n).toBe(1);
   });
+  it.runIf(!!process.env.TEST_PG_URL)("lets only one of many simultaneous pairings of the same driver through, on different devices and vehicles (only the driver's own rule can stop them)", async () => {
+    const w = await world(); const ds = await Promise.all([1, 2, 3].map((i) => w.device(`RK-${i}`))); for (const v of [w.v1, w.v2, w.v3]) { await w.queue(w.rank, v); await w.db.query(`UPDATE vehicles SET driver_id = $1 WHERE id = $2`, [U.driver, v]); }
+    for (const t of ds) ok(await w.rs.open({ rankId: w.rank, marshalId: U.marshal, actorName: "m", terminalId: t }));
+    const r = await Promise.allSettled(ds.flatMap((t, i) => [1, 2].map(() => w.rs.pair({ terminalId: t, serial: `RK-${i + 1}`, cardUid: CARD.driver }))));
+    expect(r.every((x) => x.status === "fulfilled")).toBe(true); expect((await w.db.query(`SELECT COUNT(*) AS n FROM loading_sessions WHERE status = 'loading'`)).rows[0].n).toBe(1);
+  });
   it("refuses a device or a vehicle that is already loading, in plain words", async () => {
     const w = await world(); const d = await w.device("RK-1"); await w.queue(w.rank, w.v1); await w.queue(w.rank, w.v2); ok(await w.rs.open({ rankId: w.rank, marshalId: U.marshal, actorName: "m", terminalId: d }));
     refused(await w.rs.open({ rankId: w.rank, marshalId: U.marshal, actorName: "m", terminalId: d }), 409, "device_busy"); const d2 = await w.device("RK-2"); const first = (await w.rs.board(w.rank)).queue[0].id;
@@ -113,7 +121,7 @@ describe("pairing needs the driver's own card", () => {
     await w.db.query(`UPDATE token_cards SET status = 'lost' WHERE card_hash = $1`, [cardHash(CARD.driver)]); refused(await tap(CARD.driver), 403, "card_blocked");
     await w.db.query(`UPDATE token_cards SET status = 'active' WHERE card_hash = $1`, [cardHash(CARD.driver)]); await w.db.query(`UPDATE token_wallets SET status = 'frozen' WHERE user_id = $1`, [U.driver]); refused(await tap(CARD.driver), 403, "card_blocked");
     expect((await w.rs.board(w.rank)).queue[0].status).toBe("pairing");                          // none of those paired it
-    const refusals = await w.audit("rank.pair_refused"); expect(refusals.map((r: any) => JSON.parse(r.details).reason)).toEqual(["card_unknown", "not_driver_card", "wrong_driver", "card_blocked", "card_blocked"]);
+    const refusals = await w.audit("rank.pair_refused"); expect(refusals.map((r: any) => det(r.details).reason)).toEqual(["card_unknown", "not_driver_card", "wrong_driver", "card_blocked", "card_blocked"]);
     expect(JSON.stringify(refusals)).not.toContain(CARD.driver);                                   // only the last four characters of a card are ever logged
   });
   it("says so when the device has no vehicle waiting", async () => {
@@ -368,7 +376,7 @@ describe("the driver departs their own vehicle", () => {
     await rsd.tap({ terminalId: d, serial: "RK-1", cardUid: CARD.pax, key: "tap-0001" }, fakeCharge(w.db));
     const r = ok<any>(await rsd.departByDriver({ driverId: U.driver, actorName: "driver", note: "full" })); expect(r).toMatchObject({ id: s.id, status: "closed", passengers: 1, totalCents: 2500 }); expect(closed).toEqual([s.id]);
     expect((await w.db.query(`SELECT marshal_id, driver_id, passengers, note FROM departures WHERE id = $1`, [r.departureId])).rows[0]).toMatchObject({ marshal_id: U.marshal, driver_id: U.driver, passengers: 1, note: "full" });
-    const log = (await w.audit("rank.session_close"))[0]; expect(log).toMatchObject({ target: s.id }); expect(JSON.parse(log.details)).toMatchObject({ by: "driver" });
+    const log = (await w.audit("rank.session_close"))[0]; expect(log).toMatchObject({ target: s.id }); expect(det(log.details)).toMatchObject({ by: "driver" });
     expect((await w.rs.board(w.rank)).queue).toEqual([]);                                           // the vehicle has left the queue
     refused(await rsd.departByDriver({ driverId: U.driver, actorName: "driver" }), 409, "no_session");                // pressing it again, or when not loading, is refused
   });
@@ -461,7 +469,7 @@ describe("a driver on an owner's own device", () => {
     const d = await ownDevice(w, "OWN-1"); const s = ok<any>(await rsd.pair({ terminalId: d, serial: "OWN-1", cardUid: CARD.driver })); ok(await rsd.tap({ terminalId: d, serial: "OWN-1", cardUid: CARD.pax, key: "tap-0001" }, fakeCharge(w.db)));
     expect(ok<any>(await rsd.tap({ terminalId: d, serial: "OWN-1", cardUid: "04AAAA0002", key: "tap-0002" }, fakeCharge(w.db))).session).toMatchObject({ passengers: 2, totalCents: 5000 });
     const done = ok<any>(await rsd.departByDriver({ driverId: U.driver, actorName: "driver" })); expect(done).toMatchObject({ id: s.id, status: "closed", passengers: 2, departureId: null }); expect(closed).toEqual([s.id]);
-    expect((await w.db.query(`SELECT COUNT(*) AS n FROM departures`)).rows[0].n).toBe(0); expect(JSON.parse((await w.audit("rank.session_close"))[0].details)).toMatchObject({ by: "driver", departureId: null });
+    expect((await w.db.query(`SELECT COUNT(*) AS n FROM departures`)).rows[0].n).toBe(0); expect(det((await w.audit("rank.session_close"))[0].details)).toMatchObject({ by: "driver", departureId: null });
     await w.db.query(`INSERT INTO owner_drivers (owner_id, driver_id, status, requested_by) VALUES ($1,$2,'active','owner')`, [U.owner, U.driver3]); expect(ok<any>(await rsd.pair({ terminalId: d, serial: "OWN-1", cardUid: CARD.driver3 })).driverId).toBe(U.driver3);
     expect(ok<any>(await rsd.tap({ terminalId: d, serial: "OWN-1", cardUid: CARD.pax, key: "tap-0003" }, fakeCharge(w.db))).session).toMatchObject({ passengers: 1, totalCents: 2500, driverName: "Driver Three" });      // a new trip, so the same card is a new fare, counted on the new driver
   });
@@ -469,7 +477,7 @@ describe("a driver on an owner's own device", () => {
     const w = await world(); const d = await ownDevice(w, "OWN-1"); const s = ok<any>(await w.rs.pair({ terminalId: d, serial: "OWN-1", cardUid: CARD.driver }));
     refused(await w.rs.endByOwner({ ownerId: U.owner2, sessionId: s.id, actorName: "owner2" }), 404, "session"); refused(await w.rs.endByOwner({ ownerId: U.driver, sessionId: s.id, actorName: "driver" }), 404, "session");
     expect((await sessionRows(w))[0].status).toBe("loading"); expect(ok<any>(await w.rs.endByOwner({ ownerId: U.owner, sessionId: s.id, actorName: "owner" })).status).toBe("closed");
-    expect(JSON.parse((await w.audit("rank.session_close"))[0].details)).toMatchObject({ by: "owner" });
+    expect(det((await w.audit("rank.session_close"))[0].details)).toMatchObject({ by: "owner" });
   });
 });
 
@@ -591,6 +599,32 @@ describe("the device's batch route stays wired", () => {
     const src = read("tokenRoutes.ts");
     expect(src).toMatch(/router\.post\("\/rank-tap\/batch", json\(\{ limit: "64kb" \}\)[\s\S]*?authed\(req\)[\s\S]*?createRankSessions\(d\.db\)\.syncTaps\([\s\S]*?d\.tokens\.tapToken\(t\)/);
     expect(src).toMatch(/req\.path === "\/rank-tap\/batch" \? next\(\) : small\(req, res, next\)/); expect(src).toMatch(/const small = json\(\{ limit: "4kb" \}\)/);
+  });
+});
+
+/** Races between simultaneous requests, which the database's unique indexes decide. The in-memory database cannot run these (it has no true concurrency and no partial indexes), so they run only against a real PostgreSQL (TEST_PG_URL). */
+describe.runIf(!!process.env.TEST_PG_URL)("simultaneous requests, on a real PostgreSQL", () => {
+  const one = (rs: PromiseSettledResult<any>[]) => rs.filter((r) => r.status === "fulfilled" && r.value.ok).length;
+  it("lets only one of many simultaneous requests open the same device, each for a different vehicle (so only the device's own rule can stop them)", async () => {
+    const w = await world(); const d = await w.device("RK-1"); for (const v of [w.v1, w.v2, w.v3]) await w.queue(w.rank, v); const qs = (await w.rs.board(w.rank)).queue.map((x) => x.id);
+    const r = await Promise.allSettled([...qs, ...qs].map((queueId) => w.rs.open({ rankId: w.rank, marshalId: U.marshal, actorName: "m", terminalId: d, queueId })));
+    expect(one(r)).toBe(1); expect(r.every((x) => x.status === "fulfilled")).toBe(true);                         // none threw: the losers were told, not crashed
+    expect((await w.db.query(`SELECT COUNT(*) AS n FROM loading_sessions`)).rows[0].n).toBe(1);
+  });
+  it("lets only one of many simultaneous requests start the same vehicle on different devices", async () => {
+    const w = await world(); const ds = await Promise.all([1, 2, 3, 4].map((i) => w.device(`RK-${i}`))); await w.queue(w.rank, w.v1); const q = (await w.rs.board(w.rank)).queue[0].id;
+    const r = await Promise.allSettled(ds.map((terminalId) => w.rs.open({ rankId: w.rank, marshalId: U.marshal, actorName: "m", terminalId, queueId: q })));
+    expect(one(r)).toBe(1); expect((await w.db.query(`SELECT COUNT(*) AS n FROM loading_sessions WHERE status IN ('pending','loading')`)).rows[0].n).toBe(1);
+  });
+  it("lets only one of two drivers who tap the same owner's device at the same moment open the trip", async () => {
+    const w = await world(); const d = await ownDevice(w, "OWN-1"); await w.db.query(`INSERT INTO owner_drivers (owner_id, driver_id, status, requested_by) VALUES ($1,$2,'active','owner')`, [U.owner, U.driver3]);
+    const r = await Promise.allSettled([CARD.driver, CARD.driver3].map((cardUid) => w.rs.pair({ terminalId: d, serial: "OWN-1", cardUid })));
+    expect(one(r)).toBe(1); expect(r.every((x) => x.status === "fulfilled")).toBe(true); expect((await w.db.query(`SELECT COUNT(*) AS n FROM loading_sessions`)).rows[0].n).toBe(1);
+  });
+  it("lets only one of two simultaneous Departs go through, and logs one departure", async () => {
+    const w = await world(); const { d, s } = await opened(w); ok(await w.rs.pair({ terminalId: d, serial: "RK-1", cardUid: CARD.driver }));
+    const r = await Promise.allSettled([1, 2, 3].map(() => w.rs.close({ sessionId: s.id, rankId: w.rank, marshalId: U.marshal, actorName: "m" })));
+    expect(r.every((x) => x.status === "fulfilled")).toBe(true); expect((await w.db.query(`SELECT COUNT(*) AS n FROM departures`)).rows[0].n).toBe(1);
   });
 });
 

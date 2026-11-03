@@ -236,3 +236,15 @@ describe("the batch route", () => {
   });
 });
 
+/** Real concurrency on a real PostgreSQL only (TEST_PG_URL): a retry that overlaps the original must never charge twice. */
+describe.runIf(!!process.env.TEST_PG_URL)("simultaneous taps, on a real PostgreSQL", () => {
+  it("charges a passenger once when the same tap, and the same offline batch, arrive at the same moment several times over", async () => {
+    await loading(); const before = tok(U.pax);
+    await Promise.allSettled([1, 2, 3, 4].map(() => tapOn("tap-0001")));
+    expect(tok(U.pax)).toBe(before - FARE); expect((await q(`SELECT id FROM terminal_taps WHERE status = 'confirmed'`)).length).toBe(1);
+    const at = (m: number) => new Date(NOW.getTime() + m * 60_000).toISOString(); const batch = { terminalId: DEVICE, serial: "RK-1", taps: [{ key: "off-0001", cardUid: CARD.pax2, at: at(2) }] };
+    await Promise.allSettled([1, 2, 3, 4].map(() => rs.syncTaps(batch, (t) => tokens.tapToken(t))));
+    expect(tok(U.pax2)).toBe(100_000 - FARE); expect((await q(`SELECT id FROM terminal_taps WHERE status = 'confirmed'`)).length).toBe(2); expect(tok(U.d1)).toBe(2 * (FARE - FEE));
+  });
+});
+

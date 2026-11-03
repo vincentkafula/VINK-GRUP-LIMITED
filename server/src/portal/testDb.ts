@@ -1,9 +1,36 @@
 import { randomUUID } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { Pool, types } from "pg";
 import { newDb, DataType } from "pg-mem";
 import type { Db } from "./driverRoutes.js";
 
+/**
+ * A throwaway database on a REAL PostgreSQL, built from the real db/schema.sql, for running the same tests against the real thing (partial indexes, the planner, real parameter typing). Used when
+ * TEST_PG_URL is set (for example postgres://postgres:pw@127.0.0.1:5432/postgres); each call makes its own database. Fixtures fill in only the columns a test cares about, so every "must be filled
+ * in" rule is relaxed here, except on loading_sessions; types, defaults, indexes, unique rules and foreign keys are exactly production's.
+ */
+function realPostgresDb(baseUrl: string): Db {
+  const name = `t_${randomUUID().replace(/-/g, "")}`;
+  const ready = (async () => {
+    const admin = new Pool({ connectionString: baseUrl, max: 1 }); await admin.query(`CREATE DATABASE ${name}`); await admin.end();
+    const url = new URL(baseUrl); url.pathname = `/${name}`;
+    const pool = new Pool({ connectionString: url.toString(), max: 3, idleTimeoutMillis: 500, allowExitOnIdle: true, types: { getTypeParser: ((oid: number, fmt: never) => (oid === 20 ? Number : types.getTypeParser(oid, fmt))) as never } });
+    await pool.query(readFileSync(join(__dirname, "../db/schema.sql"), "utf8"));
+    await pool.query(`DO $$ DECLARE r record; BEGIN FOR r IN
+        SELECT c.table_name, c.column_name FROM information_schema.columns c JOIN information_schema.tables t ON t.table_name = c.table_name AND t.table_schema = c.table_schema AND t.table_type = 'BASE TABLE'
+         WHERE c.table_schema = 'public' AND c.is_nullable = 'NO' AND c.column_default IS NULL AND c.table_name <> 'loading_sessions'
+           AND NOT EXISTS (SELECT 1 FROM information_schema.key_column_usage k JOIN information_schema.table_constraints tc ON tc.constraint_name = k.constraint_name AND tc.table_schema = k.table_schema
+                            WHERE tc.constraint_type = 'PRIMARY KEY' AND k.table_name = c.table_name AND k.column_name = c.column_name)
+      LOOP EXECUTE format('ALTER TABLE %I ALTER COLUMN %I DROP NOT NULL', r.table_name, r.column_name); END LOOP; END $$`);
+    return pool;
+  })();
+  return { query: async (sql: string, params?: unknown[]) => (await ready).query(sql, params as never) } as unknown as Db;
+}
+
 /** In-memory Postgres (pg-mem) with the tables the transport portals use, mirroring db/schema.sql. For tests only. */
 export function allPortalsDb(): Db {
+  if (process.env.TEST_PG_URL) return realPostgresDb(process.env.TEST_PG_URL);
   const mem = newDb();
   mem.public.registerFunction({ name: "gen_random_uuid", returns: DataType.uuid, implementation: () => randomUUID(), impure: true });
   mem.public.none(`
