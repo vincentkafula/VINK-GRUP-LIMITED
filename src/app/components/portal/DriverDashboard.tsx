@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { TokensPanel } from "./TokensPanel";
-import { User, Car, Route as RouteIcon, Wallet, Bell, Loader2, TriangleAlert, Link2, FileText, Landmark, Coins } from "lucide-react";
+import { User, Car, Route as RouteIcon, Wallet, Bell, Loader2, TriangleAlert, Link2, FileText, Landmark, Coins, Bus } from "lucide-react";
+import { DriverLoading } from "./DriverLoading";
 import { Banknote } from "lucide-react";
 import { PaymentsPanel, TripsPanel, CrossBorderPanel, VirtualAccountsPanel, DriverAgreements } from "./MoneyPanels";
 import { BankStrip, BankScreen } from "./BankAccount";
@@ -17,6 +18,7 @@ import {
 const COLOR = "#C8102E";
 const NAV_BASE = [
   { icon: <User className="w-4 h-4" />, label: "Profile" },
+  { icon: <Bus className="w-4 h-4" />, label: "Loading" },
   { icon: <Car className="w-4 h-4" />, label: "Vehicle & licence" },
   { icon: <RouteIcon className="w-4 h-4" />, label: "Route & trips" },
   { icon: <Wallet className="w-4 h-4" />, label: "Earnings" },
@@ -66,6 +68,7 @@ export function DriverDashboard({ userName, onClose }: { userName?: string; onCl
         <BankStrip segment="driver" color={COLOR} onOpen={() => setNav("Bank account")} />
         <ScreenBoundary resetKey={nav}>
           {nav === "Profile" && <ProfileScreen onChanged={reloadNotes} />}
+          {nav === "Loading" && <DriverLoading onWithdraw={() => setNav("VINK Tokens")} />}
           {nav === "Vehicle & licence" && <VehicleScreen />}
           {nav === "Route & trips" && <TripsScreen />}
           {nav === "Earnings" && <EarningsScreen />}

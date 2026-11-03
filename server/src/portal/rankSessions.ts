@@ -29,7 +29,7 @@ export interface SessionView {
   startedAt: string; pairedAt: string | null; endedAt: string | null; passengers: number; totalCents: number; departureId: string | null; closeReason: string | null;
 }
 export interface BoardView {
-  queue: { id: string; vehicleId: string; registration: string; seats: number | null; joinedAt: string; status: "waiting" | "pairing" | "loading"; sessionId: string | null; driverName: string | null }[];
+  queue: { id: string; vehicleId: string; registration: string; seats: number | null; joinedAt: string; status: "waiting" | "pairing" | "loading"; sessionId: string | null; driverName: string | null; passengers: number; totalCents: number }[];
   devices: { id: string; serial: string; model: string; status: string; lastSeenAt: string | null; online: boolean; routeId: string | null; sessionId: string | null }[];
 }
 
@@ -227,6 +227,7 @@ export function createRankSessions(db: Db, now: () => Date = () => new Date(), p
       queue: waiting.map((w) => { const s = open.find((x) => String(x.queue_id) === String(w.id)); return {
         id: String(w.id), vehicleId: String(w.vehicle_id), registration: String(w.registration), seats: w.seats === null ? null : Number(w.seats), joinedAt: iso(w.joined_at)!,
         status: !s ? "waiting" as const : s.status === "pending" ? "pairing" as const : "loading" as const, sessionId: s ? String(s.id) : null, driverName: s?.driver_name ? String(s.driver_name) : null,
+        passengers: s ? Number(s.passengers ?? 0) : 0, totalCents: s ? Number(s.total_cents ?? 0) : 0,
       }; }),
       devices: devices.map((d) => ({ id: String(d.id), serial: String(d.serial), model: String(d.model ?? ""), status: String(d.status), lastSeenAt: iso(d.last_seen_at), online: !!d.last_seen_at && t - new Date(d.last_seen_at as string).getTime() <= ONLINE_WITHIN_MS,
         routeId: d.route_id ? String(d.route_id) : null, sessionId: (() => { const s = open.find((x) => String(x.terminal_id) === String(d.id)); return s ? String(s.id) : null; })() })),

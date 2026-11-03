@@ -1,18 +1,20 @@
 import { useState } from "react";
 import { TokensPanel } from "./TokensPanel";
-import { ListOrdered, History, BarChart3, Link2, Landmark, Coins } from "lucide-react";
+import { ListOrdered, History, BarChart3, Link2, Landmark, Coins, Bus } from "lucide-react";
 import { Banknote } from "lucide-react";
 import { PaymentsPanel, TripsPanel, CrossBorderPanel, VirtualAccountsPanel } from "./MoneyPanels";
 import { BankStrip, BankScreen } from "./BankAccount";
 import { DashboardShell, SectionPanel, StatCard, TableCard } from "../dashboards/DashboardShell";
 import { portalClient, useLoad, Status, Empty, Field, ActionButton, inputCls, when, inkOn, type Load } from "./ui";
 import { LinksPanel } from "./LinksPanel";
+import { MarshalLoading } from "./MarshalLoading";
 import { CsvButton, Pager, RangeBar, ScreenBoundary, TrendChart, rangeQuery, saToday, saShift, monthStart, useAutoRefresh, type Range } from "./widgets";
 
 const COLOR = "#C8102E";
 const call = portalClient("marshal");
 const NAV = [
   { icon: <ListOrdered className="w-4 h-4" />, label: "Ranks & queue" },
+  { icon: <Bus className="w-4 h-4" />, label: "Loading" },
   { icon: <History className="w-4 h-4" />, label: "Departures" },
   { icon: <BarChart3 className="w-4 h-4" />, label: "Reports" }, { icon: <Coins className="w-4 h-4" />, label: "VINK Tokens" }, { icon: <Landmark className="w-4 h-4" />, label: "Bank account" },
   { icon: <Banknote className="w-4 h-4" />, label: "Payments & trips" },
@@ -36,8 +38,9 @@ export function MarshalDashboard({ userName, onClose }: { userName?: string; onC
       <div className="p-4 md:p-6 space-y-4 max-w-5xl">
         <BankStrip segment="marshal" color={COLOR} onOpen={() => setNav("Bank account")} />
         <ScreenBoundary resetKey={nav}>
-          {(nav === "Ranks & queue" || nav === "Departures") && <RankPicker ranks={ranks} picked={picked?.id} onPick={setRankId} />}
+          {(nav === "Ranks & queue" || nav === "Loading" || nav === "Departures") && <RankPicker ranks={ranks} picked={picked?.id} onPick={setRankId} />}
           {nav === "Ranks & queue" && picked && <QueueScreen key={picked.id} rank={picked} onChanged={reloadRanks} />}
+          {nav === "Loading" && picked && <MarshalLoading key={picked.id} rank={picked} />}
           {nav === "Departures" && picked && <DeparturesScreen key={picked.id} rank={picked} />}
           {nav === "Reports" && <ReportsScreen />}
           {nav === "Payments & trips" && <><VirtualAccountsPanel segment="marshal" color={COLOR} /><CrossBorderPanel segment="marshal" color={COLOR} /><PaymentsPanel segment="marshal" color={COLOR} /><TripsPanel segment="marshal" color={COLOR} /></>}
