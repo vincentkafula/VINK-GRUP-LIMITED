@@ -1943,4 +1943,6 @@ CREATE TABLE IF NOT EXISTS token_offline_debts (
 );
 CREATE INDEX IF NOT EXISTS idx_token_debts_wallet ON token_offline_debts(wallet_id, status);
 CREATE INDEX IF NOT EXISTS idx_token_debts_open ON token_offline_debts(status, created_at);
+-- The most VINK will stand behind, in total, for offline fares it has paid and the passengers have not yet repaid. 0 (the default) means VINK carries NO offline risk: nothing is guaranteed.
+ALTER TABLE token_settings ADD COLUMN IF NOT EXISTS offline_guarantee_limit_cents BIGINT NOT NULL DEFAULT 0 CHECK (offline_guarantee_limit_cents >= 0);
 

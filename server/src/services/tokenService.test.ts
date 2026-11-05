@@ -149,7 +149,7 @@ describe("a trip in tokens", () => {
 
   it("the device fee is a setting, and zero turns it off", async () => {
     expect((await tokens.setDeviceFee(250, U.staff)).ok).toBe(true);
-    expect(await tokens.settings()).toEqual({ deviceFeeCents: 250 });
+    expect(await tokens.settings()).toEqual({ deviceFeeCents: 250, offlineGuaranteeLimitCents: 0 });
     expect((await tokens.setDeviceFee(-1, U.staff)).ok).toBe(false);
     expect((await tokens.setDeviceFee(0, U.staff)).ok).toBe(true);
     await db.query(`INSERT INTO driver_agreements (owner_id, driver_id, mode, amount_cents, pay_day, start_date, status) VALUES ($1,$2,'cash_basis_weekly',100000,5,'2026-10-05','active')`, [U.owner, U.driver]);

@@ -179,17 +179,23 @@ export function createTokenService(deps: {
         ? { ok: true, tapId: String(dup.id), fareCents: fare, balanceCents: balance(), route: String(route.name), replayed: true }
         : { ok: false, status: 402, code: "insufficient_tokens", message: "Not enough tokens", tapId: String(dup.id) };
     }
+    // The guarantee only applies to a genuinely offline tap, and only while what VINK already stands behind plus this fare is within the limit VINK has set (0 by default: no guarantee at all).
+    let canGuarantee = false;
+    if (t.guarantee) {
+      const limit = (await settings()).offlineGuaranteeLimitCents;
+      if (limit > 0) canGuarantee = Number((await db.query(`SELECT COALESCE(SUM(amount_cents), 0) AS s FROM token_offline_debts WHERE currency = $1 AND status = 'open'`, [cur])).rows[0].s) + fare <= limit;
+    }
     // A card that owes an earlier offline fare may not ride until it can pay it. If the wallet now covers what is owed it is collected first, and the card is clear.
     const owing = await openDebts(String(c.wallet_id));
     if (owing.length) {
       const total = owing.reduce((a, d) => a + d.amount, 0);
       if (balance() >= total) await collectDebts(owing, cur, holder);
-      else if (!t.guarantee) return { ok: false, status: 402, code: "card_owes", message: `This card owes ${(total / 100).toFixed(2)} from an earlier fare. Top it up to use it again.`, owedCents: total };
+      else if (!canGuarantee) return { ok: false, status: 402, code: "card_owes", message: `This card owes ${(total / 100).toFixed(2)} from an earlier fare. Top it up to use it again.`, owedCents: total };
     }
     const masked = `VINK ****${uid.slice(-4)}`;
     let posted = ledger.post(ref, "token_tap", [line(cur, holder, -fare, true), { account: systemAccounts(cur).clearing, kind: "system", amount: fare }], `Fare ${route.name}`);
     let guaranteed = false;
-    if (posted === "insufficient" && t.guarantee) {                                           // the driver and the owner are paid; the card owes it
+    if (posted === "insufficient" && canGuarantee) {                                           // the driver and the owner are paid; the card owes it
       posted = ledger.post(ref, "token_tap_guaranteed", [{ account: systemAccounts(cur).offlineGuarantee, kind: "system", amount: -fare }, { account: systemAccounts(cur).clearing, kind: "system", amount: fare }], `Fare ${route.name} (offline, guaranteed)`);
       guaranteed = true;
     }
@@ -714,8 +720,17 @@ export function createTokenService(deps: {
   }
 
   async function settings() {
-    const r = (await db.query(`SELECT device_fee_cents FROM token_settings WHERE scope = 'default'`)).rows[0];
-    return { deviceFeeCents: r ? Number(r.device_fee_cents) : 100 };
+    const r = (await db.query(`SELECT device_fee_cents, offline_guarantee_limit_cents FROM token_settings WHERE scope = 'default'`)).rows[0];
+    return { deviceFeeCents: r ? Number(r.device_fee_cents) : 100, offlineGuaranteeLimitCents: r ? Number(r.offline_guarantee_limit_cents ?? 0) : 0 };
+  }
+  /** What a device is told about taking VINK cards without a signal. With no guarantee limit (the default) VINK stands behind nothing, so a device must NOT accept a VINK card offline: a fare it cannot check might not be paid. */
+  async function offlinePolicy() { const lim = (await settings()).offlineGuaranteeLimitCents; return { offlineCards: lim > 0 }; }
+  /** The most VINK will stand behind, in total, for offline fares not yet repaid. 0 means none. */
+  async function setOfflineGuaranteeLimit(cents: unknown, by: string): Promise<TokenResult<{ offlineGuaranteeLimitCents: number }>> {
+    if (!Number.isInteger(cents) || (cents as number) < 0 || (cents as number) > 100_000_000) return bad(400, "The limit must be a whole number of cents, from 0 up to 1 000 000.00");
+    await db.query(`INSERT INTO token_settings (scope, offline_guarantee_limit_cents, updated_by, updated_at) VALUES ('default',$1,$2, now())
+                    ON CONFLICT (scope) DO UPDATE SET offline_guarantee_limit_cents = EXCLUDED.offline_guarantee_limit_cents, updated_by = EXCLUDED.updated_by, updated_at = now()`, [cents, by]);
+    return { ok: true, value: { offlineGuaranteeLimitCents: cents as number } };
   }
   async function setDeviceFee(cents: unknown, by: string): Promise<TokenResult<{ deviceFeeCents: number }>> {
     if (!Number.isInteger(cents) || (cents as number) < 0 || (cents as number) > 100_000) return bad(400, "The device fee must be between 0 and 1 000.00");
@@ -762,6 +777,6 @@ export function createTokenService(deps: {
     return { ok: true, value: { id: String(row.id) } };
   }
 
-  return { bindEngine(e: Pick<Engine, "settleTaps">) { engine = e; }, partyOf, setTier, wallet, openWallet, linkCard, cards, blockCard, tapToken, offlineDebts, writeOffDebt, transfer, redeemToBank, requestCashOut, decideCashOut, retryCashOut, processPayouts, attemptPayout, issueCard, issuedCards, activateCard, cardOrders, shipCardOrder, resetActivation, cardOptions, setIssuedCardStatus, authoriseCardSpend, reverseCardSpend, cardIsActive, addPayoutCard, startCardSession, addPayoutCardFromSession, cardEntry: () => ({ hosted: !!deps.hosted, raw: deps.acceptRawCardNumbers !== false }), payoutsEnabled: () => deps.externalPayouts !== false, payoutCards, removePayoutCard, reviewPayoutCard, cardsToReview, activity, summary, settings, setDeviceFee, routes, upsertRoute };
+  return { bindEngine(e: Pick<Engine, "settleTaps">) { engine = e; }, partyOf, setTier, wallet, openWallet, linkCard, cards, blockCard, tapToken, offlineDebts, writeOffDebt, offlinePolicy, setOfflineGuaranteeLimit, transfer, redeemToBank, requestCashOut, decideCashOut, retryCashOut, processPayouts, attemptPayout, issueCard, issuedCards, activateCard, cardOrders, shipCardOrder, resetActivation, cardOptions, setIssuedCardStatus, authoriseCardSpend, reverseCardSpend, cardIsActive, addPayoutCard, startCardSession, addPayoutCardFromSession, cardEntry: () => ({ hosted: !!deps.hosted, raw: deps.acceptRawCardNumbers !== false }), payoutsEnabled: () => deps.externalPayouts !== false, payoutCards, removePayoutCard, reviewPayoutCard, cardsToReview, activity, summary, settings, setDeviceFee, routes, upsertRoute };
 }
 export type TokenService = ReturnType<typeof createTokenService>;

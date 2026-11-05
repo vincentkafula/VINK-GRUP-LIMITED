@@ -160,12 +160,16 @@ describe("a trip on a device the owner fitted to their own vehicle", () => {
     ok(await pairOwn(CARD.d1)); ok(await tapOwn("tap-0001")); expect(tok(U.d1)).toBe(FARE - FEE); expect(tok(U.owner)).toBe(0);
     ok(await rs.departByDriver({ driverId: U.d1, actorName: "driver" })); ok(await pairOwn(CARD.d2)); ok(await tapOwn("tap-0002", CARD.pax2)); expect(tok(U.d2)).toBe(FARE - FEE); expect(tok(U.d1)).toBe(FARE - FEE);
   });
-  it("makes the trip when the driver ends it, with no departure and no marshal, so no marshal fee, but the device fee still falls on that driver", async () => {
+  it("makes the trip when the driver ends it, with no departure and no marshal, charging the marshal fee to the association as for any trip with no marshal logged, and the device fee to that driver", async () => {
     const s = ok(await pairOwn(CARD.d1)); ok(await tapOwn("tap-0001")); ok(await tapOwn("tap-0002", CARD.pax2));
     ok(await rs.departByDriver({ driverId: U.d1, actorName: "driver" }));
     expect(await q(`SELECT terminal_id, vehicle_id, driver_id, owner_id, marshal_id, departure_id, taps, fare_cents FROM trips`)).toEqual([{ terminal_id: OWN, vehicle_id: VEH, driver_id: U.d1, owner_id: U.owner, marshal_id: null, departure_id: null, taps: 2, fare_cents: 2 * FARE }]);
-    const items = await q(`SELECT kind, payer_id, payee_id FROM payment_items`); expect(items.filter((i) => i.kind === "marshal_fee")).toEqual([]);              // no marshal was involved, so none is owed
+    const items = await q(`SELECT kind, payer_id, payee_id FROM payment_items`); expect(items.filter((i) => i.kind === "marshal_fee")).toEqual([{ kind: "marshal_fee", payer_id: U.d1, payee_id: U.assoc }]);              // the marshal fee is carried: with no marshal it accrues to the association
     expect(items.find((i) => i.kind === "per_trip_pay")).toMatchObject({ payer_id: U.d1, payee_id: U.investor }); expect(s.id).toBeTruthy();
+  });
+  it("flags a trip for review, rather than letting the marshal fee go uncharged, when the device has no association to receive it", async () => {
+    await db.query(`UPDATE terminals SET association_id = NULL WHERE id = $1`, [OWN]); ok(await pairOwn(CARD.d1)); ok(await tapOwn("tap-0001")); ok(await rs.departByDriver({ driverId: U.d1, actorName: "driver" }));
+    expect((await q(`SELECT needs_review FROM trips`))[0].needs_review).toBe("marshal_fee_not_assigned"); expect((await q(`SELECT kind FROM payment_items`)).filter((i) => i.kind === "marshal_fee")).toEqual([]);
   });
   it("still pays the owner when the owner and that driver have a salary agreement, as at a rank", async () => {
     await db.query(`INSERT INTO driver_agreements (owner_id, driver_id, mode, amount_cents, pay_day, start_date, status) VALUES ($1,$2,'monthly_salary',300000,25,'2026-10-01','active')`, [U.owner, U.d1]);
@@ -226,7 +230,12 @@ describe("the batch route", () => {
 
   it("accepts a full batch of 200 taps (far more than the 4 KB every other terminal route allows) and answers each one", async () => {
     const big = batch(200); expect(JSON.stringify(big).length).toBeGreaterThan(4096);
-    const r = await post("/rank-tap/batch", big); expect(r.status).toBe(200); expect(r.body.data.results).toHaveLength(200); expect(r.body.data.results.every((x: any) => x.status === "rejected" && x.code === "no_session")).toBe(true);          // nobody was paired
+    const r = await post("/rank-tap/batch", big); expect(r.status).toBe(200); expect(r.body.data.policy).toEqual({ offlineCards: false }); expect(r.body.data.results).toHaveLength(200); expect(r.body.data.results.every((x: any) => x.status === "rejected" && x.code === "no_session")).toBe(true);          // nobody was paired
+  });
+  it("tells a device its offline policy, only if it is a known device", async () => {
+    expect(await (await fetch(`${base}/policy`, { headers: { "x-terminal-serial": "RK-1", "x-terminal-api-key": "secret" } })).json()).toEqual({ success: true, data: { offlineCards: false } });
+    ok(await tokens.setOfflineGuaranteeLimit(5000, U.assoc)); expect(((await (await fetch(`${base}/policy`, { headers: { "x-terminal-serial": "RK-1", "x-terminal-api-key": "secret" } })).json()) as any).data).toEqual({ offlineCards: true });
+    expect((await fetch(`${base}/policy`)).status).toBe(401);
   });
   it("keeps the strict 4 KB limit on a single tap, needs the device's own credentials, and refuses an empty or oversized batch", async () => {
     expect((await post("/rank-tap", { cardNumber: "x".repeat(5000) })).status).toBe(413);
@@ -247,7 +256,7 @@ describe.runIf(!!process.env.TEST_PG_URL)("simultaneous taps, on a real PostgreS
   });
 });
 
-describe("offline fares are guaranteed: the driver and the owner never lose one, and a card that cannot pay is blocked", () => {
+describe("when VINK sets an offline guarantee limit: the driver and the owner never lose an offline fare within it, and a card that cannot pay is blocked", () => {
   // This group starts its load three hours before the pinned "now", so what the device took offline is genuinely in the past, as it always is in life.
   const B = -180, at = (m: number, sec = 0) => new Date(NOW.getTime() + (B + m) * 60_000 + sec * 1000);
   const svc = (m: number) => createRankSessions(db, () => at(m), undefined, { notify: () => {}, onClosed: (sid) => engine.closeSessionTrip(sid) });
@@ -256,7 +265,7 @@ describe("offline fares are guaranteed: the driver and the owner never lose one,
   const guar = () => ledger.balance(systemAccounts("ZAR").offlineGuarantee);
   const debts = () => q(`SELECT status, amount_cents FROM token_offline_debts ORDER BY created_at, id`);
   const owed = async () => (await q(`SELECT amount_cents FROM token_offline_debts WHERE status = 'open'`)).reduce((a, d) => a + Number(d.amount_cents), 0);
-  beforeEach(async () => { await db.query(`INSERT INTO users (id, username, name, email, role) VALUES ($1,'poor','Poor','p@x.test','personal')`, [POOR_USER]); await tokens.openWallet(POOR_USER, "passenger", "ZAR"); ok(await tokens.linkCard(POOR_USER, "ZAR", POOR)); await queueUp(); ok(await svc(0).open({ rankId: RANK, marshalId: U.marshal, actorName: "m", terminalId: DEVICE })); ok(await svc(0).pair({ terminalId: DEVICE, serial: "RK-1", cardUid: CARD.d1 })); });
+  beforeEach(async () => { ok(await tokens.setOfflineGuaranteeLimit(10_000_000, U.assoc)); await db.query(`INSERT INTO users (id, username, name, email, role) VALUES ($1,'poor','Poor','p@x.test','personal')`, [POOR_USER]); await tokens.openWallet(POOR_USER, "passenger", "ZAR"); ok(await tokens.linkCard(POOR_USER, "ZAR", POOR)); await queueUp(); ok(await svc(0).open({ rankId: RANK, marshalId: U.marshal, actorName: "m", terminalId: DEVICE })); ok(await svc(0).pair({ terminalId: DEVICE, serial: "RK-1", cardUid: CARD.d1 })); });
 
   it("pays the driver the whole fare, less VINK's usual fee, when an offline card cannot pay, and the card owes it; nobody else is out of pocket", async () => {
     const r = ok(await send(30, [{ key: "off-0001", cardUid: POOR, at: at(5) }]));
@@ -385,3 +394,52 @@ describe("giving a route its two ranks, the product's own way", () => {
   });
 });
 
+describe("with no guarantee limit (the default) VINK carries no offline risk", () => {
+  const B = -180, at = (m: number, sec = 0) => new Date(NOW.getTime() + (B + m) * 60_000 + sec * 1000);
+  const svc = (m: number) => createRankSessions(db, () => at(m), undefined, { notify: () => {}, onClosed: (sid) => engine.closeSessionTrip(sid) });
+  const send = (m: number, taps: { key: string; cardUid: string; at: Date }[]) => svc(m).syncTaps({ terminalId: DEVICE, serial: "RK-1", taps: taps.map((t) => ({ ...t, at: t.at.toISOString() })) }, (t) => tokens.tapToken(t));
+  const POOR = "04F0F0F0", POOR_USER = id(60);
+  const guar = () => ledger.balance(systemAccounts("ZAR").offlineGuarantee);
+  const debts = () => q(`SELECT status, amount_cents FROM token_offline_debts ORDER BY created_at, id`);
+  beforeEach(async () => { await db.query(`INSERT INTO users (id, username, name, email, role) VALUES ($1,'poor','Poor','p@x.test','personal')`, [POOR_USER]); await tokens.openWallet(POOR_USER, "passenger", "ZAR"); ok(await tokens.linkCard(POOR_USER, "ZAR", POOR)); await queueUp(); ok(await svc(0).open({ rankId: RANK, marshalId: U.marshal, actorName: "m", terminalId: DEVICE })); ok(await svc(0).pair({ terminalId: DEVICE, serial: "RK-1", cardUid: CARD.d1 })); });
+
+  it("starts at 0 and tells a device it must not accept a VINK card without a signal", async () => {
+    expect(await tokens.settings()).toMatchObject({ offlineGuaranteeLimitCents: 0 }); expect(await tokens.offlinePolicy()).toEqual({ offlineCards: false });
+    ok(await tokens.setOfflineGuaranteeLimit(5000, U.assoc)); expect(await tokens.offlinePolicy()).toEqual({ offlineCards: true }); ok(await tokens.setOfflineGuaranteeLimit(0, U.assoc)); expect(await tokens.offlinePolicy()).toEqual({ offlineCards: false });
+  });
+  it("declines an offline tap by a card that cannot pay, with nothing owed, nothing paid and nothing carried by VINK", async () => {
+    const r = ok(await send(30, [{ key: "off-0001", cardUid: POOR, at: at(5) }]));
+    expect(r.results[0]).toMatchObject({ status: "declined", code: "insufficient_tokens" }); expect(await debts()).toEqual([]); expect(guar()).toBe(0); expect(tok(U.d1)).toBe(0); expect(tok(U.owner)).toBe(0);
+    expect((await q(`SELECT passengers, total_cents FROM loading_sessions`))[0]).toMatchObject({ passengers: 0, total_cents: 0 });
+    await topUp(POOR_USER, FARE); expect(await tapOn("tap-0001", POOR)).toMatchObject({ ok: true });                                      // the card is not blocked: it owes nothing
+  });
+  it("still charges an offline tap by a card that can pay, as always", async () => {
+    const pax = tok(U.pax); const r = ok(await send(30, [{ key: "off-0001", cardUid: CARD.pax, at: at(5) }])); expect(r.results[0]).toMatchObject({ status: "accepted" }); expect(r.results[0].code).toBeUndefined();
+    expect(tok(U.pax)).toBe(pax - FARE); expect(tok(U.d1)).toBe(FARE - FEE); expect(guar()).toBe(0);
+  });
+  it("guarantees fares only up to the limit, counting what is still owed, and frees room as passengers repay", async () => {
+    ok(await tokens.setOfflineGuaranteeLimit(2 * FARE, U.assoc)); await db.query(`INSERT INTO users (id, username, name, email, role) VALUES ($1,'poor2','Poor Two','p2@x.test','personal')`, [id(61)]); await tokens.openWallet(id(61), "passenger", "ZAR"); ok(await tokens.linkCard(id(61), "ZAR", "04F0F0F1")); await db.query(`INSERT INTO users (id, username, name, email, role) VALUES ($1,'poor3','Poor Three','p3@x.test','personal')`, [id(62)]); await tokens.openWallet(id(62), "passenger", "ZAR"); ok(await tokens.linkCard(id(62), "ZAR", "04F0F0F2"));
+    const r = ok(await send(30, [{ key: "off-0001", cardUid: POOR, at: at(5) }, { key: "off-0002", cardUid: "04F0F0F1", at: at(10) }, { key: "off-0003", cardUid: "04F0F0F2", at: at(15) }]));
+    expect(r.results.map((x: any) => [x.status, x.code])).toEqual([["accepted", "guaranteed"], ["accepted", "guaranteed"], ["declined", "insufficient_tokens"]]);        // the third would take VINK past its limit
+    expect(guar()).toBe(-2 * FARE); expect(tok(U.d1)).toBe(2 * (FARE - FEE)); expect(await debts()).toHaveLength(2);
+    await topUp(POOR_USER, 2 * FARE); ok(await tapOn("tap-0002", POOR));                                                                       // one passenger repays (and rides)
+    expect(guar()).toBe(-FARE);
+    expect(ok(await send(45, [{ key: "off-0004", cardUid: "04F0F0F2", at: at(40) }])).results[0]).toMatchObject({ status: "accepted", code: "guaranteed" });      // room again
+  });
+  it("blocks, rather than guarantees, a card that already owes when the limit has since been lowered to 0", async () => {
+    ok(await tokens.setOfflineGuaranteeLimit(10_000_000, U.assoc)); ok(await send(30, [{ key: "off-0001", cardUid: POOR, at: at(5) }])); ok(await tokens.setOfflineGuaranteeLimit(0, U.assoc));
+    const r = ok(await send(45, [{ key: "off-0002", cardUid: POOR, at: at(20) }])); expect(r.results[0]).toMatchObject({ status: "declined", code: "card_owes" }); expect(await debts()).toHaveLength(1); expect(guar()).toBe(-FARE);
+  });
+  it("lets the limit be set and read by staff, with validation and an audit record", async () => {
+    const app = express(); app.use((req, _r, next) => { (req as any).user = { userId: U.marshal, username: "boss", role: "superadmin" }; next(); }); app.use("/admin", createTokenAdminRouter({ db, tokens }));
+    const srv: Server = await new Promise((res) => { const x = app.listen(0, "127.0.0.1", () => res(x)); }); const base = `http://127.0.0.1:${(srv.address() as AddressInfo).port}/admin`;
+    const put = async (body: unknown) => { const r = await fetch(`${base}/settings`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }); return { status: r.status, body: (await r.json()) as any }; };
+    try {
+      expect(((await (await fetch(`${base}/settings`)).json()) as any)).toMatchObject({ success: true, deviceFeeCents: 100, offlineGuaranteeLimitCents: 0 });
+      expect(await put({ offlineGuaranteeLimitCents: 5000 })).toMatchObject({ status: 200, body: { success: true, offlineGuaranteeLimitCents: 5000, deviceFeeCents: 100 } });
+      expect(await put({ deviceFeeCents: 150, offlineGuaranteeLimitCents: 0 })).toMatchObject({ status: 200, body: { deviceFeeCents: 150, offlineGuaranteeLimitCents: 0 } });
+      for (const bad of [{}, { offlineGuaranteeLimitCents: -1 }, { offlineGuaranteeLimitCents: 1.5 }, { offlineGuaranteeLimitCents: "5000" }, { offlineGuaranteeLimitCents: 100_000_001 }, { deviceFeeCents: -5 }]) expect((await put(bad)).status, JSON.stringify(bad)).toBe(400);
+      expect((await q(`SELECT details FROM audit_log WHERE action = 'token.settings' ORDER BY created_at`)).length).toBe(2); expect((await tokens.settings()).offlineGuaranteeLimitCents).toBe(0);
+    } finally { await new Promise<void>((res) => srv.close(() => res())); }
+  });
+});

@@ -184,7 +184,7 @@ export function createMoneyEngine(deps: {
          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING id`, [s.terminal_id, next, s.vehicle_id, s.driver_id, s.owner_id, s.marshal_id, s.departure_id, taps.length, fare, taps[0].currency, first, last])).rows[0].id;
     } catch (e) { if (isUniqueViolation(e)) return { trip: null }; throw e; }                 // the session's departure already has its trip
     for (const g of taps) await db.query(`UPDATE terminal_taps SET trip_id = $1 WHERE id = $2 AND trip_id IS NULL`, [tripId, g.id]);
-    await createTripItems(tripId, { driver_id: s.driver_id, owner_id: s.owner_id, association_id: s.association_id, marshal_id: s.marshal_id, investor_id: s.investor_id }, taps[0].currency, last, cfg, taps.every((g) => g.scheme === "vink_token"), !s.rank_id);
+    await createTripItems(tripId, { driver_id: s.driver_id, owner_id: s.owner_id, association_id: s.association_id, marshal_id: s.marshal_id, investor_id: s.investor_id }, taps[0].currency, last, cfg, taps.every((g) => g.scheme === "vink_token"));
     return { trip: tripId };
   }
 
@@ -229,9 +229,7 @@ export function createMoneyEngine(deps: {
     return { trips: made + fromSessions };
   }
 
-  async function createTripItems(tripId: string, t: { driver_id: string | null; owner_id: string | null; association_id: string | null; marshal_id: string | null; investor_id?: string | null }, currency: string, at: Date, cfg: CountryConfig, tokenTrip = false, noMarshal = false) {
-    // A trip with no rank and no marshal (a driver on an owner's own device) has no marshal to pay, so no marshal fee; every other charge still applies.
-    if (!noMarshal) {
+  async function createTripItems(tripId: string, t: { driver_id: string | null; owner_id: string | null; association_id: string | null; marshal_id: string | null; investor_id?: string | null }, currency: string, at: Date, cfg: CountryConfig, tokenTrip = false) {
     const fee = cfg.marshalFee;
     const set = t.association_id ? (await db.query(`SELECT marshal_fee_cents FROM association_settings WHERE association_id = $1`, [t.association_id])).rows[0] : null;
     const amount = set?.marshal_fee_cents != null ? Number(set.marshal_fee_cents) : fee.amountCents;
@@ -243,7 +241,6 @@ export function createMoneyEngine(deps: {
         [payer, payee, amount, currency, `marshal:${tripId}`, tripId, t.marshal_id ? "Marshal fee for a completed trip" : "Marshal fee (no marshal logged): held for the association"]);
     } else if (amount > 0) {
       await db.query(`UPDATE trips SET needs_review = COALESCE(needs_review, 'marshal_fee_not_assigned') WHERE id = $1`, [tripId]);
-    }
     }
     const agr = await activeAgreement(t.owner_id, t.driver_id, saDay(at));
     if (agr?.mode === "per_trip_amount") {

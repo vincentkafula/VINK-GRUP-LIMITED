@@ -325,6 +325,42 @@ async function tokenApi(path: string, init?: { method?: string; body?: unknown }
   } catch { return { error: "We could not reach the server." }; }
 }
 
+/**
+ * Offline fares. A device with no signal cannot check a card. With the limit at 0 (the default) VINK stands behind NOTHING: devices are told not to take VINK cards without a signal and a card that cannot
+ * pay is declined. A limit above 0 is the most VINK will carry, in total, for fares it has paid and passengers have not yet repaid; the card that owes is blocked until it pays. Staff see what is owed
+ * and can write a fare off (VINK keeps the loss and the card is clear).
+ */
+export function OfflineFaresPanel() {
+  const [cfg, reloadCfg] = useLoad<{ offlineGuaranteeLimitCents?: number }>(() => tokenApi("/settings") as never);
+  const [owed, reloadOwed] = useLoad<{ openCents?: number; openCount?: number; debts?: { id: string; name: string; email: string; amountCents: number; terminal: string; createdAt: string }[] }>(() => tokenApi("/offline-debts") as never);
+  const [limit, setLimit] = useState(""); const [why, setWhy] = useState<Record<string, string>>({});
+  const limitCents = cfg.state === "ready" ? cfg.data.offlineGuaranteeLimitCents ?? 0 : 0;
+  const o = owed.state === "ready" ? owed.data : {}; const debts = o.debts ?? [];
+  return (
+    <div className="border border-line rounded-lg p-3 space-y-3">
+      <h4 className="text-sm font-bold text-fg">Offline fares</h4>
+      <p className="text-xs text-fg-muted">{limitCents === 0
+        ? "The limit is R0.00, so VINK carries no offline risk: devices are told not to take VINK cards without a signal, and a card that cannot pay is declined."
+        : `VINK stands behind up to ${cents(limitCents)} of offline fares at a time. A card that could not pay owes the fare and is blocked until it does.`}</p>
+      <div className="flex flex-wrap items-end gap-3">
+        <label className="block"><span className="text-[11px] text-fg-muted">Most VINK stands behind (R)</span><input className={inputCls + " mt-1 !w-32"} inputMode="decimal" value={limit} onChange={(e) => setLimit(e.target.value)} placeholder="0.00" /></label>
+        <ActionButton label="Set offline limit" color={COLOR} onRun={async () => { const c = Math.round(Number(limit.replace(",", ".")) * 100); if (!Number.isInteger(c) || c < 0) return { error: "Enter an amount, 0 or more" }; const r = await tokenApi("/settings", { method: "PUT", body: { offlineGuaranteeLimitCents: c } }); if ("error" in r) return { error: r.error }; reloadCfg(); return { message: c === 0 ? "Saved. VINK now carries no offline risk." : "Saved." }; }} />
+      </div>
+      <p className="text-xs text-fg" aria-live="polite">Owed by cards now: <b>{cents(o.openCents ?? 0)}</b> ({o.openCount ?? 0} fare{(o.openCount ?? 0) === 1 ? "" : "s"})</p>
+      {debts.length > 0 && (
+        <ul className="space-y-2 text-xs text-fg">{debts.slice(0, 20).map((x) => (
+          <li key={x.id} className="flex flex-wrap items-end justify-between gap-2 border-t border-line pt-2">
+            <span><b>{x.name}</b> · {x.email} · {cents(x.amountCents)} · {x.terminal} · {when(x.createdAt)}</span>
+            <span className="flex items-end gap-2">
+              <input aria-label={`Why write off ${x.name}'s fare`} className={inputCls + " !w-48"} placeholder="Why (required)" value={why[x.id] ?? ""} onChange={(e) => setWhy({ ...why, [x.id]: e.target.value })} />
+              <ActionButton small label="Write off" color="#F59E0B" onRun={async () => { const reason = (why[x.id] ?? "").trim(); if (!reason) return { error: "Say why" }; const r = await tokenApi(`/offline-debts/${x.id}/write-off`, { method: "POST", body: { reason } }); if ("error" in r) return { error: r.error }; reloadOwed(); return { message: "Written off. The card is clear." }; }} />
+            </span>
+          </li>))}</ul>
+      )}
+    </div>
+  );
+}
+
 /** VINK tokens: how many are in circulation, the cash-outs and refunds waiting to be paid out of the pool, and the per-trip device fee paid to investors. */
 function TokensAdminPanel() {
   const [sum, reloadSum] = useLoad<{ summary: { circulationCents: number; wallets: number; byRole: Record<string, { wallets: number; cents: number }>; pendingCashouts: { count: number; cents: number }; clearingCents: number; cardSettlementCents?: number }; settings: { deviceFeeCents: number } }>(() => tokenApi("/summary") as never);
@@ -377,6 +413,7 @@ function TokensAdminPanel() {
               </div>
             </li>))}</ul>
         </div>)}</Status>
+      <OfflineFaresPanel />
       <div className="flex flex-wrap items-end gap-3">
         <label className="block"><span className="text-[11px] text-fg-muted">Device fee per trip (R)</span><input className={inputCls + " mt-1 !w-28"} inputMode="decimal" value={fee} onChange={(e) => setFee(e.target.value)} placeholder="1.00" /></label>
         <ActionButton label="Set device fee" color={COLOR} onRun={async () => { const c = Math.round(Number(fee.replace(",", ".")) * 100); if (!Number.isInteger(c) || c < 0) return { error: "Enter an amount, 0 or more" }; const r = await tokenApi("/settings", { method: "PUT", body: { deviceFeeCents: c } }); if ("error" in r) return { error: r.error }; reloadSum(); return { message: "Saved. It applies to trips completed from now on." }; }} />

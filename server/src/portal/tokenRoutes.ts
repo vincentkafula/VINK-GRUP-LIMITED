@@ -238,7 +238,7 @@ export function createTokenTerminalRouter(d: { db: Db; tokens: TokenService; aut
     const b = (req.body ?? {}) as Record<string, unknown>;
     const r = await createRankSessions(d.db).tap({ terminalId: a.terminalId, serial: req.header("x-terminal-serial") ?? "", cardUid: b.cardNumber, key: req.header("idempotency-key") ?? "" }, (t) => d.tokens.tapToken(t));
     if (!r.ok) { res.status(r.status).json({ success: false, error: r.message, code: r.code, data: (r as { tapId?: string }).tapId ? { tapId: (r as { tapId?: string }).tapId } : undefined, ...(r.owedCents ? { owedCents: r.owedCents } : {}) }); return; }
-    res.status(r.value.replayed ? 200 : 201).json({ success: true, data: r.value });
+    res.status(r.value.replayed ? 200 : 201).json({ success: true, data: { ...r.value, policy: await d.tokens.offlinePolicy() } });
   }));
   /**
    * POST /rank-tap/batch  {taps: [{key, cardNumber, at}]}   (at most 200)
@@ -252,7 +252,16 @@ export function createTokenTerminalRouter(d: { db: Db; tokens: TokenService; aut
     const taps = ((req.body ?? {}) as { taps?: { key?: unknown; cardNumber?: unknown; at?: unknown }[] }).taps;
     const r = await createRankSessions(d.db).syncTaps({ terminalId: a.terminalId, serial: req.header("x-terminal-serial") ?? "", taps: Array.isArray(taps) ? taps.map((x) => ({ key: x?.key, cardUid: x?.cardNumber, at: x?.at })) : taps }, (t) => d.tokens.tapToken(t));
     if (!r.ok) { res.status(r.status).json({ success: false, error: r.message, code: r.code }); return; }
-    res.json({ success: true, data: r.value });
+    res.json({ success: true, data: { ...r.value, policy: await d.tokens.offlinePolicy() } });
+  }));
+  /**
+   * GET /policy   what this device may do without a signal. `offlineCards: false` (the default: VINK stands behind no offline fares) means the device must NOT accept a VINK card while it has no connection:
+   * a fare it cannot check may not be paid, and the driver and the owner must never lose one. Devices should read this whenever they are online and keep the latest answer.
+   */
+  router.get("/policy", h(async (req, res) => {
+    const a = await authed(req);
+    if (!a.authenticated || !a.terminalId) return fail(res, 401, a.error ?? "Terminal authentication failed");
+    res.json({ success: true, data: await d.tokens.offlinePolicy() });
   }));
   return router;
 }
@@ -266,7 +275,8 @@ export function createTokenTerminalRouter(d: { db: Db; tokens: TokenService; aut
  *   GET  /payout-cards           debit cards whose name does not match the account holder's, waiting for a person; POST /payout-cards/:id/approve | /reject
  *   POST /refund                 { userId, currency, amountCents, note } a refund: paid by the system to the holder's own verified debit card, for any reason
  *   PUT  /wallets/tier           { userId, currency, tier } sets a holder's verification level (basic, standard, full, business) once their identity is checked
- *   PUT  /settings               { deviceFeeCents } the per-trip fee paid to the investor who sponsored a device
+ *   GET  /settings               the per-trip device fee and the offline guarantee limit
+ *   PUT  /settings               { deviceFeeCents?, offlineGuaranteeLimitCents? } the per-trip fee paid to the investor who sponsored a device; the most VINK will stand behind for offline fares (0, the default: none)
  *   GET  /offline-debts?status=open&currency=ZAR   fares VINK paid for cards that could not pay when a device sent them later (the card is blocked until it pays), and what VINK is out of pocket for
  *   POST /offline-debts/:id/write-off   { reason } VINK keeps the loss and the card is clear
  */
@@ -377,11 +387,15 @@ export function createTokenAdminRouter(d: { db: Db; tokens: TokenService; sandbo
     await audit(d.db, req, "token.wallet.tier", b.userId, { tier: r.value.kycTier });
     res.json({ success: true, ...r.value });
   }));
+  router.get("/settings", h(async (_req, res) => { res.json({ success: true, ...(await d.tokens.settings()) }); }));
   router.put("/settings", h(async (req, res) => {
-    const r = await d.tokens.setDeviceFee((req.body ?? {}).deviceFeeCents, uid(req));
-    if (!r.ok) return fail(res, r.status, r.error);
-    await audit(d.db, req, "token.settings", null, { deviceFeeCents: r.value.deviceFeeCents });
-    res.json({ success: true, ...r.value });
+    const b = (req.body ?? {}) as { deviceFeeCents?: unknown; offlineGuaranteeLimitCents?: unknown };
+    if (b.deviceFeeCents === undefined && b.offlineGuaranteeLimitCents === undefined) return fail(res, 400, "Say what to change: the device fee or the offline guarantee limit");
+    const changed: Record<string, number> = {};
+    if (b.deviceFeeCents !== undefined) { const r = await d.tokens.setDeviceFee(b.deviceFeeCents, uid(req)); if (!r.ok) return fail(res, r.status, r.error); changed.deviceFeeCents = r.value.deviceFeeCents; }
+    if (b.offlineGuaranteeLimitCents !== undefined) { const r = await d.tokens.setOfflineGuaranteeLimit(b.offlineGuaranteeLimitCents, uid(req)); if (!r.ok) return fail(res, r.status, r.error); changed.offlineGuaranteeLimitCents = r.value.offlineGuaranteeLimitCents; }
+    await audit(d.db, req, "token.settings", null, changed);
+    res.json({ success: true, ...(await d.tokens.settings()) });
   }));
   return router;
 }
