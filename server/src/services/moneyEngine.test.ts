@@ -9,6 +9,7 @@ import { manshyaBankCore } from "../portal/bankLinks.js";
 import { createMoneyEngine, manshyaLedgerPort, bankLedgerAccount, walletLedgerAccount, systemAccounts, SYS_FEES, SYS_CLEARING, type Engine, type LedgerPort } from "./moneyEngine.js";
 import { DEFAULT_ZA, DEFAULT_ZM } from "../config/countryConfig.js";
 import { reconcile } from "./reconciliation.js";
+import { createCommission } from "./commission.js";
 import { checkTierLimit, decideInstantCredit, quoteCorridor } from "../config/riskRules.js";
 
 const id = (n: number) => `00000000-0000-0000-0000-${String(n).padStart(12, "0")}`;
@@ -282,3 +283,46 @@ describe("kwacha is kept apart from rand", () => {
     expect((await reconcile(db, ledger)).ok).toBe(true);
   });
 });
+
+describe("the trip fee goes to the association and the marshal earns a share of it", () => {
+  const RANK = id(50), DEP_AT = new Date("2026-10-05T08:20:00Z"), CYCLE = new Date("2026-10-05T12:00:00Z");
+  let commission: ReturnType<typeof createCommission>;
+  async function setup(mode: "off" | "shadow" | "commission") {
+    await db.query(`INSERT INTO ranks (id, association_id, name) VALUES ($1,$2,'Langa rank')`, [RANK, U.assoc]); commission = createCommission(db, () => DEP_AT);
+    const r = await commission.addRate(U.assoc, U.assoc, { scope: "default", rateBp: 4000, effectiveFrom: "2026-01-01" }); expect(r.ok).toBe(true);
+    if (mode !== "off") expect((await commission.updateSettings(U.assoc, { mode })).ok).toBe(true);
+  }
+  const depart = async () => { const r = await db.query(`INSERT INTO departures (rank_id, vehicle_id, driver_id, marshal_id, departed_at) VALUES ($1,$2,$3,$4,$5) RETURNING id`, [RANK, V, U.driver, U.marshal, DEP_AT]); return String(r.rows[0].id); };
+
+  it("LIVE: charges the driver R20 for the association (not the marshal), collects it, and the marshal's R8 is recorded for the payslip", async () => {
+    await setup("commission"); const dep = await depart(); fund(U.driver, 10_000); await taps(16);
+    expect(await commission.recordDeparture(dep)).toMatchObject({ status: "recorded", commissionCents: 800 });
+    await engine.runCycle(CYCLE);
+    expect(bal(U.marshal)).toBe(0);                                                                                       // the marshal is no longer paid R20 on the spot
+    expect(bal(U.assoc)).toBe(2000); expect(bal(U.driver)).toBe(8000);                                                    // the driver paid the association once
+    expect(await q(`SELECT kind, status, remaining_cents FROM payment_items ORDER BY kind`)).toEqual([{ kind: "trip_fee", status: "paid", remaining_cents: 0 }]);
+    expect(await q(`SELECT commission_cents, mode FROM trip_commissions`)).toEqual([{ commission_cents: 800, mode: "live" }]);
+    await engine.runCycle(new Date("2026-10-05T13:00:00Z")); expect(bal(U.assoc)).toBe(2000); expect(bal(U.driver)).toBe(8000);   // and only once
+  });
+  it("LIVE: a driver who cannot pay yet leaves the fee owed (retried later), and the marshal's commission is unaffected under the default rule", async () => {
+    await setup("commission"); const dep = await depart(); await commission.recordDeparture(dep); await taps(16);
+    await engine.runCycle(CYCLE);
+    expect(await q(`SELECT status, last_error FROM payment_items WHERE kind = 'trip_fee'`)).toEqual([{ status: "waiting", last_error: "Not enough money in the payer's account yet" }]); expect(bal(U.assoc)).toBe(0);
+    expect(await commission.netCommission(dep)).toBe(800);
+    fund(U.driver, 5000); await engine.processItems(new Date("2026-10-05T16:00:00Z")); expect(bal(U.assoc)).toBe(2000); expect((await q(`SELECT status FROM payment_items WHERE kind = 'trip_fee'`))[0].status).toBe("paid");
+  });
+  it("LIVE: a trip with no marshal logged (an owner's own device) still carries the fee, held for the association, as decided", async () => {
+    await setup("commission"); fund(U.driver, 10_000); await taps(16); await engine.runCycle(CYCLE);
+    expect(bal(U.assoc)).toBe(2000); expect((await q(`SELECT kind FROM payment_items`)).map((r) => r.kind)).toEqual(["marshal_fee"]);
+  });
+  it("SHADOW: the calculation is recorded beside today's payment, which still goes to the marshal, and no trip fee is charged", async () => {
+    await setup("shadow"); const dep = await depart(); fund(U.driver, 10_000); await taps(16); await commission.recordDeparture(dep); await engine.runCycle(CYCLE);
+    expect(bal(U.marshal)).toBe(2000); expect(bal(U.assoc)).toBe(0); expect(await q(`SELECT kind FROM payment_items`)).toEqual([{ kind: "marshal_fee" }]);
+    expect(await q(`SELECT commission_cents, mode FROM trip_commissions`)).toEqual([{ commission_cents: 800, mode: "shadow" }]);
+  });
+  it("OFF (the default): exactly today's behaviour, and nothing is calculated", async () => {
+    await setup("off"); const dep = await depart(); fund(U.driver, 10_000); await taps(16); expect(await commission.recordDeparture(dep)).toMatchObject({ status: "off" }); await engine.runCycle(CYCLE);
+    expect(bal(U.marshal)).toBe(2000); expect(await q(`SELECT * FROM trip_commissions`)).toEqual([]); expect(await q(`SELECT * FROM trip_fees`)).toEqual([]);
+  });
+});
+

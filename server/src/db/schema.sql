@@ -1946,3 +1946,256 @@ CREATE INDEX IF NOT EXISTS idx_token_debts_open ON token_offline_debts(status, c
 -- The most VINK will stand behind, in total, for offline fares it has paid and the passengers have not yet repaid. 0 (the default) means VINK carries NO offline risk: nothing is guaranteed.
 ALTER TABLE token_settings ADD COLUMN IF NOT EXISTS offline_guarantee_limit_cents BIGINT NOT NULL DEFAULT 0 CHECK (offline_guarantee_limit_cents >= 0);
 
+
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+-- MARSHAL COMMISSION AND PAYSLIPS (docs/MARSHAL_COMMISSION.md)
+-- The association's trip fee (R20 by default) is charged to the driver for every completed departure and goes to the ASSOCIATION; the marshal earns a percentage of it (the commission rate), accrued per trip
+-- and paid through a payslip each pay period. It is OFF for every association until it chooses otherwise: 'off' leaves today's behaviour (the marshal fee goes to the marshal), 'shadow' records the calculation
+-- beside it without moving any money, 'commission' is live. Money is whole cents; rates are basis points (4000 = 40%). Nothing here is edited after the fact: a correction is a new row.
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+ALTER TABLE association_settings ADD COLUMN IF NOT EXISTS commission_mode TEXT NOT NULL DEFAULT 'off' CHECK (commission_mode IN ('off','shadow','commission'));
+ALTER TABLE association_settings ADD COLUMN IF NOT EXISTS commission_payable_on TEXT NOT NULL DEFAULT 'recorded' CHECK (commission_payable_on IN ('recorded','paid'));   -- when the trip fee is recorded, or only once the driver has paid it
+ALTER TABLE association_settings ADD COLUMN IF NOT EXISTS pay_period TEXT NOT NULL DEFAULT 'weekly' CHECK (pay_period IN ('weekly','fortnightly','monthly'));
+ALTER TABLE association_settings ADD COLUMN IF NOT EXISTS pay_period_anchor DATE NOT NULL DEFAULT DATE '2026-01-05';      -- a Monday: weekly and fortnightly periods count from it
+ALTER TABLE association_settings ADD COLUMN IF NOT EXISTS tiers_enabled BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE association_settings ADD COLUMN IF NOT EXISTS deduction_cap_bp INTEGER NOT NULL DEFAULT 5000 CHECK (deduction_cap_bp BETWEEN 0 AND 10000);   -- the most of a payslip's gross that deductions may take
+ALTER TABLE association_settings ADD COLUMN IF NOT EXISTS uif_applies BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE association_settings ADD COLUMN IF NOT EXISTS uif_rate_bp INTEGER NOT NULL DEFAULT 100 CHECK (uif_rate_bp BETWEEN 0 AND 10000);
+
+ALTER TABLE payment_items DROP CONSTRAINT IF EXISTS payment_items_kind_check;
+ALTER TABLE payment_items ADD CONSTRAINT payment_items_kind_check CHECK (kind IN ('marshal_fee','per_trip_pay','weekly_cash_payment','monthly_salary','trip_fee','marshal_commission'));
+
+ALTER TABLE departures ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'completed' CHECK (status IN ('completed','approved_exception'));
+ALTER TABLE departures ADD COLUMN IF NOT EXISTS exception_code TEXT;
+ALTER TABLE departures ADD COLUMN IF NOT EXISTS approved_by UUID REFERENCES users(id);
+
+-- Fixed lists of reasons, so deviations are explainable and comparable. Labels are English for now; other languages are added as columns of translations.
+CREATE TABLE IF NOT EXISTS reason_codes (
+  code     TEXT PRIMARY KEY,
+  kind     TEXT NOT NULL CHECK (kind IN ('queue','exception','fee')),
+  label_en TEXT NOT NULL,
+  active   BOOLEAN NOT NULL DEFAULT true
+);
+INSERT INTO reason_codes (code, kind, label_en) VALUES
+  ('breakdown','queue','Breakdown'), ('emergency','queue','Emergency'), ('priority_route','queue','Priority route'), ('driver_request','queue','Driver asked'), ('left_voluntarily','queue','Left the rank'), ('sent_away','queue','Sent away'), ('queue_other','queue','Other'),
+  ('returned_approved','exception','Returned, approved'), ('cancelled_approved','exception','Cancelled, approved'), ('aborted_approved','exception','Aborted, approved'),
+  ('goodwill','fee','Goodwill'), ('error_corrected','fee','Recorded in error'), ('association_absorbs','fee','Association absorbs the fee')
+ON CONFLICT (code) DO NOTHING;
+
+-- Every change to a rank's queue, timestamped and attributable. An override (a vehicle leaving out of order, or taken out of the line) carries a reason code.
+CREATE TABLE IF NOT EXISTS queue_events (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  rank_id         UUID NOT NULL REFERENCES ranks(id) ON DELETE CASCADE,
+  vehicle_id      UUID NOT NULL REFERENCES vehicles(id),
+  queue_id        UUID,
+  marshal_id      UUID NOT NULL REFERENCES users(id),
+  action          TEXT NOT NULL CHECK (action IN ('join','remove','depart','override')),
+  reason_code     TEXT REFERENCES reason_codes(code),
+  position_before INTEGER,
+  note            TEXT,
+  client_ref      TEXT UNIQUE,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_queue_events_rank ON queue_events(rank_id, created_at DESC);
+
+-- The association's trip fee and the marshal's commission rate. Rules are never edited or deleted: a new row with a later effective date supersedes (the most specific scope in force on the day wins).
+CREATE TABLE IF NOT EXISTS trip_fee_rules (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  association_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  scope          TEXT NOT NULL CHECK (scope IN ('association','rank','route')),
+  rank_id        UUID REFERENCES ranks(id),
+  route_id       UUID REFERENCES token_routes(id),
+  amount_cents   BIGINT NOT NULL CHECK (amount_cents >= 0),
+  effective_from DATE NOT NULL,
+  note           TEXT,
+  created_by     UUID REFERENCES users(id),
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_trip_fee_rules ON trip_fee_rules(association_id, scope, effective_from DESC);
+CREATE TABLE IF NOT EXISTS commission_rules (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  association_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  scope          TEXT NOT NULL CHECK (scope IN ('default','rank','marshal')),
+  rank_id        UUID REFERENCES ranks(id),
+  marshal_id     UUID REFERENCES users(id),
+  rate_bp        INTEGER NOT NULL CHECK (rate_bp BETWEEN 0 AND 10000),
+  effective_from DATE NOT NULL,
+  note           TEXT,
+  created_by     UUID REFERENCES users(id),
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_commission_rules ON commission_rules(association_id, scope, effective_from DESC);
+-- Optional tiers (when the association enables them): from the trip AFTER the marshal's Nth in the week, this rate applies. Never backdated.
+CREATE TABLE IF NOT EXISTS commission_tiers (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  association_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  rank_id        UUID REFERENCES ranks(id),
+  after_trips    INTEGER NOT NULL CHECK (after_trips >= 1),
+  rate_bp        INTEGER NOT NULL CHECK (rate_bp BETWEEN 0 AND 10000),
+  effective_from DATE NOT NULL,
+  created_by     UUID REFERENCES users(id),
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- One trip fee per departure (the unique key is what stops a trip being charged twice). The status is not stored: it is read from the payment item (paid or owed), 'waived', or 'shadow' (recorded only).
+CREATE TABLE IF NOT EXISTS trip_fees (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  departure_id    UUID NOT NULL UNIQUE REFERENCES departures(id),
+  association_id  UUID NOT NULL REFERENCES users(id),
+  rank_id         UUID NOT NULL REFERENCES ranks(id),
+  vehicle_id      UUID NOT NULL REFERENCES vehicles(id),
+  driver_id       UUID REFERENCES users(id),
+  payer_id        UUID REFERENCES users(id),
+  amount_cents    BIGINT NOT NULL CHECK (amount_cents >= 0),
+  fee_rule_id     UUID,
+  payment_item_id UUID REFERENCES payment_items(id),
+  mode            TEXT NOT NULL CHECK (mode IN ('shadow','live')),
+  waived_reason   TEXT,
+  waived_at       TIMESTAMPTZ,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_trip_fees_assoc ON trip_fees(association_id, created_at DESC);
+-- The audit trail: one row per calculation, never edited. A correction adds a REVERSAL (negative, reverses_id set) at the next sequence number. A departure's commission is the sum of its rows.
+CREATE TABLE IF NOT EXISTS trip_commissions (
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  departure_id     UUID NOT NULL REFERENCES departures(id),
+  seq              INTEGER NOT NULL DEFAULT 1,
+  marshal_id       UUID NOT NULL REFERENCES users(id),
+  association_id   UUID NOT NULL REFERENCES users(id),
+  rank_id          UUID NOT NULL REFERENCES ranks(id),
+  vehicle_id       UUID NOT NULL REFERENCES vehicles(id),
+  driver_id        UUID REFERENCES users(id),
+  fee_cents        BIGINT NOT NULL,
+  rate_bp          INTEGER NOT NULL,
+  tier_after_trips INTEGER,
+  commission_cents BIGINT NOT NULL,
+  fee_rule_id      UUID,
+  rate_rule_id     UUID,
+  reverses_id      UUID,
+  reason_code      TEXT REFERENCES reason_codes(code),
+  reason           TEXT,
+  approved_by      UUID REFERENCES users(id),
+  engine_version   TEXT NOT NULL,
+  mode             TEXT NOT NULL CHECK (mode IN ('shadow','live')),
+  departed_at      TIMESTAMPTZ NOT NULL,
+  payslip_id       UUID,
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (departure_id, seq)
+);
+CREATE INDEX IF NOT EXISTS idx_trip_commissions_marshal ON trip_commissions(marshal_id, departed_at DESC);
+CREATE INDEX IF NOT EXISTS idx_trip_commissions_open ON trip_commissions(association_id, payslip_id);
+
+-- Payslips: one per marshal per pay period; a revision is a new version and the old one stays. Lines are what the payslip shows, each one disputable.
+CREATE TABLE IF NOT EXISTS payslips (
+  id                     UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  association_id         UUID NOT NULL REFERENCES users(id),
+  marshal_id             UUID NOT NULL REFERENCES users(id),
+  number                 TEXT NOT NULL UNIQUE,
+  period_start           DATE NOT NULL,
+  period_end             DATE NOT NULL,
+  ranks                  TEXT,
+  status                 TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft','issued','paid','revised')),
+  trips                  INTEGER NOT NULL DEFAULT 0,
+  trip_fees_cents        BIGINT NOT NULL DEFAULT 0,
+  gross_commission_cents BIGINT NOT NULL DEFAULT 0,
+  other_earnings_cents   BIGINT NOT NULL DEFAULT 0,
+  deductions_cents       BIGINT NOT NULL DEFAULT 0,
+  net_cents              BIGINT NOT NULL DEFAULT 0,
+  withheld_cents         BIGINT NOT NULL DEFAULT 0,
+  fees_owed_trips        INTEGER NOT NULL DEFAULT 0,
+  fees_owed_cents        BIGINT NOT NULL DEFAULT 0,
+  payment_method         TEXT CHECK (payment_method IN ('wallet','bank','cash')),
+  payment_reference      TEXT,
+  payment_item_id        UUID REFERENCES payment_items(id),
+  version                INTEGER NOT NULL DEFAULT 1,
+  supersedes_id          UUID,
+  note                   TEXT,
+  issued_at              TIMESTAMPTZ,
+  paid_at                TIMESTAMPTZ,
+  created_by             UUID REFERENCES users(id),
+  created_at             TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (association_id, marshal_id, period_start, period_end, version)
+);
+CREATE INDEX IF NOT EXISTS idx_payslips_marshal ON payslips(marshal_id, period_end DESC);
+CREATE TABLE IF NOT EXISTS payslip_lines (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  payslip_id    UUID NOT NULL REFERENCES payslips(id) ON DELETE CASCADE,
+  sort          INTEGER NOT NULL DEFAULT 0,
+  side          TEXT NOT NULL CHECK (side IN ('earning','deduction')),
+  kind          TEXT NOT NULL CHECK (kind IN ('commission','reversal','late_trip','bonus','incentive','allowance','dispute_credit','uif','advance','penalty','association_fee','stokvel','other_deduction')),
+  label         TEXT NOT NULL,
+  quantity      INTEGER,
+  unit_cents    BIGINT,
+  rate_bp       INTEGER,
+  amount_cents  BIGINT NOT NULL CHECK (amount_cents >= 0),
+  reason        TEXT,
+  reference     TEXT,
+  adjustment_id UUID
+);
+CREATE INDEX IF NOT EXISTS idx_payslip_lines ON payslip_lines(payslip_id, sort);
+-- Earnings beyond commission (bonus, incentive, allowance, a dispute credit) and deductions (advance or loan repayment, a penalty or shortfall, association or stokvel contributions). Every deduction carries a reason and a
+-- reference. A deduction with per_period_cents is taken in instalments until remaining_cents is 0; whatever the cap leaves out carries to the next payslip.
+CREATE TABLE IF NOT EXISTS pay_adjustments (
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  association_id   UUID NOT NULL REFERENCES users(id),
+  marshal_id       UUID NOT NULL REFERENCES users(id),
+  kind             TEXT NOT NULL CHECK (kind IN ('bonus','incentive','allowance','dispute_credit','advance','penalty','association_fee','stokvel','other_deduction')),
+  side             TEXT NOT NULL CHECK (side IN ('earning','deduction')),
+  label            TEXT NOT NULL,
+  reason           TEXT,
+  reference        TEXT NOT NULL,
+  total_cents      BIGINT NOT NULL CHECK (total_cents > 0),
+  per_period_cents BIGINT CHECK (per_period_cents > 0),
+  remaining_cents  BIGINT NOT NULL CHECK (remaining_cents >= 0),
+  active           BOOLEAN NOT NULL DEFAULT true,
+  created_by       UUID REFERENCES users(id),
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_pay_adjustments ON pay_adjustments(association_id, marshal_id, active);
+
+CREATE TABLE IF NOT EXISTS disputes (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  association_id UUID NOT NULL REFERENCES users(id),
+  raised_by      UUID NOT NULL REFERENCES users(id),
+  raised_role    TEXT NOT NULL CHECK (raised_role IN ('marshal','driver')),
+  target_type    TEXT NOT NULL CHECK (target_type IN ('payslip_line','trip')),
+  target_id      UUID NOT NULL,
+  payslip_id     UUID REFERENCES payslips(id),
+  message        TEXT NOT NULL,
+  status         TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open','under_review','upheld','rejected')),
+  response       TEXT,
+  responded_by   UUID REFERENCES users(id),
+  responded_at   TIMESTAMPTZ,
+  credit_cents   BIGINT,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_disputes_assoc ON disputes(association_id, status, created_at DESC);
+
+-- A marshal's identity for payslips (a number, not an ID document: data minimisation), their language, and whether they are an employee (UIF applies) or independent.
+CREATE TABLE IF NOT EXISTS marshal_profiles (
+  marshal_id    UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  marshal_number TEXT NOT NULL UNIQUE,
+  language      TEXT NOT NULL DEFAULT 'en' CHECK (language IN ('en','xh','zu','af')),
+  class         TEXT NOT NULL DEFAULT 'independent' CHECK (class IN ('independent','employee')),
+  uif_applies   BOOLEAN NOT NULL DEFAULT false,
+  started_on    DATE,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+-- POPIA: consent per purpose, with withdrawal; and a log of who looked at a person's financial records.
+CREATE TABLE IF NOT EXISTS consents (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id      UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  purpose      TEXT NOT NULL,
+  granted_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  withdrawn_at TIMESTAMPTZ,
+  UNIQUE (user_id, purpose)
+);
+CREATE TABLE IF NOT EXISTS access_log (
+  id        UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  actor_id  UUID NOT NULL REFERENCES users(id),
+  owner_id  UUID NOT NULL REFERENCES users(id),
+  what      TEXT NOT NULL,
+  record_id TEXT,
+  at        TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_access_log_owner ON access_log(owner_id, at DESC);

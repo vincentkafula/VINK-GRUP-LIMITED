@@ -5,6 +5,7 @@ import { requestLink } from "./linkRoutes.js";
 import { loadMap } from "./mapData.js";
 import { createRankSessions, ONLINE_WITHIN_MS } from "./rankSessions.js";
 import { createLoadingReports } from "./loadingReports.js";
+import { createCommission, sessionClosedHook } from "../services/commission.js";
 
 /**
  * The Owner Dashboard API, mounted at /api/portal/owner (vehicle owners only). An owner sees and changes only their own records.
@@ -150,7 +151,7 @@ export function createOwnerRouter(db: Db, now: () => Date = () => new Date(), on
   /** End a trip on one of the owner's own vehicles, for a driver who forgot to or has left. */
   router.post("/loading/:sid/end", h(async (req, res) => {
     if (!isUuid(req.params.sid)) { fail(res, 400, "Invalid session"); return; }
-    const r = await createRankSessions(db, now, undefined, { onClosed: onSessionClosed }).endByOwner({ ownerId: uid(req), sessionId: req.params.sid, actorName: req.user!.username });
+    const r = await createRankSessions(db, now, undefined, { onClosed: sessionClosedHook(createCommission(db, now), onSessionClosed) }).endByOwner({ ownerId: uid(req), sessionId: req.params.sid, actorName: req.user!.username });
     if (!r.ok) { res.status(r.status).json({ success: false, error: r.message, code: r.code }); return; }
     res.json({ success: true, session: r.value });
   }));

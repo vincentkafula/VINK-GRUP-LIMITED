@@ -316,7 +316,7 @@ describe("the departure hook and the wiring", () => {
     const read = (f: string) => readFileSync(join(__dirname, f), "utf8");
     expect(read("tokenRoutes.ts")).toMatch(/router\.post\("\/rank-tap"[\s\S]*?authed\(req\)[\s\S]*?createRankSessions\(d\.db\)\.tap\([\s\S]*?d\.tokens\.tapToken\(t\)/);
     expect(read("../routes/portal.ts")).toMatch(/createMarshalRouter\(d, undefined, money\.closeSessionTrip\)/); expect(read("../index.ts")).toMatch(/closeSessionTrip: moneyEngine \? \(id\) => moneyEngine\.closeSessionTrip\(id\) : undefined/);
-    expect(read("marshalRoutes.ts")).toMatch(/createRankSessions\(db, now, undefined, \{ onClosed: onSessionClosed \}\)/);
+    expect(read("marshalRoutes.ts")).toMatch(/createRankSessions\(db, now, undefined, \{ onClosed: sessionClosedHook\(commission, onSessionClosed\) \}\)/);                  // the trip, then the marshal's commission
     const money = read("../services/moneyEngine.ts");
     expect(money).toMatch(/COALESCE\(s\.driver_id, m\.driver_id\) AS driver_id, COALESCE\(sv\.owner_id, m\.owner_id\) AS owner_id/); expect(money).toMatch(/LEFT JOIN loading_sessions s ON s\.id = t\.session_id/);
     expect(money).toMatch(/t\.status = 'confirmed' AND t\.trip_id IS NULL AND t\.session_id IS NULL/);                 // the ordinary trip run leaves session taps to the session's own trip

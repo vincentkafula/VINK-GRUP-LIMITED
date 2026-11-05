@@ -2,6 +2,7 @@ import { Router, json, type Request, type Response, type RequestHandler } from "
 import { audit, bucketDays, pageParams, rangeParams, saDay, saDayStart, sendCsv, isUuid, fail } from "./common.js";
 import { createRankSessions } from "./rankSessions.js";
 import { createLoadingReports } from "./loadingReports.js";
+import { createCommission, sessionClosedHook } from "../services/commission.js";
 
 /**
  * The Driver's Dashboard API, mounted at /api/portal/driver (driver accounts only; the guard is applied where this is mounted).
@@ -111,7 +112,7 @@ export function createDriverRouter(db: Db, now: () => Date = () => new Date(), o
    */
   router.post("/loading/depart", json({ limit: "5kb" }), h(async (req, res) => {
     const note = typeof req.body?.note === "string" ? req.body.note.trim().slice(0, 200) || null : null;
-    const r = await createRankSessions(db, now, undefined, { onClosed: onSessionClosed }).departByDriver({ driverId: uid(req), actorName: req.user!.username, note });
+    const r = await createRankSessions(db, now, undefined, { onClosed: sessionClosedHook(createCommission(db, now), onSessionClosed) }).departByDriver({ driverId: uid(req), actorName: req.user!.username, note });
     if (!r.ok) { res.status(r.status).json({ success: false, error: r.message, code: r.code }); return; }
     res.json({ success: true, session: r.value });
   }));

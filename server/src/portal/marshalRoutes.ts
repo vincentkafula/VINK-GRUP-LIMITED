@@ -3,6 +3,7 @@ import { h, uid, num, iso, isUuid, optText, fail, isUniqueViolation, audit, buck
 import { saPeriods } from "./driverRoutes.js";
 import { createRankSessions, type Res } from "./rankSessions.js";
 import { createLoadingReports } from "./loadingReports.js";
+import { createCommission, sessionClosedHook } from "../services/commission.js";
 
 /**
  * The Marshal Dashboard API, mounted at /api/portal/marshal (marshals only). A marshal works only at the ranks the association
@@ -25,7 +26,25 @@ import { createLoadingReports } from "./loadingReports.js";
  */
 export function createMarshalRouter(db: Db, now: () => Date = () => new Date(), onSessionClosed?: (sessionId: string) => Promise<unknown>): Router {
   const router = Router();
+  const commission = createCommission(db, now);
 
+  /**
+   * Every change to a rank's queue is recorded with who made it and when. A vehicle leaving out of order, or taken out of the line, carries a REASON from a fixed list so a deviation can be explained in a dispute;
+   * that is required once the association has switched commission on (or to shadow), and always recorded when given. The log can never stop a marshal working: if it fails the error is logged.
+   */
+  const needReason = async (associationId: unknown) => (await commission.settings(String(associationId))).mode !== "off";
+  async function readReason(body: unknown): Promise<{ code: string | null; bad?: string }> {
+    const c = (body as { reasonCode?: unknown } | undefined)?.reasonCode;
+    if (c === undefined || c === null || c === "") return { code: null };
+    return (await commission.reasonOk(c, "queue")) ? { code: String(c) } : { code: null, bad: "Choose a reason from the list" };
+  }
+  async function logQueue(rankId: unknown, vehicleId: unknown, queueId: unknown, marshalId: string, action: "join" | "remove" | "depart" | "override", reason: string | null, position: number | null): Promise<void> {
+    try { await db.query(`INSERT INTO queue_events (rank_id, vehicle_id, queue_id, marshal_id, action, reason_code, position_before) VALUES ($1,$2,$3,$4,$5,$6,$7)`, [rankId, vehicleId, queueId ?? null, marshalId, action, reason, position]); }
+    catch (e) { console.error("[queue] could not log a queue change:", e instanceof Error ? e.message : e); }
+  }
+  const calculate = async (departureId: string): Promise<void> => { try { await commission.recordDeparture(departureId); } catch (e) { console.error("[commission] a departure's commission will be calculated by the next catch-up:", e instanceof Error ? e.message : e); } };
+
+  router.get("/reason-codes", h(async (_req, res) => { res.json({ success: true, reasons: (await db.query(`SELECT code, kind, label_en FROM reason_codes WHERE active = true AND kind = 'queue' ORDER BY label_en`)).rows.map((r) => ({ code: String(r.code), label: String(r.label_en) })) }); }));
   router.get("/", (req, res) => { res.json({ success: true, role: "marshal", user: { id: uid(req), username: req.user!.username } }); });
 
   /** The rank, if (and only if) the signed-in marshal is assigned to it. */
@@ -82,6 +101,7 @@ export function createMarshalRouter(db: Db, now: () => Date = () => new Date(), 
     if ((await db.query(`SELECT 1 AS x FROM rank_queue WHERE vehicle_id = $1 AND left_at IS NULL`, [vehicleId])).rows.length) { fail(res, 409, "That vehicle is already in a queue"); return; }
     try {
       const r = await db.query(`INSERT INTO rank_queue (rank_id, vehicle_id) VALUES ($1,$2) RETURNING id`, [rank.id, vehicleId]);
+      await logQueue(rank.id, vehicleId, r.rows[0].id, uid(req), "join", null, (await db.query(`SELECT id FROM rank_queue WHERE rank_id = $1 AND left_at IS NULL`, [rank.id])).rows.length);
       res.status(201).json({ success: true, id: r.rows[0].id });
     } catch (e) { if (isUniqueViolation(e)) { fail(res, 409, "That vehicle is already in a queue"); return; } throw e; }
   }));
@@ -103,6 +123,13 @@ export function createMarshalRouter(db: Db, now: () => Date = () => new Date(), 
     // A vehicle with a loading session on a device is ended through that session (so its taps, trip and device are closed with it), never by this button.
     const onDevice = new Set((await db.query(`SELECT queue_id FROM loading_sessions WHERE rank_id = $1 AND status IN ('pending','loading')`, [rank.id])).rows.map((x) => String(x.queue_id)));
     if (named && onDevice.has(String(named))) { fail(res, 409, "That vehicle is loading on a device. End or cancel its loading session instead."); return; }
+    // A vehicle that is not first in line leaves OUT OF ORDER: that is the marshal's call, and it needs a reason (once the association has commission on) so it can be explained in a dispute.
+    const lineUp = (await db.query(`SELECT id FROM rank_queue WHERE rank_id = $1 AND left_at IS NULL ORDER BY joined_at, id`, [rank.id])).rows.map((x) => String(x.id)).filter((x) => !onDevice.has(x));
+    const outOfOrder = !!named && lineUp.length > 0 && String(named) !== lineUp[0];
+    const why = await readReason(b);
+    if (why.bad) { fail(res, 400, why.bad); return; }
+    if (outOfOrder && !why.code && (await needReason(rank.association_id))) { res.status(400).json({ success: false, error: "Say why this vehicle leaves out of order", code: "reason_required" }); return; }
+    const position = named ? lineUp.indexOf(String(named)) + 1 || null : lineUp.length ? 1 : null;
     // Taking the place in the line is the atomic step (an UPDATE that only succeeds while left_at is still empty), so two requests
     // can never log the same vehicle. A request for "the first in line" that loses the race simply takes the next one.
     let took: Record<string, unknown> | undefined;
@@ -121,11 +148,13 @@ export function createMarshalRouter(db: Db, now: () => Date = () => new Date(), 
     const r = await db.query(`INSERT INTO departures (rank_id, vehicle_id, driver_id, marshal_id, passengers, note) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id`,
       [rank.id, took.vehicle_id, veh?.driver_id ?? null, me, passengers, note]);
     await audit(db, req, "marshal.depart", String(rank.id), { vehicleId: took.vehicle_id, passengers });
+    await logQueue(rank.id, took.vehicle_id, named ?? null, me, outOfOrder || why.code ? "override" : "depart", why.code, position);
+    await calculate(String(r.rows[0].id));                                                    // the marshal's commission for this trip (nothing happens unless the association has switched it on)
     res.status(201).json({ success: true, id: r.rows[0].id });
   }));
 
   /* ── shared rank devices ── */
-  const sessions = createRankSessions(db, now, undefined, { onClosed: onSessionClosed });
+  const sessions = createRankSessions(db, now, undefined, { onClosed: sessionClosedHook(commission, onSessionClosed) });
   createLoadingReports(db).mount(router, "marshal", now);                              // the loads this marshal started: per load, driver, vehicle or route
   const answer = <T,>(res: import("express").Response, r: Res<T>, okStatus = 200) => {
     if (!r.ok) { res.status(r.status).json({ success: false, error: r.message, code: r.code }); return; }
@@ -167,13 +196,18 @@ export function createMarshalRouter(db: Db, now: () => Date = () => new Date(), 
     answer(res, await sessions.close({ sessionId: req.params.sid, rankId: String(rank.id), marshalId: uid(req), actorName: req.user!.username, passengers, note }));
   }));
 
-  router.post("/ranks/:id/queue/:queueId/remove", h(async (req, res) => {
+  router.post("/ranks/:id/queue/:queueId/remove", json({ limit: "5kb" }), h(async (req, res) => {
     const rank = await myRank(req.params.id, uid(req));
     if (!rank) { fail(res, 404, "Rank not found"); return; }
     if (!isUuid(req.params.queueId)) { fail(res, 400, "Invalid queue entry"); return; }
     if ((await db.query(`SELECT 1 AS x FROM loading_sessions WHERE queue_id = $1 AND status IN ('pending','loading')`, [req.params.queueId])).rows.length) { fail(res, 409, "That vehicle is loading on a device. End or cancel its loading session instead."); return; }
-    const r = await db.query(`UPDATE rank_queue SET left_at = now() WHERE id = $1 AND rank_id = $2 AND left_at IS NULL RETURNING id`, [req.params.queueId, rank.id]);
+    const why = await readReason(req.body);
+    if (why.bad) { fail(res, 400, why.bad); return; }
+    if (!why.code && (await needReason(rank.association_id))) { res.status(400).json({ success: false, error: "Say why this vehicle is taken out of the queue", code: "reason_required" }); return; }
+    const was = (await db.query(`SELECT id, vehicle_id FROM rank_queue WHERE rank_id = $1 AND left_at IS NULL ORDER BY joined_at, id`, [rank.id])).rows;
+    const r = await db.query(`UPDATE rank_queue SET left_at = now() WHERE id = $1 AND rank_id = $2 AND left_at IS NULL RETURNING id, vehicle_id`, [req.params.queueId, rank.id]);
     if (!r.rows.length) { fail(res, 404, "Queue entry not found"); return; }
+    await logQueue(rank.id, r.rows[0].vehicle_id, req.params.queueId, uid(req), "remove", why.code, was.findIndex((x) => String(x.id) === req.params.queueId) + 1 || null);
     res.json({ success: true });
   }));
 

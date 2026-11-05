@@ -231,6 +231,10 @@ export function createMoneyEngine(deps: {
 
   async function createTripItems(tripId: string, t: { driver_id: string | null; owner_id: string | null; association_id: string | null; marshal_id: string | null; investor_id?: string | null }, currency: string, at: Date, cfg: CountryConfig, tokenTrip = false) {
     const fee = cfg.marshalFee;
+    // With commission live, the trip fee for a rank trip is charged per DEPARTURE to the driver, for the association (services/commission.ts), so the old fee that paid the marshal directly must not also be
+    // charged. A trip with no marshal (an owner's own device) has no departure, so it still carries the fee, accruing to the association.
+    const commissionLive = !!t.marshal_id && !!t.association_id && (await db.query(`SELECT 1 AS x FROM association_settings WHERE association_id = $1 AND commission_mode = 'commission'`, [t.association_id])).rows.length > 0;
+    if (!commissionLive) {
     const set = t.association_id ? (await db.query(`SELECT marshal_fee_cents FROM association_settings WHERE association_id = $1`, [t.association_id])).rows[0] : null;
     const amount = set?.marshal_fee_cents != null ? Number(set.marshal_fee_cents) : fee.amountCents;
     const payer = t.driver_id ?? t.owner_id;                           // the driver pays; with no driver on the terminal the owner does
@@ -241,6 +245,7 @@ export function createMoneyEngine(deps: {
         [payer, payee, amount, currency, `marshal:${tripId}`, tripId, t.marshal_id ? "Marshal fee for a completed trip" : "Marshal fee (no marshal logged): held for the association"]);
     } else if (amount > 0) {
       await db.query(`UPDATE trips SET needs_review = COALESCE(needs_review, 'marshal_fee_not_assigned') WHERE id = $1`, [tripId]);
+    }
     }
     const agr = await activeAgreement(t.owner_id, t.driver_id, saDay(at));
     if (agr?.mode === "per_trip_amount") {
