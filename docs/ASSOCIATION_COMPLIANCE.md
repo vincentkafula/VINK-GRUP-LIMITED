@@ -13,7 +13,7 @@ specification, how the rules work, and what is not built. It is built in slices;
 | 4 | Driver register | **Built** (slice 1): ID, permit and licence, employer and vehicle, employment status and contract, pay basis, UIF and COIDA, training, suspension; optional rule blocking a driver without a valid permit |
 | 5 | Operating licence tracker | **Built** (slice 1): per vehicle; valid, expired, application lodged, none; applications tracked separately; alerts at 180, 90 and 30 days; the headline share trended monthly |
 | 6 | Routes and ranks | Partial: ranks and routes exist; saturation, licence reconciliation, queue rotation record and regulator notices are **not built** |
-| 7 | Finance and levies | Partial: levies, ledger and statements exist; fee schedule, numbered receipts, expenses with two-person approval and the fee-cap check are **not built** |
+| 7 | Finance and levies | **Built** (slice 2): approved fee schedule with the province's cap check, numbered receipts (never deleted, printable), member accounts and statements, expenses with named-office-bearer approval, cash against banking, budgets, monthly and annual statements with CSV |
 | 8 | Governance and discipline | **Not built**: meetings, resolutions, elections, declarations of interest, disciplinary cases |
 | 9 | Safety and conflict | Partial: marshals' safety reports exist; accidents, inter-association disputes, repeat-incident flags are **not built** |
 | 10 | Tax and labour formalisation | Partial: driver UIF and COIDA are recorded and flagged; owner business and tax status are **not built** |
@@ -36,6 +36,20 @@ specification, how the rules work, and what is not built. It is built in slices;
 - **Change history**: every change to a register is recorded with who, when, and what it was and became. A driver's ID number is never written to it, and is returned masked in lists.
 - **Who sees what**: every route is scoped to the signed-in association (no route takes an association id), and an association sees only vehicles of its own active owner members and its own drivers.
 
+## Finance (module 7)
+
+- **The association's own books, in the open.** These record what the association says happened and move no money; the VINK wallet ledger and fines (the "VINK money" menu) are separate and untouched.
+- **Fee schedule.** Members can only be charged a fee that is on it. A joining or membership fee above the province's cap (entered under Registration; it differs by province and is never assumed) is flagged when added and **refused when charging**; the cap does not apply to levies or fines.
+  A joining fee is charged to a member once.
+- **Receipts** are numbered in an unbroken sequence per association (R-000001, R-000002, …) and are **never deleted**. A mistake is **voided with a reason** and keeps its number, and the next receipt takes the next number. A voided receipt's PDF says VOID across it. A payment against a levy cannot be more than is
+  owed on it; a levy becomes paid only when its receipts add up, and unpaid again if a receipt is voided. A levy marked paid with **no receipt** (cash payments recorded before receipts existed) is counted as paid and **flagged**.
+- **Member accounts**: what each member was charged, has paid (by receipt, or marked paid with none), owes, and how much is overdue and for how long; and a statement with a running balance to hand them.
+- **Expenses** are recorded, then **approved by named office bearers** (from the Registration screen): one approver below the association's threshold, **two different people at or above it** (R5 000 by default; the association sets it). Nobody can approve what they asked for themselves, an office bearer whose term has ended cannot approve,
+  and the same person cannot approve twice. The association's single login records the approvals; it cannot prove the named person was the one who gave them, so this is an attestation, not authentication (see the decision on named users below).
+- **Banking**: cash received against deposits made, taking deposits to cover the oldest cash first so the age of the oldest unbanked cash is known; flagged after 30 days (medium) and 60 (high), and when more has been banked than cash receipts recorded.
+- **Statements**: income (receipts not void) and expenses (approved only), by month and by year with the budget alongside, as CSV. **Flags**: a fee above the cap; payments with no receipt; an expense waiting 14 days; a member more than 90 days overdue; unbanked cash; voided receipts (three or more in a month); charges with no approved schedule.
+- **Not built in this module**: sending a receipt or statement to a member by email or WhatsApp, matching bank statement lines automatically, and reconciling the ledger against cashless fare data (module 11).
+
 ## Decisions only the association can make
 
 - **Evidence files.** The registers record each document, where it is kept and its dates, but do not store the files. Storing the signed constitution and certificate would need a storage decision (the database is small).
@@ -44,4 +58,4 @@ specification, how the rules work, and what is not built. It is built in slices;
 
 ## Testing
 
-`cd server && npx vitest run src/services/compliance.test.ts src/portal/complianceRoutes.test.ts`. Run against a real PostgreSQL by setting `TEST_PG_URL` (see docs/MARSHAL_COMMISSION.md).
+`cd server && npx vitest run src/services/compliance.test.ts src/portal/complianceRoutes.test.ts src/services/finance.test.ts src/portal/financeRoutes.test.ts`. Run against a real PostgreSQL by setting `TEST_PG_URL` (see docs/MARSHAL_COMMISSION.md).

@@ -94,7 +94,8 @@ describe("the member ledger", () => {
   it("gives a member a statement in date order with a running balance, voided receipts shown but not counted, and a note about payments with no receipt", async () => {
     const a = await levy(U.O1, "Annual membership", 600, plus(-60)); const r1 = ok<any>(await receipt({ levyId: a, amountCents: R(200), receivedOn: plus(-30) })), r2 = ok<any>(await receipt({ levyId: a, amountCents: R(100), receivedOn: plus(-10) })); ok(await f.voidReceipt(U.A, U.A, r2.id, "Bounced")); await levy(U.O1, "Old", 50, plus(-90), true);
     const s = ok<any>(await f.memberStatement(U.A, U.O1)); expect(s.member).toBe("Olu Owner"); expect(s.lines.map((l: any) => [l.kind, l.ref, l.amountCents, l.balanceCents])).toEqual([["charge", "", R(50), R(50)], ["charge", "", R(600), R(650)], ["receipt", "R-000001", R(200), R(450)], ["void", "R-000002", R(100), R(450)]]);
-    expect(s.owedCents).toBe(R(400)); expect(s.note).toContain("marked paid without a receipt"); expect(r1.number).toBe(1); expect(await f.memberStatement(U.A, U.O3)).toMatchObject({ ok: false, status: 404 });
+    expect(s.owedCents).toBe(R(400)); expect(s.openLevies).toEqual([{ id: a, title: "Annual membership", remainingCents: R(400), dueOn: plus(-60) }]);               // only what is still owed, oldest first
+     expect(s.note).toContain("marked paid without a receipt"); expect(r1.number).toBe(1); expect(await f.memberStatement(U.A, U.O3)).toMatchObject({ ok: false, status: 404 });
   });
 });
 
