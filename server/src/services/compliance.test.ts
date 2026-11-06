@@ -187,7 +187,9 @@ describe("the overview, the trend and the history", () => {
     const s = await c.summary(U.A, TODAY); const sev = s.flags.map((f) => f.severity); expect([...sev].sort((a, b) => ({ high: 0, medium: 1, low: 2 })[a] - ({ high: 0, medium: 1, low: 2 })[b])).toEqual(sev); expect(s.flagCounts).toEqual({ high: sev.filter((x) => x === "high").length, medium: sev.filter((x) => x === "medium").length, low: sev.filter((x) => x === "low").length });
   });
   it("snapshots each month once (the latest picture of the month wins), keeps a trend in order, and snapshots every association", async () => {
-    ok(await licence(V.v1)); expect(await c.snapshot(U.A, "2026-09-15")).toEqual({ month: "2026-09", vehicles: 3, licensed: 1, drivers: 3, driversValid: 2 });                                // Dan's permit only expires on 23 October, so on 15 September two drivers had valid permits ok(await licence(V.v2, { licenceNumber: "OL-2" })); await c.snapshot(U.A, "2026-09-28"); await c.snapshot(U.A, "2026-10-05");
+    ok(await licence(V.v1)); expect(await c.snapshot(U.A, "2026-09-15")).toEqual({ month: "2026-09", vehicles: 3, licensed: 1, drivers: 3, driversValid: 2 });
+    // (Dan's permit only expires on 23 October, so on 15 September two drivers had valid permits.)
+    ok(await licence(V.v2, { licenceNumber: "OL-2" })); await c.snapshot(U.A, "2026-09-28"); await c.snapshot(U.A, "2026-10-05");
     expect(await c.trend(U.A)).toEqual([{ month: "2026-09", vehicles: 3, licensed: 2, licensedPercent: 66.7, drivers: 3, driversValid: 2, validPermitPercent: 66.7 }, { month: "2026-10", vehicles: 3, licensed: 2, licensedPercent: 66.7, drivers: 3, driversValid: 2, validPermitPercent: 66.7 }]);
     expect((await c.trend(U.A, 1)).map((x) => x.month)).toEqual(["2026-10"]); expect(await c.trend(U.B)).toEqual([]); expect(await c.snapshotAll("2026-11-02")).toBe(2); expect((await c.trend(U.B)).map((x) => x.month)).toEqual(["2026-11"]);
   });
