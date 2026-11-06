@@ -98,6 +98,11 @@ describe("safety reports and the risk picture", () => {
     expect(await m.acknowledgeIncident(U.A, a.id, U.A, "acknowledged")).toEqual({ ok: true, value: { status: "acknowledged" } }); expect((await m.incidents({ associationId: U.A })).newCount).toBe(0);
     ok(await m.acknowledgeIncident(U.A, a.id, U.A, "closed")); expect(await m.acknowledgeIncident(U.A, a.id, U.A, "acknowledged")).toMatchObject({ ok: false, status: 409 });
   });
+  it("puts each report in the right part of the day, exactly at the edges (South African time: 05:00, 12:00, 17:00 and 21:00)", async () => {
+    // South African time is two hours ahead of UTC. 04:59 and 21:00 are night; 05:00 and 11:59 morning; 12:00 and 16:59 afternoon; 17:00 and 20:59 evening.
+    for (const utc of ["02:59", "03:00", "09:59", "10:00", "14:59", "15:00", "18:59", "19:00"]) await report({ type: "other", occurredAt: `2026-10-31T${utc}:00Z` });
+    expect(ok<any>(await m.riskMap(U.A, "2026-10-26", "2026-11-02")).ranks.find((x: any) => x.rank === "Langa").byPeriod).toEqual({ night: 2, morning: 2, afternoon: 2, evening: 2 });
+  });
   it("builds the risk picture per rank: counts by kind and by time of day, a score weighted by seriousness, and a level", async () => {
     await report({ type: "robbery", occurredAt: "2026-10-30T21:30:00Z" });                       // 23:30 in South Africa: night
     await report({ type: "threat", occurredAt: "2026-10-31T06:00:00Z" }); await report({ type: "fight", occurredAt: "2026-10-31T14:00:00Z" });            // morning 08:00, evening 16:00 is afternoon
@@ -198,6 +203,18 @@ describe("the overview and patterns", () => {
     for (let i = 0; i < 4; i++) await session(R1, U.M1, sa(`2026-10-${28 + (i % 3)}`, 7 + i), 6, 10);                          // this week: 40% cash over 40
     expect(await m.patterns(U.A, "2026-11-02")).toEqual([{ rank: "Langa", kind: "cash_share_up", message: "Cash share at Langa is 30 points above its 4-week average", nowPercent: 40, basePercent: 10, passengers: 40 }]);
     expect(await m.patterns(U.B, "2026-11-02")).toEqual([]); expect(await m.patterns(U.A, "2026-10-20")).toEqual([]);                                                            // the base is empty then
+  });
+  it("flags a rise of exactly 12 points but not 11, so the line is where it says it is", async () => {
+    const base = async () => { for (let i = 0; i < 6; i++) await session(R1, U.M1, sa(`2026-10-${10 + i}`, 7), 9, 10); };                                       // 10% cash over 60 passengers
+    await base(); for (let i = 0; i < 5; i++) await session(R1, U.M1, sa(`2026-10-${27 + i}`, 7), i < 4 ? 8 : 7, 10);                                           // 11 cash over 50 = 22%: 12 points up
+    expect((await m.patterns(U.A, "2026-11-02")).map((p) => [p.nowPercent, p.basePercent])).toEqual([[22, 10]]);
+    await db.query(`DELETE FROM loading_sessions WHERE paired_at >= $1`, [sa("2026-10-26", 0)]); await db.query(`DELETE FROM departures WHERE departed_at >= $1`, [sa("2026-10-26", 0)]);
+    for (let i = 0; i < 10; i++) await session(R1, U.M1, sa(`2026-10-${27 + (i % 5)}`, 7 + (i % 3)), i < 9 ? 8 : 7, 10);                                        // 21 cash over 100 = 21%: 11 points up
+    expect(await m.patterns(U.A, "2026-11-02")).toEqual([]);
+  });
+  it("never counts a negative amount of cash when more were tapped than were counted at departure", async () => {
+    await session(R1, U.M1, sa("2026-10-27", 7), 12, 10); await session(R1, U.M1, sa("2026-10-27", 9), 5, 10);
+    expect(await m.cashShare(U.A, sa("2026-10-26", 0), sa("2026-11-02", 0))).toEqual([{ rankId: R1, rank: "Langa", tapPassengers: 17, cashEstimate: 5, sample: 22 }]);                // 0 for the first (not -2), 5 for the second
   });
   it("does not flag a rank with too few passengers or a small change", async () => {
     for (let i = 0; i < 6; i++) await session(R1, U.M1, sa(`2026-10-${10 + i}`, 7), 9, 10); for (let i = 0; i < 4; i++) await session(R1, U.M1, sa(`2026-10-${28 + (i % 3)}`, 7 + i), 9, 10);
