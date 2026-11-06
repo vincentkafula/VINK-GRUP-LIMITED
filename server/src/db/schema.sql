@@ -2355,3 +2355,153 @@ ALTER TABLE tax_tables ADD COLUMN IF NOT EXISTS secondary_rebate_cents BIGINT NO
 ALTER TABLE tax_tables ADD COLUMN IF NOT EXISTS tertiary_rebate_cents BIGINT NOT NULL DEFAULT 0 CHECK (tertiary_rebate_cents >= 0);
 UPDATE tax_tables SET secondary_rebate_cents = 976500, tertiary_rebate_cents = 324900 WHERE tax_year = '2026/27' AND secondary_rebate_cents = 0 AND tertiary_rebate_cents = 0;
 ALTER TABLE marshal_profiles ADD COLUMN IF NOT EXISTS birth_date DATE;
+
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+-- ASSOCIATION COMPLIANCE (docs/ASSOCIATION_COMPLIANCE.md): registration, the vehicle and driver registers, per-vehicle operating licences
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+-- The association's own registration. One row; every field is the association's record of what its registrar has told it, never something the system decides.
+CREATE TABLE IF NOT EXISTS association_registration (
+  association_id             UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  status                     TEXT NOT NULL DEFAULT 'conditional' CHECK (status IN ('conditional','provisional','full','suspended')),
+  registration_number        TEXT,
+  registrar                  TEXT,
+  province                   TEXT,
+  conditional_since          DATE,
+  conditional_limit_months   INTEGER NOT NULL DEFAULT 12 CHECK (conditional_limit_months BETWEEN 1 AND 120),
+  registered_on              DATE,
+  certificate_issued_on      DATE,
+  renewal_due_on             DATE,
+  min_members_required       INTEGER CHECK (min_members_required IS NULL OR min_members_required >= 0),
+  constitution_version       TEXT,
+  constitution_dated         DATE,
+  constitution_lodged_version TEXT,
+  constitution_lodged_on     DATE,
+  code_version               TEXT,
+  code_dated                 DATE,
+  fee_cap_cents              BIGINT CHECK (fee_cap_cents IS NULL OR fee_cap_cents >= 0),
+  notes                      TEXT,
+  updated_at                 TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS office_bearers (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  association_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  member_id      UUID REFERENCES users(id) ON DELETE SET NULL,
+  name           TEXT NOT NULL,
+  office         TEXT NOT NULL,
+  term_start     DATE,
+  term_end       DATE,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CHECK (term_end IS NULL OR term_start IS NULL OR term_end >= term_start)
+);
+CREATE INDEX IF NOT EXISTS idx_office_bearers_assoc ON office_bearers(association_id);
+-- Evidence the association holds (the certificate, the signed constitution and code): the details, where it is kept and its dates. The files themselves are not stored here.
+CREATE TABLE IF NOT EXISTS association_documents (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  association_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  kind           TEXT NOT NULL CHECK (kind IN ('registration_certificate','constitution','code_of_conduct','other')),
+  title          TEXT NOT NULL,
+  reference      TEXT,
+  version        TEXT,
+  dated_on       DATE,
+  expires_on     DATE,
+  held_at        TEXT,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_association_documents_assoc ON association_documents(association_id, kind);
+-- Each member's signed acceptance of a version of the constitution and code.
+CREATE TABLE IF NOT EXISTS member_acceptances (
+  association_id       UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  member_id            UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  constitution_version TEXT NOT NULL,
+  accepted_on          DATE NOT NULL,
+  reference            TEXT,
+  PRIMARY KEY (association_id, member_id, constitution_version)
+);
+
+-- What the register holds about a vehicle beyond the plate. The licence follows the vehicle and its owner, not the association, so it is stored per vehicle (operating_licences) and never as a fact about membership.
+CREATE TABLE IF NOT EXISTS vehicle_compliance (
+  vehicle_id         UUID PRIMARY KEY REFERENCES vehicles(id) ON DELETE CASCADE,
+  vin                TEXT,
+  roadworthy_expiry  DATE,
+  roadworthy_ref     TEXT,
+  insurer            TEXT,
+  policy_number      TEXT,
+  insurance_expiry   DATE,
+  tracker            TEXT NOT NULL DEFAULT 'unknown' CHECK (tracker IN ('unknown','none','installed')),
+  camera             TEXT NOT NULL DEFAULT 'unknown' CHECK (camera IN ('unknown','none','installed')),
+  signage_note       TEXT,
+  recap_status       TEXT NOT NULL DEFAULT 'unknown' CHECK (recap_status IN ('unknown','not_applicable','applied','completed','scrapped')),
+  state              TEXT NOT NULL DEFAULT 'active' CHECK (state IN ('active','off_road','replaced')),
+  replaced_by        UUID REFERENCES vehicles(id) ON DELETE SET NULL,
+  replacement_note   TEXT,
+  updated_at         TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS operating_licences (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  vehicle_id      UUID NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+  licence_number  TEXT NOT NULL,
+  authority       TEXT,
+  holder_name     TEXT,
+  valid_from      DATE NOT NULL,
+  valid_until     DATE NOT NULL,
+  condition_route TEXT,
+  condition_area  TEXT,
+  condition_times TEXT,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CHECK (valid_until >= valid_from),
+  UNIQUE (vehicle_id, licence_number)
+);
+CREATE INDEX IF NOT EXISTS idx_operating_licences_vehicle ON operating_licences(vehicle_id, valid_until DESC);
+-- An application is NOT a licence: a vehicle with only an application lodged counts as unlicensed.
+CREATE TABLE IF NOT EXISTS licence_applications (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  vehicle_id  UUID NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+  kind        TEXT NOT NULL CHECK (kind IN ('new','renewal','transfer','amendment')),
+  reference   TEXT,
+  authority   TEXT,
+  lodged_on   DATE NOT NULL,
+  outcome     TEXT NOT NULL DEFAULT 'pending' CHECK (outcome IN ('pending','granted','refused','withdrawn')),
+  outcome_on  DATE,
+  note        TEXT,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_licence_applications_vehicle ON licence_applications(vehicle_id, lodged_on DESC);
+
+-- The driver register: what the association holds about each driver beyond the permit and licence (driver_profiles). Drivers are employed by owners, not by the association, so each is linked to an owner and a vehicle.
+CREATE TABLE IF NOT EXISTS driver_register (
+  driver_id              UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  id_number              TEXT,
+  employment_status      TEXT NOT NULL DEFAULT 'unknown' CHECK (employment_status IN ('unknown','employed','contractor','owner_driver')),
+  contract_on_file       BOOLEAN NOT NULL DEFAULT false,
+  pay_basis              TEXT NOT NULL DEFAULT 'unknown' CHECK (pay_basis IN ('unknown','salary','daily_rate','commission','cash','other')),
+  uif_registered         BOOLEAN NOT NULL DEFAULT false,
+  coida_registered       BOOLEAN NOT NULL DEFAULT false,
+  clean_record_confirmed BOOLEAN NOT NULL DEFAULT false,
+  training_note          TEXT,
+  state                  TEXT NOT NULL DEFAULT 'active' CHECK (state IN ('active','suspended')),
+  state_reason           TEXT,
+  updated_at             TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE association_settings ADD COLUMN IF NOT EXISTS enforce_prdp BOOLEAN NOT NULL DEFAULT false;       -- refuse to put a driver on a vehicle without a valid professional driving permit
+
+-- What changed in a register, by whom and when: the change history that lets an association show its records were not altered after the fact.
+CREATE TABLE IF NOT EXISTS register_changes (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  association_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  entity         TEXT NOT NULL,
+  entity_id      TEXT,
+  summary        TEXT NOT NULL,
+  changed_by     UUID,
+  changed_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_register_changes_assoc ON register_changes(association_id, changed_at DESC);
+-- A monthly picture of how many vehicles and drivers are legal, so the trend can be shown.
+CREATE TABLE IF NOT EXISTS compliance_trend (
+  association_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  month          TEXT NOT NULL CHECK (month ~ '^[0-9]{4}-[0-9]{2}$'),
+  vehicles       INTEGER NOT NULL,
+  licensed       INTEGER NOT NULL,
+  drivers        INTEGER NOT NULL,
+  drivers_valid  INTEGER NOT NULL,
+  PRIMARY KEY (association_id, month)
+);
