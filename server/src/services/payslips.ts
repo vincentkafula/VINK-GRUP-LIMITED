@@ -1,6 +1,6 @@
 import PDFDocument from "pdfkit";
 import type { Db } from "../portal/common.js";
-import { createTaxTables, periodsPerYear, payeForPeriod, uifForPeriod } from "./tax.js";
+import { createTaxTables, periodsPerYear, payeForPeriod, uifForPeriod, ageOn } from "./tax.js";
 import { saDay, saDayStart } from "../portal/common.js";
 import type { Commission, Settings } from "./commission.js";
 
@@ -61,12 +61,19 @@ export function createPayslips(db: Db, commission: Commission, now: () => Date =
     }
     return (await db.query(`SELECT * FROM marshal_profiles WHERE marshal_id = $1`, [marshalId])).rows[0];
   }
-  async function updateProfile(marshalId: string, p: { language?: unknown; class?: unknown; uifApplies?: unknown; startedOn?: unknown }): Promise<Res<Row>> {
+  async function updateProfile(marshalId: string, p: { language?: unknown; class?: unknown; uifApplies?: unknown; startedOn?: unknown; birthDate?: unknown }): Promise<Res<Row>> {
     if (p.language !== undefined && !["en", "xh", "zu", "af"].includes(String(p.language))) return bad(400, "Choose English, isiXhosa, isiZulu or Afrikaans");
     if (p.class !== undefined && !["independent", "employee"].includes(String(p.class))) return bad(400, "A marshal is independent or an employee");
     if (p.uifApplies !== undefined && typeof p.uifApplies !== "boolean") return bad(400, "UIF applies or it does not");
     if (p.startedOn !== undefined && (typeof p.startedOn !== "string" || !DAY.test(p.startedOn))) return bad(400, "Say the start date (YYYY-MM-DD)");
+    // The date of birth decides which PAYE age rebate applies. It is the association's record: a real date, in the past, for someone between 14 and 110. null clears it.
+    if (p.birthDate !== undefined && p.birthDate !== null) {
+      const d = typeof p.birthDate === "string" && DAY.test(p.birthDate) ? new Date(`${p.birthDate}T00:00:00Z`) : null;
+      if (!d || Number.isNaN(d.getTime()) || d.toISOString().slice(0, 10) !== p.birthDate) return bad(400, "Give the date of birth as YYYY-MM-DD");
+      const age = ageOn(p.birthDate as string, new Date(now().getTime() + 2 * 3600_000).toISOString().slice(0, 10)); if (age < 14 || age > 110) return bad(400, "That date of birth is not possible for a working marshal");
+    }
     await ensureProfile(marshalId);
+    if (p.birthDate !== undefined) await db.query(`UPDATE marshal_profiles SET birth_date = $2 WHERE marshal_id = $1`, [marshalId, p.birthDate]);
     await db.query(`UPDATE marshal_profiles SET language = COALESCE($2, language), class = COALESCE($3, class), uif_applies = COALESCE($4, uif_applies), started_on = COALESCE($5, started_on) WHERE marshal_id = $1`,
       [marshalId, p.language ?? null, p.class ?? null, p.uifApplies ?? null, p.startedOn ?? null]);
     return { ok: true, value: await ensureProfile(marshalId) };
@@ -166,8 +173,8 @@ export function createPayslips(db: Db, commission: Commission, now: () => Date =
     if (st.payeEnabled && prof.class === "employee") {
       if (!table) payeNotice = "PAYE was not calculated: no tax table covers this period. Add the current SARS table under Commission settings.";
       else {
-        const r = payeForPeriod(Math.max(0, earnings - uifPaid), periods, table), paye = Math.min(r.periodPayeCents, Math.max(0, earnings - deductions));
-        if (paye > 0) { lines.push({ side: "deduction", kind: "paye", label: "PAYE (estimate)", quantity: null, unitCents: null, rateBp: null, amountCents: paye, reason: `Income tax estimate from the SARS ${table.taxYear} tables (annualised: ${rand(r.annualTaxableCents)} a year, less the primary rebate)`, reference: "PAYE", adjustmentId: null }); deductions += paye; }
+        const age = prof.birth_date ? ageOn(dayOf(prof.birth_date), table.effectiveTo) : null, r = payeForPeriod(Math.max(0, earnings - uifPaid), periods, table, age), paye = Math.min(r.periodPayeCents, Math.max(0, earnings - deductions));
+        if (paye > 0) { lines.push({ side: "deduction", kind: "paye", label: "PAYE (estimate)", quantity: null, unitCents: null, rateBp: null, amountCents: paye, reason: `Income tax estimate from the SARS ${table.taxYear} tables (annualised: ${rand(r.annualTaxableCents)} a year, less the ${age !== null && age >= 65 ? "primary and age rebates" : "primary rebate"})`, reference: "PAYE", adjustmentId: null }); deductions += paye; }
         else payeNotice = "No PAYE is due on this pay: it is below the tax threshold.";
       }
     }
@@ -455,7 +462,7 @@ export function createPayslips(db: Db, commission: Commission, now: () => Date =
   async function marshals(assoc: string): Promise<Row[]> {
     const rows = (await db.query(`SELECT DISTINCT m.marshal_id, u.name, u.email FROM rank_marshals m JOIN ranks r ON r.id = m.rank_id JOIN users u ON u.id = m.marshal_id WHERE r.association_id = $1 ORDER BY u.name`, [assoc])).rows;
     const out: Row[] = [];
-    for (const m of rows) { const p = await ensureProfile(String(m.marshal_id)); out.push({ id: String(m.marshal_id), name: String(m.name ?? ""), email: String(m.email ?? ""), marshalNumber: String(p.marshal_number), language: String(p.language), class: String(p.class), uifApplies: !!p.uif_applies, startedOn: p.started_on ? dayOf(p.started_on) : null }); }
+    for (const m of rows) { const p = await ensureProfile(String(m.marshal_id)); out.push({ id: String(m.marshal_id), name: String(m.name ?? ""), email: String(m.email ?? ""), marshalNumber: String(p.marshal_number), language: String(p.language), class: String(p.class), uifApplies: !!p.uif_applies, startedOn: p.started_on ? dayOf(p.started_on) : null, birthDate: p.birth_date ? dayOf(p.birth_date) : null }); }
     return out;
   }
 

@@ -329,6 +329,21 @@ describe("PAYE and the UIF ceiling on the payslip", () => {
     await employee(); await adj({ kind: "bonus", label: "Festive", totalCents: 200000 }); const a = ok(await p.draft(U.A, U.M1, START, END, U.boss)).value; ok(await p.issue(U.A, a.id, U.boss, "bank"));
     expect((await q(`SELECT kind, amount_cents FROM payslip_lines WHERE kind = 'paye'`))).toEqual([{ kind: "paye", amount_cents: 1371 }]); expect((await q(`SELECT net_cents FROM payslips`))[0].net_cents).toBe(196629);
   });
+  it("gives an older employee the age rebate: R3 000 a week is R191.91 of PAYE under 65, R4.12 at 66 and none at 77, by age at the end of the tax year", async () => {
+    await employee(); await adj({ kind: "bonus", label: "Big week", totalCents: 300000 });
+    const paye = async (birth: string | null) => { await db.query(`DELETE FROM payslip_lines`); await db.query(`DELETE FROM payslips`); ok(await p.updateProfile(U.M1, { birthDate: birth })); const v = await slip(300000); return { cents: (v.lines.find((l: any) => l.kind === "paye") as any)?.amountCents ?? 0, v }; };
+    expect((await paye(null)).cents).toBe(19191);                                                                                                // no date of birth: primary rebate only
+    expect((await paye("1990-05-01")).cents).toBe(19191); const sixty6 = await paye("1960-05-01"); expect(sixty6.cents).toBe(412); expect((sixty6.v.lines.find((l: any) => l.kind === "paye") as any).reason).toContain("primary and age rebates");
+    const seventy7 = await paye("1950-01-01"); expect(seventy7.cents).toBe(0); expect(seventy7.v.note).toContain("No PAYE is due on this pay: it is below the tax threshold");
+    expect((await paye("1962-02-28")).cents).toBe(412); expect((await paye("1962-03-01")).cents).toBe(19191);                                    // 65 on the last day of the tax year, or one day short of it
+  });
+  it("keeps the date of birth for the association only: validated, shown in the marshal list, clearable, and never on the payslip", async () => {
+    for (const bad of ["1960/05/01", "not a date", "1960-02-30", "2026-11-01", "2020-01-01", "1900-01-01", 19600501]) expect(await p.updateProfile(U.M1, { birthDate: bad as any }), String(bad)).toMatchObject({ ok: false, status: 400 });
+    ok(await p.updateProfile(U.M1, { birthDate: "1960-05-01" })); expect((await p.marshals(U.A)).find((m: any) => m.name === "Mo Marshal")).toMatchObject({ birthDate: "1960-05-01" }); expect((await p.marshals(U.A)).find((m: any) => m.name === "Mia Marshal")).toMatchObject({ birthDate: null });
+    ok(await p.updateProfile(U.M1, { language: "af" })); expect((await p.marshals(U.A)).find((m: any) => m.name === "Mo Marshal")).toMatchObject({ birthDate: "1960-05-01", language: "af" });                // changing something else leaves it
+    ok(await p.updateProfile(U.M1, { birthDate: null })); expect((await p.marshals(U.A)).find((m: any) => m.name === "Mo Marshal")).toMatchObject({ birthDate: null });
+    ok(await p.updateProfile(U.M1, { birthDate: "1960-05-01", class: "employee", uifApplies: true })); await c.updateSettings(U.A, { payeEnabled: true }); await adj({ kind: "bonus", label: "Big week", totalCents: 300000 }); expect(JSON.stringify(await slip(300000))).not.toContain("1960");
+  });
   it("validates and stores the PAYE switch and the alert email and phone, tidying the phone number", async () => {
     expect(await c.updateSettings(U.A, { payeEnabled: "yes" } as any)).toMatchObject({ ok: false, status: 400 }); expect(await c.updateSettings(U.A, { alertEmail: "not an email" })).toMatchObject({ ok: false, status: 400 }); expect(await c.updateSettings(U.A, { alertPhone: "0821234567" })).toMatchObject({ ok: false, status: 400, error: expect.stringContaining("country code") });
     expect(ok(await c.updateSettings(U.A, { payeEnabled: true, alertEmail: "ops@langa.example", alertPhone: "+27 82 123 4567" })).value).toMatchObject({ payeEnabled: true, alertEmail: "ops@langa.example", alertPhone: "+27821234567" });

@@ -2349,3 +2349,9 @@ CREATE TABLE IF NOT EXISTS auto_cashouts (
   created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
   PRIMARY KEY (marshal_id, day)
 );
+
+-- Age rebates for PAYE (2026/27: secondary R9 765 from age 65, tertiary R3 249 from age 75) and the date of birth they need, kept by the association and never printed on a payslip.
+ALTER TABLE tax_tables ADD COLUMN IF NOT EXISTS secondary_rebate_cents BIGINT NOT NULL DEFAULT 0 CHECK (secondary_rebate_cents >= 0);
+ALTER TABLE tax_tables ADD COLUMN IF NOT EXISTS tertiary_rebate_cents BIGINT NOT NULL DEFAULT 0 CHECK (tertiary_rebate_cents >= 0);
+UPDATE tax_tables SET secondary_rebate_cents = 976500, tertiary_rebate_cents = 324900 WHERE tax_year = '2026/27' AND secondary_rebate_cents = 0 AND tertiary_rebate_cents = 0;
+ALTER TABLE marshal_profiles ADD COLUMN IF NOT EXISTS birth_date DATE;

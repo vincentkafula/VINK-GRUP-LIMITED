@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { allPortalsDb } from "../portal/testDb.js";
 import type { Db } from "../portal/common.js";
-import { createTaxTables, taxBeforeRebateCents, payeForPeriod, uifForPeriod, periodsPerYear, tableProblem, type TaxTable, type TaxTables } from "./tax.js";
+import { createTaxTables, taxBeforeRebateCents, payeForPeriod, uifForPeriod, periodsPerYear, tableProblem, ageOn, rebateFor, type TaxTable, type TaxTables } from "./tax.js";
 
 /**
  * PAYE is checked against figures published by SARS and by payroll guides for the 2026/27 tax year (1 March 2026 to 28 February 2027), not against numbers produced by this code:
@@ -63,3 +63,21 @@ describe("the tables the system holds", () => {
   });
   it("never uses a table that has been damaged in the database", async () => { await db.query(`UPDATE tax_tables SET brackets = 'not json'`); expect(await t.forDay("2026-11-02")).toBeNull(); expect(await t.list()).toEqual([]); });
 });
+
+describe("age rebates", () => {
+  it("ship with the table: the secondary rebate R9 765 from 65 and the tertiary R3 249 from 75", () => { expect(table.secondaryRebateCents).toBe(R(9_765)); expect(table.tertiaryRebateCents).toBe(R(3_249)); expect(rebateFor(null, table)).toBe(R(17_820)); expect(rebateFor(64, table)).toBe(R(17_820)); expect(rebateFor(65, table)).toBe(R(27_585)); expect(rebateFor(74, table)).toBe(R(27_585)); expect(rebateFor(75, table)).toBe(R(30_834)); });
+  it("move the tax-free threshold to the published figures: R99 000 under 65, R153 250 from 65 and R171 300 from 75", () => {
+    const owed = (annual: number, age: number | null) => payeForPeriod(R(annual) / 12, 12, table, age).annualPayeCents;
+    expect(owed(99_000, 50)).toBe(0); expect(owed(99_001, 50)).toBe(18); expect(owed(153_250, 66)).toBe(0); expect(owed(153_251, 66)).toBe(18); expect(owed(153_250, 40)).toBe(R(9_765)); expect(owed(171_300, 77)).toBe(0); expect(owed(171_301, 77)).toBe(18); expect(owed(153_250, null)).toBe(R(9_765));          // an unknown age gets no age rebate
+  });
+  it("works out age on a day the way SARS does (a birthday not yet reached does not count)", () => {
+    expect(ageOn("1962-02-28", "2027-02-28")).toBe(65); expect(ageOn("1962-03-01", "2027-02-28")).toBe(64); expect(ageOn("1952-02-28", "2027-02-28")).toBe(75); expect(ageOn("1952-03-01", "2027-02-28")).toBe(74); expect(ageOn("2000-12-31", "2027-01-01")).toBe(26);
+  });
+  it("can be given when a table is added (and default to none), and are refused if they are not amounts", async () => {
+    const next = { taxYear: "2027/28", effectiveFrom: "2027-03-01", effectiveTo: "2028-02-29", brackets: [{ upToCents: 25000000, rateBp: 1800 }, { upToCents: null, rateBp: 4500 }], primaryRebateCents: R(18_000), uifCeilingMonthlyCents: R(18_000), source: "SARS Budget 2027" };
+    expect(await t.add({ ...next, secondaryRebateCents: -1 } as any)).toMatchObject({ ok: false, status: 400, error: expect.stringContaining("age rebates") }); expect(await t.add({ ...next, tertiaryRebateCents: 1.5 } as any)).toMatchObject({ ok: false, status: 400 });
+    expect(await t.add({ ...next, secondaryRebateCents: R(9_900), tertiaryRebateCents: R(3_300) })).toEqual({ ok: true }); expect(await t.forDay("2027-06-01")).toMatchObject({ secondaryRebateCents: R(9_900), tertiaryRebateCents: R(3_300) });
+    await db.query(`DELETE FROM tax_tables WHERE tax_year = '2027/28'`); expect(await t.add(next)).toEqual({ ok: true }); expect(await t.forDay("2027-06-01")).toMatchObject({ secondaryRebateCents: 0, tertiaryRebateCents: 0 });
+  });
+});
+

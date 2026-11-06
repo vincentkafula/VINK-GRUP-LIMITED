@@ -86,7 +86,7 @@ export function mountAssociationCommission(router: Router, db: Db, now: () => Da
   router.get("/commission/marshals", h(async (req, res) => { res.json({ success: true, marshals: await payslips.marshals(assoc(req)) }); }));
   router.put("/commission/marshals/:id", body, h(async (req, res) => {
     const m = req.params.id; if (!isUuid(m) || !(await db.query(`SELECT 1 AS x FROM rank_marshals rm JOIN ranks r ON r.id = rm.rank_id WHERE rm.marshal_id = $1 AND r.association_id = $2`, [m, assoc(req)])).rows.length) { fail(res, 404, "Marshal not found"); return; }
-    const { class: cls, uifApplies, startedOn } = req.body ?? {}; const r = await payslips.updateProfile(m, { class: cls, uifApplies, startedOn });
+    const { class: cls, uifApplies, startedOn, birthDate } = req.body ?? {}; const r = await payslips.updateProfile(m, { class: cls, uifApplies, startedOn, ...(birthDate !== undefined ? { birthDate } : {}) });
     if (r.ok) await audit(db, req, "commission.marshal_profile", m, { class: cls, uifApplies, startedOn }); reply(res, r.ok ? { ok: true, value: {} } : r);
   }));
 

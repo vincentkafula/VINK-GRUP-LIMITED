@@ -7,13 +7,13 @@ import type { Db } from "../portal/common.js";
  * It is an ESTIMATE for the marshal's information and the association's payroll; the association is responsible for its EMP201 and IRP5 returns, and should take advice.
  */
 export interface Bracket { upToCents: number | null; rateBp: number }
-export interface TaxTable { taxYear: string; effectiveFrom: string; effectiveTo: string; brackets: Bracket[]; primaryRebateCents: number; uifCeilingMonthlyCents: number; source: string | null }
+export interface TaxTable { taxYear: string; effectiveFrom: string; effectiveTo: string; brackets: Bracket[]; primaryRebateCents: number; secondaryRebateCents: number; tertiaryRebateCents: number; uifCeilingMonthlyCents: number; source: string | null }
 export type PayPeriod = "weekly" | "fortnightly" | "monthly";
 export const periodsPerYear = (p: PayPeriod): number => ({ weekly: 52, fortnightly: 26, monthly: 12 })[p];
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 
 /** Checks a table before it is stored or used: brackets rise, end open-ended, rates are sensible, and the dates make sense. Returns a reason it is not usable, or null. */
-export function tableProblem(t: { effectiveFrom: unknown; effectiveTo: unknown; brackets: unknown; primaryRebateCents: unknown; uifCeilingMonthlyCents: unknown; taxYear?: unknown }): string | null {
+export function tableProblem(t: { effectiveFrom: unknown; effectiveTo: unknown; brackets: unknown; primaryRebateCents: unknown; secondaryRebateCents?: unknown; tertiaryRebateCents?: unknown; uifCeilingMonthlyCents: unknown; taxYear?: unknown }): string | null {
   if (typeof t.taxYear !== "string" || !/^\d{4}\/\d{2}$/.test(t.taxYear)) return "Name the tax year like 2027/28";
   if (typeof t.effectiveFrom !== "string" || typeof t.effectiveTo !== "string" || !DAY.test(t.effectiveFrom) || !DAY.test(t.effectiveTo) || t.effectiveTo < t.effectiveFrom) return "Give the dates it applies from and to";
   if (!Array.isArray(t.brackets) || t.brackets.length < 2 || t.brackets.length > 12) return "A table needs between 2 and 12 brackets";
@@ -26,6 +26,7 @@ export function tableProblem(t: { effectiveFrom: unknown; effectiveTo: unknown; 
     else last = b.upToCents as number;
   }
   if (!Number.isInteger(t.primaryRebateCents) || (t.primaryRebateCents as number) < 0) return "The primary rebate must be an amount of cents";
+  for (const r of [t.secondaryRebateCents, t.tertiaryRebateCents]) if (r !== undefined && (!Number.isInteger(r) || (r as number) < 0)) return "The age rebates must be amounts of cents";
   if (!Number.isInteger(t.uifCeilingMonthlyCents) || (t.uifCeilingMonthlyCents as number) <= 0) return "The UIF monthly ceiling must be an amount of cents";
   return null;
 }
@@ -40,9 +41,16 @@ export function taxBeforeRebateCents(annualCents: number, brackets: Bracket[]): 
   }
   return tax;
 }
-export function payeForPeriod(taxablePeriodCents: number, periods: number, t: TaxTable): { annualTaxableCents: number; taxBeforeRebateCents: number; annualPayeCents: number; periodPayeCents: number } {
-  const annual = Math.max(0, taxablePeriodCents) * periods, before = taxBeforeRebateCents(annual, t.brackets), annualPaye = Math.max(0, before - t.primaryRebateCents);
-  return { annualTaxableCents: annual, taxBeforeRebateCents: before, annualPayeCents: annualPaye, periodPayeCents: Math.round(annualPaye / periods) };
+/** Whole years old on a day (the SARS rule is age at the end of the tax year). */
+export function ageOn(birthDate: string, onDay: string): number {
+  const [by, bm, bd] = birthDate.split("-").map(Number), [y, m, d] = onDay.split("-").map(Number);
+  return y - by - (m < bm || (m === bm && d < bd) ? 1 : 0);
+}
+/** The rebate for an age: the primary for everyone, plus the secondary from 65 and the tertiary from 75. With no known age, only the primary (so tax is never UNDER-stated). */
+export function rebateFor(age: number | null, t: TaxTable): number { return t.primaryRebateCents + (age !== null && age >= 65 ? t.secondaryRebateCents : 0) + (age !== null && age >= 75 ? t.tertiaryRebateCents : 0); }
+export function payeForPeriod(taxablePeriodCents: number, periods: number, t: TaxTable, age: number | null = null): { annualTaxableCents: number; taxBeforeRebateCents: number; rebateCents: number; annualPayeCents: number; periodPayeCents: number } {
+  const annual = Math.max(0, taxablePeriodCents) * periods, before = taxBeforeRebateCents(annual, t.brackets), rebate = rebateFor(age, t), annualPaye = Math.max(0, before - rebate);
+  return { annualTaxableCents: annual, taxBeforeRebateCents: before, rebateCents: rebate, annualPayeCents: annualPaye, periodPayeCents: Math.round(annualPaye / periods) };
 }
 /** UIF for a period: the rate on earnings up to the ceiling (the monthly ceiling, scaled to the period). */
 export function uifForPeriod(earningsCents: number, rateBp: number, periods: number, t: TaxTable | null): number {
@@ -52,7 +60,7 @@ export function uifForPeriod(earningsCents: number, rateBp: number, periods: num
 
 const parse = (r: Record<string, unknown>): TaxTable | null => {
   try {
-    const t: TaxTable = { taxYear: String(r.tax_year), effectiveFrom: new Date(r.effective_from as string).toISOString().slice(0, 10), effectiveTo: new Date(r.effective_to as string).toISOString().slice(0, 10), brackets: JSON.parse(String(r.brackets)), primaryRebateCents: Number(r.primary_rebate_cents), uifCeilingMonthlyCents: Number(r.uif_ceiling_monthly_cents), source: (r.source as string | null) ?? null };
+    const t: TaxTable = { taxYear: String(r.tax_year), effectiveFrom: new Date(r.effective_from as string).toISOString().slice(0, 10), effectiveTo: new Date(r.effective_to as string).toISOString().slice(0, 10), brackets: JSON.parse(String(r.brackets)), primaryRebateCents: Number(r.primary_rebate_cents), secondaryRebateCents: Number(r.secondary_rebate_cents ?? 0), tertiaryRebateCents: Number(r.tertiary_rebate_cents ?? 0), uifCeilingMonthlyCents: Number(r.uif_ceiling_monthly_cents), source: (r.source as string | null) ?? null };
     return tableProblem(t) ? null : t;
   } catch { return null; }
 };
@@ -63,13 +71,13 @@ export function createTaxTables(db: Db) {
     return rows[0] ? parse(rows[0]) : null;
   }
   async function list(): Promise<TaxTable[]> { return (await db.query(`SELECT * FROM tax_tables ORDER BY effective_from DESC`)).rows.map(parse).filter((t): t is TaxTable => !!t); }
-  async function add(t: { taxYear: unknown; effectiveFrom: unknown; effectiveTo: unknown; brackets: unknown; primaryRebateCents: unknown; uifCeilingMonthlyCents: unknown; source?: unknown }): Promise<{ ok: true } | { ok: false; status: number; error: string }> {
+  async function add(t: { taxYear: unknown; effectiveFrom: unknown; effectiveTo: unknown; brackets: unknown; primaryRebateCents: unknown; secondaryRebateCents?: unknown; tertiaryRebateCents?: unknown; uifCeilingMonthlyCents: unknown; source?: unknown }): Promise<{ ok: true } | { ok: false; status: number; error: string }> {
     const bad = tableProblem(t); if (bad) return { ok: false, status: 400, error: bad };
     const src = typeof t.source === "string" ? t.source.trim().slice(0, 300) : "";
     if (!src) return { ok: false, status: 400, error: "Say where the figures come from (the SARS page or notice)" };
     const clash = (await db.query(`SELECT tax_year FROM tax_tables WHERE tax_year = $1 OR (effective_from <= $3 AND effective_to >= $2)`, [t.taxYear, t.effectiveFrom, t.effectiveTo])).rows[0];
     if (clash) return { ok: false, status: 409, error: `That overlaps the table for ${String(clash.tax_year)}` };
-    await db.query(`INSERT INTO tax_tables (tax_year, effective_from, effective_to, brackets, primary_rebate_cents, uif_ceiling_monthly_cents, source) VALUES ($1,$2,$3,$4,$5,$6,$7)`, [t.taxYear, t.effectiveFrom, t.effectiveTo, JSON.stringify(t.brackets), t.primaryRebateCents, t.uifCeilingMonthlyCents, src]);
+    await db.query(`INSERT INTO tax_tables (tax_year, effective_from, effective_to, brackets, primary_rebate_cents, secondary_rebate_cents, tertiary_rebate_cents, uif_ceiling_monthly_cents, source) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`, [t.taxYear, t.effectiveFrom, t.effectiveTo, JSON.stringify(t.brackets), t.primaryRebateCents, t.secondaryRebateCents ?? 0, t.tertiaryRebateCents ?? 0, t.uifCeilingMonthlyCents, src]);
     return { ok: true };
   }
   return { forDay, list, add };
