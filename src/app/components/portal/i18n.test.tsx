@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { render, screen, cleanup, act, fireEvent } from "@testing-library/react";
 import { useState } from "react";
 import { describe, it, expect, afterEach, vi } from "vitest";
