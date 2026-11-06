@@ -23,7 +23,7 @@ beforeEach(async () => {
   await db.query(`INSERT INTO memberships (association_id, member_id, member_role, status, requested_by) VALUES ($1,$2,'vehicle_owner','active','member'),($1,$3,'vehicle_owner','active','member'),($4,$5,'vehicle_owner','active','member'),($1,$6,'driver','active','member')`, [U.A, U.O1, U.O2, U.B, U.O3, U.D1]);
   await db.query(`INSERT INTO owner_drivers (owner_id, driver_id, status, requested_by) VALUES ($1,$2,'active','owner'),($3,$4,'active','owner')`, [U.O1, U.D2, U.O2, U.D3]);
   await db.query(`INSERT INTO vehicles (id, owner_id, registration, make, model, seats, driver_id) VALUES ($1,$2,'CA 111-111','Toyota','Quantum',15,$3),($4,$2,'CA 222-222','Toyota','Quantum',15,NULL),($5,$6,'CA 333-333','Nissan','Urvan',14,$7),($8,$9,'CB 444-444','Toyota','Quantum',15,NULL)`, [V.v1, U.O1, U.D2, V.v2, V.v3, U.O2, U.D3, V.v4, U.O3]);
-  await db.query(`INSERT INTO driver_profiles (user_id, licence_code, licence_expiry, pdp_number, pdp_expiry) VALUES ($1,'EC1',$4,'PDP-1',$4),($2,'EC1',$5,'PDP-2',$6)`, [U.D1, U.D2, plus(400), plus(400), plus(400), plus(-10)]);
+  await db.query(`INSERT INTO driver_profiles (user_id, licence_code, licence_expiry, pdp_number, pdp_expiry) VALUES ($1,'EC1',$3,'PDP-1',$3),($2,'EC1',$3,'PDP-2',$4)`, [U.D1, U.D2, plus(400), plus(-10)]);
 });
 const licence = (vehicle: string, o: any = {}) => c.addLicence(U.A, U.A, vehicle, { licenceNumber: "OL-1", authority: "Provincial Regulatory Entity", validFrom: plus(-100), validUntil: plus(400), ...o });
 
