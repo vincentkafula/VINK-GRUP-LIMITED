@@ -37,6 +37,10 @@ import jobsRouter from "./routes/jobsRouter.js";
 import mastercardRouter from "./routes/mastercard.js";
 import visaRouter from "./routes/visa.js";
 import publicRouter from "./routes/public.js";
+import { createLetterCheckRouter } from "./routes/letterCheck.js";
+import { alertsFor } from "./services/alerts.js";
+import { createCommission } from "./services/commission.js";
+import { createPayslips } from "./services/payslips.js";
 import financialReportsRouter from "./routes/financialReports.js";
 import levySystemRouter from "./routes/levySystem.js";
 import afcRouter from "./routes/afc.js";
@@ -125,6 +129,14 @@ const mailService = pool ? createMailService({ db: pool, mail: mailEmail, files:
 if (mailService && process.env.NODE_ENV !== "test") {
   const tick = () => mailService.sendDue().catch((e) => console.error("[mail] scheduled send failed:", e instanceof Error ? e.message : e));
   setTimeout(tick, 15_000).unref(); setInterval(tick, 30_000).unref();
+}
+
+// Marshal care background work: tell the association about safety reports that could not be delivered the first time (every minute), and pay the marshals who chose automatic cash-out (checked every 15 minutes; it pays each at most once a day, from 17:00 South African time).
+if (pool && process.env.NODE_ENV !== "test") {
+  const alerts = alertsFor(pool), payslips = createPayslips(pool, createCommission(pool));
+  setInterval(() => { alerts.retryUnsent().catch((e) => console.error("[alerts] retry failed:", e instanceof Error ? e.message : e)); }, 60_000).unref();
+  setTimeout(() => { payslips.runAutoCashOuts().catch((e) => console.error("[cash-out] daily run failed:", e instanceof Error ? e.message : e)); }, 45_000).unref();
+  setInterval(() => { payslips.runAutoCashOuts().catch((e) => console.error("[cash-out] daily run failed:", e instanceof Error ? e.message : e)); }, 15 * 60_000).unref();
 }
 
 // Posts to Facebook, Instagram and Threads, by hand or automatic (services/social). Scheduled and automatic posts are sent by a worker that runs every minute.
@@ -258,6 +270,7 @@ app.use("/api/applications",       applicationsRouter);
 app.use("/api/otp",                otpRouter);
 app.use("/api/jobs",               jobsRouter);
 app.use("/api/public",             publicRouter);
+if (pool) app.use("/api/verify/income-letter", createLetterCheckRouter(pool));     // a bank or landlord checks a proof-of-income letter: no sign-in, rate limited, no figures
 // Messages to a VINK department: stored, then emailed to the department, with a receipt to the sender (see services/contactService.ts).
 const contactService = pool ? createContactService({ db: pool, mail: createEmailSender() }) : null;
 // Online sponsorship: applications and their documents, review and scoring, awards and agreements, payments, replies and final reports (see services/sponsorship*.ts).

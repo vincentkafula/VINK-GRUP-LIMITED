@@ -82,7 +82,7 @@ describe("the SMS providers", () => {
   });
   it("picks Twilio when it is configured, the console in development, and fails loudly in production without it", async () => {
     expect(createSmsSender({ TWILIO_ACCOUNT_SID: "AC1", TWILIO_AUTH_TOKEN: "t", TWILIO_FROM: "+1" } as any)).toBeInstanceOf(TwilioSms); expect(createSmsSender({ NODE_ENV: "development" } as any)).toBeInstanceOf(ConsoleSms);
-    const prod = createSmsSender({ NODE_ENV: "production" } as any); expect(prod).toBeInstanceOf(UnconfiguredSms); await expect(prod.send()).rejects.toThrow(/not configured/); expect(createSmsSender({ NODE_ENV: "production", TWILIO_ACCOUNT_SID: "AC1" } as any)).toBeInstanceOf(UnconfiguredSms);
+    const prod = createSmsSender({ NODE_ENV: "production" } as any); expect(prod).toBeInstanceOf(UnconfiguredSms); await expect(prod.send("+27821234567", "x")).rejects.toThrow(/not configured/); expect(createSmsSender({ NODE_ENV: "production", TWILIO_ACCOUNT_SID: "AC1" } as any)).toBeInstanceOf(UnconfiguredSms);
   });
   it("an unconfigured provider becomes a visible, retried failure rather than a lost alarm", async () => {
     await setAlert({ phone: "+27821234567" }); const i = await report(); const a = createAlerts({ db, email, sms: new UnconfiguredSms(), now: () => clock }); expect(await a.notifyIncident(i)).toEqual({ email: "sent", sms: "failed" }); expect((await row(i)).notify_error).toContain("SMS is not configured");

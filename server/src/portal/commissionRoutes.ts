@@ -4,6 +4,8 @@ import { createCommission } from "../services/commission.js";
 import { createPayslips, periodFor, addDays } from "../services/payslips.js";
 import { createCommissionReports } from "../services/commissionReports.js";
 import { createMarshalCare } from "../services/marshalCare.js";
+import { alertsFor } from "../services/alerts.js";
+import { createTaxTables } from "../services/tax.js";
 
 /**
  * The marshal commission and payslip API (docs/MARSHAL_COMMISSION.md), mounted on three routers. Who can see what is decided here, by the signed-in role:
@@ -186,12 +188,24 @@ export function mountDriverCommission(router: Router, db: Db, now: () => Date = 
 
 /* ───────────────────────── marshal care: the marshal's side ───────────────────────── */
 function mountMarshalCare(router: Router, db: Db, now: () => Date): void {
-  const { care } = services(db, now), body = json({ limit: "300kb" });               // a small photo with an incident report
+  const { care, payslips } = services(db, now), body = json({ limit: "300kb" });               // a small photo with an incident report
   const window = (req: Request) => { const today = saDay(now()); return { from: queryDay(req, "from", addDays(today, -13)), to: queryDay(req, "to", today) }; };
   router.get("/shifts", h(async (req, res) => { const w = window(req); await care.detectShifts({ marshalId: uid(req) }, w.from, w.to); res.json({ success: true, ...(await care.shifts({ marshalId: uid(req) }, w.from, w.to)) }); }));
   router.post("/shifts", body, h(async (req, res) => { reply(res, await care.addShift(uid(req), req.body ?? {}), 201); }));
   router.put("/shifts/:id", body, h(async (req, res) => { if (!isUuid(req.params.id)) { fail(res, 400, "Invalid shift"); return; } reply(res, await care.correctShift(uid(req), req.params.id, req.body ?? {})); }));
-  router.post("/incidents", body, h(async (req, res) => { reply(res, await care.reportIncident(uid(req), req.body ?? {}), 201); }));
+  // The marshal is answered first; the association is told afterwards, so a slow mail server never keeps someone in danger waiting. A failure is kept on the report and retried.
+  router.post("/incidents", body, h(async (req, res) => {
+    const r = await care.reportIncident(uid(req), req.body ?? {});
+    if (!r.ok) { res.status(r.status).json({ success: false, error: r.error }); return; }
+    res.status(201).json({ success: true, ...r.value });
+    if (!r.value.replayed) await alertsFor(db, now).notifyIncident(r.value.id).catch((e) => console.error("[alerts] could not notify:", e instanceof Error ? e.message : e));
+  }));
+  router.get("/auto-cash-out", h(async (req, res) => { res.json({ success: true, ...(await payslips.autoCashOutStatus(uid(req))) }); }));
+  router.put("/auto-cash-out", body, h(async (req, res) => { reply(res, await payslips.setAutoCashOut(uid(req), req.body ?? {})); }));
+  router.get("/work-record.pdf", h(async (req, res) => {
+    const name = String((await db.query(`SELECT name FROM users WHERE id = $1`, [uid(req)])).rows[0]?.name ?? "Marshal");
+    res.setHeader("Content-Type", "application/pdf"); res.setHeader("Content-Disposition", `attachment; filename="work-record.pdf"`); res.send(await care.workRecordPdf(await care.workRecord(uid(req)) as never, name));
+  }));
   router.get("/incidents", h(async (req, res) => { res.json({ success: true, ...(await care.incidents({ marshalId: uid(req) })) }); }));
   router.post("/grievances", body, h(async (req, res) => { reply(res, await care.submitGrievance(uid(req), req.body ?? {}), 201); }));
   router.get("/grievances", h(async (req, res) => { res.json({ success: true, grievances: await care.grievances({ marshalId: uid(req) }) }); }));
@@ -201,7 +215,7 @@ function mountMarshalCare(router: Router, db: Db, now: () => Date): void {
   router.post("/income-letters", body, h(async (req, res) => { const r = await care.makeLetter(uid(req), req.body?.months); if (!r.ok) { res.status(r.status).json({ success: false, error: r.error }); return; } res.status(201).json({ success: true, letter: r.value }); }));
   router.get("/income-letters/:id.pdf", h(async (req, res) => {
     if (!isUuid(req.params.id)) { fail(res, 400, "Invalid letter"); return; } const l = await care.renderLetter(uid(req), req.params.id); if (!l) { fail(res, 404, "Letter not found"); return; }
-    res.setHeader("Content-Type", "application/pdf"); res.setHeader("Content-Disposition", `attachment; filename="income-letter-${String(l.number)}.pdf"`); res.send(await care.letterPdf(l as never));
+    res.setHeader("Content-Type", "application/pdf"); res.setHeader("Content-Disposition", `attachment; filename="income-letter-${String(l.number)}.pdf"`); const pub = process.env.PUBLIC_API_URL?.trim().replace(/\/+$/, ""); res.send(await care.letterPdf(l as never, pub ? `${pub}/api/verify/income-letter` : undefined));
   }));
   router.get("/income-letters/:id", h(async (req, res) => { if (!isUuid(req.params.id)) { fail(res, 400, "Invalid letter"); return; } const l = await care.renderLetter(uid(req), req.params.id); if (!l) { fail(res, 404, "Letter not found"); return; } res.json({ success: true, letter: l }); }));
 }
@@ -218,6 +232,16 @@ function mountAssociationCare(router: Router, db: Db, now: () => Date): void {
   router.post("/shifts/:id/decide", body, h(async (req, res) => { if (!isUuid(req.params.id)) { fail(res, 400, "Invalid shift"); return; } const r = await care.decideShift(assoc(req), req.params.id, uid(req), req.body?.decision); if (r.ok) await audit(db, req, "shift.decide", req.params.id, { decision: req.body?.decision }); reply(res, r); }));
   router.get("/incidents", h(async (req, res) => { const st = typeof req.query.status === "string" ? req.query.status : undefined; res.json({ success: true, ...(await care.incidents({ associationId: assoc(req) }, { ...(st ? { status: st } : {}), from: queryDay(req, "from", ""), to: queryDay(req, "to", "") })) }); }));
   router.get("/incidents/:id/photo", h(async (req, res) => { if (!isUuid(req.params.id)) { fail(res, 400, "Invalid report"); return; } const p = await care.incidentPhoto(assoc(req), req.params.id); if (!p) { fail(res, 404, "No photo"); return; } res.json({ success: true, photo: p }); }));
+  router.post("/incidents/:id/resend", body, h(async (req, res) => {
+    if (!isUuid(req.params.id)) { fail(res, 400, "Invalid report"); return; }
+    if (!(await db.query(`SELECT 1 AS x FROM incidents WHERE id = $1 AND association_id = $2`, [req.params.id, assoc(req)])).rows.length) { fail(res, 404, "That report was not found"); return; }
+    const r = await alertsFor(db, now).notifyIncident(req.params.id); res.json({ success: true, ...r });
+  }));
+  router.get("/commission/tax-tables", h(async (_req, res) => { res.json({ success: true, tables: await createTaxTables(db).list() }); }));
+  router.post("/commission/tax-tables", json({ limit: "20kb" }), h(async (req, res) => {
+    const r = await createTaxTables(db).add(req.body ?? {}); if (!r.ok) { fail(res, r.status, r.error); return; }
+    await audit(db, req, "tax.table", String(req.body?.taxYear), { source: req.body?.source }); res.status(201).json({ success: true });
+  }));
   router.post("/incidents/:id/ack", body, h(async (req, res) => { if (!isUuid(req.params.id)) { fail(res, 400, "Invalid report"); return; } const r = await care.acknowledgeIncident(assoc(req), req.params.id, uid(req), req.body?.status); if (r.ok) await audit(db, req, "incident.ack", req.params.id, { status: req.body?.status }); reply(res, r); }));
   router.get("/risk-map", h(async (req, res) => { const w = window(req); reply(res, await care.riskMap(assoc(req), w.from, w.to)); }));
   router.get("/grievances", h(async (req, res) => { res.json({ success: true, grievances: await care.grievances({ associationId: assoc(req) }, typeof req.query.status === "string" ? req.query.status : undefined) }); }));
@@ -230,7 +254,7 @@ function mountAssociationCare(router: Router, db: Db, now: () => Date): void {
   router.put("/benefits", body, h(async (req, res) => { const r = await care.setBenefit(assoc(req), uid(req), req.body ?? {}); if (r.ok) await audit(db, req, "benefit.set", String(req.body?.marshalId), { kind: req.body?.kind, status: req.body?.status }); reply(res, r); }));
   router.get("/work-record/:marshalId", h(async (req, res) => {
     if (!isUuid(req.params.marshalId) || !(await db.query(`SELECT 1 AS x FROM rank_marshals m JOIN ranks r ON r.id = m.rank_id WHERE m.marshal_id = $1 AND r.association_id = $2`, [req.params.marshalId, assoc(req)])).rows.length) { fail(res, 404, "That marshal was not found"); return; }
-    res.json({ success: true, record: await care.workRecord(req.params.marshalId, assoc(req)) });
+    res.json({ success: true, record: await care.workRecord(req.params.marshalId, assoc(req), { forAssociation: true }) });
   }));
   router.post("/income-letters/verify", body, h(async (req, res) => { reply(res, await care.verifyLetter(assoc(req), req.body?.number, req.body?.code)); }));
   const kpiArgs = (req: Request) => { const w = window(req), rankId = typeof req.query.rankId === "string" && isUuid(req.query.rankId) ? req.query.rankId : undefined, marshalId = typeof req.query.marshalId === "string" && isUuid(req.query.marshalId) ? req.query.marshalId : undefined; return { ...w, f: { ...(rankId ? { rankId } : {}), ...(marshalId ? { marshalId } : {}) } }; };
