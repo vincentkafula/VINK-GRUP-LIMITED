@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { allPortalsDb } from "../portal/testDb.js";
 import type { Db } from "../portal/common.js";
 import { createCommission, type Commission } from "./commission.js";
@@ -183,6 +183,7 @@ describe("who may see a marshal's earnings, and the public check of a letter", (
   it("lets anyone holding a letter check it by number and code, showing only the period, the issue date and a masked name, never a figure", async () => {
     await db.query(`INSERT INTO consents (user_id, purpose) VALUES ($1,'income_letter')`, [U.M1]); const l = ok<any>(await m.makeLetter(U.M1, 3));
     const v = await m.verifyLetterPublic(l.number, l.verificationCode.toLowerCase()); expect(v).toEqual({ valid: true, name: "Mo M.", number: l.number, issuedAt: l.issuedAt, from: l.from, to: l.to, intact: true }); expect(JSON.stringify(v)).not.toMatch(/earned|net|Cents/i);
+    const spy = vi.spyOn(db, "query"); for (const [n, c] of [["x".repeat(100), l.verificationCode], [l.number, "x".repeat(30)]] as any[]) expect(await m.verifyLetterPublic(n, c)).toEqual({ valid: false }); expect(spy).not.toHaveBeenCalled(); spy.mockRestore();        // oversized input never reaches the database
     for (const [n, c] of [[l.number, "000000000000"], ["IL-nope", l.verificationCode], [5, "x"], [l.number, 12], ["x".repeat(100), l.verificationCode], [l.number, "x".repeat(30)]] as any[]) expect(await m.verifyLetterPublic(n, c), String(n)).toEqual({ valid: false });
   });
   it("makes the work record a small PDF with the facts, the verification state and a plain disclaimer, and the letter PDF says where to check it", async () => {

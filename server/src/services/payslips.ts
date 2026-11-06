@@ -224,7 +224,9 @@ export function createPayslips(db: Db, commission: Commission, now: () => Date =
     if ((amountCents as number) > s0.maxCents) return bad(409, `You can draw up to ${rand(s0.maxCents)} right now`);
     const reference = `ACC-${String(Number((await db.query(`SELECT COUNT(*) AS n FROM pay_adjustments WHERE association_id = $1`, [assoc])).rows[0].n) + 1).padStart(4, "0")}`;
     const adj = (await db.query(`INSERT INTO pay_adjustments (association_id, marshal_id, kind, side, label, reason, reference, total_cents, remaining_cents, created_by) VALUES ($1,$2,'advance','deduction','Cash-out of accrued commission','Paid before the payslip',$3,$4,$4,$5) RETURNING id`, [assoc, marshalId, reference, amountCents, by])).rows[0];
-    await db.query(`INSERT INTO payment_items (kind, payer_id, payee_id, amount_cents, remaining_cents, currency, ref, note, status) VALUES ('marshal_commission',$1,$2,$3,$3,'ZAR',$4,$5,'pending') ON CONFLICT (ref) DO NOTHING`, [assoc, marshalId, amountCents, `cashout:${adj.id}`, `Cash-out ${reference}`]);
+    // The deduction exists to take back money that has been paid, so if the payment cannot be arranged the deduction must not be left behind: undo it, then let the failure through.
+    try { await db.query(`INSERT INTO payment_items (kind, payer_id, payee_id, amount_cents, remaining_cents, currency, ref, note, status) VALUES ('marshal_commission',$1,$2,$3,$3,'ZAR',$4,$5,'pending') ON CONFLICT (ref) DO NOTHING`, [assoc, marshalId, amountCents, `cashout:${adj.id}`, `Cash-out ${reference}`]); }
+    catch (e) { await db.query(`DELETE FROM pay_adjustments WHERE id = $1`, [adj.id]); throw e; }
     return { ok: true, value: { reference, amountCents: amountCents as number, maxCents: s0.maxCents - (amountCents as number) } };
   }
 
@@ -255,9 +257,12 @@ export function createPayslips(db: Db, commission: Commission, now: () => Date =
       let done = false;
       for (const a of assocs) {
         const st = await cashOutStatus(a, marshal); if (!st.enabled || st.maxCents < Number(prof.auto_cashout_min_cents)) continue;
-        const claim = (await db.query(`INSERT INTO auto_cashouts (marshal_id, day) VALUES ($1,$2) ON CONFLICT (marshal_id, day) DO NOTHING RETURNING marshal_id`, [marshal, day])).rows;
-        if (!claim.length) { done = true; break; }                                                      // already paid today
-        const r = await cashOut(a, marshal, st.maxCents, marshal);
+        if ((await db.query(`SELECT 1 AS x FROM auto_cashouts WHERE marshal_id = $1 AND day = $2`, [marshal, day])).rows.length) { done = true; break; }                          // already paid today
+        const claim = (await db.query(`INSERT INTO auto_cashouts (marshal_id, day) VALUES ($1,$2) ON CONFLICT (marshal_id, day) DO NOTHING RETURNING marshal_id`, [marshal, day])).rows;      // (and if another server claimed it a moment ago, this finds nothing)
+        if (!claim.length) { done = true; break; }
+        let r: Awaited<ReturnType<typeof cashOut>>;
+        try { r = await cashOut(a, marshal, st.maxCents, marshal); }
+        catch (e) { await db.query(`DELETE FROM auto_cashouts WHERE marshal_id = $1 AND day = $2`, [marshal, day]); console.error("[cash-out] could not pay a marshal, will try again:", e instanceof Error ? e.message : e); break; }      // one marshal's failure must not stop the others, and must not use up their day
         if (r.ok) { await db.query(`UPDATE auto_cashouts SET amount_cents = $3 WHERE marshal_id = $1 AND day = $2`, [marshal, day, st.maxCents]); paid++; done = true; break; }
         await db.query(`DELETE FROM auto_cashouts WHERE marshal_id = $1 AND day = $2`, [marshal, day]);   // could not be arranged: let a later run try again
       }

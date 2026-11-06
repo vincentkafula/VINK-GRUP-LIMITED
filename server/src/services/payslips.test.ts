@@ -354,6 +354,18 @@ describe("automatic daily cash-out", () => {
     await trips([["2026-10-27", 10]]); await db.query(`UPDATE payment_items SET status = 'paid' WHERE kind = 'trip_fee'`);                      // five more trips' fees now paid too
     expect(await p.runAutoCashOuts(new Date("2026-11-03T15:30:00Z"))).toMatchObject({ paid: 1 }); expect((await q(`SELECT amount_cents FROM payment_items WHERE kind = 'marshal_commission' ORDER BY created_at DESC`)).length).toBe(2);
   });
+  it("does not pay again the same day even when more has become available since, only the next day", async () => {
+    await earned(); await optIn(); expect(await p.runAutoCashOuts(EVENING)).toMatchObject({ paid: 1 });
+    await trips([["2026-10-27", 10]]); await db.query(`UPDATE payment_items SET status = 'paid' WHERE kind = 'trip_fee'`);                                                    // much more is now safely earned
+    expect(await p.runAutoCashOuts(new Date("2026-11-02T18:00:00Z"))).toMatchObject({ paid: 0 }); expect((await q(`SELECT COUNT(*) AS n FROM payment_items WHERE kind = 'marshal_commission'`))[0].n).toBe(1);
+    expect(await p.runAutoCashOuts(new Date("2026-11-03T15:30:00Z"))).toMatchObject({ paid: 1 });
+  });
+  it("never leaves a deduction behind for money that was not paid: if the payment cannot be arranged the deduction is undone, the day is not used up, and the next run pays", async () => {
+    await earned(); await optIn(); await db.query(`ALTER TABLE payment_items RENAME COLUMN note TO note_x`);                                                                       // makes the payment insert fail
+    await expect(p.cashOut(U.A, U.M1, 1500, U.M1)).rejects.toThrow(); expect((await q(`SELECT COUNT(*) AS n FROM pay_adjustments`))[0].n).toBe(0);
+    expect(await p.runAutoCashOuts(EVENING)).toEqual({ paid: 0, skipped: 1, early: false }); expect((await q(`SELECT COUNT(*) AS n FROM auto_cashouts`))[0].n).toBe(0); expect((await q(`SELECT COUNT(*) AS n FROM pay_adjustments`))[0].n).toBe(0);
+    await db.query(`ALTER TABLE payment_items RENAME COLUMN note_x TO note`); expect(await p.runAutoCashOuts(EVENING)).toMatchObject({ paid: 1 }); expect((await q(`SELECT COUNT(*) AS n FROM pay_adjustments`))[0].n).toBe(1);
+  });
   it("skips a marshal whose available amount is under their minimum, who has not opted in, or whose association has not switched cash-out on", async () => {
     await earned(); await optIn(5000); expect(await p.runAutoCashOuts(EVENING)).toEqual({ paid: 0, skipped: 1, early: false });                                  // R20 available, R50 minimum
     ok(await p.setAutoCashOut(U.M1, { enabled: false })); expect(await p.runAutoCashOuts(EVENING)).toEqual({ paid: 0, skipped: 0, early: false });
