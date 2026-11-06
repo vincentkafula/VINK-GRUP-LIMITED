@@ -2,6 +2,7 @@ import { Router, json, type Request, type Response, type RequestHandler } from "
 import { audit, bucketDays, pageParams, rangeParams, saDay, saDayStart, sendCsv, isUuid, fail } from "./common.js";
 import { createRankSessions } from "./rankSessions.js";
 import { createLoadingReports } from "./loadingReports.js";
+import { mountDriverCommission } from "./commissionRoutes.js";
 import { createCommission, sessionClosedHook } from "../services/commission.js";
 
 /**
@@ -104,7 +105,8 @@ export function createDriverRouter(db: Db, now: () => Date = () => new Date(), o
     res.json({ success: true, ...(await createRankSessions(db, now).forDriver(uid(req), { from: day, to: new Date(day.getTime() + 24 * 3600_000) })) });
   }));
 
-  createLoadingReports(db).mount(router, "driver", now);                               // the driver's own loads: per load, vehicle or route, for a period
+  createLoadingReports(db).mount(router, "driver", now);
+  mountDriverCommission(router, db, now);                                               // the driver's own place in the queue and fees                               // the driver's own loads: per load, vehicle or route, for a period
 
   /**
    * POST /loading/depart   {note?}   "Vehicle full, depart": the driver ends the session they are loading. The departure is logged under the marshal who started it, the vehicle leaves the queue and the

@@ -3,6 +3,7 @@ import { h, uid, num, iso, isUuid, optText, fail, isUniqueViolation, audit, buck
 import { saPeriods } from "./driverRoutes.js";
 import { createRankSessions, type Res } from "./rankSessions.js";
 import { createLoadingReports } from "./loadingReports.js";
+import { mountMarshalCommission } from "./commissionRoutes.js";
 import { createCommission, sessionClosedHook } from "../services/commission.js";
 
 /**
@@ -155,7 +156,8 @@ export function createMarshalRouter(db: Db, now: () => Date = () => new Date(), 
 
   /* ── shared rank devices ── */
   const sessions = createRankSessions(db, now, undefined, { onClosed: sessionClosedHook(commission, onSessionClosed) });
-  createLoadingReports(db).mount(router, "marshal", now);                              // the loads this marshal started: per load, driver, vehicle or route
+  createLoadingReports(db).mount(router, "marshal", now);
+  mountMarshalCommission(router, db, now);                                              // the marshal's own earnings, payslips, queries and money check                              // the loads this marshal started: per load, driver, vehicle or route
   const answer = <T,>(res: import("express").Response, r: Res<T>, okStatus = 200) => {
     if (!r.ok) { res.status(r.status).json({ success: false, error: r.message, code: r.code }); return; }
     res.status(okStatus).json({ success: true, session: r.value });
