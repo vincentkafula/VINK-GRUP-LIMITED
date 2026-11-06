@@ -2505,3 +2505,85 @@ CREATE TABLE IF NOT EXISTS compliance_trend (
   drivers_valid  INTEGER NOT NULL,
   PRIMARY KEY (association_id, month)
 );
+
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+-- ASSOCIATION FINANCE (docs/ASSOCIATION_COMPLIANCE.md, module 7): fee schedule, numbered receipts, expenses with approval, banking, budgets
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS finance_settings (
+  association_id           UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  approval_threshold_cents BIGINT NOT NULL DEFAULT 500000 CHECK (approval_threshold_cents >= 0),
+  updated_at               TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+-- The approved fees: what a member is charged is taken from here, so a fee the members have not been told about cannot be charged.
+CREATE TABLE IF NOT EXISTS fee_schedule (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  association_id  UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  kind           TEXT NOT NULL CHECK (kind IN ('joining','membership','levy','fine','other')),
+  name           TEXT NOT NULL,
+  amount_cents   BIGINT NOT NULL CHECK (amount_cents > 0),
+  effective_from DATE NOT NULL,
+  active         BOOLEAN NOT NULL DEFAULT true,
+  approved_by    TEXT,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_fee_schedule_assoc ON fee_schedule(association_id, active);
+-- Numbered receipts, in an unbroken sequence per association. A receipt is never deleted: a mistake is voided, with a reason, and keeps its number.
+CREATE TABLE IF NOT EXISTS receipts (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  association_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  number         INTEGER NOT NULL CHECK (number > 0),
+  member_id      UUID REFERENCES users(id) ON DELETE SET NULL,
+  payer_name     TEXT,
+  levy_id        UUID REFERENCES levies(id) ON DELETE SET NULL,
+  category       TEXT NOT NULL CHECK (category IN ('joining','membership','levy','fine','other')),
+  amount_cents   BIGINT NOT NULL CHECK (amount_cents > 0),
+  method         TEXT NOT NULL CHECK (method IN ('cash','eft','card','other')),
+  received_on    DATE NOT NULL,
+  note           TEXT,
+  recorded_by    UUID,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+  voided_at      TIMESTAMPTZ,
+  void_reason    TEXT,
+  UNIQUE (association_id, number)
+);
+CREATE INDEX IF NOT EXISTS idx_receipts_member ON receipts(association_id, member_id);
+CREATE TABLE IF NOT EXISTS expenses (
+  id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  association_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  incurred_on        DATE NOT NULL,
+  category           TEXT NOT NULL,
+  payee              TEXT NOT NULL,
+  amount_cents       BIGINT NOT NULL CHECK (amount_cents > 0),
+  description        TEXT,
+  requested_by       TEXT NOT NULL,
+  status             TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','approved','rejected')),
+  required_approvals INTEGER NOT NULL DEFAULT 1 CHECK (required_approvals IN (1,2)),
+  rejected_reason    TEXT,
+  created_at         TIMESTAMPTZ NOT NULL DEFAULT now(),
+  decided_at         TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS idx_expenses_assoc ON expenses(association_id, incurred_on DESC);
+CREATE TABLE IF NOT EXISTS expense_approvals (
+  expense_id       UUID NOT NULL REFERENCES expenses(id) ON DELETE CASCADE,
+  office_bearer_id UUID NOT NULL REFERENCES office_bearers(id) ON DELETE CASCADE,
+  approver_name    TEXT NOT NULL,
+  approved_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (expense_id, office_bearer_id)
+);
+CREATE TABLE IF NOT EXISTS bank_deposits (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  association_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  deposited_on   DATE NOT NULL,
+  amount_cents   BIGINT NOT NULL CHECK (amount_cents > 0),
+  reference      TEXT,
+  note           TEXT,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_bank_deposits_assoc ON bank_deposits(association_id, deposited_on DESC);
+CREATE TABLE IF NOT EXISTS budgets (
+  association_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  year           INTEGER NOT NULL CHECK (year BETWEEN 2000 AND 2100),
+  category       TEXT NOT NULL,
+  amount_cents   BIGINT NOT NULL CHECK (amount_cents >= 0),
+  PRIMARY KEY (association_id, year, category)
+);

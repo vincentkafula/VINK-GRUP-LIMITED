@@ -43,7 +43,7 @@ export function licenceStatus(licences: { validFrom: string; validUntil: string 
 export type Severity = "high" | "medium" | "low";
 export interface Flag { id: string; category: string; severity: Severity; message: string; subject: string; dueOn: string | null }
 const SEV: Record<Severity, number> = { high: 0, medium: 1, low: 2 };
-const flagSort = (a: Flag, b: Flag) => SEV[a.severity] - SEV[b.severity] || (a.dueOn ?? "9999").localeCompare(b.dueOn ?? "9999") || a.subject.localeCompare(b.subject) || a.id.localeCompare(b.id);
+export const flagSort = (a: Flag, b: Flag) => SEV[a.severity] - SEV[b.severity] || (a.dueOn ?? "9999").localeCompare(b.dueOn ?? "9999") || a.subject.localeCompare(b.subject) || a.id.localeCompare(b.id);
 const STATUSES = ["conditional", "provisional", "full", "suspended"] as const;
 const TRI = ["unknown", "none", "installed"] as const, RECAP = ["unknown", "not_applicable", "applied", "completed", "scrapped"] as const, VSTATE = ["active", "off_road", "replaced"] as const;
 const EMPLOY = ["unknown", "employed", "contractor", "owner_driver"] as const, PAY = ["unknown", "salary", "daily_rate", "commission", "cash", "other"] as const;
