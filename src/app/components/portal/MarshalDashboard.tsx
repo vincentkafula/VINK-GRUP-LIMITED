@@ -9,7 +9,7 @@ import { portalClient, useLoad, Status, Empty, Field, ActionButton, inputCls, wh
 import { LinksPanel } from "./LinksPanel";
 import { MarshalLoading } from "./MarshalLoading";
 import { EarningsScreen, PayslipsScreen, MoneyCheckScreen } from "./MarshalPay";
-import { ShiftsScreen, SafetyScreen, VoiceScreen, MyRecordScreen, OutboxBar } from "./MarshalCare";
+import { ShiftsScreen, SafetyScreen, VoiceScreen, MyRecordScreen, OutboxBar, PanicButton } from "./MarshalCare";
 import { sendOrQueue } from "./offlineQueue";
 import { LangProvider } from "./i18n";
 import { LoadingReport } from "./LoadingReport";
@@ -51,6 +51,7 @@ export function MarshalDashboard({ userName, onClose }: { userName?: string; onC
     <DashboardShell title="Marshal Dashboard" subtitle="Rank queue and departures" accentColor={COLOR} gradient={`from-[${COLOR}]`} navItems={NAV} activeNav={nav} onNavChange={setNav} onClose={onClose} userName={userName}>
       <div className="p-4 md:p-6 space-y-4 max-w-5xl">
         <OutboxBar />
+        <PanicButton rankId={picked?.id} />
         <BankStrip segment="marshal" color={COLOR} onOpen={() => setNav("Bank account")} />
         <ScreenBoundary resetKey={nav}>
           {(nav === "Ranks & queue" || nav === "Loading" || nav === "Departures") && <RankPicker ranks={ranks} picked={picked?.id} onPick={setRankId} />}

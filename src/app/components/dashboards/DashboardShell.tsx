@@ -6,6 +6,8 @@ import { Sheet, ThemeToggle } from "../ds";
 export interface NavItem {
   icon: React.ReactNode;
   label: string;
+  /** What is shown, when it differs from the label (the label is the key the app navigates by, so it stays as it is). Used to show the menu in the user's language. */
+  display?: string;
   badge?: number;
 }
 
@@ -39,14 +41,14 @@ function NavList({ items, active, accent, onPick, collapsed }: { items: NavItem[
         const on = active === item.label;
         return (
           <li key={item.label}>
-            <button type="button" onClick={() => onPick(item.label)} aria-current={on ? "page" : undefined} title={collapsed ? item.label : undefined}
+            <button type="button" onClick={() => onPick(item.label)} aria-current={on ? "page" : undefined} title={collapsed ? (item.display ?? item.label) : undefined}
               className={`relative flex min-h-11 w-full items-center gap-3 rounded-vk-md px-3 text-left text-sm transition-colors ${on ? "font-semibold text-fg" : "font-medium text-fg-muted hover:bg-surface-2 hover:text-fg"}`}
               style={on ? { background: `color-mix(in srgb, ${accent} 16%, transparent)` } : undefined}>
               {on && <span aria-hidden="true" className="absolute inset-y-2 left-0 w-1 rounded-full" style={{ background: accent }} />}
               <span className="flex size-5 shrink-0 items-center justify-center [&_svg]:size-[18px]" style={on ? { color: accentText(accent) } : undefined}>{item.icon}</span>
               {!collapsed && (
                 <span className="flex min-w-0 flex-1 items-center justify-between gap-2">
-                  <span className="truncate">{item.label}</span>
+                  <span className="truncate">{item.display ?? item.label}</span>
                   {item.badge && item.badge > 0 ? <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-bad text-[11px] font-bold text-white" aria-label={`${item.badge} new`}>{item.badge > 9 ? "9+" : item.badge}</span> : null}
                 </span>
               )}
@@ -114,7 +116,7 @@ export function DashboardShell({
             <div className="min-w-0">
               <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-fg-muted">
                 <span className="hidden truncate sm:inline">{title}</span><ChevronRight className="hidden size-3 sm:inline" aria-hidden="true" />
-                <span aria-current="page" className="truncate text-sm font-semibold text-fg sm:text-xs">{activeNav}</span>
+                <span aria-current="page" className="truncate text-sm font-semibold text-fg sm:text-xs">{navItems.find((i) => i.label === activeNav)?.display ?? activeNav}</span>
               </nav>
               {userName && <p className="hidden truncate text-xs text-fg-muted sm:block">Logged in as {userName}</p>}
             </div>

@@ -15,7 +15,7 @@ const money = (cents: number) => rand(cents / 100);
 const hm = (m: number) => `${Math.floor(m / 60)} h ${String(m % 60)} min`;
 const Field = ({ label, children }: { label: string; children: React.ReactNode }) => <label className="block"><span className="text-[11px] text-fg-muted">{label}</span>{children}</label>;
 const dayOffset = (n: number) => { const d = new Date(Date.now() + n * 86_400_000); return d.toISOString().slice(0, 10); };
-const TYPE_TEXT: Record<string, string> = { threat: "Threat", fight: "Fight", robbery: "Robbery", overcrowding: "Overcrowding", injury: "Injury", other: "Other" };
+const TYPE_TEXT: Record<string, string> = { panic: "PANIC", threat: "Threat", fight: "Fight", robbery: "Robbery", overcrowding: "Overcrowding", injury: "Injury", other: "Other" };
 
 /** Downloads a file from the association's API with the signed-in session (so it never needs a public link). */
 function DownloadButton({ path, filename, label }: { path: string; filename: string; label: string }) {
@@ -66,7 +66,7 @@ export function ShiftsPanel() {
 }
 
 /* ───────────────────────── safety ───────────────────────── */
-interface Incident { id: string; rank: string; type: string; occurredAt: string; note: string | null; hasPhoto: boolean; status: string; reporter: string | null }
+interface Incident { id: string; rank: string; type: string; occurredAt: string; note: string | null; hasPhoto: boolean; status: string; reporter: string | null; panic?: boolean; location?: { latitude: number; longitude: number; accuracyM: number | null; mapUrl: string } | null; alert?: { email: boolean; sms: boolean; delivered: boolean; error: string | null } | null }
 function Photo({ id }: { id: string }) { const [load] = useLoad<{ photo: string }>(() => call(`/incidents/${id}/photo`), [id]); return <Status load={load}>{({ photo }) => <img src={photo} alt="Photo sent with the report" className="mt-2 max-h-56 rounded-lg border border-line" />}</Status>; }
 const LEVEL_STYLE: Record<string, string> = { high: "#C8102E", medium: "#D97706", low: "#6B7280" };
 export function SafetyPanel() {
@@ -86,11 +86,14 @@ export function SafetyPanel() {
           <Status load={inc}>{({ incidents, newCount }) => (
             <>
               <p className="text-sm font-bold text-fg" role="status">{newCount === 0 ? "No new reports." : `${newCount} new report${newCount === 1 ? "" : "s"} waiting.`}</p>
+              {incidents.some((i) => i.panic && i.status === "new") && <p role="alert" className="text-sm font-black text-bad">An emergency alert is waiting. Open the map and call the marshal.</p>}
               {incidents.length === 0 ? <Empty>No reports in this period.</Empty> : (
                 <ul className="space-y-3">{incidents.map((i) => (
-                  <li key={i.id} className="text-sm text-fg border-b border-line/60 pb-3">
+                  <li key={i.id} className={`text-sm text-fg border-b border-line/60 pb-3 ${i.panic ? "border-l-4 border-l-bad pl-3 bg-bad/5" : ""}`}>
                     <div className="flex flex-wrap justify-between gap-2"><span><b>{TYPE_TEXT[i.type] ?? i.type}</b> at {i.rank} · {when(i.occurredAt)} · reported by {i.reporter}</span><span className="font-bold">{i.status === "new" ? "New" : i.status === "acknowledged" ? "Acknowledged" : "Closed"}</span></div>
                     {i.note && <p className="text-xs text-fg-muted">{i.note}</p>}
+                    {i.location ? <p className="text-xs"><a className="underline font-bold" href={i.location.mapUrl} target="_blank" rel="noreferrer">Open the map</a>{i.location.accuracyM ? ` (within about ${i.location.accuracyM} m)` : ""}</p> : i.panic ? <p className="text-xs text-fg-muted">The phone could not find its location.</p> : null}
+                    {i.alert && <p className="text-xs text-fg-muted" role="status">{i.alert.delivered ? `You were told by email${i.alert.sms ? " and SMS" : ""}.` : `You have not yet been told by ${i.panic ? "email and SMS" : "email"}${i.alert.error ? `: ${i.alert.error}` : ""}.`}{!i.alert.delivered && <> <ActionButton small label="Send the alert again" color={COLOR} onRun={async () => { const r = await call(`/incidents/${i.id}/resend`, { method: "POST", body: {} }); if ("error" in r) return { error: r.error }; reloadInc(); return { message: "Sent again." }; }} /></>}</p>}
                     <div className="mt-1 flex flex-wrap gap-2">{i.hasPhoto && <button type="button" className="text-xs underline" aria-expanded={showPhoto === i.id} onClick={() => setShowPhoto(showPhoto === i.id ? null : i.id)}>{showPhoto === i.id ? "Hide photo" : "View photo"}</button>}{i.status === "new" && act(i.id, "acknowledged", "Acknowledge", COLOR)}{i.status !== "closed" && act(i.id, "closed", "Close", "#6B7280")}</div>
                     {showPhoto === i.id && <Photo id={i.id} />}
                   </li>))}</ul>)}
@@ -195,7 +198,7 @@ export function OverviewPanel() {
   const [kpis] = useLoad<{ kpis: Kpis }>(() => call(`/kpis?${q}`), [q]);
   const [ranks] = useLoad<{ ranks: { id: string; name: string }[] }>(() => call("/ranks"));
   const [marshals] = useLoad<{ marshals: { id: string; name: string }[] }>(() => call("/commission/marshals"));
-  const [record] = useLoad<{ record: { startDate: string | null; tenureDays: number; totalTrips: number; verified: boolean; missing: string[]; ranks: { rank: string; trips: number }[] } } | null>(() => (rec ? call(`/work-record/${rec}`) : Promise.resolve({ data: null })), [rec]);
+  const [record] = useLoad<{ record: { startDate: string | null; tenureDays: number; totalTrips: number; verified: boolean; missing: string[]; earningsHidden?: boolean; ranks: { rank: string; trips: number }[] } } | null>(() => (rec ? call(`/work-record/${rec}`) : Promise.resolve({ data: null })), [rec]);
   const rk = ranks.state === "ready" ? ranks.data.ranks ?? [] : [], ms = marshals.state === "ready" ? marshals.data.marshals ?? [] : [];
   return (
     <div className="space-y-4">
@@ -225,7 +228,7 @@ export function OverviewPanel() {
       <SectionPanel title="A marshal's work record">
         <div className="p-4 space-y-3 text-sm text-fg">
           <Field label="Marshal"><select aria-label="Record marshal" className={inputCls + " mt-1 w-48"} value={rec} onChange={(e) => setRec(e.target.value)}><option value="">Choose</option>{ms.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}</select></Field>
-          {rec && <Status load={record}>{(d) => d ? <div><p>Started {d.record.startDate ?? "(not recorded)"} · {d.record.tenureDays} days · {d.record.totalTrips} trips{d.record.ranks.length ? ` · ${d.record.ranks.map((r) => `${r.rank} ${r.trips}`).join(", ")}` : ""}</p><p className="font-bold">{d.record.verified ? "Verified" : `Not yet verified: needs ${d.record.missing.join(", ")}`}</p></div> : null}</Status>}
+          {rec && <Status load={record}>{(d) => d ? <div><p>Started {d.record.startDate ?? "(not recorded)"} · {d.record.tenureDays} days · {d.record.totalTrips} trips{d.record.ranks.length ? ` · ${d.record.ranks.map((r) => `${r.rank} ${r.trips}`).join(", ")}` : ""}</p><p className="font-bold">{d.record.verified ? "Verified" : `Not yet verified: needs ${d.record.missing.join(", ")}`}</p>{d.record.earningsHidden && <p className="text-xs text-fg-muted">Earnings are not shown: this marshal has not agreed to share them.</p>}</div> : null}</Status>}
         </div>
       </SectionPanel>
       <VerifyLetter />

@@ -1,13 +1,13 @@
 import { render, screen, fireEvent, waitFor, cleanup, within } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { CommissionScreen, PayRunScreen, QueriesScreen } from "./AssociationCommission";
+import { CommissionScreen, PayRunScreen, QueriesScreen, parseBrackets } from "./AssociationCommission";
 import { rand } from "./ui";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const R = (cents: number) => rand(cents / 100).replace(/\s/g, " ");
 type Reply = { status?: number; body: unknown; type?: string };
 let routes: (method: string, path: string, body: any) => Reply | undefined, calls: { method: string; path: string; body: any }[];
-const SETTINGS = { success: true, settings: { mode: "off", payableOn: "recorded", payPeriod: "weekly", tiersEnabled: false, deductionCapBp: 5000, uifApplies: false, uifRateBp: 100, shiftLimitMinutes: 600, weekLimitMinutes: 3600, shiftGapMinutes: 180, cashoutEnabled: false, cashoutCapBp: 5000 }, currentPeriod: { start: "2026-11-02", end: "2026-11-08" }, lastFinishedPeriod: { start: "2026-10-26", end: "2026-11-01" },
+const SETTINGS = { success: true, settings: { mode: "off", payableOn: "recorded", payPeriod: "weekly", tiersEnabled: false, deductionCapBp: 5000, uifApplies: false, uifRateBp: 100, shiftLimitMinutes: 600, weekLimitMinutes: 3600, shiftGapMinutes: 180, cashoutEnabled: false, cashoutCapBp: 5000, payeEnabled: false, alertEmail: null, alertPhone: null }, currentPeriod: { start: "2026-11-02", end: "2026-11-08" }, lastFinishedPeriod: { start: "2026-10-26", end: "2026-11-01" },
   reasons: [{ code: "breakdown", kind: "queue", label: "Breakdown" }, { code: "goodwill", kind: "fee", label: "Goodwill" }, { code: "association_absorbs", kind: "fee", label: "Association absorbs the fee" }] };
 const RULES = { success: true, feeRules: [{ id: "f1", scope: "association", rank: null, route: null, amountCents: 2000, effectiveFrom: "2026-01-01", note: null }], rates: [{ id: "r1", scope: "default", rank: null, marshal: null, rateBp: 4000, effectiveFrom: "2026-01-01", note: null }, { id: "r2", scope: "marshal", rank: null, marshal: "Mo Marshal", rateBp: 5000, effectiveFrom: "2026-02-01", note: null }], tiers: [] };
 const TRIPS = { success: true, trips: [{ departureId: "d1", time: "2026-11-02T04:00:00Z", rank: "Langa", marshal: "Mo Marshal", registration: "CA 111-111", driver: "Dee Driver", mode: "live", feeCents: 2000, rateBp: 4000, commissionCents: 800, reversed: false, feeStatus: "owed" }, { departureId: "d2", time: "2026-11-02T04:10:00Z", rank: "Langa", marshal: "Mo Marshal", registration: "CA 222-222", driver: null, mode: "live", feeCents: 2000, rateBp: 4000, commissionCents: 800, reversed: false, feeStatus: "paid" }] };
@@ -18,6 +18,7 @@ beforeEach(() => {
   routes = (m, p) => {
     if (p === "/api/portal/association/commission/settings") return { body: SETTINGS }; if (p === "/api/portal/association/commission/rules") return { body: RULES };
     if (p === "/api/portal/association/tokens/routes") return { body: { success: true, routes: [{ id: "rt1", name: "Langa to Bellville" }] } };
+    if (p === "/api/portal/association/commission/tax-tables" && m === "GET") return { body: { success: true, tables: [{ taxYear: "2026/27", effectiveFrom: "2026-03-01", effectiveTo: "2027-02-28", brackets: [{ upToCents: 24510000, rateBp: 1800 }, { upToCents: null, rateBp: 4500 }], primaryRebateCents: 1782000, uifCeilingMonthlyCents: 1771200, source: "SARS, rates of tax for individuals" }] } };
     if (p === "/api/portal/association/ranks") return { body: { success: true, ranks: [{ id: "k1", name: "Langa rank" }, { id: "k2", name: "Bellville rank" }] } };
     if (p === "/api/portal/association/commission/marshals") return { body: { success: true, marshals: [{ id: "m1", name: "Mo Marshal", marshalNumber: "M-0001", class: "independent", uifApplies: false, startedOn: null }, { id: "m2", name: "Mia Marshal", marshalNumber: "M-0002", class: "employee", uifApplies: true, startedOn: null }] } };
     if (p.startsWith("/api/portal/association/commission/trips") && m === "GET") return { body: TRIPS };
@@ -50,7 +51,7 @@ describe("the commission screen", () => {
     render(<CommissionScreen />); await screen.findByText("Commission settings");
     fireEvent.change(screen.getByLabelText("Commission is"), { target: { value: "shadow" } }); fireEvent.change(screen.getByLabelText("Commission becomes payable"), { target: { value: "paid" } }); fireEvent.change(screen.getByLabelText("Pay period"), { target: { value: "fortnightly" } });
     fireEvent.change(screen.getByLabelText(/Most deductions may take/), { target: { value: "40" } }); fireEvent.click(screen.getByLabelText(/Use tiers/)); fireEvent.click(screen.getByLabelText(/Take UIF from employees/)); fireEvent.change(screen.getByLabelText("UIF rate (%)"), { target: { value: "1" } });
-    fireEvent.click(screen.getByRole("button", { name: "Save settings" })); await waitFor(() => expect(writes()).toEqual([{ method: "PUT", path: "/api/portal/association/commission/settings", body: { mode: "shadow", payableOn: "paid", payPeriod: "fortnightly", tiersEnabled: true, deductionCapBp: 4000, uifApplies: true, uifRateBp: 100, shiftLimitMinutes: 600, weekLimitMinutes: 3600, shiftGapMinutes: 180, cashoutEnabled: false, cashoutCapBp: 5000 } }]));
+    fireEvent.click(screen.getByRole("button", { name: "Save settings" })); await waitFor(() => expect(writes()).toEqual([{ method: "PUT", path: "/api/portal/association/commission/settings", body: { mode: "shadow", payableOn: "paid", payPeriod: "fortnightly", tiersEnabled: true, deductionCapBp: 4000, uifApplies: true, uifRateBp: 100, shiftLimitMinutes: 600, weekLimitMinutes: 3600, shiftGapMinutes: 180, cashoutEnabled: false, cashoutCapBp: 5000, payeEnabled: false, alertEmail: "", alertPhone: "" } }]));
   });
   it("shows the server's reason when settings are refused (commission needs a rate before it can be switched on)", async () => {
     routes = ((o) => (m: string, p: string, b: any) => (m === "PUT" ? { status: 409, body: { success: false, error: "Set the commission rate first: there is nothing to calculate with" } } : o(m, p, b)))(routes);
@@ -158,3 +159,25 @@ describe("the new commission controls", () => {
     render(<PayRunScreen />); fireEvent.click(await screen.findByRole("button", { name: "Review" })); await screen.findByText(/Paid 2026-11-02/); expect(screen.queryByText("Revise this payslip")).toBeNull();
   });
 });
+
+describe("PAYE, alerts and the tax tables", () => {
+  it("saves the PAYE switch and the alert email and phone, trimmed", async () => {
+    render(<CommissionScreen />); await screen.findByText("Commission settings"); fireEvent.click(screen.getByLabelText(/Work out PAYE/)); fireEvent.change(screen.getByLabelText("Alert email"), { target: { value: "  ops@langa.example " } }); fireEvent.change(screen.getByLabelText("Alert phone"), { target: { value: " +27821234567 " } });
+    fireEvent.click(screen.getByRole("button", { name: "Save settings" })); await waitFor(() => expect(writes().at(-1)!.body).toMatchObject({ payeEnabled: true, alertEmail: "ops@langa.example", alertPhone: "+27821234567" }));
+  });
+  it("shows the tables PAYE is worked from with their source, and says what happens with none", async () => {
+    render(<CommissionScreen />); expect((await screen.findByText("2026/27")).closest("li")).toHaveTextContent(`2026/27 · 2026-03-01 to 2027-02-28 · 2 brackets, from 18% to 45% · rebate ${R(1782000)} · UIF ceiling ${R(1771200)} a month`); expect(screen.getByText("SARS, rates of tax for individuals")).toBeInTheDocument(); expect(screen.getByText(/no PAYE is calculated and the payslip says so/)).toBeInTheDocument();
+  });
+  it("reads brackets typed as the top of each in rand and its rate, and refuses a line it cannot read", () => {
+    expect(parseBrackets("245100 18\n383 100 26\nabove 45")).toEqual([{ upToCents: 24510000, rateBp: 1800 }, { upToCents: 38310000, rateBp: 2600 }, { upToCents: null, rateBp: 4500 }]); expect(parseBrackets("1000,50 18.5%\n\nABOVE 45")).toEqual([{ upToCents: 100050, rateBp: 1850 }, { upToCents: null, rateBp: 4500 }]);
+    expect(parseBrackets("lots 18")).toBeNull(); expect(parseBrackets("245100")).toBeNull(); expect(parseBrackets("")).toEqual([]);
+  });
+  it("adds next year's table in the units the server wants, with its source, and explains a bracket line it cannot read without sending anything", async () => {
+    render(<CommissionScreen />); await screen.findByText(/2026\/27/); fireEvent.click(screen.getByText("Add next year's table")); fireEvent.change(screen.getByLabelText("Tax year"), { target: { value: "2027/28" } }); fireEvent.change(screen.getByLabelText("Table from"), { target: { value: "2027-03-01" } }); fireEvent.change(screen.getByLabelText("Table to"), { target: { value: "2028-02-29" } });
+    fireEvent.change(screen.getByLabelText("Primary rebate"), { target: { value: "18 000" .replace(" ", "") } }); fireEvent.change(screen.getByLabelText("UIF ceiling"), { target: { value: "18000" } }); fireEvent.change(screen.getByLabelText("Table source"), { target: { value: "SARS Budget 2027" } });
+    fireEvent.change(screen.getByLabelText("Tax brackets"), { target: { value: "oops" } }); fireEvent.click(screen.getByRole("button", { name: "Add the table" })); expect(await screen.findByText(/Each bracket line is the top amount then the rate/)).toBeInTheDocument(); expect(writes()).toEqual([]);
+    fireEvent.change(screen.getByLabelText("Tax brackets"), { target: { value: "250000 18\n400000 26\nabove 45" } }); fireEvent.click(screen.getByRole("button", { name: "Add the table" }));
+    await waitFor(() => expect(writes().at(-1)).toEqual({ method: "POST", path: "/api/portal/association/commission/tax-tables", body: { taxYear: "2027/28", effectiveFrom: "2027-03-01", effectiveTo: "2028-02-29", brackets: [{ upToCents: 25000000, rateBp: 1800 }, { upToCents: 40000000, rateBp: 2600 }, { upToCents: null, rateBp: 4500 }], primaryRebateCents: 1800000, uifCeilingMonthlyCents: 1800000, source: "SARS Budget 2027" } }));
+  });
+});
+

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { render, screen, fireEvent, waitFor, cleanup, within } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, cleanup, within, act } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { ShiftsScreen, SafetyScreen, VoiceScreen, MyRecordScreen, CashOutCard, OutboxBar, shrinkPhoto } from "./MarshalCare";
+import { ShiftsScreen, SafetyScreen, VoiceScreen, MyRecordScreen, CashOutCard, OutboxBar, PanicButton, shrinkPhoto } from "./MarshalCare";
 import { pending } from "./offlineQueue";
 import { rand } from "./ui";
 
@@ -17,16 +17,20 @@ const BENEFITS = { success: true, contributions: { uifCents: 200, stokvelCents: 
 const LETTER = { id: "l1", number: "IL-20261102-M0001-1", monthsCovered: 3, from: "2026-08-02", to: "2026-11-02", issuedAt: "2026-11-02T08:00:00Z", verificationCode: "AB12CD34EF56", intact: true, months: [{ month: "2026-10", payslips: 2, trips: 175, earnedCents: 70000, deductionsCents: 5000, netCents: 65000 }], totals: { earnedCents: 70000, deductionsCents: 5000, netCents: 65000, trips: 175 }, note: "It is not a certificate of employment." };
 beforeEach(() => {
   calls = []; Object.defineProperty(navigator, "onLine", { value: true, configurable: true }); localStorage.clear();
-  routes = (m, p) => {
+  beforeEachRoutes = () => { routes = standard; };
+  const standard: typeof routes = (m, p) => {
     if (p === "/api/portal/marshal/ranks") return { body: RANKS }; if (p.startsWith("/api/portal/marshal/shifts") && m === "GET") return { body: SHIFTS }; if (m === "POST" || m === "PUT") return { status: m === "POST" ? 201 : 200, body: { success: true, id: "new" } };
     if (p === "/api/portal/marshal/incidents") return { body: { success: true, incidents: [{ id: "i1", rank: "Langa", type: "robbery", occurredAt: "2026-11-01T05:00:00Z", status: "acknowledged" }, { id: "i2", rank: "Langa", type: "threat", occurredAt: "2026-11-02T05:00:00Z", status: "new" }] } };
     if (p === "/api/portal/marshal/grievances") return { body: { success: true, grievances: [{ id: "g1", category: "pay", message: "My advance was taken twice", status: "resolved", response: "Refunded", respondedBy: "Your association", createdAt: "2026-11-01T05:00:00Z" }, { id: "g2", category: "hours", message: "Too many hours", status: "open", response: null, respondedBy: null, createdAt: "2026-11-02T05:00:00Z" }] } };
     if (p === "/api/portal/marshal/work-record") return { body: RECORD }; if (p === "/api/portal/marshal/benefits") return { body: BENEFITS };
     if (p === "/api/portal/marshal/profile") return { body: { success: true, profile: { marshalNumber: "M-0001", language: "en", class: "independent" }, consents: [{ purpose: "income_letter", granted: false }] } };
     if (p === "/api/portal/marshal/income-letters") return { body: { success: true, letters: [{ id: "l1", number: LETTER.number, months: 3, issuedAt: LETTER.issuedAt }] } }; if (p === "/api/portal/marshal/income-letters/l1") return { body: { success: true, letter: LETTER } };
+    if (p === "/api/portal/marshal/auto-cash-out") return { body: { success: true, enabled: false, minCents: 5000 } };
+    if (p === "/api/portal/marshal/work-record.pdf") return { body: "%PDF-1.3", status: 200 };
     if (p === "/api/portal/marshal/cash-out") return { body: { success: true, enabled: true, availableCents: 4000, outstandingCents: 1500, maxCents: 500, capBp: 5000 } };
     return undefined;
   };
+  routes = standard;
   vi.stubGlobal("fetch", vi.fn(async (url: string, init?: RequestInit) => {
     const path = String(url).replace(/^https?:\/\/[^/]+/, ""), method = init?.method ?? "GET", body = init?.body ? JSON.parse(String(init.body)) : undefined; calls.push({ method, path, body });
     const r = routes(method, path, body); if (r === "offline") throw new TypeError("Failed to fetch"); if (!r) return new Response(JSON.stringify({ error: "unexpected " + method + " " + path }), { status: 500 });
@@ -34,6 +38,7 @@ beforeEach(() => {
   }));
 });
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
+let beforeEachRoutes: () => void = () => undefined;
 const writes = () => calls.filter((c) => c.method !== "GET");
 const offline = () => { const o = routes; routes = (m, p, b) => (m === "GET" ? o(m, p, b) : "offline"); };
 const REF = expect.stringMatching(/^[A-Za-z0-9._-]{8,80}$/);
@@ -143,3 +148,65 @@ describe("drawing earned commission", () => {
     fireEvent.change(screen.getByLabelText("Cash-out amount"), { target: { value: "50" } }); fireEvent.click(screen.getByRole("button", { name: "Draw" })); expect(await screen.findByText("You can draw up to R5.00 right now")).toBeInTheDocument(); expect(pending()).toEqual([]);
   });
 });
+
+describe("the emergency button", () => {
+  // Time is fully controlled here: the countdown is a real part of the behaviour, so it is advanced exactly, never left to run.
+  const press = () => fireEvent.click(screen.getByRole("button", { name: "I need help now" }));
+  const settle = (ms: number) => act(async () => { await vi.advanceTimersByTimeAsync(ms); });
+  const geo = (impl: (ok: (p: any) => void, fail: () => void) => void) => Object.defineProperty(navigator, "geolocation", { value: { getCurrentPosition: vi.fn((ok, fail) => impl(ok, fail)) }, configurable: true });
+  beforeEach(() => { vi.useFakeTimers(); });
+  afterEach(() => { vi.useRealTimers(); Object.defineProperty(navigator, "geolocation", { value: undefined, configurable: true }); });
+  const shown = () => document.body.textContent ?? "";
+  it("counts down so a pocket press can be cancelled, and sends nothing if it is", async () => {
+    render(<PanicButton rankId="k1" />); await settle(10); press(); expect(screen.getByRole("alert")).toHaveTextContent("Sending an emergency alert: 5"); await settle(2000); expect(screen.getByRole("alert")).toHaveTextContent("Sending an emergency alert: 3");
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" })); await settle(10_000); expect(writes()).toEqual([]); expect(screen.getByRole("button", { name: "I need help now" })).toBeInTheDocument();
+  });
+  it("after the countdown takes the phone's location and sends a panic report with it and the rank, and tells the marshal their association has been told", async () => {
+    geo((ok) => ok({ coords: { latitude: -33.9249, longitude: 18.4241, accuracy: 18 } })); render(<PanicButton rankId="k1" />); await settle(10); press(); await settle(4900); expect(writes()).toEqual([]); await settle(300); await settle(50);
+    expect(writes().at(-1)).toMatchObject({ method: "POST", path: "/api/portal/marshal/incidents", body: { rankId: "k1", type: "panic", latitude: -33.9249, longitude: 18.4241, accuracyM: 18, clientRef: REF } });
+    expect(shown()).toContain("Emergency alert sent. Your association has been told."); expect(shown()).toContain("call the police on 10111 or 112");
+  });
+  it("sends exactly one alarm however long time passes afterwards, and the button is ready again for a second one", async () => {
+    geo((ok) => ok({ coords: { latitude: 1, longitude: 2, accuracy: 5 } })); render(<PanicButton rankId="k1" />); await settle(10); press(); await settle(5300); await settle(60_000); expect(writes().filter((w) => w.path.endsWith("/incidents"))).toHaveLength(1);
+    expect(screen.getByRole("button", { name: "I need help now" })).toBeEnabled();
+  });
+  it("still sends the alarm when the phone cannot find its location, and says so", async () => {
+    geo((_ok, fail) => fail()); render(<PanicButton rankId="k1" />); await settle(10); press(); await settle(5300); await settle(50);
+    expect(writes().at(-1)!.body).toEqual({ rankId: "k1", type: "panic", clientRef: REF }); expect(shown()).toContain("We could not find your location, so the alert will go without it");
+  });
+  it("does not wait for ever for a location that never comes", async () => {
+    geo(() => undefined); render(<PanicButton rankId="k1" />); await settle(10); press(); await settle(5000); await settle(6900); expect(writes()).toEqual([]); await settle(300); await settle(50);                    // it gives up after about 7 seconds
+    expect(writes().at(-1)!.body.type).toBe("panic"); expect(writes().at(-1)!.body.latitude).toBeUndefined();
+  });
+  it("keeps the alarm on the phone with no signal, to send the moment there is signal, and tells the marshal that", async () => {
+    geo((ok) => ok({ coords: { latitude: 1, longitude: 2, accuracy: 5 } })); offline(); render(<PanicButton rankId="k1" />); await settle(10); press(); await settle(5300); await settle(50);
+    expect(shown()).toContain("Emergency alert saved on your phone. It will send as soon as you have signal."); expect(pending()[0]).toMatchObject({ label: "Emergency alert", path: "/incidents", body: { type: "panic", latitude: 1, longitude: 2 } });
+  });
+  it("shows the server's reason if the alarm is refused", async () => {
+    routes = ((o) => (m: string, p: string, b: any) => (m === "POST" ? { status: 403, body: { success: false, error: "You do not work at that rank" } } : o(m, p, b)))(routes); render(<PanicButton rankId="k1" />); await settle(10); press(); await settle(5300); await settle(50);
+    expect(screen.getByRole("alert")).toHaveTextContent("You do not work at that rank"); expect(pending()).toEqual([]);
+  });
+  it("cannot be pressed when the marshal has no rank to report to, and uses their first rank when none is given", async () => {
+    routes = (m, p) => (p.endsWith("/ranks") ? { body: { success: true, ranks: [] } } : undefined); const a = render(<PanicButton />); await settle(50); expect(screen.getByRole("button", { name: "I need help now" })).toBeDisabled(); a.unmount();
+    cleanup(); beforeEachRoutes(); render(<PanicButton />); await settle(50); press(); await settle(5300); await settle(50); expect(writes().at(-1)!.body.rankId).toBe("k1");
+  });
+  it("shows an emergency as an Emergency in the marshal's own list of reports", async () => {
+    vi.useRealTimers(); routes = ((o) => (m: string, p: string, b: any) => (p === "/api/portal/marshal/incidents" ? { body: { success: true, incidents: [{ id: "i9", rank: "Langa", type: "panic", occurredAt: "2026-11-02T05:00:00Z", status: "acknowledged" }] } } : o(m, p, b)))(routes); render(<SafetyScreen />); expect(await screen.findByText("Emergency", { selector: "b" })).toBeInTheDocument();
+  });
+});
+
+describe("automatic cash-out and the work record download", () => {
+  it("lets a marshal choose to be paid each evening with their own minimum, and switch it off", async () => {
+    render(<CashOutCard />); await screen.findByText(/You can draw up to/); const box = await screen.findByLabelText("Pay me automatically each evening"); fireEvent.click(box); await waitFor(() => expect(writes().at(-1)).toEqual({ method: "PUT", path: "/api/portal/marshal/auto-cash-out", body: { enabled: true, minCents: 5000 } }));
+    cleanup(); routes = ((o) => (m: string, p: string, b: any) => (p === "/api/portal/marshal/auto-cash-out" && m === "GET" ? { body: { success: true, enabled: true, minCents: 5000 } } : o(m, p, b)))(routes); render(<CashOutCard />); fireEvent.change(await screen.findByLabelText("Automatic cash-out minimum"), { target: { value: "75,50" } }); fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    await waitFor(() => expect(writes().at(-1)).toEqual({ method: "PUT", path: "/api/portal/marshal/auto-cash-out", body: { enabled: true, minCents: 7550 } })); fireEvent.click(screen.getByLabelText("Pay me automatically each evening")); await waitFor(() => expect(writes().at(-1)!.body.enabled).toBe(false));
+  });
+  it("shows the server's reason when the minimum is refused", async () => {
+    routes = ((o) => (m: string, p: string, b: any) => (p === "/api/portal/marshal/auto-cash-out" && m === "GET" ? { body: { success: true, enabled: true, minCents: 5000 } } : m === "PUT" ? { status: 400, body: { success: false, error: "The least you can ask for is R10.00 and the most R10 000.00" } } : o(m, p, b)))(routes);
+    render(<CashOutCard />); fireEvent.change(await screen.findByLabelText("Automatic cash-out minimum"), { target: { value: "1" } }); fireEvent.click(screen.getByRole("button", { name: "Save" })); expect(await screen.findByText(/The least you can ask for is R10.00/)).toBeInTheDocument();
+  });
+  it("downloads the work record as a PDF with the signed-in session", async () => {
+    URL.createObjectURL = vi.fn(() => "blob:x"); URL.revokeObjectURL = vi.fn(); render(<MyRecordScreen />); fireEvent.click(await screen.findByRole("button", { name: /Download my work record \(PDF\)/ })); await waitFor(() => expect(calls.at(-1)!.path).toBe("/api/portal/marshal/work-record.pdf")); await waitFor(() => expect(URL.createObjectURL).toHaveBeenCalled());
+  });
+});
+

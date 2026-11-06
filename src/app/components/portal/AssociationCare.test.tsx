@@ -117,3 +117,28 @@ describe("the overview", () => {
     await check({ valid: false }); expect(await screen.findByText(/Not recognised\./)).toBeInTheDocument(); await check({ valid: true, marshal: "Mo Marshal", from: "a", to: "b", issuedAt: "2026-11-02T08:00:00Z", intact: false }); expect(await screen.findByText(/should not be relied on/)).toBeInTheDocument();
   });
 });
+
+describe("emergency alerts on the safety screen", () => {
+  const PANIC = { id: "p1", rank: "Langa", type: "panic", occurredAt: "2026-11-02T08:00:00Z", note: null, hasPhoto: false, status: "new", reporter: "Mo Marshal", panic: true, location: { latitude: -33.9249, longitude: 18.4241, accuracyM: 18, mapUrl: "https://maps.google.com/?q=-33.9249,18.4241" }, alert: { email: true, sms: false, delivered: false, error: "sms: sms down" } };
+  const withPanic = () => { routes = ((o) => (m: string, p: string, b: any) => (m === "GET" && p.startsWith("/api/portal/association/incidents") && !p.includes("/photo") ? { body: { success: true, newCount: 1, incidents: [PANIC, ...INCIDENTS.incidents] } } : o(m, p, b)))(routes); };
+  it("warns that an emergency is waiting, names it PANIC, and links to the map with how precise the location is", async () => {
+    withPanic(); render(<SafetyPanel />); expect(await screen.findByRole("alert")).toHaveTextContent("An emergency alert is waiting. Open the map and call the marshal."); expect(screen.getByText("PANIC")).toBeInTheDocument();
+    const link = screen.getByRole("link", { name: "Open the map" }); expect(link).toHaveAttribute("href", "https://maps.google.com/?q=-33.9249,18.4241"); expect(link).toHaveAttribute("target", "_blank"); expect(link).toHaveAttribute("rel", expect.stringContaining("noreferrer")); expect(screen.getByText(/within about 18 m/)).toBeInTheDocument();
+  });
+  it("says plainly when the association has not been told, with the reason, and lets it send the alert again", async () => {
+    withPanic(); render(<SafetyPanel />); expect(await screen.findByText(/You have not yet been told by email and SMS: sms: sms down/)).toBeInTheDocument(); fireEvent.click(screen.getByRole("button", { name: "Send the alert again" }));
+    await waitFor(() => expect(writes().at(-1)).toEqual({ method: "POST", path: "/api/portal/association/incidents/p1/resend", body: {} })); expect(await screen.findByText("Sent again.")).toBeInTheDocument();
+  });
+  it("says when it was told, by email and SMS, and does not offer to resend", async () => {
+    routes = ((o) => (m: string, p: string, b: any) => (m === "GET" && p.startsWith("/api/portal/association/incidents") && !p.includes("/photo") ? { body: { success: true, newCount: 0, incidents: [{ ...PANIC, status: "acknowledged", alert: { email: true, sms: true, delivered: true, error: null } }] } } : o(m, p, b)))(routes);
+    render(<SafetyPanel />); expect(await screen.findByText("You were told by email and SMS.")).toBeInTheDocument(); expect(screen.queryByRole("button", { name: "Send the alert again" })).toBeNull(); expect(screen.queryByText(/An emergency alert is waiting/)).toBeNull();
+  });
+  it("says when the phone could not find its location", async () => {
+    routes = ((o) => (m: string, p: string, b: any) => (m === "GET" && p.startsWith("/api/portal/association/incidents") && !p.includes("/photo") ? { body: { success: true, newCount: 1, incidents: [{ ...PANIC, location: null }] } } : o(m, p, b)))(routes); render(<SafetyPanel />); expect(await screen.findByText("The phone could not find its location.")).toBeInTheDocument(); expect(screen.queryByRole("link", { name: "Open the map" })).toBeNull();
+  });
+  it("says a marshal's earnings are not shown when they have not agreed to share them", async () => {
+    routes = ((o) => (m: string, p: string, b: any) => (p === "/api/portal/association/work-record/m1" ? { body: { success: true, record: { startDate: "2026-08-15", tenureDays: 83, totalTrips: 312, verified: false, missing: [], earningsHidden: true, ranks: [] } } } : o(m, p, b)))(routes);
+    render(<OverviewPanel />); await screen.findByText(R(31500)); pick("Record marshal", "m1"); expect(await screen.findByText("Earnings are not shown: this marshal has not agreed to share them.")).toBeInTheDocument();
+  });
+});
+

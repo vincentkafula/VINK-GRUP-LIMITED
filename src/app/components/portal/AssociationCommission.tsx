@@ -17,7 +17,7 @@ const toCents = (v: string) => Math.round(Number(v.replace(",", ".")) * 100);
 const toBp = (v: string) => Math.round(Number(v.replace(",", ".")) * 100);
 const Field = ({ label, children }: { label: string; children: React.ReactNode }) => <label className="block"><span className="text-[11px] text-fg-muted">{label}</span>{children}</label>;
 
-interface Settings { mode: string; payableOn: string; payPeriod: string; tiersEnabled: boolean; deductionCapBp: number; uifApplies: boolean; uifRateBp: number; shiftLimitMinutes: number; weekLimitMinutes: number; shiftGapMinutes: number; cashoutEnabled: boolean; cashoutCapBp: number }
+interface Settings { mode: string; payableOn: string; payPeriod: string; tiersEnabled: boolean; deductionCapBp: number; uifApplies: boolean; uifRateBp: number; shiftLimitMinutes: number; weekLimitMinutes: number; shiftGapMinutes: number; cashoutEnabled: boolean; cashoutCapBp: number; payeEnabled: boolean; alertEmail: string | null; alertPhone: string | null }
 interface SettingsData { settings: Settings; currentPeriod: { start: string; end: string }; lastFinishedPeriod: { start: string; end: string }; reasons: { code: string; kind: string; label: string }[] }
 const MODE_HELP: Record<string, string> = {
   off: "Today's behaviour: the marshal fee goes to the marshal. Nothing here runs.",
@@ -28,7 +28,7 @@ const MODE_HELP: Record<string, string> = {
 /* ───────────────────────── settings ───────────────────────── */
 function SettingsCard({ data, reload }: { data: SettingsData; reload: () => void }) {
   const s = data.settings;
-  const [f, setF] = useState({ mode: s.mode, payableOn: s.payableOn, payPeriod: s.payPeriod, tiersEnabled: s.tiersEnabled, cap: String(s.deductionCapBp / 100), uifApplies: s.uifApplies, uif: String(s.uifRateBp / 100), shiftH: String(s.shiftLimitMinutes / 60), weekH: String(s.weekLimitMinutes / 60), gap: String(s.shiftGapMinutes), cashout: s.cashoutEnabled, cashCap: String(s.cashoutCapBp / 100) });
+  const [f, setF] = useState({ mode: s.mode, payableOn: s.payableOn, payPeriod: s.payPeriod, tiersEnabled: s.tiersEnabled, cap: String(s.deductionCapBp / 100), uifApplies: s.uifApplies, uif: String(s.uifRateBp / 100), shiftH: String(s.shiftLimitMinutes / 60), weekH: String(s.weekLimitMinutes / 60), gap: String(s.shiftGapMinutes), cashout: s.cashoutEnabled, cashCap: String(s.cashoutCapBp / 100), paye: s.payeEnabled, alertEmail: s.alertEmail ?? "", alertPhone: s.alertPhone ?? "" });
   return (
     <SectionPanel title="Commission settings">
       <div className="p-4 space-y-3">
@@ -40,6 +40,7 @@ function SettingsCard({ data, reload }: { data: SettingsData; reload: () => void
         </div>
         <p className="text-xs text-fg-muted">{MODE_HELP[f.mode]}</p>
         <div className="flex flex-wrap items-center gap-4 text-sm text-fg">
+          <label className="flex items-center gap-2"><input type="checkbox" checked={f.paye} onChange={(e) => setF({ ...f, paye: e.target.checked })} />Work out PAYE (an estimate) for marshals who are employees</label>
           <label className="flex items-center gap-2"><input type="checkbox" checked={f.tiersEnabled} onChange={(e) => setF({ ...f, tiersEnabled: e.target.checked })} />Use tiers (a higher rate after a number of trips in the week)</label>
           <label className="flex items-center gap-2"><input type="checkbox" checked={f.uifApplies} onChange={(e) => setF({ ...f, uifApplies: e.target.checked })} />Take UIF from employees</label>
           {f.uifApplies && <Field label="UIF rate (%)"><input className={inputCls + " mt-1 !w-20"} inputMode="decimal" value={f.uif} onChange={(e) => setF({ ...f, uif: e.target.value })} /></Field>}
@@ -49,12 +50,16 @@ function SettingsCard({ data, reload }: { data: SettingsData; reload: () => void
           <Field label="Longest week (hours)"><input aria-label="Longest week" className={inputCls + " mt-1 !w-20"} inputMode="decimal" value={f.weekH} onChange={(e) => setF({ ...f, weekH: e.target.value })} /></Field>
           <Field label="A gap this long ends a shift (minutes)"><input aria-label="Shift gap" className={inputCls + " mt-1 !w-20"} inputMode="numeric" value={f.gap} onChange={(e) => setF({ ...f, gap: e.target.value })} /></Field>
         </div>
+        <div className="flex flex-wrap items-end gap-3 border-t border-line pt-3">
+          <Field label="Email for safety alerts (leave empty to use your account email)"><input aria-label="Alert email" className={inputCls + " mt-1 w-72"} inputMode="email" value={f.alertEmail} onChange={(e) => setF({ ...f, alertEmail: e.target.value })} /></Field>
+          <Field label="Phone for emergency SMS (with country code)"><input aria-label="Alert phone" className={inputCls + " mt-1 w-52"} inputMode="tel" placeholder="+27821234567" value={f.alertPhone} onChange={(e) => setF({ ...f, alertPhone: e.target.value })} /></Field>
+        </div>
         <div className="flex flex-wrap items-center gap-4 text-sm text-fg">
           <label className="flex items-center gap-2"><input type="checkbox" checked={f.cashout} onChange={(e) => setF({ ...f, cashout: e.target.checked })} />Let marshals draw commission they have already earned</label>
           {f.cashout && <Field label="Share of it they may draw (%)"><input aria-label="Cash-out share" className={inputCls + " mt-1 !w-20"} inputMode="decimal" value={f.cashCap} onChange={(e) => setF({ ...f, cashCap: e.target.value })} /></Field>}
         </div>
         <ActionButton label="Save settings" color={COLOR} onRun={async () => {
-          const r = await call("/commission/settings", { method: "PUT", body: { mode: f.mode, payableOn: f.payableOn, payPeriod: f.payPeriod, tiersEnabled: f.tiersEnabled, deductionCapBp: toBp(f.cap), uifApplies: f.uifApplies, uifRateBp: toBp(f.uif), shiftLimitMinutes: Math.round(Number(f.shiftH.replace(",", ".")) * 60), weekLimitMinutes: Math.round(Number(f.weekH.replace(",", ".")) * 60), shiftGapMinutes: Number(f.gap), cashoutEnabled: f.cashout, cashoutCapBp: toBp(f.cashCap) } });
+          const r = await call("/commission/settings", { method: "PUT", body: { mode: f.mode, payableOn: f.payableOn, payPeriod: f.payPeriod, tiersEnabled: f.tiersEnabled, deductionCapBp: toBp(f.cap), uifApplies: f.uifApplies, uifRateBp: toBp(f.uif), shiftLimitMinutes: Math.round(Number(f.shiftH.replace(",", ".")) * 60), weekLimitMinutes: Math.round(Number(f.weekH.replace(",", ".")) * 60), shiftGapMinutes: Number(f.gap), cashoutEnabled: f.cashout, cashoutCapBp: toBp(f.cashCap), payeEnabled: f.paye, alertEmail: f.alertEmail.trim(), alertPhone: f.alertPhone.trim() } });
           if ("error" in r) return { error: r.error }; reload(); return { message: "Saved." };
         }} />
         <p className="text-xs text-fg-subtle">Pay period now: {data.currentPeriod.start} to {data.currentPeriod.end}. Last finished: {data.lastFinishedPeriod.start} to {data.lastFinishedPeriod.end}. Not a tax document: no PAYE is calculated.</p>
@@ -169,11 +174,55 @@ function CatchUpCard() {
   );
 }
 
+/* ───────────────────────── the income tax tables PAYE is worked from ───────────────────────── */
+interface TaxTableRow { taxYear: string; effectiveFrom: string; effectiveTo: string; brackets: { upToCents: number | null; rateBp: number }[]; primaryRebateCents: number; uifCeilingMonthlyCents: number; source: string | null }
+/** "245100 18" per line, the last line "above 45": the top of each bracket in rand and its rate in percent. Returns null when a line cannot be read. */
+export function parseBrackets(text: string): { upToCents: number | null; rateBp: number }[] | null {
+  const out: { upToCents: number | null; rateBp: number }[] = [];
+  for (const line of text.split("\n").map((l) => l.trim()).filter(Boolean)) {
+    const m = /^(above|[\d\s.,]+)\s+([\d.,]+)\s*%?$/i.exec(line); if (!m) return null;
+    const rate = Math.round(Number(m[2].replace(",", ".")) * 100), up = /^above$/i.test(m[1]) ? null : Math.round(Number(m[1].replace(/\s/g, "").replace(",", ".")) * 100);
+    if (!Number.isFinite(rate) || (up !== null && !Number.isFinite(up))) return null; out.push({ upToCents: up, rateBp: rate });
+  }
+  return out;
+}
+function TaxTablesCard() {
+  const [load, reload] = useLoad<{ tables: TaxTableRow[] }>(() => call("/commission/tax-tables"));
+  const [f, setF] = useState({ year: "", from: "", to: "", rebate: "", uif: "", source: "", brackets: "" });
+  return (
+    <SectionPanel title="Income tax tables (for PAYE)">
+      <div className="p-4 space-y-4 text-sm text-fg">
+        <p className="text-xs text-fg-muted">PAYE is worked out from these tables, which SARS changes every March. If no table covers a payslip's dates, no PAYE is calculated and the payslip says so. It is an estimate: take advice, and the association is responsible for its own tax returns.</p>
+        <Status load={load}>{({ tables }) => tables.length === 0 ? <Empty>No tables yet.</Empty> : (
+          <ul className="space-y-2">{tables.map((t) => <li key={t.taxYear}><b>{t.taxYear}</b> · {t.effectiveFrom} to {t.effectiveTo} · {t.brackets.length} brackets, from {t.brackets[0].rateBp / 100}% to {t.brackets[t.brackets.length - 1].rateBp / 100}% · rebate {money(t.primaryRebateCents)} · UIF ceiling {money(t.uifCeilingMonthlyCents)} a month<span className="block text-xs text-fg-subtle">{t.source}</span></li>)}</ul>)}</Status>
+        <details><summary className="cursor-pointer font-bold">Add next year's table</summary>
+          <div className="mt-3 space-y-3">
+            <div className="flex flex-wrap items-end gap-3">
+              <Field label="Tax year (like 2027/28)"><input aria-label="Tax year" className={inputCls + " mt-1 !w-28"} value={f.year} onChange={(e) => setF({ ...f, year: e.target.value })} /></Field>
+              <Field label="Applies from"><input type="date" aria-label="Table from" className={inputCls + " mt-1 w-40"} value={f.from} onChange={(e) => setF({ ...f, from: e.target.value })} /></Field>
+              <Field label="Applies to"><input type="date" aria-label="Table to" className={inputCls + " mt-1 w-40"} value={f.to} onChange={(e) => setF({ ...f, to: e.target.value })} /></Field>
+              <Field label="Primary rebate (R a year)"><input aria-label="Primary rebate" className={inputCls + " mt-1 !w-28"} inputMode="decimal" value={f.rebate} onChange={(e) => setF({ ...f, rebate: e.target.value })} /></Field>
+              <Field label="UIF ceiling (R a month)"><input aria-label="UIF ceiling" className={inputCls + " mt-1 !w-28"} inputMode="decimal" value={f.uif} onChange={(e) => setF({ ...f, uif: e.target.value })} /></Field>
+            </div>
+            <Field label="Brackets: the top of each in rand, then its rate in percent, one per line. End with the word above and the top rate."><textarea aria-label="Tax brackets" className={inputCls + " mt-1 min-h-[8rem] font-mono"} placeholder={"245100 18\n383100 26\nabove 45"} value={f.brackets} onChange={(e) => setF({ ...f, brackets: e.target.value })} /></Field>
+            <Field label="Where the figures come from (the SARS page or notice)"><input aria-label="Table source" className={inputCls + " mt-1"} maxLength={300} value={f.source} onChange={(e) => setF({ ...f, source: e.target.value })} /></Field>
+            <ActionButton label="Add the table" color={COLOR} onRun={async () => {
+              const brackets = parseBrackets(f.brackets); if (!brackets) return { error: "Each bracket line is the top amount then the rate, like: 245100 18" };
+              const r = await call("/commission/tax-tables", { method: "POST", body: { taxYear: f.year.trim(), effectiveFrom: f.from, effectiveTo: f.to, brackets, primaryRebateCents: toCents(f.rebate), uifCeilingMonthlyCents: toCents(f.uif), source: f.source } });
+              if ("error" in r) return { error: r.error }; reload(); return { message: "Added." };
+            }} />
+          </div>
+        </details>
+      </div>
+    </SectionPanel>
+  );
+}
+
 export function CommissionScreen() {
   const [load, reload] = useLoad<SettingsData>(() => call("/commission/settings"));
   return (
     <div className="space-y-4">
-      <Status load={load}>{(d) => <><SettingsCard key={JSON.stringify(d.settings)} data={d} reload={reload} /><RulesCard tiersOn={d.settings.tiersEnabled} /><AuditCard reasons={d.reasons} /><MoneyCheckCard /><CatchUpCard /></>}</Status>
+      <Status load={load}>{(d) => <><SettingsCard key={JSON.stringify(d.settings)} data={d} reload={reload} /><TaxTablesCard /><RulesCard tiersOn={d.settings.tiersEnabled} /><AuditCard reasons={d.reasons} /><MoneyCheckCard /><CatchUpCard /></>}</Status>
     </div>
   );
 }

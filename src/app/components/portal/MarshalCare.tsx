@@ -1,5 +1,7 @@
-import { useState } from "react";
-import { Siren, AlertTriangle, Clock, MessageSquare, IdCard } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { authFetch } from "../../services/apiClient";
+import { API_BASE } from "../../services/config";
+import { Siren, AlertTriangle, Clock, MessageSquare, IdCard, Download, ShieldAlert } from "lucide-react";
 import { SectionPanel, StatCard } from "../dashboards/DashboardShell";
 import { portalClient, useLoad, Status, Empty, ActionButton, rand, when, inputCls } from "./ui";
 import { sendOrQueue, useOutbox, clearRejected } from "./offlineQueue";
@@ -37,6 +39,69 @@ export function OutboxBar() {
           <button type="button" className="underline text-xs mt-1" onClick={() => clearRejected()}>Dismiss</button>
         </div>)}
     </div>
+  );
+}
+
+/* ───────────────────────── the emergency button ───────────────────────── */
+/** Where the phone is, if it can say within a few seconds. Never blocks the alarm: no fix just means the alert goes without a location. */
+function where(): Promise<{ latitude: number; longitude: number; accuracyM: number } | null> {
+  return new Promise((resolve) => {
+    if (typeof navigator === "undefined" || !navigator.geolocation) { resolve(null); return; }
+    const timer = setTimeout(() => resolve(null), 7000);
+    navigator.geolocation.getCurrentPosition((p) => { clearTimeout(timer); resolve({ latitude: p.coords.latitude, longitude: p.coords.longitude, accuracyM: p.coords.accuracy }); }, () => { clearTimeout(timer); resolve(null); }, { enableHighAccuracy: true, timeout: 6000, maximumAge: 30_000 });
+  });
+}
+/**
+ * "I need help now": reachable from every marshal screen. Pressing it starts a short countdown (so a pocket press can be cancelled), then takes the phone's location and sends an emergency alert to the association
+ * by email and SMS. With no signal the alert is kept on the phone and sent the moment there is signal. It is not a substitute for calling the police or an ambulance, and says so.
+ */
+export function PanicButton({ rankId }: { rankId?: string }) {
+  const t = useT(), ranks = useRanks(), rid = rankId || ranks[0]?.id || "";
+  const [phase, setPhase] = useState<"idle" | "counting" | "sending" | "done">("idle"), [left, setLeft] = useState(5), [msg, setMsg] = useState<{ text: string; bad?: boolean } | null>(null), cancelled = useRef(false);
+  const send = async () => {
+    setPhase("sending"); setMsg(null); const loc = await where(); if (cancelled.current) return;
+    const r = await sendOrQueue(call, { method: "POST", path: "/incidents", label: "Emergency alert", body: { rankId: rid, type: "panic", ...(loc ?? {}) } });
+    setPhase("done");
+    if (r.status === "error") setMsg({ text: r.error, bad: true });
+    else setMsg({ text: `${r.status === "queued" ? t("Emergency alert saved on your phone. It will send as soon as you have signal.") : t("Emergency alert sent. Your association has been told.")}${loc ? "" : ` ${t("We could not find your location, so the alert will go without it.")}`}` });
+  };
+  // One interval for the whole countdown (not a timer re-armed after every render), so it keeps true time however busy the phone is; the alert goes when it reaches zero.
+  useEffect(() => {
+    if (phase !== "counting") return;
+    const id = setInterval(() => setLeft((l) => l - 1), 1000); return () => clearInterval(id);
+  }, [phase]);
+  useEffect(() => {
+    if (phase === "counting" && left <= 0) void send();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, left]);
+  return (
+    <div className="mb-4" role="group" aria-label={t("Emergency")}>
+      {phase === "idle" || phase === "done" ? (
+        <button type="button" disabled={!rid} onClick={() => { cancelled.current = false; setLeft(5); setMsg(null); setPhase("counting"); }} className="flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-base font-black text-white disabled:opacity-50" style={{ background: "#B91C1C" }}><ShieldAlert className="w-5 h-5" aria-hidden />{t("I need help now")}</button>
+      ) : phase === "counting" ? (
+        <div className="flex items-center justify-between gap-3 rounded-xl border-2 border-bad px-4 py-3" role="alert"><span className="text-base font-bold text-fg">{t("Sending an emergency alert")}: <span className="text-2xl">{left}</span></span><button type="button" className="rounded-lg border border-line px-4 py-2 text-sm font-bold text-fg" onClick={() => { cancelled.current = true; setPhase("idle"); }}>{t("Cancel")}</button></div>
+      ) : <p role="status" className="rounded-xl border border-line px-4 py-3 text-sm font-bold text-fg">{t("Getting your location")}…</p>}
+      {msg && <p role={msg.bad ? "alert" : "status"} className={`mt-2 text-sm font-bold ${msg.bad ? "text-bad" : "text-ok"}`}>{msg.text}</p>}
+      {phase !== "counting" && phase !== "sending" && <p className="mt-1 text-[11px] text-fg-subtle">This alerts your association. In danger, call the police on 10111 or 112 as well.</p>}
+    </div>
+  );
+}
+
+/** Downloads a file from the marshal's API with the signed-in session. */
+function DownloadFile({ path, filename, label }: { path: string; filename: string; label: string }) {
+  const [busy, setBusy] = useState(false), [err, setErr] = useState<string | null>(null);
+  return (
+    <span className="inline-flex items-center gap-2">
+      <button type="button" disabled={busy} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-bold text-white disabled:opacity-60" style={{ background: COLOR }} onClick={async () => {
+        setBusy(true); setErr(null);
+        try {
+          const res = await authFetch(`${API_BASE}/api/portal/marshal${path}`);
+          if (!res.ok) { const b = await res.json().catch(() => ({})); setErr(b.error ?? `Download failed (${res.status})`); return; }
+          const url = URL.createObjectURL(await res.blob()), a = document.createElement("a"); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+        } catch { setErr("We could not reach the server."); } finally { setBusy(false); }
+      }}><Download className="w-4 h-4" />{busy ? "Preparing…" : label}</button>
+      {err && <span role="alert" className="text-xs text-bad">{err}</span>}
+    </span>
   );
 }
 
@@ -142,7 +207,7 @@ export function SafetyScreen() {
       </SectionPanel>
       <SectionPanel title={t("My reports")}>
         <div className="p-4"><Status load={mine}>{({ incidents }) => incidents.length === 0 ? <Empty>You have not reported anything.</Empty> : (
-          <ul className="space-y-2 text-sm text-fg">{incidents.map((i) => <li key={i.id}>{when(i.occurredAt)} · {i.rank} · <b>{t(INCIDENTS.find(([k]) => k === i.type)?.[1] ?? i.type)}</b> · <span className="text-fg-muted">{i.status === "new" ? "Sent" : i.status === "acknowledged" ? "Seen by your association" : "Closed"}</span></li>)}</ul>)}</Status></div>
+          <ul className="space-y-2 text-sm text-fg">{incidents.map((i) => <li key={i.id}>{when(i.occurredAt)} · {i.rank} · <b>{t(i.type === "panic" ? "Emergency" : INCIDENTS.find(([k]) => k === i.type)?.[1] ?? i.type)}</b> · <span className="text-fg-muted">{i.status === "new" ? "Sent" : i.status === "acknowledged" ? "Seen by your association" : "Closed"}</span></li>)}</ul>)}</Status></div>
       </SectionPanel>
     </div>
   );
@@ -215,6 +280,7 @@ export function MyRecordScreen() {
           <div className="space-y-3 text-sm text-fg">
             <div className="grid gap-3 sm:grid-cols-3"><StatCard label={t("Started working")} value={r.startDate ?? "Not recorded"} icon={<Clock className="w-5 h-5" />} color={COLOR} /><StatCard label={t("Trips handled")} value={String(r.totalTrips)} icon={<AlertTriangle className="w-5 h-5" />} color={COLOR} /><StatCard label="Marshal number" value={r.marshalNumber ?? "None yet"} icon={<IdCard className="w-5 h-5" />} color={COLOR} /></div>
             <p>{r.verified ? <b>{t("Verified")}: your start date, consent and payslips are all on record.</b> : <span>{t("Not yet verified")}: still needed: {r.missing.join(", ")}.</span>}</p>
+            <DownloadFile path="/work-record.pdf" filename="work-record.pdf" label={t("Download my work record (PDF)")} />
             {r.ranks.length > 0 && <ul className="space-y-1">{r.ranks.map((k) => <li key={k.rank}>{k.rank}: {k.trips} trips ({k.first} to {k.last})</li>)}</ul>}
             {r.earningsByMonth.length > 0 && <table className="w-full"><thead><tr className="text-left text-xs text-fg-muted border-b border-line"><th className="py-1">Month</th><th className="text-right">Trips</th><th className="text-right">Earned</th><th className="text-right">Net</th></tr></thead><tbody>{r.earningsByMonth.map((m) => <tr key={m.month} className="border-b border-line/60"><td className="py-1">{m.month}</td><td className="text-right">{m.trips}</td><td className="text-right">{money(m.earnedCents)}</td><td className="text-right">{money(m.netCents)}</td></tr>)}</tbody></table>}
           </div>)}</Status></div>
@@ -249,13 +315,33 @@ export function CashOutCard() {
   return (
     <SectionPanel title={t("Cash-out")}>
       <div className="p-4 space-y-3 text-sm text-fg">
-        <p aria-live="polite">{t("You can draw up to")} <b>{money(c.maxCents)}</b> now. Earned and safe to draw: {money(c.availableCents)} ({c.capBp / 100}% of it may be drawn).{c.outstandingCents > 0 ? ` Already drawn and still to come off your payslip: ${money(c.outstandingCents)}.` : ""}</p>
+        <p aria-live="polite">You can draw up to <b>{money(c.maxCents)}</b> now. Earned and safe to draw: {money(c.availableCents)} ({c.capBp / 100}% of it may be drawn).{c.outstandingCents > 0 ? ` Already drawn and still to come off your payslip: ${money(c.outstandingCents)}.` : ""}</p>
         <div className="flex flex-wrap items-end gap-3">
           <Field label="Amount (R)"><input aria-label="Cash-out amount" className={inputCls + " mt-1 !w-28"} inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} /></Field>
           <ActionButton label={t("Draw")} color={COLOR} onRun={async () => { const r = await call<{ reference: string; amountCents: number }>("/cash-out", { method: "POST", body: { amountCents: Math.round(Number(amount.replace(",", ".")) * 100) } }); if ("error" in r) return { error: r.error }; setAmount(""); reload(); return { message: `${r.data.reference}: ${money(r.data.amountCents)} will be paid to you by your association, and comes off your next payslip.` }; }} />
         </div>
+        <AutoCashOut />
         <p className="text-[11px] text-fg-subtle">Only commission on trips whose fee has been paid can be drawn. It is a payment now of money you have earned, taken back from your next payslip, and is not a loan with interest.</p>
       </div>
     </SectionPanel>
+  );
+}
+
+/** Opting in to being paid what is safely available each evening (from 17:00), once it reaches a minimum the marshal sets. */
+function AutoCashOut() {
+  const t = useT(), [load, reload] = useLoad<{ enabled: boolean; minCents: number }>(() => call("/auto-cash-out"));
+  const [min, setMin] = useState<string | null>(null);
+  if (load.state !== "ready") return null;
+  const c = load.data, shown = min ?? String(c.minCents / 100);
+  return (
+    <div className="space-y-2 border-t border-line pt-3">
+      <label className="flex items-start gap-2"><input type="checkbox" className="mt-1" checked={c.enabled} onChange={async (e) => { await call("/auto-cash-out", { method: "PUT", body: { enabled: e.target.checked, minCents: Math.round(Number(shown.replace(",", ".")) * 100) || c.minCents } }); reload(); }} /><span>{t("Pay me automatically each evening")}</span></label>
+      {c.enabled && (
+        <div className="flex flex-wrap items-end gap-2 text-xs text-fg-muted">
+          <Field label="Only when at least (R)"><input aria-label="Automatic cash-out minimum" className={inputCls + " mt-1 !w-24"} inputMode="decimal" value={shown} onChange={(e) => setMin(e.target.value)} /></Field>
+          <ActionButton small label={t("Save")} color={COLOR} onRun={async () => { const r = await call("/auto-cash-out", { method: "PUT", body: { enabled: true, minCents: Math.round(Number(shown.replace(",", ".")) * 100) } }); if ("error" in r) return { error: r.error }; setMin(null); reload(); return { message: "Saved." }; }} />
+        </div>)}
+      <p className="text-[11px] text-fg-subtle">From 17:00 each day you are paid what is safely available, once it reaches your minimum, and it comes off your next payslip. You can switch it off at any time.</p>
+    </div>
   );
 }
