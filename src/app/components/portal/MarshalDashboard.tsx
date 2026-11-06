@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { TokensPanel } from "./TokensPanel";
-import { ListOrdered, History, BarChart3, Link2, Landmark, Coins, Bus } from "lucide-react";
+import { ListOrdered, History, BarChart3, Link2, Landmark, Coins, Bus, FileText, Scale } from "lucide-react";
 import { Banknote } from "lucide-react";
 import { PaymentsPanel, TripsPanel, CrossBorderPanel, VirtualAccountsPanel } from "./MoneyPanels";
 import { BankStrip, BankScreen } from "./BankAccount";
@@ -8,6 +8,7 @@ import { DashboardShell, SectionPanel, StatCard, TableCard } from "../dashboards
 import { portalClient, useLoad, Status, Empty, Field, ActionButton, inputCls, when, inkOn, type Load } from "./ui";
 import { LinksPanel } from "./LinksPanel";
 import { MarshalLoading } from "./MarshalLoading";
+import { EarningsScreen, PayslipsScreen, MoneyCheckScreen } from "./MarshalPay";
 import { LoadingReport } from "./LoadingReport";
 import { CsvButton, Pager, RangeBar, ScreenBoundary, TrendChart, rangeQuery, saToday, saShift, monthStart, useAutoRefresh, type Range } from "./widgets";
 
@@ -16,6 +17,9 @@ const call = portalClient("marshal");
 const NAV = [
   { icon: <ListOrdered className="w-4 h-4" />, label: "Ranks & queue" },
   { icon: <Bus className="w-4 h-4" />, label: "Loading" },
+  { icon: <Coins className="w-4 h-4" />, label: "Earnings" },
+  { icon: <FileText className="w-4 h-4" />, label: "Payslips" },
+  { icon: <Scale className="w-4 h-4" />, label: "Money check" },
   { icon: <History className="w-4 h-4" />, label: "Departures" },
   { icon: <BarChart3 className="w-4 h-4" />, label: "Reports" }, { icon: <Coins className="w-4 h-4" />, label: "VINK Tokens" }, { icon: <Landmark className="w-4 h-4" />, label: "Bank account" },
   { icon: <Banknote className="w-4 h-4" />, label: "Payments & trips" },
@@ -42,6 +46,9 @@ export function MarshalDashboard({ userName, onClose }: { userName?: string; onC
           {(nav === "Ranks & queue" || nav === "Loading" || nav === "Departures") && <RankPicker ranks={ranks} picked={picked?.id} onPick={setRankId} />}
           {nav === "Ranks & queue" && picked && <QueueScreen key={picked.id} rank={picked} onChanged={reloadRanks} />}
           {nav === "Loading" && picked && <MarshalLoading key={picked.id} rank={picked} />}
+          {nav === "Earnings" && <EarningsScreen />}
+          {nav === "Payslips" && <PayslipsScreen />}
+          {nav === "Money check" && <MoneyCheckScreen />}
           {nav === "Departures" && picked && <DeparturesScreen key={picked.id} rank={picked} />}
           {nav === "Reports" && <><ReportsScreen /><LoadingReport segment="marshal" /></>}
           {nav === "Payments & trips" && <><VirtualAccountsPanel segment="marshal" color={COLOR} /><CrossBorderPanel segment="marshal" color={COLOR} /><PaymentsPanel segment="marshal" color={COLOR} /><TripsPanel segment="marshal" color={COLOR} /></>}
@@ -71,7 +78,10 @@ function RankPicker({ ranks, picked, onPick }: { ranks: Load<{ ranks: Rank[] }>;
 function QueueScreen({ rank, onChanged }: { rank: Rank; onChanged: () => void }) {
   const [q, reloadQ] = useLoad<{ queue: QItem[] }>(() => call(`/ranks/${rank.id}/queue`));
   const [veh, reloadV] = useLoad<{ vehicles: RankVehicle[] }>(() => call(`/ranks/${rank.id}/vehicles`));
-  const [pax, setPax] = useState(""); const [note, setNote] = useState("");
+  const [pax, setPax] = useState(""); const [note, setNote] = useState(""); const [reason, setReason] = useState("");
+  // Why a vehicle leaves out of order or is taken out of the line: asked for once the association uses commission, always recorded when given (so a deviation can be explained in a dispute).
+  const [rs] = useLoad<{ reasons: { code: string; label: string }[] }>(() => call("/reason-codes"));
+  const reasons = rs.state === "ready" ? rs.data.reasons ?? [] : [];
   const refresh = () => { reloadQ(); reloadV(); onChanged(); };
   useAutoRefresh(() => { reloadQ(); reloadV(); }, 15_000);          // another marshal may have changed the line
 
@@ -85,14 +95,17 @@ function QueueScreen({ rank, onChanged }: { rank: Rank; onChanged: () => void })
                 <li key={x.id} className="flex flex-wrap items-center justify-between gap-2 text-sm text-fg">
                   <span><b className="mr-2" style={{ color: `color-mix(in srgb, ${COLOR} 62%, var(--vk-fg))` }}>{x.position}</b>{x.registration}<span className="text-fg-subtle"> · {[x.make, x.model].filter(Boolean).join(" ") || "vehicle"}{x.seats ? ` · ${x.seats} seats` : ""} · {x.driver ?? "no driver set"} · since {when(x.joinedAt)}</span></span>
                   <span className="flex gap-2">
-                    <ActionButton small label="Depart" busyLabel="Logging…" color={COLOR} onRun={async () => { const r = await call(`/ranks/${rank.id}/depart`, { method: "POST", body: { queueId: x.id, passengers: pax === "" ? undefined : Number(pax), note: note || undefined } }); refresh(); return "error" in r ? { error: r.error } : undefined; }} />
-                    <ActionButton small label="Remove" color="#6B7280" onRun={async () => { const r = await call(`/ranks/${rank.id}/queue/${x.id}/remove`, { method: "POST", body: {} }); refresh(); return "error" in r ? { error: r.error } : undefined; }} />
+                    <ActionButton small label="Depart" busyLabel="Logging…" color={COLOR} onRun={async () => { const r = await call(`/ranks/${rank.id}/depart`, { method: "POST", body: { queueId: x.id, reasonCode: reason || undefined, passengers: pax === "" ? undefined : Number(pax), note: note || undefined } }); refresh(); return "error" in r ? { error: r.error } : undefined; }} />
+                    <ActionButton small label="Remove" color="#6B7280" onRun={async () => { const r = await call(`/ranks/${rank.id}/queue/${x.id}/remove`, { method: "POST", body: { reasonCode: reason || undefined } }); refresh(); return "error" in r ? { error: r.error } : undefined; }} />
                   </span>
                 </li>))}</ol>
               <div className="flex flex-wrap items-end gap-3 pt-2 border-t border-line">
                 <label className="block"><span className="text-[11px] text-fg-muted">Passengers on departure (optional)</span><input className={inputCls + " mt-1 w-40"} inputMode="numeric" value={pax} onChange={(e) => setPax(e.target.value)} /></label>
                 <label className="block flex-1 min-w-[12rem]"><span className="text-[11px] text-fg-muted">Note (optional)</span><input className={inputCls + " mt-1"} maxLength={200} value={note} onChange={(e) => setNote(e.target.value)} /></label>
-                <p className="text-[11px] text-fg-subtle basis-full">The passengers and note are saved with the departure you press Depart on.</p>
+                {reasons.length > 0 && (
+                  <label className="block"><span className="text-[11px] text-fg-muted">Reason (if a vehicle leaves out of order or is taken out)</span>
+                    <select className={inputCls + " mt-1 w-56"} value={reason} onChange={(e) => setReason(e.target.value)}><option value="">No reason</option>{reasons.map((r) => <option key={r.code} value={r.code}>{r.label}</option>)}</select></label>)}
+                <p className="text-[11px] text-fg-subtle basis-full">The passengers, note and reason are saved with the vehicle you press Depart or Remove on.</p>
               </div>
             </>
           )}</Status>

@@ -9,6 +9,7 @@ import { portalClient, useLoad, Status, Empty, ActionButton, outcome, inputCls, 
 import { MembersList, VehiclesList, RoutesManager, AssociationMap, DeparturesTrend, FinesLedger, AssociationStatements } from "./AssociationExtras";
 import { ScreenBoundary } from "./widgets";
 import { LoadingReport } from "./LoadingReport";
+import { CommissionScreen, PayRunScreen, QueriesScreen } from "./AssociationCommission";
 
 const COLOR = "#C8102E";
 const call = portalClient("association");
@@ -32,6 +33,7 @@ export function AssociationDashboard({ userName, onClose }: { userName?: string;
     { icon: <RouteIcon className="w-4 h-4" />, label: "Routes" }, { icon: <MapIcon className="w-4 h-4" />, label: "Map" },
     { icon: <Coins className="w-4 h-4" />, label: "Levies" }, { icon: <Landmark className="w-4 h-4" />, label: "Fines ledger" }, { icon: <FileText className="w-4 h-4" />, label: "Statements" },
     { icon: <Banknote className="w-4 h-4" />, label: "Marshal fee & payments" },
+    { icon: <Coins className="w-4 h-4" />, label: "Commission" }, { icon: <FileText className="w-4 h-4" />, label: "Pay runs" }, { icon: <Landmark className="w-4 h-4" />, label: "Queries" },
     { icon: <Coins className="w-4 h-4" />, label: "VINK Tokens" }, { icon: <Building2 className="w-4 h-4" />, label: "Bank account" },
   ];
   return (
@@ -50,6 +52,9 @@ export function AssociationDashboard({ userName, onClose }: { userName?: string;
           {nav === "Map" && <AssociationMap />}
           {nav === "Levies" && <Levies />}
           {nav === "Fines ledger" && <FinesLedger />}
+          {nav === "Commission" && <CommissionScreen />}
+          {nav === "Pay runs" && <PayRunScreen />}
+          {nav === "Queries" && <QueriesScreen />}
           {nav === "Statements" && <><AssociationStatements /><LoadingReport segment="association" /></>}
           {nav === "Marshal fee & payments" && <><MarshalFeeSetting color={COLOR} /><VirtualAccountsPanel segment="association" color={COLOR} /><CrossBorderPanel segment="association" color={COLOR} /><PaymentsPanel segment="association" color={COLOR} /><TripsPanel segment="association" color={COLOR} /></>}
           {nav === "VINK Tokens" && <TokensPanel segment="association" color={COLOR} />}

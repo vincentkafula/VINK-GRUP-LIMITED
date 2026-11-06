@@ -22,9 +22,10 @@ const q = async (sql: string, p: unknown[] = []) => (await db.query(sql, p)).row
 beforeEach(async () => {
   db = allPortalsDb(); c = createCommission(db, () => clock); as = U.M1;
   for (const [i, n, r] of [[U.A, "Association A", "association"], [U.M1, "Mo Marshal", "marshal"], [U.M2, "Mia Marshal", "marshal"], [U.D1, "Dee Driver", "driver"], [U.O1, "Olu Owner", "vehicle_owner"]] as const) await db.query(`INSERT INTO users (id, username, name, email, role) VALUES ($1,$2,$3,$4,$5)`, [i, n.replace(/ /g, "").toLowerCase(), n, `${i}@x.test`, r]);
+  await db.query(`INSERT INTO terminals (id, serial) VALUES ($1,'T-900'),($2,'T-901')`, [id(900), id(901)]);                          // a loading session needs a real device
   await db.query(`INSERT INTO ranks (id, association_id, name) VALUES ($1,$2,'Langa rank')`, [R1, U.A]); await db.query(`INSERT INTO rank_marshals (rank_id, marshal_id) VALUES ($1,$2)`, [R1, U.M1]);
   await db.query(`INSERT INTO vehicles (id, owner_id, registration, driver_id) VALUES ($1,$2,'CA 111-111',$3),($4,$2,'CA 222-222',NULL),($5,$2,'CA 333-333',NULL)`, [V1, U.O1, U.D1, V2, V3]);
-  await db.query(`INSERT INTO memberships (member_id, association_id, status, member_role, requested_by) VALUES ($1,$2,'active','vehicle_owner','owner')`, [U.O1, U.A]);
+  await db.query(`INSERT INTO memberships (member_id, association_id, status, member_role, requested_by) VALUES ($1,$2,'active','vehicle_owner','member')`, [U.O1, U.A]);
   const app = express(); app.use(express.json()); app.use((req, _r, next) => { (req as any).user = { userId: as, username: "marshal", role: "marshal" }; next(); }); app.use("/marshal", createMarshalRouter(db, () => clock));
   await new Promise<void>((ok) => { server = app.listen(0, "127.0.0.1", ok); }); url = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
 });

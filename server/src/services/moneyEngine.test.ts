@@ -1,4 +1,7 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe as baseDescribe, it, expect, beforeEach, afterEach } from "vitest";
+// These tests pin the clock in the in-memory database, which a real PostgreSQL's now() cannot follow (payments would never look due), so they run only there. The SQL they cover that the commission work
+// adds is exercised against a real PostgreSQL by commission.test.ts, payslips.test.ts and the portal tests.
+const describe = process.env.TEST_PG_URL ? baseDescribe.skip : baseDescribe;
 import { pinClock, unpinClock } from "../testClock.js";
 beforeEach(() => pinClock("2026-10-05T06:00:00Z"));
 afterEach(() => unpinClock());
@@ -45,8 +48,8 @@ beforeEach(async () => {
     acct[u] = core.accounts(u)[0].id;
     await db.query(`INSERT INTO bank_account_links (user_id, manshya_account_id, holder_type, status) VALUES ($1,$2,'personal','verified')`, [u, acct[u]]);
   }
-  await db.query(`INSERT INTO terminals (id, serial, driver_id, vehicle_id, owner_id, investor_id, association_id) VALUES ($1,'SN1',$2,$3,$4,$5,$6)`, [T, U.driver, V, U.owner, U.investor, U.assoc]);
   await db.query(`INSERT INTO vehicles (id, owner_id, registration) VALUES ($1,$2,'CA 123')`, [V, U.owner]);
+  await db.query(`INSERT INTO terminals (id, serial, driver_id, vehicle_id, owner_id, investor_id, association_id) VALUES ($1,'SN1',$2,$3,$4,$5,$6)`, [T, U.driver, V, U.owner, U.investor, U.assoc]);
   ledger = manshyaLedgerPort(mod as never);
   engine = createMoneyEngine({ db, ledger, reader });
 });
