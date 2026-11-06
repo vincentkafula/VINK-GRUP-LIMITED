@@ -39,8 +39,15 @@ export function createMarshalRouter(db: Db, now: () => Date = () => new Date(), 
     if (c === undefined || c === null || c === "") return { code: null };
     return (await commission.reasonOk(c, "queue")) ? { code: String(c) } : { code: null, bad: "Choose a reason from the list" };
   }
-  async function logQueue(rankId: unknown, vehicleId: unknown, queueId: unknown, marshalId: string, action: "join" | "remove" | "depart" | "override", reason: string | null, position: number | null): Promise<void> {
-    try { await db.query(`INSERT INTO queue_events (rank_id, vehicle_id, queue_id, marshal_id, action, reason_code, position_before) VALUES ($1,$2,$3,$4,$5,$6,$7)`, [rankId, vehicleId, queueId ?? null, marshalId, action, reason, position]); }
+  /** A reference the marshal's phone gave the change, so one made offline and sent twice happens once. */
+  const clientRefOf = (req: { body?: { clientRef?: unknown } }): string | null => (typeof req.body?.clientRef === "string" && /^[A-Za-z0-9._-]{8,80}$/.test(req.body.clientRef) ? req.body.clientRef : null);
+  async function replayed(req: { body?: { clientRef?: unknown } }, res: { json: (b: unknown) => void }, marshalId: string): Promise<boolean> {
+    const ref = clientRefOf(req); if (!ref) return false;
+    if (!(await db.query(`SELECT 1 AS x FROM queue_events WHERE client_ref = $1 AND marshal_id = $2`, [ref, marshalId])).rows.length) return false;
+    res.json({ success: true, replayed: true }); return true;
+  }
+  async function logQueue(rankId: unknown, vehicleId: unknown, queueId: unknown, marshalId: string, action: "join" | "remove" | "depart" | "override", reason: string | null, position: number | null, ref: string | null = null): Promise<void> {
+    try { await db.query(`INSERT INTO queue_events (rank_id, vehicle_id, queue_id, marshal_id, action, reason_code, position_before, client_ref) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`, [rankId, vehicleId, queueId ?? null, marshalId, action, reason, position, ref]); }
     catch (e) { console.error("[queue] could not log a queue change:", e instanceof Error ? e.message : e); }
   }
   const calculate = async (departureId: string): Promise<void> => { try { await commission.recordDeparture(departureId); } catch (e) { console.error("[commission] a departure's commission will be calculated by the next catch-up:", e instanceof Error ? e.message : e); } };
@@ -92,6 +99,7 @@ export function createMarshalRouter(db: Db, now: () => Date = () => new Date(), 
   }));
 
   router.post("/ranks/:id/queue", json({ limit: "5kb" }), h(async (req, res) => {
+    if (await replayed(req, res, uid(req))) return;
     const rank = await myRank(req.params.id, uid(req)), vehicleId = req.body?.vehicleId;
     if (!rank) { fail(res, 404, "Rank not found"); return; }
     if (!isUuid(vehicleId)) { fail(res, 400, "Choose a vehicle"); return; }
@@ -102,12 +110,13 @@ export function createMarshalRouter(db: Db, now: () => Date = () => new Date(), 
     if ((await db.query(`SELECT 1 AS x FROM rank_queue WHERE vehicle_id = $1 AND left_at IS NULL`, [vehicleId])).rows.length) { fail(res, 409, "That vehicle is already in a queue"); return; }
     try {
       const r = await db.query(`INSERT INTO rank_queue (rank_id, vehicle_id) VALUES ($1,$2) RETURNING id`, [rank.id, vehicleId]);
-      await logQueue(rank.id, vehicleId, r.rows[0].id, uid(req), "join", null, (await db.query(`SELECT id FROM rank_queue WHERE rank_id = $1 AND left_at IS NULL`, [rank.id])).rows.length);
+      await logQueue(rank.id, vehicleId, r.rows[0].id, uid(req), "join", null, (await db.query(`SELECT id FROM rank_queue WHERE rank_id = $1 AND left_at IS NULL`, [rank.id])).rows.length, clientRefOf(req));
       res.status(201).json({ success: true, id: r.rows[0].id });
     } catch (e) { if (isUniqueViolation(e)) { fail(res, 409, "That vehicle is already in a queue"); return; } throw e; }
   }));
 
   router.post("/ranks/:id/depart", json({ limit: "5kb" }), h(async (req, res) => {
+    if (await replayed(req, res, uid(req))) return;
     const me = uid(req), rank = await myRank(req.params.id, me);
     if (!rank) { fail(res, 404, "Rank not found"); return; }
     const b = req.body ?? {};
@@ -149,7 +158,7 @@ export function createMarshalRouter(db: Db, now: () => Date = () => new Date(), 
     const r = await db.query(`INSERT INTO departures (rank_id, vehicle_id, driver_id, marshal_id, passengers, note) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id`,
       [rank.id, took.vehicle_id, veh?.driver_id ?? null, me, passengers, note]);
     await audit(db, req, "marshal.depart", String(rank.id), { vehicleId: took.vehicle_id, passengers });
-    await logQueue(rank.id, took.vehicle_id, named ?? null, me, outOfOrder || why.code ? "override" : "depart", why.code, position);
+    await logQueue(rank.id, took.vehicle_id, named ?? null, me, outOfOrder || why.code ? "override" : "depart", why.code, position, clientRefOf(req));
     await calculate(String(r.rows[0].id));                                                    // the marshal's commission for this trip (nothing happens unless the association has switched it on)
     res.status(201).json({ success: true, id: r.rows[0].id });
   }));
@@ -199,6 +208,7 @@ export function createMarshalRouter(db: Db, now: () => Date = () => new Date(), 
   }));
 
   router.post("/ranks/:id/queue/:queueId/remove", json({ limit: "5kb" }), h(async (req, res) => {
+    if (await replayed(req, res, uid(req))) return;
     const rank = await myRank(req.params.id, uid(req));
     if (!rank) { fail(res, 404, "Rank not found"); return; }
     if (!isUuid(req.params.queueId)) { fail(res, 400, "Invalid queue entry"); return; }
@@ -209,7 +219,7 @@ export function createMarshalRouter(db: Db, now: () => Date = () => new Date(), 
     const was = (await db.query(`SELECT id, vehicle_id FROM rank_queue WHERE rank_id = $1 AND left_at IS NULL ORDER BY joined_at, id`, [rank.id])).rows;
     const r = await db.query(`UPDATE rank_queue SET left_at = now() WHERE id = $1 AND rank_id = $2 AND left_at IS NULL RETURNING id, vehicle_id`, [req.params.queueId, rank.id]);
     if (!r.rows.length) { fail(res, 404, "Queue entry not found"); return; }
-    await logQueue(rank.id, r.rows[0].vehicle_id, req.params.queueId, uid(req), "remove", why.code, was.findIndex((x) => String(x.id) === req.params.queueId) + 1 || null);
+    await logQueue(rank.id, r.rows[0].vehicle_id, req.params.queueId, uid(req), "remove", why.code, was.findIndex((x) => String(x.id) === req.params.queueId) + 1 || null, clientRefOf(req));
     res.json({ success: true });
   }));
 

@@ -1,8 +1,9 @@
 import { Router, json, type Request, type Response } from "express";
-import { h, uid, fail, isUuid, audit, saDay, type Db } from "./common.js";
+import { h, uid, fail, isUuid, audit, saDay, sendCsv, type Db } from "./common.js";
 import { createCommission } from "../services/commission.js";
 import { createPayslips, periodFor, addDays } from "../services/payslips.js";
 import { createCommissionReports } from "../services/commissionReports.js";
+import { createMarshalCare } from "../services/marshalCare.js";
 
 /**
  * The marshal commission and payslip API (docs/MARSHAL_COMMISSION.md), mounted on three routers. Who can see what is decided here, by the signed-in role:
@@ -21,12 +22,13 @@ const queryDay = (req: Request, name: string, fallback: string): string => (type
 
 function services(db: Db, now: () => Date) {
   const commission = createCommission(db, now), payslips = createPayslips(db, commission, now), reports = createCommissionReports(db, commission, payslips, now);
-  return { commission, payslips, reports };
+  return { commission, payslips, reports, care: createMarshalCare(db, commission, now) };
 }
 
 /* ───────────────────────── the association ───────────────────────── */
 export function mountAssociationCommission(router: Router, db: Db, now: () => Date = () => new Date()): void {
   const { commission, payslips, reports } = services(db, now);
+  mountAssociationCare(router, db, now);
   const body = json({ limit: "10kb" });
   const assoc = (req: Request) => uid(req);
 
@@ -140,6 +142,7 @@ export function mountAssociationCommission(router: Router, db: Db, now: () => Da
 /* ───────────────────────── the marshal (their own data only) ───────────────────────── */
 export function mountMarshalCommission(router: Router, db: Db, now: () => Date = () => new Date()): void {
   const { payslips, reports } = services(db, now);
+  mountMarshalCare(router, db, now);
   /** The association a marshal works for (the first, if they work for several: a request can name another). */
   const firstAssociation = async (marshalId: string): Promise<string | null> => String((await db.query(`SELECT r.association_id FROM rank_marshals m JOIN ranks r ON r.id = m.rank_id WHERE m.marshal_id = $1 ORDER BY r.created_at LIMIT 1`, [marshalId])).rows[0]?.association_id ?? "") || null;
   const body = json({ limit: "5kb" });
@@ -173,9 +176,72 @@ export function mountMarshalCommission(router: Router, db: Db, now: () => Date =
 /* ───────────────────────── the driver (their own fees and place in line) ───────────────────────── */
 export function mountDriverCommission(router: Router, db: Db, now: () => Date = () => new Date()): void {
   const { reports } = services(db, now);
+  router.get("/trip-fees", h(async (req, res) => { const today = saDay(now()); res.json({ success: true, trips: await reports.driverTrips(uid(req), queryDay(req, "from", addDays(today, -13)), queryDay(req, "to", today)) }); }));
   const body = json({ limit: "5kb" });
   router.get("/queue-position", h(async (req, res) => { res.json({ success: true, positions: await reports.queuePosition(uid(req)) }); }));
   router.get("/fees", h(async (req, res) => { const today = saDay(now()); reply(res, await reports.reconcile({ driverId: uid(req) }, queryDay(req, "from", addDays(today, -6)), queryDay(req, "to", today))); }));
   router.get("/disputes", h(async (req, res) => { res.json({ success: true, disputes: await reports.listDisputes({ userId: uid(req) }) }); }));
   router.post("/disputes", body, h(async (req, res) => { reply(res, await reports.raiseDispute(uid(req), "driver", { ...(req.body ?? {}), targetType: "trip" }), 201); }));
+}
+
+/* ───────────────────────── marshal care: the marshal's side ───────────────────────── */
+function mountMarshalCare(router: Router, db: Db, now: () => Date): void {
+  const { care } = services(db, now), body = json({ limit: "300kb" });               // a small photo with an incident report
+  const window = (req: Request) => { const today = saDay(now()); return { from: queryDay(req, "from", addDays(today, -13)), to: queryDay(req, "to", today) }; };
+  router.get("/shifts", h(async (req, res) => { const w = window(req); await care.detectShifts({ marshalId: uid(req) }, w.from, w.to); res.json({ success: true, ...(await care.shifts({ marshalId: uid(req) }, w.from, w.to)) }); }));
+  router.post("/shifts", body, h(async (req, res) => { reply(res, await care.addShift(uid(req), req.body ?? {}), 201); }));
+  router.put("/shifts/:id", body, h(async (req, res) => { if (!isUuid(req.params.id)) { fail(res, 400, "Invalid shift"); return; } reply(res, await care.correctShift(uid(req), req.params.id, req.body ?? {})); }));
+  router.post("/incidents", body, h(async (req, res) => { reply(res, await care.reportIncident(uid(req), req.body ?? {}), 201); }));
+  router.get("/incidents", h(async (req, res) => { res.json({ success: true, ...(await care.incidents({ marshalId: uid(req) })) }); }));
+  router.post("/grievances", body, h(async (req, res) => { reply(res, await care.submitGrievance(uid(req), req.body ?? {}), 201); }));
+  router.get("/grievances", h(async (req, res) => { res.json({ success: true, grievances: await care.grievances({ marshalId: uid(req) }) }); }));
+  router.get("/benefits", h(async (req, res) => { res.json({ success: true, ...(await care.benefits(uid(req))) }); }));
+  router.get("/work-record", h(async (req, res) => { res.json({ success: true, record: await care.workRecord(uid(req)) }); }));
+  router.get("/income-letters", h(async (req, res) => { res.json({ success: true, letters: await care.letters(uid(req)) }); }));
+  router.post("/income-letters", body, h(async (req, res) => { const r = await care.makeLetter(uid(req), req.body?.months); if (!r.ok) { res.status(r.status).json({ success: false, error: r.error }); return; } res.status(201).json({ success: true, letter: r.value }); }));
+  router.get("/income-letters/:id.pdf", h(async (req, res) => {
+    if (!isUuid(req.params.id)) { fail(res, 400, "Invalid letter"); return; } const l = await care.renderLetter(uid(req), req.params.id); if (!l) { fail(res, 404, "Letter not found"); return; }
+    res.setHeader("Content-Type", "application/pdf"); res.setHeader("Content-Disposition", `attachment; filename="income-letter-${String(l.number)}.pdf"`); res.send(await care.letterPdf(l as never));
+  }));
+  router.get("/income-letters/:id", h(async (req, res) => { if (!isUuid(req.params.id)) { fail(res, 400, "Invalid letter"); return; } const l = await care.renderLetter(uid(req), req.params.id); if (!l) { fail(res, 404, "Letter not found"); return; } res.json({ success: true, letter: l }); }));
+}
+
+/* ───────────────────────── marshal care: the association's side ───────────────────────── */
+function mountAssociationCare(router: Router, db: Db, now: () => Date): void {
+  const { care } = services(db, now), body = json({ limit: "10kb" }), assoc = (req: Request) => uid(req);
+  const window = (req: Request) => { const today = saDay(now()); return { from: queryDay(req, "from", addDays(today, -13)), to: queryDay(req, "to", today) }; };
+  router.get("/shifts", h(async (req, res) => { const w = window(req); res.json({ success: true, ...(await care.shifts({ associationId: assoc(req) }, w.from, w.to)) }); }));
+  router.post("/shifts/detect", body, h(async (req, res) => {
+    const to = typeof req.body?.to === "string" && DAY.test(req.body.to) ? req.body.to : saDay(now()), from = typeof req.body?.from === "string" && DAY.test(req.body.from) ? req.body.from : addDays(to, -13);
+    if (from > to) { fail(res, 400, "The start must not be after the end"); return; } res.json({ success: true, found: await care.detectShifts({ associationId: assoc(req) }, from, to) });
+  }));
+  router.post("/shifts/:id/decide", body, h(async (req, res) => { if (!isUuid(req.params.id)) { fail(res, 400, "Invalid shift"); return; } const r = await care.decideShift(assoc(req), req.params.id, uid(req), req.body?.decision); if (r.ok) await audit(db, req, "shift.decide", req.params.id, { decision: req.body?.decision }); reply(res, r); }));
+  router.get("/incidents", h(async (req, res) => { const st = typeof req.query.status === "string" ? req.query.status : undefined; res.json({ success: true, ...(await care.incidents({ associationId: assoc(req) }, { ...(st ? { status: st } : {}), from: queryDay(req, "from", ""), to: queryDay(req, "to", "") })) }); }));
+  router.get("/incidents/:id/photo", h(async (req, res) => { if (!isUuid(req.params.id)) { fail(res, 400, "Invalid report"); return; } const p = await care.incidentPhoto(assoc(req), req.params.id); if (!p) { fail(res, 404, "No photo"); return; } res.json({ success: true, photo: p }); }));
+  router.post("/incidents/:id/ack", body, h(async (req, res) => { if (!isUuid(req.params.id)) { fail(res, 400, "Invalid report"); return; } const r = await care.acknowledgeIncident(assoc(req), req.params.id, uid(req), req.body?.status); if (r.ok) await audit(db, req, "incident.ack", req.params.id, { status: req.body?.status }); reply(res, r); }));
+  router.get("/risk-map", h(async (req, res) => { const w = window(req); reply(res, await care.riskMap(assoc(req), w.from, w.to)); }));
+  router.get("/grievances", h(async (req, res) => { res.json({ success: true, grievances: await care.grievances({ associationId: assoc(req) }, typeof req.query.status === "string" ? req.query.status : undefined) }); }));
+  router.post("/grievances/:id/respond", body, h(async (req, res) => { if (!isUuid(req.params.id)) { fail(res, 400, "Invalid complaint"); return; } const r = await care.respondGrievance(assoc(req), req.params.id, uid(req), req.body ?? {}); if (r.ok) await audit(db, req, "grievance.respond", req.params.id, { status: req.body?.status }); reply(res, r); }));
+  router.get("/welfare-insights", h(async (req, res) => { const w = window(req); reply(res, await care.welfareInsights(assoc(req), w.from, w.to)); }));
+  router.get("/benefits", h(async (req, res) => {
+    const ms = (await db.query(`SELECT DISTINCT m.marshal_id, u.name FROM rank_marshals m JOIN ranks r ON r.id = m.rank_id JOIN users u ON u.id = m.marshal_id WHERE r.association_id = $1 ORDER BY u.name`, [assoc(req)])).rows;
+    res.json({ success: true, marshals: await Promise.all(ms.map(async (m) => ({ id: String(m.marshal_id), name: String(m.name), ...(await care.benefits(String(m.marshal_id), assoc(req))) }))) });
+  }));
+  router.put("/benefits", body, h(async (req, res) => { const r = await care.setBenefit(assoc(req), uid(req), req.body ?? {}); if (r.ok) await audit(db, req, "benefit.set", String(req.body?.marshalId), { kind: req.body?.kind, status: req.body?.status }); reply(res, r); }));
+  router.get("/work-record/:marshalId", h(async (req, res) => {
+    if (!isUuid(req.params.marshalId) || !(await db.query(`SELECT 1 AS x FROM rank_marshals m JOIN ranks r ON r.id = m.rank_id WHERE m.marshal_id = $1 AND r.association_id = $2`, [req.params.marshalId, assoc(req)])).rows.length) { fail(res, 404, "That marshal was not found"); return; }
+    res.json({ success: true, record: await care.workRecord(req.params.marshalId, assoc(req)) });
+  }));
+  router.post("/income-letters/verify", body, h(async (req, res) => { reply(res, await care.verifyLetter(assoc(req), req.body?.number, req.body?.code)); }));
+  const kpiArgs = (req: Request) => { const w = window(req), rankId = typeof req.query.rankId === "string" && isUuid(req.query.rankId) ? req.query.rankId : undefined, marshalId = typeof req.query.marshalId === "string" && isUuid(req.query.marshalId) ? req.query.marshalId : undefined; return { ...w, f: { ...(rankId ? { rankId } : {}), ...(marshalId ? { marshalId } : {}) } }; };
+  router.get("/kpis", h(async (req, res) => { const k = kpiArgs(req); reply(res, await care.kpis(assoc(req), k.from, k.to, k.f), 200, "kpis"); }));
+  router.get("/kpis.csv", h(async (req, res) => {
+    const k = kpiArgs(req), r = await care.kpis(assoc(req), k.from, k.to, k.f); if (!r.ok) { fail(res, r.status, r.error); return; }
+    sendCsv(res, `marshal-overview-${k.from}-to-${k.to}.csv`, ["Measure", "Value"], Object.entries(r.value).map(([key, v]) => [key, v === null ? "" : v as never]));
+  }));
+  router.get("/kpis.pdf", h(async (req, res) => {
+    const k = kpiArgs(req), r = await care.kpis(assoc(req), k.from, k.to, k.f); if (!r.ok) { fail(res, r.status, r.error); return; }
+    res.setHeader("Content-Type", "application/pdf"); res.setHeader("Content-Disposition", `attachment; filename="marshal-overview-${k.from}-to-${k.to}.pdf"`); res.send(await care.kpisPdf(assoc(req), r.value));
+  }));
+  router.get("/patterns", h(async (req, res) => { res.json({ success: true, patterns: await care.patterns(assoc(req), saDay(now())) }); }));
 }

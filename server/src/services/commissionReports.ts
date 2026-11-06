@@ -1,7 +1,7 @@
 import type { Db } from "../portal/common.js";
 import { saDay, saDayStart } from "../portal/common.js";
 import type { Commission } from "./commission.js";
-import type { Payslips } from "./payslips.js";
+import { addDays, type Payslips } from "./payslips.js";
 
 /**
  * What marshals, drivers and the association can see of the commission records (docs/MARSHAL_COMMISSION.md): a marshal's earnings by day and the trips behind a day, the money check (trip fees due,
@@ -100,7 +100,10 @@ export function createCommissionReports(db: Db, commission: Commission, payslips
 
   /* ───────────────────────── disputes ───────────────────────── */
   /** A marshal queries a line of a payslip or a trip; a driver queries a trip. It goes to the association admin and is tracked until answered. */
-  async function raiseDispute(userId: string, role: "marshal" | "driver", a: { targetType?: unknown; targetId?: unknown; message?: unknown }): Promise<Res<{ id: string }>> {
+  async function raiseDispute(userId: string, role: "marshal" | "driver", a: { targetType?: unknown; targetId?: unknown; message?: unknown; clientRef?: unknown }): Promise<Res<{ id: string }>> {
+    const ref = a.clientRef === undefined || a.clientRef === null || a.clientRef === "" ? null : typeof a.clientRef === "string" && /^[A-Za-z0-9._-]{8,80}$/.test(a.clientRef) ? a.clientRef : undefined;
+    if (ref === undefined) return bad(400, "That reference is not valid");
+    if (ref) { const dup = (await db.query(`SELECT id FROM disputes WHERE client_ref = $1 AND raised_by = $2`, [ref, userId])).rows[0]; if (dup) return { ok: true, value: { id: String(dup.id) } }; }
     const message = typeof a.message === "string" ? a.message.trim() : "";
     if (message.length < 5 || message.length > 500) return bad(400, "Say what is wrong, in 5 to 500 characters");
     if (typeof a.targetId !== "string" || !/^[0-9a-f-]{36}$/i.test(a.targetId)) return bad(400, "Choose what you are querying");
@@ -117,7 +120,7 @@ export function createCommissionReports(db: Db, commission: Commission, payslips
       association = String(d.association_id);
     } else return bad(400, "Query a payslip line or a trip");
     if ((await db.query(`SELECT 1 AS x FROM disputes WHERE raised_by = $1 AND target_id = $2 AND status IN ('open','under_review')`, [userId, a.targetId])).rows.length) return bad(409, "You already have an open query about that");
-    const row = (await db.query(`INSERT INTO disputes (association_id, raised_by, raised_role, target_type, target_id, payslip_id, message) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id`, [association, userId, role, a.targetType, a.targetId, payslipId, message])).rows[0];
+    const row = (await db.query(`INSERT INTO disputes (association_id, raised_by, raised_role, target_type, target_id, payslip_id, message, client_ref) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`, [association, userId, role, a.targetType, a.targetId, payslipId, message, ref])).rows[0];
     return { ok: true, value: { id: String(row.id) } };
   }
   async function listDisputes(scope: { associationId?: string; userId?: string }, status?: string): Promise<Row[]> {
@@ -158,6 +161,15 @@ export function createCommissionReports(db: Db, commission: Commission, payslips
 
   /* ───────────────────────── a driver's place in the queue ───────────────────────── */
   /** Where each of a driver's vehicles stands in the queue at each rank, so favouritism cannot be alleged without the record to answer it. */
+  /** The driver's own trips with what each fee is: paid, owed, waived or refunded. Never anything a marshal earned. */
+  async function driverTrips(driverId: string, from: string, to: string): Promise<Record<string, unknown>[]> {
+    const rows = (await db.query(`SELECT d.id AS departure_id, d.driver_id, d.departed_at, rk.name AS rank_name, v.registration, tf.payer_id, tf.amount_cents, tf.waived_at, tf.waived_reason, pi.status AS item_status
+                                  FROM departures d JOIN ranks rk ON rk.id = d.rank_id JOIN vehicles v ON v.id = d.vehicle_id LEFT JOIN trip_fees tf ON tf.departure_id = d.id LEFT JOIN payment_items pi ON pi.id = tf.payment_item_id
+                                  WHERE d.departed_at >= $1 AND d.departed_at < $2 ORDER BY d.departed_at DESC LIMIT 400`, [saDayStart(from), saDayStart(addDays(to, 1))])).rows;
+    return rows.filter((r) => String(r.driver_id ?? "") === driverId || String(r.payer_id ?? "") === driverId).slice(0, 200).map((r) => ({
+      departureId: String(r.departure_id), time: new Date(r.departed_at as string).toISOString(), rank: String(r.rank_name), registration: String(r.registration), feeCents: r.amount_cents === null ? null : Number(r.amount_cents),
+      feeStatus: r.amount_cents === null ? "none" : r.waived_at ? (String(r.waived_reason).startsWith("refunded") ? "refunded" : "waived") : r.item_status === "paid" ? "paid" : "owed" }));
+  }
   async function queuePosition(driverId: string): Promise<{ rankId: string; rank: string; registration: string; position: number; ahead: number; waiting: number; loading: boolean; since: string }[]> {
     const mine = (await db.query(`SELECT q.id, q.rank_id, q.joined_at, v.registration, rk.name AS rank_name FROM rank_queue q JOIN vehicles v ON v.id = q.vehicle_id JOIN ranks rk ON rk.id = q.rank_id WHERE v.driver_id = $1 AND q.left_at IS NULL`, [driverId])).rows;
     const out = [];
@@ -175,6 +187,6 @@ export function createCommissionReports(db: Db, commission: Commission, payslips
       .rows.map((e) => ({ action: String(e.action), reason: e.label_en ?? null, reasonCode: e.reason_code ?? null, positionBefore: e.position_before === null ? null : Number(e.position_before), at: iso(e.created_at), registration: String(e.registration), rank: String(e.rank_name) }));
   }
   void now;
-  return { earnings, dayTrips, reconcile, auditTrail, raiseDispute, listDisputes, respond, queuePosition, myQueueEvents };
+  return { earnings, dayTrips, reconcile, auditTrail, raiseDispute, listDisputes, respond, driverTrips, queuePosition, myQueueEvents };
 }
 export type CommissionReports = ReturnType<typeof createCommissionReports>;
