@@ -8,6 +8,8 @@ export interface NavItem {
   label: string;
   /** What is shown, when it differs from the label (the label is the key the app navigates by, so it stays as it is). Used to show the menu in the user's language. */
   display?: string;
+  /** A heading this item sits under in the menu: shown once, above the first item of each group (not when the menu is collapsed to icons). */
+  group?: string;
   badge?: number;
 }
 
@@ -37,10 +39,11 @@ export const accentText = (color: string) => `color-mix(in srgb, ${color} 62%, v
 function NavList({ items, active, accent, onPick, collapsed }: { items: NavItem[]; active: string; accent: string; onPick: (label: string) => void; collapsed?: boolean }) {
   return (
     <ul className="space-y-0.5">
-      {items.map((item) => {
-        const on = active === item.label;
+      {items.map((item, i) => {
+        const on = active === item.label, heading = !collapsed && item.group && item.group !== items[i - 1]?.group ? item.group : null;
         return (
           <li key={item.label}>
+            {heading && <p role="presentation" className="px-3 pb-1 pt-3 text-[10px] font-bold uppercase tracking-wider text-fg-subtle">{heading}</p>}
             <button type="button" onClick={() => onPick(item.label)} aria-current={on ? "page" : undefined} title={collapsed ? (item.display ?? item.label) : undefined}
               className={`relative flex min-h-11 w-full items-center gap-3 rounded-vk-md px-3 text-left text-sm transition-colors ${on ? "font-semibold text-fg" : "font-medium text-fg-muted hover:bg-surface-2 hover:text-fg"}`}
               style={on ? { background: `color-mix(in srgb, ${accent} 16%, transparent)` } : undefined}>

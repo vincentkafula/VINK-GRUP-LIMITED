@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { TokensPanel } from "./TokensPanel";
-import { Clock, Siren, HeartHandshake, BarChart3 as OverviewIcon, Home, Users, CheckCircle2, MapPin, Route as RouteIcon, Coins, Car, Map as MapIcon, Landmark, FileText, UserCog, UserCheck, Building2 } from "lucide-react";
+import { ShieldCheck, ClipboardList, IdCard, Clock, Siren, HeartHandshake, BarChart3 as OverviewIcon, Home, Users, CheckCircle2, MapPin, Route as RouteIcon, Coins, Car, Map as MapIcon, Landmark, FileText, UserCog, UserCheck, Building2 } from "lucide-react";
 import { Banknote } from "lucide-react";
 import { PaymentsPanel, TripsPanel, CrossBorderPanel, VirtualAccountsPanel, MarshalFeeSetting } from "./MoneyPanels";
 import { BankStrip, BankScreen } from "./BankAccount";
@@ -10,6 +10,7 @@ import { MembersList, VehiclesList, RoutesManager, AssociationMap, DeparturesTre
 import { ScreenBoundary } from "./widgets";
 import { LoadingReport } from "./LoadingReport";
 import { ShiftsPanel, SafetyPanel, WelfarePanel, OverviewPanel } from "./AssociationCare";
+import { ComplianceOverview, RegistrationScreen, VehicleRegisterScreen, DriverRegisterScreen } from "./AssociationCompliance";
 import { CommissionScreen, PayRunScreen, QueriesScreen } from "./AssociationCommission";
 
 const COLOR = "#C8102E";
@@ -23,26 +24,30 @@ interface Rank { id: string; name: string; location: string | null; active: bool
 interface Levy { id: string; title: string; amount: number; dueDate: string | null; paidAt: string | null; member: string }
 
 export function AssociationDashboard({ userName, onClose }: { userName?: string; onClose: () => void }) {
-  const [nav, setNav] = useState("Overview");
+  const [nav, setNav] = useState("Compliance");
   const [reqs, reloadReqs] = useLoad<{ requests: { id: string; name: string; email: string; role: string; at: string }[] }>(() => call("/requests"));
   const pending = reqs.state === "ready" ? reqs.data.requests.length : 0;
+  const G = { home: "Compliance", reg: "Registers", routes: "Routes and ranks", money: "Money", care: "Marshals", vink: "VINK" };
   const items = [
-    { icon: <Home className="w-4 h-4" />, label: "Overview" },
-    { icon: <Users className="w-4 h-4" />, label: "Owners" }, { icon: <UserCog className="w-4 h-4" />, label: "Drivers" }, { icon: <UserCheck className="w-4 h-4" />, label: "Marshals" },
-    { icon: <Car className="w-4 h-4" />, label: "Vehicles" },
-    { icon: <CheckCircle2 className="w-4 h-4" />, label: "Approvals", badge: pending || undefined }, { icon: <MapPin className="w-4 h-4" />, label: "Ranks" },
-    { icon: <RouteIcon className="w-4 h-4" />, label: "Routes" }, { icon: <MapIcon className="w-4 h-4" />, label: "Map" },
-    { icon: <Coins className="w-4 h-4" />, label: "Levies" }, { icon: <Landmark className="w-4 h-4" />, label: "Fines ledger" }, { icon: <FileText className="w-4 h-4" />, label: "Statements" },
-    { icon: <Banknote className="w-4 h-4" />, label: "Marshal fee & payments" },
-    { icon: <Coins className="w-4 h-4" />, label: "Commission" }, { icon: <FileText className="w-4 h-4" />, label: "Pay runs" }, { icon: <Landmark className="w-4 h-4" />, label: "Queries" },
-    { icon: <Clock className="w-4 h-4" />, label: "Shifts" }, { icon: <Siren className="w-4 h-4" />, label: "Safety" }, { icon: <HeartHandshake className="w-4 h-4" />, label: "Marshal welfare" }, { icon: <OverviewIcon className="w-4 h-4" />, label: "Marshal overview" },
-    { icon: <Coins className="w-4 h-4" />, label: "VINK Tokens" }, { icon: <Building2 className="w-4 h-4" />, label: "Bank account" },
+    { icon: <ShieldCheck className="w-4 h-4" />, label: "Compliance", group: G.home }, { icon: <Home className="w-4 h-4" />, label: "Overview", group: G.home },
+    { icon: <ClipboardList className="w-4 h-4" />, label: "Registration", group: G.reg }, { icon: <Users className="w-4 h-4" />, label: "Owners", group: G.reg }, { icon: <UserCog className="w-4 h-4" />, label: "Drivers", group: G.reg }, { icon: <UserCheck className="w-4 h-4" />, label: "Marshals", group: G.reg },
+    { icon: <Car className="w-4 h-4" />, label: "Vehicles", group: G.reg }, { icon: <Car className="w-4 h-4" />, label: "Vehicle register", group: G.reg }, { icon: <IdCard className="w-4 h-4" />, label: "Driver register", group: G.reg },
+    { icon: <CheckCircle2 className="w-4 h-4" />, label: "Approvals", badge: pending || undefined, group: G.reg },
+    { icon: <MapPin className="w-4 h-4" />, label: "Ranks", group: G.routes }, { icon: <RouteIcon className="w-4 h-4" />, label: "Routes", group: G.routes }, { icon: <MapIcon className="w-4 h-4" />, label: "Map", group: G.routes },
+    { icon: <Coins className="w-4 h-4" />, label: "Levies", group: G.money }, { icon: <Landmark className="w-4 h-4" />, label: "Fines ledger", group: G.money }, { icon: <FileText className="w-4 h-4" />, label: "Statements", group: G.money },
+    { icon: <Banknote className="w-4 h-4" />, label: "Marshal fee & payments", group: G.money }, { icon: <Coins className="w-4 h-4" />, label: "Commission", group: G.money }, { icon: <FileText className="w-4 h-4" />, label: "Pay runs", group: G.money }, { icon: <Landmark className="w-4 h-4" />, label: "Queries", group: G.money },
+    { icon: <Clock className="w-4 h-4" />, label: "Shifts", group: G.care }, { icon: <Siren className="w-4 h-4" />, label: "Safety", group: G.care }, { icon: <HeartHandshake className="w-4 h-4" />, label: "Marshal welfare", group: G.care }, { icon: <OverviewIcon className="w-4 h-4" />, label: "Marshal overview", group: G.care },
+    { icon: <Coins className="w-4 h-4" />, label: "VINK Tokens", group: G.vink }, { icon: <Building2 className="w-4 h-4" />, label: "Bank account", group: G.vink },
   ];
   return (
     <DashboardShell title="Association" subtitle="Members, ranks, routes and levies" accentColor={COLOR} gradient={`from-[${COLOR}]`} navItems={items} activeNav={nav} onNavChange={setNav} onClose={onClose} userName={userName} alertCount={pending || undefined}>
       <div className="p-4 md:p-6 space-y-4 max-w-5xl">
         <BankStrip segment="association" color={COLOR} onOpen={() => setNav("Bank account")} />
         <ScreenBoundary resetKey={nav}>
+          {nav === "Compliance" && <ComplianceOverview onOpen={setNav} />}
+          {nav === "Registration" && <RegistrationScreen />}
+          {nav === "Vehicle register" && <VehicleRegisterScreen />}
+          {nav === "Driver register" && <DriverRegisterScreen />}
           {nav === "Overview" && <><Overview /><DeparturesTrend /></>}
           {nav === "Owners" && <><MembersList role="vehicle_owner" onChanged={reloadReqs} /><Invite onChanged={reloadReqs} /></>}
           {nav === "Drivers" && <><MembersList role="driver" onChanged={reloadReqs} /><Invite onChanged={reloadReqs} /></>}
