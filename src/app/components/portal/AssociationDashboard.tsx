@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { TokensPanel } from "./TokensPanel";
-import { Home, Users, CheckCircle2, MapPin, Route as RouteIcon, Coins, Car, Map as MapIcon, Landmark, FileText, UserCog, UserCheck, Building2 } from "lucide-react";
+import { Clock, Siren, HeartHandshake, BarChart3 as OverviewIcon, Home, Users, CheckCircle2, MapPin, Route as RouteIcon, Coins, Car, Map as MapIcon, Landmark, FileText, UserCog, UserCheck, Building2 } from "lucide-react";
 import { Banknote } from "lucide-react";
 import { PaymentsPanel, TripsPanel, CrossBorderPanel, VirtualAccountsPanel, MarshalFeeSetting } from "./MoneyPanels";
 import { BankStrip, BankScreen } from "./BankAccount";
@@ -9,6 +9,7 @@ import { portalClient, useLoad, Status, Empty, ActionButton, outcome, inputCls, 
 import { MembersList, VehiclesList, RoutesManager, AssociationMap, DeparturesTrend, FinesLedger, AssociationStatements } from "./AssociationExtras";
 import { ScreenBoundary } from "./widgets";
 import { LoadingReport } from "./LoadingReport";
+import { ShiftsPanel, SafetyPanel, WelfarePanel, OverviewPanel } from "./AssociationCare";
 import { CommissionScreen, PayRunScreen, QueriesScreen } from "./AssociationCommission";
 
 const COLOR = "#C8102E";
@@ -34,6 +35,7 @@ export function AssociationDashboard({ userName, onClose }: { userName?: string;
     { icon: <Coins className="w-4 h-4" />, label: "Levies" }, { icon: <Landmark className="w-4 h-4" />, label: "Fines ledger" }, { icon: <FileText className="w-4 h-4" />, label: "Statements" },
     { icon: <Banknote className="w-4 h-4" />, label: "Marshal fee & payments" },
     { icon: <Coins className="w-4 h-4" />, label: "Commission" }, { icon: <FileText className="w-4 h-4" />, label: "Pay runs" }, { icon: <Landmark className="w-4 h-4" />, label: "Queries" },
+    { icon: <Clock className="w-4 h-4" />, label: "Shifts" }, { icon: <Siren className="w-4 h-4" />, label: "Safety" }, { icon: <HeartHandshake className="w-4 h-4" />, label: "Marshal welfare" }, { icon: <OverviewIcon className="w-4 h-4" />, label: "Marshal overview" },
     { icon: <Coins className="w-4 h-4" />, label: "VINK Tokens" }, { icon: <Building2 className="w-4 h-4" />, label: "Bank account" },
   ];
   return (
@@ -55,6 +57,10 @@ export function AssociationDashboard({ userName, onClose }: { userName?: string;
           {nav === "Commission" && <CommissionScreen />}
           {nav === "Pay runs" && <PayRunScreen />}
           {nav === "Queries" && <QueriesScreen />}
+          {nav === "Shifts" && <ShiftsPanel />}
+          {nav === "Safety" && <SafetyPanel />}
+          {nav === "Marshal welfare" && <WelfarePanel />}
+          {nav === "Marshal overview" && <OverviewPanel />}
           {nav === "Statements" && <><AssociationStatements /><LoadingReport segment="association" /></>}
           {nav === "Marshal fee & payments" && <><MarshalFeeSetting color={COLOR} /><VirtualAccountsPanel segment="association" color={COLOR} /><CrossBorderPanel segment="association" color={COLOR} /><PaymentsPanel segment="association" color={COLOR} /><TripsPanel segment="association" color={COLOR} /></>}
           {nav === "VINK Tokens" && <TokensPanel segment="association" color={COLOR} />}

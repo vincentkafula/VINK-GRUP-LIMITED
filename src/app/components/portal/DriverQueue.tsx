@@ -1,6 +1,7 @@
 import { Users } from "lucide-react";
 import { SectionPanel } from "../dashboards/DashboardShell";
-import { portalClient, useLoad, Status, Empty, rand } from "./ui";
+import { useState } from "react";
+import { portalClient, useLoad, Status, Empty, ActionButton, rand, when, inputCls } from "./ui";
 import { useAutoRefresh } from "./widgets";
 
 /**
@@ -37,6 +38,32 @@ export function DriverFees() {
           <p>{f.trips} trip{f.trips === 1 ? "" : "s"} · due <b>{money(f.feesDueCents)}</b>, paid <b>{money(f.feesReceivedCents)}</b>, still owed <b>{money(f.feesOutstandingCents)}</b>.</p>
           {f.tripsOwed > 0 && <p className="text-xs text-fg-muted">{f.tripsOwed} trip fee{f.tripsOwed === 1 ? " is" : "s are"} waiting to be collected from your VINK account.</p>}
         </div>)}</Status></div>
+    </SectionPanel>
+  );
+}
+
+interface DriverTrip { departureId: string; time: string; rank: string; registration: string; feeCents: number | null; feeStatus: string }
+const FEE_TEXT: Record<string, string> = { paid: "Paid", owed: "Owed", waived: "Waived", refunded: "Refunded", none: "No fee" };
+/** The driver's own recent trips, each with what its fee is and a way to query it (a trip they did not make, or a fee they should not have paid). */
+export function DriverTripFees() {
+  const [load] = useLoad<{ trips: DriverTrip[] }>(() => call("/trip-fees"));
+  const [asking, setAsking] = useState<string | null>(null), [text, setText] = useState(""), [sent, setSent] = useState<string | null>(null);
+  return (
+    <SectionPanel title="My trips (last 14 days)">
+      <div className="p-4 space-y-3">
+        {sent && <p role="status" className="text-sm font-bold text-ok">{sent}</p>}
+        <Status load={load}>{({ trips }) => trips.length === 0 ? <Empty>No trips in the last 14 days.</Empty> : (
+          <ul className="space-y-3">{trips.map((t) => (
+            <li key={t.departureId} className="text-sm text-fg border-b border-line/60 pb-2">
+              <div className="flex flex-wrap justify-between gap-2"><span>{when(t.time)} · {t.registration} · {t.rank}</span><span className="font-bold">{t.feeCents === null ? FEE_TEXT.none : `${money(t.feeCents)} ${FEE_TEXT[t.feeStatus] ?? t.feeStatus}`}</span></div>
+              <button type="button" className="text-xs underline text-fg-muted" aria-expanded={asking === t.departureId} onClick={() => { setAsking(asking === t.departureId ? null : t.departureId); setSent(null); }}>Query this trip</button>
+              {asking === t.departureId && (
+                <div className="mt-2 flex flex-wrap items-end gap-2">
+                  <label className="block flex-1 min-w-[12rem]"><span className="text-[11px] text-fg-muted">What is wrong? (5 to 500 characters)</span><input aria-label="What is wrong" className={inputCls + " mt-1"} maxLength={500} value={text} onChange={(e) => setText(e.target.value)} /></label>
+                  <ActionButton small label="Send query" color={COLOR} onRun={async () => { const r = await call("/disputes", { method: "POST", body: { targetId: t.departureId, message: text } }); if ("error" in r) return { error: r.error }; setText(""); setAsking(null); setSent("Sent. Your association will answer."); return undefined; }} />
+                </div>)}
+            </li>))}</ul>)}</Status>
+      </div>
     </SectionPanel>
   );
 }

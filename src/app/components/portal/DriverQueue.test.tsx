@@ -30,3 +30,15 @@ describe("the driver's trip fees", () => {
     reply = () => ({ success: true, trips: 1, feesDueCents: 2000, feesReceivedCents: 0, feesOutstandingCents: 2000, tripsOwed: 1, outstanding: [] }); render(<DriverFees />); expect(await screen.findByText("1 trip fee is waiting to be collected from your VINK account.")).toBeInTheDocument();
   });
 });
+
+describe("the driver's trips", () => {
+  it("lists their recent trips with what each fee is, and sends a query about one", async () => {
+    const { DriverTripFees } = await import("./DriverQueue"); const sent: any[] = [];
+    vi.stubGlobal("fetch", vi.fn(async (url: string, init?: RequestInit) => { const p = String(url).replace(/^https?:\/\/[^/]+/, ""); if (init?.method === "POST") { sent.push({ p, body: JSON.parse(String(init.body)) }); return new Response(JSON.stringify({ success: true, id: "q1" }), { status: 201 }); }
+      return new Response(JSON.stringify({ success: true, trips: [{ departureId: "d1", time: "2026-11-02T04:00:00Z", rank: "Langa", registration: "CA 111-111", feeCents: 2000, feeStatus: "paid" }, { departureId: "d2", time: "2026-11-02T05:00:00Z", rank: "Langa", registration: "CA 111-111", feeCents: 2000, feeStatus: "owed" }, { departureId: "d3", time: "2026-11-01T05:00:00Z", rank: "Bellville", registration: "CA 111-111", feeCents: null, feeStatus: "none" }] }), { status: 200 }); }));
+    render(<DriverTripFees />); expect(await screen.findByText(new RegExp(`${R(2000).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")} Paid`))).toBeInTheDocument(); expect(screen.getByText(/ Owed/)).toBeInTheDocument(); expect(screen.getByText("No fee")).toBeInTheDocument();
+    const { fireEvent, waitFor } = await import("@testing-library/react"); fireEvent.click(screen.getAllByText("Query this trip")[1]); fireEvent.change(screen.getByLabelText("What is wrong"), { target: { value: "I did not do this trip" } }); fireEvent.click(screen.getByRole("button", { name: "Send query" }));
+    await waitFor(() => expect(sent).toEqual([{ p: "/api/portal/driver/disputes", body: { targetId: "d2", message: "I did not do this trip" } }])); expect(await screen.findByText("Sent. Your association will answer.")).toBeInTheDocument();
+  });
+  it("says there are no trips", async () => { const { DriverTripFees } = await import("./DriverQueue"); reply = () => ({ success: true, trips: [] }); render(<DriverTripFees />); expect(await screen.findByText("No trips in the last 14 days.")).toBeInTheDocument(); });
+});

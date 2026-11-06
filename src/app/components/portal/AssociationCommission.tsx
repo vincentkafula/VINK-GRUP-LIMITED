@@ -17,7 +17,7 @@ const toCents = (v: string) => Math.round(Number(v.replace(",", ".")) * 100);
 const toBp = (v: string) => Math.round(Number(v.replace(",", ".")) * 100);
 const Field = ({ label, children }: { label: string; children: React.ReactNode }) => <label className="block"><span className="text-[11px] text-fg-muted">{label}</span>{children}</label>;
 
-interface Settings { mode: string; payableOn: string; payPeriod: string; tiersEnabled: boolean; deductionCapBp: number; uifApplies: boolean; uifRateBp: number }
+interface Settings { mode: string; payableOn: string; payPeriod: string; tiersEnabled: boolean; deductionCapBp: number; uifApplies: boolean; uifRateBp: number; shiftLimitMinutes: number; weekLimitMinutes: number; shiftGapMinutes: number; cashoutEnabled: boolean; cashoutCapBp: number }
 interface SettingsData { settings: Settings; currentPeriod: { start: string; end: string }; lastFinishedPeriod: { start: string; end: string }; reasons: { code: string; kind: string; label: string }[] }
 const MODE_HELP: Record<string, string> = {
   off: "Today's behaviour: the marshal fee goes to the marshal. Nothing here runs.",
@@ -28,7 +28,7 @@ const MODE_HELP: Record<string, string> = {
 /* ───────────────────────── settings ───────────────────────── */
 function SettingsCard({ data, reload }: { data: SettingsData; reload: () => void }) {
   const s = data.settings;
-  const [f, setF] = useState({ mode: s.mode, payableOn: s.payableOn, payPeriod: s.payPeriod, tiersEnabled: s.tiersEnabled, cap: String(s.deductionCapBp / 100), uifApplies: s.uifApplies, uif: String(s.uifRateBp / 100) });
+  const [f, setF] = useState({ mode: s.mode, payableOn: s.payableOn, payPeriod: s.payPeriod, tiersEnabled: s.tiersEnabled, cap: String(s.deductionCapBp / 100), uifApplies: s.uifApplies, uif: String(s.uifRateBp / 100), shiftH: String(s.shiftLimitMinutes / 60), weekH: String(s.weekLimitMinutes / 60), gap: String(s.shiftGapMinutes), cashout: s.cashoutEnabled, cashCap: String(s.cashoutCapBp / 100) });
   return (
     <SectionPanel title="Commission settings">
       <div className="p-4 space-y-3">
@@ -44,8 +44,17 @@ function SettingsCard({ data, reload }: { data: SettingsData; reload: () => void
           <label className="flex items-center gap-2"><input type="checkbox" checked={f.uifApplies} onChange={(e) => setF({ ...f, uifApplies: e.target.checked })} />Take UIF from employees</label>
           {f.uifApplies && <Field label="UIF rate (%)"><input className={inputCls + " mt-1 !w-20"} inputMode="decimal" value={f.uif} onChange={(e) => setF({ ...f, uif: e.target.value })} /></Field>}
         </div>
+        <div className="flex flex-wrap items-end gap-3 border-t border-line pt-3">
+          <Field label="Longest shift (hours)"><input aria-label="Longest shift" className={inputCls + " mt-1 !w-20"} inputMode="decimal" value={f.shiftH} onChange={(e) => setF({ ...f, shiftH: e.target.value })} /></Field>
+          <Field label="Longest week (hours)"><input aria-label="Longest week" className={inputCls + " mt-1 !w-20"} inputMode="decimal" value={f.weekH} onChange={(e) => setF({ ...f, weekH: e.target.value })} /></Field>
+          <Field label="A gap this long ends a shift (minutes)"><input aria-label="Shift gap" className={inputCls + " mt-1 !w-20"} inputMode="numeric" value={f.gap} onChange={(e) => setF({ ...f, gap: e.target.value })} /></Field>
+        </div>
+        <div className="flex flex-wrap items-center gap-4 text-sm text-fg">
+          <label className="flex items-center gap-2"><input type="checkbox" checked={f.cashout} onChange={(e) => setF({ ...f, cashout: e.target.checked })} />Let marshals draw commission they have already earned</label>
+          {f.cashout && <Field label="Share of it they may draw (%)"><input aria-label="Cash-out share" className={inputCls + " mt-1 !w-20"} inputMode="decimal" value={f.cashCap} onChange={(e) => setF({ ...f, cashCap: e.target.value })} /></Field>}
+        </div>
         <ActionButton label="Save settings" color={COLOR} onRun={async () => {
-          const r = await call("/commission/settings", { method: "PUT", body: { mode: f.mode, payableOn: f.payableOn, payPeriod: f.payPeriod, tiersEnabled: f.tiersEnabled, deductionCapBp: toBp(f.cap), uifApplies: f.uifApplies, uifRateBp: toBp(f.uif) } });
+          const r = await call("/commission/settings", { method: "PUT", body: { mode: f.mode, payableOn: f.payableOn, payPeriod: f.payPeriod, tiersEnabled: f.tiersEnabled, deductionCapBp: toBp(f.cap), uifApplies: f.uifApplies, uifRateBp: toBp(f.uif), shiftLimitMinutes: Math.round(Number(f.shiftH.replace(",", ".")) * 60), weekLimitMinutes: Math.round(Number(f.weekH.replace(",", ".")) * 60), shiftGapMinutes: Number(f.gap), cashoutEnabled: f.cashout, cashoutCapBp: toBp(f.cashCap) } });
           if ("error" in r) return { error: r.error }; reload(); return { message: "Saved." };
         }} />
         <p className="text-xs text-fg-subtle">Pay period now: {data.currentPeriod.start} to {data.currentPeriod.end}. Last finished: {data.lastFinishedPeriod.start} to {data.lastFinishedPeriod.end}. Not a tax document: no PAYE is calculated.</p>
@@ -55,13 +64,15 @@ function SettingsCard({ data, reload }: { data: SettingsData; reload: () => void
 }
 
 /* ───────────────────────── rules ───────────────────────── */
-interface Rules { feeRules: { id: string; scope: string; rank: string | null; amountCents: number; effectiveFrom: string }[]; rates: { id: string; scope: string; rank: string | null; marshal: string | null; rateBp: number; effectiveFrom: string }[]; tiers: { id: string; rank: string | null; afterTrips: number; rateBp: number; effectiveFrom: string }[] }
+interface Rules { feeRules: { id: string; scope: string; rank: string | null; route?: string | null; amountCents: number; effectiveFrom: string }[]; rates: { id: string; scope: string; rank: string | null; marshal: string | null; rateBp: number; effectiveFrom: string }[]; tiers: { id: string; rank: string | null; afterTrips: number; rateBp: number; effectiveFrom: string }[] }
 function RulesCard({ tiersOn }: { tiersOn: boolean }) {
   const [rules, reload] = useLoad<Rules>(() => call("/commission/rules"));
   const [ranks] = useLoad<{ ranks: { id: string; name: string }[] }>(() => call("/ranks"));
   const [marshals] = useLoad<{ marshals: { id: string; name: string }[] }>(() => call("/commission/marshals"));
+  const [routes] = useLoad<{ routes: { id: string; name: string }[] }>(() => call("/tokens/routes"));
+  const rt = routes.state === "ready" ? routes.data.routes ?? [] : [];
   const rk = ranks.state === "ready" ? ranks.data.ranks ?? [] : [], ms = marshals.state === "ready" ? marshals.data.marshals ?? [] : [];
-  const [fee, setFee] = useState({ scope: "association", rank: "", amount: "", from: "" }), [rate, setRate] = useState({ scope: "default", rank: "", marshal: "", percent: "", from: "" }), [tier, setTier] = useState({ rank: "", after: "", percent: "", from: "" });
+  const [fee, setFee] = useState({ scope: "association", rank: "", route: "", amount: "", from: "" }), [rate, setRate] = useState({ scope: "default", rank: "", marshal: "", percent: "", from: "" }), [tier, setTier] = useState({ rank: "", after: "", percent: "", from: "" });
   return (
     <SectionPanel title="Trip fee and commission rate">
       <div className="p-4 space-y-5">
@@ -72,7 +83,7 @@ function RulesCard({ tiersOn }: { tiersOn: boolean }) {
             <>
               <p className="text-sm text-fg" aria-live="polite">{baseRate ? <>A day of 20 trips at {money(fee20)} and {pct(baseRate.rateBp)} pays the marshal <b>{money(20 * Math.floor((fee20 * baseRate.rateBp + 5000) / 10000))}</b>.</> : "No commission rate is set yet. Set one below before switching commission on."}</p>
               <div className="grid gap-4 md:grid-cols-2">
-                <div><h4 className="text-xs font-bold uppercase text-fg-muted mb-1">Trip fee rules</h4>{r.feeRules.length === 0 ? <p className="text-xs text-fg-muted">None: the association's marshal fee, or R20.00, applies.</p> : <ul className="text-sm text-fg space-y-1">{r.feeRules.map((x) => <li key={x.id}>{money(x.amountCents)} · {x.scope === "rank" ? x.rank : x.scope} · from {x.effectiveFrom}</li>)}</ul>}</div>
+                <div><h4 className="text-xs font-bold uppercase text-fg-muted mb-1">Trip fee rules</h4>{r.feeRules.length === 0 ? <p className="text-xs text-fg-muted">None: the association's marshal fee, or R20.00, applies.</p> : <ul className="text-sm text-fg space-y-1">{r.feeRules.map((x) => <li key={x.id}>{money(x.amountCents)} · {x.scope === "rank" ? x.rank : x.scope === "route" ? x.route : x.scope} · from {x.effectiveFrom}</li>)}</ul>}</div>
                 <div><h4 className="text-xs font-bold uppercase text-fg-muted mb-1">Commission rates</h4>{r.rates.length === 0 ? <p className="text-xs text-fg-muted">None yet.</p> : <ul className="text-sm text-fg space-y-1">{r.rates.map((x) => <li key={x.id}>{pct(x.rateBp)} · {x.scope === "marshal" ? x.marshal : x.scope === "rank" ? x.rank : "everyone"} · from {x.effectiveFrom}</li>)}</ul>}</div>
               </div>
               {r.tiers.length > 0 && <div><h4 className="text-xs font-bold uppercase text-fg-muted mb-1">Tiers</h4><ul className="text-sm text-fg space-y-1">{r.tiers.map((x) => <li key={x.id}>{pct(x.rateBp)} after {x.afterTrips} trips in the week · {x.rank ?? "all ranks"} · from {x.effectiveFrom}</li>)}</ul></div>}
@@ -80,11 +91,12 @@ function RulesCard({ tiersOn }: { tiersOn: boolean }) {
         }}</Status>
         <p className="text-xs text-fg-subtle">Rules are never edited: add a new one with a later date, and trips already calculated keep the rule they were calculated with.</p>
         <div className="flex flex-wrap items-end gap-3 border-t border-line pt-3">
-          <Field label="Trip fee applies to"><select className={inputCls + " mt-1 w-40"} value={fee.scope} onChange={(e) => setFee({ ...fee, scope: e.target.value })}><option value="association">The association</option><option value="rank">One rank</option></select></Field>
+          <Field label="Trip fee applies to"><select className={inputCls + " mt-1 w-40"} value={fee.scope} onChange={(e) => setFee({ ...fee, scope: e.target.value })}><option value="association">The association</option><option value="rank">One rank</option><option value="route">One route</option></select></Field>
+          {fee.scope === "route" && <Field label="Route"><select aria-label="Fee route" className={inputCls + " mt-1 w-44"} value={fee.route} onChange={(e) => setFee({ ...fee, route: e.target.value })}><option value="">Choose</option>{rt.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}</select></Field>}
           {fee.scope === "rank" && <Field label="Rank"><select aria-label="Fee rank" className={inputCls + " mt-1 w-40"} value={fee.rank} onChange={(e) => setFee({ ...fee, rank: e.target.value })}><option value="">Choose</option>{rk.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}</select></Field>}
           <Field label="Trip fee (R)"><input className={inputCls + " mt-1 !w-24"} inputMode="decimal" value={fee.amount} onChange={(e) => setFee({ ...fee, amount: e.target.value })} /></Field>
           <Field label="From"><input type="date" aria-label="Fee from" className={inputCls + " mt-1 w-40"} value={fee.from} onChange={(e) => setFee({ ...fee, from: e.target.value })} /></Field>
-          <ActionButton small label="Add trip fee" color={COLOR} onRun={async () => { const r = await call("/commission/fee-rules", { method: "POST", body: { scope: fee.scope, rankId: fee.scope === "rank" ? fee.rank : undefined, amountCents: toCents(fee.amount), effectiveFrom: fee.from } }); if ("error" in r) return { error: r.error }; reload(); return { message: "Added." }; }} />
+          <ActionButton small label="Add trip fee" color={COLOR} onRun={async () => { const r = await call("/commission/fee-rules", { method: "POST", body: { scope: fee.scope, rankId: fee.scope === "rank" ? fee.rank : undefined, routeId: fee.scope === "route" ? fee.route : undefined, amountCents: toCents(fee.amount), effectiveFrom: fee.from } }); if ("error" in r) return { error: r.error }; reload(); return { message: "Added." }; }} />
         </div>
         <div className="flex flex-wrap items-end gap-3">
           <Field label="Commission rate applies to"><select className={inputCls + " mt-1 w-40"} value={rate.scope} onChange={(e) => setRate({ ...rate, scope: e.target.value })}><option value="default">Everyone</option><option value="rank">One rank</option><option value="marshal">One marshal</option></select></Field>
@@ -110,21 +122,21 @@ function RulesCard({ tiersOn }: { tiersOn: boolean }) {
 interface AuditTrip { departureId: string; time: string; rank: string; marshal: string; registration: string; driver: string | null; mode: string; feeCents: number; rateBp: number; commissionCents: number; reversed: boolean; feeStatus: string }
 function AuditCard({ reasons }: { reasons: { code: string; kind: string; label: string }[] }) {
   const [load, reload] = useLoad<{ trips: AuditTrip[] }>(() => call("/commission/trips"));
-  const [waiving, setWaiving] = useState<string | null>(null), [why, setWhy] = useState({ code: "", text: "", absorb: false });
+  const [notice, setNotice] = useState(""), [waiving, setWaiving] = useState<string | null>(null), [mode, setMode] = useState<"waive" | "refund">("waive"), [why, setWhy] = useState({ code: "", text: "", absorb: false });
   const feeReasons = reasons.filter((r) => r.kind === "fee");
   return (
     <SectionPanel title="Trips and what they earned (last 7 days)">
-      <div className="p-4"><Status load={load}>{({ trips }) => trips.length === 0 ? <Empty>No calculated trips yet.</Empty> : (
+      <div className="p-4">{notice && <p role="status" className="text-sm font-bold text-ok mb-2">{notice}</p>}<Status load={load}>{({ trips }) => trips.length === 0 ? <Empty>No calculated trips yet.</Empty> : (
         <div className="overflow-x-auto"><table className="w-full text-sm text-fg"><thead><tr className="text-left text-xs text-fg-muted border-b border-line"><th className="py-2 pr-3">When</th><th className="pr-3">Marshal</th><th className="pr-3">Vehicle</th><th className="pr-3 text-right">Fee</th><th className="pr-3 text-right">Rate</th><th className="pr-3 text-right">Commission</th><th className="pr-3">Fee</th><th /></tr></thead>
           <tbody>{trips.map((t) => (
             <tr key={t.departureId} className="border-b border-line/60 align-top"><td className="py-2 pr-3">{when(t.time)}</td><td className="pr-3">{t.marshal}</td><td className="pr-3">{t.registration}</td><td className="pr-3 text-right">{money(t.feeCents)}</td><td className="pr-3 text-right">{pct(t.rateBp)}</td><td className="pr-3 text-right font-bold">{money(t.commissionCents)}{t.reversed ? " (reversed)" : ""}</td><td className="pr-3">{t.mode === "shadow" ? "shadow" : t.feeStatus}</td>
-              <td>{t.feeStatus === "owed" && !t.reversed && <button type="button" className="text-xs underline" onClick={() => setWaiving(waiving === t.departureId ? null : t.departureId)}>Waive</button>}
+              <td>{(t.feeStatus === "owed" || t.feeStatus === "paid") && !t.reversed && <button type="button" className="text-xs underline" onClick={() => { setMode(t.feeStatus === "paid" ? "refund" : "waive"); setWaiving(waiving === t.departureId ? null : t.departureId); }}>{t.feeStatus === "paid" ? "Refund" : "Waive"}</button>}
                 {waiving === t.departureId && (
                   <div className="mt-2 space-y-2 min-w-[14rem]">
                     <select aria-label="Reason" className={inputCls} value={why.code} onChange={(e) => setWhy({ ...why, code: e.target.value })}><option value="">Reason</option>{feeReasons.map((r) => <option key={r.code} value={r.code}>{r.label}</option>)}</select>
                     <input aria-label="Say why" className={inputCls} placeholder="Say why" maxLength={200} value={why.text} onChange={(e) => setWhy({ ...why, text: e.target.value })} />
                     <label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={why.absorb} onChange={(e) => setWhy({ ...why, absorb: e.target.checked })} />The association absorbs it (the marshal keeps the commission)</label>
-                    <ActionButton small label="Waive the fee" color={COLOR} onRun={async () => { const r = await call(`/commission/trips/${t.departureId}/waive`, { method: "POST", body: { reasonCode: why.code, reason: why.text, absorb: why.absorb } }); if ("error" in r) return { error: r.error }; reload(); setWaiving(null); return { message: "Waived." }; }} />
+                    <ActionButton small label={mode === "refund" ? "Refund the driver" : "Waive the fee"} color={COLOR} onRun={async () => { const r = await call(`/commission/trips/${t.departureId}/${mode}`, { method: "POST", body: { reasonCode: why.code, reason: why.text, absorb: why.absorb } }); if ("error" in r) return { error: r.error }; reload(); setWaiving(null); setNotice(mode === "refund" ? "Refund arranged: the driver is paid back through the money engine." : "Fee waived."); return undefined; }} />
                   </div>)}</td></tr>))}</tbody></table></div>)}</Status></div>
     </SectionPanel>
   );
@@ -190,6 +202,7 @@ function PayslipAdmin({ id, onChanged }: { id: string; onChanged: () => void }) 
               <Field label="Date paid"><input type="date" aria-label="Date paid" className={inputCls + " mt-1 w-40"} value={pay.date} onChange={(e) => setPay({ ...pay, date: e.target.value })} /></Field>
               <ActionButton label="Record payment" color={COLOR} onRun={async () => { const r = await call(`/payslips/${p.id}/payment`, { method: "POST", body: { method: pay.method, reference: pay.reference, paidAt: pay.date || undefined } }); if ("error" in r) return { error: r.error }; reload(); onChanged(); return { message: "Recorded." }; }} /></>)}
           {p.status === "issued" && p.payment.method === "wallet" && <p className="text-xs text-fg-muted">{p.payment.waiting ?? "Waiting to be paid"}: the money engine pays it from the association's VINK account and retries until it can.</p>}
+          {p.status === "issued" && !p.payment.paidAt && <ReviseControl id={p.id} onDone={() => { reload(); onChanged(); }} />}
           {p.status !== "draft" && p.payment.paidAt && <p className="text-xs text-fg-muted">Paid {p.payment.paidAt.slice(0, 10)} by {p.payment.method}{p.payment.reference ? `, ${p.payment.reference}` : ""}.</p>}
           <PdfButton id={p.id} number={p.number} segment="association" />
         </div>
@@ -197,6 +210,17 @@ function PayslipAdmin({ id, onChanged }: { id: string; onChanged: () => void }) 
   );
 }
 
+/** An issued payslip that has not been paid can be revised: its payment is cancelled, its trips are released, and the period is prepared again as a new version. */
+function ReviseControl({ id, onDone }: { id: string; onDone: () => void }) {
+  const [open, setOpen] = useState(false), [note, setNote] = useState("");
+  return (
+    <span className="inline-flex flex-wrap items-end gap-2">
+      <button type="button" className="text-xs underline" aria-expanded={open} onClick={() => setOpen(!open)}>Revise this payslip</button>
+      {open && <><input aria-label="Why it is revised" className={inputCls + " w-56"} placeholder="Why is it being revised?" maxLength={200} value={note} onChange={(e) => setNote(e.target.value)} />
+        <ActionButton small label="Revise" color={COLOR} onRun={async () => { const r = await call(`/payslips/${id}/revise`, { method: "POST", body: { note } }); if ("error" in r) return { error: r.error }; onDone(); return { message: "Revised. Prepare the payslips again to make the corrected version." }; }} /></>}
+    </span>
+  );
+}
 const ADJ_KINDS: [string, string][] = [["bonus", "Bonus"], ["incentive", "Incentive"], ["allowance", "Allowance"], ["advance", "Advance or loan repayment"], ["penalty", "Shortfall or penalty"], ["association_fee", "Association fee"], ["stokvel", "Stokvel contribution"], ["other_deduction", "Other deduction"]];
 function AdjustmentsCard() {
   const [marshals] = useLoad<{ marshals: { id: string; name: string }[] }>(() => call("/commission/marshals"));

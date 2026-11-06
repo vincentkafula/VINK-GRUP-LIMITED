@@ -3,7 +3,7 @@ import { TokensPanel } from "./TokensPanel";
 import { User, Car, Route as RouteIcon, Wallet, Bell, Loader2, TriangleAlert, Link2, FileText, Landmark, Coins, Bus } from "lucide-react";
 import { DriverLoading } from "./DriverLoading";
 import { LoadingReport } from "./LoadingReport";
-import { DriverQueuePosition, DriverFees } from "./DriverQueue";
+import { DriverQueuePosition, DriverFees, DriverTripFees } from "./DriverQueue";
 import { Banknote } from "lucide-react";
 import { PaymentsPanel, TripsPanel, CrossBorderPanel, VirtualAccountsPanel, DriverAgreements } from "./MoneyPanels";
 import { BankStrip, BankScreen } from "./BankAccount";
@@ -70,7 +70,7 @@ export function DriverDashboard({ userName, onClose }: { userName?: string; onCl
         <BankStrip segment="driver" color={COLOR} onOpen={() => setNav("Bank account")} />
         <ScreenBoundary resetKey={nav}>
           {nav === "Profile" && <ProfileScreen onChanged={reloadNotes} />}
-          {nav === "Loading" && <><DriverQueuePosition /><DriverLoading onWithdraw={() => setNav("VINK Tokens")} /><DriverFees /><LoadingReport segment="driver" /></>}
+          {nav === "Loading" && <><DriverQueuePosition /><DriverLoading onWithdraw={() => setNav("VINK Tokens")} /><DriverFees /><DriverTripFees /><LoadingReport segment="driver" /></>}
           {nav === "Vehicle & licence" && <VehicleScreen />}
           {nav === "Route & trips" && <TripsScreen />}
           {nav === "Earnings" && <EarningsScreen />}

@@ -7,7 +7,7 @@ import { rand } from "./ui";
 const R = (cents: number) => rand(cents / 100).replace(/\s/g, " ");
 type Reply = { status?: number; body: unknown; type?: string };
 let routes: (method: string, path: string, body: any) => Reply | undefined, calls: { method: string; path: string; body: any }[];
-const SETTINGS = { success: true, settings: { mode: "off", payableOn: "recorded", payPeriod: "weekly", tiersEnabled: false, deductionCapBp: 5000, uifApplies: false, uifRateBp: 100 }, currentPeriod: { start: "2026-11-02", end: "2026-11-08" }, lastFinishedPeriod: { start: "2026-10-26", end: "2026-11-01" },
+const SETTINGS = { success: true, settings: { mode: "off", payableOn: "recorded", payPeriod: "weekly", tiersEnabled: false, deductionCapBp: 5000, uifApplies: false, uifRateBp: 100, shiftLimitMinutes: 600, weekLimitMinutes: 3600, shiftGapMinutes: 180, cashoutEnabled: false, cashoutCapBp: 5000 }, currentPeriod: { start: "2026-11-02", end: "2026-11-08" }, lastFinishedPeriod: { start: "2026-10-26", end: "2026-11-01" },
   reasons: [{ code: "breakdown", kind: "queue", label: "Breakdown" }, { code: "goodwill", kind: "fee", label: "Goodwill" }, { code: "association_absorbs", kind: "fee", label: "Association absorbs the fee" }] };
 const RULES = { success: true, feeRules: [{ id: "f1", scope: "association", rank: null, route: null, amountCents: 2000, effectiveFrom: "2026-01-01", note: null }], rates: [{ id: "r1", scope: "default", rank: null, marshal: null, rateBp: 4000, effectiveFrom: "2026-01-01", note: null }, { id: "r2", scope: "marshal", rank: null, marshal: "Mo Marshal", rateBp: 5000, effectiveFrom: "2026-02-01", note: null }], tiers: [] };
 const TRIPS = { success: true, trips: [{ departureId: "d1", time: "2026-11-02T04:00:00Z", rank: "Langa", marshal: "Mo Marshal", registration: "CA 111-111", driver: "Dee Driver", mode: "live", feeCents: 2000, rateBp: 4000, commissionCents: 800, reversed: false, feeStatus: "owed" }, { departureId: "d2", time: "2026-11-02T04:10:00Z", rank: "Langa", marshal: "Mo Marshal", registration: "CA 222-222", driver: null, mode: "live", feeCents: 2000, rateBp: 4000, commissionCents: 800, reversed: false, feeStatus: "paid" }] };
@@ -17,6 +17,7 @@ beforeEach(() => {
   calls = []; URL.createObjectURL = vi.fn(() => "blob:x"); URL.revokeObjectURL = vi.fn();
   routes = (m, p) => {
     if (p === "/api/portal/association/commission/settings") return { body: SETTINGS }; if (p === "/api/portal/association/commission/rules") return { body: RULES };
+    if (p === "/api/portal/association/tokens/routes") return { body: { success: true, routes: [{ id: "rt1", name: "Langa to Bellville" }] } };
     if (p === "/api/portal/association/ranks") return { body: { success: true, ranks: [{ id: "k1", name: "Langa rank" }, { id: "k2", name: "Bellville rank" }] } };
     if (p === "/api/portal/association/commission/marshals") return { body: { success: true, marshals: [{ id: "m1", name: "Mo Marshal", marshalNumber: "M-0001", class: "independent", uifApplies: false, startedOn: null }, { id: "m2", name: "Mia Marshal", marshalNumber: "M-0002", class: "employee", uifApplies: true, startedOn: null }] } };
     if (p.startsWith("/api/portal/association/commission/trips") && m === "GET") return { body: TRIPS };
@@ -49,7 +50,7 @@ describe("the commission screen", () => {
     render(<CommissionScreen />); await screen.findByText("Commission settings");
     fireEvent.change(screen.getByLabelText("Commission is"), { target: { value: "shadow" } }); fireEvent.change(screen.getByLabelText("Commission becomes payable"), { target: { value: "paid" } }); fireEvent.change(screen.getByLabelText("Pay period"), { target: { value: "fortnightly" } });
     fireEvent.change(screen.getByLabelText(/Most deductions may take/), { target: { value: "40" } }); fireEvent.click(screen.getByLabelText(/Use tiers/)); fireEvent.click(screen.getByLabelText(/Take UIF from employees/)); fireEvent.change(screen.getByLabelText("UIF rate (%)"), { target: { value: "1" } });
-    fireEvent.click(screen.getByRole("button", { name: "Save settings" })); await waitFor(() => expect(writes()).toEqual([{ method: "PUT", path: "/api/portal/association/commission/settings", body: { mode: "shadow", payableOn: "paid", payPeriod: "fortnightly", tiersEnabled: true, deductionCapBp: 4000, uifApplies: true, uifRateBp: 100 } }]));
+    fireEvent.click(screen.getByRole("button", { name: "Save settings" })); await waitFor(() => expect(writes()).toEqual([{ method: "PUT", path: "/api/portal/association/commission/settings", body: { mode: "shadow", payableOn: "paid", payPeriod: "fortnightly", tiersEnabled: true, deductionCapBp: 4000, uifApplies: true, uifRateBp: 100, shiftLimitMinutes: 600, weekLimitMinutes: 3600, shiftGapMinutes: 180, cashoutEnabled: false, cashoutCapBp: 5000 } }]));
   });
   it("shows the server's reason when settings are refused (commission needs a rate before it can be switched on)", async () => {
     routes = ((o) => (m: string, p: string, b: any) => (m === "PUT" ? { status: 409, body: { success: false, error: "Set the commission rate first: there is nothing to calculate with" } } : o(m, p, b)))(routes);
@@ -132,5 +133,28 @@ describe("queries from marshals and drivers", () => {
     routes = ((o) => (m: string, p: string, b: any) => (m === "GET" && p.startsWith("/api/portal/association/disputes") ? { body: { success: true, disputes: [{ id: "q3", raisedBy: "Dee Driver", role: "driver", targetType: "trip", message: "not my trip", status: "open", response: null, creditCents: null, createdAt: "2026-11-03T08:00:00Z" }] } } : m === "POST" ? { status: 400, body: { success: false, error: "Give the reason, so the person sees why" } } : o(m, p, b)))(routes);
     render(<QueriesScreen />); await screen.findByText(/not my trip/); expect(screen.queryByLabelText("Credit (R)")).toBeNull(); fireEvent.click(screen.getByRole("button", { name: "Answer" })); expect(await screen.findByText("Give the reason, so the person sees why")).toBeInTheDocument();
     pick("Show queries", "open"); await waitFor(() => expect(calls.at(-1)!.path).toBe("/api/portal/association/disputes?status=open"));
+  });
+});
+
+describe("the new commission controls", () => {
+  it("saves the shift limits in minutes and the cash-out switch and share in the units the server wants", async () => {
+    render(<CommissionScreen />); await screen.findByText("Commission settings"); fireEvent.change(screen.getByLabelText("Longest shift"), { target: { value: "9,5" } }); fireEvent.change(screen.getByLabelText("Longest week"), { target: { value: "54" } }); fireEvent.change(screen.getByLabelText("Shift gap"), { target: { value: "120" } });
+    expect(screen.queryByLabelText("Cash-out share")).toBeNull(); fireEvent.click(screen.getByLabelText(/Let marshals draw commission they have already earned/)); fireEvent.change(screen.getByLabelText("Cash-out share"), { target: { value: "40" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save settings" })); await waitFor(() => expect(writes().at(-1)!.body).toMatchObject({ shiftLimitMinutes: 570, weekLimitMinutes: 3240, shiftGapMinutes: 120, cashoutEnabled: true, cashoutCapBp: 4000 }));
+  });
+  it("adds a trip fee for one route", async () => {
+    render(<CommissionScreen />); await screen.findByText(/A day of 20 trips/); pick("Trip fee applies to", "route"); pick("Fee route", "rt1"); fireEvent.change(screen.getByLabelText("Trip fee (R)"), { target: { value: "25" } }); fireEvent.change(screen.getByLabelText("Fee from"), { target: { value: "2026-12-01" } }); fireEvent.click(screen.getByRole("button", { name: "Add trip fee" }));
+    await waitFor(() => expect(writes().at(-1)).toEqual({ method: "POST", path: "/api/portal/association/commission/fee-rules", body: { scope: "route", routeId: "rt1", amountCents: 2500, effectiveFrom: "2026-12-01" } }));
+  });
+  it("offers a refund for a fee the driver has paid (and a waiver for one still owed), saying the driver is paid back", async () => {
+    render(<CommissionScreen />); await screen.findByText("CA 222-222"); expect(screen.getByText("Refund")).toBeInTheDocument(); expect(screen.getByText("Waive")).toBeInTheDocument(); fireEvent.click(screen.getByText("Refund")); pick("Reason", "goodwill"); fireEvent.change(screen.getByLabelText("Say why"), { target: { value: "Never left" } });
+    fireEvent.click(screen.getByRole("button", { name: "Refund the driver" })); await waitFor(() => expect(writes().at(-1)).toEqual({ method: "POST", path: "/api/portal/association/commission/trips/d2/refund", body: { reasonCode: "goodwill", reason: "Never left", absorb: false } })); expect(await screen.findByText(/the driver is paid back through the money engine/)).toBeInTheDocument();
+  });
+  it("revises an issued payslip that has not been paid, with a reason, and says to prepare it again; a paid one cannot be revised", async () => {
+    routes = ((o) => (m: string, p: string, b: any) => (p === "/api/portal/association/payslips/p1" ? { body: { success: true, payslip: { ...SLIP, status: "issued", payment: { method: "bank", reference: null, paidAt: null, waiting: null } } } } : o(m, p, b)))(routes);
+    render(<PayRunScreen />); fireEvent.click(await screen.findByRole("button", { name: "Review" })); fireEvent.click(await screen.findByText("Revise this payslip")); fireEvent.change(screen.getByLabelText("Why it is revised"), { target: { value: "A trip was left out" } }); fireEvent.click(screen.getByRole("button", { name: "Revise" }));
+    await waitFor(() => expect(writes().at(-1)).toEqual({ method: "POST", path: "/api/portal/association/payslips/p1/revise", body: { note: "A trip was left out" } })); expect(await screen.findByText(/Prepare the payslips again to make the corrected version/)).toBeInTheDocument(); cleanup();
+    routes = ((o) => (m: string, p: string, b: any) => (p === "/api/portal/association/payslips/p1" ? { body: { success: true, payslip: { ...SLIP, status: "paid", payment: { method: "bank", reference: "EFT", paidAt: "2026-11-02T10:00:00Z", waiting: null } } } } : o(m, p, b)))(routes);
+    render(<PayRunScreen />); fireEvent.click(await screen.findByRole("button", { name: "Review" })); await screen.findByText(/Paid 2026-11-02/); expect(screen.queryByText("Revise this payslip")).toBeNull();
   });
 });
