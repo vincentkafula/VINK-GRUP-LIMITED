@@ -2296,3 +2296,44 @@ CREATE INDEX IF NOT EXISTS idx_income_letters_marshal ON income_letters(marshal_
 
 ALTER TABLE disputes ADD COLUMN IF NOT EXISTS client_ref TEXT;
 CREATE UNIQUE INDEX IF NOT EXISTS idx_disputes_client_ref ON disputes(client_ref) WHERE client_ref IS NOT NULL;
+
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+-- MARSHAL CARE, PART TWO: PAYE, alerts for safety reports and panic, automatic cash-out (docs/MARSHAL_COMMISSION.md)
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+-- The income tax tables PAYE is worked from: data, never hard-coded, with their source, because they change every March. A payslip is only given PAYE when a table covers its date; otherwise the system says so and calculates none.
+-- brackets is JSON text: [{"upToCents": 24510000, "rateBp": 1800}, ..., {"upToCents": null, "rateBp": 4500}], lowest first.
+CREATE TABLE IF NOT EXISTS tax_tables (
+  id                        UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tax_year                  TEXT NOT NULL UNIQUE,
+  effective_from            DATE NOT NULL,
+  effective_to              DATE NOT NULL,
+  brackets                  TEXT NOT NULL,
+  primary_rebate_cents      BIGINT NOT NULL CHECK (primary_rebate_cents >= 0),
+  uif_ceiling_monthly_cents BIGINT NOT NULL CHECK (uif_ceiling_monthly_cents > 0),
+  source                    TEXT,
+  created_at                TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CHECK (effective_to >= effective_from)
+);
+INSERT INTO tax_tables (tax_year, effective_from, effective_to, brackets, primary_rebate_cents, uif_ceiling_monthly_cents, source)
+VALUES ('2026/27', '2026-03-01', '2027-02-28',
+  '[{"upToCents":24510000,"rateBp":1800},{"upToCents":38310000,"rateBp":2600},{"upToCents":53020000,"rateBp":3100},{"upToCents":69580000,"rateBp":3600},{"upToCents":88700000,"rateBp":3900},{"upToCents":187860000,"rateBp":4100},{"upToCents":null,"rateBp":4500}]',
+  1782000, 1771200, 'SARS, rates of tax for individuals, 1 March 2026 to 28 February 2027 (https://www.sars.gov.za/tax-rates/income-tax/rates-of-tax-for-individuals/); UIF ceiling R17 712 a month')
+ON CONFLICT (tax_year) DO NOTHING;
+
+ALTER TABLE association_settings ADD COLUMN IF NOT EXISTS paye_enabled BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE association_settings ADD COLUMN IF NOT EXISTS alert_email TEXT;
+ALTER TABLE association_settings ADD COLUMN IF NOT EXISTS alert_phone TEXT;
+ALTER TABLE marshal_profiles ADD COLUMN IF NOT EXISTS auto_cashout BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE marshal_profiles ADD COLUMN IF NOT EXISTS auto_cashout_min_cents INTEGER NOT NULL DEFAULT 5000 CHECK (auto_cashout_min_cents >= 1000);
+
+ALTER TABLE incidents DROP CONSTRAINT IF EXISTS incidents_type_check;
+ALTER TABLE incidents ADD CONSTRAINT incidents_type_check CHECK (type IN ('threat','fight','robbery','overcrowding','injury','other','panic'));
+ALTER TABLE incidents ADD COLUMN IF NOT EXISTS latitude DOUBLE PRECISION CHECK (latitude IS NULL OR latitude BETWEEN -90 AND 90);
+ALTER TABLE incidents ADD COLUMN IF NOT EXISTS longitude DOUBLE PRECISION CHECK (longitude IS NULL OR longitude BETWEEN -180 AND 180);
+ALTER TABLE incidents ADD COLUMN IF NOT EXISTS accuracy_m INTEGER;
+ALTER TABLE incidents ADD COLUMN IF NOT EXISTS notified_at TIMESTAMPTZ;
+ALTER TABLE incidents ADD COLUMN IF NOT EXISTS notify_attempts INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE incidents ADD COLUMN IF NOT EXISTS notify_error TEXT;
+CREATE INDEX IF NOT EXISTS idx_incidents_unnotified ON incidents(created_at) WHERE notified_at IS NULL;
+ALTER TABLE payslip_lines DROP CONSTRAINT IF EXISTS payslip_lines_kind_check;
+ALTER TABLE payslip_lines ADD CONSTRAINT payslip_lines_kind_check CHECK (kind IN ('commission','reversal','late_trip','bonus','incentive','allowance','dispute_credit','uif','paye','advance','penalty','association_fee','stokvel','other_deduction'));

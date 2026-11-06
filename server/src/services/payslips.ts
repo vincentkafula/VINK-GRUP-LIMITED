@@ -1,5 +1,6 @@
 import PDFDocument from "pdfkit";
 import type { Db } from "../portal/common.js";
+import { createTaxTables, periodsPerYear, payeForPeriod, uifForPeriod } from "./tax.js";
 import { saDay, saDayStart } from "../portal/common.js";
 import type { Commission, Settings } from "./commission.js";
 
@@ -42,11 +43,13 @@ const LABEL: Record<string, string> = { commission: "Commission", late_trip: "La
 
 export interface Line { side: "earning" | "deduction"; kind: string; label: string; quantity: number | null; unitCents: number | null; rateBp: number | null; amountCents: number; reason: string | null; reference: string | null; adjustmentId: string | null }
 export interface Computed {
+  payeNotice: string | null;
   lines: Line[]; trips: number; tripFeesCents: number; grossCents: number; otherEarningsCents: number; deductionsCents: number; netCents: number; withheldCents: number; feesOwedTrips: number; feesOwedCents: number;
   carryCents: number; rowIds: string[]; ranks: string[]; adjustmentUse: { id: string; amount: number }[]; payableRows: Row[];
 }
 
 export function createPayslips(db: Db, commission: Commission, now: () => Date = () => new Date()) {
+  const tax = createTaxTables(db);
   /* ───────────────────────── a marshal's identity, consent and who looked ───────────────────────── */
   /** A marshal's payslip identity: a number (not an ID document: data minimisation), their language, and whether they are an employee. Made on first need. */
   async function ensureProfile(marshalId: string): Promise<Row> {
@@ -153,9 +156,20 @@ export function createPayslips(db: Db, commission: Commission, now: () => Date =
     const earnings = grossCents + other;
     const prof = await ensureProfile(marshalId);
     let deductions = 0;
+    const periods = periodsPerYear(st.payPeriod), table = await tax.forDay(end);
+    let uifPaid = 0, payeNotice: string | null = null;
     if (st.uifApplies && prof.class === "employee" && prof.uif_applies) {
-      const uif = Math.floor((earnings * st.uifRateBp + 5000) / 10000);
-      if (uif > 0) { lines.push({ side: "deduction", kind: "uif", label: `UIF contribution at ${st.uifRateBp / 100}%`, quantity: null, unitCents: null, rateBp: st.uifRateBp, amountCents: uif, reason: "UIF contribution", reference: "UIF", adjustmentId: null }); deductions += uif; }
+      const uif = uifForPeriod(earnings, st.uifRateBp, periods, table);
+      if (uif > 0) { lines.push({ side: "deduction", kind: "uif", label: `UIF contribution at ${st.uifRateBp / 100}%`, quantity: null, unitCents: null, rateBp: st.uifRateBp, amountCents: uif, reason: table ? "UIF contribution (on earnings up to the UIF ceiling)" : "UIF contribution", reference: "UIF", adjustmentId: null }); deductions += uif; uifPaid = uif; }
+    }
+    // PAYE is only for employees, only when the association has switched it on, and only when a tax table covers this period: otherwise none is calculated and the payslip says why. It is an estimate, and statutory, so it sits outside the deduction cap.
+    if (st.payeEnabled && prof.class === "employee") {
+      if (!table) payeNotice = "PAYE was not calculated: no tax table covers this period. Add the current SARS table under Commission settings.";
+      else {
+        const r = payeForPeriod(Math.max(0, earnings - uifPaid), periods, table), paye = Math.min(r.periodPayeCents, Math.max(0, earnings - deductions));
+        if (paye > 0) { lines.push({ side: "deduction", kind: "paye", label: "PAYE (estimate)", quantity: null, unitCents: null, rateBp: null, amountCents: paye, reason: `Income tax estimate from the SARS ${table.taxYear} tables (annualised: ${rand(r.annualTaxableCents)} a year, less the primary rebate)`, reference: "PAYE", adjustmentId: null }); deductions += paye; }
+        else payeNotice = "No PAYE is due on this pay: it is below the tax threshold.";
+      }
     }
     // A cash-out already paid to the marshal (ACC-) comes back off the payslip first, and is outside the cap: it is their own earned commission returning, not a deduction the association chose.
     const isAcc = (a: Row) => String(a.reference).startsWith("ACC-");
@@ -180,7 +194,7 @@ export function createPayslips(db: Db, commission: Commission, now: () => Date =
     return {
       lines, trips: inPeriod.filter((r) => !reversedHere.has(String(r.departure_id))).length, tripFeesCents: inPeriod.filter((r) => !reversedHere.has(String(r.departure_id))).reduce((a, r) => a + Number(r.fee_cents), 0), grossCents, otherEarningsCents: other, deductionsCents: deductions, netCents: earnings - deductions,
       withheldCents: withheld.reduce((a, r) => a + Number(r.commission_cents), 0), feesOwedTrips: owed.length, feesOwedCents: owed.reduce((a, f) => a + Number(f.amount_cents), 0), carryCents,
-      rowIds: payable.map((r) => String(r.id)), ranks, adjustmentUse, payableRows: payable,
+      rowIds: payable.map((r) => String(r.id)), ranks, adjustmentUse, payableRows: payable, payeNotice,
     };
   }
 
@@ -373,8 +387,16 @@ export function createPayslips(db: Db, commission: Commission, now: () => Date =
       lines: lines.map((l) => ({ id: String(l.id), side: String(l.side), kind: String(l.kind), label: String(l.label), quantity: l.quantity === null ? null : Number(l.quantity), unitCents: l.unit_cents === null ? null : Number(l.unit_cents), rateBp: l.rate_bp === null ? null : Number(l.rate_bp), amountCents: Number(l.amount_cents), reason: l.reason ?? null, reference: l.reference ?? null })),
       payment: { method: q.payment_method ?? null, reference: q.payment_reference ?? null, paidAt: q.paid_at ? new Date(q.paid_at as string).toISOString() : null, waiting: item && item.status !== "paid" ? String(item.last_error ?? "Waiting to be paid") : null },
       daily: await dailyBreakdown(p), ytd: await yearToDate(p),
-      note: "Generated from system trip records. This is not a tax document: no PAYE is calculated unless a PAYE rule has been configured.",
+      note: await footerNote(p, lines),
     } };
+  }
+  /** What the payslip's footer says about tax: what was calculated, how, and what it is not. */
+  async function footerNote(p: Row, lines: Row[]): Promise<string> {
+    const base = "Generated from system trip records.";
+    if (lines.some((l) => l.kind === "paye")) return `${base} PAYE is an estimate from the SARS tables (annualised method, primary rebate only: no age rebate, medical credit or retirement deduction). It is not a tax certificate: the association reconciles PAYE in its own returns.`;
+    if ((await commission.settings(String(p.association_id))).payeEnabled && (await ensureProfile(String(p.marshal_id))).class === "employee")
+      return `${base} ${(await tax.forDay(dayOf(p.period_end))) ? "No PAYE is due on this pay: it is below the tax threshold." : "PAYE was not calculated: no tax table covers this period."} This is not a tax document.`;
+    return `${base} This is not a tax document: no PAYE has been calculated.`;
   }
   async function list(scope: { associationId: string; marshalId?: string }, o: { start?: string; end?: string } = {}): Promise<Row[]> {
     const rows = (await db.query(`SELECT p.id, p.number, p.period_start, p.period_end, p.status, p.trips, p.gross_commission_cents, p.deductions_cents, p.net_cents, p.version, p.issued_at, p.paid_at, m.name AS marshal_name, m.id AS marshal_id FROM payslips p JOIN users m ON m.id = p.marshal_id WHERE p.association_id = $1 ORDER BY p.period_end DESC, m.name, p.version DESC LIMIT 300`, [scope.associationId])).rows

@@ -297,3 +297,42 @@ describe("drawing commission that is already earned", () => {
   });
 });
 
+describe("PAYE and the UIF ceiling on the payslip", () => {
+  const employee = async () => { ok(await p.updateProfile(U.M1, { class: "employee", uifApplies: true })); ok(await c.updateSettings(U.A, { uifApplies: true, payeEnabled: true })); };
+  const slip = async (cents: number) => ok(await p.view(ok(await p.draft(U.A, U.M1, START, END, U.boss)).value.id, { associationId: U.A })).value as any;
+  it("takes UIF and an estimate of PAYE from an employee's weekly pay, by the SARS tables, and says what it is", async () => {
+    await employee(); await adj({ kind: "bonus", label: "Festive", totalCents: 200000 }); const v = await slip(200000);
+    expect(v.lines.filter((l: any) => l.side === "deduction").map((l: any) => [l.kind, l.amountCents])).toEqual([["uif", 2000], ["paye", 1371]]);                                  // R20.00 UIF; R1 980 x 52 = R102 960, tax R18 532.80 less R17 820, over 52
+    expect(v).toMatchObject({ deductionsCents: 3371, netCents: 196629 }); expect(v.lines.find((l: any) => l.kind === "paye")).toMatchObject({ label: "PAYE (estimate)", reference: "PAYE", reason: expect.stringContaining("SARS 2026/27 tables") });
+    expect(v.note).toContain("PAYE is an estimate from the SARS tables"); expect(v.note).toContain("not a tax certificate");
+  });
+  it("takes PAYE outside the deduction cap, as the law says, even when the association allows no other deductions", async () => {
+    await employee(); ok(await c.updateSettings(U.A, { deductionCapBp: 0 })); await adj({ kind: "bonus", label: "Festive", totalCents: 200000 }); await adj({ kind: "advance", reason: "Advance", reference: "ADV-1", totalCents: 50000, perPeriodCents: 50000 });
+    const v = await slip(200000); expect(v.lines.filter((l: any) => l.side === "deduction").map((l: any) => l.kind)).toEqual(["uif", "paye"]); expect((await q(`SELECT remaining_cents FROM pay_adjustments WHERE reference = 'ADV-1'`))[0].remaining_cents).toBe(50000);   // the advance waits; the tax does not
+  });
+  it("caps UIF at the ceiling and works PAYE on what is left after it (R1 999.20 on R10 000 a week, worked by hand from the brackets)", async () => {
+    await employee(); await adj({ kind: "bonus", label: "Big week", totalCents: 1_000_000 }); const v = await slip(1_000_000);
+    expect(v.lines.find((l: any) => l.kind === "uif").amountCents).toBe(4087);                                                                                                  // R40.87 (the weekly ceiling R4 087.38 at 1%), not R100
+    expect(v.lines.find((l: any) => l.kind === "paye").amountCents).toBe(199_920);
+  });
+  it("calculates none for an independent marshal, none when the association has not switched PAYE on, and says no PAYE is due below the threshold", async () => {
+    ok(await c.updateSettings(U.A, { payeEnabled: true })); await adj({ kind: "bonus", label: "Festive", totalCents: 200000 }); let v = await slip(200000); expect(v.lines.some((l: any) => l.kind === "paye")).toBe(false); expect(v.note).toContain("no PAYE has been calculated");        // independent
+    await db.query(`DELETE FROM payslip_lines`); await db.query(`DELETE FROM payslips`); ok(await p.updateProfile(U.M1, { class: "employee" })); ok(await c.updateSettings(U.A, { payeEnabled: false })); v = await slip(200000); expect(v.lines.some((l: any) => l.kind === "paye")).toBe(false);
+    await db.query(`DELETE FROM payslip_lines`); await db.query(`DELETE FROM payslips`); ok(await c.updateSettings(U.A, { payeEnabled: true })); await db.query(`UPDATE pay_adjustments SET total_cents = 100000, remaining_cents = 100000`); v = await slip(100000);          // R1 000 a week is R52 000 a year
+    expect(v.lines.some((l: any) => l.kind === "paye")).toBe(false); expect(v.note).toContain("No PAYE is due on this pay: it is below the tax threshold");
+  });
+  it("calculates no PAYE when no tax table covers the period, and says so rather than using the wrong year's", async () => {
+    await employee(); await adj({ kind: "bonus", label: "Festive", totalCents: 200000 }); await db.query(`DELETE FROM tax_tables`); const v = await slip(200000);
+    expect(v.lines.some((l: any) => l.kind === "paye")).toBe(false); expect(v.note).toContain("PAYE was not calculated: no tax table covers this period"); expect(v.lines.find((l: any) => l.kind === "uif").amountCents).toBe(2000);     // UIF still works, without a ceiling
+  });
+  it("never takes more PAYE than there is pay, and issuing keeps the PAYE line on the payslip", async () => {
+    await employee(); await adj({ kind: "bonus", label: "Festive", totalCents: 200000 }); const a = ok(await p.draft(U.A, U.M1, START, END, U.boss)).value; ok(await p.issue(U.A, a.id, U.boss, "bank"));
+    expect((await q(`SELECT kind, amount_cents FROM payslip_lines WHERE kind = 'paye'`))).toEqual([{ kind: "paye", amount_cents: 1371 }]); expect((await q(`SELECT net_cents FROM payslips`))[0].net_cents).toBe(196629);
+  });
+  it("validates and stores the PAYE switch and the alert email and phone, tidying the phone number", async () => {
+    expect(await c.updateSettings(U.A, { payeEnabled: "yes" } as any)).toMatchObject({ ok: false, status: 400 }); expect(await c.updateSettings(U.A, { alertEmail: "not an email" })).toMatchObject({ ok: false, status: 400 }); expect(await c.updateSettings(U.A, { alertPhone: "0821234567" })).toMatchObject({ ok: false, status: 400, error: expect.stringContaining("country code") });
+    expect(ok(await c.updateSettings(U.A, { payeEnabled: true, alertEmail: "ops@langa.example", alertPhone: "+27 82 123 4567" })).value).toMatchObject({ payeEnabled: true, alertEmail: "ops@langa.example", alertPhone: "+27821234567" });
+    expect(ok(await c.updateSettings(U.A, { alertEmail: "", alertPhone: "" })).value).toMatchObject({ alertEmail: null, alertPhone: null });
+  });
+});
+

@@ -24,6 +24,7 @@ export type PayPeriod = "weekly" | "fortnightly" | "monthly";
 export interface Settings {
   mode: Mode; payableOn: PayableOn; payPeriod: PayPeriod; payPeriodAnchor: string; tiersEnabled: boolean; deductionCapBp: number; uifApplies: boolean; uifRateBp: number; legacyFeeCents: number | null;
   shiftLimitMinutes: number; weekLimitMinutes: number; shiftGapMinutes: number; cashoutEnabled: boolean; cashoutCapBp: number;
+  payeEnabled: boolean; alertEmail: string | null; alertPhone: string | null;
 }
 export type Fail = { ok: false; status: number; error: string };
 export type Res<T> = { ok: true; value: T } | Fail;
@@ -43,9 +44,10 @@ export function createCommission(db: Db, now: () => Date = () => new Date(), def
       payPeriodAnchor: r?.pay_period_anchor ? day(r.pay_period_anchor) : "2026-01-05", tiersEnabled: !!r?.tiers_enabled, deductionCapBp: Number(r?.deduction_cap_bp ?? 5000),
       uifApplies: !!r?.uif_applies, uifRateBp: Number(r?.uif_rate_bp ?? 100), legacyFeeCents: r?.marshal_fee_cents === null || r?.marshal_fee_cents === undefined ? null : Number(r.marshal_fee_cents),
       shiftLimitMinutes: Number(r?.shift_limit_minutes ?? 600), weekLimitMinutes: Number(r?.week_limit_minutes ?? 3600), shiftGapMinutes: Number(r?.shift_gap_minutes ?? 180), cashoutEnabled: !!r?.cashout_enabled, cashoutCapBp: Number(r?.cashout_cap_bp ?? 5000),
+      payeEnabled: !!r?.paye_enabled, alertEmail: (r?.alert_email as string | null) ?? null, alertPhone: (r?.alert_phone as string | null) ?? null,
     };
   }
-  async function updateSettings(associationId: string, p: Partial<Pick<Settings, "mode" | "payableOn" | "payPeriod" | "payPeriodAnchor" | "tiersEnabled" | "deductionCapBp" | "uifApplies" | "uifRateBp" | "shiftLimitMinutes" | "weekLimitMinutes" | "shiftGapMinutes" | "cashoutEnabled" | "cashoutCapBp">>): Promise<Res<Settings>> {
+  async function updateSettings(associationId: string, p: Partial<Pick<Settings, "mode" | "payableOn" | "payPeriod" | "payPeriodAnchor" | "tiersEnabled" | "deductionCapBp" | "uifApplies" | "uifRateBp" | "shiftLimitMinutes" | "weekLimitMinutes" | "shiftGapMinutes" | "cashoutEnabled" | "cashoutCapBp" | "payeEnabled" | "alertEmail" | "alertPhone">>): Promise<Res<Settings>> {
     if (p.mode !== undefined && !["off", "shadow", "commission"].includes(p.mode)) return bad(400, "The mode must be off, shadow or commission");
     if (p.payableOn !== undefined && !["recorded", "paid"].includes(p.payableOn)) return bad(400, "Commission is payable when the fee is recorded or when it is paid");
     if (p.payPeriod !== undefined && !["weekly", "fortnightly", "monthly"].includes(p.payPeriod)) return bad(400, "The pay period must be weekly, fortnightly or monthly");
@@ -53,17 +55,20 @@ export function createCommission(db: Db, now: () => Date = () => new Date(), def
     for (const [k, max] of [["deductionCapBp", 10000], ["uifRateBp", 10000]] as const) { const v = p[k]; if (v !== undefined && (!Number.isInteger(v) || v < 0 || v > max)) return bad(400, `${k === "deductionCapBp" ? "The deduction cap" : "The UIF rate"} must be between 0% and 100%`); }
     for (const [k, lo, hi, what] of [["shiftLimitMinutes", 60, 1440, "The longest shift"], ["weekLimitMinutes", 60, 10080, "The longest week"], ["shiftGapMinutes", 15, 720, "The gap that ends a shift"], ["cashoutCapBp", 0, 10000, "The cash-out limit"]] as const) { const v = p[k]; if (v !== undefined && (!Number.isInteger(v) || v < lo || v > hi)) return bad(400, `${what} is out of range`); }
     if (p.cashoutEnabled !== undefined && typeof p.cashoutEnabled !== "boolean") return bad(400, "Cash-out is on or off");
+    if (p.payeEnabled !== undefined && typeof p.payeEnabled !== "boolean") return bad(400, "PAYE is on or off");
+    if (p.alertEmail !== undefined && p.alertEmail !== null && p.alertEmail !== "" && (typeof p.alertEmail !== "string" || p.alertEmail.length > 120 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.alertEmail))) return bad(400, "That email address is not valid");
+    if (p.alertPhone !== undefined && p.alertPhone !== null && p.alertPhone !== "" && (typeof p.alertPhone !== "string" || !/^\+[1-9]\d{8,14}$/.test(p.alertPhone.replace(/[\s()-]/g, "")))) return bad(400, "Give the phone number with its country code, like +27821234567");
     if (p.mode && p.mode !== "off") {
       // Switching on needs a rate to calculate with. The trip fee always has one (the association's own, or the country default).
       if (!(await db.query(`SELECT 1 AS x FROM commission_rules WHERE association_id = $1 AND scope = 'default'`, [associationId])).rows.length) return bad(409, "Set the commission rate first: there is nothing to calculate with");
     }
     const cur = await settings(associationId), n = { ...cur, ...Object.fromEntries(Object.entries(p).filter(([, v]) => v !== undefined)) } as Settings;
     await db.query(
-      `INSERT INTO association_settings (association_id, commission_mode, commission_payable_on, pay_period, pay_period_anchor, tiers_enabled, deduction_cap_bp, uif_applies, uif_rate_bp, shift_limit_minutes, week_limit_minutes, shift_gap_minutes, cashout_enabled, cashout_cap_bp, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14, now())
+      `INSERT INTO association_settings (association_id, commission_mode, commission_payable_on, pay_period, pay_period_anchor, tiers_enabled, deduction_cap_bp, uif_applies, uif_rate_bp, shift_limit_minutes, week_limit_minutes, shift_gap_minutes, cashout_enabled, cashout_cap_bp, paye_enabled, alert_email, alert_phone, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17, now())
        ON CONFLICT (association_id) DO UPDATE SET commission_mode = EXCLUDED.commission_mode, commission_payable_on = EXCLUDED.commission_payable_on, pay_period = EXCLUDED.pay_period, pay_period_anchor = EXCLUDED.pay_period_anchor,
          tiers_enabled = EXCLUDED.tiers_enabled, deduction_cap_bp = EXCLUDED.deduction_cap_bp, uif_applies = EXCLUDED.uif_applies, uif_rate_bp = EXCLUDED.uif_rate_bp, shift_limit_minutes = EXCLUDED.shift_limit_minutes, week_limit_minutes = EXCLUDED.week_limit_minutes,
-         shift_gap_minutes = EXCLUDED.shift_gap_minutes, cashout_enabled = EXCLUDED.cashout_enabled, cashout_cap_bp = EXCLUDED.cashout_cap_bp, updated_at = now()`,
-      [associationId, n.mode, n.payableOn, n.payPeriod, n.payPeriodAnchor, n.tiersEnabled, n.deductionCapBp, n.uifApplies, n.uifRateBp, n.shiftLimitMinutes, n.weekLimitMinutes, n.shiftGapMinutes, n.cashoutEnabled, n.cashoutCapBp]);
+         shift_gap_minutes = EXCLUDED.shift_gap_minutes, cashout_enabled = EXCLUDED.cashout_enabled, cashout_cap_bp = EXCLUDED.cashout_cap_bp, paye_enabled = EXCLUDED.paye_enabled, alert_email = EXCLUDED.alert_email, alert_phone = EXCLUDED.alert_phone, updated_at = now()`,
+      [associationId, n.mode, n.payableOn, n.payPeriod, n.payPeriodAnchor, n.tiersEnabled, n.deductionCapBp, n.uifApplies, n.uifRateBp, n.shiftLimitMinutes, n.weekLimitMinutes, n.shiftGapMinutes, n.cashoutEnabled, n.cashoutCapBp, n.payeEnabled, n.alertEmail || null, n.alertPhone ? n.alertPhone.replace(/[\s()-]/g, "") : null]);
     return { ok: true, value: await settings(associationId) };
   }
 
