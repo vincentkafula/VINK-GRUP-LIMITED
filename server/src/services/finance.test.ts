@@ -42,7 +42,7 @@ describe("settings and the fee schedule", () => {
 describe("charging members from the schedule", () => {
   it("charges every member, or only those chosen, at the fee's amount with a due date (30 days by default), and logs it", async () => {
     const a = ok<any>(await fee()); expect(ok<any>(await f.charge(U.A, U.A, { feeId: a.id, all: true }))).toEqual({ created: 2, skipped: 0 });
-    expect((await q(`SELECT title, amount, due_date FROM levies ORDER BY member_id`)).map((l) => [l.title, Number(l.amount), String(l.due_date).slice(0, 10)])).toEqual([["Annual membership", 600, plus(30)], ["Annual membership", 600, plus(30)]]);
+    expect((await q(`SELECT title, amount, due_date FROM levies ORDER BY member_id`)).map((l) => [l.title, Number(l.amount), new Date(l.due_date).toISOString().slice(0, 10)])).toEqual([["Annual membership", 600, plus(30)], ["Annual membership", 600, plus(30)]]);
     expect(ok<any>(await f.charge(U.A, U.A, { feeId: a.id, memberIds: [U.O1], dueOn: plus(10) }))).toEqual({ created: 1, skipped: 0 }); expect((await q(`SELECT summary FROM register_changes WHERE entity = 'charge'`)).map((r) => r.summary)).toContain('charged "Annual membership" R600.00 to 1 member');
   });
   it("refuses a fee that is not on the schedule, is switched off, has not started, is above the cap, or goes to someone who is not a member", async () => {
