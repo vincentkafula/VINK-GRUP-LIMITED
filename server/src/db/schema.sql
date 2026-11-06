@@ -2337,3 +2337,15 @@ ALTER TABLE incidents ADD COLUMN IF NOT EXISTS notify_error TEXT;
 CREATE INDEX IF NOT EXISTS idx_incidents_unnotified ON incidents(created_at) WHERE notified_at IS NULL;
 ALTER TABLE payslip_lines DROP CONSTRAINT IF EXISTS payslip_lines_kind_check;
 ALTER TABLE payslip_lines ADD CONSTRAINT payslip_lines_kind_check CHECK (kind IN ('commission','reversal','late_trip','bonus','incentive','allowance','dispute_credit','uif','paye','advance','penalty','association_fee','stokvel','other_deduction'));
+ALTER TABLE incidents ADD COLUMN IF NOT EXISTS notified_email_at TIMESTAMPTZ;
+ALTER TABLE incidents ADD COLUMN IF NOT EXISTS notified_sms_at TIMESTAMPTZ;
+
+-- One automatic cash-out per marshal per day, however many times the daily job runs.
+CREATE TABLE IF NOT EXISTS auto_cashouts (
+  marshal_id    UUID NOT NULL REFERENCES users(id),
+  day           DATE NOT NULL,
+  adjustment_id UUID,
+  amount_cents  BIGINT,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (marshal_id, day)
+);

@@ -86,6 +86,16 @@ describe("safety reports and the risk picture", () => {
     expect(await report({ rankId: RB })).toMatchObject({ ok: false, status: 403 }); expect(await report({ type: "riot" })).toMatchObject({ ok: false, status: 400 });
     for (const bad of [{ occurredAt: "2026-10-01T00:00:00Z" }, { occurredAt: "2026-12-01T00:00:00Z" }, { occurredAt: "never" }, { photo: "data:text/html;base64,AAAA" }, { photo: "http://x/y.png" }, { photo: "data:image/png;base64," + "A".repeat(160_000) }, { clientRef: "x" }]) expect(await report(bad), JSON.stringify(bad).slice(0, 60)).toMatchObject({ ok: false, status: 400 });
   });
+  it("takes a panic report with the marshal's location, validated (both coordinates or neither, in range), and never requires one so the alarm can always be raised", async () => {
+    const a = ok<any>(await report({ type: "panic", latitude: -33.92491234, longitude: 18.42409876, accuracyM: 14.6 })); expect((await q(`SELECT type, latitude, longitude, accuracy_m FROM incidents WHERE id = $1`, [a.id]))[0]).toEqual({ type: "panic", latitude: -33.924912, longitude: 18.424099, accuracy_m: 15 });
+    ok(await report({ type: "panic" }));                                                                                                                    // no fix: still goes
+    for (const bad of [{ latitude: -33.9 }, { longitude: 18.4 }, { latitude: 91, longitude: 18 }, { latitude: 10, longitude: 181 }, { latitude: "x", longitude: 1 }, { latitude: NaN, longitude: 1 }, { latitude: 10, longitude: 10, accuracyM: -1 }, { latitude: 10, longitude: 10, accuracyM: 1e6 }, { latitude: 10, longitude: 10, accuracyM: "a" }]) expect(await report({ type: "panic", ...bad }), JSON.stringify(bad)).toMatchObject({ ok: false, status: 400 });
+    const l = (await m.incidents({ associationId: U.A })).incidents.find((i: any) => i.panic && i.location); expect(l).toMatchObject({ type: "panic", location: { latitude: -33.924912, longitude: 18.424099, accuracyM: 15, mapUrl: "https://maps.google.com/?q=-33.924912,18.424099" } });
+    expect((await m.incidents({ associationId: U.A })).incidents.find((i: any) => i.panic && !i.location)).toMatchObject({ location: null });
+  });
+  it("counts a panic report as the most serious in the risk picture", async () => {
+    ok(await report({ type: "panic", occurredAt: "2026-10-31T09:00:00Z" })); expect(ok<any>(await m.riskMap(U.A, "2026-10-26", "2026-11-02")).ranks.find((x: any) => x.rank === "Langa")).toMatchObject({ total: 1, score: 5, level: "medium", byType: { panic: 1 } });
+  });
   it("tells the association (with who reported), shows the marshal only their own, counts what is new, and never shows another association's reports", async () => {
     await report(); await report({ type: "robbery" }); await m.reportIncident(U.MB, { rankId: RB, type: "fight" });
     const a = await m.incidents({ associationId: U.A }); expect(a.newCount).toBe(2); expect(a.incidents.map((i: any) => [i.rank, i.type, i.reporter, i.status])).toEqual(expect.arrayContaining([["Langa", "threat", "Mo Marshal", "new"], ["Langa", "robbery", "Mo Marshal", "new"]]));
@@ -159,6 +169,26 @@ describe("benefits and the work record", () => {
     await db.query(`INSERT INTO marshal_profiles (marshal_id, marshal_number, started_on) VALUES ($1,'M-0001','2026-08-15')`, [U.M1]); await db.query(`INSERT INTO consents (user_id, purpose) VALUES ($1,'payroll_records')`, [U.M1]);
     w = await m.workRecord(U.M1); expect(w).toMatchObject({ startDate: "2026-08-15", marshalNumber: "M-0001", verified: true, missing: [] }); await db.query(`UPDATE consents SET withdrawn_at = now()`); expect((await m.workRecord(U.M1)).missing).toEqual(["consent to keep payroll records"]);
     expect((await m.workRecord(U.M1, U.B)).totalTrips).toBe(0);
+  });
+});
+
+describe("who may see a marshal's earnings, and the public check of a letter", () => {
+  beforeEach(async () => { await db.query(`INSERT INTO marshal_profiles (marshal_id, marshal_number, started_on) VALUES ($1,'M-0001','2026-08-15')`, [U.M1]); await slip(U.M1, U.A, "2026-10-04"); await departure(U.M1, R1, sa("2026-10-05", 6)); });
+  it("shows the association tenure and trips always, but earnings only while the marshal consents to payroll records", async () => {
+    let w = await m.workRecord(U.M1, U.A, { forAssociation: true }); expect(w).toMatchObject({ earningsHidden: true, earningsByMonth: [], totalTrips: 1, startDate: "2026-08-15" });
+    await db.query(`INSERT INTO consents (user_id, purpose) VALUES ($1,'payroll_records')`, [U.M1]); w = await m.workRecord(U.M1, U.A, { forAssociation: true }); expect(w).toMatchObject({ earningsHidden: false }); expect((w.earningsByMonth as any[]).length).toBe(1);
+    await db.query(`UPDATE consents SET withdrawn_at = now()`); expect(await m.workRecord(U.M1, U.A, { forAssociation: true })).toMatchObject({ earningsHidden: true, earningsByMonth: [] });                       // withdrawing takes it back at once
+    expect((await m.workRecord(U.M1)).earningsByMonth as any[]).toHaveLength(1);                                                                                                        // the marshal always sees their own
+  });
+  it("lets anyone holding a letter check it by number and code, showing only the period, the issue date and a masked name, never a figure", async () => {
+    await db.query(`INSERT INTO consents (user_id, purpose) VALUES ($1,'income_letter')`, [U.M1]); const l = ok<any>(await m.makeLetter(U.M1, 3));
+    const v = await m.verifyLetterPublic(l.number, l.verificationCode.toLowerCase()); expect(v).toEqual({ valid: true, name: "Mo M.", number: l.number, issuedAt: l.issuedAt, from: l.from, to: l.to, intact: true }); expect(JSON.stringify(v)).not.toMatch(/earned|net|Cents/i);
+    for (const [n, c] of [[l.number, "000000000000"], ["IL-nope", l.verificationCode], [5, "x"], [l.number, 12], ["x".repeat(100), l.verificationCode], [l.number, "x".repeat(30)]] as any[]) expect(await m.verifyLetterPublic(n, c), String(n)).toEqual({ valid: false });
+  });
+  it("makes the work record a small PDF with the facts, the verification state and a plain disclaimer, and the letter PDF says where to check it", async () => {
+    const w = await m.workRecord(U.M1); const pdf = await m.workRecordPdf(w as any, "Mo Marshal"); expect(pdf.subarray(0, 5).toString()).toBe("%PDF-"); expect(pdf.length).toBeLessThan(30_000); const text = pdfText(pdf);
+    for (const t of ["Work record", "Mo Marshal", "M-0001", "Trips handled: 1", "Not yet verified", "not a certificate of employment"]) expect(text).toContain(t);
+    await db.query(`INSERT INTO consents (user_id, purpose) VALUES ($1,'income_letter')`, [U.M1]); const l = ok<any>(await m.makeLetter(U.M1, 3)); expect(pdfText(await m.letterPdf(l))).not.toContain("To check this letter"); expect(pdfText(await m.letterPdf(l, "https://api.vink.example/api/verify/income-letter"))).toContain("To check this letter, open https://api.vink.example/api/verify/income-letter");
   });
 });
 

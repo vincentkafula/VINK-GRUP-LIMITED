@@ -228,6 +228,44 @@ export function createPayslips(db: Db, commission: Commission, now: () => Date =
     return { ok: true, value: { reference, amountCents: amountCents as number, maxCents: s0.maxCents - (amountCents as number) } };
   }
 
+  /* ───────────────────────── automatic daily cash-out ───────────────────────── */
+  async function autoCashOutStatus(marshalId: string): Promise<{ enabled: boolean; minCents: number }> {
+    const r = (await db.query(`SELECT auto_cashout, auto_cashout_min_cents FROM marshal_profiles WHERE marshal_id = $1`, [marshalId])).rows[0];
+    return { enabled: !!r?.auto_cashout, minCents: Number(r?.auto_cashout_min_cents ?? 5000) };
+  }
+  /** A marshal chooses to be paid what is safely available each evening, once it reaches a minimum they set. It only runs while their association has cash-out switched on. */
+  async function setAutoCashOut(marshalId: string, a: { enabled?: unknown; minCents?: unknown }): Promise<Res<{ enabled: boolean; minCents: number }>> {
+    if (typeof a.enabled !== "boolean") return bad(400, "Choose on or off");
+    const min = a.minCents === undefined ? (await autoCashOutStatus(marshalId)).minCents : a.minCents;
+    if (!Number.isInteger(min) || (min as number) < 1000 || (min as number) > 1_000_000) return bad(400, "The least you can ask for is R10.00 and the most R10 000.00");
+    await ensureProfile(marshalId);
+    await db.query(`UPDATE marshal_profiles SET auto_cashout = $2, auto_cashout_min_cents = $3 WHERE marshal_id = $1`, [marshalId, a.enabled, min]);
+    return { ok: true, value: { enabled: a.enabled, minCents: min as number } };
+  }
+  /**
+   * The daily job: from 17:00 South African time, pays each opted-in marshal what is safely available (see cashOut), if it reaches their minimum. A marshal is paid at most once a day however often this runs: the day is
+   * claimed first, and released again if the payment could not be arranged, so a later run can try again.
+   */
+  async function runAutoCashOuts(at: Date = now()): Promise<{ paid: number; skipped: number; early: boolean }> {
+    const sa = new Date(at.getTime() + 2 * 3600_000); if (sa.getUTCHours() < 17) return { paid: 0, skipped: 0, early: true };
+    const day = sa.toISOString().slice(0, 10); let paid = 0, skipped = 0;
+    for (const prof of (await db.query(`SELECT marshal_id, auto_cashout_min_cents FROM marshal_profiles WHERE auto_cashout = true`)).rows) {
+      const marshal = String(prof.marshal_id);
+      const assocs = (await db.query(`SELECT DISTINCT r.association_id FROM rank_marshals m JOIN ranks r ON r.id = m.rank_id WHERE m.marshal_id = $1`, [marshal])).rows.map((r) => String(r.association_id));
+      let done = false;
+      for (const a of assocs) {
+        const st = await cashOutStatus(a, marshal); if (!st.enabled || st.maxCents < Number(prof.auto_cashout_min_cents)) continue;
+        const claim = (await db.query(`INSERT INTO auto_cashouts (marshal_id, day) VALUES ($1,$2) ON CONFLICT (marshal_id, day) DO NOTHING RETURNING marshal_id`, [marshal, day])).rows;
+        if (!claim.length) { done = true; break; }                                                      // already paid today
+        const r = await cashOut(a, marshal, st.maxCents, marshal);
+        if (r.ok) { await db.query(`UPDATE auto_cashouts SET amount_cents = $3 WHERE marshal_id = $1 AND day = $2`, [marshal, day, st.maxCents]); paid++; done = true; break; }
+        await db.query(`DELETE FROM auto_cashouts WHERE marshal_id = $1 AND day = $2`, [marshal, day]);   // could not be arranged: let a later run try again
+      }
+      if (!done) skipped++;
+    }
+    return { paid, skipped, early: false };
+  }
+
   /* ───────────────────────── draft, issue, pay ───────────────────────── */
   async function numberFor(marshalId: string, end: string, assoc: string, suffix = ""): Promise<string> {
     const base = `PS-${end.replace(/-/g, "")}-${String((await ensureProfile(marshalId)).marshal_number).replace("-", "")}${suffix}`;
@@ -448,6 +486,6 @@ export function createPayslips(db: Db, commission: Commission, now: () => Date =
     });
   }
 
-  return { periodFor, ensureProfile, updateProfile, setConsent, consents, logAccess, accessLog, addAdjustment, cancelAdjustment, adjustments, compute, draft, runPeriod, issue, recordPayment, revise, cashOut, cashOutStatus, syncPayment, view, list, listForMarshal, marshals, pdf, dailyBreakdown };
+  return { periodFor, ensureProfile, updateProfile, setConsent, consents, logAccess, accessLog, addAdjustment, cancelAdjustment, adjustments, compute, draft, runPeriod, issue, recordPayment, revise, cashOut, cashOutStatus, autoCashOutStatus, setAutoCashOut, runAutoCashOuts, syncPayment, view, list, listForMarshal, marshals, pdf, dailyBreakdown };
 }
 export type Payslips = ReturnType<typeof createPayslips>;

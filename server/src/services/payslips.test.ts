@@ -336,3 +336,32 @@ describe("PAYE and the UIF ceiling on the payslip", () => {
   });
 });
 
+describe("automatic daily cash-out", () => {
+  const EVENING = new Date("2026-11-02T15:30:00Z"), MORNING = new Date("2026-11-02T08:00:00Z");                  // 17:30 and 10:00 in South Africa
+  async function earned() { await trips([["2026-10-26", 10]]); await payFees(5); }                           // R40 safely earned: up to R20 may be drawn at 50%
+  const optIn = async (min = 1000) => { ok(await c.updateSettings(U.A, { cashoutEnabled: true, cashoutCapBp: 5000 })); ok(await p.setAutoCashOut(U.M1, { enabled: true, minCents: min })); };
+  it("is chosen by the marshal, with a minimum of R10 to R10 000, and is off until then", async () => {
+    expect(await p.autoCashOutStatus(U.M1)).toEqual({ enabled: false, minCents: 5000 }); expect(await p.setAutoCashOut(U.M1, { enabled: "yes" } as any)).toMatchObject({ ok: false, status: 400 }); for (const bad of [500, 1_000_001, 12.5, "lots"]) expect(await p.setAutoCashOut(U.M1, { enabled: true, minCents: bad } as any), String(bad)).toMatchObject({ ok: false, status: 400 });
+    expect(await p.setAutoCashOut(U.M1, { enabled: true, minCents: 2000 })).toEqual({ ok: true, value: { enabled: true, minCents: 2000 } }); expect(await p.setAutoCashOut(U.M1, { enabled: false })).toEqual({ ok: true, value: { enabled: false, minCents: 2000 } });
+  });
+  it("waits until 17:00 South African time, then pays what is safely available to opted-in marshals only", async () => {
+    await earned(); await optIn(); expect(await p.runAutoCashOuts(MORNING)).toEqual({ paid: 0, skipped: 0, early: true }); expect((await q(`SELECT COUNT(*) AS n FROM payment_items WHERE kind = 'marshal_commission'`))[0].n).toBe(0);
+    expect(await p.runAutoCashOuts(EVENING)).toEqual({ paid: 1, skipped: 0, early: false }); expect(await q(`SELECT payer_id, payee_id, amount_cents FROM payment_items WHERE kind = 'marshal_commission'`)).toEqual([{ payer_id: U.A, payee_id: U.M1, amount_cents: 2000 }]);
+    expect((await q(`SELECT amount_cents FROM auto_cashouts`))[0].amount_cents).toBe(2000); expect((await q(`SELECT reference, remaining_cents FROM pay_adjustments`))[0]).toMatchObject({ reference: "ACC-0001", remaining_cents: 2000 });
+  });
+  it("pays a marshal at most once a day however often it runs, and again the next day only for what has newly become available", async () => {
+    await earned(); await optIn(); await p.runAutoCashOuts(EVENING); expect(await p.runAutoCashOuts(EVENING)).toMatchObject({ paid: 0 }); expect(await p.runAutoCashOuts(new Date("2026-11-02T20:00:00Z"))).toMatchObject({ paid: 0 }); expect((await q(`SELECT COUNT(*) AS n FROM payment_items WHERE kind = 'marshal_commission'`))[0].n).toBe(1);
+    await trips([["2026-10-27", 10]]); await db.query(`UPDATE payment_items SET status = 'paid' WHERE kind = 'trip_fee'`);                      // five more trips' fees now paid too
+    expect(await p.runAutoCashOuts(new Date("2026-11-03T15:30:00Z"))).toMatchObject({ paid: 1 }); expect((await q(`SELECT amount_cents FROM payment_items WHERE kind = 'marshal_commission' ORDER BY created_at DESC`)).length).toBe(2);
+  });
+  it("skips a marshal whose available amount is under their minimum, who has not opted in, or whose association has not switched cash-out on", async () => {
+    await earned(); await optIn(5000); expect(await p.runAutoCashOuts(EVENING)).toEqual({ paid: 0, skipped: 1, early: false });                                  // R20 available, R50 minimum
+    ok(await p.setAutoCashOut(U.M1, { enabled: false })); expect(await p.runAutoCashOuts(EVENING)).toEqual({ paid: 0, skipped: 0, early: false });
+    ok(await p.setAutoCashOut(U.M1, { enabled: true, minCents: 1000 })); ok(await c.updateSettings(U.A, { cashoutEnabled: false })); expect(await p.runAutoCashOuts(EVENING)).toEqual({ paid: 0, skipped: 1, early: false }); expect((await q(`SELECT COUNT(*) AS n FROM auto_cashouts`))[0].n).toBe(0);
+  });
+  it("comes back off the next payslip, like any cash-out", async () => {
+    await earned(); await optIn(); await p.runAutoCashOuts(EVENING); const v = ok(await p.view(ok(await p.draft(U.A, U.M1, START, END, U.boss)).value.id, { associationId: U.A })).value as any;
+    expect(v.lines.find((l: any) => l.reference === "ACC-0001")).toMatchObject({ kind: "advance", amountCents: 2000 }); expect(v.netCents).toBe(8000 - 2000);
+  });
+});
+

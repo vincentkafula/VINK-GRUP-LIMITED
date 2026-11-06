@@ -25,8 +25,8 @@ const iso = (v: unknown) => (v ? new Date(v as string).toISOString() : null);
 const mins = (a: unknown, b: unknown) => Math.max(0, Math.round((new Date(b as string).getTime() - new Date(a as string).getTime()) / 60000));
 const clientRef = (v: unknown): string | null | undefined => (v === undefined || v === null || v === "" ? null : typeof v === "string" && /^[A-Za-z0-9._-]{8,80}$/.test(v) ? v : undefined);
 
-export const INCIDENT_TYPES = ["threat", "fight", "robbery", "overcrowding", "injury", "other"] as const;
-const WEIGHT: Record<string, number> = { robbery: 5, threat: 3, fight: 3, injury: 3, overcrowding: 1, other: 1 };
+export const INCIDENT_TYPES = ["threat", "fight", "robbery", "overcrowding", "injury", "other", "panic"] as const;
+const WEIGHT: Record<string, number> = { panic: 5, robbery: 5, threat: 3, fight: 3, injury: 3, overcrowding: 1, other: 1 };
 export const GRIEVANCE_CATEGORIES = ["pay", "safety", "hours", "queue", "conditions", "benefits", "other"] as const;
 export const BENEFIT_KINDS = ["uif", "injury_cover", "savings", "funeral"] as const;
 const PERIODS = [["night", 21, 5], ["morning", 5, 12], ["afternoon", 12, 17], ["evening", 17, 21]] as const;
@@ -116,7 +116,7 @@ export function createMarshalCare(db: Db, commission: Commission, now: () => Dat
   }
 
   /* ───────────────────────── safety ───────────────────────── */
-  async function reportIncident(marshalId: string, a: { rankId?: unknown; type?: unknown; occurredAt?: unknown; note?: unknown; photo?: unknown; clientRef?: unknown }): Promise<Res<{ id: string; replayed: boolean }>> {
+  async function reportIncident(marshalId: string, a: { rankId?: unknown; type?: unknown; occurredAt?: unknown; note?: unknown; photo?: unknown; clientRef?: unknown; latitude?: unknown; longitude?: unknown; accuracyM?: unknown }): Promise<Res<{ id: string; replayed: boolean }>> {
     const ref = clientRef(a.clientRef); if (ref === undefined) return bad(400, "That reference is not valid");
     if (ref) { const dup = (await db.query(`SELECT id FROM incidents WHERE client_ref = $1 AND reported_by = $2`, [ref, marshalId])).rows[0]; if (dup) return { ok: true, value: { id: String(dup.id), replayed: true } }; }
     const rank = await worksAt(marshalId, a.rankId); if (!rank) return bad(403, "You do not work at that rank");
@@ -126,14 +126,23 @@ export function createMarshalCare(db: Db, commission: Commission, now: () => Dat
     const note = typeof a.note === "string" ? a.note.trim().slice(0, 300) || null : null;
     let photo: string | null = null;
     if (a.photo !== undefined && a.photo !== null && a.photo !== "") { if (typeof a.photo !== "string" || !/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(a.photo) || a.photo.length > 150_000) return bad(400, "The photo must be a small picture (under about 100 KB)"); photo = a.photo; }
-    const r = (await db.query(`INSERT INTO incidents (association_id, rank_id, reported_by, type, occurred_at, note, photo, client_ref) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`, [rank.association_id, rank.id, marshalId, a.type, at, note, photo, ref])).rows[0];
+    // Where the marshal was, if the phone knew: both coordinates or neither, in range. Never required (a phone with no fix must still be able to raise the alarm).
+    let lat: number | null = null, lng: number | null = null, acc: number | null = null;
+    if ((a.latitude !== undefined && a.latitude !== null) || (a.longitude !== undefined && a.longitude !== null)) {
+      if (typeof a.latitude !== "number" || typeof a.longitude !== "number" || !Number.isFinite(a.latitude) || !Number.isFinite(a.longitude) || a.latitude < -90 || a.latitude > 90 || a.longitude < -180 || a.longitude > 180) return bad(400, "The location is not valid");
+      lat = Math.round(a.latitude * 1e6) / 1e6; lng = Math.round(a.longitude * 1e6) / 1e6;
+      if (a.accuracyM !== undefined && a.accuracyM !== null) { if (typeof a.accuracyM !== "number" || !Number.isFinite(a.accuracyM) || a.accuracyM < 0 || a.accuracyM > 100_000) return bad(400, "The location accuracy is not valid"); acc = Math.round(a.accuracyM); }
+    }
+    const r = (await db.query(`INSERT INTO incidents (association_id, rank_id, reported_by, type, occurred_at, note, photo, client_ref, latitude, longitude, accuracy_m) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING id`, [rank.association_id, rank.id, marshalId, a.type, at, note, photo, ref, lat, lng, acc])).rows[0];
     return { ok: true, value: { id: String(r.id), replayed: false } };
   }
   async function incidents(scope: { associationId?: string; marshalId?: string }, o: { status?: string; from?: string; to?: string } = {}): Promise<{ incidents: Row[]; newCount: number }> {
-    const rows = (await db.query(`SELECT i.id, i.association_id, i.reported_by, i.type, i.occurred_at, i.note, i.photo, i.status, i.acknowledged_at, rk.name AS rank_name, u.name AS reporter FROM incidents i JOIN ranks rk ON rk.id = i.rank_id JOIN users u ON u.id = i.reported_by ORDER BY i.occurred_at DESC LIMIT 500`)).rows
+    const rows = (await db.query(`SELECT i.id, i.association_id, i.reported_by, i.type, i.occurred_at, i.note, i.photo, i.status, i.acknowledged_at, i.latitude, i.longitude, i.accuracy_m, i.notified_at, i.notified_email_at, i.notified_sms_at, i.notify_error, rk.name AS rank_name, u.name AS reporter FROM incidents i JOIN ranks rk ON rk.id = i.rank_id JOIN users u ON u.id = i.reported_by ORDER BY i.occurred_at DESC LIMIT 500`)).rows
       .filter((i) => (!scope.associationId || String(i.association_id) === scope.associationId) && (!scope.marshalId || String(i.reported_by) === scope.marshalId) && (!o.status || i.status === o.status)
         && (!o.from || new Date(i.occurred_at as string) >= saDayStart(o.from)) && (!o.to || new Date(i.occurred_at as string) < saDayStart(addDays(o.to, 1))));
-    return { newCount: rows.filter((i) => i.status === "new").length, incidents: rows.map((i) => ({ id: String(i.id), rank: String(i.rank_name), type: String(i.type), occurredAt: iso(i.occurred_at), note: (i.note as string | null) ?? null, hasPhoto: !!i.photo, status: String(i.status), reporter: scope.marshalId ? null : String(i.reporter ?? ""), acknowledgedAt: iso(i.acknowledged_at) })) };
+    return { newCount: rows.filter((i) => i.status === "new").length, incidents: rows.map((i) => ({ id: String(i.id), rank: String(i.rank_name), type: String(i.type), occurredAt: iso(i.occurred_at), note: (i.note as string | null) ?? null, hasPhoto: !!i.photo, status: String(i.status), reporter: scope.marshalId ? null : String(i.reporter ?? ""), acknowledgedAt: iso(i.acknowledged_at),
+      panic: i.type === "panic", location: i.latitude === null ? null : { latitude: Number(i.latitude), longitude: Number(i.longitude), accuracyM: i.accuracy_m === null ? null : Number(i.accuracy_m), mapUrl: `https://maps.google.com/?q=${Number(i.latitude)},${Number(i.longitude)}` },
+      alert: scope.marshalId ? null : { email: !!i.notified_email_at, sms: !!i.notified_sms_at, delivered: !!i.notified_at, error: (i.notify_error as string | null) ?? null } })) };
   }
   async function incidentPhoto(assoc: string, id: string): Promise<string | null> { return ((await db.query(`SELECT photo FROM incidents WHERE id = $1 AND association_id = $2`, [id, assoc])).rows[0]?.photo as string | null | undefined) ?? null; }
   async function acknowledgeIncident(assoc: string, id: string, by: string, status: unknown): Promise<Res<{ status: string }>> {
@@ -205,7 +214,7 @@ export function createMarshalCare(db: Db, commission: Commission, now: () => Dat
     return { associationId: a, contributions, benefits: BENEFIT_KINDS.map((k) => { const h = have.find((x) => x.kind === k); return { kind: k, status: String(h?.status ?? "not_registered"), reference: (h?.reference as string | null) ?? null, since: h?.since ? new Date(h.since as string).toISOString().slice(0, 10) : null, contributedCents: k === "uif" ? contributions.uifCents : k === "savings" || k === "funeral" ? contributions.stokvelCents : null }; }) };
   }
   /** Tenure, ranks worked, trips handled and earnings by month, from the system's own records, and what is still needed for the profile to count as verified. */
-  async function workRecord(marshalId: string, assoc?: string): Promise<Record<string, unknown>> {
+  async function workRecord(marshalId: string, assoc?: string, o: { forAssociation?: boolean } = {}): Promise<Record<string, unknown>> {
     const deps = (await db.query(`SELECT d.departed_at, rk.name AS rank_name, rk.association_id FROM departures d JOIN ranks rk ON rk.id = d.rank_id WHERE d.marshal_id = $1 ORDER BY d.departed_at`, [marshalId])).rows.filter((d) => !assoc || String(d.association_id) === assoc);
     const slips = (await db.query(`SELECT association_id, period_end, status, gross_commission_cents, other_earnings_cents, deductions_cents, net_cents, trips FROM payslips WHERE marshal_id = $1 AND status IN ('issued','paid') ORDER BY period_end`, [marshalId])).rows.filter((p) => !assoc || String(p.association_id) === assoc);
     const prof = (await db.query(`SELECT started_on, marshal_number FROM marshal_profiles WHERE marshal_id = $1`, [marshalId])).rows[0];
@@ -216,7 +225,8 @@ export function createMarshalCare(db: Db, commission: Commission, now: () => Dat
     const first = [deps[0] ? saDay(new Date(deps[0].departed_at as string)) : null, slips[0] ? new Date(slips[0].period_end as string).toISOString().slice(0, 10) : null].filter(Boolean).sort()[0] ?? null;
     const startDate = prof?.started_on ? new Date(prof.started_on as string).toISOString().slice(0, 10) : first;
     const missing: string[] = []; if (!prof?.started_on) missing.push("a start date"); if (!consent || consent.withdrawn_at) missing.push("consent to keep payroll records"); if (!slips.length) missing.push("an issued payslip");
-    return { marshalNumber: prof?.marshal_number ?? null, startDate, tenureDays: startDate ? Math.max(0, Math.round((Date.parse(saDay(now())) - Date.parse(startDate)) / 86_400_000)) : 0, totalTrips: deps.length, ranks: [...ranks.values()].sort((a, b) => b.trips - a.trips), earningsByMonth: [...months.values()], verified: missing.length === 0, missing };
+    const hide = !!o.forAssociation && (!consent || !!consent.withdrawn_at);                                                       // earnings are the marshal's to share: without their consent the association sees tenure and trips only
+    return { earningsHidden: hide, marshalNumber: prof?.marshal_number ?? null, startDate, tenureDays: startDate ? Math.max(0, Math.round((Date.parse(saDay(now())) - Date.parse(startDate)) / 86_400_000)) : 0, totalTrips: deps.length, ranks: [...ranks.values()].sort((a, b) => b.trips - a.trips), earningsByMonth: hide ? [] : [...months.values()], verified: missing.length === 0, missing };
   }
 
   /* ───────────────────────── the income letter ───────────────────────── */
@@ -259,7 +269,29 @@ export function createMarshalCare(db: Db, commission: Commission, now: () => Dat
     const r = await renderLetter(String(l.marshal_id), String(l.id));
     return { ok: true, value: { valid: true, marshal: String(l.marshal_name ?? ""), number: String(l.number), issuedAt: iso(l.issued_at), from: String(r?.from), to: String(r?.to), intact: !!r?.intact } };
   }
-  function letterPdf(v: Record<string, any>): Promise<Buffer> {           // eslint-disable-line @typescript-eslint/no-explicit-any
+  /** The public check of a letter (a bank or landlord holding it): its number and code must match. It reveals the period and issue date and a masked name, never any figure. */
+  async function verifyLetterPublic(number: unknown, code: unknown): Promise<{ valid: boolean; name?: string; number?: string; issuedAt?: string | null; from?: string; to?: string; intact?: boolean }> {
+    if (typeof number !== "string" || typeof code !== "string" || number.length > 60 || code.length > 20) return { valid: false };
+    const l = (await db.query(`SELECT l.*, u.name AS marshal_name FROM income_letters l JOIN users u ON u.id = l.marshal_id WHERE l.number = $1`, [number.trim()])).rows[0];
+    if (!l || String(l.content_hash).slice(0, 12).toUpperCase() !== code.trim().toUpperCase()) return { valid: false };
+    const r = await renderLetter(String(l.marshal_id), String(l.id)), parts = String(l.marshal_name ?? "").trim().split(/\s+/);
+    return { valid: true, name: parts.length > 1 ? `${parts[0]} ${parts[parts.length - 1][0]}.` : parts[0], number: String(l.number), issuedAt: iso(l.issued_at), from: String(r?.from), to: String(r?.to), intact: !!r?.intact };
+  }
+  /** The marshal's work record as a one-page document they can keep or show: tenure, ranks, trips and earnings by month, and whether it counts as verified. */
+  function workRecordPdf(r: Record<string, any>, name: string): Promise<Buffer> {           // eslint-disable-line @typescript-eslint/no-explicit-any
+    return new Promise((resolve, reject) => {
+      const doc = new PDFDocument({ size: "A4", margin: 48, compress: false, info: { Title: `Work record ${name}`, Author: "VINK" } }), parts: Buffer[] = [];
+      doc.on("data", (c: Buffer) => parts.push(c)); doc.on("end", () => resolve(Buffer.concat(parts))); doc.on("error", reject);
+      const L = 48, W = doc.page.width - 96;
+      doc.font("Helvetica-Bold", 16).fillColor("#111111").text("Work record", L, 48); doc.font("Helvetica", 11).fillColor("#555555").text(`${name}${r.marshalNumber ? `   Marshal number ${r.marshalNumber}` : ""}   Printed ${saDay(now())}`, L, doc.y + 2);
+      doc.moveDown(0.8).font("Helvetica", 11).fillColor("#111111").text(`Started working: ${r.startDate ?? "not recorded"}   (${r.tenureDays} days)`, L, doc.y, { width: W }); doc.text(`Trips handled: ${r.totalTrips}`, L, doc.y + 2);
+      doc.text(r.verified ? "Verified: start date, consent and issued payslips are on record." : `Not yet verified: still needed: ${r.missing.join(", ")}.`, L, doc.y + 2, { width: W });
+      if (r.ranks.length) { doc.moveDown(0.6).font("Helvetica-Bold", 11).text("Ranks", L, doc.y); doc.font("Helvetica", 10); for (const k of r.ranks) doc.text(`${k.rank}: ${k.trips} trips (${k.first} to ${k.last})`, L, doc.y + 1, { width: W }); }
+      if (r.earningsByMonth.length) { doc.moveDown(0.6).font("Helvetica-Bold", 11).text("Earnings by month", L, doc.y); doc.font("Helvetica", 10); for (const m of r.earningsByMonth) doc.text(`${m.month}: ${m.trips} trips, earned ${rand(m.earnedCents)}, deductions ${rand(m.deductionsCents)}, net ${rand(m.netCents)}`, L, doc.y + 1, { width: W }); }
+      doc.moveDown(1).font("Helvetica", 9).fillColor("#555555").text("Generated from the system's trip and payslip records. It describes what the system recorded and nothing more: it is not a certificate of employment.", L, doc.y, { width: W }); doc.end();
+    });
+  }
+  function letterPdf(v: Record<string, any>, verifyUrl?: string): Promise<Buffer> {           // eslint-disable-line @typescript-eslint/no-explicit-any
     return new Promise((resolve, reject) => {
       const doc = new PDFDocument({ size: "A4", margin: 48, compress: false, info: { Title: `Proof of income ${v.number}`, Author: "VINK" } }), parts: Buffer[] = [];
       doc.on("data", (c: Buffer) => parts.push(c)); doc.on("end", () => resolve(Buffer.concat(parts))); doc.on("error", reject);
@@ -270,7 +302,9 @@ export function createMarshalCare(db: Db, commission: Commission, now: () => Dat
       for (const m of v.months) { const y = doc.y; doc.font("Helvetica", 10).fillColor(INK).text(m.month, L, y); doc.text(String(m.payslips), L + 110, y, { width: 60, align: "right" }); doc.text(String(m.trips), L + 180, y, { width: 50, align: "right" }); doc.text(rand(m.earnedCents), L + 240, y, { width: 80, align: "right" }); doc.text(rand(m.deductionsCents), L + 330, y, { width: 80, align: "right" }); doc.text(rand(m.netCents), L + W - 70, y, { width: 70, align: "right" }); doc.y = y + 14; }
       doc.moveDown(0.4).font("Helvetica-Bold", 11).fillColor(INK).text(`Total over ${v.monthsCovered} months: earned ${rand(v.totals.earnedCents)}, deductions ${rand(v.totals.deductionsCents)}, net ${rand(v.totals.netCents)}.`, L, doc.y, { width: W });
       doc.font("Helvetica", 11).text(`Average per month: earned ${rand(Math.round(v.totals.earnedCents / v.monthsCovered))}, net ${rand(Math.round(v.totals.netCents / v.monthsCovered))}.`, L, doc.y + 2, { width: W });
-      doc.moveDown(1).font("Helvetica", 9).fillColor(MUTED).text(String(v.note), L, doc.y, { width: W }); doc.end();
+      doc.moveDown(1).font("Helvetica", 9).fillColor(MUTED).text(String(v.note), L, doc.y, { width: W });
+      if (verifyUrl) doc.moveDown(0.5).text(`To check this letter, open ${verifyUrl} and enter the letter number and code above.`, L, doc.y, { width: W });
+      doc.end();
     });
   }
 
@@ -326,6 +360,6 @@ export function createMarshalCare(db: Db, commission: Commission, now: () => Dat
     });
   }
 
-  return { detectShifts, shifts, correctShift, addShift, decideShift, reportIncident, incidents, incidentPhoto, acknowledgeIncident, riskMap, submitGrievance, grievances, respondGrievance, welfareInsights, setBenefit, benefits, workRecord, makeLetter, renderLetter, letters, verifyLetter, letterPdf, cashShare, patterns, kpis, kpisPdf, firstAssociation };
+  return { detectShifts, shifts, correctShift, addShift, decideShift, reportIncident, incidents, incidentPhoto, acknowledgeIncident, riskMap, submitGrievance, grievances, respondGrievance, welfareInsights, setBenefit, benefits, workRecord, makeLetter, renderLetter, letters, verifyLetter, verifyLetterPublic, workRecordPdf, letterPdf, cashShare, patterns, kpis, kpisPdf, firstAssociation };
 }
 export type MarshalCare = ReturnType<typeof createMarshalCare>;
