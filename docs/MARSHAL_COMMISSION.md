@@ -110,12 +110,35 @@ next payslip as its own line.
   Cash share is an **estimate** (passengers a marshal counted at departure against fares tapped). A rank whose cash share this week is 12 or more points above its own four-week average, over at least 30 passengers in each window, is flagged
   as **a change at a rank to look into, not a finding about anyone**.
 
+## PAYE, UIF and tax tables
+
+- **PAYE is an estimate**, worked from a tax table held as **data with its source** (`tax_tables`), never from numbers in the code, because SARS changes them every March. The 2026/27 table (1 March 2026 to 28 February 2027: seven brackets from 18% to 45%, primary rebate
+  R17 820, tax-free threshold R99 000) ships with the system and was checked against published SARS worked examples. The association adds each new year's table on the Commission screen, with the source of the figures.
+- It uses the SARS periodic (annualisation) method for regular pay, applies **only to marshals classed as employees**, only when the association has switched PAYE on, and sits **outside the deduction cap**. UIF comes off first and is deductible.
+- **If no table covers a payslip's dates, no PAYE is calculated** and the payslip says so; it never uses another year's table. Age rebates, medical credits and retirement deductions are not included, so PAYE is never under-stated for an older marshal; the association reconciles
+  its own returns (EMP201, IRP5) and should take advice. UIF is 1% of earnings up to the monthly ceiling (R17 712, so R177.12 a month), scaled to the pay period.
+
+## Emergencies and safety alerts
+
+- **Every safety report is emailed** to the association (its alert email, or its account email). A **panic report** (the "I need help now" button, on every marshal screen, with a 5-second countdown to cancel an accidental press) also carries the phone's **location** and is
+  **sent by SMS** to the association's alert phone. With no signal the alarm is kept on the phone and sent the moment there is signal. The marshal is answered first; the association is told afterwards, so a slow mail server never delays them.
+- Delivery is tracked **per channel**: a failure shows on the report to the association (with a "send again" button) and is retried every minute, up to 6 times within a day, without re-sending a channel that already went.
+- Email uses the existing Resend sender. **SMS uses Twilio** when `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN` and `TWILIO_FROM` are set (otherwise it fails loudly in the log and the report stays on screen). The Twilio adapter follows Twilio's published API and was tested against a stand-in, not a live account.
+- The button says it is not a substitute for calling the police (10111 or 112).
+
+## Automatic cash-out, consent and public letter check
+
+- A marshal can opt in to being **paid each evening** (from 17:00 South African time) what is safely available, once it reaches a minimum they set. It pays at most once a day, and if the payment cannot be arranged the deduction is undone and the day is not used up.
+- The association sees a marshal's **earnings** only while the marshal consents to payroll records; without it, tenure and trips only. Withdrawing takes effect at once.
+- A **public page** (`/api/verify/income-letter`) lets a bank or landlord holding a letter check its number and code with no sign-in: it says whether it is genuine, the period and issue date, and a masked name, never a figure. It is rate limited. Set `PUBLIC_API_URL` and letters print where to check them.
+- The marshal can download their **work record** as a PDF.
+
 ## Offline and languages
 
-- **Offline capture on the phone.** A queue change (join, depart, remove), a shift, a safety report, a complaint and a query made with no signal are kept on the phone and sent when it returns. Each carries a reference the server remembers, so
-  a change sent twice happens once. Only a failure to reach the server queues a change; a change the server refuses when finally sent goes to a "could not be sent" list the marshal sees, so nothing is lost silently. Requests for money are not queued.
-- **Languages.** Afrikaans covers the marshal's screens. **isiZulu and isiXhosa are a first draft of the most-used words only**, everything else stays in English, and they must be checked by first-language speakers before they are relied on. The
-  English text of a screen is its own key, so an untranslated string shows in English and a language can be completed a screen at a time. The navigation labels are not translated yet.
+- **Offline capture on the phone.** A queue change (join, depart, remove), a shift, a safety report, an emergency alert, a complaint and a query made with no signal are kept on the phone and sent when it returns. Each carries a reference the server remembers, so a change sent twice happens once.
+  Only a failure to reach the server queues a change; a change the server refuses when finally sent goes to a "could not be sent" list the marshal sees. Requests for money are not queued.
+- **Languages.** The marshal screens and menus can be shown in **Afrikaans, isiZulu and isiXhosa**. Afrikaans is complete for those screens. **isiZulu and isiXhosa are a first draft and must be checked by first-language speakers before they are relied on**: where a word was uncertain it was left in English
+  (for example "Deductions"). Only complete, standalone texts are translated; a sentence built from pieces and numbers stays in English rather than becoming broken grammar. English is the key, so an untranslated text always shows in English.
 
 ## Testing
 
@@ -125,13 +148,11 @@ with `--testTimeout 90000`. The worked example (120 trips, R20, 40%, advance R10
 
 ## Not built yet
 
-- **Pushing** a new safety report to the association by email or SMS (today it sees it on its Safety screen), and a panic button with location.
-- **Verified work record as a shareable document** beyond the proof-of-income letter, and a public verification page (the association confirms letters from its own screen).
-- **isiZulu and isiXhosa** beyond the first draft, and translated navigation labels.
-- **Consent enforcement** beyond the proof-of-income letter: other consents are recorded but do not yet gate anything.
-- **PAYE and statutory returns.** No tax is calculated; UIF is a simple per-employee rate. Take advice before relying on it.
-- **A daily scheduled cash-out** (a marshal asks for it; nothing pays it automatically).
-- **The marshal's phone capturing departures with no signal at all before the rank device syncs** is covered by the outbox for queue changes; the rank device's own offline sync is described in docs/RANK_DEVICES.md.
+- **WhatsApp alerts** (they need pre-approved message templates) and a push notification inside the app.
+- **PAYE age rebates, medical credits and retirement deductions**, and year-end reconciliation: take advice.
+- **Complete, reviewed isiZulu and isiXhosa.**
+- **Consent gating** beyond the proof-of-income letter and the association's view of earnings.
+- **Verifying the Twilio adapter against a live account**, and a live card-device test.
 
 ## Decisions made by default (all adjustable settings)
 
