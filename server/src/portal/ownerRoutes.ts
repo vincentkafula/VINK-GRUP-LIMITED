@@ -1,3 +1,4 @@
+import { createCompliance } from "../services/compliance.js";
 import { Router, json, type Request } from "express";
 import { h, uid, num, iso, dateOnly, isUuid, text, optText, validDate, fail, findUserByEmail, readKeys, markKeys, isUniqueViolation, audit, bucketDays, rangeParams, saDay, sendCsv, type Db } from "./common.js";
 import { saPeriods, expiryReminders } from "./driverRoutes.js";
@@ -81,6 +82,7 @@ export function createOwnerRouter(db: Db, now: () => Date = () => new Date(), on
       const ok = (await db.query(`SELECT 1 AS x FROM owner_drivers WHERE owner_id = $1 AND driver_id = $2 AND status = 'active'`, [me, driverId])).rows.length;
       if (!ok) { fail(res, 400, "That person is not one of your active drivers"); return; }
     }
+    if (driverId !== null) { const block = await createCompliance(db).assignmentBlock(me, driverId); if (block) { fail(res, 409, block); return; } }      // an association that has switched it on does not allow a driver without a valid permit
     const r = await db.query(`UPDATE vehicles SET driver_id = $3 WHERE id = $1 AND owner_id = $2 RETURNING id`, [req.params.id, me, driverId]);
     if (!r.rows.length) { fail(res, 404, "Vehicle not found"); return; }
     await audit(db, req, "owner.vehicle.driver", req.params.id, { driverId });

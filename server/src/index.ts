@@ -41,6 +41,7 @@ import { createLetterCheckRouter } from "./routes/letterCheck.js";
 import { alertsFor } from "./services/alerts.js";
 import { createCommission } from "./services/commission.js";
 import { createPayslips } from "./services/payslips.js";
+import { createCompliance } from "./services/compliance.js";
 import financialReportsRouter from "./routes/financialReports.js";
 import levySystemRouter from "./routes/levySystem.js";
 import afcRouter from "./routes/afc.js";
@@ -136,6 +137,9 @@ if (pool && process.env.NODE_ENV !== "test") {
   const alerts = alertsFor(pool), payslips = createPayslips(pool, createCommission(pool));
   setInterval(() => { alerts.retryUnsent().catch((e) => console.error("[alerts] retry failed:", e instanceof Error ? e.message : e)); }, 60_000).unref();
   setTimeout(() => { payslips.runAutoCashOuts().catch((e) => console.error("[cash-out] daily run failed:", e instanceof Error ? e.message : e)); }, 45_000).unref();
+  const compliance = createCompliance(pool);
+  setTimeout(() => { compliance.snapshotAll().catch((e) => console.error("[compliance] snapshot failed:", e instanceof Error ? e.message : e)); }, 90_000).unref();
+  setInterval(() => { compliance.snapshotAll().catch((e) => console.error("[compliance] snapshot failed:", e instanceof Error ? e.message : e)); }, 6 * 3600_000).unref();
   setInterval(() => { payslips.runAutoCashOuts().catch((e) => console.error("[cash-out] daily run failed:", e instanceof Error ? e.message : e)); }, 15 * 60_000).unref();
 }
 
