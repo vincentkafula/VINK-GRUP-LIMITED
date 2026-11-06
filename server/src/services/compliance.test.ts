@@ -155,7 +155,7 @@ describe("the vehicle register and operating licences", () => {
 
 describe("the driver register", () => {
   it("includes the association's driver members and the drivers of its owner members, each with their owner and vehicle, and nobody else's", async () => {
-    await db.query(`INSERT INTO owner_drivers (owner_id, driver_id, status, requested_by) VALUES ($1,$2,'active','owner')`, [U.O3, id(9)]); await db.query(`INSERT INTO users (id, username, name, email, role) VALUES ($1,'zed','Zed Driver','z@x.test','driver')`, [id(9)]);
+    await db.query(`INSERT INTO users (id, username, name, email, role) VALUES ($1,'zed','Zed Driver','z@x.test','driver')`, [id(9)]); await db.query(`INSERT INTO owner_drivers (owner_id, driver_id, status, requested_by) VALUES ($1,$2,'active','owner')`, [U.O3, id(9)]);
     const ds = await c.drivers(U.A, TODAY); expect(ds.map((d) => [d.name, d.employers, d.vehicle, d.member])).toEqual([["Dan Driver", ["Olu Owner"], "CA 111-111", false], ["Dee Driver", [], null, true], ["Dina Driver", ["Ona Owner"], "CA 333-333", false]]); expect((await c.drivers(U.B, TODAY)).map((d) => d.name)).toEqual(["Zed Driver"]);
   });
   it("flags a driver with no valid permit (high when assigned to a vehicle), an expiring permit, an expired licence, no employer, and suspension while still assigned", async () => {
