@@ -5,7 +5,6 @@ import { API_BASE } from "../../services/config";
 import { SectionPanel, StatCard } from "../dashboards/DashboardShell";
 import { portalClient, useLoad, Status, Empty, ActionButton, rand, when, inputCls } from "./ui";
 import { sendOrQueue } from "./offlineQueue";
-import { useT } from "./i18n";
 import { CashOutCard } from "./MarshalCare";
 
 /**
