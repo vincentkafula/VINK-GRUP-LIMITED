@@ -6,6 +6,7 @@ import { loadMap } from "./mapData.js";
 import { createLoadingReports } from "./loadingReports.js";
 import { mountAssociationCommission } from "./commissionRoutes.js";
 import { mountAssociationCompliance } from "./complianceRoutes.js";
+import { mountAssociationFinance } from "./financeRoutes.js";
 
 /**
  * The Association Dashboard API, mounted at /api/portal/association (associations only). An association sees and changes only its own
@@ -22,6 +23,7 @@ import { mountAssociationCompliance } from "./complianceRoutes.js";
 export function createAssociationRouter(db: Db, now: () => Date = () => new Date()): Router {
   const router = Router();
   createLoadingReports(db).mount(router, "association", now);
+  mountAssociationFinance(router, db, now);                                              // the fee schedule, receipts, member ledger, expenses, banking and statements
   mountAssociationCompliance(router, db, now);                                          // the compliance registers, licences, drivers and the overview (docs/ASSOCIATION_COMPLIANCE.md)
   mountAssociationCommission(router, db, now);                                          // the commission rules, pay runs, payslips and disputes (docs/MARSHAL_COMMISSION.md)                          // what loads at the association's ranks and on its devices collected: per load, driver, vehicle or route
   const body = json({ limit: "10kb" });

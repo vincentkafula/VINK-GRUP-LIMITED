@@ -1,3 +1,4 @@
+import PDFDocument from "pdfkit";
 import type { Db } from "../portal/common.js";
 import { saDay } from "../portal/common.js";
 import { isDay, addMonths, daysBetween, flagSort, type Flag } from "./compliance.js";
@@ -215,6 +216,20 @@ export function createFinance(db: Db, now: () => Date = () => new Date()) {
     const mi = rc.filter((r) => !r.voided && r.receivedOn.startsWith(month)).reduce((a, r) => a + r.amountCents, 0), me = ex.filter((e) => e.status === "approved" && e.incurredOn.startsWith(month)).reduce((a, e) => a + e.amountCents, 0);
     return { today: onDay, settings: st, cash: ca, measures: { collectedThisMonthCents: mi, expensesThisMonthCents: me, netThisMonthCents: mi - me, owedByMembersCents: led.reduce((a, m) => a + m.owedCents, 0), overdueCents: led.reduce((a, m) => a + m.overdueCents, 0), membersOverdue: led.filter((m) => m.overdueCents > 0).length, pendingExpenses: ex.filter((e) => e.status === "pending").length }, flags: flags.sort(flagSort) };
   }
-  return { settings, saveSettings, fees, addFee, setFeeActive, charge, recordReceipt, voidReceipt, receipts, memberLedger, memberStatement, expenses, addExpense, approveExpense, rejectExpense, addDeposit, deposits, cash, setBudget, budgets, statement, summary };
+  /** A numbered receipt as a one-page PDF. A voided receipt says so across its face, so it cannot be passed off as valid. */
+  async function receiptPdf(assoc: string, id: string): Promise<Res<Buffer>> {
+    const r = typeof id === "string" && UUID.test(id) ? (await db.query(`SELECT r.*, u.name AS member, a.name AS association FROM receipts r JOIN users a ON a.id = r.association_id LEFT JOIN users u ON u.id = r.member_id WHERE r.id = $1 AND r.association_id = $2`, [id, assoc])).rows[0] : null; if (!r) return bad(404, "Receipt not found");
+    const number = `R-${String(r.number).padStart(6, "0")}`, voided = !!r.voided_at, buf = await new Promise<Buffer>((resolve, reject) => {
+      const doc = new PDFDocument({ size: "A5", margin: 40, compress: false, info: { Title: `Receipt ${number}`, Author: String(r.association) } }), parts: Buffer[] = [];
+      doc.on("data", (c: Buffer) => parts.push(c)); doc.on("end", () => resolve(Buffer.concat(parts))); doc.on("error", reject);
+      doc.font("Helvetica-Bold", 16).fillColor("#111111").text(String(r.association), 40, 40); doc.font("Helvetica-Bold", 22).text(`Receipt ${number}`, 40, doc.y + 6);
+      doc.font("Helvetica", 11).fillColor("#333333"); const rows: [string, string][] = [["Date received", dayOf(r.received_on)!], ["Received from", String(r.member ?? r.payer_name ?? "")], ["Amount", rand(Number(r.amount_cents))], ["Paid by", String(r.method)], ["For", String(r.category)]]; if (r.note) rows.push(["Note", String(r.note)]);
+      doc.moveDown(0.8); for (const [k, v] of rows) { const y = doc.y; doc.font("Helvetica", 10).fillColor("#666666").text(k, 40, y, { width: 100 }); doc.font("Helvetica-Bold", 11).fillColor("#111111").text(v, 145, y, { width: 220 }); doc.y = y + 20; }
+      if (voided) { doc.moveDown(0.5).font("Helvetica-Bold", 20).fillColor("#B91C1C").text("VOID", 40, doc.y); doc.font("Helvetica", 10).text(`This receipt was voided: ${r.void_reason}`, 40, doc.y + 2, { width: 320 }); }
+      doc.moveDown(1).font("Helvetica", 8).fillColor("#666666").text("Receipts are numbered in sequence and are never deleted. A receipt that is voided keeps its number and says so.", 40, doc.y, { width: 320 }); doc.end();
+    });
+    return { ok: true, value: buf };
+  }
+  return { settings, saveSettings, receiptPdf, fees, addFee, setFeeActive, charge, recordReceipt, voidReceipt, receipts, memberLedger, memberStatement, expenses, addExpense, approveExpense, rejectExpense, addDeposit, deposits, cash, setBudget, budgets, statement, summary };
 }
 export type Finance = ReturnType<typeof createFinance>;
