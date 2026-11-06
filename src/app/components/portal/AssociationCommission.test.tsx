@@ -168,16 +168,30 @@ describe("PAYE, alerts and the tax tables", () => {
   it("shows the tables PAYE is worked from with their source, and says what happens with none", async () => {
     render(<CommissionScreen />); expect((await screen.findByText("2026/27")).closest("li")).toHaveTextContent(`2026/27 · 2026-03-01 to 2027-02-28 · 2 brackets, from 18% to 45% · rebate ${R(1782000)} · UIF ceiling ${R(1771200)} a month`); expect(screen.getByText("SARS, rates of tax for individuals")).toBeInTheDocument(); expect(screen.getByText(/no PAYE is calculated and the payslip says so/)).toBeInTheDocument();
   });
+  it("shows the age rebates beside each table, and defaults an empty age rebate to none", async () => {
+    render(<CommissionScreen />); const li = (await screen.findByText("2026/27")).closest("li")!; expect(li).toHaveTextContent(`age rebates ${R(0)} (65 and over) and ${R(0)} (75 and over)`);                    // the test data has none: shown as R0, never blank or NaN
+    routes = ((o) => (m: string, p: string, b: any) => (p === "/api/portal/association/commission/tax-tables" && m === "GET" ? { body: { success: true, tables: [{ taxYear: "2026/27", effectiveFrom: "2026-03-01", effectiveTo: "2027-02-28", brackets: [{ upToCents: 24510000, rateBp: 1800 }, { upToCents: null, rateBp: 4500 }], primaryRebateCents: 1782000, secondaryRebateCents: 976500, tertiaryRebateCents: 324900, uifCeilingMonthlyCents: 1771200, source: "SARS" }] } } : o(m, p, b)))(routes);
+    cleanup(); render(<CommissionScreen />); expect((await screen.findByText("2026/27")).closest("li")).toHaveTextContent(`age rebates ${R(976500)} (65 and over) and ${R(324900)} (75 and over)`);
+  });
   it("reads brackets typed as the top of each in rand and its rate, and refuses a line it cannot read", () => {
     expect(parseBrackets("245100 18\n383 100 26\nabove 45")).toEqual([{ upToCents: 24510000, rateBp: 1800 }, { upToCents: 38310000, rateBp: 2600 }, { upToCents: null, rateBp: 4500 }]); expect(parseBrackets("1000,50 18.5%\n\nABOVE 45")).toEqual([{ upToCents: 100050, rateBp: 1850 }, { upToCents: null, rateBp: 4500 }]);
     expect(parseBrackets("lots 18")).toBeNull(); expect(parseBrackets("245100")).toBeNull(); expect(parseBrackets("")).toEqual([]);
   });
   it("adds next year's table in the units the server wants, with its source, and explains a bracket line it cannot read without sending anything", async () => {
     render(<CommissionScreen />); await screen.findByText(/2026\/27/); fireEvent.click(screen.getByText("Add next year's table")); fireEvent.change(screen.getByLabelText("Tax year"), { target: { value: "2027/28" } }); fireEvent.change(screen.getByLabelText("Table from"), { target: { value: "2027-03-01" } }); fireEvent.change(screen.getByLabelText("Table to"), { target: { value: "2028-02-29" } });
-    fireEvent.change(screen.getByLabelText("Primary rebate"), { target: { value: "18 000" .replace(" ", "") } }); fireEvent.change(screen.getByLabelText("UIF ceiling"), { target: { value: "18000" } }); fireEvent.change(screen.getByLabelText("Table source"), { target: { value: "SARS Budget 2027" } });
+    fireEvent.change(screen.getByLabelText("Primary rebate"), { target: { value: "18 000" .replace(" ", "") } }); fireEvent.change(screen.getByLabelText("Secondary rebate"), { target: { value: "9900" } }); fireEvent.change(screen.getByLabelText("Tertiary rebate"), { target: { value: "3300,50" } }); fireEvent.change(screen.getByLabelText("UIF ceiling"), { target: { value: "18000" } }); fireEvent.change(screen.getByLabelText("Table source"), { target: { value: "SARS Budget 2027" } });
     fireEvent.change(screen.getByLabelText("Tax brackets"), { target: { value: "oops" } }); fireEvent.click(screen.getByRole("button", { name: "Add the table" })); expect(await screen.findByText(/Each bracket line is the top amount then the rate/)).toBeInTheDocument(); expect(writes()).toEqual([]);
     fireEvent.change(screen.getByLabelText("Tax brackets"), { target: { value: "250000 18\n400000 26\nabove 45" } }); fireEvent.click(screen.getByRole("button", { name: "Add the table" }));
-    await waitFor(() => expect(writes().at(-1)).toEqual({ method: "POST", path: "/api/portal/association/commission/tax-tables", body: { taxYear: "2027/28", effectiveFrom: "2027-03-01", effectiveTo: "2028-02-29", brackets: [{ upToCents: 25000000, rateBp: 1800 }, { upToCents: 40000000, rateBp: 2600 }, { upToCents: null, rateBp: 4500 }], primaryRebateCents: 1800000, uifCeilingMonthlyCents: 1800000, source: "SARS Budget 2027" } }));
+    await waitFor(() => expect(writes().at(-1)).toEqual({ method: "POST", path: "/api/portal/association/commission/tax-tables", body: { taxYear: "2027/28", effectiveFrom: "2027-03-01", effectiveTo: "2028-02-29", brackets: [{ upToCents: 25000000, rateBp: 1800 }, { upToCents: 40000000, rateBp: 2600 }, { upToCents: null, rateBp: 4500 }], primaryRebateCents: 1800000, secondaryRebateCents: 990000, tertiaryRebateCents: 330050, uifCeilingMonthlyCents: 1800000, source: "SARS Budget 2027" } }));
+  });
+});
+
+describe("a marshal's date of birth, for PAYE", () => {
+  it("is asked for only for employees, shown as it was saved, and sent (or cleared) when changed", async () => {
+    routes = ((o) => (m: string, p: string, b: any) => (p === "/api/portal/association/commission/marshals" && m === "GET" ? { body: { success: true, marshals: [{ id: "m1", name: "Mo Marshal", marshalNumber: "M-0001", class: "employee", uifApplies: true, startedOn: null, birthDate: "1960-05-01" }, { id: "m2", name: "Mia Marshal", marshalNumber: "M-0002", class: "independent", uifApplies: false, startedOn: null, birthDate: null }] } } : o(m, p, b)))(routes);
+    render(<PayRunScreen />); await screen.findByText("Marshals' payslip details"); expect(screen.getByLabelText("Date of birth of Mo Marshal")).toHaveValue("1960-05-01"); expect(screen.queryByLabelText("Date of birth of Mia Marshal")).toBeNull();
+    fireEvent.change(screen.getByLabelText("Date of birth of Mo Marshal"), { target: { value: "1961-02-03" } }); await waitFor(() => expect(writes().at(-1)).toEqual({ method: "PUT", path: "/api/portal/association/commission/marshals/m1", body: { birthDate: "1961-02-03" } }));
+    fireEvent.change(screen.getByLabelText("Date of birth of Mo Marshal"), { target: { value: "" } }); await waitFor(() => expect(writes().at(-1)!.body).toEqual({ birthDate: null }));
   });
 });
 

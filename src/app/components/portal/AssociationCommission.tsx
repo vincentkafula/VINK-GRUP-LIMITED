@@ -175,7 +175,7 @@ function CatchUpCard() {
 }
 
 /* ───────────────────────── the income tax tables PAYE is worked from ───────────────────────── */
-interface TaxTableRow { taxYear: string; effectiveFrom: string; effectiveTo: string; brackets: { upToCents: number | null; rateBp: number }[]; primaryRebateCents: number; uifCeilingMonthlyCents: number; source: string | null }
+interface TaxTableRow { taxYear: string; effectiveFrom: string; effectiveTo: string; brackets: { upToCents: number | null; rateBp: number }[]; primaryRebateCents: number; secondaryRebateCents?: number; tertiaryRebateCents?: number; uifCeilingMonthlyCents: number; source: string | null }
 /** "245100 18" per line, the last line "above 45": the top of each bracket in rand and its rate in percent. Returns null when a line cannot be read. */
 export function parseBrackets(text: string): { upToCents: number | null; rateBp: number }[] | null {
   const out: { upToCents: number | null; rateBp: number }[] = [];
@@ -188,13 +188,13 @@ export function parseBrackets(text: string): { upToCents: number | null; rateBp:
 }
 function TaxTablesCard() {
   const [load, reload] = useLoad<{ tables: TaxTableRow[] }>(() => call("/commission/tax-tables"));
-  const [f, setF] = useState({ year: "", from: "", to: "", rebate: "", uif: "", source: "", brackets: "" });
+  const [f, setF] = useState({ year: "", from: "", to: "", rebate: "", secondary: "", tertiary: "", uif: "", source: "", brackets: "" });
   return (
     <SectionPanel title="Income tax tables (for PAYE)">
       <div className="p-4 space-y-4 text-sm text-fg">
         <p className="text-xs text-fg-muted">PAYE is worked out from these tables, which SARS changes every March. If no table covers a payslip's dates, no PAYE is calculated and the payslip says so. It is an estimate: take advice, and the association is responsible for its own tax returns.</p>
         <Status load={load}>{({ tables }) => tables.length === 0 ? <Empty>No tables yet.</Empty> : (
-          <ul className="space-y-2">{tables.map((t) => <li key={t.taxYear}><b>{t.taxYear}</b> · {t.effectiveFrom} to {t.effectiveTo} · {t.brackets.length} brackets, from {t.brackets[0].rateBp / 100}% to {t.brackets[t.brackets.length - 1].rateBp / 100}% · rebate {money(t.primaryRebateCents)} · UIF ceiling {money(t.uifCeilingMonthlyCents)} a month<span className="block text-xs text-fg-subtle">{t.source}</span></li>)}</ul>)}</Status>
+          <ul className="space-y-2">{tables.map((t) => <li key={t.taxYear}><b>{t.taxYear}</b> · {t.effectiveFrom} to {t.effectiveTo} · {t.brackets.length} brackets, from {t.brackets[0].rateBp / 100}% to {t.brackets[t.brackets.length - 1].rateBp / 100}% · rebate {money(t.primaryRebateCents)} · UIF ceiling {money(t.uifCeilingMonthlyCents)} a month · age rebates {money(t.secondaryRebateCents ?? 0)} (65 and over) and {money(t.tertiaryRebateCents ?? 0)} (75 and over)<span className="block text-xs text-fg-subtle">{t.source}</span></li>)}</ul>)}</Status>
         <details><summary className="cursor-pointer font-bold">Add next year's table</summary>
           <div className="mt-3 space-y-3">
             <div className="flex flex-wrap items-end gap-3">
@@ -202,13 +202,15 @@ function TaxTablesCard() {
               <Field label="Applies from"><input type="date" aria-label="Table from" className={inputCls + " mt-1 w-40"} value={f.from} onChange={(e) => setF({ ...f, from: e.target.value })} /></Field>
               <Field label="Applies to"><input type="date" aria-label="Table to" className={inputCls + " mt-1 w-40"} value={f.to} onChange={(e) => setF({ ...f, to: e.target.value })} /></Field>
               <Field label="Primary rebate (R a year)"><input aria-label="Primary rebate" className={inputCls + " mt-1 !w-28"} inputMode="decimal" value={f.rebate} onChange={(e) => setF({ ...f, rebate: e.target.value })} /></Field>
+              <Field label="Rebate from age 65 (R)"><input aria-label="Secondary rebate" className={inputCls + " mt-1 !w-28"} inputMode="decimal" value={f.secondary} onChange={(e) => setF({ ...f, secondary: e.target.value })} /></Field>
+              <Field label="Rebate from age 75 (R)"><input aria-label="Tertiary rebate" className={inputCls + " mt-1 !w-28"} inputMode="decimal" value={f.tertiary} onChange={(e) => setF({ ...f, tertiary: e.target.value })} /></Field>
               <Field label="UIF ceiling (R a month)"><input aria-label="UIF ceiling" className={inputCls + " mt-1 !w-28"} inputMode="decimal" value={f.uif} onChange={(e) => setF({ ...f, uif: e.target.value })} /></Field>
             </div>
             <Field label="Brackets: the top of each in rand, then its rate in percent, one per line. End with the word above and the top rate."><textarea aria-label="Tax brackets" className={inputCls + " mt-1 min-h-[8rem] font-mono"} placeholder={"245100 18\n383100 26\nabove 45"} value={f.brackets} onChange={(e) => setF({ ...f, brackets: e.target.value })} /></Field>
             <Field label="Where the figures come from (the SARS page or notice)"><input aria-label="Table source" className={inputCls + " mt-1"} maxLength={300} value={f.source} onChange={(e) => setF({ ...f, source: e.target.value })} /></Field>
             <ActionButton label="Add the table" color={COLOR} onRun={async () => {
               const brackets = parseBrackets(f.brackets); if (!brackets) return { error: "Each bracket line is the top amount then the rate, like: 245100 18" };
-              const r = await call("/commission/tax-tables", { method: "POST", body: { taxYear: f.year.trim(), effectiveFrom: f.from, effectiveTo: f.to, brackets, primaryRebateCents: toCents(f.rebate), uifCeilingMonthlyCents: toCents(f.uif), source: f.source } });
+              const r = await call("/commission/tax-tables", { method: "POST", body: { taxYear: f.year.trim(), effectiveFrom: f.from, effectiveTo: f.to, brackets, primaryRebateCents: toCents(f.rebate), secondaryRebateCents: toCents(f.secondary), tertiaryRebateCents: toCents(f.tertiary), uifCeilingMonthlyCents: toCents(f.uif), source: f.source } });
               if ("error" in r) return { error: r.error }; reload(); return { message: "Added." };
             }} />
           </div>
@@ -296,13 +298,14 @@ function AdjustmentsCard() {
   );
 }
 function MarshalDetailsCard() {
-  const [load, reload] = useLoad<{ marshals: { id: string; name: string; marshalNumber: string; class: string; uifApplies: boolean; startedOn: string | null }[] }>(() => call("/commission/marshals"));
+  const [load, reload] = useLoad<{ marshals: { id: string; name: string; marshalNumber: string; class: string; uifApplies: boolean; startedOn: string | null; birthDate?: string | null }[] }>(() => call("/commission/marshals"));
   return (
     <SectionPanel title="Marshals' payslip details">
       <div className="p-4"><Status load={load}>{({ marshals }) => marshals.length === 0 ? <Empty>No marshals are assigned to your ranks yet.</Empty> : (
         <ul className="space-y-2 text-sm text-fg">{marshals.map((m) => (
           <li key={m.id} className="flex flex-wrap items-center justify-between gap-2"><span><b>{m.name}</b> · {m.marshalNumber}</span>
             <span className="flex items-center gap-2"><select aria-label={`Class of ${m.name}`} className={inputCls + " w-36"} value={m.class} onChange={async (e) => { await call(`/commission/marshals/${m.id}`, { method: "PUT", body: { class: e.target.value } }); reload(); }}><option value="independent">Independent</option><option value="employee">Employee</option></select>
+              {m.class === "employee" && <label className="flex items-center gap-1 text-xs">Born<input type="date" aria-label={`Date of birth of ${m.name}`} className={inputCls + " w-36"} value={m.birthDate ?? ""} onChange={async (e) => { await call(`/commission/marshals/${m.id}`, { method: "PUT", body: { birthDate: e.target.value || null } }); reload(); }} /></label>}
               <label className="flex items-center gap-1 text-xs"><input type="checkbox" aria-label={`UIF for ${m.name}`} checked={m.uifApplies} onChange={async (e) => { await call(`/commission/marshals/${m.id}`, { method: "PUT", body: { uifApplies: e.target.checked } }); reload(); }} />UIF</label></span></li>))}</ul>)}</Status></div>
     </SectionPanel>
   );
