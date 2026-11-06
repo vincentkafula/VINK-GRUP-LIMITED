@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { render, screen, fireEvent, waitFor, cleanup, within } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { EarningsScreen, PayslipsScreen, MoneyCheckScreen, MyDetails } from "./MarshalPay";
@@ -5,7 +6,7 @@ import { rand } from "./ui";
 
 const R = (cents: number) => rand(cents / 100).replace(/\s/g, " ");              // the app writes rand with non-breaking spaces; the page text is read with plain ones
 type Reply = { status?: number; body: unknown; type?: string };
-let routes: (method: string, path: string, body: any) => Reply | undefined, calls: { method: string; path: string; body: any }[];   // eslint-disable-line @typescript-eslint/no-explicit-any
+let routes: (method: string, path: string, body: any) => Reply | undefined, calls: { method: string; path: string; body: any }[];
 const EARN = { success: true, from: "2026-10-26", to: "2026-11-01", days: [{ date: "2026-10-26", rank: "Langa", trips: 18, feesCents: 36000, commissionCents: 14400 }, { date: "2026-10-27", rank: "Langa", trips: 17, feesCents: 34000, commissionCents: 13600 }], totals: { trips: 35, feesCents: 70000, commissionCents: 28000, onPayslipCents: 14400, accruingCents: 13600 } };
 const DAY = { success: true, date: "2026-10-26", trips: [{ departureId: "d1", time: "2026-10-26T04:05:00Z", rank: "Langa", registration: "CA 111-111", driver: "Dee Driver", feeCents: 2000, feeStatus: "paid", rateBp: 4000, commissionCents: 800, payslip: "PS-20261101-M0001" }, { departureId: "d2", time: "2026-10-26T04:15:00Z", rank: "Langa", registration: "CA 222-222", driver: null, feeCents: 2000, feeStatus: "owed", rateBp: 4000, commissionCents: 800, payslip: null }] };
 const SLIP = { id: "p1", number: "PS-20261101-M0001", status: "paid", association: "Langa Taxi Association", marshal: "Mo Marshal", marshalNumber: "M-0001", ranks: "Langa", periodStart: "2026-10-26", periodEnd: "2026-11-01", issuedAt: "2026-11-02T08:00:00Z", trips: 120, tripFeeTotalCents: 240000,
