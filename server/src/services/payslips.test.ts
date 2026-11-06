@@ -226,3 +226,74 @@ describe("the PDF", () => {
     for (const needle of ["PS-20261101-M0001", "NET PAY: R810.00", "R2,400.00", "R960.00", "ADV-0007", "Mo Marshal", "M-0001", "Langa Taxi Association", "Generated from system trip records"]) expect(text, needle).toContain(needle);
   });
 });
+
+describe("refunding a fee the driver has already paid", () => {
+  it("pays it back to the driver through the money engine, marks the trip refunded and reverses the marshal's commission, or leaves the commission when the association absorbs it", async () => {
+    const [d1, d2] = await trips([["2026-10-26", 2]]); await payFees();
+    const r = await c.refundFee(d1, U.boss, { reasonCode: "error_corrected", reason: "Charged for a trip that never left" }); expect(r).toEqual({ ok: true, value: { refundCents: 2000, reversedCents: 800 } });
+    expect(await q(`SELECT kind, payer_id, payee_id, amount_cents, remaining_cents, status, ref FROM payment_items WHERE kind = 'trip_fee_refund'`)).toEqual([{ kind: "trip_fee_refund", payer_id: U.A, payee_id: U.D1, amount_cents: 2000, remaining_cents: 2000, status: "pending", ref: `tripfee-refund:${d1}` }]);
+    expect((await q(`SELECT waived_reason FROM trip_fees WHERE departure_id = $1`, [d1]))[0].waived_reason).toBe("refunded: Charged for a trip that never left"); expect(await c.netCommission(d1)).toBe(0);
+    expect(await c.refundFee(d2, U.boss, { reasonCode: "association_absorbs", reason: "We cover it", absorb: true })).toEqual({ ok: true, value: { refundCents: 2000, reversedCents: 0 } }); expect(await c.netCommission(d2)).toBe(800);
+  });
+  it("refuses a fee that is not paid (waive it), one already refunded, a missing reason, and a trip with no fee", async () => {
+    const [d1, d2] = await trips([["2026-10-26", 2]]); await db.query(`UPDATE payment_items SET status = 'paid' WHERE ref = $1`, [`tripfee:${d1}`]);
+    expect(await c.refundFee(d2, U.boss, { reasonCode: "goodwill", reason: "x" })).toMatchObject({ ok: false, status: 409, error: expect.stringContaining("waive it instead") });
+    expect(await c.refundFee(d1, U.boss, { reasonCode: "breakdown", reason: "x" })).toMatchObject({ ok: false, status: 400 }); expect(await c.refundFee(d1, U.boss, { reasonCode: "goodwill", reason: " " })).toMatchObject({ ok: false, status: 400 });
+    ok(await c.refundFee(d1, U.boss, { reasonCode: "goodwill", reason: "Refund" })); expect(await c.refundFee(d1, U.boss, { reasonCode: "goodwill", reason: "again" })).toMatchObject({ ok: false, status: 409 }); expect(await c.refundFee(id(999), U.boss, { reasonCode: "goodwill", reason: "x" })).toMatchObject({ ok: false, status: 404 });
+    expect((await q(`SELECT * FROM payment_items WHERE kind = 'trip_fee_refund'`)).length).toBe(1);
+  });
+});
+
+describe("revising a payslip that has not been paid", () => {
+  it("releases its trips and adjustments, cancels its payment, keeps the old one on record as revised, and the corrected payslip is a new version", async () => {
+    await trips([["2026-10-26", 4]]); await adj({ kind: "advance", reason: "Advance", reference: "ADV-0001", totalCents: 1000, perPeriodCents: 1000 });
+    const a = ok(await p.draft(U.A, U.M1, START, END, U.boss)).value; ok(await p.issue(U.A, a.id, U.boss, "wallet")); expect((await q(`SELECT remaining_cents, active FROM pay_adjustments`))[0]).toMatchObject({ remaining_cents: 0, active: false });
+    expect(await p.revise(U.A, a.id, U.boss, "  ")).toMatchObject({ ok: false, status: 400 }); expect(await p.revise(id(99), a.id, U.boss, "wrong")).toMatchObject({ ok: false, status: 404 });
+    expect(await p.revise(U.A, a.id, U.boss, "A trip was left out")).toEqual({ ok: true, value: { number: "PS-20261101-M0001" } });
+    expect((await q(`SELECT status, note FROM payslips`))[0]).toEqual({ status: "revised", note: "A trip was left out" }); expect((await q(`SELECT COUNT(*) AS n FROM trip_commissions WHERE payslip_id IS NOT NULL`))[0].n).toBe(0); expect((await q(`SELECT remaining_cents, active FROM pay_adjustments`))[0]).toMatchObject({ remaining_cents: 1000, active: true });
+    expect((await q(`SELECT status, last_error FROM payment_items WHERE kind = 'marshal_commission'`))[0]).toEqual({ status: "failed", last_error: "The payslip was revised" });
+    await trips([["2026-10-27", 1]]);                                                                                                                       // the trip that was left out
+    const b = ok(await p.draft(U.A, U.M1, START, END, U.boss)).value; expect(b.number).toBe("PS-20261101-M0001-R1"); const v = ok(await p.view(b.id, { associationId: U.A })).value; expect(v).toMatchObject({ version: 2, trips: 5, grossCommissionCents: 4000, deductionsCents: 1000, netCents: 3000 });
+    ok(await p.issue(U.A, b.id, U.boss, "bank")); expect((await q(`SELECT number, version, status, supersedes_id FROM payslips ORDER BY version`)).map((r) => [r.number, r.version, r.status, !!r.supersedes_id])).toEqual([["PS-20261101-M0001", 1, "revised", false], ["PS-20261101-M0001-R1", 2, "issued", true]]);
+    expect((await p.listForMarshal(U.M1)).map((x: any) => [x.number, x.status])).toEqual([["PS-20261101-M0001-R1", "issued"], ["PS-20261101-M0001", "revised"]]);
+  });
+  it("is refused for a draft, a payslip already paid, or one whose wallet payment has gone through; and a carry made when it was issued is released", async () => {
+    await trips([["2026-10-26", 2]]); const a = ok(await p.draft(U.A, U.M1, START, END, U.boss)).value; expect(await p.revise(U.A, a.id, U.boss, "x")).toMatchObject({ ok: false, status: 409 });                         // a draft
+    ok(await p.issue(U.A, a.id, U.boss, "wallet")); await db.query(`UPDATE payment_items SET status = 'paid' WHERE kind = 'marshal_commission'`); expect(await p.revise(U.A, a.id, U.boss, "x")).toMatchObject({ ok: false, status: 409, error: expect.stringContaining("already been paid") });
+    const b = await q(`SELECT id FROM payslips`); await db.query(`UPDATE payment_items SET status = 'pending'`); await db.query(`UPDATE payslips SET status = 'paid' WHERE id = $1`, [b[0].id]); expect(await p.revise(U.A, b[0].id, U.boss, "x")).toMatchObject({ ok: false, status: 409 });
+  });
+});
+
+describe("drawing commission that is already earned", () => {
+  const MAX = async () => (await p.cashOutStatus(U.A, U.M1));
+  async function earned() { await trips([["2026-10-26", 10]]); await payFees(5); }                                    // 10 trips, 5 fees paid: R40 is safely earned
+  it("is off until the association switches it on, and allows nothing for fees the drivers have not paid", async () => {
+    await earned(); expect(await MAX()).toMatchObject({ enabled: false }); expect(await p.cashOut(U.A, U.M1, 1000, U.M1)).toMatchObject({ ok: false, status: 409, error: expect.stringContaining("not switched on") });
+    ok(await c.updateSettings(U.A, { cashoutEnabled: true, cashoutCapBp: 5000 })); expect(await MAX()).toEqual({ enabled: true, availableCents: 4000, outstandingCents: 0, maxCents: 2000, capBp: 5000 });
+  });
+  it("pays what is asked at once (a payment from the association), within the share allowed, and refuses more", async () => {
+    await earned(); ok(await c.updateSettings(U.A, { cashoutEnabled: true, cashoutCapBp: 5000 }));
+    for (const [amt, status] of [[500, 400], [10.5, 400], [2500, 409], ["lots", 400]] as const) expect(await p.cashOut(U.A, U.M1, amt, U.M1), String(amt)).toMatchObject({ ok: false, status });
+    expect(await p.cashOut(id(99), U.M1, 1500, U.M1)).toMatchObject({ ok: false });
+    expect(await p.cashOut(U.A, U.M1, 1500, U.M1)).toEqual({ ok: true, value: { reference: "ACC-0001", amountCents: 1500, maxCents: 500 } });
+    const adjRow = (await q(`SELECT id, kind, side, reference, remaining_cents FROM pay_adjustments`))[0]; expect(adjRow).toMatchObject({ kind: "advance", side: "deduction", reference: "ACC-0001", remaining_cents: 1500 });
+    expect(await q(`SELECT kind, payer_id, payee_id, amount_cents, ref FROM payment_items WHERE kind = 'marshal_commission'`)).toEqual([{ kind: "marshal_commission", payer_id: U.A, payee_id: U.M1, amount_cents: 1500, ref: `cashout:${adjRow.id}` }]);
+    expect(await MAX()).toMatchObject({ outstandingCents: 1500, maxCents: 500 }); expect(await p.cashOut(U.A, U.M1, 1000, U.M1)).toMatchObject({ ok: false, status: 409, error: expect.stringContaining("up to R5.00") });
+  });
+  it("comes back off the next payslip, outside the deduction cap, and is shown as such", async () => {
+    await earned(); ok(await c.updateSettings(U.A, { cashoutEnabled: true, deductionCapBp: 0 })); ok(await p.cashOut(U.A, U.M1, 1500, U.M1));
+    const v = ok(await p.view(ok(await p.draft(U.A, U.M1, START, END, U.boss)).value.id, { associationId: U.A })).value; expect(v).toMatchObject({ grossCommissionCents: 8000, deductionsCents: 1500, netCents: 6500 });        // the cap of 0% did not stop it
+    expect(v.lines.find((l: any) => l.reference === "ACC-0001")).toMatchObject({ kind: "advance", label: "Cash-out of accrued commission", amountCents: 1500 });
+    ok(await p.issue(U.A, v.id, U.boss, "bank")); expect((await q(`SELECT remaining_cents, active FROM pay_adjustments`))[0]).toEqual({ remaining_cents: 0, active: false });
+  });
+  it("carries what a small payslip cannot cover to the next one", async () => {
+    await trips([["2026-10-26", 1]]); await payFees(); ok(await c.updateSettings(U.A, { cashoutEnabled: true, cashoutCapBp: 10000 })); await db.query(`INSERT INTO pay_adjustments (association_id, marshal_id, kind, side, label, reason, reference, total_cents, remaining_cents) VALUES ($1,$2,'advance','deduction','Cash-out of accrued commission','x','ACC-0009',2000,2000)`, [U.A, U.M1]);
+    const v = ok(await p.view(ok(await p.draft(U.A, U.M1, START, END, U.boss)).value.id, { associationId: U.A })).value; expect(v).toMatchObject({ grossCommissionCents: 800, deductionsCents: 800, netCents: 0 }); expect(v.lines.find((l: any) => l.reference === "ACC-0009").reason).toContain("R12.00 carried to the next payslip");
+    ok(await p.issue(U.A, v.id, U.boss, "wallet")); expect((await q(`SELECT remaining_cents, active FROM pay_adjustments`))[0]).toEqual({ remaining_cents: 1200, active: true });
+  });
+  it("is validated in the settings, and a marshal who does not work for the association cannot draw", async () => {
+    for (const bad of [{ cashoutCapBp: 10001 }, { cashoutCapBp: -1 }, { cashoutEnabled: "yes" }, { shiftLimitMinutes: 30 }, { weekLimitMinutes: 20000 }, { shiftGapMinutes: 5 }]) expect(await c.updateSettings(U.A, bad as any), JSON.stringify(bad)).toMatchObject({ ok: false, status: 400 });
+    ok(await c.updateSettings(U.A, { cashoutEnabled: true })); expect(await p.cashOut(U.A, U.D1, 1000, U.D1)).toMatchObject({ ok: false, status: 403 });
+  });
+});
+

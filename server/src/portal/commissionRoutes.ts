@@ -68,6 +68,13 @@ export function mountAssociationCommission(router: Router, db: Db, now: () => Da
     if (r.ok) await audit(db, req, "commission.waive", req.params.departureId as string, { reasonCode: req.body?.reasonCode, absorb: req.body?.absorb === true });
     reply(res, r);
   }));
+  router.post("/commission/trips/:departureId/refund", body, h(async (req, res) => {
+    if (!isUuid(req.params.departureId)) { fail(res, 400, "Invalid trip"); return; }
+    if (!(await db.query(`SELECT 1 AS x FROM trip_fees WHERE departure_id = $1 AND association_id = $2`, [req.params.departureId, assoc(req)])).rows.length) { fail(res, 404, "That trip was not found"); return; }
+    const r = await commission.refundFee(req.params.departureId as string, uid(req), { reasonCode: req.body?.reasonCode, reason: req.body?.reason, absorb: req.body?.absorb === true });
+    if (r.ok) await audit(db, req, "commission.refund", req.params.departureId as string, { reasonCode: req.body?.reasonCode, absorb: req.body?.absorb === true });
+    reply(res, r);
+  }));
   router.post("/commission/exceptions", body, h(async (req, res) => { const r = await commission.approveException(assoc(req), uid(req), req.body ?? {}); if (r.ok) await audit(db, req, "commission.exception", assoc(req), req.body ?? {}); reply(res, r, 201, "result"); }));
   router.get("/commission/reconciliation", h(async (req, res) => {
     const today = saDay(now()); reply(res, await reports.reconcile({ associationId: assoc(req) }, queryDay(req, "from", addDays(today, -6)), queryDay(req, "to", today)));
@@ -107,6 +114,10 @@ export function mountAssociationCommission(router: Router, db: Db, now: () => Da
     if (!isUuid(req.params.id)) { fail(res, 400, "Invalid payslip"); return; }
     const r = await payslips.issue(assoc(req), req.params.id, uid(req), req.body?.method ?? "wallet"); if (r.ok) await audit(db, req, "payslip.issue", req.params.id, { method: req.body?.method ?? "wallet", netCents: r.value.netCents }); reply(res, r);
   }));
+  router.post("/payslips/:id/revise", body, h(async (req, res) => {
+    if (!isUuid(req.params.id)) { fail(res, 400, "Invalid payslip"); return; }
+    const r = await payslips.revise(assoc(req), req.params.id, uid(req), req.body?.note); if (r.ok) await audit(db, req, "payslip.revise", req.params.id, { note: req.body?.note }); reply(res, r);
+  }));
   router.post("/payslips/:id/payment", body, h(async (req, res) => {
     if (!isUuid(req.params.id)) { fail(res, 400, "Invalid payslip"); return; }
     const r = await payslips.recordPayment(assoc(req), req.params.id, uid(req), req.body ?? {}); if (r.ok) await audit(db, req, "payslip.payment", req.params.id, { method: req.body?.method, reference: req.body?.reference }); reply(res, r);
@@ -129,6 +140,8 @@ export function mountAssociationCommission(router: Router, db: Db, now: () => Da
 /* ───────────────────────── the marshal (their own data only) ───────────────────────── */
 export function mountMarshalCommission(router: Router, db: Db, now: () => Date = () => new Date()): void {
   const { payslips, reports } = services(db, now);
+  /** The association a marshal works for (the first, if they work for several: a request can name another). */
+  const firstAssociation = async (marshalId: string): Promise<string | null> => String((await db.query(`SELECT r.association_id FROM rank_marshals m JOIN ranks r ON r.id = m.rank_id WHERE m.marshal_id = $1 ORDER BY r.created_at LIMIT 1`, [marshalId])).rows[0]?.association_id ?? "") || null;
   const body = json({ limit: "5kb" });
   router.get("/earnings", h(async (req, res) => { const today = saDay(now()); reply(res, await reports.earnings(uid(req), queryDay(req, "from", addDays(today, -6)), queryDay(req, "to", today))); }));
   router.get("/earnings/day/:date", h(async (req, res) => { reply(res, await reports.dayTrips(uid(req), String(req.params.date))); }));
@@ -143,6 +156,8 @@ export function mountMarshalCommission(router: Router, db: Db, now: () => Date =
     const v = await payslips.view(req.params.id, { marshalId: uid(req) }); if (!v.ok) { fail(res, v.status, v.error); return; }
     await payslips.logAccess(uid(req), uid(req), "payslip", req.params.id); res.json({ success: true, payslip: v.value });
   }));
+  router.get("/cash-out", h(async (req, res) => { const a = typeof req.query.associationId === "string" && isUuid(req.query.associationId) ? req.query.associationId : await firstAssociation(uid(req)); res.json({ success: true, ...(a ? await payslips.cashOutStatus(a, uid(req)) : { enabled: false, availableCents: 0, outstandingCents: 0, maxCents: 0, capBp: 0 }) }); }));
+  router.post("/cash-out", body, h(async (req, res) => { const a = typeof req.body?.associationId === "string" && isUuid(req.body.associationId) ? req.body.associationId : await firstAssociation(uid(req)); if (!a) { fail(res, 403, "You do not work for an association"); return; } reply(res, await payslips.cashOut(a, uid(req), req.body?.amountCents, uid(req)), 201); }));
   router.get("/disputes", h(async (req, res) => { res.json({ success: true, disputes: await reports.listDisputes({ userId: uid(req) }) }); }));
   router.post("/disputes", body, h(async (req, res) => { reply(res, await reports.raiseDispute(uid(req), "marshal", req.body ?? {}), 201); }));
   router.get("/money-check", h(async (req, res) => { const today = saDay(now()); reply(res, await reports.reconcile({ marshalId: uid(req) }, queryDay(req, "from", addDays(today, -6)), queryDay(req, "to", today))); }));

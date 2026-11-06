@@ -141,7 +141,9 @@ export function createCommissionReports(db: Db, commission: Commission, payslips
       if (a.creditCents !== undefined && a.creditCents !== null) { if (!Number.isInteger(a.creditCents) || (a.creditCents as number) < 1 || (a.creditCents as number) > 10_000_000) return bad(400, "The credit must be a whole number of cents"); credit = a.creditCents as number; }
       if (d.target_type === "trip" && d.raised_role === "driver") {
         const w = await commission.waiveFee(String(d.target_id), by, { reasonCode: "error_corrected", reason: response });
-        effect = w.ok ? "fee_waived_commission_reversed" : w.status === 409 && /already paid/.test(w.error) ? "fee_already_paid_needs_refund" : w.status === 409 ? "already_waived" : "none";
+        if (w.ok) effect = "fee_waived_commission_reversed";
+        else if (w.status === 409 && /already paid/.test(w.error)) { const rf = await commission.refundFee(String(d.target_id), by, { reasonCode: "error_corrected", reason: response }); effect = rf.ok ? "fee_refunded_commission_reversed" : "fee_already_paid_needs_refund"; }      // a fee already paid is refunded
+        else effect = w.status === 409 ? "already_waived" : "none";
       }
       if (credit) {
         const marshal = d.raised_role === "marshal" ? String(d.raised_by) : null;

@@ -157,9 +157,17 @@ export function createPayslips(db: Db, commission: Commission, now: () => Date =
       const uif = Math.floor((earnings * st.uifRateBp + 5000) / 10000);
       if (uif > 0) { lines.push({ side: "deduction", kind: "uif", label: `UIF contribution at ${st.uifRateBp / 100}%`, quantity: null, unitCents: null, rateBp: st.uifRateBp, amountCents: uif, reason: "UIF contribution", reference: "UIF", adjustmentId: null }); deductions += uif; }
     }
+    // A cash-out already paid to the marshal (ACC-) comes back off the payslip first, and is outside the cap: it is their own earned commission returning, not a deduction the association chose.
+    const isAcc = (a: Row) => String(a.reference).startsWith("ACC-");
+    for (const a of adj.filter((x) => x.side === "deduction" && isAcc(x))) {
+      const wanted = Math.min(Number(a.remaining_cents), a.per_period_cents ? Number(a.per_period_cents) : Number(a.remaining_cents)), applied = Math.min(wanted, Math.max(0, earnings - deductions));
+      if (applied <= 0) continue;
+      deductions += applied; adjustmentUse.push({ id: String(a.id), amount: applied });
+      lines.push({ side: "deduction", kind: String(a.kind), label: String(a.label), quantity: null, unitCents: null, rateBp: null, amountCents: applied, reason: `${a.reason ?? ""}${applied < wanted ? ` (${rand(wanted - applied)} carried to the next payslip)` : ""}`.trim() || null, reference: String(a.reference), adjustmentId: String(a.id) });
+    }
     // The cap: what deductions may take of this payslip. UIF is outside it. Whatever it leaves out stays on the adjustment and carries to the next payslip.
     let room = Math.max(0, Math.min(Math.floor((earnings * st.deductionCapBp) / 10000), earnings - deductions));
-    for (const a of adj.filter((x) => x.side === "deduction")) {
+    for (const a of adj.filter((x) => x.side === "deduction" && !isAcc(x))) {
       const wanted = Math.min(Number(a.remaining_cents), a.per_period_cents ? Number(a.per_period_cents) : Number(a.remaining_cents)), applied = Math.min(wanted, room);
       if (applied <= 0) continue;
       room -= applied; deductions += applied; adjustmentUse.push({ id: String(a.id), amount: applied });
@@ -176,9 +184,39 @@ export function createPayslips(db: Db, commission: Commission, now: () => Date =
     };
   }
 
+  /* ───────────────────────── cash-out of commission already earned ───────────────────────── */
+  /** What a marshal has earned that is not yet on a payslip and is safe to draw: trips whose fee has been paid (or waived with the association absorbing it), less any reversal. */
+  async function accruedAvailable(assoc: string, marshalId: string): Promise<number> {
+    const rows = (await db.query(`${SELECT_ROWS} WHERE c.marshal_id = $1 AND c.association_id = $2 AND c.mode = 'live' AND c.payslip_id IS NULL ORDER BY c.departed_at, c.seq`, [marshalId, assoc])).rows;
+    const by = new Map<string, Row[]>(); for (const r of rows) by.set(String(r.departure_id), [...(by.get(String(r.departure_id)) ?? []), r]);
+    let total = 0;
+    for (const g of by.values()) { const orig = g.find((r) => Number(r.seq) === 1 && !r.reverses_id), net = g.reduce((a, r) => a + Number(r.commission_cents), 0); if (!orig || orig.item_status === "paid" || orig.waived_at) total += net; }
+    return Math.max(0, total);
+  }
+  async function cashOutStatus(assoc: string, marshalId: string): Promise<{ enabled: boolean; availableCents: number; outstandingCents: number; maxCents: number; capBp: number }> {
+    const st = await commission.settings(assoc), available = await accruedAvailable(assoc, marshalId);
+    const out = (await db.query(`SELECT reference, remaining_cents FROM pay_adjustments WHERE association_id = $1 AND marshal_id = $2 AND active = true`, [assoc, marshalId])).rows.filter((a) => String(a.reference).startsWith("ACC-")).reduce((x, a) => x + Number(a.remaining_cents), 0);
+    return { enabled: st.cashoutEnabled, availableCents: available, outstandingCents: out, maxCents: Math.max(0, Math.floor((available * st.cashoutCapBp) / 10000) - out), capBp: st.cashoutCapBp };
+  }
+  /**
+   * A marshal draws part of the commission they have already earned before the payslip. It is paid at once (a payment item from the association, collected and retried by the money engine) and comes back off their
+   * next payslip, outside the deduction cap. The most they can draw is the association's share of what has been safely earned, less anything already drawn. Off until the association switches it on.
+   */
+  async function cashOut(assoc: string, marshalId: string, amountCents: unknown, by: string): Promise<Res<{ reference: string; amountCents: number; maxCents: number }>> {
+    const s0 = await cashOutStatus(assoc, marshalId);
+    if (!s0.enabled) return bad(409, "Your association has not switched on cash-out");
+    if (!(await worksFor(assoc, marshalId))) return bad(403, "You do not work for that association");
+    if (!Number.isInteger(amountCents) || (amountCents as number) < 1000) return bad(400, "The least you can draw is R10.00");
+    if ((amountCents as number) > s0.maxCents) return bad(409, `You can draw up to ${rand(s0.maxCents)} right now`);
+    const reference = `ACC-${String(Number((await db.query(`SELECT COUNT(*) AS n FROM pay_adjustments WHERE association_id = $1`, [assoc])).rows[0].n) + 1).padStart(4, "0")}`;
+    const adj = (await db.query(`INSERT INTO pay_adjustments (association_id, marshal_id, kind, side, label, reason, reference, total_cents, remaining_cents, created_by) VALUES ($1,$2,'advance','deduction','Cash-out of accrued commission','Paid before the payslip',$3,$4,$4,$5) RETURNING id`, [assoc, marshalId, reference, amountCents, by])).rows[0];
+    await db.query(`INSERT INTO payment_items (kind, payer_id, payee_id, amount_cents, remaining_cents, currency, ref, note, status) VALUES ('marshal_commission',$1,$2,$3,$3,'ZAR',$4,$5,'pending') ON CONFLICT (ref) DO NOTHING`, [assoc, marshalId, amountCents, `cashout:${adj.id}`, `Cash-out ${reference}`]);
+    return { ok: true, value: { reference, amountCents: amountCents as number, maxCents: s0.maxCents - (amountCents as number) } };
+  }
+
   /* ───────────────────────── draft, issue, pay ───────────────────────── */
-  async function numberFor(marshalId: string, end: string, assoc: string): Promise<string> {
-    const base = `PS-${end.replace(/-/g, "")}-${String((await ensureProfile(marshalId)).marshal_number).replace("-", "")}`;
+  async function numberFor(marshalId: string, end: string, assoc: string, suffix = ""): Promise<string> {
+    const base = `PS-${end.replace(/-/g, "")}-${String((await ensureProfile(marshalId)).marshal_number).replace("-", "")}${suffix}`;
     let n = base, i = 1;
     while ((await db.query(`SELECT 1 AS x FROM payslips WHERE number = $1`, [n])).rows.length) n = `${base}-${++i}`;
     return n;
@@ -189,20 +227,22 @@ export function createPayslips(db: Db, commission: Commission, now: () => Date =
     if (end >= saDay(now())) return bad(409, "That pay period has not finished yet");
     if (!(await worksFor(assoc, marshalId))) return bad(400, "Choose one of your marshals");
     const st = await commission.settings(assoc);
-    const prior = (await db.query(`SELECT id, status FROM payslips WHERE association_id = $1 AND marshal_id = $2 AND period_start = $3 AND period_end = $4 ORDER BY version DESC LIMIT 1`, [assoc, marshalId, start, end])).rows[0];
-    if (prior && prior.status !== "draft") return bad(409, "That payslip has already been issued");
+    const prior = (await db.query(`SELECT id, status, version FROM payslips WHERE association_id = $1 AND marshal_id = $2 AND period_start = $3 AND period_end = $4 ORDER BY version DESC LIMIT 1`, [assoc, marshalId, start, end])).rows[0];
+    if (prior && prior.status !== "draft" && prior.status !== "revised") return bad(409, "That payslip has already been issued");
+    const draftPrior = prior && prior.status === "draft" ? prior : null;                              // a revised one is replaced by a new version, never overwritten
     const c = await compute(assoc, marshalId, start, end, st);
-    if (!c.lines.length && !c.withheldCents && !c.carryCents) { if (prior) { await db.query(`DELETE FROM payslip_lines WHERE payslip_id = $1`, [prior.id]); await db.query(`DELETE FROM payslips WHERE id = $1`, [prior.id]); } return { ok: true, value: { id: "", number: "", empty: true } }; }
+    if (!c.lines.length && !c.withheldCents && !c.carryCents) { if (draftPrior) { await db.query(`DELETE FROM payslip_lines WHERE payslip_id = $1`, [draftPrior.id]); await db.query(`DELETE FROM payslips WHERE id = $1`, [draftPrior.id]); } return { ok: true, value: { id: "", number: "", empty: true } }; }
     let id: string, number: string;
     const fields = [c.ranks.join(", ") || null, c.trips, c.tripFeesCents, c.grossCents, c.otherEarningsCents, c.deductionsCents, c.netCents, c.withheldCents, c.feesOwedTrips, c.feesOwedCents];
-    if (prior) {
+    if (draftPrior) {
       id = String(prior.id); number = String((await db.query(`SELECT number FROM payslips WHERE id = $1`, [id])).rows[0].number);
       await db.query(`DELETE FROM payslip_lines WHERE payslip_id = $1`, [id]);
       await db.query(`UPDATE payslips SET ranks=$2, trips=$3, trip_fees_cents=$4, gross_commission_cents=$5, other_earnings_cents=$6, deductions_cents=$7, net_cents=$8, withheld_cents=$9, fees_owed_trips=$10, fees_owed_cents=$11, created_by=$12 WHERE id = $1`, [id, ...fields, by]);
     } else {
-      number = await numberFor(marshalId, end, assoc);
-      id = String((await db.query(`INSERT INTO payslips (association_id, marshal_id, number, period_start, period_end, ranks, trips, trip_fees_cents, gross_commission_cents, other_earnings_cents, deductions_cents, net_cents, withheld_cents, fees_owed_trips, fees_owed_cents, created_by)
-                                    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) RETURNING id`, [assoc, marshalId, number, start, end, ...fields, by])).rows[0].id);
+      const version = prior ? Number(prior.version) + 1 : 1;
+      number = version > 1 ? await numberFor(marshalId, end, assoc, `-R${version - 1}`) : await numberFor(marshalId, end, assoc);
+      id = String((await db.query(`INSERT INTO payslips (association_id, marshal_id, number, period_start, period_end, ranks, trips, trip_fees_cents, gross_commission_cents, other_earnings_cents, deductions_cents, net_cents, withheld_cents, fees_owed_trips, fees_owed_cents, created_by, version, supersedes_id)
+                                    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18) RETURNING id`, [assoc, marshalId, number, start, end, ...fields, by, version, prior ? prior.id : null])).rows[0].id);
     }
     let sort = 0;
     for (const l of c.lines) await db.query(`INSERT INTO payslip_lines (payslip_id, sort, side, kind, label, quantity, unit_cents, rate_bp, amount_cents, reason, reference, adjustment_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`, [id, sort++, l.side, l.kind, l.label, l.quantity, l.unitCents, l.rateBp, l.amountCents, l.reason, l.reference, l.adjustmentId]);
@@ -252,6 +292,29 @@ export function createPayslips(db: Db, commission: Commission, now: () => Date =
     }
     await db.query(`UPDATE payslips SET status = $2, payment_item_id = $3, paid_at = CASE WHEN $2 = 'paid' THEN now() ELSE NULL END WHERE id = $1`, [payslipId, status, item]);
     return { ok: true, value: { number: String(claimed.number), status, netCents: c.netCents } };
+  }
+  /**
+   * REVISES an issued payslip that has not been paid (an error found before the money moved): its payment is cancelled, its trips and adjustments are released, and the old payslip stays on record marked
+   * "revised". The admin then prepares the period again, which makes a new version (number ending -R1, -R2 ...) that supersedes it. A payslip already paid is corrected by a reversal or credit on the next one instead.
+   */
+  async function revise(assoc: string, payslipId: string, by: string, note: unknown): Promise<Res<{ number: string }>> {
+    const why = typeof note === "string" ? note.trim() : "";
+    if (!why || why.length > 200) return bad(400, "Say why it is being revised, in 200 characters or fewer");
+    const p = (await db.query(`SELECT * FROM payslips WHERE id = $1 AND association_id = $2`, [payslipId, assoc])).rows[0];
+    if (!p) return bad(404, "Payslip not found");
+    if (p.status !== "issued") return bad(409, "Only an issued payslip that has not been paid can be revised");
+    const item = p.payment_item_id ? (await db.query(`SELECT id, status FROM payment_items WHERE id = $1`, [p.payment_item_id])).rows[0] : null;
+    if (item?.status === "paid") return bad(409, "That payslip has already been paid: correct it on the next payslip");
+    const claimed = (await db.query(`UPDATE payslips SET status = 'revised', note = $2 WHERE id = $1 AND status = 'issued' RETURNING id`, [payslipId, why])).rows;
+    if (!claimed.length) return bad(409, "That payslip changed meanwhile");
+    if (item) await db.query(`UPDATE payment_items SET status = 'failed', last_error = 'The payslip was revised' WHERE id = $1 AND status IN ('pending','waiting','arrears')`, [item.id]);
+    await db.query(`UPDATE trip_commissions SET payslip_id = NULL WHERE payslip_id = $1`, [payslipId]);
+    for (const l of (await db.query(`SELECT adjustment_id, amount_cents FROM payslip_lines WHERE payslip_id = $1 AND adjustment_id IS NOT NULL`, [payslipId])).rows) {
+      const now0 = Number((await db.query(`SELECT remaining_cents FROM pay_adjustments WHERE id = $1`, [l.adjustment_id])).rows[0]?.remaining_cents ?? 0);
+      await db.query(`UPDATE pay_adjustments SET remaining_cents = $2, active = true WHERE id = $1`, [l.adjustment_id, now0 + Number(l.amount_cents)]);
+    }
+    await db.query(`UPDATE pay_adjustments SET active = false, remaining_cents = 0 WHERE association_id = $1 AND reference = $2`, [assoc, `REV-${String(p.number)}`.slice(0, 40)]);   // a carry made when it was issued
+    void by; return { ok: true, value: { number: String(p.number) } };
   }
   /** Records that an issued payslip was paid outside the system (bank or cash), with the date and a reference. */
   async function recordPayment(assoc: string, payslipId: string, by: string, a: { method?: unknown; reference?: unknown; paidAt?: unknown }): Promise<Res<{ status: string }>> {
@@ -314,13 +377,13 @@ export function createPayslips(db: Db, commission: Commission, now: () => Date =
     } };
   }
   async function list(scope: { associationId: string; marshalId?: string }, o: { start?: string; end?: string } = {}): Promise<Row[]> {
-    const rows = (await db.query(`SELECT p.id, p.number, p.period_start, p.period_end, p.status, p.trips, p.gross_commission_cents, p.deductions_cents, p.net_cents, p.version, p.issued_at, p.paid_at, m.name AS marshal_name, m.id AS marshal_id FROM payslips p JOIN users m ON m.id = p.marshal_id WHERE p.association_id = $1 ORDER BY p.period_end DESC, m.name LIMIT 300`, [scope.associationId])).rows
+    const rows = (await db.query(`SELECT p.id, p.number, p.period_start, p.period_end, p.status, p.trips, p.gross_commission_cents, p.deductions_cents, p.net_cents, p.version, p.issued_at, p.paid_at, m.name AS marshal_name, m.id AS marshal_id FROM payslips p JOIN users m ON m.id = p.marshal_id WHERE p.association_id = $1 ORDER BY p.period_end DESC, m.name, p.version DESC LIMIT 300`, [scope.associationId])).rows
       .filter((r) => (!scope.marshalId || (String(r.marshal_id) === scope.marshalId && r.status !== "draft")) && (!o.start || dayOf(r.period_start) === o.start) && (!o.end || dayOf(r.period_end) === o.end));
     return rows.map((r) => ({ id: String(r.id), number: String(r.number), periodStart: dayOf(r.period_start), periodEnd: dayOf(r.period_end), status: String(r.status), trips: Number(r.trips), grossCents: Number(r.gross_commission_cents), deductionsCents: Number(r.deductions_cents), netCents: Number(r.net_cents), marshalId: String(r.marshal_id), marshal: String(r.marshal_name), issuedAt: r.issued_at ? new Date(r.issued_at as string).toISOString() : null, paidAt: r.paid_at ? new Date(r.paid_at as string).toISOString() : null }));
   }
   /** A marshal's own issued and paid payslips, across every association they have worked for (never a draft). */
   async function listForMarshal(marshalId: string): Promise<Row[]> {
-    const rows = (await db.query(`SELECT p.id, p.number, p.period_start, p.period_end, p.status, p.trips, p.gross_commission_cents, p.deductions_cents, p.net_cents, a.name AS association_name FROM payslips p JOIN users a ON a.id = p.association_id WHERE p.marshal_id = $1 ORDER BY p.period_end DESC LIMIT 200`, [marshalId])).rows.filter((r) => r.status !== "draft");
+    const rows = (await db.query(`SELECT p.id, p.number, p.period_start, p.period_end, p.status, p.trips, p.gross_commission_cents, p.deductions_cents, p.net_cents, a.name AS association_name FROM payslips p JOIN users a ON a.id = p.association_id WHERE p.marshal_id = $1 ORDER BY p.period_end DESC, p.version DESC LIMIT 200`, [marshalId])).rows.filter((r) => r.status !== "draft");
     return rows.map((r) => ({ id: String(r.id), number: String(r.number), association: String(r.association_name), periodStart: dayOf(r.period_start), periodEnd: dayOf(r.period_end), status: String(r.status), trips: Number(r.trips), grossCents: Number(r.gross_commission_cents), deductionsCents: Number(r.deductions_cents), netCents: Number(r.net_cents) }));
   }
   /** The marshals of an association with their payslip identity, for the admin. */
@@ -363,6 +426,6 @@ export function createPayslips(db: Db, commission: Commission, now: () => Date =
     });
   }
 
-  return { periodFor, ensureProfile, updateProfile, setConsent, consents, logAccess, accessLog, addAdjustment, cancelAdjustment, adjustments, compute, draft, runPeriod, issue, recordPayment, syncPayment, view, list, listForMarshal, marshals, pdf, dailyBreakdown };
+  return { periodFor, ensureProfile, updateProfile, setConsent, consents, logAccess, accessLog, addAdjustment, cancelAdjustment, adjustments, compute, draft, runPeriod, issue, recordPayment, revise, cashOut, cashOutStatus, syncPayment, view, list, listForMarshal, marshals, pdf, dailyBreakdown };
 }
 export type Payslips = ReturnType<typeof createPayslips>;

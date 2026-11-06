@@ -2199,3 +2199,100 @@ CREATE TABLE IF NOT EXISTS access_log (
   at        TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_access_log_owner ON access_log(owner_id, at DESC);
+
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+-- MARSHAL CARE: shifts, safety, voice, benefits, income letters, cash-out and refunds (docs/MARSHAL_COMMISSION.md)
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+ALTER TABLE association_settings ADD COLUMN IF NOT EXISTS shift_limit_minutes INTEGER NOT NULL DEFAULT 600 CHECK (shift_limit_minutes BETWEEN 60 AND 1440);        -- the longest agreed shift
+ALTER TABLE association_settings ADD COLUMN IF NOT EXISTS week_limit_minutes INTEGER NOT NULL DEFAULT 3600 CHECK (week_limit_minutes BETWEEN 60 AND 10080);      -- the longest agreed week
+ALTER TABLE association_settings ADD COLUMN IF NOT EXISTS shift_gap_minutes INTEGER NOT NULL DEFAULT 180 CHECK (shift_gap_minutes BETWEEN 15 AND 720);             -- a gap this long in a marshal's activity ends a shift
+ALTER TABLE association_settings ADD COLUMN IF NOT EXISTS cashout_enabled BOOLEAN NOT NULL DEFAULT false;                                                          -- a marshal may draw commission already earned before the payslip
+ALTER TABLE association_settings ADD COLUMN IF NOT EXISTS cashout_cap_bp INTEGER NOT NULL DEFAULT 5000 CHECK (cashout_cap_bp BETWEEN 0 AND 10000);
+
+ALTER TABLE payment_items DROP CONSTRAINT IF EXISTS payment_items_kind_check;
+ALTER TABLE payment_items ADD CONSTRAINT payment_items_kind_check CHECK (kind IN ('marshal_fee','per_trip_pay','weekly_cash_payment','monthly_salary','trip_fee','marshal_commission','trip_fee_refund'));
+
+-- A working period, found from the marshal's own activity (the queue and departures) and corrected and approved by people. A shift over the agreed length, or a long one with no break noted, is flagged, never blamed.
+CREATE TABLE IF NOT EXISTS shifts (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  association_id UUID NOT NULL REFERENCES users(id),
+  marshal_id     UUID NOT NULL REFERENCES users(id),
+  rank_id        UUID NOT NULL REFERENCES ranks(id),
+  started_at     TIMESTAMPTZ NOT NULL,
+  ended_at       TIMESTAMPTZ,
+  source         TEXT NOT NULL DEFAULT 'auto' CHECK (source IN ('auto','manual')),
+  status         TEXT NOT NULL DEFAULT 'proposed' CHECK (status IN ('proposed','approved','rejected')),
+  break_minutes  INTEGER NOT NULL DEFAULT 0 CHECK (break_minutes >= 0),
+  note           TEXT,
+  corrected      BOOLEAN NOT NULL DEFAULT false,
+  approved_by    UUID REFERENCES users(id),
+  approved_at    TIMESTAMPTZ,
+  client_ref     TEXT UNIQUE,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (marshal_id, rank_id, started_at)
+);
+CREATE INDEX IF NOT EXISTS idx_shifts_marshal ON shifts(marshal_id, started_at DESC);
+
+-- A one-tap safety report from a marshal at a rank. The association is told and the rank's risk picture is built from these.
+CREATE TABLE IF NOT EXISTS incidents (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  association_id  UUID NOT NULL REFERENCES users(id),
+  rank_id         UUID NOT NULL REFERENCES ranks(id),
+  reported_by     UUID NOT NULL REFERENCES users(id),
+  type            TEXT NOT NULL CHECK (type IN ('threat','fight','robbery','overcrowding','injury','other')),
+  occurred_at     TIMESTAMPTZ NOT NULL,
+  note            TEXT,
+  photo           TEXT,
+  status          TEXT NOT NULL DEFAULT 'new' CHECK (status IN ('new','acknowledged','closed')),
+  acknowledged_by UUID REFERENCES users(id),
+  acknowledged_at TIMESTAMPTZ,
+  client_ref      TEXT UNIQUE,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_incidents_assoc ON incidents(association_id, occurred_at DESC);
+
+-- Complaints and requests from marshals, tracked to an answer. Aggregates for the association are anonymised.
+CREATE TABLE IF NOT EXISTS grievances (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  association_id UUID NOT NULL REFERENCES users(id),
+  marshal_id     UUID NOT NULL REFERENCES users(id),
+  category       TEXT NOT NULL CHECK (category IN ('pay','safety','hours','queue','conditions','benefits','other')),
+  message        TEXT NOT NULL,
+  status         TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open','under_review','resolved','closed')),
+  response       TEXT,
+  responded_by   UUID REFERENCES users(id),
+  responded_at   TIMESTAMPTZ,
+  client_ref     TEXT UNIQUE,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_grievances_assoc ON grievances(association_id, status, created_at DESC);
+
+-- Whether a marshal is covered: UIF, injury cover, a savings or funeral scheme. What they have contributed is read from their payslips, never typed.
+CREATE TABLE IF NOT EXISTS benefit_enrolments (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  association_id UUID NOT NULL REFERENCES users(id),
+  marshal_id     UUID NOT NULL REFERENCES users(id),
+  kind           TEXT NOT NULL CHECK (kind IN ('uif','injury_cover','savings','funeral')),
+  status         TEXT NOT NULL CHECK (status IN ('registered','pending','not_registered')),
+  reference      TEXT,
+  since          DATE,
+  updated_by     UUID REFERENCES users(id),
+  updated_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (association_id, marshal_id, kind)
+);
+
+-- A letter summarising a marshal's recent issued payslips, for a bank or landlord. It can be checked against the association by its number and code. It is not a certificate of employment.
+CREATE TABLE IF NOT EXISTS income_letters (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  marshal_id   UUID NOT NULL REFERENCES users(id),
+  number       TEXT NOT NULL UNIQUE,
+  months       INTEGER NOT NULL CHECK (months IN (3,6)),
+  period_from  DATE NOT NULL,
+  period_to    DATE NOT NULL,
+  content_hash TEXT NOT NULL,
+  issued_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_income_letters_marshal ON income_letters(marshal_id, issued_at DESC);
+
+ALTER TABLE disputes ADD COLUMN IF NOT EXISTS client_ref TEXT;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_disputes_client_ref ON disputes(client_ref) WHERE client_ref IS NOT NULL;

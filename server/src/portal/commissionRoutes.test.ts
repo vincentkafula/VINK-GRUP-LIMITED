@@ -185,7 +185,7 @@ describe("queries (disputes) and what upholding one does", () => {
     expect((await A("POST", `/disputes/${r1.body.id}/respond`, { decision: "upheld", response: "Vehicle was at the workshop" })).body).toMatchObject({ success: true, effect: "fee_waived_commission_reversed" }); expect((await q(`SELECT status FROM payment_items WHERE ref = $1`, [`tripfee:${d1}`]))[0].status).toBe("waived");
     expect(Number((await q(`SELECT SUM(commission_cents) AS s FROM trip_commissions WHERE departure_id = $1`, [d1]))[0].s)).toBe(0);
     await db.query(`UPDATE payment_items SET status = 'paid' WHERE ref = $1`, [`tripfee:${d2}`]); const r2 = await D("POST", "/disputes", { targetId: d2, message: "I did not do this one either" });
-    expect((await A("POST", `/disputes/${r2.body.id}/respond`, { decision: "upheld", response: "Duplicate" })).body).toMatchObject({ success: true, effect: "fee_already_paid_needs_refund" }); expect((await D("GET", "/disputes")).body.disputes).toHaveLength(2);
+    expect((await A("POST", `/disputes/${r2.body.id}/respond`, { decision: "upheld", response: "Duplicate" })).body).toMatchObject({ success: true, effect: "fee_refunded_commission_reversed" }); expect((await D("GET", "/disputes")).body.disputes).toHaveLength(2);
     expect((await A("POST", `/disputes/${r1.body.id}/respond`, { decision: "upheld", response: "x", creditCents: 100 })).status).toBe(409);
   });
 });

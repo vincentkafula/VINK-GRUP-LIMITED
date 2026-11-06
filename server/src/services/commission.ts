@@ -23,6 +23,7 @@ export type PayPeriod = "weekly" | "fortnightly" | "monthly";
 
 export interface Settings {
   mode: Mode; payableOn: PayableOn; payPeriod: PayPeriod; payPeriodAnchor: string; tiersEnabled: boolean; deductionCapBp: number; uifApplies: boolean; uifRateBp: number; legacyFeeCents: number | null;
+  shiftLimitMinutes: number; weekLimitMinutes: number; shiftGapMinutes: number; cashoutEnabled: boolean; cashoutCapBp: number;
 }
 export type Fail = { ok: false; status: number; error: string };
 export type Res<T> = { ok: true; value: T } | Fail;
@@ -41,24 +42,28 @@ export function createCommission(db: Db, now: () => Date = () => new Date(), def
       mode: (r?.commission_mode ?? "off") as Mode, payableOn: (r?.commission_payable_on ?? "recorded") as PayableOn, payPeriod: (r?.pay_period ?? "weekly") as PayPeriod,
       payPeriodAnchor: r?.pay_period_anchor ? day(r.pay_period_anchor) : "2026-01-05", tiersEnabled: !!r?.tiers_enabled, deductionCapBp: Number(r?.deduction_cap_bp ?? 5000),
       uifApplies: !!r?.uif_applies, uifRateBp: Number(r?.uif_rate_bp ?? 100), legacyFeeCents: r?.marshal_fee_cents === null || r?.marshal_fee_cents === undefined ? null : Number(r.marshal_fee_cents),
+      shiftLimitMinutes: Number(r?.shift_limit_minutes ?? 600), weekLimitMinutes: Number(r?.week_limit_minutes ?? 3600), shiftGapMinutes: Number(r?.shift_gap_minutes ?? 180), cashoutEnabled: !!r?.cashout_enabled, cashoutCapBp: Number(r?.cashout_cap_bp ?? 5000),
     };
   }
-  async function updateSettings(associationId: string, p: Partial<Pick<Settings, "mode" | "payableOn" | "payPeriod" | "payPeriodAnchor" | "tiersEnabled" | "deductionCapBp" | "uifApplies" | "uifRateBp">>): Promise<Res<Settings>> {
+  async function updateSettings(associationId: string, p: Partial<Pick<Settings, "mode" | "payableOn" | "payPeriod" | "payPeriodAnchor" | "tiersEnabled" | "deductionCapBp" | "uifApplies" | "uifRateBp" | "shiftLimitMinutes" | "weekLimitMinutes" | "shiftGapMinutes" | "cashoutEnabled" | "cashoutCapBp">>): Promise<Res<Settings>> {
     if (p.mode !== undefined && !["off", "shadow", "commission"].includes(p.mode)) return bad(400, "The mode must be off, shadow or commission");
     if (p.payableOn !== undefined && !["recorded", "paid"].includes(p.payableOn)) return bad(400, "Commission is payable when the fee is recorded or when it is paid");
     if (p.payPeriod !== undefined && !["weekly", "fortnightly", "monthly"].includes(p.payPeriod)) return bad(400, "The pay period must be weekly, fortnightly or monthly");
     if (p.payPeriodAnchor !== undefined && (!DAY.test(p.payPeriodAnchor) || new Date(p.payPeriodAnchor + "T00:00:00Z").getUTCDay() !== 1)) return bad(400, "The pay period must start on a Monday");
     for (const [k, max] of [["deductionCapBp", 10000], ["uifRateBp", 10000]] as const) { const v = p[k]; if (v !== undefined && (!Number.isInteger(v) || v < 0 || v > max)) return bad(400, `${k === "deductionCapBp" ? "The deduction cap" : "The UIF rate"} must be between 0% and 100%`); }
+    for (const [k, lo, hi, what] of [["shiftLimitMinutes", 60, 1440, "The longest shift"], ["weekLimitMinutes", 60, 10080, "The longest week"], ["shiftGapMinutes", 15, 720, "The gap that ends a shift"], ["cashoutCapBp", 0, 10000, "The cash-out limit"]] as const) { const v = p[k]; if (v !== undefined && (!Number.isInteger(v) || v < lo || v > hi)) return bad(400, `${what} is out of range`); }
+    if (p.cashoutEnabled !== undefined && typeof p.cashoutEnabled !== "boolean") return bad(400, "Cash-out is on or off");
     if (p.mode && p.mode !== "off") {
       // Switching on needs a rate to calculate with. The trip fee always has one (the association's own, or the country default).
       if (!(await db.query(`SELECT 1 AS x FROM commission_rules WHERE association_id = $1 AND scope = 'default'`, [associationId])).rows.length) return bad(409, "Set the commission rate first: there is nothing to calculate with");
     }
     const cur = await settings(associationId), n = { ...cur, ...Object.fromEntries(Object.entries(p).filter(([, v]) => v !== undefined)) } as Settings;
     await db.query(
-      `INSERT INTO association_settings (association_id, commission_mode, commission_payable_on, pay_period, pay_period_anchor, tiers_enabled, deduction_cap_bp, uif_applies, uif_rate_bp, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9, now())
+      `INSERT INTO association_settings (association_id, commission_mode, commission_payable_on, pay_period, pay_period_anchor, tiers_enabled, deduction_cap_bp, uif_applies, uif_rate_bp, shift_limit_minutes, week_limit_minutes, shift_gap_minutes, cashout_enabled, cashout_cap_bp, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14, now())
        ON CONFLICT (association_id) DO UPDATE SET commission_mode = EXCLUDED.commission_mode, commission_payable_on = EXCLUDED.commission_payable_on, pay_period = EXCLUDED.pay_period, pay_period_anchor = EXCLUDED.pay_period_anchor,
-         tiers_enabled = EXCLUDED.tiers_enabled, deduction_cap_bp = EXCLUDED.deduction_cap_bp, uif_applies = EXCLUDED.uif_applies, uif_rate_bp = EXCLUDED.uif_rate_bp, updated_at = now()`,
-      [associationId, n.mode, n.payableOn, n.payPeriod, n.payPeriodAnchor, n.tiersEnabled, n.deductionCapBp, n.uifApplies, n.uifRateBp]);
+         tiers_enabled = EXCLUDED.tiers_enabled, deduction_cap_bp = EXCLUDED.deduction_cap_bp, uif_applies = EXCLUDED.uif_applies, uif_rate_bp = EXCLUDED.uif_rate_bp, shift_limit_minutes = EXCLUDED.shift_limit_minutes, week_limit_minutes = EXCLUDED.week_limit_minutes,
+         shift_gap_minutes = EXCLUDED.shift_gap_minutes, cashout_enabled = EXCLUDED.cashout_enabled, cashout_cap_bp = EXCLUDED.cashout_cap_bp, updated_at = now()`,
+      [associationId, n.mode, n.payableOn, n.payPeriod, n.payPeriodAnchor, n.tiersEnabled, n.deductionCapBp, n.uifApplies, n.uifRateBp, n.shiftLimitMinutes, n.weekLimitMinutes, n.shiftGapMinutes, n.cashoutEnabled, n.cashoutCapBp]);
     return { ok: true, value: await settings(associationId) };
   }
 
@@ -223,6 +228,26 @@ export function createCommission(db: Db, now: () => Date = () => new Date(), def
     return r.ok ? r : { ok: true, value: { reversedCents: 0 } };
   }
   /**
+   * REFUNDS a trip fee the driver has already paid (a waiver is for a fee not yet paid): the association pays it back to the driver through a payment item the money engine collects, the trip is marked refunded, and the
+   * marshal's commission for it is reversed unless the association absorbs it. A fee that has not been paid is waived instead.
+   */
+  async function refundFee(departureId: string, by: string, a: { reasonCode: unknown; reason: unknown; absorb?: boolean }): Promise<Res<{ refundCents: number; reversedCents: number }>> {
+    if (!(await reasonOk(a.reasonCode, "fee"))) return bad(400, "Choose a reason from the list");
+    const reason = typeof a.reason === "string" ? a.reason.trim() : "";
+    if (!reason || reason.length > 200) return bad(400, "Say why, in 200 characters or fewer");
+    const tf = (await db.query(`SELECT * FROM trip_fees WHERE departure_id = $1`, [departureId])).rows[0];
+    if (!tf) return bad(404, "No trip fee was recorded for that trip");
+    if (tf.waived_at) return bad(409, "That fee is already waived or refunded");
+    const item = tf.payment_item_id ? (await db.query(`SELECT id, status FROM payment_items WHERE id = $1`, [tf.payment_item_id])).rows[0] : null;
+    if (!item || item.status !== "paid") return bad(409, "The driver has not paid that fee: waive it instead");
+    if (!tf.payer_id) return bad(409, "There is nobody to refund");
+    await db.query(`INSERT INTO payment_items (kind, payer_id, payee_id, amount_cents, remaining_cents, currency, ref, note, status) VALUES ('trip_fee_refund',$1,$2,$3,$3,'ZAR',$4,$5,'pending') ON CONFLICT (ref) DO NOTHING`, [tf.association_id, tf.payer_id, tf.amount_cents, `tripfee-refund:${departureId}`, `Trip fee refund: ${reason}`.slice(0, 200)]);
+    await db.query(`UPDATE trip_fees SET waived_reason = $2, waived_at = now() WHERE id = $1 AND waived_at IS NULL`, [tf.id, `refunded: ${reason}`.slice(0, 200)]);
+    if (a.absorb) return { ok: true, value: { refundCents: Number(tf.amount_cents), reversedCents: 0 } };
+    const r = await reverseCommission(departureId, by, reason, String(a.reasonCode));
+    return { ok: true, value: { refundCents: Number(tf.amount_cents), reversedCents: r.ok ? r.value.reversedCents : 0 } };
+  }
+  /**
    * A trip that did not depart normally (returned, cancelled, aborted) counts only if an admin approves it with a reason code. The commission is calculated as for any trip; the driver is not charged.
    */
   async function approveException(associationId: string, by: string, a: { rankId?: unknown; vehicleId?: unknown; marshalId?: unknown; driverId?: unknown; departedAt?: unknown; reasonCode?: unknown; note?: unknown }): Promise<Res<Recorded>> {
@@ -250,7 +275,7 @@ export function createCommission(db: Db, now: () => Date = () => new Date(), def
     return { recorded, skipped };
   }
 
-  return { settings, updateSettings, feeFor, rateFor, addFeeRule, addRate, addTier, recordDeparture, recordForSession, reverseCommission, waiveFee, approveException, backfill, netCommission, reasonOk, weekStart };
+  return { settings, updateSettings, feeFor, rateFor, addFeeRule, addRate, addTier, recordDeparture, recordForSession, reverseCommission, waiveFee, refundFee, approveException, backfill, netCommission, reasonOk, weekStart };
 }
 export type Commission = ReturnType<typeof createCommission>;
 
