@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { TokensPanel } from "./TokensPanel";
-import { ListOrdered, History, BarChart3, Link2, Landmark, Coins, Bus, FileText, Scale } from "lucide-react";
+import { ListOrdered, History, BarChart3, Link2, Landmark, Coins, Bus, FileText, Scale, Clock, Siren, MessageSquare, IdCard } from "lucide-react";
 import { Banknote } from "lucide-react";
 import { PaymentsPanel, TripsPanel, CrossBorderPanel, VirtualAccountsPanel } from "./MoneyPanels";
 import { BankStrip, BankScreen } from "./BankAccount";
@@ -9,17 +9,23 @@ import { portalClient, useLoad, Status, Empty, Field, ActionButton, inputCls, wh
 import { LinksPanel } from "./LinksPanel";
 import { MarshalLoading } from "./MarshalLoading";
 import { EarningsScreen, PayslipsScreen, MoneyCheckScreen } from "./MarshalPay";
+import { ShiftsScreen, SafetyScreen, VoiceScreen, MyRecordScreen, OutboxBar } from "./MarshalCare";
+import { sendOrQueue } from "./offlineQueue";
+import { LangProvider } from "./i18n";
 import { LoadingReport } from "./LoadingReport";
 import { CsvButton, Pager, RangeBar, ScreenBoundary, TrendChart, rangeQuery, saToday, saShift, monthStart, useAutoRefresh, type Range } from "./widgets";
 
 const COLOR = "#C8102E";
 const call = portalClient("marshal");
+/** The result of a queue change as the button shows it: a refusal, or a note that it was saved on the phone to send later. */
+const qmsg = (r: { status: string; error?: string }): { error: string } | { message: string } | undefined => (r.status === "error" ? { error: String(r.error) } : r.status === "queued" ? { message: "Saved on your phone. It will send when you have signal." } : undefined);
 const NAV = [
   { icon: <ListOrdered className="w-4 h-4" />, label: "Ranks & queue" },
   { icon: <Bus className="w-4 h-4" />, label: "Loading" },
   { icon: <Coins className="w-4 h-4" />, label: "Earnings" },
   { icon: <FileText className="w-4 h-4" />, label: "Payslips" },
   { icon: <Scale className="w-4 h-4" />, label: "Money check" },
+  { icon: <Clock className="w-4 h-4" />, label: "Shifts" }, { icon: <Siren className="w-4 h-4" />, label: "Safety" }, { icon: <MessageSquare className="w-4 h-4" />, label: "My voice" }, { icon: <IdCard className="w-4 h-4" />, label: "My record" },
   { icon: <History className="w-4 h-4" />, label: "Departures" },
   { icon: <BarChart3 className="w-4 h-4" />, label: "Reports" }, { icon: <Coins className="w-4 h-4" />, label: "VINK Tokens" }, { icon: <Landmark className="w-4 h-4" />, label: "Bank account" },
   { icon: <Banknote className="w-4 h-4" />, label: "Payments & trips" },
@@ -35,12 +41,16 @@ interface Per { departures: number; passengers: number }
 export function MarshalDashboard({ userName, onClose }: { userName?: string; onClose: () => void }) {
   const [nav, setNav] = useState("Ranks & queue");
   const [ranks, reloadRanks] = useLoad<{ ranks: Rank[] }>(() => call("/ranks"));
+  const [prof, reloadProf] = useLoad<{ profile: { language: string } }>(() => call("/profile"));
+  useEffect(() => { window.addEventListener("vink-language-changed", reloadProf); return () => window.removeEventListener("vink-language-changed", reloadProf); }, [reloadProf]);
   const [rankId, setRankId] = useState<string | null>(null);
   const picked = ranks.state === "ready" ? ranks.data.ranks.find((r) => r.id === rankId) ?? ranks.data.ranks[0] : undefined;
 
   return (
+    <LangProvider lang={prof.state === "ready" ? prof.data.profile.language : undefined}>
     <DashboardShell title="Marshal Dashboard" subtitle="Rank queue and departures" accentColor={COLOR} gradient={`from-[${COLOR}]`} navItems={NAV} activeNav={nav} onNavChange={setNav} onClose={onClose} userName={userName}>
       <div className="p-4 md:p-6 space-y-4 max-w-5xl">
+        <OutboxBar />
         <BankStrip segment="marshal" color={COLOR} onOpen={() => setNav("Bank account")} />
         <ScreenBoundary resetKey={nav}>
           {(nav === "Ranks & queue" || nav === "Loading" || nav === "Departures") && <RankPicker ranks={ranks} picked={picked?.id} onPick={setRankId} />}
@@ -49,6 +59,10 @@ export function MarshalDashboard({ userName, onClose }: { userName?: string; onC
           {nav === "Earnings" && <EarningsScreen />}
           {nav === "Payslips" && <PayslipsScreen />}
           {nav === "Money check" && <MoneyCheckScreen />}
+          {nav === "Shifts" && <ShiftsScreen />}
+          {nav === "Safety" && <SafetyScreen />}
+          {nav === "My voice" && <VoiceScreen />}
+          {nav === "My record" && <MyRecordScreen />}
           {nav === "Departures" && picked && <DeparturesScreen key={picked.id} rank={picked} />}
           {nav === "Reports" && <><ReportsScreen /><LoadingReport segment="marshal" /></>}
           {nav === "Payments & trips" && <><VirtualAccountsPanel segment="marshal" color={COLOR} /><CrossBorderPanel segment="marshal" color={COLOR} /><PaymentsPanel segment="marshal" color={COLOR} /><TripsPanel segment="marshal" color={COLOR} /></>}
@@ -58,6 +72,7 @@ export function MarshalDashboard({ userName, onClose }: { userName?: string; onC
         </ScreenBoundary>
       </div>
     </DashboardShell>
+    </LangProvider>
   );
 }
 
@@ -95,8 +110,8 @@ function QueueScreen({ rank, onChanged }: { rank: Rank; onChanged: () => void })
                 <li key={x.id} className="flex flex-wrap items-center justify-between gap-2 text-sm text-fg">
                   <span><b className="mr-2" style={{ color: `color-mix(in srgb, ${COLOR} 62%, var(--vk-fg))` }}>{x.position}</b>{x.registration}<span className="text-fg-subtle"> · {[x.make, x.model].filter(Boolean).join(" ") || "vehicle"}{x.seats ? ` · ${x.seats} seats` : ""} · {x.driver ?? "no driver set"} · since {when(x.joinedAt)}</span></span>
                   <span className="flex gap-2">
-                    <ActionButton small label="Depart" busyLabel="Logging…" color={COLOR} onRun={async () => { const r = await call(`/ranks/${rank.id}/depart`, { method: "POST", body: { queueId: x.id, reasonCode: reason || undefined, passengers: pax === "" ? undefined : Number(pax), note: note || undefined } }); refresh(); return "error" in r ? { error: r.error } : undefined; }} />
-                    <ActionButton small label="Remove" color="#6B7280" onRun={async () => { const r = await call(`/ranks/${rank.id}/queue/${x.id}/remove`, { method: "POST", body: { reasonCode: reason || undefined } }); refresh(); return "error" in r ? { error: r.error } : undefined; }} />
+                    <ActionButton small label="Depart" busyLabel="Logging…" color={COLOR} onRun={async () => { const r = await sendOrQueue(call, { method: "POST", path: `/ranks/${rank.id}/depart`, label: "Departure", body: { queueId: x.id, reasonCode: reason || undefined, passengers: pax === "" ? undefined : Number(pax), note: note || undefined } }); refresh(); return qmsg(r); }} />
+                    <ActionButton small label="Remove" color="#6B7280" onRun={async () => { const r = await sendOrQueue(call, { method: "POST", path: `/ranks/${rank.id}/queue/${x.id}/remove`, label: "Removal", body: { reasonCode: reason || undefined } }); refresh(); return qmsg(r); }} />
                   </span>
                 </li>))}</ol>
               <div className="flex flex-wrap items-end gap-3 pt-2 border-t border-line">
@@ -118,7 +133,7 @@ function QueueScreen({ rank, onChanged }: { rank: Rank; onChanged: () => void })
               <li key={v.id} className="flex flex-wrap items-center justify-between gap-2 text-sm text-fg">
                 <span>{v.registration}<span className="text-fg-subtle"> · {[v.make, v.model].filter(Boolean).join(" ") || "vehicle"} · owner {v.owner} · driver {v.driver ?? "not set"}</span></span>
                 {v.inQueue ? <span className="text-xs text-fg-muted">in a queue</span> :
-                  <ActionButton small label="Add to queue" color={COLOR} onRun={async () => { const r = await call(`/ranks/${rank.id}/queue`, { method: "POST", body: { vehicleId: v.id } }); refresh(); return "error" in r ? { error: r.error } : undefined; }} />}
+                  <ActionButton small label="Add to queue" color={COLOR} onRun={async () => { const r = await sendOrQueue(call, { method: "POST", path: `/ranks/${rank.id}/queue`, label: "Added to queue", body: { vehicleId: v.id } }); refresh(); return qmsg(r); }} />}
               </li>))}</ul>)}
           </div>
         </SectionPanel>

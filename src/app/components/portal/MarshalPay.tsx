@@ -4,6 +4,9 @@ import { authFetch } from "../../services/apiClient";
 import { API_BASE } from "../../services/config";
 import { SectionPanel, StatCard } from "../dashboards/DashboardShell";
 import { portalClient, useLoad, Status, Empty, ActionButton, rand, when, inputCls } from "./ui";
+import { sendOrQueue } from "./offlineQueue";
+import { useT } from "./i18n";
+import { CashOutCard } from "./MarshalCare";
 
 /**
  * What a marshal sees of their own pay (docs/MARSHAL_COMMISSION.md): their commission by day and the trips behind each day; their payslips, readable on a phone, with a Query button on every line,
@@ -19,14 +22,14 @@ const bp = (n: number) => `${n / 100}%`;
 function QueryForm({ targetType, targetId, onDone }: { targetType: "payslip_line" | "trip"; targetId: string; onDone?: () => void }) {
   const [text, setText] = useState(""), [sent, setSent] = useState(false);
   // The confirmation lives here, not in the button: the marshal must see that the query went, and it stays until they close the form.
-  if (sent) return <p role="status" className="mt-2 text-xs text-ok">Sent. The association will answer under My queries. <button type="button" className="underline" onClick={() => { setSent(false); onDone?.(); }}>Close</button></p>;
+  if (sent) return <p role="status" className="mt-2 text-xs text-ok">Sent (or saved on your phone to send when you have signal). The association will answer under My queries. <button type="button" className="underline" onClick={() => { setSent(false); onDone?.(); }}>Close</button></p>;
   return (
     <div className="mt-2 flex flex-wrap items-end gap-2">
       <label className="block flex-1 min-w-[12rem]"><span className="text-[11px] text-fg-muted">What is wrong? (5 to 500 characters)</span><input className={inputCls + " mt-1"} maxLength={500} value={text} onChange={(e) => setText(e.target.value)} /></label>
       <ActionButton small label="Send query" busyLabel="Sending…" color={COLOR} onRun={async () => {
-        const r = await call("/disputes", { method: "POST", body: { targetType, targetId, message: text } });
-        if ("error" in r) return { error: r.error };
-        setText(""); setSent(true); return undefined;
+        const r = await sendOrQueue(call, { method: "POST", path: "/disputes", body: { targetType, targetId, message: text }, label: "Query" });
+        if (r.status === "error") return { error: r.error };
+        setText(""); setSent(true); return r.status === "queued" ? { message: "Saved on your phone. It will send when you have signal." } : undefined;
       }} />
     </div>
   );
@@ -101,14 +104,14 @@ interface Payslip {
 }
 
 /** Downloads the payslip as a PDF (fetched with the signed-in session, so it never needs a public link). */
-export function PdfButton({ id, number, segment = "marshal" }: { id: string; number: string; segment?: "marshal" | "association" }) {
+export function PdfButton({ id, number, segment = "marshal", kind = "payslips" }: { id: string; number: string; segment?: "marshal" | "association"; kind?: "payslips" | "income-letters" }) {
   const [busy, setBusy] = useState(false), [err, setErr] = useState<string | null>(null);
   const run = async () => {
     setBusy(true); setErr(null);
     try {
-      const res = await authFetch(`${API_BASE}/api/portal/${segment}/payslips/${id}.pdf`);
+      const res = await authFetch(`${API_BASE}/api/portal/${segment}/${kind}/${id}.pdf`);
       if (!res.ok) { const b = await res.json().catch(() => ({})); setErr(b.error ?? `Download failed (${res.status})`); return; }
-      const url = URL.createObjectURL(await res.blob()); const a = document.createElement("a"); a.href = url; a.download = `payslip-${number}.pdf`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+      const url = URL.createObjectURL(await res.blob()); const a = document.createElement("a"); a.href = url; a.download = `${kind === "payslips" ? "payslip" : "income-letter"}-${number}.pdf`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
     } catch { setErr("We could not reach the server."); } finally { setBusy(false); }
   };
   return <span className="inline-flex items-center gap-2"><button type="button" disabled={busy} onClick={run} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-bold text-white disabled:opacity-60" style={{ background: COLOR }}><Download className="w-4 h-4" />{busy ? "Preparing…" : "Download PDF"}</button>{err && <span role="alert" className="text-xs text-bad">{err}</span>}</span>;
@@ -184,6 +187,7 @@ export function PayslipsScreen() {
           {open && <div className="rounded-lg border border-line p-4"><PayslipView id={open} /></div>}
         </div>
       </SectionPanel>
+      <CashOutCard />
       <MyQueries />
       <MyDetails />
     </div>
@@ -227,10 +231,10 @@ export function MyDetails() {
           <div className="space-y-3 text-sm text-fg">
             <p>Marshal number <b>{profile.marshalNumber}</b></p>
             <label className="block text-xs text-fg-muted">Language
-              <select className={inputCls + " mt-1 w-48"} value={profile.language} onChange={async (e) => { await call("/profile", { method: "PUT", body: { language: e.target.value } }); reload(); }}>
+              <select className={inputCls + " mt-1 w-48"} value={profile.language} onChange={async (e) => { await call("/profile", { method: "PUT", body: { language: e.target.value } }); reload(); window.dispatchEvent(new Event("vink-language-changed")); }}>
                 <option value="en">English</option><option value="xh">isiXhosa</option><option value="zu">isiZulu</option><option value="af">Afrikaans</option>
               </select></label>
-            <p className="text-xs text-fg-subtle">The screens are in English for now. Your choice is saved for when the other languages arrive.</p>
+            <p className="text-xs text-fg-subtle">Afrikaans is available for the marshal screens. isiZulu and isiXhosa are a first draft of the most-used words only (everything else stays in English) and are still being checked by first-language speakers: please tell your association what to correct.</p>
             <label className="flex items-start gap-2"><input type="checkbox" className="mt-1" checked={granted} onChange={async (e) => { await call("/consents/payroll_records", { method: "PUT", body: { granted: e.target.checked } }); reload(); }} />
               <span>I agree that my trip, commission and payslip records are kept and used to work out and show my pay. I can withdraw this at any time.</span></label>
           </div>);

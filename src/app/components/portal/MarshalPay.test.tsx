@@ -50,7 +50,7 @@ describe("my earnings", () => {
     render(<EarningsScreen />); fireEvent.click(await screen.findByRole("button", { name: "2026-10-26" })); expect(await screen.findByText(/CA 111-111 · Dee Driver/)).toBeInTheDocument();
     expect(screen.getByText(/On payslip PS-20261101-M0001/)).toBeInTheDocument(); expect(screen.getByText(/Not on a payslip yet/)).toBeInTheDocument(); expect(screen.getByText(/\(Paid\)/)).toBeInTheDocument(); expect(screen.getByText(/\(Owed\)/)).toBeInTheDocument();
     fireEvent.click(screen.getAllByText("Query this trip")[1]); fireEvent.change(screen.getByLabelText(/What is wrong/), { target: { value: "I did not load this vehicle" } }); fireEvent.click(screen.getByRole("button", { name: "Send query" }));
-    await waitFor(() => expect(posts()).toEqual([{ method: "POST", path: "/api/portal/marshal/disputes", body: { targetType: "trip", targetId: "d2", message: "I did not load this vehicle" } }])); expect(await screen.findByText(/The association will answer under My queries/)).toBeInTheDocument();
+    await waitFor(() => expect(posts()).toEqual([{ method: "POST", path: "/api/portal/marshal/disputes", body: { targetType: "trip", targetId: "d2", message: "I did not load this vehicle", clientRef: expect.stringMatching(/^[A-Za-z0-9._-]{8,80}$/) } }])); expect(await screen.findByText(/The association will answer under My queries/)).toBeInTheDocument();
   });
   it("shows the server's reason when a query is refused, and says so when there are no trips", async () => {
     routes = ((orig) => (m: string, p: string, b: any) => (m === "POST" ? { status: 409, body: { success: false, error: "You already have an open query about that" } } : orig(m, p, b)))(routes);
@@ -71,7 +71,7 @@ describe("my payslips", () => {
   it("says there are no payslips yet", async () => { routes = (m, p) => (p === "/api/portal/marshal/payslips" ? { body: { success: true, payslips: [] } } : p.endsWith("/disputes") ? { body: { success: true, disputes: [] } } : p.startsWith("/api/portal/marshal/profile") ? { body: { success: true, profile: { marshalNumber: "M-1", language: "en", class: "independent" }, consents: [] } } : undefined); render(<PayslipsScreen />); expect(await screen.findByText(/No payslips yet/)).toBeInTheDocument(); });
   it("lets the marshal query any line, sending that line's id", async () => {
     await open(); fireEvent.click(screen.getAllByText("Query this line")[1]); fireEvent.change(screen.getByLabelText(/What is wrong/), { target: { value: "I never took an advance" } }); fireEvent.click(screen.getByRole("button", { name: "Send query" }));
-    await waitFor(() => expect(posts()).toEqual([{ method: "POST", path: "/api/portal/marshal/disputes", body: { targetType: "payslip_line", targetId: "l2", message: "I never took an advance" } }]));
+    await waitFor(() => expect(posts()).toEqual([{ method: "POST", path: "/api/portal/marshal/disputes", body: { targetType: "payslip_line", targetId: "l2", message: "I never took an advance", clientRef: expect.stringMatching(/^[A-Za-z0-9._-]{8,80}$/) } }]));
   });
   it("downloads the PDF with the signed-in session, shows a failure, and offers WhatsApp and email with the figures in the message", async () => {
     await open(); fireEvent.click(screen.getByRole("button", { name: /Download PDF/ })); await waitFor(() => expect(calls.at(-1)!.path).toBe("/api/portal/marshal/payslips/p1.pdf")); await waitFor(() => expect(URL.createObjectURL).toHaveBeenCalled());
@@ -102,8 +102,8 @@ describe("the money check", () => {
 });
 
 describe("my details and privacy", () => {
-  it("shows the marshal number, saves the chosen language, gives and withdraws consent, and is honest that only English exists for now", async () => {
-    render(<MyDetails />); expect(await screen.findByText("M-0001")).toBeInTheDocument(); expect(screen.getByText(/The screens are in English for now/)).toBeInTheDocument();
+  it("shows the marshal number, saves the chosen language, gives and withdraws consent, and is honest about which languages are complete", async () => {
+    render(<MyDetails />); expect(await screen.findByText("M-0001")).toBeInTheDocument(); expect(screen.getByText(/isiZulu and isiXhosa are a first draft/)).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Language"), { target: { value: "zu" } }); await waitFor(() => expect(calls.some((c) => c.method === "PUT" && c.path === "/api/portal/marshal/profile" && c.body.language === "zu")).toBe(true));
     fireEvent.click(screen.getByRole("checkbox")); await waitFor(() => expect(calls.some((c) => c.method === "PUT" && c.path === "/api/portal/marshal/consents/payroll_records" && c.body.granted === true)).toBe(true));
   });
