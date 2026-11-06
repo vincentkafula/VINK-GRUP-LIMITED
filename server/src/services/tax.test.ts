@@ -72,6 +72,7 @@ describe("age rebates", () => {
   });
   it("works out age on a day the way SARS does (a birthday not yet reached does not count)", () => {
     expect(ageOn("1962-02-28", "2027-02-28")).toBe(65); expect(ageOn("1962-03-01", "2027-02-28")).toBe(64); expect(ageOn("1952-02-28", "2027-02-28")).toBe(75); expect(ageOn("1952-03-01", "2027-02-28")).toBe(74); expect(ageOn("2000-12-31", "2027-01-01")).toBe(26);
+    expect(ageOn("1962-02-28", "2027-02-27")).toBe(64); expect(ageOn("1962-02-28", "2027-02-28")).toBe(65); expect(ageOn("1962-02-28", "2027-02-29")).toBe(65); expect(ageOn("1952-12-15", "2027-12-14")).toBe(74);              // the same month: the day decides
   });
   it("can be given when a table is added (and default to none), and are refused if they are not amounts", async () => {
     const next = { taxYear: "2027/28", effectiveFrom: "2027-03-01", effectiveTo: "2028-02-29", brackets: [{ upToCents: 25000000, rateBp: 1800 }, { upToCents: null, rateBp: 4500 }], primaryRebateCents: R(18_000), uifCeilingMonthlyCents: R(18_000), source: "SARS Budget 2027" };

@@ -115,8 +115,8 @@ next payslip as its own line.
 - **PAYE is an estimate**, worked from a tax table held as **data with its source** (`tax_tables`), never from numbers in the code, because SARS changes them every March. The 2026/27 table (1 March 2026 to 28 February 2027: seven brackets from 18% to 45%, primary rebate
   R17 820, tax-free threshold R99 000) ships with the system and was checked against published SARS worked examples. The association adds each new year's table on the Commission screen, with the source of the figures.
 - It uses the SARS periodic (annualisation) method for regular pay, applies **only to marshals classed as employees**, only when the association has switched PAYE on, and sits **outside the deduction cap**. UIF comes off first and is deductible.
-- **If no table covers a payslip's dates, no PAYE is calculated** and the payslip says so; it never uses another year's table. Age rebates, medical credits and retirement deductions are not included, so PAYE is never under-stated for an older marshal; the association reconciles
-  its own returns (EMP201, IRP5) and should take advice. UIF is 1% of earnings up to the monthly ceiling (R17 712, so R177.12 a month), scaled to the pay period.
+- **If no table covers a payslip's dates, no PAYE is calculated** and the payslip says so; it never uses another year's table. **Age rebates** (2026/27: secondary R9 765 from age 65, tertiary R3 249 from age 75, by age at the end of the tax year) apply when the association has recorded the marshal's **date of birth**, which is the association's record, is never printed on a payslip, and cannot be
+  changed by the marshal; with no date of birth only the primary rebate is applied, so PAYE is never under-stated. Medical credits and retirement deductions are not included; the association reconciles its own returns (EMP201, IRP5) and should take advice. UIF is 1% of earnings up to the monthly ceiling (R17 712, so R177.12 a month), scaled to the pay period.
 
 ## Emergencies and safety alerts
 
@@ -149,7 +149,7 @@ with `--testTimeout 90000`. The worked example (120 trips, R20, 40%, advance R10
 ## Not built yet
 
 - **WhatsApp alerts** (they need pre-approved message templates) and a push notification inside the app.
-- **PAYE age rebates, medical credits and retirement deductions**, and year-end reconciliation: take advice.
+- **PAYE medical credits and retirement deductions**, and year-end reconciliation: take advice.
 - **Complete, reviewed isiZulu and isiXhosa.**
 - **Consent gating** beyond the proof-of-income letter and the association's view of earnings.
 - **Verifying the Twilio adapter against a live account**, and a live card-device test.
