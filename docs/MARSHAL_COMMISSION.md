@@ -70,33 +70,68 @@ Every read of a payslip or its PDF is recorded in `access_log` (who, what, when)
 
 Association (`/api/portal/association`): `GET|PUT /commission/settings`, `GET /commission/rules`, `POST /commission/fee-rules`, `/commission/rates`, `/commission/tiers`, `POST /commission/backfill`, `GET /commission/trips`,
 `POST /commission/trips/:departureId/waive`, `POST /commission/exceptions`, `GET /commission/reconciliation`, `GET /commission/marshals`, `PUT /commission/marshals/:id`, `GET|POST /payruns`, `POST /payslips/draft`,
-`GET /payslips/:id` (and `.pdf`), `POST /payslips/:id/issue`, `POST /payslips/:id/payment`, `GET|POST /adjustments`, `POST /adjustments/:id/cancel`, `GET /disputes`, `POST /disputes/:id/respond`, `GET /access-log`.
+`GET /payslips/:id` (and `.pdf`), `POST /payslips/:id/issue`, `POST /payslips/:id/revise`, `POST /commission/trips/:id/refund`, `GET /shifts`, `POST /shifts/detect`, `POST /shifts/:id/decide`, `GET /incidents` (and `/:id/photo`, `POST /:id/ack`), `GET /risk-map`, `GET /grievances`, `POST /grievances/:id/respond`, `GET /welfare-insights`, `GET|PUT /benefits`, `GET /work-record/:marshalId`, `POST /income-letters/verify`, `GET /kpis` (and `.csv`, `.pdf`), `GET /patterns`, `POST /payslips/:id/payment`, `GET|POST /adjustments`, `POST /adjustments/:id/cancel`, `GET /disputes`, `POST /disputes/:id/respond`, `GET /access-log`.
 
 Marshal (`/api/portal/marshal`): `GET /earnings`, `GET /earnings/day/:date`, `GET /payslips`, `GET /payslips/:id` (and `.pdf`), `GET|POST /disputes`, `GET /money-check`, `GET|PUT /profile`, `PUT /consents/:purpose`,
-`GET /queue-events`, `GET /reason-codes`; the existing `POST /ranks/:id/depart` and `/queue/:queueId/remove` take a `reasonCode`.
+`GET /queue-events`, `GET /reason-codes`, `GET|POST /cash-out`, `GET|POST /shifts`, `PUT /shifts/:id`, `GET|POST /incidents`, `GET|POST /grievances`, `GET /benefits`, `GET /work-record`, `GET|POST /income-letters` (and `/:id`, `/:id.pdf`); the existing `POST /ranks/:id/depart` and `/queue/:queueId/remove` take a `reasonCode`.
 
-Driver (`/api/portal/driver`): `GET /queue-position`, `GET /fees`, `GET|POST /disputes` (a query about a trip they drove).
+Driver (`/api/portal/driver`): `GET /queue-position`, `GET /fees`, `GET /trip-fees`, `GET|POST /disputes` (a query about a trip they drove).
 
 ## Queries (disputes)
 
 A marshal can query any line of an issued payslip or a trip they handled; a driver can query a trip they drove. It goes to the association and is tracked (open, under review, upheld, rejected). Upholding needs a reason the person
-sees. A driver's upheld query waives an unpaid fee and reverses that trip's commission (a fee already paid is flagged as needing a refund, which is not built). A marshal's upheld query can carry a credit that appears on their
+sees. A driver's upheld query waives an unpaid fee and reverses that trip's commission, or refunds a fee already paid. A marshal's upheld query can carry a credit that appears on their
 next payslip as its own line.
+
+## Refunds, revisions and drawing earned commission
+
+- **Refund a paid fee.** A trip fee the driver has already paid is refunded by the association: a `trip_fee_refund` payment item pays the driver back through the money engine (retried until the association's account can pay),
+  the trip is marked refunded, and the marshal's commission for it reverses unless the association absorbs it. An upheld driver query on a paid fee does this automatically. A fee not yet paid is waived instead.
+- **Revise a payslip.** An issued payslip that has **not been paid** can be revised with a reason: its payment is cancelled, its trips and adjustments are released, and the old payslip stays on record marked *revised*.
+  Preparing the period again makes a new version (number ending `-R1`, `-R2`) that supersedes it. A payslip already paid is corrected by a reversal or credit on the next one.
+- **Cash-out.** Off until the association switches it on (Commission settings). A marshal may draw up to the association's share (50% by default) of commission already earned on trips **whose fee has been paid**, less anything already
+  drawn. It is paid at once (a `marshal_commission` payment item) and comes back off their next payslip, outside the deduction cap. It is not a loan and carries no interest. Money requests are never queued offline.
+
+## Marshal care
+
+- **Shifts and hours.** A marshal's shifts are found from their own queue and departure records (a gap longer than the association's setting ends a shift), **proposed** for the marshal to correct (a reason is needed for changed
+  times) and for the association to approve. A marshal can add a shift that was not found. A shift over the agreed length, a long shift with no break noted, and a week over the agreed hours are **flagged**, never blamed.
+- **Safety.** A one-tap report from a rank (threat, fight, robbery, overcrowding, injury, other) with an optional note and a small photo (about 100 KB). The association sees who reported, acknowledges and closes it, and reads a **risk
+  picture by rank**: reports, a score weighted by seriousness (robbery 5; threat, fight, injury 3; overcrowding, other 1), and when in the day (night is 21:00 to 05:00 South African time). It supports the case for security at a rank.
+  The association is told by seeing new reports on its Safety screen; it is not yet pushed by email or SMS.
+- **My voice.** A marshal raises a complaint or request (pay, hours, safety, queue, conditions, benefits, other), sees it tracked to an answer, and the association answers it. The association also sees anonymised insight: counts by
+  theme and how long answers take, never names in the summary.
+- **Cover and benefits.** The association records whether each marshal is registered for UIF, injury cover, a savings scheme or funeral cover. What a marshal has paid in is **read from their issued payslips**, never typed.
+- **Work record.** Tenure, ranks worked, trips handled and earnings by month, from the system's own records, and what is still needed for the profile to count as **verified** (a start date, consent to keep payroll records, an issued payslip).
+- **Proof-of-income letter.** A letter summarising the last 3 or 6 months of issued payslips (never drafts or revised ones), **only with the marshal's consent**, as a small PDF. It carries a number and a verification code; the association can
+  confirm a letter someone presents (it confirms the letter is genuine and from one of its marshals, without showing figures, and says if the payslips behind it have since changed). It says it is generated from system records and is **not
+  a certificate of employment**.
+- **Overview and patterns.** The association's overview: fares on rank devices, trips, share paid by tap, commission issued and paid, payslips, queries, incidents, average shift, and verified profiles, filterable by rank and marshal, as CSV and PDF.
+  Cash share is an **estimate** (passengers a marshal counted at departure against fares tapped). A rank whose cash share this week is 12 or more points above its own four-week average, over at least 30 passengers in each window, is flagged
+  as **a change at a rank to look into, not a finding about anyone**.
+
+## Offline and languages
+
+- **Offline capture on the phone.** A queue change (join, depart, remove), a shift, a safety report, a complaint and a query made with no signal are kept on the phone and sent when it returns. Each carries a reference the server remembers, so
+  a change sent twice happens once. Only a failure to reach the server queues a change; a change the server refuses when finally sent goes to a "could not be sent" list the marshal sees, so nothing is lost silently. Requests for money are not queued.
+- **Languages.** Afrikaans covers the marshal's screens. **isiZulu and isiXhosa are a first draft of the most-used words only**, everything else stays in English, and they must be checked by first-language speakers before they are relied on. The
+  English text of a screen is its own key, so an untranslated string shows in English and a language can be completed a screen at a time. The navigation labels are not translated yet.
 
 ## Testing
 
-`cd server && npx vitest run src/services/commission.test.ts src/services/payslips.test.ts src/portal/commissionRoutes.test.ts src/portal/marshalCommission.test.ts src/services/moneyEngine.test.ts` runs them on the in-memory
+`cd server && npx vitest run src/services/commission.test.ts src/services/payslips.test.ts src/services/marshalCare.test.ts src/portal/commissionRoutes.test.ts src/portal/careRoutes.test.ts src/portal/marshalCommission.test.ts src/services/moneyEngine.test.ts` runs them on the in-memory
 database. Against a real PostgreSQL (recommended before switching an association on), set `TEST_PG_URL` and run the same files except `moneyEngine.test.ts` (it pins the clock, which a real database cannot follow, and skips itself),
 with `--testTimeout 90000`. The worked example (120 trips, R20, 40%, advance R100 and fee R50, net R810) is a test in `payslips.test.ts`.
 
 ## Not built yet
 
-- **Phase two of the plan**: proof-of-income letters, shifts and hours, incident reports and the rank risk map, grievances, the benefits panel and verified work record, the KPI dashboard with PDF export, the cash-share estimate
-  and pattern flags, and the isiXhosa, isiZulu and Afrikaans screens (the choice is saved; the screens are English).
-- **Offline capture** on the marshal's own phone (the database already has client references for it).
-- **Revised payslip versions** (a correction today is a reversal or credit on the next payslip), **refunds of fees already paid**, and a **daily cash-out** of accrued commission. Marshals are paid per pay period, not per trip.
-- **Consent is recorded but not yet enforced** anywhere.
-- The driver has no screen to query a trip (the API exists), and trip fee rules by **route** have no screen (the API supports them).
+- **Pushing** a new safety report to the association by email or SMS (today it sees it on its Safety screen), and a panic button with location.
+- **Verified work record as a shareable document** beyond the proof-of-income letter, and a public verification page (the association confirms letters from its own screen).
+- **isiZulu and isiXhosa** beyond the first draft, and translated navigation labels.
+- **Consent enforcement** beyond the proof-of-income letter: other consents are recorded but do not yet gate anything.
+- **PAYE and statutory returns.** No tax is calculated; UIF is a simple per-employee rate. Take advice before relying on it.
+- **A daily scheduled cash-out** (a marshal asks for it; nothing pays it automatically).
+- **The marshal's phone capturing departures with no signal at all before the rank device syncs** is covered by the outbox for queue changes; the rank device's own offline sync is described in docs/RANK_DEVICES.md.
 
 ## Decisions made by default (all adjustable settings)
 
