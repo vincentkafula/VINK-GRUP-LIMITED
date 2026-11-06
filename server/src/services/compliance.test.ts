@@ -72,6 +72,15 @@ describe("the association's registration", () => {
   });
 });
 
+describe("the conditional period", () => {
+  it("flags registration that has been conditional for longer than the allowed months, but not for exactly that long", async () => {
+    const flagged = async () => (await c.summary(U.A, TODAY)).flags.some((f) => f.id === "reg:conditional");
+    ok(await c.saveRegistration(U.A, U.A, { status: "conditional", conditionalLimitMonths: 12, conditionalSince: addMonths(TODAY, -12) })); expect(await flagged()).toBe(false);                      // the limit falls today: not yet over
+    ok(await c.saveRegistration(U.A, U.A, { conditionalSince: plus(-366) > addMonths(TODAY, -12) ? addMonths(TODAY, -12) : plus(-366) })); await db.query(`UPDATE association_registration SET conditional_since = $2 WHERE association_id = $1`, [U.A, "2025-11-01"]); expect(await flagged()).toBe(true);      // one day over
+    ok(await c.saveRegistration(U.A, U.A, { conditionalLimitMonths: 13 })); expect(await flagged()).toBe(false);
+  });
+});
+
 describe("office bearers, documents and acceptances", () => {
   it("records office bearers with terms, validated, only linking to the association's own members, and flags a term that has ended or is about to", async () => {
     expect(await c.addOfficeBearer(U.A, U.A, { name: "", office: "Chairperson" })).toMatchObject({ ok: false, status: 400 }); expect(await c.addOfficeBearer(U.A, U.A, { name: "Thabo", office: "Chair", termStart: "2026-05-01", termEnd: "2026-01-01" })).toMatchObject({ ok: false, status: 400 });
@@ -162,6 +171,11 @@ describe("the driver register", () => {
     const d = (await c.drivers(U.A, TODAY)).find((x) => x.id === U.D2)!; expect(d.idNumberMasked).toBe("•••••••••9087"); expect(JSON.stringify(d)).not.toContain("8001015009"); expect(d.register).toMatchObject({ employmentStatus: "employed", contractOnFile: true, payBasis: "salary", uifRegistered: true, coidaRegistered: false, cleanRecordConfirmed: true });
     expect((await c.summary(U.A, TODAY)).flags.find((x) => x.id === `drv:${U.D2}:formalities`)!.message).toContain("not registered for COIDA"); expect(JSON.stringify(await c.changes(U.A))).not.toContain("8001015009"); expect(await c.saveDriver(U.B, U.B, U.D2, { employmentStatus: "employed" })).toMatchObject({ ok: false, status: 404 });
     ok(await c.saveDriver(U.A, U.A, U.D2, { idNumber: null })); expect((await c.drivers(U.A, TODAY)).find((x) => x.id === U.D2)!.idNumberMasked).toBeNull();
+  });
+  it("treats a permit as valid through its last day and refused from the next, and a licence the same", async () => {
+    await db.query(`INSERT INTO association_settings (association_id, enforce_prdp) VALUES ($1, true) ON CONFLICT (association_id) DO UPDATE SET enforce_prdp = true`, [U.A]);
+    await db.query(`UPDATE driver_profiles SET pdp_expiry = $2 WHERE user_id = $1`, [U.D1, TODAY]); expect(await c.assignmentBlock(U.O1, U.D1, TODAY)).toBeNull(); expect((await c.drivers(U.A, TODAY)).find((d) => d.id === U.D1)!.permit.band).toBe("30");
+    await db.query(`UPDATE driver_profiles SET pdp_expiry = $2 WHERE user_id = $1`, [U.D1, plus(-1)]); expect(await c.assignmentBlock(U.O1, U.D1, TODAY)).toContain("expired"); expect((await c.drivers(U.A, TODAY)).find((d) => d.id === U.D1)!.permit.band).toBe("expired");
   });
   it("refuses to put a driver on a vehicle without a valid permit, but only for an association that has switched that on, and says why", async () => {
     expect(await c.assignmentBlock(U.O1, U.D3, TODAY)).toBeNull();                                                                              // off by default: nothing changes for anyone
