@@ -5,6 +5,7 @@ import { Banknote } from "lucide-react";
 import { PaymentsPanel, TripsPanel, CrossBorderPanel, VirtualAccountsPanel, OwnerAgreements } from "./MoneyPanels";
 import { DriverTargetsScreen } from "./OwnerDriverPay";
 import { MyAssociationScreen } from "./OwnerAssociation";
+import { ComplianceCentreScreen } from "./OwnerCompliance";
 import { BankStrip, BankScreen } from "./BankAccount";
 import { DashboardShell, SectionPanel, StatCard, TableCard, Badge } from "../dashboards/DashboardShell";
 import { portalClient, useLoad, Status, Empty, ActionButton, outcome, inputCls, rand, day, type Load } from "./ui";
@@ -31,7 +32,7 @@ export function OwnerDashboard({ userName, onClose }: { userName?: string; onClo
     { icon: <Users className="w-4 h-4" />, label: "Drivers" }, { icon: <MapPin className="w-4 h-4" />, label: "Routes & map" },
     { icon: <BarChart3 className="w-4 h-4" />, label: "Reports" }, { icon: <Scale className="w-4 h-4" />, label: "Financials" },
     { icon: <FileText className="w-4 h-4" />, label: "Documents" }, { icon: <Bell className="w-4 h-4" />, label: "Notifications", badge: unread || undefined },
-    { icon: <Banknote className="w-4 h-4" />, label: "Driver pay" }, { icon: <Scale className="w-4 h-4" />, label: "Driver targets" }, { icon: <Scale className="w-4 h-4" />, label: "My association" }, { icon: <Scale className="w-4 h-4" />, label: "Payments & trips" },
+    { icon: <Banknote className="w-4 h-4" />, label: "Driver pay" }, { icon: <Scale className="w-4 h-4" />, label: "Driver targets" }, { icon: <Scale className="w-4 h-4" />, label: "My association" }, { icon: <Scale className="w-4 h-4" />, label: "Compliance centre" }, { icon: <Scale className="w-4 h-4" />, label: "Payments & trips" },
     { icon: <Link2 className="w-4 h-4" />, label: "Requests & links" }, { icon: <Coins className="w-4 h-4" />, label: "VINK Tokens" }, { icon: <Landmark className="w-4 h-4" />, label: "Bank account" },
   ];
   return (
@@ -48,6 +49,7 @@ export function OwnerDashboard({ userName, onClose }: { userName?: string; onClo
           {nav === "Driver pay" && <OwnerAgreements color={COLOR} />}
           {nav === "Driver targets" && <DriverTargetsScreen />}
           {nav === "My association" && <MyAssociationScreen />}
+          {nav === "Compliance centre" && <ComplianceCentreScreen />}
           {nav === "Payments & trips" && <><VirtualAccountsPanel segment="owner" color={COLOR} /><CrossBorderPanel segment="owner" color={COLOR} /><PaymentsPanel segment="owner" color={COLOR} /><TripsPanel segment="owner" color={COLOR} /></>}
           {nav === "Documents" && <Documents onChanged={reloadNotes} />}
           {nav === "Notifications" && <Notifications notes={notes} reload={reloadNotes} />}
