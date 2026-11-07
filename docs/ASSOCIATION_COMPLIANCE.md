@@ -8,7 +8,7 @@ specification, how the rules work, and what is not built. It is built in slices;
 | # | Module | State |
 | --- | --- | --- |
 | 1 | Association registration | **Built** (slice 1): status, number, registrar, certificate and renewal dates, member count against the minimum, constitution and code with versions, office bearers with terms, evidence held, members' signed acceptance |
-| 2 | Member (owner) register | Partial: approvals and levies exist; membership class, card number, standing, dual-membership and non-member operators are **not built** |
+| 2 | Member (owner) register | **Built** (slice 6): legal name or company, ID or company number (validated, masked), contact, join date, membership card, standing (active, suspended, terminated, with a reason), another-association membership with consent, linked vehicles and fees owed, disciplinary history as counts, and a separate register of non-member operators |
 | 3 | Vehicle register | **Built** (slice 1): VIN, roadworthy, insurance, tracker and camera, signage, recapitalisation, state (active, off the road, replaced), replacement tracking |
 | 4 | Driver register | **Built** (slice 1): ID, permit and licence, employer and vehicle, employment status and contract, pay basis, UIF and COIDA, training, suspension; optional rule blocking a driver without a valid permit |
 | 5 | Operating licence tracker | **Built** (slice 1): per vehicle; valid, expired, application lodged, none; applications tracked separately; alerts at 180, 90 and 30 days; the headline share trended monthly |
@@ -16,7 +16,7 @@ specification, how the rules work, and what is not built. It is built in slices;
 | 7 | Finance and levies | **Built** (slice 2): approved fee schedule with the province's cap check, numbered receipts (never deleted, printable), member accounts and statements, expenses with named-office-bearer approval, cash against banking, budgets, monthly and annual statements with CSV |
 | 8 | Governance and discipline | **Built** (slice 3): meetings with attendance and minutes (and when adopted), numbered resolutions tracked to an action and date, elections against the constitution's cycle, declarations of interest by office bearers, disciplinary cases from complaint to outcome and appeal |
 | 9 | Safety and conflict | **Built** (slice 5): accidents, passenger complaints, disputes with other associations (with escalation to SANTACO or the National Taxi Alliance), police matters and regulator notices, with repeat-incident, open-dispute and route-spike flags, and a counts-only report |
-| 10 | Tax and labour formalisation | Partial: driver UIF and COIDA are recorded and flagged; owner business and tax status are **not built** |
+| 10 | Tax and labour formalisation | **Built** (slice 6): each owner's business type and registration, SARS tax reference (masked), filing status as reported, employer registrations (UIF, COIDA, SDL), beside the drivers they employ; tracks and reports only |
 | 11 | Digital fleet and payments | Later: the VINK card and rank-device data exist to link to |
 | 12 | Reports and regulator export | **Built** (slice 4): registration, licence, finance and governance packs as stamped PDFs; member, vehicle and driver lists as CSV; monthly, quarterly and annual emailing with a record of every send |
 | 13 | Alerts, users and audit trail | Partial: expiry alerts, flags, change history and the audit log are built; named office-bearer users and scheduled digests are **not built** |
@@ -95,6 +95,22 @@ specification, how the rules work, and what is not built. It is built in slices;
 - **The safety and conflict summary** is a fifth report pack: counts for the last 12 months, what is open, and the regulator notices in force. **It names no driver, vehicle, other association or incident.**
 - **Privacy.** These events name identifiable people. Today the association has one login, so anyone who holds it can see them; the guide's decision on named office-bearer users applies here above all.
 
+## The member register and formalisation (modules 2 and 10)
+
+- **Who is a member.** Membership is voluntary under the NLTA, so the register shows exactly who is: each owner member's legal name (or company), **type** (individual, company, close corporation, partnership, trust), **ID or company number** (a real South African ID for an individual, a registration number otherwise), phone, **membership card number** (one card to one member, whatever the capitals),
+  and **standing**. **Suspending or terminating a member needs a reason**, and the reason is cleared when they are active again. Terminating a member's standing is a record, separate from removing them in the Approvals screen.
+- **Another association.** Some constitutions forbid dual membership without consent: a member recorded as also belonging to another association is **flagged until consent is recorded**, and consent is forgotten if that other membership is cleared or changed.
+- **A suspended or terminated member whose vehicles still ran trips on your routes in the last 30 days is flagged high.** A member with no ID or company number on record is flagged low.
+- **Disciplinary history is shown as counts (open and closed), never described.**
+- **Non-member operators** are kept in a separate register (name, vehicle, route, phone, when noted, when they stopped). **A vehicle that belongs to a member cannot be entered**, a vehicle is listed once while it is active, and the vehicles from outside the association seen on your routes in the last 30 days that are not yet in the
+  register are listed (with a button to add them) and flagged low.
+- **Formalisation tracks and reports only.** Per owner: business type and registration number, SARS tax reference (**ten digits**, shown masked), whether registered for tax, **tax filing status as the owner has reported it**, whether registered with UIF, COIDA and the Skills Development Levy as an employer, and when it was last checked.
+  **Filing tax and registering as an employer are each owner's own duty, and nothing here is tax or labour advice.** An owner with drivers on record who is not recorded as an employer with UIF or COIDA is flagged medium; SDL is flagged low, with the note that it applies only to employers above a payroll threshold; a reported overdue filing is flagged medium;
+  drivers paid in cash with no contract are flagged low.
+- **Progress** is shown as exact shares: owners with a business recorded, owners registered for tax, employers with UIF and COIDA, and **drivers formally employed** (recorded as employed, with a contract on file, registered for UIF and registered for COIDA).
+- **Privacy.** ID numbers and tax numbers are returned masked and are **never written to the change history or the audit record**. A phone number is shown to the association but is not written to them either.
+- **Exports (CSV):** the member list, the non-member operators, and the formalisation list (tax numbers masked).
+
 ## Decisions only the association can make
 
 - **Evidence files.** The registers record each document, where it is kept and its dates, but do not store the files. Storing the signed constitution and certificate would need a storage decision (the database is small).
@@ -103,4 +119,4 @@ specification, how the rules work, and what is not built. It is built in slices;
 
 ## Testing
 
-`cd server && npx vitest run src/services/compliance.test.ts src/portal/complianceRoutes.test.ts src/services/finance.test.ts src/portal/financeRoutes.test.ts src/services/governance.test.ts src/portal/governanceRoutes.test.ts src/services/reports.test.ts src/portal/reportsRoutes.test.ts src/services/safety.test.ts src/services/routeControl.test.ts src/portal/safetyRoutes.test.ts`. Run against a real PostgreSQL by setting `TEST_PG_URL` (see docs/MARSHAL_COMMISSION.md).
+`cd server && npx vitest run src/services/compliance.test.ts src/portal/complianceRoutes.test.ts src/services/finance.test.ts src/portal/financeRoutes.test.ts src/services/governance.test.ts src/portal/governanceRoutes.test.ts src/services/reports.test.ts src/portal/reportsRoutes.test.ts src/services/safety.test.ts src/services/routeControl.test.ts src/portal/safetyRoutes.test.ts src/services/memberRegister.test.ts src/portal/memberRegisterRoutes.test.ts`. Run against a real PostgreSQL by setting `TEST_PG_URL` (see docs/MARSHAL_COMMISSION.md).
