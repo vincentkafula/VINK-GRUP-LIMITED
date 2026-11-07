@@ -19,7 +19,7 @@ specification, how the rules work, and what is not built. It is built in slices;
 | 10 | Tax and labour formalisation | **Built** (slice 6): each owner's business type and registration, SARS tax reference (masked), filing status as reported, employer registrations (UIF, COIDA, SDL), beside the drivers they employ; tracks and reports only |
 | 11 | Digital fleet and payments | Later: the VINK card and rank-device data exist to link to |
 | 12 | Reports and regulator export | **Built** (slice 4): registration, licence, finance and governance packs as stamped PDFs; member, vehicle and driver lists as CSV; monthly, quarterly and annual emailing with a record of every send |
-| 13 | Alerts, users and audit trail | Partial: expiry alerts, flags, change history and the audit log are built; named office-bearer users and scheduled digests are **not built** |
+| 13 | Alerts, users and audit trail | **Built** (slice 7): expiry alerts and flags, the change history and audit log, and **named office-bearer logins with roles** that restrict the sensitive modules; scheduled digests are **not built** |
 
 ## How it works
 
@@ -111,12 +111,26 @@ specification, how the rules work, and what is not built. It is built in slices;
 - **Privacy.** ID numbers and tax numbers are returned masked and are **never written to the change history or the audit record**. A phone number is shown to the association but is not written to them either.
 - **Exports (CSV):** the member list, the non-member operators, and the formalisation list (tax numbers masked).
 
+## Named office-bearer logins (module 13)
+
+- **Why.** An association had one login, so anyone who held it could see disciplinary cases, safety events, member identities and finance approvals. Now the association gives each office bearer **their own login with a role**, and the modules that name people are restricted to the roles that need them.
+- **Roles.** **Chairperson**: everything about the association except its bank and payroll. **Secretary**: the registers, members, governance, **discipline, safety**, routes and reports; not finance. **Treasurer**: **finance**, and the registers, routes and reports to read; not discipline, safety or member identities.
+  **Viewer**: the overview, registers, routes and reports, read only. The association's own login keeps everything and is **the only one that manages the logins**; the **bank, payments to marshals and the logins themselves stay with the main login whatever role is given**.
+- **Fail closed.** A delegate can use only a path that is explicitly mapped to a module their role allows (reading needs read access, anything else needs write access). **Anything not listed, including anything added later and the bank, money, tokens and payroll routes, is refused**, and the check runs
+  **before** those routers see the request. A login that is switched off is refused at once, even though it still holds a token.
+- **Seeing less in the overview.** The overview's flags and the change history are filtered by role too, so a treasurer does not read a disciplinary or safety flag that names a driver, and the logins are never shown in a delegate's history. The member, formalisation and driver exports need the module that holds them.
+- **In their own name.** Everything a delegate changes is recorded in the change history and the audit log under **their** name, not the association's.
+- **Approvals as yourself.** A delegate linked to their office-bearer record approves expenses **as themselves**, whatever they send, and the approval is marked **signed in**. An approval recorded by the shared login is an **attestation**; the association can switch on "approvals must be made by the office bearer
+  signed in to their own account", after which the shared login can no longer record one. A delegate who is not linked to an office bearer cannot approve.
+- **Passwords.** A login is created with a password that meets the password policy, **shown once** to the association and never stored in the clear or written to any record; the person should change it when they first sign in. A reset makes a new one. Delegates use the same sign-in as everyone else, including two-step sign-in if it is switched on.
+- **Not built**: scheduled digests by email, an emailed invitation to set one's own password (it needs email to be configured), and per-person permissions beyond the four roles.
+
 ## Decisions only the association can make
 
 - **Evidence files.** The registers record each document, where it is kept and its dates, but do not store the files. Storing the signed constitution and certificate would need a storage decision (the database is small).
-- **Named office-bearer users.** The dashboard has one login per association. The safety, disciplinary and finance modules hold allegations about identifiable people, so they should be restricted to named office bearers; that needs several users per association with roles.
+- **Named office-bearer users** are now built (below). What remains for the association to decide is who gets which role, and whether to require approvals to be made by the signed-in office bearer.
 - **Province-specific limits.** Fee caps, how long registration may stay conditional and the required minimum membership differ by province and are entered by the association, not assumed.
 
 ## Testing
 
-`cd server && npx vitest run src/services/compliance.test.ts src/portal/complianceRoutes.test.ts src/services/finance.test.ts src/portal/financeRoutes.test.ts src/services/governance.test.ts src/portal/governanceRoutes.test.ts src/services/reports.test.ts src/portal/reportsRoutes.test.ts src/services/safety.test.ts src/services/routeControl.test.ts src/portal/safetyRoutes.test.ts src/services/memberRegister.test.ts src/portal/memberRegisterRoutes.test.ts`. Run against a real PostgreSQL by setting `TEST_PG_URL` (see docs/MARSHAL_COMMISSION.md).
+`cd server && npx vitest run src/services/compliance.test.ts src/portal/complianceRoutes.test.ts src/services/finance.test.ts src/portal/financeRoutes.test.ts src/services/governance.test.ts src/portal/governanceRoutes.test.ts src/services/reports.test.ts src/portal/reportsRoutes.test.ts src/services/safety.test.ts src/services/routeControl.test.ts src/portal/safetyRoutes.test.ts src/services/memberRegister.test.ts src/portal/memberRegisterRoutes.test.ts src/services/delegates.test.ts src/portal/delegatesRoutes.test.ts src/portal/portalGate.test.ts`. Run against a real PostgreSQL by setting `TEST_PG_URL` (see docs/MARSHAL_COMMISSION.md).
