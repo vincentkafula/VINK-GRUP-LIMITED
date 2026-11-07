@@ -14,7 +14,7 @@ specification, how the rules work, and what is not built. It is built in slices;
 | 5 | Operating licence tracker | **Built** (slice 1): per vehicle; valid, expired, application lodged, none; applications tracked separately; alerts at 180, 90 and 30 days; the headline share trended monthly |
 | 6 | Routes and ranks | Partial: ranks and routes exist; saturation, licence reconciliation, queue rotation record and regulator notices are **not built** |
 | 7 | Finance and levies | **Built** (slice 2): approved fee schedule with the province's cap check, numbered receipts (never deleted, printable), member accounts and statements, expenses with named-office-bearer approval, cash against banking, budgets, monthly and annual statements with CSV |
-| 8 | Governance and discipline | **Not built**: meetings, resolutions, elections, declarations of interest, disciplinary cases |
+| 8 | Governance and discipline | **Built** (slice 3): meetings with attendance and minutes (and when adopted), numbered resolutions tracked to an action and date, elections against the constitution's cycle, declarations of interest by office bearers, disciplinary cases from complaint to outcome and appeal |
 | 9 | Safety and conflict | Partial: marshals' safety reports exist; accidents, inter-association disputes, repeat-incident flags are **not built** |
 | 10 | Tax and labour formalisation | Partial: driver UIF and COIDA are recorded and flagged; owner business and tax status are **not built** |
 | 11 | Digital fleet and payments | Later: the VINK card and rank-device data exist to link to |
@@ -50,6 +50,18 @@ specification, how the rules work, and what is not built. It is built in slices;
 - **Statements**: income (receipts not void) and expenses (approved only), by month and by year with the budget alongside, as CSV. **Flags**: a fee above the cap; payments with no receipt; an expense waiting 14 days; a member more than 90 days overdue; unbanked cash; voided receipts (three or more in a month); charges with no approved schedule.
 - **Not built in this module**: sending a receipt or statement to a member by email or WhatsApp, matching bank statement lines automatically, and reconciling the ledger against cashless fare data (module 11).
 
+## Governance and discipline (module 8)
+
+- **Meetings** record the kind (AGM, executive, general, special), date, venue and agenda; **attendance** names each member by their own record and guests by name (present, apology or absent, nobody twice); **minutes** are written, and the **date they were adopted** at a following meeting is recorded separately (it cannot be before the meeting, in the future, or before there are minutes).
+- **Resolutions** are numbered by the year of their meeting (2026/01, 2026/02, …, starting again each year), carry who acts and by when, and are **overdue the day after their due date** while open.
+- **Elections** are compared with the cycle the constitution sets (entered under Registration): flagged when none is on record, **overdue the day after it was due** (by the cycle, or by the date the last election set if that is sooner), and coming up within 90 days. An **AGM** not recorded in the last 12 months is flagged, as are minutes not adopted after 60 days.
+- **Declarations of interest**: each office bearer declares once a year, and "no interest" is a declaration too. An office bearer (whose term has not ended) with no declaration in the last 365 days is flagged.
+- **Disciplinary cases** follow a fixed order: complaint and charge under the code of conduct, hearing date, outcome (upheld, not upheld, withdrawn), **a sanction (required only if upheld)**, an appeal and its outcome, then closed. An outcome needs a hearing set first (a withdrawal does not); there is nothing to appeal on a withdrawn case; a case cannot be
+  closed without an outcome, or while an appeal is open; and **a closed case cannot be changed**. A case open longer than the limit the association sets (90 days by default) is flagged medium, high past double that, and a hearing date that has passed with no outcome is flagged.
+- **The system never says anyone is guilty.** A case's outcome is what the association's own hearing decided. Cases hold allegations about identifiable people: today they are visible to whoever holds the association's login (see the decision on named users below).
+- **One list.** The compliance overview now carries the finance and governance flags with the registers' flags, ordered by seriousness, so there is a single place to see what needs attention.
+- **Not built in this module**: a member-facing grievance log beyond the marshals' (it exists for marshals), notice and agenda mailing, voting records, and quorum rules.
+
 ## Decisions only the association can make
 
 - **Evidence files.** The registers record each document, where it is kept and its dates, but do not store the files. Storing the signed constitution and certificate would need a storage decision (the database is small).
@@ -58,4 +70,4 @@ specification, how the rules work, and what is not built. It is built in slices;
 
 ## Testing
 
-`cd server && npx vitest run src/services/compliance.test.ts src/portal/complianceRoutes.test.ts src/services/finance.test.ts src/portal/financeRoutes.test.ts`. Run against a real PostgreSQL by setting `TEST_PG_URL` (see docs/MARSHAL_COMMISSION.md).
+`cd server && npx vitest run src/services/compliance.test.ts src/portal/complianceRoutes.test.ts src/services/finance.test.ts src/portal/financeRoutes.test.ts src/services/governance.test.ts src/portal/governanceRoutes.test.ts`. Run against a real PostgreSQL by setting `TEST_PG_URL` (see docs/MARSHAL_COMMISSION.md).

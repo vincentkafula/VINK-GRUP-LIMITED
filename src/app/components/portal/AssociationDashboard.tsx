@@ -12,6 +12,7 @@ import { LoadingReport } from "./LoadingReport";
 import { ShiftsPanel, SafetyPanel, WelfarePanel, OverviewPanel } from "./AssociationCare";
 import { ComplianceOverview, RegistrationScreen, VehicleRegisterScreen, DriverRegisterScreen } from "./AssociationCompliance";
 import { FinanceOverview, FeesAndReceiptsScreen, ExpensesScreen, IncomeStatementScreen } from "./AssociationFinance";
+import { GovernanceScreen, DisciplineScreen } from "./AssociationGovernance";
 import { CommissionScreen, PayRunScreen, QueriesScreen } from "./AssociationCommission";
 
 const COLOR = "#C8102E";
@@ -28,7 +29,7 @@ export function AssociationDashboard({ userName, onClose }: { userName?: string;
   const [nav, setNav] = useState("Compliance");
   const [reqs, reloadReqs] = useLoad<{ requests: { id: string; name: string; email: string; role: string; at: string }[] }>(() => call("/requests"));
   const pending = reqs.state === "ready" ? reqs.data.requests.length : 0;
-  const G = { home: "Compliance", reg: "Registers", routes: "Routes and ranks", fin: "Association finance", money: "VINK money", care: "Marshals", vink: "VINK" };
+  const G = { home: "Compliance", reg: "Registers", routes: "Routes and ranks", fin: "Association finance", gov: "Governance", money: "VINK money", care: "Marshals", vink: "VINK" };
   const items = [
     { icon: <ShieldCheck className="w-4 h-4" />, label: "Compliance", group: G.home }, { icon: <Home className="w-4 h-4" />, label: "Overview", group: G.home },
     { icon: <ClipboardList className="w-4 h-4" />, label: "Registration", group: G.reg }, { icon: <Users className="w-4 h-4" />, label: "Owners", group: G.reg }, { icon: <UserCog className="w-4 h-4" />, label: "Drivers", group: G.reg }, { icon: <UserCheck className="w-4 h-4" />, label: "Marshals", group: G.reg },
@@ -36,6 +37,7 @@ export function AssociationDashboard({ userName, onClose }: { userName?: string;
     { icon: <CheckCircle2 className="w-4 h-4" />, label: "Approvals", badge: pending || undefined, group: G.reg },
     { icon: <MapPin className="w-4 h-4" />, label: "Ranks", group: G.routes }, { icon: <RouteIcon className="w-4 h-4" />, label: "Routes", group: G.routes }, { icon: <MapIcon className="w-4 h-4" />, label: "Map", group: G.routes },
     { icon: <Banknote className="w-4 h-4" />, label: "Finance", group: G.fin }, { icon: <FileText className="w-4 h-4" />, label: "Fees & receipts", group: G.fin }, { icon: <Landmark className="w-4 h-4" />, label: "Expenses & banking", group: G.fin }, { icon: <FileText className="w-4 h-4" />, label: "Income statement", group: G.fin },
+    { icon: <ClipboardList className="w-4 h-4" />, label: "Governance", group: G.gov }, { icon: <Siren className="w-4 h-4" />, label: "Discipline", group: G.gov },
     { icon: <Coins className="w-4 h-4" />, label: "Levies", group: G.money }, { icon: <Landmark className="w-4 h-4" />, label: "Fines ledger", group: G.money }, { icon: <FileText className="w-4 h-4" />, label: "Statements", group: G.money },
     { icon: <Banknote className="w-4 h-4" />, label: "Marshal fee & payments", group: G.money }, { icon: <Coins className="w-4 h-4" />, label: "Commission", group: G.money }, { icon: <FileText className="w-4 h-4" />, label: "Pay runs", group: G.money }, { icon: <Landmark className="w-4 h-4" />, label: "Queries", group: G.money },
     { icon: <Clock className="w-4 h-4" />, label: "Shifts", group: G.care }, { icon: <Siren className="w-4 h-4" />, label: "Safety", group: G.care }, { icon: <HeartHandshake className="w-4 h-4" />, label: "Marshal welfare", group: G.care }, { icon: <OverviewIcon className="w-4 h-4" />, label: "Marshal overview", group: G.care },
@@ -48,6 +50,8 @@ export function AssociationDashboard({ userName, onClose }: { userName?: string;
         <ScreenBoundary resetKey={nav}>
           {nav === "Compliance" && <ComplianceOverview onOpen={setNav} />}
           {nav === "Finance" && <FinanceOverview onOpen={setNav} />}
+          {nav === "Governance" && <GovernanceScreen />}
+          {nav === "Discipline" && <DisciplineScreen />}
           {nav === "Fees & receipts" && <FeesAndReceiptsScreen />}
           {nav === "Expenses & banking" && <ExpensesScreen />}
           {nav === "Income statement" && <IncomeStatementScreen />}

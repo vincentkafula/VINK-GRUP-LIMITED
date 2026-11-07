@@ -76,6 +76,10 @@ describe("registration", () => {
     render(<RegistrationScreen />); await screen.findByDisplayValue("GP/2026/0412"); pick("Registration status", "full"); pick("Fee cap", "12 500,50".replace(" ", "")); pick("Minimum members", ""); pick("Conditional limit", "18"); pick("Registered on", "2026-03-01");
     fireEvent.click(screen.getByRole("button", { name: "Save registration" })); await waitFor(() => expect(writes().at(-1)).toMatchObject({ method: "PUT", path: `${P}/registration`, body: { status: "full", registrationNumber: "GP/2026/0412", conditionalLimitMonths: 18, minMembersRequired: null, feeCapCents: 1250050, registeredOn: "2026-03-01", constitutionVersion: "3", constitutionLodgedVersion: "2", certificateIssuedOn: "" } }));
   });
+  it("saves how often elections are required (empty means not set) and how long a disciplinary case may stay open", async () => {
+    render(<RegistrationScreen />); await screen.findByDisplayValue("GP/2026/0412"); expect(screen.getByLabelText("Election interval")).toHaveValue(""); expect(screen.getByLabelText("Discipline limit")).toHaveValue("90"); fireEvent.click(screen.getByRole("button", { name: "Save registration" }));
+    await waitFor(() => expect(writes().at(-1)!.body).toMatchObject({ electionIntervalMonths: null, disciplineLimitDays: 90 })); pick("Election interval", "36"); pick("Discipline limit", "60"); fireEvent.click(screen.getByRole("button", { name: "Save registration" })); await waitFor(() => expect(writes().at(-1)!.body).toMatchObject({ electionIntervalMonths: 36, disciplineLimitDays: 60 }));
+  });
   it("shows the server's reason when the registration is refused", async () => {
     routes = ((o) => (m: string, p: string, b: any) => (m === "PUT" ? { status: 400, body: { success: false, error: "Give renewalDueOn as YYYY-MM-DD" } } : o(m, p, b)))(routes); render(<RegistrationScreen />); await screen.findByDisplayValue("GP/2026/0412"); fireEvent.click(screen.getByRole("button", { name: "Save registration" })); expect(await screen.findByText("Give renewalDueOn as YYYY-MM-DD")).toBeInTheDocument();
   });
