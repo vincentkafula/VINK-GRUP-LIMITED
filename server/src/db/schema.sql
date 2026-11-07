@@ -2701,3 +2701,35 @@ CREATE TABLE IF NOT EXISTS report_runs (
   sent_at        TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_report_runs_assoc ON report_runs(association_id, sent_at DESC);
+
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+-- ASSOCIATION SAFETY AND CONFLICT (docs/ASSOCIATION_COMPLIANCE.md, module 9): accidents, passenger complaints, disputes with other associations, police matters, regulator notices
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+-- These hold allegations about identifiable people (a driver, a vehicle): restrict them to named office bearers once an association has more than one user.
+CREATE TABLE IF NOT EXISTS safety_events (
+  id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  association_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  kind               TEXT NOT NULL CHECK (kind IN ('accident','passenger_complaint','inter_association_dispute','police_matter','regulator_notice')),
+  occurred_on        DATE NOT NULL,
+  title              TEXT NOT NULL,
+  description        TEXT,
+  vehicle_id         UUID REFERENCES vehicles(id) ON DELETE SET NULL,
+  driver_id          UUID REFERENCES users(id) ON DELETE SET NULL,
+  route_label        TEXT,
+  injuries           INTEGER NOT NULL DEFAULT 0 CHECK (injuries >= 0),
+  fatalities         INTEGER NOT NULL DEFAULT 0 CHECK (fatalities >= 0),
+  police_case_number TEXT,
+  other_association  TEXT,
+  mediator           TEXT,
+  escalated_to       TEXT NOT NULL DEFAULT 'none' CHECK (escalated_to IN ('none','santaco','national_taxi_alliance','other')),
+  escalated_on       DATE,
+  notice_until       DATE,
+  status             TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open','resolved')),
+  resolved_on        DATE,
+  resolution         TEXT,
+  created_at         TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_safety_events_assoc ON safety_events(association_id, occurred_on DESC);
+-- The safety summary is a fifth report pack.
+ALTER TABLE report_schedules DROP CONSTRAINT IF EXISTS report_schedules_pack_check;
+ALTER TABLE report_schedules ADD CONSTRAINT report_schedules_pack_check CHECK (pack IN ('registration','licences','finance','governance','safety'));
