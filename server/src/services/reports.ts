@@ -6,6 +6,7 @@ import { createCompliance } from "./compliance.js";
 import { createFinance } from "./finance.js";
 import { createGovernance } from "./governance.js";
 import { createSafety } from "./safety.js";
+import { createMembers } from "./memberRegister.js";
 
 /**
  * ASSOCIATION REPORTS (docs/ASSOCIATION_COMPLIANCE.md, module 12): the documents an association hands to its executive, its regional body, its registrar or its auditor.
@@ -27,7 +28,7 @@ export const PACKS = [
   { id: "safety", title: "Safety and conflict summary", description: "Accidents, complaints, disputes and police matters in the last 12 months as counts, how many are escalated or unresolved, and the regulator notices in force (without names)" },
 ] as const;
 export type PackId = (typeof PACKS)[number]["id"];
-export const CSV_KINDS = ["members", "vehicles", "drivers"] as const;
+export const CSV_KINDS = ["members", "vehicles", "drivers", "formalisation", "non_members"] as const;
 const dayOf = (v: unknown): string | null => (v ? new Date(v as string).toISOString().slice(0, 10) : null);
 const R = (cents: number) => `R${(cents / 100).toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/\u00a0/g, " ")}`;
 const LICENCE_TEXT: Record<string, string> = { valid: "Valid", expired: "Expired", application_lodged: "Application lodged (unlicensed)", not_yet_valid: "Not valid yet", none: "None on file" };
@@ -58,7 +59,7 @@ export async function renderPdf(o: { title: string; association: string; subtitl
 }
 
 export function createReports(db: Db, mail: EmailSender | null = null, now: () => Date = () => new Date()) {
-  const today = () => saDay(now()), comp = createCompliance(db, now), fin = createFinance(db, now), gov = createGovernance(db, now), safe = createSafety(db, now);
+  const today = () => saDay(now()), comp = createCompliance(db, now), fin = createFinance(db, now), gov = createGovernance(db, now), safe = createSafety(db, now), mem = createMembers(db, now);
   const assocName = async (assoc: string) => String((await db.query(`SELECT name FROM users WHERE id = $1`, [assoc])).rows[0]?.name ?? "Association");
   const OWN = `JOIN memberships m ON m.member_id = v.owner_id AND m.association_id = $1 AND m.status = 'active' AND m.member_role = 'vehicle_owner'`;
   async function memberRows(assoc: string): Promise<string[][]> {
@@ -71,6 +72,8 @@ export function createReports(db: Db, mail: EmailSender | null = null, now: () =
     if (kind === "members") return { ok: true, value: { filename: `members-${day}.csv`, columns: ["Name", "Email", "Member since", "Vehicles"], rows: await memberRows(assoc) } };
     if (kind === "vehicles") { const vs = await comp.vehicles(assoc, day); return { ok: true, value: { filename: `vehicles-${day}.csv`, columns: ["Registration", "Make", "Model", "Seats", "Owner", "Driver", "State", "Licence status", "Licence valid until", "Roadworthy expires", "Insurance expires", "Tracker", "Camera"], rows: vs.map((v) => [v.registration, v.make ?? "", v.model ?? "", v.seats === null ? "" : String(v.seats), v.owner, v.driver ?? "", String(v.compliance.state), LICENCE_TEXT[v.licence.status], v.licence.validUntil ?? "", String(v.compliance.roadworthyExpiry ?? ""), String(v.compliance.insuranceExpiry ?? ""), String(v.compliance.tracker), String(v.compliance.camera)]) } }; }
     if (kind === "drivers") { const ds = await comp.drivers(assoc, day); return { ok: true, value: { filename: `drivers-${day}.csv`, columns: ["Name", "ID number", "Vehicle", "Employer", "Employment", "Pay basis", "UIF", "COIDA", "PrDP number", "PrDP expires", "Driver's licence expires", "Status"], rows: ds.map((d) => [d.name, d.idNumberMasked ?? "", d.vehicle ?? "", d.employers.join("; "), String(d.register.employmentStatus), String(d.register.payBasis), d.register.uifRegistered ? "Yes" : "No", d.register.coidaRegistered ? "Yes" : "No", d.permit.number ?? "", d.permit.expiresOn ?? "", d.licence.expiresOn ?? "", String(d.register.state)]) } }; }
+    if (kind === "formalisation") { const f = await mem.formalisation(assoc, day); return { ok: true, value: { filename: `formalisation-${day}.csv`, columns: ["Owner", "Business type", "Registration number", "SARS tax number", "Tax registered", "Tax filing", "UIF employer", "COIDA employer", "SDL registered", "Drivers on record", "Drivers formally employed", "Drivers paid cash with no contract", "Last checked"], rows: f.owners.map((o) => [o.name, o.businessType.replace(/_/g, " "), o.registrationNo ?? "", o.taxNumberMasked ?? "", o.taxRegistered ? "Yes" : "No", o.filingStatus.replace(/_/g, " "), o.uifEmployer ? "Yes" : "No", o.coidaEmployer ? "Yes" : "No", o.sdlRegistered ? "Yes" : "No", String(o.drivers), String(o.driversFormal), String(o.driversPaidCashNoContract), o.checkedOn ?? ""]) } }; }
+    if (kind === "non_members") return { ok: true, value: { filename: `non-member-operators-${day}.csv`, columns: ["Operator", "Vehicle", "Route", "Phone", "Noted on", "Ended on"], rows: (await mem.nonMembers(assoc)).map((n) => [n.name, n.vehicleRegistration, n.routeLabel ?? "", n.phone ?? "", n.notedOn, n.endedOn ?? ""]) } };
     return bad(404, "That export does not exist");
   }
 

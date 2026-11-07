@@ -102,6 +102,11 @@ describe("the safety and conflict summary", () => {
 
 describe("what can be asked for", () => {
   it("lists the four packs, and refuses one that does not exist", async () => { expect(rep.packs().map((p) => p.id)).toEqual(["registration", "licences", "finance", "governance", "safety"]); expect(await rep.build(U.A, "tax")).toMatchObject({ ok: false, status: 404 }); });
+  it("exports each owner's formalisation with the tax number masked, and the register of non-member operators, scoped to the association", async () => {
+    const { createMembers } = await import("./memberRegister.js"); const mem = createMembers(db, () => clock); ok(await mem.saveBusiness(U.A, U.A, U.O1, { businessType: "company", registrationNo: "2015/123456/07", taxNumber: "0123456789", taxRegistered: true, filingStatus: "up_to_date", uifEmployer: true })); ok(await mem.addNonMember(U.A, U.A, { name: "Visiting Vusi", vehicleRegistration: "zz 111-222", routeLabel: "Langa to Bellville", notedOn: plus(-3), phone: "0821112222" }));
+    const f = ok<any>(await rep.csv(U.A, "formalisation")); expect(f.filename).toBe("formalisation-2026-11-02.csv"); expect(f.rows[0]).toEqual(["Olu Owner", "company", "2015/123456/07", "•••••••789", "Yes", "up to date", "Yes", "No", "No", "1", "0", "0", ""]); expect(f.rows[1][0]).toBe("Ona Owner"); expect(JSON.stringify(f)).not.toContain("0123456789");
+    const n = ok<any>(await rep.csv(U.A, "non_members")); expect(n.rows).toEqual([["Visiting Vusi", "ZZ 111-222", "Langa to Bellville", "0821112222", plus(-3), ""]]); expect(ok<any>(await rep.csv(U.B, "non_members")).rows).toEqual([]); expect(ok<any>(await rep.csv(U.B, "formalisation")).rows.map((r: string[]) => r[0])).toEqual(["Otto Owner"]);
+  });
   it("exports members (with the date they joined), vehicles and drivers (with the ID masked), each scoped to the association, and refuses another export", async () => {
     await comp.saveDriver(U.A, U.A, U.D1, { idNumber: "8001015009087", employmentStatus: "employed", uifRegistered: true });
     expect(ok<any>(await rep.csv(U.A, "members"))).toEqual({ filename: "members-2026-11-02.csv", columns: ["Name", "Email", "Member since", "Vehicles"], rows: [["Olu Owner", "olu@x.test", "2025-03-10", "2"], ["Ona Owner", "ona@x.test", "2026-01-05", "0"]] });
