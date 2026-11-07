@@ -3,6 +3,8 @@ import { h, uid, fail, isUuid, audit, type Db } from "./common.js";
 import { createCompliance, flagSort } from "../services/compliance.js";
 import { createFinance } from "../services/finance.js";
 import { createGovernance } from "../services/governance.js";
+import { createSafety } from "../services/safety.js";
+import { createRouteControl } from "../services/routeControl.js";
 
 /**
  * The association's compliance API (docs/ASSOCIATION_COMPLIANCE.md), mounted on the association router, so everything is scoped to the signed-in association by construction: no route takes an association id.
@@ -19,10 +21,10 @@ const reply = <T,>(res: Response, r: { ok: true; value: T } | { ok: false; statu
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 
 export function mountAssociationCompliance(router: Router, db: Db, now: () => Date = () => new Date()): void {
-  const comp = createCompliance(db, now), fin = createFinance(db, now), gov = createGovernance(db, now), body = json({ limit: "20kb" }), id = (req: Request) => String(req.params.id);
+  const comp = createCompliance(db, now), fin = createFinance(db, now), gov = createGovernance(db, now), safety = createSafety(db, now), routeControl = createRouteControl(db, now), body = json({ limit: "20kb" }), id = (req: Request) => String(req.params.id);
   const bad = (res: Response) => fail(res, 400, "Invalid id");
 
-  router.get("/compliance/summary", h(async (req, res) => { const day = typeof req.query.on === "string" && DAY.test(req.query.on) ? req.query.on : undefined; const s = await comp.summary(uid(req), day), flags = [...s.flags, ...(await fin.summary(uid(req), day)).flags, ...(await gov.summary(uid(req), day)).flags].sort(flagSort);      // one list: registers, money and governance
+  router.get("/compliance/summary", h(async (req, res) => { const day = typeof req.query.on === "string" && DAY.test(req.query.on) ? req.query.on : undefined; const s = await comp.summary(uid(req), day), flags = [...s.flags, ...(await fin.summary(uid(req), day)).flags, ...(await gov.summary(uid(req), day)).flags, ...(await safety.summary(uid(req), day)).flags, ...(await routeControl.report(uid(req), day)).flags].sort(flagSort);      // one list: registers, money, governance, safety and routes
     res.json({ success: true, ...s, flags, flagCounts: { high: flags.filter((f) => f.severity === "high").length, medium: flags.filter((f) => f.severity === "medium").length, low: flags.filter((f) => f.severity === "low").length } }); }));
   router.get("/compliance/trend", h(async (req, res) => { const n = Number(req.query.months); res.json({ success: true, trend: await comp.trend(uid(req), Number.isInteger(n) ? n : 12) }); }));
   router.get("/compliance/changes", h(async (req, res) => { const n = Number(req.query.limit); res.json({ success: true, changes: await comp.changes(uid(req), { ...(typeof req.query.entity === "string" ? { entity: req.query.entity } : {}), ...(Number.isInteger(n) ? { limit: n } : {}) }) }); }));

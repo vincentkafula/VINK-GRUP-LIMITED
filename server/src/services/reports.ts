@@ -5,6 +5,7 @@ import type { EmailSender } from "../auth/email.js";
 import { createCompliance } from "./compliance.js";
 import { createFinance } from "./finance.js";
 import { createGovernance } from "./governance.js";
+import { createSafety } from "./safety.js";
 
 /**
  * ASSOCIATION REPORTS (docs/ASSOCIATION_COMPLIANCE.md, module 12): the documents an association hands to its executive, its regional body, its registrar or its auditor.
@@ -23,6 +24,7 @@ export const PACKS = [
   { id: "licences", title: "Licence compliance report", description: "Every vehicle's operating licence, roadworthy and insurance, every driver's permit, and what is expiring" },
   { id: "finance", title: "Finance statement", description: "Income and expenses with the budget, cash and banking, and what members owe" },
   { id: "governance", title: "Governance report", description: "Meetings and attendance, resolutions, elections, declarations of interest, and the number of disciplinary cases (without names)" },
+  { id: "safety", title: "Safety and conflict summary", description: "Accidents, complaints, disputes and police matters in the last 12 months as counts, how many are escalated or unresolved, and the regulator notices in force (without names)" },
 ] as const;
 export type PackId = (typeof PACKS)[number]["id"];
 export const CSV_KINDS = ["members", "vehicles", "drivers"] as const;
@@ -56,7 +58,7 @@ export async function renderPdf(o: { title: string; association: string; subtitl
 }
 
 export function createReports(db: Db, mail: EmailSender | null = null, now: () => Date = () => new Date()) {
-  const today = () => saDay(now()), comp = createCompliance(db, now), fin = createFinance(db, now), gov = createGovernance(db, now);
+  const today = () => saDay(now()), comp = createCompliance(db, now), fin = createFinance(db, now), gov = createGovernance(db, now), safe = createSafety(db, now);
   const assocName = async (assoc: string) => String((await db.query(`SELECT name FROM users WHERE id = $1`, [assoc])).rows[0]?.name ?? "Association");
   const OWN = `JOIN memberships m ON m.member_id = v.owner_id AND m.association_id = $1 AND m.status = 'active' AND m.member_role = 'vehicle_owner'`;
   async function memberRows(assoc: string): Promise<string[][]> {
@@ -101,6 +103,13 @@ export function createReports(db: Db, mail: EmailSender | null = null, now: () =
       if (v.budget?.length) sections.push({ heading: "Against the budget", table: { columns: ["Category", "Budget", "Actual", "Difference"], rows: v.budget.map((b) => [b.category, b.budgetCents === null ? "No budget" : R(b.budgetCents), R(b.actualCents), b.varianceCents === null ? "" : R(b.varianceCents)]), widths: [160, 110, 110, 110] } });
       sections.push({ heading: "Cash and members' accounts (as at today)", facts: [["Cash received (all time)", R(cash.cashReceivedCents)], ["Cash banked", R(cash.bankedCents)], ["Cash not yet banked", cash.unbankedCents ? `${R(cash.unbankedCents)}, the oldest from ${cash.oldestUnbankedOn}` : R(0)], ["Owed by members", R(sum.measures.owedByMembersCents)], ["Overdue", `${R(sum.measures.overdueCents)} (${sum.measures.membersOverdue} member${sum.measures.membersOverdue === 1 ? "" : "s"})`], ["Approval rule", `Payments of ${R(sum.settings.approvalThresholdCents)} or more need two different office bearers`]] });
       sections.push({ heading: "Items flagged in the association's own records", lines: sum.flags.length ? sum.flags.map((f) => `• ${f.message}`) : ["Nothing is flagged."] });
+    } else if (pack === "safety") {
+      const [s, evs] = [await safe.summary(assoc, day), await safe.events(assoc, {}, day)], m = s.measures, notices = evs.filter((e) => e.kind === "regulator_notice").slice(0, 20), open = evs.filter((e) => e.status === "open"), oldest = open.reduce((a, e) => Math.max(a, e.daysOpen), 0);
+      sections.push({ heading: "Last 12 months", lines: ["Only counts are given here: no driver, vehicle or other person is named, and no incident is described."], facts: [["Accidents", String(m.accidents)], ["People injured in accidents", String(m.injuries)], ["Deaths in accidents", String(m.fatalities)], ["Passenger complaints", String(m.passengerComplaints)], ["Disputes with other associations", String(m.disputes)], ["Police matters", String(m.policeMatters)], ["Regulator notices received", String(m.regulatorNotices)], ["Disputes escalated to SANTACO or another body", String(m.escalated)], ["Average days to resolve (resolved events)", m.averageDaysToResolve === null ? "None resolved" : String(m.averageDaysToResolve)]] });
+      sections.push({ heading: "Open now", facts: [["Events still open", String(open.length)], ["Longest open (days)", open.length ? String(oldest) : "None open"], ["Regulator notices in force", String(m.noticesInForce)]] });
+      sections.push({ heading: "Regulator notices", lines: ["Closure and restriction notices the association has received."], table: { columns: ["Issued", "Notice", "Route", "Applies until", "Status"], rows: notices.map((e) => [e.occurredOn, e.title, e.routeLabel ?? "", e.noticeUntil ?? "Not stated", e.status === "resolved" ? "Lifted" : "In force"]), widths: [70, 170, 110, 80, 60] } });
+      const n = (prefix: string) => s.flags.filter((f) => f.id.startsWith(prefix)).length, plural = (c: number, one: string, many: string) => `${c} ${c === 1 ? one : many}`, lines = [n("safety:repeat:vehicle") ? `• ${plural(n("safety:repeat:vehicle"), "vehicle has", "vehicles have")} had three or more accidents or passenger complaints in the last 12 months` : "", n("safety:repeat:driver") ? `• ${plural(n("safety:repeat:driver"), "driver has", "drivers have")} been involved in three or more accidents or passenger complaints in the last 12 months` : "", n("safety:dispute") ? `• ${plural(n("safety:dispute"), "dispute has", "disputes have")} been open for more than 30 days` : "", n("safety:police") ? `• ${plural(n("safety:police"), "police matter has", "police matters have")} been open for more than 90 days` : "", n("safety:spike") ? `• ${plural(n("safety:spike"), "route has", "routes have")} had a sharp rise in incidents in the last 30 days` : ""].filter(Boolean);
+      sections.push({ heading: "Patterns the association's records show", lines: lines.length ? lines : ["Nothing is flagged."] });
     } else {
       const [s, ms, rs, els, cs] = [await gov.summary(assoc, day), await gov.meetings(assoc), await gov.resolutions(assoc, day), await gov.elections(assoc), await gov.cases(assoc, day)], m = s.measures, year = day.slice(0, 4);
       sections.push({ heading: "Summary", facts: [["Meetings held this year", String(m.meetingsThisYear)], ["Average attendance this year", m.averageAttendancePercent === null ? "No attendance recorded" : `${m.averageAttendancePercent}%`], ["Resolutions open", `${m.openResolutions}${m.overdueResolutions ? ` (${m.overdueResolutions} overdue)` : ""}`], ["Last election", m.lastElectionOn ?? "None on record"], ["Next election due", m.nextElectionDue ?? "Not set"], ["Election cycle in the constitution", s.settings.electionIntervalMonths ? `Every ${s.settings.electionIntervalMonths} months` : "Not recorded"]] });

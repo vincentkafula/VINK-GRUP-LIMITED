@@ -7,6 +7,7 @@ import { createReports, renderPdf, type Reports } from "./reports.js";
 import { createCompliance, type Compliance } from "./compliance.js";
 import { createFinance, type Finance } from "./finance.js";
 import { createGovernance, type Governance } from "./governance.js";
+import { createSafety, type Safety } from "./safety.js";
 
 /** The report packs and their schedule. Association A has owners O1 and O2, drivers, vehicles, a licence, receipts and a disciplinary case about O1; B is a stranger. The clock is movable. */
 const id = (n: number) => `00000000-0000-0000-0000-${String(n).padStart(12, "0")}`;
@@ -87,8 +88,20 @@ describe("the governance report", () => {
   it("says what is not recorded rather than leaving a gap", async () => { const t = pdfText(ok<any>(await rep.build(U.A, "governance")).buffer); for (const x of ["No attendance recorded", "None on record", "Not set", "None open"]) expect(t, x).toContain(x); });
 });
 
+describe("the safety and conflict summary", () => {
+  it("gives the year's counts, what is open and the notices in force, and never names a driver, vehicle, other association or incident", async () => {
+    const safe: Safety = createSafety(db, () => clock);
+    for (let i = 0; i < 3; i++) ok(await safe.add(U.A, U.A, { kind: "accident", occurredOn: plus(-10 - i), title: `Secret collision ${i}`, description: "Secret details", vehicleId: V.v1, driverId: U.D1, routeLabel: "Langa to Bellville", injuries: 1, fatalities: i === 0 ? 1 : 0 }));
+    const d = ok<any>(await safe.add(U.A, U.A, { kind: "inter_association_dispute", occurredOn: plus(-45), title: "Secret border dispute", otherAssociation: "Bellville Secret TA" })); ok(await safe.escalate(U.A, U.A, d.id, { to: "santaco", on: plus(-20), mediator: "Secret Mediator" }));
+    ok(await safe.add(U.A, U.A, { kind: "regulator_notice", occurredOn: plus(-5), title: "Route closure order", routeLabel: "Langa to Bellville", noticeUntil: plus(20) }));
+    const t = pdfText(ok<any>(await rep.build(U.A, "safety")).buffer); for (const x of ["Safety and conflict summary", "Accidents", "People injured in accidents", "Deaths in accidents", "Disputes escalated to SANTACO or another body", "Events still open", "Longest open (days)", "45", "Regulator notices in force", "Route closure order", "Langa to Bellville", "In force", "1 vehicle has had three or more accidents", "1 driver has been involved in three or more", "1 dispute has been open for more than 30 days", "Only counts are given here"]) expect(t, x).toContain(x);
+    for (const secret of ["Secret", "CA 111-111", "Dan Driver", "Bellville Secret TA", "Mediator"]) expect(t, secret).not.toContain(secret);
+  });
+  it("says what is not recorded rather than leaving a gap", async () => { const t = pdfText(ok<any>(await rep.build(U.A, "safety")).buffer); for (const x of ["None resolved", "None open", "Nothing is flagged."]) expect(t, x).toContain(x); });
+});
+
 describe("what can be asked for", () => {
-  it("lists the four packs, and refuses one that does not exist", async () => { expect(rep.packs().map((p) => p.id)).toEqual(["registration", "licences", "finance", "governance"]); expect(await rep.build(U.A, "tax")).toMatchObject({ ok: false, status: 404 }); });
+  it("lists the four packs, and refuses one that does not exist", async () => { expect(rep.packs().map((p) => p.id)).toEqual(["registration", "licences", "finance", "governance", "safety"]); expect(await rep.build(U.A, "tax")).toMatchObject({ ok: false, status: 404 }); });
   it("exports members (with the date they joined), vehicles and drivers (with the ID masked), each scoped to the association, and refuses another export", async () => {
     await comp.saveDriver(U.A, U.A, U.D1, { idNumber: "8001015009087", employmentStatus: "employed", uifRegistered: true });
     expect(ok<any>(await rep.csv(U.A, "members"))).toEqual({ filename: "members-2026-11-02.csv", columns: ["Name", "Email", "Member since", "Vehicles"], rows: [["Olu Owner", "olu@x.test", "2025-03-10", "2"], ["Ona Owner", "ona@x.test", "2026-01-05", "0"]] });

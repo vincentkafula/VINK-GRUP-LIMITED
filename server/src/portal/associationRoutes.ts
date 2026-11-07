@@ -9,6 +9,7 @@ import { mountAssociationCompliance } from "./complianceRoutes.js";
 import { mountAssociationFinance } from "./financeRoutes.js";
 import { mountAssociationGovernance } from "./governanceRoutes.js";
 import { mountAssociationReports } from "./reportsRoutes.js";
+import { mountAssociationSafety } from "./safetyRoutes.js";
 import { createEmailSender, type EmailSender } from "../auth/email.js";
 
 /**
@@ -27,6 +28,7 @@ import { createEmailSender, type EmailSender } from "../auth/email.js";
 export function createAssociationRouter(db: Db, now: () => Date = () => new Date(), mail: EmailSender | null = createEmailSender()): Router {
   const router = Router();
   createLoadingReports(db).mount(router, "association", now);
+  mountAssociationSafety(router, db, now);                                              // safety events and disputes, and route control (saturation, licences against routes, the queue)
   mountAssociationReports(router, db, now, mail);                                       // regulator and audit reports, and their schedule
   mountAssociationGovernance(router, db, now);                                           // meetings, resolutions, elections, declarations of interest and disciplinary cases
   mountAssociationFinance(router, db, now);                                              // the fee schedule, receipts, member ledger, expenses, banking and statements
