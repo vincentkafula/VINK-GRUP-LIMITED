@@ -144,3 +144,25 @@ describe("the income statement and budget", () => {
     routes = ((o) => (m: string, p: string, b: any) => (p.startsWith(`${P}/finance/statement?month`) ? { body: { success: true, period: "2026-10", income: [], expenses: [], incomeCents: 0, expensesCents: 0, netCents: 0 } } : o(m, p, b)))(routes); render(<IncomeStatementScreen />); expect((await screen.findAllByText("None.")).length).toBe(2);
   });
 });
+
+describe("approving as yourself", () => {
+  const delegate = (linked: boolean) => ((o) => (m: string, p: string, b: any) => (p === `${P}/access` ? { body: { success: true, kind: "delegate", name: "Sipho Dube", role: "treasurer", roleText: "Treasurer", officeBearerId: linked ? "b2" : null, modules: { finance: "rw" } } } : o(m, p, b)))(routes);
+  it("shows a signed-in office bearer no list of people to approve as: they approve as themselves, and nothing is sent about who", async () => {
+    routes = delegate(true); render(<ExpensesScreen />); const li = (await screen.findByText("Lights & Co", { exact: false })).closest("li")!; await waitFor(() => expect(within(li).getByText("You approve as Sipho Dube.")).toBeInTheDocument()); expect(within(li).queryByLabelText("Approver for Lights & Co")).toBeNull();
+    fireEvent.click(within(li).getByRole("button", { name: "Approve" })); await waitFor(() => expect(writes().at(-1)).toEqual({ method: "POST", path: `${P}/finance/expenses/e1/approve`, body: {} }));
+  });
+  it("tells a delegate whose login is not linked to an office bearer that they cannot approve, and offers no button", async () => {
+    routes = delegate(false); render(<ExpensesScreen />); const li = (await screen.findByText("Lights & Co", { exact: false })).closest("li")!; await waitFor(() => expect(within(li).getByText(/Your login is not linked to an office bearer, so you cannot approve/)).toBeInTheDocument()); expect(within(li).queryByRole("button", { name: "Approve" })).toBeNull(); expect(within(li).getByRole("button", { name: "Reject" })).toBeInTheDocument();
+  });
+  it("keeps the list of office bearers for the association's own login", async () => {
+    routes = ((o) => (m: string, p: string, b: any) => (p === `${P}/access` ? { body: { success: true, kind: "owner", name: null, role: null, roleText: "Main login", officeBearerId: null, modules: {} } } : o(m, p, b)))(routes); render(<ExpensesScreen />); const li = (await screen.findByText("Lights & Co", { exact: false })).closest("li")!; expect(await within(li).findByLabelText("Approver for Lights & Co")).toBeInTheDocument();
+  });
+  it("marks an approval made by the office bearer signed in to their own account", async () => {
+    routes = ((o) => (m: string, p: string, b: any) => (p === `${P}/finance/expenses` && m === "GET" ? { body: { success: true, expenses: [{ ...EXPENSES[0], approvals: [{ officeBearerId: "b2", name: "Sipho Dube", signedIn: true }, { officeBearerId: "b3", name: "Lerato Nel", signedIn: false }] }] } } : o(m, p, b)))(routes); render(<ExpensesScreen />); expect(await screen.findByText("Approved by Sipho Dube (signed in) and Lerato Nel")).toBeInTheDocument();
+  });
+  it("switches on the rule that approvals must be made by the office bearer signed in, and says what it means", async () => {
+    render(<FinanceOverview />); await screen.findByText(R(120000)); expect(screen.getByText(/An attestation, not proof|which is an attestation, not proof/i)).toBeInTheDocument(); const box = screen.getByLabelText(/Approvals must be made by the office bearer signed in to their own account/); expect(box).not.toBeChecked(); fireEvent.click(box);
+    await waitFor(() => expect(writes().at(-1)).toEqual({ method: "PUT", path: `${P}/finance/settings`, body: { requireSignedInApprovals: true } }));
+  });
+});
+

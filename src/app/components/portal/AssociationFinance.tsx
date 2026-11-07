@@ -4,6 +4,7 @@ import { authFetch } from "../../services/apiClient";
 import { API_BASE } from "../../services/config";
 import { SectionPanel, StatCard } from "../dashboards/DashboardShell";
 import { portalClient, useLoad, Status, Empty, ActionButton, rand, inputCls } from "./ui";
+import { useAccess } from "./AssociationAccess";
 
 /**
  * The association's own books (docs/ASSOCIATION_COMPLIANCE.md, module 7): what members are charged, numbered receipts that are never deleted, expenses that named office bearers approve, banking, budgets and statements.
@@ -37,7 +38,7 @@ export function FileButton({ path, filename, label }: { path: string; filename: 
 }
 
 /* ───────────────────────── overview ───────────────────────── */
-interface Summary { today: string; settings: { approvalThresholdCents: number }; cash: { cashReceivedCents: number; bankedCents: number; onHandCents: number; unbankedCents: number; oldestUnbankedOn: string | null; oldestUnbankedDays: number | null }; measures: { collectedThisMonthCents: number; expensesThisMonthCents: number; netThisMonthCents: number; owedByMembersCents: number; overdueCents: number; membersOverdue: number; pendingExpenses: number }; flags: { id: string; severity: string; message: string }[] }
+interface Summary { today: string; settings: { approvalThresholdCents: number; requireSignedInApprovals?: boolean }; cash: { cashReceivedCents: number; bankedCents: number; onHandCents: number; unbankedCents: number; oldestUnbankedOn: string | null; oldestUnbankedDays: number | null }; measures: { collectedThisMonthCents: number; expensesThisMonthCents: number; netThisMonthCents: number; owedByMembersCents: number; overdueCents: number; membersOverdue: number; pendingExpenses: number }; flags: { id: string; severity: string; message: string }[] }
 export function FinanceOverview({ onOpen }: { onOpen?: (screen: string) => void }) {
   const [load, reload] = useLoad<Summary>(() => call("/finance/summary"));
   const [thr, setThr] = useState<string | null>(null);
@@ -64,6 +65,7 @@ export function FinanceOverview({ onOpen }: { onOpen?: (screen: string) => void 
               <Field label="Payments of this amount or more need two different office bearers (R)"><input aria-label="Approval threshold" className={inputCls + " mt-1 !w-32"} inputMode="decimal" value={shown} onChange={(e) => setThr(e.target.value)} /></Field>
               <ActionButton small label="Save" color={COLOR} onRun={async () => { const r = await call("/finance/settings", { method: "PUT", body: { approvalThresholdCents: toCents(shown) } }); if ("error" in r) return { error: r.error }; setThr(null); reload(); return { message: "Saved." }; }} />
               <p className="basis-full text-xs text-fg-subtle">Below it, one office bearer approves. Nobody can approve something they asked for themselves.</p>
+              <label className="basis-full flex items-start gap-2 text-sm"><input type="checkbox" className="mt-1" checked={!!s.settings.requireSignedInApprovals} onChange={async (e) => { await call("/finance/settings", { method: "PUT", body: { requireSignedInApprovals: e.target.checked } }); reload(); }} /><span>Approvals must be made by the office bearer signed in to their own account. Without this, the association's shared login can record an approval for a named office bearer, which is an attestation, not proof.</span></label>
             </div>
           </SectionPanel>
         </div>);
@@ -169,12 +171,12 @@ export function FeesAndReceiptsScreen() {
 }
 
 /* ───────────────────────── expenses, banking and budgets ───────────────────────── */
-interface Expense { id: string; incurredOn: string; category: string; payee: string; amountCents: number; description: string | null; requestedBy: string; status: string; requiredApprovals: number; rejectedReason: string | null; approvals: { officeBearerId: string; name: string }[] }
+interface Expense { id: string; incurredOn: string; category: string; payee: string; amountCents: number; description: string | null; requestedBy: string; status: string; requiredApprovals: number; rejectedReason: string | null; approvals: { officeBearerId: string; name: string; signedIn?: boolean }[] }
 function ExpensesCard() {
   const [load, reload] = useLoad<{ expenses: Expense[] }>(() => call("/finance/expenses"));
   const [bearers] = useLoad<{ officeBearers: { id: string; name: string; office: string }[] }>(() => call("/compliance/office-bearers"));
   const [f, setF] = useState({ incurredOn: today(), category: "", payee: "", amount: "", requestedBy: "", description: "" }), [who, setWho] = useState<Record<string, string>>({}), [rej, setRej] = useState<string | null>(null), [why, setWhy] = useState("");
-  const ob = bearers.state === "ready" ? bearers.data.officeBearers : [];
+  const ob = bearers.state === "ready" ? bearers.data.officeBearers : [], access = useAccess(), asSelf = access?.kind === "delegate";
   return (
     <SectionPanel title="Expenses">
       <div className="p-4 space-y-4">
@@ -191,11 +193,11 @@ function ExpensesCard() {
           <ul className="space-y-3 text-sm text-fg">{expenses.slice(0, 50).map((e) => (
             <li key={e.id} className="border-b border-line/60 pb-3">
               <div className="flex flex-wrap items-center justify-between gap-2"><span><b>{money(e.amountCents)}</b> to {e.payee} · {e.category} · {e.incurredOn} · asked for by {e.requestedBy}{e.description ? ` · ${e.description}` : ""}</span><Chip color={e.status === "approved" ? "#15803d" : e.status === "rejected" ? "#6B7280" : SEV.medium}>{e.status === "pending" ? `${e.approvals.length} of ${e.requiredApprovals} approvals` : e.status}</Chip></div>
-              {e.approvals.length > 0 && <p className="text-xs text-fg-muted">Approved by {e.approvals.map((a) => a.name).join(" and ")}</p>}{e.rejectedReason && <p className="text-xs text-fg-muted">Rejected: {e.rejectedReason}</p>}
+              {e.approvals.length > 0 && <p className="text-xs text-fg-muted">Approved by {e.approvals.map((a) => `${a.name}${a.signedIn ? " (signed in)" : ""}`).join(" and ")}</p>}{e.rejectedReason && <p className="text-xs text-fg-muted">Rejected: {e.rejectedReason}</p>}
               {e.status === "pending" && (
                 <div className="mt-2 flex flex-wrap items-end gap-2">
-                  <Field label="Approved by"><select aria-label={`Approver for ${e.payee}`} className={inputCls + " mt-1 w-52"} value={who[e.id] ?? ""} onChange={(x) => setWho({ ...who, [e.id]: x.target.value })}><option value="">Choose an office bearer</option>{ob.filter((o) => !e.approvals.some((a) => a.officeBearerId === o.id)).map((o) => <option key={o.id} value={o.id}>{o.name} ({o.office})</option>)}</select></Field>
-                  <ActionButton small label="Approve" color={COLOR} onRun={async () => { const r = await call(`/finance/expenses/${e.id}/approve`, { method: "POST", body: { officeBearerId: who[e.id] } }); if ("error" in r) return { error: r.error }; reload(); return undefined; }} />
+                  {asSelf ? <p className="text-xs text-fg-muted basis-full">{access?.officeBearerId ? `You approve as ${access.name}.` : "Your login is not linked to an office bearer, so you cannot approve: ask the association to link it."}</p> : <Field label="Approved by"><select aria-label={`Approver for ${e.payee}`} className={inputCls + " mt-1 w-52"} value={who[e.id] ?? ""} onChange={(x) => setWho({ ...who, [e.id]: x.target.value })}><option value="">Choose an office bearer</option>{ob.filter((o) => !e.approvals.some((a) => a.officeBearerId === o.id)).map((o) => <option key={o.id} value={o.id}>{o.name} ({o.office})</option>)}</select></Field>}
+                  {(!asSelf || access?.officeBearerId) && <ActionButton small label="Approve" color={COLOR} onRun={async () => { const r = await call(`/finance/expenses/${e.id}/approve`, { method: "POST", body: asSelf ? {} : { officeBearerId: who[e.id] } }); if ("error" in r) return { error: r.error }; reload(); return undefined; }} />}
                   <button type="button" className="text-xs underline" aria-expanded={rej === e.id} onClick={() => setRej(rej === e.id ? null : e.id)}>Reject</button>
                   {rej === e.id && <><input aria-label="Why reject" className={inputCls + " w-56"} placeholder="Why is it rejected?" value={why} onChange={(x) => setWhy(x.target.value)} /><ActionButton small label="Reject it" color="#6B7280" onRun={async () => { const r = await call(`/finance/expenses/${e.id}/reject`, { method: "POST", body: { reason: why } }); if ("error" in r) return { error: r.error }; setRej(null); setWhy(""); reload(); return undefined; }} /></>}
                 </div>)}
