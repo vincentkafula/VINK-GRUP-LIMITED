@@ -2733,3 +2733,57 @@ CREATE INDEX IF NOT EXISTS idx_safety_events_assoc ON safety_events(association_
 -- The safety summary is a fifth report pack.
 ALTER TABLE report_schedules DROP CONSTRAINT IF EXISTS report_schedules_pack_check;
 ALTER TABLE report_schedules ADD CONSTRAINT report_schedules_pack_check CHECK (pack IN ('registration','licences','finance','governance','safety'));
+
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+-- MEMBER REGISTER (module 2) AND OWNER FORMALISATION (module 10) (docs/ASSOCIATION_COMPLIANCE.md)
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+-- What the association holds about each owner member beyond their account: who exactly they are, their card, their standing, and any membership of another association. Membership is voluntary under the NLTA, so the association must be able to show exactly who is a member.
+CREATE TABLE IF NOT EXISTS member_register (
+  association_id      UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  member_id           UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  legal_name          TEXT,
+  entity_type         TEXT NOT NULL DEFAULT 'individual' CHECK (entity_type IN ('individual','company','cc','partnership','trust','other')),
+  id_number           TEXT,
+  phone               TEXT,
+  card_number         TEXT,
+  standing            TEXT NOT NULL DEFAULT 'active' CHECK (standing IN ('active','suspended','terminated')),
+  standing_reason     TEXT,
+  standing_changed_on DATE,
+  dual_member_of      TEXT,
+  dual_consent        BOOLEAN NOT NULL DEFAULT false,
+  notes               TEXT,
+  updated_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (association_id, member_id)
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_member_register_card ON member_register(association_id, card_number) WHERE card_number IS NOT NULL;
+-- Operators on the association's routes who are not members, kept apart from the members.
+CREATE TABLE IF NOT EXISTS non_member_operators (
+  id                   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  association_id       UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  name                 TEXT NOT NULL,
+  phone                TEXT,
+  vehicle_registration TEXT NOT NULL,
+  route_label          TEXT,
+  noted_on             DATE NOT NULL,
+  notes                TEXT,
+  ended_on             DATE,
+  created_at           TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_non_member_operators_assoc ON non_member_operators(association_id, noted_on DESC);
+-- What each owner has told the association about their business and their formalities. The association tracks and reports; filing tax and registering as an employer are the owner's own duties.
+CREATE TABLE IF NOT EXISTS owner_business (
+  association_id   UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  owner_id         UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  business_type    TEXT NOT NULL DEFAULT 'unknown' CHECK (business_type IN ('unknown','sole_proprietor','company','cc','partnership','trust','other')),
+  registration_no  TEXT,
+  tax_number       TEXT,
+  tax_registered   BOOLEAN NOT NULL DEFAULT false,
+  filing_status    TEXT NOT NULL DEFAULT 'unknown' CHECK (filing_status IN ('unknown','up_to_date','overdue','not_applicable')),
+  uif_employer     BOOLEAN NOT NULL DEFAULT false,
+  coida_employer   BOOLEAN NOT NULL DEFAULT false,
+  sdl_registered   BOOLEAN NOT NULL DEFAULT false,
+  checked_on       DATE,
+  notes            TEXT,
+  updated_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (association_id, owner_id)
+);
