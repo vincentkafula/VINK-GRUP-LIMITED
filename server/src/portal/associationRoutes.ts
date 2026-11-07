@@ -8,6 +8,8 @@ import { mountAssociationCommission } from "./commissionRoutes.js";
 import { mountAssociationCompliance } from "./complianceRoutes.js";
 import { mountAssociationFinance } from "./financeRoutes.js";
 import { mountAssociationGovernance } from "./governanceRoutes.js";
+import { mountAssociationReports } from "./reportsRoutes.js";
+import { createEmailSender, type EmailSender } from "../auth/email.js";
 
 /**
  * The Association Dashboard API, mounted at /api/portal/association (associations only). An association sees and changes only its own
@@ -21,9 +23,11 @@ import { mountAssociationGovernance } from "./governanceRoutes.js";
  *   GET/POST /levies, POST /levies/:id/paid, POST /levies/:id/delete    levies the association sets (all amounts typed in by them)
  *   GET  /reports                         members, ranks, departures and levy totals
  */
-export function createAssociationRouter(db: Db, now: () => Date = () => new Date()): Router {
+/** `mail` sends the scheduled and on-request reports; without a key in production it refuses loudly, so a report is recorded as failed, never as sent. */
+export function createAssociationRouter(db: Db, now: () => Date = () => new Date(), mail: EmailSender | null = createEmailSender()): Router {
   const router = Router();
   createLoadingReports(db).mount(router, "association", now);
+  mountAssociationReports(router, db, now, mail);                                       // regulator and audit reports, and their schedule
   mountAssociationGovernance(router, db, now);                                           // meetings, resolutions, elections, declarations of interest and disciplinary cases
   mountAssociationFinance(router, db, now);                                              // the fee schedule, receipts, member ledger, expenses, banking and statements
   mountAssociationCompliance(router, db, now);                                          // the compliance registers, licences, drivers and the overview (docs/ASSOCIATION_COMPLIANCE.md)
