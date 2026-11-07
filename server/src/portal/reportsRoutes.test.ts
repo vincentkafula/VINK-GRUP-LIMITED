@@ -59,7 +59,7 @@ describe("packs and exports, through the routes", () => {
     await db.query(`INSERT INTO vehicles (owner_id, registration, make, seats) VALUES ($1,'CA 111-111','Toyota, Quantum',15)`, [U.O1]);
     const m = await raw("/association/reports/csv/members.csv", U.A); expect(m.type).toContain("text/csv"); expect(m.disposition).toContain("members-2026-11-02.csv"); expect(m.buf.toString("utf8")).toContain(`Olu Owner,${U.O1}@x.test`); expect(m.buf.toString("utf8")).not.toContain("Otto Owner");
     const v = (await raw("/association/reports/csv/vehicles.csv", U.A)).buf.toString("utf8"); expect(v).toContain("CA 111-111"); expect(v).toContain('"Toyota, Quantum"' ); expect((await raw("/association/reports/csv/drivers.csv", U.A)).status).toBe(200); expect((await raw("/association/reports/csv/secrets.csv", U.A)).status).toBe(404); expect((await raw("/association/reports/csv/vehicles.csv", U.B)).buf.toString("utf8")).not.toContain("CA 111-111");
-    expect((await q(`SELECT action FROM audit_log WHERE action = 'reports.export'`)).length).toBe(3);
+    expect((await q(`SELECT action FROM audit_log WHERE action = 'reports.export'`)).length).toBe(4);                  // three for A, and B's own
   });
 });
 
