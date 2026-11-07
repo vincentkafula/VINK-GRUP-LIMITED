@@ -22,6 +22,7 @@ beforeEach(async () => {
   await db.query(`INSERT INTO vehicles (id, owner_id, registration, make, seats) VALUES ($1,$2,'CA 111-111','Toyota',15),($3,$2,'CA 222-222','Toyota',15),($4,$5,'CA 333-333','Toyota',15),($6,$5,'CA 444-444','Toyota',15),($7,$8,'ZZ 999-999','Toyota',15)`, [V.v1, U.O1, V.v2, V.v3, U.O2, V.v4, V.v9, U.O3]);
   await db.query(`INSERT INTO token_routes (id, association_id, name, fare_cents) VALUES ($1,$2,'Langa to Bellville',2500),($3,$2,'Khayelitsha rank',3000),($4,$5,'Other route',2000)`, [R.lb, U.A, R.kh, R.rb, U.B]);
   await db.query(`INSERT INTO ranks (id, association_id, name) VALUES ($1,$2,'Langa rank')`, [RK, U.A]);
+  await db.query(`INSERT INTO terminals (id, serial, api_key_hash) VALUES ($1,'T-ROUTES','x')`, [id(60)]);                  // the loading sessions are on a real terminal (PostgreSQL enforces it)
 });
 const licence = (vehicle: string, route: string | null, o: any = {}) => comp.addLicence(U.A, U.A, vehicle, { licenceNumber: `OL-${vehicle.slice(-2)}`, validFrom: plus(-100), validUntil: plus(300), ...(route ? { route } : {}), ...o });
 const session = (vehicle: string, route: string, days: number, status = "closed") => db.query(`INSERT INTO loading_sessions (terminal_id, vehicle_id, route_id, status, started_at) VALUES ($1,$2,$3,$4,$5)`, [id(60), vehicle, route, status, at(days)]);

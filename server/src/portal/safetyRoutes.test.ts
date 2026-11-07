@@ -44,6 +44,7 @@ const V = { v1: id(20), v2: id(21), v9: id(29) }, ROUTE = id(40);
 beforeEach(async () => {
   await db.query(`INSERT INTO vehicles (id, owner_id, registration, make, seats) VALUES ($1,$2,'CA 111-111','Toyota',15),($3,$2,'CA 222-222','Toyota',15),($4,$5,'ZZ 999-999','Toyota',15)`, [V.v1, U.O1, V.v2, V.v9, U.O3]);
   await db.query(`INSERT INTO token_routes (id, association_id, name, fare_cents) VALUES ($1,$2,'Langa to Bellville',2500)`, [ROUTE, U.A]);
+  await db.query(`INSERT INTO terminals (id, serial, api_key_hash) VALUES ($1,'T-SAFETY','x')`, [id(60)]);
 });
 const session = (vehicle: string, days: number) => db.query(`INSERT INTO loading_sessions (terminal_id, vehicle_id, route_id, status, started_at) VALUES ($1,$2,$3,'closed',$4)`, [id(60), vehicle, ROUTE, new Date(Date.parse(`${plus(days)}T08:00:00Z`))]);
 
