@@ -1,5 +1,7 @@
 import { mountOwnerDriverPay } from "./ownerDriverPayRoutes.js";
 import { mountOwnerAssociation } from "./ownerAssociationRoutes.js";
+import { mountOwnerCompliance } from "./ownerComplianceRoutes.js";
+import { createOwnerCompliance } from "../services/ownerCompliance.js";
 import { createCompliance } from "../services/compliance.js";
 import { Router, json, type Request } from "express";
 import { h, uid, num, iso, dateOnly, isUuid, text, optText, validDate, fail, findUserByEmail, readKeys, markKeys, isUniqueViolation, audit, bucketDays, rangeParams, saDay, sendCsv, type Db } from "./common.js";
@@ -291,12 +293,15 @@ export function createOwnerRouter(db: Db, now: () => Date = () => new Date(), on
       ...docs.map((d) => ({ key: `doc-${d.id}`, kind: "licence" as const, label: String(d.kind), date: dateOnly(d.expires_on) })),
       ...discs.map((v) => ({ key: `disc-${v.registration}`, kind: "disc" as const, label: `Licence disc for ${v.registration}`, date: dateOnly(v.disc_expiry) })),
     ], now()).map((r) => ({ key: r.key, kind: r.kind, title: r.title, body: r.body, at: r.date + "T00:00:00.000Z" }));
+    // The compliance centre's reminders (licence, roadworthy, insurance, driver licence, PrDP) at the days the owner chose, one per band. The disc is already above.
+    for (const r of (await createOwnerCompliance(db, now).centre(uid(req))).reminders.filter((x) => !x.itemKey.startsWith("disc:"))) items.push({ key: r.key, kind: r.itemKey.startsWith("prdp:") ? "pdp" : "licence", title: r.title, body: r.daysLeft < 0 ? `It expired on ${r.expiresOn}. Please renew it.` : `Expiry date: ${r.expiresOn}.`, at: `${r.expiresOn}T00:00:00.000Z` });
     const read = await readKeys(db, uid(req));
     items.sort((a, b) => b.at.localeCompare(a.at));
     res.json({ success: true, notifications: items.map((i) => ({ ...i, read: read.has(i.key) })), unread: items.filter((i) => !read.has(i.key)).length });
   }));
   router.post("/notifications/read", json({ limit: "10kb" }), h(async (req, res) => { res.json({ success: true, marked: await markKeys(db, uid(req), req.body?.keys) }); }));
 
+  mountOwnerCompliance(router, db, now);                                                 // the licence and compliance centre
   mountOwnerAssociation(router, db, now);                                                // the owner's association: profile, statement, receipts, "I have paid"
   mountOwnerDriverPay(router, db, now);                                                  // what each driver owes, what was paid, and where it is earmarked (docs/OWNER_DASHBOARD.md)
   return router;
