@@ -12,10 +12,10 @@ specification, how the rules work, and what is not built. It is built in slices;
 | 3 | Vehicle register | **Built** (slice 1): VIN, roadworthy, insurance, tracker and camera, signage, recapitalisation, state (active, off the road, replaced), replacement tracking |
 | 4 | Driver register | **Built** (slice 1): ID, permit and licence, employer and vehicle, employment status and contract, pay basis, UIF and COIDA, training, suspension; optional rule blocking a driver without a valid permit |
 | 5 | Operating licence tracker | **Built** (slice 1): per vehicle; valid, expired, application lodged, none; applications tracked separately; alerts at 180, 90 and 30 days; the headline share trended monthly |
-| 6 | Routes and ranks | Partial: ranks and routes exist; saturation, licence reconciliation, queue rotation record and regulator notices are **not built** |
+| 6 | Routes and ranks | **Built** (slice 5): saturation per route against the licences held, vehicles running a route their licence does not cover, non-member operators listed separately, and queue-skipping per rank; regulator notices are recorded under safety |
 | 7 | Finance and levies | **Built** (slice 2): approved fee schedule with the province's cap check, numbered receipts (never deleted, printable), member accounts and statements, expenses with named-office-bearer approval, cash against banking, budgets, monthly and annual statements with CSV |
 | 8 | Governance and discipline | **Built** (slice 3): meetings with attendance and minutes (and when adopted), numbered resolutions tracked to an action and date, elections against the constitution's cycle, declarations of interest by office bearers, disciplinary cases from complaint to outcome and appeal |
-| 9 | Safety and conflict | Partial: marshals' safety reports exist; accidents, inter-association disputes, repeat-incident flags are **not built** |
+| 9 | Safety and conflict | **Built** (slice 5): accidents, passenger complaints, disputes with other associations (with escalation to SANTACO or the National Taxi Alliance), police matters and regulator notices, with repeat-incident, open-dispute and route-spike flags, and a counts-only report |
 | 10 | Tax and labour formalisation | Partial: driver UIF and COIDA are recorded and flagged; owner business and tax status are **not built** |
 | 11 | Digital fleet and payments | Later: the VINK card and rank-device data exist to link to |
 | 12 | Reports and regulator export | **Built** (slice 4): registration, licence, finance and governance packs as stamped PDFs; member, vehicle and driver lists as CSV; monthly, quarterly and annual emailing with a record of every send |
@@ -72,7 +72,28 @@ specification, how the rules work, and what is not built. It is built in slices;
 - **Sent automatically.** The association chooses who gets which report: for example monthly to the executive, quarterly to the regional body (January, April, July, October), and annually to the registrar (in a month of its choosing), from a day of the month between 1 and 28. Each is sent **once per period**, as a PDF
   attachment. A finance report sent monthly covers the month that has just ended; quarterly, the year so far (in January, the year that has just ended); annually, the year that has just ended. Every other report is a picture as at the day it is sent.
 - **Failures are recorded, not hidden.** A send that fails is recorded with its reason, the period stays unsent, and it is tried again at the next run (not within six hours). In production without email configured the report is recorded as failed, never as sent. "Send now" sends one on request without using up the period.
-- **Not built in this module**: reports in other languages, a WhatsApp delivery, and a safety summary (it follows the safety and conflict module).
+- **Not built in this module**: reports in other languages and a WhatsApp delivery.
+
+## Routes and ranks (module 6)
+
+- **Saturation** is the number of vehicles that actually **operated** on a route in the last 30 days (a loading session on that route that was not cancelled), divided by the number of **your members' vehicles that hold a valid licence naming that route**. Above 1 the route is **over-supplied** (high); from 0.85 it is **nearly full** (medium).
+  A route that vehicles operated on, when none of your members' licences is recorded as naming it, is flagged high, with a hint to record the route on each licence or check the names match.
+- **The licence is the legal authority, not your route list.** Your route list is internal. A member's vehicle that operated on a route with **no valid licence** (an application lodged counts as none) is flagged high; one whose valid licence names a **different route** is flagged medium; one whose licence names no route at all
+  is listed for checking rather than accused. A licence's route is matched to a route **by its words** (the same words in any capitals, or one phrase inside the other, at least four characters), so the licences that name a route you do not have, and those with no route, are listed for you to check.
+- **Non-member operators**: vehicles from outside the association that operated on its routes are listed with their owner and trips, separately from members, because membership is voluntary.
+- **Queue fairness**: each departure is checked against the rank queue. It is a **skip** if a vehicle that joined earlier, and had not left, was still waiting. A departure out of order that was **formally approved with a reason code is a recorded exception, not a skip**, and is counted separately. The skips are counted and the
+  vehicles named; a rank is flagged medium from 10% and high from 25% of its departures, but only judged once at least ten departures have been checked.
+- **Regulator notices** (closures and restrictions under section 91 of the NLTA) are recorded as safety events, with the route and the date they apply until, and are flagged high while in force.
+- **Not built in this module**: reconciling routes against GPS positions (module 11), and a rotation schedule for who goes first.
+
+## Safety and conflict (module 9)
+
+- **Events**: accidents (with injuries and deaths), passenger complaints, **disputes with other associations** (which must name the other association), police matters (with the case number) and regulator notices. A vehicle or driver can only be linked if they are the association's own.
+- **Escalation**: a dispute can be recorded as taken to **SANTACO, the National Taxi Alliance or another body** for mediation, with the date and the mediator. An event is **resolved** with a date and how; a resolved event cannot be changed.
+- **Flags** (they describe the record, not anyone's fault): a **vehicle or driver with three or more accidents or passenger complaints in the last 12 months** (medium; five or more is high); a **dispute open more than 30 days** (medium; more than 60 high), saying whether it has been escalated; a **police matter open more than 90 days**; a
+  **regulator notice in force** (through its last day); and a **spike on a route**: at least three incidents in the last 30 days that are more than double the 30 days before.
+- **The safety and conflict summary** is a fifth report pack: counts for the last 12 months, what is open, and the regulator notices in force. **It names no driver, vehicle, other association or incident.**
+- **Privacy.** These events name identifiable people. Today the association has one login, so anyone who holds it can see them; the guide's decision on named office-bearer users applies here above all.
 
 ## Decisions only the association can make
 
@@ -82,4 +103,4 @@ specification, how the rules work, and what is not built. It is built in slices;
 
 ## Testing
 
-`cd server && npx vitest run src/services/compliance.test.ts src/portal/complianceRoutes.test.ts src/services/finance.test.ts src/portal/financeRoutes.test.ts src/services/governance.test.ts src/portal/governanceRoutes.test.ts src/services/reports.test.ts src/portal/reportsRoutes.test.ts`. Run against a real PostgreSQL by setting `TEST_PG_URL` (see docs/MARSHAL_COMMISSION.md).
+`cd server && npx vitest run src/services/compliance.test.ts src/portal/complianceRoutes.test.ts src/services/finance.test.ts src/portal/financeRoutes.test.ts src/services/governance.test.ts src/portal/governanceRoutes.test.ts src/services/reports.test.ts src/portal/reportsRoutes.test.ts src/services/safety.test.ts src/services/routeControl.test.ts src/portal/safetyRoutes.test.ts`. Run against a real PostgreSQL by setting `TEST_PG_URL` (see docs/MARSHAL_COMMISSION.md).
