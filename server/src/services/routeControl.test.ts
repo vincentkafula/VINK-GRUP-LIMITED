@@ -31,7 +31,7 @@ const flagIds = async () => (await rc.report(U.A, TODAY)).flags.map((f) => f.id)
 describe("matching a licence's route to a route", () => {
   it("matches the same words however they are written, or one phrase inside the other, but not short or empty text", () => {
     expect(routeMatches("Langa to Bellville", "Langa to Bellville")).toBe(true); expect(routeMatches("LANGA  to  bellville", "langa to bellville")).toBe(true); expect(routeMatches("Langa-Bellville", "Langa Bellville")).toBe(true); expect(routeMatches("Langa to Bellville via N2", "Langa to Bellville")).toBe(true); expect(routeMatches("Bellville", "Langa to Bellville")).toBe(true);
-    expect(routeMatches("Khayelitsha", "Langa to Bellville")).toBe(false); expect(routeMatches("Lan", "Langa to Bellville")).toBe(false); expect(routeMatches("Langa", "Langalibalele rank")).toBe(false); expect(routeMatches(null, "Langa")).toBe(false); expect(routeMatches("", "")).toBe(false); expect(routeMatches("Rank", "Langa to Bellville")).toBe(false);
+    expect(routeMatches("Khayelitsha", "Langa to Bellville")).toBe(false); expect(routeMatches("Lan", "Langa to Bellville")).toBe(false); expect(routeMatches("Langa", "Langalibalele rank")).toBe(false); expect(routeMatches(null, "Langa")).toBe(false); expect(routeMatches("N2", "Langa to Bellville via N2")).toBe(false); expect(routeMatches("to", "Langa to Bellville")).toBe(false); expect(routeMatches("Via N2", "Langa to Bellville via N2")).toBe(true);                  // a short word is not enough to mean a route expect(routeMatches("", "")).toBe(false); expect(routeMatches("Rank", "Langa to Bellville")).toBe(false);
   });
 });
 
@@ -105,6 +105,10 @@ describe("the queue", () => {
   it("treats an approved exception as a recorded exception, not a skip, and counts it separately", async () => {
     for (let d = 0; d < 10; d++) { const day = -(d + 2); await join(V.v1, day, 6, at(day, 12)); await join(V.v2, day, 7, at(day, 8)); await depart(V.v2, day, 8, "approved_exception"); await depart(V.v1, day, 12); }
     expect(await rank()).toMatchObject({ departures: 20, approvedExceptions: 10, checked: 10, skips: 0, band: "ok" });
+  });
+  it("counts a vehicle that joined earlier and is still waiting (no departure recorded for it) as ahead", async () => {
+    await join(V.v1, -1, 6, null); await join(V.v2, -1, 7, at(-1, 9)); await depart(V.v2, -1, 9); expect(await rank()).toMatchObject({ departures: 1, checked: 1, skips: 1, skippers: [{ registration: "CA 222-222", skips: 1 }] });
+    await db.query(`UPDATE rank_queue SET left_at = $1 WHERE vehicle_id = $2`, [at(-1, 8), V.v1]); expect(await rank()).toMatchObject({ skips: 0 });                  // it had already left before v2 did: nobody was ahead
   });
   it("ignores departures older than 30 days and a vehicle with no queue record, and shows only the association's own ranks", async () => {
     await join(V.v1, -40, 6, at(-40, 12)); await join(V.v2, -40, 7, at(-40, 8)); await depart(V.v2, -40, 8); await depart(V.v3, -1, 9); expect(await rank()).toMatchObject({ departures: 1, checked: 0, skips: 0 }); expect((await rc.report(U.B, TODAY)).ranks).toEqual([]);
