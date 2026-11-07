@@ -1,6 +1,7 @@
 import { Router, json, type Request, type Response } from "express";
 import { h, uid, actor, fail, isUuid, audit, sendCsv, type Db } from "./common.js";
 import { createFinance } from "../services/finance.js";
+import { createOwnerAssociation } from "../services/ownerAssociation.js";
 
 /**
  * The association's finance API (docs/ASSOCIATION_COMPLIANCE.md, module 7), mounted on the association router, so everything is scoped to the signed-in association by construction: no route takes an association id.
@@ -19,7 +20,7 @@ const reply = <T,>(res: Response, r: { ok: true; value: T } | { ok: false; statu
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 
 export function mountAssociationFinance(router: Router, db: Db, now: () => Date = () => new Date()): void {
-  const fin = createFinance(db, now), body = json({ limit: "20kb" }), id = (req: Request) => String(req.params.id), bad = (res: Response) => fail(res, 400, "Invalid id");
+  const fin = createFinance(db, now), owned = createOwnerAssociation(db, now), body = json({ limit: "20kb" }), id = (req: Request) => String(req.params.id), bad = (res: Response) => fail(res, 400, "Invalid id");
   const day = (req: Request, k: string) => (typeof req.query[k] === "string" && DAY.test(String(req.query[k])) ? String(req.query[k]) : undefined);
 
   router.get("/finance/summary", h(async (req, res) => { res.json({ success: true, ...(await fin.summary(uid(req), day(req, "on"))) }); }));
@@ -41,6 +42,11 @@ export function mountAssociationFinance(router: Router, db: Db, now: () => Date 
     res.setHeader("Content-Type", "application/pdf"); res.setHeader("Content-Disposition", `attachment; filename="receipt-${id(req).slice(0, 8)}.pdf"`); res.send(r.value);
   }));
   router.post("/finance/receipts/:id/void", body, h(async (req, res) => { if (!isUuid(id(req))) { bad(res); return; } const r = await fin.voidReceipt(uid(req), actor(req), id(req), req.body?.reason); if (r.ok) await audit(db, req, "finance.receipt.void", id(req), { reason: req.body?.reason }); reply(res, r); }));
+
+  // What members say they have paid and the association has not yet checked against its own bank. Confirming issues the numbered receipt; rejecting needs a reason.
+  router.get("/finance/claims", h(async (req, res) => { res.json({ success: true, claims: await owned.pending(uid(req)) }); }));
+  router.post("/finance/claims/:id/confirm", body, h(async (req, res) => { if (!isUuid(id(req))) { bad(res); return; } const r = await owned.confirm(uid(req), actor(req), id(req), req.body ?? {}); if (r.ok) await audit(db, req, "finance.claim.confirm", id(req), { receiptId: r.value.receiptId }); reply(res, r); }));
+  router.post("/finance/claims/:id/reject", body, h(async (req, res) => { if (!isUuid(id(req))) { bad(res); return; } const r = await owned.reject(uid(req), actor(req), id(req), req.body?.reason); if (r.ok) await audit(db, req, "finance.claim.reject", id(req), { reason: req.body?.reason }); reply(res, r); }));
 
   router.get("/finance/expenses", h(async (req, res) => { res.json({ success: true, expenses: await fin.expenses(uid(req), typeof req.query.status === "string" ? req.query.status : undefined) }); }));
   router.post("/finance/expenses", body, h(async (req, res) => { const r = await fin.addExpense(uid(req), actor(req), req.body ?? {}); if (r.ok) await audit(db, req, "finance.expense", r.value.id, { amountCents: req.body?.amountCents }); reply(res, r, 201); }));

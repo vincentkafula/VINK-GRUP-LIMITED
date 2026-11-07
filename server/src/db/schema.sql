@@ -2895,3 +2895,29 @@ CREATE TABLE IF NOT EXISTS target_waivers (
   created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_target_waivers_vehicle ON target_waivers(vehicle_id, waived_on);
+
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+-- OWNER DASHBOARD, slice B: an owner tells their association they have paid, and the association confirms it with a receipt (docs/OWNER_DASHBOARD.md)
+-- Records only: the platform holds no money here. To remove: db/rollback/owner_dashboard_b.sql
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS dues_claims (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id       UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  association_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  levy_id        UUID REFERENCES levies(id) ON DELETE SET NULL,
+  amount_cents   BIGINT NOT NULL CHECK (amount_cents > 0),
+  paid_on        DATE NOT NULL,
+  method         TEXT NOT NULL CHECK (method IN ('eft','cash','other')),
+  reference      TEXT,
+  note           TEXT,
+  client_ref     TEXT,
+  status         TEXT NOT NULL DEFAULT 'claimed' CHECK (status IN ('claimed','confirmed','rejected','withdrawn')),
+  decided_by     UUID,
+  decided_at     TIMESTAMPTZ,
+  decision_note  TEXT,
+  receipt_id     UUID REFERENCES receipts(id) ON DELETE SET NULL,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (owner_id, client_ref)
+);
+CREATE INDEX IF NOT EXISTS idx_dues_claims_assoc ON dues_claims(association_id, status, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_dues_claims_owner ON dues_claims(owner_id, created_at DESC);
