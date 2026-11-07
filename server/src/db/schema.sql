@@ -2667,3 +2667,37 @@ CREATE TABLE IF NOT EXISTS disciplinary_cases (
   created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_disciplinary_cases_assoc ON disciplinary_cases(association_id, opened_on DESC);
+
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+-- ASSOCIATION REPORTS (docs/ASSOCIATION_COMPLIANCE.md, module 12): packs for the executive, the regional body and the registrar, sent on a schedule
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS report_schedules (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  association_id  UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  pack            TEXT NOT NULL CHECK (pack IN ('registration','licences','finance','governance')),
+  frequency       TEXT NOT NULL CHECK (frequency IN ('monthly','quarterly','annually')),
+  recipient_label TEXT NOT NULL,
+  recipient_email TEXT NOT NULL,
+  day_of_month    INTEGER NOT NULL DEFAULT 1 CHECK (day_of_month BETWEEN 1 AND 28),
+  send_month      INTEGER NOT NULL DEFAULT 3 CHECK (send_month BETWEEN 1 AND 12),
+  active          BOOLEAN NOT NULL DEFAULT true,
+  last_period     TEXT,
+  last_sent_at    TIMESTAMPTZ,
+  last_attempt_at TIMESTAMPTZ,
+  last_error      TEXT,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_report_schedules_assoc ON report_schedules(association_id, active);
+-- What was sent, to whom and when (or why it failed): the record that a report really went.
+CREATE TABLE IF NOT EXISTS report_runs (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  association_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  schedule_id    UUID REFERENCES report_schedules(id) ON DELETE SET NULL,
+  pack           TEXT NOT NULL,
+  period         TEXT NOT NULL,
+  recipient      TEXT NOT NULL,
+  ok             BOOLEAN NOT NULL,
+  error          TEXT,
+  sent_at        TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_report_runs_assoc ON report_runs(association_id, sent_at DESC);
