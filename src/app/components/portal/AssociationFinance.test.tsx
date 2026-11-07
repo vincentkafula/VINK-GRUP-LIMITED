@@ -166,3 +166,21 @@ describe("approving as yourself", () => {
   });
 });
 
+describe("payments members say they have made", () => {
+  const CLAIMS = [{ id: "c1", member: "Olu Owner", memberId: "m1", levy: "Annual levy", amountCents: 20000, paidOn: "2026-11-01", method: "eft", reference: "EFT 8841", note: null, status: "claimed" }, { id: "c2", member: "Ona Owner", memberId: "m2", levy: null, amountCents: 5000, paidOn: "2026-10-30", method: "cash", reference: null, note: "Paid at the rank", status: "claimed" }];
+  const withClaims = (list: unknown[]) => ((o) => (m: string, p: string, b: any) => (p === `${P}/finance/claims` ? { body: { success: true, claims: list } } : o(m, p, b)))(routes);
+  it("lists what members say they paid, with how, when, for what and the reference, and explains that nothing counts until it is confirmed", async () => {
+    routes = withClaims(CLAIMS); render(<FeesAndReceiptsScreen />); const a = (await screen.findByRole("button", { name: "Confirm Olu Owner's payment" })).closest("li")!; expect(screen.getByText(/nothing counts as paid until you do/)).toBeInTheDocument(); const b = screen.getByRole("button", { name: "Confirm Ona Owner's payment" }).closest("li")!;
+    expect(a).toHaveTextContent(`Olu Owner says they paid ${R(20000)} by EFT on 2026-11-01 for Annual levy · reference EFT 8841`); expect(b).toHaveTextContent(`Ona Owner says they paid ${R(5000)} by cash on 2026-10-30 · Paid at the rank`);
+  });
+  it("shows nothing at all when no payment is waiting", async () => { routes = withClaims([]); render(<FeesAndReceiptsScreen />); await screen.findByText("Annual membership"); expect(screen.queryByText("Payments to confirm")).toBeNull(); });
+  it("confirms a payment, which issues the receipt", async () => {
+    routes = withClaims(CLAIMS); render(<FeesAndReceiptsScreen />); fireEvent.click(await screen.findByRole("button", { name: "Confirm Olu Owner's payment" })); await waitFor(() => expect(writes().at(-1)).toEqual({ method: "POST", path: `${P}/finance/claims/c1/confirm`, body: {} }));
+  });
+  it("rejects only with a reason, and shows the server's refusal when the receipt cannot be issued", async () => {
+    routes = withClaims(CLAIMS); render(<FeesAndReceiptsScreen />); const a = (await screen.findByRole("button", { name: "Confirm Olu Owner's payment" })).closest("li")!; fireEvent.click(within(a).getByRole("button", { name: "Not received" })); fireEvent.change(screen.getByLabelText("Reason for Olu Owner"), { target: { value: "Nothing on the statement" } }); fireEvent.click(screen.getByRole("button", { name: "Send the reason" }));
+    await waitFor(() => expect(writes().at(-1)).toEqual({ method: "POST", path: `${P}/finance/claims/c1/reject`, body: { reason: "Nothing on the statement" } }));
+    routes = ((o) => (m: string, p: string, b: any) => (p.endsWith("/confirm") ? { status: 409, body: { success: false, error: "That levy is already paid" } } : o(m, p, b)))(withClaims(CLAIMS)); fireEvent.click(screen.getByRole("button", { name: "Confirm Ona Owner's payment" })); expect(await screen.findByText("That levy is already paid")).toBeInTheDocument();
+  });
+});
+

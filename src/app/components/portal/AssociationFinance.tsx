@@ -23,13 +23,13 @@ const receiptNo = (n: number) => `R-${String(n).padStart(6, "0")}`;
 const today = () => new Date().toISOString().slice(0, 10);
 
 /** Downloads a file with the signed-in session. */
-export function FileButton({ path, filename, label }: { path: string; filename: string; label: string }) {
+export function FileButton({ path, filename, label, segment = "association" }: { path: string; filename: string; label: string; segment?: string }) {
   const [busy, setBusy] = useState(false), [err, setErr] = useState<string | null>(null);
   return (
     <span className="inline-flex items-center gap-2">
       <button type="button" disabled={busy} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-line text-fg disabled:opacity-60" onClick={async () => {
         setBusy(true); setErr(null);
-        try { const res = await authFetch(`${API_BASE}/api/portal/association${path}`); if (!res.ok) { const b = await res.json().catch(() => ({})); setErr(b.error ?? `Download failed (${res.status})`); return; } const url = URL.createObjectURL(await res.blob()), a = document.createElement("a"); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); }
+        try { const res = await authFetch(`${API_BASE}/api/portal/${segment}${path}`); if (!res.ok) { const b = await res.json().catch(() => ({})); setErr(b.error ?? `Download failed (${res.status})`); return; } const url = URL.createObjectURL(await res.blob()), a = document.createElement("a"); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); }
         catch { setErr("We could not reach the server."); } finally { setBusy(false); }
       }}><Download className="w-3.5 h-3.5" />{busy ? "Preparing…" : label}</button>
       {err && <span role="alert" className="text-xs text-bad">{err}</span>}
@@ -164,10 +164,35 @@ function StatementView({ memberId }: { memberId: string }) {
         {s.note && <p className="mt-2 text-xs text-fg-muted">{s.note}</p>}</>)}</Status></div>
   );
 }
+/** What members say they have paid. The association checks its own bank, then confirms (which issues the numbered receipt) or rejects with a reason. */
+interface PendingClaim { id: string; member: string; levy: string | null; amountCents: number; paidOn: string; method: string; reference: string | null; note: string | null }
+function ClaimsCard() {
+  const [load, reload] = useLoad<{ claims: PendingClaim[] }>(() => call("/finance/claims")), [rej, setRej] = useState<string | null>(null), [why, setWhy] = useState("");
+  return (
+    <Status load={load}>{({ claims }) => claims.length === 0 ? null : (
+      <SectionPanel title="Payments to confirm">
+        <div className="p-4 space-y-3">
+          <p className="text-xs text-fg-subtle">Members say they have paid. Check your own bank statement first. Confirming issues the numbered receipt; nothing counts as paid until you do.</p>
+          <ul className="space-y-3 text-sm text-fg">{claims.map((c) => (
+            <li key={c.id} className="border-b border-line/60 pb-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span><b>{c.member}</b> says they paid {rand(c.amountCents / 100)} by {c.method === "eft" ? "EFT" : c.method} on {c.paidOn}{c.levy ? ` for ${c.levy}` : ""}{c.reference ? ` · reference ${c.reference}` : ""}{c.note ? ` · ${c.note}` : ""}</span>
+                <span className="flex flex-wrap items-center gap-2">
+                  <ActionButton small label={`Confirm ${c.member}'s payment`} color={COLOR} onRun={async () => { const r = await call<{ number: number }>(`/finance/claims/${c.id}/confirm`, { method: "POST", body: {} }); if ("error" in r) return { error: r.error }; reload(); return undefined; }} />
+                  <button type="button" className="text-xs underline" aria-expanded={rej === c.id} onClick={() => { setRej(rej === c.id ? null : c.id); setWhy(""); }}>Not received</button>
+                </span>
+              </div>
+              {rej === c.id && <div className="mt-2 flex flex-wrap items-center gap-2"><input aria-label={`Reason for ${c.member}`} maxLength={200} className={inputCls + " w-72"} placeholder="Why is it not accepted?" value={why} onChange={(e) => setWhy(e.target.value)} /><ActionButton small label="Send the reason" color="#6B7280" onRun={async () => { const r = await call(`/finance/claims/${c.id}/reject`, { method: "POST", body: { reason: why } }); if ("error" in r) return { error: r.error }; setRej(null); reload(); return undefined; }} /></div>}
+            </li>))}</ul>
+        </div>
+      </SectionPanel>)}</Status>
+  );
+}
+
 export function FeesAndReceiptsScreen() {
   const [led] = useLoad<{ members: MemberAccount[] }>(() => call("/finance/members"));
   const members = led.state === "ready" ? led.data.members : [];
-  return <div className="space-y-4"><FeesCard /><ReceiptsCard members={members} /><MemberAccounts members={members} /></div>;
+  return <div className="space-y-4"><ClaimsCard /><FeesCard /><ReceiptsCard members={members} /><MemberAccounts members={members} /></div>;
 }
 
 /* ───────────────────────── expenses, banking and budgets ───────────────────────── */

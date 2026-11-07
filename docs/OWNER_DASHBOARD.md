@@ -95,6 +95,30 @@ This is the design for extending the existing Owner Dashboard. It records what t
 - A target ending mid-week does not bill the part of that week after it ends.
 - Money recorded here is the owner's own record; nothing checks that the driver agrees with it.
 
+## 4b. Slice B, built: the owner's association
+
+**What it does.** The owner sees each association they belong to (or have asked to join): their membership status and join date, their **membership number** (the card number the association recorded), their **standing** (with the association's reason if suspended), the association's registration number and province, the **routes on their valid operating licences**, what they are charged, have paid, owe and what is overdue, their full statement with a running balance, and the association's **numbered receipts** (a downloadable PDF for each, only for receipts issued to them). It is built on the association's own records, so there is one source of truth.
+
+**"I have paid".** The brief asks for payment of association fees through the platform. **No licensed payment provider is integrated, and the platform must not hold funds**, so this slice does not move money. Instead the owner **tells the association what they paid** (amount, date, how, reference, optionally against one of their open charges). The association checks its own bank statement and **confirms it, which issues the numbered receipt**, or **rejects it with a reason**. Nothing counts as paid until the association confirms. Paying through a provider, or through the platform's own Banking ledger, is a separate decision (below).
+
+**Rules (all covered by tests)**
+- An owner sees only **their own** account, and only for associations they are an **active** member of; a pending, declined or removed membership shows no ledger and no statement. Another owner's receipt cannot be read or downloaded.
+- A claim against a charge **cannot exceed what is still owed on it, counting claims already waiting**; a claim against none is allowed (paying ahead). A rejected or withdrawn claim frees the charge to be claimed again. At most 20 claims may wait at once.
+- A claim carries a **client reference**, so an offline retry records it once. The owner screen uses the same offline queue as driver payments.
+- Confirming creates the receipt through the association's existing receipt rules (the charge must still be open and not over-paid); **if the receipt cannot be issued, nothing changes and the reason is returned**. A claim can be decided once. An association decides only its own members' claims.
+- The queue belongs to the association's **finance** module: a treasurer or chairperson can confirm or reject; a secretary or viewer cannot (the same fail-closed gate as the rest of finance). Decisions are recorded in the deciding person's own name.
+
+**API.** Owner (`/api/portal/owner`): `GET /my-association`, `GET /my-association/:aid/statement`, `GET /my-association/:aid/receipts`, `GET /my-association/:aid/receipts/:rid.pdf`, `GET/POST /my-association/claims`, `POST /my-association/claims/:id/withdraw`. Association (`/api/portal/association`): `GET /finance/claims`, `POST /finance/claims/:id/confirm`, `POST /finance/claims/:id/reject`.
+
+**Data** (rollback `server/src/db/rollback/owner_dashboard_b.sql`): `dues_claims`.
+
+**Screens.** Owner menu *My association*; the association's *Fees and receipts* screen gains *Payments to confirm*.
+
+**Known limits, to do next**
+- Letters of recommendation and membership certificates are shown from the owner's document **details**; **uploading the file** arrives with the secure file store in slice C.
+- The association's vehicle compliance (licences per vehicle) is not shown here; slice C is the owner's compliance centre.
+- No emailed or SMS notice when a claim is confirmed or rejected yet (slice F).
+
 ## 5. Assumptions made (non-blocking; change any of them)
 
 - A target is **bookkeeping the owner sets**; it does not change the platform's agreement or collection. The two are linked by an optional agreement reference.
@@ -108,7 +132,7 @@ This is the design for extending the existing Owner Dashboard. It records what t
 ## 6. Needs legal, regulatory or provider confirmation
 
 - **Operating licence validity by province** (5 or 7 years) and what happens on transfer: verify with each Provincial Regulatory Entity before relying on the configured values.
-- **Payment of association dues through the platform**: whether and how this is permitted under the platform's existing Banking arrangement, or whether a licensed payment provider is needed. The brief says not to hold or custody funds; today there is no external provider.
+- **Payment of association dues through the platform**: slice B records and confirms payments but moves no money. Whether and how dues may be **paid** through the platform (its own Banking ledger, or a licensed payment provider with signed webhooks, retries and a reconciliation job) needs a decision and legal confirmation first. The brief says not to hold or custody funds; today there is no external provider.
 - **Driver agreements and employment status**: a daily target paid by a driver to an owner is often treated as an employment or independent-contractor arrangement; the labour-law position needs advice. The system records what the parties agreed and does not say what the law makes of it.
 - **POPIA**: owner and driver personal information, consent records, data export and deletion; documents with ID numbers; retention periods.
 - **Tax and lender reports**: the exports show what is recorded; they are not tax advice or a statement an accountant or lender will accept without review.
