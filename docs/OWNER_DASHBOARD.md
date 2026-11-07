@@ -56,6 +56,45 @@ This is the design for extending the existing Owner Dashboard. It records what t
 5. **Slice E: structure and roles (P2).** Owner business record; roles for an owner's team (co-owner, fleet manager, driver, and the association's own roles' views), using the same fail-closed gate pattern as the association's named logins.
 6. **Slice F: growth and risk (P3).** Planner, notifications (in-app first, SMS and WhatsApp through the existing alert service), audit trail for owner changes.
 
+## 4a. Slice A, built: owner and driver money
+
+**What it does.** The owner sets what each vehicle's driver should pay (a daily amount on chosen working days, or a weekly amount on a chosen day), writes down what the driver actually pays (cash or otherwise, also with no signal), and sees at a glance who is paying on time, who is behind, and by how much. It records and earmarks; **it moves no money and does not touch the platform's agreement or collection**.
+
+**Rules (all covered by tests)**
+- A daily target builds up on the working days the vehicle was not off the road; a weekly target falls due on its due day, **pro rata** for days of that week not under the target or off the road. Whole cents, rounded half up.
+- **Arrears carry forward** week to week until paid or waived; a **surplus carries forward as credit**. A payment made after a target ended still counts; one dated before it began does not.
+- **Traffic light, always with words**: *Paying on time* (nothing owed), *Behind* (owes less than three days of the target), *Far behind* (three days or more). Flags: *low* below three days, *medium* from three days, *high* from seven days; plus *nothing paid for seven days while behind* and *nothing paid since the target started*.
+- A payment is **never deleted**: a mistake is **voided with a reason** and stops counting. A waiver of part of a shortfall needs a reason and stays on the record.
+- **Retries change nothing**: a payment carries a client reference, so an offline sync or a double tap records it once (per owner).
+- **Split earmarks**: four shares (owner, association levy, finance instalment, maintenance) in basis points that must total 100%, applied to each payment from the rule's date. The parts **always add up to the exact cents** (largest-remainder rounding, and a zero share never receives a cent). Each payment keeps the earmarks it had when recorded, so a new rule never rewrites history.
+- One open target per vehicle; a new one closes the old the day before, so the history is kept. A target can be linked to the owner's existing **driver agreement** (the formal record with consent) and carries free-text terms.
+
+**API** (all under `/api/portal/owner/driver-pay`, owner role only, scoped to the signed-in owner by construction)
+
+| Method and path | What it does |
+| --- | --- |
+| `GET /fleet` | each vehicle's light, target, what is owed, last payment; fleet totals; flags |
+| `GET /vehicles/:id` | the reconciliation: totals, week by week, earmarks, pauses, flags |
+| `GET /targets`, `POST /targets`, `POST /targets/:id/end` | targets |
+| `PUT /vehicles/:id/split` | the split rule |
+| `GET/POST /pauses`, `DELETE /pauses/:id` | days off the road (only a pause that has not started can be cancelled) |
+| `GET /payments`, `POST /payments`, `POST /payments/:id/void` | payments, with `clientRef` for idempotency |
+| `GET/POST /waivers` | waivers |
+
+**Data (additive; rollback in `server/src/db/rollback/owner_dashboard_a.sql`)**: `vehicle_targets`, `target_pauses`, `driver_payments`, `driver_payment_allocations`, `vehicle_split_rules`, `target_waivers`. Every table is also in the test mirror (`portal/testDb.ts`).
+
+**Screen**: *Driver targets* in the owner menu: a large "Record a payment" form (works offline: a payment captured with no signal is kept on the phone and sent once, with the same reference, when the signal returns; a refusal is shown, never retried), the fleet with lights, and a per-vehicle view with the target, week-by-week arrears, the split, days off the road, waivers and history.
+
+**Demo data**: `cd server && DATABASE_URL=... DEMO_PASSWORD='a-long-passphrase' npm run seed:owner-demo` makes three owners (Gauteng, Western Cape, KwaZulu-Natal), six drivers, seven vehicles and four weeks of payments, one vehicle in each state. Safe to run twice; refuses production unless `ALLOW_DEMO_SEED=1`. Logins: `demo.owner.1` to `3`, `demo.driver.1` to `6`, with the password you supplied.
+
+**Tests**: `cd server && npx vitest run src/services/driverTargets.test.ts src/portal/ownerDriverPayRoutes.test.ts src/db/seedOwnerDemo.test.ts`; `npx vitest run src/app/components/portal/OwnerDriverPay` from the project root. On a real PostgreSQL: set `TEST_PG_URL` as for the other suites.
+
+**Known limits, to do next**
+- Payments that came **through the platform** (weekly cash payments the money engine collects) are **not yet merged** into this reconciliation; they belong to an agreement, not to a vehicle, so merging needs a rule for a driver who drives more than one vehicle.
+- The split is **earmarking only**. Reserve balances (what has been spent from the maintenance or finance earmark) arrive with slice D.
+- A target ending mid-week does not bill the part of that week after it ends.
+- Money recorded here is the owner's own record; nothing checks that the driver agrees with it.
+
 ## 5. Assumptions made (non-blocking; change any of them)
 
 - A target is **bookkeeping the owner sets**; it does not change the platform's agreement or collection. The two are linked by an optional agreement reference.

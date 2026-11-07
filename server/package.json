@@ -12,6 +12,7 @@
     "test": "vitest run",
     "webhook:simulate": "tsx scripts/simulate-webhook.ts",
     "set-password": "tsx scripts/set-password.ts",
+    "seed:owner-demo": "tsx scripts/seed-owner-demo.ts",
     "test:manshya": "node --test \"src/manshya/tests/*.test.js\"",
     "test:watch": "vitest",
     "rank:simulate": "tsx scripts/simulate-rank-device.ts"
