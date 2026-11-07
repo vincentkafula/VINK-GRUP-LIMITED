@@ -1,6 +1,7 @@
 import type { Db } from "../portal/common.js";
 import { saDay } from "../portal/common.js";
 import { validateSaId } from "./saIdValidator.js";
+import { createLicenceRules, isProvince, yearsText } from "./licenceRules.js";
 
 /**
  * ASSOCIATION COMPLIANCE (docs/ASSOCIATION_COMPLIANCE.md): the registers every other control reads from, and the rules that turn them into warnings.
@@ -56,6 +57,7 @@ export interface VehicleView { id: string; registration: string; make: string | 
 export interface DriverView { id: string; name: string; email: string; idNumberMasked: string | null; vehicle: string | null; vehicleId: string | null; employers: string[]; member: boolean; permit: { number: string | null; expiresOn: string | null; band: Band; days: number | null }; licence: { code: string | null; expiresOn: string | null; band: Band; days: number | null }; register: Record<string, unknown>; flags: Flag[] }
 
 export function createCompliance(db: Db, now: () => Date = () => new Date()) {
+  const rules = createLicenceRules(db, now);
   const today = () => saDay(now());
   const log = async (assoc: string, entity: string, entityId: string | null, summary: string, by: string | null) => { await db.query(`INSERT INTO register_changes (association_id, entity, entity_id, summary, changed_by) VALUES ($1,$2,$3,$4,$5)`, [assoc, entity, entityId, summary.slice(0, 300), by]); };
   const isMemberOwner = async (assoc: string, id: unknown) => typeof id === "string" && UUID.test(id) && (await db.query(`SELECT 1 AS x FROM memberships WHERE association_id = $1 AND member_id = $2 AND status = 'active' AND member_role = 'vehicle_owner'`, [assoc, id])).rows.length > 0;
@@ -149,7 +151,7 @@ export function createCompliance(db: Db, now: () => Date = () => new Date()) {
     const vs = (await db.query(`SELECT v.id, v.registration, v.make, v.model, v.seats, v.owner_id, v.driver_id, o.name AS owner, d.name AS driver FROM vehicles v ${OWN} JOIN users o ON o.id = v.owner_id LEFT JOIN users d ON d.id = v.driver_id ORDER BY v.registration`, [assoc])).rows;
     const comp = (await db.query(`SELECT c.* FROM vehicle_compliance c JOIN vehicles v ON v.id = c.vehicle_id ${OWN}`, [assoc])).rows, lic = (await db.query(`SELECT l.* FROM operating_licences l JOIN vehicles v ON v.id = l.vehicle_id ${OWN}`, [assoc])).rows, apps = (await db.query(`SELECT a.* FROM licence_applications a JOIN vehicles v ON v.id = a.vehicle_id ${OWN} ORDER BY a.lodged_on DESC`, [assoc])).rows;
     const byId = new Map(vs.map((v) => [String(v.id), v])), out: VehicleView[] = [];
-    const licOfVeh = (id: string) => lic.filter((l) => String(l.vehicle_id) === id).map((l) => ({ id: String(l.id), licenceNumber: String(l.licence_number), authority: (l.authority as string | null) ?? null, holder: (l.holder_name as string | null) ?? null, validFrom: dayOf(l.valid_from)!, validUntil: dayOf(l.valid_until)!, route: (l.condition_route as string | null) ?? null, area: (l.condition_area as string | null) ?? null, times: (l.condition_times as string | null) ?? null }));
+    const licOfVeh = (id: string) => lic.filter((l) => String(l.vehicle_id) === id).map((l) => ({ id: String(l.id), licenceNumber: String(l.licence_number), authority: (l.authority as string | null) ?? null, holder: (l.holder_name as string | null) ?? null, validFrom: dayOf(l.valid_from)!, validUntil: dayOf(l.valid_until)!, route: (l.condition_route as string | null) ?? null, area: (l.condition_area as string | null) ?? null, times: (l.condition_times as string | null) ?? null, province: (l.province as string | null) ?? null }));
     const statusOf = (id: string) => { const all = licOfVeh(id), pending = apps.some((a) => String(a.vehicle_id) === id && a.outcome === "pending"); return { all, ...licenceStatus(all, pending, onDay) }; };
     for (const v of vs) {
       const id = String(v.id), c = comp.find((x) => String(x.vehicle_id) === id), l = statusOf(id), flags: Flag[] = [], reg = String(v.registration);
@@ -169,7 +171,7 @@ export function createCompliance(db: Db, now: () => Date = () => new Date()) {
         else if (ins.band !== "ok") flags.push({ id: `veh:${id}:insexpiring`, category: "vehicle", severity: ins.band === "30" ? "medium" : "low", message: `${reg}'s insurance expires in ${ins.days} days (${cx.insuranceExpiry})`, subject: reg, dueOn: cx.insuranceExpiry });
       }
       if (cx.state === "replaced" && cx.replacedBy && statusOf(cx.replacedBy).status !== "valid") flags.push({ id: `veh:${id}:replacement`, category: "licence", severity: "medium", message: `${reg} was replaced by ${cx.replacedByRegistration ?? "another vehicle"}, which has no valid licence yet: the licence must be amended`, subject: reg, dueOn: null });
-      for (const x of l.all) if (addYears(x.validFrom, 7) < x.validUntil) flags.push({ id: `veh:${id}:licspan:${x.id}`, category: "data", severity: "low", message: `${reg}'s licence ${x.licenceNumber} is recorded as lasting more than seven years: check the dates`, subject: reg, dueOn: null });
+      for (const x of l.all) { const rule = await rules.forProvince(x.province); if (addYears(x.validFrom, rule.maxYears) < x.validUntil) flags.push({ id: `veh:${id}:licspan:${x.id}`, category: "data", severity: "low", message: `${reg}'s licence ${x.licenceNumber} is recorded as lasting more than ${yearsText(rule.maxYears)}${x.province ? ` (the limit set for ${x.province})` : ""}: check the dates`, subject: reg, dueOn: null }); }
       out.push({ id, registration: reg, make: (v.make as string | null) ?? null, model: (v.model as string | null) ?? null, seats: v.seats === null ? null : Number(v.seats), ownerId: String(v.owner_id), owner: String(v.owner), driver: (v.driver as string | null) ?? null, compliance: cx, licence: { status: l.status, validUntil: l.validUntil, current: l.all.find((x) => x.validUntil === l.validUntil) ?? null, all: l.all }, applications: apps.filter((a) => String(a.vehicle_id) === id).map((a) => ({ id: String(a.id), kind: String(a.kind), reference: (a.reference as string | null) ?? null, authority: (a.authority as string | null) ?? null, lodgedOn: dayOf(a.lodged_on), outcome: String(a.outcome), outcomeOn: dayOf(a.outcome_on), note: (a.note as string | null) ?? null })), roadworthy: rw, insurance: ins, flags });
     }
     return out;
@@ -198,10 +200,11 @@ export function createCompliance(db: Db, now: () => Date = () => new Date()) {
     const number = text(b.licenceNumber, 60); if (!number) return bad(400, "Give the licence number");
     if (!isDay(b.validFrom) || !isDay(b.validUntil)) return bad(400, "Give the dates the licence is valid from and until (YYYY-MM-DD)");
     if ((b.validUntil as string) < (b.validFrom as string)) return bad(400, "A licence is valid until after it starts");
-    if (addYears(b.validFrom as string, 7) < (b.validUntil as string)) return bad(400, "An operating licence lasts at most seven years: check the dates");
+    let province: string | null = null; if (b.province !== undefined && b.province !== null && b.province !== "") { if (!isProvince(b.province)) return bad(400, "Choose one of the nine provinces"); province = b.province; }
+    const rule = await rules.forProvince(province); if (addYears(b.validFrom as string, rule.maxYears) < (b.validUntil as string)) return bad(400, `An operating licence lasts at most ${yearsText(rule.maxYears)}${province ? ` in ${province}` : ""} under the limit set in this system${rule.verified ? "" : " (not yet verified with the Provincial Regulatory Entity)"}: check the dates`);
     const auth = text(b.authority, 120), holder = text(b.holder, 120), route = text(b.route, 200), area = text(b.area, 200), times = text(b.times, 200); if ([auth, holder, route, area, times].some((x) => x === false)) return bad(400, "A field is too long");
     if ((await db.query(`SELECT 1 AS x FROM operating_licences WHERE vehicle_id = $1 AND licence_number = $2`, [vehicleId, number])).rows.length) return bad(409, "That licence number is already recorded for this vehicle");
-    const r = (await db.query(`INSERT INTO operating_licences (vehicle_id, licence_number, authority, holder_name, valid_from, valid_until, condition_route, condition_area, condition_times) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`, [vehicleId, number, auth, holder, b.validFrom, b.validUntil, route, area, times])).rows[0];
+    const r = (await db.query(`INSERT INTO operating_licences (vehicle_id, licence_number, authority, holder_name, valid_from, valid_until, condition_route, condition_area, condition_times, province) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id`, [vehicleId, number, auth, holder, b.validFrom, b.validUntil, route, area, times, province])).rows[0];
     await log(assoc, "licence", String(r.id), `${v.registration}: licence ${number} valid ${b.validFrom} to ${b.validUntil}`, by); return { ok: true, value: { id: String(r.id) } };
   }
   async function removeLicence(assoc: string, by: string, id: string): Promise<Res<{ id: string }>> {

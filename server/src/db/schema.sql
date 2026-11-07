@@ -2921,3 +2921,29 @@ CREATE TABLE IF NOT EXISTS dues_claims (
 );
 CREATE INDEX IF NOT EXISTS idx_dues_claims_assoc ON dues_claims(association_id, status, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_dues_claims_owner ON dues_claims(owner_id, created_at DESC);
+
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+-- OWNER DASHBOARD, slice C1: province-aware licence rules and the owner's compliance reminders (docs/OWNER_DASHBOARD.md)
+-- To remove: db/rollback/owner_dashboard_c1.sql
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+-- Which province issued an operating licence, so the right validity rule applies. Null means "not stated": the default rule applies.
+ALTER TABLE operating_licences ADD COLUMN IF NOT EXISTS province TEXT;
+-- How long an operating licence may last, by province. '*' is the rule for any province not listed. These are CONFIGURATION, not law: every row says whether anyone has verified it with the Provincial Regulatory Entity, and the screens say so while it is false.
+CREATE TABLE IF NOT EXISTS licence_rules (
+  province   TEXT PRIMARY KEY,
+  max_years  INTEGER NOT NULL CHECK (max_years BETWEEN 1 AND 20),
+  verified   BOOLEAN NOT NULL DEFAULT false,
+  note       TEXT,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+INSERT INTO licence_rules (province, max_years, verified, note) VALUES
+  ('*', 7, false, 'Used for any province not listed here. Not yet verified with the Provincial Regulatory Entity.'),
+  ('Gauteng', 5, false, 'Not yet verified with the Gauteng Provincial Regulatory Entity.'),
+  ('Western Cape', 5, false, 'Not yet verified with the Western Cape Provincial Regulatory Entity.')
+ON CONFLICT (province) DO NOTHING;
+-- How many days before an expiry an owner wants to be reminded (comma separated, largest first).
+CREATE TABLE IF NOT EXISTS owner_compliance_settings (
+  owner_id      UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  reminder_days TEXT NOT NULL DEFAULT '90,60,30,7',
+  updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+);
