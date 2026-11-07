@@ -2587,3 +2587,83 @@ CREATE TABLE IF NOT EXISTS budgets (
   amount_cents   BIGINT NOT NULL CHECK (amount_cents >= 0),
   PRIMARY KEY (association_id, year, category)
 );
+
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+-- ASSOCIATION GOVERNANCE AND DISCIPLINE (docs/ASSOCIATION_COMPLIANCE.md, module 8)
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+ALTER TABLE association_registration ADD COLUMN IF NOT EXISTS election_interval_months INTEGER CHECK (election_interval_months IS NULL OR election_interval_months BETWEEN 1 AND 120);   -- how often the constitution requires elections
+ALTER TABLE association_registration ADD COLUMN IF NOT EXISTS discipline_limit_days INTEGER NOT NULL DEFAULT 90 CHECK (discipline_limit_days BETWEEN 7 AND 730);                      -- how long a disciplinary case may stay open before it is flagged
+
+CREATE TABLE IF NOT EXISTS meetings (
+  id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  association_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  held_on            DATE NOT NULL,
+  kind               TEXT NOT NULL CHECK (kind IN ('agm','executive','general','special','other')),
+  title              TEXT NOT NULL,
+  venue              TEXT,
+  agenda             TEXT,
+  minutes            TEXT,
+  minutes_adopted_on DATE,
+  created_at         TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_meetings_assoc ON meetings(association_id, held_on DESC);
+CREATE TABLE IF NOT EXISTS meeting_attendance (
+  meeting_id UUID NOT NULL REFERENCES meetings(id) ON DELETE CASCADE,
+  name       TEXT NOT NULL,
+  member_id  UUID REFERENCES users(id) ON DELETE SET NULL,
+  status     TEXT NOT NULL CHECK (status IN ('present','apology','absent')),
+  PRIMARY KEY (meeting_id, name)
+);
+CREATE TABLE IF NOT EXISTS resolutions (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  association_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  meeting_id     UUID REFERENCES meetings(id) ON DELETE SET NULL,
+  number         TEXT NOT NULL,
+  text           TEXT NOT NULL,
+  action_owner   TEXT,
+  due_on         DATE,
+  status         TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open','done','cancelled')),
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (association_id, number)
+);
+CREATE TABLE IF NOT EXISTS elections (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  association_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  held_on        DATE NOT NULL,
+  notes          TEXT,
+  results        TEXT,
+  next_due_on    DATE,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_elections_assoc ON elections(association_id, held_on DESC);
+-- A declaration of interests by an office bearer. "None" is a declaration too: an office bearer with no declaration on record is flagged.
+CREATE TABLE IF NOT EXISTS interest_declarations (
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  association_id   UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  office_bearer_id UUID NOT NULL REFERENCES office_bearers(id) ON DELETE CASCADE,
+  declared_on      DATE NOT NULL,
+  none             BOOLEAN NOT NULL DEFAULT false,
+  interest         TEXT,
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_interest_declarations_assoc ON interest_declarations(association_id, office_bearer_id, declared_on DESC);
+-- Disciplinary cases under the code of conduct. These hold allegations about identifiable people: restrict them to named office bearers once the association has more than one user.
+CREATE TABLE IF NOT EXISTS disciplinary_cases (
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  association_id   UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  subject_kind     TEXT NOT NULL CHECK (subject_kind IN ('member','driver','marshal','other')),
+  subject_id       UUID REFERENCES users(id) ON DELETE SET NULL,
+  subject_name     TEXT NOT NULL,
+  complaint        TEXT NOT NULL,
+  charge           TEXT,
+  opened_on        DATE NOT NULL,
+  hearing_on       DATE,
+  outcome          TEXT CHECK (outcome IS NULL OR outcome IN ('upheld','not_upheld','withdrawn')),
+  sanction         TEXT,
+  decided_on       DATE,
+  appeal_lodged_on DATE,
+  appeal_outcome   TEXT CHECK (appeal_outcome IS NULL OR appeal_outcome IN ('upheld','overturned','varied')),
+  closed_on        DATE,
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_disciplinary_cases_assoc ON disciplinary_cases(association_id, opened_on DESC);
