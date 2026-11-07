@@ -48,7 +48,7 @@ beforeEach(async () => { await db.query(`INSERT INTO levies (id, association_id,
 
 describe("the owner's association, through the owner routes", () => {
   it("shows the owner their associations, membership, what is owed and the routes, and nobody else's", async () => {
-    await db.query(`INSERT INTO association_registration (association_id, status, registration_number, province) VALUES ($1,'registered','WC/ASSOC/0042','Western Cape')`, [U.A]); await db.query(`INSERT INTO operating_licences (vehicle_id, licence_number, valid_from, valid_until, condition_route) VALUES ($1,'L1','2024-01-01',$2,'Langa to Bellville')`, [V.v1, plus(200)]);
+    await db.query(`INSERT INTO association_registration (association_id, status, registration_number, province) VALUES ($1,'full','WC/ASSOC/0042','Western Cape')`, [U.A]); await db.query(`INSERT INTO operating_licences (vehicle_id, licence_number, valid_from, valid_until, condition_route) VALUES ($1,'L1','2024-01-01',$2,'Langa to Bellville')`, [V.v1, plus(200)]);
     const p = (await O1("GET", "")).body; expect(p).toMatchObject({ success: true, associations: [{ associationId: U.A, name: expect.any(String), status: "active", registrationNumber: "WC/ASSOC/0042", province: "Western Cape", routes: ["Langa to Bellville"], ledger: { chargedCents: 70000, owedCents: 70000, overdueCents: 60000, daysOverdue: 120 } }] });
     expect((await O3("GET", "")).body.associations.map((a: any) => a.associationId)).toEqual([U.B]); expect(JSON.stringify(p)).not.toContain(U.O2);
   });
