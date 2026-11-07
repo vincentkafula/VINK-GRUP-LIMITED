@@ -2,6 +2,8 @@ import { Router, json, type Request, type Response } from "express";
 import { h, uid, fail, isUuid, audit, sendCsv, type Db } from "./common.js";
 import type { EmailSender } from "../auth/email.js";
 import { createReports, PACKS, CSV_KINDS } from "../services/reports.js";
+import { canRead, type Module } from "../services/delegates.js";
+const CSV_MODULE: Record<string, Module> = { members: "members", non_members: "members", formalisation: "members", vehicles: "registers", drivers: "registers" };
 
 /**
  * The association's reports API (docs/ASSOCIATION_COMPLIANCE.md, module 12), mounted on the association router, so everything is scoped to the signed-in association by construction: no route takes an association id.
@@ -25,7 +27,7 @@ export function mountAssociationReports(router: Router, db: Db, now: () => Date 
     await audit(db, req, "reports.download", String(req.params.pack), { period: r.value.period });
     res.setHeader("Content-Type", "application/pdf"); res.setHeader("Content-Disposition", `attachment; filename="${r.value.filename.replace(/[^A-Za-z0-9._-]/g, "_")}"`); res.send(r.value.buffer);
   }));
-  router.get("/reports/csv/:kind.csv", h(async (req, res) => { const r = await rep.csv(uid(req), String(req.params.kind)); if (!r.ok) { fail(res, r.status, r.error); return; } await audit(db, req, "reports.export", String(req.params.kind)); sendCsv(res, r.value.filename, r.value.columns, r.value.rows); }));
+  router.get("/reports/csv/:kind.csv", h(async (req, res) => { if (!canRead(req.delegateRole ?? null, CSV_MODULE[String(req.params.kind)] ?? "registers")) { fail(res, 403, "Your role does not have access to that list"); return; } const r = await rep.csv(uid(req), String(req.params.kind)); if (!r.ok) { fail(res, r.status, r.error); return; } await audit(db, req, "reports.export", String(req.params.kind)); sendCsv(res, r.value.filename, r.value.columns, r.value.rows); }));
 
   router.get("/reports/schedules", h(async (req, res) => { res.json({ success: true, schedules: await rep.schedules(uid(req)), emailConfigured: mail !== null && mail.name !== "unconfigured" }); }));
   router.post("/reports/schedules", body, h(async (req, res) => { const r = await rep.addSchedule(uid(req), req.body ?? {}); if (r.ok) await audit(db, req, "reports.schedule.add", r.value.id, { pack: req.body?.pack, frequency: req.body?.frequency }); reply(res, r, 201); }));

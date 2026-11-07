@@ -2787,3 +2787,22 @@ CREATE TABLE IF NOT EXISTS owner_business (
   updated_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
   PRIMARY KEY (association_id, owner_id)
 );
+
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+-- NAMED OFFICE-BEARER USERS (docs/ASSOCIATION_COMPLIANCE.md, module 13)
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+-- A delegate is a person with their own login (a users row with role 'association') who acts for an association with a role: chairperson, secretary, treasurer or viewer. The association's own login keeps full access and manages its delegates.
+-- Every association request by a delegate is checked against what their role allows, and everything they change is recorded in their own name.
+CREATE TABLE IF NOT EXISTS association_delegates (
+  user_id          UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  association_id   UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  role             TEXT NOT NULL CHECK (role IN ('chairperson','secretary','treasurer','viewer')),
+  office_bearer_id UUID REFERENCES office_bearers(id) ON DELETE SET NULL,
+  created_by       UUID,
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+  disabled_at      TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS idx_association_delegates_assoc ON association_delegates(association_id);
+-- An approval made by the office bearer signed in to their own account is authenticated; one recorded by the shared login is an attestation.
+ALTER TABLE expense_approvals ADD COLUMN IF NOT EXISTS signed_in BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE finance_settings ADD COLUMN IF NOT EXISTS require_signed_in_approvals BOOLEAN NOT NULL DEFAULT false;

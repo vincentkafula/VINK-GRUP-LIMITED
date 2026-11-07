@@ -28,7 +28,7 @@ const receipt = (o: any = {}) => f.recordReceipt(U.A, U.A, { memberId: U.O1, amo
 
 describe("settings and the fee schedule", () => {
   it("starts with a R5 000 approval threshold, takes a new one validated, and logs the change", async () => {
-    expect(await f.settings(U.A)).toEqual({ approvalThresholdCents: 500000 }); expect(ok<any>(await f.saveSettings(U.A, U.A, { approvalThresholdCents: R(2000) }))).toEqual({ approvalThresholdCents: 200000 }); expect(await f.settings(U.B)).toEqual({ approvalThresholdCents: 500000 });
+    expect(await f.settings(U.A)).toEqual({ approvalThresholdCents: 500000, requireSignedInApprovals: false }); expect(ok<any>(await f.saveSettings(U.A, U.A, { approvalThresholdCents: R(2000) }))).toEqual({ approvalThresholdCents: 200000, requireSignedInApprovals: false }); expect(await f.settings(U.B)).toEqual({ approvalThresholdCents: 500000, requireSignedInApprovals: false });
     for (const bad of [-1, 1.5, "lots", 1e12]) expect(await f.saveSettings(U.A, U.A, { approvalThresholdCents: bad as any }), String(bad)).toMatchObject({ ok: false, status: 400 }); expect((await q(`SELECT summary FROM register_changes WHERE entity = 'finance_settings'`))[0].summary).toContain("R2000.00 or more need two approvers");
   });
   it("records approved fees, validated, flags a joining or membership fee above the province's cap (and only those), and can switch one off", async () => {
@@ -121,6 +121,23 @@ describe("expenses and their approval", () => {
   it("validates an expense: a real past date, a category, a payee, who asked, an amount in cents", async () => {
     for (const bad of [{ incurredOn: plus(1) }, { incurredOn: "soon" }, { category: "" }, { payee: "" }, { requestedBy: "" }, { amountCents: 0 }, { amountCents: 10.5 }, { description: "x".repeat(400) }]) expect(await exp(bad), JSON.stringify(bad)).toMatchObject({ ok: false, status: 400 });
     ok(await f.saveSettings(U.A, U.A, { approvalThresholdCents: 100 })); expect(ok<any>(await exp({ amountCents: 100 })).requiredApprovals).toBe(2);                                                         // the association's own threshold applies
+  });
+});
+
+describe("authenticated approvals", () => {
+  const exp = (o: any = {}) => f.addExpense(U.A, U.A, { incurredOn: TODAY, category: "Fuel", payee: "Garage", amountCents: R(800), requestedBy: "Thabo Mokoena", ...o });
+  it("changes only the setting that is sent, validated, and logs a change to either", async () => {
+    expect(await f.saveSettings(U.A, U.A, {})).toMatchObject({ ok: false, status: 400, error: expect.stringContaining("Nothing to change") }); expect(await f.saveSettings(U.A, U.A, { requireSignedInApprovals: "yes" as any })).toMatchObject({ ok: false, status: 400 });
+    expect(ok<any>(await f.saveSettings(U.A, U.A, { requireSignedInApprovals: true }))).toEqual({ approvalThresholdCents: 500000, requireSignedInApprovals: true }); expect(ok<any>(await f.saveSettings(U.A, U.A, { approvalThresholdCents: R(1000) }))).toEqual({ approvalThresholdCents: 100000, requireSignedInApprovals: true });
+    expect((await q(`SELECT summary FROM register_changes WHERE entity = 'finance_settings' ORDER BY changed_at`)).map((r) => r.summary)).toEqual(["approvals must now be made by the office bearer signed in to their own account", "payments of R1000.00 or more need two approvers"]); expect(await f.settings(U.B)).toMatchObject({ requireSignedInApprovals: false });
+  });
+  it("records whether each approval was made by the office bearer signed in to their own account", async () => {
+    const t = await bearer("Sipho Dube"), l = await bearer("Lerato Nel"), e = ok<any>(await exp({ amountCents: R(6000) })); ok(await f.approveExpense(U.A, U.A, e.id, t, { signedIn: true })); ok(await f.approveExpense(U.A, U.A, e.id, l));
+    expect((await f.expenses(U.A))[0].approvals.map((a) => [a.name, a.signedIn]).sort()).toEqual([["Lerato Nel", false], ["Sipho Dube", true]]); expect((await q(`SELECT summary FROM register_changes WHERE entity = 'expense' ORDER BY changed_at`)).some((r) => r.summary.includes("Sipho Dube (Committee) approved") && r.summary.includes("signed in to their own account"))).toBe(true);
+  });
+  it("refuses an approval recorded by the shared login once signed-in approvals are required, and still accepts a signed-in one", async () => {
+    const t = await bearer("Sipho Dube"), e = ok<any>(await exp()); ok(await f.saveSettings(U.A, U.A, { requireSignedInApprovals: true })); expect(await f.approveExpense(U.A, U.A, e.id, t)).toMatchObject({ ok: false, status: 403, error: expect.stringContaining("signed in to their own account") }); expect((await f.expenses(U.A))[0].status).toBe("pending");
+    ok(await f.approveExpense(U.A, U.A, e.id, t, { signedIn: true })); expect((await f.expenses(U.A))[0].status).toBe("approved"); ok(await f.saveSettings(U.A, U.A, { requireSignedInApprovals: false })); const e2 = ok<any>(await exp({ payee: "Other" })); ok(await f.approveExpense(U.A, U.A, e2.id, t));
   });
 });
 

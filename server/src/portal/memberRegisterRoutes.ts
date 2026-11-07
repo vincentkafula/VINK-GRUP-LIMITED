@@ -1,5 +1,5 @@
 import { Router, json, type Request, type Response } from "express";
-import { h, uid, fail, isUuid, audit, type Db } from "./common.js";
+import { h, uid, actor, fail, isUuid, audit, type Db } from "./common.js";
 import { createMembers } from "../services/memberRegister.js";
 
 /**
@@ -19,11 +19,11 @@ export function mountAssociationMembers(router: Router, db: Db, now: () => Date 
   const day = (req: Request) => (typeof req.query.on === "string" && DAY.test(req.query.on) ? req.query.on : undefined);
 
   router.get("/member-register", h(async (req, res) => { res.json({ success: true, ...(await mem.register(uid(req), day(req))) }); }));
-  router.put("/member-register/:id", body, h(async (req, res) => { if (!isUuid(id(req))) { bad(res); return; } const r = await mem.saveMember(uid(req), uid(req), id(req), req.body ?? {}); if (r.ok) await audit(db, req, "members.register.save", id(req), { fields: Object.keys(req.body ?? {}).filter((k) => k !== "idNumber" && k !== "phone") }); reply(res, r); }));
+  router.put("/member-register/:id", body, h(async (req, res) => { if (!isUuid(id(req))) { bad(res); return; } const r = await mem.saveMember(uid(req), actor(req), id(req), req.body ?? {}); if (r.ok) await audit(db, req, "members.register.save", id(req), { fields: Object.keys(req.body ?? {}).filter((k) => k !== "idNumber" && k !== "phone") }); reply(res, r); }));
   router.get("/member-register/non-members", h(async (req, res) => { res.json({ success: true, nonMembers: await mem.nonMembers(uid(req)) }); }));
-  router.post("/member-register/non-members", body, h(async (req, res) => { const r = await mem.addNonMember(uid(req), uid(req), req.body ?? {}); if (r.ok) await audit(db, req, "members.nonmember.add", r.value.id); reply(res, r, 201); }));
-  router.post("/member-register/non-members/:id/end", body, h(async (req, res) => { if (!isUuid(id(req))) { bad(res); return; } reply(res, await mem.endNonMember(uid(req), uid(req), id(req), req.body?.endedOn)); }));
+  router.post("/member-register/non-members", body, h(async (req, res) => { const r = await mem.addNonMember(uid(req), actor(req), req.body ?? {}); if (r.ok) await audit(db, req, "members.nonmember.add", r.value.id); reply(res, r, 201); }));
+  router.post("/member-register/non-members/:id/end", body, h(async (req, res) => { if (!isUuid(id(req))) { bad(res); return; } reply(res, await mem.endNonMember(uid(req), actor(req), id(req), req.body?.endedOn)); }));
 
   router.get("/formalisation", h(async (req, res) => { res.json({ success: true, ...(await mem.formalisation(uid(req), day(req))) }); }));
-  router.put("/formalisation/:id", body, h(async (req, res) => { if (!isUuid(id(req))) { bad(res); return; } const r = await mem.saveBusiness(uid(req), uid(req), id(req), req.body ?? {}); if (r.ok) await audit(db, req, "members.formalisation.save", id(req), { fields: Object.keys(req.body ?? {}).filter((k) => k !== "taxNumber") }); reply(res, r); }));
+  router.put("/formalisation/:id", body, h(async (req, res) => { if (!isUuid(id(req))) { bad(res); return; } const r = await mem.saveBusiness(uid(req), actor(req), id(req), req.body ?? {}); if (r.ok) await audit(db, req, "members.formalisation.save", id(req), { fields: Object.keys(req.body ?? {}).filter((k) => k !== "taxNumber") }); reply(res, r); }));
 }

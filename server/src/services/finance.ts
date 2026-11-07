@@ -33,11 +33,16 @@ export function createFinance(db: Db, now: () => Date = () => new Date()) {
   const feeCap = async (assoc: string): Promise<number | null> => { const r = (await db.query(`SELECT fee_cap_cents FROM association_registration WHERE association_id = $1`, [assoc])).rows[0]; return r?.fee_cap_cents === null || r?.fee_cap_cents === undefined ? null : Number(r.fee_cap_cents); };
 
   /* ───────────────────────── settings and the fee schedule ───────────────────────── */
-  async function settings(assoc: string) { const r = (await db.query(`SELECT approval_threshold_cents FROM finance_settings WHERE association_id = $1`, [assoc])).rows[0]; return { approvalThresholdCents: Number(r?.approval_threshold_cents ?? 500000) }; }
-  async function saveSettings(assoc: string, by: string, b: { approvalThresholdCents?: unknown }): Promise<Res<{ approvalThresholdCents: number }>> {
-    if (!isCents(b.approvalThresholdCents, 0)) return bad(400, "The approval threshold is an amount of cents");
-    await db.query(`INSERT INTO finance_settings (association_id, approval_threshold_cents, updated_at) VALUES ($1,$2, now()) ON CONFLICT (association_id) DO UPDATE SET approval_threshold_cents = EXCLUDED.approval_threshold_cents, updated_at = now()`, [assoc, b.approvalThresholdCents]);
-    await log(assoc, "finance_settings", null, `payments of ${rand(b.approvalThresholdCents)} or more need two approvers`, by); return { ok: true, value: await settings(assoc) };
+  async function settings(assoc: string) { const r = (await db.query(`SELECT approval_threshold_cents, require_signed_in_approvals FROM finance_settings WHERE association_id = $1`, [assoc])).rows[0]; return { approvalThresholdCents: Number(r?.approval_threshold_cents ?? 500000), requireSignedInApprovals: !!r?.require_signed_in_approvals }; }
+  /** Only what is sent changes: the amount from which two approvers are needed, and whether approvals must be made by the office bearer signed in to their own account. */
+  async function saveSettings(assoc: string, by: string, b: { approvalThresholdCents?: unknown; requireSignedInApprovals?: unknown }): Promise<Res<{ approvalThresholdCents: number; requireSignedInApprovals: boolean }>> {
+    const cur = await settings(assoc);
+    if (b.approvalThresholdCents === undefined && b.requireSignedInApprovals === undefined) return bad(400, "Nothing to change");
+    if (b.approvalThresholdCents !== undefined && !isCents(b.approvalThresholdCents, 0)) return bad(400, "The approval threshold is an amount of cents");
+    if (b.requireSignedInApprovals !== undefined && typeof b.requireSignedInApprovals !== "boolean") return bad(400, "Requiring signed-in approvals is yes or no");
+    const thr = (b.approvalThresholdCents as number | undefined) ?? cur.approvalThresholdCents, req = (b.requireSignedInApprovals as boolean | undefined) ?? cur.requireSignedInApprovals;
+    await db.query(`INSERT INTO finance_settings (association_id, approval_threshold_cents, require_signed_in_approvals, updated_at) VALUES ($1,$2,$3, now()) ON CONFLICT (association_id) DO UPDATE SET approval_threshold_cents = EXCLUDED.approval_threshold_cents, require_signed_in_approvals = EXCLUDED.require_signed_in_approvals, updated_at = now()`, [assoc, thr, req]);
+    if (thr !== cur.approvalThresholdCents) await log(assoc, "finance_settings", null, `payments of ${rand(thr)} or more need two approvers`, by); if (req !== cur.requireSignedInApprovals) await log(assoc, "finance_settings", null, `approvals ${req ? "must now be made by the office bearer signed in to their own account" : "may again be recorded by the association's login"}`, by); return { ok: true, value: await settings(assoc) };
   }
   const feeOf = (r: Row, cap: number | null) => ({ id: String(r.id), kind: String(r.kind), name: String(r.name), amountCents: Number(r.amount_cents), effectiveFrom: dayOf(r.effective_from)!, active: !!r.active, approvedBy: (r.approved_by as string | null) ?? null, overCap: cap !== null && (r.kind === "joining" || r.kind === "membership") && Number(r.amount_cents) > cap });
   async function fees(assoc: string) { const cap = await feeCap(assoc); return (await db.query(`SELECT * FROM fee_schedule WHERE association_id = $1 ORDER BY kind, name, effective_from DESC`, [assoc])).rows.map((r) => feeOf(r, cap)); }
@@ -139,7 +144,7 @@ export function createFinance(db: Db, now: () => Date = () => new Date()) {
   }
 
   /* ───────────────────────── expenses, banking and budgets ───────────────────────── */
-  const expOf = (e: Row, ap: Row[]) => ({ id: String(e.id), incurredOn: dayOf(e.incurred_on)!, category: String(e.category), payee: String(e.payee), amountCents: Number(e.amount_cents), description: (e.description as string | null) ?? null, requestedBy: String(e.requested_by), status: String(e.status), requiredApprovals: Number(e.required_approvals), rejectedReason: (e.rejected_reason as string | null) ?? null, createdAt: new Date(e.created_at as string).toISOString(), approvals: ap.filter((a) => String(a.expense_id) === String(e.id)).map((a) => ({ officeBearerId: String(a.office_bearer_id), name: String(a.approver_name), at: new Date(a.approved_at as string).toISOString() })) });
+  const expOf = (e: Row, ap: Row[]) => ({ id: String(e.id), incurredOn: dayOf(e.incurred_on)!, category: String(e.category), payee: String(e.payee), amountCents: Number(e.amount_cents), description: (e.description as string | null) ?? null, requestedBy: String(e.requested_by), status: String(e.status), requiredApprovals: Number(e.required_approvals), rejectedReason: (e.rejected_reason as string | null) ?? null, createdAt: new Date(e.created_at as string).toISOString(), approvals: ap.filter((a) => String(a.expense_id) === String(e.id)).map((a) => ({ officeBearerId: String(a.office_bearer_id), name: String(a.approver_name), signedIn: !!a.signed_in, at: new Date(a.approved_at as string).toISOString() })) });
   async function expenses(assoc: string, status?: string) {
     const rows = (await db.query(`SELECT * FROM expenses WHERE association_id = $1 ORDER BY incurred_on DESC, created_at DESC LIMIT 500`, [assoc])).rows.filter((e) => !status || e.status === status), ap = (await db.query(`SELECT a.* FROM expense_approvals a JOIN expenses e ON e.id = a.expense_id WHERE e.association_id = $1`, [assoc])).rows;
     return rows.map((e) => expOf(e, ap));
@@ -154,16 +159,17 @@ export function createFinance(db: Db, now: () => Date = () => new Date()) {
     await log(assoc, "expense", String(r.id), `expense ${rand(b.amountCents as number)} to ${payee} (${category}) needs ${need} approval${need === 1 ? "" : "s"}`, by); return { ok: true, value: { id: String(r.id), requiredApprovals: need } };
   }
   /** An office bearer's approval, recorded by the association. Their term must not have ended, they cannot approve what they asked for, and the same person cannot approve twice. */
-  async function approveExpense(assoc: string, by: string, id: string, officeBearerId: unknown): Promise<Res<{ status: string; approvals: number }>> {
+  async function approveExpense(assoc: string, by: string, id: string, officeBearerId: unknown, o: { signedIn?: boolean } = {}): Promise<Res<{ status: string; approvals: number }>> {
+    if (!o.signedIn && (await settings(assoc)).requireSignedInApprovals) return bad(403, "Approvals must be made by the office bearer signed in to their own account");
     const e = typeof id === "string" && UUID.test(id) ? (await db.query(`SELECT * FROM expenses WHERE id = $1 AND association_id = $2`, [id, assoc])).rows[0] : null; if (!e) return bad(404, "Expense not found"); if (e.status !== "pending") return bad(409, `That expense is already ${e.status}`);
     const ob = typeof officeBearerId === "string" && UUID.test(officeBearerId) ? (await db.query(`SELECT * FROM office_bearers WHERE id = $1 AND association_id = $2`, [officeBearerId, assoc])).rows[0] : null; if (!ob) return bad(400, "Choose one of your office bearers");
     if (ob.term_end && dayOf(ob.term_end)! < today()) return bad(400, `${ob.name}'s term as ${ob.office} ended on ${dayOf(ob.term_end)}`);
     if (String(ob.name).trim().toLowerCase() === String(e.requested_by).trim().toLowerCase()) return bad(400, "Nobody can approve what they asked for themselves");
     if ((await db.query(`SELECT 1 AS x FROM expense_approvals WHERE expense_id = $1 AND office_bearer_id = $2`, [id, ob.id])).rows.length) return bad(409, `${ob.name} has already approved this`);
-    await db.query(`INSERT INTO expense_approvals (expense_id, office_bearer_id, approver_name) VALUES ($1,$2,$3)`, [id, ob.id, ob.name]);
+    await db.query(`INSERT INTO expense_approvals (expense_id, office_bearer_id, approver_name, signed_in) VALUES ($1,$2,$3,$4)`, [id, ob.id, ob.name, !!o.signedIn]);
     const n = Number((await db.query(`SELECT COUNT(*) AS n FROM expense_approvals WHERE expense_id = $1`, [id])).rows[0].n), done = n >= Number(e.required_approvals);
     if (done) await db.query(`UPDATE expenses SET status = 'approved', decided_at = now() WHERE id = $1`, [id]);
-    await log(assoc, "expense", id, `${ob.name} (${ob.office}) approved ${rand(Number(e.amount_cents))} to ${e.payee}${done ? ": now approved" : ""}`, by); return { ok: true, value: { status: done ? "approved" : "pending", approvals: n } };
+    await log(assoc, "expense", id, `${ob.name} (${ob.office}) approved ${rand(Number(e.amount_cents))} to ${e.payee}${o.signedIn ? " (signed in to their own account)" : ""}${done ? ": now approved" : ""}`, by); return { ok: true, value: { status: done ? "approved" : "pending", approvals: n } };
   }
   async function rejectExpense(assoc: string, by: string, id: string, reason: unknown): Promise<Res<{ id: string }>> {
     const why = text(reason, 200); if (!why) return bad(400, "Say why it is being rejected");

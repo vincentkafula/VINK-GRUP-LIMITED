@@ -10,7 +10,13 @@ export const h = (fn: (req: Request, res: Response) => Promise<void>): RequestHa
 export const num = (v: unknown) => Number(v ?? 0);
 export const iso = (v: unknown) => (v ? new Date(v as string).toISOString() : null);
 export const dateOnly = (v: unknown) => (v ? new Date(v as string).toISOString().slice(0, 10) : null);
+declare global { namespace Express { interface Request {
+  /** Set when an office bearer with their own login acts for an association: who they really are, and their role. `uid(req)` is then the association. */
+  actorId?: string; actorName?: string; delegateRole?: "chairperson" | "secretary" | "treasurer" | "viewer"; delegateBearerId?: string | null; delegateName?: string;
+} } }
 export const uid = (req: Request) => req.user!.userId;
+/** Who really made the request: the delegate if one is acting, otherwise the signed-in user. Changes and audit records are written in this person's name. */
+export const actor = (req: Request) => req.actorId ?? req.user!.userId;
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export const isUuid = (v: unknown): v is string => typeof v === "string" && UUID.test(v);
@@ -115,6 +121,6 @@ export function sendCsv(res: Response, filename: string, columns: string[], rows
 export async function audit(db: Db, req: Request, action: string, target: string | null, details: Record<string, unknown> = {}): Promise<void> {
   try {
     await db.query(`INSERT INTO audit_log (id, actor_id, actor_name, action, target, details) VALUES ($1,$2,$3,$4,$5,$6)`,
-      [randomUUID(), uid(req), req.user?.username ?? "unknown", action, target, JSON.stringify(details)]);
+      [randomUUID(), actor(req), req.actorName ?? req.user?.username ?? "unknown", action, target, JSON.stringify(details)]);
   } catch (e) { console.error("[audit] could not record", action, e instanceof Error ? e.message : e); }
 }

@@ -1,5 +1,5 @@
 import { Router, json, type Request, type Response } from "express";
-import { h, uid, fail, isUuid, audit, sendCsv, type Db } from "./common.js";
+import { h, uid, actor, fail, isUuid, audit, sendCsv, type Db } from "./common.js";
 import { createFinance } from "../services/finance.js";
 
 /**
@@ -24,35 +24,37 @@ export function mountAssociationFinance(router: Router, db: Db, now: () => Date 
 
   router.get("/finance/summary", h(async (req, res) => { res.json({ success: true, ...(await fin.summary(uid(req), day(req, "on"))) }); }));
   router.get("/finance/settings", h(async (req, res) => { res.json({ success: true, ...(await fin.settings(uid(req))) }); }));
-  router.put("/finance/settings", body, h(async (req, res) => { const r = await fin.saveSettings(uid(req), uid(req), req.body ?? {}); if (r.ok) await audit(db, req, "finance.settings", null, { threshold: req.body?.approvalThresholdCents }); reply(res, r); }));
+  router.put("/finance/settings", body, h(async (req, res) => { const r = await fin.saveSettings(uid(req), actor(req), req.body ?? {}); if (r.ok) await audit(db, req, "finance.settings", null, { threshold: req.body?.approvalThresholdCents, requireSignedInApprovals: req.body?.requireSignedInApprovals }); reply(res, r); }));
 
   router.get("/finance/fees", h(async (req, res) => { res.json({ success: true, fees: await fin.fees(uid(req)) }); }));
-  router.post("/finance/fees", body, h(async (req, res) => { const r = await fin.addFee(uid(req), uid(req), req.body ?? {}); if (r.ok) await audit(db, req, "finance.fee", r.value.id, { kind: req.body?.kind, amountCents: req.body?.amountCents }); reply(res, r, 201); }));
-  router.post("/finance/fees/:id/active", body, h(async (req, res) => { if (!isUuid(id(req)) || typeof req.body?.active !== "boolean") { bad(res); return; } reply(res, await fin.setFeeActive(uid(req), uid(req), id(req), req.body.active)); }));
-  router.post("/finance/charges", body, h(async (req, res) => { const r = await fin.charge(uid(req), uid(req), req.body ?? {}); if (r.ok) await audit(db, req, "finance.charge", String(req.body?.feeId), { created: r.value.created }); reply(res, r, 201); }));
+  router.post("/finance/fees", body, h(async (req, res) => { const r = await fin.addFee(uid(req), actor(req), req.body ?? {}); if (r.ok) await audit(db, req, "finance.fee", r.value.id, { kind: req.body?.kind, amountCents: req.body?.amountCents }); reply(res, r, 201); }));
+  router.post("/finance/fees/:id/active", body, h(async (req, res) => { if (!isUuid(id(req)) || typeof req.body?.active !== "boolean") { bad(res); return; } reply(res, await fin.setFeeActive(uid(req), actor(req), id(req), req.body.active)); }));
+  router.post("/finance/charges", body, h(async (req, res) => { const r = await fin.charge(uid(req), actor(req), req.body ?? {}); if (r.ok) await audit(db, req, "finance.charge", String(req.body?.feeId), { created: r.value.created }); reply(res, r, 201); }));
 
   router.get("/finance/members", h(async (req, res) => { res.json({ success: true, members: await fin.memberLedger(uid(req), day(req, "on")) }); }));
   router.get("/finance/members/:id/statement", h(async (req, res) => { if (!isUuid(id(req))) { bad(res); return; } reply(res, await fin.memberStatement(uid(req), id(req))); }));
 
   router.get("/finance/receipts", h(async (req, res) => { const m = typeof req.query.memberId === "string" && isUuid(req.query.memberId) ? req.query.memberId : undefined, from = day(req, "from"), to = day(req, "to"); res.json({ success: true, receipts: await fin.receipts(uid(req), { ...(from ? { from } : {}), ...(to ? { to } : {}), ...(m ? { memberId: m } : {}) }) }); }));
-  router.post("/finance/receipts", body, h(async (req, res) => { const r = await fin.recordReceipt(uid(req), uid(req), req.body ?? {}); if (r.ok) await audit(db, req, "finance.receipt", r.value.id, { number: r.value.number, amountCents: req.body?.amountCents, method: req.body?.method }); reply(res, r, 201); }));
+  router.post("/finance/receipts", body, h(async (req, res) => { const r = await fin.recordReceipt(uid(req), actor(req), req.body ?? {}); if (r.ok) await audit(db, req, "finance.receipt", r.value.id, { number: r.value.number, amountCents: req.body?.amountCents, method: req.body?.method }); reply(res, r, 201); }));
   router.get("/finance/receipts/:id.pdf", h(async (req, res) => {
     if (!isUuid(id(req))) { bad(res); return; } const r = await fin.receiptPdf(uid(req), id(req)); if (!r.ok) { fail(res, r.status, r.error); return; }
     res.setHeader("Content-Type", "application/pdf"); res.setHeader("Content-Disposition", `attachment; filename="receipt-${id(req).slice(0, 8)}.pdf"`); res.send(r.value);
   }));
-  router.post("/finance/receipts/:id/void", body, h(async (req, res) => { if (!isUuid(id(req))) { bad(res); return; } const r = await fin.voidReceipt(uid(req), uid(req), id(req), req.body?.reason); if (r.ok) await audit(db, req, "finance.receipt.void", id(req), { reason: req.body?.reason }); reply(res, r); }));
+  router.post("/finance/receipts/:id/void", body, h(async (req, res) => { if (!isUuid(id(req))) { bad(res); return; } const r = await fin.voidReceipt(uid(req), actor(req), id(req), req.body?.reason); if (r.ok) await audit(db, req, "finance.receipt.void", id(req), { reason: req.body?.reason }); reply(res, r); }));
 
   router.get("/finance/expenses", h(async (req, res) => { res.json({ success: true, expenses: await fin.expenses(uid(req), typeof req.query.status === "string" ? req.query.status : undefined) }); }));
-  router.post("/finance/expenses", body, h(async (req, res) => { const r = await fin.addExpense(uid(req), uid(req), req.body ?? {}); if (r.ok) await audit(db, req, "finance.expense", r.value.id, { amountCents: req.body?.amountCents }); reply(res, r, 201); }));
-  router.post("/finance/expenses/:id/approve", body, h(async (req, res) => { if (!isUuid(id(req))) { bad(res); return; } const r = await fin.approveExpense(uid(req), uid(req), id(req), req.body?.officeBearerId); if (r.ok) await audit(db, req, "finance.expense.approve", id(req), { officeBearerId: req.body?.officeBearerId }); reply(res, r); }));
-  router.post("/finance/expenses/:id/reject", body, h(async (req, res) => { if (!isUuid(id(req))) { bad(res); return; } reply(res, await fin.rejectExpense(uid(req), uid(req), id(req), req.body?.reason)); }));
+  router.post("/finance/expenses", body, h(async (req, res) => { const r = await fin.addExpense(uid(req), actor(req), req.body ?? {}); if (r.ok) await audit(db, req, "finance.expense", r.value.id, { amountCents: req.body?.amountCents }); reply(res, r, 201); }));
+  router.post("/finance/expenses/:id/approve", body, h(async (req, res) => { if (!isUuid(id(req))) { bad(res); return; } let bearer: unknown = req.body?.officeBearerId, signedIn = false;
+    if (req.delegateRole) { if (!req.delegateBearerId) { fail(res, 403, "Your login is not linked to an office bearer, so you cannot approve: ask the association to link it"); return; } bearer = req.delegateBearerId; signedIn = true; }             // a named office bearer approves as themselves, whatever they send
+    const r = await fin.approveExpense(uid(req), actor(req), id(req), bearer, { signedIn }); if (r.ok) await audit(db, req, "finance.expense.approve", id(req), { officeBearerId: bearer, signedIn }); reply(res, r); }));
+  router.post("/finance/expenses/:id/reject", body, h(async (req, res) => { if (!isUuid(id(req))) { bad(res); return; } reply(res, await fin.rejectExpense(uid(req), actor(req), id(req), req.body?.reason)); }));
 
   router.get("/finance/deposits", h(async (req, res) => { res.json({ success: true, deposits: await fin.deposits(uid(req)) }); }));
-  router.post("/finance/deposits", body, h(async (req, res) => { reply(res, await fin.addDeposit(uid(req), uid(req), req.body ?? {}), 201); }));
+  router.post("/finance/deposits", body, h(async (req, res) => { reply(res, await fin.addDeposit(uid(req), actor(req), req.body ?? {}), 201); }));
   router.get("/finance/cash", h(async (req, res) => { res.json({ success: true, ...(await fin.cash(uid(req), day(req, "on"))) }); }));
 
   router.get("/finance/budgets", h(async (req, res) => { const y = Number(req.query.year) || Number(new Date(now()).getUTCFullYear()); res.json({ success: true, year: y, budgets: await fin.budgets(uid(req), y) }); }));
-  router.put("/finance/budgets", body, h(async (req, res) => { reply(res, await fin.setBudget(uid(req), uid(req), req.body ?? {})); }));
+  router.put("/finance/budgets", body, h(async (req, res) => { reply(res, await fin.setBudget(uid(req), actor(req), req.body ?? {})); }));
   const period = (req: Request) => ({ ...(typeof req.query.month === "string" ? { month: req.query.month } : {}), ...(Number.isInteger(Number(req.query.year)) && req.query.year ? { year: Number(req.query.year) } : {}) });
   router.get("/finance/statement", h(async (req, res) => { reply(res, await fin.statement(uid(req), period(req))); }));
   router.get("/finance/statement.csv", h(async (req, res) => {

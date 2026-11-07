@@ -6,6 +6,7 @@ import { createDriverRouter, type Db } from "../portal/driverRoutes.js";
 import { createOwnerRouter } from "../portal/ownerRoutes.js";
 import { createMarshalRouter } from "../portal/marshalRoutes.js";
 import { createAssociationRouter } from "../portal/associationRoutes.js";
+import { delegateGate } from "../portal/delegateGate.js";
 import { createInvestorRouter } from "../portal/investorRoutes.js";
 import { createPersonalRouter } from "../portal/personalRoutes.js";
 import { createLinkRouter } from "../portal/linkRoutes.js";
@@ -49,6 +50,7 @@ export function createPortalRouter(db: Db | null = pool, bank: Omit<BankDeps, "d
     const sub = Router();
     if (!db) sub.use(unavailable);
     else {
+      if (role === "association") sub.use(delegateGate(db));                                                      // first: a named office bearer is checked against their role before anything else, the bank and money routers included
       if (links) sub.use(links(db));
       if (money.tokens) sub.use("/tokens", createTokenRouter(db, money.tokens, { channels: money.channels, crossBorder: money.crossBorder }));         // every role can hold tokens
       if (role !== "personal") sub.use("/bank", bank ? createBankRouter({ ...bank, db }, role as BankRole) : unavailable);   // the five business roles; passengers use the VINK dashboard directly

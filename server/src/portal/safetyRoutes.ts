@@ -1,5 +1,5 @@
 import { Router, json, type Request, type Response } from "express";
-import { h, uid, fail, isUuid, audit, type Db } from "./common.js";
+import { h, uid, actor, fail, isUuid, audit, type Db } from "./common.js";
 import { createSafety } from "../services/safety.js";
 import { createRouteControl } from "../services/routeControl.js";
 
@@ -19,10 +19,10 @@ export function mountAssociationSafety(router: Router, db: Db, now: () => Date =
 
   router.get("/safety/summary", h(async (req, res) => { res.json({ success: true, ...(await safety.summary(uid(req), day(req))) }); }));
   router.get("/safety/events", h(async (req, res) => { res.json({ success: true, events: await safety.events(uid(req), { ...(typeof req.query.kind === "string" ? { kind: req.query.kind } : {}), ...(typeof req.query.status === "string" ? { status: req.query.status } : {}) }) }); }));
-  router.post("/safety/events", body, h(async (req, res) => { const r = await safety.add(uid(req), uid(req), req.body ?? {}); if (r.ok) await audit(db, req, "safety.event.add", r.value.id, { kind: req.body?.kind }); reply(res, r, 201); }));
-  router.put("/safety/events/:id", body, h(async (req, res) => { if (!isUuid(id(req))) { bad(res); return; } const r = await safety.update(uid(req), uid(req), id(req), req.body ?? {}); if (r.ok) await audit(db, req, "safety.event.update", id(req), { fields: Object.keys(req.body ?? {}) }); reply(res, r); }));
-  router.post("/safety/events/:id/escalate", body, h(async (req, res) => { if (!isUuid(id(req))) { bad(res); return; } const r = await safety.escalate(uid(req), uid(req), id(req), req.body ?? {}); if (r.ok) await audit(db, req, "safety.event.escalate", id(req), { to: req.body?.to }); reply(res, r); }));
-  router.post("/safety/events/:id/resolve", body, h(async (req, res) => { if (!isUuid(id(req))) { bad(res); return; } const r = await safety.resolve(uid(req), uid(req), id(req), req.body ?? {}); if (r.ok) await audit(db, req, "safety.event.resolve", id(req)); reply(res, r); }));
+  router.post("/safety/events", body, h(async (req, res) => { const r = await safety.add(uid(req), actor(req), req.body ?? {}); if (r.ok) await audit(db, req, "safety.event.add", r.value.id, { kind: req.body?.kind }); reply(res, r, 201); }));
+  router.put("/safety/events/:id", body, h(async (req, res) => { if (!isUuid(id(req))) { bad(res); return; } const r = await safety.update(uid(req), actor(req), id(req), req.body ?? {}); if (r.ok) await audit(db, req, "safety.event.update", id(req), { fields: Object.keys(req.body ?? {}) }); reply(res, r); }));
+  router.post("/safety/events/:id/escalate", body, h(async (req, res) => { if (!isUuid(id(req))) { bad(res); return; } const r = await safety.escalate(uid(req), actor(req), id(req), req.body ?? {}); if (r.ok) await audit(db, req, "safety.event.escalate", id(req), { to: req.body?.to }); reply(res, r); }));
+  router.post("/safety/events/:id/resolve", body, h(async (req, res) => { if (!isUuid(id(req))) { bad(res); return; } const r = await safety.resolve(uid(req), actor(req), id(req), req.body ?? {}); if (r.ok) await audit(db, req, "safety.event.resolve", id(req)); reply(res, r); }));
 
   router.get("/route-control", h(async (req, res) => { res.json({ success: true, ...(await control.report(uid(req), day(req))) }); }));
 }
