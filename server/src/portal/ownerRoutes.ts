@@ -1,3 +1,4 @@
+import { mountOwnerDriverPay } from "./ownerDriverPayRoutes.js";
 import { createCompliance } from "../services/compliance.js";
 import { Router, json, type Request } from "express";
 import { h, uid, num, iso, dateOnly, isUuid, text, optText, validDate, fail, findUserByEmail, readKeys, markKeys, isUniqueViolation, audit, bucketDays, rangeParams, saDay, sendCsv, type Db } from "./common.js";
@@ -295,5 +296,6 @@ export function createOwnerRouter(db: Db, now: () => Date = () => new Date(), on
   }));
   router.post("/notifications/read", json({ limit: "10kb" }), h(async (req, res) => { res.json({ success: true, marked: await markKeys(db, uid(req), req.body?.keys) }); }));
 
+  mountOwnerDriverPay(router, db, now);                                                  // what each driver owes, what was paid, and where it is earmarked (docs/OWNER_DASHBOARD.md)
   return router;
 }
