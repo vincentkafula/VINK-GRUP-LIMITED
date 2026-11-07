@@ -2806,3 +2806,92 @@ CREATE INDEX IF NOT EXISTS idx_association_delegates_assoc ON association_delega
 -- An approval made by the office bearer signed in to their own account is authenticated; one recorded by the shared login is an attestation.
 ALTER TABLE expense_approvals ADD COLUMN IF NOT EXISTS signed_in BOOLEAN NOT NULL DEFAULT false;
 ALTER TABLE finance_settings ADD COLUMN IF NOT EXISTS require_signed_in_approvals BOOLEAN NOT NULL DEFAULT false;
+
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+-- OWNER DASHBOARD, slice A: what a driver owes an owner, what was paid, and where the money is earmarked (docs/OWNER_DASHBOARD.md)
+-- Bookkeeping only: nothing here moves money. To remove: db/rollback/owner_dashboard_a.sql
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+-- The payment the owner expects from a vehicle's driver: a daily amount on the working days, or a weekly amount on a chosen day. One open target per vehicle; a new one closes the old, so the history is kept.
+CREATE TABLE IF NOT EXISTS vehicle_targets (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id      UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  vehicle_id    UUID NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+  driver_id     UUID REFERENCES users(id) ON DELETE SET NULL,
+  period        TEXT NOT NULL CHECK (period IN ('daily','weekly')),
+  amount_cents  BIGINT NOT NULL CHECK (amount_cents > 0),
+  working_days  SMALLINT NOT NULL DEFAULT 63 CHECK (working_days BETWEEN 1 AND 127),   -- daily targets: bit 0 Monday ... bit 6 Sunday (63 = Monday to Saturday)
+  due_weekday   SMALLINT NOT NULL DEFAULT 7 CHECK (due_weekday BETWEEN 1 AND 7),       -- weekly targets: 1 Monday ... 7 Sunday
+  start_date    DATE NOT NULL,
+  end_date      DATE,
+  agreement_id  UUID REFERENCES driver_agreements(id) ON DELETE SET NULL,              -- the formal agreement record, if there is one
+  terms         TEXT,
+  created_by    UUID,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CHECK (end_date IS NULL OR end_date >= start_date)
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_vehicle_targets_open ON vehicle_targets(vehicle_id) WHERE end_date IS NULL;
+CREATE INDEX IF NOT EXISTS idx_vehicle_targets_owner ON vehicle_targets(owner_id, vehicle_id, start_date DESC);
+-- Days a vehicle is off the road (a breakdown, a service, an accident): the target does not accrue on them.
+CREATE TABLE IF NOT EXISTS target_pauses (
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id   UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  vehicle_id UUID NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+  from_date  DATE NOT NULL,
+  to_date    DATE NOT NULL,
+  reason     TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CHECK (to_date >= from_date)
+);
+CREATE INDEX IF NOT EXISTS idx_target_pauses_vehicle ON target_pauses(vehicle_id, from_date);
+-- A payment the owner has received from the driver, in cash or otherwise. Never deleted: a mistake is voided with a reason. client_ref makes a retry (an offline sync, a double tap) change nothing.
+CREATE TABLE IF NOT EXISTS driver_payments (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  vehicle_id   UUID NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+  driver_id    UUID REFERENCES users(id) ON DELETE SET NULL,
+  amount_cents BIGINT NOT NULL CHECK (amount_cents > 0),
+  paid_on      DATE NOT NULL,
+  method       TEXT NOT NULL CHECK (method IN ('cash','eft','vink','other')),
+  note         TEXT,
+  client_ref   TEXT,
+  recorded_by  UUID,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  voided_at    TIMESTAMPTZ,
+  void_reason  TEXT,
+  UNIQUE (owner_id, client_ref)
+);
+CREATE INDEX IF NOT EXISTS idx_driver_payments_vehicle ON driver_payments(vehicle_id, paid_on DESC);
+-- Where each payment was earmarked, fixed at the time it was recorded, so changing a split rule never rewrites history. Earmarks only: no money moves.
+CREATE TABLE IF NOT EXISTS driver_payment_allocations (
+  payment_id UUID NOT NULL REFERENCES driver_payments(id) ON DELETE CASCADE,
+  bucket     TEXT NOT NULL CHECK (bucket IN ('owner','association','finance','maintenance')),
+  cents      BIGINT NOT NULL CHECK (cents >= 0),
+  PRIMARY KEY (payment_id, bucket)
+);
+-- How a vehicle's payments are earmarked, in basis points that total 10 000 (100%). A later rule applies to payments from its date on.
+CREATE TABLE IF NOT EXISTS vehicle_split_rules (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id       UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  vehicle_id     UUID NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+  owner_bp       INTEGER NOT NULL CHECK (owner_bp >= 0),
+  association_bp INTEGER NOT NULL CHECK (association_bp >= 0),
+  finance_bp     INTEGER NOT NULL CHECK (finance_bp >= 0),
+  maintenance_bp INTEGER NOT NULL CHECK (maintenance_bp >= 0),
+  effective_from DATE NOT NULL,
+  created_by     UUID,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CHECK (owner_bp + association_bp + finance_bp + maintenance_bp = 10000),
+  UNIQUE (vehicle_id, effective_from)
+);
+-- An owner's decision not to chase part of a shortfall, with who, when and why.
+CREATE TABLE IF NOT EXISTS target_waivers (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  vehicle_id   UUID NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+  amount_cents BIGINT NOT NULL CHECK (amount_cents > 0),
+  waived_on    DATE NOT NULL,
+  reason       TEXT NOT NULL,
+  created_by   UUID,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_target_waivers_vehicle ON target_waivers(vehicle_id, waived_on);
