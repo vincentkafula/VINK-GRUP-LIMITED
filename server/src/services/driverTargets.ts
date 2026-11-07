@@ -34,7 +34,8 @@ const rand = (c: number) => `R${(c / 100).toFixed(2)}`;
 export function allocate(cents: number, split: Split): Record<Bucket, number> {
   const bps = [split.ownerBp, split.associationBp, split.financeBp, split.maintenanceBp], raw = bps.map((bp) => (cents * bp) / 10000), base = raw.map((x) => Math.floor(x));
   let left = cents - base.reduce((a, b) => a + b, 0); const order = raw.map((x, i) => ({ i, r: x - Math.floor(x) })).sort((a, b) => b.r - a.r || a.i - b.i);
-  for (const o of order) { if (left <= 0) break; if (bps[o.i] > 0 || order.every((x) => bps[x.i] === 0)) { base[o.i]++; left--; } }
+  // What is left over is the sum of the fractional parts, so it is always smaller than the number of non-zero shares: a share of zero can never be given a cent.
+  for (const o of order) { if (left <= 0) break; base[o.i]++; left--; }
   return { owner: base[0], association: base[1], finance: base[2], maintenance: base[3] };
 }
 const splitOf = (r: Row | undefined): Split => (r ? { ownerBp: Number(r.owner_bp), associationBp: Number(r.association_bp), financeBp: Number(r.finance_bp), maintenanceBp: Number(r.maintenance_bp) } : DEFAULT_SPLIT);
