@@ -13,6 +13,7 @@ import { ShiftsPanel, SafetyPanel, WelfarePanel, OverviewPanel } from "./Associa
 import { ComplianceOverview, RegistrationScreen, VehicleRegisterScreen, DriverRegisterScreen } from "./AssociationCompliance";
 import { FinanceOverview, FeesAndReceiptsScreen, ExpensesScreen, IncomeStatementScreen } from "./AssociationFinance";
 import { GovernanceScreen, DisciplineScreen } from "./AssociationGovernance";
+import { ReportsScreen } from "./AssociationReports";
 import { CommissionScreen, PayRunScreen, QueriesScreen } from "./AssociationCommission";
 
 const COLOR = "#C8102E";
@@ -31,7 +32,7 @@ export function AssociationDashboard({ userName, onClose }: { userName?: string;
   const pending = reqs.state === "ready" ? reqs.data.requests.length : 0;
   const G = { home: "Compliance", reg: "Registers", routes: "Routes and ranks", fin: "Association finance", gov: "Governance", money: "VINK money", care: "Marshals", vink: "VINK" };
   const items = [
-    { icon: <ShieldCheck className="w-4 h-4" />, label: "Compliance", group: G.home }, { icon: <Home className="w-4 h-4" />, label: "Overview", group: G.home },
+    { icon: <ShieldCheck className="w-4 h-4" />, label: "Compliance", group: G.home }, { icon: <FileText className="w-4 h-4" />, label: "Reports", group: G.home }, { icon: <Home className="w-4 h-4" />, label: "Overview", group: G.home },
     { icon: <ClipboardList className="w-4 h-4" />, label: "Registration", group: G.reg }, { icon: <Users className="w-4 h-4" />, label: "Owners", group: G.reg }, { icon: <UserCog className="w-4 h-4" />, label: "Drivers", group: G.reg }, { icon: <UserCheck className="w-4 h-4" />, label: "Marshals", group: G.reg },
     { icon: <Car className="w-4 h-4" />, label: "Vehicles", group: G.reg }, { icon: <Car className="w-4 h-4" />, label: "Vehicle register", group: G.reg }, { icon: <IdCard className="w-4 h-4" />, label: "Driver register", group: G.reg },
     { icon: <CheckCircle2 className="w-4 h-4" />, label: "Approvals", badge: pending || undefined, group: G.reg },
@@ -49,6 +50,7 @@ export function AssociationDashboard({ userName, onClose }: { userName?: string;
         <BankStrip segment="association" color={COLOR} onOpen={() => setNav("Bank account")} />
         <ScreenBoundary resetKey={nav}>
           {nav === "Compliance" && <ComplianceOverview onOpen={setNav} />}
+          {nav === "Reports" && <ReportsScreen />}
           {nav === "Finance" && <FinanceOverview onOpen={setNav} />}
           {nav === "Governance" && <GovernanceScreen />}
           {nav === "Discipline" && <DisciplineScreen />}

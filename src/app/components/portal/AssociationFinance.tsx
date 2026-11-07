@@ -22,7 +22,7 @@ const receiptNo = (n: number) => `R-${String(n).padStart(6, "0")}`;
 const today = () => new Date().toISOString().slice(0, 10);
 
 /** Downloads a file with the signed-in session. */
-function FileButton({ path, filename, label }: { path: string; filename: string; label: string }) {
+export function FileButton({ path, filename, label }: { path: string; filename: string; label: string }) {
   const [busy, setBusy] = useState(false), [err, setErr] = useState<string | null>(null);
   return (
     <span className="inline-flex items-center gap-2">
