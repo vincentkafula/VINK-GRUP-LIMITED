@@ -37,7 +37,6 @@ afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 const writes = () => calls.filter((c) => c.method !== "GET");
 const pick = (label: string, value: string) => fireEvent.change(screen.getByLabelText(label), { target: { value } });
 const override = (path: string, reply: Reply) => { const o = routes; routes = (m, p, b) => (p === path ? reply : o(m, p, b)); };
-const card = (reg: string) => screen.getByText(new RegExp(`^${reg}`), { selector: "h2,h3" }).closest("section,div")!;
 const openV1 = async () => { render(<ComplianceCentreScreen />); fireEvent.click(await screen.findByRole("button", { name: "Update CA 111-111" })); };
 
 describe("the overview", () => {
