@@ -221,6 +221,8 @@ This is the design for extending the existing Owner Dashboard. It records what t
 - Emailed invitations (so a person sets their own password) need email to be set up; until then the owner passes on a one-time password.
 - Co-owners cannot see the bank. Whether they should is a decision for the business (see the questions to the owner).
 
+**What each person sees first.** The Overview page shows the fares collected, which belong to the *earnings* module. The owner, a co-owner and an accountant have it. A **fleet manager does not**, so instead of an error they land on a short welcome that names their role and offers only the menu items they can open (vehicles, drivers, driver targets, the compliance centre, documents, notifications). The dashboard also waits to know who is signed in before it asks for any money figures, so a role that may not see them is never even asked for them. (If who is signed in cannot be found out, it falls back to the figures page; the server still decides what each person may see.)
+
 ## 4g. Slice F1, built: the activity log
 
 **What it does.** *Activity log* shows who did what and when, in plain words, for the owner and everyone on their team: "Recorded a R300.00 payment from a driver for CA 111-111 (cash)", "Switched off the login of Thabo Mokoena". Filter by kind (money, vehicles and drivers, documents, the team, downloads), by person and by dates; page back through older activity; download it as a spreadsheet.
