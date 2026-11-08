@@ -1,10 +1,13 @@
 import { Router, Request, Response } from "express";
 import { pool, hasDb } from "../db/pool.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
+import { createRouteScope } from "./routeScope.js";
 
 const router: ReturnType<typeof Router> = Router();
 
 const REVIEWER_ROLES = ["owner", "superadmin", "noc_engineer", "billing_admin", "association"] as const;
+/** An association login sees and changes only its own routes and ledger (see routeScope.ts); platform staff are not restricted. */
+const scope = createRouteScope(hasDb ? (pool as never) : null);
 
 interface WaypointInput { lat: number; lng: number }
 
@@ -22,7 +25,7 @@ function validWaypoints(value: unknown): value is WaypointInput[] {
  * waypoints for a specific terminal (vehicle). tolerance_meters
  * defaults to 200 in the schema if not provided here.
  */
-router.post("/", requireAuth, requireRole(...REVIEWER_ROLES), async (req: Request, res: Response): Promise<void> => {
+router.post("/", requireAuth, requireRole(...REVIEWER_ROLES), scope, async (req: Request, res: Response): Promise<void> => {
   if (!hasDb || !pool) { res.status(503).json({ success: false, error: "Database not configured" }); return; }
   const { terminalId, associationId, name, toleranceMeters, waypoints } = req.body as {
     terminalId?: string; associationId?: string; name?: string; toleranceMeters?: number; waypoints?: unknown;
@@ -69,13 +72,14 @@ router.post("/", requireAuth, requireRole(...REVIEWER_ROLES), async (req: Reques
  * List routes, optionally filtered by terminalId. Includes waypoints
  * so the caller doesn't need a second request per route.
  */
-router.get("/", requireAuth, requireRole(...REVIEWER_ROLES), async (req: Request, res: Response): Promise<void> => {
+router.get("/", requireAuth, requireRole(...REVIEWER_ROLES), scope, async (req: Request, res: Response): Promise<void> => {
   if (!hasDb || !pool) { res.json({ success: true, data: [] }); return; }
   const { terminalId } = req.query as { terminalId?: string };
 
+  const own = res.locals.associationScope as string | undefined;                          // set for an association login: only its own routes
   const routesResult = terminalId
-    ? await pool.query(`SELECT * FROM vehicle_routes WHERE terminal_id = $1 ORDER BY created_at DESC`, [terminalId])
-    : await pool.query(`SELECT * FROM vehicle_routes ORDER BY created_at DESC`);
+    ? await pool.query(`SELECT * FROM vehicle_routes WHERE terminal_id = $1 AND ($2::uuid IS NULL OR association_id = $2) ORDER BY created_at DESC`, [terminalId, own ?? null])
+    : await pool.query(`SELECT * FROM vehicle_routes WHERE ($1::uuid IS NULL OR association_id = $1) ORDER BY created_at DESC`, [own ?? null]);
 
   const routes = routesResult.rows;
   if (!routes.length) { res.json({ success: true, data: [] }); return; }
@@ -101,7 +105,7 @@ router.get("/", requireAuth, requireRole(...REVIEWER_ROLES), async (req: Request
  * violations always refer to the exact path that was active at the
  * time, not a since-edited one.
  */
-router.patch("/:id", requireAuth, requireRole(...REVIEWER_ROLES), async (req: Request, res: Response): Promise<void> => {
+router.patch("/:id", requireAuth, requireRole(...REVIEWER_ROLES), scope, async (req: Request, res: Response): Promise<void> => {
   if (!hasDb || !pool) { res.status(503).json({ success: false, error: "Database not configured" }); return; }
   const { active, toleranceMeters } = req.body as { active?: boolean; toleranceMeters?: number };
   const { rows } = await pool.query(
@@ -117,7 +121,7 @@ router.patch("/:id", requireAuth, requireRole(...REVIEWER_ROLES), async (req: Re
  * GET /api/routes/:id/violations
  * Every violation recorded against a specific route.
  */
-router.get("/:id/violations", requireAuth, requireRole(...REVIEWER_ROLES), async (req: Request, res: Response): Promise<void> => {
+router.get("/:id/violations", requireAuth, requireRole(...REVIEWER_ROLES), scope, async (req: Request, res: Response): Promise<void> => {
   if (!hasDb || !pool) { res.json({ success: true, data: [] }); return; }
   const { rows } = await pool.query(
     `SELECT v.*, p.lat, p.lng FROM route_violations v JOIN vehicle_positions p ON p.id = v.position_id
@@ -135,7 +139,7 @@ router.get("/:id/violations", requireAuth, requireRole(...REVIEWER_ROLES), async
  * for route violation fines, not general driver accounting (see
  * driver_ledger's own schema comment).
  */
-router.get("/drivers/:driverId/ledger", requireAuth, requireRole(...REVIEWER_ROLES), async (req: Request, res: Response): Promise<void> => {
+router.get("/drivers/:driverId/ledger", requireAuth, requireRole(...REVIEWER_ROLES), scope, async (req: Request, res: Response): Promise<void> => {
   if (!hasDb || !pool) { res.json({ success: true, data: { balance: 0, entries: [] } }); return; }
   const { rows } = await pool.query(
     `SELECT * FROM driver_ledger WHERE driver_id = $1 ORDER BY created_at DESC`,
@@ -150,7 +154,7 @@ router.get("/drivers/:driverId/ledger", requireAuth, requireRole(...REVIEWER_ROL
  * The other side of a fine transfer -- an association's credited fine
  * balance from route violations on its own routes.
  */
-router.get("/associations/:associationId/ledger", requireAuth, requireRole(...REVIEWER_ROLES), async (req: Request, res: Response): Promise<void> => {
+router.get("/associations/:associationId/ledger", requireAuth, requireRole(...REVIEWER_ROLES), scope, async (req: Request, res: Response): Promise<void> => {
   if (!hasDb || !pool) { res.json({ success: true, data: { balance: 0, entries: [] } }); return; }
   const { rows } = await pool.query(
     `SELECT * FROM association_ledger WHERE association_id = $1 ORDER BY created_at DESC`,
