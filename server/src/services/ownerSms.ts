@@ -20,7 +20,7 @@ export type Res<T> = { ok: true; value: T } | Fail;
 const bad = (status: number, error: string): Fail => ({ ok: false, status, error });
 export const SMS_KINDS = ["finance", "service", "compliance", "arrears"] as const;
 export type SmsKind = (typeof SMS_KINDS)[number];
-export const KIND_TEXT: Record<SmsKind, string> = { finance: "Money: a loan instalment missed, unpaid fines, a vehicle losing money", service: "Servicing: a service due or overdue", compliance: "Compliance: a licence, certificate or disc running out", arrears: "What drivers owe: a driver behind on payments" };
+export const KIND_TEXT: Record<SmsKind, string> = { finance: "Money: a loan instalment missed or about to fall due, unpaid fines, a vehicle losing money", service: "Servicing: a service due or overdue", compliance: "Compliance: a licence, certificate or disc running out", arrears: "What drivers owe: a driver behind on payments" };
 const PREFIX: Record<SmsKind, string[]> = { finance: ["fin:", "fines:", "pl:"], service: ["mnt:"], compliance: ["cc:"], arrears: ["pay:"] };
 /** The words that mean "stop texting me". Twilio's own list. A message that STARTS with one is taken as a stop: it is always safer to stop. */
 export const STOP_WORDS = ["STOP", "STOPALL", "UNSUBSCRIBE", "CANCEL", "END", "QUIT"], START_WORDS = ["START", "YES", "UNSTOP"], HELP_WORDS = ["HELP", "INFO"];

@@ -7,7 +7,7 @@ import { ownerNavAllowed, type OwnerAccess } from "./OwnerTeam";
 type Reply = { status?: number; body: unknown };
 let routes: (method: string, path: string, body: any) => Reply | undefined, calls: { method: string; path: string; body: any }[], state: any;
 const P = "/api/portal/owner";
-const KINDS = [{ key: "finance", label: "Money: a loan instalment missed, unpaid fines, a vehicle losing money" }, { key: "service", label: "Servicing: a service due or overdue" }, { key: "compliance", label: "Compliance: a licence, certificate or disc running out" }, { key: "arrears", label: "What drivers owe: a driver behind on payments" }];
+const KINDS = [{ key: "finance", label: "Money: a loan instalment missed or about to fall due, unpaid fines, a vehicle losing money" }, { key: "service", label: "Servicing: a service due or overdue" }, { key: "compliance", label: "Compliance: a licence, certificate or disc running out" }, { key: "arrears", label: "What drivers owe: a driver behind on payments" }];
 const base = (o: any = {}) => ({ success: true, available: true, phone: null, verified: false, enabled: false, kinds: [], kindList: KINDS, codePending: false, ...o });
 
 beforeEach(() => {

@@ -267,7 +267,7 @@ This is the design for extending the existing Owner Dashboard. It records what t
 
 **Rules (all covered by tests)**
 - **A confirmed number only.** A code is texted to the number; it works for 10 minutes, five wrong tries kill it, and at most 3 codes an hour and 8 a day can be asked for. Until it is confirmed, nothing else can be sent to it, not even a test. **A different number starts again**: unconfirmed, switched off, nothing chosen.
-- **The owner chooses what they are told**: money (a missed loan instalment, unpaid fines), servicing (due or overdue), compliance (a licence, certificate or disc running out), and what drivers owe. Nothing is chosen by default.
+- **The owner chooses what they are told**: money (a missed loan instalment, one falling due in the next three days, unpaid fines), servicing (due or overdue), compliance (a licence, certificate or disc running out), and what drivers owe. Nothing is chosen by default.
 - **Limits**: at most **one text a day**, only between **07:00 and 19:00 South African time**, only things that need action (high or medium importance), **never the same thing twice within a week**, at most three failed tries in a day, three test texts a day. The text lists at most three items and says how many more are on the dashboard, and how to switch off.
 - **Privacy**: the number is shown with only its end visible; it and the code are **never written to the audit record**; the log keeps *what went and when* (never the message text). Deleting the number removes it and every choice. The text can name a vehicle and an amount; it never contains bank details or a password.
 - **Owner's own login only**: not available to a co-owner, a fleet manager or the accountant (tested, and refused by the same fail-closed gate).
@@ -283,7 +283,7 @@ This is the design for extending the existing Owner Dashboard. It records what t
 **Known limits, to do next**
 - **A reply of STOP is handled** (see below), but only once the SMS provider is pointed at the platform: in Twilio, set the incoming-message address to `https://<your API>/api/webhooks/twilio/sms` and set `TWILIO_SMS_WEBHOOK_URL` on the server to that same address (it is part of what Twilio signs). START never switches alerts back on; the owner does that on the dashboard.
 - It sends SMS only; email and WhatsApp are not used for these alerts.
-- Only the four kinds above; an instalment *coming up* (rather than missed) and a payment received are not alerts yet.
+- Only the four kinds above. An instalment *coming up* is part of "money": it is raised from three days before the due date (and on the day), once for each due date, and not at all if an instalment was already recorded in the fifteen days before it. A payment *received* is not an alert yet.
 - The message is in English only.
 - Real delivery has not been tried: only a stand-in sender has been tested.
 
