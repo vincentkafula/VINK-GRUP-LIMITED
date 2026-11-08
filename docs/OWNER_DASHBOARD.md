@@ -218,6 +218,26 @@ This is the design for extending the existing Owner Dashboard. It records what t
 - A record shows the person's name as it is today, not as it was when they acted.
 - Free text typed by a person (a void reason) is shown as typed, in quotes, shortened.
 
+## 4h. Slice F2, built: the fleet expansion planner
+
+**What it does.** *Profit and costs → Planner* answers "can I afford another vehicle?" before the owner buys it. The owner types the price, deposit, the costs to get it on the road, and the **interest rate and months from a real quote**; it works out the monthly instalment, what is left each month, the cash needed now, how many months to earn that back, the income needed to break even (monthly and weekly), what happens if income is 10% or 20% lower, and what the whole business would make with it.
+
+**Rules (all covered by tests)**
+- **A calculator on the owner's own records.** It records nothing and moves no money (tested). It is **not financial or credit advice and not what a lender would approve**, and says so on screen and in the result.
+- **It never assumes a rate, a term or a lender's rules.** With a loan, no rate or term is an error. With no loan (the deposit is the whole price) none is needed.
+- **The instalment** is that of a standard fixed-rate loan, in whole cents, rounded **up**. It was tested against figures worked out separately with exact decimal arithmetic (for example R300 000 at 12% over 60 months is R6 673.34 a month).
+- **Income and costs** are what the owner types, or else the average **per vehicle** over the last 3, 6 or 12 **full** months before this one (never the current partial month), from what they recorded in slices A and D. The screen says which it used, and warns when fewer than 3 months had income or when the average may be thin because vehicles were added.
+- **The colour is a rule of thumb, shown with its numbers, not a lender's test**: green when the vehicle earns at least 1.5 times its instalment after running costs, amber from 1.0 up to 1.5, red below 1.0 or when it loses money each month. The comparison uses the exact ratio, not the rounded one shown (1.499 is not 1.5).
+- **Who may use it**: the owner, a co-owner and the accountant (it is part of the finance module). Not the fleet manager.
+
+**API**: `GET /api/portal/owner/finance/planner?priceCents=&depositCents=&ratePercent=&termMonths=&upfrontCostsCents=&expectedIncomeCents=&expectedCostsCents=&lookbackMonths=`. No new tables.
+
+**Known limits, to do next**
+- A plan cannot be saved or compared side by side yet.
+- Income is what the owner recorded from drivers (slice A); platform-collected payments are not yet included.
+- It does not model interest-only periods, balloon payments, depreciation, a vehicle sold later, or tax.
+- A driver's pay is a private agreement, so any income used here is a plan, not a promise.
+
 ## 5. Assumptions made (non-blocking; change any of them)
 
 - A target is **bookkeeping the owner sets**; it does not change the platform's agreement or collection. The two are linked by an optional agreement reference.

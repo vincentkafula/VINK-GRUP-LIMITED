@@ -239,13 +239,62 @@ function MaintenancePanel() {
   );
 }
 
-const TABS: [string, string, string][] = [["overview", "Overview", "finance"], ["profit", "Profit and loss", "finance"], ["costs", "Costs and fines", "costs"], ["loans", "Loans", "finance"], ["maintenance", "Servicing", "costs"]];
+/* ───────────────────────── planner ───────────────────────── */
+interface PlanResult { verdict: { colour: string; text: string }; loan: { amountCents: number; instalmentCents: number; totalRepayableCents: number; totalInterestCents: number }; monthly: { incomeCents: number; incomeFrom: string; costsCents: number; costsFrom: string; beforeFinanceCents: number; instalmentCents: number; netCents: number; coverage: number | null }; cashNeededNowCents: number; paybackMonths: number | null; breakEvenIncomeCents: number; breakEvenWeeklyCents: number; stress: { percent: number; incomeCents: number; netCents: number }[]; businessAfter: { monthlyCashProfitNowCents: number; monthlyCashProfitWithItCents: number }; history: { months: number; from: string | null; to: string | null; vehicles: number }; notes: string[] }
+const COLOUR: Record<string, [string, string]> = { green: ["#15803d", "Comfortable"], amber: ["#D97706", "Tight"], red: ["#C8102E", "Does not pay for itself"] };
+function PlannerPanel() {
+  const [f, setF] = useState({ price: "", deposit: "", upfront: "", rate: "", term: "", income: "", costs: "", lookback: "6" }), [res, setRes] = useState<PlanResult | null>(null), [err, setErr] = useState<string | null>(null), [busy, setBusy] = useState(false);
+  const run = async () => {
+    setErr(null); setRes(null); const price = toCents(f.price), deposit = f.deposit.trim() ? (f.deposit.trim() === "0" ? 0 : toCents(f.deposit)) : 0, upfront = f.upfront.trim() ? (f.upfront.trim() === "0" ? 0 : toCents(f.upfront)) : 0, income = f.income.trim() ? toCents(f.income) : undefined, costs = f.costs.trim() ? (f.costs.trim() === "0" ? 0 : toCents(f.costs)) : undefined;
+    if (price === null) return setErr("Type the price of the vehicle in rand, for example 300000."); if (deposit === null || upfront === null || income === null || costs === null) return setErr("Type each amount in rand, for example 50000. Leave a box empty if you do not know."); if (deposit > price) return setErr("The deposit cannot be more than the price.");
+    const loan = price - deposit > 0, rate = f.rate.trim().replace(",", "."), term = num(f.term); if (loan && !/^\d+(\.\d{1,2})?$/.test(rate)) return setErr("Type the yearly interest rate from your quote, for example 12 or 13.75. This planner never guesses a rate."); if (loan && (term === null || term < 1)) return setErr("Type the number of months of the loan, for example 60.");
+    const q = new URLSearchParams({ priceCents: String(price), depositCents: String(deposit), upfrontCostsCents: String(upfront), lookbackMonths: f.lookback, ...(loan ? { ratePercent: rate, termMonths: String(term) } : {}), ...(income !== undefined ? { expectedIncomeCents: String(income) } : {}), ...(costs !== undefined ? { expectedCostsCents: String(costs) } : {}) });
+    setBusy(true); const r = await call<PlanResult>(`/finance/planner?${q}`); setBusy(false); if ("error" in r) return setErr(r.error); setRes(r.data as unknown as PlanResult);
+  };
+  const field = (k: keyof typeof f, label: string, aria: string, w = "w-40", hint?: string) => <label className="block"><span className="text-xs text-fg-muted">{label}</span><input aria-label={aria} inputMode="decimal" className={inputCls + ` mt-1 ${w} py-3`} value={f[k]} onChange={(e) => setF({ ...f, [k]: e.target.value })} />{hint && <span className="block text-[11px] text-fg-subtle">{hint}</span>}</label>;
+  return (
+    <div className="space-y-4">
+      <SectionPanel title="Can I afford another vehicle?">
+        <div className="p-4 space-y-4">
+          <p className="text-sm text-fg">Work out what one more vehicle would do to your profit before you buy it. It uses your own recorded figures, and the interest rate and loan term you type in from a real quote. It is a plan, not advice and not what a lender would approve, and it records nothing.</p>
+          <div className="flex flex-wrap items-end gap-3">{field("price", "Price of the vehicle (rand)", "Planner price")}{field("deposit", "Deposit you will pay (rand)", "Planner deposit", "w-40", "Leave empty if none")}{field("upfront", "Costs to get it on the road (rand)", "Planner upfront", "w-44", "Licence, registration, first insurance")}</div>
+          <div className="flex flex-wrap items-end gap-3">{field("rate", "Yearly interest rate (%)", "Planner rate", "w-32", "From your quote")}{field("term", "Months to pay", "Planner term", "w-28")}</div>
+          <div className="flex flex-wrap items-end gap-3">{field("income", "What a driver would pay each month (rand)", "Planner income", "w-48", "Empty: use your average per vehicle")}{field("costs", "What it would cost to run each month (rand)", "Planner costs", "w-48", "Empty: use your average per vehicle")}
+            <label className="block"><span className="text-xs text-fg-muted">Average over the last</span><select aria-label="Planner lookback" className={inputCls + " mt-1 w-40 py-3"} value={f.lookback} onChange={(e) => setF({ ...f, lookback: e.target.value })}><option value="3">3 months</option><option value="6">6 months</option><option value="12">12 months</option></select></label></div>
+          <button type="button" disabled={busy} onClick={run} className="px-6 py-3 rounded-lg text-base font-bold text-white disabled:opacity-60" style={{ background: COLOR }}>{busy ? "Working it out…" : "Work it out"}</button>
+          {err && <p role="alert" className="text-sm text-bad">{err}</p>}
+        </div>
+      </SectionPanel>
+      {res && (
+        <SectionPanel title="What it would do">
+          <div className="p-4 space-y-4 text-sm text-fg">
+            <p className="flex flex-wrap items-center gap-2"><Chip color={COLOUR[res.verdict.colour][0]}>{COLOUR[res.verdict.colour][1]}</Chip><b>{res.verdict.text}</b></p>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <StatCard label="Instalment each month" value={R(res.loan.instalmentCents)} icon={<span aria-hidden>I</span>} color={COLOR} /><StatCard label="Left over each month" value={R(res.monthly.netCents)} icon={<span aria-hidden>L</span>} color={COLOR} />
+              <StatCard label="Cash needed now" value={R(res.cashNeededNowCents)} icon={<span aria-hidden>C</span>} color={COLOR} /><StatCard label="Needed each month to break even" value={R(res.breakEvenIncomeCents)} icon={<span aria-hidden>B</span>} color={COLOR} />
+            </div>
+            <ul className="space-y-1">
+              <li>It would bring in {R(res.monthly.incomeCents)} a month ({res.monthly.incomeFrom === "you" ? "what you typed" : `your average per vehicle over the last ${res.history.months} months`}) and cost {R(res.monthly.costsCents)} to run ({res.monthly.costsFrom === "you" ? "what you typed" : "your average per vehicle"}).</li>
+              {res.loan.amountCents > 0 ? <li>You would borrow {R(res.loan.amountCents)} and pay back {R(res.loan.totalRepayableCents)} in all, which is {R(res.loan.totalInterestCents)} in interest.{res.monthly.coverage !== null ? ` After running costs it earns ${res.monthly.coverage} times its instalment.` : ""}</li> : <li>You would pay for it in cash.</li>}
+              <li>{res.paybackMonths === null ? "It would not earn back the cash you put in at these figures." : `It would take about ${res.paybackMonths} months to earn back the ${R(res.cashNeededNowCents)} you put in.`}</li>
+              <li>To break even it must bring in {R(res.breakEvenIncomeCents)} a month, which is about {R(res.breakEvenWeeklyCents)} a week from a driver.</li>
+              <li>Your business makes {R(res.businessAfter.monthlyCashProfitNowCents)} a month now (after instalments) and would make {R(res.businessAfter.monthlyCashProfitWithItCents)} with it.</li>
+            </ul>
+            <table className="w-full"><caption className="text-left text-xs font-bold uppercase text-fg-muted mb-1">If it brings in less</caption><thead><tr className="text-left text-xs text-fg-muted"><th className="pr-3">If income is</th><th className="pr-3">It brings in</th><th>It leaves</th></tr></thead><tbody>{res.stress.map((s) => <tr key={s.percent} className="border-t border-line/60"><td className="pr-3">{s.percent}% lower</td><td className="pr-3">{R(s.incomeCents)}</td><td>{R(s.netCents)}</td></tr>)}</tbody></table>
+            <ul className="space-y-1 text-xs text-fg-subtle">{res.notes.map((n) => <li key={n}>{n}</li>)}</ul>
+          </div>
+        </SectionPanel>)}
+    </div>
+  );
+}
+
+const TABS: [string, string, string][] = [["overview", "Overview", "finance"], ["profit", "Profit and loss", "finance"], ["costs", "Costs and fines", "costs"], ["loans", "Loans", "finance"], ["maintenance", "Servicing", "costs"], ["planner", "Planner", "finance"]];
 export function OwnerFinanceScreen() {
   const access = useOwnerAccess(), tabs = TABS.filter(([, , m]) => access === null || access.kind === "owner" || !!access.modules[m]), [picked, setTab] = useState("overview"), tab = tabs.some(([k]) => k === picked) ? picked : (tabs[0]?.[0] ?? "overview");                  // a role sees only the tabs it can use
   return (
     <div className="space-y-4">
       <div role="tablist" aria-label="Finances" className="flex flex-wrap gap-2">{tabs.map(([k, l]) => <button key={k} type="button" role="tab" aria-selected={tab === k} className="px-4 py-3 rounded-lg text-sm font-bold border" style={tab === k ? { background: COLOR, color: "#fff", borderColor: COLOR } : {}} onClick={() => setTab(k)}>{l}</button>)}</div>
-      {tab === "overview" && <Overview />}{tab === "profit" && <ProfitPanel />}{tab === "costs" && <CostsPanel />}{tab === "loans" && <LoansPanel />}{tab === "maintenance" && <MaintenancePanel />}
+      {tab === "overview" && <Overview />}{tab === "profit" && <ProfitPanel />}{tab === "costs" && <CostsPanel />}{tab === "loans" && <LoansPanel />}{tab === "maintenance" && <MaintenancePanel />}{tab === "planner" && <PlannerPanel />}
     </div>
   );
 }
