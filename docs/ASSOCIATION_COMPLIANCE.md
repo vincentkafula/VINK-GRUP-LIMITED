@@ -19,7 +19,7 @@ specification, how the rules work, and what is not built. It is built in slices;
 | 10 | Tax and labour formalisation | **Built** (slice 6): each owner's business type and registration, SARS tax reference (masked), filing status as reported, employer registrations (UIF, COIDA, SDL), beside the drivers they employ; tracks and reports only |
 | 11 | Digital fleet and payments | Later: the VINK card and rank-device data exist to link to |
 | 12 | Reports and regulator export | **Built** (slice 4): registration, licence, finance and governance packs as stamped PDFs; member, vehicle and driver lists as CSV; monthly, quarterly and annual emailing with a record of every send |
-| 13 | Alerts, users and audit trail | **Built** (slice 7): expiry alerts and flags, the change history and audit log, and **named office-bearer logins with roles** that restrict the sensitive modules; scheduled digests are **not built** |
+| 13 | Alerts, users and audit trail | **Built** (slice 7): expiry alerts and flags, the change history and audit log, **named office-bearer logins with roles** that restrict the sensitive modules, and a **weekly or monthly email digest** of what needs attention (see "The email digest" below) |
 
 ## How it works
 
@@ -123,7 +123,7 @@ specification, how the rules work, and what is not built. It is built in slices;
 - **Approvals as yourself.** A delegate linked to their office-bearer record approves expenses **as themselves**, whatever they send, and the approval is marked **signed in**. An approval recorded by the shared login is an **attestation**; the association can switch on "approvals must be made by the office bearer
   signed in to their own account", after which the shared login can no longer record one. A delegate who is not linked to an office bearer cannot approve.
 - **Passwords.** A login is created with a password that meets the password policy, **shown once** to the association and never stored in the clear or written to any record; the person should change it when they first sign in. A reset makes a new one. Delegates use the same sign-in as everyone else, including two-step sign-in if it is switched on.
-- **Emailed invitation: built.** When email is set up, the association can email a new office bearer a link to choose their own password instead of handing over a one-time password (see docs/OWNER_DASHBOARD.md, section 4l). **Not built**: scheduled digests by email, and per-person permissions beyond the four roles.
+- **Emailed invitation: built.** When email is set up, the association can email a new office bearer a link to choose their own password instead of handing over a one-time password (see docs/OWNER_DASHBOARD.md, section 4l). **Not built**: per-person permissions beyond the four roles.
 
 ## Decisions only the association can make
 
@@ -134,3 +134,17 @@ specification, how the rules work, and what is not built. It is built in slices;
 ## Testing
 
 `cd server && npx vitest run src/services/compliance.test.ts src/portal/complianceRoutes.test.ts src/services/finance.test.ts src/portal/financeRoutes.test.ts src/services/governance.test.ts src/portal/governanceRoutes.test.ts src/services/reports.test.ts src/portal/reportsRoutes.test.ts src/services/safety.test.ts src/services/routeControl.test.ts src/portal/safetyRoutes.test.ts src/services/memberRegister.test.ts src/portal/memberRegisterRoutes.test.ts src/services/delegates.test.ts src/portal/delegatesRoutes.test.ts src/portal/portalGate.test.ts`. Run against a real PostgreSQL by setting `TEST_PG_URL` (see docs/MARSHAL_COMMISSION.md).
+
+## The email digest
+
+*Email digest* (the main login only) sends a short email, weekly or monthly, of what needs attention, to up to five addresses the association chooses, so the executive does not have to open the dashboard to know.
+
+- **What it says:** the same things the dashboard shows, gathered from compliance, finance, governance and safety, most serious first: how many things need action now and soon, the headline figures (vehicles licensed, drivers with a valid permit, members overdue, resolutions past their date), and the expiries in the next 30 days. Smaller notes are counted and left to the dashboard. Nothing is worked out differently from the dashboard.
+- **When:** on the chosen weekday (weekly) or day of the month, 1 to 28 (monthly), **once for each week or month and never twice**, between 07:00 and 19:00 South African time. If the server was off on the day, it is sent when it is next on within the same period. A failed send is tried again, up to three times in a period.
+- **Quiet weeks:** if nothing needs attention nothing is sent (and the record says so once), unless the association asks for it anyway.
+- **Who:** only the main login can set it up or change it; a named office bearer cannot see it, because it gathers every module (including ones their role may not see) in one email. The screen says it names vehicles, drivers and members, so add only people who may see that. **Each person gets their own copy**, so addresses are not shown to each other.
+- **Records:** every send, skip, failure and test is listed on the screen. The record of a change holds only whether it is on, how often and how many addresses, never the addresses; a failure keeps a fixed note, never the email provider's message.
+- **Test and preview:** *Show me today's digest* shows exactly what would be sent today (sending nothing); *Send a test email now* sends it to the saved addresses (at most three a day, and it never counts as the period's digest).
+- **Needs** the email service (`RESEND_API_KEY`, `EMAIL_FROM`); without it the screen says so and nothing is sent, and no tries are used up.
+- **Data** (rollback `server/src/db/rollback/association_digest.sql`): `association_digests`, `association_digest_log`.
+- **Not built:** a digest to office bearers by their own role, digests in other languages, and a WhatsApp digest.
