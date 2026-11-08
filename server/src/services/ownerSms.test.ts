@@ -131,6 +131,18 @@ describe("the daily run", () => {
     ok(await s.configure(U.O1, { enabled: true, kinds: ["compliance"] })); name = "unconfigured"; expect(await s.dispatch()).toEqual({ owners: 0, sent: 0, failed: 0, quiet: 0 }); expect(sent).toEqual([]);                  // the SMS service is not set up
     name = "twilio"; expect((await s.dispatch()).sent).toBe(1);
   });
+  it("never texts a number that is saved but not confirmed, even if its row somehow says alerts are on", async () => {
+    await compliance(); ok(await s.setPhone(U.O1, "0821234567")); sent = []; await db.query(`UPDATE owner_sms SET enabled = true, kinds = $1 WHERE owner_id = $2`, [JSON.stringify(["compliance"]), U.O1]);
+    expect(await s.dispatch()).toMatchObject({ owners: 0, sent: 0 }); expect(sent).toEqual([]); expect(await s.status(U.O1)).toMatchObject({ verified: false, enabled: false });                  // and the owner is not shown as switched on
+  });
+  it("sends only one a day even when something new goes wrong the same day, and tells about the new thing the next day", async () => {
+    await compliance(); await choose(["compliance", "service"]); expect((await s.dispatch()).sent).toBe(1); await service(); advance(3_600_000); const again = await s.dispatch(); expect(again).toMatchObject({ sent: 0, quiet: 1 }); expect(sent).toHaveLength(1);
+    advance(24 * 3_600_000); expect((await s.dispatch()).sent).toBe(1); expect(sent).toHaveLength(2); expect(texts()[1]).toContain("CA 222-222");
+  });
+  it("tells about only the kinds chosen, even when the source it reads also reports other kinds", async () => {
+    await money(); await service(); await choose(["finance"]); await s.dispatch(); expect(sent).toHaveLength(1); const t = texts()[0]; expect(t).toMatch(/WesBank|fine/); expect(t).not.toContain("CA 222-222"); expect(t).not.toMatch(/service/i);                  // the servicing problem is on vehicle 2, and the money overview also lists servicing: it must not be told
+    sent = []; await db.query(`DELETE FROM owner_sms_log WHERE kind = 'daily'`); ok(await s.configure(U.O1, { enabled: true, kinds: ["service"] })); await s.dispatch(); expect(texts()[0]).toContain("CA 222-222"); expect(texts()[0]).not.toContain("WesBank");
+  });
   it("tries again after a failure, but gives up for the day after three failures, and counts a failure as not sent", async () => {
     await compliance(); await choose(["compliance"]); fail = true; for (let i = 0; i < MAX_FAILED_PER_DAY; i++) expect(await s.dispatch(), `try ${i + 1}`).toMatchObject({ sent: 0, failed: 1 }); expect(await s.dispatch()).toMatchObject({ sent: 0, failed: 0, quiet: 1 }); fail = false; expect((await s.dispatch()).sent).toBe(0); advance(86_400_000); expect((await s.dispatch()).sent).toBe(1);
     expect((await q(`SELECT status FROM owner_sms_log WHERE kind = 'daily' ORDER BY sent_at`)).map((r) => r.status)).toEqual(["failed", "failed", "failed", "sent"]);
