@@ -89,7 +89,7 @@ describe("choosing what to be told", () => {
 
 describe("a test message", () => {
   it("goes to the confirmed number only, three a day, and says plainly when it cannot be sent", async () => {
-    expect(await s.test(U.O1)).toMatchObject({ ok: false, status: 409 }); await confirmed(); sent = []; for (let i = 0; i < MAX_TESTS_PER_DAY; i++) ok(await s.test(U.O1)); expect(sent.map((m) => m.to)).toEqual(Array(3).fill("+27821234567")); expect(sent[0].text).toBe("VINK: this is a test. Your text alerts are working."); expect(await s.test(U.O1)).toMatchObject({ ok: false, status: 429 }); advance(24 * 3_600_000); ok(await s.test(U.O1));
+    expect(await s.test(U.O1)).toMatchObject({ ok: false, status: 409 }); ok(await s.setPhone(U.O1, "0821234567")); const pending = codeSent(); sent = []; expect(await s.test(U.O1)).toMatchObject({ ok: false, status: 409, error: "Confirm your number first" }); expect(sent).toEqual([]); ok(await s.verify(U.O1, pending)); sent = []; for (let i = 0; i < MAX_TESTS_PER_DAY; i++) ok(await s.test(U.O1)); expect(sent.map((m) => m.to)).toEqual(Array(3).fill("+27821234567")); expect(sent[0].text).toBe("VINK: this is a test. Your text alerts are working."); expect(await s.test(U.O1)).toMatchObject({ ok: false, status: 429 }); advance(24 * 3_600_000); ok(await s.test(U.O1));
     fail = true; advance(24 * 3_600_000); expect(await s.test(U.O1)).toMatchObject({ ok: false, status: 502 }); fail = false; name = "unconfigured"; expect(await s.test(U.O1)).toMatchObject({ ok: false, status: 503 });
   });
 });

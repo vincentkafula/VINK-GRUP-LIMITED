@@ -238,6 +238,30 @@ This is the design for extending the existing Owner Dashboard. It records what t
 - It does not model interest-only periods, balloon payments, depreciation, a vehicle sold later, or tax.
 - A driver's pay is a private agreement, so any income used here is a plan, not a promise.
 
+## 4i. Slice F3, built: text (SMS) alerts
+
+**What it does.** *Text alerts* (the owner's own login only) lets an owner be told by SMS when something needs action, so they do not have to open the dashboard. It is **strictly opt-in**: a mobile number, confirmed with a code texted to it, and the kinds of alert the owner chooses. Nothing is sent until they have done both.
+
+**Rules (all covered by tests)**
+- **A confirmed number only.** A code is texted to the number; it works for 10 minutes, five wrong tries kill it, and at most 3 codes an hour and 8 a day can be asked for. Until it is confirmed, nothing else can be sent to it, not even a test. **A different number starts again**: unconfirmed, switched off, nothing chosen.
+- **The owner chooses what they are told**: money (a missed loan instalment, unpaid fines), servicing (due or overdue), compliance (a licence, certificate or disc running out), and what drivers owe. Nothing is chosen by default.
+- **Limits**: at most **one text a day**, only between **07:00 and 19:00 South African time**, only things that need action (high or medium importance), **never the same thing twice within a week**, at most three failed tries in a day, three test texts a day. The text lists at most three items and says how many more are on the dashboard, and how to switch off.
+- **Privacy**: the number is shown with only its end visible; it and the code are **never written to the audit record**; the log keeps *what went and when* (never the message text). Deleting the number removes it and every choice. The text can name a vehicle and an amount; it never contains bank details or a password.
+- **Owner's own login only**: not available to a co-owner, a fleet manager or the accountant (tested, and refused by the same fail-closed gate).
+- **Sending**: through the platform's existing SMS service (Twilio; `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM`). If it is not set up, the screen says so and nothing is sent. The run happens every 15 minutes inside the server and is safe to repeat.
+- **WhatsApp is not used**: WhatsApp requires pre-approved message templates and each person's consent under WhatsApp's own rules, and the platform's WhatsApp service is a staff inbox built around those. It needs a decision and approved templates before it can be added.
+
+**API** (`/api/portal/owner/sms`): `GET`, `POST /phone`, `POST /verify`, `PUT /settings`, `POST /test`, `DELETE`.
+
+**Data** (rollback `server/src/db/rollback/owner_dashboard_f3.sql`): `owner_sms`, `owner_sms_log`.
+
+**Known limits, to do next**
+- A reply such as STOP is not handled: opting out is done on the screen.
+- It sends SMS only; email and WhatsApp are not used for these alerts.
+- Only the four kinds above; an instalment *coming up* (rather than missed) and a payment received are not alerts yet.
+- The message is in English only.
+- Real delivery has not been tried: only a stand-in sender has been tested.
+
 ## 5. Assumptions made (non-blocking; change any of them)
 
 - A target is **bookkeeping the owner sets**; it does not change the platform's agreement or collection. The two are linked by an optional agreement reference.
