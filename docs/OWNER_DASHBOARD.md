@@ -144,6 +144,30 @@ This is the design for extending the existing Owner Dashboard. It records what t
 - Without a real antivirus engine configured, only the built-in shape checks run.
 - Rotating `DATA_ENCRYPTION_KEY` needs a re-encryption step that does not exist yet (the stored format carries a version byte to allow it).
 
+## 4e. Slice D, built: capital and profitability
+
+**What it does.** The owner writes down what each vehicle costs to run, the loans on their vehicles, services and repairs, and fines, and sees profit and loss per vehicle and for the whole fleet, with PDF and CSV exports for an accountant, a lender or SARS. It is the **owner's own bookkeeping: it records and reports, it moves no money, and it is not tax advice.** Menu: *Profit and costs* (tabs: Overview, Profit and loss, Costs and fines, Loans, Servicing).
+
+**Rules (all covered by tests)**
+- **Income** is what the owner recorded receiving from drivers (slice A). Payments the platform itself collected are not yet merged in.
+- **Two profit lines.** *Profit before finance* is income less running costs. *Cash profit* also subtracts loan instalments paid. A loan instalment includes repayment of capital, and an accountant treats only the interest as an expense, so both are shown, and the exports and PDF say so.
+- **Costs**: fuel, maintenance and repairs, insurance, tracker fees, fines, association costs, licence fees, tyres, wages and other, for one vehicle or the whole business (costs not tied to a vehicle appear as their own line and in the fleet total). A fine can name one of the owner's drivers and has its own status (unpaid, paid, disputed). **A disputed fine is not counted as a cost until it is settled.**
+- **Loans**: the lender, the instalment, the due day (a due day of 31 is the 28th in February), and what the lender **last said was owed, as at a date**. The balance is **never worked out from the instalments** (they include interest); it moves only when the owner records a new statement, which cannot be earlier than the last or in the future. "About N instalments left" is labelled a rough guess that ignores interest. A missing-instalment flag appears when the last due date was five or more days ago and no payment was recorded in the fifteen days before it.
+- **Maintenance**: services, repairs, tyres, brakes and odometer readings, with the next service by date and by kilometres. A cost on an entry creates a running cost for the vehicle (tyres count as tyres), so the money is counted once; voiding the entry voids that cost. A service is **due soon** from 30 days or 1 000 km before, and **overdue** the day after its date or at its kilometres. The odometer is the highest reading recorded.
+- **Periods**: a calendar month, quarter or year, the **individual's tax year (1 March to the end of February)**, or any dates up to three years apart; each is compared with the period of the same length just before, and the last twelve months are shown.
+- **Nothing is deleted.** A mistake is voided with a reason; a retry with the same client reference records nothing twice (a cost captured with no signal is sent once when the signal returns).
+- **Exports**: profit and loss (CSV and PDF), costs (CSV) and loans (CSV). Money in a CSV is a plain number of rand; a cell that could run as a spreadsheet formula (a payee of `=1+1`) is neutralised. The PDF states that it is the owner's own record, not audited, and not tax advice. Every export is audited.
+
+**API** (`/api/portal/owner/finance`): `GET /overview`, `GET /profit?period=&on=&from=&to=`, `GET|POST /costs`, `POST /costs/:id/void`, `PUT /costs/:id/fine-status`, `GET|POST /loans`, `PUT /loans/:id/balance`, `POST /loans/:id/settle`, `POST /loans/:id/instalments`, `POST /instalments/:id/void`, `GET|POST /maintenance`, `GET /maintenance/status`, `POST /maintenance/:id/void`, and `GET /export/profit.csv|costs.csv|loans.csv|profit.pdf`.
+
+**Data** (rollback `server/src/db/rollback/owner_dashboard_d1.sql`): `vehicle_finance`, `finance_instalments`, `vehicle_costs`, `maintenance_log`.
+
+**Known limits, to do next**
+- Income is what the owner recorded from drivers; platform-collected payments, and any other income (for example a vehicle sold), are not included.
+- No interest or capital split of instalments, no depreciation or vehicle purchase and sale, no VAT: the exports give an accountant the records, and the accountant does the tax.
+- A fine's recovery from a driver is not tracked separately.
+- The fleet expansion planner (affordability from historical profit) is slice F.
+
 ## 5. Assumptions made (non-blocking; change any of them)
 
 - A target is **bookkeeping the owner sets**; it does not change the platform's agreement or collection. The two are linked by an optional agreement reference.
