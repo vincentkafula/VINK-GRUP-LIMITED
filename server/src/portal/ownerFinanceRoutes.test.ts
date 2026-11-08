@@ -94,3 +94,21 @@ describe("profit and the overview, through the owner routes", () => {
     const o = (await F1("GET", "/overview")).body; expect(o).toMatchObject({ success: true, unpaidFines: { count: 1, cents: 20000 }, finance: { activeAgreements: 1 } }); expect(o.flags.map((f: any) => f.id.split(":").slice(0, 2).join(":"))).toEqual(expect.arrayContaining(["fin:missing", "fines:unpaid", "mnt:none"])); expect((await F3("GET", "/overview")).body.unpaidFines).toEqual({ count: 0, cents: 0 });
   });
 });
+
+describe("the exports, through the owner routes", () => {
+  const get = (who: string, path: string) => fetch(`${url}/owner/finance/export${path}`, { headers: { "x-test-user": `${who}:vehicle_owner` } });
+  beforeEach(async () => { await payment(V.v1, 350000, "2026-10-12"); await F1("POST", "/costs", { vehicleId: V.v1, category: "fuel", amountCents: 60000, incurredOn: "2026-10-15", payee: "=1+1" }); await F1("POST", "/loans", { vehicleId: V.v1, lender: "WesBank", originalCents: 45000000, balanceCents: 30000000, balanceOn: "2026-10-31", instalmentCents: 900000, dueDay: 20, startDate: "2024-01-20" }); });
+  it("downloads the profit and loss as a CSV attachment that no spreadsheet will treat as a formula, with the owner's own figures only", async () => {
+    const r = await get(U.O1, "/profit.csv?on=2026-10-20"); expect(r.status).toBe(200); expect(r.headers.get("content-type")).toContain("text/csv"); expect(r.headers.get("content-disposition")).toContain('attachment; filename="profit-and-loss-2026-10-01-to-2026-10-31.csv"'); expect(r.headers.get("cache-control")).toBe("no-store"); const t = await r.text();
+    expect(t).toContain("CA 111-111,3500,600,600,2900,0,2900"); expect(t).toContain("Whole fleet,3500,600,600,2900,0,2900"); expect(await (await get(U.O3, "/profit.csv?on=2026-10-20")).text()).not.toContain("CA 111-111");
+    const c = await (await get(U.O1, "/costs.csv?on=2026-10-20")).text(); expect(c).toContain("'=1+1"); expect(c).not.toMatch(/,=1\+1,/);                  // the payee cannot run as a formula
+  });
+  it("downloads the loans as a CSV and the profit and loss as a PDF attachment", async () => {
+    const l = await get(U.O1, "/loans.csv?on=2026-11-02"); expect(l.status).toBe(200); expect(await l.text()).toContain("CA 111-111,WesBank,,450000,300000,2026-10-31,9000,20,2024-01-20,,Active"); const p = await get(U.O1, "/profit.pdf?on=2026-10-20"); expect(p.status).toBe(200); expect(p.headers.get("content-type")).toBe("application/pdf"); expect(p.headers.get("content-disposition")).toContain('attachment; filename="profit-and-loss-october-2026.pdf"'); const b = Buffer.from(await p.arrayBuffer()); expect(b.subarray(0, 5).toString()).toBe("%PDF-"); expect(b.length).toBeGreaterThan(800);
+  });
+  it("refuses a period that is not valid, and records each export in the audit log", async () => {
+    for (const path of ["/profit.csv?period=decade", "/costs.csv?period=decade", "/profit.pdf?period=decade", "/profit.csv?period=custom", "/profit.pdf?period=custom"]) expect((await get(U.O1, path)).status, path).toBe(400);
+    await get(U.O1, "/profit.csv?on=2026-10-20"); await get(U.O1, "/costs.csv?on=2026-10-20"); await get(U.O1, "/loans.csv"); await get(U.O1, "/profit.pdf?on=2026-10-20"); expect((await q(`SELECT details FROM audit_log WHERE action = 'owner.export' ORDER BY created_at`)).length).toBe(4);
+  });
+});
+
