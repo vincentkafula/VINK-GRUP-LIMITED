@@ -13,6 +13,8 @@ export const dateOnly = (v: unknown) => (v ? new Date(v as string).toISOString()
 declare global { namespace Express { interface Request {
   /** Set when an office bearer with their own login acts for an association: who they really are, and their role. `uid(req)` is then the association. */
   actorId?: string; actorName?: string; delegateRole?: "chairperson" | "secretary" | "treasurer" | "viewer"; delegateBearerId?: string | null; delegateName?: string;
+  /** Set when a member of an owner's team acts for the owner: their role. `uid(req)` is then the owner. */
+  ownerRole?: "co_owner" | "fleet_manager" | "accountant";
 } } }
 export const uid = (req: Request) => req.user!.userId;
 /** Who really made the request: the delegate if one is acting, otherwise the signed-in user. Changes and audit records are written in this person's name. */

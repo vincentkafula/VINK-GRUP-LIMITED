@@ -55,8 +55,9 @@ export const flagVisible = (role: Role | null, category: string) => canRead(role
 export const changeVisible = (role: Role | null, entity: string) => { const m = ENTITY_MODULE[entity]; return role === null ? true : m === null ? false : canRead(role, m ?? "registers"); };
 
 const ALPHA = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
-function temporaryPassword(ctx: { username: string; email: string }): string { for (;;) { const p = `${Array.from({ length: 14 }, () => ALPHA[randomInt(ALPHA.length)]).join("")}-${randomInt(1000, 10000)}`; if (!passwordProblem(p, ctx)) return p; } }
-const EMAIL = /^[^\s@,;<>"]+@[^\s@,;<>"]+\.[^\s@,;<>"]+$/, UUID = /^[0-9a-f-]{36}$/i;
+export function temporaryPassword(ctx: { username: string; email: string }): string { for (;;) { const p = `${Array.from({ length: 14 }, () => ALPHA[randomInt(ALPHA.length)]).join("")}-${randomInt(1000, 10000)}`; if (!passwordProblem(p, ctx)) return p; } }
+export const EMAIL = /^[^\s@,;<>"]+@[^\s@,;<>"]+\.[^\s@,;<>"]+$/;
+const UUID = /^[0-9a-f-]{36}$/i;
 
 export interface Delegate { userId: string; associationId: string; role: Role; officeBearerId: string | null; name: string; username: string; disabled: boolean }
 export function createDelegates(db: Db, now: () => Date = () => new Date()) {

@@ -3049,3 +3049,17 @@ CREATE TABLE IF NOT EXISTS maintenance_log (
   created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_maintenance_log_vehicle ON maintenance_log(vehicle_id, serviced_on DESC);
+
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+-- OWNER DASHBOARD, slice E: an owner's team, each with their own login and a role (docs/OWNER_DASHBOARD.md)
+-- A team member is a person with their own login (a users row with role 'vehicle_owner') who acts for an owner with a role: co-owner, fleet manager or accountant. The owner's own login keeps everything and manages the team. To remove: db/rollback/owner_dashboard_e.sql
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS owner_team (
+  user_id     UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  owner_id    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  role        TEXT NOT NULL CHECK (role IN ('co_owner','fleet_manager','accountant')),
+  created_by  UUID,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  disabled_at TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS idx_owner_team_owner ON owner_team(owner_id);
