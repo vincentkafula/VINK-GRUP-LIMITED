@@ -40,6 +40,7 @@ import publicRouter from "./routes/public.js";
 import { createLetterCheckRouter } from "./routes/letterCheck.js";
 import { alertsFor, createSmsSender } from "./services/alerts.js";
 import { createOwnerSms } from "./services/ownerSms.js";
+import { createTwilioSmsWebhook } from "./routes/twilioSmsWebhook.js";
 import { createCommission } from "./services/commission.js";
 import { createPayslips } from "./services/payslips.js";
 import { createCompliance } from "./services/compliance.js";
@@ -164,6 +165,8 @@ const waConfig = waConfigFromEnv();
 const whatsappService = pool && mailService ? createWhatsAppService({ db: pool, wa: createWaClient({ config: waConfig }), config: waConfig, departmentsFor: (u) => mailService.departmentsFor(u) }) : undefined;
 if (whatsappService) app.use("/api/webhooks/whatsapp", createWhatsAppWebhookRouter({ svc: whatsappService, config: waConfig }));
 app.use("/api/whatsapp", createWhatsAppInfoRouter({ config: waConfig }));
+// Replies to an owner's text alerts (a STOP switches them off). Twilio signs each call; see routes/twilioSmsWebhook.ts. Needs TWILIO_AUTH_TOKEN and TWILIO_SMS_WEBHOOK_URL.
+if (pool) app.use("/api/webhooks/twilio/sms", createTwilioSmsWebhook({ db: pool, sms: createSmsSender() }));
 
 // Incoming email from Resend (raw body for the signature check, so also before the JSON parser). Staff-only list endpoints.
 app.use("/api/inbound", createInboundRouter({

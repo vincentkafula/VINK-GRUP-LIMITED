@@ -22,6 +22,8 @@ export const SMS_KINDS = ["finance", "service", "compliance", "arrears"] as cons
 export type SmsKind = (typeof SMS_KINDS)[number];
 export const KIND_TEXT: Record<SmsKind, string> = { finance: "Money: a loan instalment missed, unpaid fines, a vehicle losing money", service: "Servicing: a service due or overdue", compliance: "Compliance: a licence, certificate or disc running out", arrears: "What drivers owe: a driver behind on payments" };
 const PREFIX: Record<SmsKind, string[]> = { finance: ["fin:", "fines:", "pl:"], service: ["mnt:"], compliance: ["cc:"], arrears: ["pay:"] };
+/** The words that mean "stop texting me". Twilio's own list. A message that STARTS with one is taken as a stop: it is always safer to stop. */
+export const STOP_WORDS = ["STOP", "STOPALL", "UNSUBSCRIBE", "CANCEL", "END", "QUIT"], START_WORDS = ["START", "YES", "UNSTOP"], HELP_WORDS = ["HELP", "INFO"];
 export const CODE_MINUTES = 10, MAX_ATTEMPTS = 5, MAX_CODES_PER_HOUR = 3, MAX_CODES_PER_DAY = 8, MAX_TESTS_PER_DAY = 3, MAX_FAILED_PER_DAY = 3, REPEAT_DAYS = 7, FROM_HOUR = 7, TO_HOUR = 19, MAX_LINES = 3, LINE_CHARS = 90;
 const SEV = { high: 0, medium: 1, low: 2 } as const;
 const hash = (owner: string, code: string) => createHash("sha256").update(`vink-owner-sms:${owner}:${code}`).digest("hex");
@@ -107,6 +109,22 @@ export function createOwnerSms(deps: { db: Db; sms: SmsSender; now?: () => Date 
     }
     return out;
   }
-  return { status, setPhone, verify, configure, remove, test, dispatch, candidates };
+  /**
+   * A text message the owner sent BACK to us (the SMS provider calls the webhook). STOP (or a word that means the same) switches off the alerts for every owner whose confirmed number it came from, at once; their choices are kept so they can switch on again from the dashboard.
+   * START does NOT switch anything back on: the owner has to do that on the dashboard, where they see exactly what they are agreeing to. HELP says how to stop and how to change it. Anything else is ignored.
+   */
+  async function handleInbound(from: unknown, body: unknown): Promise<{ action: "stopped" | "start" | "help" | "ignored"; owners: number; reply: string | null }> {
+    const phone = normalizePhone(from), text = typeof body === "string" ? body.trim() : "", first = text.split(/\s+/)[0]?.toUpperCase().replace(/[^A-Z]/g, "") ?? "", whole = text.toUpperCase().replace(/[^A-Z]/g, "");
+    if (!phone || !text) return { action: "ignored", owners: 0, reply: null };
+    if (STOP_WORDS.includes(first)) {
+      const rows = (await db.query(`SELECT owner_id, enabled FROM owner_sms WHERE phone = $1`, [phone])).rows; let n = 0;
+      for (const r of rows) { await db.query(`UPDATE owner_sms SET enabled = false, updated_at = $2 WHERE owner_id = $1`, [r.owner_id, now().toISOString()]); await log(String(r.owner_id), "stop", "sent"); if (r.enabled) n++; }
+      return { action: "stopped", owners: n, reply: null };                  // the SMS provider sends its own standard reply to a STOP, so we send none
+    }
+    if (START_WORDS.includes(whole)) return { action: "start", owners: 0, reply: "VINK: to switch text alerts back on, open Text alerts on your dashboard. We do not switch them on from a text message." };
+    if (HELP_WORDS.includes(whole)) return { action: "help", owners: 0, reply: "VINK text alerts: at most one text a day, only about things that need you. Reply STOP to switch them off, or open Text alerts on your dashboard to change them." };
+    return { action: "ignored", owners: 0, reply: null };
+  }
+  return { status, setPhone, verify, configure, remove, test, dispatch, candidates, handleInbound };
 }
 export type OwnerSms = ReturnType<typeof createOwnerSms>;

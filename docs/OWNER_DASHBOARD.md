@@ -276,10 +276,12 @@ This is the design for extending the existing Owner Dashboard. It records what t
 
 **API** (`/api/portal/owner/sms`): `GET`, `POST /phone`, `POST /verify`, `PUT /settings`, `POST /test`, `DELETE`.
 
+**Replies by text.** `POST /api/webhooks/twilio/sms` is called by Twilio when someone texts the number back. Every call is signed (HMAC-SHA1 of the exact address and the parameters, with the account's auth token); an unsigned or wrongly signed call is refused and changes nothing, so nobody else can switch an owner's alerts off. A message that starts with STOP, STOPALL, UNSUBSCRIBE, CANCEL, END or QUIT switches off the alerts of every owner who confirmed that number (their choices are kept); HELP or INFO gets a short reply saying how to stop or change; START or YES gets a reply saying to switch on from the dashboard. A message that merely contains the word later in the sentence (for example "please stop") is not treated as a stop, so the owner should reply with the word first.
+
 **Data** (rollback `server/src/db/rollback/owner_dashboard_f3.sql`): `owner_sms`, `owner_sms_log`.
 
 **Known limits, to do next**
-- A reply such as STOP is not handled: opting out is done on the screen.
+- **A reply of STOP is handled** (see below), but only once the SMS provider is pointed at the platform: in Twilio, set the incoming-message address to `https://<your API>/api/webhooks/twilio/sms` and set `TWILIO_SMS_WEBHOOK_URL` on the server to that same address (it is part of what Twilio signs). START never switches alerts back on; the owner does that on the dashboard.
 - It sends SMS only; email and WhatsApp are not used for these alerts.
 - Only the four kinds above; an instalment *coming up* (rather than missed) and a payment received are not alerts yet.
 - The message is in English only.

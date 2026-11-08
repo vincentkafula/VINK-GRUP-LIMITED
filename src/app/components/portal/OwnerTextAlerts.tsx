@@ -22,7 +22,7 @@ export function TextAlertsScreen() {
             <li>At most <b>one text a day</b>, between 7 in the morning and 7 in the evening, and only about things that need action.</li>
             <li>The same thing is not texted again within a week.</li>
             <li>The text can name a vehicle and an amount (for example a missed loan instalment). It never includes your bank details or a password.</li>
-            <li>You can switch it off, or delete your number, at any time. Your phone company's normal message rates apply to you.</li>
+            <li>You can switch it off, or delete your number, at any time. You can also reply <b>STOP</b> to any of the texts and it is switched off at once. Your phone company's normal message rates apply to you.</li>
           </ul>
         </div>
       </SectionPanel>

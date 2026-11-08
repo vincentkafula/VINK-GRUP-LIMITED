@@ -3084,7 +3084,7 @@ CREATE TABLE IF NOT EXISTS owner_sms (
 CREATE TABLE IF NOT EXISTS owner_sms_log (
   id        UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   owner_id  UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  kind      TEXT NOT NULL CHECK (kind IN ('daily','test','code')),
+  kind      TEXT NOT NULL CHECK (kind IN ('daily','test','code','stop')),
   sent_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
   status    TEXT NOT NULL CHECK (status IN ('sent','failed')),
   keys      JSONB NOT NULL DEFAULT '[]',
