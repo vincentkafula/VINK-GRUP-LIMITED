@@ -2971,3 +2971,81 @@ CREATE TABLE IF NOT EXISTS owner_files (
 );
 CREATE UNIQUE INDEX IF NOT EXISTS idx_owner_files_hash ON owner_files(owner_id, sha256) WHERE deleted_at IS NULL;
 CREATE INDEX IF NOT EXISTS idx_owner_files_owner ON owner_files(owner_id, created_at DESC);
+
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+-- OWNER DASHBOARD, slice D1: vehicle finance, running costs, fines, maintenance, and profit (docs/OWNER_DASHBOARD.md)
+-- The owner's own bookkeeping: it records and reports, it moves no money. All money is whole cents. To remove: db/rollback/owner_dashboard_d1.sql
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+-- A loan or instalment agreement on a vehicle. The balance is what the lender last said was owed, as at a date: instalments include interest, so the balance is NOT worked out by subtracting them.
+CREATE TABLE IF NOT EXISTS vehicle_finance (
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id         UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  vehicle_id       UUID NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+  lender           TEXT NOT NULL,
+  reference        TEXT,
+  original_cents   BIGINT NOT NULL CHECK (original_cents > 0),
+  balance_cents    BIGINT NOT NULL CHECK (balance_cents >= 0),
+  balance_on       DATE NOT NULL,
+  instalment_cents BIGINT NOT NULL CHECK (instalment_cents > 0),
+  due_day          SMALLINT NOT NULL CHECK (due_day BETWEEN 1 AND 31),
+  start_date       DATE NOT NULL,
+  final_due_on     DATE,
+  status           TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active','settled')),
+  settled_on       DATE,
+  notes            TEXT,
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_vehicle_finance_active ON vehicle_finance(vehicle_id) WHERE status = 'active';
+CREATE INDEX IF NOT EXISTS idx_vehicle_finance_owner ON vehicle_finance(owner_id);
+-- What the owner paid the lender, each time. Never deleted: a mistake is voided with a reason. A client reference makes a retry change nothing.
+CREATE TABLE IF NOT EXISTS finance_instalments (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  finance_id   UUID NOT NULL REFERENCES vehicle_finance(id) ON DELETE CASCADE,
+  owner_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  amount_cents BIGINT NOT NULL CHECK (amount_cents > 0),
+  paid_on      DATE NOT NULL,
+  client_ref   TEXT,
+  voided_at    TIMESTAMPTZ,
+  void_reason  TEXT,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (owner_id, client_ref)
+);
+CREATE INDEX IF NOT EXISTS idx_finance_instalments_finance ON finance_instalments(finance_id, paid_on DESC);
+-- Running costs: fuel, insurance, tracker fees, fines and so on, for one vehicle or (with no vehicle) for the whole business. A fine can name the driver and has its own status.
+CREATE TABLE IF NOT EXISTS vehicle_costs (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id       UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  vehicle_id     UUID REFERENCES vehicles(id) ON DELETE SET NULL,
+  driver_id      UUID REFERENCES users(id) ON DELETE SET NULL,
+  category       TEXT NOT NULL CHECK (category IN ('fuel','maintenance','insurance','tracker','fine','association','licensing','tyres','wages','other')),
+  amount_cents   BIGINT NOT NULL CHECK (amount_cents > 0),
+  incurred_on    DATE NOT NULL,
+  payee          TEXT,
+  reference      TEXT,
+  note           TEXT,
+  fine_status    TEXT CHECK (fine_status IN ('unpaid','paid','disputed')),
+  maintenance_id UUID,
+  client_ref     TEXT,
+  voided_at      TIMESTAMPTZ,
+  void_reason    TEXT,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (owner_id, client_ref)
+);
+CREATE INDEX IF NOT EXISTS idx_vehicle_costs_owner ON vehicle_costs(owner_id, incurred_on DESC);
+CREATE INDEX IF NOT EXISTS idx_vehicle_costs_vehicle ON vehicle_costs(vehicle_id, incurred_on DESC);
+-- Services and repairs, with when the next one is due (by date, by odometer, or both). A 'reading' only records the odometer.
+CREATE TABLE IF NOT EXISTS maintenance_log (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  vehicle_id  UUID NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+  serviced_on DATE NOT NULL,
+  kind        TEXT NOT NULL CHECK (kind IN ('service','repair','tyres','brakes','reading','other')),
+  description TEXT,
+  odometer_km INTEGER CHECK (odometer_km >= 0),
+  next_due_on DATE,
+  next_due_km INTEGER CHECK (next_due_km >= 0),
+  cost_id     UUID,
+  voided_at   TIMESTAMPTZ,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_maintenance_log_vehicle ON maintenance_log(vehicle_id, serviced_on DESC);
