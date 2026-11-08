@@ -118,6 +118,33 @@ export function createDriverTargets(db: Db, now: () => Date = () => new Date()) 
   }
   async function waivers(owner: string, vehicleId?: string) { return (await db.query(`SELECT * FROM target_waivers WHERE owner_id = $1 ORDER BY waived_on DESC`, [owner])).rows.filter((w) => !vehicleId || String(w.vehicle_id) === vehicleId).map((w) => ({ id: String(w.id), vehicleId: String(w.vehicle_id), amountCents: Number(w.amount_cents), waivedOn: dayOf(w.waived_on)!, reason: String(w.reason) })); }
 
+  /**
+   * MONEY THE PLATFORM COLLECTED from a driver for the owner (a weekly cash-basis payment, driver to owner, settled through the platform's own banking), counted with what the owner recorded.
+   * It is counted for a vehicle ONLY when it can be matched to exactly one: the vehicle whose target was in force on the day it was paid, for that driver (a target with no driver named belongs to the vehicle's driver at the time). If two vehicles could have been meant, or none, it is NOT counted and the owner is told.
+   * Only a payment that was settled in full has a date, so only those count; a part-paid one is shown with what is still owed. Nothing here changes what the owner recorded: if they also wrote down the same payment, they are warned it may be counted twice.
+   */
+  async function platformCollected(owner: string, v: Row, ownPays: Row[]) {
+    const out = { counted: [] as { id: string; ref: string; paidOn: string; amountCents: number }[], ambiguous: [] as { ref: string; paidOn: string; amountCents: number }[], partlyPaid: [] as { ref: string; dueOn: string; paidCents: number; owedCents: number }[], flags: [] as Flag[] };
+    const items = (await db.query(`SELECT * FROM payment_items WHERE kind = 'weekly_cash_payment' AND payee_id = $1 ORDER BY due_at`, [owner])).rows; if (!items.length) return out;
+    const tg = (await db.query(`SELECT t.vehicle_id, t.driver_id, t.start_date, t.end_date, v.driver_id AS vdriver FROM vehicle_targets t JOIN vehicles v ON v.id = t.vehicle_id WHERE v.owner_id = $1`, [owner])).rows;
+    const matches = (payer: string, day: string) => [...new Set(tg.filter((t) => dayOf(t.start_date)! <= day && (!t.end_date || day <= dayOf(t.end_date)!) && (t.driver_id ? String(t.driver_id) === payer : String(t.vdriver ?? "") === payer)).map((t) => String(t.vehicle_id)))];
+    const reg = String(v.registration);
+    for (const it of items) {
+      const payer = String(it.payer_id), amount = Number(it.amount_cents), left = Number(it.remaining_cents), ref = String(it.ref);
+      if (it.status === "paid" && it.paid_at) {
+        const day = saDay(new Date(it.paid_at as string)), m = matches(payer, day); if (!m.includes(String(v.id))) continue;
+        if (m.length > 1) { out.ambiguous.push({ ref, paidOn: day, amountCents: amount }); continue; }
+        out.counted.push({ id: String(it.id), ref, paidOn: day, amountCents: amount });
+        const twin = ownPays.find((p) => Number(p.amount_cents) === amount && Math.abs(daysBetween(dayOf(p.paid_on)!, day)) <= 1);
+        if (twin) out.flags.push({ id: `pay:twice:${it.id}`, severity: "medium", message: `${reg}: the platform collected ${rand(amount)} on ${day}, and you also wrote down ${rand(amount)} on ${dayOf(twin.paid_on)}. If it is the same payment, cancel yours so it is not counted twice`, subject: reg });
+      } else if (it.status === "arrears" && left > 0 && left < amount) {
+        const day = saDay(new Date(it.due_at as string)), m = matches(payer, day); if (m.length === 1 && m[0] === String(v.id)) out.partlyPaid.push({ ref, dueOn: day, paidCents: amount - left, owedCents: left });
+      }
+    }
+    if (out.ambiguous.length) out.flags.push({ id: `pay:platform-unmatched:${v.id}`, severity: "medium", message: `${reg}: ${rand(out.ambiguous.reduce((a, x) => a + x.amountCents, 0))} collected by the platform could not be matched to one vehicle, so it is not counted here`, subject: reg });
+    return out;
+  }
+
   /* ───────────────────────── reconciliation ───────────────────────── */
   /**
    * What was expected from a vehicle's driver, what was received, and where that leaves them, day by day, folded into weeks.
@@ -128,9 +155,11 @@ export function createDriverTargets(db: Db, now: () => Date = () => new Date()) 
    */
   async function reconcile(owner: string, vehicleId: string, onDay = today()) {
     const v = await ownVehicle(owner, vehicleId); if (!v) return bad(404, "That vehicle is not yours") as Fail;
-    const ts = (await db.query(`SELECT * FROM vehicle_targets WHERE vehicle_id = $1 ORDER BY start_date`, [v.id])).rows.map(targetOf), pz = (await db.query(`SELECT * FROM target_pauses WHERE vehicle_id = $1`, [v.id])).rows.map(pauseOf), pays = (await db.query(`SELECT * FROM driver_payments WHERE vehicle_id = $1 AND voided_at IS NULL`, [v.id])).rows, wv = (await db.query(`SELECT * FROM target_waivers WHERE vehicle_id = $1`, [v.id])).rows;
+    const ts = (await db.query(`SELECT * FROM vehicle_targets WHERE vehicle_id = $1 ORDER BY start_date`, [v.id])).rows.map(targetOf), pz = (await db.query(`SELECT * FROM target_pauses WHERE vehicle_id = $1`, [v.id])).rows.map(pauseOf), ownPays = (await db.query(`SELECT * FROM driver_payments WHERE vehicle_id = $1 AND voided_at IS NULL`, [v.id])).rows, wv = (await db.query(`SELECT * FROM target_waivers WHERE vehicle_id = $1`, [v.id])).rows;
+    const plat = await platformCollected(owner, v, ownPays), pays = [...ownPays, ...plat.counted.map((x) => ({ paid_on: x.paidOn, amount_cents: x.amountCents }))] as Row[], platAlloc = Object.fromEntries(BUCKETS.map((k) => [k, 0])) as Record<Bucket, number>;
+    for (const x of plat.counted) { const parts = allocate(x.amountCents, await splitFor(String(v.id), x.paidOn)); for (const k of BUCKETS) platAlloc[k] += parts[k]; }
     const al = (await db.query(`SELECT a.bucket, SUM(a.cents) AS c FROM driver_payment_allocations a JOIN driver_payments p ON p.id = a.payment_id WHERE p.vehicle_id = $1 AND p.voided_at IS NULL GROUP BY a.bucket`, [v.id])).rows, split = await splitFor(String(v.id), onDay);
-    const earmarks = Object.fromEntries(BUCKETS.map((k) => [k, Number(al.find((a) => a.bucket === k)?.c ?? 0)])) as Record<Bucket, number>, open = ts.find((t) => !t.endDate) ?? null;
+    const earmarks = Object.fromEntries(BUCKETS.map((k) => [k, Number(al.find((a) => a.bucket === k)?.c ?? 0) + platAlloc[k]])) as Record<Bucket, number>, open = ts.find((t) => !t.endDate) ?? null;
     const base = { vehicle: { id: String(v.id), registration: String(v.registration) }, today: onDay, targets: ts, target: open, pauses: pz, split, earmarks: { ...earmarks, totalCents: BUCKETS.reduce((a, k) => a + earmarks[k], 0) } };
     if (!ts.length) return { ok: true, value: { ...base, hasTarget: false, status: "none" as const, totals: { expectedCents: 0, receivedCents: 0, waivedCents: 0, balanceCents: 0, arrearsCents: 0, surplusCents: 0 }, dailyEquivalentCents: 0, daysBehind: 0, weeks: [], lastPaymentOn: dayOf(pays.map((p) => p.paid_on).sort().at(-1)), daysSinceLastPayment: null, flags: [] as Flag[] } } as Res<any>;
     const start = ts[0].startDate, paused = (d: string) => pz.some((p) => p.fromDate <= d && d <= p.toDate), tOn = (d: string) => ts.find((t) => t.startDate <= d && (!t.endDate || d <= t.endDate));
@@ -145,12 +174,12 @@ export function createDriverTargets(db: Db, now: () => Date = () => new Date()) 
     for (let d = start; d <= onDay; d = shift(d, 1)) { const x = exp.get(d) ?? 0, y = rec.get(d) ?? 0, z = wai.get(d) ?? 0; e += x; r += y; w += z; bal += y + z - x; const ws = shift(d, -weekdayIndex(d)); const row = weeks.get(ws) ?? { weekStart: ws, expectedCents: 0, receivedCents: 0, waivedCents: 0, balanceCents: 0 }; row.expectedCents += x; row.receivedCents += y; row.waivedCents += z; row.balanceCents = bal; weeks.set(ws, row); }
     const all = [...weeks.values()], shown = all.slice(-26).map((x) => ({ ...x, shortfallCents: Math.max(0, x.expectedCents - x.receivedCents - x.waivedCents), carriedForwardCents: Math.max(0, -x.balanceCents) }));
     const cur = open ?? ts[ts.length - 1], dailyEq = cur.period === "daily" ? cur.amountCents : Math.round(cur.amountCents / 7), arrears = Math.max(0, -bal), behind = dailyEq ? Math.round((arrears / dailyEq) * 10) / 10 : 0;
-    const last = dayOf(pays.map((p) => dayOf(p.paid_on)!).sort().at(-1)), flags: Flag[] = [], reg = String(v.registration);
+    const last = dayOf(pays.map((p) => dayOf(p.paid_on)!).sort().at(-1)), flags: Flag[] = [...plat.flags], reg = String(v.registration);
     if (open && arrears > 0) { const sev = arrears >= 7 * dailyEq ? "high" : arrears >= 3 * dailyEq ? "medium" : "low"; flags.push({ id: `pay:arrears:${v.id}`, severity: sev, message: `${reg}: ${rand(arrears)} is owed by the driver (about ${behind} day${behind === 1 ? "" : "s"} of the target)`, subject: reg }); }
     if (open && last && daysBetween(last, onDay) >= 7 && arrears > 0) flags.push({ id: `pay:silent:${v.id}`, severity: "medium", message: `${reg}: nothing has been paid for ${daysBetween(last, onDay)} days`, subject: reg });
     if (open && !last && daysBetween(open.startDate, onDay) >= 3) flags.push({ id: `pay:none:${v.id}`, severity: "medium", message: `${reg}: no payment has been recorded since the target started on ${open.startDate}`, subject: reg });
     const status = !open ? "none" : bal >= 0 ? "green" : arrears >= 3 * dailyEq ? "red" : "amber";
-    return { ok: true, value: { ...base, hasTarget: true, status, totals: { expectedCents: e, receivedCents: r, waivedCents: w, balanceCents: bal, arrearsCents: arrears, surplusCents: Math.max(0, bal) }, dailyEquivalentCents: dailyEq, daysBehind: behind, weeks: shown, lastPaymentOn: last, daysSinceLastPayment: last ? daysBetween(last, onDay) : null, flags } } as Res<any>;
+    return { ok: true, value: { ...base, hasTarget: true, status, totals: { expectedCents: e, receivedCents: r, waivedCents: w, balanceCents: bal, arrearsCents: arrears, surplusCents: Math.max(0, bal) }, dailyEquivalentCents: dailyEq, daysBehind: behind, weeks: shown, lastPaymentOn: last, daysSinceLastPayment: last ? daysBetween(last, onDay) : null, platform: { countedCents: plat.counted.filter((x) => x.paidOn >= start && x.paidOn <= onDay).reduce((a, x) => a + x.amountCents, 0), payments: plat.counted, unmatched: plat.ambiguous, partlyPaid: plat.partlyPaid }, flags } } as Res<any>;
   }
   /** Every vehicle at a glance: its target, whether it is paying on time (green, amber, red), what is owed, and the fleet's totals. */
   async function fleet(owner: string, onDay = today()) {
