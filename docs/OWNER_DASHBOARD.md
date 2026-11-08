@@ -56,6 +56,8 @@ This is the design for extending the existing Owner Dashboard. It records what t
 5. **Slice E: structure and roles (P2).** Owner business record; roles for an owner's team (co-owner, fleet manager, driver, and the association's own roles' views), using the same fail-closed gate pattern as the association's named logins.
 6. **Slice F: growth and risk (P3).** Planner, notifications (in-app first, SMS and WhatsApp through the existing alert service), audit trail for owner changes.
 
+**Status (all six slices are built, tested and pushed):** A, owner and driver money (4a); B, the owner's association (4b); C, the licence and compliance centre (4c) and the owner's documents (4d); D, capital and profitability (4e); E, an owner's team (4f); F, the activity log (4g), the fleet expansion planner (4h) and text alerts (4i). **Not built:** WhatsApp alerts (they need approved message templates and consent: a decision for the business), an owner business record (company details), a driver view of their own target, merging platform-collected payments into the driver reconciliation, and a look at every screen in a real browser. Alerts are by text message, not (yet) WhatsApp.
+
 ## 4a. Slice A, built: owner and driver money
 
 **What it does.** The owner sets what each vehicle's driver should pay (a daily amount on chosen working days, or a weekly amount on a chosen day), writes down what the driver actually pays (cash or otherwise, also with no signal), and sees at a glance who is paying on time, who is behind, and by how much. It records and earmarks; **it moves no money and does not touch the platform's agreement or collection**.
@@ -118,6 +120,27 @@ This is the design for extending the existing Owner Dashboard. It records what t
 - Letters of recommendation and membership certificates are shown from the owner's document **details**; **uploading the file** arrives with the secure file store in slice C.
 - The association's vehicle compliance (licences per vehicle) is not shown here; slice C is the owner's compliance centre.
 - No emailed or SMS notice when a claim is confirmed or rejected yet (slice F).
+
+## 4c. Slice C1, built: the licence and compliance centre
+
+**What it does.** *Compliance centre* shows, for each of the owner's vehicles, whether its papers are in order: the operating licence, the roadworthy certificate, the licence disc and the insurance, and, from what each active driver has recorded for themselves, the driver's licence and professional driving permit (PrDP) dates. Each item is valid, due soon, expired or missing, with a traffic light in words, a score for the vehicle and for the fleet, and a list of what needs doing. The owner can edit a vehicle's compliance dates, add or remove an operating licence, and choose when to be reminded.
+
+**Rules (all covered by tests)**
+- **Missing counts against the score.** A document the owner has not recorded is shown as missing, not hidden.
+- **Reminders** come in bands (by default 90, 60, 30 and 7 days before an expiry; the owner can change them) and arrive once per band in the owner's Notifications. The licence disc is left out of the new reminders so it is not reminded twice, and a PrDP is a reminder of its own kind.
+- **Driver dates are the driver's own.** The owner sees only the expiry dates a driver recorded, never the numbers on their documents.
+- **Licence length follows the province's rule.** Province rules are configuration, not code: a table of how long an operating licence may last, per province, with a default for any province not listed. The starting values (5 years for Gauteng and the Western Cape, 7 elsewhere) are the brief's placeholders and are **all marked "not verified"**; the screens say so until an administrator confirms a figure with `npm run licence-rule`. **Confirm each figure with the Provincial Regulatory Entity before relying on it.**
+- The association's own licence checks use the same rule (the default of 7 years is unchanged where no province is set), so an owner's records and the association's agree.
+- Only the owner's own vehicles and drivers are ever shown.
+
+**API** (`/api/portal/owner/compliance-centre...`): the centre, saving a vehicle's compliance dates, adding and removing an operating licence, and the reminder days.
+
+**Data** (rollback `server/src/db/rollback/owner_dashboard_c1.sql`): a province on each operating licence, the province rules (`licence_rules`), and the owner's reminder settings (`owner_compliance_settings`).
+
+**Known limits, to do next**
+- The province rules are placeholders until each is confirmed (see section 6).
+- A route has to be recorded on each operating licence by the owner for route checks to match it.
+- Documents themselves (a photo or PDF of a certificate) are slice C2 (section 4d); this slice holds dates and references only.
 
 ## 4d. Slice C2, built: the owner's documents
 
