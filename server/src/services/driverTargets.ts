@@ -123,26 +123,36 @@ export function createDriverTargets(db: Db, now: () => Date = () => new Date()) 
    * It is counted for a vehicle ONLY when it can be matched to exactly one: the vehicle whose target was in force on the day it was paid, for that driver (a target with no driver named belongs to the vehicle's driver at the time). If two vehicles could have been meant, or none, it is NOT counted and the owner is told.
    * Only a payment that was settled in full has a date, so only those count; a part-paid one is shown with what is still owed. Nothing here changes what the owner recorded: if they also wrote down the same payment, they are warned it may be counted twice.
    */
-  async function platformCollected(owner: string, v: Row, ownPays: Row[]) {
-    const out = { counted: [] as { id: string; ref: string; paidOn: string; amountCents: number }[], ambiguous: [] as { ref: string; paidOn: string; amountCents: number }[], partlyPaid: [] as { ref: string; dueOn: string; paidCents: number; owedCents: number }[], flags: [] as Flag[] };
-    const items = (await db.query(`SELECT * FROM payment_items WHERE kind = 'weekly_cash_payment' AND payee_id = $1 ORDER BY due_at`, [owner])).rows; if (!items.length) return out;
+  /** Every weekly cash payment the platform settled or part-settled for this owner, each matched to the vehicle(s) it could belong to (see above). Used by the reconciliation AND the profit and loss, so they always agree. */
+  async function platformItems(owner: string) {
+    const items = (await db.query(`SELECT * FROM payment_items WHERE kind = 'weekly_cash_payment' AND payee_id = $1 ORDER BY due_at`, [owner])).rows; if (!items.length) return [];
     const tg = (await db.query(`SELECT t.vehicle_id, t.driver_id, t.start_date, t.end_date, v.driver_id AS vdriver FROM vehicle_targets t JOIN vehicles v ON v.id = t.vehicle_id WHERE v.owner_id = $1`, [owner])).rows;
     const matches = (payer: string, day: string) => [...new Set(tg.filter((t) => dayOf(t.start_date)! <= day && (!t.end_date || day <= dayOf(t.end_date)!) && (t.driver_id ? String(t.driver_id) === payer : String(t.vdriver ?? "") === payer)).map((t) => String(t.vehicle_id)))];
-    const reg = String(v.registration);
+    const out: { id: string; ref: string; part: boolean; day: string; amountCents: number; paidCents: number; owedCents: number; vehicles: string[] }[] = [];
     for (const it of items) {
-      const payer = String(it.payer_id), amount = Number(it.amount_cents), left = Number(it.remaining_cents), ref = String(it.ref);
-      if (it.status === "paid" && it.paid_at) {
-        const day = saDay(new Date(it.paid_at as string)), m = matches(payer, day); if (!m.includes(String(v.id))) continue;
-        if (m.length > 1) { out.ambiguous.push({ ref, paidOn: day, amountCents: amount }); continue; }
-        out.counted.push({ id: String(it.id), ref, paidOn: day, amountCents: amount });
-        const twin = ownPays.find((p) => Number(p.amount_cents) === amount && Math.abs(daysBetween(dayOf(p.paid_on)!, day)) <= 1);
-        if (twin) out.flags.push({ id: `pay:twice:${it.id}`, severity: "medium", message: `${reg}: the platform collected ${rand(amount)} on ${day}, and you also wrote down ${rand(amount)} on ${dayOf(twin.paid_on)}. If it is the same payment, cancel yours so it is not counted twice`, subject: reg });
-      } else if (it.status === "arrears" && left > 0 && left < amount) {
-        const day = saDay(new Date(it.due_at as string)), m = matches(payer, day); if (m.length === 1 && m[0] === String(v.id)) out.partlyPaid.push({ ref, dueOn: day, paidCents: amount - left, owedCents: left });
-      }
+      const payer = String(it.payer_id), amount = Number(it.amount_cents), left = Number(it.remaining_cents);
+      if (it.status === "paid" && it.paid_at) { const day = saDay(new Date(it.paid_at as string)); out.push({ id: String(it.id), ref: String(it.ref), part: false, day, amountCents: amount, paidCents: amount, owedCents: 0, vehicles: matches(payer, day) }); }
+      else if (it.status === "arrears" && left > 0 && left < amount) { const day = saDay(new Date(it.due_at as string)); out.push({ id: String(it.id), ref: String(it.ref), part: true, day, amountCents: amount, paidCents: amount - left, owedCents: left, vehicles: matches(payer, day) }); }
+    }
+    return out;
+  }
+  /** For one vehicle: what counts, what could not be matched to one vehicle, what is part paid, and what to warn the owner about. */
+  async function platformCollected(owner: string, v: Row, ownPays: Row[]) {
+    const out = { counted: [] as { id: string; ref: string; paidOn: string; amountCents: number }[], ambiguous: [] as { ref: string; paidOn: string; amountCents: number }[], partlyPaid: [] as { ref: string; dueOn: string; paidCents: number; owedCents: number }[], flags: [] as Flag[] }, reg = String(v.registration), id = String(v.id);
+    for (const x of await platformItems(owner)) {
+      if (!x.vehicles.includes(id)) continue;
+      if (x.part) { if (x.vehicles.length === 1) out.partlyPaid.push({ ref: x.ref, dueOn: x.day, paidCents: x.paidCents, owedCents: x.owedCents }); continue; }
+      if (x.vehicles.length > 1) { out.ambiguous.push({ ref: x.ref, paidOn: x.day, amountCents: x.amountCents }); continue; }
+      out.counted.push({ id: x.id, ref: x.ref, paidOn: x.day, amountCents: x.amountCents });
+      const twin = ownPays.find((p) => Number(p.amount_cents) === x.amountCents && Math.abs(daysBetween(dayOf(p.paid_on)!, x.day)) <= 1);
+      if (twin) out.flags.push({ id: `pay:twice:${x.id}`, severity: "medium", message: `${reg}: the platform collected ${rand(x.amountCents)} on ${x.day}, and you also wrote down ${rand(x.amountCents)} on ${dayOf(twin.paid_on)}. If it is the same payment, cancel yours so it is not counted twice`, subject: reg });
     }
     if (out.ambiguous.length) out.flags.push({ id: `pay:platform-unmatched:${v.id}`, severity: "medium", message: `${reg}: ${rand(out.ambiguous.reduce((a, x) => a + x.amountCents, 0))} collected by the platform could not be matched to one vehicle, so it is not counted here`, subject: reg });
     return out;
+  }
+  /** Money the platform collected that belongs to exactly one vehicle, between two days: for the profit and loss. */
+  async function platformIncome(owner: string, from: string, to: string): Promise<{ vehicleId: string; paidOn: string; amountCents: number }[]> {
+    return (await platformItems(owner)).filter((x) => !x.part && x.vehicles.length === 1 && x.day >= from && x.day <= to).map((x) => ({ vehicleId: x.vehicles[0], paidOn: x.day, amountCents: x.amountCents }));
   }
 
   /* ───────────────────────── reconciliation ───────────────────────── */
@@ -188,6 +198,6 @@ export function createDriverTargets(db: Db, now: () => Date = () => new Date()) 
     const wk = shift(onDay, -weekdayIndex(onDay)), mo = `${onDay.slice(0, 7)}-01`, pays = (await db.query(`SELECT paid_on, amount_cents FROM driver_payments WHERE owner_id = $1 AND voided_at IS NULL`, [owner])).rows, sum = (from: string) => pays.filter((p) => dayOf(p.paid_on)! >= from && dayOf(p.paid_on)! <= onDay).reduce((a, p) => a + Number(p.amount_cents), 0);
     const order = { high: 0, medium: 1, low: 2 }; return { today: onDay, vehicles: rows, measures: { vehicles: rows.length, withTarget: rows.filter((x) => x.hasTarget).length, arrearsCents: rows.reduce((a, x) => a + x.arrearsCents, 0), surplusCents: rows.reduce((a, x) => a + x.surplusCents, 0), receivedThisWeekCents: sum(wk), receivedThisMonthCents: sum(mo), red: rows.filter((x) => x.status === "red").length, amber: rows.filter((x) => x.status === "amber").length, green: rows.filter((x) => x.status === "green").length }, flags: flags.sort((a, b) => order[a.severity] - order[b.severity] || a.subject.localeCompare(b.subject)) };
   }
-  return { setTarget, endTarget, targets, addPause, cancelPause, pauses, setSplit, splitFor, recordPayment, voidPayment, payments, waive, waivers, reconcile, fleet };
+  return { setTarget, endTarget, targets, addPause, cancelPause, pauses, setSplit, splitFor, recordPayment, voidPayment, payments, waive, waivers, reconcile, fleet, platformIncome };
 }
 export type DriverTargets = ReturnType<typeof createDriverTargets>;

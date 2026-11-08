@@ -1,6 +1,7 @@
 import type { Db } from "../portal/common.js";
 import { saDay } from "../portal/common.js";
 import { isDay, daysBetween } from "./compliance.js";
+import { createDriverTargets } from "./driverTargets.js";
 
 /**
  * THE OWNER'S FINANCES (docs/OWNER_DASHBOARD.md, slice D1): what a vehicle costs to run and to finance, what is owed to the lender, what has been spent on maintenance, which fines are unpaid, and what is left over.
@@ -9,7 +10,7 @@ import { isDay, daysBetween } from "./compliance.js";
  *   maintenance   services and repairs, the odometer, and when the next one is due, by date and by kilometres
  *   profit        driver payments received, less running costs = PROFIT BEFORE FINANCE; less loan instalments paid = CASH PROFIT. An instalment includes repayment of capital, so an accountant treats only the interest as an expense: both lines are shown
  * It is the owner's own bookkeeping: it records and reports, it moves no money, and nothing here is tax advice. Nothing is deleted: a mistake is voided with a reason, and a retry with the same client reference records nothing twice.
- * Income here is what the owner recorded receiving from drivers (slice A). Payments the platform itself collected are not merged yet.
+ * Income here is what the owner recorded receiving from drivers (slice A) PLUS what the platform collected from a driver for exactly one of their vehicles (a payment that could be for either of two vehicles is left out, and the reconciliation says so). If the owner also wrote the same payment down, both count and the reconciliation warns them to cancel one.
  */
 export type Fail = { ok: false; status: number; error: string };
 export type Res<T> = { ok: true; value: T } | Fail;
@@ -162,7 +163,9 @@ export function createOwnerFinance(db: Db, now: () => Date = () => new Date()) {
 
   /* ───────────────────────── profit and loss ───────────────────────── */
   async function lines(owner: string, from: string, to: string) {
-    const vs = (await db.query(`SELECT id, registration FROM vehicles WHERE owner_id = $1 ORDER BY registration`, [owner])).rows, inc = (await db.query(`SELECT vehicle_id, amount_cents, paid_on FROM driver_payments WHERE owner_id = $1 AND voided_at IS NULL`, [owner])).rows.filter((p) => dayOf(p.paid_on)! >= from && dayOf(p.paid_on)! <= to);
+    const vs = (await db.query(`SELECT id, registration FROM vehicles WHERE owner_id = $1 ORDER BY registration`, [owner])).rows, ownInc = (await db.query(`SELECT vehicle_id, amount_cents, paid_on FROM driver_payments WHERE owner_id = $1 AND voided_at IS NULL`, [owner])).rows.filter((p) => dayOf(p.paid_on)! >= from && dayOf(p.paid_on)! <= to);
+    /* income = what the owner recorded PLUS what the platform collected for exactly one vehicle (the same matching the reconciliation uses, so the two always agree) */
+    const inc = [...ownInc, ...(await createDriverTargets(db, now).platformIncome(owner, from, to)).map((x) => ({ vehicle_id: x.vehicleId, amount_cents: x.amountCents, paid_on: x.paidOn }))] as Row[];
     const cs = (await db.query(`SELECT * FROM vehicle_costs WHERE owner_id = $1 AND voided_at IS NULL`, [owner])).rows.filter((c) => dayOf(c.incurred_on)! >= from && dayOf(c.incurred_on)! <= to && c.fine_status !== "disputed"), fins = new Map((await db.query(`SELECT id, vehicle_id FROM vehicle_finance WHERE owner_id = $1`, [owner])).rows.map((f) => [String(f.id), String(f.vehicle_id)])), ins = (await db.query(`SELECT finance_id, amount_cents, paid_on FROM finance_instalments WHERE owner_id = $1 AND voided_at IS NULL`, [owner])).rows.filter((p) => dayOf(p.paid_on)! >= from && dayOf(p.paid_on)! <= to);
     const sum = (rows: Row[]) => rows.reduce((a, r) => a + Number(r.amount_cents), 0), build = (vehicleId: string | null, reg: string | null) => { const mine = cs.filter((c) => (vehicleId === null ? !c.vehicle_id : String(c.vehicle_id) === vehicleId)); const byCat = CATEGORIES.map((k) => ({ category: k, label: CATEGORY_TEXT[k], cents: sum(mine.filter((c) => c.category === k)) })).filter((x) => x.cents > 0); const incomeCents = vehicleId === null ? 0 : sum(inc.filter((p) => String(p.vehicle_id) === vehicleId)), costCents = byCat.reduce((a, x) => a + x.cents, 0), instalmentCents = vehicleId === null ? 0 : sum(ins.filter((p) => fins.get(String(p.finance_id)) === vehicleId)); return { vehicleId, registration: reg, incomeCents, costs: byCat, costCents, profitBeforeFinanceCents: incomeCents - costCents, instalmentCents, cashProfitCents: incomeCents - costCents - instalmentCents }; };
     const vehicles = vs.map((v) => build(String(v.id), String(v.registration))), unallocated = build(null, null), all = [...vehicles, unallocated], byCat = CATEGORIES.map((k) => ({ category: k, label: CATEGORY_TEXT[k], cents: all.reduce((a, x) => a + (x.costs.find((c) => c.category === k)?.cents ?? 0), 0) })).filter((x) => x.cents > 0);
