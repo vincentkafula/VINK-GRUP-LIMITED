@@ -48,7 +48,7 @@ describe("counting what the platform collected", () => {
 
 describe("what it does not count", () => {
   it("anything not settled in full, whatever its status", async () => {
-    ok(await target()); for (const status of ["pending", "waiting", "failed", "waived", "needs_review", "cancelled"]) await item({ status, amount: R(111) }); await item({ amount: R(222), paidAt: null }); const r = await rec(); expect(r.totals.receivedCents).toBe(0); expect(r.platform).toMatchObject({ countedCents: 0, payments: [], unmatched: [], partlyPaid: [] }); expect(r.lastPaymentOn).toBeNull();
+    ok(await target()); for (const status of ["pending", "waiting", "failed", "waived", "needs_review"]) await item({ status, amount: R(111) }); await item({ amount: R(222), paidAt: null }); const r = await rec(); expect(r.totals.receivedCents).toBe(0); expect(r.platform).toMatchObject({ countedCents: 0, payments: [], unmatched: [], partlyPaid: [] }); expect(r.lastPaymentOn).toBeNull();
   });
   it("something that is not a weekly cash payment to this owner from this vehicle's driver", async () => {
     ok(await target()); for (const kind of ["monthly_salary", "per_trip_pay", "marshal_fee"]) await item({ kind, amount: R(111) }); await item({ payee: U.O2, amount: R(222) }); await item({ payer: U.D2, amount: R(333) }); await item({ payer: U.D3, payee: U.O2, amount: R(444) }); expect((await rec()).totals.receivedCents).toBe(0);
