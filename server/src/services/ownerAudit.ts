@@ -25,10 +25,13 @@ export const groupOf = (action: string): AuditGroup | null => { for (const g of 
 export const MAX_LIMIT = 200, MAX_EXPORT = 5000;
 const UUID = /^[0-9a-f-]{36}$/i;
 const rand = (c: number) => { const [i, d] = Math.abs(c / 100).toFixed(2).split("."); return `${c < 0 ? "-" : ""}R${i.replace(/\B(?=(\d{3})+(?!\d))/g, " ")}.${d}`; };
+/** "a fuel cost", "an insurance cost". */
+const an = (w: string) => `${/^[aeiou]/i.test(w) ? "an" : "a"} ${w}`;
 const str = (v: unknown, max = 120): string | null => (typeof v === "string" && v.trim() ? v.trim().slice(0, max) : null);
 const cents = (v: unknown): string | null => (typeof v === "number" && Number.isInteger(v) ? rand(v) : null);
 const KIND: Record<string, string> = { letter_of_recommendation: "letter of recommendation", membership_certificate: "membership certificate", membership_card: "membership card", roadworthy: "roadworthy certificate", insurance: "insurance document", operating_licence: "operating licence", licence_disc: "licence disc", driver_agreement: "driver agreement", other: "document", service: "service", repair: "repair", tyres: "tyres", brakes: "brakes", reading: "odometer reading" };
-const CAT: Record<string, string> = { fuel: "fuel", maintenance: "maintenance", insurance: "insurance", tracker: "tracker", fine: "fine", association: "association", licensing: "licence", tyres: "tyre", wages: "wages", other: "other" };
+const MAINT: Record<string, string> = { service: "a service", repair: "a repair", tyres: "new tyres", brakes: "brake work", reading: "an odometer reading" };
+const CAT: Record<string, string> = { fuel: "fuel", maintenance: "maintenance", insurance: "insurance", tracker: "tracker", fine: "fine", association: "association", licensing: "licence", tyres: "tyre", wages: "wages", other: "miscellaneous" };
 const ROLE_WORD: Record<string, string> = { co_owner: "co-owner", fleet_manager: "fleet manager", accountant: "accountant" };
 interface Ctx { vehicles: Map<string, string>; drivers: Map<string, string>; people: Map<string, string> }
 
@@ -43,7 +46,7 @@ export function describe(action: string, target: string | null, d: Record<string
     case "owner.split.set": return "Changed how a vehicle's income is set aside";
     case "owner.waiver.add": return `Waived ${cents(d.amountCents) ?? "an amount"} owed by a driver${on(d.vehicleId)}`;
     case "owner.pause.add": return `Paused a driver's target${on(d.vehicleId)}`;
-    case "owner.cost.add": return `Wrote down a ${CAT[String(d.category)] ?? "running"} cost of ${cents(d.amountCents) ?? "an amount"}`;
+    case "owner.cost.add": return `Wrote down ${an(`${CAT[String(d.category)] ?? "running"} cost`)} of ${cents(d.amountCents) ?? "an amount"}`;
     case "owner.cost.void": return `Cancelled a cost${why(d.reason)}`;
     case "owner.fine.status": return `Marked a fine as ${["unpaid", "paid", "disputed"].includes(String(d.status)) ? String(d.status) : "changed"}`;
     case "owner.loan.add": return `Added a loan${str(d.lender, 60) ? ` with ${str(d.lender, 60)}` : ""}${on(d.vehicleId)}`;
@@ -53,7 +56,7 @@ export function describe(action: string, target: string | null, d: Record<string
     case "owner.instalment.void": return `Cancelled a loan instalment${why(d.reason)}`;
     case "owner.dues.claim": return `Said ${cents(d.amountCents) ?? "an amount"} of association dues was paid`;
     case "owner.dues.withdraw": return "Withdrew a dues payment that was waiting to be confirmed";
-    case "owner.maintenance.add": return `Wrote down ${["service", "repair", "tyres", "brakes", "reading"].includes(String(d.kind)) ? `a ${KIND[String(d.kind)]}` : "servicing"}${on(d.vehicleId)}`;
+    case "owner.maintenance.add": return `Wrote down ${MAINT[String(d.kind)] ?? "servicing"}${on(d.vehicleId)}`;
     case "owner.maintenance.void": return `Cancelled a servicing entry${why(d.reason)}`;
     case "owner.vehicle.driver": return `Put a driver on a vehicle${typeof d.driverId === "string" && c.drivers.get(d.driverId) ? `: ${c.drivers.get(d.driverId)}` : ""}${typeof target === "string" && c.vehicles.get(target) ? ` (${c.vehicles.get(target)})` : ""}`;
     case "owner.driver.remove": return `Removed a driver${typeof target === "string" && c.drivers.get(target) ? `: ${c.drivers.get(target)}` : ""}`;
@@ -62,7 +65,7 @@ export function describe(action: string, target: string | null, d: Record<string
     case "owner.compliance.vehicle": return "Changed a vehicle's compliance dates";
     case "owner.compliance.licence.add": return `Added an operating licence${on(d.vehicleId)}`;
     case "owner.compliance.licence.remove": return "Removed an operating licence";
-    case "owner.file.upload": return `Stored a ${KIND[String(d.kind)] ?? "document"}${d.scan === "clean" ? " (checked by an antivirus)" : ""}`;
+    case "owner.file.upload": return `Stored ${an(KIND[String(d.kind)] ?? "document")}${d.scan === "clean" ? " (checked by an antivirus)" : ""}`;
     case "owner.file.download": return "Opened a stored document";
     case "owner.file.delete": return "Deleted a stored document and erased it";
     case "team.create": return `Gave a new login to ${str(d.username, 40) ?? "a team member"}${ROLE_WORD[String(d.role)] ? ` as ${ROLE_WORD[String(d.role)]}` : ""}`;
