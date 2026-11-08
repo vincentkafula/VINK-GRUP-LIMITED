@@ -314,6 +314,17 @@ This is the design for extending the existing Owner Dashboard. It records what t
 - **The activity log** says "Saved the business details: changed the trading name, the VAT number": the names of the fields, never their values.
 - **Its table is `owner_business_profile`.** (The association's own record of each owner's formalities, in the member register, is a different table called `owner_business`, and is untouched. The rollback `owner_dashboard_business_profile.sql` drops only the owner's own record.)
 
+## 4l. Emailed invitations (owner's team, and the association's office bearers)
+
+Instead of handing a new login-holder a one-time password, the owner (or the association) can **email them an invitation**: a link to choose *their own* password. Nobody is handed a password, and nobody can sign in as them until they do. It is offered, ticked, on the Team screen (and the association's Logins screen) whenever email is set up, with a **Resend the invitation** button for anyone who has not signed in yet.
+
+- **It is the platform's own password-reset flow**, so it has the same protection: the link works once, only the newest link works, and using it signs the person out everywhere. The link lasts **seven days** (an ordinary password reset still lasts one hour: both are tested).
+- **It needs email set up** (`RESEND_API_KEY`, `EMAIL_FROM`). If it is not, the screen does not offer it and the server says so; the owner falls back to a one-time password. A login is **never left behind** if its invitation cannot be sent: it is taken back (only if the person has never signed in) so the same username can be tried again.
+- **Limits and records:** at most five invitations a day to the same person; a failed send does not count against that. The record says an invitation was sent and to whom, never the link; the provider's own error message is never passed on to the screen.
+- **The email cannot carry someone else's message.** The names that go in it (the person's, the inviter's, what they are being given a login to) have web addresses, line breaks and angle brackets removed and are shortened, so an invitation cannot be used to put a link or instruction into the platform's own email (tested).
+- **The activity log** says "Gave a new login to thabo as fleet manager and emailed them an invitation" and "Emailed an invitation to Thabo Mokoena".
+- **Not built:** an invitation that sets the person's role-specific welcome text, translation of the email, and reminders when an invitation is not used.
+
 ## 5. Assumptions made (non-blocking; change any of them)
 
 - A target is **bookkeeping the owner sets**; it does not change the platform's agreement or collection. The two are linked by an optional agreement reference.

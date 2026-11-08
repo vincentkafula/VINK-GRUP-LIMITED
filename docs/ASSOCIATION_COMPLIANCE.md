@@ -123,7 +123,7 @@ specification, how the rules work, and what is not built. It is built in slices;
 - **Approvals as yourself.** A delegate linked to their office-bearer record approves expenses **as themselves**, whatever they send, and the approval is marked **signed in**. An approval recorded by the shared login is an **attestation**; the association can switch on "approvals must be made by the office bearer
   signed in to their own account", after which the shared login can no longer record one. A delegate who is not linked to an office bearer cannot approve.
 - **Passwords.** A login is created with a password that meets the password policy, **shown once** to the association and never stored in the clear or written to any record; the person should change it when they first sign in. A reset makes a new one. Delegates use the same sign-in as everyone else, including two-step sign-in if it is switched on.
-- **Not built**: scheduled digests by email, an emailed invitation to set one's own password (it needs email to be configured), and per-person permissions beyond the four roles.
+- **Emailed invitation: built.** When email is set up, the association can email a new office bearer a link to choose their own password instead of handing over a one-time password (see docs/OWNER_DASHBOARD.md, section 4l). **Not built**: scheduled digests by email, and per-person permissions beyond the four roles.
 
 ## Decisions only the association can make
 
