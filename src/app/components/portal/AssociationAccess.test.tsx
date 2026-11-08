@@ -30,7 +30,8 @@ const pick = (label: string, value: string) => fireEvent.change(screen.getByLabe
 
 describe("which menu items a person may see", () => {
   it("shows the main login everything, and a delegate only the modules their role allows", () => {
-    for (const l of ["Compliance", "Discipline", "Bank account", "Commission", "Office bearers' logins", "Anything"]) expect(navAllowed(l, OWNER), l).toBe(true);
+    for (const l of ["Compliance", "Discipline", "Bank account", "Commission", "Office bearers' logins", "Email digest", "Anything"]) expect(navAllowed(l, OWNER), l).toBe(true);
+    for (const a of [TREASURER, SECRETARY]) expect(navAllowed("Email digest", a)).toBe(false);                  // the digest gathers every module in one email, so only the main login has it
     expect(["Compliance", "Finance", "Fees & receipts", "Registration", "Reports", "Route control", "Levies"].map((l) => navAllowed(l, TREASURER))).toEqual([true, true, true, true, true, true, true]); expect(["Discipline", "Safety", "Member register", "Governance", "Operations", "Owners", "Bank account", "Commission", "Office bearers' logins", "VINK Tokens"].map((l) => navAllowed(l, TREASURER))).toEqual(Array(10).fill(false));
     expect(["Discipline", "Safety", "Member register", "Formalisation", "Governance", "Registration", "Owners", "Approvals", "Reports"].map((l) => navAllowed(l, SECRETARY))).toEqual(Array(9).fill(true)); expect(["Finance", "Levies", "Statements", "Bank account", "Office bearers' logins"].map((l) => navAllowed(l, SECRETARY))).toEqual(Array(5).fill(false));
     expect(["Compliance", "Registration", "Vehicle register", "Route control", "Reports"].map((l) => navAllowed(l, VIEWER))).toEqual(Array(5).fill(true)); expect(["Finance", "Discipline", "Safety", "Member register", "Governance", "Owners"].map((l) => navAllowed(l, VIEWER))).toEqual(Array(6).fill(false));

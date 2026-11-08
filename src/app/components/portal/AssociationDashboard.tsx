@@ -15,6 +15,7 @@ import { FinanceOverview, FeesAndReceiptsScreen, ExpensesScreen, IncomeStatement
 import { GovernanceScreen, DisciplineScreen } from "./AssociationGovernance";
 import { ReportsScreen } from "./AssociationReports";
 import { AccessScreen, useAccess, navAllowed } from "./AssociationAccess";
+import { DigestScreen } from "./AssociationDigest";
 import { SafetyScreen, RouteControlScreen } from "./AssociationSafety";
 import { MemberRegisterScreen, FormalisationScreen } from "./AssociationMembers";
 import { CommissionScreen, PayRunScreen, QueriesScreen } from "./AssociationCommission";
@@ -36,7 +37,7 @@ export function AssociationDashboard({ userName, onClose }: { userName?: string;
   const G = { home: "Compliance", reg: "Registers", routes: "Routes and ranks", fin: "Association finance", gov: "Governance", money: "VINK money", care: "Marshals", vink: "VINK" };
   const allItems = [
     { icon: <ShieldCheck className="w-4 h-4" />, label: "Compliance", group: G.home }, { icon: <FileText className="w-4 h-4" />, label: "Reports", group: G.home }, { icon: <Home className="w-4 h-4" />, label: "Overview", group: G.home },
-    { icon: <ClipboardList className="w-4 h-4" />, label: "Registration", group: G.reg }, { icon: <ShieldCheck className="w-4 h-4" />, label: "Office bearers' logins", group: G.reg }, { icon: <IdCard className="w-4 h-4" />, label: "Member register", group: G.reg }, { icon: <Banknote className="w-4 h-4" />, label: "Formalisation", group: G.reg }, { icon: <Users className="w-4 h-4" />, label: "Owners", group: G.reg }, { icon: <UserCog className="w-4 h-4" />, label: "Drivers", group: G.reg }, { icon: <UserCheck className="w-4 h-4" />, label: "Marshals", group: G.reg },
+    { icon: <ClipboardList className="w-4 h-4" />, label: "Registration", group: G.reg }, { icon: <ShieldCheck className="w-4 h-4" />, label: "Office bearers' logins", group: G.reg }, { icon: <FileText className="w-4 h-4" />, label: "Email digest", group: G.reg }, { icon: <IdCard className="w-4 h-4" />, label: "Member register", group: G.reg }, { icon: <Banknote className="w-4 h-4" />, label: "Formalisation", group: G.reg }, { icon: <Users className="w-4 h-4" />, label: "Owners", group: G.reg }, { icon: <UserCog className="w-4 h-4" />, label: "Drivers", group: G.reg }, { icon: <UserCheck className="w-4 h-4" />, label: "Marshals", group: G.reg },
     { icon: <Car className="w-4 h-4" />, label: "Vehicles", group: G.reg }, { icon: <Car className="w-4 h-4" />, label: "Vehicle register", group: G.reg }, { icon: <IdCard className="w-4 h-4" />, label: "Driver register", group: G.reg },
     { icon: <CheckCircle2 className="w-4 h-4" />, label: "Approvals", badge: pending || undefined, group: G.reg },
     { icon: <MapPin className="w-4 h-4" />, label: "Ranks", group: G.routes }, { icon: <RouteIcon className="w-4 h-4" />, label: "Routes", group: G.routes }, { icon: <MapIcon className="w-4 h-4" />, label: "Map", group: G.routes }, { icon: <ShieldCheck className="w-4 h-4" />, label: "Route control", group: G.routes },
@@ -57,6 +58,7 @@ export function AssociationDashboard({ userName, onClose }: { userName?: string;
           {nav === "Compliance" && <ComplianceOverview onOpen={setNav} />}
           {nav === "Reports" && <ReportsScreen />}
           {nav === "Office bearers' logins" && <AccessScreen />}
+          {nav === "Email digest" && <DigestScreen />}
           {nav === "Finance" && <FinanceOverview onOpen={setNav} />}
           {nav === "Governance" && <GovernanceScreen />}
           {nav === "Discipline" && <DisciplineScreen />}
