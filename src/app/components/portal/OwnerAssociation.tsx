@@ -4,6 +4,7 @@ import { portalClient, useLoad, Status, Empty, ActionButton, rand, inputCls } fr
 import { sendOrQueue, useOutbox, newRef } from "./offlineQueue";
 import { FileButton } from "./AssociationFinance";
 import { toCents } from "./OwnerDriverPay";
+import { DocumentFiles } from "./OwnerDocuments";
 
 /**
  * The owner's association (docs/OWNER_DASHBOARD.md, slice B): who they belong to, their membership and standing, the routes on their licences, what they owe, the association's receipts, and "I have paid".
@@ -97,7 +98,8 @@ export function MyAssociationScreen() {
           <SectionPanel title="Your membership papers">
             <div className="p-4 space-y-2 text-sm text-fg">
               {documents.length === 0 ? <Empty>No letter of recommendation or membership certificate is recorded.</Empty> : <ul className="space-y-1">{documents.map((d) => <li key={d.id}><b>{DOC_KIND[d.kind] ?? d.kind}</b>{d.reference ? ` · ${d.reference}` : ""}{d.expiresOn ? ` · valid until ${d.expiresOn}` : ""}</li>)}</ul>}
-              <p className="text-xs text-fg-subtle">Add or change these under Documents. Keep your letter of recommendation and membership certificate current: they are what shows you may operate on a route.</p>
+              <DocumentFiles title="Attach your membership papers" kinds={["letter_of_recommendation", "membership_certificate", "membership_card"]} hint="Keep your letter of recommendation and membership certificate current: they are what shows you may operate on a route." />
+              <p className="text-xs text-fg-subtle">The details of these papers (their reference and expiry) are recorded under Documents.</p>
             </div>
           </SectionPanel>
         </>)}</Status>

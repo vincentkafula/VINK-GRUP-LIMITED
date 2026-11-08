@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { SectionPanel, StatCard } from "../dashboards/DashboardShell";
 import { portalClient, useLoad, Status, Empty, ActionButton, inputCls } from "./ui";
+import { DocumentFiles } from "./OwnerDocuments";
 
 /**
  * The owner's licence and compliance centre (docs/OWNER_DASHBOARD.md, slice C1): each vehicle's operating licence, roadworthy certificate, licence disc, insurance, and its driver's licence and PrDP, with how long is left and what needs doing.
@@ -99,6 +100,7 @@ export function ComplianceCentreScreen() {
                   <div><h4 className="text-xs font-bold uppercase text-fg-muted mb-2">Operating licences</h4>
                     {v.licences.length === 0 ? <Empty>No operating licence is recorded.</Empty> : <ul className="space-y-1 mb-3">{v.licences.map((l) => <li key={l.id} className="flex flex-wrap items-center gap-2">{l.licenceNumber} · {l.province ?? "province not stated"} · {l.validFrom} to {l.validUntil}{l.route ? ` · ${l.route}` : ""}<ActionButton small label={`Remove ${l.licenceNumber}`} color="#6B7280" onRun={async () => { const r = await call(`/compliance-centre/licences/${l.id}`, { method: "DELETE" }); if ("error" in r) return { error: r.error }; reload(); return undefined; }} /></li>)}</ul>}
                     <LicenceForm v={v} rules={c.rules} reload={reload} /></div>
+                  <DocumentFiles title={`Photos and PDFs for ${v.registration}`} kinds={["roadworthy", "insurance", "operating_licence", "licence_disc", "driver_agreement", "other"]} vehicleId={v.vehicleId} hint="Keep a copy of each certificate here, so you can show it when you are asked." />
                 </div>)}
             </div>
           </SectionPanel>))}
