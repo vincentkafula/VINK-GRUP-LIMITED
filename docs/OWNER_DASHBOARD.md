@@ -56,7 +56,7 @@ This is the design for extending the existing Owner Dashboard. It records what t
 5. **Slice E: structure and roles (P2).** Owner business record; roles for an owner's team (co-owner, fleet manager, driver, and the association's own roles' views), using the same fail-closed gate pattern as the association's named logins.
 6. **Slice F: growth and risk (P3).** Planner, notifications (in-app first, SMS and WhatsApp through the existing alert service), audit trail for owner changes.
 
-**Status (all six slices are built, tested and pushed):** A, owner and driver money (4a); B, the owner's association (4b); C, the licence and compliance centre (4c) and the owner's documents (4d); D, capital and profitability (4e); E, an owner's team (4f); F, the activity log (4g), the fleet expansion planner (4h) and text alerts (4i). **Also built since:** money the platform itself collects from a driver is now counted in the driver reconciliation and in the profit and loss (section 4j). **Not built:** WhatsApp alerts (they need approved message templates and consent: a decision for the business), an owner business record (company details), a driver view of their own target, and a look at every screen in a real browser. Alerts are by text message, not (yet) WhatsApp.
+**Status (all six slices are built, tested and pushed):** A, owner and driver money (4a); B, the owner's association (4b); C, the licence and compliance centre (4c) and the owner's documents (4d); D, capital and profitability (4e); E, an owner's team (4f); F, the activity log (4g), the fleet expansion planner (4h) and text alerts (4i). **Also built since:** money the platform itself collects from a driver is now counted in the driver reconciliation and in the profit and loss (section 4j). **Not built:** WhatsApp alerts (they need approved message templates and consent: a decision for the business), a driver view of their own target, and a look at every screen in a real browser. Alerts are by text message, not (yet) WhatsApp.
 
 ## 4a. Slice A, built: owner and driver money
 
@@ -301,6 +301,16 @@ This is the design for extending the existing Owner Dashboard. It records what t
 - A payment made after a target has ended is not matched to any vehicle.
 - A part-paid payment is shown but not counted (its date is not recorded).
 - A salary or per-trip payment the *owner* makes to a driver is a cost, not income, and is not part of this.
+
+## 4k. The owner's business record
+
+*Profit and costs → Business* records who the owner trades as: how they trade (an individual, a company, a partnership), the trading name, the registered name and number if there is one, a VAT number if registered, a phone, an email and an address. It is printed under "The business" at the top of the profit and loss PDF, and the PDF is then made out in the trading name.
+
+- **Only the trading name and how they trade are needed.** A VAT number is checked only for its *shape* (ten digits, starting with 4); nothing is checked against any register, so the owner is responsible for it being right.
+- **No income tax number, ID number or bank detail is kept**, however it is offered (tested), so the less there is, the less can be lost.
+- **Who**: the owner and a co-owner can change it; the accountant can only look; the fleet manager cannot see it (it is part of the finance module).
+- **The activity log** says "Saved the business details: changed the trading name, the VAT number": the names of the fields, never their values.
+- **Its table is `owner_business_profile`.** (The association's own record of each owner's formalities, in the member register, is a different table called `owner_business`, and is untouched. The rollback `owner_dashboard_business_profile.sql` drops only the owner's own record.)
 
 ## 5. Assumptions made (non-blocking; change any of them)
 

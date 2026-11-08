@@ -182,7 +182,7 @@ describe("the business record", () => {
     pick("Business trading name", "Langa Taxis"); fireEvent.click(screen.getByRole("button", { name: "Save the business details" })); await waitFor(() => expect(writes().at(-1)!.body).toMatchObject({ tradingName: "Langa Taxis", kind: "company", vatNumber: "4123456789" }));
   });
   it("asks twice before deleting, and then empties the form", async () => {
-    biz(BIZ); await tab("Business"); fireEvent.click(await screen.findByRole("button", { name: "Delete the business details" })); expect(writes()).toEqual([]); biz(null); fireEvent.click(screen.getByRole("button", { name: "Yes, delete the business details" })); await waitFor(() => expect(writes().at(-1)).toEqual({ method: "DELETE", path: `${P}/finance/business`, body: undefined })); await waitFor(() => expect(screen.getByLabelText("Business trading name")).toHaveValue("")); expect(screen.queryByText(/Last saved on/)).toBeNull();
+    override((m, p) => m === "DELETE" && p === `${P}/finance/business`, { body: { success: true, removed: true } }); biz(BIZ); await tab("Business"); fireEvent.click(await screen.findByRole("button", { name: "Delete the business details" })); expect(writes()).toEqual([]); biz(null); fireEvent.click(screen.getByRole("button", { name: "Yes, delete the business details" })); await waitFor(() => expect(writes().at(-1)).toEqual({ method: "DELETE", path: `${P}/finance/business`, body: undefined })); await waitFor(() => expect(screen.getByLabelText("Business trading name")).toHaveValue("")); expect(screen.queryByText(/Last saved on/)).toBeNull();
   });
 });
 
