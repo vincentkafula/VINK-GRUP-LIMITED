@@ -23,6 +23,16 @@ export function verifyEmailMessage(to: string, name: string, link: string): Emai
   return { to, subject: "Confirm your email address", ...m };
 }
 
+/** An invitation to choose one's own password: it names the person who invited them and what they are being given a login to, and the username to sign in with. */
+/** Text a person typed, made safe to put in the platform's own email: no web addresses, no line breaks, no angle brackets, and not too long, so an invitation cannot be used to carry someone else's message or link. */
+export const plainName = (s: string) => s.replace(/(https?:\/\/|www\.)\S+/gi, "").replace(/[\r\n\t]+/g, " ").replace(/[<>]/g, "").replace(/\s{2,}/g, " ").trim().slice(0, 80);
+export function invitationMessage(to: string, name: string, username: string, link: string, by: string, what: string): EmailMessage {
+  name = plainName(name) || "there"; by = plainName(by) || "Someone"; what = plainName(what) || "VINK"; username = plainName(username);
+  const m = layout("You have been given a login", `Hi ${name}, ${by} has given you a login to ${what}. Your username is ${username}. Choose your own password with the button below: the link works for 7 days and can be used once.`, "Choose my password", link,
+    "If you were not expecting this, ignore this email: nothing works until you choose a password, and nobody else knows it. Never share this link with anyone.");
+  return { to, subject: "You have been given a VINK login", ...m };
+}
+
 export function resetPasswordMessage(to: string, name: string, link: string): EmailMessage {
   const m = layout("Reset your password", `Hi ${name}, we received a request to reset your VINK password. The link works for 1 hour and can be used once.`, "Choose a new password", link,
     "If you did not ask for this, ignore this email: your password has not changed. Never share this link with anyone.");

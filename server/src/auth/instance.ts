@@ -10,6 +10,7 @@ import { createAuthRouter } from "./router.js";
 import { createOriginPolicy } from "./origins.js";
 import { readSeedAccounts } from "./seedRoleAccounts.js";
 import bcrypt from "bcryptjs";
+import { configureInvitations } from "../services/invitations.js";
 import { BCRYPT_ROUNDS } from "../config/secrets.js";
 
 /** The real, Postgres-backed auth router, built from the environment. Throws at start-up if the auth settings are invalid. */
@@ -20,6 +21,7 @@ export function createDbAuthRouter(): { router: Router; cfg: AuthConfig } {
   const sessions = new SessionService(store, cfg);
   const mail = createEmailSender();
   const flows = new AuthFlows(store, sessions, mail, cfg);
+  configureInvitations({ flows, mailName: mail.name });                  // so an owner or an association can email a new login-holder an invitation (services/invitations.ts)
   console.log(`[auth] mode=${cfg.refreshCookies ? "cookie (rotating refresh tokens)" : "legacy (single access token)"} email=${mail.name}`);
   return { router: createAuthRouter({ store, sessions, flows, cfg, isAllowedOrigin: createOriginPolicy() }), cfg };
 }

@@ -3,13 +3,15 @@ import bcrypt from "bcryptjs";
 import type { AuthConfig } from "./config.js";
 import type { AuthStore, UserRecord, EmailPurpose } from "./store.js";
 import type { EmailSender } from "./email.js";
-import { resetPasswordMessage, verifyEmailMessage } from "./emailTemplates.js";
+import { resetPasswordMessage, verifyEmailMessage, invitationMessage } from "./emailTemplates.js";
 import { newOpaqueToken, hashToken } from "./tokens.js";
 import { passwordProblem } from "./password.js";
 import { BCRYPT_ROUNDS } from "../config/secrets.js";
 import type { SessionService } from "./sessionService.js";
 
 const TTL_MS: Record<EmailPurpose, number> = { verify: 24 * 3600_000, reset: 3600_000 };
+/** An invitation is a one-time "choose your password" link like a reset, but it has to survive the person not opening their email for a few days. */
+export const INVITE_TTL_MS = 7 * 24 * 3600_000;
 
 export class FlowError extends Error {
   constructor(readonly code: "invalid_token" | "weak_password", message: string) { super(message); this.name = "FlowError"; }
@@ -26,11 +28,11 @@ export class AuthFlows {
     private readonly log: (m: string) => void = (m) => console.error(m),
   ) {}
 
-  private async issue(user: UserRecord, purpose: EmailPurpose): Promise<string> {
+  private async issue(user: UserRecord, purpose: EmailPurpose, ttlMs: number = TTL_MS[purpose]): Promise<string> {
     const at = this.now();
     await this.store.invalidateEmailTokens(user.id, purpose, at);     // only the newest link works
     const token = newOpaqueToken();
-    await this.store.insertEmailToken({ id: crypto.randomUUID(), userId: user.id, purpose, tokenHash: hashToken(token), expiresAt: new Date(at.getTime() + TTL_MS[purpose]), createdAt: at });
+    await this.store.insertEmailToken({ id: crypto.randomUUID(), userId: user.id, purpose, tokenHash: hashToken(token), expiresAt: new Date(at.getTime() + ttlMs), createdAt: at });
     return token;
   }
 
@@ -56,6 +58,16 @@ export class AuthFlows {
     if (!user) return;
     const token = await this.issue(user, "reset");
     this.deliver(this.mail.send(resetPasswordMessage(user.email, user.name, `${this.cfg.frontendUrl}/reset-password?token=${encodeURIComponent(token)}`)));
+  }
+
+  /**
+   * Emails a person a link to choose THEIR OWN password, so nobody has to be handed one. It is the reset link (single use, and only the newest works) with a longer life and the wording of an invitation. Unlike a reset it WAITS for the email to be sent and says if it could not be, because the person asking needs to know.
+   * `by` is who is inviting them and `what` is what they are being given a login to (for example "help run Langa Taxi Services").
+   */
+  async invite(userId: string, o: { by: string; what: string }): Promise<void> {
+    const user = await this.store.findUserById(userId); if (!user) throw new FlowError("invalid_token", "That person was not found.");
+    const token = await this.issue(user, "reset", INVITE_TTL_MS);
+    await this.mail.send(invitationMessage(user.email, user.name, user.username, `${this.cfg.frontendUrl}/reset-password?token=${encodeURIComponent(token)}&invited=1`, o.by, o.what));
   }
 
   /** Sets the new password, retires the reset link, and signs the user out of every device. */

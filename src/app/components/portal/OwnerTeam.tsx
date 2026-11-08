@@ -32,7 +32,7 @@ const ROLES: [string, string, string][] = [
 const MODULE_TEXT: Record<string, string> = { overview: "overview", notifications: "notifications", fleet: "vehicles and drivers", driverpay: "what drivers pay", compliance: "compliance and documents", files: "stored files", association: "the association", costs: "costs and servicing", finance: "profit, loans and exports", earnings: "takings and reports", audit: "the activity log" };
 
 export function TeamScreen() {
-  const [load, reload] = useLoad<{ team: Member[] }>(() => call("/team")), [f, setF] = useState({ name: "", email: "", username: "", role: "fleet_manager" }), [secret, setSecret] = useState<{ name: string; username: string; password: string } | null>(null);
+  const [load, reload] = useLoad<{ team: Member[]; invitationsAvailable?: boolean }>(() => call("/team")), [f, setF] = useState({ name: "", email: "", username: "", role: "fleet_manager" }), [invite, setInvite] = useState(true), [secret, setSecret] = useState<{ name: string; username: string; password: string } | null>(null);
   return (
     <div className="space-y-4">
       <SectionPanel title="My team">
@@ -51,7 +51,7 @@ export function TeamScreen() {
         </div>)}
       <SectionPanel title="Logins">
         <div className="p-4 space-y-4">
-          <Status load={load}>{({ team }) => team.length === 0 ? <Empty>Nobody has their own login yet.</Empty> : (
+          <Status load={load}>{({ team, invitationsAvailable }) => team.length === 0 ? <Empty>Nobody has their own login yet.</Empty> : (
             <ul className="space-y-3 text-sm text-fg">{team.map((m) => (
               <li key={m.id} className="border-b border-line/60 pb-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
@@ -59,6 +59,7 @@ export function TeamScreen() {
                   <span className="flex flex-wrap items-center gap-2">
                     <select aria-label={`Role of ${m.name}`} className={inputCls + " w-52"} value={m.role} onChange={async (e) => { await call(`/team/${m.id}/role`, { method: "PUT", body: { role: e.target.value } }); reload(); }}>{ROLES.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select>
                     <ActionButton small label={`${m.disabled ? "Switch on" : "Switch off"} ${m.name}`} color="#6B7280" onRun={async () => { const r = await call(`/team/${m.id}/active`, { method: "POST", body: { active: m.disabled } }); if ("error" in r) return { error: r.error }; reload(); return undefined; }} />
+                    {invitationsAvailable && !m.lastLogin && <ActionButton small label={`Resend the invitation to ${m.name}`} color={COLOR} onRun={async () => { const r = await call(`/team/${m.id}/invite`, { method: "POST" }); if ("error" in r) return { error: r.error }; return { message: `We emailed ${m.name} a new link. The old one no longer works.` }; }} />}
                     <ActionButton small label={`Reset password for ${m.name}`} color="#6B7280" onRun={async () => { const r = await call<{ username: string; temporaryPassword: string }>(`/team/${m.id}/reset-password`, { method: "POST" }); if ("error" in r) return { error: r.error }; const x = r.data as unknown as { username: string; temporaryPassword: string }; setSecret({ name: m.name, username: x.username, password: x.temporaryPassword }); return undefined; }} />
                   </span>
                 </div>
@@ -69,7 +70,8 @@ export function TeamScreen() {
             <label className="block"><span className="text-[11px] text-fg-muted">Email</span><input type="email" aria-label="Team email" className={inputCls + " mt-1 w-52"} value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} /></label>
             <label className="block"><span className="text-[11px] text-fg-muted">Username (saved in lower case)</span><input aria-label="Team username" className={inputCls + " mt-1 w-40"} value={f.username} onChange={(e) => setF({ ...f, username: e.target.value })} /></label>
             <label className="block"><span className="text-[11px] text-fg-muted">Role</span><select aria-label="Team role" className={inputCls + " mt-1 w-52"} value={f.role} onChange={(e) => setF({ ...f, role: e.target.value })}>{ROLES.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select></label>
-            <ActionButton label="Create login" color={COLOR} onRun={async () => { const r = await call<{ username: string; temporaryPassword: string }>("/team", { method: "POST", body: { name: f.name, email: f.email, username: f.username, role: f.role } }); if ("error" in r) return { error: r.error }; const x = r.data as unknown as { username: string; temporaryPassword: string }; setSecret({ name: f.name, username: x.username, password: x.temporaryPassword }); setF({ name: "", email: "", username: "", role: f.role }); reload(); return undefined; }} />
+            {load.state === "ready" && load.data.invitationsAvailable && <label className="flex items-start gap-2 text-sm text-fg basis-full"><input type="checkbox" className="mt-1" checked={invite} onChange={(e) => setInvite(e.target.checked)} /><span><b>Email them an invitation</b> so they choose their own password. Nothing is passed on to them by you, and nobody can sign in as them until they do. (Untick it to get a one-time password instead.)</span></label>}
+            <ActionButton label="Create login" color={COLOR} onRun={async () => { const wantInvite = load.state === "ready" && !!load.data.invitationsAvailable && invite; const r = await call<{ username: string; temporaryPassword: string; invited?: boolean }>("/team", { method: "POST", body: { name: f.name, email: f.email, username: f.username, role: f.role, ...(wantInvite ? { invite: true } : {}) } }); if ("error" in r) return { error: r.error }; if (wantInvite) { const to = f.email; setF({ name: "", email: "", username: "", role: f.role }); reload(); return { message: `We emailed an invitation to ${to}. They choose their own password, so you have nothing to pass on.` }; } const x = r.data as unknown as { username: string; temporaryPassword: string }; setSecret({ name: f.name, username: x.username, password: x.temporaryPassword }); setF({ name: "", email: "", username: "", role: f.role }); reload(); return undefined; }} />
           </div>
         </div>
       </SectionPanel>

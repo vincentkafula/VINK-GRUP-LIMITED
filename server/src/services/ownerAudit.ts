@@ -73,7 +73,8 @@ export function describe(action: string, target: string | null, d: Record<string
     case "owner.plan.delete": return "Deleted a vehicle plan";
     case "owner.business.save": { const w = (Array.isArray(d.changed) ? d.changed : []).map((k) => FIELD[String(k)]).filter(Boolean); return `Saved the business details${w.length ? `: changed ${w.join(", ")}` : ""}`; }
     case "owner.business.remove": return "Deleted the business details";
-    case "team.create": return `Gave a new login to ${str(d.username, 40) ?? "a team member"}${ROLE_WORD[String(d.role)] ? ` as ${ROLE_WORD[String(d.role)]}` : ""}`;
+    case "team.create": return `Gave a new login to ${str(d.username, 40) ?? "a team member"}${ROLE_WORD[String(d.role)] ? ` as ${ROLE_WORD[String(d.role)]}` : ""}${d.invited === true ? " and emailed them an invitation" : ""}`;
+    case "team.invite": return `Emailed an invitation to ${typeof target === "string" && c.people.get(target) ? c.people.get(target) : "a team member"}`;
     case "team.role": return `Changed ${typeof target === "string" && c.people.get(target) ? c.people.get(target) : "a team member"}'s role${ROLE_WORD[String(d.role)] ? ` to ${ROLE_WORD[String(d.role)]}` : ""}`;
     case "team.active": return `${d.active === false ? "Switched off" : "Switched on"} the login of ${typeof target === "string" && c.people.get(target) ? c.people.get(target) : "a team member"}`;
     case "team.reset-password": return `Reset the password of ${typeof target === "string" && c.people.get(target) ? c.people.get(target) : "a team member"}`;

@@ -60,7 +60,7 @@ export function createLoadingReports(db: Db) {
 
   /** GET /loading/report?by=session|driver|vehicle|route&from=&to= and the same as /loading/report.csv, for the signed-in user as this role. */
   function mount(router: Router, role: ReportRole, now: () => Date): void {
-    const parse = (req: Request) => {
+    const parse = (req: Request): { error: string } | { by: ReportBy; range: Exclude<ReturnType<typeof rangeParams>, { error: string }> } => {                  // explicit, so it does not depend on the order the compiler resolves other files in
       const by = String(req.query.by ?? "driver") as ReportBy;
       if (!REPORT_BY.includes(by)) return { error: "Choose session, driver, vehicle or route" };
       const range = rangeParams(req, now(), 30); if ("error" in range) return range;

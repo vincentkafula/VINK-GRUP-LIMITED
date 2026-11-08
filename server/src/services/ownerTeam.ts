@@ -71,8 +71,15 @@ export function createOwnerTeam(db: Db, now: () => Date = () => new Date()) {
     if (!(await own(owner, id))) return bad(404, "That login was not found"); const u = (await db.query(`SELECT username, email FROM users WHERE id = $1`, [id])).rows[0], password = temporaryPassword({ username: String(u.username), email: String(u.email) });
     await db.query(`UPDATE users SET password_hash = $2 WHERE id = $1`, [id, await bcrypt.hash(password, BCRYPT_ROUNDS)]); return { ok: true, value: { id, username: String(u.username), temporaryPassword: password } };
   }
+  /** Whether this login is one of the owner's. */
+  async function isMine(owner: string, id: string): Promise<boolean> { return !!(await own(owner, id)); }
+  /** Takes back a login that was only just made and never used (for example when its invitation could not be emailed), so the owner can try again with the same username. A person who has signed in is never removed. */
+  async function discard(owner: string, id: string): Promise<Res<{ id: string }>> {
+    if (!(await own(owner, id))) return bad(404, "That login was not found"); const u = (await db.query(`SELECT last_login FROM users WHERE id = $1`, [id])).rows[0]; if (u?.last_login) return bad(409, "That person has already signed in");
+    await db.query(`DELETE FROM owner_team WHERE user_id = $1`, [id]); await db.query(`DELETE FROM users WHERE id = $1`, [id]); return { ok: true, value: { id } };
+  }
   /** What the signed-in person may do, for the screens to show only what they can use. */
   function access(m: Member | null) { const role: TeamRole | null = m?.role ?? null; return { kind: m ? "team" : "owner", name: m?.name ?? null, role, roleText: role ? TEAM_ROLE_TEXT[role] : "The owner", modules: Object.fromEntries(TEAM_MODULES.map((x) => [x, role === null ? "rw" : TEAM_MATRIX[role][x] ?? null])) as Record<TeamModule, "r" | "rw" | null> }; }
-  return { resolve, list, create, setRole, setActive, resetPassword, access };
+  return { resolve, list, create, setRole, setActive, resetPassword, access, isMine, discard };
 }
 export type OwnerTeam = ReturnType<typeof createOwnerTeam>;
