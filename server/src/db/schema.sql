@@ -3063,3 +3063,31 @@ CREATE TABLE IF NOT EXISTS owner_team (
   disabled_at TIMESTAMPTZ
 );
 CREATE INDEX IF NOT EXISTS idx_owner_team_owner ON owner_team(owner_id);
+
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+-- OWNER DASHBOARD, slice F3: text (SMS) alerts for an owner, strictly opt-in (docs/OWNER_DASHBOARD.md)
+-- A message goes only to a phone number the owner has confirmed with a code, only for the kinds of alert they chose, at most one summary a day. To remove: db/rollback/owner_dashboard_f3.sql
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS owner_sms (
+  owner_id         UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  phone            TEXT NOT NULL,
+  code_hash        TEXT,
+  code_expires_at  TIMESTAMPTZ,
+  code_attempts    INTEGER NOT NULL DEFAULT 0,
+  verified_at      TIMESTAMPTZ,
+  enabled          BOOLEAN NOT NULL DEFAULT false,
+  kinds            JSONB NOT NULL DEFAULT '[]',
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at       TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+-- What was sent, not what it said: the kind, when, whether it went, and the alert keys it covered (so the same thing is not sent again within a week). The message text and the phone number are not kept here.
+CREATE TABLE IF NOT EXISTS owner_sms_log (
+  id        UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id  UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  kind      TEXT NOT NULL CHECK (kind IN ('daily','test','code')),
+  sent_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  status    TEXT NOT NULL CHECK (status IN ('sent','failed')),
+  keys      JSONB NOT NULL DEFAULT '[]',
+  error     TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_owner_sms_log_owner ON owner_sms_log(owner_id, sent_at DESC);
