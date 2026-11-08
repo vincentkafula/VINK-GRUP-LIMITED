@@ -56,7 +56,7 @@ This is the design for extending the existing Owner Dashboard. It records what t
 5. **Slice E: structure and roles (P2).** Owner business record; roles for an owner's team (co-owner, fleet manager, driver, and the association's own roles' views), using the same fail-closed gate pattern as the association's named logins.
 6. **Slice F: growth and risk (P3).** Planner, notifications (in-app first, SMS and WhatsApp through the existing alert service), audit trail for owner changes.
 
-**Status (all six slices are built, tested and pushed):** A, owner and driver money (4a); B, the owner's association (4b); C, the licence and compliance centre (4c) and the owner's documents (4d); D, capital and profitability (4e); E, an owner's team (4f); F, the activity log (4g), the fleet expansion planner (4h) and text alerts (4i). **Not built:** WhatsApp alerts (they need approved message templates and consent: a decision for the business), an owner business record (company details), a driver view of their own target, merging platform-collected payments into the driver reconciliation, and a look at every screen in a real browser. Alerts are by text message, not (yet) WhatsApp.
+**Status (all six slices are built, tested and pushed):** A, owner and driver money (4a); B, the owner's association (4b); C, the licence and compliance centre (4c) and the owner's documents (4d); D, capital and profitability (4e); E, an owner's team (4f); F, the activity log (4g), the fleet expansion planner (4h) and text alerts (4i). **Also built since:** money the platform itself collects from a driver is now counted in the driver reconciliation and in the profit and loss (section 4j). **Not built:** WhatsApp alerts (they need approved message templates and consent: a decision for the business), an owner business record (company details), a driver view of their own target, and a look at every screen in a real browser. Alerts are by text message, not (yet) WhatsApp.
 
 ## 4a. Slice A, built: owner and driver money
 
@@ -284,6 +284,23 @@ This is the design for extending the existing Owner Dashboard. It records what t
 - Only the four kinds above; an instalment *coming up* (rather than missed) and a payment received are not alerts yet.
 - The message is in English only.
 - Real delivery has not been tried: only a stand-in sender has been tested.
+
+## 4j. Platform-collected payments, in the reconciliation and the profit and loss
+
+**The gap.** A driver on a weekly cash-basis agreement can pay the owner through the platform's own banking. Until now those payments were not in the owner's driver reconciliation or profit and loss, which counted only what the owner wrote down.
+
+**What it does now.** A weekly cash payment settled by the platform (driver to owner) is counted as received, **but only when it can be matched to exactly one of the owner's vehicles**: the vehicle whose target was in force on the day it was paid, for that driver (a target with no driver named is pinned to the vehicle's driver when it was set). It is counted in the vehicle's totals, its last-payment date, its earmarks (through the same split rule as an owner-recorded payment) and in the profit and loss, and the vehicle's page says how much was collected for the owner so they do not write it down.
+
+**Rules (all covered by tests)**
+- **Only a payment settled in full has a date, so only those count.** A part-paid one is shown with what has been paid and what is still owed, and is not counted until it is settled. Anything pending, waiting, failed, waived or under review is not counted, and neither is a salary, per-trip or marshal payment, a payment to another owner, or one from a driver who has no target on the owner's vehicles that day.
+- **It never guesses.** If two vehicles could have been meant, nothing is counted and the owner is told (a "could not be matched to one vehicle" flag on both).
+- **No silent double counting.** If the owner also wrote down the same amount within a day of a platform collection, both are counted and the owner gets a "may be counted twice: cancel yours if it is the same payment" flag. The platform's record is never changed, and the owner's own entry is never removed for them.
+- **Dates are South African days**, and the reconciliation and the profit and loss use the same matching, so the two screens always agree (tested).
+
+**Known limits, to do next**
+- A payment made after a target has ended is not matched to any vehicle.
+- A part-paid payment is shown but not counted (its date is not recorded).
+- A salary or per-trip payment the *owner* makes to a driver is a cost, not income, and is not part of this.
 
 ## 5. Assumptions made (non-blocking; change any of them)
 

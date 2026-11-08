@@ -5,6 +5,7 @@ import { DriverTargetsScreen, toCents } from "./OwnerDriverPay";
 import { rand } from "./ui";
 
 const R = (cents: number) => rand(cents / 100).replace(/\s/g, " ");
+const norm = (t: string | null | undefined) => (t ?? "").replace(/\s/g, " ");
 type Reply = { status?: number; body: unknown } | "network";
 let routes: (method: string, path: string, body: any) => Reply | undefined, calls: { method: string; path: string; body: any }[];
 const P = "/api/portal/owner";
@@ -114,3 +115,19 @@ describe("one vehicle", () => {
     routes = ((o) => (m: string, p: string, b: any) => (p === `${P}/driver-pay/vehicles/v1` ? { body: { ...REC, hasTarget: false, status: "none", target: null, weeks: [], flags: [], totals: { expectedCents: 0, receivedCents: 0, waivedCents: 0, balanceCents: 0, arrearsCents: 0, surplusCents: 0 } } } : o(m, p, b)))(routes); render(<DriverTargetsScreen />); fireEvent.click(within(await screen.findByText("CA 111-111", { selector: "b" }).then((b) => b.closest("li")!)).getByRole("button", { name: "Open" })); expect(await screen.findByText("No target is set for this vehicle.")).toBeInTheDocument(); expect(screen.getByText("Set the target", { selector: "summary" })).toBeInTheDocument(); expect(screen.queryByRole("button", { name: "End this target" })).toBeNull();
   });
 });
+
+describe("money the platform collected, on a vehicle's page", () => {
+  const withPlatform = (platform: any, flags: any[] = []) => { routes = ((o) => (m: string, p: string, b: any) => (p === `${P}/driver-pay/vehicles/v1` ? { body: { ...REC, platform, flags: [...REC.flags, ...flags] } } : o(m, p, b)))(routes); };
+  it("says how much the platform collected, lists the payments, and tells the owner not to write them down", async () => {
+    withPlatform({ countedCents: 30000, payments: [{ id: "i1", ref: "weekly:a:2026-11-01", paidOn: "2026-11-01", amountCents: 10000 }, { id: "i2", ref: "weekly:a:2026-11-03", paidOn: "2026-11-03", amountCents: 20000 }], unmatched: [], partlyPaid: [] }); await openV1();
+    expect(norm(screen.getByText(/of what was received was collected for you by the platform/).textContent)).toBe(`${R(30000)} of what was received was collected for you by the platform. It is already counted above, so you do not need to write it down.`); expect(screen.getByText(new RegExp(`2026-11-03 · .*20 ?000|2026-11-03 ·`))).toBeInTheDocument(); expect(screen.getAllByText(/\(collected by the platform\)/)).toHaveLength(2);
+  });
+  it("says what has been part paid and what is still owed, and that the part paid is not counted yet", async () => {
+    withPlatform({ countedCents: 0, payments: [], unmatched: [], partlyPaid: [{ ref: "weekly:a:2026-11-03", dueOn: "2026-11-03", paidCents: 18000, owedCents: 12000 }] }); await openV1(); expect(norm(screen.getByText(/has been part paid/).textContent)).toBe(`A payment due on 2026-11-03 has been part paid: ${R(18000)} has been paid and ${R(12000)} is still owed. The part that was paid is not counted until the whole payment is settled.`); expect(screen.queryByText(/collected for you by the platform/)).toBeNull();
+  });
+  it("shows the warning when it may be counted twice, and when it could not be matched to one vehicle, as it shows every other thing that needs attention", async () => {
+    withPlatform({ countedCents: 30000, payments: [{ id: "i1", ref: "r", paidOn: "2026-11-03", amountCents: 30000 }], unmatched: [], partlyPaid: [] }, [{ id: "pay:twice:i1", severity: "medium", message: "CA 111-111: the platform collected R300.00 on 2026-11-03, and you also wrote down R300.00 on 2026-11-02. If it is the same payment, cancel yours so it is not counted twice", subject: "CA 111-111" }, { id: "pay:platform-unmatched:v1", severity: "medium", message: "CA 111-111: R150.00 collected by the platform could not be matched to one vehicle, so it is not counted here", subject: "CA 111-111" }]); await openV1(); expect(screen.getByText(/cancel yours so it is not counted twice/)).toBeInTheDocument(); expect(screen.getByText(/could not be matched to one vehicle, so it is not counted here/)).toBeInTheDocument();
+  });
+  it("shows nothing about the platform when it collected nothing, or when the server says nothing", async () => { await openV1(); expect(screen.queryByText(/collected for you by the platform/)).toBeNull(); cleanup(); withPlatform({ countedCents: 0, payments: [], unmatched: [], partlyPaid: [] }); await openV1(); expect(screen.queryByText(/collected for you by the platform/)).toBeNull(); expect(screen.queryByText(/part paid/)).toBeNull(); });
+});
+

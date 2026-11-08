@@ -65,6 +65,9 @@ describe("what it cannot be sure of", () => {
   it("shows a part-paid payment with what has been paid and what is still owed, and does not count it", async () => {
     ok(await target()); await item({ status: "arrears", amount: R(300), remaining: R(120), paidAt: null, due: "2026-11-03T08:00:00Z" }); const r = await rec(); expect(r.platform.partlyPaid).toEqual([{ ref: "plat-1", dueOn: "2026-11-03", paidCents: R(180), owedCents: R(120) }]); expect(r.totals.receivedCents).toBe(0);
   });
+  it("does not call an item part paid when nothing of it has been paid, or when all of it has", async () => {
+    ok(await target()); await item({ status: "arrears", amount: R(300), remaining: R(300), paidAt: null }); await item({ status: "arrears", amount: R(300), remaining: 0, paidAt: null }); const r = await rec(); expect(r.platform.partlyPaid).toEqual([]); expect(r.totals.receivedCents).toBe(0);
+  });
   it("does not guess when two of the owner's vehicles could be meant: it counts nothing, says so, and flags both", async () => {
     ok(await target({ driverId: U.D1 })); ok(await target({ vehicleId: V.v2, driverId: U.D1 })); await item({ amount: R(300) });
     for (const [veh, reg] of [[V.v1, "CA 111-111"], [V.v2, "CA 222-222"]] as const) { const r = await rec(TODAY, veh), f = r.flags.find((x: any) => x.id === `pay:platform-unmatched:${veh}`); expect(r.totals.receivedCents, reg).toBe(0); expect(r.platform.unmatched).toEqual([{ ref: "plat-1", paidOn: "2026-11-03", amountCents: R(300) }]); expect(f).toMatchObject({ severity: "medium", subject: reg }); expect(f.message.startsWith(`${reg}: R`)).toBe(true); expect(f.message.endsWith("collected by the platform could not be matched to one vehicle, so it is not counted here")).toBe(true); }
@@ -108,6 +111,9 @@ describe("the profit and loss counts it the same way", () => {
     ok(await target({ driverId: U.D1 })); ok(await target({ vehicleId: V.v2, driverId: U.D1 })); await item({ amount: R(300), paidAt: "2026-11-03T10:00:00Z" }); let r = await pl(); expect(r.fleet.incomeCents).toBe(0);                  // could be either vehicle
     await db.query(`DELETE FROM payment_items`); await db.query(`DELETE FROM vehicle_targets WHERE vehicle_id = $1`, [V.v2]); await item({ status: "arrears", amount: R(300), remaining: R(100), paidAt: null }); expect((await pl()).fleet.incomeCents).toBe(0);                  // part paid
     await db.query(`DELETE FROM payment_items`); await item({ amount: R(300), paidAt: "2026-10-30T10:00:00Z" }); expect((await pl()).fleet.incomeCents).toBe(0); expect((await pl("2026-10-15")).fleet.incomeCents).toBe(0);                  // before the target began, so not matched to any vehicle
+  });
+  it("counts a payment in the month it was collected, not another", async () => {
+    ok(await target({ startDate: "2026-10-01" })); await item({ amount: R(300), paidAt: "2026-10-30T10:00:00Z" }); expect((await pl("2026-10-15")).fleet.incomeCents).toBe(R(300)); expect((await pl(TODAY)).fleet.incomeCents).toBe(0); expect((await pl("2026-09-15")).fleet.incomeCents).toBe(0);
   });
   it("counts the planner's history with it too, and never another owner's", async () => {
     ok(await t.setTarget(U.O2, U.O2, { vehicleId: V.v3, period: "daily", amountCents: R(100), startDate: "2026-11-02" })); await item({ payer: U.D3, payee: U.O2, amount: R(150) }); await item({ amount: R(999) }); ok(await target()); expect((await pl(TODAY, U.O2)).fleet.incomeCents).toBe(R(150)); expect((await pl()).fleet.incomeCents).toBe(R(999));
