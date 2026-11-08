@@ -15,7 +15,7 @@ export function useOwnerAccess(): OwnerAccess | null { const [load] = useLoad<Ow
 /** The module each menu item belongs to. "Profit and costs" is open to anyone who can see either costs or profit. An item not listed belongs to the owner's own login alone, as does anything on the server that is not mapped to a module. */
 const NAV_MODULE: Record<string, string | string[]> = {
   Overview: "overview", "Routes & map": "overview", Notifications: "notifications", Reports: "earnings", Financials: "earnings", Vehicles: "fleet", Drivers: "fleet", Documents: "compliance", "Compliance centre": "compliance",
-  "Driver targets": "driverpay", "My association": "association", "Profit and costs": ["costs", "finance"],
+  "Driver targets": "driverpay", "My association": "association", "Profit and costs": ["costs", "finance"], "Activity log": "audit",
 };
 export function ownerNavAllowed(label: string, access: OwnerAccess | null): boolean {
   if (access === null) return label === "Overview";                                                      // until we know who is signed in, show only the way in
@@ -29,7 +29,7 @@ const ROLES: [string, string, string][] = [
   ["fleet_manager", "Fleet manager", "Runs the vehicles day to day: vehicles, drivers, what drivers pay, compliance, documents, costs and servicing. Not profit, loans, takings or the association."],
   ["accountant", "Accountant (looks only)", "Looks but never changes: takings, profit and loss, loans, costs, what drivers pay, and the association's statements, with the downloads."],
 ];
-const MODULE_TEXT: Record<string, string> = { overview: "overview", notifications: "notifications", fleet: "vehicles and drivers", driverpay: "what drivers pay", compliance: "compliance and documents", files: "stored files", association: "the association", costs: "costs and servicing", finance: "profit, loans and exports", earnings: "takings and reports" };
+const MODULE_TEXT: Record<string, string> = { overview: "overview", notifications: "notifications", fleet: "vehicles and drivers", driverpay: "what drivers pay", compliance: "compliance and documents", files: "stored files", association: "the association", costs: "costs and servicing", finance: "profit, loans and exports", earnings: "takings and reports", audit: "the activity log" };
 
 export function TeamScreen() {
   const [load, reload] = useLoad<{ team: Member[] }>(() => call("/team")), [f, setF] = useState({ name: "", email: "", username: "", role: "fleet_manager" }), [secret, setSecret] = useState<{ name: string; username: string; password: string } | null>(null);

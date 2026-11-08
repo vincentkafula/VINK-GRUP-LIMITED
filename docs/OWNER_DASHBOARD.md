@@ -198,6 +198,26 @@ This is the design for extending the existing Owner Dashboard. It records what t
 - Emailed invitations (so a person sets their own password) need email to be set up; until then the owner passes on a one-time password.
 - Co-owners cannot see the bank. Whether they should is a decision for the business (see the questions to the owner).
 
+## 4g. Slice F1, built: the activity log
+
+**What it does.** *Activity log* shows who did what and when, in plain words, for the owner and everyone on their team: "Recorded a R300.00 payment from a driver for CA 111-111 (cash)", "Switched off the login of Thabo Mokoena". Filter by kind (money, vehicles and drivers, documents, the team, downloads), by person and by dates; page back through older activity; download it as a spreadsheet.
+
+**Rules (all covered by tests)**
+- **Whose**: what the owner did and what anyone on their team did. Never another owner's, and never an association's or anyone else's actions.
+- **What**: only the owner dashboard's own actions (payments, targets, costs, fines, loans, servicing, vehicles and drivers, documents, dues, the team, downloads). Nothing else in the audit log is shown.
+- **How**: each line is built from fields it knows, of the type it expects. Stored detail is **never printed raw**, a long reason is shortened, and an action it does not know is shown as "Did something in the owner dashboard". A password is never recorded in the first place.
+- **For looking only**: there is no way to change or remove an entry through it (tested for every method, for the owner and for a team member). A mistake is put right with a new entry, which then shows too. Looking at the log is not itself recorded.
+- **Who may read it**: the owner, a **co-owner** and the **accountant** (read only). Not the fleet manager. Anyone else on the team is refused by the same fail-closed gate as everything else.
+- **Dates** are South African days (a record at 00:30 on 15 November is on the 15th); the spreadsheet shows South African time.
+- **Paging** uses a marker made from the time and the record's own id, so a page never repeats or skips a line, even when several records share a moment. A page holds at most 200 lines; the spreadsheet holds up to 5 000.
+
+**API** (`/api/portal/owner`): `GET /audit?group=&actorId=&from=&to=&before=&limit=` and `GET /audit.csv?group=&actorId=&from=&to=`. No new tables.
+
+**Known limits, to do next**
+- Only actions the owner dashboard already records appear. Some changes are not recorded yet (for example saving a reminder setting, or editing a vehicle's details), so they are not in the log.
+- A record shows the person's name as it is today, not as it was when they acted.
+- Free text typed by a person (a void reason) is shown as typed, in quotes, shortened.
+
 ## 5. Assumptions made (non-blocking; change any of them)
 
 - A target is **bookkeeping the owner sets**; it does not change the platform's agreement or collection. The two are linked by an optional agreement reference.

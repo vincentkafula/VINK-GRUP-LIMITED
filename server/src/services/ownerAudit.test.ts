@@ -98,6 +98,13 @@ describe("paging", () => {
   });
 });
 
+describe("the size of a page", () => {
+  it("never returns more than the most it allows, however many are asked for, and says there is more", async () => {
+    for (let i = 0; i < MAX_LIMIT + 5; i++) await log(U.O1, "owner.cost.add", `c${i}`, { category: "fuel", amountCents: 100 }, new Date(Date.parse("2026-11-01T08:00:00Z") + i * 1000).toISOString(), "olu");
+    const r = ok<any>(await a.trail(U.O1, { limit: 100000 })); expect(r.entries).toHaveLength(MAX_LIMIT); expect(r.next).not.toBeNull(); const r2 = ok<any>(await a.trail(U.O1, { limit: 100000, before: r.next })); expect(r2.entries).toHaveLength(5); expect(r2.next).toBeNull(); expect(new Set([...r.entries, ...r2.entries].map((e: any) => e.id)).size).toBe(MAX_LIMIT + 5);
+  }, 60_000);
+});
+
 describe("the spreadsheet", () => {
   it("has the date and time in South African time, who, their role, the kind and what they did, with the same scoping and filters", async () => {
     await log(U.O1, "owner.cost.add", "c1", { category: "fuel", amountCents: 60000 }, "2026-11-10T08:30:00Z", "olu"); await log(U.FM, "owner.payment.record", "p1", { vehicleId: V.v1, amountCents: 30000, method: "cash" }, "2026-11-11T22:15:00Z", "thabo"); await log(U.O2, "owner.cost.add", "c9", { category: "fuel", amountCents: 1 }, "2026-11-11T08:00:00Z", "ona");
