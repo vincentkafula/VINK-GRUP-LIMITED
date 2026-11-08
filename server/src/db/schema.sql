@@ -3123,3 +3123,29 @@ CREATE TABLE IF NOT EXISTS owner_plans (
   created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE UNIQUE INDEX IF NOT EXISTS idx_owner_plans_name ON owner_plans(owner_id, lower(name));
+
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+-- ASSOCIATION DASHBOARD, scheduled email digest (docs/ASSOCIATION_COMPLIANCE.md, module 13)
+-- A short email of what needs attention, weekly or monthly, to the people the association chooses. To remove: db/rollback/association_digest.sql
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS association_digests (
+  association_id   UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  enabled          BOOLEAN NOT NULL DEFAULT false,
+  frequency        TEXT NOT NULL DEFAULT 'weekly' CHECK (frequency IN ('weekly','monthly')),
+  weekday          SMALLINT NOT NULL DEFAULT 1 CHECK (weekday BETWEEN 1 AND 7),
+  day_of_month     SMALLINT NOT NULL DEFAULT 1 CHECK (day_of_month BETWEEN 1 AND 28),
+  recipients       JSONB NOT NULL DEFAULT '[]',
+  send_when_quiet  BOOLEAN NOT NULL DEFAULT false,
+  updated_by       UUID,
+  updated_at       TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS association_digest_log (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  association_id  UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  period          TEXT NOT NULL,
+  status          TEXT NOT NULL CHECK (status IN ('sent','failed','skipped','test')),
+  recipients      INTEGER NOT NULL DEFAULT 0,
+  note            TEXT,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_digest_log ON association_digest_log(association_id, created_at DESC);

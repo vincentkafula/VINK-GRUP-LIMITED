@@ -41,6 +41,7 @@ import { createLetterCheckRouter } from "./routes/letterCheck.js";
 import { alertsFor, createSmsSender } from "./services/alerts.js";
 import { createOwnerSms } from "./services/ownerSms.js";
 import { createTwilioSmsWebhook } from "./routes/twilioSmsWebhook.js";
+import { createAssociationDigest } from "./services/associationDigest.js";
 import { createCommission } from "./services/commission.js";
 import { createPayslips } from "./services/payslips.js";
 import { createCompliance } from "./services/compliance.js";
@@ -144,8 +145,10 @@ if (pool && process.env.NODE_ENV !== "test") {
   setInterval(() => { ownerSms.dispatch().catch((e) => console.error("[owner-sms] run failed:", e instanceof Error ? e.message : e)); }, 15 * 60_000).unref();
   setInterval(() => { alerts.retryUnsent().catch((e) => console.error("[alerts] retry failed:", e instanceof Error ? e.message : e)); }, 60_000).unref();
   setTimeout(() => { payslips.runAutoCashOuts().catch((e) => console.error("[cash-out] daily run failed:", e instanceof Error ? e.message : e)); }, 45_000).unref();
-  const compliance = createCompliance(pool), reports = createReports(pool, createEmailSender());
+  const compliance = createCompliance(pool), reports = createReports(pool, createEmailSender()), digests = createAssociationDigest({ db: pool, mail: createEmailSender(), frontendUrl: process.env.FRONTEND_URL });
   setTimeout(() => { reports.runDue().catch((e) => console.error("[reports] scheduled send failed:", e instanceof Error ? e.message : e)); }, 150_000).unref();
+  setTimeout(() => { digests.runDue().catch((e) => console.error("[digest] scheduled send failed:", e instanceof Error ? e.message : e)); }, 200_000).unref();
+  setInterval(() => { digests.runDue().catch((e) => console.error("[digest] scheduled send failed:", e instanceof Error ? e.message : e)); }, 30 * 60_000).unref();                  // each association gets at most one per period, between 07:00 and 19:00 South African time
   setInterval(() => { reports.runDue().catch((e) => console.error("[reports] scheduled send failed:", e instanceof Error ? e.message : e)); }, 6 * 3600_000).unref();
   setTimeout(() => { compliance.snapshotAll().catch((e) => console.error("[compliance] snapshot failed:", e instanceof Error ? e.message : e)); }, 90_000).unref();
   setInterval(() => { compliance.snapshotAll().catch((e) => console.error("[compliance] snapshot failed:", e instanceof Error ? e.message : e)); }, 6 * 3600_000).unref();

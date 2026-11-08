@@ -12,6 +12,7 @@ import { mountAssociationReports } from "./reportsRoutes.js";
 import { mountAssociationSafety } from "./safetyRoutes.js";
 import { mountAssociationMembers } from "./memberRegisterRoutes.js";
 import { mountAssociationDelegates } from "./delegateRoutes.js";
+import { mountAssociationDigest } from "./digestRoutes.js";
 import { createEmailSender, type EmailSender } from "../auth/email.js";
 
 /**
@@ -30,6 +31,7 @@ import { createEmailSender, type EmailSender } from "../auth/email.js";
 export function createAssociationRouter(db: Db, now: () => Date = () => new Date(), mail: EmailSender | null = createEmailSender()): Router {
   const router = Router();
   createLoadingReports(db).mount(router, "association", now);
+  mountAssociationDigest(router, db, now, mail);                                          // the weekly or monthly email digest (the main login only)
   mountAssociationDelegates(router, db, now);                                           // named office-bearer logins and what the signed-in person may do
   mountAssociationMembers(router, db, now);                                             // the member register, non-member operators and owner formalisation
   mountAssociationSafety(router, db, now);                                              // safety events and disputes, and route control (saturation, licences against routes, the queue)
