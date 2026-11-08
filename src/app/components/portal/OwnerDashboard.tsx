@@ -7,6 +7,7 @@ import { DriverTargetsScreen } from "./OwnerDriverPay";
 import { MyAssociationScreen } from "./OwnerAssociation";
 import { ComplianceCentreScreen } from "./OwnerCompliance";
 import { OwnerFinanceScreen } from "./OwnerFinance";
+import { TeamScreen, useOwnerAccess, ownerNavAllowed } from "./OwnerTeam";
 import { BankStrip, BankScreen } from "./BankAccount";
 import { DashboardShell, SectionPanel, StatCard, TableCard, Badge } from "../dashboards/DashboardShell";
 import { portalClient, useLoad, Status, Empty, ActionButton, outcome, inputCls, rand, day, type Load } from "./ui";
@@ -25,21 +26,22 @@ interface Doc { id: string; kind: string; reference: string | null; expiresOn: s
 interface Note { key: string; title: string; body: string; read: boolean; at: string }
 
 export function OwnerDashboard({ userName, onClose }: { userName?: string; onClose: () => void }) {
-  const [nav, setNav] = useState("Overview");
+  const [nav, setNav] = useState("Overview"), access = useOwnerAccess();
   const [notes, reloadNotes] = useLoad<{ notifications: Note[]; unread: number }>(() => call("/notifications"));
   const unread = notes.state === "ready" ? notes.data.unread : 0;
-  const items = [
+  const allItems = [
     { icon: <Home className="w-4 h-4" />, label: "Overview" }, { icon: <Car className="w-4 h-4" />, label: "Vehicles" },
     { icon: <Users className="w-4 h-4" />, label: "Drivers" }, { icon: <MapPin className="w-4 h-4" />, label: "Routes & map" },
     { icon: <BarChart3 className="w-4 h-4" />, label: "Reports" }, { icon: <Scale className="w-4 h-4" />, label: "Financials" },
     { icon: <FileText className="w-4 h-4" />, label: "Documents" }, { icon: <Bell className="w-4 h-4" />, label: "Notifications", badge: unread || undefined },
     { icon: <Banknote className="w-4 h-4" />, label: "Driver pay" }, { icon: <Scale className="w-4 h-4" />, label: "Driver targets" }, { icon: <Scale className="w-4 h-4" />, label: "My association" }, { icon: <Scale className="w-4 h-4" />, label: "Compliance centre" }, { icon: <Banknote className="w-4 h-4" />, label: "Profit and costs" }, { icon: <Scale className="w-4 h-4" />, label: "Payments & trips" },
-    { icon: <Link2 className="w-4 h-4" />, label: "Requests & links" }, { icon: <Coins className="w-4 h-4" />, label: "VINK Tokens" }, { icon: <Landmark className="w-4 h-4" />, label: "Bank account" },
+    { icon: <Link2 className="w-4 h-4" />, label: "Requests & links" }, { icon: <Coins className="w-4 h-4" />, label: "VINK Tokens" }, { icon: <Landmark className="w-4 h-4" />, label: "Bank account" }, { icon: <Users className="w-4 h-4" />, label: "My team" },
   ];
+  const items = allItems.filter((i) => ownerNavAllowed(i.label, access));
   return (
-    <DashboardShell title="Owner Dashboard" subtitle="Vehicles, drivers and earnings" accentColor={COLOR} gradient={`from-[${COLOR}]`} navItems={items} activeNav={nav} onNavChange={setNav} onClose={onClose} userName={userName} alertCount={unread || undefined}>
+    <DashboardShell title="Owner Dashboard" subtitle="Vehicles, drivers and earnings" accentColor={COLOR} gradient={`from-[${COLOR}]`} navItems={items} activeNav={nav} onNavChange={setNav} onClose={onClose} userName={access?.name ?? userName} alertCount={unread || undefined}>
       <div className="p-4 md:p-6 space-y-4 max-w-5xl">
-        <BankStrip segment="owner" color={COLOR} onOpen={() => setNav("Bank account")} />
+        {access?.kind === "owner" && <BankStrip segment="owner" color={COLOR} onOpen={() => setNav("Bank account")} />}
         <ScreenBoundary resetKey={nav}>
           {nav === "Overview" && <><Overview /><OwnerTrend /></>}
           {nav === "Vehicles" && <Vehicles />}
@@ -52,6 +54,7 @@ export function OwnerDashboard({ userName, onClose }: { userName?: string; onClo
           {nav === "My association" && <MyAssociationScreen />}
           {nav === "Compliance centre" && <ComplianceCentreScreen />}
           {nav === "Profit and costs" && <OwnerFinanceScreen />}
+          {nav === "My team" && <TeamScreen />}
           {nav === "Payments & trips" && <><VirtualAccountsPanel segment="owner" color={COLOR} /><CrossBorderPanel segment="owner" color={COLOR} /><PaymentsPanel segment="owner" color={COLOR} /><TripsPanel segment="owner" color={COLOR} /></>}
           {nav === "Documents" && <Documents onChanged={reloadNotes} />}
           {nav === "Notifications" && <Notifications notes={notes} reload={reloadNotes} />}

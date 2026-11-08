@@ -168,6 +168,36 @@ This is the design for extending the existing Owner Dashboard. It records what t
 - A fine's recovery from a driver is not tracked separately.
 - The fleet expansion planner (affordability from historical profit) is slice F.
 
+## 4f. Slice E, built: an owner's team
+
+**What it does.** An owner gives the people who help run the business their own login with a role, so each sees only what they need, and what each does is recorded in their own name. Menu: *My team* (the owner only). A driver, an association's office bearers and a marshal already have their own logins and dashboards, so they are not part of an owner's team.
+
+**Roles**
+- **Co-owner** (a partner): everything about the business except the bank, VINK tokens, payments, requests and links, the older driver agreements, and the team itself.
+- **Fleet manager**: the vehicles, drivers, what drivers pay, compliance and documents, stored files, costs and servicing. **Not** profit and loss, loans, takings, reports or the association.
+- **Accountant** (an addition to your brief, for the accountant exports it asks for): **looks, never changes**: takings, profit and loss, loans, costs, what drivers pay, the association's statements, and the downloads. **Not** the vehicles, drivers, documents or compliance.
+- The owner's own login keeps everything and is the **only** one that manages the team.
+
+**How it is kept safe**
+- **Fail closed.** A team member can use only a path that is mapped to a module their role allows (reading needs read access, anything else needs write access). **Anything not listed, including the bank, VINK tokens, payments, requests and links, the older driver agreements, anything added later, and the team itself, is refused**, and the check runs **before** those routers see the request. Tested against the real portal router with real tokens.
+- **A login that is switched off is refused at once**, even with a token it already holds.
+- **In their own name.** The request is made as the owner (so every screen keeps working), but the real person is kept on it: payments, targets and the audit log are recorded under the team member, not the owner.
+- **Passwords** are made when a login is created or reset, shown **once**, never stored in the clear and never written to the audit record; the person should change it when they first sign in. Tested through the real login on a real PostgreSQL.
+- **No route outside the portal accepts the owner role** (checked), so a team login cannot bypass the gate by calling another API directly.
+- Up to ten logins per owner.
+
+**API** (`/api/portal/owner`): `GET /access` (what the signed-in person may do, open to everyone signed in), `GET|POST /team`, `PUT /team/:id/role`, `POST /team/:id/active`, `POST /team/:id/reset-password` (the owner's own login only).
+
+**Screens.** The menu shows each person only what their role allows; the bank strip appears only for the owner; the *Profit and costs* screen shows a fleet manager only *Costs and fines* and *Servicing*.
+
+**Data** (rollback `server/src/db/rollback/owner_dashboard_e.sql`): `owner_team`.
+
+**Known limits, to do next**
+- Some older owner screens (for example the Overview home) read figures from several places; a role that is not allowed one of them sees that part fail with the server's reason rather than a tidy blank. Tidying each screen for each role is not done.
+- A team login is a user account with the owner role, so it appears wherever owner accounts are listed by role.
+- Emailed invitations (so a person sets their own password) need email to be set up; until then the owner passes on a one-time password.
+- Co-owners cannot see the bank. Whether they should is a decision for the business (see the questions to the owner).
+
 ## 5. Assumptions made (non-blocking; change any of them)
 
 - A target is **bookkeeping the owner sets**; it does not change the platform's agreement or collection. The two are linked by an optional agreement reference.

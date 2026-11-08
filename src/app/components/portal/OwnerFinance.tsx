@@ -4,6 +4,7 @@ import { portalClient, useLoad, Status, Empty, ActionButton, rand, inputCls } fr
 import { sendOrQueue, useOutbox, newRef } from "./offlineQueue";
 import { FileButton } from "./AssociationFinance";
 import { toCents } from "./OwnerDriverPay";
+import { useOwnerAccess } from "./OwnerTeam";
 
 /**
  * The owner's finances (docs/OWNER_DASHBOARD.md, slice D): what each vehicle earned and cost, loans, running costs and fines, and servicing. It is the owner's own bookkeeping: it records and reports, it moves no money, and it is not tax advice.
@@ -238,12 +239,12 @@ function MaintenancePanel() {
   );
 }
 
-const TABS: [string, string][] = [["overview", "Overview"], ["profit", "Profit and loss"], ["costs", "Costs and fines"], ["loans", "Loans"], ["maintenance", "Servicing"]];
+const TABS: [string, string, string][] = [["overview", "Overview", "finance"], ["profit", "Profit and loss", "finance"], ["costs", "Costs and fines", "costs"], ["loans", "Loans", "finance"], ["maintenance", "Servicing", "costs"]];
 export function OwnerFinanceScreen() {
-  const [tab, setTab] = useState("overview");
+  const access = useOwnerAccess(), tabs = TABS.filter(([, , m]) => access === null || access.kind === "owner" || !!access.modules[m]), [picked, setTab] = useState("overview"), tab = tabs.some(([k]) => k === picked) ? picked : (tabs[0]?.[0] ?? "overview");                  // a role sees only the tabs it can use
   return (
     <div className="space-y-4">
-      <div role="tablist" aria-label="Finances" className="flex flex-wrap gap-2">{TABS.map(([k, l]) => <button key={k} type="button" role="tab" aria-selected={tab === k} className="px-4 py-3 rounded-lg text-sm font-bold border" style={tab === k ? { background: COLOR, color: "#fff", borderColor: COLOR } : {}} onClick={() => setTab(k)}>{l}</button>)}</div>
+      <div role="tablist" aria-label="Finances" className="flex flex-wrap gap-2">{tabs.map(([k, l]) => <button key={k} type="button" role="tab" aria-selected={tab === k} className="px-4 py-3 rounded-lg text-sm font-bold border" style={tab === k ? { background: COLOR, color: "#fff", borderColor: COLOR } : {}} onClick={() => setTab(k)}>{l}</button>)}</div>
       {tab === "overview" && <Overview />}{tab === "profit" && <ProfitPanel />}{tab === "costs" && <CostsPanel />}{tab === "loans" && <LoansPanel />}{tab === "maintenance" && <MaintenancePanel />}
     </div>
   );
