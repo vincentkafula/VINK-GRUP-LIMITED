@@ -119,6 +119,31 @@ This is the design for extending the existing Owner Dashboard. It records what t
 - The association's vehicle compliance (licences per vehicle) is not shown here; slice C is the owner's compliance centre.
 - No emailed or SMS notice when a claim is confirmed or rejected yet (slice F).
 
+## 4d. Slice C2, built: the owner's documents
+
+**What it does.** An owner attaches a photo or PDF of their letter of recommendation, membership certificate or card, roadworthy certificate, insurance, licence disc, operating licence or driver agreement, to a vehicle or to their membership. Files can be listed, downloaded and erased. It appears in the *Compliance centre* (per vehicle) and under *My association* (membership papers).
+
+**Rules (all covered by tests)**
+- **Only PDF, JPEG and PNG**, decided by the file's **actual first bytes**, never its name or what the sender claims; a file that says it is a PDF but is not one is refused. At most **5 MB** each.
+- **Encrypted before it reaches the database** (AES-256-GCM, key `DATA_ENCRYPTION_KEY`, the same key as the platform's field encryption). **With no key in production nothing is stored**: there is no readable fallback. In development a key is derived so the app still runs. Any change to a stored file is detected when it is opened.
+- **Scanned**: a file the scanner calls *infected* or *suspicious* is **refused and never stored**. The scan result is stored and shown honestly: *Checked by an antivirus* only when a real engine (ClamAV, `CLAMAV_HOST`; or VirusTotal, `VIRUSTOTAL_API_KEY`) said so, otherwise *Not checked by an antivirus*. Not checked is not the same as safe.
+- **Private**: an owner reads only their own files. A file is sent as a **download only** (`attachment`, `nosniff`, `no-store`, a sandboxing content-security policy), never opened in the page. Every upload, download and delete is audited.
+- **Erasable (POPIA)**: deleting a file **erases its bytes**; the record that it existed stays, marked deleted.
+- **Limited**: 100 files and 100 MB per owner, 30 uploads an hour. The same file is stored once per owner (a repeat returns the first).
+- **Made for a poor connection**: the file is sent as the raw request body (no 33% base64 overhead), and a big photo is **made smaller on the phone** first (longest side 1 600 pixels, JPEG). A file needs a connection to be sent; unlike payments it is **not** queued offline, because a photo is too large for the phone's offline storage.
+
+**API** (`/api/portal/owner`): `GET /files` (what is stored, never contents, and the storage used), `POST /files?filename=&kind=&vehicleId=&documentId=` (the file as the body), `GET /files/:id` (download), `DELETE /files/:id`.
+
+**Data** (rollback `server/src/db/rollback/owner_dashboard_c2.sql`, which **deletes every stored file**): `owner_files`. The encrypted file is kept as **base64 text** rather than `bytea`, so it behaves identically in PostgreSQL and in tests (about a third larger than raw bytes).
+
+**To switch it on:** set `DATA_ENCRYPTION_KEY` (32 random bytes, base64: `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`) on the server, and, for real virus scanning, `CLAMAV_HOST` (and `CLAMAV_PORT`). **Until the key is set, the screen says document storage is not switched on and offers no upload.** Keep a safe copy of the key: files cannot be opened without it.
+
+**Known limits, to do next**
+- Files are visible to the owner only. The association cannot yet see a member's letter of recommendation, and an owner's team (slice E) cannot yet see the owner's files.
+- No automatic expiry or retention period for stored files (POPIA retention needs a decision).
+- Without a real antivirus engine configured, only the built-in shape checks run.
+- Rotating `DATA_ENCRYPTION_KEY` needs a re-encryption step that does not exist yet (the stored format carries a version byte to allow it).
+
 ## 5. Assumptions made (non-blocking; change any of them)
 
 - A target is **bookkeeping the owner sets**; it does not change the platform's agreement or collection. The two are linked by an optional agreement reference.
