@@ -19,7 +19,7 @@ export const GROUP_TEXT: Record<AuditGroup, string> = { money: "Money: payments,
 /** The action prefixes that make up each group. */
 const GROUP_LIKE: Record<AuditGroup, string[]> = {
   money: ["owner.payment.%", "owner.target.%", "owner.split.%", "owner.waiver.%", "owner.pause.%", "owner.cost.%", "owner.fine.%", "owner.loan.%", "owner.instalment.%", "owner.dues.%"],
-  fleet: ["owner.vehicle.%", "owner.driver.%", "owner.device_%", "owner.maintenance.%"], documents: ["owner.file.%", "owner.compliance.%"], team: ["team.%"], exports: ["owner.export%"],
+  fleet: ["owner.vehicle.%", "owner.driver.%", "owner.device_%", "owner.maintenance.%"], documents: ["owner.file.%", "owner.compliance.%", "owner.business.%"], team: ["team.%"], exports: ["owner.export%"],
 };
 export const groupOf = (action: string): AuditGroup | null => { for (const g of AUDIT_GROUPS) for (const p of GROUP_LIKE[g]) { const stem = p.replace(/%$/, ""); if (p.endsWith("%") ? action.startsWith(stem) : action === p) return g; } return null; };
 export const MAX_LIMIT = 200, MAX_EXPORT = 5000;
@@ -32,6 +32,7 @@ const cents = (v: unknown): string | null => (typeof v === "number" && Number.is
 const KIND: Record<string, string> = { letter_of_recommendation: "letter of recommendation", membership_certificate: "membership certificate", membership_card: "membership card", roadworthy: "roadworthy certificate", insurance: "insurance document", operating_licence: "operating licence", licence_disc: "licence disc", driver_agreement: "driver agreement", other: "document", service: "service", repair: "repair", tyres: "tyres", brakes: "brakes", reading: "odometer reading" };
 const MAINT: Record<string, string> = { service: "a service", repair: "a repair", tyres: "new tyres", brakes: "brake work", reading: "an odometer reading" };
 const CAT: Record<string, string> = { fuel: "fuel", maintenance: "maintenance", insurance: "insurance", tracker: "tracker", fine: "fine", association: "association", licensing: "licence", tyres: "tyre", wages: "wages", other: "miscellaneous" };
+const FIELD: Record<string, string> = { kind: "how you trade", tradingName: "the trading name", registeredName: "the registered name", registrationNumber: "the registration number", vatNumber: "the VAT number", phone: "the phone number", email: "the email address", address: "the address" };
 const ROLE_WORD: Record<string, string> = { co_owner: "co-owner", fleet_manager: "fleet manager", accountant: "accountant" };
 interface Ctx { vehicles: Map<string, string>; drivers: Map<string, string>; people: Map<string, string> }
 
@@ -68,6 +69,8 @@ export function describe(action: string, target: string | null, d: Record<string
     case "owner.file.upload": return `Stored ${an(KIND[String(d.kind)] ?? "document")}${d.scan === "clean" ? " (checked by an antivirus)" : ""}`;
     case "owner.file.download": return "Opened a stored document";
     case "owner.file.delete": return "Deleted a stored document and erased it";
+    case "owner.business.save": { const w = (Array.isArray(d.changed) ? d.changed : []).map((k) => FIELD[String(k)]).filter(Boolean); return `Saved the business details${w.length ? `: changed ${w.join(", ")}` : ""}`; }
+    case "owner.business.remove": return "Deleted the business details";
     case "team.create": return `Gave a new login to ${str(d.username, 40) ?? "a team member"}${ROLE_WORD[String(d.role)] ? ` as ${ROLE_WORD[String(d.role)]}` : ""}`;
     case "team.role": return `Changed ${typeof target === "string" && c.people.get(target) ? c.people.get(target) : "a team member"}'s role${ROLE_WORD[String(d.role)] ? ` to ${ROLE_WORD[String(d.role)]}` : ""}`;
     case "team.active": return `${d.active === false ? "Switched off" : "Switched on"} the login of ${typeof target === "string" && c.people.get(target) ? c.people.get(target) : "a team member"}`;

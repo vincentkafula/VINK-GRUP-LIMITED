@@ -239,6 +239,37 @@ function MaintenancePanel() {
   );
 }
 
+/* ───────────────────────── business record ───────────────────────── */
+interface Biz { kind: string; tradingName: string; registeredName: string | null; registrationNumber: string | null; vatNumber: string | null; phone: string | null; email: string | null; address: string | null; updatedOn: string }
+const BIZ_KINDS: [string, string][] = [["individual", "An individual (sole proprietor)"], ["company", "A company"], ["partnership", "A partnership"], ["other", "Something else"]];
+function BusinessPanel() {
+  const [load, reload] = useLoad<{ business: Biz | null }>(() => call("/finance/business")), [f, setF] = useState({ kind: "individual", tradingName: "", registeredName: "", registrationNumber: "", vatNumber: "", phone: "", email: "", address: "" }), [loaded, setLoaded] = useState(false), [sure, setSure] = useState(false);
+  if (load.state === "ready" && !loaded) { const b = load.data.business; setLoaded(true); if (b) setF({ kind: b.kind, tradingName: b.tradingName, registeredName: b.registeredName ?? "", registrationNumber: b.registrationNumber ?? "", vatNumber: b.vatNumber ?? "", phone: b.phone ?? "", email: b.email ?? "", address: b.address ?? "" }); }
+  const box = (k: keyof typeof f, label: string, aria: string, w = "w-64", hint?: string) => <label className="block"><span className="text-xs text-fg-muted">{label}</span><input aria-label={aria} className={inputCls + ` mt-1 ${w} py-3`} value={f[k]} onChange={(e) => setF({ ...f, [k]: e.target.value })} />{hint && <span className="block text-[11px] text-fg-subtle">{hint}</span>}</label>;
+  return (
+    <SectionPanel title="Your business">
+      <div className="p-4 space-y-4">
+        <p className="text-sm text-fg">Who you trade as. It is printed at the top of the profit and loss that you give to your accountant, a lender or SARS, so it says whose it is. Only the trading name is needed. We keep no tax number, ID number or bank detail here.</p>
+        <Status load={load}>{({ business }) => (
+          <>
+            {business && <p className="text-xs text-fg-muted">Last saved on {business.updatedOn}.</p>}
+            <div className="flex flex-wrap items-end gap-3">
+              <label className="block"><span className="text-xs text-fg-muted">How you trade</span><select aria-label="Business kind" className={inputCls + " mt-1 w-64 py-3"} value={f.kind} onChange={(e) => setF({ ...f, kind: e.target.value })}>{BIZ_KINDS.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select></label>
+              {box("tradingName", "The name you trade under", "Business trading name")}{box("registeredName", "Registered name (if it has one)", "Business registered name")}
+            </div>
+            <div className="flex flex-wrap items-end gap-3">{box("registrationNumber", "Registration number (if it has one)", "Business registration number", "w-52")}{box("vatNumber", "VAT number (if you are registered)", "Business VAT number", "w-44", "Ten digits, starting with 4")}</div>
+            <div className="flex flex-wrap items-end gap-3">{box("phone", "Phone", "Business phone", "w-48")}{box("email", "Email", "Business email", "w-64")}</div>
+            <div className="flex flex-wrap items-end gap-3">{box("address", "Address", "Business address", "w-96")}</div>
+            <div className="flex flex-wrap items-center gap-3">
+              <ActionButton label="Save the business details" color={COLOR} onRun={async () => { const r = await call("/finance/business", { method: "PUT", body: { kind: f.kind, tradingName: f.tradingName, registeredName: f.registeredName, registrationNumber: f.registrationNumber, vatNumber: f.vatNumber, phone: f.phone, email: f.email, address: f.address } }); if ("error" in r) return { error: r.error }; reload(); return { message: "Saved." }; }} />
+              {business && (sure ? <ActionButton label="Yes, delete the business details" color="#C8102E" onRun={async () => { const r = await call("/finance/business", { method: "DELETE" }); if ("error" in r) return { error: r.error }; setSure(false); setF({ kind: "individual", tradingName: "", registeredName: "", registrationNumber: "", vatNumber: "", phone: "", email: "", address: "" }); reload(); return undefined; }} /> : <button type="button" className="px-4 py-2 rounded-lg text-sm font-bold border border-line" onClick={() => setSure(true)}>Delete the business details</button>)}
+            </div>
+          </>)}</Status>
+      </div>
+    </SectionPanel>
+  );
+}
+
 /* ───────────────────────── planner ───────────────────────── */
 interface PlanResult { verdict: { colour: string; text: string }; loan: { amountCents: number; instalmentCents: number; totalRepayableCents: number; totalInterestCents: number }; monthly: { incomeCents: number; incomeFrom: string; costsCents: number; costsFrom: string; beforeFinanceCents: number; instalmentCents: number; netCents: number; coverage: number | null }; cashNeededNowCents: number; paybackMonths: number | null; breakEvenIncomeCents: number; breakEvenWeeklyCents: number; stress: { percent: number; incomeCents: number; netCents: number }[]; businessAfter: { monthlyCashProfitNowCents: number; monthlyCashProfitWithItCents: number }; history: { months: number; from: string | null; to: string | null; vehicles: number }; notes: string[] }
 const COLOUR: Record<string, [string, string]> = { green: ["#15803d", "Comfortable"], amber: ["#D97706", "Tight"], red: ["#C8102E", "Does not pay for itself"] };
@@ -288,13 +319,13 @@ function PlannerPanel() {
   );
 }
 
-const TABS: [string, string, string][] = [["overview", "Overview", "finance"], ["profit", "Profit and loss", "finance"], ["costs", "Costs and fines", "costs"], ["loans", "Loans", "finance"], ["maintenance", "Servicing", "costs"], ["planner", "Planner", "finance"]];
+const TABS: [string, string, string][] = [["overview", "Overview", "finance"], ["profit", "Profit and loss", "finance"], ["costs", "Costs and fines", "costs"], ["loans", "Loans", "finance"], ["maintenance", "Servicing", "costs"], ["planner", "Planner", "finance"], ["business", "Business", "finance"]];
 export function OwnerFinanceScreen() {
   const access = useOwnerAccess(), tabs = TABS.filter(([, , m]) => access === null || access.kind === "owner" || !!access.modules[m]), [picked, setTab] = useState("overview"), tab = tabs.some(([k]) => k === picked) ? picked : (tabs[0]?.[0] ?? "overview");                  // a role sees only the tabs it can use
   return (
     <div className="space-y-4">
       <div role="tablist" aria-label="Finances" className="flex flex-wrap gap-2">{tabs.map(([k, l]) => <button key={k} type="button" role="tab" aria-selected={tab === k} className="px-4 py-3 rounded-lg text-sm font-bold border" style={tab === k ? { background: COLOR, color: "#fff", borderColor: COLOR } : {}} onClick={() => setTab(k)}>{l}</button>)}</div>
-      {tab === "overview" && <Overview />}{tab === "profit" && <ProfitPanel />}{tab === "costs" && <CostsPanel />}{tab === "loans" && <LoansPanel />}{tab === "maintenance" && <MaintenancePanel />}{tab === "planner" && <PlannerPanel />}
+      {tab === "overview" && <Overview />}{tab === "profit" && <ProfitPanel />}{tab === "costs" && <CostsPanel />}{tab === "loans" && <LoansPanel />}{tab === "maintenance" && <MaintenancePanel />}{tab === "planner" && <PlannerPanel />}{tab === "business" && <BusinessPanel />}
     </div>
   );
 }

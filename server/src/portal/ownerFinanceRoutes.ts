@@ -1,8 +1,9 @@
 import { Router, json, type Request, type Response } from "express";
-import { h, uid, fail, isUuid, audit, sendCsv, type Db } from "./common.js";
+import { h, uid, actor, fail, isUuid, audit, sendCsv, type Db } from "./common.js";
 import { createOwnerFinance, type PeriodKind } from "../services/ownerFinance.js";
 import { createOwnerFinanceExports } from "../services/ownerFinanceExports.js";
 import { createOwnerPlanner } from "../services/ownerPlanner.js";
+import { createOwnerBusiness } from "../services/ownerBusiness.js";
 
 /**
  * The owner's finances (docs/OWNER_DASHBOARD.md, slice D1), mounted on the owner router, so everything is scoped to the signed-in owner by construction. The owner's own bookkeeping: it records and reports, it moves no money.
@@ -11,6 +12,7 @@ import { createOwnerPlanner } from "../services/ownerPlanner.js";
  *   GET/POST /finance/costs, POST /finance/costs/:id/void, PUT /finance/costs/:id/fine-status
  *   GET/POST /finance/loans, PUT /finance/loans/:id/balance, POST /finance/loans/:id/settle, POST /finance/loans/:id/instalments, POST /finance/instalments/:id/void
  *   GET/POST /finance/maintenance, GET /finance/maintenance/status, POST /finance/maintenance/:id/void
+ *   GET|PUT|DELETE /finance/business     who the owner trades as (printed at the top of the profit and loss)
  *   GET  /finance/planner?priceCents=&depositCents=&ratePercent=&termMonths=&expectedIncomeCents=&expectedCostsCents=&upfrontCostsCents=&lookbackMonths=     what one more vehicle would do (a calculator: records nothing)
  *   GET  /finance/export/profit.csv, costs.csv, loans.csv, profit.pdf     for an accountant, a lender or SARS (same period parameters as /finance/profit)
  * A cost, an instalment or a loan carries an optional clientRef so a retry changes nothing.
@@ -22,7 +24,7 @@ const reply = <T,>(res: Response, r: { ok: true; value: T } | { ok: false; statu
 const DAY = /^\d{4}-\d{2}-\d{2}$/, PERIODS = ["month", "quarter", "year", "tax_year", "custom"];
 
 export function mountOwnerFinance(router: Router, db: Db, now: () => Date = () => new Date()): void {
-  const svc = createOwnerFinance(db, now), exp = createOwnerFinanceExports(db, now), planner = createOwnerPlanner(db, now), body = json({ limit: "10kb" }), id = (req: Request) => String(req.params.id), bad = (res: Response) => fail(res, 400, "Invalid id");
+  const svc = createOwnerFinance(db, now), exp = createOwnerFinanceExports(db, now), planner = createOwnerPlanner(db, now), business = createOwnerBusiness(db, now), body = json({ limit: "10kb" }), id = (req: Request) => String(req.params.id), bad = (res: Response) => fail(res, 400, "Invalid id");
   const q = (req: Request, k: string) => (typeof req.query[k] === "string" ? String(req.query[k]) : undefined), day = (req: Request, k: string) => { const v = q(req, k); return v && DAY.test(v) ? v : undefined; };
 
   router.get("/finance/overview", h(async (req, res) => { res.json({ success: true, ...(await svc.overview(uid(req), day(req, "on"))) }); }));
@@ -36,6 +38,10 @@ export function mountOwnerFinance(router: Router, db: Db, now: () => Date = () =
 
   const num = (req: Request, k: string): number | undefined => { const v = q(req, k); return v === undefined ? undefined : Number(v); };
   router.get("/finance/planner", h(async (req, res) => { reply(res, await planner.plan(uid(req), { priceCents: num(req, "priceCents"), depositCents: num(req, "depositCents"), ratePercent: num(req, "ratePercent"), termMonths: num(req, "termMonths"), expectedIncomeCents: num(req, "expectedIncomeCents"), expectedCostsCents: num(req, "expectedCostsCents"), upfrontCostsCents: num(req, "upfrontCostsCents"), lookbackMonths: num(req, "lookbackMonths") })); }));
+
+  router.get("/finance/business", h(async (req, res) => { res.json({ success: true, business: await business.get(uid(req)) }); }));
+  router.put("/finance/business", body, h(async (req, res) => { const r = await business.save(uid(req), actor(req), req.body ?? {}); if (r.ok) await audit(db, req, "owner.business.save", null, { changed: r.value.changed }); reply(res, r); }));
+  router.delete("/finance/business", h(async (req, res) => { const r = await business.remove(uid(req)); if (r.ok) await audit(db, req, "owner.business.remove", null); reply(res, r); }));
 
   router.get("/finance/costs", h(async (req, res) => { const v = q(req, "vehicleId"); res.json({ success: true, costs: await svc.costs(uid(req), { ...(v && isUuid(v) ? { vehicleId: v } : {}), ...(q(req, "category") ? { category: q(req, "category")! } : {}), ...(day(req, "from") ? { from: day(req, "from")! } : {}), ...(day(req, "to") ? { to: day(req, "to")! } : {}), includeVoided: q(req, "voided") === "1" }) }); }));
   router.post("/finance/costs", body, h(async (req, res) => { const r = await svc.addCost(uid(req), req.body ?? {}); if (r.ok && !r.value.duplicate) await audit(db, req, "owner.cost.add", r.value.id, { category: req.body?.category, amountCents: req.body?.amountCents }); reply(res, r, r.ok && r.value.duplicate ? 200 : 201); }));

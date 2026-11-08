@@ -1,6 +1,7 @@
 import type { Db } from "../portal/common.js";
 import { createOwnerFinance, CATEGORIES, CATEGORY_TEXT, type PeriodKind } from "./ownerFinance.js";
 import { renderPdf, type Section } from "./reports.js";
+import { createOwnerBusiness } from "./ownerBusiness.js";
 
 /**
  * EXPORTS OF THE OWNER'S FINANCES (docs/OWNER_DASHBOARD.md, slice D2): CSV for an accountant's spreadsheet, and a PDF for an accountant, a lender or SARS to read. They show exactly what the owner recorded and say so: they are the owner's own records, not audited accounts, and not tax advice.
@@ -16,7 +17,7 @@ const slug = (s: string) => s.replace(/[^A-Za-z0-9]+/g, "-").replace(/^-|-$/g, "
 type Opts = { period?: PeriodKind; on?: string; from?: string; to?: string };
 
 export function createOwnerFinanceExports(db: Db, now: () => Date = () => new Date()) {
-  const fin = createOwnerFinance(db, now);
+  const fin = createOwnerFinance(db, now), biz = createOwnerBusiness(db, now);
   const ownerName = async (owner: string) => String((await db.query(`SELECT name FROM users WHERE id = $1`, [owner])).rows[0]?.name ?? "The owner");
 
   /** One row per vehicle, then costs not tied to a vehicle, then the fleet: income, each cost category that was used, profit before finance, instalments paid and cash profit. */
@@ -36,9 +37,10 @@ export function createOwnerFinanceExports(db: Db, now: () => Date = () => new Da
   }
   /** A profit and loss statement an accountant, a lender or SARS can read: what it is, the fleet's figures, each vehicle, the costs by category, and the finance agreements. */
   async function profitPdf(owner: string, o: Opts): Promise<Res<{ filename: string; pdf: Buffer }>> {
-    const p = await fin.profit(owner, o); if (!p.ok) return p; const v = p.value as any, name = await ownerName(owner), loans = await fin.finances(owner, v.period.to <= now().toISOString().slice(0, 10) ? v.period.to : undefined), unpaid = (await fin.costs(owner, { category: "fine" })).filter((c) => c.fineStatus === "unpaid"), f = v.fleet;
+    const p = await fin.profit(owner, o); if (!p.ok) return p; const v = p.value as any, b = await biz.get(owner), name = b?.tradingName ?? await ownerName(owner), loans = await fin.finances(owner, v.period.to <= now().toISOString().slice(0, 10) ? v.period.to : undefined), unpaid = (await fin.costs(owner, { category: "fine" })).filter((c) => c.fineStatus === "unpaid"), f = v.fleet;
     const sections: Section[] = [
       { heading: "What this statement is", lines: [`This is ${name}'s own record of what the vehicles earned and cost to run for ${v.period.label}. It is made from what the owner recorded: it has not been audited, and it is not tax advice.`, "Income is what the owner recorded receiving from drivers. A loan instalment includes repayment of capital: for tax, an accountant treats only the interest as an expense, so profit is shown both before and after instalments."] },
+      ...(b ? [{ heading: "The business", facts: [["Trading as", b.tradingName], ["How it trades", b.kindText], ...(b.registeredName ? [["Registered name", b.registeredName]] : []), ...(b.registrationNumber ? [["Registration number", b.registrationNumber]] : []), ...(b.vatNumber ? [["VAT number", b.vatNumber]] : []), ...(b.address ? [["Address", b.address]] : []), ...(b.phone ? [["Phone", b.phone]] : []), ...(b.email ? [["Email", b.email]] : [])] } as Section] : []),
       { heading: "The whole fleet", facts: [["Period", `${v.period.from} to ${v.period.to}`], ["Income received from drivers", rand(f.incomeCents)], ["Running costs", rand(f.costCents)], ["Profit before finance", rand(f.profitBeforeFinanceCents)], ["Loan instalments paid", rand(f.instalmentCents)], ["Cash profit", rand(f.cashProfitCents)], ["Margin (cash profit as a share of income)", f.marginPercent === null ? "No income in this period" : `${f.marginPercent}%`], ["Compared with the period before", `${v.changeCents >= 0 ? "Up" : "Down"} ${rand(Math.abs(v.changeCents))} (it was ${rand(v.previous.fleet.cashProfitCents)}, ${v.period.previousFrom} to ${v.period.previousTo})`]] },
       { heading: "Each vehicle", table: { columns: ["Vehicle", "Income", "Running costs", "Profit before finance", "Instalments", "Cash profit"], rows: [...v.vehicles.map((x: any) => [x.registration, rand(x.incomeCents), rand(x.costCents), rand(x.profitBeforeFinanceCents), rand(x.instalmentCents), rand(x.cashProfitCents)]), ...(v.unallocated.costCents > 0 ? [["Not tied to a vehicle", rand(0), rand(v.unallocated.costCents), rand(-v.unallocated.costCents), rand(0), rand(-v.unallocated.costCents)]] : [])], widths: [100, 76, 80, 90, 76, 70] } },
       { heading: "Running costs by category", table: { columns: ["Category", "Amount"], rows: f.costs.map((c: any) => [c.label, rand(c.cents)]), widths: [300, 192] } },

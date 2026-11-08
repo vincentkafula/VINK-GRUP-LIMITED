@@ -51,7 +51,7 @@ describe("the overview", () => {
     const lis = screen.getAllByRole("listitem").map((l) => l.textContent ?? ""); expect(lis.findIndex((t) => t.includes("overdue"))).toBeLessThan(lis.findIndex((t) => t.includes("unpaid"))); expect(lis.findIndex((t) => t.includes("unpaid"))).toBeLessThan(lis.findIndex((t) => t.includes("no service")));
   });
   it("says when nothing needs attention, and offers the five tabs with the first selected", async () => {
-    override((m, p) => p === `${P}/finance/overview`, { body: { ...OVERVIEW, flags: [], month: null } }); render(<OwnerFinanceScreen />); expect(await screen.findByText("Nothing needs attention.")).toBeInTheDocument(); expect(screen.getAllByRole("tab").map((t) => t.textContent)).toEqual(["Overview", "Profit and loss", "Costs and fines", "Loans", "Servicing", "Planner"]); expect(screen.getByRole("tab", { name: "Overview" })).toHaveAttribute("aria-selected", "true");
+    override((m, p) => p === `${P}/finance/overview`, { body: { ...OVERVIEW, flags: [], month: null } }); render(<OwnerFinanceScreen />); expect(await screen.findByText("Nothing needs attention.")).toBeInTheDocument(); expect(screen.getAllByRole("tab").map((t) => t.textContent)).toEqual(["Overview", "Profit and loss", "Costs and fines", "Loans", "Servicing", "Planner", "Business"]); expect(screen.getByRole("tab", { name: "Overview" })).toHaveAttribute("aria-selected", "true");
   });
 });
 
@@ -165,6 +165,24 @@ describe("the planner", () => {
   it("shows the server's reason, and clears an old result, when it cannot be worked out", async () => {
     await tab("Planner"); await screen.findByText("Can I afford another vehicle?"); fill({ "Planner price": "300000", "Planner deposit": "50000", "Planner rate": "12", "Planner term": "60" }); fireEvent.click(screen.getByRole("button", { name: "Work it out" })); await screen.findByText("What it would do");
     const o = routes; routes = (m, p, b) => (p.startsWith(`${P}/finance/planner`) ? { status: 400, body: { success: false, error: "Give what you expect a driver to pay each month: there is not enough recorded history to work it out" } } : o(m, p, b)); fireEvent.click(screen.getByRole("button", { name: "Work it out" })); expect(await screen.findByText(/there is not enough recorded history to work it out/)).toBeInTheDocument(); expect(screen.queryByText("What it would do")).toBeNull();
+  });
+});
+
+describe("the business record", () => {
+  const BIZ = { kind: "company", tradingName: "Langa Taxi Services", registeredName: "Langa Taxi Services (Pty) Ltd", registrationNumber: "2019/123456/07", vatNumber: "4123456789", phone: "+27821234567", email: "accounts@langa.test", address: "12 Main Road, Langa", updatedOn: "2026-11-10" };
+  const biz = (b: any) => override((m, p) => p === `${P}/finance/business` && m === "GET", { body: { success: true, business: b } });
+  it("says what it is for and what it does not keep", async () => { biz(null); await tab("Business"); expect(await screen.findByText(/It is printed at the top of the profit and loss that you give to your accountant, a lender or SARS/)).toBeInTheDocument(); expect(screen.getByText(/We keep no tax number, ID number or bank detail here/)).toBeInTheDocument(); expect(screen.getByLabelText("Business kind")).toHaveValue("individual"); expect(screen.getByLabelText("Business trading name")).toHaveValue(""); expect(screen.queryByText(/Last saved on/)).toBeNull(); expect(screen.queryByRole("button", { name: /Delete/ })).toBeNull(); });
+  it("sends what was typed, and shows it was saved", async () => {
+    biz(null); await tab("Business"); await screen.findByLabelText("Business trading name"); pick("Business kind", "company"); pick("Business trading name", "Langa Taxi Services"); pick("Business registered name", "Langa Taxi Services (Pty) Ltd"); pick("Business registration number", "2019/123456/07"); pick("Business VAT number", "4123456789"); pick("Business phone", "082 123 4567"); pick("Business email", "Accounts@Langa.test"); pick("Business address", "12 Main Road, Langa");
+    fireEvent.click(screen.getByRole("button", { name: "Save the business details" })); await waitFor(() => expect(writes().at(-1)).toEqual({ method: "PUT", path: `${P}/finance/business`, body: { kind: "company", tradingName: "Langa Taxi Services", registeredName: "Langa Taxi Services (Pty) Ltd", registrationNumber: "2019/123456/07", vatNumber: "4123456789", phone: "082 123 4567", email: "Accounts@Langa.test", address: "12 Main Road, Langa" } })); expect(await screen.findByText("Saved.")).toBeInTheDocument();
+  });
+  it("shows the server's reason when it is refused", async () => { biz(null); await tab("Business"); await screen.findByLabelText("Business trading name"); override((m, p) => m === "PUT" && p === `${P}/finance/business`, { status: 400, body: { success: false, error: "A VAT number is ten digits and starts with 4" } }); pick("Business trading name", "Olu"); pick("Business VAT number", "123"); fireEvent.click(screen.getByRole("button", { name: "Save the business details" })); expect(await screen.findByText("A VAT number is ten digits and starts with 4")).toBeInTheDocument(); });
+  it("shows what was saved, when, and lets it be changed", async () => {
+    biz(BIZ); await tab("Business"); expect(await screen.findByText("Last saved on 2026-11-10.")).toBeInTheDocument(); expect(screen.getByLabelText("Business kind")).toHaveValue("company"); expect(screen.getByLabelText("Business trading name")).toHaveValue("Langa Taxi Services"); expect(screen.getByLabelText("Business VAT number")).toHaveValue("4123456789"); expect(screen.getByLabelText("Business address")).toHaveValue("12 Main Road, Langa");
+    pick("Business trading name", "Langa Taxis"); fireEvent.click(screen.getByRole("button", { name: "Save the business details" })); await waitFor(() => expect(writes().at(-1)!.body).toMatchObject({ tradingName: "Langa Taxis", kind: "company", vatNumber: "4123456789" }));
+  });
+  it("asks twice before deleting, and then empties the form", async () => {
+    biz(BIZ); await tab("Business"); fireEvent.click(await screen.findByRole("button", { name: "Delete the business details" })); expect(writes()).toEqual([]); biz(null); fireEvent.click(screen.getByRole("button", { name: "Yes, delete the business details" })); await waitFor(() => expect(writes().at(-1)).toEqual({ method: "DELETE", path: `${P}/finance/business`, body: undefined })); await waitFor(() => expect(screen.getByLabelText("Business trading name")).toHaveValue("")); expect(screen.queryByText(/Last saved on/)).toBeNull();
   });
 });
 

@@ -54,9 +54,9 @@ describe("the dashboard's menu for each person", () => {
 
 describe("the finance tabs for each role", () => {
   const tabs = async (a: OwnerAccess) => { withAccess(a); render(<OwnerFinanceScreen />); await waitFor(() => expect(calls.some((c) => c.path === `${P}/access`)).toBe(true)); await new Promise((r) => setTimeout(r, 60)); return screen.getAllByRole("tab").map((t) => t.textContent); };
-  it("shows the owner and a co-owner all six", async () => { expect(await tabs(OWNER)).toEqual(["Overview", "Profit and loss", "Costs and fines", "Loans", "Servicing", "Planner"]); cleanup(); expect(await tabs(CO)).toHaveLength(6); });
+  it("shows the owner and a co-owner all seven", async () => { expect(await tabs(OWNER)).toEqual(["Overview", "Profit and loss", "Costs and fines", "Loans", "Servicing", "Planner", "Business"]); cleanup(); expect(await tabs(CO)).toHaveLength(7); });
   it("shows a fleet manager only costs and servicing, and opens on costs, never asking for profit or loans", async () => { expect(await tabs(FLEET)).toEqual(["Costs and fines", "Servicing"]); expect(screen.getByRole("tab", { name: "Costs and fines" })).toHaveAttribute("aria-selected", "true"); expect(calls.some((c) => c.path.includes("/finance/overview") && calls.indexOf(c) > calls.findIndex((x) => x.path === `${P}/access`))).toBe(false); });
-  it("shows an accountant the overview, profit and loss, costs, loans and servicing, looking only", async () => { expect(await tabs(ACC)).toEqual(["Overview", "Profit and loss", "Costs and fines", "Loans", "Servicing", "Planner"]); });
+  it("shows an accountant the overview, profit and loss, costs, loans and servicing, looking only", async () => { expect(await tabs(ACC)).toEqual(["Overview", "Profit and loss", "Costs and fines", "Loans", "Servicing", "Planner", "Business"]); });
 });
 
 describe("the team screen", () => {

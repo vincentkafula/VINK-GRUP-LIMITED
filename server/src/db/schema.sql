@@ -3091,3 +3091,21 @@ CREATE TABLE IF NOT EXISTS owner_sms_log (
   error     TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_owner_sms_log_owner ON owner_sms_log(owner_id, sent_at DESC);
+
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+-- OWNER DASHBOARD, the owner's business record (docs/OWNER_DASHBOARD.md, slice E, leftover)
+-- Who the owner trades as: shown at the top of the statements an accountant, a lender or SARS reads. To remove: db/rollback/owner_dashboard_business_profile.sql
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS owner_business_profile (
+  owner_id            UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  kind                TEXT NOT NULL CHECK (kind IN ('individual','company','partnership','other')),
+  trading_name        TEXT NOT NULL,
+  registered_name     TEXT,
+  registration_number TEXT,
+  vat_number          TEXT,
+  phone               TEXT,
+  email               TEXT,
+  address             TEXT,
+  updated_by          UUID,
+  updated_at          TIMESTAMPTZ NOT NULL DEFAULT now()
+);
