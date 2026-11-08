@@ -97,3 +97,18 @@ describe("inviting by email", () => {
   it("shows the server's reason when a resend is refused", async () => { withInvites(true); const o = routes; routes = (m, p, b) => (m === "POST" && p.endsWith("/invite") ? { status: 429, body: { success: false, error: "That person has been sent enough invitations today: ask them to check their email, or try again tomorrow" } } : o(m, p, b)); render(<TeamScreen />); fireEvent.click(await screen.findByRole("button", { name: "Resend the invitation to Anele Nkosi" })); expect(await screen.findByText(/sent enough invitations today/)).toBeInTheDocument(); });
 });
 
+describe("what each person sees first on the dashboard", () => {
+  const open = async (a: OwnerAccess | null) => { withAccess(a); render(<OwnerDashboard userName="Olu" onClose={() => undefined} />); await waitFor(() => expect(calls.some((c) => c.path === `${P}/access`)).toBe(true)); await new Promise((r) => setTimeout(r, 80)); };
+  const asked = (path: string) => calls.some((c) => c.path.startsWith(`${P}${path}`));
+  it("gives a fleet manager a welcome and where to go, and never asks for the money figures they may not see", async () => {
+    await open(FLEET); expect(await screen.findByText("Welcome, Thabo Mokoena")).toBeInTheDocument(); expect(screen.getByText(/Your role does not include the money figures/)).toBeInTheDocument(); expect(asked("/earnings")).toBe(false); expect(asked("/trend")).toBe(false); expect(screen.queryByText(/not have access/)).toBeNull(); expect(screen.queryByText(/fares collected/)).toBeNull();
+    const body = screen.getByText("Welcome, Thabo Mokoena").parentElement!; const names = within(body).getAllByRole("button").map((b) => b.textContent); for (const l of ["Vehicles", "Drivers", "Driver targets", "Compliance centre", "Documents", "Notifications"]) expect(names, l).toContain(l); for (const l of ["Overview", "Reports", "Financials", "My association", "Bank account", "My team", "Activity log"]) expect(names, l).not.toContain(l);
+  });
+  it("opens what the fleet manager chooses from that page", async () => { await open(FLEET); fireEvent.click(await within((await screen.findByText("Welcome, Thabo Mokoena")).parentElement!).findByRole("button", { name: "Vehicles" })); await waitFor(() => expect(asked("/vehicles")).toBe(true)); expect(screen.queryByText("Welcome, Thabo Mokoena")).toBeNull(); });
+  it("shows the fares, as before, to the owner, a co-owner and an accountant, whose access includes them", async () => {
+    for (const a of [OWNER, CO, ACC]) { cleanup(); calls.length = 0; await open(a); await waitFor(() => expect(asked("/earnings")).toBe(true)); expect(screen.queryByText(/Welcome, /)).toBeNull(); expect(asked("/trend")).toBe(true); }
+  });
+  it("asks for nothing, and shows nothing, while it is still being found out who is signed in", async () => { withAccess(FLEET); const real = globalThis.fetch; vi.stubGlobal("fetch", (url: string, init?: RequestInit) => (String(url).endsWith("/access") ? new Promise<Response>(() => undefined) : real(url, init))); render(<OwnerDashboard userName="Olu" onClose={() => undefined} />); await new Promise((r) => setTimeout(r, 150)); expect(asked("/earnings")).toBe(false); expect(asked("/trend")).toBe(false); expect(screen.queryByText(/Welcome, /)).toBeNull(); });
+  it("falls back to the figures page if who is signed in cannot be found out, because the server still decides what each person may see", async () => { const o = routes; routes = (m, p, b) => (p === `${P}/access` ? { status: 500, body: { success: false, error: "down" } } : o(m, p, b)); render(<OwnerDashboard userName="Olu" onClose={() => undefined} />); await waitFor(() => expect(asked("/earnings")).toBe(true)); expect(screen.queryByText(/Welcome, /)).toBeNull(); });
+});
+

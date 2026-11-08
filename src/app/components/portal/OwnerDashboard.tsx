@@ -7,7 +7,7 @@ import { DriverTargetsScreen } from "./OwnerDriverPay";
 import { MyAssociationScreen } from "./OwnerAssociation";
 import { ComplianceCentreScreen } from "./OwnerCompliance";
 import { OwnerFinanceScreen } from "./OwnerFinance";
-import { TeamScreen, useOwnerAccess, ownerNavAllowed } from "./OwnerTeam";
+import { TeamScreen, useOwnerAccessState, ownerNavAllowed, type OwnerAccess } from "./OwnerTeam";
 import { ActivityScreen } from "./OwnerActivity";
 import { TextAlertsScreen } from "./OwnerTextAlerts";
 import { BankStrip, BankScreen } from "./BankAccount";
@@ -28,7 +28,7 @@ interface Doc { id: string; kind: string; reference: string | null; expiresOn: s
 interface Note { key: string; title: string; body: string; read: boolean; at: string }
 
 export function OwnerDashboard({ userName, onClose }: { userName?: string; onClose: () => void }) {
-  const [nav, setNav] = useState("Overview"), access = useOwnerAccess();
+  const [nav, setNav] = useState("Overview"), { access, loading: accessLoading } = useOwnerAccessState();
   const [notes, reloadNotes] = useLoad<{ notifications: Note[]; unread: number }>(() => call("/notifications"));
   const unread = notes.state === "ready" ? notes.data.unread : 0;
   const allItems = [
@@ -45,7 +45,9 @@ export function OwnerDashboard({ userName, onClose }: { userName?: string; onClo
       <div className="p-4 md:p-6 space-y-4 max-w-5xl">
         {access?.kind === "owner" && <BankStrip segment="owner" color={COLOR} onOpen={() => setNav("Bank account")} />}
         <ScreenBoundary resetKey={nav}>
-          {nav === "Overview" && <><Overview /><OwnerTrend /></>}
+          {nav === "Overview" && (accessLoading ? null : !access || access.kind === "owner" || access.modules.earnings
+            ? <><Overview /><OwnerTrend /></>
+            : <RoleOverview access={access} labels={items.map((i) => i.label).filter((l) => l !== "Overview")} onOpen={setNav} />)}
           {nav === "Vehicles" && <Vehicles />}
           {nav === "Drivers" && <Drivers />}
           {nav === "Routes & map" && <OwnerMap />}
@@ -68,6 +70,17 @@ export function OwnerDashboard({ userName, onClose }: { userName?: string; onClo
         </ScreenBoundary>
       </div>
     </DashboardShell>
+  );
+}
+
+/** What a team member sees first when their role does not include the money figures (a fleet manager): not an error, but where they can go. */
+function RoleOverview({ access, labels, onOpen }: { access: OwnerAccess; labels: string[]; onOpen: (l: string) => void }) {
+  return (
+    <div className="rounded-xl border border-line bg-surface p-4 space-y-3">
+      <h2 className="text-base font-bold text-fg">Welcome{access.name ? `, ${access.name}` : ""}</h2>
+      <p className="text-sm text-fg">You are signed in as <b>{access.roleText}</b> for this business. Your role does not include the money figures, so there is nothing to total up here. Open what you work with:</p>
+      <div className="flex flex-wrap gap-2">{labels.map((l) => <button key={l} type="button" className="px-4 py-2 rounded-lg text-sm font-bold text-white" style={{ background: COLOR }} onClick={() => onOpen(l)}>{l}</button>)}</div>
+    </div>
   );
 }
 

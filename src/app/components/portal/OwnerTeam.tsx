@@ -11,6 +11,8 @@ const call = portalClient("owner");
 
 export interface OwnerAccess { kind: "owner" | "team"; name: string | null; role: string | null; roleText: string; modules: Record<string, "r" | "rw" | null> }
 /** What the signed-in person may do. null while it loads, or if it cannot be told (screens then behave as they always did, and the server still refuses anything not allowed). */
+/** The same, but also says whether it is still loading, so a screen can wait to know who is signed in before it asks for anything that person may not be allowed to see. */
+export function useOwnerAccessState(): { access: OwnerAccess | null; loading: boolean } { const [load] = useLoad<OwnerAccess>(() => call("/access")); return { access: load.state === "ready" ? load.data : null, loading: load.state === "loading" }; }
 export function useOwnerAccess(): OwnerAccess | null { const [load] = useLoad<OwnerAccess>(() => call("/access")); return load.state === "ready" ? load.data : null; }
 /** The module each menu item belongs to. "Profit and costs" is open to anyone who can see either costs or profit. An item not listed belongs to the owner's own login alone, as does anything on the server that is not mapped to a module. */
 const NAV_MODULE: Record<string, string | string[]> = {
