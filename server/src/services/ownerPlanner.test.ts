@@ -2,7 +2,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { allPortalsDb } from "../portal/testDb.js";
 import type { Db } from "../portal/common.js";
-import { createOwnerPlanner, loanPayment, MAX_PRICE_CENTS, MAX_TERM, MAX_RATE_PERCENT, type OwnerPlanner } from "./ownerPlanner.js";
+import { createOwnerPlanner, loanPayment, MAX_PRICE_CENTS, MAX_TERM, MAX_RATE_PERCENT, MAX_PLANS, type OwnerPlanner } from "./ownerPlanner.js";
 
 /**
  * The fleet expansion planner. Every loan figure below was worked out separately with exact decimal arithmetic, not copied from the code.
@@ -94,3 +94,35 @@ describe("what it refuses", () => {
   });
   it("records nothing: it is only a calculation", async () => { const before = JSON.stringify([(await db.query(`SELECT COUNT(*) AS n FROM audit_log`)).rows, (await db.query(`SELECT COUNT(*) AS n FROM vehicle_costs`)).rows, (await db.query(`SELECT COUNT(*) AS n FROM vehicle_finance`)).rows]); await p.plan(U.O1, BASE); await p.plan(U.O1, { ...BASE, priceCents: -1 }); expect(JSON.stringify([(await db.query(`SELECT COUNT(*) AS n FROM audit_log`)).rows, (await db.query(`SELECT COUNT(*) AS n FROM vehicle_costs`)).rows, (await db.query(`SELECT COUNT(*) AS n FROM vehicle_finance`)).rows])).toBe(before); });
 });
+
+describe("saved plans", () => {
+  const save = (name: string, o: any = {}, owner = U.O1) => p.savePlan(owner, owner, { name, ...BASE, ...o });
+  it("keeps only the figures typed, never the answer, and shows what each works out to now, side by side", async () => {
+    ok(await save("Hiace, R50k deposit")); ok(await save("Hiace, R100k deposit", { depositCents: R(100000) })); const l = await p.plans(U.O1); expect(l.map((x) => x.name)).toEqual(["Hiace, R100k deposit", "Hiace, R50k deposit"]);                  // saved at the same moment, so by name
+    expect(l[1]).toMatchObject({ savedOn: "2026-11-18", problem: null, inputs: { priceCents: 30000000, depositCents: 5000000, upfrontCostsCents: 1000000, ratePercent: 12, termMonths: 60 }, result: { instalmentCents: 556112, netCents: 143888, cashNeededNowCents: 6000000, paybackMonths: 42, breakEvenIncomeCents: 856112, incomeCents: 1000000, costsCents: 300000, businessAfterCents: 1143888, verdict: { colour: "amber" } } });
+    expect(l[0].result).toMatchObject({ instalmentCents: loanPayment(20000000, 1200, 60), cashNeededNowCents: R(100000) + R(10000) }); expect(l[0].result!.instalmentCents).toBeLessThan(l[1].result!.instalmentCents);
+    const row = (await db.query(`SELECT inputs FROM owner_plans ORDER BY created_at LIMIT 1`)).rows[0]; const raw = typeof row.inputs === "string" ? JSON.parse(row.inputs) : row.inputs; expect(Object.keys(raw).sort()).toEqual(["depositCents", "priceCents", "ratePercent", "termMonths", "upfrontCostsCents"]); expect(JSON.stringify(raw)).not.toMatch(/verdict|instalmentCents|netCents|history/);
+  });
+  it("drops anything it does not know, and leaves out boxes that were empty", async () => {
+    ok(await save("Tidy", { verdict: "green", loan: { instalmentCents: 1 }, instalmentCents: 5, expectedIncomeCents: "", expectedCostsCents: null, extra: "<script>" })); const l = await p.plans(U.O1); expect(Object.keys(l[0].inputs).sort()).toEqual(["depositCents", "priceCents", "ratePercent", "termMonths", "upfrontCostsCents"]); expect(l[0].result!.instalmentCents).toBe(556112);
+  });
+  it("works out each plan from the records as they are NOW, so it is never out of date", async () => {
+    ok(await save("Live")); expect((await p.plans(U.O1))[0].result).toMatchObject({ incomeCents: 1000000, costsCents: 300000 }); for (const m of ["09", "10"]) await pay(V.v1, 6000, `2026-${m}-20`); const l = await p.plans(U.O1); expect(l[0].result!.incomeCents).toBeGreaterThan(1000000); expect(l[0].result!.netCents).toBeGreaterThan(143888);
+  });
+  it("says when a plan no longer works out, instead of showing an old answer", async () => {
+    ok(await save("Needs history")); await db.query(`DELETE FROM driver_payments`); const l = await p.plans(U.O1); expect(l[0].result).toBeNull(); expect(l[0].problem).toContain("there is not enough recorded history"); ok(await save("Typed it", { expectedIncomeCents: R(9000) })); expect((await p.plans(U.O1)).find((x) => x.name === "Typed it")!.result!.incomeCents).toBe(900000);
+  });
+  it("refuses a plan with no name or a long one, one that does not work out, and a name already used (whatever the capitals), saving nothing", async () => {
+    for (const [name, why] of [["", /name/], ["   ", /name/], ["x".repeat(61), /name/], [undefined, /name/]] as const) expect(await save(name as any), String(name)).toMatchObject({ ok: false, status: 400, error: expect.stringMatching(why) });
+    expect(await save("Bad price", { priceCents: 0 })).toMatchObject({ ok: false, status: 400, error: expect.stringContaining("price") }); expect(await save("No rate", { ratePercent: undefined })).toMatchObject({ ok: false, status: 400, error: expect.stringContaining("interest rate") }); expect(await save("No history", {}, U.O2)).toMatchObject({ ok: false, status: 400 }); expect((await db.query(`SELECT COUNT(*) AS n FROM owner_plans`)).rows[0].n).toBe(0);
+    ok(await save("Hiace")); expect(await save("HIACE")).toMatchObject({ ok: false, status: 409, error: "You already have a plan with that name" }); expect(await save("  hiace  ")).toMatchObject({ ok: false, status: 409 }); ok(await save("Hiace 2"));
+  });
+  it("keeps at most twenty, and a deleted one makes room", async () => {
+    for (let i = 0; i < MAX_PLANS; i++) ok(await save(`Plan ${i}`)); expect(await save("One more")).toMatchObject({ ok: false, status: 409, error: expect.stringContaining("20 plans") }); const first = (await p.plans(U.O1))[0]; ok(await p.removePlan(U.O1, first.id)); ok(await save("One more"));
+  }, 60_000);
+  it("deletes only the owner's own plan, once, and keeps each owner's plans to themselves", async () => {
+    const a = ok<any>(await save("Mine")); ok(await save("Theirs", { expectedIncomeCents: R(9000) }, U.O2)); expect((await p.plans(U.O2)).map((x) => x.name)).toEqual(["Theirs"]); expect((await p.plans(U.O1)).map((x) => x.name)).toEqual(["Mine"]); expect(await p.removePlan(U.O2, a.id)).toMatchObject({ ok: false, status: 404 }); expect(await p.removePlan(U.O1, "nope")).toMatchObject({ ok: false, status: 404 }); ok(await p.removePlan(U.O1, a.id)); expect(await p.removePlan(U.O1, a.id)).toMatchObject({ ok: false, status: 404 }); expect((await p.plans(U.O2)).length).toBe(1);
+    ok(await save("Mine")); expect(JSON.stringify(await p.plans(U.O1))).not.toContain("Theirs");                  // the same name can be used again once it is deleted, and by another owner
+  });
+});
+

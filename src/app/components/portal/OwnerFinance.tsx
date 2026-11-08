@@ -271,16 +271,17 @@ function BusinessPanel() {
 }
 
 /* ───────────────────────── planner ───────────────────────── */
+interface SavedPlan { id: string; name: string; savedOn: string; inputs: Record<string, number>; result: { verdict: { colour: string; text: string }; instalmentCents: number; netCents: number; cashNeededNowCents: number; paybackMonths: number | null; breakEvenIncomeCents: number } | null; problem: string | null }
 interface PlanResult { verdict: { colour: string; text: string }; loan: { amountCents: number; instalmentCents: number; totalRepayableCents: number; totalInterestCents: number }; monthly: { incomeCents: number; incomeFrom: string; costsCents: number; costsFrom: string; beforeFinanceCents: number; instalmentCents: number; netCents: number; coverage: number | null }; cashNeededNowCents: number; paybackMonths: number | null; breakEvenIncomeCents: number; breakEvenWeeklyCents: number; stress: { percent: number; incomeCents: number; netCents: number }[]; businessAfter: { monthlyCashProfitNowCents: number; monthlyCashProfitWithItCents: number }; history: { months: number; from: string | null; to: string | null; vehicles: number }; notes: string[] }
 const COLOUR: Record<string, [string, string]> = { green: ["#15803d", "Comfortable"], amber: ["#D97706", "Tight"], red: ["#C8102E", "Does not pay for itself"] };
 function PlannerPanel() {
-  const [f, setF] = useState({ price: "", deposit: "", upfront: "", rate: "", term: "", income: "", costs: "", lookback: "6" }), [res, setRes] = useState<PlanResult | null>(null), [err, setErr] = useState<string | null>(null), [busy, setBusy] = useState(false);
+  const [f, setF] = useState({ price: "", deposit: "", upfront: "", rate: "", term: "", income: "", costs: "", lookback: "6" }), [res, setRes] = useState<PlanResult | null>(null), [err, setErr] = useState<string | null>(null), [busy, setBusy] = useState(false), [last, setLast] = useState<Record<string, number> | null>(null), [planName, setPlanName] = useState(""), [saved, reloadSaved] = useLoad<{ plans: SavedPlan[] }>(() => call("/finance/plans"));
   const run = async () => {
     setErr(null); setRes(null); const price = toCents(f.price), deposit = f.deposit.trim() ? (f.deposit.trim() === "0" ? 0 : toCents(f.deposit)) : 0, upfront = f.upfront.trim() ? (f.upfront.trim() === "0" ? 0 : toCents(f.upfront)) : 0, income = f.income.trim() ? toCents(f.income) : undefined, costs = f.costs.trim() ? (f.costs.trim() === "0" ? 0 : toCents(f.costs)) : undefined;
     if (price === null) return setErr("Type the price of the vehicle in rand, for example 300000."); if (deposit === null || upfront === null || income === null || costs === null) return setErr("Type each amount in rand, for example 50000. Leave a box empty if you do not know."); if (deposit > price) return setErr("The deposit cannot be more than the price.");
     const loan = price - deposit > 0, rate = f.rate.trim().replace(",", "."), term = num(f.term); if (loan && !/^\d+(\.\d{1,2})?$/.test(rate)) return setErr("Type the yearly interest rate from your quote, for example 12 or 13.75. This planner never guesses a rate."); if (loan && (term === null || term < 1)) return setErr("Type the number of months of the loan, for example 60.");
     const q = new URLSearchParams({ priceCents: String(price), depositCents: String(deposit), upfrontCostsCents: String(upfront), lookbackMonths: f.lookback, ...(loan ? { ratePercent: rate, termMonths: String(term) } : {}), ...(income !== undefined ? { expectedIncomeCents: String(income) } : {}), ...(costs !== undefined ? { expectedCostsCents: String(costs) } : {}) });
-    setBusy(true); const r = await call<PlanResult>(`/finance/planner?${q}`); setBusy(false); if ("error" in r) return setErr(r.error); setRes(r.data as unknown as PlanResult);
+    setBusy(true); const r = await call<PlanResult>(`/finance/planner?${q}`); setBusy(false); if ("error" in r) return setErr(r.error); setRes(r.data as unknown as PlanResult); setLast(Object.fromEntries([...q.entries()].map(([k, v]) => [k, Number(v)])));
   };
   const field = (k: keyof typeof f, label: string, aria: string, w = "w-40", hint?: string) => <label className="block"><span className="text-xs text-fg-muted">{label}</span><input aria-label={aria} inputMode="decimal" className={inputCls + ` mt-1 ${w} py-3`} value={f[k]} onChange={(e) => setF({ ...f, [k]: e.target.value })} />{hint && <span className="block text-[11px] text-fg-subtle">{hint}</span>}</label>;
   return (
@@ -313,8 +314,25 @@ function PlannerPanel() {
             </ul>
             <table className="w-full"><caption className="text-left text-xs font-bold uppercase text-fg-muted mb-1">If it brings in less</caption><thead><tr className="text-left text-xs text-fg-muted"><th className="pr-3">If income is</th><th className="pr-3">It brings in</th><th>It leaves</th></tr></thead><tbody>{res.stress.map((s) => <tr key={s.percent} className="border-t border-line/60"><td className="pr-3">{s.percent}% lower</td><td className="pr-3">{R(s.incomeCents)}</td><td>{R(s.netCents)}</td></tr>)}</tbody></table>
             <ul className="space-y-1 text-xs text-fg-subtle">{res.notes.map((n) => <li key={n}>{n}</li>)}</ul>
+            <div className="flex flex-wrap items-end gap-3 border-t border-line pt-3">
+              <label className="block"><span className="text-xs text-fg-muted">Keep this plan to compare later</span><input aria-label="Plan name" maxLength={60} className={inputCls + " mt-1 w-64 py-3"} placeholder="For example: Hiace with R50 000 deposit" value={planName} onChange={(e) => setPlanName(e.target.value)} /></label>
+              <ActionButton label="Save this plan" color={COLOR} onRun={async () => { if (!last) return { error: "Work it out first." }; const body: Record<string, unknown> = { name: planName, priceCents: last.priceCents, depositCents: last.depositCents, upfrontCostsCents: last.upfrontCostsCents, lookbackMonths: last.lookbackMonths, ...(last.ratePercent !== undefined ? { ratePercent: last.ratePercent, termMonths: last.termMonths } : {}), ...(last.expectedIncomeCents !== undefined ? { expectedIncomeCents: last.expectedIncomeCents } : {}), ...(last.expectedCostsCents !== undefined ? { expectedCostsCents: last.expectedCostsCents } : {}) }; const r = await call("/finance/plans", { method: "POST", body }); if ("error" in r) return { error: r.error }; setPlanName(""); reloadSaved(); return { message: "Saved." }; }} />
+            </div>
           </div>
         </SectionPanel>)}
+      <Status load={saved}>{({ plans }) => plans.length === 0 ? null : (
+        <SectionPanel title="Your saved plans, side by side">
+          <div className="p-4 space-y-3 text-sm text-fg">
+            <p className="text-xs text-fg-muted">Only the figures you typed are kept. Each answer is worked out again from your records every time you look, so it is never out of date.</p>
+            <div className="overflow-x-auto"><table className="w-full"><thead><tr className="text-left text-xs text-fg-muted"><th className="pr-3">Plan</th><th className="pr-3">Price</th><th className="pr-3">Instalment</th><th className="pr-3">Left each month</th><th className="pr-3">Cash needed now</th><th className="pr-3">Months to earn back</th><th>Verdict</th></tr></thead>
+              <tbody>{plans.map((p) => (
+                <tr key={p.id} className="border-t border-line/60 align-top">
+                  <td className="pr-3 py-2"><b>{p.name}</b><span className="block text-[11px] text-fg-subtle">saved {p.savedOn}</span></td><td className="pr-3">{R(p.inputs.priceCents)}</td>
+                  {p.result ? <><td className="pr-3">{R(p.result.instalmentCents)}</td><td className="pr-3">{R(p.result.netCents)}</td><td className="pr-3">{R(p.result.cashNeededNowCents)}</td><td className="pr-3">{p.result.paybackMonths ?? "Never"}</td><td><Chip color={COLOUR[p.result.verdict.colour][0]}>{COLOUR[p.result.verdict.colour][1]}</Chip></td></> : <td colSpan={5} className="text-bad">{p.problem}</td>}
+                  <td className="pl-3"><span className="flex flex-col gap-1"><button type="button" className="text-xs underline text-left" onClick={() => { const i = p.inputs, r = (c?: number) => (c === undefined ? "" : String(c / 100)); setF({ price: r(i.priceCents), deposit: r(i.depositCents), upfront: r(i.upfrontCostsCents), rate: i.ratePercent === undefined ? "" : String(i.ratePercent), term: i.termMonths === undefined ? "" : String(i.termMonths), income: r(i.expectedIncomeCents), costs: r(i.expectedCostsCents), lookback: String(i.lookbackMonths ?? 6) }); setRes(null); setErr(null); }}>{`Use the figures of ${p.name}`}</button><ActionButton small label={`Delete the plan ${p.name}`} color="#6B7280" onRun={async () => { const r = await call(`/finance/plans/${p.id}`, { method: "DELETE" }); if ("error" in r) return { error: r.error }; reloadSaved(); return undefined; }} /></span></td>
+                </tr>))}</tbody></table></div>
+          </div>
+        </SectionPanel>)}</Status>
     </div>
   );
 }

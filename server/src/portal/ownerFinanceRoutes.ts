@@ -13,6 +13,7 @@ import { createOwnerBusiness } from "../services/ownerBusiness.js";
  *   GET/POST /finance/loans, PUT /finance/loans/:id/balance, POST /finance/loans/:id/settle, POST /finance/loans/:id/instalments, POST /finance/instalments/:id/void
  *   GET/POST /finance/maintenance, GET /finance/maintenance/status, POST /finance/maintenance/:id/void
  *   GET|PUT|DELETE /finance/business     who the owner trades as (printed at the top of the profit and loss)
+ *   GET|POST /finance/plans, DELETE /finance/plans/:id     saved plans: only the figures typed are kept; each is worked out again from the owner's records when shown
  *   GET  /finance/planner?priceCents=&depositCents=&ratePercent=&termMonths=&expectedIncomeCents=&expectedCostsCents=&upfrontCostsCents=&lookbackMonths=     what one more vehicle would do (a calculator: records nothing)
  *   GET  /finance/export/profit.csv, costs.csv, loans.csv, profit.pdf     for an accountant, a lender or SARS (same period parameters as /finance/profit)
  * A cost, an instalment or a loan carries an optional clientRef so a retry changes nothing.
@@ -42,6 +43,10 @@ export function mountOwnerFinance(router: Router, db: Db, now: () => Date = () =
   router.get("/finance/business", h(async (req, res) => { res.json({ success: true, business: await business.get(uid(req)) }); }));
   router.put("/finance/business", body, h(async (req, res) => { const r = await business.save(uid(req), actor(req), req.body ?? {}); if (r.ok) await audit(db, req, "owner.business.save", null, { changed: r.value.changed }); reply(res, r); }));
   router.delete("/finance/business", h(async (req, res) => { const r = await business.remove(uid(req)); if (r.ok) await audit(db, req, "owner.business.remove", null); reply(res, r); }));
+
+  router.get("/finance/plans", h(async (req, res) => { res.json({ success: true, plans: await planner.plans(uid(req)) }); }));
+  router.post("/finance/plans", body, h(async (req, res) => { const r = await planner.savePlan(uid(req), actor(req), req.body ?? {}); if (r.ok) await audit(db, req, "owner.plan.save", r.value.id, { name: typeof req.body?.name === "string" ? req.body.name.trim().slice(0, 60) : null }); reply(res, r, 201); }));
+  router.delete("/finance/plans/:id", h(async (req, res) => { if (!isUuid(id(req))) { bad(res); return; } const r = await planner.removePlan(uid(req), id(req)); if (r.ok) await audit(db, req, "owner.plan.delete", id(req)); reply(res, r); }));
 
   router.get("/finance/costs", h(async (req, res) => { const v = q(req, "vehicleId"); res.json({ success: true, costs: await svc.costs(uid(req), { ...(v && isUuid(v) ? { vehicleId: v } : {}), ...(q(req, "category") ? { category: q(req, "category")! } : {}), ...(day(req, "from") ? { from: day(req, "from")! } : {}), ...(day(req, "to") ? { to: day(req, "to")! } : {}), includeVoided: q(req, "voided") === "1" }) }); }));
   router.post("/finance/costs", body, h(async (req, res) => { const r = await svc.addCost(uid(req), req.body ?? {}); if (r.ok && !r.value.duplicate) await audit(db, req, "owner.cost.add", r.value.id, { category: req.body?.category, amountCents: req.body?.amountCents }); reply(res, r, r.ok && r.value.duplicate ? 200 : 201); }));

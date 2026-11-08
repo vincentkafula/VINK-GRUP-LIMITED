@@ -18,7 +18,7 @@ export type AuditGroup = (typeof AUDIT_GROUPS)[number];
 export const GROUP_TEXT: Record<AuditGroup, string> = { money: "Money: payments, targets, costs, fines, loans, dues", fleet: "Vehicles, drivers, devices and servicing", documents: "Documents and compliance", team: "The team", exports: "Downloads" };
 /** The action prefixes that make up each group. */
 const GROUP_LIKE: Record<AuditGroup, string[]> = {
-  money: ["owner.payment.%", "owner.target.%", "owner.split.%", "owner.waiver.%", "owner.pause.%", "owner.cost.%", "owner.fine.%", "owner.loan.%", "owner.instalment.%", "owner.dues.%"],
+  money: ["owner.payment.%", "owner.target.%", "owner.split.%", "owner.waiver.%", "owner.pause.%", "owner.cost.%", "owner.fine.%", "owner.loan.%", "owner.instalment.%", "owner.dues.%", "owner.plan.%"],
   fleet: ["owner.vehicle.%", "owner.driver.%", "owner.device_%", "owner.maintenance.%"], documents: ["owner.file.%", "owner.compliance.%", "owner.business.%"], team: ["team.%"], exports: ["owner.export%"],
 };
 export const groupOf = (action: string): AuditGroup | null => { for (const g of AUDIT_GROUPS) for (const p of GROUP_LIKE[g]) { const stem = p.replace(/%$/, ""); if (p.endsWith("%") ? action.startsWith(stem) : action === p) return g; } return null; };
@@ -69,6 +69,8 @@ export function describe(action: string, target: string | null, d: Record<string
     case "owner.file.upload": return `Stored ${an(KIND[String(d.kind)] ?? "document")}${d.scan === "clean" ? " (checked by an antivirus)" : ""}`;
     case "owner.file.download": return "Opened a stored document";
     case "owner.file.delete": return "Deleted a stored document and erased it";
+    case "owner.plan.save": return `Saved the vehicle plan${str(d.name, 60) ? ` "${str(d.name, 60)}"` : ""}`;
+    case "owner.plan.delete": return "Deleted a vehicle plan";
     case "owner.business.save": { const w = (Array.isArray(d.changed) ? d.changed : []).map((k) => FIELD[String(k)]).filter(Boolean); return `Saved the business details${w.length ? `: changed ${w.join(", ")}` : ""}`; }
     case "owner.business.remove": return "Deleted the business details";
     case "team.create": return `Gave a new login to ${str(d.username, 40) ?? "a team member"}${ROLE_WORD[String(d.role)] ? ` as ${ROLE_WORD[String(d.role)]}` : ""}`;

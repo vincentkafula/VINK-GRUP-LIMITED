@@ -15,6 +15,7 @@ import { createOwnerFinance } from "./ownerFinance.js";
 export type Fail = { ok: false; status: number; error: string };
 export type Res<T> = { ok: true; value: T } | Fail;
 const bad = (status: number, error: string): Fail => ({ ok: false, status, error });
+export const MAX_PLANS = 20;
 export const MAX_PRICE_CENTS = 2_000_000_000, MAX_MONTHLY_CENTS = 1_000_000_000, MAX_TERM = 120, MAX_RATE_PERCENT = 60, GREEN_COVER = 1.5, AMBER_COVER = 1.0, LOOKBACKS = [3, 6, 12] as const;
 const rand = (c: number) => { const [i, d] = Math.abs(c / 100).toFixed(2).split("."); return `${c < 0 ? "-" : ""}R${i.replace(/\B(?=(\d{3})+(?!\d))/g, " ")}.${d}`; };
 
@@ -69,6 +70,26 @@ export function createOwnerPlanner(db: Db, now: () => Date = () => new Date()) {
       verdict: { colour, text: colour === "green" ? "It pays for itself comfortably at these figures." : colour === "amber" ? "It pays for itself, but with little room if income falls." : "It would lose money each month at these figures." },
       notes } };
   }
-  return { plan, history };
+
+  /* ───────────────────────── saved plans ───────────────────────── */
+  const UUIDRE = /^[0-9a-f-]{36}$/i, FIELDS = ["priceCents", "depositCents", "upfrontCostsCents", "ratePercent", "termMonths", "expectedIncomeCents", "expectedCostsCents", "lookbackMonths"] as const;
+  const asObj = (v: unknown): Record<string, unknown> => { if (v && typeof v === "object" && !Array.isArray(v)) return v as Record<string, unknown>; if (typeof v === "string") { try { const p = JSON.parse(v); return p && typeof p === "object" && !Array.isArray(p) ? p : {}; } catch { return {}; } } return {}; };
+  /** Keeps a plan's figures (and only those): the answer is not saved, it is worked out again from the owner's records every time it is shown. A plan is refused unless it works out. */
+  async function savePlan(owner: string, by: string, b: Record<string, unknown>): Promise<Res<{ id: string }>> {
+    const name = typeof b.name === "string" ? b.name.trim() : ""; if (!name || name.length > 60) return bad(400, "Give the plan a name (up to 60 characters)");
+    const inputs: Record<string, unknown> = {}; for (const k of FIELDS) if (b[k] !== undefined && b[k] !== null && b[k] !== "") inputs[k] = b[k];
+    const r = await plan(owner, inputs as unknown as PlanInput); if (!r.ok) return r;
+    if ((await db.query(`SELECT 1 AS x FROM owner_plans WHERE owner_id = $1 AND lower(name) = $2`, [owner, name.toLowerCase()])).rows.length) return bad(409, "You already have a plan with that name");
+    if (Number((await db.query(`SELECT COUNT(*) AS n FROM owner_plans WHERE owner_id = $1`, [owner])).rows[0].n) >= MAX_PLANS) return bad(409, `You can keep ${MAX_PLANS} plans: delete one you no longer need`);
+    const row = (await db.query(`INSERT INTO owner_plans (owner_id, name, inputs, created_by, created_at) VALUES ($1,$2,$3,$4,$5) RETURNING id`, [owner, name, JSON.stringify(inputs), by, now().toISOString()])).rows[0]; return { ok: true, value: { id: String(row.id) } };
+  }
+  /** The saved plans, oldest first, each with what it works out to NOW (or why it no longer works out). */
+  async function plans(owner: string) {
+    const rows = (await db.query(`SELECT * FROM owner_plans WHERE owner_id = $1 ORDER BY created_at, name`, [owner])).rows, out = [];
+    for (const r of rows) { const inputs = asObj(r.inputs), res = await plan(owner, inputs as unknown as PlanInput); const v = res.ok ? (res.value as any) : null; out.push({ id: String(r.id), name: String(r.name), savedOn: saDay(new Date(r.created_at as string)), inputs, result: v ? { verdict: v.verdict, instalmentCents: v.loan.instalmentCents, netCents: v.monthly.netCents, coverage: v.monthly.coverage, cashNeededNowCents: v.cashNeededNowCents, paybackMonths: v.paybackMonths, breakEvenIncomeCents: v.breakEvenIncomeCents, incomeCents: v.monthly.incomeCents, costsCents: v.monthly.costsCents, businessAfterCents: v.businessAfter.monthlyCashProfitWithItCents } : null, problem: res.ok ? null : res.error }); }
+    return out;
+  }
+  async function removePlan(owner: string, id: string): Promise<Res<{ id: string }>> { const r = typeof id === "string" && UUIDRE.test(id) ? (await db.query(`SELECT id FROM owner_plans WHERE id = $1 AND owner_id = $2`, [id, owner])).rows[0] : null; if (!r) return bad(404, "That plan was not found"); await db.query(`DELETE FROM owner_plans WHERE id = $1`, [id]); return { ok: true, value: { id } }; }
+  return { plan, history, savePlan, plans, removePlan };
 }
 export type OwnerPlanner = ReturnType<typeof createOwnerPlanner>;

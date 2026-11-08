@@ -3109,3 +3109,17 @@ CREATE TABLE IF NOT EXISTS owner_business_profile (
   updated_by          UUID,
   updated_at          TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+-- OWNER DASHBOARD, saved fleet expansion plans (docs/OWNER_DASHBOARD.md, slice F2 leftover)
+-- Only the figures the owner typed are saved, never the answer: the answer is worked out again from their records each time. To remove: db/rollback/owner_dashboard_plans.sql
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS owner_plans (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  name        TEXT NOT NULL,
+  inputs      JSONB NOT NULL,
+  created_by  UUID,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_owner_plans_name ON owner_plans(owner_id, lower(name));

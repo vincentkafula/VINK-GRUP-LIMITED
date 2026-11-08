@@ -29,6 +29,7 @@ beforeEach(() => {
     if (p === `${P}/driver-pay/fleet`) return { body: { success: true, vehicles: [{ vehicleId: "v1", registration: "CA 111-111" }, { vehicleId: "v2", registration: "CA 222-222" }] } };
     if (p === `${P}/drivers`) return { body: { success: true, drivers: [{ driverId: "d1", name: "Dan Driver", status: "active" }, { driverId: "d9", name: "Pending Pete", status: "pending" }] } };
     if (p === `${P}/finance/overview`) return { body: OVERVIEW }; if (p.startsWith(`${P}/finance/profit`)) return { body: PROFIT }; if (p.startsWith(`${P}/finance/costs`) && m === "GET") return { body: { success: true, costs: COSTS } }; if (p === `${P}/finance/loans` && m === "GET") return { body: { success: true, finances: [LOAN], measures: { activeAgreements: 1, owedCents: 30000000, monthlyInstalmentsCents: 900000 } } };
+    if (p === `${P}/finance/plans` && m === "GET") return { body: { success: true, plans: [] } };
     if (p.startsWith(`${P}/finance/planner`)) return { body: PLAN };
     if (p === `${P}/finance/maintenance/status`) return { body: MSTATUS }; if (p === `${P}/finance/maintenance` && m === "GET") return { body: MLOG }; if (p.includes("/export/")) return { body: "x", file: true };
     if (m === "POST") return { status: 201, body: { success: true, id: "new", duplicate: false } }; if (m === "PUT") return { body: { success: true } }; return undefined;
@@ -184,5 +185,35 @@ describe("the business record", () => {
   it("asks twice before deleting, and then empties the form", async () => {
     override((m, p) => m === "DELETE" && p === `${P}/finance/business`, { body: { success: true, removed: true } }); biz(BIZ); await tab("Business"); fireEvent.click(await screen.findByRole("button", { name: "Delete the business details" })); expect(writes()).toEqual([]); biz(null); fireEvent.click(screen.getByRole("button", { name: "Yes, delete the business details" })); await waitFor(() => expect(writes().at(-1)).toEqual({ method: "DELETE", path: `${P}/finance/business`, body: undefined })); await waitFor(() => expect(screen.getByLabelText("Business trading name")).toHaveValue("")); expect(screen.queryByText(/Last saved on/)).toBeNull();
   });
+});
+
+describe("saved plans on the planner", () => {
+  const SAVED = [
+    { id: "p1", name: "Hiace, R50k deposit", savedOn: "2026-11-10", inputs: { priceCents: 30000000, depositCents: 5000000, upfrontCostsCents: 1000000, ratePercent: 12, termMonths: 60, lookbackMonths: 6 }, result: { verdict: { colour: "amber", text: "x" }, instalmentCents: 556112, netCents: 143888, cashNeededNowCents: 6000000, paybackMonths: 42, breakEvenIncomeCents: 856112 }, problem: null },
+    { id: "p2", name: "Quantum, cash", savedOn: "2026-11-11", inputs: { priceCents: 40000000, depositCents: 40000000, upfrontCostsCents: 0, lookbackMonths: 12, expectedIncomeCents: 1500000, expectedCostsCents: 300000 }, result: { verdict: { colour: "green", text: "y" }, instalmentCents: 0, netCents: 1200000, cashNeededNowCents: 40000000, paybackMonths: null, breakEvenIncomeCents: 300000 }, problem: null },
+    { id: "p3", name: "Old idea", savedOn: "2026-10-01", inputs: { priceCents: 25000000 }, result: null, problem: "Give what you expect a driver to pay each month: there is not enough recorded history to work it out" }];
+  const fill = (o: Record<string, string>) => { for (const [k, v] of Object.entries(o)) pick(k, v); };
+  const withPlans = (plans: any[]) => override((m, p) => p === `${P}/finance/plans` && m === "GET", { body: { success: true, plans } });
+  const run = async () => { await screen.findByText("Can I afford another vehicle?"); pick("Planner price", "300000"); pick("Planner deposit", "50000"); pick("Planner rate", "12"); pick("Planner term", "60"); fireEvent.click(screen.getByRole("button", { name: "Work it out" })); await screen.findByText("What it would do"); };
+  it("shows nothing about saved plans when there are none", async () => { await tab("Planner"); await screen.findByText("Can I afford another vehicle?"); expect(screen.queryByText("Your saved plans, side by side")).toBeNull(); });
+  it("shows each saved plan side by side with what it works out to now, in words, and why one no longer works out", async () => {
+    withPlans(SAVED); await tab("Planner"); await screen.findByText("Your saved plans, side by side"); const rows = screen.getAllByRole("row").map((r) => norm(r.textContent));
+    const a = rows.find((r) => r.startsWith("Hiace, R50k deposit"))!; for (const v of [R(30000000), R(556112), R(143888), R(6000000)]) expect(a).toContain(v); expect(a).toContain("42"); expect(a).toContain("Tight"); const b = rows.find((r) => r.startsWith("Quantum, cash"))!; expect(b).toContain(R(40000000)); expect(b).toContain(R(1200000)); expect(b).toContain("Never"); expect(b).toContain("Comfortable");
+    expect(rows.find((r) => r.startsWith("Old idea"))).toContain("there is not enough recorded history to work it out"); expect(screen.getByText(/worked out again from your records every time you look/)).toBeInTheDocument();
+  });
+  it("saves the plan just worked out, with only the figures typed, under the name given", async () => {
+    await tab("Planner"); await run(); pick("Plan name", "Hiace, R50k deposit"); fireEvent.click(screen.getByRole("button", { name: "Save this plan" })); await waitFor(() => expect(writes().at(-1)!.path).toBe(`${P}/finance/plans`)); expect(writes().at(-1)!.body).toEqual({ name: "Hiace, R50k deposit", priceCents: 30000000, depositCents: 5000000, upfrontCostsCents: 0, lookbackMonths: 6, ratePercent: 12, termMonths: 60 }); expect(await screen.findByText("Saved.")).toBeInTheDocument(); expect(screen.getByLabelText("Plan name")).toHaveValue("");
+  });
+  it("saves the figures typed for income and costs, and a cash purchase without a rate or term", async () => {
+    await tab("Planner"); await screen.findByText("Can I afford another vehicle?"); fill({ "Planner price": "400000", "Planner deposit": "400000", "Planner income": "15000", "Planner costs": "3000" }); fireEvent.click(screen.getByRole("button", { name: "Work it out" })); await screen.findByText("What it would do"); pick("Plan name", "Quantum, cash"); fireEvent.click(screen.getByRole("button", { name: "Save this plan" })); await waitFor(() => expect(writes().at(-1)!.path).toBe(`${P}/finance/plans`)); expect(writes().at(-1)!.body).toEqual({ name: "Quantum, cash", priceCents: 40000000, depositCents: 40000000, upfrontCostsCents: 0, lookbackMonths: 6, expectedIncomeCents: 1500000, expectedCostsCents: 300000 });
+  });
+  it("shows the server's reason when a plan cannot be saved", async () => {
+    await tab("Planner"); await run(); override((m, p) => m === "POST" && p === `${P}/finance/plans`, { status: 409, body: { success: false, error: "You already have a plan with that name" } }); pick("Plan name", "Hiace"); fireEvent.click(screen.getByRole("button", { name: "Save this plan" })); expect(await screen.findByText("You already have a plan with that name")).toBeInTheDocument();
+  });
+  it("puts a saved plan's figures back in the boxes to change and work out again, and clears the old answer", async () => {
+    withPlans(SAVED); await tab("Planner"); await run(); fireEvent.click(screen.getByRole("button", { name: "Use the figures of Quantum, cash" })); expect(screen.getByLabelText("Planner price")).toHaveValue("400000"); expect(screen.getByLabelText("Planner deposit")).toHaveValue("400000"); expect(screen.getByLabelText("Planner income")).toHaveValue("15000"); expect(screen.getByLabelText("Planner costs")).toHaveValue("3000"); expect(screen.getByLabelText("Planner lookback")).toHaveValue("12"); expect(screen.getByLabelText("Planner rate")).toHaveValue(""); expect(screen.queryByText("What it would do")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Use the figures of Hiace, R50k deposit" })); expect(screen.getByLabelText("Planner rate")).toHaveValue("12"); expect(screen.getByLabelText("Planner term")).toHaveValue("60"); expect(screen.getByLabelText("Planner upfront")).toHaveValue("10000");
+  });
+  it("deletes a saved plan", async () => { override((m, p) => m === "DELETE" && p === `${P}/finance/plans/p1`, { body: { success: true } }); withPlans(SAVED); await tab("Planner"); fireEvent.click(await screen.findByRole("button", { name: "Delete the plan Hiace, R50k deposit" })); await waitFor(() => expect(writes().at(-1)).toEqual({ method: "DELETE", path: `${P}/finance/plans/p1`, body: undefined })); });
 });
 

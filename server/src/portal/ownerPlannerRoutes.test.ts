@@ -62,3 +62,25 @@ describe("what it works out, through the real routes", () => {
     const w = await call(T("accountant"), "POST", "/finance/planner", {}); expect(w.status).toBe(403); expect(w.body.error).toBe("The accountant role can look at that but not change it"); expect((await call(OWNER(), "POST", "/finance/planner", {})).status).toBe(404);
   });
 });
+
+describe("saved plans, through the real routes", () => {
+  const savePlan = (tk: string, name: string, o: Record<string, unknown> = {}) => call(tk, "POST", "/finance/plans", { name, ...BASE, ...o });
+  it("lets the owner and a co-owner save and delete, the accountant only look, and the fleet manager do neither", async () => {
+    await history(); const a = await savePlan(OWNER(), "Hiace"); expect(a.status).toBe(201); expect((await savePlan(T("co_owner"), "Quantum", { depositCents: 6000000 })).status).toBe(201);
+    for (const [who, tk] of [["owner", OWNER()], ["co_owner", T("co_owner")], ["accountant", T("accountant")]] as const) { const r = await call(tk, "GET", "/finance/plans"); expect(r.status, who).toBe(200); expect(r.body.plans.map((x: any) => x.name).sort(), who).toEqual(["Hiace", "Quantum"]); }
+    const w = await savePlan(T("accountant"), "Nope"); expect(w.status).toBe(403); expect(w.body.error).toBe("The accountant role can look at that but not change it"); expect((await call(T("accountant"), "DELETE", `/finance/plans/${a.body.id}`)).status).toBe(403);
+    for (const m of ["GET", "POST", "DELETE"]) { const f = await call(T("fleet_manager"), m, m === "DELETE" ? `/finance/plans/${a.body.id}` : "/finance/plans", m === "POST" ? { name: "x", ...BASE } : undefined); expect(f.status, m).toBe(403); expect(f.body.error).toBe("The fleet manager role does not have access to that"); }
+    expect((await call(T("co_owner"), "DELETE", `/finance/plans/${a.body.id}`)).status).toBe(200); expect((await call(OWNER(), "GET", "/finance/plans")).body.plans.map((x: any) => x.name)).toEqual(["Quantum"]);
+  });
+  it("shows each plan's answer from the owner's own records, and each owner only their own plans", async () => {
+    await history(); await savePlan(OWNER(), "Hiace"); const r = (await call(OWNER(), "GET", "/finance/plans")).body.plans[0]; expect(r).toMatchObject({ name: "Hiace", problem: null, result: { instalmentCents: 556112, netCents: 143888, paybackMonths: 42, verdict: { colour: "amber" } } }); const other = tok(U.O2, "ona"); expect((await call(other, "GET", "/finance/plans")).body.plans).toEqual([]); expect((await call(other, "DELETE", `/finance/plans/${r.id}`)).status).toBe(404); expect((await call(OWNER(), "GET", "/finance/plans")).body.plans).toHaveLength(1);
+  });
+  it("shows the server's reason for each mistake, and keeps nothing", async () => {
+    await history(); for (const [bad, st, why] of [[{ name: "" }, 400, /name/], [{ name: "x".repeat(61) }, 400, /name/], [{ priceCents: 0 }, 400, /price/], [{ ratePercent: undefined }, 400, /interest rate/]] as const) { const r = await savePlan(OWNER(), "ok", bad as any); expect(r.status, JSON.stringify(bad)).toBe(st); expect(r.body.error).toMatch(why); }
+    expect((await call(OWNER(), "GET", "/finance/plans")).body.plans).toEqual([]); await savePlan(OWNER(), "Same"); expect((await savePlan(OWNER(), "SAME")).status).toBe(409); expect((await call(OWNER(), "DELETE", "/finance/plans/nope")).status).toBe(400);
+  });
+  it("records a save and a delete under the person who did it, and the activity log says so in words", async () => {
+    await history(); const a = await savePlan(T("co_owner"), "Hiace 2027"); await call(OWNER(), "DELETE", `/finance/plans/${a.body.id}`); const log = (await call(OWNER(), "GET", "/audit?group=money")).body.entries.map((e: any) => [e.actor, e.text]); expect(log).toEqual([["Olu Owner", "Deleted a vehicle plan"], ["co_owner person", 'Saved the vehicle plan "Hiace 2027"']]);
+  });
+});
+
