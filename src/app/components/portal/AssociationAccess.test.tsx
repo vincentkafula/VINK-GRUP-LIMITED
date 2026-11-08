@@ -77,3 +77,23 @@ describe("the logins screen", () => {
   });
   it("says no office bearer has a login yet", async () => { routes = ((o) => (m: string, p: string, b: any) => (p === `${P}/delegates` && m === "GET" ? { body: { success: true, delegates: [] } } : o(m, p, b)))(routes); render(<AccessScreen />); expect(await screen.findByText("No office bearer has their own login yet.")).toBeInTheDocument(); });
 });
+
+describe("inviting an office bearer by email", () => {
+  const withInvites = (available: boolean) => { const o = routes; routes = (m, p, b) => (p === `${P}/delegates` && m === "GET" ? { body: { success: true, delegates: DELEGATES, invitationsAvailable: available } } : m === "POST" && p === `${P}/delegates` && b?.invite ? { status: 201, body: { success: true, id: "new", username: "thabo", invited: true } } : o(m, p, b)); };
+  const fillNew = () => { pick("Login name", "Thabo Mokoena"); pick("Login email", "thabo@langa.test"); pick("Login username", "thabo"); pick("Login role", "chairperson"); };
+  it("offers it, ticked, when email is set up, and says what it means", async () => { withInvites(true); render(<AccessScreen />); const box = await screen.findByRole("checkbox", { name: /Email them an invitation/ }); expect(box).toBeChecked(); expect(screen.getByText(/so they choose their own password\. Nothing is passed on to them by you/)).toBeInTheDocument(); });
+  it("does not offer it when email is not set up, and gives a one-time password as before", async () => { withInvites(false); render(<AccessScreen />); await screen.findByText("Sipho Dube", { selector: "b" }); expect(screen.queryByRole("checkbox", { name: /Email them an invitation/ })).toBeNull(); expect(screen.queryByRole("button", { name: /Resend the invitation/ })).toBeNull(); fillNew(); fireEvent.click(screen.getByRole("button", { name: "Create login" })); expect((await screen.findByRole("alert")).textContent).toContain("Abcdefghjkmnpq-4821"); expect(writes().at(-1)!.body.invite).toBeUndefined(); });
+  it("sends the invitation, says where it went, shows no password and clears the form", async () => {
+    withInvites(true); render(<AccessScreen />); await screen.findByRole("checkbox", { name: /Email them an invitation/ }); fillNew(); fireEvent.click(screen.getByRole("button", { name: "Create login" })); await waitFor(() => expect(writes().at(-1)).toMatchObject({ method: "POST", path: `${P}/delegates`, body: { name: "Thabo Mokoena", email: "thabo@langa.test", username: "thabo", role: "chairperson", invite: true } }));
+    expect(await screen.findByText("We emailed an invitation to thabo@langa.test. They choose their own password, so you have nothing to pass on.")).toBeInTheDocument(); expect(screen.queryByRole("alert")).toBeNull(); expect(screen.getByLabelText("Login name")).toHaveValue("");
+  });
+  it("gives a one-time password instead when unticked, and shows the server's reason when the invitation cannot be sent", async () => {
+    withInvites(true); render(<AccessScreen />); fireEvent.click(await screen.findByRole("checkbox", { name: /Email them an invitation/ })); fillNew(); fireEvent.click(screen.getByRole("button", { name: "Create login" })); expect((await screen.findByRole("alert")).textContent).toContain("Abcdefghjkmnpq-4821"); expect(writes().at(-1)!.body.invite).toBeUndefined(); cleanup();
+    withInvites(true); const o = routes; routes = (m, p, b) => (m === "POST" && p === `${P}/delegates` ? { status: 502, body: { success: false, error: "The invitation could not be emailed: check the address and try again" } } : o(m, p, b)); render(<AccessScreen />); await screen.findByRole("checkbox", { name: /Email them an invitation/ }); fillNew(); fireEvent.click(screen.getByRole("button", { name: "Create login" })); expect(await screen.findByText(/The invitation could not be emailed/)).toBeInTheDocument();
+  });
+  it("offers to resend only to someone who has not signed in yet, and only when email is set up", async () => {
+    withInvites(true); render(<AccessScreen />); await screen.findByText("Lerato Nel", { selector: "b" }); expect(screen.getByRole("button", { name: "Resend the invitation to Lerato Nel" })).toBeInTheDocument(); expect(screen.queryByRole("button", { name: "Resend the invitation to Sipho Dube" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Resend the invitation to Lerato Nel" })); await waitFor(() => expect(writes().at(-1)).toEqual({ method: "POST", path: `${P}/delegates/d2/invite`, body: undefined })); expect(await screen.findByText("We emailed Lerato Nel a new link. The old one no longer works.")).toBeInTheDocument();
+  });
+});
+

@@ -98,6 +98,13 @@ export function createDelegates(db: Db, now: () => Date = () => new Date()) {
   }
   /** What the signed-in person may do, for the screens to show only what they can use. */
   function access(d: Delegate | null) { const role: Role | null = d?.role ?? null; return { kind: d ? "delegate" : "owner", name: d?.name ?? null, role, roleText: role ? ROLE_TEXT[role] : "Main login", officeBearerId: d?.officeBearerId ?? null, modules: Object.fromEntries(MODULES.map((m) => [m, role === null ? "rw" : MATRIX[role][m] ?? null])) as Record<Module, "r" | "rw" | null> }; }
-  return { resolve, list, create, setRole, setActive, resetPassword, access };
+  /** Whether this login is one of the association's. */
+  async function isMine(assoc: string, id: string): Promise<boolean> { return !!(await own(assoc, id)); }
+  /** Takes back a login that was only just made and never used (for example when its invitation could not be emailed). A person who has signed in is never removed. */
+  async function discard(assoc: string, by: string, id: string): Promise<Res<{ id: string }>> {
+    if (!(await own(assoc, id))) return bad(404, "That login was not found"); const u = (await db.query(`SELECT name, last_login FROM users WHERE id = $1`, [id])).rows[0]; if (u?.last_login) return bad(409, "That person has already signed in");
+    await db.query(`DELETE FROM association_delegates WHERE user_id = $1`, [id]); await db.query(`DELETE FROM users WHERE id = $1`, [id]); await log(assoc, null, `${String(u?.name ?? "A")} login was taken back before it was used (its invitation could not be sent)`, by); return { ok: true, value: { id } };
+  }
+  return { resolve, list, create, setRole, setActive, resetPassword, access, isMine, discard };
 }
 export type Delegates = ReturnType<typeof createDelegates>;
