@@ -2947,3 +2947,27 @@ CREATE TABLE IF NOT EXISTS owner_compliance_settings (
   reminder_days TEXT NOT NULL DEFAULT '90,60,30,7',
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+-- OWNER DASHBOARD, slice C2: the owner's documents, stored encrypted (docs/OWNER_DASHBOARD.md)
+-- The file's bytes are encrypted (AES-256-GCM, key DATA_ENCRYPTION_KEY) before they reach this table; the database never holds a readable copy. To remove: db/rollback/owner_dashboard_c2.sql
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS owner_files (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  vehicle_id   UUID REFERENCES vehicles(id) ON DELETE SET NULL,
+  document_id  UUID REFERENCES compliance_documents(id) ON DELETE SET NULL,
+  kind         TEXT NOT NULL CHECK (kind IN ('letter_of_recommendation','membership_certificate','membership_card','roadworthy','insurance','operating_licence','licence_disc','driver_agreement','other')),
+  filename     TEXT NOT NULL,
+  mime         TEXT NOT NULL CHECK (mime IN ('application/pdf','image/jpeg','image/png')),
+  size_bytes   INTEGER NOT NULL CHECK (size_bytes BETWEEN 1 AND 5242880),
+  sha256       TEXT NOT NULL,
+  scan_status  TEXT NOT NULL CHECK (scan_status IN ('clean','unscanned')),
+  scan_detail  TEXT,
+  scan_engine  TEXT,
+  data         TEXT,                                                    -- the ENCRYPTED file, base64 (text rather than bytea so it behaves the same everywhere, and can be tested for real)
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  deleted_at   TIMESTAMPTZ
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_owner_files_hash ON owner_files(owner_id, sha256) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_owner_files_owner ON owner_files(owner_id, created_at DESC);
