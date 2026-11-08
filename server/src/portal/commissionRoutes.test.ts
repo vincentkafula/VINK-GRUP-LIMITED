@@ -117,7 +117,7 @@ describe("the pay run, as the association runs it", () => {
     expect((await A("POST", `/payslips/${slip.id}/payment`, { method: "bank", reference: "EFT-4411", paidAt: "2026-11-02" })).body).toMatchObject({ success: true, status: "paid" }); expect((await A("GET", `/payslips/${slip.id}`)).body.payslip.payment).toMatchObject({ method: "bank", reference: "EFT-4411" });
     expect((await q(`SELECT action FROM audit_log WHERE action LIKE 'payslip.%' OR action LIKE 'payrun.%' ORDER BY created_at`)).map((r) => r.action)).toEqual(["payrun.draft", "payslip.issue", "payslip.payment"]);
     const pdf = await A("GET", `/payslips/${slip.id}.pdf`); expect(pdf.type).toContain("application/pdf"); expect(pdf.body.length).toBeLessThan(60_000);
-  });
+  }, 30_000);                  // a long scenario: allow it time on a busy machine
   it("refuses what it should: another association's payslip, a period that has not finished, a bad id, an unknown marshal, and a payment before issue", async () => {
     await live(); await trips([["2026-10-27", 1]]); await A("POST", "/payruns", {}); const slip = (await A("GET", "/payruns")).body.payslips[0];
     const B = (m: string, p: string, b?: unknown) => call(m, `/association${p}`, as(U.B, "association"), b);

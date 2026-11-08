@@ -249,7 +249,8 @@ describe("advanced dashboard features (real queries on in-memory Postgres)", () 
     it("taps: only mine, filterable, paged, with my income on each; CSV; no card data", async () => {
       const t = (await get("/investor/taps?from=2026-10-01&to=2026-10-07")).body;
       expect(t.total).toBe(4); expect(t.taps[0]).toMatchObject({ terminal: "TERM-1", fare: 20, income: 0.1, status: "confirmed" });
-      expect(JSON.stringify(t)).not.toMatch(/4242|pan/i); expect(JSON.stringify(t)).not.toContain("500");
+      expect(JSON.stringify(t)).not.toMatch(/4242|pan/i);
+      expect(t.taps.every((x: any) => x.terminal === "TERM-1" && x.fare !== 500 && x.income !== 499)).toBe(true);                  // another investor's R500 tap is never here (checked on the fields, not by searching the text for digits that a random id could contain)
       expect((await get("/investor/taps?from=2026-10-01&to=2026-10-07&status=declined")).body.total).toBe(1);
       expect((await get("/investor/taps?from=2026-10-07&to=2026-10-01")).status).toBe(400);
       const c = await csv("/investor/taps.csv?from=2026-10-01&to=2026-10-07");
