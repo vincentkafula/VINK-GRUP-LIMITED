@@ -4,6 +4,7 @@ import { mountOwnerCompliance } from "./ownerComplianceRoutes.js";
 import { mountOwnerFiles, type FileDeps } from "./ownerFilesRoutes.js";
 import { mountOwnerFinance } from "./ownerFinanceRoutes.js";
 import { mountOwnerTeam } from "./ownerTeamRoutes.js";
+import { mountOwnerAudit } from "./ownerAuditRoutes.js";
 import { createOwnerCompliance } from "../services/ownerCompliance.js";
 import { createCompliance } from "../services/compliance.js";
 import { Router, json, type Request } from "express";
@@ -304,6 +305,7 @@ export function createOwnerRouter(db: Db, now: () => Date = () => new Date(), on
   }));
   router.post("/notifications/read", json({ limit: "10kb" }), h(async (req, res) => { res.json({ success: true, marked: await markKeys(db, uid(req), req.body?.keys) }); }));
 
+  mountOwnerAudit(router, db, now);                                                      // the owner's activity log (read only)
   mountOwnerTeam(router, db, now);                                                       // the owner's team: their own logins and roles
   mountOwnerFinance(router, db, now);                                                    // the owner's costs, loans, maintenance and profit
   mountOwnerFiles(router, db, now, fileDeps);                                            // the owner's documents, stored encrypted

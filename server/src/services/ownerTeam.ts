@@ -16,15 +16,15 @@ export type Res<T> = { ok: true; value: T } | Fail;
 const bad = (status: number, error: string): Fail => ({ ok: false, status, error });
 export const TEAM_ROLES = ["co_owner", "fleet_manager", "accountant"] as const;
 export type TeamRole = (typeof TEAM_ROLES)[number];
-export const TEAM_MODULES = ["overview", "notifications", "fleet", "driverpay", "compliance", "files", "association", "costs", "finance", "earnings"] as const;
+export const TEAM_MODULES = ["overview", "notifications", "fleet", "driverpay", "compliance", "files", "association", "costs", "finance", "earnings", "audit"] as const;
 export type TeamModule = (typeof TEAM_MODULES)[number];
 export const TEAM_ROLE_TEXT: Record<TeamRole, string> = { co_owner: "Co-owner", fleet_manager: "Fleet manager", accountant: "Accountant (looks only)" };
 export const MAX_TEAM = 10;
 /** What each role may do in each module: read only ("r"), or read and change ("rw"). A module not listed is closed to that role. */
 export const TEAM_MATRIX: Record<TeamRole, Partial<Record<TeamModule, "r" | "rw">>> = {
-  co_owner: { overview: "rw", notifications: "rw", fleet: "rw", driverpay: "rw", compliance: "rw", files: "rw", association: "rw", costs: "rw", finance: "rw", earnings: "rw" },
+  co_owner: { overview: "rw", notifications: "rw", fleet: "rw", driverpay: "rw", compliance: "rw", files: "rw", association: "rw", costs: "rw", finance: "rw", earnings: "rw", audit: "r" },
   fleet_manager: { overview: "r", notifications: "rw", fleet: "rw", driverpay: "rw", compliance: "rw", files: "rw", costs: "rw" },
-  accountant: { overview: "r", notifications: "rw", driverpay: "r", association: "r", costs: "r", finance: "r", earnings: "r" },
+  accountant: { overview: "r", notifications: "rw", driverpay: "r", association: "r", costs: "r", finance: "r", earnings: "r", audit: "r" },
 };
 /** Which module a path (relative to the owner portal) belongs to. The first match wins. A path that is not listed belongs to the owner's login alone (null). */
 const PATHS: [RegExp, TeamModule | "open" | null][] = [
@@ -33,7 +33,7 @@ const PATHS: [RegExp, TeamModule | "open" | null][] = [
   [/^\/(earnings|trend|statements|statements\.csv|reports)(\/|$)/, "earnings"],
   [/^\/(vehicles|drivers|devices|loading)(\/|$)/, "fleet"], [/^\/driver-pay(\/|$)/, "driverpay"],
   [/^\/(compliance-centre|documents)(\/|$)/, "compliance"], [/^\/files(\/|$)/, "files"], [/^\/my-association(\/|$)/, "association"],
-  [/^\/finance\/(costs|maintenance)(\/|$)/, "costs"], [/^\/finance(\/|$)/, "finance"],
+  [/^\/finance\/(costs|maintenance)(\/|$)/, "costs"], [/^\/finance(\/|$)/, "finance"], [/^\/audit(\.csv)?(\/|$)/, "audit"],
 ];
 export function teamModuleFor(path: string): TeamModule | "open" | null { for (const [re, m] of PATHS) if (re.test(path)) return m; return null; }
 export const teamCanRead = (role: TeamRole | null, m: TeamModule) => role === null || !!TEAM_MATRIX[role][m];
