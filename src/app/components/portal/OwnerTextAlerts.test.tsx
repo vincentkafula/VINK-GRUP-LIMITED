@@ -25,7 +25,8 @@ const pick = (label: string, value: string) => fireEvent.change(screen.getByLabe
 describe("what the owner is told before anything is set up", () => {
   it("says plainly that it is optional, what is sent, how often, when, and how to stop it", async () => {
     render(<TextAlertsScreen />); expect(await screen.findByText(/It is completely optional and you choose what you are told/)).toBeInTheDocument();
-    for (const t of [/only text a number you have confirmed with a code/, /one text a day/, /between 7 in the morning and 7 in the evening/, /not texted again within a week/, /never includes your bank details or a password/, /switch it off, or delete your number, at any time/, /reply STOP to any of the texts and it is switched off at once/]) expect(screen.getByText(t)).toBeInTheDocument();
+    for (const t of [/only text a number you have confirmed with a code/, /one text a day/, /between 7 in the morning and 7 in the evening/, /not texted again within a week/, /never includes your bank details or a password/, /switch it off, or delete your number, at any time/]) expect(screen.getByText(t)).toBeInTheDocument();
+    expect(screen.getByText((_, el) => el?.tagName === "LI" && /reply STOP to any of the texts and it is switched off at once/.test(el.textContent ?? ""))).toBeInTheDocument();                  // STOP is in bold, so the sentence is split across elements
   });
   it("says the service is not set up when it is not, instead of letting the owner try", async () => { state = base({ available: false }); render(<TextAlertsScreen />); expect(await screen.findByRole("alert")).toHaveTextContent("Text messages are not switched on yet"); });
 });
