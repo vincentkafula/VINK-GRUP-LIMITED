@@ -5,6 +5,7 @@ import { mountOwnerFiles, type FileDeps } from "./ownerFilesRoutes.js";
 import { mountOwnerFinance } from "./ownerFinanceRoutes.js";
 import { mountOwnerTeam } from "./ownerTeamRoutes.js";
 import { mountOwnerAudit } from "./ownerAuditRoutes.js";
+import { mountOwnerSms, type SmsDeps } from "./ownerSmsRoutes.js";
 import { createOwnerCompliance } from "../services/ownerCompliance.js";
 import { createCompliance } from "../services/compliance.js";
 import { Router, json, type Request } from "express";
@@ -45,7 +46,7 @@ function cleanVehicle(b: Record<string, unknown>): { error: string } | { v: { re
   return { v: { registration, make, model, year, colour, seats, disc_expiry: disc as string | null } };
 }
 
-export function createOwnerRouter(db: Db, now: () => Date = () => new Date(), onSessionClosed?: (sessionId: string) => Promise<unknown>, fileDeps?: FileDeps): Router {
+export function createOwnerRouter(db: Db, now: () => Date = () => new Date(), onSessionClosed?: (sessionId: string) => Promise<unknown>, fileDeps?: FileDeps, smsDeps?: SmsDeps): Router {
   const router = Router();
 
   router.get("/", (req, res) => { res.json({ success: true, role: "vehicle_owner", user: { id: uid(req), username: req.user!.username } }); });
@@ -305,6 +306,7 @@ export function createOwnerRouter(db: Db, now: () => Date = () => new Date(), on
   }));
   router.post("/notifications/read", json({ limit: "10kb" }), h(async (req, res) => { res.json({ success: true, marked: await markKeys(db, uid(req), req.body?.keys) }); }));
 
+  mountOwnerSms(router, db, now, smsDeps);                                               // the owner's text alerts (the owner's own login only)
   mountOwnerAudit(router, db, now);                                                      // the owner's activity log (read only)
   mountOwnerTeam(router, db, now);                                                       // the owner's team: their own logins and roles
   mountOwnerFinance(router, db, now);                                                    // the owner's costs, loans, maintenance and profit

@@ -38,7 +38,8 @@ import mastercardRouter from "./routes/mastercard.js";
 import visaRouter from "./routes/visa.js";
 import publicRouter from "./routes/public.js";
 import { createLetterCheckRouter } from "./routes/letterCheck.js";
-import { alertsFor } from "./services/alerts.js";
+import { alertsFor, createSmsSender } from "./services/alerts.js";
+import { createOwnerSms } from "./services/ownerSms.js";
 import { createCommission } from "./services/commission.js";
 import { createPayslips } from "./services/payslips.js";
 import { createCompliance } from "./services/compliance.js";
@@ -136,6 +137,10 @@ if (mailService && process.env.NODE_ENV !== "test") {
 // Marshal care background work: tell the association about safety reports that could not be delivered the first time (every minute), and pay the marshals who chose automatic cash-out (checked every 15 minutes; it pays each at most once a day, from 17:00 South African time).
 if (pool && process.env.NODE_ENV !== "test") {
   const alerts = alertsFor(pool), payslips = createPayslips(pool, createCommission(pool));
+  // Owners' text alerts: each owner who confirmed a number and chose what to be told gets at most ONE summary a day, between 07:00 and 19:00 South African time. Checked every 15 minutes; safe to run as often as that (see services/ownerSms.ts).
+  const ownerSms = createOwnerSms({ db: pool, sms: createSmsSender() });
+  setTimeout(() => { ownerSms.dispatch().catch((e) => console.error("[owner-sms] run failed:", e instanceof Error ? e.message : e)); }, 180_000).unref();
+  setInterval(() => { ownerSms.dispatch().catch((e) => console.error("[owner-sms] run failed:", e instanceof Error ? e.message : e)); }, 15 * 60_000).unref();
   setInterval(() => { alerts.retryUnsent().catch((e) => console.error("[alerts] retry failed:", e instanceof Error ? e.message : e)); }, 60_000).unref();
   setTimeout(() => { payslips.runAutoCashOuts().catch((e) => console.error("[cash-out] daily run failed:", e instanceof Error ? e.message : e)); }, 45_000).unref();
   const compliance = createCompliance(pool), reports = createReports(pool, createEmailSender());

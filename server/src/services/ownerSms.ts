@@ -33,6 +33,8 @@ export function normalizePhone(raw: unknown): string | null {
   if (!/^\+\d{8,15}$/.test(s)) return null; if (s.startsWith("+27") && !/^\+27[678]\d{8}$/.test(s)) return null; return s;
 }
 export const maskPhone = (p: string) => `${p.slice(0, 3)} ${"•".repeat(Math.max(2, p.length - 7))} ${p.slice(-4)}`;
+/** A stored list, whether the database hands it back as a list or as text. */
+const asList = (v: unknown): string[] => { if (Array.isArray(v)) return v.map(String); if (typeof v === "string") { try { const p = JSON.parse(v); return Array.isArray(p) ? p.map(String) : []; } catch { return []; } } return []; };
 const hourSA = (d: Date) => (d.getUTCHours() + 2) % 24;
 const trim = (s: string, n: number) => (s.length > n ? `${s.slice(0, n - 1).trimEnd()}…` : s);
 
@@ -40,12 +42,12 @@ export function createOwnerSms(deps: { db: Db; sms: SmsSender; now?: () => Date 
   const { db, sms } = deps, now = deps.now ?? (() => new Date()), configured = () => sms.name !== "unconfigured";
   const row = async (owner: string) => (await db.query(`SELECT * FROM owner_sms WHERE owner_id = $1`, [owner])).rows[0] ?? null;
   const log = (owner: string, kind: string, status: "sent" | "failed", keys: string[] = [], error: string | null = null) => db.query(`INSERT INTO owner_sms_log (owner_id, kind, sent_at, status, keys, error) VALUES ($1,$2,$3,$4,$5,$6)`, [owner, kind, now().toISOString(), status, JSON.stringify(keys), error ? error.slice(0, 200) : null]);
-  const since = async (owner: string, kind: string, ms: number, status?: string) => (await db.query(`SELECT * FROM owner_sms_log WHERE owner_id = $1 AND kind = $2`, [owner, kind])).rows.filter((r) => new Date(r.sent_at as string).getTime() >= now().getTime() - ms && (!status || r.status === status));
+  const since = async (owner: string, kind: string, ms: number, status?: string) => (await db.query(`SELECT * FROM owner_sms_log WHERE owner_id = $1 AND kind = $2`, [owner, kind])).rows.filter((r) => new Date(r.sent_at as string).getTime() > now().getTime() - ms && (!status || r.status === status));
   async function send(owner: string, kind: string, to: string, text: string, keys: string[] = []): Promise<boolean> { try { await sms.send(to, text); await log(owner, kind, "sent", keys); return true; } catch (e) { await log(owner, kind, "failed", keys, e instanceof Error ? e.message : String(e)); return false; } }
 
   /** What the owner sees: whether text alerts are possible, the number (hidden but for its end), whether it is confirmed, and what they chose. */
   async function status(owner: string) {
-    const r = await row(owner); return { available: configured(), phone: r ? maskPhone(String(r.phone)) : null, verified: !!r?.verified_at, enabled: !!r?.enabled && !!r?.verified_at, kinds: ((r?.kinds as string[] | undefined) ?? []).filter((k) => SMS_KINDS.includes(k as never)), kindList: SMS_KINDS.map((k) => ({ key: k, label: KIND_TEXT[k] })), codePending: !!r?.code_hash && !r?.verified_at && !!r?.code_expires_at && new Date(r.code_expires_at as string) > now() };
+    const r = await row(owner); return { available: configured(), phone: r ? maskPhone(String(r.phone)) : null, verified: !!r?.verified_at, enabled: !!r?.enabled && !!r?.verified_at, kinds: asList(r?.kinds).filter((k) => SMS_KINDS.includes(k as never)), kindList: SMS_KINDS.map((k) => ({ key: k, label: KIND_TEXT[k] })), codePending: !!r?.code_hash && !r?.verified_at && !!r?.code_expires_at && new Date(r.code_expires_at as string) > now() };
   }
   /** Saves a number and sends it a code. A new number replaces the old one and starts again: unconfirmed, switched off, nothing chosen. */
   async function setPhone(owner: string, raw: unknown): Promise<Res<{ phone: string }>> {
@@ -95,10 +97,10 @@ export function createOwnerSms(deps: { db: Db; sms: SmsSender; now?: () => Date 
     const out = { owners: 0, sent: 0, failed: 0, quiet: 0 }; const h = hourSA(now()); if (!configured() || h < FROM_HOUR || h >= TO_HOUR) return out;
     const onDay = saDay(now()), owners = (await db.query(`SELECT * FROM owner_sms WHERE enabled = true AND verified_at IS NOT NULL`)).rows;
     for (const r of owners) {
-      out.owners++; const owner = String(r.owner_id), kinds = ((r.kinds as string[]) ?? []).filter((k): k is SmsKind => SMS_KINDS.includes(k as never)); if (!kinds.length) { out.quiet++; continue; }
+      out.owners++; const owner = String(r.owner_id), kinds = asList(r.kinds).filter((k): k is SmsKind => SMS_KINDS.includes(k as never)); if (!kinds.length) { out.quiet++; continue; }
       const today = (await db.query(`SELECT * FROM owner_sms_log WHERE owner_id = $1 AND kind = 'daily'`, [owner])).rows.filter((l) => saDay(new Date(l.sent_at as string)) === onDay);
       if (today.some((l) => l.status === "sent") || today.filter((l) => l.status === "failed").length >= MAX_FAILED_PER_DAY) { out.quiet++; continue; }
-      const recent = new Set((await since(owner, "daily", REPEAT_DAYS * 86_400_000, "sent")).flatMap((l) => (l.keys as string[]) ?? [])), fresh = (await candidates(owner, kinds, onDay)).filter((f) => !recent.has(f.id));
+      const recent = new Set((await since(owner, "daily", REPEAT_DAYS * 86_400_000, "sent")).flatMap((l) => asList(l.keys))), fresh = (await candidates(owner, kinds, onDay)).filter((f) => !recent.has(f.id));
       if (!fresh.length) { out.quiet++; continue; }
       const shown = fresh.slice(0, MAX_LINES), more = fresh.length - shown.length, text = `VINK: ${fresh.length} thing${fresh.length === 1 ? " needs" : "s need"} you.\n${shown.map((f) => `- ${trim(f.message, LINE_CHARS)}`).join("\n")}${more > 0 ? `\n+${more} more on your dashboard.` : ""}\nSwitch off under Text alerts.`;
       if (await send(owner, "daily", String(r.phone), text, shown.map((f) => f.id))) out.sent++; else out.failed++;
