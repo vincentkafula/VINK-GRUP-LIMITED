@@ -105,7 +105,7 @@ describe("the daily run", () => {
 
   it("sends one summary of what needs action, for the kinds chosen only, most serious first, with a way to switch off", async () => {
     await money(); await service(); await compliance(); await choose(["finance", "service", "compliance"]); const r = await s.dispatch(); expect(r).toEqual({ owners: 1, sent: 1, failed: 0, quiet: 0 }); expect(sent).toHaveLength(1); expect(sent[0].to).toBe("+27821234567"); const t = texts()[0];
-    expect(t).toMatch(/^VINK: 4 things need you\.\n/); expect(t.split("\n").filter((l) => l.startsWith("- ")).length).toBe(3); expect(t).toContain("+1 more on your dashboard."); expect(t.endsWith("Switch off under Text alerts.")).toBe(true); expect(t.split("\n")[1]).toMatch(/expired on 2026-10-01|overdue/); expect(t).not.toContain("driver"); expect(t.length).toBeLessThanOrEqual(480);
+    expect(t).toMatch(/^VINK: 5 things need you\.\n/); expect(t.split("\n").filter((l) => l.startsWith("- ")).length).toBe(3); expect(t).toContain("+2 more on your dashboard."); expect(t.endsWith("Switch off under Text alerts.")).toBe(true); expect(t.split("\n")[1]).toMatch(/expired on 2026-10-01|overdue/); expect(t).not.toContain("driver"); expect(t.length).toBeLessThanOrEqual(480);
   });
   it("tells an owner about nothing they did not choose", async () => {
     await money(); await service(); await compliance(); await arrears(); await choose(["arrears"]); await s.dispatch(); expect(texts()).toHaveLength(1); expect(texts()[0]).toContain("CA 111-111"); expect(texts()[0]).toMatch(/paid|behind|owed|target|payment/i); expect(texts()[0]).not.toContain("WesBank"); expect(texts()[0]).not.toContain("expired"); expect(texts()[0]).not.toContain("service");

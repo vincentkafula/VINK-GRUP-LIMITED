@@ -181,10 +181,35 @@ describe("profit and loss", () => {
 });
 
 describe("what needs the owner's attention", () => {
-  it("gathers unpaid fines, a vehicle that lost money this month, a missing instalment and an overdue service, most serious first, with the month's figures", async () => {
+  it("gathers unpaid fines, a vehicle that lost money this month, a missing instalment, an instalment about to fall due and an overdue service, most serious first, with the month's figures", async () => {
     await income(V.v1, 100, "2026-11-03"); ok(await cost({ category: "fine", amountCents: R(200), incurredOn: "2026-11-09" })); ok(await cost({ category: "fine", amountCents: R(150), incurredOn: "2026-11-10", clientRef: "f2" })); ok(await cost({ category: "fuel", amountCents: R(300), incurredOn: "2026-11-06", clientRef: "fuel" })); ok(await fin()); ok(await f.addMaintenance(U.O1, { vehicleId: V.v2, kind: "service", servicedOn: "2026-05-01", nextDueOn: "2026-11-01", odometerKm: 1000 }));
-    const o = await f.overview(U.O1, TODAY); expect(o.unpaidFines).toEqual({ count: 2, cents: 35000 }); expect(o.finance).toEqual({ activeAgreements: 1, owedCents: 30000000, monthlyInstalmentsCents: 900000 }); expect(o.month).toMatchObject({ incomeCents: 10000, costCents: 65000 }); expect(o.flags.map((x) => [x.severity, x.id.split(":").slice(0, 2).join(":")])).toEqual([["high", "mnt:overdue"], ["medium", "fin:missing"], ["medium", "fines:unpaid"], ["low", "mnt:none"], ["low", "pl:loss"]]);
+    const o = await f.overview(U.O1, TODAY); expect(o.unpaidFines).toEqual({ count: 2, cents: 35000 }); expect(o.finance).toEqual({ activeAgreements: 1, owedCents: 30000000, monthlyInstalmentsCents: 900000 }); expect(o.month).toMatchObject({ incomeCents: 10000, costCents: 65000 }); expect(o.flags.map((x) => [x.severity, x.id.split(":").slice(0, 2).join(":")])).toEqual([["high", "mnt:overdue"], ["medium", "fin:missing"], ["medium", "fin:due"], ["medium", "fines:unpaid"], ["low", "mnt:none"], ["low", "pl:loss"]]);
     expect(o.flags.find((x) => x.id === "fines:unpaid")!.message).toBe("2 fines are unpaid, R350.00 in all"); expect(o.flags.find((x) => x.id.startsWith("pl:loss"))!.message).toBe("CA 111-111 cost more than it earned this month (R550.00 short)");                  // earned 100; costs 650 (fuel 300 and two fines, 350); no instalment recorded: 100 - 650 = -550
   });
   it("is quiet when nothing needs doing", async () => { const o = await f.overview(U.O2, TODAY); expect(o.flags.map((x) => x.id)).toEqual([`mnt:none:${V.v3}`]); expect(o.unpaidFines).toEqual({ count: 0, cents: 0 }); });
 });
+
+describe("an instalment about to fall due", () => {
+  const due = async (day: string, owner = U.O1) => ((await f.finances(owner, day)) as any).flags.filter((x: any) => x.id.startsWith("fin:due:"));
+  it("is flagged from three days before until the day it is due, with the date and the words for how soon, and not before", async () => {
+    ok(await fin()); expect(await due("2026-11-16")).toEqual([]); const three = await due("2026-11-17"); expect(three).toHaveLength(1); expect(three[0]).toMatchObject({ severity: "medium", subject: "CA 111-111" }); expect(three[0].message).toMatch(/^CA 111-111: a R.* instalment to WesBank is due in 3 days \(2026-11-20\)$/);
+    expect((await due("2026-11-18"))[0].message).toContain("is due in 2 days (2026-11-20)"); expect((await due("2026-11-19"))[0].message).toContain("is due tomorrow (2026-11-20)"); expect((await due("2026-11-20"))[0].message).toContain("is due today (2026-11-20)");
+  });
+  it("is not flagged once the day has passed (it is then a missing instalment, a different alert), until the next one is three days away", async () => { ok(await fin()); expect(await due("2026-11-21")).toEqual([]); expect(await due("2026-12-10")).toEqual([]); expect((await due("2026-12-17"))[0].message).toContain("(2026-12-20)"); });
+  it("gives each due date its own alert, so one month's does not hide the next", async () => { ok(await fin()); const a = (await due("2026-11-18"))[0].id, b = (await due("2026-12-18"))[0].id; expect(a).toMatch(/^fin:due:[0-9a-f-]+:2026-11-20$/); expect(b).toMatch(/^fin:due:[0-9a-f-]+:2026-12-20$/); expect(a).not.toBe(b); });
+  it("is not raised when an instalment was already paid in the fifteen days before the due date, but is when it was paid earlier than that", async () => {
+    const id = ok<any>(await fin()).id; ok(await f.recordInstalment(U.O1, id, { amountCents: R(9000), paidOn: "2026-11-05" })); expect(await due("2026-11-18")).toEqual([]);                  // 15 days before the 20th
+    await db.query(`UPDATE finance_instalments SET paid_on = '2026-11-04'`); expect((await due("2026-11-18")).length).toBe(1);                  // 16 days before: that was last month's instalment
+  });
+  it("does not count an instalment that was cancelled as paid", async () => { const id = ok<any>(await fin()).id, i = ok<any>(await f.recordInstalment(U.O1, id, { amountCents: R(9000), paidOn: "2026-11-10" })); expect(await due("2026-11-18")).toEqual([]); ok(await f.voidInstalment(U.O1, i.id, "Wrong day")); expect((await due("2026-11-18")).length).toBe(1); });
+  it("is not raised for an agreement that is settled, one that has not started, or one whose last instalment has passed", async () => {
+    const id = ok<any>(await fin()).id; ok(await f.settle(U.O1, id, "2026-11-10")); expect(await due("2026-11-18")).toEqual([]);
+    ok(await fin({ vehicleId: V.v2, startDate: "2026-12-01", reference: "AGR-2", lender: "Absa" })); expect(await due("2026-11-18")).toEqual([]);
+    ok(await fin({ vehicleId: V.v1, startDate: "2024-01-20", finalDueOn: "2026-10-20", reference: "AGR-3", lender: "Nedbank" })); expect(await due("2026-11-18")).toEqual([]);
+  });
+  it("is raised on the very last instalment's due date, and for each of the owner's own agreements only", async () => {
+    ok(await fin({ finalDueOn: "2026-11-20" })); expect((await due("2026-11-18")).length).toBe(1); expect(await due("2026-11-18", U.O2)).toEqual([]);
+  });
+  it("reaches the overview and so the dashboard and, if chosen, the text alerts", async () => { ok(await fin()); const o = await f.overview(U.O1, "2026-11-18"); expect(o.flags.some((x: any) => x.id.startsWith("fin:due:"))).toBe(true); });
+});
+
