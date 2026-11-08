@@ -1,6 +1,7 @@
 import { mountOwnerDriverPay } from "./ownerDriverPayRoutes.js";
 import { mountOwnerAssociation } from "./ownerAssociationRoutes.js";
 import { mountOwnerCompliance } from "./ownerComplianceRoutes.js";
+import { mountOwnerFiles, type FileDeps } from "./ownerFilesRoutes.js";
 import { createOwnerCompliance } from "../services/ownerCompliance.js";
 import { createCompliance } from "../services/compliance.js";
 import { Router, json, type Request } from "express";
@@ -41,7 +42,7 @@ function cleanVehicle(b: Record<string, unknown>): { error: string } | { v: { re
   return { v: { registration, make, model, year, colour, seats, disc_expiry: disc as string | null } };
 }
 
-export function createOwnerRouter(db: Db, now: () => Date = () => new Date(), onSessionClosed?: (sessionId: string) => Promise<unknown>): Router {
+export function createOwnerRouter(db: Db, now: () => Date = () => new Date(), onSessionClosed?: (sessionId: string) => Promise<unknown>, fileDeps?: FileDeps): Router {
   const router = Router();
 
   router.get("/", (req, res) => { res.json({ success: true, role: "vehicle_owner", user: { id: uid(req), username: req.user!.username } }); });
@@ -301,6 +302,7 @@ export function createOwnerRouter(db: Db, now: () => Date = () => new Date(), on
   }));
   router.post("/notifications/read", json({ limit: "10kb" }), h(async (req, res) => { res.json({ success: true, marked: await markKeys(db, uid(req), req.body?.keys) }); }));
 
+  mountOwnerFiles(router, db, now, fileDeps);                                            // the owner's documents, stored encrypted
   mountOwnerCompliance(router, db, now);                                                 // the licence and compliance centre
   mountOwnerAssociation(router, db, now);                                                // the owner's association: profile, statement, receipts, "I have paid"
   mountOwnerDriverPay(router, db, now);                                                  // what each driver owes, what was paid, and where it is earmarked (docs/OWNER_DASHBOARD.md)
