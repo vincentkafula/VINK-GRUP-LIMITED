@@ -2,9 +2,7 @@ import { createHash, randomInt, timingSafeEqual } from "node:crypto";
 import type { Db } from "../portal/common.js";
 import { saDay } from "../portal/common.js";
 import type { SmsSender } from "./alerts.js";
-import { createOwnerFinance } from "./ownerFinance.js";
-import { createOwnerCompliance } from "./ownerCompliance.js";
-import { createDriverTargets } from "./driverTargets.js";
+import { gatherAttention } from "./ownerAttention.js";
 
 /**
  * TEXT (SMS) ALERTS FOR AN OWNER (docs/OWNER_DASHBOARD.md, slice F3). Strictly opt-in, and careful with a person's phone:
@@ -21,7 +19,7 @@ const bad = (status: number, error: string): Fail => ({ ok: false, status, error
 export const SMS_KINDS = ["finance", "service", "compliance", "arrears"] as const;
 export type SmsKind = (typeof SMS_KINDS)[number];
 export const KIND_TEXT: Record<SmsKind, string> = { finance: "Money: a loan instalment missed or about to fall due, unpaid fines, a vehicle losing money", service: "Servicing: a service due or overdue", compliance: "Compliance: a licence, certificate or disc running out", arrears: "What drivers owe: a driver behind on payments" };
-const PREFIX: Record<SmsKind, string[]> = { finance: ["fin:", "fines:", "pl:"], service: ["mnt:"], compliance: ["cc:"], arrears: ["pay:"] };
+
 /** The words that mean "stop texting me". Twilio's own list. A message that STARTS with one is taken as a stop: it is always safer to stop. */
 export const STOP_WORDS = ["STOP", "STOPALL", "UNSUBSCRIBE", "CANCEL", "END", "QUIT"], START_WORDS = ["START", "YES", "UNSTOP"], HELP_WORDS = ["HELP", "INFO"];
 export const CODE_MINUTES = 10, MAX_ATTEMPTS = 5, MAX_CODES_PER_HOUR = 3, MAX_CODES_PER_DAY = 8, MAX_TESTS_PER_DAY = 3, MAX_FAILED_PER_DAY = 3, REPEAT_DAYS = 7, FROM_HOUR = 7, TO_HOUR = 19, MAX_LINES = 3, LINE_CHARS = 90;
@@ -86,14 +84,7 @@ export function createOwnerSms(deps: { db: Db; sms: SmsSender; now?: () => Date 
   }
 
   /** What needs the owner's action right now, for the kinds they chose: high and medium things only, most serious first. */
-  async function candidates(owner: string, kinds: SmsKind[], onDay: string): Promise<{ id: string; severity: "high" | "medium" | "low"; message: string }[]> {
-    const all: { id: string; severity: "high" | "medium" | "low"; message: string }[] = [];
-    if (kinds.includes("finance")) all.push(...(await createOwnerFinance(db, now).finances(owner, onDay)).flags, ...((await createOwnerFinance(db, now).overview(owner, onDay)).flags));
-    if (kinds.includes("service")) all.push(...(await createOwnerFinance(db, now).maintenanceStatus(owner, onDay)).flags);
-    if (kinds.includes("compliance")) all.push(...((await createOwnerCompliance(db, now).centre(owner, onDay)) as { flags: { id: string; severity: "high" | "medium" | "low"; message: string }[] }).flags);
-    if (kinds.includes("arrears")) all.push(...((await createDriverTargets(db, now).fleet(owner, onDay)) as { flags: { id: string; severity: "high" | "medium" | "low"; message: string }[] }).flags);
-    const seen = new Set<string>(); return all.filter((f) => (f.severity === "high" || f.severity === "medium") && kinds.some((k) => PREFIX[k].some((p) => f.id.startsWith(p))) && !seen.has(f.id) && !!seen.add(f.id)).sort((a, b) => SEV[a.severity] - SEV[b.severity] || a.message.localeCompare(b.message));
-  }
+  async function candidates(owner: string, kinds: SmsKind[], onDay: string): Promise<{ id: string; severity: "high" | "medium" | "low"; message: string }[]> { return gatherAttention(db, now, owner, kinds, onDay); }
   /** The daily run: for each owner who has confirmed a number, switched alerts on and chosen kinds, send ONE summary of what needs action, if anything new does. Safe to run as often as you like. */
   async function dispatch(): Promise<{ owners: number; sent: number; failed: number; quiet: number }> {
     const out = { owners: 0, sent: 0, failed: 0, quiet: 0 }; const h = hourSA(now()); if (!configured() || h < FROM_HOUR || h >= TO_HOUR) return out;

@@ -7,6 +7,8 @@ import { mountOwnerTeam } from "./ownerTeamRoutes.js";
 import { mountOwnerAudit } from "./ownerAuditRoutes.js";
 import { mountOwnerSms, type SmsDeps } from "./ownerSmsRoutes.js";
 import { createOwnerCompliance } from "../services/ownerCompliance.js";
+import { gatherAttention, attentionKey, attentionTitle, type AttentionKind } from "../services/ownerAttention.js";
+import { teamCanRead, type TeamRole, type TeamModule } from "../services/ownerTeam.js";
 import { createCompliance } from "../services/compliance.js";
 import { Router, json, type Request } from "express";
 import { h, uid, num, iso, dateOnly, isUuid, text, optText, validDate, fail, findUserByEmail, readKeys, markKeys, isUniqueViolation, audit, bucketDays, rangeParams, saDay, sendCsv, type Db } from "./common.js";
@@ -300,9 +302,14 @@ export function createOwnerRouter(db: Db, now: () => Date = () => new Date(), on
     ], now()).map((r) => ({ key: r.key, kind: r.kind, title: r.title, body: r.body, at: r.date + "T00:00:00.000Z" }));
     // The compliance centre's reminders (licence, roadworthy, insurance, driver licence, PrDP) at the days the owner chose, one per band. The disc is already above.
     for (const r of (await createOwnerCompliance(db, now).centre(uid(req))).reminders.filter((x) => !x.itemKey.startsWith("disc:"))) items.push({ key: r.key, kind: r.itemKey.startsWith("prdp:") ? "pdp" : "licence", title: r.title, body: r.daysLeft < 0 ? `It expired on ${r.expiresOn}. Please renew it.` : `Expiry date: ${r.expiresOn}.`, at: `${r.expiresOn}T00:00:00.000Z` });
-    const read = await readKeys(db, uid(req));
-    items.sort((a, b) => b.at.localeCompare(a.at));
-    res.json({ success: true, notifications: items.map((i) => ({ ...i, read: read.has(i.key) })), unread: items.filter((i) => !read.has(i.key)).length });
+    // What needs the owner beyond expiries: the money, servicing and driver-payment alerts the dashboard and the text messages also show, so the three never disagree. Each is included only if this person's role may see that part (a fleet manager gets servicing and fines and driver payments, an accountant the money, the owner everything).
+    const role = (req as unknown as { ownerRole?: TeamRole }).ownerRole ?? null, can = (m: TeamModule) => teamCanRead(role, m), kinds: AttentionKind[] = [];
+    if (can("finance") || can("costs")) kinds.push("finance"); if (can("costs")) kinds.push("service"); if (can("driverpay")) kinds.push("arrears");
+    const today = saDay(now()), mine = (id: string) => (id.startsWith("fin:") || id.startsWith("pl:") ? can("finance") : id.startsWith("fines:") || id.startsWith("mnt:") ? can("costs") : id.startsWith("pay:") ? can("driverpay") : false);
+    const alerts = kinds.length ? (await gatherAttention(db, now, uid(req), kinds, today)).filter((x) => mine(x.id)).map((x) => ({ key: attentionKey(x), kind: "alert" as string, title: attentionTitle(x.id), body: x.message, at: `${today}T00:00:00.000Z` })) : [];
+    const everything = [...items, ...alerts], read = await readKeys(db, uid(req));
+    everything.sort((a, b) => b.at.localeCompare(a.at));
+    res.json({ success: true, notifications: everything.map((i) => ({ ...i, read: read.has(i.key) })), unread: everything.filter((i) => !read.has(i.key)).length });
   }));
   router.post("/notifications/read", json({ limit: "10kb" }), h(async (req, res) => { res.json({ success: true, marked: await markKeys(db, uid(req), req.body?.keys) }); }));
 

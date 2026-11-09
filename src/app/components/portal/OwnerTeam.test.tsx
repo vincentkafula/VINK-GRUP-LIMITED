@@ -112,3 +112,19 @@ describe("what each person sees first on the dashboard", () => {
   it("falls back to the figures page if who is signed in cannot be found out, because the server still decides what each person may see", async () => { const o = routes; routes = (m, p, b) => (p === `${P}/access` ? { status: 500, body: { success: false, error: "down" } } : o(m, p, b)); render(<OwnerDashboard userName="Olu" onClose={() => undefined} />); await waitFor(() => expect(asked("/earnings")).toBe(true)); expect(screen.queryByText(/Welcome, /)).toBeNull(); });
 });
 
+describe("alerts on the notifications screen", () => {
+  const NOTES = [
+    { key: "alert-fin:due:l1:2026-11-20-aaaa1111", kind: "alert", title: "An instalment is coming up", body: "CA 111-111: a R9000.00 instalment to WesBank is due in 2 days (2026-11-20)", read: false, at: "2026-11-18T00:00:00.000Z" },
+    { key: "alert-fines:unpaid-bbbb2222", kind: "alert", title: "Fines are unpaid", body: "2 fines are unpaid, R400.00 in all", read: true, at: "2026-11-18T00:00:00.000Z" },
+    { key: "disc-CA 111-111", kind: "disc", title: "Licence disc for CA 111-111 expires soon", body: "It expires on 2026-11-25.", read: false, at: "2026-11-25T00:00:00.000Z" }];
+  const withNotes = (notifications: any[], unread: number) => { const o = routes; routes = (m, p, b) => (p === `${P}/notifications` && m === "GET" ? { body: { success: true, notifications, unread } } : m === "POST" && p === `${P}/notifications/read` ? { body: { success: true, marked: 2 } } : o(m, p, b)); };
+  const openNotes = async (a: OwnerAccess) => { withAccess(a); render(<OwnerDashboard userName="Olu" onClose={() => undefined} />); await waitFor(() => expect(calls.some((c) => c.path === `${P}/access`)).toBe(true)); await new Promise((r) => setTimeout(r, 60)); fireEvent.click(within(screen.getAllByRole("list")[0]).getByRole("button", { name: /Notifications/ })); };
+  it("lists each alert with its heading and sentence beside the expiry reminders, unread ones standing out", async () => {
+    withNotes(NOTES, 2); await openNotes(OWNER); expect(await screen.findByText("An instalment is coming up")).toBeInTheDocument(); expect(screen.getByText("CA 111-111: a R9000.00 instalment to WesBank is due in 2 days (2026-11-20)")).toBeInTheDocument(); expect(screen.getByText("Fines are unpaid")).toBeInTheDocument(); expect(screen.getByText("2 fines are unpaid, R400.00 in all")).toBeInTheDocument(); expect(screen.getByText("Licence disc for CA 111-111 expires soon")).toBeInTheDocument();
+    expect(screen.getByText("An instalment is coming up").className).toContain("font-semibold"); expect(screen.getByText("Fines are unpaid").className).not.toContain("font-semibold");
+  });
+  it("marks every unread one as read, by its key, when asked", async () => { withNotes(NOTES, 2); await openNotes(OWNER); fireEvent.click(await screen.findByRole("button", { name: "Mark all as read" })); await waitFor(() => expect(writes().at(-1)).toEqual({ method: "POST", path: `${P}/notifications/read`, body: { keys: ["alert-fin:due:l1:2026-11-20-aaaa1111", "disc-CA 111-111"] } })); });
+  it("says what appears there when nothing needs attention, including the alerts", async () => { withNotes([], 0); await openNotes(OWNER); expect(await screen.findByText(/Nothing needs your attention\. Reminders about expiring documents and licence discs, and things that need action \(loan instalments, fines, servicing and what your drivers owe\), appear here\./)).toBeInTheDocument(); });
+  it("shows the same list to a fleet manager as the server gives them, with no money figures of its own", async () => { withNotes([NOTES[1]], 1); await openNotes(FLEET); expect(await screen.findByText("Fines are unpaid")).toBeInTheDocument(); expect(screen.queryByText(/WesBank/)).toBeNull(); });
+});
+

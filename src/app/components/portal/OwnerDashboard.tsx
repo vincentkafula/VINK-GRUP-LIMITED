@@ -205,7 +205,7 @@ function Notifications({ notes, reload }: { notes: Load<{ notifications: Note[];
   return (
     <Status load={notes}>{({ notifications, unread }) => (
       <SectionPanel title="Notifications" action={unread > 0 ? <button className="text-xs text-fg underline" onClick={async () => { await call("/notifications/read", { method: "POST", body: { keys: notifications.filter((n) => !n.read).map((n) => n.key) } }); reload(); }}>Mark all as read</button> : undefined}>
-        <div className="p-4">{notifications.length === 0 ? <Empty>Nothing needs your attention. Reminders about expiring documents and licence discs appear here.</Empty> : (
+        <div className="p-4">{notifications.length === 0 ? <Empty>Nothing needs your attention. Reminders about expiring documents and licence discs, and things that need action (loan instalments, fines, servicing and what your drivers owe), appear here.</Empty> : (
           <ul className="space-y-3">{notifications.map((n) => (
             <li key={n.key} className="flex items-start gap-3"><span className="mt-1.5 w-2 h-2 rounded-full" style={{ background: n.read ? "#ffffff33" : COLOR }} />
               <div><p className={`text-sm ${n.read ? "text-fg-muted" : "text-fg font-semibold"}`}>{n.title}</p><p className="text-xs text-fg-muted">{n.body}</p></div></li>))}</ul>)}
