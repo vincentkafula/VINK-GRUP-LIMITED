@@ -5,10 +5,10 @@ import { temporaryPassword, EMAIL } from "./delegates.js";
 
 /**
  * AN OWNER'S TEAM (docs/OWNER_DASHBOARD.md, slice E). An owner can give the people who help run the business their own login with a role, so each sees only what they need and what each does is recorded in their own name.
- *   co-owner        a partner: everything about the business, except the bank, VINK tokens, payments and the team itself
+ *   co-owner        a partner: everything about the business, and can LOOK at the bank, VINK tokens and payments (but not change them: nothing that moves money or changes the linked bank account), but not the team itself
  *   fleet manager   runs the vehicles day to day: vehicles, drivers, what drivers pay, compliance and documents, costs and servicing. NOT profit, loans, takings, or the association
  *   accountant      looks, never changes: takings, profit and loss, loans, costs, what drivers pay, and the association's statements, with the exports. NOT the vehicles, drivers or documents
- * The owner's own login keeps everything and is the only one that manages the team. FAIL CLOSED: a team member can use only a path that is mapped to a module their role allows. The bank, VINK tokens, payments, requests and links, the older driver agreements, and the team itself belong to the owner's login alone, and so does anything not listed here.
+ * The owner's own login keeps everything and is the only one that manages the team. FAIL CLOSED: a team member can use only a path that is mapped to a module their role allows. Changing anything about the bank, VINK tokens and payments, requests and links, accepting or cancelling driver agreements, and the team itself belong to the owner's login alone, and so does anything not listed here.
  * (A driver, an association's office bearers and a marshal already have their own logins and dashboards: they are not part of an owner's team.)
  */
 export type Fail = { ok: false; status: number; error: string };
@@ -16,13 +16,13 @@ export type Res<T> = { ok: true; value: T } | Fail;
 const bad = (status: number, error: string): Fail => ({ ok: false, status, error });
 export const TEAM_ROLES = ["co_owner", "fleet_manager", "accountant"] as const;
 export type TeamRole = (typeof TEAM_ROLES)[number];
-export const TEAM_MODULES = ["overview", "notifications", "fleet", "driverpay", "compliance", "files", "association", "costs", "finance", "earnings", "audit"] as const;
+export const TEAM_MODULES = ["overview", "notifications", "fleet", "driverpay", "compliance", "files", "association", "costs", "finance", "earnings", "audit", "bank"] as const;
 export type TeamModule = (typeof TEAM_MODULES)[number];
 export const TEAM_ROLE_TEXT: Record<TeamRole, string> = { co_owner: "Co-owner", fleet_manager: "Fleet manager", accountant: "Accountant (looks only)" };
 export const MAX_TEAM = 10;
 /** What each role may do in each module: read only ("r"), or read and change ("rw"). A module not listed is closed to that role. */
 export const TEAM_MATRIX: Record<TeamRole, Partial<Record<TeamModule, "r" | "rw">>> = {
-  co_owner: { overview: "rw", notifications: "rw", fleet: "rw", driverpay: "rw", compliance: "rw", files: "rw", association: "rw", costs: "rw", finance: "rw", earnings: "rw", audit: "r" },
+  co_owner: { overview: "rw", notifications: "rw", fleet: "rw", driverpay: "rw", compliance: "rw", files: "rw", association: "rw", costs: "rw", finance: "rw", earnings: "rw", audit: "r", bank: "r" },
   fleet_manager: { overview: "r", notifications: "rw", fleet: "rw", driverpay: "rw", compliance: "rw", files: "rw", costs: "rw" },
   accountant: { overview: "r", notifications: "rw", driverpay: "r", association: "r", costs: "r", finance: "r", earnings: "r", audit: "r" },
 };
@@ -33,7 +33,7 @@ const PATHS: [RegExp, TeamModule | "open" | null][] = [
   [/^\/(earnings|trend|statements|statements\.csv|reports)(\/|$)/, "earnings"],
   [/^\/(vehicles|drivers|devices|loading)(\/|$)/, "fleet"], [/^\/driver-pay(\/|$)/, "driverpay"],
   [/^\/(compliance-centre|documents)(\/|$)/, "compliance"], [/^\/files(\/|$)/, "files"], [/^\/my-association(\/|$)/, "association"],
-  [/^\/finance\/(costs|maintenance)(\/|$)/, "costs"], [/^\/finance(\/|$)/, "finance"], [/^\/audit(\.csv)?(\/|$)/, "audit"],
+  [/^\/(bank|money|tokens)(\/|$)/, "bank"], [/^\/finance\/(costs|maintenance)(\/|$)/, "costs"], [/^\/finance(\/|$)/, "finance"], [/^\/audit(\.csv)?(\/|$)/, "audit"],
 ];
 export function teamModuleFor(path: string): TeamModule | "open" | null { for (const [re, m] of PATHS) if (re.test(path)) return m; return null; }
 export const teamCanRead = (role: TeamRole | null, m: TeamModule) => role === null || !!TEAM_MATRIX[role][m];

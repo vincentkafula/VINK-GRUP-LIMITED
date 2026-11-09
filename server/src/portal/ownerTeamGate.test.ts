@@ -41,8 +41,10 @@ describe("the gate in the real owner portal", () => {
     expect((await call(OWNER(), "GET", "/driver-pay/fleet")).status).toBe(200); expect((await call(OWNER(), "GET", "/team")).status).toBe(200); const bank = await call(OWNER(), "GET", "/bank/accounts"); expect(bank.status).not.toBe(403); expect(bank.status).toBe(503); expect((await call(OWNER(), "GET", "/money/summary")).status).not.toBe(403); expect((await call(OWNER(), "GET", "/access")).body).toMatchObject({ kind: "owner", roleText: "The owner" });
   });
   it("refuses every team role the bank, money, tokens, payments, requests, links, agreements, the team and anything not mapped, before those routers see the request", async () => {
-    for (const role of ["co_owner", "fleet_manager", "accountant"] as const) for (const p of ["/bank/accounts", "/bank", "/money/summary", "/money", "/tokens/balance", "/tokens", "/payments", "/requests", "/links", "/agreements", "/team", "/sms", "/sms/phone", "/something-new"]) { const r = await call(T(role), "GET", p); expect(r.status, `${role} ${p}`).toBe(403); expect(r.body.success).toBe(false); }
-    for (const role of ["co_owner", "fleet_manager", "accountant"] as const) for (const m of ["POST", "PUT", "DELETE"]) for (const p of ["/bank/accounts", "/money/pay", "/tokens/send", "/team", "/sms/phone", "/sms/verify", "/sms/settings", "/sms"]) expect((await call(T(role), m, p, {})).status, `${role} ${m} ${p}`).toBe(403);
+    for (const role of ["fleet_manager", "accountant"] as const) for (const p of ["/bank/accounts", "/bank", "/money/summary", "/money", "/tokens/balance", "/tokens"]) { const r = await call(T(role), "GET", p); expect(r.status, `${role} ${p}`).toBe(403); expect(r.body.success).toBe(false); }
+    for (const role of ["co_owner", "fleet_manager", "accountant"] as const) for (const p of ["/payments", "/requests", "/links", "/agreements", "/team", "/sms", "/sms/phone", "/something-new"]) { const r = await call(T(role), "GET", p); expect(r.status, `${role} ${p}`).toBe(403); expect(r.body.success).toBe(false); }
+    for (const role of ["co_owner", "fleet_manager", "accountant"] as const) for (const m of ["POST", "PUT", "DELETE"]) for (const p of ["/bank/accounts", "/bank/link", "/money/pay", "/money/agreements/1/accept", "/money/cross-border/1/confirm", "/tokens/send", "/tokens/transfer", "/tokens/cash-out", "/team", "/sms/phone", "/sms/verify", "/sms/settings", "/sms"]) expect((await call(T(role), m, p, {})).status, `${role} ${m} ${p}`).toBe(403);
+    expect((await call(T("co_owner"), "PUT", "/bank/link", {})).body.error).toBe("The co-owner role can look at that but not change it"); expect((await call(T("co_owner"), "POST", "/tokens/transfer", {})).body.error).toBe("The co-owner role can look at that but not change it"); expect((await call(T("fleet_manager"), "PUT", "/bank/link", {})).body.error).toBe("The fleet manager role does not have access to that");
   });
   it("shows a team member the owner's own business, not another owner's", async () => {
     for (const role of ["co_owner", "fleet_manager", "accountant"] as const) { if (role === "accountant") continue; const r = await call(T(role), "GET", "/driver-pay/fleet"); expect(r.status, role).toBe(200); expect(r.body.vehicles.map((v: any) => v.registration), role).toEqual(["CA 111-111"]); }
@@ -70,9 +72,10 @@ describe("what each role reaches, through the real routes", () => {
     const v = await call(a, "POST", "/vehicles", {}); expect(v.status).toBe(403); expect(v.body.error).toBe("The accountant role does not have access to that");                  // not even a place to look
     for (const p of ["/vehicles", "/drivers", "/files", "/compliance-centre", "/documents"]) expect((await call(a, "GET", p)).status, p).toBe(403); expect((await call(a, "POST", "/notifications/read", { keys: [] })).status).not.toBe(403);
   });
-  it("lets a co-owner do everything about the business except the bank, tokens, payments and the team", async () => {
+  it("lets a co-owner do everything about the business, and LOOK at the bank, tokens and payments, but not the team", async () => {
     const c = T("co_owner"); for (const p of ["/finance/profit", "/finance/loans", "/earnings", "/my-association", "/vehicles", "/files", "/compliance-centre", "/driver-pay/fleet"]) expect((await call(c, "GET", p)).status, p).toBe(200); expect((await call(c, "POST", "/finance/costs", { category: "fuel", amountCents: 1000, incurredOn: "2026-10-01" })).status).toBe(201);
-    for (const p of ["/team", "/bank/accounts", "/tokens", "/money/summary"]) expect((await call(c, "GET", p)).status, p).toBe(403);
+    expect((await call(c, "GET", "/team")).status).toBe(403); for (const p of ["/bank/accounts", "/bank", "/tokens", "/money/summary"]) expect((await call(c, "GET", p)).status, p).not.toBe(403);                  // the gate lets a co-owner's look through: those routers answer for themselves (503 here, with no bank connected)
+    expect((await call(c, "PUT", "/bank/link", {})).status).toBe(403);
   });
 });
 

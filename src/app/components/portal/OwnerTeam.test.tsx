@@ -8,9 +8,9 @@ import { OwnerFinanceScreen } from "./OwnerFinance";
 type Reply = { status?: number; body: unknown };
 let routes: (method: string, path: string, body: any) => Reply | undefined, calls: { method: string; path: string; body: any }[];
 const P = "/api/portal/owner";
-const MODS = ["overview", "notifications", "fleet", "driverpay", "compliance", "files", "association", "costs", "finance", "earnings", "audit"];
+const MODS = ["overview", "notifications", "fleet", "driverpay", "compliance", "files", "association", "costs", "finance", "earnings", "audit", "bank"];
 const access = (role: string | null, mods: Record<string, "r" | "rw">): OwnerAccess => ({ kind: role ? "team" : "owner", name: role ? "Thabo Mokoena" : null, role, roleText: role ?? "The owner", modules: Object.fromEntries(MODS.map((m) => [m, mods[m] ?? null])) as any });
-const OWNER = access(null, Object.fromEntries(MODS.map((m) => [m, "rw" as const]))), CO = access("co_owner", { ...Object.fromEntries(MODS.map((m) => [m, "rw" as const])), audit: "r" }), FLEET = access("fleet_manager", { overview: "r", notifications: "rw", fleet: "rw", driverpay: "rw", compliance: "rw", files: "rw", costs: "rw" }), ACC = access("accountant", { overview: "r", notifications: "rw", driverpay: "r", association: "r", costs: "r", finance: "r", earnings: "r", audit: "r" });
+const OWNER = access(null, Object.fromEntries(MODS.map((m) => [m, "rw" as const]))), CO = access("co_owner", { ...Object.fromEntries(MODS.map((m) => [m, "rw" as const])), audit: "r", bank: "r" }), FLEET = access("fleet_manager", { overview: "r", notifications: "rw", fleet: "rw", driverpay: "rw", compliance: "rw", files: "rw", costs: "rw" }), ACC = access("accountant", { overview: "r", notifications: "rw", driverpay: "r", association: "r", costs: "r", finance: "r", earnings: "r", audit: "r" });
 const TEAM = [{ id: "t1", name: "Thabo Mokoena", username: "thabo", email: "thabo@x.test", role: "fleet_manager", roleText: "Fleet manager", disabled: false, lastLogin: "2026-11-01T08:00:00Z", modules: [{ module: "overview", level: "r" }, { module: "fleet", level: "rw" }, { module: "costs", level: "rw" }] }, { id: "t2", name: "Anele Nkosi", username: "anele", email: "anele@x.test", role: "accountant", roleText: "Accountant (looks only)", disabled: true, lastLogin: null, modules: [{ module: "finance", level: "r" }] }];
 
 beforeEach(() => {
@@ -31,8 +31,9 @@ const withAccess = (a: OwnerAccess | null) => { const o = routes; routes = (m, p
 
 describe("which menu items a person may see", () => {
   it("shows the owner everything, including the team and the bank", () => { for (const l of ["Overview", "Vehicles", "Driver pay", "Payments & trips", "Requests & links", "VINK Tokens", "Bank account", "My team", "Profit and costs", "Anything"]) expect(ownerNavAllowed(l, OWNER), l).toBe(true); });
-  it("shows a co-owner the business but never the bank, tokens, payments, requests or the team", () => {
-    for (const l of ["Overview", "Vehicles", "Drivers", "Reports", "Financials", "Documents", "Notifications", "Driver targets", "My association", "Compliance centre", "Profit and costs", "Routes & map"]) expect(ownerNavAllowed(l, CO), l).toBe(true); for (const l of ["Driver pay", "Payments & trips", "Requests & links", "VINK Tokens", "Bank account", "My team"]) expect(ownerNavAllowed(l, CO), l).toBe(false);
+  it("shows a co-owner the business, and the bank, tokens and payments to look at, but never requests, the team or the text and WhatsApp alerts", () => {
+    for (const l of ["Overview", "Vehicles", "Drivers", "Reports", "Financials", "Documents", "Notifications", "Driver targets", "My association", "Compliance centre", "Profit and costs", "Routes & map", "Payments & trips", "VINK Tokens", "Bank account"]) expect(ownerNavAllowed(l, CO), l).toBe(true); for (const l of ["Driver pay", "Requests & links", "My team", "Text alerts", "WhatsApp alerts"]) expect(ownerNavAllowed(l, CO), l).toBe(false);
+    for (const a of [FLEET, ACC]) for (const l of ["Payments & trips", "VINK Tokens", "Bank account", "Requests & links", "My team", "Text alerts", "WhatsApp alerts"]) expect(ownerNavAllowed(l, a), `${a.role} ${l}`).toBe(false); for (const l of ["Payments & trips", "VINK Tokens", "Bank account", "Requests & links", "My team", "Text alerts", "WhatsApp alerts"]) expect(ownerNavAllowed(l, OWNER), l).toBe(true);
   });
   it("shows a fleet manager the vehicles, drivers, what drivers pay, compliance, documents and costs, but not takings, reports, the association or profit and loans' menu", () => {
     for (const l of ["Overview", "Vehicles", "Drivers", "Driver targets", "Compliance centre", "Documents", "Notifications", "Profit and costs", "Routes & map"]) expect(ownerNavAllowed(l, FLEET), l).toBe(true); for (const l of ["Reports", "Financials", "My association", "My team", "Bank account", "VINK Tokens", "Driver pay"]) expect(ownerNavAllowed(l, FLEET), l).toBe(false);
@@ -126,5 +127,19 @@ describe("alerts on the notifications screen", () => {
   it("marks every unread one as read, by its key, when asked", async () => { withNotes(NOTES, 2); await openNotes(OWNER); fireEvent.click(await screen.findByRole("button", { name: "Mark all as read" })); await waitFor(() => expect(writes().at(-1)).toEqual({ method: "POST", path: `${P}/notifications/read`, body: { keys: ["alert-fin:due:l1:2026-11-20-aaaa1111", "disc-CA 111-111"] } })); });
   it("says what appears there when nothing needs attention, including the alerts", async () => { withNotes([], 0); await openNotes(OWNER); expect(await screen.findByText(/Nothing needs your attention\. Reminders about expiring documents and licence discs, and things that need action \(loan instalments, fines, servicing and what your drivers owe\), appear here\./)).toBeInTheDocument(); });
   it("shows the same list to a fleet manager as the server gives them, with no money figures of its own", async () => { withNotes([NOTES[1]], 1); await openNotes(FLEET); expect(await screen.findByText("Fines are unpaid")).toBeInTheDocument(); expect(screen.queryByText(/WesBank/)).toBeNull(); });
+});
+
+describe("what a co-owner sees of the bank", () => {
+  const openFor = async (a: OwnerAccess) => { withAccess(a); render(<OwnerDashboard userName="Olu" onClose={() => undefined} />); await waitFor(() => expect(calls.some((c) => c.path === `${P}/access`)).toBe(true)); await new Promise((r) => setTimeout(r, 80)); };
+  const go = (label: RegExp) => fireEvent.click(within(screen.getAllByRole("list")[0]).getByRole("button", { name: label }));
+  const NOTICE = /You can look at this, but not change anything: only the owner can link or change the bank account, move money or tokens, or accept or cancel an agreement\./;
+  it("offers the bank, tokens and payments, asks the bank for its strip, and says on each screen that it is for looking only", async () => {
+    await openFor(CO); const names = within(screen.getAllByRole("list")[0]).queryAllByRole("button").map((b) => b.textContent ?? ""); for (const l of ["Bank account", "VINK Tokens", "Payments & trips"]) expect(names.some((x) => x.includes(l)), l).toBe(true); for (const l of ["Requests & links", "My team", "Text alerts", "WhatsApp alerts"]) expect(names.some((x) => x.includes(l)), l).toBe(false);
+    expect(calls.some((c) => c.path.includes("/bank"))).toBe(true); for (const l of [/Bank account/, /VINK Tokens/, /Payments & trips/]) { go(l); expect(await screen.findByRole("note"), String(l)).toHaveTextContent(NOTICE); }
+  });
+  it("shows the owner the same screens with no such notice, and never shows a fleet manager or an accountant the bank", async () => {
+    await openFor(OWNER); go(/Bank account/); await new Promise((r) => setTimeout(r, 60)); expect(screen.queryByRole("note")).toBeNull(); cleanup(); calls.length = 0;
+    for (const a of [FLEET, ACC]) { cleanup(); calls.length = 0; await openFor(a); const names = within(screen.getAllByRole("list")[0]).queryAllByRole("button").map((b) => b.textContent ?? ""); for (const l of ["Bank account", "VINK Tokens", "Payments & trips"]) expect(names.some((x) => x.includes(l)), `${a.role} ${l}`).toBe(false); expect(calls.some((c) => c.path.includes("/bank"))).toBe(false); }
+  });
 });
 

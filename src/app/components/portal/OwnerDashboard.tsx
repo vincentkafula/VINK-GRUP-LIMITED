@@ -10,6 +10,7 @@ import { OwnerFinanceScreen } from "./OwnerFinance";
 import { TeamScreen, useOwnerAccessState, ownerNavAllowed, type OwnerAccess } from "./OwnerTeam";
 import { ActivityScreen } from "./OwnerActivity";
 import { TextAlertsScreen } from "./OwnerTextAlerts";
+import { WhatsAppAlertsScreen } from "./OwnerWhatsAppAlerts";
 import { BankStrip, BankScreen } from "./BankAccount";
 import { DashboardShell, SectionPanel, StatCard, TableCard, Badge } from "../dashboards/DashboardShell";
 import { portalClient, useLoad, Status, Empty, ActionButton, outcome, inputCls, rand, day, type Load } from "./ui";
@@ -37,13 +38,13 @@ export function OwnerDashboard({ userName, onClose }: { userName?: string; onClo
     { icon: <BarChart3 className="w-4 h-4" />, label: "Reports" }, { icon: <Scale className="w-4 h-4" />, label: "Financials" },
     { icon: <FileText className="w-4 h-4" />, label: "Documents" }, { icon: <Bell className="w-4 h-4" />, label: "Notifications", badge: unread || undefined },
     { icon: <Banknote className="w-4 h-4" />, label: "Driver pay" }, { icon: <Scale className="w-4 h-4" />, label: "Driver targets" }, { icon: <Scale className="w-4 h-4" />, label: "My association" }, { icon: <Scale className="w-4 h-4" />, label: "Compliance centre" }, { icon: <Banknote className="w-4 h-4" />, label: "Profit and costs" }, { icon: <Scale className="w-4 h-4" />, label: "Payments & trips" },
-    { icon: <Link2 className="w-4 h-4" />, label: "Requests & links" }, { icon: <Coins className="w-4 h-4" />, label: "VINK Tokens" }, { icon: <Landmark className="w-4 h-4" />, label: "Bank account" }, { icon: <Users className="w-4 h-4" />, label: "My team" }, { icon: <FileText className="w-4 h-4" />, label: "Activity log" }, { icon: <Bell className="w-4 h-4" />, label: "Text alerts" },
+    { icon: <Link2 className="w-4 h-4" />, label: "Requests & links" }, { icon: <Coins className="w-4 h-4" />, label: "VINK Tokens" }, { icon: <Landmark className="w-4 h-4" />, label: "Bank account" }, { icon: <Users className="w-4 h-4" />, label: "My team" }, { icon: <FileText className="w-4 h-4" />, label: "Activity log" }, { icon: <Bell className="w-4 h-4" />, label: "Text alerts" }, { icon: <Bell className="w-4 h-4" />, label: "WhatsApp alerts" },
   ];
   const items = allItems.filter((i) => ownerNavAllowed(i.label, access));
   return (
     <DashboardShell title="Owner Dashboard" subtitle="Vehicles, drivers and earnings" accentColor={COLOR} gradient={`from-[${COLOR}]`} navItems={items} activeNav={nav} onNavChange={setNav} onClose={onClose} userName={access?.name ?? userName} alertCount={unread || undefined}>
       <div className="p-4 md:p-6 space-y-4 max-w-5xl">
-        {access?.kind === "owner" && <BankStrip segment="owner" color={COLOR} onOpen={() => setNav("Bank account")} />}
+        {(access?.kind === "owner" || !!access?.modules.bank) && <BankStrip segment="owner" color={COLOR} onOpen={() => setNav("Bank account")} />}
         <ScreenBoundary resetKey={nav}>
           {nav === "Overview" && (accessLoading ? null : !access || access.kind === "owner" || access.modules.earnings
             ? <><Overview /><OwnerTrend /></>
@@ -61,12 +62,13 @@ export function OwnerDashboard({ userName, onClose }: { userName?: string; onClo
           {nav === "My team" && <TeamScreen />}
           {nav === "Activity log" && <ActivityScreen />}
           {nav === "Text alerts" && <TextAlertsScreen />}
-          {nav === "Payments & trips" && <><VirtualAccountsPanel segment="owner" color={COLOR} /><CrossBorderPanel segment="owner" color={COLOR} /><PaymentsPanel segment="owner" color={COLOR} /><TripsPanel segment="owner" color={COLOR} /></>}
+          {nav === "WhatsApp alerts" && <WhatsAppAlertsScreen />}
+          {nav === "Payments & trips" && <><ReadOnlyNotice access={access} /><VirtualAccountsPanel segment="owner" color={COLOR} /><CrossBorderPanel segment="owner" color={COLOR} /><PaymentsPanel segment="owner" color={COLOR} /><TripsPanel segment="owner" color={COLOR} /></>}
           {nav === "Documents" && <Documents onChanged={reloadNotes} />}
           {nav === "Notifications" && <Notifications notes={notes} reload={reloadNotes} />}
           {nav === "Requests & links" && <LinksPanel call={call} color={COLOR} />}
-          {nav === "VINK Tokens" && <TokensPanel segment="owner" color={COLOR} />}
-          {nav === "Bank account" && <BankScreen segment="owner" color={COLOR} />}
+          {nav === "VINK Tokens" && <><ReadOnlyNotice access={access} /><TokensPanel segment="owner" color={COLOR} /></>}
+          {nav === "Bank account" && <><ReadOnlyNotice access={access} /><BankScreen segment="owner" color={COLOR} /></>}
         </ScreenBoundary>
       </div>
     </DashboardShell>
@@ -82,6 +84,12 @@ function RoleOverview({ access, labels, onOpen }: { access: OwnerAccess; labels:
       <div className="flex flex-wrap gap-2">{labels.map((l) => <button key={l} type="button" className="px-4 py-2 rounded-lg text-sm font-bold text-white" style={{ background: COLOR }} onClick={() => onOpen(l)}>{l}</button>)}</div>
     </div>
   );
+}
+
+/** A person whose role may look at the bank, VINK tokens and payments but not change them is told so, at the top of those screens, instead of finding that every button is refused. */
+function ReadOnlyNotice({ access }: { access: OwnerAccess | null }) {
+  if (!access || access.kind !== "team" || access.modules.bank !== "r") return null;
+  return <p role="note" className="text-xs rounded-lg border border-line bg-surface-2 p-3 text-fg">You can look at this, but not change anything: only the owner can link or change the bank account, move money or tokens, or accept or cancel an agreement.</p>;
 }
 
 function Overview() {

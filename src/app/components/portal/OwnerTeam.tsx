@@ -17,7 +17,7 @@ export function useOwnerAccess(): OwnerAccess | null { const [load] = useLoad<Ow
 /** The module each menu item belongs to. "Profit and costs" is open to anyone who can see either costs or profit. An item not listed belongs to the owner's own login alone, as does anything on the server that is not mapped to a module. */
 const NAV_MODULE: Record<string, string | string[]> = {
   Overview: "overview", "Routes & map": "overview", Notifications: "notifications", Reports: "earnings", Financials: "earnings", Vehicles: "fleet", Drivers: "fleet", Documents: "compliance", "Compliance centre": "compliance",
-  "Driver targets": "driverpay", "My association": "association", "Profit and costs": ["costs", "finance"], "Activity log": "audit",
+  "Driver targets": "driverpay", "My association": "association", "Profit and costs": ["costs", "finance"], "Activity log": "audit", "Payments & trips": "bank", "VINK Tokens": "bank", "Bank account": "bank",
 };
 export function ownerNavAllowed(label: string, access: OwnerAccess | null): boolean {
   if (access === null) return label === "Overview";                                                      // until we know who is signed in, show only the way in
