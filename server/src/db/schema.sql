@@ -3149,3 +3149,25 @@ CREATE TABLE IF NOT EXISTS association_digest_log (
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_digest_log ON association_digest_log(association_id, created_at DESC);
+
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+-- OWNER DASHBOARD, WhatsApp alerts (docs/OWNER_DASHBOARD.md, slice F3 extension)
+-- The owner's own opt-in to be told by WhatsApp, on the mobile number already confirmed under text alerts. To remove: db/rollback/owner_dashboard_whatsapp.sql
+-- ═════════════════════════════════════════════════════════════════════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS owner_whatsapp (
+  owner_id    UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  enabled     BOOLEAN NOT NULL DEFAULT false,
+  kinds       JSONB NOT NULL DEFAULT '[]',
+  consent_at  TIMESTAMPTZ,
+  updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS owner_whatsapp_log (
+  id        UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id  UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  kind      TEXT NOT NULL CHECK (kind IN ('daily','test','stop')),
+  sent_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  status    TEXT NOT NULL CHECK (status IN ('sent','failed')),
+  keys      JSONB NOT NULL DEFAULT '[]',
+  error     TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_owner_whatsapp_log_owner ON owner_whatsapp_log(owner_id, sent_at DESC);

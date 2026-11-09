@@ -6,6 +6,7 @@ import { mountOwnerFinance } from "./ownerFinanceRoutes.js";
 import { mountOwnerTeam } from "./ownerTeamRoutes.js";
 import { mountOwnerAudit } from "./ownerAuditRoutes.js";
 import { mountOwnerSms, type SmsDeps } from "./ownerSmsRoutes.js";
+import { mountOwnerWhatsapp } from "./ownerWhatsappRoutes.js";
 import { createOwnerCompliance } from "../services/ownerCompliance.js";
 import { gatherAttention, attentionKey, attentionTitle, type AttentionKind } from "../services/ownerAttention.js";
 import { teamCanRead, type TeamRole, type TeamModule } from "../services/ownerTeam.js";
@@ -313,6 +314,7 @@ export function createOwnerRouter(db: Db, now: () => Date = () => new Date(), on
   }));
   router.post("/notifications/read", json({ limit: "10kb" }), h(async (req, res) => { res.json({ success: true, marked: await markKeys(db, uid(req), req.body?.keys) }); }));
 
+  mountOwnerWhatsapp(router, db, now);                                                      // the owner's WhatsApp alerts (the owner's own login only)
   mountOwnerSms(router, db, now, smsDeps);                                               // the owner's text alerts (the owner's own login only)
   mountOwnerAudit(router, db, now);                                                      // the owner's activity log (read only)
   mountOwnerTeam(router, db, now);                                                       // the owner's team: their own logins and roles

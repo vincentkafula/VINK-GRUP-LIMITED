@@ -40,6 +40,7 @@ import publicRouter from "./routes/public.js";
 import { createLetterCheckRouter } from "./routes/letterCheck.js";
 import { alertsFor, createSmsSender } from "./services/alerts.js";
 import { createOwnerSms } from "./services/ownerSms.js";
+import { createOwnerWhatsapp, configureOwnerWhatsapp } from "./services/ownerWhatsapp.js";
 import { createTwilioSmsWebhook } from "./routes/twilioSmsWebhook.js";
 import { createAssociationDigest } from "./services/associationDigest.js";
 import { createCommission } from "./services/commission.js";
@@ -143,6 +144,10 @@ if (pool && process.env.NODE_ENV !== "test") {
   const ownerSms = createOwnerSms({ db: pool, sms: createSmsSender() });
   setTimeout(() => { ownerSms.dispatch().catch((e) => console.error("[owner-sms] run failed:", e instanceof Error ? e.message : e)); }, 180_000).unref();
   setInterval(() => { ownerSms.dispatch().catch((e) => console.error("[owner-sms] run failed:", e instanceof Error ? e.message : e)); }, 15 * 60_000).unref();
+  // Owners' WhatsApp alerts: the same rules, only for owners who agreed to them, only once an approved message template is set up (WHATSAPP_ALERT_TEMPLATE); until then it does nothing.
+  const ownerWhatsapp = createOwnerWhatsapp(pool);
+  setTimeout(() => { ownerWhatsapp.dispatch().catch((e) => console.error("[owner-whatsapp] run failed:", e instanceof Error ? e.message : e)); }, 240_000).unref();
+  setInterval(() => { ownerWhatsapp.dispatch().catch((e) => console.error("[owner-whatsapp] run failed:", e instanceof Error ? e.message : e)); }, 15 * 60_000).unref();
   setInterval(() => { alerts.retryUnsent().catch((e) => console.error("[alerts] retry failed:", e instanceof Error ? e.message : e)); }, 60_000).unref();
   setTimeout(() => { payslips.runAutoCashOuts().catch((e) => console.error("[cash-out] daily run failed:", e instanceof Error ? e.message : e)); }, 45_000).unref();
   const compliance = createCompliance(pool), reports = createReports(pool, createEmailSender()), digests = createAssociationDigest({ db: pool, mail: createEmailSender(), frontendUrl: process.env.FRONTEND_URL });
@@ -165,7 +170,10 @@ if (socialService && process.env.NODE_ENV !== "test") {
 
 // Customer chat on WhatsApp (services/whatsapp): Meta calls the webhook (raw body for its signature, so before the JSON parser); staff answer from the Management Panel.
 const waConfig = waConfigFromEnv();
-const whatsappService = pool && mailService ? createWhatsAppService({ db: pool, wa: createWaClient({ config: waConfig }), config: waConfig, departmentsFor: (u) => mailService.departmentsFor(u) }) : undefined;
+const waClient = createWaClient({ config: waConfig });
+configureOwnerWhatsapp({ wa: waClient, config: waConfig });                  // for the owner's WhatsApp alerts (services/ownerWhatsapp.ts)
+const ownerWaForStop = pool ? createOwnerWhatsapp(pool) : null;
+const whatsappService = pool && mailService ? createWhatsAppService({ db: pool, wa: waClient, config: waConfig, departmentsFor: (u) => mailService.departmentsFor(u), onStop: async (waId) => { await ownerWaForStop?.handleStop(waId); } }) : undefined;
 if (whatsappService) app.use("/api/webhooks/whatsapp", createWhatsAppWebhookRouter({ svc: whatsappService, config: waConfig }));
 app.use("/api/whatsapp", createWhatsAppInfoRouter({ config: waConfig }));
 // Replies to an owner's text alerts (a STOP switches them off). Twilio signs each call; see routes/twilioSmsWebhook.ts. Needs TWILIO_AUTH_TOKEN and TWILIO_SMS_WEBHOOK_URL.

@@ -27,7 +27,7 @@ const preview = (s: string) => s.replace(/\s+/g, " ").trim().slice(0, 160);
 
 export const inOfficeHours = (d: Date) => { const sa = new Date(d.getTime() + 2 * 3_600_000); const day = sa.getUTCDay(), h = sa.getUTCHours(); return day >= 1 && day <= 5 && h >= 8 && h < 17; };
 
-export function createWhatsAppService(deps: { db: Db; wa: WaClient; config: WaConfig; departmentsFor: (u: { userId: string; role: string }) => Promise<DeptRef[]>; now?: () => Date }) {
+export function createWhatsAppService(deps: { db: Db; wa: WaClient; config: WaConfig; departmentsFor: (u: { userId: string; role: string }) => Promise<DeptRef[]>; now?: () => Date; onStop?: (waId: string) => Promise<unknown> }) {
   const { db, wa, config } = deps, now = deps.now ?? (() => new Date());
   const menuDepartments = () => publicDepartments();
 
@@ -72,7 +72,7 @@ export function createWhatsAppService(deps: { db: Db; wa: WaClient; config: WaCo
     const conv = { id: String(row.id), waId };
     const text = a.body.trim();
 
-    if (/^stop$/i.test(text)) { await db.query(`UPDATE wa_conversations SET opted_in = false WHERE id = $1`, [conv.id]); await autoSay(conv, "You will no longer get alerts from VINK on WhatsApp. Reply START to turn them on again."); return true; }
+    if (/^stop$/i.test(text)) { await db.query(`UPDATE wa_conversations SET opted_in = false WHERE id = $1`, [conv.id]); try { await deps.onStop?.(waId); } catch (e) { console.error("[whatsapp] could not switch off owner alerts:", e instanceof Error ? e.message.slice(0, 80) : "error"); } await autoSay(conv, "You will no longer get alerts from VINK on WhatsApp. Reply START to turn them on again."); return true; }
     if (/^start$/i.test(text)) { await db.query(`UPDATE wa_conversations SET opted_in = true WHERE id = $1`, [conv.id]); await autoSay(conv, "You will now get payment and card alerts from VINK on WhatsApp. Reply STOP at any time to turn them off."); return true; }
     if (/^(menu|0)$/i.test(text)) { await db.query(`UPDATE wa_conversations SET department = NULL, state = 'menu' WHERE id = $1`, [conv.id]); await autoSay(conv, menuText()); return true; }
 
