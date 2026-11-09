@@ -327,6 +327,15 @@ Instead of handing a new login-holder a one-time password, the owner (or the ass
 - **The activity log** says "Gave a new login to thabo as fleet manager and emailed them an invitation" and "Emailed an invitation to Thabo Mokoena".
 - **Not built:** an invitation that sets the person's role-specific welcome text, translation of the email, and reminders when an invitation is not used.
 
+## 4m. Alerts in the app's Notifications
+
+The in-app **Notifications** list (and its unread badge) used to carry only expiry reminders. It now also carries the alerts that need action: a loan instalment coming up or not recorded, unpaid fines, a vehicle losing money, servicing overdue, and a driver behind on payments, so the dashboard, the Notifications and the text messages show the same things.
+
+- **One source.** All three draw on `services/ownerAttention.ts`, so they cannot disagree about what needs attention. Only importance *high* and *medium* appear; smaller notes stay on the dashboard.
+- **By role.** Notifications is open to every team role, so each alert is included only if that role may see that part: loans and "losing money" need the finance module, fines and servicing need costs, driver payments need driver pay. A fleet manager therefore sees fines, servicing and driver payments but never a loan or a profit figure; an accountant and a co-owner see everything; the owner sees everything.
+- **Read once, new again when it changes.** An alert's "read" is kept under a key that includes a fingerprint of its wording, so an unchanged alert stays read, and when the situation changes (a second fine, a new amount owed) it shows as new again.
+- **Not changed:** the expiry reminders, which still appear alongside, and the text messages, which behave as before.
+
 ## 5. Assumptions made (non-blocking; change any of them)
 
 - A target is **bookkeeping the owner sets**; it does not change the platform's agreement or collection. The two are linked by an optional agreement reference.
