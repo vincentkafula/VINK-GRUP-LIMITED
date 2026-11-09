@@ -70,6 +70,16 @@ describe("the WhatsApp service", () => {
   beforeEach(() => { db = allPortalsDb(); clock = WEEKDAY; who = { userId: id(1), role: "superadmin", username: "root" }; managed = [SUPPORT]; setCustomDepartments([]); });
   afterEach(() => setCustomDepartments([]));
 
+  it("tells the owner-alert service when a customer sends STOP, once, with their number, and for nothing else", async () => {
+    const stops: string[] = []; f = fakeWa({ fail: false }); const config = waConfigFromEnv({ ...ENV, WHATSAPP_REOPEN_TEMPLATE: "reopen_chat" }), svc = createWhatsAppService({ db, wa: createWaClient({ config, fetchImpl: f.fetchImpl }), config, now: () => clock, departmentsFor: async () => allDepartments(), onStop: async (waId) => { stops.push(waId); } });
+    await svc.handleWebhook(msg("27821112222", "Hi")); await svc.handleWebhook(msg("27821112222", "start")); await svc.handleWebhook(msg("27821112222", "stopping")); await svc.handleWebhook(msg("27821112222", "please stop")); expect(stops).toEqual([]);
+    await svc.handleWebhook(msg("27821112222", "STOP")); expect(stops).toEqual(["27821112222"]); expect((await conv()).opted_in).toBe(false); expect(f.texts().at(-1)).toContain("no longer get alerts");                  // the inbox's own reply is unchanged
+  });
+  it("still turns the customer's alerts off, and still replies, when the owner-alert service fails", async () => {
+    f = fakeWa({ fail: false }); const config = waConfigFromEnv({ ...ENV, WHATSAPP_REOPEN_TEMPLATE: "reopen_chat" }), svc = createWhatsAppService({ db, wa: createWaClient({ config, fetchImpl: f.fetchImpl }), config, now: () => clock, departmentsFor: async () => allDepartments(), onStop: async () => { throw new Error("database down"); } });
+    await svc.handleWebhook(msg("27821112222", "start")); await svc.handleWebhook(msg("27821112222", "stop")); expect((await conv()).opted_in).toBe(false); expect(f.texts().at(-1)).toContain("no longer get alerts"); expect(f.texts().at(-1)).not.toContain("database down");
+  });
+  it("works as before when there is no owner-alert service at all", async () => { const svc = build(); await svc.handleWebhook(msg("27821112222", "start")); await svc.handleWebhook(msg("27821112222", "stop")); expect((await conv()).opted_in).toBe(false); });
   it("answers a first message with a menu of the public departments, and keeps the chat without a department until one is chosen", async () => {
     const svc = build(); await svc.handleWebhook(msg("27821112222", "Hi"));
     const menu = f.texts()[0]; expect(menu).toContain("Welcome to VINK"); publicDepartments().forEach((d, i) => expect(menu).toContain(`${i + 1}. ${d.name}`)); expect(menu).toContain("START"); expect(menu).toContain("not yet in full operation");
