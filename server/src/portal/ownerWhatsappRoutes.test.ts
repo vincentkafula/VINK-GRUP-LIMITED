@@ -76,7 +76,7 @@ describe("the test message", () => {
 describe("what is recorded", () => {
   it("is that it was changed or tested, and how many kinds: never the number, never a message", async () => {
     await confirm(); await call(OWNER(), "PUT", "/whatsapp/settings", SET); await call(OWNER(), "POST", "/whatsapp/test"); await call(OWNER(), "DELETE", "/whatsapp"); const a = await q(`SELECT action, details FROM audit_log WHERE action LIKE 'owner.whatsapp.%' ORDER BY created_at`); expect(a.map((r) => r.action)).toEqual(["owner.whatsapp.settings", "owner.whatsapp.test", "owner.whatsapp.remove"]);
-    const all = a.map((r) => (typeof r.details === "string" ? r.details : JSON.stringify(r.details))).join(" "); expect(all).toMatch(/"kinds":\s*2/); expect(all).not.toMatch(/\+?27821234567|0821234567|test of your VINK|WesBank/);
+    const all = a.map((r) => (typeof r.details === "string" ? r.details : JSON.stringify(r.details))).join(" "); expect(all).toMatch(/"kinds":\s*2/); for (const r of a.filter((x) => x.action === "owner.whatsapp.settings")) expect(Object.keys(typeof r.details === "string" ? JSON.parse(r.details) : r.details).sort()).toEqual(["enabled", "kinds"]);                  // exactly these two, nothing else, not even the masked number expect(all).not.toMatch(/\+?27821234567|0821234567|test of your VINK|WesBank/);
   });
   it("stays out of the activity log the owner reads, like the text alert settings", async () => { await confirm(); await call(OWNER(), "PUT", "/whatsapp/settings", SET); const log = (await call(OWNER(), "GET", "/audit")).body.entries; expect(JSON.stringify(log)).not.toMatch(/whatsapp/i); });
 });

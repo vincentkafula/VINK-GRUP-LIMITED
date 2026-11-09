@@ -56,7 +56,7 @@ This is the design for extending the existing Owner Dashboard. It records what t
 5. **Slice E: structure and roles (P2).** Owner business record; roles for an owner's team (co-owner, fleet manager, driver, and the association's own roles' views), using the same fail-closed gate pattern as the association's named logins.
 6. **Slice F: growth and risk (P3).** Planner, notifications (in-app first, SMS and WhatsApp through the existing alert service), audit trail for owner changes.
 
-**Status (all six slices are built, tested and pushed):** A, owner and driver money (4a); B, the owner's association (4b); C, the licence and compliance centre (4c) and the owner's documents (4d); D, capital and profitability (4e); E, an owner's team (4f); F, the activity log (4g), the fleet expansion planner (4h) and text alerts (4i). **Also built since:** money the platform itself collects from a driver is now counted in the driver reconciliation and in the profit and loss (section 4j). **Not built:** WhatsApp alerts (they need approved message templates and consent: a decision for the business), a driver view of their own target, and a look at every screen in a real browser. Alerts are by text message, not (yet) WhatsApp.
+**Status (all six slices are built, tested and pushed):** A, owner and driver money (4a); B, the owner's association (4b); C, the licence and compliance centre (4c) and the owner's documents (4d); D, capital and profitability (4e); E, an owner's team (4f); F, the activity log (4g), the fleet expansion planner (4h) and text alerts (4i). **Also built since:** money the platform itself collects from a driver is now counted in the driver reconciliation and in the profit and loss (section 4j); the owner's business record (4k); emailed invitations (4l); alerts in the app's Notifications (4m); WhatsApp alerts, off until a template is approved (4n); and a view-only bank for a co-owner (4o). **Not built:** a driver view of their own target, and a look at every screen in a real browser.
 
 ## 4a. Slice A, built: owner and driver money
 
@@ -335,6 +335,28 @@ The in-app **Notifications** list (and its unread badge) used to carry only expi
 - **By role.** Notifications is open to every team role, so each alert is included only if that role may see that part: loans and "losing money" need the finance module, fines and servicing need costs, driver payments need driver pay. A fleet manager therefore sees fines, servicing and driver payments but never a loan or a profit figure; an accountant and a co-owner see everything; the owner sees everything.
 - **Read once, new again when it changes.** An alert's "read" is kept under a key that includes a fingerprint of its wording, so an unchanged alert stays read, and when the situation changes (a second fine, a new amount owed) it shows as new again.
 - **Not changed:** the expiry reminders, which still appear alongside, and the text messages, which behave as before.
+
+## 4n. WhatsApp alerts
+
+The same alerts as the text messages, by WhatsApp, for an owner who asks for them (*WhatsApp alerts*, the owner's own login only). **It stays switched off, and says so, until a message template is approved by Meta and set up.**
+
+- **Opt-in with a recorded agreement.** The owner must tick that they agree to be sent alerts on WhatsApp before it can be switched on; the day they agreed is kept, and shown. Withdrawing the agreement forgets their choices.
+- **The number** is the mobile number the owner already confirmed with a code under *Text alerts*, so there is no second code. It cannot be switched on until a number is confirmed there (this needs the text-message provider set up). If the owner deletes that number, WhatsApp alerts stop with it.
+- **Same rules as text alerts:** at most one message a day, between 07:00 and 19:00 South African time, only things that need action, never the same alert twice in a week, three tests a day, three failed tries a day, and the owner chooses the kinds (money, servicing, compliance, what drivers owe). It uses the same source as the dashboard and the Notifications (`services/ownerAttention.ts`).
+- **STOP:** a WhatsApp reply of STOP switches it off at once (the platform's WhatsApp inbox calls the owner-alert service), keeping their choices. The inbox's own reply and behaviour are unchanged, and a failure in the owner-alert service never stops the customer being answered.
+- **Privacy:** the number is shown only by its end; neither the number nor any message is written to the activity record; a failure keeps only a fixed note, never the provider's wording.
+
+**The message template to apply for** (Meta, category *Utility*, language English):
+
+> VINK alert: {{1}}. {{2}} Reply STOP to switch these off, or open WhatsApp alerts on your dashboard to change them.
+
+Samples for the review: {{1}} = "3 things need you"; {{2}} = "CA 111-111: the service was due on 2026-10-30 and is overdue | 1 fine is unpaid, R200.00 in all". A variable may not hold a line break, tab or a run of spaces, so the alerts are joined on one line with " | ". When it is approved, set `WHATSAPP_ALERT_TEMPLATE` to its name (and `WHATSAPP_ALERT_LANGUAGE` if it is not English), alongside the WhatsApp variables the platform already uses (`WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_TOKEN`, `META_APP_SECRET`). A business-initiated WhatsApp message must be a template, so nothing else is ever sent first.
+
+**Data** (rollback `server/src/db/rollback/owner_dashboard_whatsapp.sql`): `owner_whatsapp`, `owner_whatsapp_log`. **Not built:** confirming a number by WhatsApp itself (it would need its own approved "authentication" template).
+
+## 4o. A co-owner can look at the bank
+
+A co-owner can now **look at** the bank account, payments and trips, and VINK tokens (a read-only *bank* access). Anything that changes something is refused with "The co-owner role can look at that but not change it": linking, changing or deleting the linked bank account, moving money or tokens, cashing out, accepting, declining or cancelling an agreement, and confirming a cross-border payment. The screens say so at the top. A fleet manager and an accountant still see none of it; *Requests & links*, the team and text and WhatsApp alerts stay with the owner's own login alone.
 
 ## 5. Assumptions made (non-blocking; change any of them)
 
